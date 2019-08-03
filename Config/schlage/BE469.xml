@@ -1,35 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<CommandClass id="112">
-		<Value type="list" genre="config" index="3" label="Beeper" min="0" max="255" size="1" value="255">
-			<Help>
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/003B:5044:6341</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/schlage/BE469.png</MetaDataItem>
+    <MetaDataItem id="5044" name="ZWProductPage" type="6341">https://products.z-wavealliance.org/products/748/</MetaDataItem>
+    <MetaDataItem id="5044" name="Identifier" type="6341">BE469</MetaDataItem>
+    <MetaDataItem name="Description">At Schlage, we know security. After all, we’ve been innovating locks for more than 90 years. Now, with the Touch screen Deadbolt, we’ve created a door lock that combines all of our best security features into one keyless door lock, redefining what it means to be secure. Our innovative touch screen feature provides the convenience of going keyless. No more keys to lose, hide, carry or forget. The fingerprint-resistant touch screen ensures numbers won’t be detectable to intruders after repeated use, safeguarding your home even more. Schrage’s Touch screen Deadbolt with Alarm combines our best security features into one door lock: Grade 1 certification, an Anti-pick shield, Built-in Alarm technology. The Touch screen Deadbolt is also enabled to work with Nexia Home Intelligence, a home automation system that allows you to control locks, thermostats, lights, cameras and more from wherever you and the Internet happen to be.</MetaDataItem>
+    <MetaDataItem name="Name">Schlage Touchscreen Deadbolt</MetaDataItem>
+    <MetaDataItem id="5044" name="FrequencyName" type="6341">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/748/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="Beeper" max="255" min="0" size="1" type="list" value="255">
+      <Help>
 				Enable or disable the beeper.
 			</Help>
-			<Item label="Disable Beeper" value="0" />
-			<Item label="Enable Beeper" value="255" />
-
-		</Value>
-		<Value type="list" genre="config" index="4" label="Vacation Mode" min="0" max="255" size="1" value="0">
-			<Help>
+      <Item label="Disable Beeper" value="0"/>
+      <Item label="Enable Beeper" value="255"/>
+    </Value>
+    <Value genre="config" index="4" label="Vacation Mode" max="255" min="0" size="1" type="list" value="0">
+      <Help>
 				Prevents all user codes from unlocking the deadbolt.
 				Enable for extra security while you are away for
 				an extended period of time.
 			</Help>
-			<Item label="Disable Vacation Mode" value="0" />
-			<Item label="Enable Vacation Mode" value="255" />
-		</Value>
-		<Value type="list" genre="config" index="5" label="Lock &amp; Leave" units="" min="0" max="255" size="1" value="255">
-			<Help>
+      <Item label="Disable Vacation Mode" value="0"/>
+      <Item label="Enable Vacation Mode" value="255"/>
+    </Value>
+    <Value genre="config" index="5" label="Lock &amp; Leave" max="255" min="0" size="1" type="list" units="" value="255">
+      <Help>
 				When enabled: Press the Outside Schlage Button to lock the
 				deadbolt. (Default setting).
 				When disabled: Press the Outside Schlage Button and then enter
 				a user code to lock the deadbolt.
 			</Help>
-			<Item label="Disable Lock &amp; Leave" value="0" />
-			<Item label="Enable Lock &amp; Leave" value="255" />
-		</Value>
-		<Value type="list" genre="config" index="7" label="Lock Alarm Mode" size="1" value="0">
-			<Help>
+      <Item label="Disable Lock &amp; Leave" value="0"/>
+      <Item label="Enable Lock &amp; Leave" value="255"/>
+    </Value>
+    <Value genre="config" index="7" label="Lock Alarm Mode" size="1" type="list" value="0">
+      <Help>
 				The alarm is turned off by default. After installation,
 				you will need to turn on your alarm.
 
@@ -52,99 +62,98 @@
 				   Least sensitive mode
 				 Sounds three-minute shrill, steady alarm (90 dB)
 			</Help>
-			<Item label="Alarm Off" value="0" />
-			<Item label="Activity" value="1" />
-			<Item label="Tamper" value="2" />
-			<Item label="Forced Entry" value="3" />
-		</Value>
-		<Value type="list" genre="config" index="8" label="Activity Alarm Sensitivity" size="1" value="3">
-			<Help>
+      <Item label="Alarm Off" value="0"/>
+      <Item label="Activity" value="1"/>
+      <Item label="Tamper" value="2"/>
+      <Item label="Forced Entry" value="3"/>
+    </Value>
+    <Value genre="config" index="8" label="Activity Alarm Sensitivity" size="1" type="list" value="3">
+      <Help>
 				Each alarm mode is preset to a sensitivity level of three.
 				If your alarm is sounding too frequently, or not frequently enough,
 				try changing this setting.
 				If you change the alarm mode, the sensitivity will revert
 				back to the default setting.
 			</Help>
-			<Item label="Most Sensitive" value="1" />
-			<Item label="Medium/high Sensitivity" value="2" />
-			<Item label="Medium Sensitivity" value="3" />
-			<Item label="Medium/low Sensitivity" value="4" />
-			<Item label="Least Sensitivity" value="5" />
-		</Value>
-		<Value type="list" genre="config" index="9" label="Tamper Alarm Sensitivity" size="1" value="3">
-			<Help>
+      <Item label="Most Sensitive" value="1"/>
+      <Item label="Medium/high Sensitivity" value="2"/>
+      <Item label="Medium Sensitivity" value="3"/>
+      <Item label="Medium/low Sensitivity" value="4"/>
+      <Item label="Least Sensitivity" value="5"/>
+    </Value>
+    <Value genre="config" index="9" label="Tamper Alarm Sensitivity" size="1" type="list" value="3">
+      <Help>
 				Each alarm mode is preset to a sensitivity level of three.
 				If your alarm is sounding too frequently, or not frequently enough,
 				try changing this setting.
 				If you change the alarm mode, the sensitivity will revert
 				back to the default setting.
 			</Help>
-			<Item label="Most Sensitive" value="1" />
-			<Item label="Medium/high Sensitivity" value="2" />
-			<Item label="Medium Sensitivity" value="3" />
-			<Item label="Medium/low Sensitivity" value="4" />
-			<Item label="Least Sensitivity" value="5" />
-		</Value>
-		<Value type="list" genre="config" index="10" label="Forced Entry Alarm Sensitivity" size="1" value="3">
-			<Help>
+      <Item label="Most Sensitive" value="1"/>
+      <Item label="Medium/high Sensitivity" value="2"/>
+      <Item label="Medium Sensitivity" value="3"/>
+      <Item label="Medium/low Sensitivity" value="4"/>
+      <Item label="Least Sensitivity" value="5"/>
+    </Value>
+    <Value genre="config" index="10" label="Forced Entry Alarm Sensitivity" size="1" type="list" value="3">
+      <Help>
 				Each alarm mode is preset to a sensitivity level of three.
 				If your alarm is sounding too frequently, or not frequently enough,
 				try changing this setting.
 				If you change the alarm mode, the sensitivity will revert
 				back to the default setting.
 			</Help>
-			<Item label="Most Sensitive" value="1" />
-			<Item label="Medium/high Sensitivity" value="2" />
-			<Item label="Medium Sensitivity" value="3" />
-			<Item label="Medium/low Sensitivity" value="4" />
-			<Item label="Least Sensitivity" value="5" />
-		</Value>
-		<Value type="list" genre="config" index="11" label="Disable Local Alarm Controls" size="1" value="255">
-			<Help>
+      <Item label="Most Sensitive" value="1"/>
+      <Item label="Medium/high Sensitivity" value="2"/>
+      <Item label="Medium Sensitivity" value="3"/>
+      <Item label="Medium/low Sensitivity" value="4"/>
+      <Item label="Least Sensitivity" value="5"/>
+    </Value>
+    <Value genre="config" index="11" label="Disable Local Alarm Controls" size="1" type="list" value="255">
+      <Help>
 				Enables/Disables local alarm on/off, mode change, sensitivity changes
 			</Help>
-			<Item label="Disable local alarm controls" value="0" />
-			<Item label="Enable local alarm controls" value="255" />
-		</Value>
-		<Value type="int" genre="config" index="12" read_only="true" label="Electronic transition count" />
-		<Value type="int" genre="config" index="13" read_only="true" label="Mechanical transition count" />
-		<Value type="int" genre="config" index="14" read_only="true" label="Electronic failed count">
-			<Help>
+      <Item label="Disable local alarm controls" value="0"/>
+      <Item label="Enable local alarm controls" value="255"/>
+    </Value>
+    <Value genre="config" index="12" label="Electronic transition count" read_only="true" type="int"/>
+    <Value genre="config" index="13" label="Mechanical transition count" read_only="true" type="int"/>
+    <Value genre="config" index="14" label="Electronic failed count" read_only="true" type="int">
+      <Help>
 				Each failed electronic attempt increments this count by one.
 			</Help>
-		</Value>
-		<Value type="list" genre="config" index="15" label="Auto lock" size="1" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="15" label="Auto lock" size="1" type="list" value="0">
+      <Help>
 				When enabled, the lock will automatically relock 30 seconds
 				after unlocking. (Disabled by default.)
 			</Help>
-			<Item label="Disable auto lock" value="0" />
-			<Item label="Enable auto lock" value="255" />
-		</Value>
-		<Value type="byte" genre="config" index="16" label="User code pin length" min="4" max="8" value="4">
-			<Help>
+      <Item label="Disable auto lock" value="0"/>
+      <Item label="Enable auto lock" value="255"/>
+    </Value>
+    <Value genre="config" index="16" label="User code pin length" max="8" min="4" type="byte" value="4">
+      <Help>
 				User Code PIN length, a value between 4 and 8. 
 				IMPORTANT: All user codes must be the same length.
 			</Help>
-		</Value>
-		<Value type="int" genre="config" index="17" label="Electrical High Preload Transition Count" read_only="true">
-			<Help>
+    </Value>
+    <Value genre="config" index="17" label="Electrical High Preload Transition Count" read_only="true" type="int">
+      <Help>
 				A subset of Electronic transition count, the number of transitions
 				with high preload.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" index="18" label="Bootloader Version" read_only="true">
-			<Help>The version of the bootloader</Help>
-		</Value>
-	</CommandClass>
-
-	<CommandClass id="113">
-		<!-- These Door Locks don't send a DoorLockReport when the
+    </Value>
+    <Value genre="config" index="18" label="Bootloader Version" read_only="true" type="byte">
+      <Help>The version of the bootloader</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="113">
+    <!-- These Door Locks don't send a DoorLockReport when the
 		Lock Status is Changed, but instead send a Alarm Message -
 		So we trigger a Refresh of the DoorLock Command Class when
 		we recieve a Alarm Message Instead -->
-		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
-			<RefreshClassValue CommandClass="98" RequestFlags="0" Index="1" Instance="1" />
-		</TriggerRefreshValue>
-	</CommandClass>
+    <TriggerRefreshValue Genre="user" Index="0" Instance="1">
+      <RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
+    </TriggerRefreshValue>
+  </CommandClass>
 </Product>

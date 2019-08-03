@@ -1,8 +1,9 @@
 #pragma once
 
 #include "RFXNames.h"
+#include "../hardware/hardwaretypes.h"
 #include <string>
-#include <vector>
+#include "StoppableTask.h"
 
 struct tScheduleItem
 {
@@ -17,10 +18,10 @@ struct tScheduleItem
 	unsigned short startYear;
 	unsigned char startHour;
 	unsigned char startMin;
-	_eTimerType	timerType; 
+	_eTimerType	timerType;
 	_eTimerCommand timerCmd;
 	int Level;
-	int Hue;
+	_tColor Color;
 	float Temperature;
 	bool bUseRandomness;
 	int Days;
@@ -30,6 +31,30 @@ struct tScheduleItem
 	//internal
 	time_t startTime;
 
+	tScheduleItem() {
+		bEnabled = false;
+		bIsScene = false;
+		bIsThermostat = false;
+		RowID = 0;
+		TimerID = 0;
+		startDay = 0;
+		startMonth = 0;
+		startYear = 0;
+		startHour = 0;
+		startMin = 0;
+		timerType = TTYPE_ONTIME;
+		timerCmd = TCMD_ON;
+		Level = 0;
+		Temperature = 0.0f;
+		bUseRandomness = false;
+		Days = 0;
+		MDay = 0;
+		Month = 0;
+		Occurence = 0;
+		//internal
+		startTime = 0;
+	}
+
 	bool operator==(const tScheduleItem &comp) const {
 		return (this->TimerID == comp.TimerID)
 			&& (this->bIsScene == comp.bIsScene)
@@ -37,7 +62,7 @@ struct tScheduleItem
 	}
 };
 
-class CScheduler
+class CScheduler : public StoppableTask
 {
 public:
 	CScheduler(void);
@@ -62,9 +87,8 @@ private:
 	time_t m_tNautTwEnd;
 	time_t m_tAstTwStart;
 	time_t m_tAstTwEnd;
-	boost::mutex m_mutex;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::mutex m_mutex;
+	std::shared_ptr<std::thread> m_thread;
 	std::vector<tScheduleItem> m_scheduleitems;
 
 	//our thread

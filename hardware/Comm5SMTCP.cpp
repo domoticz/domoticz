@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Comm5SMTCP.h"
-#include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
+#include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
@@ -38,7 +38,6 @@ Comm5SMTCP::Comm5SMTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	initSensorData = true;
 	m_bReceiverStarted = false;
@@ -46,28 +45,29 @@ Comm5SMTCP::Comm5SMTCP(const int ID, const std::string &IPAddress, const unsigne
 
 bool Comm5SMTCP::StartHardware()
 {
-	m_stoprequested = false;
+	RequestStart();
+
 	m_bReceiverStarted = false;
 
 	//force connect the next first time
 	m_bIsStarted = true;
-	m_rxbufferpos = 0;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Comm5SMTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&Comm5SMTCP::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 
-	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: Started");
+	Log(LOG_STATUS, "Started");
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool Comm5SMTCP::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -75,7 +75,7 @@ bool Comm5SMTCP::StopHardware()
 
 void Comm5SMTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 
 	sOnConnected(this);
@@ -84,36 +84,27 @@ void Comm5SMTCP::OnConnect()
 
 void Comm5SMTCP::OnDisconnect()
 {
-	_log.Log(LOG_ERROR, "Comm5 SM-XXXX: disconected");
+	Log(LOG_ERROR, "disconected");
 }
 
 void Comm5SMTCP::Do_Work()
 {
-	bool bFirstTime = true;
-	int count = 0;
-	while (!m_stoprequested)
+	int sec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
+	while (!IsStopRequested(1000))
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			if (!mIsConnected)
-			{
-				m_rxbufferpos = 0;
-				connect(m_szIPAddress, m_usIPPort);
-			}
+		sec_counter++;
+
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
-		else
-		{
-			sleep_milliseconds(40);
-			update();
-			if (count++ >= 100) {
-				count = 0;
-				querySensorState();
-			}
+		if (sec_counter % 4 == 0) {
+			querySensorState();
 		}
 	}
-	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: TCP/IP Worker stopped...");
+	terminate();
+
+	Log(LOG_STATUS, "TCP/IP Worker stopped...");
 }
 
 void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
@@ -165,20 +156,19 @@ void Comm5SMTCP::querySensorState()
 	write("PRESSURE\n\r");
 }
 
-bool Comm5SMTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool Comm5SMTCP::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
 
 void Comm5SMTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 
 void Comm5SMTCP::OnError(const std::exception e)
 {
-	_log.Log(LOG_ERROR, "Comm5 SM-XXXX: Error: %s", e.what());
+	Log(LOG_ERROR, "Error: %s", e.what());
 }
 
 void Comm5SMTCP::OnError(const boost::system::error_code& error)
@@ -190,13 +180,13 @@ void Comm5SMTCP::OnError(const boost::system::error_code& error)
 	case boost::asio::error::access_denied:
 	case boost::asio::error::host_unreachable:
 	case boost::asio::error::timed_out:
-		_log.Log(LOG_ERROR, "Comm5 SM-XXXX: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		break;
 	case boost::asio::error::eof:
 	case boost::asio::error::connection_reset:
-		_log.Log(LOG_ERROR, "Comm5 SM-XXXX: Connection reset!");
+		Log(LOG_ERROR, "Connection reset!");
 		break;
 	default:
-		_log.Log(LOG_ERROR, "Comm5 SM-XXXX: %s", error.message().c_str());
+		Log(LOG_ERROR, "%s", error.message().c_str());
 	}
 }

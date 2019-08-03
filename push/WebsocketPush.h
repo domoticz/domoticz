@@ -30,7 +30,7 @@ private:
 	bool listenRoomplan;
 	bool listenDeviceTable;
 	std::vector<unsigned long long> listenIdxs;
-	boost::mutex listenMutex;
+	std::mutex listenMutex;
 	http::server::CWebsocketHandler *m_sock;
 	bool isStarted;
 };

@@ -10,18 +10,17 @@ define(['app'], function (app) {
 			$http.post(uploadUrl, fd, {
 				transformRequest: angular.identity,
 				headers: { 'Content-Type': undefined }
-			})
-				.success(function (data) {
-					if (data.status != "OK") {
-						HideNotify();
-						ShowNotify($.t('Error uploading Iconset') + ": " + data.error, 5000, true);
-					}
-					$scope.RefreshIconList();
-				})
-				.error(function (data) {
-					HideNotify();
-					ShowNotify($.t('Error uploading Iconset'), 5000, true);
-				});
+			}).then(function successCallback(response) {
+			    var data = response.data;
+			    if (data.status != "OK") {
+			        HideNotify();
+			        ShowNotify($.t('Error uploading Iconset') + ": " + data.error, 5000, true);
+			    }
+			    $scope.RefreshIconList();
+			}, function errorCallback(response) {
+			    HideNotify();
+			    ShowNotify($.t('Error uploading Iconset'), 5000, true);
+			});
 		}
 
 		$scope.UploadIconSet = function () {
@@ -38,12 +37,14 @@ define(['app'], function (app) {
 			$scope.iconset = [];
 			$scope.selectedIcon = [];
 
-			$http.get("json.htm?type=command&param=getcustomiconset").
-				success(function (data, status, headers, config) {
-					if (typeof data.result != 'undefined') {
-						$scope.iconset = data.result;
-					}
-				});
+			$http({
+                url: "json.htm?type=command&param=getcustomiconset",
+            }).then(function successCallback(response) {
+                var data = response.data;
+				if (typeof data.result != 'undefined') {
+					$scope.iconset = data.result;
+				}
+			});
 		}
 
 		$scope.OnIconSelected = function (icon) {

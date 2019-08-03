@@ -39,10 +39,10 @@ import re
 #	pass
 
 def log(*args):
-    domoticz_.log(0, " ".join([str(k) for k in args]))
+    domoticz_.Log(0, " ".join([str(k) for k in args]))
 
 def error(*args):
-    domoticz_.log(1, " ".join([str(k) for k in args]))
+    domoticz_.Log(1, " ".join([str(k) for k in args]))
 
 reloader.auto_reload(__name__)
 

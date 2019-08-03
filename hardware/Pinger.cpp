@@ -1,25 +1,32 @@
 #include "stdafx.h"
 #include "Pinger.h"
 #include "../main/Helper.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../main/RFXtrx.h"
 #include "../main/localtime_r.h"
+#include "../main/Noncopyable.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 
 #include <boost/asio.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
 #include "pinger/icmp_header.h"
 #include "pinger/ipv4_header.h"
 
 #include <iostream>
 
+#if BOOST_VERSION >= 107000
+#define GET_IO_SERVICE(s) ((boost::asio::io_context&)(s).get_executor().context())
+#else
+#define GET_IO_SERVICE(s) ((s).get_io_service())
+#endif
+
 class pinger
-	: private boost::noncopyable
+	: private domoticz::noncopyable
 {
 public:
 	pinger(boost::asio::io_service& io_service, const char* destination, const int iPingTimeoutms)
@@ -76,7 +83,7 @@ private:
 				num_tries_++;
 				if (num_tries_ > 4)
 				{
-					resolver_.get_io_service().stop();
+					GET_IO_SERVICE(resolver_).stop();
 				}
 				else
 				{
@@ -118,13 +125,13 @@ private:
 			if (num_replies_++ == 0)
 				timer_.cancel();
 			m_PingState = true;
-			resolver_.get_io_service().stop();
+			GET_IO_SERVICE(resolver_).stop();
 		}
 		else
 		{
 			// DD 2 possible 'invalid' replies that will be discarded are:
 			// Type 8: Echo request, happens when we ping ourselves (localhost)
-			// Type 3: Destination host unreachable. 
+			// Type 3: Destination host unreachable.
 			start_receive();
 		}
 	}
@@ -147,7 +154,6 @@ private:
 };
 
 CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms) :
-	m_stoprequested(false),
 	m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
@@ -163,6 +169,9 @@ CPinger::~CPinger(void)
 bool CPinger::StartHardware()
 {
 	StopHardware();
+
+	RequestStart();
+
 	m_bIsStarted = true;
 	sOnConnected(this);
 	m_iThreadsRunning = 0;
@@ -172,10 +181,8 @@ bool CPinger::StartHardware()
 	ReloadNodes();
 
 	//Start worker thread
-	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPinger::Do_Work, this)));
-	_log.Log(LOG_STATUS, "Pinger: Started");
-
+	m_thread = std::make_shared<std::thread>(&CPinger::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	return true;
 }
 
@@ -183,25 +190,11 @@ bool CPinger::StopHardware()
 {
 	StopHeartbeatThread();
 
-	try {
-		if (m_thread)
-		{
-			m_stoprequested = true;
-			m_thread->join();
-			m_thread.reset();
-
-			//Make sure all our background workers are stopped
-			int iRetryCounter = 0;
-			while ((m_iThreadsRunning > 0) && (iRetryCounter < 15))
-			{
-				sleep_milliseconds(500);
-				iRetryCounter++;
-			}
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -215,21 +208,21 @@ bool CPinger::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, const int Timeout)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
 		m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size() > 0)
+	if (!result.empty())
 		return; //Already exists
 	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d,'%q','%q',%d)",
 		m_HwdID, Name.c_str(), IPAddress.c_str(), Timeout);
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
 		m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size() < 1)
+	if (result.empty())
 		return;
 
 	int ID = atoi(result[0][0].c_str());
@@ -243,14 +236,14 @@ void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, con
 
 bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Timeout)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
 		m_HwdID, ID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false; //Not Found!?
 
 	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=%d WHERE (HardwareID==%d) AND (ID==%d)",
@@ -269,7 +262,7 @@ bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::strin
 
 void CPinger::RemoveNode(const int ID)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
 		m_HwdID, ID);
@@ -285,7 +278,7 @@ void CPinger::RemoveNode(const int ID)
 
 void CPinger::RemoveAllNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 
@@ -300,7 +293,7 @@ void CPinger::ReloadNodes()
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)",
 		m_HwdID);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
@@ -382,16 +375,17 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 
 void CPinger::DoPingHosts()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	std::vector<PingNode>::const_iterator itt;
 	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
 	{
-		if (m_stoprequested)
+		if (IsStopRequested(0))
 			return;
 		if (m_iThreadsRunning < 1000)
 		{
 			//m_iThreadsRunning++;
 			boost::thread t(boost::bind(&CPinger::Do_Ping_Worker, this, *itt));
+			SetThreadName(t.native_handle(), "PingerWorker");
 			t.join();
 		}
 	}
@@ -402,9 +396,9 @@ void CPinger::Do_Work()
 	int mcounter = 0;
 	int scounter = 0;
 	bool bFirstTime = true;
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "Pinger: Worker started...");
+	while (!IsStopRequested(500))
 	{
-		sleep_milliseconds(500);
 		mcounter++;
 		if (mcounter == 2)
 		{
@@ -417,6 +411,11 @@ void CPinger::Do_Work()
 				DoPingHosts();
 			}
 		}
+	}
+	//Make sure all our background workers are stopped
+	while (m_iThreadsRunning > 0)
+	{
+		sleep_milliseconds(150);
 	}
 	_log.Log(LOG_STATUS, "Pinger: Worker stopped...");
 }
@@ -431,12 +430,6 @@ void CPinger::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPollInterval = PollIntervalsec;
 	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
 		m_iPingTimeoutms = PingTimeoutms;
-}
-
-void CPinger::Restart()
-{
-	StopHardware();
-	StartHardware();
 }
 
 //Webserver helpers
@@ -465,7 +458,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)",
 				iHardwareID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
@@ -531,8 +524,8 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
-			std::string ip = request::findValue(&req, "ip");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Timeout = atoi(request::findValue(&req, "timeout").c_str());
 			if (
 				(hwid == "") ||
@@ -564,8 +557,8 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			std::string name = request::findValue(&req, "name");
-			std::string ip = request::findValue(&req, "ip");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Timeout = atoi(request::findValue(&req, "timeout").c_str());
 			if (
 				(hwid == "") ||

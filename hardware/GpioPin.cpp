@@ -78,7 +78,7 @@ int CGpioPin::SetReadValueFd(int value)
 	return m_read_value_fd;
 }
 
-bool CGpioPin::SetDBState(int db_state)
+void CGpioPin::SetDBState(int db_state)
 {
 	m_db_state = db_state;
 }

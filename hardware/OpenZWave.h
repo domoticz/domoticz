@@ -2,7 +2,6 @@
 
 #ifdef WITH_OPENZWAVE
 
-#include <map>
 #include <string>
 #include <time.h>
 #include "ZWaveBase.h"
@@ -42,17 +41,19 @@ public:
 	typedef struct
 	{
 		unsigned int					homeId;
-		unsigned char					nodeId;
+		uint8_t							nodeId;
 		bool							polled;
 
 		std::string						szType;
 		int								iVersion;
-		std::string						Manufacturer_id;
+		uint16_t						Manufacturer_id;
 		std::string						Manufacturer_name;
-		std::string						Product_type;
-		std::string						Product_id;
+		uint16_t						Product_type;
+		uint16_t						Product_id;
 		std::string						Product_name;
 		int								Application_version;
+
+		int								batValue = 255;
 
 		std::map<int, std::map<int, NodeCommandClass> >	Instances;
 
@@ -69,8 +70,8 @@ public:
 		int								tClockMinute;
 		int								tMode;
 		int								tFanMode;
-		std::vector<string>				tModes;
-		std::vector<string>				tFanModes;
+		std::vector<std::string>				tModes;
+		std::vector<std::string>				tFanModes;
 	}NodeInfo;
 
 	COpenZWave(const int ID, const std::string& devname);
@@ -83,6 +84,7 @@ public:
 	void EnableDisableNodePolling(const int nodeID);
 	void SetNodeName(const unsigned int homeID, const int nodeID, const std::string &Name);
 	std::string GetNodeStateString(const unsigned int homeID, const int nodeID);
+	std::string GetNodeGenericType(const bool bIsPlus, const uint32 homeID, const uint8 nodeID);
 	void GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value &root, const int index);
 	bool ApplyNodeConfig(const unsigned int homeID, const int nodeID, const std::string &svaluelist);
 	NodeInfo* GetNodeInfo(const unsigned int homeID, const int nodeID);
@@ -94,11 +96,14 @@ public:
 	bool GetNodeUserCodes(const unsigned int homeID, const int nodeID, Json::Value &root);
 	bool RemoveUserCode(const unsigned int homeID, const int nodeID, const int codeIndex);
 
+	bool GetBatteryLevels(Json::Value& root);
+
 	std::vector<std::string> GetSupportedThermostatModes(const unsigned long ID);
 	std::string GetSupportedThermostatFanModes(const unsigned long ID);
 
 	//Controller Commands
 	bool RequestNodeConfig(const unsigned int homeID, const int nodeID);
+	bool RequestNodeInfo(const unsigned int homeID, const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
 	bool HasNodeFailed(const int nodeID);
 	bool ReceiveConfigurationFromOtherController();
@@ -117,7 +122,7 @@ public:
 	bool NetworkInfo(const int hwID,std::vector< std::vector< int > > &NodeArray);
 	int ListGroupsForNode(const int nodeID);
 	std::string GetGroupName(const int nodeID, const int groupID);
-	int ListAssociatedNodesinGroup(const int nodeID,const int groupID,std::vector< string > &nodesingroup);
+	int ListAssociatedNodesinGroup(const int nodeID,const int groupID,std::vector< std::string > &nodesingroup);
 	bool AddNodeToGroup(const int nodeID,const int groupID, const int addID, const int instance);
 	bool RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID, const int instance);
 	void GetConfigFile(std::string & filePath, std::string & fileContent);
@@ -126,7 +131,7 @@ public:
 
 	bool m_awakeNodesQueried;
 	bool m_allNodesQueried;
-	unsigned char m_controllerNodeId;
+	uint8_t m_controllerNodeId;
 	COpenZWaveControlPanel m_ozwcp;
 private:
 	void NodeQueried(const unsigned int homeID, const int nodeID);
@@ -135,18 +140,19 @@ private:
 	void EnableNodePoll(const unsigned int homeID, const int nodeID, const int pollTime);
 	void DisableNodePoll(const unsigned int homeID, const int nodeID);
 	bool GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue);
-	bool GetValueByCommandClassLabel(const int nodeID, const int instanceID, const int commandClass, const std::string &vLabel, OpenZWave::ValueID &nValue);
+	bool GetValueByCommandClassIndex(const int nodeID, const int instanceID, const int commandClass, const uint16_t vIndex, OpenZWave::ValueID &nValue);
 	bool GetNodeConfigValueByIndex(const NodeInfo *pNode, const int index, OpenZWave::ValueID &nValue);
-	void AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeInfo);
-	void UpdateValue(const OpenZWave::ValueID &vID);
+	void DebugValue(const OpenZWave::ValueID& vID, const int Line);
+	void AddValue(NodeInfo* pNode, const OpenZWave::ValueID &vID);
+	void UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID &vID);
 	void UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID);
-	void UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID);
 	bool SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute);
 	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);
 	void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode);
+	void UpdateDeviceBatteryStatus(const int nodeID, const int value);
 
 	uint8_t GetInstanceFromValueID(const OpenZWave::ValueID &vID);
 
@@ -156,9 +162,6 @@ private:
 
 	bool OpenSerialConnector();
 	void CloseSerialConnector();
-
-	void WriteControllerConfig();
-	time_t m_LastControllerConfigWrite;
 
 	OpenZWave::Manager *m_pManager;
 
@@ -171,7 +174,6 @@ private:
 	bool m_initFailed;
 	bool m_bInUserCodeEnrollmentMode;
 	bool m_bNightlyNetworkHeal;
-	bool m_bNeedSave;
 	bool m_bAeotecBlinkingMode;
 	int	m_LastAlarmTypeReceived;
 };

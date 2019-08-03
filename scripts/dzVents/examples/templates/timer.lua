@@ -22,19 +22,21 @@ return {
 			'xx minutes before sunset',
 			'xx minutes after sunset',
 			'xx minutes before sunrise',
-			'xx minutes after sunrise'   -- guess ;-)
-			'between aa and bb'          -- aa/bb can be a time stamp like 15:44
+			'xx minutes after sunrise',   -- guess ;-)
+			'between aa and bb',          -- aa/bb can be a time stamp like 15:44
 										 -- aa/bb can be sunrise/sunset
 										 -- aa/bb can be 'xx minutes before/after
 										 -- sunrise/sunset'
 			'at nighttime',              -- between sunset and sunrise
 			'at daytime',                -- between sunrise and sunset
+			'at civildaytime',           -- between civil twilight start and civil twilight end
+			'at civilnighttime',         -- between civil twilight end and civil twilight startœ
 			'at daytime on mon,tue',     -- between sunrise and sunset
 										 --	only on monday and tuesday
 
 			-- or if you want to go really wild:
 			'at nighttime at 21:32-05:44 every 5 minutes on sat, sun',
-			'every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,fri,tue'
+			'every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,fri,tue',
 
 			-- or just do it yourself:
 			function(domoticz)

@@ -1,0 +1,75 @@
+<div id="hardwarecontent" class="container">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="pingsettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
+            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="SetPingerSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
+    </table>
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Nodes">Nodes</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="ipnodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+        <tr>
+            <th width="70" align="center" data-i18n="ID">ID</th>
+            <th width="150" align="left" data-i18n="Name">Name</th>
+            <th align="left" data-i18n="IP Address">IP Address</th>
+            <th width="70" align="center" data-i18n="Timeout">Timeout</th>
+        </tr>
+        </thead>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+            </td>
+            <td align="right">
+                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Clear" onclick="PingerClearNodes();">Clear</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <table class="display" id="ipnodeparamstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name"></span>:</label></td>
+            <td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="nodeip"><span data-i18n="IP Address">IP Address</span>:</label></td>
+            <td><input type="text" id="nodeip" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="nodetimeout"><span data-i18n="Timeout">Timeout</span>:</label></td>
+            <td><input type="text" id="nodetimeout" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btnstyle3" onclick="AddPingerNode();" data-i18n="Add">Add</a></td>
+        </tr>
+    </table>
+</div>

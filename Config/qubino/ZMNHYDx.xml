@@ -1,0 +1,157 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0054:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/qubino/ZMNHYDx.png</MetaDataItem>
+    <MetaDataItem id="0054" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/3146/</MetaDataItem>
+    <MetaDataItem name="Name">Smart Plug 16A</MetaDataItem>
+    <MetaDataItem id="0054" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ResetDescription">FACTORY RESET
+• The reset is only possible the first minute after the power on
+• Press and hold the service button S more than 6 seconds
+• The device will be removed from your network and the led will start blinking. The device is now in its factory default state.
+• When the S button is held more than 6 seconds after the first minute is passed, the relay should not react!
+
+By resetting the device, all custom parameters previously set on the device will return to their default values, and the owner ID will be deleted. Use this reset procedure only when the main gateway (hub) is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">The Smart Plug 16A controls on/off function for the connected device. It also measures power consumption of the connected device according to the principle of fast sampling of voltage and current signals. A built-in microprocessor calculates energy and power from the measured signals.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">AUTOMATICALLY ADDING THE DEVICE TO A Z-WAVE NETWORK (AUTO INCLUSION)
+1. Enable add/remove mode on your Z-Wave gateway (hub)
+2. Automatic selection of secure/unsecure inclusion
+3. The device can be automatically added to a Z-Wave network during the first 2 minutes
+4. Connect the device to the power supply
+5. Auto-inclusion will be initiated within 5 seconds of connection to the power supply and the device will automatically enrol in your network (when the device is excluded and connected to the power supply it automatically enters the INCLUSION MODE state.)</MetaDataItem>
+    <MetaDataItem id="0054" name="Identifier" type="0002">ZMNHYD1</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">REMOVAL FROM A Z-WAVE NETWORK (Z-WAVE EXCLUSION)
+1. Connect the device to the power supply
+2. Make sure the device is within direct range of your Z-Wave gateway (hub) or use a hand-held Z-Wave remote to perform exclusion
+3. Enable add/remove mode on your Z-Wave gateway (hub)
+4. Press and hold the Service button S from 2 to 6 seconds (with holding the S button for the interval between 2 and 6 seconds you put the device in EXCLUSION MODE)
+5. The device will be removed from your network, but any custom configuration parameters will not be erased</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3146/Qubino_Smart Plug 16A PLUS extended manual_eng_2.5.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3146/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
+    Qubino ZMNHYDx Smart Plug
+    ZMNHYD1 868,4 MHz
+    ZMNHYD2 921,4 MHz
+    ZMNHYD3 908,4 MHz
+    ZMNHYD4 869,0 MHz
+    ZMNHYD5 916,0 MHz
+    -->
+
+    <!-- Configuration  -->
+  <CommandClass id="112">
+    <Value genre="config" index="10" instance="1" label="Functions ALL ON/ALL OFF" max="255" min="0" size="2" type="list" value="255">
+      <Help>Smart Meter module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system</Help>
+      <Item label="ALL ON is not active ALL OFF is not active" value="0"/>
+      <Item label="ALL ON is not active ALL OFF active" value="1"/>
+      <Item label="ALL ON active ALL OFF is not active" value="2"/>
+      <Item label="ALL ON active, ALL OFF active" value="255"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Automatic turning off relay after set time" max="32535" min="0" size="2" type="short" value="0">
+      <Help>
+                If Smart plug 16A is ON, you can schedule it to turn OFF automatically after a period of time defined in this parameter.
+                The timer is reset to zero each time the device receives an ON command, either remotely (from the gateway (hub) or associated device) or locally from the switch.
+                0 => Auto OFF disabled.
+                1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s).
+                Auto OFF enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0
+            </Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Automatic turning on relay after set time" max="32535" min="0" size="2" type="short" value="0">
+      <Help>
+                If Smart plug 16A is OFF, you can schedule it to turn ON automatically after a period of time defined in this parameter.
+                The timer is reset to zero each time the device receives an OFF command, either remotely (from the gateway (hub) or associated device) or locally from the switch.
+                0 - Auto OFF disabled.
+                1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s).
+                Auto ON enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0
+            </Help>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Set Timer Units" max="1" min="0" size="1" type="list" value="0">
+      <Help>
+                Choose if you want to set the timer in seconds or milliseconds in parameters 11 and 12.
+            </Help>
+      <Item label="Timer set in seconds" value="0"/>
+      <Item label="Timer set in milliseconds" value="1"/>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Restore on/off status after power failure" max="1" min="0" size="1" type="list" value="0">
+      <Help>
+                This parameter determines if on/off status is saved and restored for the Smart plug 16A after power failure.
+            </Help>
+      <Item label="Restores it after a power failure" value="0"/>
+      <Item label="Remains off position" value="1"/>
+    </Value>
+    <Value genre="config" index="40" instance="1" label="Power reporting in Watts on power change" max="100" min="0" size="1" type="byte" units="%" value="20">
+      <Help>
+                Choose by how much power consumption needs to increase or decrease to be reported. Values correspond to percentages so if 20 is set (by default), the device will report any power consumption changes of 20% or more compared to the last reading.
+                Set value from 0 - 100 (0% - 100%).
+                0 - Reporting Disabled.
+                1 - 100 = 1% - 100% Reporting enabled.
+                Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%.
+                Default value 20.</Help>
+    </Value>
+    <Value genre="config" index="42" instance="1" label="Power reporting in Watts by time interval" max="32767" min="0" type="short" units="seconds" value="300">
+      <Help>
+                Set value refers to the time interval with which power consumption in Watts is reported (0 - 32535 seconds).
+                If 300 is entered (by default), energy consumption reports will be sent to the gateway (hub) every 300 seconds (or 5 minutes).
+                Set value means time interval (0 - 32767) in seconds, when power report is send.
+                0 - Reporting Disabled.
+                1 second to 32767 seconds reporting enabled.
+                Power report is send with time interval set by entered value.
+                Default value 300 (power report in Watts is send each 300s).
+            </Help>
+    </Value>
+    <Value genre="config" index="50" instance="1" label="Down value" max="4000" min="0" size="2" type="short" units="Watts" value="30">
+      <Help>
+                Lower power threshold used in param 52.
+                Can not be higher than param 51
+                0-4000 (0.0 to 4000.0W, 0 disables)
+            </Help>
+    </Value>
+    <Value genre="config" index="51" instance="1" label="Up value" max="4000" min="0" size="2" type="short" units="Watts" value="50">
+      <Help>
+                Upper power threshold used in param 52.
+                Can not be higher than param 50
+                0-4000 (0.0 to 4000.0W, 0 disables)
+            </Help>
+    </Value>
+    <Value genre="config" index="52" instance="1" label="Action in case of exceeding power values (param 51/52)" max="6" min="0" size="1" type="list" value="6">
+      <Help>
+                Parameter defines the way 3rd association group devices are controlled, depending on the current power load.
+            </Help>
+      <Item label="Disbale" value="0"/>
+      <Item label="1 - Turn on once the power drop below param 50" value="1"/>
+      <Item label="2 - Turn off once the power drop below param 50" value="2"/>
+      <Item label="3 - Turn on once the power rises above param 51" value="3"/>
+      <Item label="4 - Turn off once the power rises above param 51" value="4"/>
+      <Item label="1 and 4 combined" value="5"/>
+      <Item label="2 and 6 combined" value="6"/>
+    </Value>
+    <Value genre="config" index="70" instance="1" label="Overload safety switch" max="4000" min="0" size="2" type="short" units="Watts" value="0">
+      <Help>
+                The function allows for turning off the controlled device in case of exceeding the defined power for more than 3.1s.
+                Controlled device can be turned back on by S-button or sending a control frame. By default this function is inactive.
+                1-4000 (1-4000W) 0 disables
+            </Help>
+    </Value>
+    <Value genre="config" index="249" instance="1" label="Reporting on set command" max="1" min="0" size="1" type="list" value="1">
+      <Help>
+                Using this parameter it is possible to enable/disable reporting after the set command (i.e. Basic set).
+            </Help>
+      <Item label="Disbale" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Plug status Basic On/Off" max_associations="5"/>
+      <Group index="3" label="Basic On/Off depending on the current load" max_associations="5"/>
+      <Group index="4" label="Secure Encapsulated Plug status basic On/Off" max_associations="5"/>
+      <Group index="5" label="Secure Encapsulated Basic On/Off depending on the current load" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+  <!-- Remove COMMAND_CLASS_BASIC -->
+  <CommandClass action="remove" id="32"/>
+</Product>

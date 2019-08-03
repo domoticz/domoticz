@@ -1,0 +1,43 @@
+<div class="container">
+    <a class="btnstylerev" back-button>{{ :: 'Back'|translate }}</a>
+
+    <div class="pull-right">
+        <label for="comboyear">{{ :: 'Year' | translate }}: </label>
+        <select
+                id="comboyear"
+                class="combobox ui-corner-all"
+                style="width:64px"
+                ng-model="vm.selectedYear"
+                ng-change="vm.selectYear()"
+                ng-options="year for year in ::vm.getYearsOptions()">
+        </select>
+    </div>
+
+    <h2 class="page-header">{{ ::vm.pageName }}</h2>
+
+    <device-counter-report
+            ng-if="::vm.isCounterReport()"
+            device="::vm.device"
+            selected-year="::vm.selectedYear"
+            selected-month="::vm.selectedMonth"
+            is-only-usage="::vm.isOnlyUsage()"
+    />
+
+    <device-energy-multi-counter-report
+            ng-if="::vm.isEnergyMultiCounterReport()"
+            device="::vm.device"
+            selected-year="::vm.selectedYear"
+            selected-month="::vm.selectedMonth"
+    />
+
+    <device-temperature-report
+            ng-if="::vm.isTemperatureReport()"
+            device="::vm.device"
+            selected-year="::vm.selectedYear"
+            selected-month="::vm.selectedMonth"
+    />
+
+    <div class="no-data" ng-if="::vm.isNoReport()">
+        {{ ::'This device does not have any reports.' | translate}}
+    </div>
+</div>

@@ -13,10 +13,10 @@ local function Variable(domoticz, data)
 		['baseType'] = domoticz.BASETYPE_VARIABLE,
 		isVariable = true,
 		isHTTPResponse = false,
-	    isDevice = false,
-	    isScene = false,
-	    isGroup = false,
-	    isTimer = false,
+		isDevice = false,
+		isScene = false,
+		isGroup = false,
+		isTimer = false,
 		isSecurity = false
 	}
 
@@ -28,7 +28,7 @@ local function Variable(domoticz, data)
 	end
 
 	if (data.variableType == 'date') then
-		local d, mon, y = string.match(data.data.value, "(%d+)%/(%d+)%/(%d+)")
+		local d, mon, y = string.match(data.data.value, "(%d+)[%p](%d+)[%p](%d+)")
 		local date = y .. '-' .. mon .. '-' .. d .. ' 00:00:00'
 		self['date'] = Time(date)
 	end
@@ -61,6 +61,15 @@ local function Variable(domoticz, data)
 			type = 'variable',
 			idx = data.id
 		})
+	end
+
+	function self.rename(newName)
+		local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=updateuservariable' ..
+					'&idx=' .. data.id ..
+					'&vname=' .. domoticz.utils.urlEncode(newName) ..
+					'&vtype=' ..  self.type ..
+					'&vvalue=' .. domoticz.utils.urlEncode(self.value)
+		domoticz.openURL(url)
 	end
 
 	return self

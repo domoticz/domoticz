@@ -8,7 +8,7 @@
         Z-Wave Alliance Product Database info: 
         https://products.z-wavealliance.org/products/2242
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 	<!-- Configuration Parameters -->
         <CommandClass id="112">
                 <Value type="short" genre="config" index="3" label="Unsolicited Report Configuration" units="" min="0" max="255" value="0">

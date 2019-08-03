@@ -1,0 +1,150 @@
+<!--
+Eurotronic Spirit Z-Wave Plus Thermostat
+Product website: https://www.eurotronic.org/produkte/spirit-z-wave-plus.html
+Tech manual: https://www.eurotronic.org/fileadmin/user_upload/eurotronic.org/Produktbilder/spirit_z_wave_plus/Spirit_Z-Wave_BAL_web_EN_view_04.pdf
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0148:0001:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/eurotronic/eur_spiritz.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2543/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Start Inclusion mode of your primary Z-Wave Controller.
+Press the Boost-Button.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2650/Spirit_Z-Wave_BAL_web_EN_view_05.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Start Exclusion mode of your primary Z-Wave Controller.
+Now press and hold the boost button of the Spirit Z-Wave Plus for at least 5 seconds.</MetaDataItem>
+    <MetaDataItem name="Name">KOMFORTHAUS Spirit Z-Wave Plus</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0003">4260012711110</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0003">UAE</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+
+Remove batteries.
+Press and hold boost button.
+While still holding boost button insert batteries.
+The LCD shows RES. Release boost button.
+To perform the factory reset press boost button.
+</MetaDataItem>
+    <MetaDataItem name="Description">•	Easy control for water radiators from any Z-Wave Controller
+•	Fits most European water radiators (wide range of additional adaptors for different manufacturers available)
+•	FLiRS for quick response time 
+•	LED Backlit LCD
+•	Metal nut for reliable connection to the radiator
+•	2 buttons for easy temperature regulation
+•	Battery level indicator
+•	Child Lock
+•	Over the Air update
+•	UK-Mode for upside down installation
+•	Open Window detection
+•	Automatic frost protection
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2543/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2650/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2650/</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0003">4250848804063</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0003">UAE</MetaDataItem>
+  </MetaData>
+  <!-- Multilevel switch for setting valve opening -->
+  <CommandClass id="38">
+    <Value genre="user" index="0" label="Valve Opening" max="100" min="0" type="byte" units="%" value="0"/>
+  </CommandClass>
+  <!-- Thermostat mode -->
+  <CommandClass id="64">
+    <Instance index="1"/>
+    <Value genre="user" index="0" instance="1" label="Mode" type="list">
+      <Help>
+                Off: No heating, only frost protection.
+                Heat: Room temperature will be kept at the configured setpoint.
+                Heat Eco: Energy save heating mode. Room temperature will be lowered to the configured eco setpoint in order to save energy.
+                Full Power: Full power heating. This mode is left automatically after 5 minutes.
+                Manufacturer Specific: Direct valve control mode. The valve opening percentage can be controlled using the switch multilevel command class.
+            </Help>
+      <Item label="Off" value="0"/>
+      <Item label="Heat" value="1"/>
+      <Item label="Heat Eco" value="11"/>
+      <Item label="Full Power" value="15"/>
+      <Item label="Manufacturer Specific" value="31"/>
+    </Value>
+    <SupportedModes>
+      <Mode index="0" label="Off"/>
+      <Mode index="1" label="Heat"/>
+      <Mode index="11" label="Heat Eco"/>
+      <Mode index="15" label="Full Power"/>
+      <Mode index="31" label="Manufacturer Specific"/>
+    </SupportedModes>
+  </CommandClass>
+  <!-- Setpoints -->
+  <CommandClass id="67">
+    <Instance index="1"/>
+    <Value genre="user" index="1" instance="1" label="Heat" max="28" min="8" read_only="false" type="decimal" units="°C" value="20" write_only="false"/>
+    <Value genre="user" index="11" instance="1" label="Heat Eco" max="28" min="8" read_only="false" type="decimal" units="°C" value="16" write_only="false"/>
+    <Compatibility>
+      <Base>0</Base>
+      <AltTypeInterpretation>false</AltTypeInterpretation>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Instance index="1"/>
+    <Value genre="config" index="1" instance="1" label="LCD Invert" max="1" min="0" size="1" type="list" value="0">
+      <Help>
+                Allows rotating the LCD contents by 180 degrees.
+                Default: Normal
+            </Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Upside Down" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="LCD Timeout" max="30" min="0" type="byte" units="sec" value="0">
+      <Help>
+                0: No Timeout, LCD always on.
+                5-30: Timeout after 5-30s.
+                Default: 0 (LCD always on)
+            </Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Backlight" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
+                Default: Backlight enabled
+            </Help>
+      <Item label="Backlight disabled" value="0"/>
+      <Item label="Backlight enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Battery Report" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
+                Default: Send once a day
+            </Help>
+      <Item label="Only send battery status as notification" value="0"/>
+      <Item label="Send once a day" value="1"/>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Temperature Report Threshold" max="50" min="0" type="byte" units="0.1°C" value="5">
+      <Help>
+                0: Don't send temperature automatically.
+                1-50: Report temperature at 0.1-5.0°C temperature difference.
+                Default: 5 (Delta = 0.5°C)
+            </Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Valve Opening Percentage Report" max="100" min="0" type="byte" units="" value="0">
+      <Help>
+                0: Don't send Valve opening percentage automatically.
+                1-100: Report valve opening percentage at a delta of 1-100%.
+                Default: 0
+            </Help>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Open Window Detection" max="3" min="0" size="1" type="list" units="" value="2">
+      <Help>
+                Default: Medium sensibility
+            </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Low sensibility" value="1"/>
+      <Item label="Medium sensibility" value="2"/>
+      <Item label="High sensibility" value="3"/>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Measured Temperature Offset" max="255" min="0" type="byte" units="" value="0">
+      <Help>
+                206-255: -5.0 to -0.1°C.
+                0-50: 0°C-5°C.
+                128: External Temperature Sensor.
+                Default: 0 (0.0°C Offset)
+            </Help>
+    </Value>
+  </CommandClass>
+</Product>

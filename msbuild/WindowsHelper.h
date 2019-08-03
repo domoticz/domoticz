@@ -3,7 +3,6 @@
 #if defined WIN32
 
 #include <fstream>
-#include <vector>
 
 class console
 {

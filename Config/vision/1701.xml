@@ -1,0 +1,36 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0620:2006</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/1701.png</MetaDataItem>
+    <MetaDataItem id="0620" name="ZWProductPage" type="2006">https://products.z-wavealliance.org/products/632/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.visionsecurity.com.tw/ha_products_page2_154_192.html</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave Certification - Vision Security Door Lock - EU</MetaDataItem>
+    <MetaDataItem id="0620" name="FrequencyName" type="2006">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">Use AES encryption to Lock/Unlock Door,have User Code management. Logging and schedule setting.HM 1701-SSX03 (Polished Brass)
+
+This is a radio frequency remote control electronic deadbolt with water proof design, easy to install and operate. Fit most standard door preps, no need to drill additional holes. 
+
+User friendly for elder and young children, remote with simple icon lock and unlock, or choose manual locking, and remote can be used from indoor. The keypad buttons glow in the dark for night time visibility. 
+
+Easily and quickly add and delete user codes right at the keypad, so it is convenient to provide a user code for temporary access.
+ 
+	Features:
+*13 sets of user codes/Code numbers can be any combination from 4~10 digits 
+*Schedule Setting/Logging
+*AES encryption for Z-wave Door Lock
+*Keypad shuts down after 4 incorrect code attempts. It will return to standard mode after 15 sec.
+*Z-Wave 4.51 SDK
+100ft line of sight
+*LED visual and audible (warning sounds) feedback message definitions
+*Operating temp: -10oC~50oC
+*Working Voltage: 6V
+*Dimensions: 150*70*57mm
+ </MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.visionsecurity.com.tw/ha_products_page2_154_192.html</MetaDataItem>
+    <MetaDataItem id="0620" name="Identifier" type="2006">1701</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/632/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

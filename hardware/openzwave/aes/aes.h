@@ -72,7 +72,9 @@ typedef union
     uint8_t b[4];
 } aes_inf;
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4324 )
+#endif
 
 #ifdef _WIN64
 __declspec(align(16))
@@ -90,7 +92,9 @@ typedef struct
     aes_inf inf;
 } aes_decrypt_ctx;
 
+#ifdef _MSC_VER
 #pragma warning( default : 4324 )
+#endif
 
 /* This routine must be called before first use if non-static       */
 /* tables are being used                                            */

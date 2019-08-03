@@ -55,6 +55,33 @@ define(['app'], function (app) {
 			});
 		}
 
+		CopyTimerPlan = function(idx)
+		{
+			$( "#dialog-add-edit-timerplan" ).dialog({
+				resizable: false,
+				width: 390,
+				height:200,
+				modal: true,
+				title: 'Duplicate Plan',
+				buttons: {
+					"Cancel": function() {
+						$( this ).dialog( "close" );
+					},
+					"Duplicate": function() {
+						var csettings=GetTimerPlanSettings();
+						if (typeof csettings == 'undefined') {
+							return;
+						}
+						$( this ).dialog( "close" );
+						DuplicateTimerPlan(idx);
+					}
+				},
+				close: function() {
+					$( this ).dialog( "close" );
+				}
+			});
+		}
+
 		DeleteTimerPlan = function(idx)
 		{
 			bootbox.confirm($.t("Are you sure you want to delete this Plan?"), function(result) {
@@ -108,6 +135,26 @@ define(['app'], function (app) {
 			});
 		}
 
+		DuplicateTimerPlan = function(idx)
+		{
+			var csettings=GetTimerPlanSettings();
+			if (typeof csettings == 'undefined') {
+				return;
+			}
+
+			$.ajax({
+				 url: "json.htm?type=command&param=duplicatetimerplan&idx=" + idx +"&name=" + csettings.name,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshTimerPlanTable();
+				 },
+				 error: function(){
+					ShowNotify('Problem duplicating Plan!', 2500, true);
+				 }     
+			});
+		}
+
 		AddTimerPlan = function()
 		{
 			var csettings=GetTimerPlanSettings();
@@ -135,6 +182,7 @@ define(['app'], function (app) {
 			$.devIdx=-1;
 
 			$('#updelclr #timerplanedit').attr("class", "btnstyle3-dis");
+			$('#updelclr #timerplancopy').attr("class", "btnstyle3-dis");
 			$('#updelclr #timerplandelete').attr("class", "btnstyle3-dis");
 
 			var oTable = $('#timerplantable').dataTable();
@@ -170,6 +218,7 @@ define(['app'], function (app) {
 				if ( $(this).hasClass('row_selected') ) {
 					$(this).removeClass('row_selected');
 					$('#updelclr #timerplanedit').attr("class", "btnstyle3-dis");
+					$('#updelclr #timerplancopy').attr("class", "btnstyle3-dis");
 					$('#updelclr #timerplandelete').attr("class", "btnstyle3-dis");
 					$("#dialog-add-edit-plan #planname").val("");
 				}
@@ -178,6 +227,7 @@ define(['app'], function (app) {
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 					$('#updelclr #timerplanedit').attr("class", "btnstyle3-dis");
+					$('#updelclr #timerplancopy').attr("class", "btnstyle3-dis");
 					$('#updelclr #timerplandelete').attr("class", "btnstyle3-dis");
 					
 					var anSelected = fnGetSelected( oTable );
@@ -187,6 +237,8 @@ define(['app'], function (app) {
 						$.devIdx=idx;
 						$('#updelclr #timerplanedit').attr("class", "btnstyle3");
 						$("#updelclr #timerplanedit").attr("href", "javascript:EditTimerPlan(" + idx + ")");
+						$('#updelclr #timerplancopy').attr("class", "btnstyle3");
+						$("#updelclr #timerplancopy").attr("href", "javascript:CopyTimerPlan(" + idx + ")");
 						if (idx!=0) {
 							//not allowed to delete the default timer plan
 							$('#updelclr #timerplandelete').attr("class", "btnstyle3");

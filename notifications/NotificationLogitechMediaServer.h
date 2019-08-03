@@ -1,8 +1,6 @@
 #pragma once
 #include "NotificationBase.h"
 
-#include "../json/json.h"
-
 class CNotificationLogitechMediaServer : public CNotificationBase {
 public:
 	CNotificationLogitechMediaServer();

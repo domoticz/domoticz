@@ -1,0 +1,103 @@
+<!-- 
+ZWA002 LED Bulb 6 Multi-Color
+https://products.z-wavealliance.org/products/2881
+--><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:0002:0103</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zwa002.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/2880/</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset the Device.
+1.	Assuming led bulb was added to controller and was power on.
+2.	RGBW bulb re-power 6 times (between 0.5-2 seconds each time).
+Note: ON -> OFF -> ON -> OFF -> ON -> OFF -> ON -> OFF -> ON -> OFF -> ON -> OFF -> ON 
+3.	If the 6th power on, the led bulb change to Yellow color(into pairing process ), which means that the reset factory settings are successf.
+
+Using this action in case of the primary controller is missing or inoperable.
+</MetaDataItem>
+    <MetaDataItem name="Description">✓ Standard form factor and appearance of the light bulb with 800 lm output
+✓ RGBW: dimmable from 5% to 100%, tunable from 1800K to 6500K, and 16 million colors
+✓ Possible to be included in groups, scenes, or schedules
+✓ Suitable for indoor lighting: Corridors, Bedroom, Living Room, etc.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Add for inclusion 
+1.	Ensure the led bulb has been excluded outside the network.
+2.	Triggered by OFF ->ON (between 0.5-2 seconds each time)
+3.	LED solid yellow Color (0xFFFF00) during the pairing(Timeout is 10 seconds).
+
+	Failure:
+Blinks between 100% White and Red 0x0000FF color for 3 seconds (at a rate of 200ms per flash), Once 3 seconds have passed, the LED should return to a Warm White LED at 100%
+	Success:
+Blinks between 100% White and Green 0x00FF00 color for 3 seconds (at a rate of 200ms per flash). Once 3 seconds have passed, the LED should return to a Warm White LED at 100%.
+</MetaDataItem>
+    <MetaDataItem name="Name"> LED Bulb 6:Multi-Colour</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2881/AA LED Bulb 6 说明书（RGBW-AL001）_转曲-2dd.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Remove for exclusion 
+1.	Assuming led bulb was added to controller.
+2.	Triggered by OFF -> ON -> OFF -> ON -> OFF -> ON (between 0.5-2 seconds each time).
+3.	LED Solid Purple/Violet Color (0xEE82EE) during the unpairing process. (Timeout is 10 seconds).
+	Failure:
+Blinks between 100% White and Red 0x0000FF color for 3 seconds (at a rate of 200ms per flash), Once 3 seconds have passed, the LED should return to the last color ( memory status(color cc set)) of LED Bulb.
+	Success:
+Blinks between 100% White and Blue 0x0000FF color for 3 seconds (at a rate of 200ms per flash). Once 3 seconds have passed, the LED should return to a Warm White LED at 100%.
+</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0103">ZWA002-A</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2880/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2881/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2881/</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0003">ZWA002-C</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="User custom mode LED animations" max="2" min="0" size="1" type="list" value="0">
+      <Help>User custom mode for LED animations</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Blink Colors in order mode" value="1"/>
+      <Item label="Randomized blink color mode" value="2"/>
+    </Value>
+    <Value genre="config" index="2" label="Strobe over Custom Color" max="1" min="0" size="1" type="list" value="0">
+      <Help>Enable/Disable Strobe over Custom Color.</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="Set the rate of change to next color in Custom Mode" max="8640000" min="5" type="int" units="ms" value="50">
+      <Help>
+                Set the rate of change to next color in Custom Mode.
+            </Help>
+    </Value>
+    <Value genre="config" index="4" label="Set color that LED Bulb blinks" max="255" min="1" type="byte" units="" value="1">
+      <Help>
+                Set color that LED Bulb blinks in Blink Mode.
+            </Help>
+    </Value>
+    <Value genre="config" index="16" label="Ramp rate when dimming using Multilevel Switch" max="100" min="0" type="byte" units="100ms" value="20">
+      <Help>
+                Specifying the ramp rate when dimming using Multilevel Switch V1 CC in 100ms.
+            </Help>
+    </Value>
+    <Value genre="config" index="80" label="Notification" max="1" min="0" size="1" type="list" value="1">
+      <Help>Enable to send notifications to associated devices (Group 1) when the state of LED Bulb is changed.</Help>
+      <Item label="Nothing" value="0"/>
+      <Item label="Basic CC report" value="1"/>
+    </Value>
+    <Value genre="config" index="81" label="Warm White temperature" max="4999" min="2700" size="2" type="short" units="k" value="2700">
+      <Help>
+				Adjusting the color temperature in warm white color component.
+				available value: 2700k to 4999k</Help>
+    </Value>
+    <Value genre="config" index="82" label="cold white temperature" max="6500" min="5000" size="2" type="short" units="k" value="6500">
+      <Help>
+				Adjusting the color temperature in cold white color component.
+				available value:5000k to 6500k
+			</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

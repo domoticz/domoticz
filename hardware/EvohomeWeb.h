@@ -13,8 +13,8 @@
 #pragma once
 
 #include "EvohomeBase.h"
-#include "../json/json.h"
 
+#include "../json/json.h"
 
 class CEvohomeWeb : public CEvohomeBase
 {
@@ -62,12 +62,12 @@ class CEvohomeWeb : public CEvohomeBase
 public:
 	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const int UseFlags, const unsigned int installation);
 	~CEvohomeWeb(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	// base functions
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	// evohome web commands
@@ -79,6 +79,7 @@ private:
 
 	// evohome client library - don't ask about naming convention - these are imported from another project
 	bool login(const std::string &user, const std::string &password);
+	bool renew_login();
 	bool user_account();
 
 	void get_gateways(int location);
@@ -120,11 +121,22 @@ private:
 	uint8_t GetUnit_by_ID(unsigned long evoID);
 	std::string local_to_utc(const std::string &local_time);
 
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
+	// Evohome v1 API
+	bool v1_login(const std::string &user, const std::string &password);
+	void get_v1_temps();
+
+	// HTTP helpers
+	std::string send_receive_data(std::string url, std::vector<std::string> &headers);
+	std::string send_receive_data(std::string url, std::string postdata, std::vector<std::string> &headers);
+	std::string put_receive_data(std::string url, std::string putdata, std::vector<std::string> &headers);
+	std::string process_response(std::vector<unsigned char> vHTTPResponse, std::vector<std::string> vHeaderData, bool httpOK);
+
+private:
+	std::shared_ptr<std::thread> m_thread;
 
 	std::string m_username;
 	std::string m_password;
+	std::string m_v2refresh_token;
 	bool m_updatedev;
 	bool m_showschedule;
 	int m_refreshrate;
@@ -164,8 +176,5 @@ private:
 	// Evohome v1 API
 	std::string m_v1uid;
 	std::vector<std::string> m_v1SessionHeaders;
-
-	bool v1_login(const std::string &user, const std::string &password);
-	void get_v1_temps();
 };
 

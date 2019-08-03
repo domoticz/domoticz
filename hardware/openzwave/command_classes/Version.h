@@ -32,39 +32,57 @@
 
 namespace OpenZWave
 {
-	class ValueString;
-
-	/** \brief Implements COMMAND_CLASS_VERSION (0x86), a Z-Wave device command class.
-	 */
-	class Version: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new Version( _homeId, _nodeId ); }
-		virtual ~Version(){}
+		namespace CC
+		{
 
-		static uint8 const StaticGetCommandClassId(){ return 0x86; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_VERSION"; }
+			/** \brief Implements COMMAND_CLASS_VERSION (0x86), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class Version: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new Version(_homeId, _nodeId);
+					}
+					virtual ~Version()
+					{
+					}
 
-		bool RequestCommandClassVersion( CommandClass const* _commandClass );
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x86;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_VERSION";
+					}
 
-		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement );
-		virtual void WriteXML( TiXmlElement* _ccElement );
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
+					bool RequestCommandClassVersion(CommandClass const* _commandClass);
 
-	protected:
-		virtual void CreateVars( uint8 const _instance );
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
 
-	private:
-		Version( uint32 const _homeId, uint8 const _nodeId );
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
-		bool m_classGetSupported;
-	};
-
+				private:
+					Version(uint32 const _homeId, uint8 const _nodeId);
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

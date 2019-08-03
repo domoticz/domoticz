@@ -5,25 +5,25 @@
 #include "ASyncSerial.h"
 #include "RFXBase.h"
 #include "serial/serial.h"
-#include <map>
 
 class RFXComSerial: public CRFXBase, AsyncSerial
 {
 public:
-	RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate);
+	RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate, const _eRFXAsyncType AsyncType);
     ~RFXComSerial();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	bool UploadFirmware(const std::string &szFilename);
 	float GetUploadPercentage(); //returns -1 when failed
 	std::string GetUploadMessage();
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool OpenSerialDevice(const bool bIsFirmwareUpgrade=false);
 	void Do_Work();
 
 	bool UpgradeFirmware();
-	bool Write_TX_PKT(const unsigned char *pdata, size_t length, const int max_retry = 3);
+	bool Read_TX_PKT();
+	bool Write_TX_PKT(const unsigned char *pdata, size_t length, int max_retry = 3);
 	bool Handle_RX_PKT(const unsigned char *pdata, size_t length);
 	bool Read_Firmware_File(const char *szFilename, std::map<unsigned long, std::string>& fileBuffer);
 	bool EraseMemory(const int StartAddress, const int StopAddress);
@@ -37,14 +37,9 @@ private:
 	float m_FirmwareUploadPercentage;
 	bool m_bInBootloaderMode;
 	bool m_bHaveRX;
-
 	unsigned char m_rx_input_buffer[512];
 	int m_rx_tot_bytes;
 	int m_retrycntr;
-
-    /**
-     * Read callback, stores data in the buffer
-     */
     void readCallback(const char *data, size_t len);
 };
 

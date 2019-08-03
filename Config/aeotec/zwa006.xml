@@ -1,0 +1,138 @@
+<!--
+ZWA006 Smart Boost Timer Switch
+https://products.z-wavealliance.org/products/3067
+--><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:00B4:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zwa006.png</MetaDataItem>
+    <MetaDataItem id="00B4" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3067/</MetaDataItem>
+    <MetaDataItem id="00B4" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only when the primary controller is missing or inoperable.
+
+1. Make sure the device has been powered.
+2. Press and hold the action button for 15 seconds. When the red LED turns on, release the button. Then, the device will enter factory reset mode. If the reset is successful, the LED will blink blue slowly.
+
+
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Power on the device, and the power led will blink blue slowly.
+2. Put the Z-Wave Primary Controller into inclusion mode (If you don’t know how to do this, refer to its manual)
+3. Press and hold the action button, and when the yellow LED is on, release the button. It indicates the device has enter learn mode.
+4. If added successfully, the power LED will remain green for 2 seconds, then turn off.</MetaDataItem>
+    <MetaDataItem name="Description">The Aeotec Smart Boost Timer Switch is a Z-Wave Plus enabled device and can be included/operated in any Z-Wave™ network with other Z-Wave™ certified devices from other manufacturers and/or other applications. All non-battery operated nodes within the network will act as repeaters regardless of vendor to increase reliability of the network.
+The Aeotec Smart Boost Time Switch supports consumption meter function. When the device has been included in the network, it will report the consumption power periodically. It is also a high output countdown timer that can be used to control immersion heater elements or other electrical appliances rated up to 16A. On the product, four simple white LEDs are used to show the user how much time is left to run. Pressing the switch whilst the unit is operating allows the user to cancel the timing program,and the memory function of the timer will remember the last period selected.
+</MetaDataItem>
+    <MetaDataItem name="Name">Smart Boost Timer Switch</MetaDataItem>
+    <MetaDataItem id="00B4" name="Identifier" type="0003">ZWA006-C</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Power on the device.
+2. Put the Primary Controller into exclusion mode (If you don’t know how to do this refer to its manual)
+3. Press and hold the action button, and when the purple LED turns on, release the button. This indicates that the device has entered learn mode. If removal is successful, the blue LED will blink slowly.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3067/Smart Boost Timer Switch User Manual-V1.9.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3067/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Power out action" max="3" min="0" size="1" type="list" value="3">
+      <Help>
+				Action in case of power out. This parameter is used to configure the device state after power on.
+			</Help>
+      <Item label="Keep the last state when re-power on" value="0"/>
+      <Item label="Power on" value="1"/>
+      <Item label="Power off" value="2"/>
+      <Item label="Return to standard schedule" value="3"/>
+    </Value>
+    <Value genre="config" index="2" label="LED status" max="2" min="0" size="1" type="list" units="" value="1">
+      <Help>
+                Configure LED (except boost) to be off irrespective of switch status.
+            </Help>
+      <Item label="Disable all LED except for boost" value="0"/>
+      <Item label="Enable all LED indication" value="1"/>
+      <Item label="Momentary mode" value="2"/>
+    </Value>
+    <Value genre="config" index="3" label="Auto off timer" type="int" units="second" value="0">
+      <Help>
+                Timer acts as auto off after specified minutes, setting is set in seconds.
+				0 - no auto off with timer.
+				1 ~ 86400 auto off after this specified time, unit second.
+            </Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Current overload protection" max="1" min="0" size="1" type="list" value="1">
+      <Help>
+				Current and overload protection
+			</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="5" label="Boost time" type="short" units="minute" value="30">
+      <Help>
+                Configure boost time interval, unit minute.
+				When user press the boost button one time, the boost time will increase 30 (the value can be changed) minutes.
+            </Help>
+    </Value>
+    <Value genre="config" index="7" label="LED threshold setting" max="3000" min="0" type="short" units="watt" value="100">
+      <Help>
+                This parameter is used to configure the power led threshold, unit W.
+				When the load &lt;= 100W, the power led will indicate yellow.
+				When the load > 100W, the power led will indicate orange.
+				When no load, the power led will indicate white.
+            </Help>
+    </Value>
+    <Value genre="config" index="20" label="kWh threshold setting" max="10000" min="0" type="short" units="kWh" value="100">
+      <Help>
+                Threshold settings for energy kWh. When the energy above the threshold, it will send a meter report command to gateway.
+				0 - disable report.
+				1 ~ 10000 - enable report.
+            </Help>
+    </Value>
+    <Value genre="config" index="21" label="Watt threshold setting" max="2500" min="0" type="short" units="watt" value="100">
+      <Help>
+                Threshold settings for Watt automatic report, unit W. When Watt above the threshold, it will send a meter report command to gateway.
+				0 - disable report.
+				1 ~ 2500 - enable report.
+            </Help>
+    </Value>
+    <Value genre="config" index="22" label="Current threshold setting" max="150" min="0" type="short" units="0.1A" value="0">
+      <Help>
+                Threshold settings for Current automatic report, unit 0.1A. When current above the threshold, it will send a meter report command to gateway.
+				0 - disable report.
+				1 ~ 150 - enable report.
+            </Help>
+    </Value>
+    <Value genre="config" index="23" label="Watt report interval" max="65535" min="0" type="int" units="second" value="600">
+      <Help>
+                Watt automatic report interval, unit second.
+				0 - disable.
+				65535 - enable.
+            </Help>
+    </Value>
+    <Value genre="config" index="24" label="kWh report interval" max="65535" min="0" type="int" units="second" value="600">
+      <Help>
+                kWh automatic report interval, unit second.
+				0 - disable.
+				65535 - enable.
+            </Help>
+    </Value>
+    <Value genre="config" index="25" label="Voltage report interval" max="65535" min="0" type="int" units="second" value="600">
+      <Help>
+                Voltage automatic report interval, unit second.
+				0 - disable.
+				65535 - enable.
+            </Help>
+    </Value>
+    <Value genre="config" index="26" label="Current report interval" max="65535" min="0" type="int" units="second" value="600">
+      <Help>
+                Current automatic report interval, unit second.
+				0 - disable.
+				65535 - enable.
+            </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="BasicSet" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

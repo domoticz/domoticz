@@ -12,7 +12,10 @@ define(['app'], function (app) {
 						if (data.status=="OK") {
 							$('#influxremote #tcpaddress').val(data.InfluxIP);
 							$('#influxremote #tcpport').val(data.InfluxPort);
+							$('#influxremote #path').val(data.InfluxPath);
 							$('#influxremote #database').val(data.InfluxDatabase);
+							$('#influxremote #username').val(data.InfluxUsername);
+							$('#influxremote #password').val(data.InfluxPassword);
 							$('#influxremote #influxlinkenabled').prop('checked', false);
 							if (data.InfluxActive) {
 								$('#influxremote #influxlinkenabled').prop('checked', true);
@@ -41,7 +44,10 @@ define(['app'], function (app) {
 			var port = $('#influxremote #tcpport').val();
 			if (port.Length==0)
 				port="8086";
+			var path = $('#influxremote #path').val();
 			var database = $('#influxremote #database').val();
+			var username = $('#influxremote #username').val();
+			var password = $('#influxremote #password').val();
 			var debugenabled = 0;
 			if ($('#influxremote #debugenabled').is(":checked"))
 			{
@@ -53,7 +59,10 @@ define(['app'], function (app) {
 					"&linkactive=" + linkactive +
 					"&remote=" + encodeURIComponent(remoteurl) +
 					"&port=" + port +
+					"&path=" + path +
 					"&database=" + encodeURIComponent(database) +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
 					"&debugenabled=" + debugenabled,
 				 async: false, 
 				 dataType: 'json',

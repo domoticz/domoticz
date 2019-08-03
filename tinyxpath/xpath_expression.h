@@ -143,7 +143,7 @@ public :
 		d_content = d_in;
 	}
    /// Set the comment associated with a stack element. This is for debuging
-	void v_set_comment (const char * cp_in)
+	void v_set_comment (const char * /*cp_in*/)
 	{
       #ifdef TINYXPATH_DEBUG
 		   S_comment = cp_in;
@@ -166,28 +166,28 @@ public :
       ns_set = * nsp_source;
 	}
    /// Set the expression_result as a node set
-	void v_set_node_set (TiXmlNode * XNp_root)
+	void v_set_node_set (TiXmlNode * XNp_root2)
 	{
 		e_type = e_node_set;
-      ns_set . v_copy_node_children (XNp_root);
+      ns_set . v_copy_node_children (XNp_root2);
 	}
    /// Set the expression_result as a node set
-	void v_set_node_set (TiXmlNode * XNp_root, const char * cp_lookup)
+	void v_set_node_set (TiXmlNode * XNp_root2, const char * cp_lookup)
 	{
 		e_type = e_node_set;
-      ns_set . v_copy_node_children (XNp_root, cp_lookup);
+      ns_set . v_copy_node_children (XNp_root2, cp_lookup);
 	}
    /// Set the expression_result as a node set
-	void v_set_node_set_recursive (TiXmlNode * XNp_root)
+	void v_set_node_set_recursive (TiXmlNode * XNp_root2)
 	{
 		e_type = e_node_set;
-      ns_set . v_copy_selected_node_recursive (XNp_root);
+      ns_set . v_copy_selected_node_recursive (XNp_root2);
 	}
    /// Set the expression_result as a node set
-	void v_set_node_set_recursive (TiXmlNode * XNp_root, const char * cp_lookup)
+	void v_set_node_set_recursive (TiXmlNode * XNp_root2, const char * cp_lookup)
 	{
 		e_type = e_node_set;
-      ns_set . v_copy_selected_node_recursive (XNp_root, cp_lookup);
+      ns_set . v_copy_selected_node_recursive (XNp_root2, cp_lookup);
 	}
    /// Set the expression_result as an empty node set
 	void v_set_node_set ()

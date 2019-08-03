@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
-#define DenkoviSmartdenIPInOut_POLL_INTERVAL 60
+#define MAX_POLL_INTERVAL 30*1000
 
 #ifdef _DEBUG
 //#define DEBUG_DenkoviInR
@@ -31,14 +31,19 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CDenkoviSmartdenIPInOut::CDenkoviSmartdenIPInOut(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password) :
+CDenkoviSmartdenIPInOut::CDenkoviSmartdenIPInOut(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password, const int pollInterval) :
 m_szIPAddress(IPAddress),
-m_Password(CURLEncode::URLEncode(password))
+m_Password(CURLEncode::URLEncode(password)),
+m_pollInterval(pollInterval)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
 	m_stoprequested=false;
 	m_bOutputLog = false;
+	if (m_pollInterval < 500)
+		m_pollInterval = 500;
+	else if (m_pollInterval > MAX_POLL_INTERVAL)
+		m_pollInterval = MAX_POLL_INTERVAL;
 	Init();
 }
 
@@ -54,20 +59,21 @@ bool CDenkoviSmartdenIPInOut::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviSmartdenIPInOut::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CDenkoviSmartdenIPInOut::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "DenkoviSmartdenIPInOut");
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Denkovi_IP_In: Started");
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CDenkoviSmartdenIPInOut::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -75,18 +81,19 @@ bool CDenkoviSmartdenIPInOut::StopHardware()
 
 void CDenkoviSmartdenIPInOut::Do_Work()
 {
-	int sec_counter = DenkoviSmartdenIPInOut_POLL_INTERVAL - 2;
+	int poll_interval = m_pollInterval / 100;
+	int poll_counter = poll_interval - 2;
 
 	while (!m_stoprequested)
 	{
-		sleep_seconds(1);
-		sec_counter++;
+		sleep_milliseconds(100);
+		poll_counter++;
 
-		if (sec_counter % 12 == 0) {
+		if (poll_counter % 12*10 == 0) { //10 steps = 1 second (10 * 100)
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (sec_counter % DenkoviSmartdenIPInOut_POLL_INTERVAL == 0)
+		if (poll_counter % poll_interval == 0)
 		{
 			GetMeterDetails();
 		}
@@ -94,7 +101,7 @@ void CDenkoviSmartdenIPInOut::Do_Work()
 	_log.Log(LOG_STATUS,"Denkovi_IP_In: Worker stopped...");
 }
 
-bool CDenkoviSmartdenIPInOut::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDenkoviSmartdenIPInOut::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -184,7 +191,7 @@ void CDenkoviSmartdenIPInOut::UpdateSwitch(const unsigned char Idx, const int Su
 	lcmd.LIGHTING2.id2 = 0;
 	lcmd.LIGHTING2.id3 = 0;
 	lcmd.LIGHTING2.id4 = Idx;
-	lcmd.LIGHTING2.unitcode = SubUnit;
+	lcmd.LIGHTING2.unitcode = (uint8_t)SubUnit;
 	if (!bOn)
 	{
 		lcmd.LIGHTING2.cmnd = light2_sOff;
@@ -193,7 +200,7 @@ void CDenkoviSmartdenIPInOut::UpdateSwitch(const unsigned char Idx, const int Su
 	{
 		lcmd.LIGHTING2.cmnd = light2_sOn;
 	}
-	lcmd.LIGHTING2.level = level;
+	lcmd.LIGHTING2.level = (uint8_t)level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
@@ -245,7 +252,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 	for (ii = 1; ii < results.size(); ii++)
 	{
 		tmpstr = stdstring_trim(results[ii]);
-		
+
 		if (
 			(!bHaveDigitalInput) &&
 			(!bHaveDigitalOutput) &&

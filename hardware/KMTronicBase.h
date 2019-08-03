@@ -13,16 +13,16 @@ class KMTronicBase : public CDomoticzHardwareBase
 public:
 	KMTronicBase(void);
 	~KMTronicBase(void);
-	std::string m_szSerialPort;
-	unsigned int m_iBaudRate;
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	virtual bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn) = 0;
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
+private:
+	std::string m_szSerialPort;
+	unsigned int m_iBaudRate;
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
-
 	bool m_bDoInitialQuery;
 	int m_TotRelais;
 	bool m_bRelaisStatus[Max_KMTronic_Relais];

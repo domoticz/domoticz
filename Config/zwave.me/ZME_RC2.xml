@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- ZME_RC2 Z-Wave Remote Control+ -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
 
 	<!-- COMMAND_CLASS_CONFIGURATION. Configuration Parameters -->
 	<CommandClass id="112">

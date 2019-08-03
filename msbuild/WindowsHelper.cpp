@@ -171,8 +171,6 @@ BOOL TrayMessage(DWORD dwMessage, const char *szInfo)
 	tnd.uID = 100;
 	tnd.uCallbackMessage = WM_TRAYICON;
 	tnd.uFlags = NIF_MESSAGE|NIF_ICON|NIF_TIP | NIF_SHOWTIP;
-	if (dwMessage==NIM_ADD)
-		tnd.uFlags|=NIF_SHOWTIP;
 	tnd.hIcon = LoadIcon(g_hInstance,MAKEINTRESOURCE (IDR_MAINFRAME));
 	strcpy(tnd.szTip, "Domoticz Home Automation");
 	tnd.uTimeout=5;
@@ -182,7 +180,6 @@ BOOL TrayMessage(DWORD dwMessage, const char *szInfo)
 		strcpy(tnd.szInfo, szInfo);
 		strcpy(tnd.szInfoTitle, tnd.szTip);
 	}
-
 	return Shell_NotifyIcon(dwMessage, &tnd);
 }
 

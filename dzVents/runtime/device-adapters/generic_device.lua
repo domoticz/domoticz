@@ -43,11 +43,19 @@ return {
 	baseType = 'device',
 
 	match = function (device)
-		return true -- generic always matches
+		return true -- generic always matches?
+	end,
+
+	matches = function (device, adapterManager)
+		adapterManager.addDummyMethod(device, 'protectionOn')
+		adapterManager.addDummyMethod(device, 'protectionOff')
+		adapterManager.addDummyMethod(device, 'setDescription')
+		adapterManager.addDummyMethod(device, 'setIcon')
+		adapterManager.addDummyMethod(device, 'setValues')
+		adapterManager.addDummyMethod(device, 'rename')
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)
-
 		local _states = adapterManager.states
 
 		if (data.lastUpdate == '' or data.lastUpdate == nil) then
@@ -57,7 +65,9 @@ return {
 			else
 				level = utils.LOG_DEBUG
 			end
-			utils.log('Discarding device. No last update info found: ' .. domoticz.utils._.str(data), level)
+			if data.baseType ~= 'camera' then
+				utils.log('Discarding device. No last update info found: ' .. domoticz.utils._.str(data), level)
+			end
 			return nil
 		end
 
@@ -97,7 +107,7 @@ return {
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = data.rawData
 			device['nValue'] = data.data._nValue
-
+			device['sValue'] = data.data._state
 			device['cancelQueuedCommands'] = function()
 				domoticz.sendCommand('Cancel', {
 					type = 'device',
@@ -110,6 +120,7 @@ return {
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then
 			device['description'] = data.description
+			device['protected'] = data.protected 
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = { [1] = data.data._state }
 			device['changed'] = data.changed
@@ -123,6 +134,64 @@ return {
 		end
 
 		setStateAttribute(data.data._state, device, _states)
+
+		function device.setDescription(description)
+			local url = domoticz.settings['Domoticz url'] ..
+				"/json.htm?description=" .. utils.urlEncode(description) ..
+				"&idx=" .. device.id ..
+				"&name=".. utils.urlEncode(device.name) ..
+				"&type=setused&used=true"
+			return domoticz.openURL(url)
+		end
+
+		function device.setIcon(iconNumber)
+			local url = domoticz.settings['Domoticz url'] .. 
+				'/json.htm?type=setused&used=true&name=' .. 
+				 utils.urlEncode(device.name) ..
+				'&description=' .. utils.urlEncode(device.description) ..
+				'&idx=' .. device.id .. 
+				'&switchtype=' .. device.switchTypeValue ..
+				'&customimage=' .. iconNumber
+			return domoticz.openURL(url)
+		end
+
+		function device.rename(newName)
+			local url = domoticz.settings['Domoticz url'] ..  
+						"/json.htm?type=command&param=renamedevice" ..
+						"&idx=" .. device.idx ..
+						"&name=" .. utils.urlEncode(newName)
+			return domoticz.openURL(url)
+		end
+
+		function device.protectionOn()
+			local url = domoticz.settings['Domoticz url'] ..  
+						"/json.htm?type=setused&used=true&protected=true" ..
+						"&idx=" .. device.idx
+			return domoticz.openURL(url)
+		end
+
+		function device.protectionOff()
+			local url = domoticz.settings['Domoticz url'] ..  
+						"/json.htm?type=setused&used=true&protected=false" ..
+						"&idx=" .. device.idx
+			return domoticz.openURL(url)
+		end
+
+		function device.setValues(nValue, ...)
+			local args = {...}
+			local sValue = ''
+			for _,value in ipairs(args) do
+				sValue	= sValue .. tostring(value) .. ';'
+			end
+			if #sValue > 1 then 
+				sValue = sValue:sub(1,-2)
+			end
+			local url = domoticz.settings['Domoticz url'] ..
+				'/json.htm?type=command&param=udevice&idx=' .. device.id .. 
+				'&nvalue=' .. (nValue or device.nValue) ..
+				'&svalue=' .. sValue 
+			return domoticz.openURL(url)
+		end
 
 		function device.setState(newState)
 			-- generic state update method

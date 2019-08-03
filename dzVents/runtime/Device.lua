@@ -3,7 +3,6 @@ local Adapters = require('Adapters')
 local TimedCommand = require('TimedCommand')
 local TIMED_OPTIONS = require('TimedCommandOptions')
 
-
 local function Device(domoticz, data, dummyLogger)
 
 	local self = {}

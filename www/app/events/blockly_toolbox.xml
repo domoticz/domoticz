@@ -1,0 +1,95 @@
+<xml id="toolbox">
+    <category name="Control">
+        <block type="domoticzcontrols_if"></block>
+        <block type="domoticzcontrols_ifelseif"></block>
+    </category>
+    <category name="Logic">
+        <block type="logic_compare"></block>
+        <block type="logic_operation"></block>
+        <!--<block type="logic_boolean"></block>-->
+        <block type="logic_states"></block>
+        <block type="logic_set"></block>
+        <block type="logic_setlevel"></block>
+        <block type="logic_setafter"></block>
+        <block type="logic_setdelayed"></block>
+        <block type="logic_setrandom"></block>
+        <block type="math_number"></block>
+        <block type="text"></block>
+    </category>
+    <category name="Time">
+        <block type="logic_timeofday"></block>
+        <block type="logic_weekday"></block>
+        <block type="logic_timevalue"></block>
+        <block type="logic_sunrisesunset"></block>
+    </category>
+    <category name="Messages">
+        <block type="send_notification"></block>
+        <block type="send_email"></block>
+        <block type="send_sms"></block>
+        <block type="trigger_ifttt"></block>
+        <block type="text"></block>
+        <block type="open_url"></block>
+        <block type="open_url_after"></block>
+        <block type="url_text"></block>
+        <block type="start_script"></block>
+    </category>
+    <category name="Security">
+        <block type="security_status"></block>
+    </category>
+    <category name="Debug/log">
+        <block type="writetolog"></block>
+        <block type="text"></block>
+    </category>
+    <category name="Devices">
+        <category name="Switches">
+            <block type="switchvariablesAF"></block>
+            <block type="switchvariablesGL"></block>
+            <block type="switchvariablesMR"></block>
+            <block type="switchvariablesSZ"></block>
+        </category>
+        <category name="Temperature">
+            <block type="temperaturevariables"></block>
+        </category>
+        <category name="Humidity">
+            <block type="humidityvariables"></block>
+        </category>
+        <category name="Dewpoint">
+            <block type="dewpointvariables"></block>
+        </category>
+        <category name="Barometer">
+            <block type="barometervariables"></block>
+        </category>
+        <category name="Weather">
+            <block type="weathervariables"></block>
+        </category>
+        <category name="Utility">
+            <block type="utilityvariables"></block>
+            <block type="utilityvariablesAF"></block>
+            <block type="utilityvariablesGL"></block>
+            <block type="utilityvariablesMR"></block>
+            <block type="utilityvariablesSZ"></block>
+        </category>
+        <category name="User variables">
+            <block type="uservariablesAF"></block>
+            <block type="uservariablesGL"></block>
+            <block type="uservariablesMR"></block>
+            <block type="uservariablesSZ"></block>
+        </category>
+        <category name="Text">
+            <block type="textvariables"></block>
+        </category>
+        <category name="Scenes/groups">
+            <block type="scenevariables"></block>
+            <block type="groupvariables"></block>
+        </category>
+        <category name="Cameras">
+            <block type="cameravariables"></block>
+        </category>
+        <category name="SetPoints">
+            <block type="setpointvariables"></block>
+        </category>
+        <category name="ZWave Alarms">
+            <block type="zwavealarms"></block>
+        </category>
+    </category>
+</xml>

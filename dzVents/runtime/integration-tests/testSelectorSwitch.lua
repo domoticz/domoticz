@@ -25,6 +25,7 @@ describe('Test if selector switch afterSec() works', function ()
 		ok, vdScriptOKIdx = TestTools.createVirtualDevice(dummyIdx, 'vdScriptOK', 6)
 
 		TestTools.switchSelector(switchIdx, 10)
+		socket.sleep(2)
 
 		TestTools.installFSScripts(fsScripts)
 

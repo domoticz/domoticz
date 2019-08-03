@@ -32,37 +32,65 @@
 
 namespace OpenZWave
 {
-	class ValueDecimal;
-
-	/** \brief Implements COMMAND_CLASS_SENSOR_MULTILEVEL (0x31), a Z-Wave device command class.
-	 */
-	class SensorMultilevel: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new SensorMultilevel( _homeId, _nodeId ); }
-		virtual ~SensorMultilevel(){}
+		namespace CC
+		{
 
-		static uint8 const StaticGetCommandClassId(){ return 0x31; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_SENSOR_MULTILEVEL"; }
+			/** \brief Implements COMMAND_CLASS_SENSOR_MULTILEVEL (0x31), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class SensorMultilevel: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new SensorMultilevel(_homeId, _nodeId);
+					}
+					virtual ~SensorMultilevel()
+					{
+					}
 
-		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _dummy, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-		
-		virtual uint8 GetMaxVersion(){ return 5; }
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x31;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_SENSOR_MULTILEVEL";
+					}
 
-	protected:
-		virtual void CreateVars( uint8 const _instance );
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _dummy, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
 
-	private:
-		SensorMultilevel( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
-	};
+					virtual uint8 GetMaxVersion() override
+					{
+						return 11;
+					}
 
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
+
+				private:
+					SensorMultilevel(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+					}
+					std::map<uint32_t, uint8> SensorScaleMap;
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
-
 
 #endif
 

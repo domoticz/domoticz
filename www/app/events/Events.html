@@ -1,0 +1,119 @@
+<div class="row" style="margin: -14px 0 0 -8px;">
+	<timesun></timesun>
+</div>
+<div class="row">
+	<div class="events-editor">
+		<section class="events-editor__tree" ng-show="$ctrl.isListExpanded">
+			<h2>{{:: 'My automation scripts' | translate }}</h2>
+			<input class="events-editor__search" type="search" ng-model="$ctrl.search.name" placeholder="{{:: 'Filter' | translate }}" />
+			<nav class="events-editor-tree">
+				<li class="events-editor-tree-item"
+					ng-class="{
+						'events-editor-tree-item_disabled': event.eventstatus === '0',
+						'events-editor-tree-item_active': event.id === $ctrl.activeEventId
+					}"
+					ng-repeat="event in $ctrl.events | filter:$ctrl.search track by event.id"
+				>
+					<a class="events-editor-tree-item__file"
+					   href="javascript:void(0)"
+					   ng-click="$ctrl.openEvent(event)"
+					>
+						<span class="label label-important" ng-if="event.eventstatus === '0'">{{:: 'Disabled' | translate }}</span>
+						{{ event.name }}
+					</a>
+				</li>
+			</nav>
+		</section>
+
+		<button type="button"
+				class="events-editor__splitter"
+				ng-click="$ctrl.isListExpanded = !$ctrl.isListExpanded"
+		>
+			<i ng-class="{'icon-chevron-left': $ctrl.isListExpanded, 'icon-chevron-right': !$ctrl.isListExpanded}"></i>
+		</button>
+
+		<section class="events-editor__editor">
+			<nav class="events-editor__file-list">
+				<a class="events-editor__file"
+				   href="javascript:void(0)"
+				   ng-class="{'events-editor__file_active': $ctrl.activeEventId === 'states'}"
+				   ng-click="$ctrl.setActiveEventId('states')"
+				   title="{{:: 'Devices current states' | translate}}"
+			   >
+					<i class="icon-tasks"></i>
+				</a>
+
+				<a class="events-editor__file"
+				   href="javascript:void(0)"
+				   ng-repeat="event in $ctrl.openedEvents track by event.id"
+				   ng-class="{'events-editor__file_active': event.id === $ctrl.activeEventId}"
+				   ng-click="$ctrl.setActiveEventId(event.id)"
+				>
+					{{ event.name }}
+					<span ng-if="event.isChanged">*</span>
+					<button class="events-editor__file-close" ng-click="$ctrl.closeEvent(event)">×</button>
+				</a>
+
+				<div class="events-editor__file-create">
+					<button class="events-editor__file"
+							title="{{:: 'Add automation script' | translate}}"
+							data-toggle="dropdown"
+					>
+						<i class="icon-plus"></i>
+					</button>
+					<ul class="dropdown-menu events-editor__menu">
+						<li ng-if=":: $ctrl.isInterpreterSupported('Blockly')">
+							<a class="events-editor__menu-item" tabindex="-1" href="javascript:void(0)" ng-click="$ctrl.createEvent('Blockly')">Blockly</a>
+						</li>
+						<li ng-if=":: $ctrl.isInterpreterSupported('Python')">
+							<a class="events-editor__menu-item" tabindex="-1" href="javascript:void(0)" ng-click="$ctrl.createEvent('Python')">Python</a>
+						</li>
+						<li ng-if=":: $ctrl.isInterpreterSupported('Lua')" class="dropdown-submenu">
+							<a class="events-editor__menu-item" tabindex="-1" href="javascript:void(0)">Lua</a>
+							<ul class="dropdown-menu events-editor__menu">
+								<li ng-repeat="template in ::$ctrl.luaTemplates">
+									<a tabindex="-1"
+									   class="events-editor__menu-item"
+									   href="javascript:void(0)"
+									   ng-click="$ctrl.createEvent('Lua', template.id)"
+									>
+										{{:: template.name}}
+									</a>
+								</li>
+							</ul>
+						</li>
+						<li ng-if=":: $ctrl.isInterpreterSupported('dzVents')" class="dropdown-submenu">
+							<a class="events-editor__menu-item" tabindex="-1" href="javascript:void(0)">dzVents</a>
+							<ul class="dropdown-menu events-editor__menu">
+								<li ng-repeat="template in ::$ctrl.dzVentsTemplates">
+									<a tabindex="-1"
+									   class="events-editor__menu-item"
+									   href="javascript:void(0)"
+									   ng-click="$ctrl.createEvent('dzVents', template.id)"
+									>
+										{{:: template.name}}
+									</a>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</nav>
+
+			<events-current-states
+				class="events-editor-file events-editor__file-content"
+				ng-show="$ctrl.activeEventId === 'states'"
+			/>
+
+			<event-viewer
+					class="events-editor-file events-editor__file-content"
+					ng-repeat="event in $ctrl.openedEvents track by event.id"
+					ng-show="event.id === $ctrl.activeEventId"
+					event="event"
+					on-update="$ctrl.updateEvent(event)"
+					on-delete="$ctrl.deleteEvent(event)"
+			/>
+		</section>
+	</div>
+</div>
+

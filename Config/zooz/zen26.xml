@@ -1,0 +1,74 @@
+<!-- 
+Zooz ZEN26 S2 On Off Wall Switch 
+https://products.z-wavealliance.org/products/3147
+--><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027A:A001:A000</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zen26.png</MetaDataItem>
+    <MetaDataItem id="A001" name="ZWProductPage" type="A000">https://products.z-wavealliance.org/products/3147/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">If your primary controller is missing or inoperable, you may need to reset the device to factory settings. To complete the reset process manually, tap-tap-tap’n’hold the upper paddle for at least 10 seconds. The LED indicator will flash to confirm successful reset.
+NOTE: All previously recorded activity and custom settings will be erased from the device’s memory.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Bring your Z-Wave gateway (hub) close to the switch if possible
+2. Put the Z-Wave hub into exclusion mode (not sure how to do that?
+ask@getzooz.com)
+3. Tap the lower paddle on the switch 3 times quickly</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Initiate inclusion (pairing) in the app (or web interface) of your hub.
+2. Tap the upper paddle on the switch 3 times quickly.</MetaDataItem>
+    <MetaDataItem id="A001" name="FrequencyName" type="A000">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="A001" name="Identifier" type="A000">ZEN26</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3147/zooz-z-wave-plus-s2-on-off-switch-zen26-manual.pdf</MetaDataItem>
+    <MetaDataItem name="Name">S2 On Off Switch</MetaDataItem>
+    <MetaDataItem name="Description">FEATURES:
+- Manual or Z-Wave on/off control with instant status updates
+- Simple Direct 3-Way: connect with existing on/off switches in 3-way, 4-way, and 5-way set-ups, no add-on needed (neutral wire required)
+- Remembers and restores on/off status after power failure
+- LED indicator signals inclusion, exclusion, reset, and setting changes
+- Built-in Z-Wave Plus signal repeater to extend network range
+- Works with LED, CFL, and incandescent bulbs
+- S2 security protocol and the latest 500 Z-Wave chip for faster and safer wireless communication
+- Supported by most Z-Wave controllers
+
+SPECIFICATIONS:
+- Model Number: ZEN26
+- Z-Wave Signal Frequency: 908.42 MHz
+- Power: 120 VAC, 60 Hz
+- Maximum Load: 8 A, 150 W LED/CFL, 600 W incandescent, 1200 W resistive
+- Range: Up to 100 feet line of sight
+- Operating Temperature: 32-104° F (0-40° C)
+- Installation and Use: Indoor only</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3147/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Paddle Control" max="1" min="0" size="1" type="list" value="0">
+      <Help>Normal mode: Upper paddle turns the light on, lower paddle turns the light off.  Reverse will reverse those functions.</Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Reverse" value="1"/>
+    </Value>
+    <Value genre="config" index="2" label="LED Indication Control" max="3" min="0" size="1" type="list" value="0">
+      <Help>LED Indication light function.  Normal has the LED Indication on when the switch is off, off when the switch is on. </Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Reverse" value="1"/>
+      <Item label="Always Off" value="2"/>
+      <Item label="Always On" value="3"/>
+    </Value>
+    <Value genre="config" index="3" label="Auto Turn-Off Timer" max="32768" min="0" size="2" type="short" units="seconds" value="0">
+      <Help>Time, in seconds, for auto-off timer delay.  0 (default) disables the timer.</Help>
+    </Value>
+    <Value genre="config" index="5" label="On Off Status After Power Failure" max="2" min="0" size="1" type="list" value="2">
+      <Help>Status after power on after power failure.  OFF will always turn light off.  ON will always turn light on.  Restore will remember the latest state and restore that state.</Help>
+      <Item label="OFF" value="0"/>
+      <Item label="ON" value="1"/>
+      <Item label="Restore" value="2"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Status" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

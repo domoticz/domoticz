@@ -1,48 +1,71 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0001:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/hsp02.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/606/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0001">Malaysia / Hong Kong / CEPT (Europe) / CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">HSP02</MetaDataItem>
+    <MetaDataItem name="Description">The motion detector is designed with dual detecting mode: security mode and home automation mode.In security mode, the detector can be used as a security device to detect movements. Z-Wave protocol to secure the success of wireless two way communication
+With tamper-proof protection
+Easy install and can corner mount
+Low battery indication
+Very low power consumption (2 years battery life)
+Adjustable PIR detection pattern and sensitivity (pet immunity)
+Built in light sensor to simulate lighting control </MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.ctc-chromagic.com/?q=zwave/HSP02</MetaDataItem>
+    <MetaDataItem name="Name">Chromagic (HSP02) Motion Detector</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/24/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/35/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/392/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/606/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem name="ProductSupport">http://www.ctc-chromagic.com/?q=support</MetaDataItem>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="byte" index="1" genre="config" label="Basic Set Level" units="" min="0" max="99" value="99">
+    <Value genre="config" index="1" label="Basic Set Level" max="99" min="0" type="byte" units="" value="99">
       <Help>
 	When Basic Set Command is sent where contains a value, the receiver will take it for consideration; for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp module shall be.
       </Help>
     </Value>
-    <Value type="bool" index="2" genre="config" label="Enable/Disable Detecting" min="0" max="3" value="1">
+    <Value genre="config" index="2" label="Enable/Disable Detecting" max="3" min="0" type="bool" value="1">
       <Help>
 	The Detecting function can be Disabled of Enabled.
       </Help>
     </Value>
-    <Value type="byte" index="3" genre="config" label="Sensitivity Level" units="" min="1" max="10" value="6">
+    <Value genre="config" index="3" label="Sensitivity Level" max="10" min="1" type="byte" units="" value="6">
       <Help>
 	1 Means lowest sensitivity and 10 means highest.
       </Help>
     </Value>
-    <Value type="byte" index="4" genre="config" label="Re-trigger Interval Setting" units="Seconds" min="5" max="3600" value="180">
+    <Value genre="config" index="4" label="Re-trigger Interval Setting" max="3600" min="5" type="byte" units="Seconds" value="180">
       <Help>
 	Adjust the interval of being re-triggered afer the detector has	been triggered in seconds.
       </Help>
     </Value>
-    <Value type="byte" index="5" genre="config" label="Lux Level" units="%" min="1" max="100" value="10">
+    <Value genre="config" index="5" label="Lux Level" max="100" min="1" type="byte" units="%" value="10">
       <Help>
 	Sets minimum Lux Level of ambient illumination necessary for Motion Detector to trigger.
       </Help>
     </Value>
-    <Value type="byte" index="6" genre="config" label="On-Off Duration" units="Seconds" min="5" max="3600" value="15">
+    <Value genre="config" index="6" label="On-Off Duration" max="3600" min="5" type="byte" units="Seconds" value="15">
       <Help>
 	The duration determines how long before the module sends an Off after being triggered.
       </Help>
     </Value>
   </CommandClass>
-
   <!-- Basic set as report -->
-  <CommandClass id="32" setasreport="true"/>
-
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
   <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" max_associations="1" label="Reports" />
-      <Group index="2" max_associations="3" label="Control" />
+      <Group index="1" label="Reports" max_associations="1"/>
+      <Group index="2" label="Control" max_associations="3"/>
     </Associations>
   </CommandClass>
-
 </Product>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+    <!--
+    Wenzhou TKB Control System TZ57 Two channel switch
+    -->
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="1" label="Night light" min="0" max="1" value="1" size="1">
+            <Help>
+                The LED on the switch will by default, turn ON when the load attached is turned OFF.
+                To make the LED turn ON when the load attached is turned ON instead, set parameter to a value of 0.
+            </Help>
+            <Item label="The LED is ON when the load is ON" value="0" />
+            <Item label="The LED is ON when the load is OFF" value="1" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="2" label="Memory function" value="1" size="1">
+            <Help>Default with memory: the socket status is same as before when power on</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="3" label="Invert switch" value="0" size="1">
+            <Help>In the edge mode invert switch</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="4" label="LED Transmission Indication" value="1" size="1">
+            <Help>Led flicker on transmission</Help>
+            <Item label="No flicker" value="0"/>
+            <Item label="Only 1 second at beginning" value="1"/>
+            <Item label="Always" value="2"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="5" label="Suspend Group 4" value="0" size="1">
+            <Help>Enable/Disable group 4</Help>
+            <Item label="Enable" value="0"/>
+            <Item label="Disable" value="1"/>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="4">
+            <Group index="1" max_associations="5" label="Lifeline" />
+            <Group index="2" max_associations="5" label="On/Off Dimmer 1" />
+            <Group index="3" max_associations="5" label="On/Off Dimmer 2" />
+            <Group index="4" max_associations="5" label="Wireless" />
+        </Associations>
+    </CommandClass>
+
+</Product>

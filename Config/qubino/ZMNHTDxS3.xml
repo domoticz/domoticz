@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
 
 <!-- 
 Qubino:  ZMNHTDx Smart meter Z-Wave+
@@ -102,12 +102,18 @@ ZMNHTD5 916,0 MHz
 		</Associations>
 	</CommandClass>
 
-	<CommandClass id="142" ForceInstances="true" />
-
+	<CommandClass id="142">
+		<Compatibility>
+			<ForceInstances>true</ForceInstances>
+		</Compatibility>
+	</CommandClass>
 	<!-- Remove COMMAND_CLASS_BASIC -->
 	<CommandClass id="32" action="remove" />
 
 	<!-- Map endpoints to instances -->
-	<CommandClass id="96" mapping="endpoints" />
-
+	<CommandClass id="96">
+		<Compatibility>
+			<MapRootToEndpoint>true</MapRootToEndpoint>
+		</Compatibility>
+	</CommandClass>
 </Product>

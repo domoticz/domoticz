@@ -39,6 +39,7 @@ private:
 	bool UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
+	bool TriggerIFTTT(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	void ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void IterateTable(lua_State *lua_state, const int tIndex, std::vector<_tLuaTableValues> &vLuaTable);
 	void SetGlobalVariables(lua_State *lua_state, const bool reasonTime, const int secStatus);

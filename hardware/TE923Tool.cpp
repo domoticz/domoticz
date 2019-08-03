@@ -75,7 +75,7 @@ bool CTE923Tool::OpenDevice()
 		_log.Log(LOG_ERROR, "TE923: Error while opening USB port and getting a device handler." );
 		return false;
 	}
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__NetBSD__)
 	char driver_name[30];
 	ret = usb_get_driver_np(m_device_handle, 0, driver_name, 30);
 	if ( ret == 0 ) {

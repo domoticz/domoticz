@@ -2,3 +2,63 @@
 @import url("base.css"); /* Don't remove this line! */
 @import url("extras_and_animations.css"); /* Adds visual extras. */
 /*@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
+
+.dataTables_wrapper {
+    margin-bottom: 16px;
+}
+/*
+.modal-content {
+    color: #ddd;
+    background-color: #013;
+    border: 1px solid #666;
+    border-radius: .3125em;
+}
+
+.modal-header {
+    background: #013 url(images/ui-bg_gloss-wave_25_333333_500x100.png) 50% 50% repeat-x;
+    border-bottom-color: #666;
+    color: #FFF;
+}
+
+.modal-footer {
+    background-color: inherit;
+    border-top-color: #666;
+    box-shadow: none;
+}
+
+.modal-title,
+.bootbox-body {
+    color: inherit;
+}
+
+.modal .form-control {
+    color: #eee;
+    line-height: 1.5;
+    background-color: #283750;
+    padding: 0.25rem 0.5rem;
+    border-radius: .3125em;
+    border: none;
+}
+*/
+.btn {
+    border: none;
+    border-radius: 5px;
+}
+
+.btn.btn-default {
+    background: url(/css/images/img03b.jpg) repeat right top;
+    color: #FFFFFF;
+    text-shadow: none;
+}
+
+.btn.btn-default:disabled {
+    background-image: url(/css/images/img03bd.png);
+}
+
+.btn.btn-default.active {
+    background-image: url(/css/images/img03bs.jpg);
+}
+
+.btn-group > .btn {
+    border-radius: 0;
+}

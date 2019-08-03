@@ -971,6 +971,24 @@ div.item.statusTimeout td#name{
 div.item.statusLowBattery td#name{
     background-color:#DDDF2D;
 }
+div.item.statusEvoSetPointOff td#name{
+    background-color:#9b9b9b;
+}
+div.item.statusEvoSetPoint25 td#name{
+    background-color:#ff0302;
+}
+div.item.statusEvoSetPoint22 td#name{
+    background-color:#ff6a2a;
+}
+div.item.statusEvoSetPoint19 td#name{
+    background-color:#fe9b2d;
+}
+div.item.statusEvoSetPoint16 td#name{
+    background-color:#79bc5c;
+}
+div.item.statusEvoSetPointMin td#name{
+    background-color:#6ca5fd;
+}
 
 .selectorlevels {
 	font-size: 1em;
@@ -986,4 +1004,23 @@ div.item.statusLowBattery td#name{
 
 .selectorlevels .ui-selectmenu-button.ui-widget {
 	font-size: 1.1em;
+}
+
+.zwave_label {
+	font-style: normal;
+	font-weight: bold;
+	color: #fff;
+}
+.zwave_no_info {
+	font-style: italic;
+	color: #ff5050;
+}
+.zwave_help {
+	font-style: normal;
+	color: #ddd;
+}
+.zwave_last_update {
+	font-style: italic;
+	font-size: smaller;
+	color: #e0c0ff;
 }

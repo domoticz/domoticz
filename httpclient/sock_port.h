@@ -37,7 +37,6 @@
  #include <sys/types.h>
  #include <sys/socket.h>
  #include <netdb.h>
- #include <sys/time.h>
  #include <sys/poll.h>
 
  #if !defined( NEED_IOCTLSOCKET )

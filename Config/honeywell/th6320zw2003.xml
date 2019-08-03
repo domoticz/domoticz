@@ -1,0 +1,427 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0039:0008:0011</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/honeywell/th6320zw2003.png</MetaDataItem>
+    <MetaDataItem id="0008" name="ZWProductPage" type="0011">https://products.z-wavealliance.org/products/2893/</MetaDataItem>
+    <MetaDataItem name="Name">T6 Pro Z-Wave Programmable Thermostat</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To include the thermostat in to Z-Wave network, go to thermostat MENU/ Z-Wave SETUP.
+• Touch Select. You will be asked to set your primary controller to INCLUDE MODE. Please refer to the user manual of your Z-Wave controller.
+• After inclusion procedure has been initiated on your Z-Wave controller, touch Select on the thermostat.
+• If the inclusion procedure is successful, "INCLUDED", the node ID, and the Z-Wave connected status icon appear on the screen.
+If the procedure fails, “FAILED TO INCLUDE” appears on the screen.
+• Your controller will indicate whether the thermostat was successfully added to its network. Please refer to the user manual of your Z-Wave controller.</MetaDataItem>
+    <MetaDataItem name="Description">The Honeywell T6 Pro Z-Wave Programmable Thermostat is a Z-Wave Plus certified, universal thermostat capable to control up to three heat and two cool stages of heat pump, (incl. dual fuel heat pump systems) and up to two heat and two cool stages of conventional system (3H/2C HP, 2H/2C Conv.)
+- 3 x AA battery or 24VAC powered
+- Easy wiring, easy configuration
+- Flexible local thermostat scheduling options
+- Attractive look, large Easy-To-Read touchscreen
+- Displays and reports ambient temperature and % Relative Indoor Humidity
+- Displays and reports HVAC system status, battery power status, Z-Wave signal status
+- Large amount of supported Z-Wave command classes
+- Remotely configurable via Z-Wave configuration command class
+- Advanced HVAC configuration parameters</MetaDataItem>
+    <MetaDataItem id="0008" name="FrequencyName" type="0011">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0008" name="Identifier" type="0011">TH6320ZW2003</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2893/33-00414-01-min.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To exclude the thermostat from Z-Wave network, go to thermostat MENU/ Z-Wave SETUP.
+• Touch Select. You will be asked to set your primary
+controller to EXCLUDE MODE. Please refer to the user manual of your Z-Wave controller.
+• After exclusion procedure has been initiated on your Z-Wave controller, touch Select on the thermostat.
+• If the exclusion procedure is successful, "EXCLUDED", and the Z-Wave excluded status icon appear on the screen.
+If the procedure fails, “FAILED TO EXCLUDE” appears on the screen.
+• Your controller will indicate whether the thermostat was successfully excluded from its network. Please refer to the user manual of your Z-Wave controller.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To reset the thermostat to factory default setting, go to Installer setup – advanced menu. To access the advanced menu, press and hold the thermostat Menu button for 5 seconds.
+Touch &lt; or > to go to RESET menu. Press Select. Touch &lt; or > to go to FACTORY. Press Select. Touch Yes to reset the thermostat to factory default settings.. 
+Please use the reset procedure only when the primary controller is missing or inoperable.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2583/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2893/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- This thermostat's setpoint descriptions are 1 based, not 0 -->
+  <CommandClass id="67">
+    <Compatibility>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Schedule Type" max="4" min="0" size="1" type="list" units="" value="2">
+      <Help>
+        Schedule Type
+      </Help>
+      <Item label="No schedule/Occupancy based schedule" value="0"/>
+      <Item label="Every day the same" value="1"/>
+      <Item label="5-2 Schedule" value="2"/>
+      <Item label="5-1-1 Schedule" value="3"/>
+      <Item label="Every day individual" value="4"/>
+    </Value>
+    <Value genre="config" index="2" label="Temperature Scale" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Temperature Scale
+      </Help>
+      <Item label="Fahrenheit" value="0"/>
+      <Item label="Celsius" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="Outdoor Temperature" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Outdoor Temperature Sensor
+      </Help>
+      <Item label="No" value="0"/>
+      <Item label="Wired" value="1"/>
+    </Value>
+    <Value genre="config" index="4" label="Equipment Type" max="9" min="0" size="1" type="list" units="" value="2">
+      <Help>
+        Equipment Type
+      </Help>
+      <Item label="None" value="0"/>
+      <Item label="Standard Gas" value="1"/>
+      <Item label="High Efficiency Gas" value="2"/>
+      <Item label="Oil" value="3"/>
+      <Item label="Electric" value="4"/>
+      <Item label="Fan Coil" value="5"/>
+      <Item label="Air to Air Heat pump" value="6"/>
+      <Item label="Geothermal Heat Pump" value="7"/>
+      <Item label="Hot Water" value="8"/>
+      <Item label="Steam" value="9"/>
+    </Value>
+    <Value genre="config" index="5" label="Reversing Valve" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Reversing Valve
+      </Help>
+      <Item label="O/B on Cool" value="0"/>
+      <Item label="O/B on Heat" value="1"/>
+    </Value>
+    <Value genre="config" index="6" label="Cool Stages" max="2" min="0" size="1" type="byte" units="" value="1">
+      <Help>
+        Stages
+      </Help>
+    </Value>
+    <Value genre="config" index="7" label="Heat Stages Auxiliary/Emergency stages" max="2" min="0" size="1" type="byte" units="" value="1">
+      <Help>
+        Stages
+      </Help>
+    </Value>
+    <Value genre="config" index="8" label="Auxiliary/Emergency Control" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help></Help>
+      <Item label="Both Aux and E" value="0"/>
+      <Item label="Either Aux/E" value="1"/>
+    </Value>
+    <Value genre="config" index="9" label="Auxiliary Heat Type" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Auxiliary Heat Control
+      </Help>
+      <Item label="Electric" value="0"/>
+      <Item label="Gas/Oil" value="1"/>
+    </Value>
+    <Value genre="config" index="10" label="Emergency Heat Type" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Emergency Heat Type
+      </Help>
+      <Item label="Electric" value="0"/>
+      <Item label="Gas/Oil" value="1"/>
+    </Value>
+    <Value genre="config" index="11" label="Fossil Kit Control" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Fossil Kit Control
+      </Help>
+      <Item label="Thermostat" value="0"/>
+      <Item label="External" value="1"/>
+    </Value>
+    <Value genre="config" index="12" label="Auto Changeover" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        ADVANCED PARAMETER SHOULD ONLY BE CHANGED FROM ITS DEFAULT VALUE BY A QUALIFIED HVAC PROFESSIONAL
+      </Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="1"/>
+    </Value>
+    <Value genre="config" index="13" label="Auto Differential" max="5" min="0" size="1" type="byte" units="F" value="0">
+      <Help>
+        Auto Differential in degrees Fahrenheit
+      </Help>
+    </Value>
+    <Value genre="config" index="14" label="High Cool Stage Finish" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        High Cool Stage Finish
+      </Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="15" label="High Heat Stage Finish" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        High Heat Stage Finish
+      </Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="16" label="Auxiliary Heat Droop" max="15" min="0" size="1" type="list" units="F" value="0">
+      <Help>
+        0 = Comfort (1 is not accepted) Integer from 2 to 15 degrees of Fahrenheit from setpoint
+      </Help>
+      <Item label="Comfort" value="0"/>
+      <Item label="2F" value="2"/>
+      <Item label="3F" value="3"/>
+      <Item label="4F" value="4"/>
+      <Item label="5F" value="5"/>
+      <Item label="6F" value="6"/>
+      <Item label="7F" value="7"/>
+      <Item label="8F" value="8"/>
+      <Item label="9F" value="9"/>
+      <Item label="10F" value="10"/>
+      <Item label="11F" value="11"/>
+      <Item label="12F" value="12"/>
+      <Item label="13F" value="13"/>
+      <Item label="14F" value="14"/>
+      <Item label="15F" value="15"/>
+    </Value>
+    <Value genre="config" index="17" label="Up Stage Timer Aux Heat" max="15" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Up Stage Timer Auxiliary Heat
+      </Help>
+      <Item label="Off" value="0"/>
+      <Item label="30 minutes" value="1"/>
+      <Item label="45 minutes" value="2"/>
+      <Item label="60 minutes" value="3"/>
+      <Item label="75 minutes" value="4"/>
+      <Item label="90 minutes" value="5"/>
+      <Item label="2 hours" value="6"/>
+      <Item label="3 hours" value="7"/>
+      <Item label="4 hours" value="8"/>
+      <Item label="5 hours" value="9"/>
+      <Item label="6 hours" value="10"/>
+      <Item label="8 hours" value="11"/>
+      <Item label="10 hours" value="12"/>
+      <Item label="12 hours" value="13"/>
+      <Item label="14 hours" value="14"/>
+      <Item label="16 hours" value="15"/>
+    </Value>
+    <Value genre="config" index="18" label="Balance Point (Compressor Lockout)" max="65" min="0" size="1" type="list" units="" value="65">
+      <Help>
+        0 = Off integer from 5 to 65 degrees Fahrenheit in only 5 degrees increments. Other values not accepted.
+      </Help>
+      <Item label="Balance Point Off" value="0"/>
+      <Item label="Balance Point 5 degrees Fahrenheit" value="5"/>
+      <Item label="Balance Point 10 degrees Fahrenheit" value="10"/>
+      <Item label="Balance Point 15 degrees Fahrenheit" value="15"/>
+      <Item label="Balance Point 20 degrees Fahrenheit" value="20"/>
+      <Item label="Balance Point 25 degrees Fahrenheit" value="25"/>
+      <Item label="Balance Point 30 degrees Fahrenheit" value="30"/>
+      <Item label="Balance Point 35 degrees Fahrenheit" value="35"/>
+      <Item label="Balance Point 40 degrees Fahrenheit" value="40"/>
+      <Item label="Balance Point 55 degrees Fahrenheit" value="55"/>
+      <Item label="Balance Point 60 degrees Fahrenheit" value="60"/>
+      <Item label="Balance Point 65 degrees Fahrenheit" value="65"/>
+    </Value>
+    <Value genre="config" index="19" label="Aux Heat Lock Out (Aux Heat Outdoor Lockout)" max="65" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        0 = Off integer from 5 to 65 degrees Fahrenheit in only 5 degrees increments. Other values not accepted.
+      </Help>
+      <Item label="Aux Heat Lockout Off" value="0"/>
+      <Item label="Aux Heat Lockout 5 degrees Fahrenheit" value="5"/>
+      <Item label="Aux Heat Lockout 10 degrees Fahrenheit" value="10"/>
+      <Item label="Aux Heat Lockout 15 degrees Fahrenheit" value="15"/>
+      <Item label="Aux Heat Lockout 20 degrees Fahrenheit" value="20"/>
+      <Item label="Aux Heat Lockout 25 degrees Fahrenheit" value="25"/>
+      <Item label="Aux Heat Lockout 30 degrees Fahrenheit" value="30"/>
+      <Item label="Aux Heat Lockout 35 degrees Fahrenheit" value="35"/>
+      <Item label="Aux Heat Lockout 40 degrees Fahrenheit" value="40"/>
+      <Item label="Aux Heat Lockout 55 degrees Fahrenheit" value="55"/>
+      <Item label="Aux Heat Lockout 60 degrees Fahrenheit" value="60"/>
+      <Item label="Aux Heat Lockout 65 degrees Fahrenheit" value="65"/>
+    </Value>
+    <Value genre="config" index="20" label="Cool 1 CPH (Cooling cycle rate stage 1)" max="6" min="1" size="1" type="byte" units="" value="3">
+      <Help>
+        Cycle rates per hour
+      </Help>
+    </Value>
+    <Value genre="config" index="21" label="Cool 2 CPH (Cooling cycle rate stage 2)" max="6" min="1" size="1" type="byte" units="" value="3">
+      <Help>
+        Cycle rates per hour
+      </Help>
+    </Value>
+    <Value genre="config" index="22" label="Heat 1 CPH (Heating cycle rate stage 1)" max="12" min="1" size="1" type="byte" units="" value="3">
+      <Help>
+        Cycle rates per hour
+      </Help>
+    </Value>
+    <Value genre="config" index="23" label="Heat 2 CPH (Heating cycle rate stage 2)" max="12" min="1" size="1" type="byte" units="" value="3">
+      <Help>
+        Cycle rates per hour
+      </Help>
+    </Value>
+    <Value genre="config" index="24" label="Aux Heat CPH (Heating cycle rate Auxiliary Heat)" max="12" min="1" size="1" type="byte" units="" value="9">
+      <Help>
+        Cycle rates per hour
+      </Help>
+    </Value>
+    <Value genre="config" index="25" label="EM Heat CPH (Heating cycle rate Emergency Heat)" max="12" min="1" size="1" type="byte" units="" value="9">
+      <Help>
+        Cycle rates per hour
+      </Help>
+    </Value>
+    <Value genre="config" index="26" label="Compressor Protection" max="5" min="0" size="1" type="byte" units="" value="5">
+      <Help>
+        0 = Off Integer from 1-5 minutes
+      </Help>
+      <Item label="Off" value="0"/>
+      <Item label="1 minute" value="1"/>
+      <Item label="2 minute" value="2"/>
+      <Item label="3 minute" value="3"/>
+      <Item label="4 minute" value="4"/>
+      <Item label="5 minute" value="5"/>
+    </Value>
+    <Value genre="config" index="27" label="Adaptive Intelligent Recovery" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
+        Adaptive Intelligent Recovery
+      </Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="1"/>
+    </Value>
+    <Value genre="config" index="28" label="Minimum Cool Temperature" max="99" min="50" size="1" type="byte" units="F" value="50">
+      <Help>
+        Degrees Fahrenheit
+      </Help>
+    </Value>
+    <Value genre="config" index="29" label="Maximum Heat Temperature" max="90" min="40" size="1" type="byte" units="F" value="90">
+      <Help>
+        Degrees Fahrenheit
+      </Help>
+    </Value>
+    <Value genre="config" index="30" label="Air Filters" max="2" min="0" size="1" type="byte" units="" value="0">
+      <Help>
+        Number of air filters
+      </Help>
+    </Value>
+    <Value genre="config" index="31" label="Air Filter 1 Reminder" max="19" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Air Filter 1 Reminder
+      </Help>
+      <Item label="Off" value="0"/>
+      <Item label="10 Run time Days" value="1"/>
+      <Item label="20 Run time Days" value="2"/>
+      <Item label="30 Run time Days" value="3"/>
+      <Item label="45 Run time Days" value="4"/>
+      <Item label="60 Run time Days" value="5"/>
+      <Item label="90 Run time Days" value="6"/>
+      <Item label="120 Run time Days" value="7"/>
+      <Item label="150 Run time Days" value="8"/>
+      <Item label="30 Days" value="9"/>
+      <Item label="45 Days" value="10"/>
+      <Item label="60 Days" value="11"/>
+      <Item label="75 Days" value="12"/>
+      <Item label="3 Months" value="13"/>
+      <Item label="4 Months" value="14"/>
+      <Item label="5 Months" value="15"/>
+      <Item label="6 Months" value="16"/>
+      <Item label="9 Months" value="17"/>
+      <Item label="12 Months" value="18"/>
+      <Item label="15 Months" value="19"/>
+    </Value>
+    <Value genre="config" index="32" label="Air Filter 2 Reminder" max="19" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Air Filter 2 Reminder
+      </Help>
+      <Item label="Off" value="0"/>
+      <Item label="10 Run time Days" value="1"/>
+      <Item label="20 Run time Days" value="2"/>
+      <Item label="30 Run time Days" value="3"/>
+      <Item label="45 Run time Days" value="4"/>
+      <Item label="60 Run time Days" value="5"/>
+      <Item label="90 Run time Days" value="6"/>
+      <Item label="120 Run time Days" value="7"/>
+      <Item label="150 Run time Days" value="8"/>
+      <Item label="30 Days" value="9"/>
+      <Item label="45 Days" value="10"/>
+      <Item label="60 Days" value="11"/>
+      <Item label="75 Days" value="12"/>
+      <Item label="3 Months" value="13"/>
+      <Item label="4 Months" value="14"/>
+      <Item label="5 Months" value="15"/>
+      <Item label="6 Months" value="16"/>
+      <Item label="9 Months" value="17"/>
+      <Item label="12 Months" value="18"/>
+      <Item label="15 Months" value="19"/>
+    </Value>
+    <Value genre="config" index="33" label="Humidification Pad Reminder" max="2" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Humidification Pad Reminder
+      </Help>
+      <Item label="Off" value="0"/>
+      <Item label="6 Calendar Months" value="1"/>
+      <Item label="12 Calendar Months" value="2"/>
+    </Value>
+    <Value genre="config" index="34" label="Dehumidification Filter Reminder" max="12" min="0" size="1" type="byte" units="" value="0">
+      <Help>
+        0 = Off, 1-12 Calendar Months
+      </Help>
+    </Value>
+    <Value genre="config" index="35" label="Ventilation Filter Reminder" max="12" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        integer from 0 to 12 months. 0 = Off 3 = 3 Months 6 = 6 Months 9 = 9 Months 12 = 12 Months Other values not accepted.
+      </Help>
+      <Item label="No Ventilation Filter Reminder" value="0"/>
+      <Item label="Reminder in 3 Months" value="3"/>
+      <Item label="Reminder in 6 Months" value="6"/>
+      <Item label="Reminder in 9 Months" value="9"/>
+      <Item label="Reminder in 12 Months" value="12"/>
+    </Value>
+    <Value genre="config" index="36" label="UV Devices" max="2" min="0" size="1" type="byte" units="" value="0">
+      <Help>
+        UV Devices
+      </Help>
+    </Value>
+    <Value genre="config" index="37" label="UV Bulb 1 Reminder" max="24" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        integer from 0 to 24 months. 0 = Off 6 = 6 Months 12 = 12 Months 24 = 24 Months Other values not accepted.
+      </Help>
+      <Item label="UV Bulb 1 Reminder Off" value="0"/>
+      <Item label="Reminder in 6 Months" value="6"/>
+      <Item label="Reminder in 12 Months" value="12"/>
+      <Item label="Reminder in 24 Months" value="24"/>
+    </Value>
+    <Value genre="config" index="38" label="UV Bulb 2 Reminder" max="24" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        integer from 0 to 24 months. 0 = Off 6 = 6 Months 12 = 12 Months 24 = 24 Months Other values not accepted.
+      </Help>
+      <Item label="UV Bulb 2 Reminder Off" value="0"/>
+      <Item label="Reminder in 6 Months" value="6"/>
+      <Item label="Reminder in 12 Months" value="12"/>
+      <Item label="Reminder in 24 Months" value="24"/>
+    </Value>
+    <Value genre="config" index="39" label="Idle Brightness" max="5" min="0" size="1" type="byte" units="" value="0">
+      <Help>
+        Brightness level
+      </Help>
+    </Value>
+    <Value genre="config" index="40" label="Clock Format" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Clock Format
+      </Help>
+      <Item label="12 hour" value="0"/>
+      <Item label="24 hour" value="1"/>
+    </Value>
+    <Value genre="config" index="41" label="Daylight Saving" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
+        Daylight Saving
+      </Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="1"/>
+    </Value>
+    <Value genre="config" index="42" label="Temperature Offset" max="3" min="-3" size="1" type="list" units="" value="0">
+      <Help>
+        -3 = -3 deg Fahrenheit -2 = -2 deg Fahrenheit -1 = -1 deg Fahrenheit 0 = Off 1 = +1 deg Fahrenheit 2 = +2 deg Fahrenheit 3 = +3 deg Fahrenheit
+      </Help>
+      <Item label="-3" value="-3"/>
+      <Item label="-2" value="-2"/>
+      <Item label="-1" value="-1"/>
+      <Item label="0" value="0"/>
+      <Item label="+1" value="1"/>
+      <Item label="+2" value="2"/>
+      <Item label="+3" value="3"/>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

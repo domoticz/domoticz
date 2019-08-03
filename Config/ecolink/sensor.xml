@@ -1,23 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Ecolink Z-Wave Sensor Z-Wave
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Basic set as report-->
-	<CommandClass id="32" setasreport="true"/>
-    <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="991" label="Fault restore" min="0" max="1" value="1" size="1">
-            <Help>Enable/Disable Basic Sets of 0x00 on a fault restore to nodes in Group 2</Help>
-            <Item label="Disable" value="0"/>
-            <Item label="Enable" value="255"/>
-        </Value>       
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="2">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="Basic Report"/>
-        </Associations>
-    </CommandClass>
+--><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/014A:0001:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ecolink/sensor.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/791/</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">PIRZWAVE1</MetaDataItem>
+    <MetaDataItem name="Name">Ecolink Motion Sensor</MetaDataItem>
+    <MetaDataItem name="Description">The PIR Motion Sensor transmits to a Z-Wave gateway/controller when it detects movement within its field of view. </MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/791/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Basic set as report-->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="991" instance="1" label="Fault restore" max="1" min="0" size="1" type="list" value="1">
+      <Help>Enable/Disable Basic Sets of 0x00 on a fault restore to nodes in Group 2</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="255"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic Report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -266,7 +266,8 @@ define(['app'], function (app) {
 
 			$http({
 				url: "json.htm?type=devices&filter=all&used=true&order=Name&lastupdate=" + $scope.lastUpdateTime
-			}).success(function (data) {
+			}).then(function successCallback(response) {
+				var data = response.data;
 				if (typeof data.ActTime != 'undefined') {
 					$scope.lastUpdateTime = data.ActTime;
 				}
@@ -298,15 +299,22 @@ define(['app'], function (app) {
 						});
 					});
 				}
-				if ((bOneOff != true)) $scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
-			}).error(function () {
-				if ((bOneOff != true)) $scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
+				if (bOneOff != true) {
+					$scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
+				}
+			}, function errorCallback(response) {
+				if (bOneOff != true) {
+					$scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
+				}
 			});
 		}
 
 		$scope.ShowFPDevices = function (floorIdx) {
 
-			$http({ url: "json.htm?type=devices&filter=all&used=true&order=Name&floor=" + $scope.floorPlans[floorIdx].idx }).success(function (data) {
+			$http({
+				url: "json.htm?type=devices&filter=all&used=true&order=Name&floor=" + $scope.floorPlans[floorIdx].idx
+			}).then(function successCallback(response) {
+				var data = response.data;
 				if ((typeof data.ActTime != 'undefined') && ($scope.lastUpdateTime == 0)) {
 					$scope.lastUpdateTime = data.ActTime;
 				}
@@ -361,7 +369,10 @@ define(['app'], function (app) {
 		}
 
 		$scope.ShowRooms = function (floorIdx) {
-			$http({ url: "json.htm?type=command&param=getfloorplanplans&idx=" + $scope.floorPlans[floorIdx].idx }).success(function (data) {
+			$http({
+				url: "json.htm?type=command&param=getfloorplanplans&idx=" + $scope.floorPlans[floorIdx].idx
+			}).then(function successCallback(response) {
+				var data = response.data;
 				if (typeof data.result != 'undefined') {
 					$.each(data.result, function (i, item) {
 						$("#" + $scope.floorPlans[floorIdx].tagName + '_Rooms').append(makeSVGnode('polygon', { id: item.Name, 'class': 'hoverable', points: item.Area }, item.Name));
@@ -400,7 +411,10 @@ define(['app'], function (app) {
 			Device.checkDefs();
 
 			//Get initial floorplans
-			$http({ url: "json.htm?type=floorplans", async: false }).success(function (data) {
+			$http({
+				url: "json.htm?type=floorplans", async: false
+			}).then(function successCallback(response) {
+				var data = response.data;
 				if (typeof data.result != 'undefined') {
 					if (typeof $scope.actFloorplan == "undefined") {
 						$scope.FloorplanCount = data.result.length;

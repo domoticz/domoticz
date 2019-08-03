@@ -12,7 +12,8 @@ define(['app'], function (app) {
 				url: "json.htm?type=command&param=getuptime",
 				async: true,
 				dataType: 'json'
-			}).success(function (data) {
+			}).then(function successCallback(response) {
+				var data = response.data;
 				if (typeof data.status != 'undefined') {
 					var szUpdate = "";
 					if (data.days != 0) {

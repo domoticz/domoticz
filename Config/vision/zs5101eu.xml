@@ -1,9 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-        <CommandClass id="32" setasreport="true"/>
-        <CommandClass id="133">
-                <Associations num_groups="1">
-                        <Group index="1" max_associations="5" label="Send Command when shock is detected"  />
-                </Associations>
-        </CommandClass>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Send Command when shock is detected" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

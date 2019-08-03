@@ -1,0 +1,187 @@
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/5254:8490:0100</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/remotec/zxt-600.png</MetaDataItem>
+    <MetaDataItem id="8490" name="ZWProductPage" type="0100">https://products.z-wavealliance.org/products/2445/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1, Refer to your primary controller to enter into the Inclusion Mode or Exclusion Mode
+2, When it is prompted to enter it, please triple click the “PROG” button within 1 second.
+3, Green Indicator flashes TWICE then stay off</MetaDataItem>
+    <MetaDataItem name="Name">AC MASTER</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1, Refer to your primary controller to enter into the Inclusion Mode or Exclusion Mode
+2, When it is prompted to enter it, please triple click the “PROG” button within 1 second.
+3, Green Indicator flashes TWICE then stay off</MetaDataItem>
+    <MetaDataItem name="Description">ZXT-600 AC Master is a Z-Wave plus certified IR Bridge for split air conditioner control by receiving Z-Wave command and translating to Infrared command and flawlessly work with any Z-Wave compliant gateway.
+With its over 250 brands built-in code library and ever-green up to date cloud IR database supporting advanced code learning search, ZXT-600 can easily set up and smart control most of AC brands and models actively worldwide by Z-Wave gateway.
+The battery powered device will allow you to mount it anywhere you want such as wall, ceiling or put it on table and never compromise on the form factor. By supporting OTA function, gateway can enable ZXT-600 to update firmware if newest available.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and Hold “PROG” button for 3 seconds on AC Master, the Green Indicator will light up. DO NOT Release the “PROG” Button until Green Indicator flashes TWICE.
+Remark : Please use this procedure only when the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="8490" name="FrequencyName" type="0100">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2553/BW8490_Installation_Guide_201700807.pdf</MetaDataItem>
+    <MetaDataItem id="8490" name="Identifier" type="0100">ZXT-600US</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2445/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2553/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="8490" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/2553/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press the "PROG" button to wakeup the unit </MetaDataItem>
+    <MetaDataItem id="8490" name="Identifier" type="0101">ZXT-600EU</MetaDataItem>
+    <MetaDataItem id="8490" name="FrequencyName" type="0101">CEPT (Europe)</MetaDataItem>
+  </MetaData>
+  <!--
+    Remotec ZXT-600 AC MASTER
+    https://products.z-wavealliance.org/products/2445
+    -->
+
+	<!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+	<!-- COMMAND_CLASS_THERMOSTAT_SETPOINT get is not supported -->
+  <CommandClass id="67">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
+  <!-- The thermostat does not properly report its operating modes -->
+  <CommandClass id="64">
+    <Value genre="user" index="0" instance="1" label="Mode" max="0" min="0" read_only="false" type="list" units="" value="0" write_only="false">
+      <Item label="Off" value="0"/>
+      <Item label="Heat" value="1"/>
+      <Item label="Cool" value="2"/>
+      <Item label="Resume" value="5"/>
+      <Item label="Fan Only" value="6"/>
+      <Item label="Dry Air" value="8"/>
+      <Item label="Auto Changeover" value="10"/>
+    </Value>
+    <SupportedModes>
+      <Mode index="0" label="Off"/>
+      <Mode index="1" label="Heat"/>
+      <Mode index="2" label="Cool"/>
+      <Mode index="5" label="Resume"/>
+      <Mode index="6" label="Fan Only"/>
+      <Mode index="8" label="Dry Air"/>
+      <Mode index="10" label="Auto Changeover"/>
+    </SupportedModes>
+    <Compatibility>
+      <CreateVars>true</CreateVars>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="25" label="Learn IR code" max="32" min="0" size="2" type="list" value="0" write_only="true">
+      <Help>
+				In case none of the code on the code list works for the targeted air conditioner, user can use IR code learning function.
+				See manual at section "IR Code Learning" for a description of the procedure. Value 0-22
+			</Help>
+      <Item label="OFF" value="0"/>
+      <Item label="ON (resume)" value="1"/>
+      <Item label="Cool 17 C" value="2"/>
+      <Item label="Cool 18 C" value="3"/>
+      <Item label="Cool 19 C" value="4"/>
+      <Item label="Cool 20 C" value="5"/>
+      <Item label="Cool 21 C" value="6"/>
+      <Item label="Cool 22 C" value="7"/>
+      <Item label="Cool 23 C" value="8"/>
+      <Item label="Cool 24 C" value="9"/>
+      <Item label="Cool 25 C" value="10"/>
+      <Item label="Cool 26 C" value="11"/>
+      <Item label="Cool 27 C" value="12"/>
+      <Item label="Cool 28 C" value="13"/>
+      <Item label="Cool 29 C" value="14"/>
+      <Item label="Cool 30 C" value="15"/>
+      <Item label="Heat 17 C" value="16"/>
+      <Item label="Heat 18 C" value="17"/>
+      <Item label="Heat 19 C" value="18"/>
+      <Item label="Heat 20 C" value="19"/>
+      <Item label="Heat 21 C" value="20"/>
+      <Item label="Heat 22 C" value="21"/>
+      <Item label="Heat 23 C" value="22"/>
+      <Item label="Heat 24 C" value="23"/>
+      <Item label="Heat 25 C" value="24"/>
+      <Item label="Heat 26 C" value="25"/>
+      <Item label="Heat 27 C" value="26"/>
+      <Item label="Heat 28 C" value="27"/>
+      <Item label="Heat 29 C" value="28"/>
+      <Item label="Heat 30 C" value="29"/>
+      <Item label="Dry Mode" value="30"/>
+      <Item label="Auto Mode" value="31"/>
+      <Item label="Fan Mode" value="32"/>
+    </Value>
+    <Value genre="config" index="26" label="Check IR Code Learning Status" read_only="true" size="1" type="list">
+      <Help>Note: The status value 0x01 and 0x04 will be reset to 0 when the ZXT-120 receive a get command to this parameter.
+				Idle - this IR channel is idle (default).
+				OK - the latest learning process successful and completed.
+				Learning - the ZXT- 120 is busy processing previous learning request.
+				Failed - the latest learning request failed.</Help>
+      <Item label="Idle" value="0"/>
+      <Item label="OK" value="1"/>
+      <Item label="Learning" value="2"/>
+      <Item label="Failed" value="4"/>
+    </Value>
+    <Value genre="config" index="27" label="Set IR Code number from built-in code library" size="2" type="short" value="0">
+      <Help>Refer to Code Finder Web page.</Help>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Set auto report condition trigger" max="8" min="0" size="1" type="list" value="0">
+      <Help>
+				Set Auto Report Condition Trigger By Room Temperature change.
+                Disable AUTO report function (Default) for saving battery life.
+                Auto report if room temperature is different from last report.
+			</Help>
+      <Item label="Disable AUTO report" value="0"/>
+      <Item label="0.5 C" value="1"/>
+      <Item label="1.0 C" value="2"/>
+      <Item label="1.5 C" value="3"/>
+      <Item label="2.0 C" value="4"/>
+      <Item label="2.5 C" value="5"/>
+      <Item label="3.0 C" value="6"/>
+      <Item label="3.5 C" value="7"/>
+      <Item label="4.0 C" value="8"/>
+    </Value>
+    <Value genre="config" index="32" label="Set Built-in IR Emitter Control" size="1" type="list" value="255">
+      <Help>
+				To avoid the IR interference by disabling the surrounding IR emitter if 2 air-conditioners in a room are used.
+				Extend the battery life by disabling the Surround IR Emitters
+			</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="255"/>
+    </Value>
+    <Value genre="config" index="33" label="Control Air Conditioner SWING function" size="1" type="list" value="1">
+      <Help></Help>
+      <Item label="Swing Off" value="0"/>
+      <Item label="Swing Auto" value="1"/>
+    </Value>
+    <Value genre="config" index="34" instance="1" label="Set Auto report condition by Time interval" max="8" min="1" size="1" type="list" value="1">
+      <Help>
+				Set Auto Report Condition Trigger By Time interval
+			</Help>
+      <Item label="1 Hr" value="1"/>
+      <Item label="2 Hrs" value="2"/>
+      <Item label="3 Hrs" value="3"/>
+      <Item label="4 Hrs" value="4"/>
+      <Item label="5 Hrs" value="5"/>
+      <Item label="6 Hrs" value="6"/>
+      <Item label="7 Hrs" value="7"/>
+      <Item label="8 Hrs" value="8"/>
+    </Value>
+    <Value genre="config" index="37" instance="1" label="Calibrate temperature reading" max="255" min="0" size="1" type="list" value="0">
+      <Help>
+				Temperature offset value.
+			</Help>
+      <Item label="0 C" value="0"/>
+      <Item label="1 C" value="1"/>
+      <Item label="2 C" value="2"/>
+      <Item label="3 C" value="3"/>
+      <Item label="4 C" value="4"/>
+      <Item label="5 C" value="5"/>
+      <Item label="-1 C" value="255"/>
+      <Item label="-2 C" value="254"/>
+      <Item label="-3 C" value="253"/>
+      <Item label="-4 C" value="252"/>
+      <Item label="-5 C" value="251"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

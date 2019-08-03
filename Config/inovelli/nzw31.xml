@@ -1,0 +1,65 @@
+<!-- Inovelli Dimmer NZW31 -->
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Dimming/Brightening Step Level" max="99" min="0" size="1" type="byte" units="%" value="3">
+      <Help>Each step of the dimming process will increase or decrease the brightness by this percentage. Increasing this will make the transition time slower. 0 is instant.</Help>
+    </Value>
+    <Value genre="config" index="2" label="Minimum Dimming Level" max="99" min="1" size="1" type="byte" units="%" value="1">
+      <Help>This is the minimum value to which the switch will dim. Useful for CFL or LED lights that otherwise won't come on or come on but flicker/buzz.</Help>
+    </Value>
+    <Value genre="config" index="3" label="LED Indicator Control" max="255" min="0" size="1" type="list" units="" value="0">
+      <Help>Choose if you want the LED indicator to turn on when switch is on or off or disable completely.</Help>
+      <Item label="LED on when switch is off" value="0"/>
+      <Item label="LED on when switch is on" value="1"/>
+      <Item label="LED is disabled" value="2"/>
+      <Item label="LED is always on" value="3"/>
+    </Value>
+    <Value genre="config" index="4" label="Orientation" max="255" min="0" size="1" type="list" units="" value="0">
+      <Help>Controls the on/off orientation of the rocker switch</Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Inverted" value="1"/>
+    </Value>
+    <Value genre="config" index="5" label="Automatically turn switch off after interval" max="32767" min="0" size="2" type="short" units="seconds" value="0">
+      <Help>Automatically turn the switch off after this many seconds. 0 is disabled, or up to 32767 seconds</Help>
+    </Value>
+    <Value genre="config" index="6" label="Association Group 3 Behavior" max="255" min="0" size="1" type="list" units="" value="0">
+      <Help>Change how devices respond when associated in group 3</Help>
+      <Item label="Dim up/down" value="0"/>
+      <Item label="Keep in sync" value="1"/>
+    </Value>
+    <Value genre="config" index="7" label="Association Group 3 Configuration" max="255" min="0" size="1" type="list" units="" value="1">
+      <Help>Send association group 3 commands on these types of actions</Help>
+      <Item label="none" value="0"/>
+      <Item label="local" value="1"/>
+      <Item label="3way" value="2"/>
+      <Item label="3way &amp; local" value="3"/>
+      <Item label="z-wave hub" value="4"/>
+      <Item label="z-wave hub &amp; local" value="5"/>
+      <Item label="z-wave hub &amp; 3-way" value="6"/>
+      <Item label="z-wave hub &amp; local &amp; 3way" value="7"/>
+      <Item label="timer" value="8"/>
+      <Item label="timer &amp; local" value="9"/>
+      <Item label="timer &amp; 3-way" value="10"/>
+      <Item label="timer &amp; 3-way &amp; local" value="11"/>
+      <Item label="timer &amp; z-wave hub" value="12"/>
+      <Item label="timer &amp; z-wave hub &amp; local" value="13"/>
+      <Item label="timer &amp; z-wave hub &amp; 3-way" value="14"/>
+      <Item label="all" value="15"/>
+    </Value>
+    <Value genre="config" index="8" label="Default value when turned on at switch" max="99" min="0" size="1" type="byte" value="0">
+      <Help>Default brightness when switch is turned on locally.  0 is previous. Firmware 1.02+"</Help>
+    </Value>
+    <Value genre="config" index="9" label="Default value when turned on via zwave" max="99" min="0" size="1" type="byte" value="0">
+      <Help>Default brightness when switch is turned on via zwave.  0 is previous.  Firmware 1.02+"</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic_Set" max_associations="5"/>
+      <Group index="3" label="Switch_Multilevel_Set" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

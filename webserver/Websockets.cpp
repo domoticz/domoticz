@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include "Websockets.hpp"
-// debug
-#include "../main/Logger.h"
 #include "../json/json.h"
 
 #define FIN_MASK 0x80

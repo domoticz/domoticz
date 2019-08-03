@@ -24,6 +24,7 @@ body, #foreground, #midground{
 	<span>Build Hash</span>: {{config.apphash}}<br>
 	<span>Compile Date</span>: {{config.appdate}}<br>
 	<span>dzVents Version</span>: {{config.dzventsversion}}<br>
+	<span>Python Version</span>: {{config.pythonversion}}<br>
 	<br>
 	<span>Uptime</span>: {{strupptime}}
 	<br>
@@ -32,11 +33,11 @@ body, #foreground, #midground{
 	<div class="page-header-small">
 		<h3 data-i18n="Links">Links</h3>
 	</div>
-	<a data-i18n="Website" class="btn btn-info" role="button" href="https://www.domoticz.com">Website</a>
-	<a data-i18n="Forum" class="btn btn-info" role="button" href="https://www.domoticz.com/forum">Forum</a>
-	<a data-i18n="Wiki" class="btn btn-info" role="button" href="https://www.domoticz.com/wiki">Wiki</a>
-	<a data-i18n="Source Code" class="btn btn-info" role="button" href="https://github.com/domoticz/domoticz">Source Code</a>
-	<a data-i18n="Manual" class="btn btn-info" role="button" href="https://www.domoticz.com/DomoticzManual.pdf">Manual</a>
+	<a data-i18n="Website" class="btn btn-info" role="button" href="https://www.domoticz.com" target="_blank">Website</a>
+	<a data-i18n="Forum" class="btn btn-info" role="button" href="https://www.domoticz.com/forum" target="_blank">Forum</a>
+	<a data-i18n="Wiki" class="btn btn-info" role="button" href="https://www.domoticz.com/wiki" target="_blank">Wiki</a>
+	<a data-i18n="Source Code" class="btn btn-info" role="button" href="https://github.com/domoticz/domoticz" target="_blank">Source Code</a>
+	<a data-i18n="Manual" class="btn btn-info" role="button" href="https://www.domoticz.com/DomoticzManual.pdf" target="_blank">Manual</a>
 	<br>
 	<br>
 	<div class="page-header-small">
@@ -46,7 +47,7 @@ body, #foreground, #midground{
 	<span data-i18n="If you like the product or encourage the development, please use the button below.">If you like the product or encourage the development, please use the button below.</span>
 
 	<p>
-		<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
 		<input type="hidden" name="cmd" value="_s-xclick">
 		<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
 		">

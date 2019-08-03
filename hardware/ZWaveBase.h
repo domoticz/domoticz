@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <time.h>
 #include "DomoticzHardware.h"
 
@@ -46,19 +45,17 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_CENTRAL_SCENE,
 
 		ZDTYPE_SENSOR_CUSTOM,
-
 	};
 	struct _tZWaveDevice
 	{
 		int nodeID;
-		int commandClassID;
 		int instanceID;
 		int indexID;
 		int orgInstanceID;
 		int orgIndexID;
+		int commandClassID;
 		_eZWaveDeviceType devType;
-		int scaleID;
-		int scaleMultiply;
+		float scaleMultiply;
 		int basicType;
 		int genericType;
 		int specificType;
@@ -98,14 +95,12 @@ class ZWaveBase : public CDomoticzHardwareBase
 		{
 			sequence_number=1;
 			nodeID=-1;
-			scaleID=1;
-			scaleMultiply=1;
+			scaleMultiply=1.0f;
 			isListening=false;
 			sensor250=false;
 			sensor1000=false;
 			isFLiRS=false;
 			hasWakeup=false;
-			hasBattery=false;
 			batValue = 255;
 			floatValue=0;
 			intvalue=0;
@@ -132,20 +127,20 @@ public:
 
 	virtual bool GetInitialDevices()=0;
 	virtual bool GetUpdates()=0;
-	bool StartHardware();
-	bool StopHardware();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool StartHardware() override;
+	bool StopHardware() override;
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 public:
 	int m_LastIncludedNode;
 	std::string m_LastIncludedNodeType;
 	bool m_bHaveLastIncludedNodeInfo;
 	int m_LastRemovedNode;
-	boost::mutex m_NotificationMutex;
+	std::mutex m_NotificationMutex;
 private:
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
-	
+
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID);
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType);
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType);
@@ -156,7 +151,6 @@ private:
 
 	std::string GenerateDeviceStringID(const _tZWaveDevice *pDevice);
 	void InsertDevice(_tZWaveDevice device);
-	void UpdateDeviceBatteryStatus(const int nodeID, const int value);
 	unsigned char Convert_Battery_To_PercInt(const unsigned char level);
 	virtual bool SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
 	virtual bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr) = 0;
@@ -180,8 +174,7 @@ private:
 	time_t m_updateTime;
 	bool m_bInitState;
 	std::map<std::string,_tZWaveDevice> m_devices;
-	boost::shared_ptr<boost::thread> m_thread;
-	bool m_stoprequested;
+	std::shared_ptr<std::thread> m_thread;
 };
 
 

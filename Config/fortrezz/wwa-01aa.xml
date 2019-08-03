@@ -1,0 +1,19 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0084:0210:0013</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fortrezz/wwa-01aa.png</MetaDataItem>
+    <MetaDataItem id="0210" name="ZWProductPage" type="0013">https://products.z-wavealliance.org/products/302/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.fortrezz.com/</MetaDataItem>
+    <MetaDataItem name="Description">Wireless Water &amp; Freeze Alarm. Wireless Water Alarm WWA-01AA. This product will provide you with peace of mind and the protection you expect. Water damages are caused by leaking pipes, corroded water heaters, water storage tanks, fixtures in bathrooms, laundry rooms, refrigerator drip pans etc.
+
+•Wireless Water Alarm WWA-01AA is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. Inclusion of this WWA-01 into a Z-WaveTM network allows remote status monitoring and alerts when the detector is triggered. Other Z-Wave nodes in the system also act as repeaters if they support that function.</MetaDataItem>
+    <MetaDataItem name="Name">WWA-01AA - Wireless Water &amp; Freeze Alarm</MetaDataItem>
+    <MetaDataItem id="0210" name="FrequencyName" type="0013">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.fortrezz.com/</MetaDataItem>
+    <MetaDataItem id="0210" name="Identifier" type="0013">WWA-01AA</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/302/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

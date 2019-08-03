@@ -32,41 +32,60 @@
 
 namespace OpenZWave
 {
-	class ValueDecimal;
-
-	/** \brief Implements COMMAND_CLASS_METER (0x32), a Z-Wave device command class.
-	 */
-	class Meter: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new Meter( _homeId, _nodeId ); }
-		virtual ~Meter(){}
+		namespace CC
+		{
+			/** \brief Implements COMMAND_CLASS_METER (0x32), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class Meter: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new Meter(_homeId, _nodeId);
+					}
+					virtual ~Meter()
+					{
+					}
 
-		static uint8 const StaticGetCommandClassId(){ return 0x32; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_METER"; }
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x32;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_METER";
+					}
 
-		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-		virtual bool SetValue( Value const& _value );
-		virtual uint8 GetMaxVersion(){ return 3; }
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
+					virtual uint8 GetMaxVersion() override
+					{
+						return 5;
+					}
 
-	protected:
-		virtual void CreateVars( uint8 const _instance );
-
-	private:
-		Meter( uint32 const _homeId, uint8 const _nodeId );
-
-		bool HandleSupportedReport( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-		bool HandleReport( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-
-	};
-
+				private:
+					Meter(uint32 const _homeId, uint8 const _nodeId);
+					int32_t GetScale(uint8_t const *_data, uint32_t const_length);
+					bool HandleSupportedReport(uint8 const* _data, uint32 const _length, uint32 const _instance = 1);
+					bool HandleReport(uint8 const* _data, uint32 const _length, uint32 const _instance = 1);
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
-
 
 #endif
 

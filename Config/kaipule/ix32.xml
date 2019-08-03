@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kaipule IX32 PIR Sensor -->
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Basic Set Level" size="1" min="1" max="255" value="255">
+			<Help>Basic Set parameter setting, the receivers make relevant adjustment according to parameter value</Help>
+		</Value>		
+		<Value type="byte" genre="config" instance="1" index="2" label="Turn Off Light Time" size="1" min="1" max="255" units="5seconds" value="1">
+			<Help>When the device triggered and sends out BASIC SET to the lightings, the light turns on and off as the set time. 
+			The minimum value is 1, means the light bright time is 1*5s (5 seconds), and turn off after 5 seconds, if the value is t, means the bright time is t*5s, turn off after t*5 seconds.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="Alarm Elimination Time" size="1" min="1" max="24" units="5seconds" value="4">
+			<Help>Eliminate alarm after 5xt seconds.</Help>
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+			<Group index="1" max_associations="1" label="Lifeline"/>
+			<Group index="2" max_associations="2" label="Control BASIC SET" />
+		</Associations>
+	</CommandClass>
+</Product>

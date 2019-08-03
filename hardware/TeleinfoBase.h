@@ -23,102 +23,108 @@ History :
 
 class CTeleinfoBase : public CDomoticzHardwareBase
 {
-
-	public:
-
-		CTeleinfoBase();
-		~CTeleinfoBase();
-
-	private:
-		int AlertLevel(int Iinst, int Isousc, char* text);
-		P1Power m_p1power, m_p2power, m_p3power;
-
-	protected:
-		int m_iRateLimit;
-		int m_iDataTimeout;
-
-		typedef struct _tTeleinfo
+public:
+	CTeleinfoBase();
+	~CTeleinfoBase();
+protected:
+	typedef struct _tTeleinfo
+	{
+		std::string ADCO;
+		std::string PTEC;
+		std::string OPTARIF;
+		uint32_t ISOUSC;
+		uint32_t IINST;
+		uint32_t IINST1;
+		uint32_t IINST2;
+		uint32_t IINST3;
+		uint32_t PPOT;
+		uint32_t ADPS;
+		uint32_t PAPP;
+		uint32_t BASE;
+		uint32_t HCHC;
+		uint32_t HCHP;
+		uint32_t PEJP;
+		uint32_t EJPHN;
+		uint32_t EJPHPM;
+		uint32_t BBRHPJB;
+		uint32_t BBRHCJB;
+		uint32_t BBRHPJW;
+		uint32_t BBRHCJW;
+		uint32_t BBRHPJR;
+		uint32_t BBRHCJR;
+		std::string DEMAIN;
+		uint32_t pAlertPAPP;
+		uint32_t pAlertI1;
+		uint32_t pAlertI2;
+		uint32_t pAlertI3;
+		uint32_t pAlertPPOT;
+		uint32_t pAlertRate;
+		uint32_t pAlertColor;
+		uint32_t pAlertEJP;
+		uint32_t pAlertDemain;
+		std::string rate;
+		std::string tariff;
+		std::string color;
+		time_t  last;
+		bool    triphase;
+		bool    withPAPP; 	//For meters with no PAPP
+		int     CRCmode1;	// really a bool, but with a special "un-initialized state"
+		_tTeleinfo()
 		{
-			std::string ADCO;
-			std::string PTEC;
-			std::string OPTARIF;
-			uint32_t ISOUSC;
-			uint32_t IINST;
-			uint32_t IINST1;
-			uint32_t IINST2;
-			uint32_t IINST3;
-			uint32_t PPOT;
-			uint32_t ADPS;
-			uint32_t PAPP;
-			uint32_t BASE;
-			uint32_t HCHC;
-			uint32_t HCHP;
-			uint32_t PEJP;
-			uint32_t EJPHN;
-			uint32_t EJPHPM;
-			uint32_t BBRHPJB;
-			uint32_t BBRHCJB;
-			uint32_t BBRHPJW;
-			uint32_t BBRHCJW;
-			uint32_t BBRHPJR;
-			uint32_t BBRHCJR;
-			std::string DEMAIN;
-			uint32_t pAlertPAPP;
-			uint32_t pAlertI1;
-			uint32_t pAlertI2;
-			uint32_t pAlertI3;
-			uint32_t pAlertPPOT;
-			uint32_t pAlertRate;
-			uint32_t pAlertColor;
-			uint32_t pAlertEJP;
-			uint32_t pAlertDemain;
-			std::string rate;
-			std::string tariff;
-			std::string color;
-			time_t  last;
-			bool    triphase;
-			bool    withPAPP; 	//For meters with no PAPP
-			int     CRCmode1;	// really a bool, but with a special "un-initialized state"
-			_tTeleinfo()
-			{
-				ISOUSC = 0;
-				IINST = 0;
-				IINST1 = 0;
-				IINST2 = 0;
-				IINST3 = 0;
-				PPOT = 0;
-				ADPS = 0;
-				PAPP = 0;
-				BASE = 0;
-				HCHC = 0;
-				HCHP = 0;
-				PEJP = 0;
-				EJPHN = 0;
-				EJPHPM = 0;
-				BBRHPJB = 0;
-				BBRHCJB = 0;
-				BBRHPJW = 0;
-				BBRHCJW = 0;
-				BBRHPJR = 0;
-				BBRHCJR = 0;
-				pAlertPAPP = 10;
-				pAlertI1 = 10;
-				pAlertI2 = 10;
-				pAlertI3 = 10;
-				pAlertPPOT = 10;
-				pAlertRate = 10;
-				pAlertColor = 10;
-				pAlertEJP = 10;
-				pAlertDemain = 10;
-				last = 0;
-				triphase = false;
-                		withPAPP = false;
-				CRCmode1 = 255;	 // means "bool not initialized yet", will be when running CRC Check for the first time
-			}
-		} Teleinfo;
+			ISOUSC = 0;
+			IINST = 0;
+			IINST1 = 0;
+			IINST2 = 0;
+			IINST3 = 0;
+			PPOT = 0;
+			ADPS = 0;
+			PAPP = 0;
+			BASE = 0;
+			HCHC = 0;
+			HCHP = 0;
+			PEJP = 0;
+			EJPHN = 0;
+			EJPHPM = 0;
+			BBRHPJB = 0;
+			BBRHCJB = 0;
+			BBRHPJW = 0;
+			BBRHCJW = 0;
+			BBRHPJR = 0;
+			BBRHCJR = 0;
+			pAlertPAPP = 10;
+			pAlertI1 = 10;
+			pAlertI2 = 10;
+			pAlertI3 = 10;
+			pAlertPPOT = 10;
+			pAlertRate = 10;
+			pAlertColor = 10;
+			pAlertEJP = 10;
+			pAlertDemain = 10;
+			last = 0;
+			triphase = false;
+			withPAPP = false;
+			CRCmode1 = 255;	 // means "bool not initialized yet", will be when running CRC Check for the first time
+		}
+	} Teleinfo;
+	void ProcessTeleinfo(Teleinfo &teleinfo);
+	void ProcessTeleinfo(const std::string &name, int rank, Teleinfo &teleinfo);
+	bool isCheckSumOk(const std::string &sLine, int &isMode1);
 
-		void ProcessTeleinfo(Teleinfo &teleinfo);
-		void ProcessTeleinfo(const std::string &name, int rank, Teleinfo &teleinfo);
+	void InitTeleinfo();
+	void ParseTeleinfoData(const char *pData, int Len);
+	void MatchLine();
+protected:
+	int m_iRateLimit;
+	int m_iDataTimeout;
+	unsigned int m_iBaudRate;
+	bool m_bDisableCRC;
+private:
+	int AlertLevel(int Iinst, int Isousc, char* text);
+	P1Power m_p1power, m_p2power, m_p3power;
+	Teleinfo m_teleinfo;
+	char m_buffer[1024];
+	int m_bufferpos;
+	unsigned int m_counter;
 };
 
 /*  Details on Teleinfo variables

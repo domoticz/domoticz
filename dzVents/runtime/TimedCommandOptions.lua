@@ -27,9 +27,23 @@ local TIMED_OPTIONS = {
 		_checkState = false
 	},
 	setpoint =  {
-	 _silent = true,
-	 _triggerMode = 'NOTRIGGER'
- }
+		_silent = true,
+		_after = true,
+		_within = true,
+		_triggerMode = 'NOTRIGGER'
+	},
+	camera =  {
+		_silent = false,
+		_after = true,
+		_within = true,
+		_triggerMode = ''
+	},
+	triggerIFTTT =  {
+		_silent = false,
+		_after = true,
+		_within = false,
+		_triggerMode = ''
+	},
 }
 
 return TIMED_OPTIONS

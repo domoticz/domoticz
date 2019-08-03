@@ -44,3 +44,4 @@ install_manifest.txt
 /.idea_/
 /www/images/floorplans/*.png
 /www/images/floorplans/*.jpg
+.vscode

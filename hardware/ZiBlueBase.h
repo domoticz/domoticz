@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 
@@ -23,11 +22,7 @@ enum _eZiBlueState
 public:
 	CZiBlueBase();
     ~CZiBlueBase();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-	virtual bool WriteInt(const std::string &sendString) = 0;
-	virtual bool WriteInt(const uint8_t *pData, const size_t length) = 0;
-	bool m_bTXokay;
-	std::string m_Version;
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();
 	void OnConnected();
@@ -35,10 +30,19 @@ private:
 	void ParseData(const char *data, size_t len);
 	bool ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len);
 	bool SendSwitchInt(const int ID, const int switchunit, const int BatteryLevel, const std::string &switchType, const std::string &switchcmd, const int level);
+
+	virtual bool WriteInt(const std::string &sendString) = 0;
+	virtual bool WriteInt(const uint8_t *pData, const size_t length) = 0;
+private:
+	bool m_bTXokay;
+	std::string m_Version;
+
 	unsigned char m_rfbuffer[ZiBlue_READ_BUFFER_SIZE];
 	int m_rfbufferpos;
 	int m_retrycntr;
 	time_t m_LastReceivedTime;
+	std::map<int, time_t> m_LastReceivedKWhMeterTime;
+	std::map<int, int> m_LastReceivedKWhMeterValue;
 
 	//
 	_eZiBlueState m_State;

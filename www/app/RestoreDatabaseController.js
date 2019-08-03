@@ -27,13 +27,11 @@ define(['app'], function (app) {
 					delete headers['Content-Type'];
 					return formData;
 				}
-			})
-				.success(function (data) {
+			}).then(function successCallback(response) {
 					$window.location = '/#Dashboard';
-				})
-				.error(function (data, status) {
+			}, function errorCallback(response) {
 					$window.location = '/#Dashboard';
-				});
+			});
 		};
 
 		$scope.onSubmit = function () {

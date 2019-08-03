@@ -7,6 +7,7 @@ class P1MeterBase : public CDomoticzHardwareBase
 {
 	friend class P1MeterSerial;
 	friend class P1MeterTCP;
+	friend class CRFXBase;
 public:
 	P1MeterBase(void);
 	~P1MeterBase(void);
@@ -37,6 +38,19 @@ private:
 	float m_voltagel2;
 	float m_voltagel3;
 
+	bool m_bReceivedAmperage;
+	float m_amperagel1;
+	float m_amperagel2;
+	float m_amperagel3;
+	
+	float m_powerdell1;
+	float m_powerdell2;
+	float m_powerdell3;
+
+	float m_powerusel1;
+	float m_powerusel2;
+	float m_powerusel3;
+
 	unsigned char m_gasmbuschannel;
 	std::string m_gasprefix;
 	std::string m_gastimestamp;
@@ -45,7 +59,7 @@ private:
 
 	void Init();
 	bool MatchLine();
-	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit);
+	void ParseP1Data(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit);
 
 	bool CheckCRC();
 };

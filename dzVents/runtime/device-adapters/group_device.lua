@@ -9,8 +9,12 @@ return {
 	matches = function (device, adapterManager)
 		local res = (device.baseType == 'group')
 		if (not res) then
-			adapterManager.addDummyMethod(device, 'switchOn')
+			adapterManager.addDummyMethod(device, 'protectionOn')
+			adapterManager.addDummyMethod(device, 'protectionOff')
+			adapterManager.addDummyMethod(device, 'rename')
+			adapterManager.addDummyMethod(device, 'setDescription')
 			adapterManager.addDummyMethod(device, 'switchOff')
+			adapterManager.addDummyMethod(device, 'switchOn')
 			adapterManager.addDummyMethod(device, 'toggleGroup')
 		end
 		return res
@@ -45,6 +49,39 @@ return {
 
 		function group.switchOff()
 			return TimedCommand(domoticz, 'Group:' .. group.name, 'Off', 'device', group.state)
+		end
+
+		function group.setDescription(newDescription)
+			local url = domoticz.settings['Domoticz url'] .. 
+						'/json.htm?type=updatescene&scenetype=1' ..
+						'&idx=' .. group.id ..
+						'&name='.. utils.urlEncode(group.name) ..
+						'&description=' .. utils.urlEncode(newDescription) 
+			return domoticz.openURL(url)
+		end
+
+		function group.rename(newName)
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=1' ..
+						'&idx=' .. group.id ..
+						'&name='.. utils.urlEncode(newName) ..
+						'&description=' .. utils.urlEncode(group.description) 
+			return domoticz.openURL(url)
+		end
+
+		function group.protectionOn()
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=1&protected=true' ..
+						'&idx=' .. group.id ..
+						'&name='.. utils.urlEncode(group.name) ..
+						'&description=' .. utils.urlEncode(group.description) 
+			return domoticz.openURL(url)
+		end
+
+		function group.protectionOff()
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=1&protected=false' ..
+						'&idx=' .. group.id ..
+						'&name='.. utils.urlEncode(group.name) ..
+						'&description=' .. utils.urlEncode(group.description) 
+			return domoticz.openURL(url) 
 		end
 
 		function group.devices()

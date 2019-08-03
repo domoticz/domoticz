@@ -1,0 +1,37 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010A:5200:1200</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vitrum/vitrumII-Switch.png</MetaDataItem>
+    <MetaDataItem id="5200" name="ZWProductPage" type="1200">https://products.z-wavealliance.org/products/87/</MetaDataItem>
+    <MetaDataItem id="5200" name="Identifier" type="1200">Vitrum II EU on-off</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.ivitrum.com/index.php?file=contact</MetaDataItem>
+    <MetaDataItem id="5200" name="FrequencyName" type="1200">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Vitrum II EU on-off wireless</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.ivitrum.com/index.php?file=prodotti&amp;form_id_products=13&amp;qt=1</MetaDataItem>
+    <MetaDataItem name="Description">2 channel Switch - 503 BOX - ZWave. Smart Switch II
+
+Two buttons Smart Glass Switch 
+Switch Device for Modbus System
+with two switches for lighting control 
+or alternatively, sequential 
+pre-programmed settings
+Configurable aural feedback 
+
+
+Available in British Standard &amp; European Standard;
+Dimensions:BS 95x95mm; EU 125x95mm; 
+On/Off by "One Touch"
+Dimming is by the "iPod ®-like" touch control
+Capacitive technology to adjust lighting level</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/87/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Multi-Instance configuration -->
+  <CommandClass id="96">
+    <Compatibility>
+      <IgnoreMCCapReports>true</IgnoreMCCapReports>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+</Product>

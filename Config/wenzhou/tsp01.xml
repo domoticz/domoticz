@@ -1,48 +1,68 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Product xmlns="http://code.google.com/p/open-zwave/">
- 
-<!-- Wenzhou TKB Control System: TSP01 Z-Wave 3 in 1 PIR Motion sensor -->
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0118:0002:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/wenzhou/tsp01.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/839/</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0002">TSM02U</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0002">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">PIR, door/window, temperature and illumination, 4 sensors function in one.
+
+ - (1)Door/window (2)PIR (3)illumination and (4)temperature functions in one sensor
+ - Adopt newest Z-wave 400 series chip, support multichannel operation and higher data rate (9.6/40/100kbps)
+ - Higher output power (+2.5dBm output power as compared to -2.5dBm 300 series Z-wave module) to enhance the communication range
+ - 1500mA CR123A lithium battery to guarantee 2 year battery life
+ - Built in light sensor while applied to light control
+ - Adopt Z-Wave protocol to secure the success of wireless two way communication
+ - With Tamper proof protection
+ - Easy install
+ - Low battery indication
+ - Auto report the open/close status and battery status
+ - FCC part15.249 / EN300 220-1/ certification
+ - NCC</MetaDataItem>
+    <MetaDataItem name="Name">TSM02U Multi-Sensor</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.tkbhome.com/?cn-p-d-257.html</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/838/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/839/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Wenzhou TKB Control System: TSP01 Z-Wave 3 in 1 PIR Motion sensor -->
 
 	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-
-		<Value type="byte" instance="1" index="2" genre="config" label="Basic Set Level" min="1" max="255" value="255">
-			<Help>
+  <CommandClass id="112">
+    <Value genre="config" index="2" instance="1" label="Basic Set Level" max="255" min="1" type="byte" value="255">
+      <Help>
 				Setting the BASIC command value to turn on the light. The 0xFF (255) means turn on the light. 
 				For dimmer equipment 1 to 100 means the light strength.
 			</Help>
-		</Value>
-
-		<Value type="byte" instance="1" index="3" genre="config" label="PIR Sensitivity" min="0" max="99" value="70">
-			 <Help>PIR sensitivity settings. 
+    </Value>
+    <Value genre="config" index="3" instance="1" label="PIR Sensitivity" max="99" min="0" type="byte" value="70">
+      <Help>PIR sensitivity settings. 
 				0 means disable the PIR motion.
 				1 means the lowest sensitivity.
 				99 means the highest sensitivity.
 				High sensitivity means can detect long distance, but if there is more noise signal in the environment, it will re-trigger too frequently.</Help>
-		</Value>
-	
-		<Value type="byte" instance="1" index="4" genre="config" label="Light threshold" min="0" max="100" value="99">
-			<Help>Setting the illumination threshold to turn on the light. When the event triggered and the environment illumination lower than 
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Light threshold" max="100" min="0" type="byte" value="99">
+      <Help>Setting the illumination threshold to turn on the light. When the event triggered and the environment illumination lower than 
 				the threshold, the device will turn on the light.
 				0 means turn off illumination detected function and never turn on the light.
 				1 means darkest.
 				99 means brightest.
 				100 means turn off illumination detected function. And always turn on the light.
 				* Notice * in none test mode, only the value in 1 to 99 will enable the illumination detected function and update the illumination value.</Help>
-		</Value>
-	
-		<Value type="byte" instance="1" index="5" genre="config" label="Operation Mode" min="0" max="127" value="0">
-			 <Help>Bit 0: 1 means security mode; 0 means home automation mode.
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Operation Mode" max="127" min="0" type="byte" value="0">
+      <Help>Bit 0: 1 means security mode; 0 means home automation mode.
 				Bit 1: 1 means enable test mode; 0 means disable test mode.
 				* Notice * Bit 0 and bit 1 will effect when the DIP Switch setting to program mode. If bit1 is enabled, the bit0 is useless.
 				Bit 2: Reserved, always 1.
 				Bit 3: Setting the temperature scale; 0: Fahrenheit, 1:Celsius
 				Bit 4: Disable illumination report after event triggered.
 				Bit 5: Disable temperature report after event triggered.</Help>
-		</Value>
-
-		<Value type="byte" instance="1" index="6" genre="config" label="Multi-Sensor Function Switch" min="0" max="127" value="4">
-			 <Help>Multi-Sensor Function switch. Using bit to control.
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Multi-Sensor Function Switch" max="127" min="0" type="byte" value="4">
+      <Help>Multi-Sensor Function switch. Using bit to control.
 				Bit 0: Reserved, always 1.
 				Bit 1: Disable PIR integrate Illumination.
 				Bit 2: Reserved, always 1.
@@ -51,50 +71,43 @@
 				Bit 5: Reserved.
 				Bit 6: Enable temperature monitoring. When this bit enabled, the temperature changed 3 degree Fahrenheit, it will report. 
 				And also the temperature over 140 degree Fahrenheit, it will report every 64 seconds.</Help>
-		</Value>
-
-		<Value type="byte" instance="1" index="8" genre="config" label="PIR re-detect interval time" units="8 sec" min="3" max="27" value="3">
-			 <Help>In the security mode, after the PIR report motion detected, setting the re-detect time. 8 seconds per tick, and minimum time is 24 seconds, default tick is 3 (24 seconds). Setting the suitable value to prevent received the trigger signal too frequency. Also can save the battery energy. * Notice * If this value bigger than the configuration setting NO. 9. There is a period after the light turned off and the PIR not detecting.</Help>
-		</Value>
-	
-		<Value type="byte" instance="1" index="9" genre="config" label="Turn Off Light Time" units="8 sec" min="4" max="127" value="4">
-			 <Help>After turn on the light, setting the delay time to turn off the light when the PIR motion is not detected. 8 seconds per tick, and minimum time is 32 seconds, default tick is 4 (32 seconds).</Help>
-		</Value>
- 
-		<Value type="byte" instance="1" index="10" genre="config" label="Auto Report Battery Time" units="30 min" min="1" max="127" value="12">
-			<Help>The interval time for auto report the battery level. 30 minutes per tick and minimum time is 30 minutes, default tick is 12 (6 hours)</Help>
-		</Value>
- 
-		<Value type="byte" instance="1" index="12" genre="config" label="Auto Report Illumination Time" units="30 min" min="1" max="127" value="12">
-			<Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="PIR re-detect interval time" max="27" min="3" type="byte" units="8 sec" value="3">
+      <Help>In the security mode, after the PIR report motion detected, setting the re-detect time. 8 seconds per tick, and minimum time is 24 seconds, default tick is 3 (24 seconds). Setting the suitable value to prevent received the trigger signal too frequency. Also can save the battery energy. * Notice * If this value bigger than the configuration setting NO. 9. There is a period after the light turned off and the PIR not detecting.</Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Turn Off Light Time" max="127" min="4" type="byte" units="8 sec" value="4">
+      <Help>After turn on the light, setting the delay time to turn off the light when the PIR motion is not detected. 8 seconds per tick, and minimum time is 32 seconds, default tick is 4 (32 seconds).</Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Auto Report Battery Time" max="127" min="1" type="byte" units="30 min" value="12">
+      <Help>The interval time for auto report the battery level. 30 minutes per tick and minimum time is 30 minutes, default tick is 12 (6 hours)</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Auto Report Illumination Time" max="127" min="1" type="byte" units="30 min" value="12">
+      <Help>
 				 The interval time for auto report the illumination.
 				 30 minutes per tick and minimum time is 30 minutes, default tick is 12 (6 hours)
 			</Help>
-		</Value>
- 
-		<Value type="byte" instance="1" index="13" genre="config" label="Auto Report Temperature time" units="30 min" min="1" max="127" value="12">
-			<Help>The interval time for auto report the temperature. 30 minutes per tick and minimum time is 30 minutes, default tick is 12 (6 hours)</Help>
-		</Value>
- 
-	</CommandClass>
-
-	<!-- Basic set as report -->
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Auto Report Temperature time" max="127" min="1" type="byte" units="30 min" value="12">
+      <Help>The interval time for auto report the temperature. 30 minutes per tick and minimum time is 30 minutes, default tick is 12 (6 hours)</Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
 	<!-- <CommandClass id="32" setasreport="true" ignoremapping="true"/> -->
- 
-	<CommandClass id="48" create_vars="false">
-			<Instance index="1" />
-			<Value type="bool" genre="user" instance="1" index="0" label="Motion Sensor" read_only="true" write_only="false" min="0" max="0" value="false" />
-			<Value type="bool" genre="user" instance="1" index="1" label="Tamper Sensor" read_only="true" write_only="false" min="0" max="0" value="false" />
-			<SensorMap index="0" type="12" />
-			<SensorMap index="1" type="8" />
-	</CommandClass>
- 
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="2">
-			<Group index="1" max_associations="7" label="Report message" />
-			<Group index="2" max_associations="7" label="Light control" auto="true"/>
-		</Associations>
-	</CommandClass>
-
+  <CommandClass id="48">
+    <Instance index="1"/>
+    <Value genre="user" index="0" instance="1" label="Motion Sensor" max="0" min="0" read_only="true" type="bool" value="false" write_only="false"/>
+    <Value genre="user" index="1" instance="1" label="Tamper Sensor" max="0" min="0" read_only="true" type="bool" value="false" write_only="false"/>
+    <SensorMap index="0" type="12"/>
+    <SensorMap index="1" type="8"/>
+    <Compatibility>
+      <CreateVars>false</CreateVars>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Report message" max_associations="7"/>
+      <Group auto="true" index="2" label="Light control" max_associations="7"/>
+    </Associations>
+  </CommandClass>
 </Product>

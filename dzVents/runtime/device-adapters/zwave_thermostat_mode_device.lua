@@ -14,11 +14,7 @@ return {
 
 	process = function(device, data, domoticz, utils, adapterManager)
 
-		-- modes from data: ["modes"] = "0;Off;1;Heat;2;Heat Econ;";
-		-- mode from data
-
-
-		local _modes = device.modes and string.split(device.modes, ';') or {}
+		local _modes = device.modes and utils.stringSplit(device.modes, ';') or {}
 		-- we have to combine tupels into one
 		local modesLookup = {}
 		local modes = {}
@@ -42,7 +38,7 @@ return {
 		function device.updateMode(modeString)
 			for i, mode in pairs(modesLookup) do
 				if (mode == modeString) then
-					return device.update(i, i)
+					return device.update(i, modeString) -- 20190112 Changed 2nd parm from i to modeString to include modeString in logs
 				end
 			end
 		end

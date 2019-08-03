@@ -48,10 +48,10 @@ return {
 			forecast = forecast ~= nil and constMapping[forecast] or 5
 
 			local value = tostring(temperature) .. ';' ..
-					tostring(humidity) .. ';' ..
-					tostring(status) .. ';' ..
-					tostring(pressure) .. ';' ..
-					tostring(forecast)
+				tostring(humidity) .. ';' ..
+				tostring(status) .. ';' ..
+				tostring(pressure) .. ';' ..
+				tostring(forecast)
 			return device.update(0, value)
 		end
 

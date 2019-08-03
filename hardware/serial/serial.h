@@ -37,7 +37,6 @@
 #define SERIAL_H
 
 #include <limits>
-#include <vector>
 #include <string>
 #include <cstring>
 #include <sstream>

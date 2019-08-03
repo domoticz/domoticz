@@ -1,0 +1,188 @@
+.events-editor {
+    display: flex;
+    position: absolute;
+    top: 60px;
+    left: 12px;
+    right: 12px;
+    bottom: 40px;
+}
+
+.events-editor__tree {
+    width: 300px;
+    padding-top: 6px;
+    margin-right: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.events-editor__search {
+    padding: 4px;
+    margin-bottom: 4px;
+}
+
+.events-editor__editor {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.events-editor__splitter {
+    width: 16px;
+    margin: 36px 8px 0 0;
+    border: none;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.events-editor__splitter:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.events-editor__file-list {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 8px 24px 0 24px;
+    overflow: visible;
+}
+
+.events-editor__file {
+    border: 1px solid grey;
+    border-bottom: none;
+    border-top-left-radius: 2px !important;
+    border-top-right-radius: 2px !important;
+    background-color: #CCC;
+    padding: 6px;
+    text-decoration: none;
+    color: #333 !important;
+    cursor: default;
+    white-space: nowrap;
+}
+
+.events-editor__file_active {
+    background-color: #e8e8e8;
+}
+
+.events-editor__file-close {
+    background: none;
+    border: none;
+    font-size: 14px;
+    margin-left: 8px;
+    margin-top: -8px;
+    cursor: default;
+}
+
+.events-editor__file-close:hover {
+    color: #666;
+}
+
+.events-editor__file-create {
+    position: relative;
+}
+
+.events-editor__file-content {
+    flex: 1;
+}
+
+.events-editor__menu-item {
+    text-decoration: none;
+}
+
+/* ///////////////////// */
+
+.events-editor-tree {
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.8);
+    overflow-y: scroll;
+    overflow-x: auto;
+}
+
+.events-editor-tree-item {
+    position: relative;
+    list-style: none;
+    padding: 2px;
+}
+
+.events-editor-tree-item__file:link {
+    text-decoration: none;
+    color: #333;
+    cursor: default;
+    white-space: nowrap;
+    padding-left: 22px;
+    overflow: hidden;
+}
+
+.events-editor-tree-item__file:hover,
+.events-editor-tree-item__file:active {
+    color: blue;
+}
+
+.events-editor-tree-item__file:before {
+    content: "";
+    background-image: url('/images/script.png');
+    width: 16px;
+    height: 16px;
+    left: 4px;
+    position: absolute;
+}
+
+.events-editor-tree-item_active .events-editor-tree-item__file:link {
+    color: blue;
+}
+
+/* ///////////////////// */
+
+.events-editor-file {
+    position: relative;
+}
+
+.events-editor-file__header {
+    height: 30px;
+    background-color: #e8e8e8;
+    padding: 8px;
+}
+
+.events-editor-file__name {
+    margin-left: 8px;
+    font-size: 16px;
+    background-color: white;
+    padding: 2px;
+}
+
+.events-editor-file__type {
+    color: #000;
+}
+
+.events-editor-file__type > select {
+    background-color: #FFF;
+    height: 30px;
+    color: #000;
+    border: 1px solid #ccc;
+}
+
+.events-editor-file__content {
+    position: absolute !important;
+    top: 46px;
+    bottom: 0;
+    width: 100%;
+    overflow-y: auto;
+}
+
+.events-editor-file__content-table {
+    background-color: #e8e8e8;
+    width: 100%;
+}
+
+/* ///////////////////// */
+
+.blocklyToolboxDiv {
+    top: 0 !important;
+    left: 0 !important;
+    background-color: #e8e8e8;
+}
+
+.blocklyTreeLabel {
+    color: black;
+}

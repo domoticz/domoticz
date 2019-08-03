@@ -1,46 +1,66 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- https://products.z-wavealliance.org/products/1756 -->
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="button" index="2" genre="config" label="Clear Pulse Meter Counts" units="" min="0" max="255" value="0" write_only="true">
-			<Help>
+<!-- https://products.z-wavealliance.org/products/1756 --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0084:0111:0453</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fortrezz/mimolite.png</MetaDataItem>
+    <MetaDataItem id="0111" name="ZWProductPage" type="0453">https://products.z-wavealliance.org/products/1756/</MetaDataItem>
+    <MetaDataItem id="0111" name="FrequencyName" type="0453">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0111" name="Identifier" type="0453">MIMOlite</MetaDataItem>
+    <MetaDataItem name="Name">MIMOlite</MetaDataItem>
+    <MetaDataItem name="Description">Make virtually anything speak Z-wave™!  The MiMOlite Module is an interface / bridge module, capable of converting a wire or wireless input to a wire or wireless output.  It provides one relay to wirelessly control low voltage applications &amp; one signal input to connect a digital, analog, or pulse signal into your Z-waveTM network.
+
+Common Applications
+
+    Garage Doors &amp; Motorized Gates
+    Wired Door Bells / Chimes
+    Control Solenoids
+    Connect to existing wired buttons
+    Security Panel Zone-in
+    Motorized Shades
+    Connect to various wired sensors including Temperature probes, Soil Moisture probes, Float switches, Level Sensors, Reed Switches, Door / Window sensors, etc. </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1756/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" label="Clear Pulse Meter Counts" max="255" min="0" type="button" units="" value="0" write_only="true">
+      <Help>
 				Clear Pulse Meter Counts (actual value is dont care; count gets reset whenever
 				this command is received regardless of value). This parameter is for SIG1 only.
 			</Help>
-		</Value>
-		<Value type="byte" index="3" genre="config" label="Trigger Mapping" units="" min="0" max="255" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="3" label="Trigger Mapping" max="255" min="0" type="byte" units="" value="0">
+      <Help>
 				SIG1 triggered/untriggered sets or clears Relay1. 
 				Refer to description in User Manual under section, Input to Relay Mapping. Note
 				that neither a Basic Report nor a Binary Switch Report is sent when relay is
 				automatically set or cleared by Trigger Mapping. Only applies to the Relay1 output.
 			</Help>
-		</Value>
-		<Value type="byte" index="4" genre="config" label="Lower Threshold, High" min="0" max="255" value="187">
-			<Help>
+    </Value>
+    <Value genre="config" index="4" label="Lower Threshold, High" max="255" min="0" type="byte" value="187">
+      <Help>
 				SIG1 high lower threshold. 
 				Must be less than Upper Threshold Low and greater than Lower Threshold Low.
 			</Help>
-		</Value>
-		<Value type="byte" index="5" genre="config" label="Lower Threshold, Low" min="0" max="255" value="171">
-			<Help>
+    </Value>
+    <Value genre="config" index="5" label="Lower Threshold, Low" max="255" min="0" type="byte" value="171">
+      <Help>
 				SIG1 low lower threshold.
 			</Help>
-		</Value>
-		<Value type="byte" index="6" genre="config" label="Upper Threshold, High" min="0" max="255" value="255">
-			<Help>
+    </Value>
+    <Value genre="config" index="6" label="Upper Threshold, High" max="255" min="0" type="byte" value="255">
+      <Help>
 				SIG1 high upper threshold.
 			</Help>
-		</Value>
-		<Value type="byte" index="7" genre="config" label="Upper Threshold, Low" min="0" max="255" value="254">
-			<Help>
+    </Value>
+    <Value genre="config" index="7" label="Upper Threshold, Low" max="255" min="0" type="byte" value="254">
+      <Help>
 				SIG1 low upper threshold.
 				Must be greater than Lower Threshold High and less than Upper Threshold High.
 			</Help>
-		</Value>
-		<Value type="list" index="8" genre="config" label="Input Flags" min="0" max="3" size="1" value="3">
-			<Help>
+    </Value>
+    <Value genre="config" index="8" label="Input Flags" max="3" min="0" size="1" type="list" value="3">
+      <Help>
 				Bits 7 - 2 are ignored and should be set to 0
 
 				Bit1 : Digital-Configuration flag
@@ -51,35 +71,35 @@
 					1 = Set to triggered when input falls between thresholds; Default
 					0 = Set to triggered when input falls outside of thresholds
 			</Help>
-			<Item label="Trigger outside thresholds, analog trigger thresholds" value="0"/>
-			<Item label="Trigger between thresholds, analog trigger thresholds" value="1"/>
-			<Item label="Trigger outside thresholds, digital trigger thresholds" value="2"/>
-			<Item label="Trigger between thresholds, digital trigger thresholds" value="3"/>
-		</Value>
-		<Value type="byte" index="9" genre="config" label="Sensor/Pulse Report Interval" units="10 minutes" min="0" max="255" value="3">
-			<Help>
+      <Item label="Trigger outside thresholds, analog trigger thresholds" value="0"/>
+      <Item label="Trigger between thresholds, analog trigger thresholds" value="1"/>
+      <Item label="Trigger outside thresholds, digital trigger thresholds" value="2"/>
+      <Item label="Trigger between thresholds, digital trigger thresholds" value="3"/>
+    </Value>
+    <Value genre="config" index="9" label="Sensor/Pulse Report Interval" max="255" min="0" type="byte" units="10 minutes" value="3">
+      <Help>
 				Periodic send interval of Multilevel Sensor Reports (Association Group 2) and/or
 				Pulse Count Reports (Association Group 5) for SIG1. This parameter has a resolution
 				of 10 seconds; for example, 1 = 10 seconds, 2 = 20 seconds, 3 = 30 seconds (Default),
 				... 255 = 2550 seconds = 42.5 minutes. A value of 0 disables automatic reporting.
 			</Help>
-		</Value>
-		<Value type="byte" index="11" genre="config" label="Momentary Relay1 enable/disable" units="100 msec" min="0" max="255" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="11" label="Momentary Relay1 enable/disable" max="255" min="0" type="byte" units="100 msec" value="0">
+      <Help>
 				Momentary Relay1 output enable/disable.
 				1..255 = enable / value sets the approximate momentary on time in increments
 				of 100msec.
 			</Help>
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="5">
-			<Group index="1" max_associations="2" label="Input trigger Basic Set report" auto="false"/>
-			<Group index="2" max_associations="2" label="MultiLevel Sensor report" auto="true"/>
-			<Group index="3" max_associations="2" label="Power dropout Alarm"/>
-			<Group index="4" max_associations="2" label="Input trigger Binary Sensor report" auto="true"/>
-			<Group index="5" max_associations="2" label="Pulse meter counts"/>
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group auto="false" index="1" label="Input trigger Basic Set report" max_associations="2"/>
+      <Group auto="true" index="2" label="MultiLevel Sensor report" max_associations="2"/>
+      <Group index="3" label="Power dropout Alarm" max_associations="2"/>
+      <Group auto="true" index="4" label="Input trigger Binary Sensor report" max_associations="2"/>
+      <Group index="5" label="Pulse meter counts" max_associations="2"/>
+    </Associations>
+  </CommandClass>
 </Product>

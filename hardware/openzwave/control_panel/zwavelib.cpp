@@ -38,90 +38,90 @@
 #include <string.h>
 #include "ozwcp.h"
 
-const char *valueGenreStr (ValueID::ValueGenre vg)
+const char *valueGenreStr (OpenZWave::ValueID::ValueGenre vg)
 {
   switch (vg) {
-  case ValueID::ValueGenre_Basic:
+  case OpenZWave::ValueID::ValueGenre_Basic:
     return "basic";
-  case ValueID::ValueGenre_User:
+  case OpenZWave::ValueID::ValueGenre_User:
     return "user";
-  case ValueID::ValueGenre_Config:
+  case OpenZWave::ValueID::ValueGenre_Config:
     return "config";
-  case ValueID::ValueGenre_System:
+  case OpenZWave::ValueID::ValueGenre_System:
     return "system";
-  case ValueID::ValueGenre_Count:
+  case OpenZWave::ValueID::ValueGenre_Count:
     return "count";
   }
   return "unknown";
 }
 
-ValueID::ValueGenre valueGenreNum (char const *str)
+OpenZWave::ValueID::ValueGenre valueGenreNum (char const *str)
 {
   if (strcmp(str, "basic") == 0)
-    return ValueID::ValueGenre_Basic;
+    return OpenZWave::ValueID::ValueGenre_Basic;
   else if (strcmp(str, "user") == 0)
-    return ValueID::ValueGenre_User;
+    return OpenZWave::ValueID::ValueGenre_User;
   else if (strcmp(str, "config") == 0)
-    return ValueID::ValueGenre_Config;
+    return OpenZWave::ValueID::ValueGenre_Config;
   else if (strcmp(str, "system") == 0)
-    return ValueID::ValueGenre_System;
+    return OpenZWave::ValueID::ValueGenre_System;
   else if (strcmp(str, "count") == 0)
-    return ValueID::ValueGenre_Count;
+    return OpenZWave::ValueID::ValueGenre_Count;
   else
-    return (ValueID::ValueGenre)255;
+    return (OpenZWave::ValueID::ValueGenre)255;
 }
 
-const char *valueTypeStr (ValueID::ValueType vt)
+const char *valueTypeStr (OpenZWave::ValueID::ValueType vt)
 {
   switch (vt) {
-  case ValueID::ValueType_Bool:
+  case OpenZWave::ValueID::ValueType_Bool:
     return "bool";
-  case ValueID::ValueType_Byte:
+  case OpenZWave::ValueID::ValueType_Byte:
     return "byte";
-  case ValueID::ValueType_Decimal:
+  case OpenZWave::ValueID::ValueType_Decimal:
     return "decimal";
-  case ValueID::ValueType_Int:
+  case OpenZWave::ValueID::ValueType_Int:
     return "int";
-  case ValueID::ValueType_List:
+  case OpenZWave::ValueID::ValueType_List:
     return "list";
-  case ValueID::ValueType_Schedule:
+  case OpenZWave::ValueID::ValueType_Schedule:
     return "schedule";
-  case ValueID::ValueType_String:
+  case OpenZWave::ValueID::ValueType_String:
     return "string";
-  case ValueID::ValueType_Short:
+  case OpenZWave::ValueID::ValueType_Short:
     return "short";
-  case ValueID::ValueType_Button:
+  case OpenZWave::ValueID::ValueType_Button:
     return "button";
-  case ValueID::ValueType_Raw:
+  case OpenZWave::ValueID::ValueType_Raw:
     return "raw";
   }
   return "unknown";
 }
 
-ValueID::ValueType valueTypeNum (char const *str)
+OpenZWave::ValueID::ValueType valueTypeNum (char const *str)
 {
   if (strcmp(str, "bool") == 0)
-    return ValueID::ValueType_Bool;
+    return OpenZWave::ValueID::ValueType_Bool;
   else if (strcmp(str, "byte") == 0)
-    return ValueID::ValueType_Byte;
+    return OpenZWave::ValueID::ValueType_Byte;
   else if (strcmp(str, "decimal") == 0)
-    return ValueID::ValueType_Decimal;
+    return OpenZWave::ValueID::ValueType_Decimal;
   else if (strcmp(str, "int") == 0)
-    return ValueID::ValueType_Int;
+    return OpenZWave::ValueID::ValueType_Int;
   else if (strcmp(str, "list") == 0)
-    return ValueID::ValueType_List;
+    return OpenZWave::ValueID::ValueType_List;
   else if (strcmp(str, "schedule") == 0)
-    return ValueID::ValueType_Schedule;
+    return OpenZWave::ValueID::ValueType_Schedule;
   else if (strcmp(str, "short") == 0)
-    return ValueID::ValueType_Short;
+    return OpenZWave::ValueID::ValueType_Short;
   else if (strcmp(str, "string") == 0)
-    return ValueID::ValueType_String;
+    return OpenZWave::ValueID::ValueType_String;
   else if (strcmp(str, "button") == 0)
-    return ValueID::ValueType_Button;
+    return OpenZWave::ValueID::ValueType_Button;
   else if (strcmp(str, "raw") == 0)
-    return ValueID::ValueType_Raw;
+    return OpenZWave::ValueID::ValueType_Raw;
   else
-    return (ValueID::ValueType)255;
+    return (OpenZWave::ValueID::ValueType)255;
 }
 
 const char *nodeBasicStr (uint8 basic)
@@ -308,34 +308,34 @@ uint8 cclassNum(char const *str)
 	else
 		return 0xFF;
 }
-const char *controllerErrorStr (Driver::ControllerError err)
+const char *controllerErrorStr (OpenZWave::Driver::ControllerError err)
 {
   switch (err) {
-  case Driver::ControllerError_None:
+  case OpenZWave::Driver::ControllerError_None:
     return "None";
-  case Driver::ControllerError_ButtonNotFound:
+  case OpenZWave::Driver::ControllerError_ButtonNotFound:
     return "Button Not Found";
-  case Driver::ControllerError_NodeNotFound:
+  case OpenZWave::Driver::ControllerError_NodeNotFound:
     return "Node Not Found";
-  case Driver::ControllerError_NotBridge:
+  case OpenZWave::Driver::ControllerError_NotBridge:
     return "Not a Bridge";
-  case Driver::ControllerError_NotPrimary:
+  case OpenZWave::Driver::ControllerError_NotPrimary:
     return "Not Primary Controller";
-  case Driver::ControllerError_IsPrimary:
+  case OpenZWave::Driver::ControllerError_IsPrimary:
     return "Is Primary Controller";
-  case Driver::ControllerError_NotSUC:
+  case OpenZWave::Driver::ControllerError_NotSUC:
     return "Not Static Update Controller";
-  case Driver::ControllerError_NotSecondary:
+  case OpenZWave::Driver::ControllerError_NotSecondary:
     return "Not Secondary Controller";
-  case Driver::ControllerError_NotFound:
+  case OpenZWave::Driver::ControllerError_NotFound:
     return "Not Found";
-  case Driver::ControllerError_Busy:
+  case OpenZWave::Driver::ControllerError_Busy:
     return "Controller Busy";
-  case Driver::ControllerError_Failed:
+  case OpenZWave::Driver::ControllerError_Failed:
     return "Failed";
-  case Driver::ControllerError_Disabled:
+  case OpenZWave::Driver::ControllerError_Disabled:
     return "Disabled";
-  case Driver::ControllerError_Overflow:
+  case OpenZWave::Driver::ControllerError_Overflow:
     return "Overflow";
   default:
     return "Unknown error";

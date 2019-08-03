@@ -111,9 +111,7 @@
 #pragma warning(disable:4786)
 
 //#include <iosfwd> // you may need this
-#include <map>
 #include <string>
-#include <vector>
 
 // handy little container for our argument vector
 struct CCmdParam

@@ -128,6 +128,7 @@ describe('Event dispatching', function()
 			['Security'] = 'sec',
 			['domoticz_listening_port'] = '8080',
 			['script_path'] = scriptPath,
+			['runtime_path'] = '',
 			['isTimeEvent'] = false,
 			['currentTime'] = '2017-08-17 12:13:14.123'
 		}

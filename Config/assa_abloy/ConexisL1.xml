@@ -1,0 +1,121 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0129:0002:6600</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/assa_abloy/ConexisL1.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="6600">https://products.z-wavealliance.org/products/2535/</MetaDataItem>
+    <MetaDataItem name="Description">Features:
+
+Control Via Smartphone - Configure, Control and unlock your Smart Door Lock from your smartphone via our secure Bluetooth App.
+
+Keyless - Say goodbye to keys, Open your Smart Door lock via your smartphone, Key Card or Key Tag.
+
+Simple to Fit - Engineered for easy installation.
+
+Connectivity - Compatible with the Yale Smart Home system. (Yale module sold separately)
+
+Security as standard - Built in tamper alarm, PAS24 accredited.
+
+Battery Operated - Powered by 4 AA batteries and a warning when they're running low.
+
+Battery Backup - A 9v battery connection port can be used to power the Smart door lock in the event of flat batteries.
+
+Secure Push &amp; Turn Thumbturn - Engineered to give additional convenience and security to your door</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="6600">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="6600">SD-L1000-CH</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Put the Z-Wave controller into add or learn mode
+
+Press the R button on the lock 3 times quickly (within 1.5 seconds)
+
+Refer to the operation manual of the Z-Wave controller to complete the learn in process
+
+For more information on this please visit:
+www.yale.co.uk/smart-living
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Only use this when the existing Z-Wave controller is missing or inoperable
+
+ Lift up the lever handle
+
+While holding the handle up, press the R button 3 times within 1.5 seconds
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Put the existing Z-Wave controller into Remove Mode
+
+Press the R button on the lock 3 times quickly (within 1.5 secs)
+
+The lock is now ready to be added to a new Z-Wave controller
+
+For more information on this please visit:
+www.yale.co.uk/smart-living
+
+</MetaDataItem>
+    <MetaDataItem name="Name">Conexis L1</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2535/Instruction Manual V2a.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2535/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Yale Conexis L1 (SD-L1000-CH)
+http://ozw.my-ho.st/Yale/Yale%20ZWave%20Developer%20Guide.pdf 
+https://products.z-wavealliance.org/products/2535/configs
+-->
+	<!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Volume" size="1" type="list" value="3">
+      <Help>Volume of the keypad tones and any voice prompts (default = 3, high)</Help>
+      <Item label="Silent" value="1"/>
+      <Item label="Low" value="2"/>
+      <Item label="High" value="3"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Auto Relock" size="1" type="list" value="0">
+      <Help>Enable or disable the Auto relock feature (default = 255, enable)</Help>
+      <Item label="On" value="255"/>
+      <Item label="Off" value="0"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Auto-re-lock Time" max="60" min="7" size="1" type="byte" units="seconds" value="30">
+      <Help>After successful local unlock, automatically relock after the specified time (default = 7 seconds)</Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Wrong Tag Limit" max="20" min="1" size="1" type="list" value="5">
+      <Help>
+		    Number of incorrect tags before lock will accept before sending TAMPER Alarm. 
+			When number of wrong code entries is exceeded, lock will disable for the time specified by Wrong tag timeout parameter. (5 = default)
+			</Help>
+      <Item label="1" value="1"/>
+      <Item label="2" value="2"/>
+      <Item label="3" value="3"/>
+      <Item label="4" value="4"/>
+      <Item label="5" value="5"/>
+      <Item label="6" value="6"/>
+      <Item label="7" value="7"/>
+      <Item label="8" value="8"/>
+      <Item label="9" value="9"/>
+      <Item label="10" value="10"/>
+      <Item label="11" value="11"/>
+      <Item label="12" value="12"/>
+      <Item label="13" value="13"/>
+      <Item label="14" value="14"/>
+      <Item label="15" value="15"/>
+      <Item label="16" value="16"/>
+      <Item label="17" value="17"/>
+      <Item label="18" value="18"/>
+      <Item label="19" value="19"/>
+      <Item label="20" value="20"/>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Wrong tag timeout" max="250" min="1" size="1" type="byte" units="seconds" value="30">
+      <Help>Number of seconds unit will be inoperable after number of Wrong tag attempts is exceeded (30 = default)</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="113">
+    <!-- These Door Locks don't send a DoorLockReport when the
+		Lock Status is Changed, but instead send a Alarm Message -
+		So we trigger a Refresh of the DoorLock Command Class when
+		we recieve a Alarm Message Instead -->
+    <TriggerRefreshValue Genre="user" Index="0" Instance="1">
+      <RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
+    </TriggerRefreshValue>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

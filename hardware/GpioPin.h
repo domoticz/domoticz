@@ -43,7 +43,7 @@ public:
 	bool GetDBState();
 	int GetActiveLow();
 	int SetReadValueFd(int value);
-	bool SetDBState(int db_state);
+	void SetDBState(int db_state);
 	std::string ToString();
 	bool operator<(const CGpioPin& pin) const { return m_pin_number < pin.m_pin_number; };
 

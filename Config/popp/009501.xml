@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Popp Flow Stop Automated Water Shut-Off Valve
+     https://www.popp.eu/wp-content/uploads/2015/07/Manual_Flow-Stop_POPP_En.pdf -->
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" instance="1" index="0" label="LED status" size="1" value="0">
+      <Help>Status of the LED indicator during normal operation</Help>
+      <Item label="LED always on" value="0" />
+      <Item label="LED always off" value="1" />
+    </Value>
+    <Value type="list" genre="config" instance="1" index="1" label="Controller behavior" size="1" value="0">
+      <Help>Limit the operations that can be performed locally and/or over the Z-Wave network</Help>
+      <Item label="Remote and manual open/close" value="0" />
+      <Item label="Remote open/close only" value="1" />
+      <Item label="Remote open, manual close only" value="2" />
+      <Item label="Manual open, remote close only" value="3" />
+      <Item label="Manual open/close only" value="4" />
+    </Value>
+  </CommandClass>
+  <!-- Remove COMMAND_CLASS_SWITCH_MULTILEVEL -->
+  <CommandClass id="38" action="remove" />
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="10" label="Lifeline"/>
+      <Group index="2" max_associations="10" label="Local valve operation" />
+    </Associations>
+  </CommandClass>
+</Product>

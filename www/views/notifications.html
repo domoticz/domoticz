@@ -1,0 +1,197 @@
+<div class="container">
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+            </td>
+        </tr>
+    </table>
+
+    <h2>{{ ::'Name'|translate }}: {{ ::vm.pageName }}</h2>
+
+    <device-notifications-table
+            device="vm.device"
+            notifications="vm.notifications"
+            on-select="vm.selectNotification(value)"
+    />
+
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <button class="btnstyle3"
+                        ng-disabled="!vm.notification.idx"
+                        ng-click="vm.updateNotification()">
+                    {{:: 'Update' | translate }}
+                </button>
+                &nbsp;&nbsp;
+                <button class="btnstyle3"
+                        ng-disabled="!vm.notification.idx"
+                        ng-click="vm.deleteNotification()">
+                    {{:: 'Delete' | translate }}
+                </button>
+            </td>
+            <td align="right">
+                <button class="btnstyle3" ng-click="vm.clearNotifications()">{{:: 'Clear' | translate }}</button>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+
+    <device-notification-form
+            ng-if="::vm.isLoaded"
+            notification-types="::vm.notificationTypes"
+            notifiers="::vm.notifiers"
+            device="::vm.device"
+            ng-model="vm.notification"
+    />
+
+    <br>
+
+    <button class="btnstyle3" ng-click="vm.addNotification()">{{:: 'Add' | translate }}</button>
+</div>
+
+<script type="text/ng-template" id="app/notifications/notificationForm.html">
+    <table class="display table-details table-details-lg">
+        <tr>
+            <td>
+                <label for="combotype">{{:: 'Type' | translate }}:</label>
+            </td>
+            <td>
+                <select id="combotype"
+                        class="combobox ui-corner-all"
+                        style="width:120px"
+                        ng-model="$ctrl.notification.type"
+                        ng-change="$ctrl.updateViewValue()"
+                        ng-options="item.ptag as item.text | translate for item in ::$ctrl.notificationTypes"
+                ></select>
+            </td>
+        </tr>
+
+        <tr ng-if="::$ctrl.levelOptions" ng-show="$ctrl.notification.type == 'S'">
+            <td>
+                <label for="combolevel">{{:: 'Level' | translate }}:</label>
+            </td>
+            <td>
+                <select id="combolevel"
+                        class="combobox ui-corner-all"
+                        style="min-width:50px"
+                        ng-model="$ctrl.notification.level"
+                        ng-change="$ctrl.updateViewValue()"
+                        ng-options="item.value as item.label for item in ::$ctrl.levelOptions"
+                ></select>
+            </td>
+        </tr>
+
+        <tr ng-show="$ctrl.isAdditionalOptionsAvailable()">
+            <td>
+                <label for="combowhen">{{:: 'When' | translate }}:</label>
+            </td>
+            <td>
+                <select id="combowhen"
+                        style="min-width:120px"
+                        class="combobox ui-corner-all"
+                        ng-model="$ctrl.notification.condition"
+                        ng-change="$ctrl.updateViewValue()"
+                        ng-options="key as value for (key, value) in ::$ctrl.conditionOptions"
+                ></select>
+            </td>
+        </tr>
+
+        <tr ng-show="$ctrl.isAdditionalOptionsAvailable()">
+            <td>
+                <label for="value">{{:: 'Value' | translate }}:</label>
+            </td>
+            <td>
+                <input type="text"
+                       id="value"
+                       style="width: 50px; padding: .2em;"
+                       class="text ui-widget-content ui-corner-all"
+                       ng-model="$ctrl.notification.level"
+                       ng-change="$ctrl.updateViewValue()"
+                />
+                <label for="value">&nbsp;{{ $ctrl.getValueUnit() }}</label>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <label for="combopriority">{{:: 'Priority' | translate }}:</label>
+            </td>
+            <td>
+                <select id="combopriority"
+                        style="width:120px"
+                        class="combobox ui-corner-all"
+                        ng-model="$ctrl.notification.priority"
+                        ng-change="$ctrl.updateViewValue()"
+                        ng-options="key-2 as value for (key, value) in ::$ctrl.priorityOptions"
+                ></select>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <label for="checkalways">{{:: 'Ignore Interval' | translate }}:</label>
+            </td>
+            <td>
+                <div id="id_checkalways">
+                    <input type="checkbox"
+                           id="checkalways"
+                           ng-model="$ctrl.notification.ignoreInterval"
+                           ng-change="$ctrl.updateViewValue()"
+                    />&nbsp;
+                    <label for="checkalways">({{:: 'If enabled, it will bypass the Notification interval specified in the Settings page' | translate }})</label>
+                </div>
+            </td>
+        </tr>
+
+        <tr ng-show="$ctrl.isAdditionalOptionsAvailable()">
+            <td>
+                <label for="checkrecovery">{{:: 'Recovery Notification' | translate}}:</label>
+            </td>
+            <td>
+                <div id="id_checkrecovery">
+                    <input type="checkbox"
+                           id="checkrecovery"
+                           ng-model="$ctrl.notification.sendRecovery"
+                           ng-change="$ctrl.updateViewValue()"
+                    />&nbsp;
+                    <label for="checkrecovery">({{:: 'If enabled, a notification will be send when given condition has been recovered' | translate }})</label>
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <label for="custommessage">{{:: 'Custom Message' | translate }}:</label>
+            </td>
+            <td>
+                <input type="text"
+                       id="custommessage"
+                       class="text ui-widget-content ui-corner-all"
+                       style="width: 350px; padding: .2em;"
+                       ng-model="$ctrl.notification.customMessage"
+                       ng-change="$ctrl.updateViewValue()"
+                />&nbsp;
+                <span>{{:: '(Optional)' | translate}}</span>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <label>{{:: 'Active Systems' | translate }}:</label>
+            </td>
+            <td>
+                <div ng-repeat="item in ::$ctrl.notifiers">
+                    <input
+                            type="checkbox"
+                            id="{{:: item.description}}"
+                            ng-model="$ctrl.notification.systems[item.name]"
+                            ng-change="$ctrl.updateViewValue()"
+                    />
+                    <label for="{{:: item.description}}">{{:: item.name }}</label>
+                </div>
+            </td>
+        </tr>
+    </table>
+</script>

@@ -1,0 +1,77 @@
+<!--
+GoControl in-wall lighting dimmer switch WD500Z5-1 
+https://products.z-wavealliance.org/products/1883
+--><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/014F:3530:5744</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/linear/WD500Z5-1.png</MetaDataItem>
+    <MetaDataItem id="3530" name="ZWProductPage" type="5744">https://products.z-wavealliance.org/products/1883/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Adding to a Network:
+1. With your Controller in Discovery or Add Mode, tap the switch. The LED will blink slowly when in ADD Mode.
+2. You should see an indication on your Controller that the “device was added” to the network and the LED will stop blinking.
+3. The device will appear in the list of Switches. It should display as a switch.</MetaDataItem>
+    <MetaDataItem id="3530" name="Identifier" type="5744">WD500Z5-1</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To Reset Unit (If Required):
+Use only in the event that your primary Controller is lost or otherwise inoperable, to reset the GoControl Dimmer and clear all network information, follow these steps:
+1. Tap the top of the switch five (5) times.
+2. Press and hold the bottom of the switch for 15 seconds. The LED will increasingly blink faster to indicate that a Reset is taking place.
+
+</MetaDataItem>
+    <MetaDataItem name="Description">The WD500Z5-1 is an in-wall lighting dimmer switch designed to operate with LED, halogen and incandescent lights.  Not only can this switch control the connected load, with Central Scene support it can run up to 6 scenes created by the Hub it is the most versatile Home Automation light switch available. With OTA upgrading supported, this light switch may be the last one ever installed in a home.</MetaDataItem>
+    <MetaDataItem name="Name">WD500Z5-1</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Removing from a Network:
+1. Set the Controller into Removal Mode and follow its instruction to delete the GoControl Dimmer from the Controller.
+2. Remove the switch by tapping the paddle 2 times. The LED will begin blinking slowly for 10 seconds indicating that it has been removed.
+3. You should see an indication on your Controller that the “device was removed” from the network.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1883/10008092X18 WD500Z5-1_WD1000Z5-1 Instructions.pdf</MetaDataItem>
+    <MetaDataItem id="3530" name="FrequencyName" type="5744">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1883/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="Night Light" size="1" type="list" value="0">
+      <Help>By default, the Dimmer LED will turn OFF when the load attached is turned ON.</Help>
+      <Item label="Night-light Mode" value="0"/>
+      <Item label="LED ON when load is on" value="1"/>
+      <Item label="LED always ON" value="2"/>
+      <Item label="LED always OFF" value="3"/>
+      <Item label="LED blink during RF transmission" value="4"/>
+    </Value>
+    <Value genre="config" index="4" label="Invert Switch" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON.</Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Invert" value="1"/>
+    </Value>
+    <Value genre="config" index="5" label="Ignore Start-Level" size="1" type="list" value="1">
+      <Help>This dimmer will always start dimming from its current level, ignoring any commanded start level.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="7" label="Dim Remote On/Off Step" max="99" min="1" size="1" type="byte" units="steps" value="3">
+      <Help>Dim Step can be set to a value of 1 to 99. This value indicates how many levels the dimmer will change each time the Dim Timer expires.</Help>
+    </Value>
+    <Value genre="config" index="8" label="Dim Remote On/Off Timer" max="255" min="1" size="1" type="byte" units="ms" value="10">
+      <Help>The Dim Timer (how fast the dim steps happen). It can be set to a value of 1 to 255. This value indicates in 10 millisecond resolution, how often the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="9" label="Dim Local On/Off Step" max="99" min="1" size="1" type="byte" units="steps" value="10">
+      <Help>Dim Step can be set to a value of 1 to 99. This value indicates how many levels the dimmer will change each time the Dim Timer expires.</Help>
+    </Value>
+    <Value genre="config" index="10" label="Dim Local On/Off Timer" max="255" min="1" size="1" type="byte" units="ms" value="10">
+      <Help>The Dim Timer (how fast the dim steps happen). It can be set to a value of 1 to 255. This value indicates in 10 millisecond resolution, how often the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="11" label="Dim ALL On/Off Step" max="99" min="1" size="1" type="byte" units="steps" value="10">
+      <Help>Dim Step can be set to a value of 1 to 99. This value indicates how many levels the dimmer will change each time the Dim Timer expires.</Help>
+    </Value>
+    <Value genre="config" index="12" label="Dim ALL On/Off Timer" max="255" min="1" size="1" type="byte" units="ms" value="10">
+      <Help>The Dim Timer (how fast the dim steps happen). It can be set to a value of 1 to 255. This value indicates in 10 millisecond resolution, how often the dim level will change.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

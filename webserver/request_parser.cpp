@@ -10,6 +10,7 @@
 #include "stdafx.h"
 #include "request_parser.hpp"
 #include "request.hpp"
+#include <algorithm>
 
 namespace http {
 namespace server {
@@ -300,10 +301,17 @@ boost::tribool request_parser::consume(request& req, const char* &pInput, const 
 			  req.content_length = 0;
 			  for( std::vector<header>::iterator ph = req.headers.begin();  ph != req.headers.end(); ++ph )
 			  {
-				  if( (*ph).name == "Content-Length" ) {
+				  std::string hname = (*ph).name;
+				  std::transform(hname.begin(), hname.end(), hname.begin(), ::tolower);
+				  if( hname == "content-length" ) {
 					  req.content_length = atoi( (*ph).value.c_str());
 					  break;
 				  }
+			  }
+
+			  // check on content_length, we might be done already
+			  if (req.content_length == 0) {
+				  return true;
 			  }
 
 			  state_ = reading_content;

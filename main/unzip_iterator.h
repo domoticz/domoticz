@@ -38,9 +38,8 @@
 //#include "config.h"
 #include <iterator>
 #include <string>
-#include "../zip/unzip.h"
+#include <unzip.h>
 #include "unzip_stream.h"
-#include <boost/shared_ptr.hpp>
 
 namespace clx {
 	/* --------------------------------------------------------------------- */
@@ -53,7 +52,7 @@ namespace clx {
 	class basic_unzip_iterator : public std::iterator<std::input_iterator_tag, basic_unzip_stream<CharT, Traits> > {
 	public:
 		typedef basic_unzip_stream<CharT, Traits> stream_type;
-		typedef boost::shared_ptr<stream_type> stream_ptr;
+		typedef std::shared_ptr<stream_type> stream_ptr;
 		typedef unzFile handler_type;
 		typedef std::basic_string<CharT, Traits> string_type;
 		
@@ -83,14 +82,18 @@ namespace clx {
 		//returns NULL when error, or a pointer to the buffer and file_size
 		void *Extract(uLong &file_size, const int ExtraAllocBytes=0) {
 			file_size = 0;
-			unz_s* s = (unz_s*)handler_;
 			int err = 0;// unzOpenCurrentFilePassword((unzFile)handler_, pass_.c_str());
 			if (err != UNZ_OK)
 			{
 				//printf("error %d with zipfile in unzOpenCurrentFilePassword\n",err);
 				return NULL;
 			}
-			file_size = s->cur_file_info.uncompressed_size;
+			unz_file_info64 info;
+			err = unzGetCurrentFileInfo64((unzFile)handler_, &info, NULL, 0, NULL, 0, NULL, 0);
+			if (err != UNZ_OK)
+				return NULL;
+
+			file_size = (uLong) info.uncompressed_size;
 			unsigned char *buf = (unsigned char*)malloc(file_size + ExtraAllocBytes);
 			if (buf == NULL)
 				return NULL;

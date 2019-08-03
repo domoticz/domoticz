@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <boost/thread/shared_mutex.hpp>
 
 extern "C" {
 #ifdef WITH_EXTERNAL_LUA
@@ -18,10 +18,12 @@ extern "C" {
 
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
+#include "StoppableTask.h"
 
-class CEventSystem : public CLuaCommon
+class CEventSystem : public CLuaCommon, StoppableTask
 {
 	friend class CdzVents;
+	friend class CLuaHandler;
 	typedef struct lua_State lua_State;
 
 	struct _tEventItem
@@ -40,12 +42,12 @@ class CEventSystem : public CLuaCommon
 	struct _tActionParseResults
 	{
 		std::string sCommand;
-		float fForSec;
-		float fAfterSec;
-		float fRandomSec;
-		int iRepeat;
-		float fRepeatSec;
-		bool bEventTrigger;
+		float fForSec = 0;
+		float fAfterSec = 0;
+		float fRandomSec = 0;
+		int iRepeat = 1;
+		float fRepeatSec = 0;
+		bool bEventTrigger = false;
 	};
 public:
 	enum _eReason
@@ -73,6 +75,7 @@ public:
 		std::string description;
 		std::string deviceID;
 		int batteryLevel;
+		int protection;
 		int signalLevel;
 		int unit;
 		int hardwareID;
@@ -97,6 +100,7 @@ public:
 		std::string scenesgroupName;
 		std::string scenesgroupValue;
 		int scenesgroupType;
+		int protection;
 		std::string lastUpdate;
 		std::vector<uint64_t> memberID;
 	};
@@ -115,7 +119,7 @@ public:
 	void StopEventSystem();
 
 	void LoadEvents();
-	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId);
+	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname);
 	void RemoveSingleState(const uint64_t ulDevID, const _eReason reason);
 	void WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname, const _eReason reason);
 	void WWWUpdateSecurityState(int securityStatus);
@@ -125,12 +129,12 @@ public:
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
 	bool UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
-	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string &varValue, const int varType, const std::string &lastUpdate);
-	void ExportDeviceStatesToLua(lua_State *lua_state);
+	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate);
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
-	void UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const bool Protected = false, const bool bEventTrigger = false);
+	void UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger = false);
+	bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 
 	void TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback);
 
@@ -160,12 +164,11 @@ private:
 	struct _tEventQueue
 	{
 		_eReason reason;
-		uint64_t DeviceID;
+		uint64_t id;
 		std::string devname;
 		int nValue;
 		std::string sValue;
 		std::string nValueWording;
-		uint64_t varId;
 		std::string lastUpdate;
 		uint8_t lastLevel;
 		std::vector<std::string> vData;
@@ -184,10 +187,11 @@ private:
 	boost::shared_mutex m_uservariablesMutex;
 	boost::shared_mutex m_scenesgroupsMutex;
 	boost::shared_mutex m_eventtriggerMutex;
-	boost::mutex m_measurementStatesMutex;
-	boost::mutex luaMutex;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread, m_eventqueuethread;
+	std::mutex m_measurementStatesMutex;
+	std::mutex luaMutex;
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> m_eventqueuethread;
+	StoppableTask m_TaskQueue;
 	int m_SecStatus;
 	std::string m_lua_Dir;
 	std::string m_szStartTime;
@@ -215,9 +219,9 @@ private:
 	static void luaStop(lua_State *L, lua_Debug *ar);
 	std::string nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
 	static int l_domoticz_print(lua_State* lua_state);
-	void OpenURL(const std::string &URL);
+	void OpenURL(const float delay, const std::string &URL);
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
-	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
+	bool ScheduleEvent(int deviceID, const std::string &Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	lua_State *CreateBlocklyLuaState();
 
@@ -226,8 +230,8 @@ private:
 	void UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID);
 	void EventQueueThread();
 	void UnlockEventQueueThread();
+	void ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQueue &item);
 	void EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, const int secStatus);
-
 
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
@@ -270,7 +274,7 @@ private:
 	bool iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename);
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename);
 	void report_errors(lua_State *L, int status, std::string filename);
-	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
+	int calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);
 	std::string SpaceToUnderscore(std::string sResult);
 	std::string LowerCase(std::string sResult);

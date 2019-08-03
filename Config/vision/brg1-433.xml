@@ -1,0 +1,15 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:1401:2014</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/brg1-433.png</MetaDataItem>
+    <MetaDataItem id="1401" name="ZWProductPage" type="2014">https://products.z-wavealliance.org/products/762/</MetaDataItem>
+    <MetaDataItem name="Description">Plug-in Dimmer &amp; CT-Clamp Module(Power Meter)</MetaDataItem>
+    <MetaDataItem id="1401" name="FrequencyName" type="2014">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="1401" name="Identifier" type="2014">BRG1-433</MetaDataItem>
+    <MetaDataItem name="Name">Vision Security Dimmer BRG1-433</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/762/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>
