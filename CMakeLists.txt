@@ -1,5 +1,5 @@
-#set to minimum version that supports clean build
-cmake_minimum_required(VERSION 3.14.0)
+#set to minimum version that supports clean build on cygwin
+cmake_minimum_required(VERSION 2.8.4)
 
 project(domoticz)
 
