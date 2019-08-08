@@ -818,6 +818,57 @@ local testVersion = function(name)
 	return res
 end
 
+local testExistUtils = function()
+	local interimResult 
+	local res = {}
+	local utils = require('Utils')
+
+	interimResult = utils.deviceExists(1)
+	res[#res + 1] = interimResult 
+	handleResult('Test Device exists',interimResult ~= false)
+
+	interimResult = not(utils.deviceExists('none existing'))
+	res[#res + 1] = interimResult
+	handleResult('Test Device not exists',interimResult)
+
+	interimResult = utils.sceneExists(1)
+	res[#res + 1] = interimResult
+	handleResult('Test Scene exists',interimResult ~= false)
+
+	interimResult = not(utils.sceneExists(112))
+	res[#res + 1] = interimResult
+	handleResult('Test Scene not exists',interimResult)
+
+	interimResult = utils.groupExists(2)
+	res[#res + 1] = interimResult
+	handleResult('Test Group exists',interimResult ~= false)
+
+	interimResult = not(utils.groupExists(112))
+	res[#res + 1] = interimResult
+	handleResult('Test Group not exists',interimResult)
+
+	interimResult = utils.variableExists(1)
+	res[#res + 1] = interimResult
+	handleResult('Test Variable exists',interimResult ~= false)
+
+	interimResult = not(utils.variableExists('dummyVar'))
+	res[#res + 1] = interimResult
+	handleResult('Test Variable not exists',interimResult)
+
+	interimResult = utils.cameraExists(1)
+	res[#res + 1] = interimResult
+	handleResult('Test Camera exists',interimResult ~= false)
+
+	interimResult = not(utils.cameraExists('Cannnon'))
+	res[#res + 1] = interimResult
+	handleResult('Test Camera not exists',interimResult)
+
+	for _, bool in ipairs(res) do 
+		if not(bool) then return false end
+	end
+	return true
+end
+
 local writeResultsTofile = function(file, resTable)
 	local utils = require('Utils')
 	local results = assert(io.open(file, "wb"))
@@ -907,6 +958,7 @@ return {
 		res = res and testSettingsDump()
 		res = res and testIFTTT('myEvent')
 		res = res and testVersion('version')
+		res = res and testExistUtils()
 
 		-- test a require
 		local m = require('some_module')
