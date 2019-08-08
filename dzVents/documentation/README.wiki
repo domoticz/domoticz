@@ -555,7 +555,22 @@ The domoticz object holds all information about your Domoticz system. It has glo
 <li><p>_''':lodash:''' This is an entire collection with very handy Lua functions. Read more about [[#lodash_for_Lua|lodash]]. E.g.:</p>
 <source lang="lua">domoticz.utils._.size({'abc', 'def'}))` Returns 2.</source></li>
 <li>'''cameraExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid cameraID or ID when entered with valid cameraName or false when not a cameraID or cameraName of an existing camera</li>
-<li>'''deviceExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid deviceID or ID when entered with valid deviceName or false when not a deviceID or deviceName of an existing device</li>
+<li><p>'''deviceExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid deviceID or ID when entered with valid deviceName or false when not a deviceID or deviceName of an existing device.<br />
+example:</p>
+<source lang="lua">local dz = domoticz
+local _u = dz.utils
+if _u.deviceExists('myDevice') then 
+   dz.devices('myDevice').switchOn()
+else
+   dz.log('Device myDevice does not exist!', dz.LOG_ERROR)
+end
+
+local myName = _u.deviceExists(123)
+if myName then
+   dz.log('Device 123 is ' .. myName, dz.LOG_INFO)
+else
+   dz.log('Device 123 does not exist', dz.LOG_ERROR)
+end</source></li>
 <li>'''dumpTable(table,[levelIndicator])''': ''Function'': <sup>2.4.19</sup> print table structure and contents to log</li>
 <li>'''fileExists(path)''': ''Function'': <sup>2.4.0</sup> Returns <code>true</code> if the file (with full path) exists.</li>
 <li>'''fromJSON(json, fallback <sup>2.4.16</sup>)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.</li>
@@ -563,7 +578,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
 <li>'''inTable(table, searchString)''': ''Function'': <sup>2.4.21</sup> Returns <code>&quot;key&quot;</code> if table has searchString as a key, <code>&quot;value&quot;</code> if table has searchString as value and <code>false</code> otherwise.</li>
 <li>'''leftPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.</li>
 <li>'''centerPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.</li>
-<li><p>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation Examples:</p>
+<li><p>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation<br />
+Examples:</p>
 <source lang="lua">    domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,
     domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
     domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300</source></li>

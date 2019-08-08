@@ -558,7 +558,29 @@ The domoticz object holds all information about your Domoticz system. It has glo
         ```
 
     - **cameraExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid cameraID or ID when entered with valid cameraName or false when not a cameraID or cameraName of an existing camera
-    - **deviceExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid deviceID or ID when entered with valid deviceName or false when not a deviceID or deviceName of an existing device
+    -   **deviceExists(parm)**: *Function*: ^2.4.28^ returns name when
+        entered with valid deviceID or ID when entered with valid
+        deviceName or false when not a deviceID or deviceName of an
+        existing device.  
+        example:
+
+        ``` {.lua}
+        local dz = domoticz
+        local _u = dz.utils
+        if _u.deviceExists('myDevice') then 
+           dz.devices('myDevice').switchOn()
+        else
+           dz.log('Device myDevice does not exist!', dz.LOG_ERROR)
+        end
+
+        local myName = _u.deviceExists(123)
+        if myName then
+           dz.log('Device 123 is ' .. myName, dz.LOG_INFO)
+        else
+           dz.log('Device 123 does not exist', dz.LOG_ERROR)
+        end
+        ```
+
     - **dumpTable(table,[levelIndicator])**: *Function*: <sup>2.4.19</sup> print table structure and contents to log
     - **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
     - **fromJSON(json, fallback <sup>2.4.16</sup>)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
@@ -566,8 +588,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
     - **leftPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.
     - **centerPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.
-    - **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation
-        Examples:
+    - **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation  
+      Examples:
 ```Lua
 			domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,
 			domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
