@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 136
+#define DB_VERSION 137
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
