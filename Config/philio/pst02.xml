@@ -1,4 +1,4 @@
-<!-- Philio: PST02-A 4 in 1 Multi-Sensor --><Product Revision="10" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Philio: PST02-A 4 in 1 Multi-Sensor --><Product Revision="11" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:000C:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/philio/pst02.png</MetaDataItem>
@@ -32,6 +32,7 @@ Notice: Use this procedure only in the event that the primary controller is lost
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2433/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2434/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2568/xml</Entry>
+      <Entry author="gizmocuz - " date="28 Jul 2019" revision="11">Fix Philio door sensors #1898</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->

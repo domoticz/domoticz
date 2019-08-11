@@ -3642,6 +3642,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_OnkyoAVTCP:
 	case HTYPE_eHouseTCP:
 	case HTYPE_TTN_MQTT:
+	case HTYPE_S0SmartMeterTCP:
 		return true;
 	default:
 		return false;
