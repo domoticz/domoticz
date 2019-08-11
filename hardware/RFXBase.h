@@ -4,7 +4,7 @@
 #include "DomoticzHardware.h"
 #include "P1MeterBase.h"
 
-#define RX_BUFFER_SIZE 100
+#define RX_BUFFER_SIZE 256
 
 class CRFXBase: public P1MeterBase
 {
