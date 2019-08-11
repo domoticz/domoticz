@@ -7,8 +7,34 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.4.26',
+	DZVERSION = '2.4.28',
 }
+
+function self.rightPad(str, len, char)
+	if char == nil then char = ' ' end
+	return str .. string.rep(char, len - #str)
+end
+
+function self.leftPad(str, len, char)
+	if char == nil then char = ' ' end
+	return string.rep(char, len - #str) .. str
+end
+
+function self.centerPad(str, len, char )
+	if char == nil then char = ' ' end
+	return string.rep(char, ( len - #str) / 2 ) .. str .. string.rep(char, ( len - #str) /2)
+end
+
+function self.leadingZeros(num, len )
+	return self.leftPad(tostring(num),len,'0')
+end
+
+function self.numDecimals(num, int, dec)
+	if int == nil then int = 99 end  
+	if dec == nil then dec = 0 end
+	local fmt = '%' .. int .. '.' .. dec .. 'f' 
+	return string.format(fmt,num)
+end
 
 function self.fileExists(name)
 	local f = io.open(name, "r")
@@ -152,7 +178,6 @@ function self.log(msg, level)
 	local lLevel = _G.logLevel == nil and 1 or _G.logLevel
 	local marker = ''
 
-
 	if (level == self.LOG_ERROR) then
 		marker = marker .. 'Error: (' .. self.DZVERSION .. ') '
 	elseif (level == self.LOG_DEBUG) then
@@ -205,6 +230,35 @@ function self.rgbToHSB(r, g, b)
 
 	local isWhite = (hsb.s < 20)
 	return hsb.h, hsb.s, hsb.b, isWhite
+end
+
+local function loopGlobal(parm, baseType)
+	local res = 'id'
+	if type(parm) == 'number' then res = 'name' end
+	for i,item in ipairs(_G.domoticzData) do 
+		if item.baseType == baseType and ( item.id == parm or item.name == parm ) then return item[res] end
+	end
+	return false
+end
+
+function self.deviceExists(parm)
+	return loopGlobal(parm, 'device')  
+end
+
+function self.sceneExists(parm)
+	return loopGlobal(parm, 'scene')  
+end
+
+function self.groupExists(parm)
+	return loopGlobal(parm, 'group')  
+end
+
+function self.variableExists(parm)
+	return loopGlobal(parm, 'uservariable')
+end
+
+function self.cameraExists(parm)
+	return loopGlobal(parm, 'camera')
 end
 
 function self.dumpTable(t, level)

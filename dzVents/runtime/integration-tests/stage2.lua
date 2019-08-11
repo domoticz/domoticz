@@ -68,7 +68,7 @@ local testDimmer = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 42,
+		["id"] = 43,
 		["state"] = "On",
 		["lastLevel"] = 75, -- this script is NOT triggered by the dimmer so lastLevel is the current level
 		["level"] = 75;
@@ -200,7 +200,6 @@ local testLux = function(name)
 	return res
 end
 
-
 local testManagedCounter = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -211,7 +210,6 @@ local testManagedCounter = function(name)
 	handleResult('Test managed counter', res)
 	return res
 end
-
 
 local testP1SmartMeter = function(name)
 	local dev = dz.devices(name)
@@ -356,7 +354,6 @@ local testAPITemperature = function(name)
 	handleResult('Test API temperature device', res)
 	return res
 end
-
 
 local testTempHum = function(name)
 	local dev = dz.devices(name)
@@ -813,13 +810,63 @@ local testQuietOff = function(name)
 	return res
 end
 
-
 local testVersion = function(name)
 	local res = true
 	local utils = require('Utils')
 	res = res and expectEql(utils.DZVERSION , dz.settings.dzVentsVersion)
 	handleResult('Test version strings to equal (' .. utils.DZVERSION .. ') and (' ..  dz.settings.dzVentsVersion .. ')',res)
 	return res
+end
+
+local testExistUtils = function()
+	local interimResult 
+	local res = {}
+	local utils = require('Utils')
+
+	interimResult = utils.deviceExists(1)
+	res[#res + 1] = interimResult 
+	handleResult('Test Device exists',interimResult ~= false)
+
+	interimResult = not(utils.deviceExists('none existing'))
+	res[#res + 1] = interimResult
+	handleResult('Test Device not exists',interimResult)
+
+	interimResult = utils.sceneExists(1)
+	res[#res + 1] = interimResult
+	handleResult('Test Scene exists',interimResult ~= false)
+
+	interimResult = not(utils.sceneExists(112))
+	res[#res + 1] = interimResult
+	handleResult('Test Scene not exists',interimResult)
+
+	interimResult = utils.groupExists(2)
+	res[#res + 1] = interimResult
+	handleResult('Test Group exists',interimResult ~= false)
+
+	interimResult = not(utils.groupExists(112))
+	res[#res + 1] = interimResult
+	handleResult('Test Group not exists',interimResult)
+
+	interimResult = utils.variableExists(1)
+	res[#res + 1] = interimResult
+	handleResult('Test Variable exists',interimResult ~= false)
+
+	interimResult = not(utils.variableExists('dummyVar'))
+	res[#res + 1] = interimResult
+	handleResult('Test Variable not exists',interimResult)
+
+	interimResult = utils.cameraExists(1)
+	res[#res + 1] = interimResult
+	handleResult('Test Camera exists',interimResult ~= false)
+
+	interimResult = not(utils.cameraExists('Cannnon'))
+	res[#res + 1] = interimResult
+	handleResult('Test Camera not exists',interimResult)
+
+	for _, bool in ipairs(res) do 
+		if not(bool) then return false end
+	end
+	return true
 end
 
 local writeResultsTofile = function(file, resTable)
@@ -911,6 +958,7 @@ return {
 		res = res and testSettingsDump()
 		res = res and testIFTTT('myEvent')
 		res = res and testVersion('version')
+		res = res and testExistUtils()
 
 		-- test a require
 		local m = require('some_module')

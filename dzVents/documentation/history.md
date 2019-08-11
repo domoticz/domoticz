@@ -1,3 +1,13 @@
+[2.4.28]
+- Add deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods
+- increased httpResponse resilience against different use of Upper-, Lowercase in headers['content-type'] to ensure JSON conversion to Lua table
+
+[2.4.27]
+
+- Add protect attribute for devices / scenes and groups
+- Add methods protectOn and protectOff for devices / scenes and groups
+- Add functions rightPad, leftPad, centerPad, leadingZeros, numDecimals in utils
+
 [2.4.26]
 - Add Smoke detector
 

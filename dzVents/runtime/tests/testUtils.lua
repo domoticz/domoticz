@@ -80,6 +80,31 @@ describe('event helpers', function()
 		assert.is_true(utils.fileExists('testfile'))
 	end)
 
+	it('should right pad a string', function()
+		assert.is_same(utils.rightPad('string',7),'string ')
+		assert.is_same(utils.rightPad('string',7,'@'),'string@')
+		assert.is_same(utils.rightPad('string',2),'string')
+	end)
+    
+	it('should left pad a string', function()
+		assert.is_same(utils.leftPad('string',7),' string')
+		assert.is_same(utils.leftPad('string',7,'@'),'@string')
+		assert.is_same(utils.leftPad('string',2),'string')
+	end)
+    
+    
+	it('should center and pad a string', function()
+		assert.is_same(utils.centerPad('string',8),' string ')
+		assert.is_same(utils.centerPad('string',8,'@'),'@string@')
+		assert.is_same(utils.centerPad('string',2),'string')
+	end)
+    
+        
+	it('should pad a number with leading zeros', function()
+		assert.is_same(utils.leadingZeros(99,3),'099')
+		assert.is_same(utils.leadingZeros(999,2),'999')
+	end)
+
 	it('should return nil for os.execute (echo)', function()
 		assert.is_nil(utils.osExecute('echo test > testfile.out'))
 	end)
