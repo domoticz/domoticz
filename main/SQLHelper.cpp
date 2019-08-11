@@ -2621,6 +2621,44 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 136)
 		{
+      //SolarEdge WEB API Frequency sensor change from Percentage to Custom type
+			std::stringstream szQuery;
+        		std::vector<std::vector<std::string> > hwResult, dsResult;
+        		std::vector<std::string> sd;
+        		szQuery.clear();
+        		szQuery.str("");
+        		szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_SolarEdgeAPI << ")";
+        		hwResult = query(szQuery.str());
+        		if (!hwResult.empty())
+        		{
+                		for (const auto & itt : hwResult)
+                		{
+                        		sd = itt;
+                        		szQuery.clear();
+                        		szQuery.str("");
+                        		szQuery << "SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type]=" << pTypeGeneral << ") AND (SubType=" << sTypePercentage << ") AND (HardwareID=" << sd[0] << ")";
+                        		dsResult = query(szQuery.str());
+                        		if (!dsResult.empty())
+                        		{
+                                		for (const auto & itt2 : dsResult)
+                                		{
+                                        		sd = itt2;
+							int id = atoi(sd[1].c_str());
+							char szTmp[20];
+							sprintf(szTmp, "%06X01", id);
+
+                                        		szQuery.clear();
+                                        		szQuery.str("");
+                                        		szQuery << "UPDATE DeviceStatus SET DeviceID='" << szTmp << "', [Type]=" << pTypeGeneral << ", SubType=" << sTypeCustom << ", Options=\"1;Hz\" WHERE (ID=" << sd[0] << ")";
+                                        		query(szQuery.str());
+                                		}
+                        		}
+                		}
+        		}
+		} 
+    
+    if (dbversion < 137)
+		{
 			// Patch for OpenWebNetTCP: update unit and deviceID for Alert devices, update subtype for GeneralSwitch devices
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result, result2;
@@ -2683,7 +2721,7 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-	}
+	} 
 	else if (bNewInstall)
 	{
 		//place here actions that needs to be performed on new databases

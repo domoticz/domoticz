@@ -431,7 +431,7 @@ There are several options for time triggers. It is important to know that Domoti
            'on mon,tue',                -- on Mondays and Tuesdays
            'every hour on sat',         -- you guessed it correctly
            'at sunset',                 -- uses sunset/sunrise info from Domoticz
-           'at sunrise',           
+           'at sunrise',
            'at civiltwilightstart',     -- uses civil twilight start/end info from Domoticz
            'at civiltwilightend',
            'at sunset on sat,sun',
@@ -548,34 +548,54 @@ The domoticz object holds all information about your Domoticz system. It has glo
 <li>'''civTwilightEndInMinutes''': ''Number''. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.</li></ul>
 </li>
 <li>'''triggerIFTTT(makerName [,sValue1, sValue2, sValue3])''': ''Function''. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].</li>
-<li><p>'''utils''': <sup>2.4.0</sup>. A subset of handy utilities: Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder.<br />
-Example:<br />
-_u = domoticz.utils<br />
-print(_u.rPad('test',8) .. '|') =&gt; test||||</p>
+<li><p>'''utils''': <sup>2.4.0</sup>. A subset of handy utilities: Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example:</p>
+<source lang="lua">    _u = domoticz.utils
+    print(_u.rightPad('test',10) .. '|||') -- =>  test      |||</source>
 <ul>
-<li>_: Lodash. This is an entire collection with very handy Lua functions. Read more about [[#Lodash_for_Lua|Lodash]]. E.g.: <code>domoticz.utils._.size({'abc', 'def'}))</code> Returns 2.</li>
-<li>'''rPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.</li>
-<li>'''lPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.</li>
-<li>'''mPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.</li>
-<li>'''zPad(number, length)''': ''Function'': <sup>2.4.27</sup> Precede number with given zeros to given length.</li>
-<li><p>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation<br />
-Examples:</p>
-<source lang="lua">    domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,  
-    domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,  
-    domoticz.utils.zPpad(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300   </source></li>
+<li><p>_''':lodash:''' This is an entire collection with very handy Lua functions. Read more about [[#lodash_for_Lua|lodash]]. E.g.:</p>
+<source lang="lua">domoticz.utils._.size({'abc', 'def'}))` Returns 2.</source></li>
+<li>'''cameraExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid cameraID or ID when entered with valid cameraName or false when not a cameraID or cameraName of an existing camera</li>
+<li><p>'''deviceExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid deviceID or ID when entered with valid deviceName or false when not a deviceID or deviceName of an existing device.<br />
+example:</p>
+<source lang="lua">local dz = domoticz
+local _u = dz.utils
+if _u.deviceExists('myDevice') then 
+   dz.devices('myDevice').switchOn()
+else
+   dz.log('Device myDevice does not exist!', dz.LOG_ERROR)
+end
+
+local myName = _u.deviceExists(123)
+if myName then
+   dz.log('Device 123 is ' .. myName, dz.LOG_INFO)
+else
+   dz.log('Device 123 does not exist', dz.LOG_ERROR)
+end</source></li>
 <li>'''dumpTable(table,[levelIndicator])''': ''Function'': <sup>2.4.19</sup> print table structure and contents to log</li>
 <li>'''fileExists(path)''': ''Function'': <sup>2.4.0</sup> Returns <code>true</code> if the file (with full path) exists.</li>
 <li>'''fromJSON(json, fallback <sup>2.4.16</sup>)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.</li>
+<li>'''groupExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid groupID or ID when entered with valid groupName or false when not a groupID or groupName of an existing group</li>
 <li>'''inTable(table, searchString)''': ''Function'': <sup>2.4.21</sup> Returns <code>&quot;key&quot;</code> if table has searchString as a key, <code>&quot;value&quot;</code> if table has searchString as value and <code>false</code> otherwise.</li>
+<li>'''leftPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.</li>
+<li>'''centerPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.</li>
+<li><p>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation<br />
+Examples:</p>
+<source lang="lua">    domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,
+    domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
+    domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300</source></li>
 <li>'''osExecute(cmd)''': ''Function'': Execute an os command.</li>
+<li>'''rightPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.</li>
 <li>'''round(number, [decimalPlaces])''': ''Function''. Helper function to round numbers. Default decimalPlaces is 0.</li>
+<li>'''sceneExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid sceneID or ID when entered with valid sceneName or false when not a sceneID or sceneName of an existing scene</li>
 <li>'''stringSplit(string, [separator ])''':<sup>2.4.19</sup> ''Function''. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words.</li>
 <li>'''toCelsius(f, relative)''': ''Function''. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So <code>toCelsius(5, true)</code> returns 5F*(1/1.8) = 2.78C.</li>
 <li>'''toJSON(luaTable)''': ''Function''. <sup>2.4.0</sup> Converts a Lua table to a json string.</li>
 <li>'''urlDecode(s)''': <sup>2.4.13</sup> ''Function''. Simple deCoder to convert a string with escaped chars (%20, %3A and the likes) to human readable format</li>
-<li>'''urlEncode(s, [strSub])''': ''Functon''. Simple url encoder for string so you can use them in <code>openURL()</code>. <code>strSub</code> is optional and defaults to + but you can also pass %20 if you like/need.</li></ul>
+<li>'''urlEncode(s, [strSub])''': ''Function''. Simple url encoder for string so you can use them in <code>openURL()</code>. <code>strSub</code> is optional and defaults to + but you can also pass %20 if you like/need.</li>
+<li>'''variableExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid variableID or ID when entered with valid variableName or false when not a variableID or variableName of an existing variable</li>
+<li><p>'''leadingZeros(number, length)''': ''Function'': <sup>2.4.27</sup> Precede number with given zeros to given length.</p></li></ul>
 </li>
-<li><p>'''variables(idx/name)''': ''Function''. A function returning a variable by it's name or idx. See [[#Variable_object_API_.28user_variables.29|Variable object API]] for the attributes. To iterate over all variables do: <code>domoticz.variables().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. '''Note that you cannot do <code>for i, j in pairs(domoticz.variables()) do .. end</code>'''.</p></li></ul>
+<li><p>'''variables(idx/name)''': ''Function''. A function returning a variable by it's name or idx. See [Variable object API] (#Variable_object_API_.28user_variables.29) for the attributes. To iterate over all variables do: <code>domoticz.variables().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. '''Note that you cannot do <code>for i, j in pairs(domoticz.variables()) do .. end</code>'''.</p></li></ul>
 
 === Looping through the collections: iterators ===
 
@@ -1284,8 +1304,7 @@ local utcTime = Time('2017-12-31 22:19:15', true)</pre>
 * '''secondsSinceMidnight''': ''Number''
 * '''secondsAgo''': ''Number''. Number of seconds since the last update.
 * '''sunsetInMinutes''': ''Number''. Minutes from midnight until sunset.
-* '''sunriseInMinutes''': ''Number''. Minutes from midnight until sunrise.<br />
-
+* '''sunriseInMinutes''': ''Number''. Minutes from midnight until sunrise.
 * '''utcSystemTime''': ''Table''. UTC system time (only when in UTC mode):
 ** '''day''': ''Number''
 ** '''hour''': ''Number''
@@ -2031,9 +2050,9 @@ The Domoticz forum is a great resource for help and solutions. Check the [https:
 
 = Other interesting stuff =
 
-== Lodash for Lua ==
+== lodash for Lua ==
 
-Lodash is a well known and very popular Javascript library filled with dozens of handy helper functions that really make you life a lot easier. Fortunately there is also a Lua version. As of dzVents 2.4.0 this is directly available through the domoticz object:
+lodash is a well known and very popular Javascript library filled with dozens of handy helper functions that really make you life a lot easier. Fortunately there is also a Lua version. As of dzVents 2.4.0 this is directly available through the domoticz object:
 
 <pre>local _ = domoticz.utils._
 _.print(_.indexOf({2, 3, 'x', 4}, 'x'))</pre>
@@ -2155,11 +2174,16 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 = History =
 
+== [2.4.28] ==
+
+* Add deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods in utils
+* increased httpResponse resilience against different use of Upper-, Lowercase in headers['content-type'] to ensure JSON conversion to Lua table
+
 == [2.4.27] ==
 
 * Add attribute protected for devices / scenes and groups
 * Add methods protectionOn and protectionOff for devices / scenes and groups
-* Add functions rPad, lPad, mPad, zPad, numDecimals in utils.
+* Add functions rightPad, leftPad, centerPad, leadingZeros, numDecimals in utils
 
 == [2.4.26] ==
 
@@ -2351,7 +2375,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * <code>active</code> section is now optional in your dzVents script. If you don't specify an <code>active = true/false</code> then true is assumed (script is active). Handy for when you use Domoticz' GUI script editor as it has its own way of activating and deactivating scripts.
 * Added <code>humidityStatusValue</code> for humidity devices. This value matches with the values used for setting the humidity status.
 * <code>Time</code> object will initialize to current time if nothing is passed: <code>local current = Time()</code>.
-* Added the lua Lodash library (http://axmat.github.io/lodash.lua, MIT license).
+* Added the lua lodash library (http://axmat.github.io/lodash.lua, MIT license).
 * Fixed documentation about levelNames for selector switches and added the missing levelName.
 * Moved dzVents runtime code away from the <code>/path/to/domoticz/scripts/dzVents</code> folder as this scripts folder contains user stuff.
 * Added more trigger examples in the documentation.
