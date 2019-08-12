@@ -4534,6 +4534,8 @@ namespace http {
 							)
 							return;
 						int iUnitCode = atoi(sunitcode.c_str());
+						if (iUnitCode == 0)
+							iUnitCode = 1;
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
 						devid = id;
@@ -5109,6 +5111,8 @@ namespace http {
 							)
 							return;
 						int iUnitCode = atoi(sunitcode.c_str());
+						if (iUnitCode == 0)
+							iUnitCode = 1;
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
 						devid = id;

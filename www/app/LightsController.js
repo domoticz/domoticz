@@ -1802,7 +1802,7 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #blindsparams").show();
 				var bShow1 = (lighttype == 205) || (lighttype == 206) || (lighttype == 207) || (lighttype == 210) || (lighttype == 211) || (lighttype == 250) || (lighttype == 226);
 				var bShow4 = (lighttype == 206) || (lighttype == 207) || (lighttype == 209);
-				var bShowUnit = (lighttype == 206) || (lighttype == 207) || (lighttype == 208) || (lighttype == 209) || (lighttype == 212) || (lighttype == 213) || (lighttype == 250) || (lighttype == 226);
+				var bShowUnit = (lighttype == 206) || (lighttype == 207) || (lighttype == 208) || (lighttype == 209) || (lighttype == 212) || (lighttype == 213) || (lighttype == 215) || (lighttype == 250) || (lighttype == 226);
 				if (bShow1)
 					$('#dialog-addmanuallightdevice #blindsparams #combocmd1').show();
 				else {
