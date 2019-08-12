@@ -12489,7 +12489,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_OpenWebNetTCP)
 		{
 			COpenWebNetTCP *pGateway = reinterpret_cast<COpenWebNetTCP*>(pHardware);
-			return pGateway->SetSetpoint(ID4, TempValue);
+			return pGateway->SetSetpoint(ID, TempValue);
 		}
 	}
 	else
