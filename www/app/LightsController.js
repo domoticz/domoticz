@@ -2066,22 +2066,22 @@ define(['app', 'livesocket'], function (app) {
 				//OpenWebNet Bus Blinds
 				var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
 					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
-				var ID = ("0002" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUTOMATION
-				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware
+				var ID = ("002" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUTOMATION
+				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();
 				mParams += "&id=" + ID.toUpperCase() + "&unitcode=" + unitcode;
 			}
 			else if (lighttype == 401) {
 				//OpenWebNet Bus Lights
 				var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
 					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
-				var ID = ("0001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
-				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware
+				var ID = ("001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
+				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();
 				mParams += "&id=" + ID.toUpperCase() + "&unitcode=" + unitcode;
 			}
 			else if (lighttype == 402) {
 				//OpenWebNet Bus Auxiliary
 				var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1 option:selected").val());
-				var ID = ("0009" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUXILIARY
+				var ID = ("009" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUXILIARY
 				var unitcode = "0";
 				mParams += "&id=" + ID.toUpperCase() + "&unitcode=" + unitcode;
 			}

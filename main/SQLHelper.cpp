@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 136
+#define DB_VERSION 137
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2621,7 +2621,7 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 136)
 		{
-        		//SolarEdge WEB API Frequency sensor change from Percentage to Custom type
+      //SolarEdge WEB API Frequency sensor change from Percentage to Custom type
 			std::stringstream szQuery;
         		std::vector<std::vector<std::string> > hwResult, dsResult;
         		std::vector<std::string> sd;
@@ -2656,6 +2656,71 @@ bool CSQLHelper::OpenDatabase()
                 		}
         		}
 		} 
+    
+    if (dbversion < 137)
+		{
+			// Patch for OpenWebNetTCP: update unit and deviceID for Alert devices, update subtype for GeneralSwitch devices
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::string> sd;
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_OpenWebNetTCP << ")";
+			result = query(szQuery.str());
+			if (!result.empty())
+			{
+				for (const auto& itt : result)
+				{
+					sd = itt;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID, DeviceID, SubType FROM DeviceStatus WHERE (HardwareID=" << sd[0] << ")";
+					result2 = query(szQuery.str());
+
+					if (!result2.empty())
+					{
+						for (const auto& itt2 : result2)
+						{
+							sd = itt2;
+
+							int sub_type = atoi(sd[2].c_str());
+							uint32_t NodeID;
+							std::stringstream s_strid;
+							s_strid << std::hex << sd[1];
+							s_strid >> NodeID;
+
+							if (sub_type == sTypeAlert)
+							{
+								NodeID = NodeID & 0x000000ff;
+								if (NodeID > 8) NodeID = 0xff - NodeID + 17; // update id BURGLAR status to allow the 'id bus interface'
+
+								char ndeviceid[10];
+								sprintf(ndeviceid, "%u", NodeID);
+
+								_log.Log(LOG_STATUS, "COpenWebNetTCP: ID:%s, DeviceID change from %s to %s!", sd[0].c_str(), sd[1].c_str(), ndeviceid);
+
+								szQuery.clear();
+								szQuery.str("");
+								szQuery << "UPDATE DeviceStatus SET DeviceID='" << ndeviceid << "', Unit=1 WHERE (ID=" << sd[0] << ")";
+								query(szQuery.str());
+							}
+							else if ((sub_type == sSwitchBlindsT1) || (sub_type == sSwitchLightT1) || (sub_type == sSwitchContactT1) || (sub_type == sSwitchAuxiliaryT1))
+							{
+								char ndeviceid[10];
+								sprintf(ndeviceid, "%07X", NodeID);
+
+								_log.Log(LOG_STATUS, "COpenWebNetTCP: ID:%s, DeviceID change from %s to %s!", sd[0].c_str(), sd[1].c_str(), ndeviceid);
+								szQuery.clear();
+								szQuery.str("");
+								szQuery << "UPDATE DeviceStatus SET DeviceID='" << ndeviceid << "', Type='" << pTypeLighting2 << "', SubType='" << sTypeAC << "' WHERE (ID=" << sd[0] << ")";
+								query(szQuery.str());
+							}
+						}
+					}
+				}
+			}
+		}
 	} 
 	else if (bNewInstall)
 	{

@@ -4635,8 +4635,8 @@ namespace http {
 					}
 					else if (lighttype == 400) {
 						//Openwebnet Bus Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchBlindsT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4647,8 +4647,8 @@ namespace http {
 					}
 					else if (lighttype == 401) {
 						//Openwebnet Bus Lights
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchLightT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4660,8 +4660,8 @@ namespace http {
 					else if (lighttype == 402)
 					{
 						//Openwebnet Bus Auxiliary
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchAuxiliaryT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -5252,8 +5252,8 @@ namespace http {
 					else if (lighttype == 400)
 					{
 						//Openwebnet Bus Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchBlindsT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -5265,8 +5265,8 @@ namespace http {
 					else if (lighttype == 401)
 					{
 						//Openwebnet Bus Lights
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchLightT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -5278,8 +5278,8 @@ namespace http {
 					else if (lighttype == 402)
 					{
 						//Openwebnet Bus Auxiliary
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchAuxiliaryT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
