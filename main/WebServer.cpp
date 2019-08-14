@@ -3848,6 +3848,7 @@ namespace http {
 						case pTypeGeneralSwitch:
 						case pTypeHomeConfort:
 						case pTypeFS20:
+						case pTypeHunter:
 							bdoAdd = true;
 							if (!used)
 							{
@@ -3975,6 +3976,7 @@ namespace http {
 							case pTypeGeneralSwitch:
 							case pTypeHomeConfort:
 							case pTypeFS20:
+							case pTypeHunter:
 								root["result"][ii]["type"] = 0;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
@@ -6357,7 +6359,8 @@ namespace http {
 					(dType != pTypeFS20) &&
 					(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
 					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
-					(!((dType == pTypeGeneral) && (dSubType == sTypeAlert)))
+					(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) &&
+					(dType != pTypeHunter)
 					)
 					return; //no light device! we should not be here!
 
@@ -8572,7 +8575,8 @@ namespace http {
 								(dType != pTypeChime) &&
 								(dType != pTypeFS20) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
-								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
+								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))&&
+								(dType != pTypeHunter)
 								)
 								continue;
 						}
@@ -8856,7 +8860,8 @@ namespace http {
 						(dType == pTypeHomeConfort) ||
 						(dType == pTypeFS20) ||
 						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) ||
-						((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
+						((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus)) ||
+						(dType == pTypeHunter)
 						)
 					{
 						//add light details
@@ -13083,7 +13088,8 @@ namespace http {
 				(dType != pTypeGeneralSwitch) &&
 				(dType != pTypeHomeConfort) &&
 				(dType != pTypeFS20) &&
-				(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
+				(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
+				(dType != pTypeHunter)
 				)
 				return; //no light device! we should not be here!
 
