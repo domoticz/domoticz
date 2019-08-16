@@ -357,8 +357,8 @@ const std::string COpenWebNetTCP::byteToHexStrConvert(uint8_t *digest, size_t di
 	char arrayOfChar1[] = "0123456789abcdef";
 	for (idxb = 0, idxh = 0; idxb < digestLen; idxb++, idxh += 2)
 	{
-		byte bval = digest[idxb] & 0xFF;
-		pArray[idxh] = arrayOfChar1[bval >> 4];
+		uint8_t bval = digest[idxb] & 0xFF;
+		pArray[idxh] = arrayOfChar1[(bval >> 4) & 0xf];
 		pArray[idxh + 1] = arrayOfChar1[bval & 0xF];
 	}
 	pArray[idxh] = 0;
