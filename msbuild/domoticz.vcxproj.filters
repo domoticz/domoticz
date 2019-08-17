@@ -551,9 +551,6 @@
     <None Include="..\www\app\FrontpageController.js">
       <Filter>www\app</Filter>
     </None>
-    <None Include="..\www\app\HardwareController.js">
-      <Filter>www\app</Filter>
-    </None>
     <None Include="..\www\app\HistoryController.js">
       <Filter>www\app</Filter>
     </None>

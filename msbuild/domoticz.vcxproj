@@ -130,7 +130,6 @@
     <None Include="..\www\app\FloorplanEditController.js" />
     <None Include="..\www\app\ForecastController.js" />
     <None Include="..\www\app\FrontpageController.js" />
-    <None Include="..\www\app\HardwareController.js" />
     <None Include="..\www\app\hardware\Hardware.html" />
     <None Include="..\www\app\hardware\Hardware.js" />
     <None Include="..\www\app\hardware\HardwareSetup.html" />
