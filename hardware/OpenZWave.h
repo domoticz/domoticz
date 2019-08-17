@@ -146,13 +146,15 @@ private:
 	void AddValue(NodeInfo* pNode, const OpenZWave::ValueID &vID);
 	void UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID &vID);
 	void UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID);
-	bool SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
-	bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr);
+	bool SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const int value);
+	bool SwitchColor(const int nodeID, const int instanceID, const std::string &ColorStr);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute);
 	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);
 	void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode);
 	void UpdateDeviceBatteryStatus(const int nodeID, const int value);
+	void ForceUpdateForNodeDevices(const unsigned int homeID, const int nodeID);
+	bool IsNodeRGBW(const unsigned int homeID, const int nodeID);
 
 	uint8_t GetInstanceFromValueID(const OpenZWave::ValueID &vID);
 

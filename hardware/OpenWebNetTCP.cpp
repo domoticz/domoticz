@@ -25,8 +25,9 @@ License: Public domain
 
 #include <string.h>
 #include "hardwaretypes.h"
-#include "../main/RFXNames.h"
 #include "../main/RFXtrx.h"
+
+#include <openssl/sha.h>
 
 #define OPENWEBNET_HEARTBEAT_DELAY      1
 #define OPENWEBNET_STATUS_NB_HEARTBEAT  600
@@ -177,6 +178,30 @@ bool COpenWebNetTCP::isStatusSocketConnected()
 
 
 /**
+   write ...
+**/
+bool COpenWebNetTCP::ownWrite(csocket *connectionSocket, const char* pdata, size_t size)
+{
+	int bytesWritten = connectionSocket->write(pdata, size);
+	if (bytesWritten != size) 
+	{
+		_log.Log(LOG_ERROR, "COpenWebNetTCP: partial write: %u/%u", bytesWritten, size);
+		return (false);
+	}
+	return (true);
+}
+
+/**
+   read ...
+**/
+int COpenWebNetTCP::ownRead(csocket *connectionSocket, char* pdata, size_t size)
+{
+	memset(pdata, 0, size);
+	int read = connectionSocket->read(pdata, size, false);
+	return (read);
+}
+
+/**
    Calculate 'nonce-hash' authentication
 **/
 uint32_t COpenWebNetTCP::ownCalcPass(const std::string &password, const std::string &nonce)
@@ -290,51 +315,230 @@ uint32_t COpenWebNetTCP::ownCalcPass(const std::string &password, const std::str
 }
 
 /**
+	Perform conversion 80/128 DEC-chars to 40/64 HEX-chars
+**/
+const std::string COpenWebNetTCP::decToHexStrConvert(std::string paramString)
+{
+	char retStr[256];
+	size_t idxb, idxh;
+	for (idxb = 0, idxh = 0; idxb < paramString.length(); idxb += 2, idxh++)
+	{
+		std::string str = paramString.substr(idxb, 2);
+		sprintf(&retStr[idxh], "%x", atoi(str.c_str()));
+	}
+	return std::string(retStr);
+}
+
+/**
+	Perform conversion HEX-40/64 chars to 80/128 DEC-chars
+**/
+const std::string COpenWebNetTCP::hexToDecStrConvert(std::string paramString)
+{
+	uint32_t bval;
+	size_t idxb, idxh;
+	char retStr[256];
+	for (idxb = 0, idxh = 0; idxb < paramString.length(); idxb++, idxh += 2)
+	{
+		std::stringstream s_strid;
+		s_strid << std::hex << paramString.substr(idxb, 1);
+		s_strid >> bval;
+		sprintf(&retStr[idxh], "%02u", bval & 0xf);
+	}
+	
+	return std::string(retStr);
+}
+
+/**
+	Perform conversion byte to HEX-chars
+**/
+const std::string COpenWebNetTCP::byteToHexStrConvert(uint8_t *digest, size_t digestLen, char *pArray)
+{
+	size_t idxb, idxh;
+	char arrayOfChar1[] = "0123456789abcdef";
+	for (idxb = 0, idxh = 0; idxb < digestLen; idxb++, idxh += 2)
+	{
+		uint8_t bval = digest[idxb] & 0xFF;
+		pArray[idxh] = arrayOfChar1[(bval >> 4) & 0xf];
+		pArray[idxh + 1] = arrayOfChar1[bval & 0xF];
+	}
+	pArray[idxh] = 0;
+	return(std::string(pArray));
+}
+
+/**
+	Perform SHA1/SHA256 and convert into HEX-chars
+**/
+const std::string COpenWebNetTCP::shaCalc(std::string paramString, int auth_type)
+{
+	uint8_t *digest;
+	uint8_t strArray[OPENWEBNET_BUFFER_SIZE];
+	memset(strArray, 0, sizeof(strArray));
+	memcpy(strArray, paramString.c_str(), paramString.length());
+
+	if (auth_type == 0)
+	{
+		// Perform SHA1
+		digest = SHA1(strArray, paramString.length(), 0);	
+		char arrayOfChar2[(SHA_DIGEST_LENGTH * 2) + 1];
+		return (byteToHexStrConvert(digest, SHA_DIGEST_LENGTH, arrayOfChar2));
+	}
+	else
+	{
+		// Perform SHA256
+		digest = SHA256(strArray, paramString.length(), 0);
+		char arrayOfChar2[(SHA256_DIGEST_LENGTH * 2) + 1];
+		return (byteToHexStrConvert(digest, SHA256_DIGEST_LENGTH, arrayOfChar2));
+	}
+
+	return(std::string(""));
+}
+
+/**
+	Perform HMAC authentication
+**/
+bool COpenWebNetTCP::hmacAuthentication(csocket *connectionSocket, int auth_type)
+{
+	// Write ACK
+	ownWrite(connectionSocket, OPENWEBNET_MSG_OPEN_OK, strlen(OPENWEBNET_MSG_OPEN_OK));
+
+	// Read server Response
+	char databuffer[OPENWEBNET_BUFFER_SIZE];
+	int read = ownRead(connectionSocket, databuffer, sizeof(databuffer));
+	bt_openwebnet responseSrv(std::string(databuffer, read));
+	if (responseSrv.IsPwdFrame())
+	{
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+
+		// receive Ra
+		const std::string strRcvSrv = responseSrv.Extract_who();							  // Ra from server in DEC-chars
+		const std::string strRa = decToHexStrConvert(strRcvSrv);							  // convert Ra in HEX-chars
+		std::stringstream strRb_rand;
+		strRb_rand << "Time" << tv.tv_sec << tv.tv_usec;									  // get random Rb from time..
+		const std::string strRb = shaCalc(strRb_rand.str(), auth_type);						  // sha of Rb and convert into HEX-chars	
+		const std::string strA = "736F70653E";												  // is the client identity (HEX-chars)
+		const std::string strB = "636F70653E";												  // is the server identity (HEX-chars)
+		const std::string strKab = shaCalc(m_ownPassword, auth_type);						  // perform SHA of password
+		const std::string strHMAC = shaCalc(strRa + strRb + strA + strB + strKab, auth_type); // HMAC
+
+#if 0
+		// print some logs for debug..
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: HMAC Ra digits received: '%s'", strRcvSrv.c_str());
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: Ra = '%s'", strRa.c_str());
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: Rb = '%s'", strRb.c_str());
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: A = '%s', B = '%s'", strA.c_str(), strB.c_str());
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: pwd = '%s', Kab = '%s'", m_ownPassword.c_str(), strKab.c_str());
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: HMAC(Ra,Rb,A,B,Kab) = '%s'", strHMAC.c_str());
+#endif
+		// Write HMAC
+		const std::string strSend = "*#" + hexToDecStrConvert(strRb) + "*" + hexToDecStrConvert(strHMAC) + "##";
+		ownWrite(connectionSocket, strSend.c_str(), strSend.length());
+
+		// Server response....
+		read = ownRead(connectionSocket, databuffer, sizeof(databuffer));
+		bt_openwebnet responseSrv2(std::string(databuffer, read));
+		if (responseSrv2.IsPwdFrame())
+		{
+			const std::string strRcvSrv2 = decToHexStrConvert(responseSrv2.Extract_who());
+			const std::string strHMAC2 = shaCalc(strRa + strRb + strKab, auth_type);
+
+			if (strHMAC2.compare(strRcvSrv2) == 0)
+			{
+				ownWrite(connectionSocket, OPENWEBNET_MSG_OPEN_OK, strlen(OPENWEBNET_MSG_OPEN_OK)); // Write ACK
+				return (true); // HMAC authentication OK
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: HMAC(Ra,Rb,Kab) received: '%s'", strRcvSrv2.c_str());
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: not match with: '%s'", strHMAC2.c_str());
+			}
+		}
+	}
+	_log.Log(LOG_ERROR, "COpenWebNetTCP: HMAC authentication ERROR!");
+	return false; // error!
+}
+
+/**
+	Perform nonce-hash authentication
+**/
+bool COpenWebNetTCP::nonceHashAuthentication(csocket *connectionSocket, std::string nonce)
+{
+	std::stringstream frame;
+	/** calculate nonce-hash **/
+	uint32_t ownHash = ownCalcPass(m_ownPassword, nonce);
+	/** write frame with nonce-hash **/
+	frame << "*#";
+	frame << ownHash;
+	frame << "##";
+	ownWrite(connectionSocket, frame.str().c_str(), frame.str().length());
+
+	char databuffer[OPENWEBNET_BUFFER_SIZE];
+	int read = ownRead(connectionSocket, databuffer, sizeof(databuffer));
+	bt_openwebnet responseNonce2(std::string(databuffer, read));
+
+	if (responseNonce2.IsOKFrame()) return true; // hash authentication OK
+
+	_log.Log(LOG_ERROR, "COpenWebNetTCP: hash authentication ERROR!");
+	return false;
+}
+
+/**
 	Perform nonce-hash authentication
 **/
 
-bool COpenWebNetTCP::nonceHashAuthentication(csocket *connectionSocket)
+bool COpenWebNetTCP::ownAuthentication(csocket *connectionSocket)
 {
 	char databuffer[OPENWEBNET_BUFFER_SIZE];
-	memset(databuffer, 0, OPENWEBNET_BUFFER_SIZE);
-	int read = connectionSocket->read(databuffer, OPENWEBNET_BUFFER_SIZE, false);
+	int read = ownRead(connectionSocket, databuffer, sizeof(databuffer));
 	bt_openwebnet responseNonce(std::string(databuffer, read));
+
+	//_log.Log(LOG_STATUS, "COpenWebNetTCP: authentication rcv: '%s'", responseNonce.Extract_frame().c_str());
+
 	if (responseNonce.IsPwdFrame())
 	{
-		std::stringstream frame;
-		uint32_t ownHash;
-
 		if (!m_ownPassword.length())
 		{
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: no password set for a unofficial bticino gateway");
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: no password set for a unofficial bticino gateway");
 			return false;
 		}
 
-		/** calculate nonce-hash **/
-		ownHash = ownCalcPass(m_ownPassword, responseNonce.Extract_who());
-		/** write frame with nonce-hash **/
-		frame << "*#";
-		frame << ownHash;
-		frame << "##";
-
-		int bytesWritten = connectionSocket->write(frame.str().c_str(), frame.str().length());
-		if (bytesWritten != frame.str().length()) {
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: partial write");
+		// Hash authentication for unofficial gateway
+		return(nonceHashAuthentication(connectionSocket, responseNonce.Extract_who()));
+	}
+	else if (responseNonce.IsNormalFrame())
+	{
+		if (!m_ownPassword.length())
+		{
+			_log.Log(LOG_ERROR, "COpenWebNetTCP:  bticino gateway requires the password");
+			return false;
 		}
 
-		/** Open password for test **/
-		memset(databuffer, 0, OPENWEBNET_BUFFER_SIZE);
-		read = connectionSocket->read(databuffer, OPENWEBNET_BUFFER_SIZE, false);
-		bt_openwebnet responseNonce2(std::string(databuffer, read));
-		if (responseNonce2.IsOKFrame()) return true;
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: authentication ERROR!");
-		return false;
+		// TODO: only alphanumeric password....
+
+		const std::string strFrame = responseNonce.Extract_frame();
+		if (strFrame.compare(OPENWEBNET_AUTH_REQ_SHA1) == 0) 	// *98*1##
+		{
+			// HMAC authentication with SHA-1
+			return (hmacAuthentication(connectionSocket, 0));
+		}
+		else if	(strFrame.compare(OPENWEBNET_AUTH_REQ_SHA2) == 0)		// *98*2##
+		{
+			// HMAC authentication with SHA-256
+			return (hmacAuthentication(connectionSocket, 1));
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: frame request error:'%s'", strFrame);
+			return false;
+		}
 	}
 	else if (responseNonce.IsOKFrame())
 	{
+		// no authentication required..ok!
+		//_log.Log(LOG_STATUS, "COpenWebNetTCP: authentication OK, no password!");
 		return true;
 	}
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: ERROR_FRAME? %d", responseNonce.frame_type);
+	_log.Log(LOG_ERROR, "COpenWebNetTCP: ERROR_FRAME? %d", responseNonce.frame_type);
 	return false;
 }
 
@@ -361,22 +565,18 @@ csocket* COpenWebNetTCP::connectGwOwn(const char *connectionMode)
 	}
 
 	char databuffer[OPENWEBNET_BUFFER_SIZE];
-	memset(databuffer, 0, OPENWEBNET_BUFFER_SIZE);
-	int read = connectionSocket->read(databuffer, OPENWEBNET_BUFFER_SIZE, false);
+	int read = ownRead(connectionSocket, databuffer, OPENWEBNET_BUFFER_SIZE);
 	bt_openwebnet responseSession(std::string(databuffer, read));
 	if (!responseSession.IsOKFrame())
 	{
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: failed to begin session, NACK received (%s:%d)-> %s", m_szIPAddress.c_str(), m_usIPPort, databuffer);
+		_log.Log(LOG_ERROR, "COpenWebNetTCP: failed to begin session, (%s:%d)-> '%s'", m_szIPAddress.c_str(), m_usIPPort, databuffer);
 		disconnect();  // disconnet socket if present
 		return NULL;
 	}
 
-	int bytesWritten = connectionSocket->write(connectionMode, strlen(connectionMode));
-	if (bytesWritten != strlen(connectionMode)) {
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: partial write");
-	}
+	ownWrite(connectionSocket, connectionMode, strlen(connectionMode));
 
-	if (!nonceHashAuthentication(connectionSocket)) return NULL;
+	if (!ownAuthentication(connectionSocket)) return NULL;
 
 	return connectionSocket;
 }
@@ -415,8 +615,7 @@ void COpenWebNetTCP::MonitorFrames()
 			if (bIsDataReadable)
 			{
 				char data[OPENWEBNET_BUFFER_SIZE];
-				memset(data, 0, OPENWEBNET_BUFFER_SIZE);
-				int bread = m_pStatusSocket->read(data, OPENWEBNET_BUFFER_SIZE, false);
+				int bread = ownRead(m_pStatusSocket, data, OPENWEBNET_BUFFER_SIZE);
 
 				if (IsStopRequested(0))
 					break;
@@ -1375,20 +1574,13 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 	_log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	// Command session correctly open -> write command
-	int bytesWritten = commandSocket->write(command.frame_open.c_str(), command.frame_open.length());
-	if (bytesWritten != command.frame_open.length()) {
-		if (!silent) {
-			_log.Log(LOG_ERROR, "COpenWebNetTCP sendCommand: partial write");
-		}
-	}
+	ownWrite(commandSocket, command.frame_open.c_str(), command.frame_open.length());
 
 	if (waitForResponse > 0) {
 		sleep_seconds(waitForResponse);
 
 		char responseBuffer[OPENWEBNET_BUFFER_SIZE];
-		memset(responseBuffer, 0, OPENWEBNET_BUFFER_SIZE);
-		int read = commandSocket->read(responseBuffer, OPENWEBNET_BUFFER_SIZE, false);
-
+		int read = ownRead(commandSocket, responseBuffer, OPENWEBNET_BUFFER_SIZE);
 		if (!silent) {
 			_log.Log(LOG_STATUS, "COpenWebNetTCP: sent=%s received=%s", command.frame_open.c_str(), responseBuffer);
 		}

@@ -519,8 +519,15 @@ define(['app'], function (app) {
 					}
                 if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
                     if (password != "") {
-                        if ((isNaN(password)) || (password.length < 5)) /* must be a number */ {
+
+                        if ((password.length < 5) || (password.length > 16)) {
                             ShowNotify($.t('Please enter a password of at least 5 characters'), 2500, true);
+                            return;
+                        }
+
+                        var intRegex = /^[a-zA-Z0-9]*$/; 
+                        if (!intRegex.test(password)) {
+                            ShowNotify($.t('Please enter a numeric or alphanumeric (for HMAC) password'), 2500, true);
                             return;
                         }
                     }
@@ -1674,11 +1681,17 @@ define(['app'], function (app) {
 				}
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
-					if (password != "") {
-                        if ((isNaN(password)) || (password.length < 5)) /* must be a number */ {
+                    if (password != "") {
+                        if ((password.length < 5) || (password.length > 16)) {
                             ShowNotify($.t('Please enter a password of at least 5 characters'), 2500, true);
-							return;
-						}
+                            return;
+                        }
+
+                        var intRegex = /^[a-zA-Z0-9]*$/; 
+                        if (!intRegex.test(password)) {
+                            ShowNotify($.t('Please enter a numeric or alphanumeric (for HMAC) password'), 2500, true);
+                            return;
+                        }
                     }
                     var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
                     if ((ratelimitp1 == "") || (isNaN(ratelimitp1))) {
