@@ -146,14 +146,11 @@ private:
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType);
 	_tZWaveDevice* FindDeviceEx(const int nodeID, const int instanceID, const _eZWaveDeviceType devType);
 
-	void ForceUpdateForNodeDevices(const unsigned int homeID, const int nodeID);
-	bool IsNodeRGBW(const unsigned int homeID, const int nodeID);
-
 	std::string GenerateDeviceStringID(const _tZWaveDevice *pDevice);
 	void InsertDevice(_tZWaveDevice device);
 	unsigned char Convert_Battery_To_PercInt(const unsigned char level);
-	virtual bool SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
-	virtual bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr) = 0;
+	virtual bool SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const int value)=0;
+	virtual bool SwitchColor(const int nodeID, const int instanceID, const std::string &ColorStr) = 0;
 	virtual void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)=0;
 	virtual void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
 	virtual void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode) = 0;

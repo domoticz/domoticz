@@ -27,7 +27,18 @@ portions of this file.
 */
 
 /*
-SDK version 9.24
+SDK version 9.27	August 12, 2019
+	Hunter fan added
+	Novy fan added
+	BlindsT6 Light added
+
+SDK version 9.26	March 28, 2019
+	sTypeBlindsT15 = Motostar
+
+SDK version 9.25	March 18, 2019
+	no change in .h
+
+SDK version 9.24	March 16, 2019
 	Chime Alfawise, dBell added
 	SelectPlus3 changed to ByronBY
 	Async Get Settings added
@@ -36,10 +47,10 @@ SDK version 9.24
 	ACH2010 moved to WEATHER
 	WS5500 added
 
-SDK version 9.23
+SDK version 9.23	Oct 10, 2018
 	Async data subtypes changed
 
-SDK version 9.22
+SDK version 9.22	Aug 18, 2018
 	Falmec added
 	Fan LucciAir DCII added
 	Zemismart blinds added
@@ -47,42 +58,42 @@ SDK version 9.22
 	Firmware types added
 	Livolo 1-10 device changed 
 
-SDK version 9.21
+SDK version 9.21	June 18, 2018
 	Fan LucciAir DC added
 	Casafan added
 	FT1211R fan controller added
 	Hualite blind added
 	Lighting1 Oase added
 
-SDK version 9.20
+SDK version 9.20	May 29, 2018
 	Lighting6 Cuveo added
 
-SDK version 9.19a
+SDK version 9.19a	May 27, 2018
 	FS20 commands added
 
-SDK version 9.19
+SDK version 9.19	May 26, 2018
 	IRESPONSE868 added
 	IRESPONSE updated
 	433 & 868 config bits updated
 
-SDK version 9.18
+SDK version 9.18	May 11, 2018
 	RAW transmit/receive added
 	BlindsT6 intermediate position added
 
-SDK version 9.17
+SDK version 9.17	April 30, 2018
 	868 config bits added (changed)
 	Interface Control Freq commands removed (use freqsel instead)
 	FunkBus (Gira, Jung, Berker, Insta) added
 
-SDK version 9.16
+SDK version 9.16	July 30, 2017
 	RAIN8 and RAIN9 added
 	WIND8 added
 	Cartelectronic - Linky added
 
-SDK version 9.15
+SDK version 9.15	March 29, 2017
 	BlindsT13 - Screenline angle change added
 
-SDK version 9.14
+SDK version 9.14	Jan 12, 2017
 	Lighting5 - Kangtai added
 
 SDK version 9.13
@@ -517,6 +528,7 @@ SDK version 4.9
 #define sTypeUrfy 0x14
 #define sTypeUselectplus 0x15
 #define sTypeUhomeconfort 0x16
+#define sTypeURFXtrx868 0x17
 #define sTypeUfunkbus 0x19
 
 //types for Lighting
@@ -715,6 +727,8 @@ SDK version 4.9
 #define sTypeFT1211R 0x7
 #define sTypeFalmec 0x8
 #define sTypeLucciAirDCII 0x9
+#define sTypeIthoECO 0xA
+#define sTypeNovy 0xB
 
 #define fan_sTimer 0x1
 #define fan_sMin 0x2
@@ -786,6 +800,11 @@ SDK version 4.9
 #define fan_LucciDCII6 0x7
 #define fan_LucciDCIILight 0x8
 #define fan_LucciDCIIReverse 0x9
+#define fan_NovyPower 0x1
+#define fan_NovyPlus 0x2
+#define fan_NovyMin 0x3
+#define fan_NovyLight 0x4
+#define fan_NovyLearn 0x5
 
 //types for Curtain
 #define pTypeCurtain 0x18
@@ -812,7 +831,7 @@ SDK version 4.9
 #define sTypeBlindsT12 0xC	//Confexx
 #define sTypeBlindsT13 0xD	//Screenline
 #define sTypeBlindsT14 0xE	//Hualite
-#define sTypeBlindsT15 0xF	//RFU
+#define sTypeBlindsT15 0xF	//Motostar
 #define sTypeBlindsT16 0x10	//Zemismart
 
 #define blinds_sOpen 0x0
@@ -826,6 +845,7 @@ SDK version 4.9
 #define blinds_sLeft 0x8
 #define blinds_sRight 0x9
 #define blinds_s6Im 0x4
+#define blinds_s6Light 0x5
 #define blinds_s9ChangeDirection 0x6
 #define blinds_s9ImA 0x7
 #define blinds_s9ImCenter 0x8
@@ -886,6 +906,16 @@ SDK version 4.9
 #define Funkbus_sScene 0x04
 #define Funkbus_sMasterMin 0x05
 #define Funkbus_sMasterPlus 0x06
+
+//types for Hunter Fan
+#define pTypeHunter 0x1F
+#define sTypeHunterfan 0x00
+#define HunterOff 0x1
+#define HunterLight 0x2
+#define HunterSpeed1 0x3
+#define HunterSpeed2 0x4
+#define HunterSpeed3 0x5
+#define HunterProgram 0x6
 
 //types for Security1
 #define pTypeSecurity1 0x20
@@ -1774,6 +1804,27 @@ typedef union tRBUF {
 		BYTE	rssi : 4;
 #endif
 	} FUNKBUS;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	id3;
+		BYTE	id4;
+		BYTE	id5;
+		BYTE	id6;
+		BYTE	cmnd;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
+#else
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
+#endif
+	} HUNTER;
 
 	struct {
 		BYTE	packetlength;

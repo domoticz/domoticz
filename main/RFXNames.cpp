@@ -531,6 +531,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 	{ pTypeGeneralSwitch, "Light/Switch", "lightbulb" },
 	{ pTypeWEATHER, "Weather" , "weather" },
 	{ pTypeSOLAR, "Solar" , "solar" },
+	{ pTypeHunter, "Hunter" , "Hunter" },
 	{ 0, NULL, NULL }
 	};
 	if (snum == 1)
@@ -608,6 +609,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeWEATHER, sTypeWEATHER2, "Alecto WS5500" },
 
 	{ pTypeSOLAR, sTypeSOLAR1, "Davis" },
+
+	{ pTypeHunter, sTypeHunterfan, "Hunter Fan" },
 
 	{ pTypeLighting1, sTypeX10, "X10" },
 	{ pTypeLighting1, sTypeARC, "ARC" },
@@ -2112,6 +2115,33 @@ void GetLightStatus(
 		break;
 		}
 		break;
+		case pTypeHunter:
+			switch (dSubType)
+			{
+			case sTypeHunterfan:
+			{
+				switch (nValue)
+				{
+				case HunterOff:
+					lstatus = "off";
+					break;
+				case HunterLight:
+					lstatus = "light";
+					break;
+				case HunterSpeed1:
+					lstatus = "low";
+					break;
+				case HunterSpeed2:
+					lstatus = "med";
+					break;
+				case HunterSpeed3:
+					lstatus = "high";
+					break;
+				}
+			}
+			break;
+			}
+			break;
 	}
 	//_log.Debug(DEBUG_NORM, "RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s",
 	//dType, dSubType, nValue, sValue.c_str(), llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, lstatus.c_str());
@@ -3515,6 +3545,38 @@ bool GetLightCommand(
 		break;
 		}
 		return true;
+	}
+	break;
+	case pTypeHunter:
+	{
+		switch (dSubType)
+		{
+		case sTypeHunterfan:
+		{
+			if (switchcmd == "off")
+			{
+				cmd = HunterOff;
+			}
+			else if (switchcmd == "light")
+			{
+				cmd = HunterLight;
+			}
+			else if (switchcmd == "low")
+			{
+				cmd = HunterSpeed1;
+			}
+			else if (switchcmd == "med")
+			{
+				cmd = HunterSpeed2;
+			}
+			else if (switchcmd == "high")
+			{
+				cmd = HunterSpeed3;
+			}
+		}
+		return true;
+		}
+		break;
 	}
 	break;
 	}

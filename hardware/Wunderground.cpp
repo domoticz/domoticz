@@ -220,7 +220,7 @@ void CWunderground::GetMeterDetails()
 #else
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL << "https://api.weather.com/v2/pws/observations/current?stationId=" << szLoc << "&format=json&units=m&apiKey=" << m_APIKey;
+	sURL << "https://api.weather.com/v2/pws/observations/current?stationId=" << szLoc << "&format=json&units=m&numericPrecision=decimal&apiKey=" << m_APIKey;
 	bool bret;
 	std::string szURL=sURL.str();
 	bret=HTTPClient::GET(szURL,sResult);
