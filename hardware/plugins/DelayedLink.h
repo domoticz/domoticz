@@ -128,6 +128,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_Str, PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_IsTrue, PyObject*);
 		DECLARE_PYTHON_SYMBOL(double, PyFloat_AsDouble, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetIter, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyIter_Next, PyObject*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -262,6 +264,8 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyObject_Str);
 					RESOLVE_PYTHON_SYMBOL(PyObject_IsTrue);
 					RESOLVE_PYTHON_SYMBOL(PyFloat_AsDouble);
+					RESOLVE_PYTHON_SYMBOL(PyObject_GetIter);
+					RESOLVE_PYTHON_SYMBOL(PyIter_Next);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -466,4 +470,6 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyObject_Str			pythonLib->PyObject_Str
 #define	PyObject_IsTrue			pythonLib->PyObject_IsTrue
 #define PyFloat_AsDouble		pythonLib->PyFloat_AsDouble
+#define	PyObject_GetIter		pythonLib->PyObject_GetIter
+#define	PyIter_Next				pythonLib->PyIter_Next
 }

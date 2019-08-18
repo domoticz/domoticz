@@ -462,15 +462,27 @@ namespace Plugins {
 			}
 			PyObject* pObj = Py_BuildValue("s", sHeaderText.c_str());
 			PyObject* pPrevObj = PyDict_GetItemString((PyObject*)m_Headers, sHeaderName.c_str());
-			// If the header is not unique, we concatenate with '\n'. RFC2616 recommends comma, but it doesn't work for cookies for instance
+			// Encode multi headers in a list
 			if (pPrevObj != NULL) {
-				std::string sCombin = PyUnicode_AsUTF8(pPrevObj);
-				sCombin += '\n' + sHeaderText;
-				PyObject*   pObjCombin = Py_BuildValue("s", sCombin.c_str());
-				if (PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pObjCombin) == -1) {
-					_log.Log(LOG_ERROR, "(%s) failed to append key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
+				PyObject* pListObj = pPrevObj;
+				// First duplicate? Create a list and add previous value
+				if (!PyList_Check(pListObj))
+				{
+					pListObj = PyList_New(1);
+					if (!pListObj)
+					{
+						_log.Log(LOG_ERROR, "(%s) failed to create list to handle duplicate header. Name '%s'.", __func__, sHeaderName.c_str());
+						return;
+					}
+					PyList_SetItem(pListObj, 0, pPrevObj);
+					Py_INCREF(pPrevObj);
+					PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pListObj);
+					Py_DECREF(pListObj);
 				}
-				Py_DECREF(pObjCombin);
+				// Append new value to the list
+				if (PyList_Append(pListObj, pObj) == -1) {
+					_log.Log(LOG_ERROR, "(%s) failed to append to list key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
+				}
 			}
 			else if (PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pObj) == -1) {
 				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
@@ -863,8 +875,46 @@ namespace Plugins {
 					while (PyDict_Next(pHeaders, &pos, &key, &value))
 					{
 						std::string	sKey = PyUnicode_AsUTF8(key);
-						std::string	sValue = PyUnicode_AsUTF8(value);
-						sHttp += sKey + ": " + sValue + "\r\n";
+						if (PyUnicode_Check(value))
+						{
+							std::string	sValue = PyUnicode_AsUTF8(value);
+							sHttp += sKey + ": " + sValue + "\r\n";
+						}
+						else if (PyBytes_Check(value))
+						{
+							const char* pBytes = PyBytes_AsString(value);
+							sHttp += sKey + ": " + pBytes + "\r\n";
+						}
+						else if (value->ob_type->tp_name == std::string("bytearray"))
+						{
+							const char* pByteArray = PyByteArray_AsString(value);
+							sHttp += sKey + ": " + pByteArray + "\r\n";
+						}
+						else if (PyList_Check(value))
+						{
+							PyObject* iterator = PyObject_GetIter(value);
+							PyObject* item;
+							while (item = PyIter_Next(iterator)) {
+								if (PyUnicode_Check(item))
+								{
+									std::string	sValue = PyUnicode_AsUTF8(item);
+									sHttp += sKey + ": " + sValue + "\r\n";
+								}
+								else if (PyBytes_Check(item))
+								{
+									const char* pBytes = PyBytes_AsString(item);
+									sHttp += sKey + ": " + pBytes + "\r\n";
+								}
+								else if (item->ob_type->tp_name == std::string("bytearray"))
+								{
+									const char* pByteArray = PyByteArray_AsString(item);
+									sHttp += sKey + ": " + pByteArray + "\r\n";
+								}
+								Py_DECREF(item);
+							}
+
+							Py_DECREF(iterator);
+						}
 					}
 				}
 				else
