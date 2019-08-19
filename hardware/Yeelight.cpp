@@ -317,7 +317,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 			}
 			else
 			{
-				_log.Log(LOG_STATUS, "YeeLight: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+				_log.Log(LOG_STATUS, "YeeLight: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", pLed->color.mode, szTmp);
 			}
 			// Send brigthness command
 			ss.str("");
@@ -356,16 +356,16 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		case Color_DiscoMode:
 			sendOnFirst = true;
 			// simulate strobe effect - at time of writing, minimum timing allowed by Yeelight is 50ms
-			_log.Log(LOG_STATUS, "Yeelight: Disco Mode - simulate strobe effect, if you have a suggestion for what it should do, please post on the Domoticz forum");
+			_log.Log(LOG_STATUS, "Yeelight: Disco Mode - simulate strobe effect, if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", szTmp);
 			message = "{\"id\":1,\"method\":\"start_cf\",\"params\":[ 50, 0, \"";
 			message += "50, 2, 5000, 100, ";
 			message += "50, 2, 5000, 1\"]}\r\n";
 			break;
 		case Color_DiscoSpeedFasterLong:
-			_log.Log(LOG_STATUS, "Yeelight: Exclude Lamp - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
+			_log.Log(LOG_STATUS, "Yeelight: Exclude Lamp - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", szTmp);
 			break;
 		default:
-			_log.Log(LOG_STATUS, "YeeLight: Unhandled WriteToHardware command: %d - if you have a suggestion for what it should do, please post on the Domoticz forum", command);
+			_log.Log(LOG_STATUS, "YeeLight: Unhandled WriteToHardware command: %d - if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", command, szTmp);
 			break;
 		}
 
@@ -399,7 +399,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	catch (const std::exception &e)
 	{
-		_log.Log(LOG_ERROR, "YeeLight: Exception: %s", e.what());
+		_log.Log(LOG_ERROR, "YeeLight: Exception: %s (IP: %s)", e.what(), szTmp);
 		return false;
 	}
 
