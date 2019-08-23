@@ -17,7 +17,7 @@
 #define BUIENRADAR_ACTUAL_URL "https://observations.buienradar.nl/1.0/actual/weatherstation/"
 
 #ifdef _DEBUG
-#define DEBUG_BUIENRADARR
+//#define DEBUG_BUIENRADARR
 //#define DEBUG_BUIENRADARW
 #endif
 
@@ -154,11 +154,8 @@ bool CBuienRadar::WriteToHardware(const char* pdata, const unsigned char length)
 
 std::string CBuienRadar::GetForecastURL()
 {
-	std::stringstream sURL;
-	//std::string szLoc = CURLEncode::URLEncode(m_Location);
-	//sURL << "https://api.weather.com/v3/location/point?geocode=" << szLoc << "&language=en-US&format=json&apiKey=" << m_APIKey;
-	//sURL << "http://www.BuienRadar.com/cgi-bin/findweather/getForecast?query=" << szLoc;
-	return sURL.str();
+	std::string szURL = "https://gadgets.buienradar.nl/gadget/forecastandstation/" + std::to_string(m_iNearestStationID);
+	return szURL;
 }
 
 bool CBuienRadar::FindNearestStationID()
