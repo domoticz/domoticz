@@ -93,7 +93,7 @@ namespace OpenZWave
 	/** \brief Implements a platform-independent log...written to the console and, optionally, a file.
 	 * \ingroup Platform
 	 */
-	class Log
+	class OPENZWAVE_EXPORT Log
 	{
 		public:
 			/** \brief Create a log.

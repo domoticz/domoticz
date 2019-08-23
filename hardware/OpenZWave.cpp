@@ -1510,6 +1510,9 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 {
 	if (m_pManager == NULL)
 		return;
+	if (!m_pManager->IsValueValid(vID))
+		return;
+
 	if (m_controllerID == 0)
 		return;
 	uint8_t commandclass = vID.GetCommandClassId();
@@ -2304,6 +2307,9 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 {
 	if (m_pManager == NULL)
 		return;
+	if (!m_pManager->IsValueValid(vID))
+		return;
+
 	if (m_controllerID == 0)
 		return;
 
@@ -2383,6 +2389,9 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 {
 	if (m_pManager == NULL)
 		return;
+	if (!m_pManager->IsValueValid(vID))
+		return;
+
 	if (m_controllerID == 0)
 		return;
 

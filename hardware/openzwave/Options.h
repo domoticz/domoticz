@@ -122,10 +122,7 @@ namespace OpenZWave
 			 * \return a pointer to the Options singleton object.
 			 * \see Create, Destroy
 			 */
-			static Options* Get()
-			{
-				return s_instance;
-			}
+			static Options* Get();
 
 			/**
 			 * Locks the options.

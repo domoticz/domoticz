@@ -1070,6 +1070,15 @@ namespace OpenZWave
 			bool IsValuePolled(ValueID const& _id);
 
 			/**
+			 * \brief Test whether the ValueID is valid.
+			 * \param _id The unique identifier of the value.
+			 * \return true if the valueID is valid, otherwise false.
+			 * \see ValueID
+			 */
+			bool IsValueValid(ValueID const& _id);
+
+
+			/**
 			 * \brief Gets a the value of a Bit from a BitSet ValueID
 			 * \param _id The unique identifier of the value.
 			 * \param _pos the Bit you want to test for
