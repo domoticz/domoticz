@@ -23,6 +23,7 @@
 #include "../hardware/DarkSky.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/OpenWeatherMap.h"
+#include "../hardware/Buienradar.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/LogitechMediaServer.h"
@@ -1215,6 +1216,9 @@ namespace http {
 			else if (htype == HTYPE_USBtinGateway) {
 				//All fine here
 			}
+			else if (htype == HTYPE_BuienRadar) {
+				//All fine here
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_DarkSky) ||
@@ -1603,6 +1607,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_USBtinGateway) {
+				//All fine here
+			}
+			else if (htype == HTYPE_BuienRadar) {
 				//All fine here
 			}
 			else if (
@@ -8765,6 +8772,15 @@ namespace http {
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
+						else if (pHardware->HwdType == HTYPE_BuienRadar)
+						{
+							CBuienRadar* pWHardware = reinterpret_cast<CBuienRadar*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (forecast_url != "")
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
 					}
 
 					if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_PythonPlugin))
@@ -11327,8 +11343,6 @@ namespace http {
 
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
-						continue;
-					if (hType == HTYPE_RESERVED_FOR_YOU_1)
 						continue;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];

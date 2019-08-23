@@ -242,7 +242,7 @@ static const STR_TABLE_SINGLE	HardwareTypeTable[] =
 	{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller",										"HTTP(S) Poller" },
 	{ HTYPE_RAVEn, "Rainforest RAVEn USB",											"Rainforest" },
 	{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface",							"S0 Meter" },
-	{ HTYPE_RESERVED_FOR_YOU_1, "",													"" },
+	{ HTYPE_BuienRadar, "Buienradar (Dutch Weather Information)",					"BuienRadar" },
 	{ HTYPE_AccuWeather, "AccuWeather (Weather Lookup)",							"AccuWeather" },
 	{ HTYPE_BleBox, "BleBox devices",												"BleBox" },
 	{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN",		"Ec3kMeter" },

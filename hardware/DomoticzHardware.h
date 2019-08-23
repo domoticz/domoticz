@@ -100,7 +100,8 @@ protected:
 	void SendCurrentSensor(const int NodeID, const int BatteryLevel, const float Current1, const float Current2, const float Current3, const std::string &defaultname, const int RssiLevel = 12);
 	void SendPercentageSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname);
 	void SendWaterflowSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float LPM, const std::string &defaultname);
-	void SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname, const int RssiLevel = 12);
+	void SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string& defaultname, const int RssiLevel = 12);
+	void SendRainSensorWU(const int NodeID, const int BatteryLevel, const float RainCounter, const float LastHour, const std::string& defaultname, const int RssiLevel = 12);
 	void SendRainRateSensor(const int NodeID, const int BatteryLevel, const float RainRate, const std::string &defaultname, const int RssiLevel = 12);
 	float GetRainSensorValue(const int NodeID, bool &bExists);
 	bool GetWindSensorValue(const int NodeID, int &WindDir, float &WindSpeed, float &WindGust, float &twindtemp, float &windchill, bool bHaveWindTemp, bool &bExists);
@@ -109,7 +110,8 @@ protected:
 	void SendSolarRadiationSensor(const unsigned char NodeID, const int BatteryLevel, const float radiation, const std::string &defaultname);
 	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance, const std::string &defaultname);
 	void SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string &defaultname, const int RssiLevel = 12);
-	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI, const std::string &defaultname, const int RssiLevel = 12);
+	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI, const std::string& defaultname, const int RssiLevel = 12);
+	void SendVisibilitySensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Visibility, const std::string& defaultname);
 	void SendBlindSensor(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const uint8_t Command, const std::string &defaultname, const int RssiLevel = 12);
 	void SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname);
 	void SendAlertSensor(const int NodeID, const int BatteryLevel, const int alertLevel, const std::string &message, const std::string &defaultname);
