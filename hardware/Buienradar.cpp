@@ -129,7 +129,7 @@ void CBuienRadar::Do_Work()
 	GetMeterDetails();
 	GetRainPrediction();
 #endif
-	int sec_counter = 590;
+	int sec_counter = 593;
 	_log.Log(LOG_STATUS, "BuienRadar: Worker started...");
 
 	while (!IsStopRequested(1000))
@@ -138,13 +138,14 @@ void CBuienRadar::Do_Work()
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-#ifdef DEBUG_BUIENRADARR
-		if (sec_counter % 10 == 0)
-#else
 		if (sec_counter % 600 == 0)
-#endif
 		{
+			//Every 10 minutes
 			GetMeterDetails();
+		}
+		if (sec_counter % 300 == 0)
+		{
+			//Every 5 minutes
 			GetRainPrediction();
 		}
 	}
