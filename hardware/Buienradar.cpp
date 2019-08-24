@@ -10,15 +10,23 @@
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
+#include <sstream>
 
 #define round(a) ( int ) ( a + .5 )
 
 #define BUIENRADAR_URL "https://data.buienradar.nl/2.0/feed/json"
-#define BUIENRADAR_ACTUAL_URL "https://observations.buienradar.nl/1.0/actual/weatherstation/"
+#define BUIENRADAR_ACTUAL_URL "https://observations.buienradar.nl/1.0/actual/weatherstation/" //station_id
+#define BUIENRADAR_GRAFIEK_URL "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/" //station_id
+//#define BUIENRARA_GRAFIEK_HISTORY_URL "https://graphdata.buienradar.nl/1.0/actualarchive/weatherstation/6370?startDate=2019-09-15"
+
+#define BUIENRADAR_RAIN "https://gadgets.buienradar.nl/data/raintext/?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
+#define RAIN_ALARM_DURATION 15
+#define RAIN_SWITCH_THRESHOLD 70
+
 
 #ifdef _DEBUG
-//#define DEBUG_BUIENRADARR
-//#define DEBUG_BUIENRADARW
+// #define DEBUG_BUIENRADARR
+// #define DEBUG_BUIENRADARW
 #endif
 
 #ifdef DEBUG_BUIENRADARW
@@ -35,17 +43,11 @@ void SaveString2Disk(std::string str, std::string filename)
 #ifdef DEBUG_BUIENRADARR
 std::string ReadFile(std::string filename)
 {
-	std::ifstream file;
-	std::string sResult = "";
-	file.open(filename.c_str());
+	std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open())
 		return "";
-	std::string sLine;
-	while (!file.eof())
-	{
-		getline(file, sLine);
-		sResult += sLine;
-	}
+	std::string sResult((std::istreambuf_iterator<char>(file)),
+		(std::istreambuf_iterator<char>()));
 	file.close();
 	return sResult;
 }
@@ -125,6 +127,7 @@ void CBuienRadar::Do_Work()
 {
 #ifdef DEBUG_BUIENRADARR
 	GetMeterDetails();
+	GetRainPrediction();
 #endif
 	int sec_counter = 590;
 	_log.Log(LOG_STATUS, "BuienRadar: Worker started...");
@@ -142,6 +145,7 @@ void CBuienRadar::Do_Work()
 #endif
 		{
 			GetMeterDetails();
+			GetRainPrediction();
 		}
 	}
 	_log.Log(LOG_STATUS, "BuienRadar: Worker stopped...");
@@ -184,8 +188,11 @@ bool CBuienRadar::FindNearestStationID()
 		return false;
 	}
 
-	double my_Latitude = std::stod(Latitude);
-	double my_Longitude = std::stod(Longitude);
+	m_szMyLatitude = Latitude;
+	m_szMyLongitude = Longitude;
+
+	double MyLatitude = std::stod(Latitude);
+	double MyLongitude = std::stod(Longitude);
 
 	std::string sResult;
 #ifdef DEBUG_BUIENRADARR
@@ -237,7 +244,7 @@ bool CBuienRadar::FindNearestStationID()
 		double lon = itt["lon"].asDouble();
 
 		double distance_km = distanceEarth(
-			my_Latitude, my_Longitude,
+			MyLatitude, MyLongitude,
 			lat, lon
 		);
 		if (distance_km < shortest_distance_km)
@@ -432,3 +439,95 @@ void CBuienRadar::GetMeterDetails()
 	}
 }
 
+void CBuienRadar::GetRainPrediction()
+{
+	if (m_szMyLatitude.empty())
+		return;
+	std::string sResult;
+#ifdef DEBUG_BUIENRADARR
+	sResult = ReadFile("E:\\br_rain.txt");
+#else
+	std::string szUrl = BUIENRADAR_RAIN + m_szMyLatitude + "&lon=" + m_szMyLongitude;
+	bool bret = HTTPClient::GET(szUrl, sResult);
+	if (!bret)
+	{
+		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
+		return;
+	}
+#ifdef DEBUG_BUIENRADARW
+	SaveString2Disk(sResult, "E:\\br_rain.txt");
+#endif
+#endif
+
+	time_t now = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	int startTime = (ltime.tm_hour * 60) + ltime.tm_min;
+#ifdef DEBUG_BUIENRADARR
+	startTime = (13 * 60) + 30;
+#endif
+	int endTime = startTime + RAIN_ALARM_DURATION;
+	int endTimeHour = startTime + 60;
+
+	std::istringstream iStream(sResult);
+	std::string sLine;
+
+	double total_rain_in_duration = 0;
+	int total_rain_values_in_duration = 0;
+	double total_rain_next_hour = 0;
+	int total_rain_values_next_hour = 0;
+
+	//values are between 0 (no rain) till 255 (heavy rain)
+	//mm/h = 10^((value -109)/32), 77 = 0.1 mm.h
+
+	while (!iStream.eof())
+	{
+		std::getline(iStream, sLine);
+		if (!sLine.empty())
+		{
+			std::vector<std::string> strarray;
+			StringSplit(sLine, "|", strarray);
+			if (strarray.size() != 2)
+				return;
+
+			int rain_value = std::stoi(strarray[0]);
+
+			StringSplit(strarray[1], ":", strarray);
+			if (strarray.size() != 2)
+				return;
+
+			int hour = std::stoi(strarray[0]);
+			int min = std::stoi(strarray[1]);
+
+			int rain_time = (hour * 60) + min;
+
+			if ((rain_time >= startTime) && (rain_time <= endTimeHour))
+			{
+				total_rain_next_hour += rain_value;
+				total_rain_values_next_hour++;
+			}
+
+			if ((rain_time < startTime) || (rain_time > endTime))
+				continue;
+
+			total_rain_in_duration += rain_value;
+			total_rain_values_in_duration++;
+		}
+	}
+
+	if (total_rain_values_in_duration) {
+		double rain_avg = total_rain_in_duration / total_rain_values_in_duration;
+		//double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
+		double rain_perc = rain_avg * 0.392156862745098;
+		SendPercentageSensor(1, 1, 255, static_cast<float>(rain_perc), "Rain Intensity");
+		SendSwitch(1, 1, 255, (rain_avg >= RAIN_SWITCH_THRESHOLD), 255, "Is it Raining");
+	}
+	if (total_rain_values_next_hour)
+	{
+		double rain_avg = total_rain_next_hour / total_rain_values_next_hour;
+		double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
+		SendCustomSensor(1, 1, 255, static_cast<float>(rain_mm_hour), "Rainfall next Hour", "mm/h");
+	}
+
+}
