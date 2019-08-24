@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="45" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="48" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -819,6 +819,7 @@
     <Product config="hank/hkzw-so05-smartplug.xml" id="000a" name="HKZW-SO05 Smart Plug" type="0100"/>
     <Product config="hank/hkzw-ms01.xml" id="0006" name="HKZW-MS01 Multisensor" type="0200"/>
     <Product config="hank/hkzw-ms02-200.xml" id="0012" name="HKZW-MS02 Motion Sensor" type="0200"/>
+    <Product config="hank/hkzw-ms02-300.xml" id="0012" name="HKZW-MS02 Motion Sensor" type="0300"/>
     <Product config="hank/hkzw-dws01.xml" id="0008" name="HKZW-DWS01 Door/Window Sensor" type="0200"/>
     <Product config="hank/hkzw-dws01.xml" id="0008" name="HKZW-DWS01 Door/Window Sensor" type="0201"/>
     <Product config="hank/scenecontroller1.xml" id="0009" name="HKZW-SCN01 Scene Controller" type="0200"/>
@@ -1068,6 +1069,7 @@
     <Product config="linear/ngd00z.xml" id="3530" name="GD00Z-4 Garage Door Opener Remote Controller" type="4744"/>
     <Product config="linear/gd00z-7.xml" id="3531" name="GD00Z-7 Garage Door Opener Remote Controller" type="4744"/>
     <Product config="linear/LB60Z-1.xml" id="3038" name="LB60Z-1 Dimmable LED Light Bulb" type="4754"/>
+    <Product config="linear/LB60Z-1.xml" id="4252" name="LB30Z-1 Dimmable LED Light Bulb" type="4754"/>
     <Product id="3133" name="FS20Z Isolated Contact Fixture Module" type="5246"/>
     <Product id="3030" name="PS15Z-2 Plug-in Appliance Module" type="5250"/>
     <Product id="3530" name="WO15Z-1 Single Wall Outlet" type="5252"/>
@@ -1454,7 +1456,9 @@
   <Manufacturer id="0286" name="Shenzhen Easyhome Technology"></Manufacturer>
   <Manufacturer id="021C" name="Shenzhen iSurpass Technology"></Manufacturer>
   <Manufacturer id="037A" name="Shenzhen JBT Smart Lighting"></Manufacturer>
-  <Manufacturer id="021D" name="Shenzhen Kaadas Intelligent Technology"></Manufacturer>
+  <Manufacturer id="021D" name="Shenzhen Kaadas Intelligent Technology">
+    <Product config="" id="0001" name="Alfred DB2 Deadbolt" type="0003"/>
+  </Manufacturer>
   <Manufacturer id="0211" name="Shenzhen Liao Wang Tong Da Technology"></Manufacturer>
   <Manufacturer id="0406" name="Shenzhen Meian Technology"></Manufacturer>
   <Manufacturer id="0258" name="Shenzhen Neo Electronics Co Ltd">
