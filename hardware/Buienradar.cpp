@@ -397,7 +397,7 @@ void CBuienRadar::GetMeterDetails()
 	{
 		int wind_direction = root["winddirectiondegrees"].asInt();
 		float wind_gusts = root["windgusts"].asFloat();
-		float wind_speed = root["windspeed "].asFloat();
+		float wind_speed = root["windspeed"].asFloat();
 
 		float wind_chill;
 		if ((temp < 10.0) && (wind_speed >= 1.4))
