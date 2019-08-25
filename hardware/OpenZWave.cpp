@@ -2277,6 +2277,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			{
 				if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
 				{
+					_device.instanceID = vOrgIndex;
 					_device.devType = ZDTYPE_SWITCH_DIMMER;
 					_device.intvalue = byteValue;
 					InsertDevice(_device);
