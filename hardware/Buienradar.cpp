@@ -416,8 +416,8 @@ void CBuienRadar::GetMeterDetails()
 
 	if (!root["sunpower"].empty())
 	{
-		float sunpower = root["sunpower"].asFloat() / 100.0F;
-		SendUVSensor(1, 1, 255, sunpower, "UV");
+		float sunpower = root["sunpower"].asFloat();
+		SendCustomSensor(2, 1, 255, sunpower, "Sun Power", "watt/m2");
 	}
 
 	float total_rain_today = -1;
