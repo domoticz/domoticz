@@ -520,14 +520,14 @@ void CBuienRadar::GetRainPrediction()
 	if (total_rain_values_in_duration) {
 		double rain_avg = total_rain_in_duration / total_rain_values_in_duration;
 		//double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
-		double rain_perc = rain_avg * 0.392156862745098;
+		double rain_perc = (rain_avg == 0) ? 0 : (rain_avg * 0.392156862745098);
 		SendPercentageSensor(1, 1, 255, static_cast<float>(rain_perc), "Rain Intensity");
 		SendSwitch(1, 1, 255, (rain_avg >= RAIN_SWITCH_THRESHOLD), 255, "Is it Raining");
 	}
 	if (total_rain_values_next_hour)
 	{
 		double rain_avg = total_rain_next_hour / total_rain_values_next_hour;
-		double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
+		double rain_mm_hour = (rain_avg == 0) ? 0 : pow(10, ((rain_avg - 109) / 32));
 		SendCustomSensor(1, 1, 255, static_cast<float>(rain_mm_hour), "Rainfall next Hour", "mm/h");
 	}
 
