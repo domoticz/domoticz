@@ -155,6 +155,17 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	if (bFoundPort)
 		return ret;
 
+	for (int ii = 1; ii < 255; ii++) // checking ports from COM0 to COM255
+	{
+		sprintf(szPortName, "COM%d", ii);
+
+		TCHAR lpTargetPath[200]; // buffer to store the path of the COMPORTS
+		if (QueryDosDevice(szPortName, (LPSTR)lpTargetPath, sizeof(lpTargetPath)))
+		{
+			ret.push_back(szPortName);
+		}
+	}
+/*
 	//Scan old fashion way (SLOW!)
 	COMMCONFIG cc;
 	DWORD dwSize = sizeof(COMMCONFIG);
@@ -208,6 +219,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			// --------------
 		}
 	}
+*/
 	// Method 3: EnumSerialPortsWindows, often fails
 	// ---------
 	if (!bFoundPort) {
