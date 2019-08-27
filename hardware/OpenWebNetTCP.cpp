@@ -509,7 +509,7 @@ bool COpenWebNetTCP::ownAuthentication(csocket *connectionSocket)
 	{
 		if (!m_ownPassword.length())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP:  bticino gateway requires the password");
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: bticino gateway requires the password");
 			return false;
 		}
 
@@ -528,7 +528,7 @@ bool COpenWebNetTCP::ownAuthentication(csocket *connectionSocket)
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: frame request error:'%s'", strFrame);
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: frame request error:'%s'", strFrame.c_str());
 			return false;
 		}
 	}
