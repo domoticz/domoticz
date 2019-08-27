@@ -836,6 +836,28 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
 }
 
 /**
+	Insert/Update sound diffusion device
+**/
+void COpenWebNetTCP::UpdateSoundDiffusion(const int who, const int where, const int what, const int iInterface, const int BatteryLevel, const char* devname)
+{
+	//NOTE: interface id (bus identifier) go in 'Unit' field
+	//make device ID
+	int NodeID = (((int)who << 16) & 0xFFFF0000) | (((int)where) & 0x0000FFFF);
+
+	/* insert switch type */
+	char szIdx[10];
+	sprintf(szIdx, "%07X", NodeID);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
+	if (result.empty())
+	{
+		//m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeLighting2, sTypeAC, STYPE_Media, 0, "Unavailable", "OpenWebNet Media", 12, 255, 1);
+	}
+
+	//TODO: manage SoundDiffusion device like dimmer (on, off and set volume) or like media device (check how to do it)
+}
+
+/**
 	Insert/Update  switch device
 **/
 void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what, const int iInterface, const int BatteryLevel, const char* devname)
@@ -1267,6 +1289,15 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 		}
 		break;
+
+	case WHO_SOUND_DIFFUSION:						// 22
+		//iAppValue = atoi(what.c_str());
+		//iWhere = atoi(where.c_str());
+		//devname = OPENWEBNET_SOUND_DIFFUSION;
+		//devname += " " + where;
+		//UpdateSoundDiffusion(WHO_SOUND_DIFFUSION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
+		//break;
+
 	case WHO_SCENARIO:                              // 0
 	case WHO_LOAD_CONTROL:                          // 3
 	case WHO_DOOR_ENTRY_SYSTEM:                     // 6
@@ -1276,7 +1307,6 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
 	case WHO_AUDIO:                                 // 16
 	case WHO_SCENARIO_PROGRAMMING:                  // 17
-	case WHO_SOUND_DIFFUSION:						// 22
 	case WHO_LIHGTING_MANAGEMENT:                   // 24
 	case WHO_ZIGBEE_DIAGNOSTIC:                     // 1000
 	case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
@@ -1327,7 +1357,6 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 		case WHO_AUTOMATION:
 			//Blinds/Window command
 			sprintf(szIdx, "%07X", ((who << 16) & 0xffff0000) | (where & 0x0000ffff));
-
 			result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (SwitchType==%d)",  //*******is there a better method for get
 				m_HwdID, szIdx, STYPE_BlindsPercentageInverted);																		   //*******SUBtype (STYPE_BlindsPercentageInverted) ??
 
@@ -1401,16 +1430,27 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 				what = AUXILIARY_WHAT_ON;
 			}
 			break;
+		
+		case 0xF00: // Custom command, fake who..
+			sprintf(szIdx, "%07X", ((who << 16) & 0xffff0000) | (where & 0x0000ffff));
+			result = m_sql.safe_query("SELECT StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s')", m_HwdID, szIdx);
+			if (!result.empty())
+			{
+				// Custom command fount, send it!
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: send custom command: '%s'", result[0][0].c_str());
+				std::vector<bt_openwebnet> responses;
+				bt_openwebnet request(result[0][0]);
+				if (sendCommand(request, responses))
+				{
+					//if (responses.size() > 0) return responses.at(0).IsOKFrame();
+					return true; // if send ok, return always ok without check the response..
+				}
+			}
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: custom command error: '%s'", result[0][0].c_str());
+			return false; // error
 		default:
 			break;
 		}
-
-		//int used = 1;
-		if (!FindDevice(who, where, iInterface, NULL)) {
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: command received for unknown device : %d/%d", who, where);
-			return false;
-		}
-
 		break;
 	default:
 		_log.Log(LOG_STATUS, "COpenWebNetTCP unknown command: packettype=%d subtype=%d", packettype, subtype);
@@ -1612,6 +1652,21 @@ void COpenWebNetTCP::scan_automation_lighting(const int cen_area)
 }
 
 /**
+	automatic scan of sound diffusion device
+**/
+void COpenWebNetTCP::scan_sound_diffusion()
+{
+	bt_openwebnet request;
+	std::vector<bt_openwebnet> responses;
+	std::stringstream whoStr;
+	std::stringstream whereStr;
+	whoStr << WHO_SOUND_DIFFUSION;
+	whereStr << 0;
+	request.CreateStateMsgOpen(whoStr.str(), whereStr.str());
+	sendCommand(request, responses, 0, false);
+}
+
+/**
 	automatic scan of temperature control device
 **/
 void COpenWebNetTCP::scan_temperature_control()
@@ -1761,6 +1816,9 @@ void COpenWebNetTCP::scan_device()
 		//_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning temperature control...");
 		//scan_temperature_control();
 
+		// Scan of sound diffusion device 
+		//scan_sound_diffusion();
+
 		_log.Log(LOG_STATUS, "COpenWebNetTCP: scan device complete, wait all the update data..");
 
 		/* Update complete scan time*/
@@ -1830,73 +1888,4 @@ void COpenWebNetTCP::Do_Work()
 		m_LastHeartbeat = mytime(NULL);
 	}
 	_log.Log(LOG_STATUS, "COpenWebNetTCP: Heartbeat worker stopped...");
-}
-
-/**
-   Find OpenWebNetDevice in DB
-**/
-bool COpenWebNetTCP::FindDevice(const int who, const int where, const int iInterface, int* used)
-{
-	std::vector<std::vector<std::string> > result;
-	int devType = -1;
-
-	//make device ID
-	int NodeID = (((int)who << 16) & 0xFFFF0000) | (((int)where) & 0x0000FFFF);
-
-	switch (who) {
-	case WHO_LIGHTING:                              // 1
-	case WHO_AUTOMATION:                            // 2
-	case WHO_AUXILIARY:                             // 9
-	case WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION:     // 25
-		//devType = pTypeGeneralSwitch;
-		devType = pTypeLighting2;
-		break;
-	case WHO_TEMPERATURE_CONTROL:                   // 4
-		return true; // device always present
-	case WHO_SCENARIO:                              // 0
-	case WHO_LOAD_CONTROL:                          // 3
-	case WHO_BURGLAR_ALARM:                         // 5
-	case WHO_DOOR_ENTRY_SYSTEM:                     // 6
-	case WHO_MULTIMEDIA:                            // 7
-	case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
-	case WHO_LIGHT_SHUTTER_ACTUATOR_LOCK:           // 14
-	case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
-	case WHO_AUDIO:                                 // 16
-	case WHO_SCENARIO_PROGRAMMING:                  // 17
-	case WHO_ENERGY_MANAGEMENT:                     // 18
-	case WHO_LIHGTING_MANAGEMENT:                   // 24
-	case WHO_ZIGBEE_DIAGNOSTIC:                     // 1000
-	case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
-	case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
-	case WHO_DEVICE_DIAGNOSTIC:                     // 1013
-	default:
-		return false;
-	}
-
-	if (devType >= 0)
-	{
-		char szIdx[10];
-		sprintf(szIdx, "%07X", NodeID);
-
-		if (used != NULL)
-		{
-			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND Used == %d",
-				m_HwdID, szIdx, iInterface, devType, *used);
-		}
-		else
-		{
-			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d)",
-				m_HwdID, szIdx, iInterface, devType);
-		}
-	}
-	else
-		return false;
-
-
-	if (!result.empty())
-	{
-		return true;
-	}
-
-	return false;
 }
