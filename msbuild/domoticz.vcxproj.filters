@@ -510,6 +510,9 @@
     <Filter Include="www\app\hardware\setup">
       <UniqueIdentifier>{a48a127e-d23d-445b-a0d7-8105024adac4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Buienradar">
+      <UniqueIdentifier>{c18fadb6-e7e3-4f2b-bfa1-086da31231a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2221,6 +2224,9 @@
     <ClInclude Include="..\main\HTMLSanitizer.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Buienradar.h">
+      <Filter>Devices\Buienradar</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -3002,6 +3008,9 @@
     </ClCompile>
     <ClCompile Include="..\main\HTMLSanitizer.cpp">
       <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Buienradar.cpp">
+      <Filter>Devices\Buienradar</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

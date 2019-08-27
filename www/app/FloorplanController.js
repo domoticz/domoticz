@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('FloorplanController', ['$scope', '$rootScope', '$location', '$window', '$http', '$interval', '$timeout', '$compile', 'permissions', function ($scope, $rootScope, $location, $window, $http, $interval, $timeout, $compile, permissions) {
+	app.controller('FloorplanController', ['$scope', '$rootScope', '$location', '$window', '$http', '$interval', '$timeout', '$compile', 'livesocket', 'permissions', function ($scope, $rootScope, $location, $window, $http, $interval, $timeout, $compile, permissions) {
 
 		$scope.debug = 0;
 		$scope.floorPlans;
@@ -7,9 +7,13 @@ define(['app'], function (app) {
 		$scope.actFloorplan;
 		$scope.browser = "unknown";
 		$scope.lastUpdateTime = 0;
-		$scope.isScrolling = false;	// used on tablets & phones
+		$scope.isScrolling = false;		// used on tablets & phones
 		$scope.pendingScroll = false;	// used on tablets & phones
 		$scope.lastTouch = 0;			// used on tablets & phones
+		$scope.PlanWebSocket = undefined;
+		$scope.socketCount = 0;
+		$scope.updateCount = 0;
+		$scope.totalUpdateCount = 0;
 
 		$scope.makeHTMLnode = function (tag, attrs) {
 			var el = document.createElement(tag);
@@ -125,11 +129,24 @@ define(['app'], function (app) {
 				if (AllLoaded == true) {
 					Device.checkDefs();
 					$(".FloorRooms").click(function (event) { $scope.RoomClick(event) });
-					$scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
+					if ("WebSocket" in window) { // Prefer WebSockets but fall back to polling
+						FPWebSocket();
+					} else {
+						$scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
+					}
 					$scope.FloorplanResize();
 				}
 			}
 			else generate_noty('error', '<b>ImageLoaded Error</b><br>Element not found: ' + tagName, false);
+		}
+
+		$scope.GetFloorplanIdx = function (floorID) {
+			for (i = 0; i < $scope.floorPlans.length; i++) { 
+				if ($scope.floorPlans[i].floorID == floorID) {
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		$scope.FloorplanResize = function () {
@@ -144,7 +161,7 @@ define(['app'], function (app) {
 					$("#floorplancontent").offset({ top: 0 });
 				}
 				$("#floorplancontent").width($("#main-view").width()).height(wrpHeight);
-				if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Window: ' + $window.innerWidth + 'x' + $window.innerHeight + '</b><br/><b>View: ' + $("#floorplancontent").width() + 'x' + wrpHeight + '</b>', 10000);
+				if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Window: ' + $window.innerWidth + 'x' + $window.innerHeight + '</b><br/><b>View: ' + $("#floorplancontent").width() + 'x' + wrpHeight + '</b>', 1000);
 				$(".imageparent").each(function (i) { $("#" + $(this).attr('id') + '_svg').width($("#floorplancontent").width()).height(wrpHeight); });
 				if ($scope.FloorplanCount > 1) {
 					$("#BulletGroup:first").css("left", ($window.innerWidth - $("#BulletGroup:first").width()) / 2)
@@ -275,11 +292,11 @@ define(['app'], function (app) {
 				if (typeof data.result != 'undefined') {
 					$.each(data.result, function (i, item) {
 						var compoundDevice = (item.Type.indexOf('+') >= 0);
-						item.Scale = $scope.floorPlans[$scope.actFloorplan].scaleFactor;
 						$(".Device_" + item.idx).each(function () {
 							var aSplit = $(this).attr("id").split("_");
 							item.FloorID = aSplit[1];
 							item.PlanID = aSplit[2];
+							item.Scale = $scope.floorPlans[$scope.GetFloorplanIdx(item.FloorID)].scaleFactor;
 							if (compoundDevice) {
 								item.Type = aSplit[0];					// handle multi value sensors (Baro, Humidity, Temp etc)
 								item.CustomImage = 1;
@@ -340,9 +357,10 @@ define(['app'], function (app) {
 								item.Image = sDev.toLowerCase();
 								item.XOffset = Math.abs(item.XOffset) + ((k == 0) ? 0 : (50 * $scope.floorPlans[floorIdx].scaleFactor));
 								dev = Device.create(item);
+								var existing = document.getElementById(dev.uniquename);
 								if (dev.onFloorplan == true) {
 									try {
-										dev.htmlMinimum(elDevices);
+										dev.htmlMinimum(existing);
 									}
 									catch (err) {
 										generate_noty('error', '<b>Device draw error</b><br>' + err, false);
@@ -352,9 +370,10 @@ define(['app'], function (app) {
 						}
 						else {
 							dev = Device.create(item);
+							var existing = document.getElementById(dev.uniquename);
 							if (dev.onFloorplan == true) {
 								try {
-									dev.htmlMinimum(elDevices);
+									dev.htmlMinimum(existing);
 								}
 								catch (err) {
 									generate_noty('error', '<b>Device draw error</b><br>' + err, false);
@@ -391,7 +410,7 @@ define(['app'], function (app) {
 			$scope.ShowFPDevices(floorIdx);
 		}
 
-		ShowFloorplans = function (floorIdx) {
+		ShowFloorplans = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -538,24 +557,150 @@ define(['app'], function (app) {
 				});
 		}
 
-		init();
+		$scope.debugOn = function () {
+			$scope.debug = 1;
+		}
+		
+		$scope.debugOff = function () {
+			$scope.debug = 0;
+		}
+		
+		FPWebSocket = function () {
+
+			var loc = window.location;
+			if (loc.hash != '#/Floorplans') { // Shouldn't happen
+				$.cachenoty = generate_noty('error', '<b>WebSocket function aborting</b>', 3000);
+				return;
+			}
+			
+			if (typeof $scope.mytimer == 'undefined') {
+				$scope.mytimer = $interval(function () { FPWebSocket(); }, 3000);
+			}
+
+			if (typeof $scope.PlanWebSocket == 'undefined') {
+
+				var ws_uri;
+				if (loc.protocol === "https:") {
+					ws_uri = "wss:";
+				} else {
+					ws_uri = "ws:";
+				}
+				ws_uri += "//" + loc.host;
+				ws_uri += loc.pathname + "json";
+			   
+				// Let us open a web socket
+				$scope.PlanWebSocket = new WebSocket(ws_uri, 'domoticz');
+				
+				$scope.PlanWebSocket.onopen = function() {
+					$scope.socketCount += 1;
+					$scope.updateCount = 0;
+					if ($scope.debug > 0) {
+						$.cachenoty = generate_noty('info', '<b>Domoticz connection established</b>', 3000);
+					}
+					RefreshFPDevices(true);
+				};
+				
+				$scope.PlanWebSocket.onmessage = function (event) { 
+					var eventData = JSON.parse(event.data);
+					try {
+						if (typeof eventData.data != 'undefined') {
+							var data = JSON.parse(eventData.data);
+							if (typeof data.ActTime != 'undefined') {
+								$scope.lastUpdateTime = data.ActTime;
+							}
+							// Device updates
+							if ((typeof data.title != 'undefined') && (data.title == "Devices")) {
+								$.each(data.result, function (i, item) {
+									$scope.updateCount += 1;
+									$scope.totalUpdateCount += 1;
+									$(".Device_" + item.idx).each(function () {
+										if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Updating '+item.Name+'</b>', 500);
+										var compoundDevice = (item.Type.indexOf('+') >= 0);
+										var aSplit = $(this).attr("id").split("_");
+										item.FloorID = aSplit[1];
+										item.PlanID = aSplit[2];
+										item.Scale = $scope.floorPlans[$scope.GetFloorplanIdx(item.FloorID)].scaleFactor;
+										if (compoundDevice) {
+											item.Type = aSplit[0];					// handle multi value sensors (Baro, Humidity, Temp etc)
+											item.CustomImage = 1;
+											item.Image = aSplit[0].toLowerCase();
+										}
+										try {
+											var dev = Device.create(item);
+											var existing = document.getElementById(dev.uniquename);
+											if (existing != undefined) {
+												dev.htmlMinimum(existing.parentNode);
+											}
+										}
+										catch (err) {
+											$.cachenoty = generate_noty('error', '<b>Device refresh error</b> ' + dev.name + '<br>' + err, 5000);
+										}
+									});
+								});
+							}
+						} else {
+							if ((typeof eventData.event != 'undefined') && (eventData.event == 'notification')) {
+								$.cachenoty = generate_noty('info', '<b>'+eventData.Subject+'</b><br/>'+
+																	'<b>'+eventData.Text+'</b>', 10000);
+							}
+						}
+					}
+					catch (err) {
+						$.cachenoty = generate_noty('error', '<b>JSON parse error</b>' + err, 5000);
+					}
+
+				}
+				
+				$scope.PlanWebSocket.onerror = function (event) { 
+					if ($scope.debug > 0) $.cachenoty = generate_noty('error', '<b>[onerror] Code='+event.code+' reason='+event.reason+'</b>', 3000);
+					$scope.PlanWebSocket.close()
+				};
+				
+				$scope.PlanWebSocket.onclose = function(event) { 
+					if ($scope.debug > 0) {
+						$.cachenoty = generate_noty('error', '<b>Not connected to Domoticz</b>', 3000);
+					}
+					delete $scope.PlanWebSocket;
+					$scope.PlanWebSocket = undefined;
+					$scope.lastUpdateTime = 0;
+				}
+				
+			} else {
+				var d = new Date();
+				var elapsedSeconds = parseInt(d.getTime() / 1000);
+				if ($scope.debug > 0) {
+					var updateTime = new Date(0);
+					updateTime.setUTCSeconds($scope.lastUpdateTime);
+					$.cachenoty = generate_noty((($scope.PlanWebSocket.readyState == 1) ? 'info' : 'error'), 
+												'<b>Update count: '+$scope.updateCount+' of '+$scope.totalUpdateCount+'</b><br/>'+
+												'<b>Last seen: '+updateTime.toLocaleString()+' ('+(elapsedSeconds-$scope.lastUpdateTime)+' elapsed)</b><br/>'+
+												'<b>WebSocket #'+parseInt($scope.socketCount)+' is '+(($scope.PlanWebSocket.readyState == 1) ? 'Open' : 'NOT Open')+'</b>', 2500);
+				}
+			}
+		}
 
 		function init() {
 			try {
 				$scope.MakeGlobalConfig();
 				ShowFloorplans();
+				document.getElementById("cFloorplans").addEventListener("mouseover", $scope.debugOn);
+				document.getElementById("cFloorplans").addEventListener("mouseout", $scope.debugOff);
 			}
 			catch (err) {
 				generate_noty('error', '<b>Error Initialising Page</b><br>' + err, false);
 			}
 		};
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			$interval.cancel($scope.mytimer);
+			$scope.mytimer = undefined;
+			if ((typeof $scope.PlanWebSocket != 'undefined') && ($scope.PlanWebSocket.readyState < 2)){
+				$scope.PlanWebSocket.close()
 			}
+			document.getElementById("cFloorplans").removeEventListener("mouseover", $scope.debugOn);
+			document.getElementById("cFloorplans").removeEventListener("mouseout", $scope.debugOff);
 			$("body").trigger("pageexit");
 		});
 
+		init();
 	}]);
 });

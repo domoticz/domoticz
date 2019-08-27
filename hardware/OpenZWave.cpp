@@ -1510,6 +1510,9 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 {
 	if (m_pManager == NULL)
 		return;
+	if (!m_pManager->IsValueValid(vID))
+		return;
+
 	if (m_controllerID == 0)
 		return;
 	uint8_t commandclass = vID.GetCommandClassId();
@@ -2274,6 +2277,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			{
 				if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
 				{
+					_device.instanceID = vOrgIndex;
 					_device.devType = ZDTYPE_SWITCH_DIMMER;
 					_device.intvalue = byteValue;
 					InsertDevice(_device);
@@ -2304,6 +2308,9 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 {
 	if (m_pManager == NULL)
 		return;
+	if (!m_pManager->IsValueValid(vID))
+		return;
+
 	if (m_controllerID == 0)
 		return;
 
@@ -2383,6 +2390,9 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 {
 	if (m_pManager == NULL)
 		return;
+	if (!m_pManager->IsValueValid(vID))
+		return;
+
 	if (m_controllerID == 0)
 		return;
 

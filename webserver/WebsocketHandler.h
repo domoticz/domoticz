@@ -14,7 +14,7 @@ namespace http {
 		public:
 			CWebsocketHandler(cWebem *pWebem, boost::function<void(const std::string &packet_data)> _MyWrite);
 			~CWebsocketHandler();
-			virtual boost::tribool Handle(const std::string &packet_data);
+			virtual boost::tribool Handle(const std::string &packet_data, bool outbound);
 			virtual void Start();
 			virtual void Stop();
 			virtual void OnDeviceChanged(const uint64_t DeviceRowIdx);

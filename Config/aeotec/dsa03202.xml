@@ -1,4 +1,5 @@
-<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" 
+  xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0003:0001</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/dsa03202.png</MetaDataItem>
@@ -14,6 +15,7 @@ Although simplicity and user experience is the primary focus, the full range of 
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/142/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/143/xml</Entry>
+      <Entry author="Peter Gebruers - peter.gebruers@gmail.com" date="22 Aug 2019" revision="5">Added GetSupported false and add 3rd option to parameter 250 to work around this limitation</Entry>
     </ChangeLog>
   </MetaData>
   <!-- 
@@ -22,9 +24,13 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584532
 -->
   <!-- Minimote requires at least firmware 1.17, 1.19 is highly recommend -->
   <!-- Minimote will normally not respond to Get commands, but Set is possible when woken up -->
+  <!-- petergebruers: confirmed aug 2019 fw 1.19 minimote does not respond to configuration get command -->
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value genre="config" index="241" instance="1" label="Button #1 Programmable" max="5" min="0" size="1" type="list" value="0" write_only="true">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+    <Value genre="config" index="241" instance="1" label="Button #1 Mode" max="5" min="0" size="1" type="list" value="0" write_only="true">
       <Help>Default Mode 0 The button on the Minimote uses the factory default functions for operation instead of any special functionality related to the below modes. Scene Mode 1 The button on the Minimote executes a scene from data received for Parameters Numbers 0-239 related to the button being pressed. Add Mode 2 The button on the Minimote is able to include/add devices into the Z-Wave network. Remove Mode 3 The button on the Minimote is able to remove devices from the Z-Wave network. Association Mode 4 The button on the Minimote is able to associate one device to another. Learn Mode 5 The button on the Minimote is able to allow the Minimote to be included into other Z-Wave networks and to learn Z-Wave network information.</Help>
       <Item label="Default Mode" value="0"/>
       <Item label="Scene Mode" value="1"/>
@@ -33,7 +39,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584532
       <Item label="Association Mode" value="4"/>
       <Item label="Learn Mode" value="5"/>
     </Value>
-    <Value genre="config" index="242" instance="1" label="Button #2 Programmable" max="5" min="0" size="1" type="list" value="0" write_only="true">
+    <Value genre="config" index="242" instance="1" label="Button #2 Mode" max="5" min="0" size="1" type="list" value="0" write_only="true">
       <Item label="Default Mode" value="0"/>
       <Item label="Scene Mode" value="1"/>
       <Item label="Add Mode" value="2"/>
@@ -41,7 +47,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584532
       <Item label="Association Mode" value="4"/>
       <Item label="Learn Mode" value="5"/>
     </Value>
-    <Value genre="config" index="243" instance="1" label="Button #3 Programmable" max="5" min="0" size="1" type="list" value="0" write_only="true">
+    <Value genre="config" index="243" instance="1" label="Button #3 Mode" max="5" min="0" size="1" type="list" value="0" write_only="true">
       <Item label="Default Mode" value="0"/>
       <Item label="Scene Mode" value="1"/>
       <Item label="Add Mode" value="2"/>
@@ -49,7 +55,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584532
       <Item label="Association Mode" value="4"/>
       <Item label="Learn Mode" value="5"/>
     </Value>
-    <Value genre="config" index="244" instance="1" label="Button #4 Programmable" max="5" min="0" size="1" type="list" value="0" write_only="true">
+    <Value genre="config" index="244" instance="1" label="Button #4 Mode" max="5" min="0" size="1" type="list" value="0" write_only="true">
       <Item label="Default Mode" value="0"/>
       <Item label="Scene Mode" value="1"/>
       <Item label="Add Mode" value="2"/>
@@ -57,12 +63,16 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584532
       <Item label="Association Mode" value="4"/>
       <Item label="Learn Mode" value="5"/>
     </Value>
-    <Value genre="config" index="250" label="Mode" max="1" min="0" size="1" type="list" units="" value="0">
+    <Value genre="config" index="250" label="Mode" max="2" min="0" size="1" type="list" units="" value="2" write_only="true">
       <Help>
-        Enable selective Group Mode or Scene Mode when Button is in Use.
+        Enable selective Group Mode or Scene Mode. Long press learn button to wake up device.
+        Option As-Last-Set is not a real option, it exists because the Minimote does not report back its actual setting.
+        When long-pressing a button, if RED + BLUE LED turn on/off at the same time, device is in scene mode.
+        If the BLUE LED starts blinking, it is in group mode.
         NOTE: Minimote firmware 1.17 or higher is required, firmware 1.19 is highly recommended.</Help>
       <Item label="Group" value="0"/>
       <Item label="Scene" value="1"/>
+      <Item label="As-Last-Set" value="2" />
     </Value>
   </CommandClass>
   <!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class isn't supported by the Minimote -->
@@ -76,6 +86,9 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584532
   </CommandClass>
   <!-- COMMAND_CLASS_ASSOCIATION. This class is in the list reported by the Minimote, but it does not respond to requests -->
   <CommandClass id="133">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
     <Associations num_groups="4">
       <Group auto="false" index="1" label="Button #1" max_associations="5"/>
       <Group index="2" label="Button #2" max_associations="5"/>

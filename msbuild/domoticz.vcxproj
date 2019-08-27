@@ -434,6 +434,7 @@
     <ClInclude Include="..\hardware\Arilux.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
     <ClInclude Include="..\hardware\AtagOne.h" />
+    <ClInclude Include="..\hardware\Buienradar.h" />
     <ClInclude Include="..\hardware\cayenne_lpp\CayenneLPP.h" />
     <ClInclude Include="..\hardware\cayenne_lpp\CayenneLPP_Dec.h" />
     <ClInclude Include="..\hardware\Comm5Serial.h" />
@@ -725,6 +726,7 @@
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
     <ClCompile Include="..\hardware\AtagOne.cpp" />
+    <ClCompile Include="..\hardware\Buienradar.cpp" />
     <ClCompile Include="..\hardware\cayenne_lpp\CayenneLPP_Dec.cpp" />
     <ClCompile Include="..\hardware\ColorSwitch.cpp" />
     <ClCompile Include="..\hardware\Comm5Serial.cpp" />

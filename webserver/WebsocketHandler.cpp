@@ -3,6 +3,9 @@
 #include "../main/localtime_r.h"
 #include "../json/json.h"
 #include "cWebem.h"
+#include "../main/Logger.h"
+
+#define WEBSOCKET_SESSION_TIMEOUT 86400 // 1 day
 
 namespace http {
 	namespace server {
@@ -21,50 +24,68 @@ namespace http {
 			Stop();
 		}
 
-		boost::tribool CWebsocketHandler::Handle(const std::string &packet_data)
+		boost::tribool CWebsocketHandler::Handle(const std::string &packet_data, bool outbound)
 		{
-			reply rep;
 			Json::Value jsonValue;
 			Json::StyledWriter writer;
-			// todo: we now assume the session (still) exists
-			WebEmSession session;
-			std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sessionid);
-			if (itt != myWebem->m_sessions.end()) {
-				session = itt->second;
-			}
-			else if (myWebem->m_userpasswords.size() == 0) {
-					session.rights = 2;
-			}
-			else {
-				// todo: check: AreWeInLocalNetwork(). If yes, then session.rights = 2 without a session being setup.
-				return false;
-			}
-			Json::Reader reader;
-			Json::Value value;
-			if (!reader.parse(packet_data, value)) {
-				return true;
-			}
-			if (value["event"] != "request") {
-				return true;
-			}
-			request req;
-			req.method = "GET";
-			std::string querystring = value["query"].asString();
-			req.uri = "/json.htm?" + querystring;
-			req.http_version_major = 1;
-			req.http_version_minor = 1;
-			req.headers.resize(0); // todo: do we need any headers?
-			req.content.clear();
-			if (myWebem->CheckForPageOverride(session, req, rep)) {
-				if (rep.status == reply::ok) {
-					jsonValue["event"] = "response";
-					jsonValue["requestid"] = value["requestid"].asInt64();
-					jsonValue["data"] = rep.content;
-					std::string response = writer.write(jsonValue);
-					MyWrite(response);
+
+			try
+			{
+				// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
+				WebEmSession session;
+				std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sessionid);
+				if (itt != myWebem->m_sessions.end())
+				{
+					session = itt->second;
+				}
+				else
+					// for outbound messages create a temporary session if required
+					// todo: Add the username and rights from the original connection
+					if (outbound)
+					{
+							time_t	nowAnd1Day = ((time_t)mytime(NULL)) + WEBSOCKET_SESSION_TIMEOUT;
+							session.timeout = nowAnd1Day;
+							session.expires = nowAnd1Day;
+							session.isnew = false;
+							session.forcelogin = false;
+							session.rememberme = false;
+							session.reply_status = 200;
+					}
+
+
+				Json::Reader reader;
+				Json::Value value;
+				if (!reader.parse(packet_data, value)) {
 					return true;
 				}
+				if (value["event"] != "request") {
+					return true;
+				}
+				request req;
+				req.method = "GET";
+				std::string querystring = value["query"].asString();
+				req.uri = "/json.htm?" + querystring;
+				req.http_version_major = 1;
+				req.http_version_minor = 1;
+				req.headers.resize(0); // todo: do we need any headers?
+				req.content.clear();
+				reply rep;
+				if (myWebem->CheckForPageOverride(session, req, rep)) {
+					if (rep.status == reply::ok) {
+						jsonValue["event"] = "response";
+						jsonValue["requestid"] = value["requestid"].asInt64();
+						jsonValue["data"] = rep.content;
+						std::string response = writer.write(jsonValue);
+						MyWrite(response);
+						return true;
+					}
+				}
 			}
+			catch (std::exception& e)
+			{
+				_log.Log(LOG_ERROR, "WebsocketHandler::%s Exception: %s", __func__, e.what());
+			}
+
 			jsonValue["error"] = "Internal Server Error!!";
 			std::string response = writer.write(jsonValue);
 			MyWrite(response);
@@ -140,11 +161,11 @@ namespace http {
 				request["requestid"] = -1;
 				request["query"] = query;
 				std::string packet = writer.write(request);
-				Handle(packet);
+				Handle(packet, true);
 			}
-			catch (...)
+			catch (std::exception& e)
 			{
-				
+				_log.Log(LOG_ERROR, "WebsocketHandler::%s Exception: %s", __func__, e.what());
 			}
 		}
 

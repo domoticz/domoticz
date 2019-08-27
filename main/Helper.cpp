@@ -155,6 +155,48 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	if (bFoundPort)
 		return ret;
 
+	for (int ii = 1; ii < 255; ii++) // checking ports from COM0 to COM255
+	{
+		sprintf(szPortName, "COM%d", ii);
+
+		TCHAR lpTargetPath[200]; // buffer to store the path of the COMPORTS
+		if (QueryDosDevice(szPortName, (LPSTR)lpTargetPath, sizeof(lpTargetPath)))
+		{
+			ret.push_back(szPortName);
+		}
+	}
+
+	if (bFoundPort)
+		return ret;
+
+	typedef ULONG(__stdcall GETCOMMPORTS)(PULONG, ULONG, PULONG);
+	HMODULE hDLL = LoadLibrary("api-ms-win-core-comm-l1-1-0.dll");
+	if (hDLL != nullptr)
+	{
+		//Running Windows 10+
+		GETCOMMPORTS* pGetCommPorts = reinterpret_cast<GETCOMMPORTS*>(GetProcAddress(hDLL, "GetCommPorts"));
+		if (pGetCommPorts != nullptr)
+		{
+			std::vector<ULONG> intPorts;
+			intPorts.resize(255);
+			ULONG nPortNumbersFound = 0;
+			const ULONG nReturn = pGetCommPorts(&(intPorts[0]), static_cast<ULONG>(intPorts.size()), &nPortNumbersFound);
+			if (nReturn == ERROR_SUCCESS)
+			{
+				for (ULONG i = 0; i < nPortNumbersFound; i++)
+				{
+					sprintf(szPortName, "COM%d", intPorts[i]);
+					ret.push_back(szPortName);
+				}
+			}
+		}
+		FreeLibrary(hDLL);
+	}
+
+	if (bFoundPort)
+		return ret;
+
+/*
 	//Scan old fashion way (SLOW!)
 	COMMCONFIG cc;
 	DWORD dwSize = sizeof(COMMCONFIG);
@@ -208,6 +250,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			// --------------
 		}
 	}
+*/
 	// Method 3: EnumSerialPortsWindows, often fails
 	// ---------
 	if (!bFoundPort) {
