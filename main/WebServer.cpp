@@ -10896,6 +10896,10 @@ namespace http {
 					oname += ".bmp";
 				else if (result[0][0][0] == 'G')
 					oname += ".gif";
+				else if ((result[0][0][0] == '<') && (result[0][0][1] == 's') && (result[0][0][2] == 'v') && (result[0][0][3] == 'g'))
+					oname += ".svg";
+				else if (result[0][0].find("<svg") != std::string::npos) //some SVG's start with <xml
+					oname += ".svg";
 			}
 			reply::add_header_attachment(&rep, oname);
 		}
