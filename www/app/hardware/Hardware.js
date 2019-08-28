@@ -521,7 +521,7 @@ define(['app'], function (app) {
                     if (password != "") {
 
                         if ((password.length < 5) || (password.length > 16)) {
-                            ShowNotify($.t('Please enter a password of at least 5 and maximum 16 characters.'), 2500, true);
+                            ShowNotify($.t('Please enter a password between 5 and 16 characters!'), 2500, true);
                             return;
                         }
 
@@ -1683,7 +1683,7 @@ define(['app'], function (app) {
 				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
                     if (password != "") {
                         if ((password.length < 5) || (password.length > 16)) {
-                            ShowNotify($.t('Please enter a password of at least 5 and maximum 16 characters'), 2500, true);
+                            ShowNotify($.t('Please enter a password between 5 and 16 characters!'), 2500, true);
                             return;
                         }
 
