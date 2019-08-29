@@ -13127,17 +13127,14 @@ namespace http {
 				{
 					std::vector<std::string> sd = itt;
 
-					int nValue = atoi(sd[1].c_str());
-					std::string sValue = sd[2];
-
-					//skip 0-values in log for MediaPlayers
-					if ((switchtype == STYPE_Media) && (sValue == "0")) continue;
-
-					root["result"][ii]["idx"] = sd[0];
+					std::string lidx = sd.at(0);
+					int nValue = atoi(sd.at(1).c_str());
+					std::string sValue = sd.at(2);
+					std::string ldate = sd.at(3);
 
 					//add light details
-					std::string lstatus = "";
-					std::string ldata = "";
+					std::string lstatus;
+					std::string ldata;
 					int llevel = 0;
 					bool bHaveDimmer = false;
 					bool bHaveSelector = false;
@@ -13145,9 +13142,9 @@ namespace http {
 					int maxDimLevel = 0;
 
 					if (switchtype == STYPE_Media) {
-						lstatus = sValue;
+						if (sValue == "0") continue; //skip 0-values in log for MediaPlayers
+							lstatus = sValue;
 						ldata = lstatus;
-
 					}
 					else if (switchtype == STYPE_Selector)
 					{
@@ -13170,13 +13167,52 @@ namespace http {
 
 					if (ii == 0)
 					{
+						//Log these parameters once
 						root["HaveDimmer"] = bHaveDimmer;
 						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
 						root["HaveGroupCmd"] = bHaveGroupCmd;
 						root["HaveSelector"] = bHaveSelector;
 					}
 
-					root["result"][ii]["Date"] = sd[3];
+					//Corrent names for certain switch types
+					switch (switchtype)
+					{
+					case STYPE_Contact:
+						ldata = (ldata == "On") ? "Open" : "Closed";
+						break;
+					case STYPE_DoorContact:
+						ldata = (ldata == "On") ? "Open" : "Closed";
+						break;
+					case STYPE_DoorLock:
+						ldata = (ldata == "On") ? "Locked" : "Unlocked";
+						break;
+					case STYPE_DoorLockInverted:
+						ldata = (ldata == "On") ? "Unlocked" : "Locked";
+						break;
+					case STYPE_Blinds:
+					case STYPE_VenetianBlindsEU:
+					case STYPE_VenetianBlindsUS:
+						ldata = (ldata == "On") ? "Closed" : "Open";
+						break;
+					case STYPE_BlindsInverted:
+						ldata = (ldata == "On") ? "Open" : "Closed";
+						break;
+					case STYPE_BlindsPercentage:
+						if ((ldata == "On") || (ldata == "Off"))
+						{
+							ldata = (ldata == "On") ? "Closed" : "Open";
+						}
+						break;
+					case STYPE_BlindsPercentageInverted:
+						if ((ldata == "On") || (ldata == "Off"))
+						{
+							ldata = (ldata == "On") ? "Open" : "Closed";
+						}
+						break;
+					}
+
+					root["result"][ii]["idx"] = lidx;
+					root["result"][ii]["Date"] = ldate;
 					root["result"][ii]["Data"] = ldata;
 					root["result"][ii]["Status"] = lstatus;
 					root["result"][ii]["Level"] = llevel;
