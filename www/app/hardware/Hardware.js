@@ -522,15 +522,15 @@ define(['app'], function (app) {
                     if (password != "") {
 
                         if ((password.length < 5) || (password.length > 16)) {
-                            ShowNotify($.t('Please enter a password of at least 5 characters'), 2500, true);
+                            ShowNotify($.t('Please enter a password between 5 and 16 characters!'), 2500, true);
                             return;
                         }
 
-                        var intRegex = /^[a-zA-Z0-9]*$/; 
-                        if (!intRegex.test(password)) {
-                            ShowNotify($.t('Please enter a numeric or alphanumeric (for HMAC) password'), 2500, true);
-                            return;
-                        }
+                        //var intRegex = /^[a-zA-Z0-9]*$/; 
+                        //if (!intRegex.test(password)) {
+                        //    ShowNotify($.t('Please enter a numeric or alphanumeric (for HMAC) password'), 2500, true);
+                        //    return;
+                        //}
                     }
 
                     var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
@@ -1685,15 +1685,15 @@ define(['app'], function (app) {
 				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
                     if (password != "") {
                         if ((password.length < 5) || (password.length > 16)) {
-                            ShowNotify($.t('Please enter a password of at least 5 characters'), 2500, true);
+                            ShowNotify($.t('Please enter a password between 5 and 16 characters!'), 2500, true);
                             return;
                         }
 
-                        var intRegex = /^[a-zA-Z0-9]*$/; 
-                        if (!intRegex.test(password)) {
-                            ShowNotify($.t('Please enter a numeric or alphanumeric (for HMAC) password'), 2500, true);
-                            return;
-                        }
+                        //var intRegex = /^[a-zA-Z0-9]*$/; 
+                        //if (!intRegex.test(password)) {
+                        //    ShowNotify($.t('Please enter a numeric or alphanumeric (for HMAC) password'), 2500, true);
+                        //    return;
+                        //}
                     }
                     var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
                     if ((ratelimitp1 == "") || (isNaN(ratelimitp1))) {

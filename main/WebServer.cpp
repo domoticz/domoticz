@@ -4715,6 +4715,23 @@ namespace http {
 							)
 							return;
 					}
+					else if (lighttype == 407) {
+						//Openwebnet Bus Custom
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						std::string StrParam1 = request::findValue(&req, "StrParam1");
+						if (
+							(devid.empty()) ||
+							(sunitcode.empty()) ||
+							(StrParam1.empty())
+							)
+						{
+							root["message"] = "Some field empty or not valid.";
+							return;
+						}
+					}
 				}
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
 				CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
@@ -4784,6 +4801,7 @@ namespace http {
 				int subtype = 0;
 				std::string sunitcode;
 				std::string devid;
+				std::string StrParam1;
 
 #ifdef ENABLE_PYTHON
 				//check if HW is plugin
@@ -5336,6 +5354,24 @@ namespace http {
 							)
 							return;
 					}
+					else if (lighttype == 407) {
+						//Openwebnet Bus Custom
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						StrParam1 = request::findValue(&req, "StrParam1");
+						_log.Log(LOG_STATUS, "COpenWebNetTCP: custom command: '%s'", StrParam1.c_str());
+						if (
+							(devid.empty()) ||
+							(sunitcode.empty()) ||
+							(StrParam1.empty())
+							)
+						{
+							root["message"] = "Some field empty or not valid.";
+							return;
+						}
+					}
 				}
 
 				//check if switch is unique
@@ -5378,6 +5414,14 @@ namespace http {
 				m_sql.safe_query(
 					"UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')",
 					name.c_str(), switchtype, ID.c_str());
+
+				if (lighttype == 407) {
+					//Openwebnet Bus Custom
+					m_sql.safe_query(
+						"UPDATE DeviceStatus SET StrParam1='%s' WHERE (ID == '%q')", 
+						StrParam1.c_str(), ID.c_str());
+				}
+
 				m_mainworker.m_eventsystem.GetCurrentStates();
 
 				//Set device options
