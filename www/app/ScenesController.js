@@ -1,5 +1,5 @@
-define(['app'], function (app) {
-	app.controller('ScenesController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
+define(['app', 'livesocket'], function (app) {
+	app.controller('ScenesController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
 
 		var SceneIdx = 0;
 

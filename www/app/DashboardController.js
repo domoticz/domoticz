@@ -1,5 +1,5 @@
-define(['app'], function (app) {
-	app.controller('DashboardController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, permissions) {
+define(['app', 'livesocket'], function (app) {
+	app.controller('DashboardController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, permissions, livesocket) {
 		var $element = $('#main-view #dashcontent').last();
 
 		$scope.LastUpdateTime = parseInt(0);
