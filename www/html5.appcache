@@ -497,8 +497,6 @@ app/events/EventViewer.html
 app/events/EventViewer.js
 app/events/factories.js
 
-app/livesocket.js
-
 app/hardware/Hardware.html
 app/hardware/Hardware.js
 app/hardware/HardwareSetup.html
@@ -575,6 +573,7 @@ app/ForecastController.js
 app/FrontpageController.js
 app/HistoryController.js
 app/LightsController.js
+app/livesocket.js
 app/LogController.js
 app/LoginController.js
 app/LogoutController.js
