@@ -425,7 +425,7 @@ define(['app', 'livesocket'], function (app) {
 			}
 		};
 
-		//We only call RefreshUtilities once. After this, the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
+		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshUtilities = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
