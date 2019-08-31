@@ -94,6 +94,10 @@ define(['app', 'angular-websocket'], function (app) {
 						case "notification":
 							notifyBrowser.notify(msg.Subject, msg.Text);
 							return;
+						case "date_time":
+							//alert("ServerTime: " + msg.ServerTime + ", Sunrise: " + msg.Sunrise + ", Sunset: " + msg.Sunset);
+							$rootScope.SetTimeAndSun(msg.Sunrise, msg.Sunset, msg.ServerTime);
+							return;
 					}
 					var requestid = msg.requestid;
 					if (requestid >= 0) {

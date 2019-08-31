@@ -169,7 +169,7 @@ namespace http {
 			}
 		}
 
-		void CWebsocketHandler::OnMessage(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
+		void CWebsocketHandler::SendNotification(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 		{
 			Json::Value json;
 
@@ -180,6 +180,18 @@ namespace http {
 			json["Priority"] = Priority;
 			json["Sound"] = Sound;
 			json["bFromNotification"] = bFromNotification;
+			std::string response = json.toStyledString();
+			MyWrite(response);
+		}
+
+		void CWebsocketHandler::SendDateTime(const std::string& ServerTime, const std::string& Sunrise, const std::string& Sunset)
+		{
+			Json::Value json;
+
+			json["event"] = "date_time";
+			json["ServerTime"] = ServerTime;
+			json["Sunrise"] = Sunrise;
+			json["Sunset"] = Sunset;
 			std::string response = json.toStyledString();
 			MyWrite(response);
 		}

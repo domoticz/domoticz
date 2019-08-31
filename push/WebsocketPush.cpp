@@ -119,5 +119,5 @@ void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const s
 	}
 
 	// push message to websocket
-	m_sock->OnMessage(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
+	m_sock->SendNotification(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 }
