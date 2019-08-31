@@ -423,7 +423,7 @@ define(['app', 'livesocket'], function (app) {
 					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 				}
 			}
-	};
+		};
 
 		//We only call RefreshUtilities once. After this, the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshUtilities = function () {
