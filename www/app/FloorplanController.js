@@ -1,5 +1,5 @@
-define(['app'], function (app) {
-	app.controller('FloorplanController', ['$scope', '$rootScope', '$location', '$window', '$http', '$interval', '$timeout', '$compile', 'livesocket', 'permissions', function ($scope, $rootScope, $location, $window, $http, $interval, $timeout, $compile, permissions) {
+define(['app', 'livesocket'], function (app) {
+	app.controller('FloorplanController', function ($scope, $rootScope, $location, $window, $http, $interval, $timeout, $compile, permissions, livesocket) {
 
 		$scope.debug = 0;
 		$scope.floorPlans;
@@ -10,10 +10,6 @@ define(['app'], function (app) {
 		$scope.isScrolling = false;		// used on tablets & phones
 		$scope.pendingScroll = false;	// used on tablets & phones
 		$scope.lastTouch = 0;			// used on tablets & phones
-		$scope.PlanWebSocket = undefined;
-		$scope.socketCount = 0;
-		$scope.updateCount = 0;
-		$scope.totalUpdateCount = 0;
 
 		$scope.makeHTMLnode = function (tag, attrs) {
 			var el = document.createElement(tag);
@@ -130,11 +126,7 @@ define(['app'], function (app) {
 				if (AllLoaded == true) {
 					Device.checkDefs();
 					$(".FloorRooms").click(function (event) { $scope.RoomClick(event) });
-					if ("WebSocket" in window) { // Prefer WebSockets but fall back to polling
-						FPWebSocket();
-					} else {
-						$scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
-					}
+					RefreshFPDevices();
 					$scope.FloorplanResize();
 				}
 			}
@@ -271,59 +263,69 @@ define(['app'], function (app) {
 			}
 		}
 
-		RefreshFPDevices = function (pOneOff) {
-			var bOneOff = true;
-			if (arguments.length > 1) {
-				bOneOff = pOneOff;
-			}
+		RefreshItem = function (item) {
+			var compoundDevice = (item.Type.indexOf('+') >= 0);
+			$(".Device_" + item.idx).each(function () {
+				var aSplit = $(this).attr("id").split("_");
+				item.FloorID = aSplit[1];
+				item.PlanID = aSplit[2];
+				item.Scale = $scope.floorPlans[$scope.GetFloorplanIdx(item.FloorID)].scaleFactor;
+				if (compoundDevice) {
+					item.Type = aSplit[0];					// handle multi value sensors (Baro, Humidity, Temp etc)
+					item.CustomImage = 1;
+					item.Image = aSplit[0].toLowerCase();
+				}
+				try {
+					var dev = Device.create(item);
+					var existing = document.getElementById(dev.uniquename);
+					if (existing != undefined) {
+						if ($scope.debug > 2) $.cachenoty = generate_noty('info', '<b>Refreshing Device ' + dev.name + ((compoundDevice) ? ' - ' + item.Type : '') + '</b>', 2000);
+						dev.htmlMinimum(existing.parentNode);
+					}
+				}
+				catch (err) {
+					$.cachenoty = generate_noty('error', '<b>Device refresh error</b> ' + dev.name + '<br>' + err, 5000);
+				}
+			});
+		}
 
-			if ((bOneOff != true) && (typeof $scope.mytimer != 'undefined')) {
+		RefreshFPDevices = function () {
+			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 
-			$http({
-				url: "json.htm?type=devices&filter=all&used=true&order=Name&lastupdate=" + $scope.lastUpdateTime
-			}).then(function successCallback(response) {
-				var data = response.data;
-				if (typeof data.ActTime != 'undefined') {
-					$scope.lastUpdateTime = data.ActTime;
+			livesocket.getJson("json.htm?type=devices&filter=all&used=true&order=Name&lastupdate=" + $.LastUpdateTime, function (data) {
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
-				// update devices that already exist in the DOM
+
 				if (typeof data.result != 'undefined') {
+					if (typeof data.ActTime != 'undefined') {
+						$scope.lastUpdateTime = data.ActTime;
+					}
+
+					/*
+						Render all the widgets at once.
+					*/
 					$.each(data.result, function (i, item) {
-						var compoundDevice = (item.Type.indexOf('+') >= 0);
-						$(".Device_" + item.idx).each(function () {
-							var aSplit = $(this).attr("id").split("_");
-							item.FloorID = aSplit[1];
-							item.PlanID = aSplit[2];
-							item.Scale = $scope.floorPlans[$scope.GetFloorplanIdx(item.FloorID)].scaleFactor;
-							if (compoundDevice) {
-								item.Type = aSplit[0];					// handle multi value sensors (Baro, Humidity, Temp etc)
-								item.CustomImage = 1;
-								item.Image = aSplit[0].toLowerCase();
-							}
-							try {
-								var dev = Device.create(item);
-								var existing = document.getElementById(dev.uniquename);
-								if (existing != undefined) {
-									if ($scope.debug > 2) $.cachenoty = generate_noty('info', '<b>Refreshing Device ' + dev.name + ((compoundDevice) ? ' - ' + item.Type : '') + '</b>', 2000);
-									dev.htmlMinimum(existing.parentNode);
-								}
-							}
-							catch (err) {
-								$.cachenoty = generate_noty('error', '<b>Device refresh error</b> ' + dev.name + '<br>' + err, 5000);
-							}
-						});
+						RefreshItem(item);
 					});
 				}
-				if (bOneOff != true) {
-					$scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
+			});
+
+			$scope.$on('jsonupdate', function (event, data) {
+				/*
+					When this event is caught, a widget status update is received.
+					We call RefreshItem to update the widget.
+				*/
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
-			}, function errorCallback(response) {
-				if (bOneOff != true) {
-					$scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
+				if (typeof data.ActTime != 'undefined') {
+					$.LastUpdateTime = parseInt(data.ActTime);
 				}
+				RefreshItem(data.item);
 			});
 		}
 
@@ -496,6 +498,8 @@ define(['app'], function (app) {
 							$("#BulletImages").append($scope.makeHTMLnode('img', { id: $scope.floorPlans[i].tagName + '_bullet', 'src': item.Image, related: $scope.floorPlans[i].tagName }));
 						}
 					});
+
+					RefreshFPDevices();
 				}
 
 				$(".bulletcell").hover(function () {
@@ -565,120 +569,6 @@ define(['app'], function (app) {
 		$scope.debugOff = function () {
 			$scope.debug = 0;
 		}
-		
-		FPWebSocket = function () {
-
-			var loc = window.location;
-			if (loc.hash != '#/Floorplans') { // Shouldn't happen
-				$.cachenoty = generate_noty('error', '<b>WebSocket function aborting</b>', 3000);
-				return;
-			}
-			
-			if (typeof $scope.mytimer == 'undefined') {
-				$scope.mytimer = $interval(function () { FPWebSocket(); }, 3000);
-			}
-
-			if (typeof $scope.PlanWebSocket == 'undefined') {
-
-				var ws_uri;
-				if (loc.protocol === "https:") {
-					ws_uri = "wss:";
-				} else {
-					ws_uri = "ws:";
-				}
-				ws_uri += "//" + loc.host;
-				ws_uri += loc.pathname + "json";
-			   
-				// Let us open a web socket
-				$scope.PlanWebSocket = new WebSocket(ws_uri, 'domoticz');
-				
-				$scope.PlanWebSocket.onopen = function() {
-					$scope.socketCount += 1;
-					$scope.updateCount = 0;
-					if ($scope.debug > 0) {
-						$.cachenoty = generate_noty('info', '<b>Domoticz connection established</b>', 3000);
-					}
-					RefreshFPDevices(true);
-				};
-				
-				$scope.PlanWebSocket.onmessage = function (event) { 
-					var eventData = JSON.parse(event.data);
-					try {
-						if (typeof eventData.data != 'undefined') {
-							var data = JSON.parse(eventData.data);
-							if (typeof data.ActTime != 'undefined') {
-								$scope.lastUpdateTime = data.ActTime;
-							}
-							// Device updates
-							if ((typeof data.title != 'undefined') && (data.title == "Devices")) {
-								$.each(data.result, function (i, item) {
-									$scope.updateCount += 1;
-									$scope.totalUpdateCount += 1;
-									$(".Device_" + item.idx).each(function () {
-										if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Updating '+item.Name+'</b>', 500);
-										var compoundDevice = (item.Type.indexOf('+') >= 0);
-										var aSplit = $(this).attr("id").split("_");
-										item.FloorID = aSplit[1];
-										item.PlanID = aSplit[2];
-										item.Scale = $scope.floorPlans[$scope.GetFloorplanIdx(item.FloorID)].scaleFactor;
-										if (compoundDevice) {
-											item.Type = aSplit[0];					// handle multi value sensors (Baro, Humidity, Temp etc)
-											item.CustomImage = 1;
-											item.Image = aSplit[0].toLowerCase();
-										}
-										try {
-											var dev = Device.create(item);
-											var existing = document.getElementById(dev.uniquename);
-											if (existing != undefined) {
-												dev.htmlMinimum(existing.parentNode);
-											}
-										}
-										catch (err) {
-											$.cachenoty = generate_noty('error', '<b>Device refresh error</b> ' + dev.name + '<br>' + err, 5000);
-										}
-									});
-								});
-							}
-						} else {
-							if ((typeof eventData.event != 'undefined') && (eventData.event == 'notification')) {
-								$.cachenoty = generate_noty('info', '<b>'+eventData.Subject+'</b><br/>'+
-																	'<b>'+eventData.Text+'</b>', 10000);
-							}
-						}
-					}
-					catch (err) {
-						$.cachenoty = generate_noty('error', '<b>JSON parse error</b>' + err, 5000);
-					}
-
-				}
-				
-				$scope.PlanWebSocket.onerror = function (event) { 
-					if ($scope.debug > 0) $.cachenoty = generate_noty('error', '<b>[onerror] Code='+event.code+' reason='+event.reason+'</b>', 3000);
-					$scope.PlanWebSocket.close()
-				};
-				
-				$scope.PlanWebSocket.onclose = function(event) { 
-					if ($scope.debug > 0) {
-						$.cachenoty = generate_noty('error', '<b>Not connected to Domoticz</b>', 3000);
-					}
-					delete $scope.PlanWebSocket;
-					$scope.PlanWebSocket = undefined;
-					$scope.lastUpdateTime = 0;
-				}
-				
-			} else {
-				var d = new Date();
-				var elapsedSeconds = parseInt(d.getTime() / 1000);
-				if ($scope.debug > 0) {
-					var updateTime = new Date(0);
-					updateTime.setUTCSeconds($scope.lastUpdateTime);
-					$.cachenoty = generate_noty((($scope.PlanWebSocket.readyState == 1) ? 'info' : 'error'), 
-												'<b>Update count: '+$scope.updateCount+' of '+$scope.totalUpdateCount+'</b><br/>'+
-												'<b>Last seen: '+updateTime.toLocaleString()+' ('+(elapsedSeconds-$scope.lastUpdateTime)+' elapsed)</b><br/>'+
-												'<b>WebSocket #'+parseInt($scope.socketCount)+' is '+(($scope.PlanWebSocket.readyState == 1) ? 'Open' : 'NOT Open')+'</b>', 2500);
-				}
-			}
-		}
 
 		function init() {
 			try {
@@ -694,14 +584,11 @@ define(['app'], function (app) {
 		$scope.$on('$destroy', function () {
 			$interval.cancel($scope.mytimer);
 			$scope.mytimer = undefined;
-			if ((typeof $scope.PlanWebSocket != 'undefined') && ($scope.PlanWebSocket.readyState < 2)){
-				$scope.PlanWebSocket.close()
-			}
 			document.getElementById("cFloorplans").removeEventListener("mouseover", $scope.debugOn);
 			document.getElementById("cFloorplans").removeEventListener("mouseout", $scope.debugOff);
 			$("body").trigger("pageexit");
 		});
 
 		init();
-	}]);
+	});
 });
