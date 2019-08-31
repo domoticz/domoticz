@@ -117,13 +117,12 @@ namespace http {
 
 		void CWebsocketHandler::Do_Work()
 		{
-			int second_counter = 0;
 			while (!IsStopRequested(1000))
 			{
-				second_counter++;
-				if (second_counter % 10 == 0)
+				time_t atime = mytime(NULL);
+				if (atime % 10 == 0)
 				{
-					//Send Date/Time
+					//Send Date/Time every 10 seconds
 					SendDateTime();
 				}
 			}
