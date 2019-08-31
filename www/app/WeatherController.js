@@ -90,7 +90,7 @@ define(['app', 'livesocket'], function (app) {
 			});
 		}
 
-		//We only call RefreshUtilities once. After this, the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
+		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshWeathers = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -108,10 +108,11 @@ define(['app', 'livesocket'], function (app) {
 						$.LastUpdateTime = parseInt(data.ActTime);
 					}
 
-					// Change updated items in temperatures list
-					// TODO is there a better way to do this ?
-					data.result.forEach(function (newitem) {
-						RefreshItem(newitem);
+					/*
+						Render all the widgets at once.
+					*/
+					$.each(data.result, function (i, item) {
+						RefreshItem(item);
 					});
 
 				}
