@@ -328,6 +328,7 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		RefreshItem = function (item) {
+			var id = "";
 			id = "#lightcontent #" + item.idx;
 			var obj = $(id);
 			if (typeof obj != 'undefined') {
@@ -378,10 +379,10 @@ define(['app', 'livesocket'], function (app) {
 				}
 				else if (item.SwitchType == "Door Contact") {
 					if (item.InternalState == "Open") {
-                        img = '<img src="images/' + item.Image + '48_On.png" title="' + $.t(item.InternalState) + '" height="48" width="48">';
+						img = '<img src="images/' + item.Image + '48_On.png" title="' + $.t(item.InternalState) + '" height="48" width="48">';
 					}
 					else {
-                        img = '<img src="images/' + item.Image + '48_Off.png" title="' + $.t(item.InternalState) + '" height="48" width="48">';
+						img = '<img src="images/' + item.Image + '48_Off.png" title="' + $.t(item.InternalState) + '" height="48" width="48">';
 					}
 				}
 				else if (item.SwitchType == "Door Lock") {
@@ -758,7 +759,6 @@ define(['app', 'livesocket'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			var id = "";
 
 			livesocket.getJson("json.htm?type=devices&filter=light&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
@@ -1584,9 +1584,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 			}).selectmenu('refresh');
 
-			$scope.mytimer = $interval(function () {
-				RefreshLights();
-			}, 10000);
+			RefreshLights();
 			return false;
 		}
 
@@ -1737,7 +1735,13 @@ define(['app', 'livesocket'], function (app) {
 				//Openwebnet Bus IR Detection
 				totrooms = 10;
 				totpointofloads = 10
-			}
+            }
+            else if (lighttype == 407) {
+                //Openwebnet Bus Custom
+                totrooms = 200;
+                totbus = 10;//maximum 10 local buses
+            }
+
 
 			$("#dialog-addmanuallightdevice #he105params").hide();
 			$("#dialog-addmanuallightdevice #blindsparams").hide();
@@ -1751,6 +1755,7 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-addmanuallightdevice #openwebnetparamsZigbee").hide();
 			$("#dialog-addmanuallightdevice #openwebnetparamsDryContact").hide();
 			$("#dialog-addmanuallightdevice #openwebnetparamsIRdetec").hide();
+			$("#dialog-addmanuallightdevice #openwebnetparamsCustom").hide();
 
 			if (lighttype == 104) {
 				//HE105
@@ -1932,7 +1937,23 @@ define(['app', 'livesocket'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #openwebnetparamsIRdetec").show();
-			}
+            }
+            else if (lighttype == 407) {
+                //Openwebnet Bus Custom
+                $("#dialog-addmanuallightdevice #openwebnetparamsCustom #combocmd1  >option").remove();
+                for (ii = 1; ii < totrooms + 1; ii++) {
+                    $('#dialog-addmanuallightdevice #openwebnetparamsCustom #combocmd1').append($('<option></option>').val(ii).html(ii));
+                }
+                $("#dialog-addmanuallightdevice #openwebnetparamsCustom #combocmd2  >option").remove();
+                $("#dialog-addmanuallightdevice #openwebnetparamsCustom #combocmd2").append($('<option></option>').val(0).html("local bus"));
+                for (ii = 1; ii < totbus; ii++) {
+                    $("#dialog-addmanuallightdevice #openwebnetparamsCustom #combocmd2").append($('<option></option>').val(ii).html(ii));
+                }
+                $("#dialog-addmanuallightdevice #lighting1params").hide();
+                $("#dialog-addmanuallightdevice #lighting2params").hide();
+                $("#dialog-addmanuallightdevice #lighting3params").hide();
+                $("#dialog-addmanuallightdevice #openwebnetparamsCustom").show();
+            }
 			else if (bIsARCType == 1) {
 				$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
 				$('#dialog-addmanuallightdevice #lightparams1 #combounitcode >option').remove();
@@ -2134,7 +2155,20 @@ define(['app', 'livesocket'], function (app) {
 				var ID = ("0019" + ("0000" + appID.toString(16)).slice(-4)); // WHO_DRY_CONTACT_IR_DETECTION (25 = 0x19)
 				var unitcode = "0";
 				mParams += "&id=" + ID.toUpperCase() + "&unitcode=" + unitcode;
-			}
+            }
+            else if (lighttype == 407) {
+                //Openwebnet Bus Custom
+                var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsCustom #combocmd1 option:selected").val());
+                var ID = ("F00" + ("0000" + appID.toString(16)).slice(-4));
+                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsCustom #combocmd2 option:selected").val();
+
+                //var intRegex = /^[0-9*#]$/; 
+                //if (!intRegex.test(cmdText)) {
+                //    ShowNotify($.t('Open command error. Please use only number, \'*\' or \'#\''), 2500, true);
+                //    return "";
+                //}
+                mParams += "&id=" + ID + "&unitcode=" + unitcode + "&StrParam1=" + encodeURIComponent($("#dialog-addmanuallightdevice #openwebnetparamsCustom #inputcmd1").val());
+            }
 			else {
 				//AC
 				var ID = "";
