@@ -95,7 +95,6 @@ define(['app', 'angular-websocket'], function (app) {
 							notifyBrowser.notify(msg.Subject, msg.Text);
 							return;
 						case "date_time":
-							//alert("ServerTime: " + msg.ServerTime + ", Sunrise: " + msg.Sunrise + ", Sunset: " + msg.Sunset);
 							$rootScope.SetTimeAndSun(msg.Sunrise, msg.Sunset, msg.ServerTime);
 							return;
 					}

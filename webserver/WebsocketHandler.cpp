@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "WebsocketHandler.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
+#include "../main/Helper.h"
 #include "../json/json.h"
 #include "cWebem.h"
 #include "../main/Logger.h"
@@ -94,14 +96,38 @@ namespace http {
 
 		void CWebsocketHandler::Start()
 		{
+			RequestStart();
+
 			m_Push.Start();
+
+			//Start worker thread
+			m_thread = std::make_shared<std::thread>(&CWebsocketHandler::Do_Work, this);
 		}
 
 		void CWebsocketHandler::Stop()
 		{
 			m_Push.Stop();
+			if (m_thread)
+			{
+				RequestStop();
+				m_thread->join();
+				m_thread.reset();
+			}
 		}
 
+		void CWebsocketHandler::Do_Work()
+		{
+			int second_counter = 0;
+			while (!IsStopRequested(1000))
+			{
+				second_counter++;
+				if (second_counter % 10 == 0)
+				{
+					//Send Date/Time
+					SendDateTime();
+				}
+			}
+		}
 
 		// todo: not sure 
 		void CWebsocketHandler::store_session_id(const request &req, const reply &rep)
@@ -184,16 +210,31 @@ namespace http {
 			MyWrite(response);
 		}
 
-		void CWebsocketHandler::SendDateTime(const std::string& ServerTime, const std::string& Sunrise, const std::string& Sunset)
+		void CWebsocketHandler::SendDateTime()
 		{
-			Json::Value json;
+			if (!m_mainworker.m_LastSunriseSet.empty())
+			{
+				std::vector<std::string> strarray;
+				StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
+				if (strarray.size() == 10)
+				{
+					char szTmp[100];
+					struct tm loctime;
+					time_t now = mytime(NULL);
 
-			json["event"] = "date_time";
-			json["ServerTime"] = ServerTime;
-			json["Sunrise"] = Sunrise;
-			json["Sunset"] = Sunset;
-			std::string response = json.toStyledString();
-			MyWrite(response);
+					localtime_r(&now, &loctime);
+					strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
+
+					Json::Value json;
+
+					json["event"] = "date_time";
+					json["ServerTime"] = szTmp;
+					json["Sunrise"] = strarray[0];
+					json["Sunset"] = strarray[1];
+					std::string response = json.toStyledString();
+					MyWrite(response);
+				}
+			}
 		}
 
 	}
