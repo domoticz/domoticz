@@ -3811,21 +3811,21 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divpollinterval").hide();
 			$("#hardwarecontent #divpythonplugin").hide();
 			$("#hardwarecontent #divrelaynet").hide();
-			$("#hardwarecontent #ehouse").hide();
 			$("#hardwarecontent #divgpio").hide();
 			$("#hardwarecontent #divsysfsgpio").hide();
             $("#hardwarecontent #divmodeldenkovidevices").hide();
             $("#hardwarecontent #divmodeldenkoviusbdevices").hide();
             $("#hardwarecontent #divmodeldenkovitcpdevices").hide();
+			$("#hardwarecontent #divunderground").hide();
+			$("#hardwarecontent #divbuienradar").hide();
+			$("#hardwarecontent #divserial").hide();
+			$("#hardwarecontent #divremote").hide();
+			$("#hardwarecontent #divlogin").hide();
+			$("#hardwarecontent #divhttppoller").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
 			if (!$.isNumeric($("#hardwarecontent #hardwareparamstable #combotype option:selected").val())) {
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 				$("#hardwarecontent #divpythonplugin .plugin").hide();
 				var plugin = $("#hardwarecontent #hardwareparamstable #combotype option:selected").attr("id");
 				$("#hardwarecontent #divpythonplugin .plugin").each(function () { if ($(this).attr("id") === plugin) $(this).show(); });
@@ -3836,29 +3836,8 @@ define(['app'], function (app) {
 			if (text.indexOf("eHouse") >= 0) {
 				$("#hardwarecontent #divehouse").show();
 			}
-
-			if ((text.indexOf("TE923") >= 0) ||
-				(text.indexOf("Volcraft") >= 0) ||
-				(text.indexOf("Dummy") >= 0) ||
-				(text.indexOf("System Alive") >= 0) ||
-				(text.indexOf("PiFace") >= 0) ||
-				(text.indexOf("Yeelight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0))
-			 {
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divevohome").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
-			}
 			else if (text.indexOf("I2C ") >= 0) {
 				$("#hardwarecontent #divi2clocal").show();
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 				$("#hardwarecontent #divi2caddress").hide();
 				$("#hardwarecontent #divi2cinvert").hide();
 				var text1 = $("#hardwarecontent #divi2clocal #hardwareparamsi2clocal #comboi2clocal option:selected").text();
@@ -3873,19 +3852,9 @@ define(['app'], function (app) {
 			}
 			else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 				$("#hardwarecontent #divgpio").show();
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("sysfs GPIO") >= 0) {
 				$("#hardwarecontent #divsysfsgpio").show();
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("USB") >= 0 || text.indexOf("Teleinfo EDF") >= 0) {
 				if (text.indexOf("Evohome") >= 0) {
@@ -3911,17 +3880,9 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divmodeldenkoviusbdevices").show();
                 }
 				$("#hardwarecontent #divserial").show();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("Eco Devices") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Relay-Net") == -1 && text.indexOf("Satel Integra") == -1 && text.indexOf("eHouse") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1) {
-				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 				if (text.indexOf("Eco Devices") >= 0) {
 					$("#hardwarecontent #divmodelecodevices").show();
 					$("#hardwarecontent #divratelimitp1").show();
@@ -3936,20 +3897,14 @@ define(['app'], function (app) {
 				}
 			}
 			else if ((text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Relay-Net") >= 0 || text.indexOf("Satel Integra") >= 0) || text.indexOf("eHouse") >= 0 || (text.indexOf("Xiaomi Gateway") >= 0) || text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
-				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divlogin").show();
-				$("#hardwarecontent #username").hide();
-				$("#hardwarecontent #lblusername").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 
 				if (text.indexOf("Relay-Net") >= 0) {
 					$("#hardwarecontent #username").show();
 					$("#hardwarecontent #lblusername").show();
 					$("#hardwarecontent #password").show();
 					$("#hardwarecontent #lblpassword").show();
-					$("#hardwarecontent #divlogin").hide();
 					$("#hardwarecontent #divrelaynet").show();
 				}
 				else if (text.indexOf("Satel Integra") >= 0) {
@@ -3961,7 +3916,6 @@ define(['app'], function (app) {
 					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
 					//$("#hardwarecontent #password").show();
 					//$("#hardwarecontent #lblpassword").show();
-					//$("#hardwarecontent #divlogin").hide();
 					$("#hardwarecontent #divehouse").show();
 				}
                 else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
@@ -3975,7 +3929,6 @@ define(['app'], function (app) {
 					if (text.indexOf("Modules with LAN (HTTP)") >= 0)
 						$("#hardwarecontent #divmodeldenkovidevices").show();
 					else if (text.indexOf("Modules with LAN (TCP)") >= 0) {
-						$("#hardwarecontent #divlogin").hide();
 						$("#hardwarecontent #divmodeldenkovitcpdevices").show();
 						var board = $("#hardwarecontent #divmodeldenkovitcpdevices #combomodeldenkovitcpdevices option:selected").val();
 						if (board == 0) {
@@ -3990,47 +3943,22 @@ define(['app'], function (app) {
 				}
 			}
 			else if (text.indexOf("Domoticz") >= 0) {
-				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divlogin").show();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 				$("#hardwarecontent #hardwareparamsremote #tcpport").val(6144);
 			}
 			else if (text.indexOf("SolarEdge via") >= 0) {
 				$("#hardwarecontent #divsolaredgeapi").show();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") >= 0) {
 			    $("#hardwarecontent #divnestoauthapi").show();
-			    $("#hardwarecontent #divremote").hide();
-			    $("#hardwarecontent #divserial").hide();
-			    $("#hardwarecontent #divunderground").hide();
-			    $("#hardwarecontent #divhttppoller").hide();
-			    $("#hardwarecontent #divlogin").hide();
 			}
 			else if (text.indexOf("Toon") >= 0) {
 				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #divenecotoon").show();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("SBFSpot") >= 0) {
 				$("#hardwarecontent #divlocation").show();
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
-				$("#hardwarecontent #username").hide();
-				$("#hardwarecontent #lblusername").hide();
 			}
 			else if (
 				(text.indexOf("ICY") >= 0) ||
@@ -4041,17 +3969,10 @@ define(['app'], function (app) {
 				(text.indexOf("Thermosmart") >= 0) ||
                 (text.indexOf("Tado") >= 0)
 			) {
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divlogin").show();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("HTTP") >= 0) {
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divlogin").show();
-				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").show();
 
 				var method = $("#hardwarecontent #divhttppoller #combomethod option:selected").val();
@@ -4065,105 +3986,45 @@ define(['app'], function (app) {
 				}
 			}
 			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0)) {
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
 				$("#hardwarecontent #divunderground").show();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("Philips Hue") >= 0) {
-				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
-				$("#hardwarecontent #divlogin").hide();
 				$("#hardwarecontent #divphilipshue").show();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("Yeelight") >= 0) {
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("Arilux AL-LC0x") >= 0) {
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("Winddelen") >= 0) {
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #username").hide();
-				$("#hardwarecontent #lblusername").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 				$("#hardwarecontent #divwinddelen").show();
 			}
 			else if (text.indexOf("Honeywell") >= 0) {
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #username").hide();
-				$("#hardwarecontent #lblusername").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 				$("#hardwarecontent #divhoneywell").show();
 			}
 			else if (text.indexOf("Logitech Media Server") >= 0) {
-				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
 			}
 			else if (text.indexOf("HEOS by DENON") >= 0) {
-				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #hardwareparamsremote #tcpport").val(1255);
 			}
 			else if (text.indexOf("MyHome OpenWebNet") >= 0) {
-				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 				$("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
 			}
 			else if (text.indexOf("1-Wire") >= 0) {
 				$("#hardwarecontent #div1wire").show();
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("Goodwe solar inverter via Web") >= 0) {
 				$("#hardwarecontent #divgoodweweb").show();
-				$("#hardwarecontent #div1wire").hide();
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("Evohome via Web") >= 0) {
 				$("#hardwarecontent #divevohomeweb").show();
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divlogin").show();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
-			}
-			else {
-				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").hide();
-				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divunderground").hide();
-				$("#hardwarecontent #divhttppoller").hide();
 			}
 			if (
 				(text.indexOf("ETH8020") >= 0) ||
