@@ -269,6 +269,7 @@ images/radiation.png
 images/radiation48.png
 images/rain.png
 images/Rain48_On.png
+images/Rain48_Off.png
 images/rainraining.png
 images/remote.png
 images/remote48.png
@@ -305,6 +306,9 @@ images/Speaker.png
 images/Speaker48_Off.png
 images/Speaker48_On.png
 images/Stop48.png
+images/Sun.png
+images/Sun48_On.png
+images/Sun48_Off.png
 images/switch.png
 images/temp-0-5.png
 images/temp-10-15.png
