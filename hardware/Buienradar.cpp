@@ -378,13 +378,13 @@ void CBuienRadar::GetMeterDetails()
 
 	if (!root["groundtemperature"].empty())
 	{
-		float temp = root["groundtemperature"].asFloat();
-		SendTempSensor(2, 255, temp, "Ground Temperature (10 cm)");
+		float tempGround = root["groundtemperature"].asFloat();
+		SendTempSensor(2, 255, tempGround, "Ground Temperature (10 cm)");
 	}
 	if (!root["feeltemperature"].empty())
 	{
-		float temp = root["feeltemperature"].asFloat();
-		SendTempSensor(3, 255, temp, "Feel Temperature");
+		float tempFeel = root["feeltemperature"].asFloat();
+		SendTempSensor(3, 255, tempFeel, "Feel Temperature");
 	}
 
 
@@ -523,7 +523,7 @@ void CBuienRadar::GetRainPrediction()
 		//double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
 		double rain_perc = (rain_avg == 0) ? 0 : (rain_avg * 0.392156862745098);
 		SendPercentageSensor(1, 1, 255, static_cast<float>(rain_perc), "Rain Intensity");
-		SendSwitch(1, 1, 255, (rain_avg >= RAIN_SWITCH_THRESHOLD), 255, "Is it Raining");
+		SendSwitch(1, 1, 255, (rain_avg >= RAIN_SWITCH_THRESHOLD), 0, "Is it Raining");
 	}
 	if (total_rain_values_next_hour)
 	{
