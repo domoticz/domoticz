@@ -1163,7 +1163,7 @@ define(['app', 'livesocket'], function (app) {
 										var status = "";
 										var bigtext = "";
 										if (typeof item.Rain != 'undefined') {
-											img = '<img src="images/rain48.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
+											img = '<img src="images/Rain48_On.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
 											status = '';
 											bigtext = item.Rain + ' mm';
 											if (typeof item.RainRate != 'undefined') {
@@ -3093,7 +3093,7 @@ define(['app', 'livesocket'], function (app) {
 									xhtm += '</span></td>\n';
 									xhtm += '\t      ';
 									if (typeof item.Rain != 'undefined') {
-										xhtm += '<td id="img" class="img img1"><img src="images/rain48.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
+										xhtm += '<td id="img" class="img img1"><img src="images/Rain48_On.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
 											'\t      <td id="status" class="status">';
 										if (typeof item.RainRate != 'undefined') {
 											xhtm += 'Rate: ' + item.RainRate + ' mm/h';
