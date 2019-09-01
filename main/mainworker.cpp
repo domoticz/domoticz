@@ -1084,7 +1084,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CTTNMQTT(ID, Address, Port, Username, Password, Extra);
 		break;
 	case HTYPE_BuienRadar:
-		pHardware = new CBuienRadar(ID);
+		pHardware = new CBuienRadar(ID, Mode1, Mode2);
 		break;
 	}
 
