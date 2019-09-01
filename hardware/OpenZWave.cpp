@@ -4965,9 +4965,25 @@ void COpenZWave::UpdateDeviceBatteryStatus(const int nodeID, const int value)
 bool COpenZWave::GetBatteryLevels(Json::Value& root)
 {
 	int ii = 0;
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT NodeID,Name FROM ZWaveNodes WHERE (HardwareID==%d)", m_HwdID);
+
+	std::map<uint16_t, std::string> _NodeNames;
+	for (const auto itt : result)
+	{
+		uint16_t nodeID = (uint16_t)atoi(itt[0].c_str());
+		_NodeNames[nodeID] = itt[1];
+	}
+
+
 	for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
 	{
 		root["result"][ii]["nodeID"] = it->nodeId;
+		std::string nodeName;
+		if (_NodeNames.find(it->nodeId) != _NodeNames.end())
+			nodeName = _NodeNames[it->nodeId];
+		root["result"][ii]["nodeName"] = nodeName;
 		root["result"][ii]["battery"] = it->batValue;
 		ii++;
 	}
