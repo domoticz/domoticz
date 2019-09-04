@@ -41,7 +41,7 @@ enum _eP1MatchType {
 #define P1POWDLL3       "1-0:62.7.0"    // Power delivered L3 (DSMRv5)
 #define P1GTS		"0-n:24.3.0"	// DSMR2 timestamp gas usage sample
 #define P1GUDSMR2	"("		// DSMR2 gas usage sample
-#define P1GUDSMR4	"0-n:24.2.1"	// DSMR4 gas usage sample
+#define P1GUDSMR4	"0-n:24.2."	// DSMR4 gas usage sample (excluding 'tariff' indicator)
 #define P1MBTYPE	"0-n:24.1.0"	// M-Bus device type
 #define P1EOT		"!"		// End of telegram.
 
@@ -236,7 +236,9 @@ bool P1MeterBase::MatchLine()
 		case GAS:
 			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
 			{
-				found = 1;
+				// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
+				if ((l_buffer[9] & 0xFD) == 1)
+					found = 1;
 			}
 			if (m_p1version >= 4)
 				i += 100; // skip matches with any DSMR v2 gas lines
