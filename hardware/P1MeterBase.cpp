@@ -20,6 +20,7 @@ enum _eP1MatchType {
 
 #define P1SMID		"/"		// Smart Meter ID. Used to detect start of telegram.
 #define P1VER		"1-3:0.2.8"	// P1 version
+#define P1VERBE		"0-0:96.1.4"	// P1 version + e-MUCS version (Belgium)
 #define P1TS		"0-0:1.0.0"	// Timestamp
 #define P1PU1		"1-0:1.8.1"	// total power usage tariff 1
 #define P1PU2		"1-0:1.8.2"	// total power usage tariff 2
@@ -87,6 +88,7 @@ P1Match matchlist[] = {
 	{ID,		P1TYPE_SMID,			P1SMID,		"",			 0,  0},
 	{EXCLMARK,	P1TYPE_END,			P1EOT,		"",			 0,  0},
 	{STD,		P1TYPE_VERSION,			P1VER,		"version",		10,  2},
+	{STD,		P1TYPE_VERSION,			P1VERBE,	"versionBE",		11,  5},
 	{STD,		P1TYPE_POWERUSAGE1,		P1PU1,		"powerusage1",		10,  9},
 	{STD,		P1TYPE_POWERUSAGE2,		P1PU2,		"powerusage2",		10,  9},
 	{STD,		P1TYPE_POWERDELIV1,		P1PD1,		"powerdeliv1",		10,  9},
@@ -404,8 +406,23 @@ bool P1MeterBase::MatchLine()
 			{
 			case P1TYPE_VERSION:
 				if (m_p1version == 0)
-					_log.Log(LOG_STATUS, "P1 Smart Meter: Meter reports as DSMR %c.%c", value[0], value[1]);
-				m_p1version = value[0] - 0x30;
+				{
+					m_p1version = value[0] - 0x30;
+					char szVersion[12];
+					if (t->width == 5)
+					{
+						// Belgian meter
+						sprintf(szVersion, "ESMR %c.%c.%c", value[0], value[1], value[2]);
+					}
+					else // if (t->width == 2)
+					{
+						// Dutch meter
+						sprintf(szVersion, "ESMR %c.%c", value[0], value[1]);
+						if (m_p1version < 5)
+							szVersion[0]='D';
+					}
+					_log.Log(LOG_STATUS, "P1 Smart Meter: Meter reports as %s", szVersion);
+				}
 				break;
 			case P1TYPE_MBUSDEVICETYPE:
 				temp_usage = (unsigned long)(strtod(value, &validate));
