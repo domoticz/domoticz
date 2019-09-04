@@ -3544,13 +3544,20 @@ define(['app'], function (app) {
 										$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #lbldenkovislaveid").hide();
 										$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #denkovislaveid").hide();
 									}
-									//!----$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
 								}
 							}
 						}
 						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
 							$("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
+						}
+						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
+							$("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
+						}
+						else if (data["Type"].indexOf("Buienradar") >= 0) {
+							$("#hardwarecontent #divbuienradar #timeframe").val(data["Mode1"]);
+							$("#hardwarecontent #divbuienradar #threshold").val(data["Mode2"]);
 						}
 						else if ((data["Type"].indexOf("HTTP/HTTPS") >= 0)) {
 							$("#hardwarecontent #hardwareparamshttp #url").val(data["Address"]);
