@@ -172,9 +172,11 @@ define(['app', 'livesocket'], function (app) {
 						}
 					}
 				}
+				return;
 			} //Scene devices
 
 			//Lights
+			var isdimmer = false;
 			if (
 				(
 					(item.Type.indexOf('Light') == 0) ||
@@ -193,7 +195,6 @@ define(['app', 'livesocket'], function (app) {
 					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Westinghouse') == 0))
 				)
 				&& (item.Favorite != 0)) {
-				var isdimmer = false;
 				id = "#light_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
@@ -944,6 +945,114 @@ define(['app', 'livesocket'], function (app) {
 				return;
 			} //light devices
 
+			//security devices
+			if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
+				id = "#security_" + item.idx;
+				var obj = $(id);
+				if (typeof obj != 'undefined') {
+					if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+						var tmpStatus = TranslateStatus(item.Status);
+						if (item.SubType == "Security Panel") {
+							tmpStatus += ' <a href="secpanel/"><img src="images/security48.png" class="lcursor" height="16" width="16"></a>';
+						}
+						else if (item.SubType.indexOf('remote') > 0) {
+							if ((item.Status.indexOf('Arm') >= 0) || (item.Status.indexOf('Panic') >= 0)) {
+								tmpStatus += ' <img src="images/remote.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="16" width="16">';
+							}
+							else {
+								tmpStatus += ' <img src="images/remote.png" title="' + $.t("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="16" width="16">';
+							}
+						}
+
+						if ($(id + " #bigtext").html() != tmpStatus) {
+							$(id + " #bigtext").html(tmpStatus);
+						}
+					}
+					else {
+						//normal/compact
+						var img = "";
+						if (item.SubType == "Security Panel") {
+							img = '<a href="secpanel/"><img src="images/security48.png" class="lcursor" height="40" width="40"></a>';
+						}
+						else if (item.SubType.indexOf('remote') > 0) {
+							if ((item.Status.indexOf('Arm') >= 0) || (item.Status.indexOf('Panic') >= 0)) {
+								img += '<img src="images/remote48.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">\n';
+							}
+							else {
+								img += '<img src="images/remote48.png" title="' + $.t("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">\n';
+							}
+						}
+						else if (item.SwitchType == "Smoke Detector") {
+							if (
+								(item.Status == "Panic") ||
+								(item.Status == "On")
+							) {
+								img = '<img src="images/smoke48on.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+							}
+							else {
+								img = '<img src="images/smoke48off.png" title="' + $.t("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+							}
+						}
+						else if (item.SubType == "X10 security") {
+							if (item.Status.indexOf('Normal') >= 0) {
+								img += '<img src="images/security48.png" title="' + $.t("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Normal Delayed") ? "Alarm Delayed" : "Alarm") + '\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+							}
+							else {
+								img += '<img src="images/Alarm48_On.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Alarm Delayed") ? "Normal Delayed" : "Normal") + '\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+							}
+						}
+						else if (item.SubType == "X10 security motion") {
+							if ((item.Status == "No Motion")) {
+								img += '<img src="images/security48.png" title="' + $.t("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'Motion\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+							}
+							else {
+								img += '<img src="images/Alarm48_On.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'No Motion\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+							}
+						}
+						else if ((item.Status.indexOf('Alarm') >= 0) || (item.Status.indexOf('Tamper') >= 0)) {
+							img = '<img src="images/Alarm48_On.png" height="40" width="40">';
+						}
+						else {
+							if (item.SubType.indexOf('Meiantech') >= 0) {
+								if ((item.Status.indexOf('Arm') >= 0) || (item.Status.indexOf('Panic') >= 0)) {
+									img = '<img src="images/security48.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+								}
+								else {
+									img = '<img src="images/security48.png" title="' + $.t("Turn Alarm On") + '" onclick="ArmSystemMeiantech(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+								}
+							}
+							else {
+								if (item.SubType.indexOf('KeeLoq') >= 0) {
+									img = '<img src="images/pushon48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+								}
+								else {
+									img = '<img src="images/security48.png" height="40" width="40">';
+								}
+							}
+						}
+
+						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+						$(id + " #bstatus").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+						$(id + " #bstatus").addClass(backgroundClass);
+
+						if ($(id + " #img").html() != img) {
+							$(id + " #img").html(img);
+						}
+						if ($(id + " #bigtext > span").html() != TranslateStatus(item.Status)) {
+							$(id + " #bigtext > span").html(TranslateStatus(item.Status));
+						}
+						if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
+							$(id + " #lastupdate > span").html(item.LastUpdate);
+						}
+						if ($scope.config.ShowUpdatedEffect == true) {
+							$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+						}
+					}
+				}
+				return
+			} //security devices
+
+			//Temperature Sensors
 			if (
 				((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined')) &&
 				(item.Favorite != 0)
@@ -1068,6 +1177,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 			} //temp devices
 
+			//Weather Sensors
 			if (
 				((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined')) &&
 				(item.Favorite != 0)
@@ -1132,7 +1242,7 @@ define(['app', 'livesocket'], function (app) {
 						var status = "";
 						var bigtext = "";
 						if (typeof item.Rain != 'undefined') {
-							img = '<img src="images/rain48.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
+							img = '<img src="images/Rain48_On.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
 							status = '';
 							bigtext = item.Rain + ' mm';
 							if (typeof item.RainRate != 'undefined') {
@@ -1228,112 +1338,8 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			} //weather devices
-
-			if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
-				id = "#security_" + item.idx;
-				var obj = $(id);
-				if (typeof obj != 'undefined') {
-					if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
-						var tmpStatus = TranslateStatus(item.Status);
-						if (item.SubType == "Security Panel") {
-							tmpStatus += ' <a href="secpanel/"><img src="images/security48.png" class="lcursor" height="16" width="16"></a>';
-						}
-						else if (item.SubType.indexOf('remote') > 0) {
-							if ((item.Status.indexOf('Arm') >= 0) || (item.Status.indexOf('Panic') >= 0)) {
-								tmpStatus += ' <img src="images/remote.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="16" width="16">';
-							}
-							else {
-								tmpStatus += ' <img src="images/remote.png" title="' + $.t("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="16" width="16">';
-							}
-						}
-
-						if ($(id + " #bigtext").html() != tmpStatus) {
-							$(id + " #bigtext").html(tmpStatus);
-						}
-					}
-					else {
-						//normal/compact
-						var img = "";
-						if (item.SubType == "Security Panel") {
-							img = '<a href="secpanel/"><img src="images/security48.png" class="lcursor" height="40" width="40"></a>';
-						}
-						else if (item.SubType.indexOf('remote') > 0) {
-							if ((item.Status.indexOf('Arm') >= 0) || (item.Status.indexOf('Panic') >= 0)) {
-								img += '<img src="images/remote48.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">\n';
-							}
-							else {
-								img += '<img src="images/remote48.png" title="' + $.t("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">\n';
-							}
-						}
-						else if (item.SwitchType == "Smoke Detector") {
-							if (
-								(item.Status == "Panic") ||
-								(item.Status == "On")
-							) {
-								img = '<img src="images/smoke48on.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-							}
-							else {
-								img = '<img src="images/smoke48off.png" title="' + $.t("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-							}
-						}
-						else if (item.SubType == "X10 security") {
-							if (item.Status.indexOf('Normal') >= 0) {
-								img += '<img src="images/security48.png" title="' + $.t("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Normal Delayed") ? "Alarm Delayed" : "Alarm") + '\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-							}
-							else {
-								img += '<img src="images/Alarm48_On.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Alarm Delayed") ? "Normal Delayed" : "Normal") + '\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-							}
-						}
-						else if (item.SubType == "X10 security motion") {
-							if ((item.Status == "No Motion")) {
-								img += '<img src="images/security48.png" title="' + $.t("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'Motion\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-							}
-							else {
-								img += '<img src="images/Alarm48_On.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'No Motion\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-							}
-						}
-						else if ((item.Status.indexOf('Alarm') >= 0) || (item.Status.indexOf('Tamper') >= 0)) {
-							img = '<img src="images/Alarm48_On.png" height="40" width="40">';
-						}
-						else {
-							if (item.SubType.indexOf('Meiantech') >= 0) {
-								if ((item.Status.indexOf('Arm') >= 0) || (item.Status.indexOf('Panic') >= 0)) {
-									img = '<img src="images/security48.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-								}
-								else {
-									img = '<img src="images/security48.png" title="' + $.t("Turn Alarm On") + '" onclick="ArmSystemMeiantech(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-								}
-							}
-							else {
-								if (item.SubType.indexOf('KeeLoq') >= 0) {
-									img = '<img src="images/pushon48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-								}
-								else {
-									img = '<img src="images/security48.png" height="40" width="40">';
-								}
-							}
-						}
-
-						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-						$(id + " #bstatus").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
-						$(id + " #bstatus").addClass(backgroundClass);
-
-						if ($(id + " #img").html() != img) {
-							$(id + " #img").html(img);
-						}
-						if ($(id + " #bigtext > span").html() != TranslateStatus(item.Status)) {
-							$(id + " #bigtext > span").html(TranslateStatus(item.Status));
-						}
-						if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
-							$(id + " #lastupdate > span").html(item.LastUpdate);
-						}
-						if ($scope.config.ShowUpdatedEffect == true) {
-							$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-						}
-					}
-				}
-			} //security devices
-
+	
+			//Utility Sensors
 			if (
 				(
 					(typeof item.Counter != 'undefined') ||
@@ -1632,10 +1638,9 @@ define(['app', 'livesocket'], function (app) {
 						}
 					}
 				}
-			} //Utility devices
+			} //Utility Sensors
 		}
 
-		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshFavorites = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -1647,7 +1652,6 @@ define(['app', 'livesocket'], function (app) {
 					bFavorites = 0;
 				}
 			}
-
 			livesocket.getJson("json.htm?type=devices&filter=all&used=true&favorite=" + bFavorites + "&order=[Order]&plan=" + window.myglobals.LastPlanSelected + "&lastupdate=" + $scope.LastUpdateTime, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
@@ -1666,7 +1670,6 @@ define(['app', 'livesocket'], function (app) {
 					});
 				}
 			});
-
 			$scope.$on('jsonupdate', function (event, data) {
 				/*
 					When this event is caught, a widget status update is received.
@@ -3044,7 +3047,7 @@ define(['app', 'livesocket'], function (app) {
 									xhtm += '</span></td>\n';
 									xhtm += '\t      ';
 									if (typeof item.Rain != 'undefined') {
-										xhtm += '<td id="img" class="img img1"><img src="images/rain48.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
+										xhtm += '<td id="img" class="img img1"><img src="images/Rain48_On.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
 											'\t      <td id="status" class="status">';
 										if (typeof item.RainRate != 'undefined') {
 											xhtm += 'Rate: ' + item.RainRate + ' mm/h';
@@ -3270,6 +3273,100 @@ define(['app', 'livesocket'], function (app) {
 						if (jj > 0) {
 							htmlcontent += '</section>';
 						}
+
+						//Gizmocuz: Don't know how did this ? But this should be under utility devices!
+						//Please do so
+/*
+						//evohome devices
+						jj = 0;
+						bHaveAddedDivider = false;
+						$.each(data.result, function (i, item) {
+							if ((item.Type.indexOf('Heating') == 0) && (item.Favorite != 0)) {
+								totdevices += 1;
+								if (jj == 0) {
+									//first time
+									htmlcontent += '<section class="dashCategory" id="dashEvohome">';
+									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+										if (htmlcontent != "") {
+											htmlcontent += '<br>';
+										}
+										htmlcontent += '\t    <table class="mobileitem">\n';
+										htmlcontent += '\t    <thead>\n';
+										htmlcontent += '\t    <tr>\n';
+										htmlcontent += '\t    		<th>' + $.t('evohome Devices') + '</th>\n';
+										htmlcontent += '\t    		<th style="text-align:right"><a id="cevohome" href="javascript:SwitchLayout(\'LightSwitches\')"><img src="images/next.png"></a></th>\n';
+										htmlcontent += '\t    </tr>\n';
+										htmlcontent += '\t    </thead>\n';
+									}
+									else {
+										htmlcontent += '<h2>' + $.t('evohome Devices') + ':</h2>\n';
+									}
+								}
+								if (jj % rowItems == 0) {
+									//add devider
+									if (bHaveAddedDivider == true) {
+										//close previous devider
+										htmlcontent += '</div>\n';
+									}
+									htmlcontent += '<div class="row divider">\n';
+									bHaveAddedDivider = true;
+								}
+								var xhtm = "";
+								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+									if (item.SubType == "Evohome") {
+										xhtm +=
+											'\t    <tr id="evohome_' + item.idx + '">\n' +
+											'\t      <td id="name" class="name">' + item.Name + '</td>\n';
+										xhtm += EvohomePopupMenu(item, 'evomobile');
+										xhtm += '\n\r  </tr>\n';
+									}
+								}
+								else {
+									if (item.SubType == "Evohome") {
+										if ($scope.config.DashboardType == 0) {
+											xhtm = '\t<div class="span4 movable" id="evohome_' + item.idx + '">\n';
+										}
+										else if ($scope.config.DashboardType == 1) {
+											xhtm = '\t<div class="span3 movable" id="evohome_' + item.idx + '">\n';
+										}
+										xhtm += '\t  <div class="item">\n';
+										if ($scope.config.DashboardType == 0) {
+											xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+										}
+										else if ($scope.config.DashboardType == 1) {
+											xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+										}
+										var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+
+										xhtm +=
+											'\t    <tr class="' + backgroundClass + '">\n' +
+											'\t      <td id="name" class="name ' + backgroundClass + '">' + item.Name + '</td>\n' +
+											'\t      <td id="bigtext" class="bigtext"><span></span></td>\n';
+										xhtm += EvohomePopupMenu(item, 'evomini');
+										xhtm +=
+											'\t      <td id="status" class="status">' + TranslateStatus(EvoDisplayTextMode(item.Status)) + '</td>\n' +
+											'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+											'\t    </tr>\n' +
+											'\t    </table>\n' +
+											'\t  </div><!--item end-->\n' +
+											'\t</div>\n';
+									}
+								}
+								htmlcontent += xhtm;
+								jj += 1;
+							}
+						}); //evohome devices
+						if (bHaveAddedDivider == true) {
+							//close previous devider
+							htmlcontent += '</div>\n';
+						}
+						if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+							htmlcontent += '\t    </table>\n';
+						}
+						if (jj > 0) {
+							htmlcontent += '</section>';
+						}
+*/
 						//Utility Sensors
 						jj = 0;
 						bHaveAddedDivider = false;
