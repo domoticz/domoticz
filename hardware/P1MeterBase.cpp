@@ -237,7 +237,7 @@ bool P1MeterBase::MatchLine()
 			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
 			{
 				// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
-				if ((l_buffer[9] & 0xFD) == 1)
+				if ((l_buffer[9] & 0xFD) == 0x31)
 					found = 1;
 			}
 			if (m_p1version >= 4)
