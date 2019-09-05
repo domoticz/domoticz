@@ -66,7 +66,6 @@ private:
 	int ownRead(csocket* connectionSocket, char* pdata, size_t size);
 	bool sendCommand(bt_openwebnet& command, std::vector<bt_openwebnet>& response, int waitForResponse = 0, bool silent = false);
 	bool ParseData(char* data, int length, std::vector<bt_openwebnet>& messages);
-	bool FindDevice(const int who, const int where, const int iInterface, int *used);
 	void UpdateSwitch(const int who, const int where, const int Level, const int iInterface, const int BatteryLevel, const char *devname);
 	void UpdateBlinds(const int who, const int where, const int Command, const int iInterface, const int iLevel, const int BatteryLevel, const char *devname);
 	void UpdateAlarm(const int who, const int where, const int Command, const char *sCommand, const int iInterface, const int BatteryLevel, const char *devname);
@@ -75,9 +74,11 @@ private:
 	void UpdateSetPoint(const int who, const int where, float fval, const int iInterface, const char *devname);
 	void UpdatePower(const int who, const int where, double fval, const int iInterface, const int BatteryLevel, const char *devname);
 	void UpdateEnergy(const int who, const int where, double fval, const int iInterface, const int BatteryLevel, const char *devname);
+	void UpdateSoundDiffusion(const int who, const int where, const int what, const int iInterface, const int BatteryLevel, const char* devname);
 	bool GetValueMeter(const int NodeID, const int ChildID, double *usage, double *energy);
 	void UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter);
 	void scan_automation_lighting(const int cen_area);
+	void scan_sound_diffusion();
 	void scan_temperature_control();
 	void scan_device();
 	void requestTime();

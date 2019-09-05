@@ -533,7 +533,7 @@ define(['app', 'livesocket'], function (app) {
 						if (typeof item.Barometer != 'undefined') {
 							return 'baro48.png';
 						} else if (typeof item.Rain != 'undefined') {
-							return 'rain48.png';
+							return 'Rain48_On.png';
 						} else if (typeof item.Visibility != 'undefined') {
 							return 'visibility48.png';
 						} else if (typeof item.UVI != 'undefined') {

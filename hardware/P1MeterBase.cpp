@@ -20,11 +20,10 @@ enum _eP1MatchType {
 
 #define P1SMID		"/"		// Smart Meter ID. Used to detect start of telegram.
 #define P1VER		"1-3:0.2.8"	// P1 version
+#define P1VERBE		"0-0:96.1.4"	// P1 version + e-MUCS version (Belgium)
 #define P1TS		"0-0:1.0.0"	// Timestamp
-#define P1PU1		"1-0:1.8.1"	// total power usage tariff 1
-#define P1PU2		"1-0:1.8.2"	// total power usage tariff 2
-#define P1PD1		"1-0:2.8.1"	// total delivered power tariff 1
-#define P1PD2		"1-0:2.8.2"	// total delivered power tariff 2
+#define P1PUSG		"1-0:1.8."	// total power usage (excluding tariff indicator)
+#define P1PDLV		"1-0:2.8."	// total delivered power (excluding tariff indicator)
 #define P1TIP		"0-0:96.14.0"	// tariff indicator power
 #define P1PUC		"1-0:1.7.0"	// current power usage
 #define P1PDC		"1-0:2.7.0"	// current power delivery
@@ -42,7 +41,7 @@ enum _eP1MatchType {
 #define P1POWDLL3       "1-0:62.7.0"    // Power delivered L3 (DSMRv5)
 #define P1GTS		"0-n:24.3.0"	// DSMR2 timestamp gas usage sample
 #define P1GUDSMR2	"("		// DSMR2 gas usage sample
-#define P1GUDSMR4	"0-n:24.2.1"	// DSMR4 gas usage sample
+#define P1GUDSMR4	"0-n:24.2."	// DSMR4 gas usage sample (excluding 'tariff' indicator)
 #define P1MBTYPE	"0-n:24.1.0"	// M-Bus device type
 #define P1EOT		"!"		// End of telegram.
 
@@ -50,10 +49,8 @@ enum _eP1Type {
 	P1TYPE_SMID = 0,
 	P1TYPE_END,
 	P1TYPE_VERSION,
-	P1TYPE_POWERUSAGE1,
-	P1TYPE_POWERUSAGE2,
-	P1TYPE_POWERDELIV1,
-	P1TYPE_POWERDELIV2,
+	P1TYPE_POWERUSAGE,
+	P1TYPE_POWERDELIV,
 	P1TYPE_USAGECURRENT,
 	P1TYPE_DELIVCURRENT,
 	P1TYPE_VOLTAGEL1,
@@ -87,10 +84,9 @@ P1Match matchlist[] = {
 	{ID,		P1TYPE_SMID,			P1SMID,		"",			 0,  0},
 	{EXCLMARK,	P1TYPE_END,			P1EOT,		"",			 0,  0},
 	{STD,		P1TYPE_VERSION,			P1VER,		"version",		10,  2},
-	{STD,		P1TYPE_POWERUSAGE1,		P1PU1,		"powerusage1",		10,  9},
-	{STD,		P1TYPE_POWERUSAGE2,		P1PU2,		"powerusage2",		10,  9},
-	{STD,		P1TYPE_POWERDELIV1,		P1PD1,		"powerdeliv1",		10,  9},
-	{STD,		P1TYPE_POWERDELIV2,		P1PD2,		"powerdeliv2",		10,  9},
+	{STD,		P1TYPE_VERSION,			P1VERBE,	"versionBE",		11,  5},
+	{STD,		P1TYPE_POWERUSAGE,		P1PUSG,		"powerusage",		10,  9},
+	{STD,		P1TYPE_POWERDELIV,		P1PDLV,		"powerdeliv",		10,  9},
 	{STD,		P1TYPE_USAGECURRENT,		P1PUC,		"powerusagec",		10,  7},
 	{STD,		P1TYPE_DELIVCURRENT,		P1PDC,		"powerdelivc",		10,  7},
 	{STD,		P1TYPE_VOLTAGEL1,		P1VOLTL1,	"voltagel1",		11,  5},
@@ -240,7 +236,9 @@ bool P1MeterBase::MatchLine()
 		case GAS:
 			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
 			{
-				found = 1;
+				// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
+				if ((l_buffer[9] & 0xFD) == 1)
+					found = 1;
 			}
 			if (m_p1version >= 4)
 				i += 100; // skip matches with any DSMR v2 gas lines
@@ -404,8 +402,23 @@ bool P1MeterBase::MatchLine()
 			{
 			case P1TYPE_VERSION:
 				if (m_p1version == 0)
-					_log.Log(LOG_STATUS, "P1 Smart Meter: Meter reports as DSMR %c.%c", value[0], value[1]);
-				m_p1version = value[0] - 0x30;
+				{
+					m_p1version = value[0] - 0x30;
+					char szVersion[12];
+					if (t->width == 5)
+					{
+						// Belgian meter
+						sprintf(szVersion, "ESMR %c.%c.%c", value[0], value[1], value[2]);
+					}
+					else // if (t->width == 2)
+					{
+						// Dutch meter
+						sprintf(szVersion, "ESMR %c.%c", value[0], value[1]);
+						if (m_p1version < 5)
+							szVersion[0]='D';
+					}
+					_log.Log(LOG_STATUS, "P1 Smart Meter: Meter reports as %s", szVersion);
+				}
 				break;
 			case P1TYPE_MBUSDEVICETYPE:
 				temp_usage = (unsigned long)(strtod(value, &validate));
@@ -416,33 +429,41 @@ bool P1MeterBase::MatchLine()
 					_log.Log(LOG_STATUS, "P1 Smart Meter: Found gas meter on M-Bus channel %c", m_gasmbuschannel);
 				}
 				break;
-			case P1TYPE_POWERUSAGE1:
+			case P1TYPE_POWERUSAGE:
 				temp_usage = (unsigned long)(strtod(value, &validate)*1000.0f);
-				if (!m_power.powerusage1 || m_p1version >= 4)
-					m_power.powerusage1 = temp_usage;
-				else if (temp_usage - m_power.powerusage1 < 10000)
-					m_power.powerusage1 = temp_usage;
+				if ((l_buffer[8] & 0xFE) == 0x30)
+				{
+					// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerusage1
+					if (!m_power.powerusage1 || m_p1version >= 4)
+						m_power.powerusage1 = temp_usage;
+					else if (temp_usage - m_power.powerusage1 < 10000)
+						m_power.powerusage1 = temp_usage;
+				}
+				else if (l_buffer[8] == 0x32)
+				{
+					if (!m_power.powerusage2 || m_p1version >= 4)
+						m_power.powerusage2 = temp_usage;
+					else if (temp_usage - m_power.powerusage2 < 10000)
+						m_power.powerusage2 = temp_usage;
+				}
 				break;
-			case P1TYPE_POWERUSAGE2:
+			case P1TYPE_POWERDELIV:
 				temp_usage = (unsigned long)(strtod(value, &validate)*1000.0f);
-				if (!m_power.powerusage2 || m_p1version >= 4)
-					m_power.powerusage2 = temp_usage;
-				else if (temp_usage - m_power.powerusage2 < 10000)
-					m_power.powerusage2 = temp_usage;
-				break;
-			case P1TYPE_POWERDELIV1:
-				temp_usage = (unsigned long)(strtod(value, &validate)*1000.0f);
-				if (!m_power.powerdeliv1 || m_p1version >= 4)
-					m_power.powerdeliv1 = temp_usage;
-				else if (temp_usage - m_power.powerdeliv1 < 10000)
-					m_power.powerdeliv1 = temp_usage;
-				break;
-			case P1TYPE_POWERDELIV2:
-				temp_usage = (unsigned long)(strtod(value, &validate)*1000.0f);
-				if (!m_power.powerdeliv2 || m_p1version >= 4)
-					m_power.powerdeliv2 = temp_usage;
-				else if (temp_usage - m_power.powerdeliv2 < 10000)
-					m_power.powerdeliv2 = temp_usage;
+				if ((l_buffer[8] & 0xFE) == 0x30)
+				{
+					// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerdeliv1
+					if (!m_power.powerdeliv1 || m_p1version >= 4)
+						m_power.powerdeliv1 = temp_usage;
+					else if (temp_usage - m_power.powerdeliv1 < 10000)
+						m_power.powerdeliv1 = temp_usage;
+				}
+				else if (l_buffer[8] == 0x32)
+				{
+					if (!m_power.powerdeliv2 || m_p1version >= 4)
+						m_power.powerdeliv2 = temp_usage;
+					else if (temp_usage - m_power.powerdeliv2 < 10000)
+						m_power.powerdeliv2 = temp_usage;
+				}
 				break;
 			case P1TYPE_USAGECURRENT:
 				temp_usage = (unsigned long)(strtod(value, &validate)*1000.0f);	//Watt
