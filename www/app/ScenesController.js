@@ -1,5 +1,5 @@
 define(['app', 'livesocket'], function (app) {
-	app.controller('ScenesController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
+	app.controller('ScenesController', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
 
 		var SceneIdx = 0;
 
@@ -758,18 +758,75 @@ define(['app', 'livesocket'], function (app) {
 			return o;
 		};
 
+		RefreshItem = function (item) {
+			var id = "#scenecontent #" + item.idx;
+			var obj = $(id);
+			if (typeof obj != 'undefined') {
+				var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+				$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+				$(id).addClass(backgroundClass);
+
+
+				if ($(id + " #name > span").html() != item.Name) {
+					$(id + " #name > span").html(item.Name);
+				}
+				var img1 = "";
+				var img2 = "";
+
+				var bigtext = TranslateStatusShort(item.Status);
+				if (item.UsedByCamera == true) {
+					var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
+					streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+					bigtext += "&nbsp;" + streamurl;
+				}
+
+				if (item.Type == "Scene") {
+					img1 = '<img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+				}
+				else {
+					var onclass = "";
+					var offclass = "";
+					if (item.Status == 'On') {
+						onclass = "transimg";
+						offclass = "";
+					}
+					else if (item.Status == 'Off') {
+						onclass = "";
+						offclass = "transimg";
+					}
+
+					img1 = '<img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
+					img2 = '<img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
+					if ($(id + " #img2").html() != img2) {
+						$(id + " #img2").html(img2);
+					}
+					if ($(id + " #status > span").html() != TranslateStatus(item.Status)) {
+						$(id + " #status > span").html(TranslateStatus(item.Status));
+						$(id + " #bigtext > span").html(bigtext);
+					}
+				}
+
+				if ($(id + " #img1").html() != img1) {
+					$(id + " #img1").html(img1);
+				}
+
+				if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
+					$(id + " #lastupdate > span").html(item.LastUpdate);
+				}
+				if ($scope.config.ShowUpdatedEffect == true) {
+					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+				}
+			}
+		}
+
+		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshScenes = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 
-			var id = "";
-
-			$http({
-				url: "json.htm?type=scenes&lastupdate=" + $.LastUpdateTime
-			}).then(function successCallback(response) {
-				var data = response.data;
+			livesocket.getJson("json.htm?type=scenes&lastupdate=" + $.LastUpdateTime, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -778,74 +835,27 @@ define(['app', 'livesocket'], function (app) {
 						$.LastUpdateTime = parseInt(data.ActTime);
 					}
 
+					/*
+						Render all the widgets at once.
+					*/
 					$.each(data.result, function (i, item) {
-						id = "#scenecontent #" + item.idx;
-						var obj = $(id);
-						if (typeof obj != 'undefined') {
-							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-							$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
-							$(id).addClass(backgroundClass);
-
-
-							if ($(id + " #name > span").html() != item.Name) {
-								$(id + " #name > span").html(item.Name);
-							}
-							var img1 = "";
-							var img2 = "";
-
-							var bigtext = TranslateStatusShort(item.Status);
-							if (item.UsedByCamera == true) {
-								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-								streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
-								bigtext += "&nbsp;" + streamurl;
-							}
-
-							if (item.Type == "Scene") {
-								img1 = '<img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected + ');" class="lcursor" height="48" width="48">';
-							}
-							else {
-								var onclass = "";
-								var offclass = "";
-								if (item.Status == 'On') {
-									onclass = "transimg";
-									offclass = "";
-								}
-								else if (item.Status == 'Off') {
-									onclass = "";
-									offclass = "transimg";
-								}
-
-								img1 = '<img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
-								img2 = '<img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
-								if ($(id + " #img2").html() != img2) {
-									$(id + " #img2").html(img2);
-								}
-								if ($(id + " #status > span").html() != TranslateStatus(item.Status)) {
-									$(id + " #status > span").html(TranslateStatus(item.Status));
-									$(id + " #bigtext > span").html(bigtext);
-								}
-							}
-
-							if ($(id + " #img1").html() != img1) {
-								$(id + " #img1").html(img1);
-							}
-
-							if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
-								$(id + " #lastupdate > span").html(item.LastUpdate);
-							}
-							if ($scope.config.ShowUpdatedEffect == true) {
-								$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-							}
-						}
+						RefreshItem(item);
 					});
 				}
-				$scope.mytimer = $interval(function () {
-					RefreshScenes();
-				}, 10000);
-			}, function errorCallback(response) {
-				$scope.mytimer = $interval(function () {
-					RefreshScenes();
-				}, 10000);
+			});
+
+			$scope.$on('jsonupdate', function (event, data) {
+				/*
+					When this event is caught, a widget status update is received.
+					We call RefreshItem to update the widget.
+				*/
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+				}
+				if (typeof data.ActTime != 'undefined') {
+					$.LastUpdateTime = parseInt(data.ActTime);
+				}
+				RefreshItem(data.item);
 			});
 		}
 
@@ -1040,9 +1050,7 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			}
-			$scope.mytimer = $interval(function () {
-				RefreshScenes();
-			}, 10000);
+			RefreshScenes();
 			return false;
 		}
 
@@ -1105,5 +1113,5 @@ define(['app', 'livesocket'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		});
-	}]);
+	});
 });

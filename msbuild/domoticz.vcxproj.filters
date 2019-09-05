@@ -1412,6 +1412,9 @@
     <None Include="..\www\app\hardware\setup\ZWave.js">
       <Filter>www\app\hardware\setup</Filter>
     </None>
+    <None Include="..\www\app\livesocket.js">
+      <Filter>www\app</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">

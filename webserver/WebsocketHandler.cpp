@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "WebsocketHandler.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
+#include "../main/Helper.h"
 #include "../json/json.h"
 #include "cWebem.h"
 #include "../main/Logger.h"
@@ -94,14 +96,37 @@ namespace http {
 
 		void CWebsocketHandler::Start()
 		{
+			RequestStart();
+
 			m_Push.Start();
+
+			//Start worker thread
+			m_thread = std::make_shared<std::thread>(&CWebsocketHandler::Do_Work, this);
 		}
 
 		void CWebsocketHandler::Stop()
 		{
 			m_Push.Stop();
+			if (m_thread)
+			{
+				RequestStop();
+				m_thread->join();
+				m_thread.reset();
+			}
 		}
 
+		void CWebsocketHandler::Do_Work()
+		{
+			while (!IsStopRequested(1000))
+			{
+				time_t atime = mytime(NULL);
+				if (atime % 10 == 0)
+				{
+					//Send Date/Time every 10 seconds
+					SendDateTime();
+				}
+			}
+		}
 
 		// todo: not sure 
 		void CWebsocketHandler::store_session_id(const request &req, const reply &rep)
@@ -169,7 +194,7 @@ namespace http {
 			}
 		}
 
-		void CWebsocketHandler::OnMessage(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
+		void CWebsocketHandler::SendNotification(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 		{
 			Json::Value json;
 
@@ -182,6 +207,33 @@ namespace http {
 			json["bFromNotification"] = bFromNotification;
 			std::string response = json.toStyledString();
 			MyWrite(response);
+		}
+
+		void CWebsocketHandler::SendDateTime()
+		{
+			if (!m_mainworker.m_LastSunriseSet.empty())
+			{
+				std::vector<std::string> strarray;
+				StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
+				if (strarray.size() == 10)
+				{
+					char szTmp[100];
+					struct tm loctime;
+					time_t now = mytime(NULL);
+
+					localtime_r(&now, &loctime);
+					strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
+
+					Json::Value json;
+
+					json["event"] = "date_time";
+					json["ServerTime"] = szTmp;
+					json["Sunrise"] = strarray[0];
+					json["Sunset"] = strarray[1];
+					std::string response = json.toStyledString();
+					MyWrite(response);
+				}
+			}
 		}
 
 	}

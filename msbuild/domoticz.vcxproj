@@ -150,6 +150,7 @@
     <None Include="..\www\app\hardware\setup\ZWave.js" />
     <None Include="..\www\app\HistoryController.js" />
     <None Include="..\www\app\LightsController.js" />
+    <None Include="..\www\app\livesocket.js" />
     <None Include="..\www\app\LogController.js" />
     <None Include="..\www\app\LoginController.js" />
     <None Include="..\www\app\LogoutController.js" />
