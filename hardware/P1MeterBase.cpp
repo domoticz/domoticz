@@ -609,7 +609,7 @@ bool P1MeterBase::CheckCRC()
 
 	if (!m_CRfound)
 	{
-		_log.Log(LOG_NORM, "P1 Smart Meter: You appear to have middle ware that changes the message content - skipping CRC validation");
+		_log.Log(LOG_NORM, "P1 Smart Meter: You appear to have middleware that changes the message content - skipping CRC validation");
 		return true;
 	}
 
