@@ -46,7 +46,7 @@ namespace OpenZWave
 			class Mutex;
 		}
 
-		class ProductDescriptor: public Internal::Platform::Ref
+		class ProductDescriptor 
 		{
 			public:
 				ProductDescriptor(uint16 _manufacturerId, uint16 _productType, uint16 _productId, string const& _productName, string const& _manufacturerName, string const& _configPath) :

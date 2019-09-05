@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="48" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="51" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -470,6 +470,7 @@
     <Product config="ecolink/motion.xml" id="0001" name="Motion Detector" type="0004"/>
     <Product config="ecolink/doorwindow.xml" id="0002" name="Door/Window Sensor" type="0004"/>
     <Product config="ecolink/tiltsensor.xml" id="0003" name="Tilt Sensor" type="0004"/>
+    <Product config="ecolink/floodfreeze.xml" id="0010" name="Flood/Freeze Sensor" type="0005"/>
     <Product config="ecolink/firefighter.xml" id="000f" name="FireFighter" type="0005"/>
   </Manufacturer>
   <Manufacturer id="0157" name="EcoNet Controls"></Manufacturer>
@@ -1273,6 +1274,7 @@
     <Product config="popp/700045.xml" id="0002" name="700045 Universal Keypad" type="0005"/>
     <Product config="popp/009303.xml" id="0101" name="009303 Battery Wall Controller" type="0100"/>
     <Product config="zwave.me/ZME_KFOB-S.xml" id="0103" name="Popp KFOB-C Remote Control" type="0100"/>
+    <Product config="popp/dwt.xml" id="0007" name="Window/Door Sensor with Tilt Detection" type="0004"/>
     <Product config="popp/smoke-detector.xml" id="0201" name="Smoke Detector and Siren" type="0100"/>
     <Product config="popp/zweather.xml" id="0400" name="ZWeather" type="0100"/>
     <Product config="popp/123601.xml" id="0001" name="123601 Plug-in Switch" type="1100"/>
@@ -1457,7 +1459,7 @@
   <Manufacturer id="021C" name="Shenzhen iSurpass Technology"></Manufacturer>
   <Manufacturer id="037A" name="Shenzhen JBT Smart Lighting"></Manufacturer>
   <Manufacturer id="021D" name="Shenzhen Kaadas Intelligent Technology">
-    <Product config="" id="0001" name="Alfred DB2 Deadbolt" type="0003"/>
+    <Product config="alfred/DB2.xml" id="0001" name="Alfred DB2 Deadbolt" type="0003"/>
   </Manufacturer>
   <Manufacturer id="0211" name="Shenzhen Liao Wang Tong Da Technology"></Manufacturer>
   <Manufacturer id="0406" name="Shenzhen Meian Technology"></Manufacturer>
@@ -1465,14 +1467,15 @@
     <Product config="shenzen_neo/nas-ds01z.xml" id="0082" name="Door/Window Detector" type="0003"/>
     <Product config="shenzen_neo/nas-ds01z.xml" id="1082" name="Door/Window Detector" type="0003"/>
     <Product config="shenzen_neo/nas-ds01z.xml" id="2082" name="Door/Window Detector" type="0003"/>
-    <Product config="shenzen_neo/nas-wr01z.xml" id="0087" name="Power plug 12A" type="0003"/>
-    <Product config="shenzen_neo/nas-wr01z.xml" id="1087" name="Power plug 12A" type="0003"/>
-    <Product config="shenzen_neo/nas-wr01ze.xml" id="1027" name="Power plug 12A" type="0200"/>
-    <Product config="shenzen_neo/nas-wr01z.xml" id="2087" name="Power plug 12A" type="0003"/>
-    <Product config="shenzen_neo/nas-pd01z.xml" id="0083" name="Battery Powered PIR Sensor" type="0003"/>
-    <Product config="shenzen_neo/nas-pd01z.xml" id="1083" name="Battery Powered PIR Sensor" type="0003"/>
-    <Product config="shenzen_neo/nas-pd02z.xml" id="108d" name="Battery Powered PIR Sensor V2" type="0003"/>
-    <!--<Product type="0003" id="108d" name="Battery Powered PIR Sensor with temp" config="shenzen_neo/nas-pd01z.xml"/>-->
+    <Product config="shenzen_neo/nas-wr01z.xml" id="0087" name="NAS-WR01Z Power plug 12A" type="0003"/>
+    <Product config="shenzen_neo/nas-wr01z.xml" id="1087" name="NAS-WR01Z Power plug 12A" type="0003"/>
+    <!-- NAS-WR01ZE and NAS-WR01Z hardware looks identical but are based on different SDK-->
+    <Product config="shenzen_neo/nas-wr01ze.xml" id="1027" name="NAS-WR01ZE Power plug 12A" type="0200"/>
+    <Product config="shenzen_neo/nas-wr01z.xml" id="2087" name="NAS-WR01Z Power plug 12A" type="0003"/>
+    <Product config="shenzen_neo/nas-pd01z.xml" id="0083" name="NAS-PD01Z Battery Powered PIR Sensor" type="0003"/>
+    <Product config="shenzen_neo/nas-pd01z.xml" id="1083" name="NAS-PD01Z Battery Powered PIR Sensor" type="0003"/>
+    <!-- NAS-PD02Z exist with and without temp sensor and different params but same IDs https://github.com/OpenZWave/open-zwave/issues/1866 -->
+    <Product config="shenzen_neo/nas-pd02z.xml" id="108d" name="NAS-PD02Z Battery Powered PIR Sensor V2" type="0003"/>
     <Product config="shenzen_neo/nas-ws02z.xml" id="0085" name="Water Leakage Detector" type="0003"/>
     <Product config="shenzen_neo/nas-ws02z.xml" id="1085" name="Water Leakage Detector" type="0003"/>
     <Product config="shenzen_neo/nas-ws02z.xml" id="6085" name="Water Leakage Detector" type="0003"/>
