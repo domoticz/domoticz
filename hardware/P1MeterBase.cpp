@@ -18,32 +18,32 @@ enum _eP1MatchType {
 	LINE18
 };
 
-#define P1SMID		"/"		// Smart Meter ID. Used to detect start of telegram.
-#define P1VER		"1-3:0.2.8"	// P1 version
+#define P1SMID		"/"				// Smart Meter ID. Used to detect start of telegram.
+#define P1VER		"1-3:0.2.8"		// P1 version
 #define P1VERBE		"0-0:96.1.4"	// P1 version + e-MUCS version (Belgium)
-#define P1TS		"0-0:1.0.0"	// Timestamp
-#define P1PUSG		"1-0:1.8."	// total power usage (excluding tariff indicator)
-#define P1PDLV		"1-0:2.8."	// total delivered power (excluding tariff indicator)
+#define P1TS		"0-0:1.0.0"		// Timestamp
+#define P1PUSG		"1-0:1.8."		// total power usage (excluding tariff indicator)
+#define P1PDLV		"1-0:2.8."		// total delivered power (excluding tariff indicator)
 #define P1TIP		"0-0:96.14.0"	// tariff indicator power
-#define P1PUC		"1-0:1.7.0"	// current power usage
-#define P1PDC		"1-0:2.7.0"	// current power delivery
+#define P1PUC		"1-0:1.7.0"		// current power usage
+#define P1PDC		"1-0:2.7.0"		// current power delivery
 #define P1VOLTL1	"1-0:32.7.0"	// voltage L1 (DSMRv5)
 #define P1VOLTL2	"1-0:52.7.0"	// voltage L2 (DSMRv5)
 #define P1VOLTL3	"1-0:72.7.0"	// voltage L3 (DSMRv5)
 #define P1AMPEREL1	"1-0:31.7.0"	// amperage L1 (DSMRv5)
 #define P1AMPEREL2	"1-0:51.7.0"	// amperage L2 (DSMRv5)
 #define P1AMPEREL3	"1-0:71.7.0"	// amperage L3 (DSMRv5)
-#define P1POWUSL1       "1-0:21.7.0"    // Power used L1 (DSMRv5)
-#define P1POWUSL2       "1-0:41.7.0"    // Power used L2 (DSMRv5)
-#define P1POWUSL3       "1-0:61.7.0"    // Power used L3 (DSMRv5)
-#define P1POWDLL1       "1-0:22.7.0"    // Power delivered L1 (DSMRv5)
-#define P1POWDLL2       "1-0:42.7.0"    // Power delivered L2 (DSMRv5)
-#define P1POWDLL3       "1-0:62.7.0"    // Power delivered L3 (DSMRv5)
+#define P1POWUSL1	"1-0:21.7.0"    // Power used L1 (DSMRv5)
+#define P1POWUSL2	"1-0:41.7.0"    // Power used L2 (DSMRv5)
+#define P1POWUSL3	"1-0:61.7.0"    // Power used L3 (DSMRv5)
+#define P1POWDLL1	"1-0:22.7.0"    // Power delivered L1 (DSMRv5)
+#define P1POWDLL2	"1-0:42.7.0"    // Power delivered L2 (DSMRv5)
+#define P1POWDLL3	"1-0:62.7.0"    // Power delivered L3 (DSMRv5)
 #define P1GTS		"0-n:24.3.0"	// DSMR2 timestamp gas usage sample
-#define P1GUDSMR2	"("		// DSMR2 gas usage sample
-#define P1GUDSMR4	"0-n:24.2."	// DSMR4 gas usage sample (excluding 'tariff' indicator)
+#define P1GUDSMR2	"("				// DSMR2 gas usage sample
+#define P1GUDSMR4	"0-n:24.2."		// DSMR4 gas usage sample (excluding 'tariff' indicator)
 #define P1MBTYPE	"0-n:24.1.0"	// M-Bus device type
-#define P1EOT		"!"		// End of telegram.
+#define P1EOT		"!"				// End of telegram.
 
 enum _eP1Type {
 	P1TYPE_SMID = 0,
@@ -189,22 +189,22 @@ void P1MeterBase::Init()
 
 bool P1MeterBase::MatchLine()
 {
-	if ((strlen((const char*)&l_buffer) < 1) || (l_buffer[0] == 0x0a))
+	if ((strlen((const char*)& l_buffer) < 1) || (l_buffer[0] == 0x0a))
 		return true; //null value (startup)
 	uint8_t i;
 	uint8_t found = 0;
-	P1Match *t;
+	P1Match* t;
 	char value[20] = "";
 	std::string vString;
 
-	for (i = 0; (i < sizeof(matchlist) / sizeof(P1Match))&(!found); i++)
+	for (i = 0; (i < sizeof(matchlist) / sizeof(P1Match)) & (!found); i++)
 	{
 		t = &matchlist[i];
 		switch (t->matchtype)
 		{
 		case ID:
 			// start of data
-			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0)
 			{
 				m_linecount = 1;
 				found = 1;
@@ -213,28 +213,28 @@ bool P1MeterBase::MatchLine()
 			break;
 		case EXCLMARK:
 			// end of data
-			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0)
 			{
 				l_exclmarkfound = 1;
 				found = 1;
 			}
 			break;
 		case STD:
-			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0)
 				found = 1;
 			break;
 		case DEVTYPE:
 			if (m_gasmbuschannel == 0)
 			{
 				vString = (const char*)t->key + 3;
-				if (strncmp(vString.c_str(), (const char*)&l_buffer + 3, strlen(t->key) - 3) == 0)
+				if (strncmp(vString.c_str(), (const char*)& l_buffer + 3, strlen(t->key) - 3) == 0)
 					found = 1;
 				else
 					i += 100; // skip matches with any other gas lines - we need to find the M0-Bus channel first
 			}
 			break;
 		case GAS:
-			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)& l_buffer, strlen(t->key)) == 0)
 			{
 				// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
 				if ((l_buffer[9] & 0xFD) == 0x31)
@@ -244,14 +244,14 @@ bool P1MeterBase::MatchLine()
 				i += 100; // skip matches with any DSMR v2 gas lines
 			break;
 		case LINE17:
-			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)& l_buffer, strlen(t->key)) == 0)
 			{
 				m_linecount = 17;
 				found = 1;
 			}
 			break;
 		case LINE18:
-			if ((m_linecount == 18) && (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0))
+			if ((m_linecount == 18) && (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0))
 				found = 1;
 			break;
 		} //switch
@@ -270,7 +270,7 @@ bool P1MeterBase::MatchLine()
 			if (difftime(atime, m_lastUpdateTime) >= m_ratelimit)
 			{
 				m_lastUpdateTime = atime;
-				sDecodeRXMessage(this, (const unsigned char *)&m_power, "Power", 255);
+				sDecodeRXMessage(this, (const unsigned char*)& m_power, "Power", 255);
 				if (m_voltagel1 != -1) {
 					SendVoltageSensor(0, 1, 255, m_voltagel1, "Voltage L1");
 				}
@@ -314,7 +314,7 @@ bool P1MeterBase::MatchLine()
 						// just accept it - we cannot sync to our clock
 						m_lastSharedSendGas = atime;
 						m_lastgasusage = m_gas.gasusage;
-						sDecodeRXMessage(this, (const unsigned char *)&m_gas, "Gas", 255);
+						sDecodeRXMessage(this, (const unsigned char*)& m_gas, "Gas", 255);
 					}
 					else if (atime >= m_gasoktime)
 					{
@@ -324,12 +324,12 @@ bool P1MeterBase::MatchLine()
 						sprintf(myts, "%02d%02d%02d%02d%02d%02dW", ltime.tm_year % 100, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 						if (ltime.tm_isdst)
 							myts[12] = 'S';
-						if ((m_gastimestamp.length() > 13) || (strncmp((const char*)&myts, m_gastimestamp.c_str(), m_gastimestamp.length()) >= 0))
+						if ((m_gastimestamp.length() > 13) || (strncmp((const char*)& myts, m_gastimestamp.c_str(), m_gastimestamp.length()) >= 0))
 						{
 							m_lastSharedSendGas = atime;
 							m_lastgasusage = m_gas.gasusage;
 							m_gasoktime += 300;
-							sDecodeRXMessage(this, (const unsigned char *)&m_gas, "Gas", 255);
+							sDecodeRXMessage(this, (const unsigned char*)& m_gas, "Gas", 255);
 						}
 						else // gas clock is ahead
 						{
@@ -366,7 +366,7 @@ bool P1MeterBase::MatchLine()
 		}
 		else
 		{
-			vString = (const char*)&l_buffer + t->start;
+			vString = (const char*)& l_buffer + t->start;
 			int ePos = t->width;
 			ePos = vString.find_first_of("*)");
 
@@ -396,7 +396,7 @@ bool P1MeterBase::MatchLine()
 			float temp_volt = 0;
 			float temp_ampere = 0;
 			float temp_power = 0;
-			char *validate = value + ePos;
+			char* validate = value + ePos;
 
 			switch (t->type)
 			{
@@ -415,7 +415,7 @@ bool P1MeterBase::MatchLine()
 						// Dutch meter
 						sprintf(szVersion, "ESMR %c.%c", value[0], value[1]);
 						if (m_p1version < 5)
-							szVersion[0]='D';
+							szVersion[0] = 'D';
 					}
 					_log.Log(LOG_STATUS, "P1 Smart Meter: Meter reports as %s", szVersion);
 				}
@@ -430,7 +430,7 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_POWERUSAGE:
-				temp_usage = (unsigned long)(strtod(value, &validate)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0f);
 				if ((l_buffer[8] & 0xFE) == 0x30)
 				{
 					// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerusage1
@@ -448,7 +448,7 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_POWERDELIV:
-				temp_usage = (unsigned long)(strtod(value, &validate)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0f);
 				if ((l_buffer[8] & 0xFE) == 0x30)
 				{
 					// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerdeliv1
@@ -466,12 +466,12 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_USAGECURRENT:
-				temp_usage = (unsigned long)(strtod(value, &validate)*1000.0f);	//Watt
+				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0f);	//Watt
 				if (temp_usage < 17250)
 					m_power.usagecurrent = temp_usage;
 				break;
 			case P1TYPE_DELIVCURRENT:
-				temp_usage = (unsigned long)(strtod(value, &validate)*1000.0f);	//Watt;
+				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0f);	//Watt;
 				if (temp_usage < 17250)
 					m_power.delivcurrent = temp_usage;
 				break;
@@ -515,32 +515,32 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_POWERUSEL1:
-				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0f);
 				if (temp_power < 10000)
 					m_powerusel1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERUSEL2:
-				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0f);
 				if (temp_power < 10000)
 					m_powerusel2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERUSEL3:
-				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0f);
 				if (temp_power < 10000)
 					m_powerusel3 = temp_power; //Power Used L3;
 				break;
 			case P1TYPE_POWERDELL1:
-				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0f);
 				if (temp_power < 10000)
 					m_powerdell1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERDELL2:
-				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0f);
 				if (temp_power < 10000)
 					m_powerdell2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERDELL3:
-				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0f);
 				if (temp_power < 10000)
 					m_powerdell3 = temp_power; //Power Used L3;
 				break;
@@ -549,7 +549,7 @@ bool P1MeterBase::MatchLine()
 				break;
 			case P1TYPE_GASUSAGE:
 			case P1TYPE_GASUSAGEDSMR4:
-				temp_usage = (unsigned long)(strtod(value, &validate)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0f);
 				if (!m_gas.gasusage || m_p1version >= 4)
 					m_gas.gasusage = temp_usage;
 				else if (temp_usage - m_gas.gasusage < 20000)
@@ -567,7 +567,7 @@ bool P1MeterBase::MatchLine()
 			if (t->type == P1TYPE_GASUSAGEDSMR4)
 			{
 				// need to get timestamp from this line as well
-				vString = (const char*)&l_buffer + 11;
+				vString = (const char*)& l_buffer + 11;
 				m_gastimestamp = vString.substr(0, 13);
 #ifdef _DEBUG
 				_log.Log(LOG_NORM, "P1 Smart Meter: Key: gastimestamp, Value: %s", m_gastimestamp);
@@ -615,7 +615,7 @@ bool P1MeterBase::CheckCRC()
 
 	// retrieve CRC from the current line
 	char crc_str[5];
-	strncpy(crc_str, (const char*)&l_buffer + 1, 4);
+	strncpy(crc_str, (const char*)& l_buffer + 1, 4);
 	crc_str[4] = 0;
 	uint16_t m_crc16 = (uint16_t)strtoul(crc_str, NULL, 16);
 
@@ -660,7 +660,7 @@ bool P1MeterBase::CheckCRC()
 /	done if the message passes all other validation rules
 */
 
-void P1MeterBase::ParseP1Data(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit)
+void P1MeterBase::ParseP1Data(const unsigned char* pData, const int Len, const bool disable_crc, int ratelimit)
 {
 	int ii = 0;
 	m_ratelimit = ratelimit;
