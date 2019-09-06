@@ -19,7 +19,7 @@
 #include <ctime>
 
 #ifdef _DEBUG
-#define DEBUG_P1_R
+//#define DEBUG_P1_R
 #endif
 
 #ifdef DEBUG_P1_R
