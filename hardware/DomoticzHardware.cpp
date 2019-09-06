@@ -409,7 +409,7 @@ void CDomoticzHardwareBase::SendRainSensorWU(const int NodeID, const int Battery
 
 	if (LastHour != 0)
 	{
-		uint64_t at10 = int((float(RainCounter) * 10.0f));
+		uint64_t at10 = int((float(LastHour) * 10.0f));
 		tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 		at10 -= (tsen.RAIN.rainrateh * 256);
 		tsen.RAIN.rainratel = (BYTE)(at10);
