@@ -420,13 +420,10 @@ void CBuienRadar::GetMeterDetails()
 
 	float total_rain_today = -1;
 	float total_rain_last_hour = 0;
-	if (!root["precipitation"].empty())
+
+	if (!root["rainFallLast24Hour"].empty())
 	{
-		total_rain_today = root["precipitation"].asFloat();
-	}
-	else if (!root["precipation"].empty())
-	{
-		total_rain_today = root["precipation"].asFloat();
+		total_rain_today = root["rainFallLast24Hour"].asFloat();
 	}
 	if (!root["rainFallLastHour"].empty())
 	{
