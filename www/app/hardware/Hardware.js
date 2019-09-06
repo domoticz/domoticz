@@ -3556,8 +3556,12 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
 						}
 						else if (data["Type"].indexOf("Buienradar") >= 0) {
-							$("#hardwarecontent #divbuienradar #timeframe").val(data["Mode1"]);
-							$("#hardwarecontent #divbuienradar #threshold").val(data["Mode2"]);
+							var timeframe = parseInt(data["Mode1"]);
+							var threshold = parseInt(data["Mode2"]);
+							if (timeframe == 0) timeframe = 15;
+							if (threshold == 0) threshold = 25;
+							$("#hardwarecontent #divbuienradar #timeframe").val(timeframe);
+							$("#hardwarecontent #divbuienradar #threshold").val(threshold);
 						}
 						else if ((data["Type"].indexOf("HTTP/HTTPS") >= 0)) {
 							$("#hardwarecontent #hardwareparamshttp #url").val(data["Address"]);
