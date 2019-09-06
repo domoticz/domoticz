@@ -104,7 +104,7 @@ define(['app', 'livesocket'], function (app) {
 						var svgCont = document.getElementById(tagName + '_svg');
 						svgCont.setAttribute("viewBox", "0 0 " + target.naturalWidth + " " + target.naturalHeight);
 						svgCont.appendChild(makeSVGnode('g', { id: tagName + '_grp', transform: 'translate(0,0) scale(1)', style: "", zoomed: "false" }, ''));
-						svgCont.childNodes[0].appendChild(makeSVGnode('rect', { width: "100%", height: "100%", fill: "white" }, ''));
+						//svgCont.childNodes[0].appendChild(makeSVGnode('rect', { width: "100%", height: "100%", fill: "white" }, ''));
 						svgCont.childNodes[0].appendChild(makeSVGnode('image', { width: "100%", height: "100%", "xlink:href": $scope.floorPlans[i].Image }, ''));
 						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id: tagName + '_Content', 'class': 'FloorContent' }, ''));
 						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id: tagName + '_Rooms', 'class': 'FloorRooms' }, ''));
