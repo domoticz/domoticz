@@ -592,6 +592,8 @@ define(['app'], function (app) {
 				if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
 					extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
 					Mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
+					Mode2 = $("#hardwarecontent #divmysensorsmqtt #combotlsversion").val();
+
 					if ($("#hardwarecontent #divmysensorsmqtt #filename").val().indexOf("#") >= 0) {
 						ShowNotify($.t('CA Filename cannot contain a "#" symbol!'), 2500, true);
 						return;
@@ -625,6 +627,7 @@ define(['app'], function (app) {
 				else if ((text.indexOf("MQTT") >= 0)) {
 					extra = $("#hardwarecontent #divmqtt #filename").val();
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
+					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
 				}
 				if (text.indexOf("Eco Devices") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
@@ -1813,6 +1816,7 @@ define(['app'], function (app) {
 				if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
 					extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
 					mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
+					Mode2 = $("#hardwarecontent #divmysensorsmqtt #combotlsversion").val();
 					if ($("#hardwarecontent #divmysensorsmqtt #filename").val().indexOf("#") >= 0) {
 						ShowNotify($.t('CA Filename cannot contain a "#" symbol!'), 2500, true);
 						return;
@@ -1846,6 +1850,7 @@ define(['app'], function (app) {
 				else if (text.indexOf("MQTT") >= 0) {
 					extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
 					mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
+					mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
 				}
 				if (text.indexOf("Eco Devices") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
@@ -3679,13 +3684,15 @@ define(['app'], function (app) {
 							}
 
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotopicselect").val(data["Mode1"]);
-						}
-						else if (data["Type"].indexOf("Rtl433") >= 0) {
-							$("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val(data["Extra"]);
+							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotlsversion").val(data["Mode2"]);
 						}
 						else if (data["Type"].indexOf("MQTT") >= 0) {
 							$("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
 							$("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
+							$("#hardwarecontent #hardwareparamsmqtt #combotlsversion").val(data["Mode2"]);
+						}
+						else if (data["Type"].indexOf("Rtl433") >= 0) {
+							$("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val(data["Extra"]);
 						}
 						if (
 							(data["Type"].indexOf("Domoticz") >= 0) ||

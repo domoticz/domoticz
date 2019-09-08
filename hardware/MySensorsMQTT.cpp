@@ -11,8 +11,10 @@
 #define TOPIC_IN		"domoticz/in/"
 #define TOPIC_OUT		"domoticz/out/"
 
-MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int Topics) :
-	MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilename, (int)MQTT::PT_out),
+extern const char* szTLSVersions[3];
+
+MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int TLS_Version, const int Topics) :
+	MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilename, TLS_Version, (int)MQTT::PT_out),
 	MyTopicIn(TOPIC_IN),
 	MyTopicOut(TOPIC_OUT)
 {
