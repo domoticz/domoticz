@@ -2093,52 +2093,52 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	{
 		if (vOrgIndex == ValueID_Index_ThermostatFanState::FanState)
 		{
-            if (vType == OpenZWave::ValueID::ValueType_String)
-            {
-                std::string strValue;
-                if (m_pManager->GetValueAsString(vID, &strValue) == true)
-                {
-                    if (strValue == "Running")
-                    {
-                        _device.intvalue = 255;
-                    }
-                    else
-                    {   // default to Idle
-                        _device.intvalue = 0;
-                    }
-                    _device.devType = ZDTYPE_SWITCH_NORMAL;
-                    InsertDevice(_device);
-                    SendDevice2Domoticz(&_device);
-                }
-            }
+			if (vType == OpenZWave::ValueID::ValueType_String)
+			{
+				std::string strValue;
+				if (m_pManager->GetValueAsString(vID, &strValue) == true)
+				{
+					if (strValue == "Running")
+					{
+						_device.intvalue = 255;
+					}
+					else
+					{   // default to Idle
+						_device.intvalue = 0;
+					}
+					_device.devType = ZDTYPE_SWITCH_NORMAL;
+					InsertDevice(_device);
+					SendDevice2Domoticz(&_device);
+				}
+			}
 		}
 	}
 	else if (commandclass == COMMAND_CLASS_THERMOSTAT_OPERATING_STATE)
 	{
 		if (vOrgIndex == ValueID_Index_ThermostatOperatingState::OperatingState)
 		{
-            if (vType == OpenZWave::ValueID::ValueType_String)
-            {
-                std::string strValue;
-                if (m_pManager->GetValueAsString(vID, &strValue) == true)
-                {
-                    if (strValue == "Cooling")
-                    {
-                        _device.intvalue = 1;
-                    }
-                    else if (strValue == "Heating")
-                    {
-                        _device.intvalue = 2;
-                    }
-                    else
-                    {   // default to Idle
-                        _device.intvalue = 0;
-                    }
-                    _device.devType = ZDTYPE_SENSOR_THERMOSTAT_OPERATING_STATE;
-                    InsertDevice(_device);
-                    SendDevice2Domoticz(&_device);
-                }
-            }
+			if (vType == OpenZWave::ValueID::ValueType_String)
+			{
+				std::string strValue;
+				if (m_pManager->GetValueAsString(vID, &strValue) == true)
+				{
+					if (strValue == "Cooling")
+					{
+						_device.intvalue = 1;
+					}
+					else if (strValue == "Heating")
+					{
+						_device.intvalue = 2;
+					}
+					else
+					{   // default to Idle
+						_device.intvalue = 0;
+					}
+					_device.devType = ZDTYPE_SENSOR_THERMOSTAT_OPERATING_STATE;
+					InsertDevice(_device);
+					SendDevice2Domoticz(&_device);
+				}
+			}
 		}
 	}
 	else if (commandclass == COMMAND_CLASS_CLOCK)
@@ -3084,27 +3084,27 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 					return;
 				}
 			}
-        }
+		}
 		else if (commandclass == COMMAND_CLASS_THERMOSTAT_FAN_STATE)
 		{
-            if (vType != OpenZWave::ValueID::ValueType_String)
-                return;
-            if (vOrgIndex == ValueID_Index_ThermostatFanMode::FanMode)
-            {
-                std::string strValue;
-                if (m_pManager->GetValueAsString(vID, &strValue) == true)
-                {
-                    if (strValue == "Running")
-                    {
-                        pDevice->intvalue = 255;
-                    }
-                    else
-                    {   // default to Idle
-                        pDevice->intvalue = 0;
-                    }
-                }
-            }
-        }
+			if (vType != OpenZWave::ValueID::ValueType_String)
+				return;
+			if (vOrgIndex == ValueID_Index_ThermostatFanMode::FanMode)
+			{
+				std::string strValue;
+				if (m_pManager->GetValueAsString(vID, &strValue) == true)
+				{
+					if (strValue == "Running")
+					{
+						pDevice->intvalue = 255;
+					}
+					else
+					{   // default to Idle
+						pDevice->intvalue = 0;
+					}
+				}
+			}
+		}
 		else if (vLabel.find("Open") != std::string::npos)
 		{
 			pDevice->intvalue = 255;
@@ -3356,22 +3356,22 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			return;
 		if (vOrgIndex == ValueID_Index_ThermostatFanMode::FanMode)
 		{
-            std::string strValue;
-            if (m_pManager->GetValueAsString(vID, &strValue) == true)
-            {
-                if (strValue == "Cooling")
-                {
-                    pDevice->intvalue = 1;
-                }
-                else if (strValue == "Heating")
-                {
-                    pDevice->intvalue = 2;
-                }
-                else
-                {   // default to Idle
-                    pDevice->intvalue = 0;
-                }
-            }
+			std::string strValue;
+			if (m_pManager->GetValueAsString(vID, &strValue) == true)
+			{
+				if (strValue == "Cooling")
+				{
+					pDevice->intvalue = 1;
+				}
+				else if (strValue == "Heating")
+				{
+					pDevice->intvalue = 2;
+				}
+				else
+				{   // default to Idle
+					pDevice->intvalue = 0;
+				}
+			}
 		}
 		break;
 	case ZDTYPE_CENTRAL_SCENE:
