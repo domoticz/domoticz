@@ -10034,6 +10034,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		(subType == sTypeZWaveClock) ||
 		(subType == sTypeZWaveThermostatMode) ||
 		(subType == sTypeZWaveThermostatFanMode) ||
+		(subType == sTypeZWaveThermostatOperatingState) ||
 		(subType == sTypeFan) ||
 		(subType == sTypeTextStatus) ||
 		(subType == sTypeSoundLevel) ||
@@ -10159,7 +10160,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		sprintf(szTmp, "%d;%d;%d", day, hour, minute);
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	}
-	else if ((subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode))
+	else if ((subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeZWaveThermostatOperatingState))
 	{
 		cmnd = (uint8_t)pMeter->intval2;
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, procResult.DeviceName);
@@ -10283,6 +10284,11 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		case sTypeZWaveThermostatFanMode:
 			WriteMessage("subtype       = Thermostat Fan Mode");
 			sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Fan_Modes[pMeter->intval2]);
+			WriteMessage(szTmp);
+			break;
+		case sTypeZWaveThermostatOperatingState:
+			WriteMessage("subtype       = Thermostat Operating State");
+			sprintf(szTmp, "State = %d", pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		case sTypePercentage:
