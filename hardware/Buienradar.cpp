@@ -131,17 +131,38 @@ void CBuienRadar::Do_Work()
 #endif
 	int sec_counter = 593;
 	_log.Log(LOG_STATUS, "BuienRadar: Worker started...");
+	bool bGetMeterDetails = true;
 
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 		if (sec_counter % 10 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			time_t now = mytime(0);
+
+			m_LastHeartbeat = now;
+
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+			if (ltime.tm_mday != m_actDay)
+			{
+				if (ltime.tm_min >= m_sql.m_ShortLogInterval - 1)
+				{
+					//reset our rain counter
+					m_actDay = ltime.tm_mday;
+					m_lastRainCount = 0;
+
+					GetMeterDetails();
+					bGetMeterDetails = false;
+				}
+			}
 		}
+
 		if (sec_counter % 600 == 0)
 		{
 			//Every 10 minutes
-			GetMeterDetails();
+			if (bGetMeterDetails)
+				GetMeterDetails();
+			bGetMeterDetails = true;
 		}
 		if (sec_counter % 300 == 0)
 		{
@@ -434,25 +455,10 @@ void CBuienRadar::GetMeterDetails()
 	if (total_rain_today != -1)
 	{
 		//Make sure the 24 hour counter does not loop when our day is not finished yet (clocks could drift a few seconds/minutes)
-		time_t now = mytime(0);
-		struct tm ltime;
-		localtime_r(&now, &ltime);
-		
 		if (total_rain_today >= m_lastRainCount)
 		{
 			m_lastRainCount = total_rain_today;
 			SendRainSensorWU(1, 255, total_rain_today, total_rain_last_hour, "Rain");
-		}
-		else
-		{
-			if (ltime.tm_mday != m_actDay)
-			{
-				if (ltime.tm_min > 3) {
-					//New day, reset our counter
-					m_actDay = ltime.tm_mday;
-					m_lastRainCount = 0;
-				}
-			}
 		}
 	}
 }
