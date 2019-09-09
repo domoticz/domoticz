@@ -438,17 +438,21 @@ void CBuienRadar::GetMeterDetails()
 		struct tm ltime;
 		localtime_r(&now, &ltime);
 		
-		if (ltime.tm_mday != m_actDay)
-		{
-			//New day, reset our counter
-			m_actDay = ltime.tm_mday;
-			m_lastRainCount = 0;
-		}
-		
 		if (total_rain_today >= m_lastRainCount)
 		{
 			m_lastRainCount = total_rain_today;
 			SendRainSensorWU(1, 255, total_rain_today, total_rain_last_hour, "Rain");
+		}
+		else
+		{
+			if (ltime.tm_mday != m_actDay)
+			{
+				if (ltime.tm_min > 3) {
+					//New day, reset our counter
+					m_actDay = ltime.tm_mday;
+					m_lastRainCount = 0;
+				}
+			}
 		}
 	}
 }
