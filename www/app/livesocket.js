@@ -113,15 +113,23 @@ define(['app', 'angular-websocket'], function (app) {
 						if (typeof data == "string") {
 							data = JSON.parse(data);
 						}
-						//alert("req_id: " + requestid + "\ndata: " + msg.data + ", msg: " + msg + "\n, data: " + JSON.stringify(data));
+						
+						var title = "Devices";
+						var broadcast_channel = 'jsonupdate';
+
+						if (msg.request == "scene_request") {
+							title = "Scenes";
+							broadcast_channel = 'scene_update';
+						}
+						//alert("title: " + title + "\nreq_id: " + requestid + "\ndata: " + msg.data + ", msg: " + msg + "\n, data: " + JSON.stringify(data));
 						var send = {
-							title: "Devices", // msg.title
+							title: title,
 							item: (typeof data.result != 'undefined') ? data.result[0] : null,
 							ServerTime: data.ServerTime,
 							Sunrise: data.Sunrise,
 							Sunset: data.Sunset
 						}
-						$rootScope.$broadcast('jsonupdate', send);
+						$rootScope.$broadcast(broadcast_channel, send);
 					}
 					if (!$rootScope.$$phase) { // prevents triggering a $digest if there's already one in progress
 						$rootScope.$digest();

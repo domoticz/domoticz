@@ -60,9 +60,10 @@ namespace http {
 				if (!reader.parse(packet_data, value)) {
 					return true;
 				}
-				if (value["event"] != "request") {
+				std::string szEvent = value["event"].asString();
+				if (szEvent.find("request") == std::string::npos)
 					return true;
-				}
+
 				request req;
 				req.method = "GET";
 				std::string querystring = value["query"].asString();
@@ -74,8 +75,10 @@ namespace http {
 				reply rep;
 				if (myWebem->CheckForPageOverride(session, req, rep)) {
 					if (rep.status == reply::ok) {
+						jsonValue["request"] = szEvent;
 						jsonValue["event"] = "response";
-						jsonValue["requestid"] = value["requestid"].asInt64();
+						Json::Value::Int64 reqID = value["requestid"].asInt64();
+						jsonValue["requestid"] = reqID;
 						jsonValue["data"] = rep.content;
 						std::string response = writer.write(jsonValue);
 						MyWrite(response);
@@ -175,14 +178,31 @@ namespace http {
 
 		void CWebsocketHandler::OnDeviceChanged(const uint64_t DeviceRowIdx)
 		{
-			//Rob, needed a try/catch, but don't know why...
-			//When a browser was still open and polling/connecting to the websocket, and the application was started this caused a crash
 			try
 			{
 				std::string query = "type=devices&rid=" + std::to_string(DeviceRowIdx);
 				Json::Value request;
 				Json::StyledWriter writer;
-				request["event"] = "request";
+				request["event"] = "device_request";
+				request["requestid"] = -1;
+				request["query"] = query;
+				std::string packet = writer.write(request);
+				Handle(packet, true);
+			}
+			catch (std::exception& e)
+			{
+				_log.Log(LOG_ERROR, "WebsocketHandler::%s Exception: %s", __func__, e.what());
+			}
+		}
+
+		void CWebsocketHandler::OnSceneChanged(const uint64_t SceneRowIdx)
+		{
+			try
+			{
+				std::string query = "type=scenes&rid=" + std::to_string(SceneRowIdx);
+				Json::Value request;
+				Json::StyledWriter writer;
+				request["event"] = "scene_request";
 				request["requestid"] = -1;
 				request["query"] = query;
 				std::string packet = writer.write(request);

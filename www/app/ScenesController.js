@@ -825,7 +825,7 @@ define(['app', 'livesocket'], function (app) {
 			}
 		}
 
-		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
+		//We only call this once. After this the widgets are being updated automatically by used of the websocket broadcast event.
 		RefreshScenes = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -850,11 +850,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
-			$scope.$on('jsonupdate', function (event, data) {
-				/*
-					When this event is caught, a widget status update is received.
-					We call RefreshItem to update the widget.
-				*/
+			$scope.$on('scene_update', function (event, data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}

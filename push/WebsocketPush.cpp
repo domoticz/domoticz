@@ -21,6 +21,7 @@ void CWebSocketPush::Start()
 	}
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CWebSocketPush::OnDeviceReceived, this, _1, _2, _3, _4));
 	m_sNotification = sOnNotificationReceived.connect(boost::bind(&CWebSocketPush::OnNotificationReceived, this, _1, _2, _3, _4, _5, _6));
+	m_sSceneChanged = m_mainworker.sOnSwitchScene.connect(boost::bind(&CWebSocketPush::OnSceneChange, this, _1, _2));
 	isStarted = true;
 }
 
@@ -36,6 +37,9 @@ void CWebSocketPush::Stop()
 	}
 	if (m_sNotification.connected()) {
 		m_sNotification.disconnect();
+	}
+	if (m_sSceneChanged.connected()) {
+		m_sSceneChanged.disconnect();
 	}
 }
 
@@ -110,6 +114,14 @@ void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const unsigned long lon
 	if (WeListenTo(DeviceRowIdx)) {
 		// push notification to web socket
 	}
+}
+
+void CWebSocketPush::OnSceneChange(const unsigned long long SceneRowIdx, const std::string& SceneName)
+{
+	if (!isStarted) {
+		return;
+	}
+	m_sock->OnSceneChanged(SceneRowIdx);
 }
 
 void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
