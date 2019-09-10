@@ -13454,6 +13454,23 @@ void MainWorker::HeartbeatCheck()
 	}
 }
 
+bool MainWorker::UpdateDevice(const int DevIdx, int nValue, std::string& sValue, const int signallevel, const int batterylevel, const bool parseTrigger)
+{
+	// Get the raw device parameters
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%d)", DevIdx);
+	if (result.empty())
+		return false;
+
+	int HardwareID = std::stoi(result[0][0]);
+	std::string DeviceID = result[0][1];
+	int unit = std::stoi(result[0][2]);
+	int devType = std::stoi(result[0][3]);
+	int subType = std::stoi(result[0][4]);
+
+	return UpdateDevice(HardwareID, DeviceID, unit, devType, subType, nValue, sValue, signallevel, batterylevel, parseTrigger);
+}
+
 bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, int nValue, std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger)
 {
 	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
