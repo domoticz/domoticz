@@ -405,7 +405,6 @@ define(['app', 'livesocket'], function (app) {
 				$(id).addClass(backgroundClass);
 
 				if ($(id + " #status").html() != status) {
-					$(id + " #bigtext").html(bigtext);
 					$(id + " #status").html(status);
 				}
 				if ($(id + " #bigtext").html() != bigtext) {
