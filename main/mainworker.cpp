@@ -13580,7 +13580,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	}
 
 	std::string devname = "Unknown";
-	uint64_t devidx = m_sql.UpdateValue(
+	const uint64_t devidx = m_sql.UpdateValue(
 		HardwareID,
 		DeviceID.c_str(),
 		(const uint8_t)unit,
