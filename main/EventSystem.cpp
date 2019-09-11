@@ -2337,9 +2337,9 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			StripQuotes(parseResult.sCommand);
 
 			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
-				UpdateDevice(atoi(variableName.c_str()), 0, parseResult.sCommand, false, false);
+				m_mainworker.UpdateDevice(std::stoi(variableName.c_str()), 0, parseResult.sCommand, 12, 255, false);
 			else
-				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(parseResult.fAfterSec, (const uint64_t)atol(variableName.c_str()), 0, parseResult.sCommand, false, false));
+				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(parseResult.fAfterSec, std::stoull(variableName.c_str()), 0, parseResult.sCommand, false, false));
 
 			actionsDone = true;
 		}
@@ -3535,17 +3535,17 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			_log.Log(LOG_ERROR, "EventSystem: UpdateDevice, invalid parameters!");
 			return false;
 		}
-		int nValue = -1, Protected = -1;
+		int nValue = 0;
 		std::string sValue;
-		uint64_t idx = std::stoull(strarray[0]);
+		int idx = std::stoi(strarray[0]);
 		if (strarray.size() > 1 && !strarray[1].empty())
 			nValue = atoi(strarray[1].c_str());
 		if (strarray.size() > 2 && !strarray[2].empty())
 			sValue = strarray[2];
-		if (strarray.size() > 3 && !strarray[3].empty())
-			Protected = atoi(strarray[3].c_str());
+		//if (strarray.size() > 3 && !strarray[3].empty())
+			//Protected = atoi(strarray[3].c_str()); //GizMoCuz: this should not be able to be changed via events!
 
-		UpdateDevice(idx, nValue, sValue, Protected, false);
+		m_mainworker.UpdateDevice(idx, nValue, sValue, 12, 255, false);
 		scriptTrue = true;
 	}
 	else if (lCommand.find("Variable:") == 0)
@@ -3645,160 +3645,6 @@ bool CEventSystem::CustomCommand(const uint64_t idx, const std::string &sCommand
 		return false;
 
 	return pHardware->CustomCommand(idx, sCommand);
-}
-
-void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger)
-{
-	//Get device parameters
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate, HardwareID, DeviceID, Unit FROM DeviceStatus WHERE (ID=='%" PRIu64 "')",
-		idx);
-	if (!result.empty())
-	{
-		std::vector<std::string> sd = result[0];
-
-		std::string dtype = sd[0];
-		std::string dsubtype = sd[1];
-		std::string dname = sd[2];
-		_eSwitchType dswitchtype = (_eSwitchType)atoi(sd[3].c_str());
-		int dlastlevel = atoi(sd[4].c_str());
-		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[5].c_str());
-		int db_nValue = atoi(sd[6].c_str());
-		std::string db_sValue = sd[7];
-		int db_Protected = atoi(sd[8].c_str());
-		std::string db_LastUpdate = sd[9];
-		int HardwareID = atoi(sd[10].c_str());
-		std::string DeviceID = sd[11];
-		int Unit = atoi(sd[12].c_str());
-
-		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
-
-		if (nValue != -1)
-			db_nValue = nValue;
-		if (!sValue.empty())
-			db_sValue = sValue;
-		if (nValue != -1 || !sValue.empty())
-			db_LastUpdate = szLastUpdate;
-		if (Protected != -1)
-			db_Protected = Protected;
-
-		m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', Protected=%d, LastUpdate='%s' WHERE (ID=='%" PRIu64 "')",
-			db_nValue,
-			db_sValue.c_str(),
-			db_Protected,
-			db_LastUpdate.c_str(),
-			idx);
-
-#ifdef ENABLE_PYTHON
-		// Notify plugin framework about the change
-		m_mainworker.m_pluginsystem.DeviceModified(idx);
-#endif
-
-		if ((nValue == -1) && (sValue.empty()))
-			return;
-
-		int devType = atoi(dtype.c_str());
-		int subType = atoi(dsubtype.c_str());
-
-		UpdateSingleState(idx, dname, nValue, sValue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
-
-		//Check if we need to log this event
-		switch (devType)
-		{
-		case pTypeRego6XXValue:
-			if (subType != sTypeRego6XXStatus)
-			{
-				break;
-			}
-		case pTypeGeneral:
-			if ((devType == pTypeGeneral) && (subType != sTypeTextStatus) && (subType != sTypeAlert))
-			{
-				break;
-			}
-		case pTypeLighting1:
-		case pTypeLighting2:
-		case pTypeLighting3:
-		case pTypeLighting4:
-		case pTypeLighting5:
-		case pTypeLighting6:
-		case pTypeFan:
-		case pTypeColorSwitch:
-		case pTypeSecurity1:
-		case pTypeSecurity2:
-		case pTypeEvohome:
-		case pTypeEvohomeRelay:
-		case pTypeCurtain:
-		case pTypeBlinds:
-		case pTypeRFY:
-		case pTypeChime:
-		case pTypeThermostat2:
-		case pTypeThermostat3:
-		case pTypeThermostat4:
-		case pTypeRemote:
-		case pTypeGeneralSwitch:
-		case pTypeHomeConfort:
-		case pTypeRadiator1:
-		case pTypeFS20:
-		case pTypeHunter:
-			if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
-				break;
-			//Add Lighting log
-			if (nValue != -1)
-				m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('%" PRIu64 "', '%d', '%q')", idx, nValue, !sValue.empty() ? sValue.c_str() : "0");
-			break;
-		}
-
-		//Check if it's a setpoint device, and if so, set the actual setpoint
-		if (
-			((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
-			(devType == pTypeRadiator1 && !sValue.empty())
-			)
-		{
-			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device '%s' (%g) ....", dname.c_str(), static_cast<float>(atof(sValue.c_str())));
-			m_mainworker.SetSetPoint(std::to_string(idx), static_cast<float>(atof(sValue.c_str())));
-		}
-		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode) && nValue != -1)
-		{
-			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device '%s' ....", dname.c_str());
-			m_mainworker.SetZWaveThermostatMode(std::to_string(idx), nValue);
-		}
-		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode) && nValue != -1)
-		{
-			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device '%s' ....", dname.c_str());
-			m_mainworker.SetZWaveThermostatFanMode(std::to_string(idx), nValue);
-		}
-		else if ((devType == pTypeGeneral) && (subType == sTypeTextStatus))
-		{
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
-			if (pHardware)
-			{
-				if (
-					(pHardware->HwdType == HTYPE_MySensorsUSB) ||
-					(pHardware->HwdType == HTYPE_MySensorsTCP) ||
-					(pHardware->HwdType == HTYPE_MySensorsMQTT)
-					)
-				{
-					unsigned long ID;
-					std::stringstream s_strid;
-					s_strid << std::hex << DeviceID;
-					s_strid >> ID;
-					unsigned char NodeID = (unsigned char)((ID & 0x0000FF00) >> 8);
-					unsigned char ChildID = (unsigned char)((ID & 0x000000FF));
-
-					MySensorsBase *pMySensorDevice = (MySensorsBase*)pHardware;
-					pMySensorDevice->SendTextSensorValue(NodeID, ChildID, sValue);
-				}
-			}
-
-		}
-		if (bEventTrigger)
-			ProcessDevice(0, idx, 0, devType, subType, 255, 255, nValue, sValue.c_str(), dname);
-
-		//Handle notifications
-		m_notifications.CheckAndHandleNotification(idx, HardwareID, DeviceID, dname, Unit, devType, subType, nValue, sValue);
-	}
-	else
-		_log.Log(LOG_ERROR, "EventSystem: UpdateDevice IDX %" PRIu64 " not found!", idx);
 }
 
 void CEventSystem::OpenURL(const float delay, const std::string &URL)
