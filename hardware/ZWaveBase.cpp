@@ -234,7 +234,28 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeGeneralSwitch, sSwitchGeneralSwitch, szID);
 		if (!result.empty())
+		{
+			std::string first_non_matched_string_id;
+			std::map<std::string, _tZWaveDevice>::iterator itt;
+			for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+			{
+				if (
+					(itt->second.nodeID == pDevice->nodeID) &&
+					(itt->second.instanceID == pDevice->instanceID) &&
+					(itt->second.string_id != pDevice->string_id))
+				{
+					first_non_matched_string_id = itt->second.string_id;
+				}
+			}
+			if (!first_non_matched_string_id.empty())
+
+				_log.Log(
+					LOG_ERROR,
+					"SendSwitchIfNotExists: Not adding '%s' because database already has DeviceID '%s'. That ID matches '%s'",
+					pDevice->string_id.c_str(), szID, first_non_matched_string_id.c_str());
+
 			return; //Already in the system
+		}
 
 		//Send as pTypeGeneralSwitch/sSwitchGeneralSwitch
 
