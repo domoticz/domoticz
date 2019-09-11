@@ -377,6 +377,7 @@
     <None Include="..\www\views\customicons.html" />
     <None Include="..\www\views\dashboard.html" />
     <None Include="..\www\views\devices.html" />
+    <None Include="..\www\views\device_light_edit.html" />
     <None Include="..\www\views\dpfibaro.html" />
     <None Include="..\www\views\dpgooglepubsub.html" />
     <None Include="..\www\views\dphttp.html" />
@@ -393,8 +394,11 @@
     <None Include="..\www\views\log.html" />
     <None Include="..\www\views\login.html" />
     <None Include="..\www\views\logout.html" />
+    <None Include="..\www\views\log\device_graph_log.html" />
+    <None Include="..\www\views\log\device_temperature_log.html" />
     <None Include="..\www\views\mobile_notifications.html" />
     <None Include="..\www\views\notification.html" />
+    <None Include="..\www\views\notifications.html" />
     <None Include="..\www\views\offline.html" />
     <None Include="..\www\views\restoredatabase.html" />
     <None Include="..\www\views\rfxcomfirmware.html" />
@@ -402,12 +406,16 @@
     <None Include="..\www\views\scenes.html" />
     <None Include="..\www\views\setup.html" />
     <None Include="..\www\views\temperature.html" />
-    <None Include="..\www\views\temperatures\temperatureWidget.html" />
+    <None Include="..\www\views\temperature_custom_temp_log.html" />
+    <None Include="..\www\views\temperature_widget.html" />
+    <None Include="..\www\views\timerplan.html" />
+    <None Include="..\www\views\timers.html" />
     <None Include="..\www\views\update.html" />
     <None Include="..\www\views\users.html" />
     <None Include="..\www\views\uservariables.html" />
     <None Include="..\www\views\utility.html" />
     <None Include="..\www\views\weather.html" />
+    <None Include="..\www\views\weather_widget.html" />
     <None Include="..\www\zwavetopology.html" />
     <None Include="domoticz.ico" />
   </ItemGroup>
