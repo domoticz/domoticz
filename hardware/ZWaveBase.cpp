@@ -155,47 +155,72 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 		)
 		return; //only for switches
 
+	//make device ID
+
+	//To fix all problems it should be
+	//ID1 = (unsigned char)pDevice->nodeID;
+	//ID2 = pDevice->instanceID;
+	//ID3 = (pDevice->indexID&0xFF00)>>8;
+	//ID4 = pDevice->indexID&&0x00FF;
+	//but current users gets new devices in this case
+
+	unsigned char ID1 = 0;
+	unsigned char ID2 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
+	unsigned char ID3 = (unsigned char)pDevice->nodeID & 0xFF;
+	unsigned char ID4 = pDevice->instanceID;
+
+	unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
+
+	char szID[10];
+	sprintf(szID, "%08lX", lID);
+	unsigned char unitcode = 1;
+
+	int devType = pTypeGeneralSwitch;
+	int SubType = sSwitchGeneralSwitch;
+	int SwitchType = (
+		(pDevice->devType == ZDTYPE_SWITCH_DIMMER)
+		|| (pDevice->devType == ZDTYPE_SWITCH_RGBW) 
+		|| (pDevice->devType == ZDTYPE_SWITCH_COLOR)
+		) ? STYPE_Dimmer : STYPE_OnOff;
+
 	if ((pDevice->devType == ZDTYPE_SWITCH_RGBW) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
 	{
+		devType = pTypeColorSwitch;
 		// TODO: For devices of type ZDTYPE_SWITCH_COLOR the supported color channels is reported in response to command SWITCH_COLOR_SUPPORTED_GET
 		// This is already done by OpenZWave::Color class and used internally by the class, the information is needed here.
-		unsigned SubType = (pDevice->devType == ZDTYPE_SWITCH_RGBW) ? sTypeColor_RGB_W_Z : sTypeColor_RGB_CW_WW_Z;
+		SubType = (pDevice->devType == ZDTYPE_SWITCH_RGBW) ? sTypeColor_RGB_W_Z : sTypeColor_RGB_CW_WW_Z;
+	}
 
-		//make device ID
-		unsigned char ID1 = 0;
-		unsigned char ID2 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
-		unsigned char ID3 = (unsigned char)pDevice->nodeID & 0xFF;
-		unsigned char ID4 = pDevice->instanceID;
-
-		//To fix all problems it should be
-		//ID1 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
-		//ID2 = (unsigned char)pDevice->nodeID & 0xFF;
-		//ID3 = pDevice->org_instanceID;
-		//ID4 = pDevice->org_indexID;
-		//but current users gets new devices in this case
-
-		unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
-
-		char szID[10];
-		sprintf(szID, "%08x", (unsigned int)lID);
-		unsigned char unitcode = 1;
-
-		//Check if we already exist
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID, SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (DeviceID=='%q')",
-			m_HwdID, int(unitcode), pTypeColorSwitch, szID);
-		if (!result.empty()) //Already in the system, but make sure SubType is correct
+	//Check if we already exist
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+		m_HwdID, int(unitcode), devType, SubType, szID);
+	if (!result.empty())
+	{
+		std::string first_non_matched_string_id;
+		std::map<std::string, _tZWaveDevice>::iterator itt;
+		for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 		{
-			unsigned sTypeOld = atoi(result[0][1].c_str());
-			std::string sID = result[0][0];
-			if (sTypeOld != SubType)
+			if (
+				(itt->second.nodeID == pDevice->nodeID) &&
+				(itt->second.instanceID == pDevice->instanceID) &&
+				(itt->second.string_id != pDevice->string_id))
 			{
-				_log.Log(LOG_STATUS, "ZWave: Updating SubType of light '%s' from %u to %u", szID, sTypeOld, SubType);
-				m_sql.UpdateDeviceValue("SubType", (int)SubType, sID);
+				first_non_matched_string_id = itt->second.string_id;
 			}
-			return;
 		}
+		if (!first_non_matched_string_id.empty())
 
+			_log.Log(
+				LOG_ERROR,
+				"SendSwitchIfNotExists: Not adding '%s' because database already has DeviceID '%s'. That ID matches '%s'",
+				pDevice->string_id.c_str(), szID, first_non_matched_string_id.c_str());
+
+		return; //Already in the system
+	}
+
+	if ((pDevice->devType == ZDTYPE_SWITCH_RGBW) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
+	{
 		//Send as ColorSwitch
 		_tColorSwitch lcmd;
 		lcmd.id = lID;
@@ -203,62 +228,11 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 		lcmd.subtype = SubType;
 		lcmd.value = 0;
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)& lcmd, pDevice->label.c_str(), pDevice->batValue);
-
-		//Set Switch Type
-		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", STYPE_Dimmer, m_HwdID, szID);
 	}
 	else
 	{
-		//make device ID
-
-		//To fix all problems it should be
-		//ID1 = (unsigned char)pDevice->nodeID;
-		//ID2 = pDevice->instanceID;
-		//ID3 = (pDevice->indexID&0xFF00)>>8;
-		//ID4 = pDevice->indexID&&0x00FF;
-		//but current users gets new devices in this case
-
-		unsigned char ID1 = 0;
-		unsigned char ID2 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
-		unsigned char ID3 = (unsigned char)pDevice->nodeID & 0xFF;
-		unsigned char ID4 = pDevice->instanceID;
-
-		unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
-
-		char szID[10];
-		sprintf(szID, "%08lX", lID);
-		unsigned char unitcode = 1;
-
-		//Check if we already exist
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-			m_HwdID, int(unitcode), pTypeGeneralSwitch, sSwitchGeneralSwitch, szID);
-		if (!result.empty())
-		{
-			std::string first_non_matched_string_id;
-			std::map<std::string, _tZWaveDevice>::iterator itt;
-			for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
-			{
-				if (
-					(itt->second.nodeID == pDevice->nodeID) &&
-					(itt->second.instanceID == pDevice->instanceID) &&
-					(itt->second.string_id != pDevice->string_id))
-				{
-					first_non_matched_string_id = itt->second.string_id;
-				}
-			}
-			if (!first_non_matched_string_id.empty())
-
-				_log.Log(
-					LOG_ERROR,
-					"SendSwitchIfNotExists: Not adding '%s' because database already has DeviceID '%s'. That ID matches '%s'",
-					pDevice->string_id.c_str(), szID, first_non_matched_string_id.c_str());
-
-			return; //Already in the system
-		}
 
 		//Send as pTypeGeneralSwitch/sSwitchGeneralSwitch
-
 		_tGeneralSwitch  gswitch;
 		gswitch.subtype = sSwitchGeneralSwitch;
 		gswitch.seqnbr = pDevice->sequence_number;
@@ -292,16 +266,12 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 		// Update the lcmd with the correct level value.
 		gswitch.level = level;
 
-		gswitch.rssi = 12;
-
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)& gswitch, pDevice->label.c_str(), pDevice->batValue);
-
-		int SwitchType = (pDevice->devType == ZDTYPE_SWITCH_DIMMER) ? 7 : 0;
-
-		//Set SwitchType
-		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-			SwitchType, m_HwdID, int(unitcode), pTypeGeneralSwitch, sSwitchGeneralSwitch, szID);
 	}
+
+	//Set SwitchType
+	m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+		SwitchType, m_HwdID, int(unitcode), devType, SubType, szID);
 }
 
 unsigned char ZWaveBase::Convert_Battery_To_PercInt(const unsigned char level)
