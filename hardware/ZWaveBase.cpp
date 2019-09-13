@@ -213,8 +213,8 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 
 			_log.Log(
 				LOG_ERROR,
-				"SendSwitchIfNotExists: Not adding '%s' because database already has DeviceID '%s'. That ID matches '%s'",
-				pDevice->string_id.c_str(), szID, first_non_matched_string_id.c_str());
+				"SendSwitchIfNotExists: Not adding '%s' (%s) because database already has DeviceID '%s'. That ID matches '%s'",
+				pDevice->string_id.c_str(), pDevice->label.c_str(), szID, first_non_matched_string_id.c_str());
 
 		return; //Already in the system
 	}
