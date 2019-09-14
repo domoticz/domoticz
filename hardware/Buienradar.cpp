@@ -21,8 +21,8 @@
 #define BUIENRADAR_RAIN "https://gadgets.buienradar.nl/data/raintext/?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
 
 #ifdef _DEBUG
-// #define DEBUG_BUIENRADARR
-// #define DEBUG_BUIENRADARW
+ #define DEBUG_BUIENRADARR
+ #define DEBUG_BUIENRADARW
 #endif
 
 #ifdef DEBUG_BUIENRADARW
@@ -92,7 +92,10 @@ CBuienRadar::~CBuienRadar(void)
 
 void CBuienRadar::Init()
 {
-	m_actDay = 0;
+	struct tm ltime;
+	time_t now = mytime(0);
+	localtime_r(&now, &ltime);
+	m_actDay = ltime.tm_mday;
 	m_lastRainCount = 0;
 }
 
@@ -322,7 +325,7 @@ void CBuienRadar::GetMeterDetails()
 		return;
 	}
 
-	if (root["stationid"].empty() == true)
+	if (root["timestamp"].empty() == true || root["stationid"].empty() == true)
 	{
 		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received, or no data returned!");
 		return;
@@ -341,6 +344,11 @@ void CBuienRadar::GetMeterDetails()
 	}
 
 	//timestamp : "2019-08-22T08:30:00"
+	std::string szTimeStamp = root["timestamp"].asString();
+	int stampDay = std::stoi(szTimeStamp.substr(8, 2));
+	if (stampDay != m_actDay)
+		return;
+
 	//iconurl : "https://www.buienradar.nl/resources/images/icons/weather/30x30/a.png"
 	//graphUrl : "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/a"
 
