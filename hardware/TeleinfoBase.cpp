@@ -17,6 +17,7 @@ History :
 1.4 2017-04-13 : Added DataTimeout
 1.5 2017-04-20 : Fix bug affecting "demain" for white days
 1.6 2017-12-17 : Fix bug affecting meters not providing PAPP, thanks to H. Lertouani
+1.7 2019-09-13 : Remove to not update the PAPP value if similar to previous (was causing some values to never update), P. Darré
 */
 
 #include "stdafx.h"
@@ -154,13 +155,13 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		rate_alert = 3;
 	}
 
-	// Process only if maximum time between updates (5mn) has been reached or power consumption changed
+	// Process only if maximum time between updates (5mn) has been reached (or power consumption changed => removed)
 	// If it did not, then alerts and intensity have not changed either
 #ifdef DEBUG_TeleinfoBase
 	_log.Log(LOG_NORM, "(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", m_Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP) ? "true" : "false", difftime(atime, teleinfo.last));
 #endif
-	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 290))
-	{
+	// 1.6 version: if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 290))
+
 		teleinfo.pAlertPAPP = teleinfo.PAPP;
 
 		//Send data at mamximum rate specified in settings, and at least every 5mn (minus 10s as a grace period for the watchdog)
@@ -351,7 +352,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendAlertSensor(32 * rank + 7, 255, alertPPOT, message, " Alerte Potentiels");
 			}
 		}
-	}
+	
 }
 
 //Example of data received from power meter
