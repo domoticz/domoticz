@@ -164,6 +164,15 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 	//ID4 = pDevice->indexID&&0x00FF;
 	//but current users gets new devices in this case
 
+	if ((pDevice->instanceID > 255) || (pDevice->instanceID < 0))
+	{
+		_log.Log(
+			LOG_STATUS,
+			"SendSwitchIfNotExists: Not adding '%s' (%s) because instanceID %d does not fit in byte",
+			pDevice->string_id.c_str(), pDevice->label.c_str(), pDevice->instanceID);
+		return;
+	}
+
 	unsigned char ID1 = 0;
 	unsigned char ID2 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
 	unsigned char ID3 = (unsigned char)pDevice->nodeID & 0xFF;
@@ -197,24 +206,50 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 		m_HwdID, int(unitcode), devType, SubType, szID);
 	if (!result.empty())
 	{
-		std::string first_non_matched_string_id;
+		// Find out if nodeID, instanceID, indexID, devType, SubType is ambiguous.
+		// This test uses the same lookup procedure as ZWaveBase::WriteToHardware, calling FindDevice,
+		// but instead of returning a single result, checks if there is more than one in memory
+		// device satisfying those criteria
+
 		std::map<std::string, _tZWaveDevice>::iterator itt;
 		for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 		{
 			if (
-				(itt->second.nodeID == pDevice->nodeID) &&
-				(itt->second.instanceID == pDevice->instanceID) &&
+				// Node ID1 is not used when searching for switch-like devices, see ID1 = 0; at the start
+				// of this routine
+				(itt->second.nodeID == (ID2 << 8) + ID3) &&
+				(itt->second.instanceID == ID4) &&
 				(itt->second.string_id != pDevice->string_id))
 			{
-				first_non_matched_string_id = itt->second.string_id;
+				// itt->second has the same szID as the one we would like to add,
+				// but a different string_id. Example: "7.instance.1.index.256.commandClasses.113"
+				// Now we have to check if devType, SubType makes it unique.
+				if (devType == pTypeGeneralSwitch)
+				{
+					// Test for two different types, because ZWaveBase::WriteToHardware first tries
+					// to find a dimmer, if that fails tries a switch. This means you cannot have
+					// one database record with a dimmer and another with a switch, because trying
+					// to control the switch will select the dimmer.
+					if ((itt->second.devType == ZDTYPE_SWITCH_DIMMER) || (itt->second.devType == ZDTYPE_SWITCH_NORMAL))
+						break;
+				}
+				else if (itt->second.devType == pDevice->devType)
+				{
+					// By elimination... devType = pTypeColorSwitch
+					// Subtype depends
+					// ZDTYPE_SWITCH_RGBW -> sTypeColor_RGB_W_Z
+					// ZDTYPE_SWITCH_COLOR -> sTypeColor_RGB_CW_WW_Z
+					// So all ZDTYPE_SWITCH_RGBW must be unique, and all ZDTYPE_SWITCH_COLOR devices must be unique
+					break;
+				}
 			}
 		}
-		if (!first_non_matched_string_id.empty())
+		if (itt != m_devices.end())
 
 			_log.Log(
-				LOG_ERROR,
-				"SendSwitchIfNotExists: Not adding '%s' (%s) because database already has DeviceID '%s'. That ID matches '%s'",
-				pDevice->string_id.c_str(), pDevice->label.c_str(), szID, first_non_matched_string_id.c_str());
+				LOG_STATUS,
+				"SendSwitchIfNotExists: Device '%s' (%s) with DeviceID '%s' matches '%s' (%s). Domoticz will use the Dimmer (and hide the Switch).",
+				pDevice->string_id.c_str(), pDevice->label.c_str(), szID, itt->second.string_id.c_str(), itt->second.label.c_str());
 
 		return; //Already in the system
 	}
