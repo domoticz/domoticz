@@ -990,6 +990,7 @@ table.mobileitem {
 	}
 
 .navbar-inverse .navbar-inner {
+	padding:5px;
 	background-color: #EEE; /* background color will be black for all browsers */
 	background-image: none;
 	background-repeat: no-repeat;
