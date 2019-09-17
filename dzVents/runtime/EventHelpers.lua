@@ -961,7 +961,7 @@ local function EventHelpers(domoticz, mainMethod)
 				local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling httpResponse-events for: "' .. callback, utils.LOG_INFO)
+					utils.log('Handling httpResponse-events for: "' .. callback .. '"', utils.LOG_INFO)
 					self.handleEvents(scriptsToExecute, nil, nil, nil, nil, response)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end
