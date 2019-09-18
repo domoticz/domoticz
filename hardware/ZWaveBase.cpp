@@ -743,60 +743,60 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID)
 {
-	auto itt = std::find_if(m_devices.begin(), m_devices.end(),
-		[&](const auto x) {
-			return (
-				(x.second.nodeID == nodeID) &&
-				(x.second.instanceID == instanceID) &&
-				(x.second.indexID == indexID)
-				);
-		}
-	);
-	return (itt != m_devices.end()) ? &itt->second : NULL;
+	for (auto& itt : m_devices)
+	{
+		if (
+			(itt.second.nodeID == nodeID) &&
+			(itt.second.instanceID == instanceID) &&
+			(itt.second.indexID == indexID)
+			)
+			return &itt.second;
+	}
+	return NULL;
 }
 
 //Used for power/energy devices
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceEx(const uint8_t nodeID, const uint8_t instanceID, const _eZWaveDeviceType devType)
 {
-	auto itt = std::find_if(m_devices.begin(), m_devices.end(),
-		[&](const auto x) {
-			return (
-				(x.second.nodeID == nodeID) &&
-				(x.second.instanceID == instanceID) &&
-				(x.second.devType == devType)
-				);
-		}
-	);
-	return (itt != m_devices.end()) ? &itt->second : NULL;
+	for (auto& itt : m_devices)
+	{
+		if (
+			(itt.second.nodeID == nodeID) &&
+			(itt.second.instanceID == instanceID) &&
+			(itt.second.devType == devType)
+			)
+			return &itt.second;
+	}
+	return NULL;
 }
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID, const _eZWaveDeviceType devType)
 {
-	auto itt = std::find_if(m_devices.begin(), m_devices.end(),
-		[&](const auto x) {
-			return (
-				(x.second.nodeID == nodeID) &&
-				((x.second.instanceID == instanceID) || (instanceID == -1)) &&
-				(x.second.devType == devType)
-				);
-		}
-	);
-	return (itt != m_devices.end()) ? &itt->second : NULL;
+	for (auto& itt : m_devices)
+	{
+		if (
+			(itt.second.nodeID == nodeID) &&
+			((itt.second.instanceID == instanceID) || (instanceID == -1)) &&
+			(itt.second.devType == devType)
+			)
+			return &itt.second;
+	}
+	return NULL;
 }
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType)
 {
-	auto itt = std::find_if(m_devices.begin(), m_devices.end(),
-		[&](const auto x) {
-			return (
-				(x.second.nodeID == nodeID) &&
-				((x.second.instanceID == instanceID) || (instanceID == -1)) &&
-				(x.second.commandClassID == CommandClassID) &&
-				(x.second.devType == devType)
-				);
-		}
-	);
-	return (itt != m_devices.end()) ? &itt->second : NULL;
+	for (auto& itt : m_devices)
+	{
+		if (
+			(itt.second.nodeID == nodeID) &&
+			((itt.second.instanceID == instanceID) || (instanceID == -1)) &&
+			(itt.second.commandClassID == CommandClassID) &&
+			(itt.second.devType == devType)
+			)
+			return &itt.second;
+	}
+	return NULL;
 }
 
 bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
