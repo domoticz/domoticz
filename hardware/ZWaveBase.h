@@ -49,32 +49,28 @@ class ZWaveBase : public CDomoticzHardwareBase
 	};
 	struct _tZWaveDevice
 	{
-		int nodeID;
-		int instanceID;
-		int indexID;
-		int orgInstanceID;
-		int orgIndexID;
-		int commandClassID;
+		uint8_t nodeID;
+		uint8_t instanceID;
+		uint16_t indexID;
+		uint8_t orgInstanceID;
+		uint16_t orgIndexID;
+		uint8_t commandClassID;
+
 		_eZWaveDeviceType devType;
 		float scaleMultiply;
 		int basicType;
-		int genericType;
-		int specificType;
 		bool isListening;
-		bool sensor250;
-		bool sensor1000;
-		bool isFLiRS;
 		bool hasWakeup;
-		bool hasBattery;
 
-		int Manufacturer_id;
-		int Product_id;
-		int Product_type;
+		uint16_t Manufacturer_id;
+		uint16_t Product_id;
+		uint16_t Product_type;
 
 		//values
+		bool bValidValue;
+
 		float floatValue;
 		int intvalue;
-		bool bValidValue;
 
 		//battery
 		int batValue;
@@ -92,15 +88,13 @@ class ZWaveBase : public CDomoticzHardwareBase
 		int Alarm_Type;
 
 		_tZWaveDevice() :
-			label("Unknown")
+			label("Unknown"),
+			lastreceived(0)
 		{
 			sequence_number=1;
 			nodeID=-1;
 			scaleMultiply=1.0f;
 			isListening=false;
-			sensor250=false;
-			sensor1000=false;
-			isFLiRS=false;
 			hasWakeup=false;
 			batValue = 255;
 			floatValue=0;
@@ -113,12 +107,9 @@ class ZWaveBase : public CDomoticzHardwareBase
 			orgIndexID=0;
 			devType = ZDTYPE_SWITCH_NORMAL;
 			basicType=0;
-			genericType=0;
-			specificType=0;
 			Manufacturer_id = -1;
 			Product_id = -1;
 			Product_type = -1;
-			lastreceived = 0;
 			Alarm_Type = -1;
 		}
 	};
@@ -135,34 +126,34 @@ public:
 	int m_LastIncludedNode;
 	std::string m_LastIncludedNodeType;
 	bool m_bHaveLastIncludedNodeInfo;
-	int m_LastRemovedNode;
+	uint8_t m_LastRemovedNode;
 	std::mutex m_NotificationMutex;
 private:
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
 
-	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID);
-	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType);
-	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType);
-	_tZWaveDevice* FindDeviceEx(const int nodeID, const int instanceID, const _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID);
+	_tZWaveDevice* FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID, const _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDeviceEx(const uint8_t nodeID, const uint8_t instanceID, const _eZWaveDeviceType devType);
 
 	std::string GenerateDeviceStringID(const _tZWaveDevice *pDevice);
 	void InsertDevice(_tZWaveDevice device);
 	unsigned char Convert_Battery_To_PercInt(const unsigned char level);
 	virtual bool SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const int value)=0;
-	virtual bool SwitchColor(const int nodeID, const int instanceID, const std::string &ColorStr) = 0;
-	virtual void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)=0;
-	virtual void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
-	virtual void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode) = 0;
-	virtual void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode) = 0;
+	virtual bool SwitchColor(const uint8_t nodeID, const uint8_t instanceID, const std::string &ColorStr) = 0;
+	virtual void SetThermostatSetPoint(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const float value)=0;
+	virtual void SetClock(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
+	virtual void SetThermostatMode(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const int tMode) = 0;
+	virtual void SetThermostatFanMode(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const int fMode) = 0;
 	virtual std::string GetSupportedThermostatFanModes(const unsigned long ID) = 0;
 	virtual void StopHardwareIntern() = 0;
 	virtual bool IncludeDevice(const bool bSecure) = 0;
-	virtual bool ExcludeDevice(const int nodeID)=0;
-	virtual bool RemoveFailedDevice(const int nodeID)=0;
+	virtual bool ExcludeDevice(const uint8_t nodeID)=0;
+	virtual bool RemoveFailedDevice(const uint8_t nodeID)=0;
 	virtual bool CancelControllerCommand(const bool bForce = false)=0;
-	virtual bool HasNodeFailed(const int nodeID) = 0;
+	virtual bool HasNodeFailed(const uint8_t nodeID) = 0;
 	virtual bool IsNodeIncluded() = 0;
 	virtual bool IsNodeExcluded() = 0;
 
