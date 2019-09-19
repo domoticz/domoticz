@@ -371,7 +371,7 @@ local testCounterIncremental = function(name)
 	dev.updateCounter(1234)
 	tstMsg('Test method updateCounter for counter incremental device', res)
 
-	dev.incrementCounter(10)
+	dev.incrementCounter(10).afterSec(10)
 	tstMsg('Test method incrementCounter for counter incremental device', res2)
 
 	return res and res2
