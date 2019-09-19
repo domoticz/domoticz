@@ -525,6 +525,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 
 void CKodiNode::UpdateStatus()
 {
+	//This has to be rebuild! No direct poking in the database, please use CMainWorker::UpdateDevice
+
 	std::vector<std::vector<std::string> > result;
 	m_CurrentStatus.LastOK(mytime(NULL));
 
