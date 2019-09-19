@@ -1,8 +1,3 @@
--- removed 'vdAirQuality' sensor because of changed updateDevice method in V4.10705 
--- function was removed completely from EventSystem.cpp and now all are using 
--- the function in MainWorker.cpp
--- see https://github.com/domoticz/domoticz/issues/3626
---
 local log
 local dz
 local err = function(msg)
@@ -15,8 +10,7 @@ end
 return {
 	active = true,
 	on = {
-		-- devices = {'vdSilentSwitch', 'sceneSilentSwitch1', 'groupSilentSwitch1', 'vdAirQuality'},
-		devices = {'vdSilentSwitch', 'sceneSilentSwitch1', 'groupSilentSwitch1'}, 
+		devices = {'vdSilentSwitch', 'sceneSilentSwitch1', 'groupSilentSwitch1', 'vdAirQuality'},
 		variables = {'varSilent'},
 
 	},
