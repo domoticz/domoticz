@@ -109,7 +109,7 @@ end
 -- tm: date (as retruned fro os.time)
 -- returns basic correction to be add for counting number of week
 -- weekNum = math.floor((dayOfYear + returnedNumber) / 7) + 1
--- (does not consider correctin at begin and end of year)
+-- (does not consider correction at begin and end of year)
 function getDayAdd(tm)
 	local yearBeginDayOfWeek = getYearBeginDayOfWeek(tm)
 	local dayAdd

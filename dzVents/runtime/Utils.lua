@@ -1,4 +1,4 @@
-devicelocal jsonParser
+
 local jsonParser
 local _ = require('lodash')
 
