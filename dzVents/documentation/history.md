@@ -1,3 +1,10 @@
+[2.4.29]
+- Add error message including affected module when module got corrupted on disk.
+- Add setLevel method for switchTypes.
+- Increased resilience against badly formatted type Time user-variables.
+- Use native domoticz command for increaseCounter method.
+- Set inverse of "set color" to Off to enable use of toggleSwitch for RGB type of devices.
+
 [2.4.28]
 - Add deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods
 - increased httpResponse resilience against different use of Upper-, Lowercase in headers['content-type'] to ensure JSON conversion to Lua table

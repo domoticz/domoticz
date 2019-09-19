@@ -126,7 +126,7 @@ local function Domoticz(settings)
 		['STRING'] = 'string',
 		['DATE'] = 'date',
 		['TIME'] = 'time',
-		['NSS_FIREBASE'] = 'gcm',  -- For the moment the change to fcm is only done in the url 
+		['NSS_FIREBASE'] = 'gcm', -- For the moment the change to fcm is only done in the url 
 		['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',
 		['NSS_HTTP'] = 'http',
 		['NSS_KODI'] = 'kodi',
@@ -503,15 +503,14 @@ local function Domoticz(settings)
 			return newItem
 		end
 
-		-- special case for scenes and groups
-		-- as they may not be in the collection if Domoticz wasn't restarted after creating the scene or group.
+		local noObjectMessage = 'There is no ' .. baseType .. ' with that name or id: ' .. tostring(id)
+
 		if (baseType == 'scene' or baseType == 'group') then
-			utils.log('There is no group or scene with that name or id: ' ..
-				tostring(id) ..
-				'. If you just created the scene or group you may have to restart Domoticz to make it become visible to dzVents.', utils.LOG_ERROR)
-		else
-			utils.log('There is no ' .. baseType .. ' with that name or id: ' .. tostring(id), utils.LOG_ERROR)
+			-- special case for scenes and groups
+			-- as they may not be in the collection if Domoticz wasn't restarted after creating the scene or group.
+				noObjectMessage = noObjectMessage .. '. If you just created the '.. baseType .. ' you may have to restart Domoticz to make it become visible to dzVents.'
 		end
+		utils.log(noObjectMessage, utils.LOG_ERROR)
 	end
 
 	function self._setIterators(collection, initial, baseType, filterForChanged, initalCollection)
