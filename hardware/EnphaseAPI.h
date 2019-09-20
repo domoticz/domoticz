@@ -3,6 +3,11 @@
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 
+namespace Json
+{
+	class Value;
+};
+
 class EnphaseAPI : public CDomoticzHardwareBase
 {
 public:
@@ -14,14 +19,11 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 
-	void getProduction();
-	void getProductionDetail();
+	bool getProductionDetails(Json::Value& result);
 
-	void getConsumption();
-	void getConsumptionDetail();
-
-	void getNetConsumption();
-	void getNetConsumptionDetail();
+	void parseProduction(const Json::Value& root);
+	void parseConsumption(const Json::Value& root);
+	void parseNetConsumption(const Json::Value& root);
 
 	int getSunRiseSunSetMinutes(const bool bGetSunRise);
 private:

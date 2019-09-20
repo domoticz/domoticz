@@ -16,10 +16,23 @@
 #define Enphase_request_INTERVAL 30
 
 #ifdef _DEBUG
-//#define DEBUG_EnphaseAPI
+//#define DEBUG_EnphaseAPI_R
+//#define DEBUG_EnphaseAPI_W
 #endif
 
-#ifdef DEBUG_EnphaseAPI
+#ifdef DEBUG_EnphaseAPI_W
+void SaveString2Disk(std::string str, std::string filename)
+{
+	FILE* fOut = fopen(filename.c_str(), "wb+");
+	if (fOut)
+	{
+		fwrite(str.c_str(), 1, str.size(), fOut);
+		fclose(fOut);
+	}
+}
+#endif
+
+#ifdef DEBUG_EnphaseAPI_R
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -91,9 +104,13 @@ void EnphaseAPI::Do_Work()
 
 		if (sec_counter % Enphase_request_INTERVAL == 0)
 		{
-			getProduction();
-			getConsumption();
-			getNetConsumption();
+			Json::Value result;
+			if (getProductionDetails(result))
+			{
+				parseProduction(result);
+				parseConsumption(result);
+				parseNetConsumption(result);
+			}
 		}
 	}
 	_log.Log(LOG_STATUS, "EnphaseAPI Worker stopped...");
@@ -113,6 +130,8 @@ int EnphaseAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 	if (!m_mainworker.m_LastSunriseSet.empty())
 	{
 		StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
+		if (strarray.size() < 2)
+			return false;
 		StringSplit(strarray[0], ":", sunRisearray);
 		StringSplit(strarray[1], ":", sunSetarray);
 
@@ -129,7 +148,49 @@ int EnphaseAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 	return 0;
 }
 
-void EnphaseAPI::getProduction()
+bool EnphaseAPI::getProductionDetails(Json::Value& result)
+{
+	std::string sResult;
+
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_production.json");
+#else
+	std::stringstream sURL;
+	sURL << "http://" << m_szIPAddress << "/production.json";
+
+	bool bret;
+	std::string szURL = sURL.str();
+	bret = HTTPClient::GET(szURL, sResult);
+	if (!bret)
+	{
+		_log.Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_production.json")
+#endif
+#endif
+
+	Json::Reader jReader;
+
+	bool ret = jReader.parse(sResult, result);
+	if ((!ret) || (!result.isObject()))
+	{
+		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
+		return false;
+	}
+	if (
+		(result["consumption"].empty())
+		&& (result["production"].empty())
+		)
+	{
+		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid (no) data received");
+		return false;
+	}
+	return true;
+}
+
+void EnphaseAPI::parseProduction(const Json::Value& root)
 {
 	time_t atime = mytime(NULL);
 	struct tm ltime;
@@ -143,48 +204,18 @@ void EnphaseAPI::getProduction()
 	if (sunRise != 0 && sunSet != 0)
 	{
 		//We only poll one hour before sunrise till one hour after sunset
+
+		//GizMoCuz: why is this as the production.json is retreived anyway ?
+
 		if (ActHourMin + 60 < sunRise)
 			return;
 		if (ActHourMin - 60 > sunSet)
 			return;
 	}
 
-	getProductionDetail();
-}
-
-void EnphaseAPI::getProductionDetail()
-{
-	std::string sResult;
-
-#ifdef DEBUG_EnphaseAPI
-	sResult = ReadFile("C:\\TEMP\\EnphaseAPI_get_production.txt");
-#else
-	std::stringstream sURL;
-	sURL << "http://" << m_szIPAddress << "/production.json";
-
-	bool bret;
-	std::string szURL = sURL.str();
-	bret = HTTPClient::GET(szURL, sResult);
-	if (!bret)
-	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
-		return;
-	}
-
-#endif
-
-	Json::Value root;
-	Json::Reader jReader;
-
-	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
-	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
-		return;
-	}
 	if (root["production"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
+		//No production details available
 		return;
 	}
 
@@ -201,46 +232,13 @@ void EnphaseAPI::getProductionDetail()
 	sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Enphase Production kWh Total", 255);
 }
 
-void EnphaseAPI::getConsumption()
+void EnphaseAPI::parseConsumption(const Json::Value& root)
 {
-	getConsumptionDetail();
-}
-
-void EnphaseAPI::getConsumptionDetail()
-{
-	std::string sResult;
-
-#ifdef DEBUG_EnphaseAPI
-	sResult = ReadFile("C:\\TEMP\\EnphaseAPI_get_production.txt");
-#else
-	std::stringstream sURL;
-	sURL << "http://" << m_szIPAddress << "/production.json";
-
-	bool bret;
-	std::string szURL = sURL.str();
-	bret = HTTPClient::GET(szURL, sResult);
-	if (!bret)
-	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
-		return;
-	}
-
-#endif
-
-	Json::Value root;
-	Json::Reader jReader;
-
-	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
-	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
-		return;
-	}
-	if (root["consumption"].empty() == true)
+	if (root["consumption"].empty())
 	{
 		return;
 	}
-	if (root["consumption"][0].empty() == true)
+	if (root["consumption"][0].empty())
 	{
 		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
 		return;
@@ -259,41 +257,8 @@ void EnphaseAPI::getConsumptionDetail()
 	sDecodeRXMessage(this, (const unsigned char *)&m_c1power, "Enphase Consumption kWh Total", 255);
 }
 
-void EnphaseAPI::getNetConsumption()
+void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 {
-	getNetConsumptionDetail();
-}
-
-void EnphaseAPI::getNetConsumptionDetail()
-{
-	std::string sResult;
-
-#ifdef DEBUG_EnphaseAPI
-	sResult = ReadFile("C:\\TEMP\\EnphaseAPI_get_production.txt");
-#else
-	std::stringstream sURL;
-	sURL << "http://" << m_szIPAddress << "/production.json";
-
-	bool bret;
-	std::string szURL = sURL.str();
-	bret = HTTPClient::GET(szURL, sResult);
-	if (!bret)
-	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
-		return;
-	}
-
-#endif
-
-	Json::Value root;
-	Json::Reader jReader;
-
-	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
-	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
-		return;
-	}
 	if (root["consumption"].empty() == true)
 	{
 		return;
