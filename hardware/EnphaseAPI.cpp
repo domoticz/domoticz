@@ -298,13 +298,13 @@ void EnphaseAPI::getNetConsumptionDetail()
 	{
 		return;
 	}
-	if (root["consumption"][0].empty() == true)
+	if (root["consumption"][1].empty() == true)
 	{
 		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
 		return;
 	}
 
-	Json::Value reading = root["consumption"][0];
+	Json::Value reading = root["consumption"][1];
 
 	int musage = reading["wNow"].asInt();
 	int mtotal = reading["whLifetime"].asInt();
