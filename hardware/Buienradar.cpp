@@ -134,7 +134,6 @@ void CBuienRadar::Do_Work()
 #endif
 	int sec_counter = 593;
 	_log.Log(LOG_STATUS, "BuienRadar: Worker started...");
-	bool bGetMeterDetails = true;
 
 	while (!IsStopRequested(1000))
 	{
@@ -153,9 +152,7 @@ void CBuienRadar::Do_Work()
 					//reset our rain counter
 					m_actDay = ltime.tm_mday;
 					m_lastRainCount = 0;
-
-					GetMeterDetails();
-					bGetMeterDetails = false;
+					SendRainSensorWU(1, 255, 0, 0, "Rain");
 				}
 			}
 		}
@@ -163,9 +160,7 @@ void CBuienRadar::Do_Work()
 		if (sec_counter % 600 == 0)
 		{
 			//Every 10 minutes
-			if (bGetMeterDetails)
-				GetMeterDetails();
-			bGetMeterDetails = true;
+			GetMeterDetails();
 		}
 		if (sec_counter % 300 == 0)
 		{

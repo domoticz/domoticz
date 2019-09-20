@@ -35,6 +35,8 @@ extern "C" {
 #endif
 }
 
+bool g_bUseEventTrigger = true;
+
 extern time_t m_StartTime;
 extern std::string szUserDataFolder, szStartupFolder;
 extern http::server::CWebServerHelper m_webservers;
@@ -1479,83 +1481,92 @@ void CEventSystem::EventQueueThread()
 }
 
 
-void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname)
+void CEventSystem::ProcessDevice(
+	const int HardwareID, 
+	const uint64_t ulDevID, 
+	const unsigned char unit, 
+	const unsigned char devType, 
+	const unsigned char subType, 
+	const unsigned char signallevel, 
+	const unsigned char batterylevel, 
+	const int nValue, 
+	const char* sValue, 
+	const std::string &devname)
 {
 	if (!m_bEnabled)
 		return;
 
-	// query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID, SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Name == '%q')",
-		devname.c_str());
-	if (!result.empty())
+	result = m_sql.safe_query("SELECT SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Name == '%q')", devname.c_str());
+	if (result.empty())
 	{
-		std::vector<std::string> sd = result[0];
-		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
-		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
+		//inpossible as we just updated it
+		_log.Log(LOG_ERROR, "EventSystem: Could not find device in system: ((ID=%" PRIu64 ": %s)", ulDevID, devname.c_str());
+		return; 
+	}
 
-		std::string osValue = sValue;
+	std::vector<std::string> sd = result[0];
 
-		if ((devType == pTypeGeneral) && (subType == sTypeCounterIncremental))
+	_eSwitchType switchType = (_eSwitchType)std::stoi(sd[0]);
+	std::string lastUpdate = sd[1];
+	uint8_t lastLevel = (uint8_t)std::stoi(sd[2]);
+	std::string dev_options = sd[3];
+
+	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(dev_options);
+
+	std::string osValue = sValue;
+
+	if ((devType == pTypeGeneral) && (subType == sTypeCounterIncremental))
+	{
+		//special case for incremental counter, need to calculate the actual count value
+
+		//get value of today
+		uint64_t total_max = std::stoull(osValue);
+
+		std::string szDate = TimeToString(nullptr, TF_Date);
+		std::vector<std::vector<std::string> > result2;
+		result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", ulDevID, szDate.c_str());
+		if (!result2.empty())
 		{
-			//special case for incremental counter, need to calculate the actual count value
+			uint64_t total_min = std::stoull(result2[0][0]);
+			uint64_t total_real = total_max - total_min;
 
-			//get value of today
-			std::string szDate = TimeToString(NULL, TF_Date);
-			std::vector<std::vector<std::string> > result2;
-
-			uint64_t total_min, total_max, total_real;
-
-			result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", ulDevID);
-			total_max = std::stoull(result2[0][0]);
-
-			result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", ulDevID, szDate.c_str());
-			if (!result2.empty())
-			{
-				total_min = std::stoull(result2[0][0]);
-				total_real = total_max - total_min;
-
-				osValue = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
-			}
+			osValue = std::to_string(total_real); //sitem.sValue = l_sValue.assign(dev_options);
 		}
+	}
 
-		if (GetEventTrigger(ulDevID, REASON_DEVICE, true))
+	if (g_bUseEventTrigger && GetEventTrigger(ulDevID, REASON_DEVICE, true))
+	{
+		_tEventQueue item;
+		item.reason = REASON_DEVICE;
+		item.id = ulDevID;
+		item.devname = devname;
+		item.nValue = nValue;
+		item.sValue = osValue;
+		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, "", 255, options);
+		item.trigger = nullptr;
+		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+		if (itt != m_devicestates.end())
 		{
-			_tEventQueue item;
-			item.reason = REASON_DEVICE;
-			item.id = ulDevID;
-			item.devname = devname;
-			item.nValue = nValue;
-			item.sValue = osValue;
-			item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, "", 255, options);
-			item.trigger = NULL;
-			boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-			std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
-			if (itt != m_devicestates.end())
+			item.lastLevel = itt->second.lastLevel;
+			item.lastUpdate = itt->second.lastUpdate;
+			if (!m_sql.m_bDisableDzVentsSystem)
 			{
-				item.lastLevel = itt->second.lastLevel;
-				item.lastUpdate = itt->second.lastUpdate;
-				if (!m_sql.m_bDisableDzVentsSystem)
-				{
-					item.JsonMapString = itt->second.JsonMapString;
-					item.JsonMapInt = itt->second.JsonMapInt;
-					item.JsonMapFloat = itt->second.JsonMapFloat;
-					item.JsonMapBool = itt->second.JsonMapBool;
-				}
-				_tDeviceStatus replaceitem = itt->second;
-				replaceitem.lastUpdate = sd[2];
-				replaceitem.lastLevel = atoi(sd[3].c_str());
-				itt->second = replaceitem;
+				item.JsonMapString = itt->second.JsonMapString;
+				item.JsonMapInt = itt->second.JsonMapInt;
+				item.JsonMapFloat = itt->second.JsonMapFloat;
+				item.JsonMapBool = itt->second.JsonMapBool;
 			}
-			m_eventqueue.push(item);
+			_tDeviceStatus replaceitem = itt->second;
+			replaceitem.lastUpdate = lastUpdate;
+			replaceitem.lastLevel = lastLevel;
+			itt->second = replaceitem;
 		}
-		else
-			UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
+		m_eventqueue.push(item);
 	}
 	else
-	{
-		_log.Log(LOG_ERROR, "EventSystem: Could not determine switch type for event device %s", devname.c_str());
-	}
+		UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, lastUpdate, lastLevel, options);
 }
 
 void CEventSystem::ProcessMinute()

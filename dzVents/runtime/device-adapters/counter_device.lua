@@ -50,8 +50,7 @@ return {
 				utils.log('method incrementCounter not valid for ' .. device.deviceSubType .. ' !! ', utils.LOG_ERROR)
 				return nil
 			else
-				local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=udevice&idx=' .. device.id .. '&svalue=' .. value 
-				domoticz.openURL(url)
+				return device.update(0, value)
 			end	
 		end	
 	end

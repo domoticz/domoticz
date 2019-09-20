@@ -118,6 +118,7 @@ local testCounterIncremental = function(name)
 		["counter"] = 1.244;
 		["counterToday"] = 0;
 	})
+
 	handleResult('Test counter incremental device', res)
 	return res
 end
@@ -757,7 +758,7 @@ end
 
 local testIFTTT = function(event)
 	res = true
-	print('triggerIFTTT should fail now because IFTTT is disabled before stage 2'  )
+	print('triggerIFTTT should fail now because IFTTT is disabled before stage 2')
 	dz.triggerIFTTT(event) 
 	dz.triggerIFTTT(event).afterSec(3) 
 	handleResult('Test IFTTT call', res)
@@ -814,7 +815,7 @@ local testVersion = function(name)
 	local res = true
 	local utils = require('Utils')
 	res = res and expectEql(utils.DZVERSION , dz.settings.dzVentsVersion)
-	handleResult('Test version strings to equal (' .. utils.DZVERSION .. ') and (' ..  dz.settings.dzVentsVersion .. ')',res)
+	handleResult('Test version strings to equal (' .. utils.DZVERSION .. ') and (' .. dz.settings.dzVentsVersion .. ')',res)
 	return res
 end
 

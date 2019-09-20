@@ -160,7 +160,7 @@ So, `active` can either be:
 
 ### on = { ... }
 The `on` section tells dzVents *when* the execute function has to be executed. It holds all the events/**triggers** that are monitored by dzVents. If any of the events or triggers match with the current event coming from Domoticz, then the `execute` part of the script is executed by dzVents.
-The `on` section has five kinds of subsections that *can all be used simultaneously* :
+The `on` section has many kinds of subsections that *can all be used simultaneously* :
 
 #### devices = { ... }
 A list of device-names or indexes. If a device in your system was changed (e.g. switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. Each device can be:
@@ -679,7 +679,7 @@ Using a reducer to count all devices that are switched on:
 ### Constants
 The domoticz object has these constants available for use in your code e.g. `domoticz.LOG_INFO`.
 
-**IMPORTANT:  you have to prefix these constants with `domoticz.<constant>`**:
+**IMPORTANT:  you have to prefix these constants with the name of your domoticz object. Example: `domoticz.ALERTLEVEL_RED`**:
 
  - **ALERTLEVEL_GREY**, **ALERTLEVEL_GREEN**, **ALERTLEVEL_ORANGE**, **ALERTLEVEL_RED**, **ALERTLEVEL_YELLOW**: for updating text sensors.
  - **BASETYPE_DEVICE**, **BASETYPE_SCENE**, **BASETYPE_GROUP**, **BASETYPE_VARIABLE**, **BASETYPE_SECURITY**, **BASETYPE_TIMER**, **BASETYPE_HTTP_RESPONSE**: indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object: `if (item.baseType == domoticz.BASETYPE_DEVICE) then ... end`.
@@ -962,10 +962,11 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **open()**: *Function*. Set device to Open if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **quietOn()**: *Function*. <sup>2.4.20</sup> Set deviceStatus to on without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **quietOff()**: *Function*. <sup>2.4.20</sup> set deviceStatus to off without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **setLevel(percentage)**: *Function*. <sup>2.4.29</sup> Set device to a given level if it supports it (e.g. blinds percentage). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). 
  - **stop()**: *Function*. Set device to Stop if it supports it (e.g. blinds). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Switch device off it is supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: *Function*. Switch device on if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **switchSelector(<[level]|[levelname]>)**: *Function*. Switches a selector switch to a specific level ( levelname or level(numeric) required ) levelname must be exact, for level the closest fit will be picked. See the edit page in Domoticz for such a switch to get a list of the values). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **switchSelector(<[level]|[levelname] <sup>2.4.22</sup> >)**: *Function*. Switches a selector switch to a specific level ( levelname or level(numeric) required ) levelname must be exact, for level the closest fit will be picked. See the edit page in Domoticz for such a switch to get a list of the values). Levelname is only supported when level 0 ("Off") is not removed Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **toggleSwitch()**: *Function*. Toggles the state of the switch (if it is togglable) like On/Off, Open/Close etc.
 
 #### Temperature sensor
@@ -2069,6 +2070,13 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+##[2.4.29]
+- Add error message including affected module when module got corrupted on disk.
+- Add setLevel method for switchTypes.
+- Increased resilience against badly formatted type Time user-variables.
+- Use native domoticz command for increaseCounter method.
+- Set inverse of "set color" to Off to enable use of toggleSwitch for RGB type of devices.
 
 ##[2.4.28]
 - Add deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods in utils

@@ -36,6 +36,7 @@ return {
 			adapterManager.addDummyMethod(device, 'open')
 			adapterManager.addDummyMethod(device, 'stop')
 			adapterManager.addDummyMethod(device, 'dimTo')
+			adapterManager.addDummyMethod(device, 'setLevel')
 			adapterManager.addDummyMethod(device, 'switchSelector')
 			adapterManager.addDummyMethod(device, 'toggleSwitch')
 			adapterManager.addDummyMethod(device, 'quietOn')
@@ -110,8 +111,12 @@ return {
 		function device.dimTo(percentage)
 			return TimedCommand(domoticz, device.name, 'Set Level ' .. tostring(percentage), 'device')
 		end
-
-		function device.switchSelector(level)
+		
+        function device.setLevel(percentage)
+			return TimedCommand(domoticz, device.name, 'Set Level ' .. tostring(percentage), 'device')
+		end
+		
+        function device.switchSelector(level)
 
 			local function guardLevel(val)
 				local maxLevel = #device.levelNames * 10 - 10

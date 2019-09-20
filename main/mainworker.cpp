@@ -181,6 +181,8 @@ extern std::string szWebRoot;
 extern bool g_bUseUpdater;
 extern http::server::_eWebCompressionMode g_wwwCompressMode;
 extern http::server::CWebServerHelper m_webservers;
+extern bool g_bUseEventTrigger;
+
 
 
 CFibaroPush m_fibaropush;
@@ -13479,6 +13481,8 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	if (!m_sql.DoesDeviceExist(HardwareID, DeviceID.c_str(), unit, devType, subType))
 		return false;
 
+	g_bUseEventTrigger = parseTrigger;
+
 	unsigned long ID = 0;
 	std::stringstream s_strid;
 	s_strid << std::hex << DeviceID;
@@ -13515,6 +13519,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			lcmd.LIGHTING2.filler = 0;
 			lcmd.LIGHTING2.rssi = signallevel;
 			DecodeRXMessage(pHardware, (const uint8_t *)&lcmd.LIGHTING2, NULL, batterylevel);
+			g_bUseEventTrigger = true;
 			return true;
 		}
 
@@ -13594,7 +13599,10 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		false
 	);
 	if (devidx == -1)
+	{
+		g_bUseEventTrigger = true;
 		return false;
+	}
 
 	if (pHardware)
 	{
@@ -13623,18 +13631,13 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp), _tTrendCalculator::TAVERAGE_TEMP);
 	}
 
-
-
 #ifdef ENABLE_PYTHON
 	// notify plugin
 	m_pluginsystem.DeviceModified(devidx);
 #endif
 
-	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
-	if (parseTrigger)
-	{
-		sOnDeviceReceived(HardwareID, devidx, devname, NULL);
-	}
+	// signal connected devices (MQTT, fibaro, http push ... ) about the update
+	sOnDeviceReceived(HardwareID, devidx, devname, nullptr);
 
 	std::stringstream sidx;
 	sidx << devidx;
@@ -13661,5 +13664,8 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		//Handle Notification
 		m_notifications.CheckAndHandleNotification(devidx, HardwareID, DeviceID, devname, unit, devType, subType, nValue, sValue);
 	}
+
+	g_bUseEventTrigger = true;
+
 	return true;
 }

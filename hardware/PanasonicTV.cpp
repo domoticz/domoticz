@@ -273,6 +273,8 @@ CPanasonicNode::~CPanasonicNode(void)
 
 void CPanasonicNode::UpdateStatus(bool forceupdate)
 {
+	//This has to be rebuild! No direct poking in the database, please use CMainWorker::UpdateDevice
+
 	std::vector<std::vector<std::string> > result;
 	m_CurrentStatus.LastOK(mytime(NULL));
 

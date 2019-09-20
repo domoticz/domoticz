@@ -92,7 +92,6 @@ local getDiffParts = function(secDiff, ms, offsetMS)
 		cmp
 end
 
-
 -- week functions as taken from http://lua-users.org/wiki/WeekNumberInYear
 -- Get day of a week at year beginning
 --(tm can be any date and will be forced to 1st of january same year)
@@ -109,8 +108,8 @@ end
 
 -- tm: date (as retruned fro os.time)
 -- returns basic correction to be add for counting number of week
---  weekNum = math.floor((dayOfYear + returnedNumber) / 7) + 1
--- (does not consider correctin at begin and end of year)
+-- weekNum = math.floor((dayOfYear + returnedNumber) / 7) + 1
+-- (does not consider correction at begin and end of year)
 function getDayAdd(tm)
 	local yearBeginDayOfWeek = getYearBeginDayOfWeek(tm)
 	local dayAdd
@@ -145,12 +144,11 @@ function getWeekNumberOfYear(tm)
 		local nextYearBegin = os.time{year=os.date("*t",tm).year+1,month=1,day=1}
 		local yearBeginDayOfWeek = getYearBeginDayOfWeek(nextYearBegin)
 		if(yearBeginDayOfWeek < 5 ) then
-		  weekNum = 1
+			weekNum = 1
 		end
 	end
 	return weekNum
 end
-
 
 local function Time(sDate, isUTC, _testMS)
 
@@ -177,7 +175,7 @@ local function Time(sDate, isUTC, _testMS)
 		isUTC = false
 	end
 
-	if (sDate == nil or sDate == '') then
+	local function makesDate()
 		local now
 		if (isUTC) then
 			now = os.date('!*t')
@@ -185,10 +183,19 @@ local function Time(sDate, isUTC, _testMS)
 			now = os.date('*t')
 		end
 		local ms = _testMS == nil and getMS() or _testMS
-		sDate = now.year .. '-' .. now.month ..'-' .. now.day .. ' ' .. now.hour .. ':' .. now.min .. ':' .. now.sec .. '.' .. tostring(ms)
+		return ( now.year .. '-' .. now.month ..'-' .. now.day .. ' ' .. now.hour .. ':' .. now.min .. ':' .. now.sec .. '.' .. tostring(ms) )
 	end
 
-	local y,mon,d,h,min,s = parseDate(sDate)
+	if sDate == nil or sDate == '' then
+		sDate = makesDate() 
+	end
+
+	local y, mon, d, h, min, s = parseDate(sDate)
+	if not(y and mon and d and h and min and s) then
+		sDate = makesDate()
+		y, mon, d, h, min, s = parseDate(sDate)
+		utils.log('sDate was invalid. Reset to ' .. sDate , utils.LOG_ERROR)  
+	end
 
 	-- extract s and ms
 	s, ms = getSMs(s)
@@ -1005,7 +1012,6 @@ local function Time(sDate, isUTC, _testMS)
 		end
 		updateTotal(res)
 
-
 		local _between = self.ruleMatchesBetweenRange(rule) -- range
 
 		if (_between == false) then
@@ -1026,8 +1032,6 @@ local function Time(sDate, isUTC, _testMS)
 				return false
 			end
 			updateTotal(res)
-
-
 			res = self.ruleIsAfterSunset(rule) -- moment
 			if (res == false) then
 				return false
@@ -1106,7 +1110,7 @@ local function Time(sDate, isUTC, _testMS)
 			return false
 		end
 		updateTotal(res)
-		
+
 		res = self.ruleIsAtCivilNightTime(rule) -- range
 		if (res == false) then
 			return false

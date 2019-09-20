@@ -28,6 +28,8 @@
 #define gmtime_r(timep, result) gmtime_s(result, timep)
 #endif
 
+#define websocket_protocol "domoticz"
+
 int m_failcounter = 0;
 
 namespace http {
@@ -870,7 +872,7 @@ namespace http {
 				if (gethostname(ac, sizeof(ac)) != SOCKET_ERROR)
 				{
 					ipnetwork.hostname = ac;
-					std::transform(ipnetwork.hostname.begin(), ipnetwork.hostname.end(), ipnetwork.hostname.begin(), ::tolower);
+					stdlower(ipnetwork.hostname);
 					m_localnetworks.push_back(ipnetwork);
 				}
 				return;
@@ -1466,13 +1468,18 @@ namespace http {
 				return false;
 			}
 			std::string connection_header = h;
-			if (connection_header.find("Upgrade") == std::string::npos)
+			if (!boost::iequals(connection_header, "upgrade"))
 			{
 				return false;
 			};
 			// client MUST include Upgrade: websocket
 			h = request::get_req_header(&req, "Upgrade");
-			if (!(h && boost::iequals(h, "websocket")))
+			if (!h)
+			{
+				return false;
+			}
+			std::string upgrade_header = h;
+			if (!boost::iequals(upgrade_header, "websocket"))
 			{
 				return false;
 			};
@@ -1513,13 +1520,13 @@ namespace http {
 				return true;
 			}
 			h = request::get_req_header(&req, "Sec-Websocket-Protocol");
-			// check if a protocol is given, and it includes "domoticz".
+			// check if a protocol is given, and it includes the {websocket_protocol}.
 			if (!h)
 			{
 				return false;
 			}
 			std::string protocol_header = h;
-			if (protocol_header.find("domoticz") == std::string::npos)
+			if (protocol_header.find(websocket_protocol) == std::string::npos)
 			{
 				rep = reply::stock_reply(reply::internal_server_error);
 				return true;
@@ -1543,8 +1550,8 @@ namespace http {
 				return true;
 			}
 			reply::add_header(&rep, "Sec-Websocket-Accept", accept);
-			// we only speak the domoticz subprotocol
-			reply::add_header(&rep, "Sec-Websocket-Protocol", "domoticz");
+			// we only speak the {websocket_protocol} subprotocol
+			reply::add_header(&rep, "Sec-Websocket-Protocol", websocket_protocol);
 			return true;
 		}
 
