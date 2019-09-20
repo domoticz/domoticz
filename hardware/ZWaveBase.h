@@ -133,10 +133,10 @@ private:
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
 
-	_tZWaveDevice* FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID);
-	_tZWaveDevice* FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID, const _eZWaveDeviceType devType);
-	_tZWaveDevice* FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType);
-	_tZWaveDevice* FindDeviceEx(const uint8_t nodeID, const uint8_t instanceID, const _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDevice(const uint8_t nodeID, const int instanceID, const int indexID);
+	_tZWaveDevice* FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDeviceEx(const uint8_t nodeID, const int instanceID, const _eZWaveDeviceType devType);
 
 	std::string GenerateDeviceStringID(const _tZWaveDevice *pDevice);
 	void InsertDevice(_tZWaveDevice device);

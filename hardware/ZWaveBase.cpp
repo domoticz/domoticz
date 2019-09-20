@@ -741,7 +741,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 	}
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID)
 {
 	for (auto& itt : m_devices)
 	{
@@ -756,7 +756,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const uint
 }
 
 //Used for power/energy devices
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceEx(const uint8_t nodeID, const uint8_t instanceID, const _eZWaveDeviceType devType)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceEx(const uint8_t nodeID, const int instanceID, const _eZWaveDeviceType devType)
 {
 	for (auto& itt : m_devices)
 	{
@@ -770,7 +770,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceEx(const uint8_t nodeID, const ui
 	return NULL;
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID, const _eZWaveDeviceType devType)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType)
 {
 	for (auto& itt : m_devices)
 	{
@@ -784,7 +784,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const uint
 	return NULL;
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const uint8_t instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType)
 {
 	for (auto& itt : m_devices)
 	{
