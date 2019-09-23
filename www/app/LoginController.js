@@ -8,12 +8,17 @@ define(['app'], function (app) {
 			var mpassword = encodeURIComponent(md5.createHash($('#password').val()));
 			var bRememberMe = $('#rememberme').is(":checked");
 
-			$http({
-				url: "json.htm?type=command&param=logincheck&username=" + musername + "&password=" + mpassword + "&rememberme=" + bRememberMe
+			var fd = new FormData();
+			fd.append('username', musername);
+			fd.append('password', mpassword);
+			fd.append('rememberme', bRememberMe);
+			$http.post('logincheck', fd, {
+				transformRequest: angular.identity,
+				headers: { 'Content-Type': undefined }
 			}).then(function successCallback(response) {
-				var data = response.data;
-				if (data.status != "OK") {
-					HideNotify();
+			    var data = response.data;
+			    if (data.status != "OK") {
+			        HideNotify();
 					$scope.failcounter += 1;
 					if ($scope.failcounter > 3) {
 						window.location.href = "http://www.1112.net/lastpage.html";
@@ -23,26 +28,22 @@ define(['app'], function (app) {
 						ShowNotify($.t('Incorrect Username/Password!'), 2500, true);
 					}
 					return;
+			    }
+				var permissionList = {
+					isloggedin: true,
+					rights: 0
+				};
+				if (data.user != "") {
+					permissionList.isloggedin = true;
 				}
-				else {
-					var permissionList = {
-						isloggedin: true,
-						rights: 0
-					};
-					if (data.user != "") {
-						permissionList.isloggedin = true;
-					}
-					permissionList.rights = parseInt(data.rights);
-					permissions.setPermissions(permissionList);
+				permissionList.rights = parseInt(data.rights);
+				permissions.setPermissions(permissionList);
 
-					$rootScope.GetGlobalConfig();
+				$rootScope.GetGlobalConfig();
 
-					$location.path('/Dashboard');
-					//$window.location = '/#Dashboard';
-					//$window.location.reload();
-				}
+				$location.path('/Dashboard');
 			}, function errorCallback(response) {
-				HideNotify();
+			    HideNotify();
 				$scope.failcounter += 1;
 				if ($scope.failcounter > 3) {
 					window.location.href = "http://www.1112.net/lastpage.html";
@@ -51,6 +52,7 @@ define(['app'], function (app) {
 				else {
 					ShowNotify($.t('Incorrect Username/Password!'), 2500, true);
 				}
+				return;
 			});
 		}
 

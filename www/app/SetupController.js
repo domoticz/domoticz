@@ -736,11 +736,22 @@ define(['app'], function (app) {
 				}
 			}
 
-			$.post("storesettings.webem", $("#settings").serialize(), function (data) {
-				$scope.$apply(function () {
-					$window.location = '/#Dashboard';
-					$window.location.reload();
-				});
+			$http.post('storesettings', new FormData(document.querySelector("#settings")), {
+				transformRequest: angular.identity,
+				headers: { 'Content-Type': undefined }
+			}).then(function successCallback(response) {
+			    var data = response.data;
+			    if (data.status != "OK") {
+			        HideNotify();
+					ShowNotify($.t("Problem saving settings!"), 2000, true);
+					return;
+			    }
+				$window.location = '/#Dashboard';
+				$window.location.reload();
+			}, function errorCallback(response) {
+			    HideNotify();
+				ShowNotify($.t("Problem saving settings!"), 2000, true);
+				return;
 			});
 		}
 

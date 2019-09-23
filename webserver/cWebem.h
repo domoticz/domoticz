@@ -169,10 +169,14 @@ namespace http {
 
 			void RegisterPageCode(
 				const char* pageurl,
-				webem_page_function fun );
+				webem_page_function fun,
+				bool bypassAuthentication = false
+			);
 			void RegisterPageCodeW(
 				const char* pageurl,
-				webem_page_function fun );
+				webem_page_function fun,
+				bool bypassAuthentication = false
+			);
 
 			bool Include( std::string& reply );
 
