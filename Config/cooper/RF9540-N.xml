@@ -1,70 +1,81 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="byte" index="1" genre="config" label="Delayed OFF time" units="seconds" min="0" max="255" value="0">
-		  <Help>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001A:0101:4449</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/cooper/RF9540-N.png</MetaDataItem>
+    <MetaDataItem id="0101" name="ZWProductPage" type="4449">https://products.z-wavealliance.org/products/797/</MetaDataItem>
+    <MetaDataItem name="Name">Cooper RF9540-N</MetaDataItem>
+    <MetaDataItem id="0101" name="Identifier" type="4449">RF9540-N</MetaDataItem>
+    <MetaDataItem id="0101" name="FrequencyName" type="4449">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">Aspire RF All load smart dimmer master</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/797/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Delayed OFF time" max="255" min="0" type="byte" units="seconds" value="0">
+      <Help>
 			The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
 		  </Help>
-		</Value>
-		<Value type="byte" index="2" genre="config" label="Panic ON time" units="seconds" min="1" max="255" value="0">
-		  <Help>
+    </Value>
+    <Value genre="config" index="2" label="Panic ON time" max="255" min="1" type="byte" units="seconds" value="0">
+      <Help>
 		  The amount of time in seconds the switch will turn on for when panic mode is trigered.  The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
 		  </Help>
-		</Value>
-		<Value type="byte" index="3" genre="config" label="Panic OFF time" units="seconds" min="1" max="255" value="0">
-		  <Help>
+    </Value>
+    <Value genre="config" index="3" label="Panic OFF time" max="255" min="1" type="byte" units="seconds" value="0">
+      <Help>
 		  The amount of time in seconds the switch will turn off for when panic mode is triggered.  The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
 		  </Help>
-		</Value>
-		<Value type="byte" index="4" genre="config" label="Basic set value" units="" min="1" max="255" value="0">
-		  <Help>
+    </Value>
+    <Value genre="config" index="4" label="Basic set value" max="255" min="1" type="byte" units="" value="0">
+      <Help>
 		  Setting this to anything other than 0 will cause the value to be transmitted to devices in the association group when the switch is triggered. A setting other than 0 will likely result in undesired operation
 		  </Help>
-		</Value>
-		<Value type="list" index="5" genre="config" label="Power Up State" units="" min="1" max="3" size="1" value="3">
-		  <Help>
+    </Value>
+    <Value genre="config" index="5" label="Power Up State" max="3" min="1" size="1" type="list" units="" value="3">
+      <Help>
 		    Power up state of the device
 		  </Help>
-		  <Item label="OFF" value="1"/>
-		  <Item label="ON" value="2"/>
-		  <Item label="Last state" value="3"/>
-		</Value>
-		<Value type="list" index="6" genre="config" label="Panic mode enable" units="" min="1" max="2" size="1" value="1">
-		  <Help>
+      <Item label="OFF" value="1"/>
+      <Item label="ON" value="2"/>
+      <Item label="Last state" value="3"/>
+    </Value>
+    <Value genre="config" index="6" label="Panic mode enable" max="2" min="1" size="1" type="list" units="" value="1">
+      <Help>
 		    Enables this switch to participate in panic mode
 		  </Help>
-		  <Item label="OFF" value="1"/>
-		  <Item label="ON" value="2"/>
-		</Value>
-		<Value type="byte" index="7" genre="config" label="Dimmer Ramp Time" units="seconds" min="0" max="255" value="0">
-		  <Help>
+      <Item label="OFF" value="1"/>
+      <Item label="ON" value="2"/>
+    </Value>
+    <Value genre="config" index="7" label="Dimmer Ramp Time" max="255" min="0" type="byte" units="seconds" value="0">
+      <Help>
 		  The amount of time in seconds the switch will take to reach the desired dim level.  The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
 		  </Help>
-		</Value>
-		<Value type="list" index="8" genre="config" label="Kickstart / Rapid Start" units="" min="0" max="1" size="1" value="0">
-		  <Help>
+    </Value>
+    <Value genre="config" index="8" label="Kickstart / Rapid Start" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
 		  	Ensures that LED / CFL bulbs turn on when the preset dim level is low.  Enabling this feature may cause the lights brightness to momentarily be bright when the switch is turned on before reducing in brightness to desired level
 		  </Help>
-		  <Item label="disable" value="0"/>
-		  <Item label="enable" value="1"/>
-		</Value>
-		<Value type="byte" index="11" genre="config" label="Minimum Dimmer Level" units="" min="4" max="99" value="4">
-		  <Help>
+      <Item label="disable" value="0"/>
+      <Item label="enable" value="1"/>
+    </Value>
+    <Value genre="config" index="11" label="Minimum Dimmer Level" max="99" min="4" type="byte" units="" value="4">
+      <Help>
 		  The minimum dim level the switch will allow.  The minimum level must always be at least 13 below the maximum level.
 		  </Help>
-		</Value>
-		<Value type="byte" index="12" genre="config" label="Maximum Dimmer Level" units="" min="4" max="99" value="99">
-		  <Help>
+    </Value>
+    <Value genre="config" index="12" label="Maximum Dimmer Level" max="99" min="4" type="byte" units="" value="99">
+      <Help>
 		  The maximum dim level the switch will allow.  The maximum level must always be at least 13 above the minimum level.
 		  </Help>
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="2">
-        	<Group index="1" max_associations="5" label="Group #1" />
-			<Group index="255" max_associations="1" label="Group #255" />
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Group #1" max_associations="5"/>
+      <Group index="255" label="Group #255" max_associations="1"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -3,7 +3,7 @@
 Aeotec DSC12104 Micro Smart Energy Switch
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584526
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>  
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
   <!-- Configuration Parameters -->
   <CommandClass id="112">    
     <Value type="short" index="2" genre="config" label="Blinking behavior" units="" min="0" max="65535" write_only="true" value="0">

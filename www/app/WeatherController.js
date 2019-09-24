@@ -1,5 +1,5 @@
-define(['app'], function (app) {
-	app.controller('WeatherController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
+define(['app', 'livesocket'], function (app) {
+	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
 
 		var ctrl = this;
 
@@ -79,6 +79,18 @@ define(['app'], function (app) {
 			bootbox.alert($.t('Please use the devices tab for this.'));
 		}
 
+		RefreshItem = function (item) {
+			ctrl.items.forEach(function (olditem, oldindex, oldarray) {
+				if (olditem.idx == item.idx) {
+					oldarray[oldindex] = item;
+					if ($scope.config.ShowUpdatedEffect == true) {
+						$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					}
+				}
+			});
+		}
+
+		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshWeathers = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -86,39 +98,39 @@ define(['app'], function (app) {
 			}
 			var id = "";
 
-			$.ajax({
-				url: "json.htm?type=devices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					if (typeof data.ServerTime != 'undefined') {
-						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+			livesocket.getJson("json.htm?type=devices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+				}
+
+				if (typeof data.result != 'undefined') {
+					if (typeof data.ActTime != 'undefined') {
+						$.LastUpdateTime = parseInt(data.ActTime);
 					}
 
-					if (typeof data.result != 'undefined') {
-						if (typeof data.ActTime != 'undefined') {
-							$.LastUpdateTime = parseInt(data.ActTime);
-						}
+					/*
+						Render all the widgets at once.
+					*/
+					$.each(data.result, function (i, item) {
+						RefreshItem(item);
+					});
 
-						// Change updated items in temperatures list
-						// TODO is there a better way to do this ?
-						data.result.forEach(function (newitem) {
-							ctrl.items.forEach(function (olditem, oldindex, oldarray) {
-								if (olditem.idx == newitem.idx) {
-									oldarray[oldindex] = newitem;
-									if ($scope.config.ShowUpdatedEffect == true) {
-										$("#weatherwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-									}
-								}
-							});
-						});
-
-					}
 				}
 			});
-			$scope.mytimer = $interval(function () {
-				RefreshWeathers();
-			}, 10000);
+
+			$scope.$on('jsonupdate', function (event, data) {
+				/*
+					When this event is caught, a widget status update is received.
+					We call RefreshItem to update the widget.
+				*/
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+				}
+				if (typeof data.ActTime != 'undefined') {
+					$.LastUpdateTime = parseInt(data.ActTime);
+				}
+				RefreshItem(data.item);
+			});
 		}
 
 		ShowForecast = function () {
@@ -156,10 +168,7 @@ define(['app'], function (app) {
 			$('#weathertophtm').i18n();
 
 			$rootScope.RefreshTimeAndSun();
-
-			$scope.mytimer = $interval(function () {
-				RefreshWeathers();
-			}, 10000);
+			RefreshWeathers();
 			return false;
 		}
 
@@ -442,7 +451,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		});
-	}])
+	})
 		.directive('dzweatherwidget', ['$rootScope', '$location', function ($rootScope,$location) {
 			return {
 				priority: 0,
@@ -524,7 +533,7 @@ define(['app'], function (app) {
 						if (typeof item.Barometer != 'undefined') {
 							return 'baro48.png';
 						} else if (typeof item.Rain != 'undefined') {
-							return 'rain48.png';
+							return 'Rain48_On.png';
 						} else if (typeof item.Visibility != 'undefined') {
 							return 'visibility48.png';
 						} else if (typeof item.UVI != 'undefined') {

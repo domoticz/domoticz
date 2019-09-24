@@ -14,11 +14,7 @@ return {
 
 	process = function(device, data, domoticz, utils, adapterManager)
 
-		-- modes from data: ["modes"] = "0;Off;1;Heat;2;Heat Econ;";
-		-- mode from data
-
-
-		local _modes = device.modes and string.split(device.modes, ';') or {}
+		local _modes = device.modes and utils.stringSplit(device.modes, ';') or {}
 		-- we have to combine tupels into one
 		local modesLookup = {}
 		local modes = {}

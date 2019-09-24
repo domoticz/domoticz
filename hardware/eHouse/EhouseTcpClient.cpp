@@ -156,22 +156,7 @@ char eHouseTCP::SendTCPEvent(const unsigned char *Events, unsigned char EventCou
 #endif
 	return 0;
 }
-/*
-void TestTCPClientMultiThread(void)
-{
-	unsigned char tcp_client_socket_index=0;
-	TC[tcp_client_socket_index].AddrH=0;
-	TC[tcp_client_socket_index].AddrL=254;
-	TC[tcp_client_socket_index].EventSize=1;
-	TC[tcp_client_socket_index].
-	pthread_create(
-			&TcpClientThread[tcp_client_socket_index],
-			NULL,
-			SubmitData,
-			(void *)&TcpClientThreadParam[tcp_client_socket_index]);
-}
 
-*/
 /* Finalize TCP IP Client Sockets
  */
 void eHouseTCP::performTCPClientThreads()

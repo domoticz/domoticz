@@ -1,12 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Enerwave ZW20R -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- Enerwave ZW20R --><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/011A:0603:0101</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/enerwave/zw20r.png</MetaDataItem>
+    <MetaDataItem id="0603" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/713/</MetaDataItem>
+    <MetaDataItem id="0603" name="FrequencyName" type="0101">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0603" name="Identifier" type="0101">ZWN-RSM2</MetaDataItem>
+    <MetaDataItem name="Name">Wenzhou MTLC Electric ZWN-RSM2</MetaDataItem>
+    <MetaDataItem name="Description">Smart Lighting Control Module(RSM2) which can be used with traditional switch, for use with incandescent, incandescent, fluorescent, ballast , motor , meet customer's requirements.</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.smart-wave.us/product_show.asp?classid=2&amp;ID=34</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/713/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="byte" index="1" genre="config" label="Toggle LED mode" min="0" max="1" value="0" size="1">
+    <Value genre="config" index="1" label="Toggle LED mode" max="1" min="0" size="1" type="byte" value="0">
       <Help>Set to 1 for LED to be in sync with switch.</Help>
-      <Item label="0: LED is on when switch is off" value="0" />
-      <Item label="1: LED is on when switch is on" value="1" />
+      <Item label="0: LED is on when switch is off" value="0"/>
+      <Item label="1: LED is on when switch is on" value="1"/>
     </Value>
   </CommandClass>
 </Product>

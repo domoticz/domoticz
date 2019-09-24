@@ -23,7 +23,7 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState)
 
 		local command = {} -- array of command parts
 
-		if (checkValue == true and currentState == valueValue) then
+		if checkValue and currentState:find(valueValue) then
 			-- do nothing
 			return nil
 		end

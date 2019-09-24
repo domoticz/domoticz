@@ -1,3 +1,50 @@
+[2.4.29]
+- Add error message including affected module when module got corrupted on disk.
+- Add setLevel method for switchTypes.
+- Increased resilience against badly formatted type Time user-variables.
+- Use native domoticz command for increaseCounter method.
+- Set inverse of "set color" to Off to enable use of toggleSwitch for RGB type of devices.
+
+[2.4.28]
+- Add deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods
+- increased httpResponse resilience against different use of Upper-, Lowercase in headers['content-type'] to ensure JSON conversion to Lua table
+
+[2.4.27]
+
+- Add protect attribute for devices / scenes and groups
+- Add methods protectOn and protectOff for devices / scenes and groups
+- Add functions rightPad, leftPad, centerPad, leadingZeros, numDecimals in utils
+
+[2.4.26]
+- Add Smoke detector
+
+[2.4.25]
+- Add rawDateTime
+- fix for combined device / civil[day|night]time trigger rule 
+- fix for checkFirst on stopped status
+
+[2.4.24]
+- Add method rename for devices, user-variables , scenes and groups
+
+[2.4.23]
+- Add method setMode for evohome device
+- Add method incrementCounter for incremental counter
+- Prepared for Firebase notifications. Firebase (fcm) is the replacement for Google Cloud Messaging gcm)
+- fix wildcard device 
+
+[2.4.22]
+- selector.switchSelector method accepts levelNames
+- increased selector.switchSelector resilience
+- fix wildcard timerule 
+
+[2.4.21]
+- fixed wrong direction for open() and close() for some types of blinds
+- Add inTable function to domoticz.utils
+- Add sValue attribute to devices
+
+[2.4.20]
+- Add quietOn() and quietOff() method to switchType devices 
+
 [2.4.19]
 - Add stringSplit function to domoticz.utils.
 - Add statusText and protocol to HTTPResponse

@@ -678,7 +678,7 @@ std::string bt_openwebnet::DeleteControlCharacters(const std::string& in_frame)
 	std::string out_frame = in_frame;
 
 	// delete control characters ....
-	while ((out_frame.at(out_frame.length() - 1) == '\n') || ((out_frame.at(out_frame.length() - 1) == '\r')))
+	while (out_frame.length() && ((out_frame.at(out_frame.length() - 1) == '\n') || ((out_frame.at(out_frame.length() - 1) == '\r'))))
 	{
 		out_frame.erase(out_frame.length() - 1, 1);
 	}

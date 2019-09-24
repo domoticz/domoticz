@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--http://www.benext.eu/static/manual/heatingcontrol.pdf-->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-
-  <CommandClass id="64" name="COMMAND_CLASS_THERMOSTAT_MODE">
-    <Value type="list" genre="user" instance="1" index="0" label="Mode" units="" read_only="false" write_only="false" min="0" max="0" value="0">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <CommandClass id="64">
+    <Value genre="user" index="0" instance="1" label="Mode" max="0" min="0" read_only="false" type="list" units="" value="0" write_only="false">
       <Item label="Heat" value="1"/>
       <Item label="Energy Heat" value="11"/>
     </Value>
@@ -11,17 +9,20 @@
       <Mode index="1" label="Heat"/>
       <Mode index="11" label="Energy Heat"/>
     </SupportedModes>
+    <Compatibility/>
   </CommandClass>
-
-  <CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" create_vars="true" base="0">
+  <CommandClass id="67">
     <Instance index="1"/>
-    <Value type="decimal" genre="user" instance="1" index="1" label="Heating" units="C" read_only="false" write_only="false" min="0" max="0" value="20"/>
-    <Value type="decimal" genre="user" instance="1" index="11" label="Energy Heat" units="C" read_only="false" write_only="false" min="0" max="0" value="16"/>
+    <Value genre="user" index="1" instance="1" label="Heating" max="0" min="0" read_only="false" type="decimal" units="C" value="20" write_only="false"/>
+    <Value genre="user" index="11" instance="1" label="Energy Heat" max="0" min="0" read_only="false" type="decimal" units="C" value="16" write_only="false"/>
+    <Compatibility>
+      <Base>0</Base>
+      <CreateVars>true</CreateVars>
+    </Compatibility>
   </CommandClass>
-
   <!-- Configuration -->
   <CommandClass id="112">
-    <Value type="byte" genre="config" instance="1" index="1" label="Reset to Default" size="1" value="0">
+    <Value genre="config" index="1" instance="1" label="Reset to Default" size="1" type="byte" value="0">
       <Help>0xFF: Set all configuration values to default values (factory settings).
         CONFIGURATION_REPORT
         0x55: Configuration settings of the device are altered.
@@ -29,54 +30,47 @@
         Note that this value will not change to 0x55 upon modifying the wake up interval and that re-setting the value to 0xAA will always reset the wake up interval.
       </Help>
     </Value>
-
-    <Value type="byte" genre="config" instance="1" index="2" label="Data request interval" value="20" size="1">
+    <Value genre="config" index="2" instance="1" label="Data request interval" size="1" type="byte" value="20">
       <Help>The interval that data is requested (and therefore updated) from the thermostat and boiler. Value in seconds. </Help>
     </Value>
-
-    <Value type="byte" genre="config" instance="1" index="3" label="T room update difference" value="1" size="1">
+    <Value genre="config" index="3" instance="1" label="T room update difference" size="1" type="byte" value="1">
       <Help>The value that the room temperature must differ (compared to his previous send value) before an unsolicited room temperature report is send to the associated node. Value in 0.1C. </Help>
     </Value>
-
-    <Value type="byte" genre="config" instance="1" index="4" label="T setpoint update difference" value="5" size="1">
+    <Value genre="config" index="4" instance="1" label="T setpoint update difference" size="1" type="byte" value="5">
       <Help>The value that the temperature setpoint must differ (compared to his previous send value) before an unsolicited temperature setpoint report is send to the associated node. Value in 0.1C .</Help>
     </Value>
-
-    <Value type="list" genre="config" instance="1" index="5" label="Unsolicited CRC" size="1" value="1">
+    <Value genre="config" index="5" instance="1" label="Unsolicited CRC" size="1" type="list" value="1">
       <Help>TConfigure if the unsolicited reports are send with the CRC-16 encapsulation. Not that the receiving node should support this encapsulation to parse the Z-Wave frame!</Help>
       <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="255"/>
     </Value>
-
-    <Value type="list" genre="config" instance="1" index="6" label="Type of 'special' thermostat" size="1" value="0">
+    <Value genre="config" index="6" instance="1" label="Type of 'special' thermostat" size="1" type="list" value="0">
       <Help>Type of 'special' thermostat: NOTE: when remeha Celcia 20 support is set then any other thermostat can not be set (!) NOTE2: when Remeha Celcia 20 gives 'Fout 203' send cfg value again</Help>
-    <Item label="No special" value="0"/>
-    <Item label="Remeha Celcia 20" value="1"/>
-    <Item label="Honeywell (rounded temperatures)" value="2"/>
+      <Item label="No special" value="0"/>
+      <Item label="Remeha Celcia 20" value="1"/>
+      <Item label="Honeywell (rounded temperatures)" value="2"/>
     </Value>
-
-    <Value type="list" genre="config" instance="1" index="7" label="Status auto report" size="1" value="0">
+    <Value genre="config" index="7" instance="1" label="Status auto report" size="1" type="list" value="0">
       <Help>Status auto report boiler/thermostat report</Help>
       <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="255"/>
     </Value>
-    
-     <Value type="list" genre="config" instance="1" index="9" label="Thermostat schedule" size="1" value="0">
+    <Value genre="config" index="9" instance="1" label="Thermostat schedule" size="1" type="list" value="0">
       <Help>Enable/Disable thermostat schedule inside the heating controller.</Help>
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="255"/>
     </Value>
-
   </CommandClass>
-  
   <!-- COMMAND_CLASS_FIRMWARE_UPDATE_MD_V2 firmware update not supported -->
-  <CommandClass id="122" getsupported="false" />
-
+  <CommandClass id="122">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="1" label="Lifeline" max_associations="5"/>
     </Associations>
   </CommandClass>
-
 </Product>

@@ -9,15 +9,6 @@ local TimedCommand = require('TimedCommand')
 local utils = require('Utils')
 local _ = require('lodash')
 
--- simple string splitting method
--- coz crappy LUA doesn't have this natively... *sigh*
-function string:split(sep)
-	local sep, fields = sep or ":", {}
-	local pattern = string.format("([^%s]+)", sep)
-	self:gsub(pattern, function(c) fields[#fields + 1] = c end)
-	return fields
-end
-
 -- main class
 local function Domoticz(settings)
 
@@ -124,11 +115,18 @@ local function Domoticz(settings)
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
 		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
 		['EVOHOME_MODE_FOLLOW_SCHEDULE'] = 'FollowSchedule',
+		['EVOHOME_MODE_AUTOWITHRESET'] = 'AutoWithReset',
+		['EVOHOME_MODE_AUTOWITHECO'] = 'AutoWithEco',
+		['EVOHOME_MODE_AWAY'] = 'Away',
+		['EVOHOME_MODE_DAYOFF'] = 'DayOff',
+		['EVOHOME_MODE_CUSTOM'] = 'Custom',
+		['EVOHOME_MODE_HEATINGOFF'] = 'HeatingOff',
 		['INTEGER'] = 'integer',
 		['FLOAT'] = 'float',
 		['STRING'] = 'string',
 		['DATE'] = 'date',
 		['TIME'] = 'time',
+		['NSS_FIREBASE'] = 'gcm', -- For the moment the change to fcm is only done in the url 
 		['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',
 		['NSS_HTTP'] = 'http',
 		['NSS_KODI'] = 'kodi',
@@ -148,15 +146,11 @@ local function Domoticz(settings)
 		['BASETYPE_TIMER'] = 'timer',
 		['BASETYPE_HTTP_RESPONSE'] = 'httpResponse',
 
-
 		utils = {
 			_ = _,
 
 			toCelsius = function(f, relative)
-				if (relative) then
-					return f*(1/1.8)
-				end
-				return ((f-32) / 1.8)
+				return utils.toCelsius(f, relative)
 			end,
 
 			urlEncode = function(s, strSub)
@@ -167,15 +161,8 @@ local function Domoticz(settings)
 				return utils.urlDecode(s)
 			end,
 
-			round = function(x, n)
-				n = math.pow(10, n or 0)
-				x = x * n
-				if x >= 0 then
-					x = math.floor(x + 0.5)
-				else
-					x = math.ceil(x - 0.5)
-				end
-				return x / n
+			round = function(x,n)
+				return utils.round(x,n)
 			end,
 
 			osExecute = function(cmd)
@@ -201,7 +188,7 @@ local function Domoticz(settings)
 			hsbToRGB = function(h, s, b)
 				return utils.hsbToRGB(h,s,b)
 			end,
-			
+
 			dumpTable = function(t, level)
 				return utils.dumpTable(t, level)
 			end,
@@ -209,7 +196,51 @@ local function Domoticz(settings)
 			stringSplit = function(text, sep)
 				return utils.stringSplit(text, sep)
 			end,
-			
+
+			inTable = function(t, searchItem)
+				return utils.inTable(t, searchItem)
+			end,
+
+			rightPad = function(text, length, char)
+				return utils.rightPad(text, length, char)
+			end,
+
+			leftPad = function(text, length, char)
+				return utils.leftPad(text, length, char)
+			end,
+
+			centerPad = function(text, length, char)
+				return utils.centerPad(text, length, char)
+			end,
+
+			leadingZeros = function(num, length)
+				return utils.leadingZeros(num, length)
+			end,
+
+			numDecimals = function(num, int, dec)
+				return utils.numDecimals(num, int, dec)
+			end,
+
+			deviceExists = function (parm)
+				return utils.deviceExists(parm)
+			end,
+
+			sceneExists = function (parm)
+				return utils.sceneExists(parm)
+			end,
+
+			groupExists = function (parm)
+				return utils.groupExists(parm)
+			end,
+
+			variableExists = function (parm)
+				return utils.variableExists(parm)
+			end,
+
+			cameraExists = function (parm)
+				return utils.cameraExists(parm)
+			end,
+
 		}
 	}
 
@@ -243,6 +274,13 @@ local function Domoticz(settings)
 				_subSystem = ''
 			end
 		end
+
+		--[[
+		if _subSystem:find('gcm') then
+			utils.log('Notification subsystem Google Cloud Messaging (gcm) has been deprecated by Google. Please consider switching to Firebase', utils.LOG_ERROR)
+		end
+		]] --
+
 		local data = subject
 				.. '#' .. message
 				.. '#' .. tostring(priority)
@@ -385,7 +423,7 @@ local function Domoticz(settings)
 	function self.round(x, n)
 		utils.log('domoticz.round deprecated. Please use domoticz.utils.round.', utils.LOG_INFO)
 		return self.utils.round(x, n)
-	end
+	 end
 
 	function self.dump()
 		self.utils.dumpTable(settings, '> ')
@@ -465,15 +503,14 @@ local function Domoticz(settings)
 			return newItem
 		end
 
-		-- special case for scenes and groups
-		-- as they may not be in the collection if Domoticz wasn't restarted after creating the scene or group.
+		local noObjectMessage = 'There is no ' .. baseType .. ' with that name or id: ' .. tostring(id)
+
 		if (baseType == 'scene' or baseType == 'group') then
-			utils.log('There is no group or scene with that name or id: ' ..
-				tostring(id) ..
-				'. If you just created the scene or group you may have to restart Domoticz to make it become visible to dzVents.', utils.LOG_ERROR)
-		else
-			utils.log('There is no ' .. baseType .. ' with that name or id: ' .. tostring(id), utils.LOG_ERROR)
+			-- special case for scenes and groups
+			-- as they may not be in the collection if Domoticz wasn't restarted after creating the scene or group.
+				noObjectMessage = noObjectMessage .. '. If you just created the '.. baseType .. ' you may have to restart Domoticz to make it become visible to dzVents.'
 		end
+		utils.log(noObjectMessage, utils.LOG_ERROR)
 	end
 
 	function self._setIterators(collection, initial, baseType, filterForChanged, initalCollection)
@@ -504,7 +541,6 @@ local function Domoticz(settings)
 					_item = item
 				end
 
-
 				if (_item and type(_item) ~= 'function' and ((initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
 					res = func(_item)
 					if (res == false) then -- abort
@@ -528,7 +564,6 @@ local function Domoticz(settings)
 				else
 					_item = item
 				end
-
 
 				if (_item and type(_item) ~= 'function' and ((initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
 					ret = func(_item)

@@ -224,7 +224,8 @@ describe('event helpers', function()
 				'onscript7b',
 				'some*device',
 				'somedevice',
-				'wild*' }, keys(modules))
+				'wild*',
+				 }, keys(modules))
 			assert.are.same(13, _.size(modules))
 		end)
 
@@ -337,7 +338,8 @@ describe('event helpers', function()
 				'onscript7b',
 				'some*device',
 				'somedevice',
-				'wild*' }, keys(modules))
+				'wild*',
+				 }, keys(modules))
 			assert.are.same(13, _.size(modules))
 		end)
 

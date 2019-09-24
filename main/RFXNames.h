@@ -175,7 +175,7 @@ enum _eHardwareTypes {
 	HTYPE_EVOHOME_WEB,			//75
 	HTYPE_RAVEn,	    		//76
 	HTYPE_S0SmartMeterTCP,		//77
-	HTYPE_RESERVED_FOR_YOU_1,	//78
+	HTYPE_BuienRadar,			//78
 	HTYPE_AccuWeather,			//79
 	HTYPE_Comm5Serial,          //80
 	HTYPE_Ec3kMeterTCP,			//81

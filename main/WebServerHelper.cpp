@@ -37,7 +37,9 @@ namespace http {
 			our_listener_port = web_settings.listening_port;
 #ifdef WWW_ENABLE_SSL
 			if (secure_web_settings.is_enabled()) {
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L) || defined(LIBRESSL_VERSION_NUMBER)
 				SSL_library_init();
+#endif
 				secureServer_.reset(new CWebServer());
 				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
 				serverCollection.push_back(secureServer_);

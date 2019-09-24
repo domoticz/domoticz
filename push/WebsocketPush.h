@@ -27,6 +27,7 @@ public:
 private:
 	void OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
 	void OnNotificationReceived(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification);
+	void OnSceneChange(const unsigned long long SceneRowIdx, const std::string& SceneName);
 	bool listenRoomplan;
 	bool listenDeviceTable;
 	std::vector<unsigned long long> listenIdxs;

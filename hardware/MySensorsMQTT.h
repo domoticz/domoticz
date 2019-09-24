@@ -5,7 +5,7 @@
 class MySensorsMQTT : public MQTT
 {
 public:
-	MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int Topics);
+	MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int TLS_Version, const int Topics);
 	~MySensorsMQTT(void);
 public:
 	void on_message(const struct mosquitto_message *message) override;

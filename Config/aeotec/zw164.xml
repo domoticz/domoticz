@@ -1,0 +1,311 @@
+<!-- 
+Aeotec ZW164 Indoor Siren 6
+-->
+
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:00a4:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw164.png</MetaDataItem>
+    <MetaDataItem id="00a4" name="Identifier" type="0003">ZW164-C</MetaDataItem>
+    <MetaDataItem id="00a4" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3301/</MetaDataItem>
+    <MetaDataItem id="00a4" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="WakeupDescription"></MetaDataItem>
+    <MetaDataItem name="InclusionDescription">This product supports Security 2 Command Class. While a Security S2 enabled Controller is needed in order to fully use the security feature. This product can be included and operated in any Z-Wave network with other Z-Wave certified devices from other manufacturers and/or other applications. All non-battery operated nodes within the network will act as repeaters regardless of vendor to increase reliability of the network. 1. Set your Z-Wave Controller into its 'Add Device' mode in order to add Chime into your Z-Wave system. Refer to the Controller's manual if you are unsure of how to perform this step. 2. Power on Chime via the provided power adapter; its LED will be breathing white light all the time. 3. Click Chime Action Button once, it will quickly flash white light for 30 seconds until Chime is added into the network. It will become constantly bright white light after being assigned a NodeID. 4. If your Z-Wave Controller supports S2 encryption, enter the first 5 digits of DSK into your Controller's interface if/when requested. The DSK is printed on Chime's housing. 5. If Adding fails, it will slowly flash white light 3 times and then become breathing white light; repeat steps 1 to 4. Contact us for further support if needed. 6. If Adding succeeds, it will quickly flash white light 3 times and then become off. Now, Chime is a part of your Z-Wave home control system. You can configure it and its automations via your Z-Wave system; please refer to your software's user guide for precise instructions. Note: If Action Button is clicked again during the Learn Mode, the Learn Mode will exit. At the same time, Indicator Light will extinguish immediately, and then become breathing white light.</MetaDataItem>
+    <MetaDataItem name="Name">Indoor Siren 6</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Set your Z-Wave Controller into its ' Remove Device' mode in order to remove Chime from your Z-Wave system. Refer to the Controller's manual if you are unsure of how to perform this step. 2. Power on Chime via the provided power adapter; its LED will be off. 3. Click Chime Action Button 6 times quickly; it will bright white light, up to 2s. 4. If Removing fails, it will keep off; repeat steps 1 to 3. Contact us for further support if needed. 5. If Removing succeeds, it will quickly flash white light 3 times and then become breathing white light. Now, Chime is removed from Z-Wave network successfully.</MetaDataItem>
+    <MetaDataItem name="Description">- S2 Security. - Not only a siren, but also can be used as a doorbell via setting. - Can be wireless controlled by more Button, up to 3. - Longer Button control distance, up to 120m. - Built-in multiple tones, up to 30. - Built-in multiple adjustable Light Effect.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">If the primary controller is missing or inoperable, you may need to reset the device to factory settings. Make sure the Chime is powered. To complete the reset process manually, press and hold the Action Button for at least 20s. The LED indicator will quickly flash white light 3 times and then become breathing white light, which indicates the reset operation is successful. Otherwise, please try again. Contact us for further support if needed. Note: 1. This procedure should only be used when the primary controller is missing or inoperable. 2. Factory Reset Chime will: (a) Remove Chime from Z-Wave network; (b) Delete the Association setting; (c) Restore the configuration settings to the default.(Except configuration parameter 51/52/53/54)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3301/Indoor%20Siren%206%20product%20manual.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Geert van Horrik - @GeertvanHorrik" date="28 Jul 2019" revision="1">Add metadata for aeotec indoor siren 6 #1894</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+
+  <CommandClass id="96">
+    <Instance index="1" label="Browse"/>
+    <Instance index="2" label="Tampering"/>
+    <Instance index="3" label="Doorbell 1"/>
+    <Instance index="4" label="Doorbell 2"/>
+    <Instance index="5" label="Doorbell 3"/>
+    <Instance index="6" label="Environment"/>
+    <Instance index="7" label="Security"/>
+    <Instance index="8" label="Emergency"/>
+  </CommandClass>
+
+  <CommandClass id="112">
+    <Value index="1" genre="config" type="int" label="Configure the Light Effect and Tone Play Mode for Endpoint 1 (Browse)." min="16777216" max="‭2147418112‬" size="4" value="16777216">
+      <!-- 
+        [XX:1][XX:2][00][00]
+        1: Light effect, allowed values are 1, 2, 4, 8, 16, 32, 64, 127 (must be converted to HEX)
+        2: Tone play mode, allowed values are 0, 1, 2, 3, 255 (must be converted to HEX)
+        
+        So Light effect #5 + single loop is:
+            Decimal: [16][01][00][00]
+            Hex:     [10][01][00][00]
+            
+        Finally the HEX number 10010000 results in ‭268500992‬
+      -->
+      
+      <!--
+        Looks like it's not allowed to support lists like this, but keeping it here for reference in case it becomes supported
+        
+      <Help>Set light effect and tone play mode for endpoint 1 (Browse)</Help>
+      <Item label="#1 Light effect - single playback" value="16777216‬" />
+      <Item label="#1 Light effect - single loop playback" value="‭16842752‬" />
+      <Item label="#1 Light effect - list loop playing" value="‭16908288‬" />
+      <Item label="#1 Light effect - list random playback" value="‭16973824‬" />
+      <Item label="#1 Light effect - last valid configuration value" value="‭33488896‬" />
+
+      <Item label="#2 Light effect - single playback" value="‭33554432‬" />
+      <Item label="#2 Light effect - single loop playback" value="‭33619968‬" />
+      <Item label="#2 Light effect - list loop playing" value="‭33685504‬" />
+      <Item label="#2 Light effect - list random playback" value="‭33751040‬" />
+      <Item label="#2 Light effect - last valid configuration value" value="‭50266112‬" />
+
+      <Item label="#3 Light effect - single playback" value="‭67108864‬" />
+      <Item label="#3 Light effect - single loop playback" value="‭67174400‬" />
+      <Item label="#3 Light effect - list loop playing" value="‭67239936‬" />
+      <Item label="#3 Light effect - list random playback" value="‭67305472‬" />
+      <Item label="#3 Light effect - last valid configuration value" value="‭83820544‬" />
+
+      <Item label="#4 Light effect - single playback" value="‭134217728‬" />
+      <Item label="#4 Light effect - single loop playback" value="‭134283264‬" />
+      <Item label="#4 Light effect - list loop playing" value="‭134348800‬" />
+      <Item label="#4 Light effect - list random playback" value="‭134414336‬" />
+      <Item label="#4 Light effect - last valid configuration value" value="‭150929408‬" />
+
+      <Item label="#5 Light effect - single playback" value="‭268435456‬" />
+      <Item label="#5 Light effect - single loop playback" value="‭268500992‬" />
+      <Item label="#5 Light effect - list loop playing" value="‭268566528‬" />
+      <Item label="#5 Light effect - list random playback" value="‭268632064‬" />
+      <Item label="#5 Light effect - last valid configuration value" value="‭285147136‬" />
+
+      <Item label="#6 Light effect - single playback" value="‭536870912‬" />
+      <Item label="#6 Light effect - single loop playback" value="‭536936448‬" />
+      <Item label="#6 Light effect - list loop playing" value="‭537001984‬" />
+      <Item label="#6 Light effect - list random playback" value="‭537067520‬" />
+      <Item label="#6 Light effect - last valid configuration value" value="‭553582592‬" />
+
+      <Item label="#7 Light effect - single playback" value="‭1073741824‬" />
+      <Item label="#7 Light effect - single loop playback" value="‭1073807360‬" />
+      <Item label="#7 Light effect - list loop playing" value="‭1073872896‬" />
+      <Item label="#7 Light effect - list random playback" value="‭1073938432‬" />
+      <Item label="#7 Light effect - last valid configuration value" value="‭1090453504‬" />
+
+      <Item label="Last valid configuration - single playback" value="‭2130706432‬" />
+      <Item label="Last valid configuration - single loop playback" value="‭2130771968‬" />
+      <Item label="Last valid configuration - list loop playing" value="‭2130837504‬" />
+      <Item label="Last valid configuration - list random playback" value="‭2130903040‬" />
+      <Item label="Last valid configuration - last valid configuration value" value="‭2147418112‬" />
+      -->
+    </Value>
+    
+    <Value index="2" genre="config" type="int" label="Configure the Light Effect and Tone Effect for Endpoint 2 (Tampering)." min="0" max="‭‭2147483647‬‬" size="4" value="16777217">
+      <!-- 
+        [XX:1][XX:2][XX:3][XX:4]
+        1: Light effect, allowed values are 1, 2, 4, 8, 16, 32, 64, 127 (must be converted to HEX)
+        2: Intercepting duration of a tone
+        3: Interval between 2 tones
+        4: Tone play count
+      -->
+    </Value>
+    
+    <Value index="3" genre="config" type="int" label="Configure the Light Effect and Tone Effect for Endpoint 3 (Doorbell 1)." min="16777216" max="‭‭2147483647‬‬" size="4" value="33554433">
+    </Value>
+        
+    <Value index="4" genre="config" type="int" label="Configure the Light Effect and Tone Effect for Endpoint 4 (Doorbell 2)." min="16777216" max="‭‭2147483647‬‬" size="4" value="33554433">
+    </Value>
+
+    <Value index="5" genre="config" type="int" label="Configure the Light Effect and Tone Effect for Endpoint 5 (Doorbell 3)." min="16777216" max="‭‭2147483647‬‬" size="4" value="33554433">
+    </Value>
+
+    <Value index="6" genre="config" type="int" label="Configure the Light Effect and Tone Effect for Endpoint 6 (Environment)." min="16777216" max="‭‭2147483647‬‬" size="4" value="67108864">
+    </Value>
+
+    <Value index="7" genre="config" type="int" label="Configure the Light Effect and Tone Effect for Endpoint 7 (Security)." min="16777216" max="‭‭2147483647‬‬" size="4" value="67108864">
+    </Value>
+
+    <Value index="8" genre="config" type="int" label="Configure the Light Effect and Tone Effect for Endpoint 8 (Emergency)." min="16777216" max="‭‭2147483647‬‬" size="4" value="67108864">
+    </Value>
+
+    <Value index="16" genre="config" type="int" label="Configure #1 Light Effect." min="0" max="‭‭2147483647‬‬" size="4" value="1259934723">
+    </Value>
+
+    <Value index="17" genre="config" type="int" label="Configure #2 Light Effect." min="0" max="‭‭2147483647‬‬" size="4" value="1259934723">
+    </Value>
+
+    <Value index="18" genre="config" type="int" label="Configure #3 Light Effect." min="0" max="‭‭2147483647‬‬" size="4" value="1259934723">
+    </Value>
+
+    <Value index="19" genre="config" type="int" label="Configure #4 Light Effect." min="0" max="‭‭2147483647‬‬" size="4" value="1259934723">
+    </Value>
+
+    <Value index="20" genre="config" type="int" label="Configure #5 Light Effect." min="0" max="‭‭2147483647‬‬" size="4" value="1259934723">
+    </Value>
+
+    <Value index="21" genre="config" type="int" label="Configure #6 Light Effect." min="0" max="‭‭2147483647‬‬" size="4" value="1259934723">
+    </Value>
+
+    <Value index="22" genre="config" type="int" label="Configure #7 Light Effect." min="0" max="‭‭2147483647‬‬" size="4" value="1259934723">
+    </Value>
+
+    <Value index="32" genre="config" type="list" label="Configure how to send Basic Set to nodes in Group 2." min="0" max="‭‭4‬‬" size="1" value="3">
+      <Item label="Don't send Basic Set" value="0‬" />
+      <Item label="When Endpoint 1 starts playing tone, send Basic Set 0xFF. When Endpoint 1 stops playing tone, don't send Basic Set" value="1" />
+      <Item label="When Endpoint 1 starts playing tone, send Basic Set 0x00. When Endpoint 1 stops playing tone, don't send Basic Set" value="2" />
+      <Item label="When Endpoint 1 starts playing tone, send Basic Set 0xFF. When Endpoint 1 stops playing tone, send Basic Set 0x00" value="3" />
+      <Item label="When Endpoint 1 starts playing tone, send Basic Set 0x00. When Endpoint 1 stops playing tone, send Basic Set 0xFF" value="4" />
+    </Value>
+
+    <Value index="33" genre="config" type="list" label="Configure how to send Basic Set to nodes in Group 3." min="0" max="‭‭4‬‬" size="1" value="3">
+      <Item label="Don't send Basic Set" value="0‬" />
+      <Item label="When Endpoint 2 starts playing tone, send Basic Set 0xFF. When Endpoint 2 stops playing tone, don't send Basic Set" value="1" />
+      <Item label="When Endpoint 2 starts playing tone, send Basic Set 0x00. When Endpoint 2 stops playing tone, don't send Basic Set" value="2" />
+      <Item label="When Endpoint 2 starts playing tone, send Basic Set 0xFF. When Endpoint 2 stops playing tone, send Basic Set 0x00" value="3" />
+      <Item label="When Endpoint 2 starts playing tone, send Basic Set 0x00. When Endpoint 2 stops playing tone, send Basic Set 0xFF" value="4" />
+    </Value>
+
+    <Value index="34" genre="config" type="list" label="Configure how to send Basic Set to nodes in Group 4." min="0" max="‭‭4‬‬" size="1" value="3">
+      <Item label="Don't send Basic Set" value="0‬" />
+      <Item label="When Endpoint 3 starts playing tone, send Basic Set 0xFF. When Endpoint 3 stops playing tone, don't send Basic Set" value="1" />
+      <Item label="When Endpoint 3 starts playing tone, send Basic Set 0x00. When Endpoint 3 stops playing tone, don't send Basic Set" value="2" />
+      <Item label="When Endpoint 3 starts playing tone, send Basic Set 0xFF. When Endpoint 3 stops playing tone, send Basic Set 0x00" value="3" />
+      <Item label="When Endpoint 3 starts playing tone, send Basic Set 0x00. When Endpoint 3 stops playing tone, send Basic Set 0xFF" value="4" />
+    </Value>
+
+    <Value index="35" genre="config" type="list" label="Configure how to send Basic Set to nodes in Group 5." min="0" max="‭‭4‬‬" size="1" value="3">
+      <Item label="Don't send Basic Set" value="0‬" />
+      <Item label="When Endpoint 4 starts playing tone, send Basic Set 0xFF. When Endpoint 4 stops playing tone, don't send Basic Set" value="1" />
+      <Item label="When Endpoint 4 starts playing tone, send Basic Set 0x00. When Endpoint 4 stops playing tone, don't send Basic Set" value="2" />
+      <Item label="When Endpoint 4 starts playing tone, send Basic Set 0xFF. When Endpoint 4 stops playing tone, send Basic Set 0x00" value="3" />
+      <Item label="When Endpoint 4 starts playing tone, send Basic Set 0x00. When Endpoint 4 stops playing tone, send Basic Set 0xFF" value="4" />
+    </Value>
+
+    <Value index="36" genre="config" type="list" label="Configure how to send Basic Set to nodes in Group 6." min="0" max="‭‭4‬‬" size="1" value="3">
+      <Item label="Don't send Basic Set" value="0‬" />
+      <Item label="When Endpoint 5 starts playing tone, send Basic Set 0xFF. When Endpoint 5 stops playing tone, don't send Basic Set" value="1" />
+      <Item label="When Endpoint 5 starts playing tone, send Basic Set 0x00. When Endpoint 5 stops playing tone, don't send Basic Set" value="2" />
+      <Item label="When Endpoint 5 starts playing tone, send Basic Set 0xFF. When Endpoint 5 stops playing tone, send Basic Set 0x00" value="3" />
+      <Item label="When Endpoint 5 starts playing tone, send Basic Set 0x00. When Endpoint 5 stops playing tone, send Basic Set 0xFF" value="4" />
+    </Value>
+
+    <Value index="37" genre="config" type="list" label="Configure how to send Basic Set to nodes in Group 7." min="0" max="‭‭4‬‬" size="1" value="3">
+      <Item label="Don't send Basic Set" value="0‬" />
+      <Item label="When Endpoint 6 starts playing tone, send Basic Set 0xFF. When Endpoint 6 stops playing tone, don't send Basic Set" value="1" />
+      <Item label="When Endpoint 6 starts playing tone, send Basic Set 0x00. When Endpoint 6 stops playing tone, don't send Basic Set" value="2" />
+      <Item label="When Endpoint 6 starts playing tone, send Basic Set 0xFF. When Endpoint 6 stops playing tone, send Basic Set 0x00" value="3" />
+      <Item label="When Endpoint 6 starts playing tone, send Basic Set 0x00. When Endpoint 6 stops playing tone, send Basic Set 0xFF" value="4" />
+    </Value>
+
+    <Value index="38" genre="config" type="list" label="Configure how to send Basic Set to nodes in Group 8." min="0" max="‭‭4‬‬" size="1" value="3">
+      <Item label="Don't send Basic Set" value="0‬" />
+      <Item label="When Endpoint 7 starts playing tone, send Basic Set 0xFF. When Endpoint 7 stops playing tone, don't send Basic Set" value="1" />
+      <Item label="When Endpoint 7 starts playing tone, send Basic Set 0x00. When Endpoint 7 stops playing tone, don't send Basic Set" value="2" />
+      <Item label="When Endpoint 7 starts playing tone, send Basic Set 0xFF. When Endpoint 7 stops playing tone, send Basic Set 0x00" value="3" />
+      <Item label="When Endpoint 7 starts playing tone, send Basic Set 0x00. When Endpoint 7 stops playing tone, send Basic Set 0xFF" value="4" />
+    </Value>
+
+    <Value index="39" genre="config" type="list" label="Configure how to send Basic Set to nodes in Group 9." min="0" max="‭‭4‬‬" size="1" value="3">
+      <Item label="Don't send Basic Set" value="0‬" />
+      <Item label="When Endpoint 8 starts playing tone, send Basic Set 0xFF. When Endpoint 8 stops playing tone, don't send Basic Set" value="1" />
+      <Item label="When Endpoint 8 starts playing tone, send Basic Set 0x00. When Endpoint 8 stops playing tone, don't send Basic Set" value="2" />
+      <Item label="When Endpoint 8 starts playing tone, send Basic Set 0xFF. When Endpoint 8 stops playing tone, send Basic Set 0x00" value="3" />
+      <Item label="When Endpoint 8 starts playing tone, send Basic Set 0x00. When Endpoint 8 stops playing tone, send Basic Set 0xFF" value="4" />
+    </Value>
+    
+    <Value index="48" genre="config" type="list" label="Trigger Unpairing Button Mode" size="1" write_only="true">
+      <Help></Help>
+      <Item label="Trigger Unpairing #1 Button Mode" value="1"/>
+      <Item label="Trigger Unpairing #2 Button Mode" value="2"/>
+      <Item label="Trigger Unpairing #2 and #1 Button Mode" value="3"/>
+      <Item label="Trigger Unpairing #3 Button Mode" value="4"/>
+      <Item label="Trigger Unpairing #3 and #1 Button Mode" value="5"/>
+      <Item label="Trigger Unpairing #3 and #2 Button Mode" value="6"/>
+      <Item label="Trigger Unpairing #3, #2 and #1 Button Mode" value="7"/>
+    </Value>
+
+    <Value index="49" genre="config" type="list" label="Trigger pairing Button Mode" size="1" write_only="true">
+      <Help></Help>
+      <Item label="Exit Pairing Button Mode" value="0"/>
+      <Item label="Trigger Pairing #1 Button Mode" value="1"/>
+      <Item label="Trigger Pairing #2 Button Mode" value="2"/>
+      <Item label="Trigger Pairing #3 Button Mode" value="4"/>
+    </Value>
+
+    <Value index="50" genre="config" type="list" label="Report which Pairing Button Mode is triggered" read_only="true" size="1">
+      <Help></Help>
+      <Item label="There is no Pairing Button Mode being triggered" value="0"/>
+      <Item label="Pairing #1 Button Mode is triggered" value="1"/>
+      <Item label="Pairing #1 Button Mode is triggered" value="2"/>
+      <Item label="Pairing #1 Button Mode is triggered" value="4"/>
+    </Value>
+
+    <Value genre="config" index="51" label="Report which Buttons had been paired" read_only="true" size="1" type="list">
+      <Help></Help>
+      <Item label="There is no paired Button" value="0"/>
+      <Item label="#1 Button had been paired" value="1"/>
+      <Item label="#2 Button had been paired" value="2"/>
+      <Item label="#2 and #1 Button had been paired" value="3"/>
+      <Item label="#3 Button had been paired" value="4"/>
+      <Item label="#3 and #1 Button had been paired" value="5"/>
+      <Item label="#3 and #2 Button had been paired" value="6"/>
+      <Item label="#3x #2 and #1 Button had been paired" value="7"/>
+    </Value>
+    
+    <Value index="52" genre="config" type="int" label="Get the information of #1 Button" read_only="true" value="0">
+      <Help>Please Refer to Engineering Specification - Aeotec Indoor Siren 6
+      </Help>
+    </Value>
+    
+    <Value index="53" genre="config" type="int" label="Get the information of #2 Button" read_only="true" value="0">
+      <Help>Please Refer to Engineering Specification - Aeotec Indoor Siren 6
+      </Help>
+    </Value>
+    
+    <Value index="54" genre="config" type="int" label="Get the information of #3 Button" read_only="true" value="0">
+      <Help>Please Refer to Engineering Specification - Aeotec Indoor Siren 6
+      </Help>
+    </Value>
+
+    <Value index="96" genre="config" type="list" label="Enable or Disable the ability that click the Action Button to stop a playing tone." min="0" max="1" size="1" value="0">
+      <Item label="Disable" value="0‬" />
+      <Item label="Enable" value="1‬" />
+    </Value>
+    
+    <Value index="255" genre="config" type="list" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+
+  <!-- the Device Doesn't support Get for Alarm Class -->
+  <CommandClass id="113">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="9">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="On/Off control (Browse)" max_associations="5"/>
+      <Group index="3" label="On/Off control (Tampering)" max_associations="5"/>
+      <Group index="4" label="On/Off control (Doorbell 1)" max_associations="5"/>
+      <Group index="5" label="On/Off control (Doorbell 2)" max_associations="5"/>
+      <Group index="6" label="On/Off control (Doorbell 3)" max_associations="5"/>
+      <Group index="7" label="On/Off control (Environment)" max_associations="5"/>
+      <Group index="8" label="On/Off control (Security)" max_associations="5"/>
+      <Group index="9" label="On/Off control (Emergency)" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

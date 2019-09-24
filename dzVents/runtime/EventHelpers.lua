@@ -76,6 +76,9 @@ local function EventHelpers(domoticz, mainMethod)
 		if (storageDef ~= nil) then
 			-- load the datafile for this module
 			ok, fileStorage = pcall(require, module)
+			if type(fileStorage) == boolean then
+				utils.log('Problem with module: ' .. module, utils.LOG_ERROR)
+			end
 			package.loaded[module] = nil -- no caching
 			if (ok) then
 				-- only transfer data as defined in storageDef
@@ -222,7 +225,6 @@ local function EventHelpers(domoticz, mainMethod)
 			-- ==================
 			local ok, res, info
 
-
 			if (device ~= nil) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_DEVICE)
 				ok, res = pcall(eventHandler['execute'], self.domoticz, device, info)
@@ -277,7 +279,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 				return res
 			else
-				utils.log('An error occured when calling event handler ' .. eventHandler.name, utils.LOG_ERROR)
+				utils.log('An error occurred when calling event handler ' .. eventHandler.name, utils.LOG_ERROR)
 				utils.log(res, utils.LOG_ERROR) -- error info
 			end
 		else
@@ -376,6 +378,7 @@ local function EventHelpers(domoticz, mainMethod)
 				moduleLabel = eventHandler.name .. ''
 			end
 
+			_G.moduleLabel = eventHandler.name
 			if (device) then
 				moduleLabelInfo = ' Device: "' .. device.name .. ' (' .. device.hardwareName .. ')", Index: ' .. tostring(device.id)
 			elseif (variable) then
@@ -580,7 +583,7 @@ local function EventHelpers(domoticz, mainMethod)
 		local modules = {}
 
 		if not self.scripts then
-		   self.scripts, self.errModules = loadEventScripts()
+			self.scripts, self.errModules = loadEventScripts()
 		end
 
 		if (mode == nil) then mode = 'device' end
@@ -710,7 +713,6 @@ local function EventHelpers(domoticz, mainMethod)
 		local printed = false
 		local level = utils.LOG_DEBUG
 
-
 		if (fromIndex == nil) then
 			fromIndex = 1
 		end
@@ -770,13 +772,12 @@ local function EventHelpers(domoticz, mainMethod)
 		-- id is done later
 
 		for scriptTrigger, scripts in pairs(allEventScripts) do
-			if (string.find(scriptTrigger, '*')) then -- a wild-card was use
-				-- turn it into a valid regexp
-				scriptTrigger = '^' .. string.gsub(scriptTrigger, "*", ".*") .. '$'
+
+			if (string.find(scriptTrigger, '*')) then -- a wild-card was used
+				-- substitute 'magical chars' with a dot (a dot matches every char) and then turn it into a valid regexp and 
+				scriptTrigger = ('^' .. scriptTrigger:gsub("[%^$]","."):gsub("*", ".*") .. '$'):gsub('[^%w%s~{\\}:&(/)<>,?@#|_^*$]','.')
 
 				if (string.match(target, scriptTrigger)) then
-					-- there is trigger for this target
-
 					if modules == nil then modules = {} end
 
 					for i, mod in pairs(scripts) do
@@ -962,7 +963,7 @@ local function EventHelpers(domoticz, mainMethod)
 				local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling httpResponse-events for: "' .. callback, utils.LOG_INFO)
+					utils.log('Handling httpResponse-events for: "' .. callback .. '"', utils.LOG_INFO)
 					self.handleEvents(scriptsToExecute, nil, nil, nil, nil, response)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end

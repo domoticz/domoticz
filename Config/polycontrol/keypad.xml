@@ -1,25 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns="http://code.google.com/p/open-zwave/">
-
-<!-- Polycontrol: Danalock Keypad -->
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Polycontrol: Danalock Keypad -->
 
 	<!-- COMMAND_CLASS_BASIC does not respond to requests -->
-	<CommandClass id="32" setasreport="true"/>
-
-	<!-- COMMAND_CLASS_DOOR_LOCK does not respond to requests -->
-	<CommandClass id="98" getsupported="false"/>
-
-	<!-- COMMAND_CLASS_ALARM does not respond to requests -->
-	<CommandClass id="113" getsupported="false"/>
-
-	<!-- COMMAND_CLASS_POWERLEVEL does not respond to requests -->
-	<CommandClass id="115" action="remove"/>
-
-	<!-- COMMAND_CLASS_ASSOCIATION. This class is in the list reported, but it does not respond to requests -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="1" label="Group 1" write_only="true"/>
-		</Associations>
-	</CommandClass>
-
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_DOOR_LOCK does not respond to requests -->
+  <CommandClass id="98">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ALARM does not respond to requests -->
+  <CommandClass id="113">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_POWERLEVEL does not respond to requests -->
+  <CommandClass action="remove" id="115"/>
+  <!-- COMMAND_CLASS_ASSOCIATION. This class is in the list reported, but it does not respond to requests -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Group 1" max_associations="1" write_only="true"/>
+    </Associations>
+  </CommandClass>
 </Product>

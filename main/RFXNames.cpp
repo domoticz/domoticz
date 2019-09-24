@@ -242,7 +242,7 @@ static const STR_TABLE_SINGLE	HardwareTypeTable[] =
 	{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller",										"HTTP(S) Poller" },
 	{ HTYPE_RAVEn, "Rainforest RAVEn USB",											"Rainforest" },
 	{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface",							"S0 Meter" },
-	{ HTYPE_RESERVED_FOR_YOU_1, "",													"" },
+	{ HTYPE_BuienRadar, "Buienradar (Dutch Weather Information)",					"BuienRadar" },
 	{ HTYPE_AccuWeather, "AccuWeather (Weather Lookup)",							"AccuWeather" },
 	{ HTYPE_BleBox, "BleBox devices",												"BleBox" },
 	{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN",		"Ec3kMeter" },
@@ -531,6 +531,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 	{ pTypeGeneralSwitch, "Light/Switch", "lightbulb" },
 	{ pTypeWEATHER, "Weather" , "weather" },
 	{ pTypeSOLAR, "Solar" , "solar" },
+	{ pTypeHunter, "Hunter" , "Hunter" },
 	{ 0, NULL, NULL }
 	};
 	if (snum == 1)
@@ -588,6 +589,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeRAIN, sTypeRAIN7, "Alecto" },
 	{ pTypeRAIN, sTypeRAIN8, "Davis" },
 	{ pTypeRAIN, sTypeRAINWU, "WWW" },
+	{ pTypeRAIN, sTypeRAINByRate, "RainByRate" },
 
 	{ pTypeWIND, sTypeWIND1, "WTGR800" },
 	{ pTypeWIND, sTypeWIND2, "WGR800" },
@@ -607,6 +609,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeWEATHER, sTypeWEATHER2, "Alecto WS5500" },
 
 	{ pTypeSOLAR, sTypeSOLAR1, "Davis" },
+
+	{ pTypeHunter, sTypeHunterfan, "Hunter Fan" },
 
 	{ pTypeLighting1, sTypeX10, "X10" },
 	{ pTypeLighting1, sTypeARC, "ARC" },
@@ -683,6 +687,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeSecurity1, sTypePowercodeAux, "Visonic sensor - auxiliary contact" },
 	{ pTypeSecurity1, sTypeMeiantech, "Meiantech/Atlantic/Aidebao" },
 	{ pTypeSecurity1, sTypeSA30, "Alecto SA30 smoke detector" },
+	{ pTypeSecurity1, sTypeRM174RF, "Smartwares RM174RF smoke detector" },
 	{ pTypeSecurity1, sTypeDomoticzSecurity, "Security Panel" },
 
 	{ pTypeSecurity2, sTypeSec2Classic, "KeeLoq" },
@@ -765,6 +770,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeGeneral, sTypeTextStatus, "Text" },
 	{ pTypeGeneral, sTypeZWaveThermostatMode, "Thermostat Mode" },
 	{ pTypeGeneral, sTypeZWaveThermostatFanMode, "Thermostat Fan Mode" },
+	{ pTypeGeneral, sTypeZWaveThermostatOperatingState, "Thermostat Operating State" },
 	{ pTypeGeneral, sTypeAlert, "Alert" },
 	{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 	{ pTypeGeneral, sTypeUV, "UV" },
@@ -2110,6 +2116,33 @@ void GetLightStatus(
 		break;
 		}
 		break;
+		case pTypeHunter:
+			switch (dSubType)
+			{
+			case sTypeHunterfan:
+			{
+				switch (nValue)
+				{
+				case HunterOff:
+					lstatus = "off";
+					break;
+				case HunterLight:
+					lstatus = "light";
+					break;
+				case HunterSpeed1:
+					lstatus = "low";
+					break;
+				case HunterSpeed2:
+					lstatus = "med";
+					break;
+				case HunterSpeed3:
+					lstatus = "high";
+					break;
+				}
+			}
+			break;
+			}
+			break;
 	}
 	//_log.Debug(DEBUG_NORM, "RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s",
 	//dType, dSubType, nValue, sValue.c_str(), llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, lstatus.c_str());
@@ -2974,7 +3007,8 @@ bool GetLightCommand(
 	case pTypeSecurity1:
 		if (
 			(dSubType == sTypeKD101) ||
-			(dSubType == sTypeSA30)
+			(dSubType == sTypeSA30) ||
+			(dSubType == sTypeRM174RF)
 			)
 		{
 			if ((switchcmd == "On") || (switchcmd == "All On"))
@@ -3514,6 +3548,38 @@ bool GetLightCommand(
 		return true;
 	}
 	break;
+	case pTypeHunter:
+	{
+		switch (dSubType)
+		{
+		case sTypeHunterfan:
+		{
+			if (switchcmd == "off")
+			{
+				cmd = HunterOff;
+			}
+			else if (switchcmd == "light")
+			{
+				cmd = HunterLight;
+			}
+			else if (switchcmd == "low")
+			{
+				cmd = HunterSpeed1;
+			}
+			else if (switchcmd == "med")
+			{
+				cmd = HunterSpeed2;
+			}
+			else if (switchcmd == "high")
+			{
+				cmd = HunterSpeed3;
+			}
+		}
+		return true;
+		}
+		break;
+	}
+	break;
 	}
 	//unknown command
 	return false;
@@ -3639,6 +3705,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_OnkyoAVTCP:
 	case HTYPE_eHouseTCP:
 	case HTYPE_TTN_MQTT:
+	case HTYPE_S0SmartMeterTCP:
 		return true;
 	default:
 		return false;

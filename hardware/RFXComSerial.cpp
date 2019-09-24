@@ -923,6 +923,7 @@ namespace http {
 				pRFXComSerial->UploadFirmware(outputfile);
 			}
 		}
+
 		void CWebServer::SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
 			redirect_uri = "/index.html";
@@ -1009,8 +1010,8 @@ namespace http {
 			{
 				//For now disable setting the protocols on a 868Mhz device
 			}
-
 		}
+
 		void CWebServer::Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "ERR";

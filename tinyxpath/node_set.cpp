@@ -40,6 +40,16 @@ node_set & node_set::operator = (const node_set & ns2)
    u_nb_node = ns2 . u_nb_node;
    if (u_nb_node)
    {
+      if ( vpp_node_set != NULL )
+      {
+          delete[] vpp_node_set;
+      }
+      
+      if ( op_attrib != NULL )
+      {
+          delete[] op_attrib;
+      }
+      
       vpp_node_set = new const void * [u_nb_node];
       memcpy (vpp_node_set, ns2 . vpp_node_set, u_nb_node * sizeof (void *));
       op_attrib = new bool [u_nb_node];

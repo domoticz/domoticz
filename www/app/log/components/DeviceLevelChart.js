@@ -55,7 +55,10 @@ define(['app', 'luxon'], function (app, luxon) {
                 }
 
                 if (level !== -1) {
-                    chartData.push([DateTime.fromFormat(item.Date, dzSettings.serverDateFormat), level]);
+                    chartData.push([
+                        DateTime.fromFormat(item.Date, dzSettings.serverDateFormat).valueOf(),
+                        level
+                    ]);
                 }
             });
 

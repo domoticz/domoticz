@@ -1,63 +1,91 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 
-Aeotec ZW080 Siren Gen5 
-https://aeotec.freshdesk.com/helpdesk/attachments/6009584694
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<Protocol refreshonnodeinfoframe="false"/>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" index="37" genre="config" label="Siren sound and Volume" units="" value="259" size="2">
-			<Help>Select the Siren Sound and Volume</Help>
-			<Item label="Sound 1 - Low Volume" value="257"/>
-			<Item label="Sound 1 - Mid Volume" value="258"/>
-			<Item label="Sound 1 - High Volume" value="259"/>
-			<Item label="Sound 2 - Low Volume" value="513"/>
-			<Item label="Sound 2 - Mid Volume" value="514"/>
-			<Item label="Sound 2 - High Volume" value="515"/>
-			<Item label="Sound 3 - Low Volume" value="769"/>
-			<Item label="Sound 3 - Mid Volume" value="770"/>
-			<Item label="Sound 3 - High Volume" value="771"/>
-			<Item label="Sound 4 - Low Volume" value="1025"/>
-			<Item label="Sound 4 - Mid Volume" value="1026"/>
-			<Item label="Sound 4 - High Volume" value="1027"/>
-			<Item label="Sound 5 - Low Volume" value="1281"/>
-			<Item label="Sound 5 - Mid Volume" value="1282"/>
-			<Item label="Sound 5 - High Volume" value="1283"/>
-		</Value>
-		<Value type="list" index="38" genre="config" label="Enable/disable the action button" units="" min="0" max="1" value="1" size="1">
-			<Help>Enable/disable to turn off the alarm sound via pressing the Action Button. </Help>
-			<Item label="Disable" value="0" />
-			<Item label="Enable" value="1" />
-		</Value>
-		<Value type="list" index="80" genre="config" label="Send Notifications" units="" min="0" max="1" value="0" size="1">
-			<Help>Enable to send notifications to associated devices (Group 1) when the state of Siren changed</Help>
-			<Item label="Nothing" value="0" />
-			<Item label="Hail" value="1" />
-			<Item label="Basic" value="2" />
-		</Value>
-		<Value type="list" index="200" genre="config" label="Partner ID" units="" min="0" max="1" value="0" size="1">
-			<Help>Partner ID</Help>
-			<Item label="Aeon Labs Standard Product" value="0"/>
-		</Value>
-		<Value type="list" index="252" genre="config" label="Enable/disable Lock Configuration" units="" min="0" max="1" value="0" size="1">
-			<Help>Enable/disable Lock Configuration</Help>
-			<Item label="Disable" value="0" />
-			<Item label="Enable" value="1" />
-		</Value>
-		<Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
-      		<Help>Reset to factory defaults</Help>
-			<Item label="Reset to factory default setting" value="0"/>
-			<Item label="Normal" value="1"/>
-			<Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
-		</Value>
-	</CommandClass>
-	<!-- Basic set as report -->
-	<CommandClass id="32" setasreport="true"/>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="LifeLine" />
-		</Associations>
-	</CommandClass>
+<!-- Aeon Labs DSD31 Siren Gen5 --><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0050:0104</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw080.png</MetaDataItem>
+    <MetaDataItem id="0050" name="ZWProductPage" type="0104">https://products.z-wavealliance.org/products/1134/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Action button that you can find on the product's housing for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">N/A</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem id="0050" name="Identifier" type="0104">ZW080-A17</MetaDataItem>
+    <MetaDataItem name="Description">Aeon Labs Siren Gen5 is an siren Z-Wave device that when an emergency is happening it lets you know. Its 105dB Speaker System is always heard. Its super-bright LED system lights your path even when it’s dark. Siren provides a smart home with the perfect security and safety features that it needs.
+Those security and safety features are matched by smart features. Siren’s speaker system can access 5 different audio alerts, allowing your smart home to pick the alert best suited to the emergency. The speaker system’s volume can also be adjusted so that Siren is perfect for every space in every home.
+It also act as a repeater that forward Z-Wave command messages to destination nodes if the originating controller is out of range from the destination node.
+By taking advantage of the Z-Wave mesh network, commands can be routed to their destination via intermediary “listening” Z-Wave products. Products that are Z-Wave certified can be used and communicate with other Z-Wave certified devices.
+Also a tool that can be programmed, scheduled, controlled and communicated with from anywhere in the world.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="Name">Siren Gen5</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1141/Siren Gen5 Manual.pdf</MetaDataItem>
+    <MetaDataItem id="0050" name="FrequencyName" type="0104">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1134/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1136/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1141/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0050" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1136/</MetaDataItem>
+    <MetaDataItem id="0050" name="Identifier" type="0004">ZW080-C15</MetaDataItem>
+    <MetaDataItem id="0050" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0050" name="ZWProductPage" type="0204">https://products.z-wavealliance.org/products/1141/</MetaDataItem>
+    <MetaDataItem id="0050" name="FrequencyName" type="0204">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="0050" name="Identifier" type="0204">ZW080-B21</MetaDataItem>
+  </MetaData>
+  <Protocol refreshonnodeinfoframe="false"/>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="37" label="Siren sound and Volume" size="2" type="list" units="" value="259">
+      <Help>Select the Siren Sound and Volume</Help>
+      <Item label="Sound 1 - Low Volume" value="257"/>
+      <Item label="Sound 1 - Mid Volume" value="258"/>
+      <Item label="Sound 1 - High Volume" value="259"/>
+      <Item label="Sound 2 - Low Volume" value="513"/>
+      <Item label="Sound 2 - Mid Volume" value="514"/>
+      <Item label="Sound 2 - High Volume" value="515"/>
+      <Item label="Sound 3 - Low Volume" value="769"/>
+      <Item label="Sound 3 - Mid Volume" value="770"/>
+      <Item label="Sound 3 - High Volume" value="771"/>
+      <Item label="Sound 4 - Low Volume" value="1025"/>
+      <Item label="Sound 4 - Mid Volume" value="1026"/>
+      <Item label="Sound 4 - High Volume" value="1027"/>
+      <Item label="Sound 5 - Low Volume" value="1281"/>
+      <Item label="Sound 5 - Mid Volume" value="1282"/>
+      <Item label="Sound 5 - High Volume" value="1283"/>
+    </Value>
+    <Value genre="config" index="38" label="Enable/disable the action button" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>Enable/disable to turn off the alarm sound via pressing the Action Button. </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="80" label="Send Notifications" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Enable to send notifications to associated devices (Group 1) when the state of Siren changed</Help>
+      <Item label="Nothing" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Basic" value="2"/>
+    </Value>
+    <Value genre="config" index="200" label="Partner ID" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Partner ID</Help>
+      <Item label="Aeon Labs Standard Product" value="0"/>
+    </Value>
+    <Value genre="config" index="252" label="Enable/disable Lock Configuration" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Enable/disable Lock Configuration</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -1,0 +1,21 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/007A:0004:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/merten/506004.png</MetaDataItem>
+    <MetaDataItem id="0004" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/211/</MetaDataItem>
+    <MetaDataItem id="0004" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.merten.com/Radio-transmitter-and-radio-receiver.148.0.html?&amp;L=3%3Fq%3Dplus%20lin</MetaDataItem>
+    <MetaDataItem name="Description">506004 4-Channel Binary Sensor.CONNECT radio transmitter flush-mounted, 4-gang
+
+For integration into any conventional switch range in the radio system
+ 
+Just place the radio pellet behind the push-button or switch inserts in the flush-mounted socket
+ </MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.merten.com/Info-Centre.59.0.html</MetaDataItem>
+    <MetaDataItem name="Name">506004 Radio Transmitter flush-mounted CONNECT, 4-gang</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/211/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

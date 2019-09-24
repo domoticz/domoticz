@@ -1,136 +1,175 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Fibaro: FGK101 Door Opening Sensor -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- Fibaro: FGK101 Door Opening Sensor --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:2001:0701</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgk10x.png</MetaDataItem>
+    <MetaDataItem id="2001" name="ZWProductPage" type="0701">https://products.z-wavealliance.org/products/1620/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1620/FGK-10x-US-T-v1.0.pdf</MetaDataItem>
+    <MetaDataItem id="2001" name="FrequencyName" type="0701">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Resetting the device is not the recommended way of removing the device from the Z-Wave network. Use reset procedure only if the primary controller is missing or inoperable.
 
-	<!-- Configuration -->
-	<CommandClass id="112">
-		<Value type="list" size="1" genre="config" instance="1" index="1" label="Operation Mode" value="0">
-			<Help>Parameter defines device operation mode.</Help>
-			<Item label="Door/Window Sensor or external alarm sensor" value="0" />
-			<Item label="External switch" value="1" />
-		</Value>
+1) Take off the Sensor's cover and remove battery.
+2) Install the battery while holding both TMP buttons (after mounting the device, one button is constantly pressed by the cover).
+3) Release the TMP button within 5 seconds.
+4) LED will blink 3 times to confirm launching of reset procedure.
+5) Reset procedure may last up to 30 seconds. Do not remove the battery until reset is complete.
+6) Reset will be confirmed by the six blinks of the LED.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1) Open the cover.
+2) Remove the battery blocker.
+3) Close the cover.
+4) Locate the sensor nearby the main Z-Wave controller.
+5) Set the main Z-Wave controller into adding mode (see main controller’s operating manual).
+6) Quickly, triple click the TMP button located on the bottom of the casing.
+7) Wait for the device to be added to the system. 
+8) Successful adding will be confirmed by the controller.
+9) Install the device using the attached self-adhesive pads.
+</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Door/Window Sensor is a wireless, battery powered reed sensor compatible with the Z-Wave Plus standard. Changing the device’s status will automatically send signal to the Z-Wave controller and associated devices.
+Sensor can be used to trigger scenes and everywhere there is a need for information about opening or closing of doors, windows, garage doors, etc. Opening is detected by separating the sensor’s body and the magnet.
+In addition the FIBARO Door/Window Sensor supports one DS18B20 temperature sensor and has one potential free input.
 
-		<Value type="list" genre="config" instance="1" index="2" label="DOOR/WINDOW/ALARM" value="1" size="1">
-			<Help>Parameter defines state of the sensor when the magnet is close. 
+The FIBARO Door / Window Sensor is available in seven colors: white, silver, black, pearl powder, cappuccino, truffle surprise and dark chocolate.
+
+
+https://www.youtube.com/watch?v=K35uFXoa5c0</MetaDataItem>
+    <MetaDataItem id="2001" name="Identifier" type="0701">FGK-10X</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1) Place the device within direct reange of the Z-Wave controller.
+2) Make sure that Sensor's cover is closed.
+3) Set the main Z-Wave controller into learning mode (see main controller’s operating manual).
+4) Quickly, triple click the TMP button.
+5) Wait for the device to be excluded from the system. Successful exclusion will be confirmed by the controller.
+</MetaDataItem>
+    <MetaDataItem name="Name">FIBARO Door/Window Sensor</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">FIBARO Door/Window Sensor will wake up at a defined time interval and will ALWAYS try to communicate with the main controller. Setting wake up interval to 0 disables sending Wake Up Notification frame automatically. There is a possibility to wake up the device manually by a single TMP button click.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1620/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Operation Mode" size="1" type="list" value="0">
+      <Help>Parameter defines device operation mode.</Help>
+      <Item label="Door/Window Sensor or external alarm sensor" value="0"/>
+      <Item label="External switch" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="DOOR/WINDOW/ALARM" size="1" type="list" value="1">
+      <Help>Parameter defines state of the sensor when the magnet is close. 
 				If you connect the alarm sensor, it determines the output type. 
 				Parameter inactive in Switch Mode (parameter 1 set to 1).</Help>
-			<Item label="Closed" value="0" />
-			<Item label="Opened" value="1" />
-		</Value>
-
-		<Value type="byte" genre="config" instance="1" index="3" label="Visual LED indications" value="6" min="1" max="7" size="1">
-			<Help>This parameter defines events indicated by the visual LED indicator. 
+      <Item label="Closed" value="0"/>
+      <Item label="Opened" value="1"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Visual LED indications" max="7" min="1" size="1" type="byte" value="6">
+      <Help>This parameter defines events indicated by the visual LED indicator. 
 				Disabling events might extend battery life.
 				0 - no indications
 				1 - indication of opening/closing status change (input IN)
 				2 - indication of wake up (1 x click or periodical)
 				4 - indication of device tampering			
 			</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="4" label="Range test after double click" min="0" max="1" value="0" size="1">
-			<Help>Parameter defines state of the sensor when the magnet is close. 
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Range test after double click" max="1" min="0" size="1" type="list" value="0">
+      <Help>Parameter defines state of the sensor when the magnet is close. 
 				If you connect the alarm sensor, it determines the output type. 
 				Parameter inactive in Switch Mode (parameter 1 set to 1).</Help>
-			<Item label="Disabled" value="0" />
-			<Item label="Enabled" value="1" />
-		</Value>
-		<Value type="list" genre="config" instance="1" index="10" label="2nd association group triggers" value="0" size="1">
-			<Help>Parameter defines events which result in sending on/off commands to devices added to the 2nd association group. 
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="2nd association group triggers" size="1" type="list" value="0">
+      <Help>Parameter defines events which result in sending on/off commands to devices added to the 2nd association group. 
 				These commands are sent alternately to switch the devices on and off. 
 				Commands represent the values of BASIC SET command frames. 
 				Parameter is inactive in external button mode (parameter 1 set to 1). </Help>
-			<Item label="Switch after opening and closing" value="0" />
-			<Item label="Switch after opening" value="1" />
-			<Item label="Switch after closing" value="2" />
-		</Value>
-		<Value type="list" genre="config" instance="1" index="11" label="Commands sent to 2nd association group" value="0" size="1">
-			<Help>Command frames sent to devices added to the 2nd association group. </Help>
-			<Item label="ON" value="0" />
-			<Item label="OFF" value="1" />
-			<Item label="ON and OFF" value="2" />
-		</Value>
-		<Value type="short" genre="config" instance="1" index="12" label="Value of ON command frame sent to 2nd association group" value="255" min="0" max="255" size="2">
-			<Help>The value of 0 turns OFF the device, 255 turns it ON. 
+      <Item label="Switch after opening and closing" value="0"/>
+      <Item label="Switch after opening" value="1"/>
+      <Item label="Switch after closing" value="2"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Commands sent to 2nd association group" size="1" type="list" value="0">
+      <Help>Command frames sent to devices added to the 2nd association group. </Help>
+      <Item label="ON" value="0"/>
+      <Item label="OFF" value="1"/>
+      <Item label="ON and OFF" value="2"/>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Value of ON command frame sent to 2nd association group" max="255" min="0" size="2" type="short" value="255">
+      <Help>The value of 0 turns OFF the device, 255 turns it ON. 
 				In case of associating the Dimmer or Roller Shutter module, values 1-99 allow to set an associated device to a specified level.			
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="13" label="Value of OFF command frame sent to 2nd association group" value="0" min="0" max="255" size="2">
-			<Help>The value of 0 turns OFF the device, 255 turns it ON. 
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Value of OFF command frame sent to 2nd association group" max="255" min="0" size="2" type="short" value="0">
+      <Help>The value of 0 turns OFF the device, 255 turns it ON. 
 				In case of associating the Dimmer or Roller Shutter module, values 1-99 allow to set an associated device to a specified level.			
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="14" label="Time delay of ON command frame" value="0" min="0" max="32400" size="2" units="seconds">
-			<Help>Time period after which ON command frame will be sent.			
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Time delay of ON command frame" max="32400" min="0" size="2" type="short" units="seconds" value="0">
+      <Help>Time period after which ON command frame will be sent.			
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="15" label="Time delay of OFF command frame" value="0" min="0" max="32400" size="2" units="seconds">
-			<Help>Time period after which OFF command frame will be sent.			
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Time delay of OFF command frame" max="32400" min="0" size="2" type="short" units="seconds" value="0">
+      <Help>Time period after which OFF command frame will be sent.			
 			</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="20" label="Type of sent alarm frames" min="0" max="5" value="0" size="1">
-			<Help>Type of control frames transmitted to the main controller and 3rd association group Alarm. 
+    </Value>
+    <Value genre="config" index="20" instance="1" label="Type of sent alarm frames" max="5" min="0" size="1" type="list" value="0">
+      <Help>Type of control frames transmitted to the main controller and 3rd association group Alarm. 
 				If an external sensor is connected to IN input, it is possible to choose its functionality. 
 				Otherwise it is recommended to set this parameter to default value.</Help>
-			<Item label="Door/Window Sensor (General Purpose Alarm)" value="0" />
-			<Item label="Smoke sensor (Smoke Alarm)" value="1" />
-			<Item label="CO detector (CO Alarm)" value="2" />
-			<Item label="CO2 detector (CO2 Alarm)" value="3" />
-			<Item label="High temperature sensor (Heat Alarm)" value="4" />
-			<Item label="Flood sensor (Water Alarm)" value="5" />
-		</Value>		
-
-		<Value type="short" genre="config" instance="1" index="30" label="Delay of tamper alarm cancellation" value="5" min="0" max="32400" size="2" units="seconds">
-			<Help>Time period after which a tamper alarm will be cancelled.		
+      <Item label="Door/Window Sensor (General Purpose Alarm)" value="0"/>
+      <Item label="Smoke sensor (Smoke Alarm)" value="1"/>
+      <Item label="CO detector (CO Alarm)" value="2"/>
+      <Item label="CO2 detector (CO2 Alarm)" value="3"/>
+      <Item label="High temperature sensor (Heat Alarm)" value="4"/>
+      <Item label="Flood sensor (Water Alarm)" value="5"/>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Delay of tamper alarm cancellation" max="32400" min="0" size="2" type="short" units="seconds" value="5">
+      <Help>Time period after which a tamper alarm will be cancelled.		
 			</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="31" label="Reporting tamper alarm cancellation" min="0" max="1" value="0" size="1">
-			<Help>Reporting cancellation of tamper alarm to the controller and 5th association group.</Help>
-			<Item label="Do not send tamper cancellation report" value="0" />
-			<Item label="Send tamper cancellation report" value="1" />
-		</Value>
-		<Value type="short" genre="config" instance="1" index="50" label="Interval of temperature measurements" value="300" min="0" max="32400" size="2" units="seconds">
-			<Help>This parameter defines how often the temperature will be measured. 
+    </Value>
+    <Value genre="config" index="31" instance="1" label="Reporting tamper alarm cancellation" max="1" min="0" size="1" type="list" value="0">
+      <Help>Reporting cancellation of tamper alarm to the controller and 5th association group.</Help>
+      <Item label="Do not send tamper cancellation report" value="0"/>
+      <Item label="Send tamper cancellation report" value="1"/>
+    </Value>
+    <Value genre="config" index="50" instance="1" label="Interval of temperature measurements" max="32400" min="0" size="2" type="short" units="seconds" value="300">
+      <Help>This parameter defines how often the temperature will be measured. 
 				The shorter the time, the more frequently the temperature will be measured, but the battery life will shorten.	
 				0 - temperature measurements disabled
 				5-32400 - time in seconds		
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="51" label="Temperature reports threshold" value="10" min="0" max="300" size="2">
-			<Help>This parameter defines the change of temperature in comparison with last reported, resulting in temperature report being sent to the main controller.
+    </Value>
+    <Value genre="config" index="51" instance="1" label="Temperature reports threshold" max="300" min="0" size="2" type="short" value="10">
+      <Help>This parameter defines the change of temperature in comparison with last reported, resulting in temperature report being sent to the main controller.
 				0 - temperature reports based on threshold disabled
 				1-300 - temperature threshold (0.1-30C, 0.1C step)		
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="52" label="Interval of temperature reports" value="0" min="0" max="32400" size="2" units="seconds">
-			<Help>This parameter determines how often the temperature reports will be sent to the main controller.
+    </Value>
+    <Value genre="config" index="52" instance="1" label="Interval of temperature reports" max="32400" min="0" size="2" type="short" units="seconds" value="0">
+      <Help>This parameter determines how often the temperature reports will be sent to the main controller.
 				0 - periodic temperature reports disabled
 				5-32400 - time in seconds		
 			</Help>
-		</Value>
-		<Value type="int" genre="config" instance="1" index="53" label="Temperature offset" value="0" min="-1000" max="1000" size="4">
-			<Help>The value to be added to the actual temperature, measured by the sensor (temperature compensation). (0,1C steps)		
+    </Value>
+    <Value genre="config" index="53" instance="1" label="Temperature offset" max="1000" min="-1000" size="4" type="int" value="0">
+      <Help>The value to be added to the actual temperature, measured by the sensor (temperature compensation). (0,1C steps)		
 			</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="54" label="Temperature alarm reports" value="0" size="1">
-			<Help>Temperature alarms reported to the Z-Wave controller. 
+    </Value>
+    <Value genre="config" index="54" instance="1" label="Temperature alarm reports" size="1" type="list" value="0">
+      <Help>Temperature alarms reported to the Z-Wave controller. 
 				Thresholds are set in parameters 55 and 56.</Help>
-			<Item label="Temperature alarms disabled" value="0" />
-			<Item label="High temperature alarm" value="1" />
-			<Item label="Low temperature alarm" value="2" />
-			<Item label="High and low temperature alarms" value="3" />
-		</Value>
-		<Value type="short" genre="config" instance="1" index="55" label="High temperature alarm threshold" value="540" min="0" max="1000" size="2">
-			<Help>If temperature is higher than set value, overheat notification will be sent and high temperature scene will be triggered (if activated).
+      <Item label="Temperature alarms disabled" value="0"/>
+      <Item label="High temperature alarm" value="1"/>
+      <Item label="Low temperature alarm" value="2"/>
+      <Item label="High and low temperature alarms" value="3"/>
+    </Value>
+    <Value genre="config" index="55" instance="1" label="High temperature alarm threshold" max="1000" min="0" size="2" type="short" value="540">
+      <Help>If temperature is higher than set value, overheat notification will be sent and high temperature scene will be triggered (if activated).
 				0-1000 (0-100C, 0.1C step).
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="56" label="Low temperature alarm threshold" value="40" min="-300" max="700" size="2">
-			<Help>If temperature is lower than the set value, underheat notification will be sent and low temperature scene will be triggered (if activated).
+    </Value>
+    <Value genre="config" index="56" instance="1" label="Low temperature alarm threshold" max="700" min="-300" size="2" type="short" value="40">
+      <Help>If temperature is lower than the set value, underheat notification will be sent and low temperature scene will be triggered (if activated).
 				300-700 (-30-70C, 0.1C step)
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="70" label="Scene activation functionality" value="0" min="0" max="3903" size="2">
-			<Help>The device can trigger scenes using scene IDs assigned to different events.
+    </Value>
+    <Value genre="config" index="70" instance="1" label="Scene activation functionality" max="3903" min="0" size="2" type="short" value="0">
+      <Help>The device can trigger scenes using scene IDs assigned to different events.
 				To deactivate all scenes set the value to 0. 
 				To activate all scenes set the value to 3903.
 				1    - [ID 10] opening door/window (single click).
@@ -144,9 +183,9 @@
 				1024 - [ID 51] low temperature  - door/window opened.
 				2048 - [ID 51] low temperature  - door/window closed.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="71" label="Alarm broadcast" value="0" min="0" max="7" size="1">
-			<Help>Settings for broadcasting ON/OFF commands, sensor alarm and tamper alarm. 
+    </Value>
+    <Value genre="config" index="71" instance="1" label="Alarm broadcast" max="7" min="0" size="1" type="byte" value="0">
+      <Help>Settings for broadcasting ON/OFF commands, sensor alarm and tamper alarm. 
 				Value other than 0 means alarms are sent in Broadcast Mode, to all devices only within the range of the device. 
 				They are not repeated by the mesh network.
 			0 - broadcasts inactive.
@@ -154,9 +193,9 @@
 			2 - sensor alarm broadcast active.
 			4 - tamper alarm broadcast active.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="72" label="Associations in Z-Wave network Security Mode" value="15" min="0" max="15" size="1">
-			<Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure. 
+    </Value>
+    <Value genre="config" index="72" instance="1" label="Associations in Z-Wave network Security Mode" max="15" min="0" size="1" type="byte" value="15">
+      <Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure. 
 				Parameter is active only in Z-Wave network security mode. It does not apply to 1st group Lifeline
 			0 - none of the groups sent as secure.
 			1 - 2nd group Control sent as secure.
@@ -164,17 +203,16 @@
 			4 - 4th group Sensor ZW3 sent as secure.
 			8 - 5th group Tamper ZW3 sent as secure.
 			</Help>
-		</Value>
-	</CommandClass>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="5">
-			<Group index="1" max_associations="1" label="Lifeline"/>
-			<Group index="2" max_associations="5" label="Control BASIC SET reports" />
-			<Group index="3" max_associations="5" label="Alarm reports"/>
-			<Group index="4" max_associations="5" label="Sensor ZW3 BASIC SET reports" auto="true"/>
-			<Group index="5" max_associations="5" label="Tamper ZW3 tamper alarm"/>
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Control BASIC SET reports" max_associations="5"/>
+      <Group index="3" label="Alarm reports" max_associations="5"/>
+      <Group auto="true" index="4" label="Sensor ZW3 BASIC SET reports" max_associations="5"/>
+      <Group index="5" label="Tamper ZW3 tamper alarm" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

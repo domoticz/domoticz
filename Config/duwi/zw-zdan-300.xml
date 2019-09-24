@@ -1,0 +1,17 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0064:0000:1001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/duwi/zw-zdan-300.png</MetaDataItem>
+    <MetaDataItem id="0000" name="ZWProductPage" type="1001">https://products.z-wavealliance.org/products/370/</MetaDataItem>
+    <MetaDataItem id="0000" name="FrequencyName" type="1001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0000" name="Identifier" type="1001">ZW-ZDAN-300</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.duewi.de/index.php?productid=37324</MetaDataItem>
+    <MetaDataItem name="Description">For wireless dimming of: light bulbs, HV and LV halogen lamps with conventional transformer, combinable with all Z-Wave transmitters and remote controls. </MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.duewi.de/index.php?productid=29184</MetaDataItem>
+    <MetaDataItem name="Name">ZW-ZDAN-300 - Z-Wave Plug-in Dimmer</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/370/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

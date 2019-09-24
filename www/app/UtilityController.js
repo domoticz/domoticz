@@ -1,6 +1,7 @@
-define(['app'], function (app) {
-	app.controller('UtilityController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
-
+define(['app', 'livesocket'], function (app) {
+	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, permissions, livesocket) {
+		var $element = $('#main-view #utilitycontent').last();
+		
 		$scope.HasInitializedEditCustomSensorDialog = false;
 
 		$.strPad = function (i, l, s) {
@@ -266,6 +267,164 @@ define(['app'], function (app) {
 			bootbox.alert($.t('Please use the devices tab for this.'));
 		}
 
+		RefreshItem = function (item) {
+			id = "#utilitycontent #" + item.idx;
+			var obj = $(id);
+			if (typeof obj != 'undefined') {
+				if ($(id + " #name").html() != item.Name) {
+					$(id + " #name").html(item.Name);
+				}
+				var img = "";
+				var status = "";
+				var bigtext = "";
+
+				if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
+					bigtext = item.Usage;
+				}
+
+				if (typeof item.Counter != 'undefined') {
+					if (
+						(item.SubType == "Gas") ||
+						(item.SubType == "RFXMeter counter") ||
+						(item.SubType == "Counter Incremental")
+					) {
+						bigtext = item.CounterToday;
+					}
+					else if (item.SubType == "Managed Counter") {
+						bigtext = item.Counter;
+						status = "";
+					}
+					if (
+						(item.SubType == "RFXMeter counter") ||
+						(item.SubType == "Counter Incremental")
+					) {
+						status = item.Counter;
+					} else {
+						status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
+					}
+				}
+				else if (item.Type == "Current") {
+					status = "";
+					bigtext = item.Data;
+				}
+				else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
+					if (typeof item.CounterToday != 'undefined') {
+						status += $.t("Today") + ': ' + item.CounterToday;
+					}
+				}
+				else if (item.SubType == "Percentage") {
+					status = "";
+					bigtext = item.Data;
+				}
+				else if (item.SubType == "Fan") {
+					status = "";
+					bigtext = item.Data;
+				}
+				else if (item.Type == "Air Quality") {
+					status = item.Quality;
+					bigtext = item.Data;
+				}
+				else if (item.SubType == "Soil Moisture") {
+					status = item.Desc;
+					bigtext = item.Data;
+				}
+				else if (item.SubType == "Custom Sensor") {
+					status = "";
+					bigtext = item.Data;
+				}
+				else if (item.SubType == "Leaf Wetness") {
+					status = "";
+					bigtext = item.Data;
+				}
+				else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "Distance") || (item.SubType == "A/D") || (item.SubType == "Pressure") || (item.SubType == "Sound Level")) {
+					status = "";
+					bigtext = item.Data;
+				}
+				else if (item.SubType == "Text") {
+					status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+				}
+				else if (item.SubType == "Alert") {
+					status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+					var aLevel = item.Level;
+					if (aLevel > 4) aLevel = 4;
+					img = '<img src="images/Alert48_' + aLevel + '.png" height="48" width="48">';
+				}
+				else if (item.Type == "Lux") {
+					status = "";
+					bigtext = item.Data;
+				}
+				else if (item.Type == "Weight") {
+					status = "";
+					bigtext = item.Data;
+				}
+				else if (item.Type == "Usage") {
+					status = "";
+					bigtext = item.Data;
+				}
+				else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+					status = "";
+					bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
+				}
+				else if (item.Type == "Radiator 1") {
+					status = item.Data + '\u00B0 ' + $scope.config.TempSign;
+					bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
+				}
+				else if (item.SubType == "Thermostat Clock") {
+					status = "";
+				}
+				else if (item.SubType == "Thermostat Mode") {
+					status = "";
+				}
+				else if (item.SubType == "Thermostat Fan Mode") {
+					status = "";
+				}
+				else if (item.SubType == "Waterflow") {
+					status = "";
+					bigtext = item.Data;
+				}
+
+				if (typeof item.Usage != 'undefined') {
+					bigtext = item.Usage;
+				}
+				if (typeof item.CounterDeliv != 'undefined') {
+					if (item.CounterDeliv != 0) {
+						status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
+						if (item.UsageDeliv.charAt(0) != 0) {
+							if (parseInt(item.Usage) != 0) {
+								bigtext += ', -' + item.UsageDeliv;
+							}
+							else {
+								bigtext = '-' + item.UsageDeliv;
+							}
+						}
+					}
+				}
+
+				var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+				$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+				$(id).addClass(backgroundClass);
+
+				if ($(id + " #status").html() != status) {
+					$(id + " #status").html(status);
+				}
+				if ($(id + " #bigtext").html() != bigtext) {
+					$(id + " #bigtext").html(bigtext);
+				}
+				if ($(id + " #lastupdate").html() != item.LastUpdate) {
+					$(id + " #lastupdate").html(item.LastUpdate);
+				}
+				if (img != "") {
+					if ($(id + " #img").html() != img) {
+						$(id + " #img").html(img);
+					}
+				}
+				if ($scope.config.ShowUpdatedEffect == true) {
+					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+				}
+			}
+		};
+
+		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshUtilities = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -273,184 +432,39 @@ define(['app'], function (app) {
 			}
 			var id = "";
 
-			$.ajax({
-				url: "json.htm?type=devices&filter=utility&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					if (typeof data.ServerTime != 'undefined') {
-						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+			livesocket.getJson("json.htm?type=devices&filter=utility&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+				}
+
+				if (typeof data.result != 'undefined') {
+					if (typeof data.ActTime != 'undefined') {
+						$.LastUpdateTime = parseInt(data.ActTime);
 					}
 
-					if (typeof data.result != 'undefined') {
-						if (typeof data.ActTime != 'undefined') {
-							$.LastUpdateTime = parseInt(data.ActTime);
-						}
-
-						$.each(data.result, function (i, item) {
-							id = "#utilitycontent #" + item.idx;
-							var obj = $(id);
-							if (typeof obj != 'undefined') {
-								if ($(id + " #name").html() != item.Name) {
-									$(id + " #name").html(item.Name);
-								}
-								var img = "";
-								var status = "";
-								var bigtext = "";
-
-								if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
-									bigtext = item.Usage;
-								}
-
-								if (typeof item.Counter != 'undefined') {
-									if (
-										(item.SubType == "Gas") ||
-										(item.SubType == "RFXMeter counter") ||
-										(item.SubType == "Counter Incremental")
-									) {
-										bigtext = item.CounterToday;
-									}
-									else if (item.SubType == "Managed Counter") {
-										bigtext = item.Counter;
-										status = "";
-									}
-									if (
-										(item.SubType == "RFXMeter counter") ||
-										(item.SubType == "Counter Incremental")
-									) {
-										status = item.Counter;
-									} else {
-										status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
-									}
-								}
-								else if (item.Type == "Current") {
-									status = "";
-									bigtext = item.Data;
-								}
-								else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
-									if (typeof item.CounterToday != 'undefined') {
-										status += $.t("Today") + ': ' + item.CounterToday;
-									}
-								}
-								else if (item.SubType == "Percentage") {
-									status = "";
-									bigtext = item.Data;
-								}
-								else if (item.SubType == "Fan") {
-									status = "";
-									bigtext = item.Data;
-								}
-								else if (item.Type == "Air Quality") {
-									status = item.Quality;
-									bigtext = item.Data;
-								}
-								else if (item.SubType == "Soil Moisture") {
-									status = item.Desc;
-									bigtext = item.Data;
-								}
-								else if (item.SubType == "Custom Sensor") {
-									status = "";
-									bigtext = item.Data;
-								}
-								else if (item.SubType == "Leaf Wetness") {
-									status = "";
-									bigtext = item.Data;
-								}
-								else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "Distance") || (item.SubType == "A/D") || (item.SubType == "Pressure") || (item.SubType == "Sound Level")) {
-									status = "";
-									bigtext = item.Data;
-								}
-								else if (item.SubType == "Text") {
-									status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-								}
-								else if (item.SubType == "Alert") {
-									status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-									var aLevel = item.Level;
-									if (aLevel > 4) aLevel = 4;
-									img = '<img src="images/Alert48_' + aLevel + '.png" height="48" width="48">';
-								}
-								else if (item.Type == "Lux") {
-									status = "";
-									bigtext = item.Data;
-								}
-								else if (item.Type == "Weight") {
-									status = "";
-									bigtext = item.Data;
-								}
-								else if (item.Type == "Usage") {
-									status = "";
-									bigtext = item.Data;
-								}
-								else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-									status = "";
-									bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
-								}
-								else if (item.Type == "Radiator 1") {
-									status = item.Data + '\u00B0 ' + $scope.config.TempSign;
-									bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
-								}
-								else if (item.SubType == "Thermostat Clock") {
-									status = "";
-								}
-								else if (item.SubType == "Thermostat Mode") {
-									status = "";
-								}
-								else if (item.SubType == "Thermostat Fan Mode") {
-									status = "";
-								}
-								else if (item.SubType == "Waterflow") {
-									status = "";
-									bigtext = item.Data;
-								}
-
-								if (typeof item.Usage != 'undefined') {
-									bigtext = item.Usage;
-								}
-								if (typeof item.CounterDeliv != 'undefined') {
-									if (item.CounterDeliv != 0) {
-										status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
-										if (item.UsageDeliv.charAt(0) != 0) {
-											if (parseInt(item.Usage) != 0) {
-												bigtext += ', -' + item.UsageDeliv;
-											}
-											else {
-												bigtext = '-' + item.UsageDeliv;
-											}
-										}
-									}
-								}
-
-								var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-								$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
-								$(id).addClass(backgroundClass);
-
-								if ($(id + " #status").html() != status) {
-									$(id + " #bigtext").html(bigtext);
-									$(id + " #status").html(status);
-								}
-								if ($(id + " #bigtext").html() != bigtext) {
-									$(id + " #bigtext").html(bigtext);
-								}
-								if ($(id + " #lastupdate").html() != item.LastUpdate) {
-									$(id + " #lastupdate").html(item.LastUpdate);
-								}
-								if (img != "") {
-									if ($(id + " #img").html() != img) {
-										$(id + " #img").html(img);
-									}
-								}
-								if ($scope.config.ShowUpdatedEffect == true) {
-									$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-								}
-							}
-						});
-					}
+					/*
+						Render all the widgets at once.
+					*/
+					$.each(data.result, function (i, item) {
+						RefreshItem(item);
+					});
 				}
 			});
-			$scope.mytimer = $interval(function () {
-				RefreshUtilities();
-			}, 10000);
-		}
+
+			$scope.$on('jsonupdate', function (event, data) {
+				/*
+					When this event is caught, a widget status update is received.
+					We call RefreshItem to update the widget.
+				*/
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+				}
+				if (typeof data.ActTime != 'undefined') {
+					$.LastUpdateTime = parseInt(data.ActTime);
+				}
+				RefreshItem(data.item);
+			});
+		};
 
 		ShowUtilities = function () {
 			if (typeof $scope.mytimer != 'undefined') {
@@ -513,8 +527,10 @@ define(['app'], function (app) {
 			}
 
 			var i = 0;
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+
 			$.ajax({
-				url: "json.htm?type=devices&filter=utility&used=true&order=[Order]&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=utility&used=true&order=[Order]&plan=" + roomPlanId,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -963,27 +979,33 @@ define(['app'], function (app) {
 				htmlcontent = '<h2>' + $.t('No Utility sensors found or added in the system...') + '</h2>';
 			}
 			$('#modal').hide();
-			$('#utilitycontent').html(tophtm + htmlcontent);
-			$('#utilitycontent').i18n();
+			$element.html(tophtm + htmlcontent);
+			$element.i18n();
+
 			if (bShowRoomplan == true) {
 				$.each($.RoomPlans, function (i, item) {
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.name);
-					$("#utilitycontent #comboroom").append(option);
+					$element.find("#comboroom").append(option);
 				});
-				if (typeof window.myglobals.LastPlanSelected != 'undefined') {
-					$("#utilitycontent #comboroom").val(window.myglobals.LastPlanSelected);
+				if (typeof roomPlanId != 'undefined') {
+					$element.find("#comboroom").val(roomPlanId);
 				}
-				$("#utilitycontent #comboroom").change(function () {
-					var idx = $("#utilitycontent #comboroom option:selected").val();
+				$element.find("#comboroom").change(function () {
+					var idx = $element.find("#comboroom option:selected").val();
 					window.myglobals.LastPlanSelected = idx;
-					ShowUtilities();
+					
+					$route.updateParams({
+						room: idx > 0 ? idx : undefined
+					});
+					$location.replace();
+					$scope.$apply();
 				});
 			}
 			if ($scope.config.AllowWidgetOrdering == true) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint == false) {
-						$("#utilitycontent .span4").draggable({
+						$element.find(".span4").draggable({
 							drag: function () {
 								if (typeof $scope.mytimer != 'undefined') {
 									$interval.cancel($scope.mytimer);
@@ -994,10 +1016,10 @@ define(['app'], function (app) {
 							},
 							revert: true
 						});
-						$("#utilitycontent .span4").droppable({
+						$element.find(".span4").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
-								var roomid = $("#utilitycontent #comboroom option:selected").val();
+								var roomid = $element.find("#comboroom option:selected").val();
 								if (typeof roomid == 'undefined') {
 									roomid = 0;
 								}
@@ -1015,9 +1037,7 @@ define(['app'], function (app) {
 				}
 			}
 			$rootScope.RefreshTimeAndSun();
-			$scope.mytimer = $interval(function () {
-				RefreshUtilities();
-			}, 10000);
+			RefreshUtilities();
 			return false;
 		}
 
@@ -1579,5 +1599,5 @@ define(['app'], function (app) {
 				popup.hide();
 			}
 		});
-	}]);
+	});
 });

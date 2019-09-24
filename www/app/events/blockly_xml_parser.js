@@ -127,9 +127,13 @@ define(function () {
             var timeBlock = $(valueTime).children('block:first');
             if (timeBlock.attr('type') == 'logic_timevalue') {
                 var valueA = $(timeBlock).children('field[name=\'TEXT\']')[0];
-                var hours = parseInt($(valueA).text().substr(0, 2));
-                var minutes = parseInt($(valueA).text().substr(3, 2));
-                var totalminutes = (hours * 60) + minutes;
+                var totalminutes = 9999;
+                var res = $(valueA).text().split(":");
+                if (res.length == 2) {
+					var hours = parseInt(res[0]);
+					var minutes = parseInt(res[1]);
+					totalminutes = (hours * 60) + minutes;
+                }
                 compareString = 'timeofday ' + locOperand + ' ' + totalminutes;
             }
             else if (timeBlock.attr('type') == 'logic_sunrisesunset') {

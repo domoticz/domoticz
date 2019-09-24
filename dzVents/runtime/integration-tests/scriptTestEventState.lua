@@ -1,5 +1,3 @@
-local socket = require("socket");
-
 local checkInitialLastUpate = function(item, expected)
 	if (item.lastUpdate.secondsAgo < expected) then
 		print('error initial lastUpdate for ' .. item.name .. ', expected less than ' .. expected .. ', got ' .. item.lastUpdate.secondsAgo)
@@ -32,6 +30,34 @@ return {
 		sceneSecs = { initial = ''}
 	},
 	execute = function(dz, item)
+
+		local function sleep (a) 
+			local function osExecute(cmd)
+				local fileHandle = assert(io.popen(cmd, 'r'))
+				local commandOutput = assert(fileHandle:read('*a'))
+				local returnTable = {fileHandle:close()}
+				local log = dz.LOG_FORCE
+				local msg = "0 (OK)"
+				if returnTable[3] ~= 0 then
+					log = dz.LOG_ERROR
+					if commandOutput == nil or commandOutput == '' then
+						commandOutput = '- failed -'
+					end
+					msg = returnTable[3] .. " ( " .. commandOutput .." )"
+				else
+					dz.log("Linux rules!; sleep worked", dz.LOG_FORCE )
+				end
+				dz.log("Command: " .. cmd .. ", returnCode: " .. msg, log )
+				return returnTable[3]			   -- rc[3] is returnCode
+			end
+
+			local rc = osExecute("sleep " .. a)
+			if rc ~= 0 then 
+				dz.log("We seem to be on Windows; trying os.execute now", dz.LOG_FORCE )
+				os.execute("timeout " .. a)
+				dz.log("That took you some time !", dz.LOG_FORCE )
+			end
+		end
 
 		local switch = dz.devices('vdRepeatSwitch')
 		local scene = dz.scenes('scScene')
@@ -66,7 +92,7 @@ return {
 
 		if (item.name == 'vdDelay') then
 			print('Delay start >>>>>>>>>>>>>>>>>>>>>')
-			socket.sleep(9)
+			sleep(8)
 			print('Delay end >>>>>>>>>>>>>>>>>>>>>')
 		end
 

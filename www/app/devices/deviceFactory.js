@@ -5,7 +5,7 @@ define(function () {
 
         function DeviceIcon(device) {
             this.isConfigurable = function() {
-                return ['Light/Switch', 'Lighting 2', 'Color Switch'].includes(device.Type) &&
+                return ['Light/Switch', 'Lighting 1', 'Lighting 2', 'Lighting 5','Color Switch'].includes(device.Type) &&
                     [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(device.SwitchTypeVal);
             };
 
@@ -153,6 +153,8 @@ define(function () {
                     return 'lx';
                 } else if (this.SubType === 'Percentage') {
                     return '%';
+                } else if (this.Type === 'Weight') {
+					return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
                 } else {
                     return '?';
                 }

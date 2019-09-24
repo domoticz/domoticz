@@ -356,7 +356,7 @@ namespace http {
 		{
 			CWebsocketHandler *handler = websocket_handlers[pdu->m_requestid];
 			if (handler) {
-				boost::tribool result = handler->Handle(pdu->m_packet_data);
+				boost::tribool result = handler->Handle(pdu->m_packet_data, false);
 			}
 		}
 

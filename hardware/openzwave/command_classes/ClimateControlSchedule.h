@@ -32,39 +32,56 @@
 
 namespace OpenZWave
 {
-	class ValueSchedule;
-	class ValueList;
-	class ValueByte;
-
-	/** \brief Implements COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE (0x46), a Z-Wave device command class.
-	 */
-	class ClimateControlSchedule: public CommandClass
+	namespace Internal
 	{
-	public:
- 		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new ClimateControlSchedule( _homeId, _nodeId ); }
-		virtual ~ClimateControlSchedule(){}
+		namespace CC
+		{
 
-		static uint8 const StaticGetCommandClassId(){ return 0x46; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE"; }
+			/** \brief Implements COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE (0x46), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class ClimateControlSchedule: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new ClimateControlSchedule(_homeId, _nodeId);
+					}
+					virtual ~ClimateControlSchedule()
+					{
+					}
 
-		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement );
-		virtual void WriteXML( TiXmlElement* _ccElement );
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-		virtual bool SetValue( Value const& _value );
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x46;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE";
+					}
 
-	protected:
-		virtual void CreateVars( uint8 const _instance );
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
 
-	private:
-		ClimateControlSchedule( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ), m_changeCounter( 0 ){}
-		uint8	m_changeCounter;
-	};
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
+				private:
+					ClimateControlSchedule(uint32 const _homeId, uint8 const _nodeId);
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

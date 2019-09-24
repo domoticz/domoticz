@@ -8,6 +8,7 @@
 #include "Helper.h"
 #include "localtime_r.h"
 #include "EventSystem.h"
+#include "HTMLSanitizer.h"
 #include "dzVents.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
@@ -22,6 +23,7 @@
 #include "../hardware/DarkSky.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/OpenWeatherMap.h"
+#include "../hardware/Buienradar.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/LogitechMediaServer.h"
@@ -351,7 +353,7 @@ namespace http {
 			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/images/floorplans/plan", boost::bind(&CWebServer::GetFloorplanImage, this, _1, _2, _3));
 
-			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/storesettings", boost::bind(&CWebServer::PostSettings, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this, _1, _2, _3));
 			RegisterCommandCode("rfxfirmwaregetpercentage", boost::bind(&CWebServer::Cmd_RFXComGetFirmwarePercentage, this, _1, _2, _3), true);
@@ -377,6 +379,8 @@ namespace http {
 			RegisterCommandCode("gettitle", boost::bind(&CWebServer::Cmd_GetTitle, this, _1, _2, _3), true);
 
 			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2, _3), true);
+			m_pWebEm->RegisterPageCode("/logincheck", boost::bind(&CWebServer::PostLoginCheck, this, _1, _2, _3), true);
+
 			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
 			RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1, _2, _3));
 			RegisterCommandCode("clearlog", boost::bind(&CWebServer::Cmd_ClearLog, this, _1, _2, _3));
@@ -633,6 +637,7 @@ namespace http {
 			RegisterCommandCode("zwavecancel", boost::bind(&CWebServer::Cmd_ZWaveCancel, this, _1, _2, _3));
 			RegisterCommandCode("applyzwavenodeconfig", boost::bind(&CWebServer::Cmd_ApplyZWaveNodeConfig, this, _1, _2, _3));
 			RegisterCommandCode("requestzwavenodeconfig", boost::bind(&CWebServer::Cmd_ZWaveRequestNodeConfig, this, _1, _2, _3));
+			RegisterCommandCode("requestzwavenodeinfo", boost::bind(&CWebServer::Cmd_ZWaveRequestNodeInfo, this, _1, _2, _3));
 			RegisterCommandCode("zwavestatecheck", boost::bind(&CWebServer::Cmd_ZWaveStateCheck, this, _1, _2, _3));
 			RegisterCommandCode("zwavereceiveconfigurationfromothercontroller", boost::bind(&CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController, this, _1, _2, _3));
 			RegisterCommandCode("zwavesendconfigurationtosecondcontroller", boost::bind(&CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController, this, _1, _2, _3));
@@ -640,6 +645,7 @@ namespace http {
 			RegisterCommandCode("zwavestartusercodeenrollmentmode", boost::bind(&CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode, this, _1, _2, _3));
 			RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1, _2, _3));
 			RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1, _2, _3));
+			RegisterCommandCode("zwavegetbatterylevels", boost::bind(&CWebServer::Cmd_ZWaveGetBatteryLevels, this, _1, _2, _3));
 
 			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", boost::bind(&CWebServer::ZWaveGetConfigFile, this, _1, _2, _3));
 
@@ -914,6 +920,20 @@ namespace http {
 				root["Title"] = "Domoticz";
 		}
 
+		//PostSettings
+		void CWebServer::PostLoginCheck(WebEmSession& session, const request& req, reply& rep)
+		{
+			Json::Value root;
+			Cmd_LoginCheck(session, req, root);
+
+			std::string jcallback = request::findValue(&req, "jsoncallback");
+			if (jcallback.size() == 0) {
+				reply::set_content(&rep, root.toStyledString());
+				return;
+			}
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+		}
+
 		void CWebServer::Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string tmpusrname = request::findValue(&req, "username");
@@ -1043,13 +1063,13 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string name = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string shtype = request::findValue(&req, "htype");
-			std::string address = request::findValue(&req, "address");
+			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
-			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+			std::string username = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "username")));
+			std::string password = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "password")));
 			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 			if (
@@ -1210,6 +1230,9 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_USBtinGateway) {
+				//All fine here
+			}
+			else if (htype == HTYPE_BuienRadar) {
 				//All fine here
 			}
 			else if (
@@ -1459,14 +1482,14 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string name = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string shtype = request::findValue(&req, "htype");
-			std::string address = request::findValue(&req, "address");
+			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
+			std::string username = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "username")));
 			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
-			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
+			std::string extra = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "extra")));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 
 			if (
@@ -1600,6 +1623,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_USBtinGateway) {
+				//All fine here
+			}
+			else if (htype == HTYPE_BuienRadar) {
 				//All fine here
 			}
 			else if (
@@ -1878,27 +1904,54 @@ namespace http {
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
+				_log.Log(LOG_ERROR, "User: %s tried to add a uservariable!", session.username.c_str());
 				return; //Only admin user allowed
 			}
-			std::string variablename = request::findValue(&req, "vname");
+			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
+			
+			root["title"] = "AddUserVariable";
+			root["status"] = "ERR";
+			
+			if (!std::isdigit(variabletype[0])) 
+			{
+				stdlower(variabletype);
+				if (variabletype == "integer")
+					variabletype = "0";
+				else if (variabletype == "float")
+					variabletype = "1";
+				else if (variabletype == "string")
+					variabletype = "2";
+				else if (variabletype == "date")
+					variabletype = "3";
+				else if (variabletype == "time")
+					variabletype = "4";
+				else
+				{
+					root["message"] = "Invalid variabletype " + variabletype;
+					return;
+				}
+			}
+			
 			if (
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
+				((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4")) || 
 				((variablevalue.empty()) && (variabletype != "2"))
 				)
+			{
+				root["message"] = "Invalid variabletype " + variabletype;
 				return;
-
-			root["title"] = "AddUserVariable";
+			}
 
 			std::string errorMessage;
 			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, errorMessage))
 			{
-				root["status"] = "ERR";
 				root["message"] = errorMessage;
 			}
-			else {
+			else 
+			{
 				root["status"] = "OK";
 			}
 		}
@@ -1907,6 +1960,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
+				_log.Log(LOG_ERROR, "User: %s tried to delete a uservariable!", session.username.c_str());
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
@@ -1923,34 +1977,68 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
+				_log.Log(LOG_ERROR, "User: %s tried to update a uservariable!", session.username.c_str());
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
-
+			
 			std::string idx = request::findValue(&req, "idx");
-			std::string variablename = request::findValue(&req, "vname");
+			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
-
+			
+			root["title"] = "UpdateUserVariable";
+			root["status"] = "ERR";
+			
+			if (!std::isdigit(variabletype[0])) 
+			{
+				stdlower(variabletype);
+				if (variabletype == "integer")
+					variabletype = "0";
+				else if (variabletype == "float")
+					variabletype = "1";
+				else if (variabletype == "string")
+					variabletype = "2";
+				else if (variabletype == "date")
+					variabletype = "3";
+				else if (variabletype == "time")
+					variabletype = "4";
+				else
+				{
+					root["message"] = "Invalid variabletype " + variabletype;
+					return;
+				}
+			}
+			
 			if (
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
+				((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4")) || 
 				((variablevalue.empty()) && (variabletype != "2"))
 				)
+			{
+				root["message"] = "Invalid variabletype " + variabletype;
 				return;
+			}
 
 			std::vector<std::vector<std::string> > result;
 			if (idx.empty())
 			{
 				result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'", variablename.c_str());
 				if (result.empty())
+				{
+					root["message"] = "Uservariable " + variablename + " does not exist";
 					return;
+				}
 				idx = result[0][0];
 			}
 
 			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE ID='%q'", idx.c_str());
 			if (result.empty())
+			{
+				root["message"] = "Uservariable " + variablename + " does not exist";
 				return;
+			}
 
 			bool bTypeNameChanged = false;
 			if (variablename != result[0][0])
@@ -1958,12 +2046,9 @@ namespace http {
 			else if (variabletype != result[0][1])
 				bTypeNameChanged = true; //new type
 
-			root["title"] = "UpdateUserVariable";
-
 			std::string errorMessage;
 			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged, errorMessage))
 			{
-				root["status"] = "ERR";
 				root["message"] = errorMessage;
 			}
 			else {
@@ -2117,7 +2202,12 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			if (name.empty())
+			{
+				session.reply_status = reply::bad_request;
+			}
+
 			root["status"] = "OK";
 			root["title"] = "AddPlan";
 			m_sql.safe_query(
@@ -2146,11 +2236,12 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = request::findValue(&req, "name");
-			if (
-				(name.empty())
-				)
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			if (name.empty())
+			{
+				session.reply_status = reply::bad_request;
 				return;
+			}
 
 			root["status"] = "OK";
 			root["title"] = "UpdatePlan";
@@ -2942,7 +3033,7 @@ namespace http {
 		{
 			std::string sstate = request::findValue(&req, "state");
 			std::string idx = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 
 			if (
 				(idx.empty()) ||
@@ -3780,6 +3871,7 @@ namespace http {
 						case pTypeGeneralSwitch:
 						case pTypeHomeConfort:
 						case pTypeFS20:
+						case pTypeHunter:
 							bdoAdd = true;
 							if (!used)
 							{
@@ -3907,6 +3999,7 @@ namespace http {
 							case pTypeGeneralSwitch:
 							case pTypeHomeConfort:
 							case pTypeFS20:
+							case pTypeHunter:
 								root["result"][ii]["type"] = 0;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
@@ -4567,8 +4660,8 @@ namespace http {
 					}
 					else if (lighttype == 400) {
 						//Openwebnet Bus Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchBlindsT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4579,8 +4672,8 @@ namespace http {
 					}
 					else if (lighttype == 401) {
 						//Openwebnet Bus Lights
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchLightT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4592,8 +4685,8 @@ namespace http {
 					else if (lighttype == 402)
 					{
 						//Openwebnet Bus Auxiliary
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchAuxiliaryT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4637,6 +4730,23 @@ namespace http {
 							(sunitcode.empty())
 							)
 							return;
+					}
+					else if (lighttype == 407) {
+						//Openwebnet Bus Custom
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						std::string StrParam1 = request::findValue(&req, "StrParam1");
+						if (
+							(devid.empty()) ||
+							(sunitcode.empty()) ||
+							(StrParam1.empty())
+							)
+						{
+							root["message"] = "Some field empty or not valid.";
+							return;
+						}
 					}
 				}
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
@@ -4688,7 +4798,7 @@ namespace http {
 				}
 
 				std::string hwdid = request::findValue(&req, "hwdid");
-				std::string name = request::findValue(&req, "name");
+				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 				std::string sswitchtype = request::findValue(&req, "switchtype");
 				std::string slighttype = request::findValue(&req, "lighttype");
 				std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
@@ -4707,6 +4817,7 @@ namespace http {
 				int subtype = 0;
 				std::string sunitcode;
 				std::string devid;
+				std::string StrParam1;
 
 #ifdef ENABLE_PYTHON
 				//check if HW is plugin
@@ -5184,8 +5295,8 @@ namespace http {
 					else if (lighttype == 400)
 					{
 						//Openwebnet Bus Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchBlindsT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -5197,8 +5308,8 @@ namespace http {
 					else if (lighttype == 401)
 					{
 						//Openwebnet Bus Lights
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchLightT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -5210,8 +5321,8 @@ namespace http {
 					else if (lighttype == 402)
 					{
 						//Openwebnet Bus Auxiliary
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchAuxiliaryT1;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -5259,6 +5370,24 @@ namespace http {
 							)
 							return;
 					}
+					else if (lighttype == 407) {
+						//Openwebnet Bus Custom
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						StrParam1 = request::findValue(&req, "StrParam1");
+						_log.Log(LOG_STATUS, "COpenWebNetTCP: custom command: '%s'", StrParam1.c_str());
+						if (
+							(devid.empty()) ||
+							(sunitcode.empty()) ||
+							(StrParam1.empty())
+							)
+						{
+							root["message"] = "Some field empty or not valid.";
+							return;
+						}
+					}
 				}
 
 				//check if switch is unique
@@ -5301,6 +5430,14 @@ namespace http {
 				m_sql.safe_query(
 					"UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')",
 					name.c_str(), switchtype, ID.c_str());
+
+				if (lighttype == 407) {
+					//Openwebnet Bus Custom
+					m_sql.safe_query(
+						"UPDATE DeviceStatus SET StrParam1='%s' WHERE (ID == '%q')", 
+						StrParam1.c_str(), ID.c_str());
+				}
+
 				m_mainworker.m_eventsystem.GetCurrentStates();
 
 				//Set device options
@@ -6289,7 +6426,8 @@ namespace http {
 					(dType != pTypeFS20) &&
 					(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
 					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
-					(!((dType == pTypeGeneral) && (dSubType == sTypeAlert)))
+					(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) &&
+					(dType != pTypeHunter)
 					)
 					return; //no light device! we should not be here!
 
@@ -7126,7 +7264,7 @@ namespace http {
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return;
-				std::string name = request::findValue(&req, "name");
+				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 				std::string scalefactor = request::findValue(&req, "scalefactor");
 				if (
 					(name.empty())
@@ -7483,10 +7621,8 @@ namespace http {
 			return false;
 		}
 
-		void CWebServer::PostSettings(WebEmSession & session, const request& req, std::string & redirect_uri)
+		void CWebServer::PostSettings(WebEmSession& session, const request& req, reply& rep)
 		{
-			redirect_uri = "/index.html";
-
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
@@ -7876,6 +8012,18 @@ namespace http {
 			//Signal plugins to update Settings dictionary
 			PluginLoadConfig();
 #endif
+
+			Json::Value root;
+			root["status"] = "OK";
+			root["title"] = "StoreSettings";
+
+			std::string jcallback = request::findValue(&req, "jsoncallback");
+			if (jcallback.size() == 0) {
+				reply::set_content(&rep, root.toStyledString());
+				return;
+			}
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri)
@@ -8112,6 +8260,7 @@ namespace http {
 							{
 								root["result"][ii]["Type"] = "Scene";
 								root["result"][ii]["TypeImg"] = "scene";
+								root["result"][ii]["Image"] = "Push";
 							}
 							else
 							{
@@ -8503,7 +8652,8 @@ namespace http {
 								(dType != pTypeChime) &&
 								(dType != pTypeFS20) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
-								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
+								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))&&
+								(dType != pTypeHunter)
 								)
 								continue;
 						}
@@ -8561,6 +8711,7 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatOperatingState))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) &&
@@ -8692,6 +8843,15 @@ namespace http {
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
+						else if (pHardware->HwdType == HTYPE_BuienRadar)
+						{
+							CBuienRadar* pWHardware = reinterpret_cast<CBuienRadar*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (forecast_url != "")
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
 					}
 
 					if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_PythonPlugin))
@@ -8787,7 +8947,8 @@ namespace http {
 						(dType == pTypeHomeConfort) ||
 						(dType == pTypeFS20) ||
 						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) ||
-						((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
+						((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus)) ||
+						(dType == pTypeHunter)
 						)
 					{
 						//add light details
@@ -9103,7 +9264,12 @@ namespace http {
 						root["result"][ii]["StrParam2"] = strParam2;
 						root["result"][ii]["Protected"] = (iProtected != 0);
 
-						if ((dSubType == sTypeKD101) || (dSubType == sTypeSA30) || (switchtype == STYPE_SMOKEDETECTOR))
+						if (
+							(dSubType == sTypeKD101)
+							|| (dSubType == sTypeSA30)
+							|| (dSubType == sTypeRM174RF)
+							|| (switchtype == STYPE_SMOKEDETECTOR)
+							)
 						{
 							root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
 							root["result"][ii]["TypeImg"] = "smoke";
@@ -10331,12 +10497,12 @@ namespace http {
 							float vis = static_cast<float>(atof(sValue.c_str()));
 							if (metertype == 0)
 							{
-								//km
+								//Metric
 								sprintf(szTmp, "%.1f cm", vis);
 							}
 							else
 							{
-								//miles
+								//Imperial
 								sprintf(szTmp, "%.1f in", vis*0.6214f);
 							}
 							root["result"][ii]["Data"] = szTmp;
@@ -10612,6 +10778,26 @@ namespace http {
 							}
 							root["result"][ii]["Modes"] = modes;
 						}
+						else if (dSubType == sTypeZWaveThermostatOperatingState)
+						{
+							strcpy(szData, "");
+							root["result"][ii]["State"] = nValue;
+							root["result"][ii]["TypeImg"] = "Fan";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							if (nValue == 1)
+							{
+								sprintf(szData, "%s", "Cooling");
+							}
+							else if (nValue == 2)
+							{
+								sprintf(szData, "%s", "Heating");
+							}
+							else
+							{
+								sprintf(szData, "%s", "Idle");
+							}
+							root["result"][ii]["Data"] = szData;
+						}
 						else if (dSubType == sTypeZWaveAlarm)
 						{
 							sprintf(szData, "Event: 0x%02X (%d)", nValue, nValue);
@@ -10632,6 +10818,7 @@ namespace http {
 						sprintf(szTmp, "%g %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = false;
+						root["result"][ii]["SwitchTypeVal"] = (m_sql.m_weightsign=="kg") ? 0 : 1;
 					}
 					else if (dType == pTypeUsage)
 					{
@@ -10800,6 +10987,10 @@ namespace http {
 					oname += ".bmp";
 				else if (result[0][0][0] == 'G')
 					oname += ".gif";
+				else if ((result[0][0][0] == '<') && (result[0][0][1] == 's') && (result[0][0][2] == 'v') && (result[0][0][3] == 'g'))
+					oname += ".svg";
+				else if (result[0][0].find("<svg") != std::string::npos) //some SVG's start with <xml
+					oname += ".svg";
 			}
 			reply::add_header_attachment(&rep, oname);
 		}
@@ -10829,7 +11020,7 @@ namespace http {
 						szAttachmentName = szVar + ".db";
 					}
 				}
-				reply::set_content_from_file(&rep, OutputFileName, szAttachmentName, true);
+				reply::set_download_file(&rep, OutputFileName, szAttachmentName);
 			}
 		}
 
@@ -10859,7 +11050,8 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			name = HTMLSanitizer::Sanitize(name);
 			if (name.empty())
 			{
 				root["status"] = "ERR";
@@ -10922,8 +11114,12 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
-			std::string description = request::findValue(&req, "description");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
+
+			name = HTMLSanitizer::Sanitize(name);
+			description = HTMLSanitizer::Sanitize(description);
+
 			if ((idx.empty()) || (name.empty()))
 				return;
 			std::string stype = request::findValue(&req, "scenetype");
@@ -11117,6 +11313,8 @@ namespace http {
 
 			std::string sLastUpdate = request::findValue(&req, "lastupdate");
 
+			std::string rid = request::findValue(&req, "rid");
+
 			time_t LastUpdate = 0;
 			if (sLastUpdate != "")
 			{
@@ -11134,7 +11332,11 @@ namespace http {
 			root["ActTime"] = static_cast<int>(now);
 
 			std::vector<std::vector<std::string> > result, result2;
-			result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes ORDER BY [Order]");
+			std::string szQuery = "SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes";
+			if (!rid.empty())
+				szQuery += " WHERE (ID == " + rid + ")";
+			szQuery += " ORDER BY [Order]";
+			result = m_sql.safe_query(szQuery.c_str());
 			if (!result.empty())
 			{
 				int ii = 0;
@@ -11242,8 +11444,6 @@ namespace http {
 
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
-						continue;
-					if (hType == HTYPE_RESERVED_FOR_YOU_1)
 						continue;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
@@ -11833,8 +12033,8 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
-			std::string sdescription = request::findValue(&req, "description");
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string sdescription = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty()) ||
@@ -11859,7 +12059,7 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty())
@@ -11888,7 +12088,7 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty())
@@ -11970,10 +12170,10 @@ namespace http {
 
 		void CWebServer::Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string suuid = request::findValue(&req, "uuid");
-			std::string ssenderid = request::findValue(&req, "senderid");
-			std::string sname = request::findValue(&req, "name");
-			std::string sdevtype = request::findValue(&req, "devicetype");
+			std::string suuid = HTMLSanitizer::Sanitize(request::findValue(&req, "uuid"));
+			std::string ssenderid = HTMLSanitizer::Sanitize(request::findValue(&req, "senderid"));
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string sdevtype = HTMLSanitizer::Sanitize(request::findValue(&req, "devicetype"));
 			std::string sactive = request::findValue(&req, "active");
 			if (
 				(suuid.empty()) ||
@@ -12033,7 +12233,7 @@ namespace http {
 			}
 			std::string sidx = request::findValue(&req, "idx");
 			std::string enabled = request::findValue(&req, "enabled");
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 
 			if (
 				(sidx.empty()) ||
@@ -12270,8 +12470,8 @@ namespace http {
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
-			std::string name = request::findValue(&req, "name");
-			std::string description = request::findValue(&req, "description");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
 			std::string sused = request::findValue(&req, "used");
 			std::string sswitchtype = request::findValue(&req, "switchtype");
 			std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
@@ -12289,14 +12489,14 @@ namespace http {
 			std::string sCustomImage = request::findValue(&req, "customimage");
 
 			std::string strunit = request::findValue(&req, "unit");
-			std::string strParam1 = base64_decode(request::findValue(&req, "strparam1"));
-			std::string strParam2 = base64_decode(request::findValue(&req, "strparam2"));
+			std::string strParam1 = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "strparam1")));
+			std::string strParam2 = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "strparam2")));
 			std::string tmpstr = request::findValue(&req, "protected");
 			bool bHasstrParam1 = request::hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string sOptions = base64_decode(request::findValue(&req, "options"));
-			std::string devoptions = CURLEncode::URLDecode(request::findValue(&req, "devoptions"));
+			std::string sOptions = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "options")));
+			std::string devoptions = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "devoptions")));
 			std::string EnergyMeterMode = CURLEncode::URLDecode(request::findValue(&req, "EnergyMeterMode"));
 
 			char szTmp[200];
@@ -13003,7 +13203,8 @@ namespace http {
 				(dType != pTypeGeneralSwitch) &&
 				(dType != pTypeHomeConfort) &&
 				(dType != pTypeFS20) &&
-				(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
+				(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
+				(dType != pTypeHunter)
 				)
 				return; //no light device! we should not be here!
 
@@ -13023,17 +13224,14 @@ namespace http {
 				{
 					std::vector<std::string> sd = itt;
 
-					int nValue = atoi(sd[1].c_str());
-					std::string sValue = sd[2];
-
-					//skip 0-values in log for MediaPlayers
-					if ((switchtype == STYPE_Media) && (sValue == "0")) continue;
-
-					root["result"][ii]["idx"] = sd[0];
+					std::string lidx = sd.at(0);
+					int nValue = atoi(sd.at(1).c_str());
+					std::string sValue = sd.at(2);
+					std::string ldate = sd.at(3);
 
 					//add light details
-					std::string lstatus = "";
-					std::string ldata = "";
+					std::string lstatus;
+					std::string ldata;
 					int llevel = 0;
 					bool bHaveDimmer = false;
 					bool bHaveSelector = false;
@@ -13041,9 +13239,9 @@ namespace http {
 					int maxDimLevel = 0;
 
 					if (switchtype == STYPE_Media) {
-						lstatus = sValue;
+						if (sValue == "0") continue; //skip 0-values in log for MediaPlayers
+							lstatus = sValue;
 						ldata = lstatus;
-
 					}
 					else if (switchtype == STYPE_Selector)
 					{
@@ -13066,13 +13264,52 @@ namespace http {
 
 					if (ii == 0)
 					{
+						//Log these parameters once
 						root["HaveDimmer"] = bHaveDimmer;
 						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
 						root["HaveGroupCmd"] = bHaveGroupCmd;
 						root["HaveSelector"] = bHaveSelector;
 					}
 
-					root["result"][ii]["Date"] = sd[3];
+					//Corrent names for certain switch types
+					switch (switchtype)
+					{
+					case STYPE_Contact:
+						ldata = (ldata == "On") ? "Open" : "Closed";
+						break;
+					case STYPE_DoorContact:
+						ldata = (ldata == "On") ? "Open" : "Closed";
+						break;
+					case STYPE_DoorLock:
+						ldata = (ldata == "On") ? "Locked" : "Unlocked";
+						break;
+					case STYPE_DoorLockInverted:
+						ldata = (ldata == "On") ? "Unlocked" : "Locked";
+						break;
+					case STYPE_Blinds:
+					case STYPE_VenetianBlindsEU:
+					case STYPE_VenetianBlindsUS:
+						ldata = (ldata == "On") ? "Closed" : "Open";
+						break;
+					case STYPE_BlindsInverted:
+						ldata = (ldata == "On") ? "Open" : "Closed";
+						break;
+					case STYPE_BlindsPercentage:
+						if ((ldata == "On") || (ldata == "Off"))
+						{
+							ldata = (ldata == "On") ? "Closed" : "Open";
+						}
+						break;
+					case STYPE_BlindsPercentageInverted:
+						if ((ldata == "On") || (ldata == "Off"))
+						{
+							ldata = (ldata == "On") ? "Open" : "Closed";
+						}
+						break;
+					}
+
+					root["result"][ii]["idx"] = lidx;
+					root["result"][ii]["Date"] = ldate;
 					root["result"][ii]["Data"] = ldata;
 					root["result"][ii]["Status"] = lstatus;
 					root["result"][ii]["Level"] = llevel;

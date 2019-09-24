@@ -18,7 +18,14 @@
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
-MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int Topics) :
+const char* szTLSVersions[3] =
+{
+	"tlsv1",
+	"tlsv1.1",
+	"tlsv1.2"
+};
+
+MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int TLS_Version, const int Topics) :
 m_szIPAddress(IPAddress),
 m_UserName(Username),
 m_Password(Password),
@@ -33,6 +40,8 @@ m_CAFilename(CAfilename)
 	m_publish_topics = (_ePublishTopics)Topics;
 	m_TopicIn = TOPIC_IN;
 	m_TopicOut = TOPIC_OUT;
+
+	m_TLS_Version = (TLS_Version < 3) ? TLS_Version : 0; //see szTLSVersions
 }
 
 MQTT::~MQTT(void)
@@ -80,6 +89,26 @@ void MQTT::on_subscribe(int mid, int qos_count, const int *granted_qos)
 {
 	_log.Log(LOG_STATUS, "MQTT: Subscribed");
 	m_IsConnected = true;
+}
+
+void MQTT::on_log(int level, const char* str)
+{
+	if (level & MOSQ_LOG_DEBUG)
+		return;
+	_eLogLevel llevel = LOG_NORM;
+	switch (level)
+	{
+	case MOSQ_LOG_NOTICE:
+		llevel = LOG_STATUS;
+		break;
+	default:
+		llevel = LOG_ERROR;
+	}
+	_log.Log(llevel, "MQTT: %s", str);
+}
+
+void MQTT::on_error()
+{
 }
 
 void MQTT::on_connect(int rc)
@@ -486,6 +515,7 @@ bool MQTT::ConnectIntEx()
 	int keepalive = 60;
 
 	if (!m_CAFilename.empty()){
+		rc = tls_opts_set(SSL_VERIFY_PEER, szTLSVersions[m_TLS_Version], NULL);
 		rc = tls_set(m_CAFilename.c_str());
 
 		if ( rc != MOSQ_ERR_SUCCESS)

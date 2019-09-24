@@ -1,7 +1,6 @@
 local log
 local dz
 
-
 local err = function(msg)
 	log(msg, dz.LOG_ERROR)
 end
@@ -59,7 +58,7 @@ return {
 				if (res) then domoticz.globalData.httpTrigger = domoticz.globalData.httpTrigger .. "OK"  end
 				
 			elseif (item.callback == 'trigger3') then
-				res = res and expectEql(item.statusCode, 0, 'statusCode')
+				res = res and expectEql(item.statusCode, 6, 'statusCode')
 				if (res) then domoticz.globalData.httpTrigger = domoticz.globalData.httpTrigger .. "OK"  end
 		
 			end
