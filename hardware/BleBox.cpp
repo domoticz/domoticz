@@ -1275,11 +1275,11 @@ void BleBox::SearchNodes(const std::string & ipmask)
 
 		if (m_devices.find(IPAddress) == m_devices.end())
 		{
-			searchingThreads.emplace_back(&BleBox::AddNode, this, "unknown", IPAddress, false);
+			searchingThreads.emplace_back(&BleBox::AddNode, this, "unknown", std::ref(IPAddress), false);
 		}
 	}
 
-	for (auto& thread : searchingThreads)
+	for (auto&& thread : searchingThreads)
 	{
 		thread.join();
 	}
