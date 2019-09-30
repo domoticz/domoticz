@@ -96,7 +96,7 @@ void CBuienRadar::Init()
 	time_t now = mytime(0);
 	localtime_r(&now, &ltime);
 	m_actDay = ltime.tm_mday;
-	m_lastRainCount = 0;
+	m_lastRainCount = -1;
 }
 
 bool CBuienRadar::StartHardware()
@@ -143,17 +143,18 @@ void CBuienRadar::Do_Work()
 
 			m_LastHeartbeat = now;
 
+			//Reset on time
+			now += m_sql.m_ShortLogInterval;
+			now += 10;
+
 			struct tm ltime;
 			localtime_r(&now, &ltime);
 			if (ltime.tm_mday != m_actDay)
 			{
-				if (ltime.tm_min >= m_sql.m_ShortLogInterval - 1)
-				{
-					//reset our rain counter
-					m_actDay = ltime.tm_mday;
-					m_lastRainCount = 0;
-					SendRainSensorWU(1, 255, 0, 0, "Rain");
-				}
+				//reset our rain counter
+				m_actDay = ltime.tm_mday;
+				m_lastRainCount = 0;
+				SendRainSensorWU(1, 255, 0, 0, "Rain");
 			}
 		}
 
