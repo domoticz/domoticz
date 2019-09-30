@@ -1615,35 +1615,6 @@ function AddDataToTempChart(data, chart, isday, isthermostat) {
 			series.setData(datatableTrendline, false);
 		}
 	}
-	return;
-	if (datatabledp.length != 0) {
-		chart.addSeries({
-			id: 'dewpoint',
-			name: $.t('Dew Point'),
-			color: 'blue',
-			yAxis: 0,
-			tooltip: {
-				valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-				valueDecimals: 1
-			}
-		}, false);
-		series = chart.get('dewpoint');
-		series.setData(datatabledp, false);
-	}
-	if (datatableba.length != 0) {
-		chart.addSeries({
-			id: 'baro',
-			name: $.t('Barometer'),
-			color: 'pink',
-			yAxis: 2,
-			tooltip: {
-				valueSuffix: ' hPa',
-				valueDecimals: 1
-			}
-		}, false);
-		series = chart.get('baro');
-		series.setData(datatableba, false);
-	}
 }
 
 function load_cam_video() {
