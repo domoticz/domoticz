@@ -279,20 +279,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		else if (szCommand == "setcolbrightnessvalue")
 		{
 			idx = (uint64_t)root["idx"].asInt64();
-
-			if (root["switchcmd"].empty())
-				root["switchcmd"] = "On";
-
-			std::string switchcmd = root["switchcmd"].asString();
-			if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle") && (switchcmd != "Set Level") && (switchcmd != "Set Color"))
-				goto mqttinvaliddata;
-
 			_tColor color;
 
 			std::string hex = root["hex"].asString();
 			std::string hue = root["hue"].asString();
 			std::string sat = root["sat"].asString();
-			std::string brightness = root["level"].asString();
+			std::string brightness = root["brightness"].asString();
 			std::string iswhite;
 			if (!root["isWhite"].empty())
 			{
@@ -399,7 +391,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 			_log.Log(LOG_STATUS, "MQTT: setcolbrightnessvalue: ID: %" PRIx64 ", bri: %d, color: '%s'", idx, ival, color.toString().c_str());
 
-			if (!m_mainworker.SwitchLight(idx, switchcmd, ival, color, false, 0) == true)
+			if (!m_mainworker.SwitchLight(idx, "Set Color", ival, color, false, 0) == true)
 			{
 				_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 			}
