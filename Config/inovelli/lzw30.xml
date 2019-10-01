@@ -1,0 +1,93 @@
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/031E:0001:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/inovelli/lzw30.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/3452</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://inovelli.com/shop/smart-light-switches/zwave-smart-switches-gen2/pre-order-z-wave-on-off-switch-base-model/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://inovelli.com/shop/smart-light-switches/zwave-smart-switches-gen2/pre-order-z-wave-on-off-switch-base-model</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To Exclude your switch, put your HUB in exclusion mode and press the Configuration Button three (3) times.</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0004">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/3452/LZW30%20Manual.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">You may factory reset the switch by holding down the Config Button for twenty (20) or more seconds. The LED Bar will turn Red and blink three (3) times to confirm. 
+
+However, we recommend using a certified Z-Wave controller to remove the device from your network for factory resetting the switch. 
+
+Only use either of these procedures in the event that the network primary controller is missing or otherwise inoperable.
+    </MetaDataItem>
+    <MetaDataItem name="Description">The Inovelli On/Off switch is a Z-Wave device that controls attached LED, CFL, &amp; Incandescent lighting which can be highly customized to your liking at the switch itself with our unique config button and advanced firmware.</MetaDataItem>
+    <MetaDataItem name="Name">LZW30 Switch</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0004">LZW30</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To include your switch, start the inclusion process on your HUB and tap the Configuration Button three (3) times.
+
+Please Note: If this doesn't work, you can check to see if your switch is within Z-Wave Range by holding down the Configuration Button for 5-10 seconds (if it's not within range, the LED Bar will indicate Red and if it is within Range, the LED Bar will indicate Green). If your switch indicates Red, please move the switch closer to the HUB. If your switch indicates Green, please try running an Exclusion to reset your switch.
+    </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="10 Sep 2019" revision="5">Adding Metadata</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" type="list" size="1" index="1" label="Power On State" min="0" max="2" value="0">
+      <Help>
+      When Power is restored
+      Range: 0-2
+      Default: 0
+      </Help>
+      <Item value="0" label="Previous"/>
+      <Item value="1" label="On"/>
+      <Item value="2" label="Off"/>
+    </Value>
+    <Value genre="config" type="list" size="1" index="2" label="Invert Switch" min="0" max="1" value="0">
+      <Help>
+      Inverts the orientation of the switch. Useful when the switch is installed upside down. Essentially up becomes down and down becomes up.
+      Range: 0-1
+      Default: 0
+      </Help>
+      <Item value="0" label="Disabled"/>
+      <Item value="1" label="Enabled"/>
+    </Value>
+    <Value genre="config" type="short" size="2" index="3" label="Auto Off Timer" min="0" max="32767" value="0">
+      <Help>
+      Automatically turns the switch off after this many seconds. When the switch is turned on a timer is started that is the duration of this setting. When the timer expires, the switch is turned off.
+      Range: 0-32767
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="4" label="Association Behavior" min="0" max="15" value="15">
+      <Help>
+      When should the switch send commands to associated devices?  01 - local 02 - 3way 03 - 3way &amp; local 04 - z-wave hub 05 - z-wave hub &amp; local 06 - z-wave hub &amp; 3-way 07 - z-wave hub &amp; local &amp; 3way 08 - timer 09 - timer &amp; local 10 - timer &amp; 3-way 11 - timer &amp; 3-way &amp; local 12 - timer &amp; z-wave hub 13 - timer &amp; z-wave hub &amp; local 14 - timer &amp; z-wave hub &amp; 3-way 15 - all
+      Range: 0-15
+      Default: 15
+      </Help>
+    </Value>
+    <Value genre="config" type="short" size="2" index="5" label="LED Indicator Color" min="0" max="255" value="170">
+      <Help>
+      This is the color of the LED strip.
+      Range: 0 to 255
+      Default: 170
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="6" label="LED Indicator Intensity" min="0" max="10" value="5">
+      <Help>
+      This is the intensity of the LED strip.
+      Range: 0-10
+      Default: 5
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="7" label="LED Indicator Intensity (When Off)" min="0" max="10" value="1">
+      <Help>
+      This is the intensity of the LED strip when the switch is off. This is useful for users to see the light switch location when the lights are off.
+      Range: 0 - 10
+      Default: 0
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5" />
+      <Group index="2" label="Basic_Set" max_associations="5" />
+    </Associations>
+  </CommandClass>
+</Product>

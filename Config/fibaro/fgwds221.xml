@@ -1,4 +1,4 @@
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
   <MetaData>
     <MetaDataItem name="Name">FGWDSEU-221 Walli Double Switch</MetaDataItem>
@@ -34,6 +34,7 @@
     <MetaDataItem id="1000" name="FrequencyName" type="1B01">CEPT (Europe)</MetaDataItem>
     <ChangeLog>
       <Entry author="Makooy - marc@makooy.nl" date="07 July 2019" revision="1">Initial Creation of config file - https://products.z-wavealliance.org/Products/3395/XML</Entry>
+	  <Entry author="Peter Gebruers - peter.gebruers@gmail.com" date="06 September 2019" revision="2">Change definition of params 30-34 to fix https://github.com/domoticz/domoticz/issues/3557</Entry>
     </ChangeLog>
   </MetaData>
   
@@ -124,44 +125,35 @@
 		<Item label="Reversed (Q1 - 2nd channel, Q2 - 1st channel)" value="1"/>
 	</Value>
 		
-    <Value genre="config" index="30" label="Alarm configuration - 1st slot" max="4" min="1" size="4" type="list" value="0">
-		<Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.</Help>
-		<Item label="[MSB] – Notification Type" value="1"/>
-		<Item label="Notification Value" value="2"/>
-		<Item label="Event/State Parameters" value="3"/>
-		<Item label="[LSB] – Action" value="4"/>
+	<Value type="int" index="30" genre="config" label="Alarm configuration - 1st slot" value="0" min="0" max="4294967295">
+		<Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B:  [MSB] Notification Type, 2B:  Notification Status, 3B: Event/State Parameters, 4B: [LSB] action
+0xX0: no action on output, 0xX1: turn ON, 0xX2: turn OFF, 0xX3: turn ON/OFF continuously, 0x0X: no action on LED frame, 0x1X: LED frame blinks red, 0x2X: LED frame blinks green, 0x4X: LED frame blinks blue, 0x8X: disable LED frame, 0xFX: LED frame LAPD signal (red-white-blue)
+		</Help>
 	</Value>
-		
-    <Value genre="config" index="31" label="Alarm configuration - 2nd slot" max="4" min="1" size="4" type="list" value="0">
-		<Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.</Help>
-		<Item label="[MSB] – Notification Type" value="1"/>
-		<Item label="Notification Value" value="2"/>
-		<Item label="Event/State Parameters" value="3"/>
-		<Item label="[LSB] – Action" value="4"/>
+	<Value type="int" index="31" genre="config" label="Alarm configuration - 2nd slot" value="0" min="0" max="4294967295">
+		<Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B:  [MSB] Notification Type, 2B:  Notification Status, 3B: Event/State Parameters, 4B: [LSB] action
+0xX0: no action on output, 0xX1: turn ON, 0xX2: turn OFF, 0xX3: turn ON/OFF continuously, 0x0X: no action on LED frame, 0x1X: LED frame blinks red, 0x2X: LED frame blinks green, 0x4X: LED frame blinks blue, 0x8X: disable LED frame, 0xFX: LED frame LAPD signal (red-white-blue)
+		</Help>
 	</Value>
-		
-    <Value genre="config" index="32" label="Alarm configuration - 3rd slot" max="4" min="1" size="4" type="list" value="0">
-		<Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.</Help>
-		<Item label="[MSB] – Notification Type" value="1"/>
-		<Item label="Notification Value" value="2"/>
-		<Item label="Event/State Parameters" value="3"/>
-		<Item label="[LSB] – Action" value="4"/>
+	<Value type="int" index="32" genre="config" label="Alarm configuration - 3rd slot" value="0" min="0" max="4294967295">
+		<Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B:  [MSB] Notification Type, 2B:  Notification Status, 3B: Event/State Parameters, 4B: [LSB] action
+0xX0: no action on output, 0xX1: turn ON, 0xX2: turn OFF, 0xX3: turn ON/OFF continuously, 0x0X: no action on LED frame, 0x1X: LED frame blinks red, 0x2X: LED frame blinks green, 0x4X: LED frame blinks blue, 0x8X: disable LED frame, 0xFX: LED frame LAPD signal (red-white-blue)
+		</Help>
 	</Value>
-		
-    <Value genre="config" index="33" label="Alarm configuration - 4th slot" max="4" min="1" size="4" type="list" value="0">
-		<Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.</Help>
-		<Item label="[MSB] – Notification Type" value="1"/>
-		<Item label="Notification Value" value="2"/>
-		<Item label="Event/State Parameters" value="3"/>
-		<Item label="[LSB] – Action" value="4"/>
+	<Value type="int" index="33" genre="config" label="Alarm configuration - 4th slot" value="0" min="0" max="4294967295">
+		<Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B:  [MSB] Notification Type, 2B:  Notification Status, 3B: Event/State Parameters, 4B: [LSB] action
+0xX0: no action on output, 0xX1: turn ON, 0xX2: turn OFF, 0xX3: turn ON/OFF continuously, 0x0X: no action on LED frame, 0x1X: LED frame blinks red, 0x2X: LED frame blinks green, 0x4X: LED frame blinks blue, 0x8X: disable LED frame, 0xFX: LED frame LAPD signal (red-white-blue)
+		</Help>
 	</Value>
-		
-    <Value genre="config" index="34" label="Alarm configuration - 5th slot" max="4" min="1" size="4" type="list" value="0">
-		<Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.</Help>
-		<Item label="[MSB] – Notification Type" value="1"/>
-		<Item label="Notification Value" value="2"/>
-		<Item label="Event/State Parameters" value="3"/>
-		<Item label="[LSB] – Action" value="4"/>
+	<Value type="int" index="34" genre="config" label="Alarm configuration - 5th slot" value="0" min="0" max="4294967295">
+		<Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B:  [MSB] Notification Type, 2B:  Notification Status, 3B: Event/State Parameters, 4B: [LSB] action
+0xX0: no action on output, 0xX1: turn ON, 0xX2: turn OFF, 0xX3: turn ON/OFF continuously, 0x0X: no action on LED frame, 0x1X: LED frame blinks red, 0x2X: LED frame blinks green, 0x4X: LED frame blinks blue, 0x8X: disable LED frame, 0xFX: LED frame LAPD signal (red-white-blue)
+		</Help>
 	</Value>
 
 	<Value genre="config" index="35" label="Alarm configuration – duration" max="32400" min="0" size="2" type="short" value="600">
