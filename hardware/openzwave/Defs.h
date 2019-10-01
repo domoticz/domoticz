@@ -35,22 +35,21 @@
 
 // Compilation export flags
 #if (defined _WINDOWS || defined WIN32 || defined _MSC_VER) && (!defined MINGW && !defined __MINGW32__ && !defined __MINGW64__)
+// As discussd here https://github.com/OpenZWave/open-zwave/pull/1835
+// Disable certain  MSVC warnings here (instead of applying the pragma throughout the code as was done in the past).
+// Application and DLL should be built with same compiler and settings anyway.
+// See https://stackoverflow.com/questions/5661738/how-can-i-use-standard-library-stl-classes-in-my-dll-interface-or-abi
 #	if defined OPENZWAVE_MAKEDLL	// Create the dynamic library.
 #		define OPENZWAVE_EXPORT    __declspec(dllexport)
+		__pragma(warning(disable: 4251)) __pragma(warning(disable: 4275))
 #	elif defined OPENZWAVE_USEDLL	// Use the dynamic library
 #		define OPENZWAVE_EXPORT    __declspec(dllimport)
+		__pragma(warning(disable: 4251)) __pragma(warning(disable: 4275))
 #	else							// Create/Use the static library
 #		define OPENZWAVE_EXPORT
 #	endif
-// Disable export warnings
-#	define OPENZWAVE_EXPORT_WARNINGS_OFF	__pragma( warning(push) )\
-											__pragma( warning(disable: 4251) ) \
-											__pragma( warning(disable: 4275) )
-#	define OPENZWAVE_EXPORT_WARNINGS_ON		__pragma( warning(pop) )
 #else
 #	define OPENZWAVE_EXPORT
-#	define OPENZWAVE_EXPORT_WARNINGS_OFF
-#	define OPENZWAVE_EXPORT_WARNINGS_ON
 #endif
 
 #ifdef __GNUC__
