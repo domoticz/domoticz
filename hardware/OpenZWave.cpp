@@ -5332,6 +5332,8 @@ namespace http {
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
 					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->SetNodeName(homeID, nodeID, name);
 					pOZWHardware->EnableDisableNodePolling(nodeID);
@@ -5360,6 +5362,8 @@ namespace http {
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
 					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->RemoveFailedDevice(nodeID);
 					root["status"] = "OK";
@@ -5386,6 +5390,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				m_sql.AllowNewHardwareTimer(5);
 				pOZWHardware->IncludeDevice(bSecure);
@@ -5408,6 +5414,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->ExcludeDevice(1);
 				root["status"] = "OK";
@@ -5423,6 +5431,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				root["status"] = "OK";
 				root["title"] = "ZWaveIsNodeIncluded";
@@ -5451,6 +5461,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				root["status"] = "OK";
 				root["title"] = "ZWaveIsNodeExcluded";
@@ -5473,6 +5485,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->SoftResetDevice();
 				root["status"] = "OK";
@@ -5494,6 +5508,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->HardResetDevice();
 				root["status"] = "OK";
@@ -5510,6 +5526,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				if (!pOZWHardware->GetFailedState()) {
 					root["status"] = "OK";
@@ -5532,6 +5550,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->HealNetwork();
 				root["status"] = "OK";
@@ -5556,6 +5576,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->HealNode(atoi(node.c_str()));
 				root["status"] = "OK";
@@ -5580,6 +5602,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwID);
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				std::vector< std::vector< int > > nodevectors;
 
@@ -5648,6 +5672,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				int nodeId = 0, instance = 0;
 				sscanf(removenode.c_str(), "%d.%d", &nodeId, &instance);
@@ -5680,6 +5706,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				int nodeId = 0, instance = 0;
 				sscanf(addnode.c_str(), "%d.%d", &nodeId, &instance);
@@ -5699,6 +5727,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 
 				std::vector<std::vector<std::string> > result;
@@ -5767,6 +5797,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->CancelControllerCommand(true);
 				root["status"] = "OK";
@@ -5799,6 +5831,8 @@ namespace http {
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
 					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					if (!pOZWHardware->ApplyNodeConfig(homeID, nodeID, svaluelist))
 						return;
@@ -5823,6 +5857,8 @@ namespace http {
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
 					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->RequestNodeConfig(homeID, nodeID);
 					root["status"] = "OK";
@@ -5845,6 +5881,8 @@ namespace http {
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
 					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->RequestNodeInfo(homeID, nodeID);
 					root["status"] = "OK";
@@ -5867,6 +5905,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->ReceiveConfigurationFromOtherController();
 				root["status"] = "OK";
@@ -5888,6 +5928,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->SendConfigurationToSecondaryController();
 				root["status"] = "OK";
@@ -5909,6 +5951,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->TransferPrimaryRole();
 				root["status"] = "OK";
@@ -5924,22 +5968,21 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::string configFilePath = "";
-					pOZWHardware->GetConfigFile(configFilePath, rep.content);
-					if (!configFilePath.empty() && !rep.content.empty()) {
-						std::string filename;
-						std::size_t last_slash_pos = configFilePath.find_last_of("/");
-						if (last_slash_pos != std::string::npos) {
-							filename = configFilePath.substr(last_slash_pos + 1);
-						}
-						else {
-							filename = configFilePath;
-						}
-						reply::add_header_attachment(&rep, filename);
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::string configFilePath = "";
+				pOZWHardware->GetConfigFile(configFilePath, rep.content);
+				if (!configFilePath.empty() && !rep.content.empty()) {
+					std::string filename;
+					std::size_t last_slash_pos = configFilePath.find_last_of("/");
+					if (last_slash_pos != std::string::npos) {
+						filename = configFilePath.substr(last_slash_pos + 1);
 					}
+					else {
+						filename = configFilePath;
+					}
+					reply::add_header_attachment(&rep, filename);
 				}
 			}
 		}
@@ -5948,13 +5991,12 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					pOZWHardware->m_ozwcp.SetAllNodesChanged();
-					std::string wwwFile = szWWWFolder + "/ozwcp/cp.html";
-					reply::set_content_from_file(&rep, wwwFile);
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				pOZWHardware->m_ozwcp.SetAllNodesChanged();
+				std::string wwwFile = szWWWFolder + "/ozwcp/cp.html";
+				reply::set_content_from_file(&rep, wwwFile);
 			}
 		}
 		void CWebServer::ZWaveCPPollXml(WebEmSession& session, const request& req, reply& rep)
@@ -5962,14 +6004,13 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendPollResponse());
-					reply::add_header_attachment(&rep, "poll.xml");
-				}
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.SendPollResponse());
+				reply::add_header_attachment(&rep, "poll.xml");
 			}
 		}
 		void CWebServer::ZWaveCPNodeGetConf(WebEmSession& session, const request& req, reply& rep)
@@ -5985,12 +6026,11 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeConfResponse(iNode));
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeConfResponse(iNode));
 			}
 		}
 		void CWebServer::ZWaveCPNodeGetValues(WebEmSession& session, const request& req, reply& rep)
@@ -6006,12 +6046,11 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeValuesResponse(iNode));
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeValuesResponse(iNode));
 			}
 		}
 		void CWebServer::ZWaveCPNodeSetValue(WebEmSession& session, const request& req, reply& rep)
@@ -6024,12 +6063,11 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeValue(strarray[0], strarray[1]));
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeValue(strarray[0], strarray[1]));
 			}
 		}
 		void CWebServer::ZWaveCPNodeSetButton(WebEmSession& session, const request& req, reply& rep)
@@ -6042,12 +6080,11 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeButton(strarray[0], strarray[1]));
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeButton(strarray[0], strarray[1]));
 			}
 		}
 		void CWebServer::ZWaveCPAdminCommand(WebEmSession& session, const request& req, reply& rep)
@@ -6068,12 +6105,11 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str())));
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str())));
 			}
 		}
 		void CWebServer::ZWaveCPNodeChange(WebEmSession& session, const request& req, reply& rep)
@@ -6092,12 +6128,11 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoNodeChange(sFun, atoi(sNode.c_str()), sValue));
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.DoNodeChange(sFun, atoi(sNode.c_str()), sValue));
 			}
 		}
 		void CWebServer::ZWaveCPSetGroup(WebEmSession& session, const request& req, reply& rep)
@@ -6119,12 +6154,9 @@ namespace http {
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 				if (pHardware != NULL)
 				{
-					if (pHardware->HwdType == HTYPE_OpenZWave)
-					{
-						COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-						std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-						reply::set_content(&rep, pOZWHardware->m_ozwcp.UpdateGroup(sFun, atoi(sNode.c_str()), atoi(sGroup.c_str()), glist));
-					}
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.UpdateGroup(sFun, atoi(sNode.c_str()), atoi(sGroup.c_str()), glist));
 				}
 			}
 		}
@@ -6134,12 +6166,11 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.SaveConfig());
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.SaveConfig());
 			}
 		}
 		void CWebServer::ZWaveCPGetTopo(WebEmSession& session, const request& req, reply& rep)
@@ -6147,13 +6178,12 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPTopo());
-					reply::add_header_attachment(&rep, "topo.xml");
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPTopo());
+				reply::add_header_attachment(&rep, "topo.xml");
 			}
 		}
 		void CWebServer::ZWaveCPGetStats(WebEmSession& session, const request& req, reply& rep)
@@ -6161,13 +6191,12 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
-					reply::add_header_attachment(&rep, "stats.xml");
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
+				reply::add_header_attachment(&rep, "stats.xml");
 			}
 		}
 		void CWebServer::ZWaveCPSceneCommand(WebEmSession& session, const request& req, reply& rep)
@@ -6185,12 +6214,11 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
-				}
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
 			}
 		}
 
@@ -6211,35 +6239,32 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware == NULL)
 				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
 			COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+			std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 
-			if (pHardware->HwdType == HTYPE_OpenZWave)
+			if (sFun == "test")
 			{
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
+				std::string sNum = request::findValue(&values, "num");
+				std::string sArg = request::findValue(&values, "cnt");
 
-				if (sFun == "test")
-				{
-					std::string sNum = request::findValue(&values, "num");
-					std::string sArg = request::findValue(&values, "cnt");
+				int node = atoi(sNum.c_str());
+				int cnt = atoi(sArg.c_str());
 
-					int node = atoi(sNum.c_str());
-					int cnt = atoi(sArg.c_str());
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.DoTestNetwork(node, cnt));
+				reply::add_header_attachment(&rep, "testheal.xml");
+			}
+			else if (sFun == "heal")
+			{
+				std::string sNum = request::findValue(&values, "num");
+				std::string sHealRRS = request::findValue(&values, "healrrs");
 
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoTestNetwork(node, cnt));
-					reply::add_header_attachment(&rep, "testheal.xml");
-				}
-				else if (sFun == "heal")
-				{
-					std::string sNum = request::findValue(&values, "num");
-					std::string sHealRRS = request::findValue(&values, "healrrs");
+				int node = atoi(sNum.c_str());
+				bool healrrs = !sHealRRS.empty();
 
-					int node = atoi(sNum.c_str());
-					bool healrrs = !sHealRRS.empty();
-
-					reply::set_content(&rep, pOZWHardware->m_ozwcp.HealNetworkNode(node, healrrs));
-					reply::add_header_attachment(&rep, "testheal.xml");
-				}
+				reply::set_content(&rep, pOZWHardware->m_ozwcp.HealNetworkNode(node, healrrs));
+				reply::add_header_attachment(&rep, "testheal.xml");
 			}
 		}
 
@@ -6257,6 +6282,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				root["status"] = "OK";
 				root["title"] = "SetUserCodeEnrollmentMode";
@@ -6291,6 +6318,8 @@ namespace http {
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
 					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					if (!pOZWHardware->RemoveUserCode(homeID, nodeID, iCodeIndex))
 						return;
@@ -6316,6 +6345,8 @@ namespace http {
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
 					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					if (!pOZWHardware->GetNodeUserCodes(homeID, nodeID, root))
 						return;
@@ -6334,6 +6365,8 @@ namespace http {
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				if (!pOZWHardware->GetBatteryLevels(root))
 					return;
