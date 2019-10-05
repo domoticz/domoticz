@@ -832,6 +832,17 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
 	//NOTE: interface id (bus identifier) go in 'Unit' field
 	//make device ID
 	int NodeID = (int)((((int)who << 16) & 0xFFFF0000) | (((int)(where + (iAppValue * 2) + (what * 3))) & 0x0000FFFF));
+	char szIdx[10];
+	sprintf(szIdx, "%07X", NodeID);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
+
+	if (result.empty())
+	{
+		// First insert, set SwitchType = STYPE_Contact, so we have a correct contact device
+		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeLighting2, sTypeAC, STYPE_Contact, 0, "Unavailable", devname);
+	}
+
 	SendSwitch(NodeID, iInterface, BatteryLevel, (bool)Command, 0, devname);
 }
 
@@ -1284,6 +1295,12 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		case ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER:
 			UpdateEnergy(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 1000.), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
+		case ENERGY_MANAGEMENT_DIMENSION_END_AUTOMATIC_UPDATE:			
+			if (atoi(value.c_str()))
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Start sending instantaneous consumption %s for %s minutes", where.c_str(), value.c_str());
+			else
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Stop sending instantaneous consumption %s", where.c_str());
+			break;
 		default:
 			_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
 			break;
@@ -1385,11 +1402,14 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 				{
 					what = AUTOMATION_WHAT_DOWN;
 				}
-
 				else if (pCmd->LIGHTING2.cmnd == light2_sSetLevel)
 				{
 					// setting level of Blinds
-					Level = int(pCmd->LIGHTING2.level); // uint8_t, always >= 0
+					Level = int((pCmd->LIGHTING2.level * 100 / 15));
+				}
+				else if (pCmd->LIGHTING2.cmnd == gswitch_sStop)
+				{
+					what = AUTOMATION_WHAT_STOP;
 				}
 			}
 
@@ -1611,9 +1631,10 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		return false;
 	}
 	// Command session correctly open
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	//_log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	// Command session correctly open -> write command
+	_log.Log(LOG_STATUS, "COpenWebNetTCP: Command %s", command.frame_open.c_str());
 	ownWrite(commandSocket, command.frame_open.c_str(), command.frame_open.length());
 
 	if (waitForResponse > 0) {
@@ -1859,10 +1880,25 @@ void COpenWebNetTCP::Do_Work()
 {
 	while (!IsStopRequested(OPENWEBNET_HEARTBEAT_DELAY*1000))
 	{
-		if (isStatusSocketConnected() && mask_request_status)
+		if (isStatusSocketConnected())
 		{
-			scan_device();
-			mask_request_status = 0x0; // scan devices complete
+			if ((mytime(NULL) - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
+			{
+				requestAutomaticUpdatePower(255); // automatic update for 255 minutes
+				LastScanTimeEnergy = mytime(NULL);
+			}
+
+			if ((mytime(NULL) - LastScanTimeEnergyTot) > SCAN_TIME_REQ_ENERGY_TOTALIZER)
+			{
+				requestEnergyTotalizer();
+				LastScanTimeEnergyTot = mytime(NULL);
+			}
+
+			if (mask_request_status)
+			{
+				scan_device();
+				mask_request_status = 0x0; // scan devices complete
+			}
 		}
 
 		// every 5 minuts force scan ALL devices for refresh status
@@ -1871,18 +1907,6 @@ void COpenWebNetTCP::Do_Work()
 			if ((mask_request_status & 0x1) == 0)
 				_log.Log(LOG_STATUS, "COpenWebNetTCP: HEARTBEAT set scan devices ...");
 			mask_request_status = 0x1; // force scan devices
-		}
-
-		if ((mytime(NULL) - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
-		{
-			requestAutomaticUpdatePower(255); // automatic update for 255 minutes
-			LastScanTimeEnergy = mytime(NULL);
-		}
-
-		if ((mytime(NULL) - LastScanTimeEnergyTot) > SCAN_TIME_REQ_ENERGY_TOTALIZER)
-		{
-			requestEnergyTotalizer();
-			LastScanTimeEnergyTot = mytime(NULL);
 		}
 
 		m_LastHeartbeat = mytime(NULL);
