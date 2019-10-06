@@ -428,10 +428,10 @@ define(['app', 'livesocket'], function (app) {
 						}
 						else if (item.SwitchType == "Dusk Sensor") {
 							if (item.Status == 'On') {
-								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Dark") + '</a>';
+								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Sunny") + '</a>';
 							}
 							else {
-								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Sunny") + '</a>';
+								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Dark") + '</a>';
 							}
 						}
 						else if (item.SwitchType == "Smoke Detector") {
@@ -785,11 +785,11 @@ define(['app', 'livesocket'], function (app) {
 							if (
 								(item.Status == 'On')
 							) {
-								img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/uvdark.png" class="lcursor" height="40" width="40"></a>';
-								$(id + " #div.item").removeClass('uvSunny').addClass('fireplaceOn');
+								img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/uvsunny.png" class="lcursor" height="40" width="40"></a>';
+								$(id + " #div.item").removeClass('uvDark').addClass('fireplaceOn');
 							}
 							else {
-								img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/uvsunny.png" class="lcursor" height="40" width="40"></a>';
+								img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/uvdark.png" class="lcursor" height="40" width="40"></a>';
 							}
 						}
 						else if (item.SwitchType == "Media Player") {
@@ -2159,7 +2159,7 @@ define(['app', 'livesocket'], function (app) {
 										}
 									}
 									else if (item.SwitchType == "Dusk Sensor") {
-										status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t(item.Status == 'On' ? "Dark": "Sunny") + '</a>';
+										status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t(item.Status == 'On' ? "Sunny": "Dark") + '</a>';
 									}
 									else if (item.SwitchType == "Motion Sensor") {
 										if (
@@ -2607,10 +2607,10 @@ define(['app', 'livesocket'], function (app) {
 									}
 									else if (item.SwitchType == "Dusk Sensor") {
 										if (item.Status == 'On') {
-											xhtm += '\t      <td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/uvdark.png" class="lcursor" height="40" width="40"></a></td>\n';
+											xhtm += '\t      <td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/uvsunny.png" class="lcursor" height="40" width="40"></td>\n';
 										}
 										else {
-											xhtm += '\t      <td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/uvsunny.png" class="lcursor" height="40" width="40"></td>\n';
+											xhtm += '\t      <td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/uvdark.png" class="lcursor" height="40" width="40"></a></td>\n';
 										}
 									}
 									else if (item.SwitchType == "Motion Sensor") {
