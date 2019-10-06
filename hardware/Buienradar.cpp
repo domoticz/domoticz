@@ -21,8 +21,8 @@
 #define BUIENRADAR_RAIN "https://gadgets.buienradar.nl/data/raintext/?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
 
 #ifdef _DEBUG
- #define DEBUG_BUIENRADARR
- #define DEBUG_BUIENRADARW
+// #define DEBUG_BUIENRADARR
+// #define DEBUG_BUIENRADARW
 #endif
 
 #ifdef DEBUG_BUIENRADARW
@@ -448,9 +448,9 @@ void CBuienRadar::GetMeterDetails()
 	float total_rain_today = -1;
 	float total_rain_last_hour = 0;
 
-	if (!root["rainFallLast24Hour"].empty())
+	if (!root["precipitationmm"].empty())
 	{
-		total_rain_today = root["rainFallLast24Hour"].asFloat();
+		total_rain_today = root["precipitationmm"].asFloat();
 	}
 	if (!root["rainFallLastHour"].empty())
 	{
