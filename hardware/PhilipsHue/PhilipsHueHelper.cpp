@@ -41,7 +41,7 @@ static const point colorPointsGamut_Default[3] = {point(1.0, 0.0),
 
 static const char* GAMUT_A_BULBS_LIST_v[] = {"LLC001", "LLC005", "LLC006", "LLC007", "LLC010", "LLC011", "LLC012", "LLC014", "LLC013", "LST001"};
 static const char* GAMUT_B_BULBS_LIST_v[] = {"LCT001", "LCT002", "LCT003", "LCT004", "LLM001", "LCT005", "LCT006", "LCT007"};
-static const char* GAMUT_C_BULBS_LIST_v[] = {"LCT010", "LCT011", "LCT012", "LCT014", "LCT015", "LCT016", "LLC020", "LST002", "LCS001"};
+static const char* GAMUT_C_BULBS_LIST_v[] = {"LCT010", "LCT011", "LCT012", "LCT014", "LCT015", "LCT016", "LLC020", "LST002", "LCS001", "LCG002"};
 static const char* MULTI_SOURCE_LUMINAIRES_v[] = {"HBL001", "HBL002", "HBL003", "HIL001", "HIL002", "HEL001", "HEL002"};
 static std::vector<std::string> GAMUT_A_BULBS_LIST(GAMUT_A_BULBS_LIST_v, GAMUT_A_BULBS_LIST_v + sizeof(GAMUT_A_BULBS_LIST_v) / sizeof(GAMUT_A_BULBS_LIST_v[0]));
 static std::vector<std::string> GAMUT_B_BULBS_LIST(GAMUT_B_BULBS_LIST_v, GAMUT_B_BULBS_LIST_v + sizeof(GAMUT_B_BULBS_LIST_v) / sizeof(GAMUT_B_BULBS_LIST_v[0]));
