@@ -154,7 +154,7 @@ void CBuienRadar::Do_Work()
 				//reset our rain counter
 				m_actDay = ltime.tm_mday;
 				m_lastRainCount = 0;
-				SendRainSensorWU(1, 255, 0, 0, "Rain");
+			//	SendRainSensorWU(1, 255, 0, 0, "Rain");
 			}
 		}
 
@@ -458,12 +458,7 @@ void CBuienRadar::GetMeterDetails()
 	}
 	if (total_rain_today != -1)
 	{
-		//Make sure the 24 hour counter does not loop when our day is not finished yet (clocks could drift a few seconds/minutes)
-		if (total_rain_today >= m_lastRainCount)
-		{
-			m_lastRainCount = total_rain_today;
-			SendRainSensorWU(1, 255, total_rain_today, total_rain_last_hour, "Rain");
-		}
+		SendRainRateSensor(1, 255, total_rain_today,  "Rain");
 	}
 }
 
