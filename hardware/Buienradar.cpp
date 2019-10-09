@@ -138,25 +138,8 @@ void CBuienRadar::Do_Work()
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
-		if (sec_counter % 10 == 0) {
-			time_t now = mytime(0);
-
-			m_LastHeartbeat = now;
-
-			//Reset on time
-			now += m_sql.m_ShortLogInterval;
-			now += 10;
-
-			struct tm ltime;
-			localtime_r(&now, &ltime);
-			if (ltime.tm_mday != m_actDay)
-			{
-				//reset our rain counter
-				m_actDay = ltime.tm_mday;
-				m_lastRainCount = 0;
-			//	SendRainSensorWU(1, 255, 0, 0, "Rain");
-			}
-		}
+		time_t now = mytime(0);
+		m_LastHeartbeat = now;
 
 		if (sec_counter % 600 == 0)
 		{
@@ -339,12 +322,6 @@ void CBuienRadar::GetMeterDetails()
 		return;
 	}
 
-	//timestamp : "2019-08-22T08:30:00"
-	std::string szTimeStamp = root["timestamp"].asString();
-	int stampDay = std::stoi(szTimeStamp.substr(8, 2));
-	if (stampDay != m_actDay)
-		return;
-
 	//iconurl : "https://www.buienradar.nl/resources/images/icons/weather/30x30/a.png"
 	//graphUrl : "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/a"
 
@@ -445,20 +422,15 @@ void CBuienRadar::GetMeterDetails()
 		SendCustomSensor(2, 1, 255, sunpower, "Sun Power", "watt/m2");
 	}
 
-	float total_rain_today = -1;
-	float total_rain_last_hour = 0;
+	float precipitation = -1;
 
 	if (!root["precipitationmm"].empty())
 	{
-		total_rain_today = root["precipitationmm"].asFloat();
+		precipitation = root["precipitationmm"].asFloat();
 	}
-	if (!root["rainFallLastHour"].empty())
+	if (precipitation != -1)
 	{
-		total_rain_last_hour = root["rainFallLastHour"].asFloat();
-	}
-	if (total_rain_today != -1)
-	{
-		SendRainRateSensor(1, 255, total_rain_today,  "Rain");
+		SendRainRateSensor(1, 255, precipitation,  "Rain");
 	}
 }
 
