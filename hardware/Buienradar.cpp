@@ -422,14 +422,9 @@ void CBuienRadar::GetMeterDetails()
 		SendCustomSensor(2, 1, 255, sunpower, "Sun Power", "watt/m2");
 	}
 
-	float precipitation = -1;
-
 	if (!root["precipitationmm"].empty())
 	{
-		precipitation = root["precipitationmm"].asFloat();
-	}
-	if (precipitation != -1)
-	{
+		float precipitation = root["precipitationmm"].asFloat();
 		SendRainRateSensor(1, 255, precipitation,  "Rain");
 	}
 }
