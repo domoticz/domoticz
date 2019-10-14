@@ -1213,12 +1213,12 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 				{
 					if (svalue == 0) {
 						//Off
-						m_pManager->SetValue(vID, 0);
+						m_pManager->SetValue(vID, (uint8_t)0);
 						pDevice->intvalue = 0;
 					}
 					else {
 						//On
-						m_pManager->SetValue(vID, 255);
+						m_pManager->SetValue(vID, (uint8_t)255);
 						pDevice->intvalue = 255;
 					}
 				}
@@ -1264,7 +1264,7 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 
 				if (vID.GetType() == OpenZWave::ValueID::ValueType_Byte)
 				{
-					if (!m_pManager->SetValue(vID, svalue))
+					if (!m_pManager->SetValue(vID, (uint8_t)svalue))
 					{
 						_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! NodeID: %d (0x%02x)", pDevice->nodeID, pDevice->nodeID);
 					}
@@ -1307,7 +1307,7 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 
 					if (vID.GetType() == OpenZWave::ValueID::ValueType_Byte)
 					{
-						if (!m_pManager->SetValue(vID, svalue))
+						if (!m_pManager->SetValue(vID, (uint8_t)svalue))
 						{
 							_log.Log(LOG_ERROR, "OpenZWave: Error setting Slat/Tilt Value! NodeID: %d (0x%02x)", pDevice->nodeID, pDevice->nodeID);
 						}
