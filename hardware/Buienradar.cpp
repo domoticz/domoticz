@@ -440,12 +440,12 @@ void CBuienRadar::GetMeterDetails()
 		m_itIsRaining=precipitation>0;
 		SendSwitch(1, 1, 255, m_itIsRaining , 0, "Is it Raining");
 
-		// For Debugging purposes
+		/* For Debugging purposes
 		if (m_itIsRaining) {
 			_log.Log(LOG_STATUS,"BuienRadar: it is raining");
 		} else {
 			_log.Log(LOG_STATUS,"BuienRadar: It is not raining");
-		}
+		} */
 	}
 }
 
@@ -534,29 +534,30 @@ void CBuienRadar::GetRainPrediction()
 				// Check for 0.00 (in this case the difference between the timestamp is negative)
 				if ((rain_time-startTime)<0) {
 					rain_time+=24*60; 
-					_log.Log(LOG_STATUS,"BuienRadar: Added 24 hrs to timestamp to compenstate 0.00 timestamp");
+					// _log.Log(LOG_STATUS,"BuienRadar: Added 24 hrs to timestamp to compenstate old timestamp (e.g. might be 0.00 timestamp)");
 				}
 
 				// check for invalid measurement, the next prediction should be within 5 minutes, for safety we check for a timestamp max 10 minutes in the futere
 				if ((rain_time-startTime)>10) {
-					_log.Log(LOG_ERROR,"BuienRadar: Invalid timestamp in Buienradar rain prediction");
+					_log.Log(LOG_ERROR,"BuienRadar: Invalid timestamp in Buienradar rain prediction, ignoring measurement");
+					return;
 				}
 
 			} else {
 				rain_time+=5;
 			}
 
-			// For Debugging purposes
+			/* For Debugging purposes
 			char logline[100];
 			sprintf(logline,"BuienRadar: rainprediction in %d minutes (at %d) = %d",rain_time-startTime,rain_time,rain_value);
-			_log.Log(LOG_STATUS,logline);
+			_log.Log(LOG_STATUS,logline); */
 
 			// calculate statistics
 			if (shower_detected) {
 				if (end_of_rainshower==0) {
 					if (rain_value==0) {
 						// End Of RainShower detected
-						_log.Log(LOG_STATUS,"Setting endofrainshower");
+						// _log.Log(LOG_STATUS,"Setting endofrainshower");
 						end_of_rainshower=rain_time;
 					} else {
 						// add stats
@@ -571,7 +572,7 @@ void CBuienRadar::GetRainPrediction()
 			} else {
 				if ((start_of_rainshower==0) and (rain_value>0)) {
 					// Start Of RainShower Detected
-					_log.Log(LOG_STATUS,"Setting StartOfRainshower");
+					// _log.Log(LOG_STATUS,"Setting StartOfRainshower");
 					start_of_rainshower=rain_time;
 					shower_detected=true;
 				
@@ -586,8 +587,8 @@ void CBuienRadar::GetRainPrediction()
 			}
 
 			// sprintf(logline,"BuienRadar: rain_time=%d,StartOfRainShower=%d,EndOfRainShower=%d",rain_time,start_of_rainshower,end_of_rainshower);
-			sprintf(logline,"BuienRadar: max_rainmh=%.2f,total_rain_values=%d,total_rainmmh=%.2f",max_rainmmh_in_next_rainshower,total_rainvalues_in_next_rainshower,total_rainmmh_in_next_rainshower);
-			_log.Log(LOG_STATUS,logline);
+			// sprintf(logline,"BuienRadar: max_rainmh=%.2f,total_rain_values=%d,total_rainmmh=%.2f",max_rainmmh_in_next_rainshower,total_rainvalues_in_next_rainshower,total_rainmmh_in_next_rainshower);
+			// _log.Log(LOG_STATUS,logline);
 			
 			if ((rain_time >= startTime) && (rain_time <= endTimeHour))
 			{
@@ -618,8 +619,8 @@ void CBuienRadar::GetRainPrediction()
 			end_of_rainshower=startTime;
 		} else {
 			if (end_of_rainshower==0) {
-				// Start was detected, but End was not, correcting EndOfRainshower to last measurement
-				end_of_rainshower=rain_time;
+				// Start was detected, but End was not, Assuming EndOfRainshower is next meausurement after the last measurement (+5 min)
+				end_of_rainshower=rain_time+5;
 			}
 		}
 	}
@@ -629,7 +630,7 @@ void CBuienRadar::GetRainPrediction()
 	}
 
 
-	// Debug
+	/* Debug
 	char logline[100];
 	sprintf(logline,"BuienRadar: rain_time=%d,StartOfRainShower=%d,EndOfRainShower=%d",rain_time,start_of_rainshower,end_of_rainshower);
 	_log.Log(LOG_STATUS,logline);
@@ -641,12 +642,13 @@ void CBuienRadar::GetRainPrediction()
 			sprintf(logline,"RainShower detected in %d which will take %d minutes",start_of_rainshower-startTime,end_of_rainshower-start_of_rainshower);
 			_log.Log(LOG_STATUS,logline);
 		}
-	}
+	} */
+
 	m_rainShowerLeadTime=start_of_rainshower-startTime;
-	SendCustomSensor(RAINSHOWER_LEADTIME, 1, 255, static_cast<float>(m_rainShowerLeadTime), "Expected Rainshower Leadtime", "minutes");
-	SendCustomSensor(RAINSHOWER_DURATION, 1, 255, static_cast<float>(end_of_rainshower-start_of_rainshower), "Expected Rainshower Duration", "minutes");
-	SendCustomSensor(RAINSHOWER_AVERAGE_MMH, 1, 255, static_cast<float>(avg_rainmmh_in_next_rainshower), "Average Rainrate In Next Rainshower", "mm/h");
-	SendCustomSensor(RAINSHOWER_MAX_MMH, 1, 255, static_cast<float>(max_rainmmh_in_next_rainshower), "Max Rainrate In Next Rainshower", "mm/h");
+	SendCustomSensor(RAINSHOWER_LEADTIME, 1, 255, static_cast<float>(m_rainShowerLeadTime), "Next Rainshower Leadtime", "min");
+	SendCustomSensor(RAINSHOWER_DURATION, 1, 255, static_cast<float>(end_of_rainshower-start_of_rainshower), "Next Rainshower Duration", "min");
+	SendCustomSensor(RAINSHOWER_AVERAGE_MMH, 1, 255, static_cast<float>(avg_rainmmh_in_next_rainshower), "Next Rainshower Avg Rainrate", "mm/h");
+	SendCustomSensor(RAINSHOWER_MAX_MMH, 1, 255, static_cast<float>(max_rainmmh_in_next_rainshower), "Next Rainshower Max Rainrate", "mm/h");
 
 
 	if (total_rain_values_in_duration) {
