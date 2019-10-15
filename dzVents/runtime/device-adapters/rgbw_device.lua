@@ -27,7 +27,7 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		if (device.deviceSubType == 'RGBWW') then
+		if (device.deviceSubType == 'RGBWW') or (device.deviceSubType == 'WW')  then
 			function device.setKelvin(kelvin)
 				local url
 				url = domoticz.settings['Domoticz url'] ..
