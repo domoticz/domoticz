@@ -136,7 +136,7 @@ void CBuienRadar::Do_Work()
 	GetMeterDetails();
 	GetRainPrediction();
 #endif
-	int sec_counter = 598;
+	int sec_counter = 593;
 	_log.Log(LOG_STATUS, "BuienRadar: Worker started...");
 
 	while (!IsStopRequested(1000))
