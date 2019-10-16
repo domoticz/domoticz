@@ -12288,8 +12288,9 @@ namespace http {
 			{
 				int dType = atoi(result[0][0].c_str());
 				if (
-					(dType == pTypeTEMP) ||
-					(dType == pTypeTEMP_HUM)
+					(dType == pTypeTEMP)
+					|| (dType == pTypeTEMP_HUM)
+					|| (dType == pTypeTEMP_HUM_BARO)
 					)
 				{
 					result = m_sql.safe_query(
