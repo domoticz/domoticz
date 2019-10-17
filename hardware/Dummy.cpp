@@ -71,46 +71,46 @@ namespace http {
 
 		static const _mappedsensorname mappedsensorname[] =
 		{
-			{ 249, 0xF9, 0x01 }, //Air Quality
-			{ 7,   0xF3, 0x16 }, //Alert
-			{ 9,   0x59, 0x01 }, //Ampere (3 Phase)
-			{ 19,  0xF3, 0x17 }, //Ampere (1 Phase)
-			{ 11,  0xF3, 0x1A }, //Barometer
-			{ 113, 0x71, 0x00 }, //Counter
-			{ 14,  0xF3, 0x1C }, //Counter Incremental
-			{ 1004,0xF3, 0x1F }, //Custom Sensor
-			{ 13,  0xF3, 0x1B }, //Distance
-			{ 18,  0xF3, 0x1D }, //Electric (Instant+Counter)
-			{ 3,   0xFB, 0x02 }, //Gas
-			{ 81,  0x51, 0x01 }, //Humidity
-			{ 16,  0xF3, 0x04 }, //Leaf Wetness
-			{ 246, 0xF6, 0x01 }, //Lux
-			{ 250, 0xFA, 0x01 }, //P1 Smart Meter (Electric)
-			{ 1005,0xF3, 0x21 }, //Managed Counter
-			{ 2,   0xF3, 0x06 }, //Percentage
-			{ 1,   0xF3, 0x09 }, //Pressure (Bar)
-			{ 85,  0x55, 0x03 }, //Rain
-			{ 241, 0xF1, 0x02 }, //RGB Switch
-			{ 1003,0xF1, 0x01 }, //RGBW Switch
-			{ 93,  0x5D, 0x01 }, //Scale
-			{ 1002,0xF4, 0x3E }, //Selector Switch
-			{ 15,  0xF3, 0x03 }, //Soil Moisture
-			{ 20,  0xF3, 0x02 }, //Solar Radiation
-			{ 10,  0xF3, 0x18 }, //Sound Level
-			{ 6,   0xF4, 0x49 }, //Switch
-			{ 80,  0x50, 0x05 }, //Temperature
-			{ 82,  0x52, 0x01 }, //Temp+Hum
-			{ 84,  0x54, 0x01 }, //Temp+Hum+Baro
-			{ 247, 0xF7, 0x01 }, //Temp+Baro
-			{ 5,   0xF3, 0x13 }, //Text
-			{ 8,   0xF2, 0x01 }, //Thermostat Setpoint
-			{ 248, 0xF8, 0x01 }, //Usage (Electric)
-			{ 87,  0x57, 0x01 }, //UV
-			{ 12,  0xF3, 0x01 }, //Visibility
-			{ 4,   0xF3, 0x08 }, //Voltage
-			{ 1000,0xF3, 0x1E }, //Waterflow
-			{ 86,  0x56, 0x01 }, //Wind
-			{ 1001,0x56, 0x04 } //Wind+Temp+Chill
+			{ 249, pTypeAirQuality, sTypeVoltcraft }, //Air Quality
+			{ 7,   pTypeGeneral, sTypeAlert }, //Alert
+			{ 9,   pTypeCURRENT, sTypeELEC1 }, //Ampere (3 Phase)
+			{ 19,  pTypeGeneral, sTypeCurrent }, //Ampere (1 Phase)
+			{ 11,  pTypeGeneral, sTypeBaro }, //Barometer
+			{ 113, pTypeRFXMeter, sTypeRFXMeterCount }, //Counter
+			{ 14,  pTypeGeneral, sTypeCounterIncremental }, //Counter Incremental
+			{ 1004,pTypeGeneral, sTypeCustom }, //Custom Sensor
+			{ 13,  pTypeGeneral, sTypeDistance }, //Distance
+			{ 18,  pTypeGeneral, sTypeKwh }, //Electric (Instant+Counter)
+			{ 3,   pTypeP1Gas, sTypeP1Gas }, //Gas
+			{ 81,  pTypeHUM, sTypeHUM1 }, //Humidity
+			{ 16,  pTypeGeneral, sTypeLeafWetness }, //Leaf Wetness
+			{ 246, pTypeLux, sTypeLux }, //Lux
+			{ 250, pTypeP1Power, sTypeP1Power}, //P1 Smart Meter (Electric)
+			{ 1005,pTypeGeneral, sTypeManagedCounter }, //Managed Counter
+			{ 2,   pTypeGeneral, sTypePercentage }, //Percentage
+			{ 1,   pTypeGeneral, sTypePressure }, //Pressure (Bar)
+			{ 85,  pTypeRAIN, sTypeRAIN3 }, //Rain
+			{ 241, pTypeColorSwitch, sTypeColor_RGB }, //RGB Switch
+			{ 1003,pTypeColorSwitch, sTypeColor_RGB_W }, //RGBW Switch
+			{ 93,  pTypeWEIGHT, sTypeWEIGHT1 }, //Scale
+			{ 1002,pTypeGeneralSwitch, sSwitchTypeSelector }, //Selector Switch
+			{ 15,  pTypeGeneral, sTypeSoilMoisture }, //Soil Moisture
+			{ 20,  pTypeGeneral, sTypeSolarRadiation }, //Solar Radiation
+			{ 10,  pTypeGeneral, sTypeSoundLevel }, //Sound Level
+			{ 6,   pTypeGeneralSwitch, sSwitchGeneralSwitch }, //Switch
+			{ 80,  pTypeTEMP, sTypeTEMP5 }, //Temperature
+			{ 82,  pTypeTEMP_HUM, sTypeTH1 }, //Temp+Hum
+			{ 84,  pTypeTEMP_HUM_BARO, sTypeTHB1 }, //Temp+Hum+Baro
+			{ 247, pTypeTEMP_BARO, sTypeBMP085 }, //Temp+Baro
+			{ 5,   pTypeGeneral, sTypeTextStatus }, //Text
+			{ 8,   pTypeThermostat, sTypeThermSetpoint }, //Thermostat Setpoint
+			{ 248, pTypeUsage, sTypeElectric }, //Usage (Electric)
+			{ 87,  pTypeUV, sTypeUV1 }, //UV
+			{ 12,  pTypeGeneral, sTypeVisibility }, //Visibility
+			{ 4,   pTypeGeneral, sTypeVoltage }, //Voltage
+			{ 1000,pTypeGeneral, sTypeWaterflow }, //Waterflow
+			{ 86,  pTypeWIND, sTypeWIND1 }, //Wind
+			{ 1001,pTypeWIND, sTypeWIND4 } //Wind+Temp+Chill
 		};
 
 		//TODO: Is this function called from anywhere, or can it be removed?
