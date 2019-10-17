@@ -1369,3 +1369,10 @@ std::string GenerateUUID() // DCE/RFC 4122
 	}
 	return uuid;
 }
+
+double round_digits(double dIn, const int totDigits)
+{
+	std::stringstream sstr;
+	sstr << std::setprecision(totDigits) << std::fixed << dIn;
+	return std::stod(sstr.str());
+}

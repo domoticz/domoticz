@@ -30,7 +30,6 @@ std::string int_to_hex(T i)
 	return stream.str();
 }
 
-
 bool file_exist (const char *filename);
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);
 double CalculateAltitudeFromPressure(double pressure);
@@ -103,3 +102,4 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 #endif
 
 std::string GenerateUUID();
+double round_digits(double dIn, const int totDigits);
