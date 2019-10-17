@@ -48,10 +48,22 @@ namespace OpenZWave
 
 	class Node;
 
+	// When dealing with MultiInstance Devices,
+	// OpenZWave uses "Instance" to identify a subdevice.
+	// The public interface maps an Instance ID to an "End Point", which in turn
+	// gets used to build Z-Wave packets.
+	// Config files and by extension ozwcache store this map per CC, for example:
+	// <Instance index="1" endpoint="1" />
+	// The Group Aka Association commands, however, expect "End Points"
+	// It would make sense to change "Instance" to "End Point" in all related code but...
+	// InstanceAssociation is exposed by the API in Manager::GetAssociations
+	// Because of its exposure, m_instance cannot be renamed to m_endPoint without
+	// breaking existing code.
+
 	typedef struct InstanceAssociation
 	{
 			uint8 m_nodeId;
-			uint8 m_instance;
+			uint8 m_instance; // "End Point" as defined in SDS13782-11B, Multi Channel Association Command Class.
 	} InstanceAssociation;
 
 	/** \brief Manages a group of devices (various nodes associated with each other).
@@ -92,7 +104,7 @@ namespace OpenZWave
 			{
 				return m_groupIdx;
 			}
-			bool Contains(uint8 const _nodeId, uint8 const _instance = 0x00);
+			bool Contains(uint8 const _nodeId, uint8 const _endPoint= 0x00);
 			bool IsMultiInstance() const
 			{
 				return m_multiInstance;
@@ -114,8 +126,8 @@ namespace OpenZWave
 				m_multiInstance = _state;
 			}
 
-			void AddAssociation(uint8 const _nodeId, uint8 const _instance = 0x00);
-			void RemoveAssociation(uint8 const _nodeId, uint8 const _instance = 0x00);
+			void AddAssociation(uint8 const _nodeId, uint8 const endPoint = 0x00);
+			void RemoveAssociation(uint8 const _nodeId, uint8 const _endPoint = 0x00);
 			void OnGroupChanged(vector<uint8> const& _associations);
 			void OnGroupChanged(vector<InstanceAssociation> const& _associations);
 
@@ -123,8 +135,8 @@ namespace OpenZWave
 			// Command methods (COMMAND_CLASS_ASSOCIATION_COMMAND_CONFIGURATION)
 			//-----------------------------------------------------------------------------
 		public:
-			bool ClearCommands(uint8 const _nodeId, uint8 const _instance = 0x00);
-			bool AddCommand(uint8 const _nodeId, uint8 const _length, uint8 const* _data, uint8 const _instance = 0x00);
+			bool ClearCommands(uint8 const _nodeId, uint8 const _endPoint = 0x00);
+			bool AddCommand(uint8 const _nodeId, uint8 const _length, uint8 const* _data, uint8 const _endPoint = 0x00);
 
 		private:
 			class AssociationCommand

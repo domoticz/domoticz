@@ -67,8 +67,8 @@ namespace OpenZWave
 					// From CommandClass
 					virtual void ReadXML(TiXmlElement const* _ccElement) override;
 					virtual void WriteXML(TiXmlElement* _ccElement) override;
-					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
-					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _endPoint, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _endPoint, Driver::MsgQueue const _queue) override;
 					virtual uint8 const GetCommandClassId() const override
 					{
 						return StaticGetCommandClassId();
@@ -77,11 +77,11 @@ namespace OpenZWave
 					{
 						return StaticGetCommandClassName();
 					}
-					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _endPoint = 1) override;
 
 					void RequestAllGroups(uint32 const _requestFlags);
-					void Set(uint8 const _group, uint8 const _nodeId, uint8 const _instance);
-					void Remove(uint8 const _group, uint8 const _nodeId, uint8 const _instance);
+					void Set(uint8 const _group, uint8 const _nodeId, uint8 const _endPoint);
+					void Remove(uint8 const _group, uint8 const _nodeId, uint8 const _endPoint);
 
 				private:
 					MultiChannelAssociation(uint32 const _homeId, uint8 const _nodeId);

@@ -1673,6 +1673,9 @@ namespace OpenZWave
 			/**
 			 * \brief Gets the associations for a group.
 			 * Makes a copy of the list of associated nodes in the group, and returns it in an array of InstanceAssociation's.
+			 * struct InstanceAssociation is defined in Group.h and contains
+			 * a (NodeID, End Point) pair. See SDS13783-11B Z-Wave Transport-Encapsulation Command Class Specification
+			 * chapter 2.3.1 Terminology for the definition of "End Point" and "Multi Channel Encapsulation"
 			 * The caller is responsible for freeing the array memory with a call to delete [].
 			 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 			 * \param _nodeId The ID of the node whose associations we are interested in.
