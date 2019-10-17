@@ -1030,12 +1030,15 @@ bool COpenZWave::GetValueByCommandClass(const uint8_t nodeID, const uint8_t inst
 	if (!pNode)
 		return false;
 
-	for (const auto itt : pNode->Instances[instanceID][commandClass].Values)
+	for (const auto ittValue : pNode->Instances[instanceID][commandClass].Values)
 	{
-		uint8_t cmdClass = itt.GetCommandClassId();
+		OpenZWave::ValueID::ValueGenre vGenre = ittValue.GetGenre();
+		if (vGenre != OpenZWave::ValueID::ValueGenre_User)
+			continue;
+		uint8_t cmdClass = ittValue.GetCommandClassId();
 		if (cmdClass == commandClass)
 		{
-			nValue = itt;
+			nValue = ittValue;
 			return true;
 		}
 	}
@@ -1050,6 +1053,9 @@ bool COpenZWave::GetValueByCommandClassIndex(const uint8_t nodeID, const uint8_t
 
 	for (auto& ittValue : pNode->Instances[instanceID][commandClass].Values)
 	{
+		OpenZWave::ValueID::ValueGenre vGenre = ittValue.GetGenre();
+		if (vGenre != OpenZWave::ValueID::ValueGenre_User)
+			continue;
 		uint8_t cmdClass = ittValue.GetCommandClassId();
 		if (cmdClass == commandClass)
 		{
