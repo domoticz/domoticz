@@ -4,7 +4,7 @@
 #include "1WireForWindows.h"
 #include "../../main/Logger.h"
 #include <boost/optional.hpp>
-#include "../json/json.h"
+#include "../../json/json.h"
 #include <WS2tcpip.h>
 
 #define _1WIRE_SERVICE_PORT "1664"
