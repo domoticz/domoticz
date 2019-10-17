@@ -140,7 +140,7 @@ FACTORY RESET DOOR LOCK FIRMWARE:
         It is a read only parameter. Default value depends on the door lock model type.
       </Help>
     </Value>
-    <Value genre="config" index="8" label="Updater Mode" max="3" min="0" type="list" units="" value="0">
+    <Value genre="config" index="8" label="Updater Mode" max="3" min="0" type="list" units="" value="0" size="1">
       <Help>
         Updater Mode
 
@@ -152,7 +152,7 @@ FACTORY RESET DOOR LOCK FIRMWARE:
       <Item label="Off" value="2"/>
       <Item label="On" value="3"/>
     </Value>
-    <Value genre="config" index="9" label="Master PIN Unlock Mode" max="1" min="0" read_only="true" type="list" units="" value="1">
+    <Value genre="config" index="9" label="Master PIN Unlock Mode" max="1" min="0" read_only="true" type="list" units="" value="1" size="1">
       <Help>
         Master PIN Unlock Mode
       </Help>
