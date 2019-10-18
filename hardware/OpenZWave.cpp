@@ -1032,12 +1032,15 @@ bool COpenZWave::GetValueByCommandClass(const uint8_t nodeID, const uint8_t inst
 
 	for (const auto ittValue : pNode->Instances[instanceID][commandClass].Values)
 	{
-		OpenZWave::ValueID::ValueGenre vGenre = ittValue.GetGenre();
-		if (vGenre != OpenZWave::ValueID::ValueGenre_User)
-			continue;
 		uint8_t cmdClass = ittValue.GetCommandClassId();
 		if (cmdClass == commandClass)
 		{
+			std::string sLabel = m_pManager->GetValueLabel(ittValue);
+			if (m_pManager->IsValueReadOnly(ittValue) == true)
+				continue;
+			OpenZWave::ValueID::ValueGenre vGenre = ittValue.GetGenre();
+			if (vGenre != OpenZWave::ValueID::ValueGenre_User)
+				continue;
 			nValue = ittValue;
 			return true;
 		}
@@ -1054,11 +1057,13 @@ bool COpenZWave::GetValueByCommandClassIndex(const uint8_t nodeID, const uint8_t
 	for (auto& ittValue : pNode->Instances[instanceID][commandClass].Values)
 	{
 		OpenZWave::ValueID::ValueGenre vGenre = ittValue.GetGenre();
-		if (vGenre != OpenZWave::ValueID::ValueGenre_User)
-			continue;
 		uint8_t cmdClass = ittValue.GetCommandClassId();
 		if (cmdClass == commandClass)
 		{
+			if (m_pManager->IsValueReadOnly(ittValue) == true)
+				continue;
+			if (vGenre != OpenZWave::ValueID::ValueGenre_User)
+				continue;
 			try
 			{
 				if (ittValue.GetIndex() == vIndex)
