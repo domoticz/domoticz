@@ -5285,7 +5285,6 @@ namespace http {
 						root["result"][ii]["PollEnabled"] = (atoi(sd[5].c_str()) == 1) ? "true" : "false";
 						root["result"][ii]["Version"] = pNode->iVersion;
 						root["result"][ii]["Manufacturer_name"] = pNode->Manufacturer_name;
-
 						root["result"][ii]["Manufacturer_id"] = int_to_hex(pNode->Manufacturer_id);
 						root["result"][ii]["Product_type"] = int_to_hex(pNode->Product_type);
 						root["result"][ii]["Product_id"] = int_to_hex(pNode->Product_id);
@@ -5294,6 +5293,7 @@ namespace http {
 						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
 						root["result"][ii]["IsPlus"] = pNode->IsPlus;
 						root["result"][ii]["Generic_type"] = pOZWHardware->GetNodeGenericType(pNode->IsPlus, homeID, nodeID);
+						root["result"][ii]["Battery"] = (pNode->batValue == 255) ? "-" : std::to_string(pNode->batValue);
 
 						root["result"][ii]["LastUpdate"] = TimeToString(&pNode->LastSeen, TF_DateTime);
 

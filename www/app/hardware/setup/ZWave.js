@@ -686,7 +686,8 @@ define(['app'], function (app) {
 							"5": item.Product_type,
 							"6": item.LastUpdate,
 							"7": $.t((item.PollEnabled === "true") ? "Yes" : "No"),
-							"8": statusImg + '&nbsp;&nbsp;' + healButton,
+							"8": item.Battery,
+							"9": statusImg + '&nbsp;&nbsp;' + healButton,
 						});
 					});
 				}
