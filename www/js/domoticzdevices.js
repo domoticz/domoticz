@@ -1220,7 +1220,7 @@ function Switch(item) {
 		this.showStatus = (Device.showSwitchValues == true);
 		this.imagetext = "Activate switch";
 		this.controlable = true;
-		this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
+		this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + this.protected + ");";
     }
 }
 Switch.inheritsFrom(Sensor);
@@ -1228,7 +1228,7 @@ Switch.inheritsFrom(Sensor);
 function BinarySwitch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
+        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + this.protected + ");";
     }
 }
 BinarySwitch.inheritsFrom(Switch);
@@ -1286,8 +1286,8 @@ function Blinds(item) {
             this.image = 'images/blindsopen48sel.png';
             this.image2 = 'images/blinds48.png';
         }
-		this.onClick = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'On' : 'Off') + "'," + Device.switchFunction + ',' + this.protected + ');';
-		this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'Off' : 'On') + "'," + Device.switchFunction + ',' + this.protected + ');';
+		this.onClick = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'On' : 'Off') + "'," + this.protected + ');';
+		this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'Off' : 'On') + "'," + this.protected + ');';
         if (item.SwitchType == "Blinds Percentage") {
             this.haveDimmer = true;
             this.image2 = '';
@@ -1551,7 +1551,7 @@ function Pushon(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
 		this.image = "images/" + item.Image + "48_On.png";
-        this.onClick = "SwitchLight(" + this.index + ",'On'," + Device.switchFunction + "," + this.protected + ");";
+        this.onClick = "SwitchLight(" + this.index + ",'On'," + this.protected + ");";
     }
 }
 Pushon.inheritsFrom(BinarySwitch);
@@ -1560,7 +1560,7 @@ function Pushoff(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = "images/" + item.Image + "48_Off.png";
-        this.onClick = "SwitchLight(" + this.index + ",'Off'," + Device.switchFunction + "," + this.protected + ");";
+        this.onClick = "SwitchLight(" + this.index + ",'Off'," + this.protected + ");";
     }
 }
 Pushoff.inheritsFrom(BinarySwitch);

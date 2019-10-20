@@ -783,7 +783,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 
 				if (item.Type == "Scene") {
-					img1 = '<img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+					img1 = '<img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
 				}
 				else {
 					var onclass = "";
@@ -797,8 +797,8 @@ define(['app', 'livesocket'], function (app) {
 						offclass = "transimg";
 					}
 
-					img1 = '<img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
-					img2 = '<img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
+					img1 = '<img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" height="48" width="48">';
+					img2 = '<img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\', ' + item.Protected + ');" height="48" width="48">';
 					if ($(id + " #img2").html() != img2) {
 						$(id + " #img2").html(img2);
 					}
@@ -942,7 +942,7 @@ define(['app', 'livesocket'], function (app) {
 							xhtm += bigtext + '</td>\n';
 
 							if (item.Type == "Scene") {
-								xhtm += '<td id="img1" class="img img1"><img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+								xhtm += '<td id="img1" class="img img1"><img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 								xhtm += '\t      <td id="status" class="status"><span>&nbsp;</span></td>\n';
 							}
 							else {
@@ -957,8 +957,8 @@ define(['app', 'livesocket'], function (app) {
 									offclass = "transimg";
 								}
 
-								xhtm += '<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
-								xhtm += '<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
+								xhtm += '<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" height="48" width="48"></td>\n';
+								xhtm += '<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\', ' + item.Protected + ');" height="48" width="48"></td>\n';
 								xhtm += '\t      <td id="status" class="status">&nbsp;</td>\n';
 							}
 							xhtm +=

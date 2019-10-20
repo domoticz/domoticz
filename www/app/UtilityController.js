@@ -727,7 +727,7 @@ define(['app', 'livesocket'], function (app) {
 								status = "";
 							}
 							else if (((item.Type == "Thermostat") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
-								xhtm += '<img src="images/override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
+								xhtm += '<img src="images/override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Thermostat Clock") {
