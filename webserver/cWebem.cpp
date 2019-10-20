@@ -1529,11 +1529,13 @@ namespace http {
 			{
 				return false;
 			}
+/*
 			std::string connection_header = h;
 			if (!boost::iequals(connection_header, "upgrade"))
 			{
 				return false;
 			};
+*/
 			// client MUST include Upgrade: websocket
 			h = request::get_req_header(&req, "Upgrade");
 			if (!h)
