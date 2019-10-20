@@ -513,6 +513,9 @@
     <Filter Include="www\views\log">
       <UniqueIdentifier>{9ada1360-f5da-4120-9747-d95d1048ba43}</UniqueIdentifier>
     </Filter>
+    <Filter Include="www\app\devices">
+      <UniqueIdentifier>{ae84d173-7ab3-47ac-bafd-145b034278f0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -627,9 +630,6 @@
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\app\DashboardController.js">
-      <Filter>www\app</Filter>
-    </None>
-    <None Include="..\www\app\DevicesController.js">
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\app\DPFibaroController.js">
@@ -1438,6 +1438,18 @@
     </None>
     <None Include="..\www\views\weather_widget.html">
       <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\app\devices\deviceFactory.js">
+      <Filter>www\app\devices</Filter>
+    </None>
+    <None Include="..\www\app\devices\Devices.css">
+      <Filter>www\app\devices</Filter>
+    </None>
+    <None Include="..\www\app\devices\Devices.html">
+      <Filter>www\app\devices</Filter>
+    </None>
+    <None Include="..\www\app\devices\Devices.js">
+      <Filter>www\app\devices</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
