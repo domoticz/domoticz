@@ -399,31 +399,34 @@ $(document).ready(function() {
 	var dialog_replacedevice_buttons = {};
 
 	dialog_replacedevice_buttons["OK"]=function() {
-		  var bValid = true;
-		  $( this ).dialog( "close" );
-
-							var NewDeviceIdx=$("#dialog-replacedevice #newdevice option:selected").val();
-							if (typeof NewDeviceIdx == 'undefined') {
-								bootbox.alert($.t('No New Device Selected!'));
-								return ;
-							}
-							$.ajax({
-								 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									if (data.status == 'OK') {
-										$.backfunction();
-									}
-									else {
-										ShowNotify($.t('Problem Transfering Device!'), 2500, true);
-									}
-								 },
-								 error: function(){
-										HideNotify();
-										ShowNotify($.t('Problem Transfering Device!'), 2500, true);
-								 }
-							});
+		var bValid = true;
+		$( this ).dialog( "close" );
+		var NewDeviceIdx=$("#dialog-replacedevice #newdevice option:selected").val();
+		if (typeof NewDeviceIdx == 'undefined') {
+			bootbox.alert($.t('No New Device Selected!'));
+			return ;
+		}
+		$.ajax({
+			 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
+			 async: false,
+			 dataType: 'json',
+			 success: function(data) {
+				if (data.status == 'OK') {
+					if (typeof $.backfunction == 'undefined') {
+						window.location = '#';
+					} else {
+						$.backfunction();
+					}
+				}
+				else {
+					ShowNotify($.t('Problem Transfering Device!'), 2500, true);
+				}
+			 },
+			 error: function(){
+					HideNotify();
+					ShowNotify($.t('Problem Transfering Device!'), 2500, true);
+			 }
+		});
 	};
 	dialog_replacedevice_buttons["Cancel"]=function() {
 		$( this ).dialog( "close" );
