@@ -137,11 +137,6 @@ function ClearNotifyCacheRefresh()
 
 function logEvent(event) {
 	var re = /https:\/\/my.domoticz.com\/.*\/html5.appcache/i;
-	console.log("logEvent: Type:" + event.type);
-	if (typeof event.url != 'undefined')
-	{
-		console.log("logEvent: url:" + event.url);
-	}
 	if (event.type == "error") {
 		if (typeof event.url != 'undefined')
 		{
