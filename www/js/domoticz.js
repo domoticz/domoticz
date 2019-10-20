@@ -1238,6 +1238,9 @@ function TranslateStatus(status) {
 }
 
 function TranslateStatusShort(status) {
+	if (typeof status == 'undefined')
+		return "-?-";
+
 	//will remove the Set Level
 	if (status.indexOf("Set Level") != -1) {
 		if (status.substring(11) == "100 %") {
