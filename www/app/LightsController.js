@@ -3,16 +3,13 @@ define(['app', 'livesocket'], function (app) {
 		var $element = $('#main-view #lightcontent').last();
 
 		$scope.HasInitializedAddManualDialog = false;
+		$scope.broadcast_unsubscribe = undefined;
 
 		MakeFavorite = function (id, isfavorite) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
-			}
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
 			}
 			$.ajax({
 				url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
@@ -40,11 +37,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		AddManualLightDevice = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
-
 			$("#dialog-addmanuallightdevice #combosubdevice").html("");
 
 			$.each($.LightsAndSwitches, function (i, item) {
@@ -58,11 +50,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		AddLightDevice = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
-
 			$("#dialog-addlightdevice #combosubdevice").html("");
 			$.each($.LightsAndSwitches, function (i, item) {
 				var option = $('<option />');
@@ -754,11 +741,6 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshLights = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
-
 			livesocket.getJson("json.htm?type=devices&filter=light&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
@@ -779,7 +761,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
-			$scope.$on('jsonupdate', function (event, data) {
+			$scope.broadcast_unsubscribe = $scope.$on('jsonupdate', function (event, data) {
 				/*
 					When this event is caught, a widget status update is received.
 					We call RefreshItem to update the widget.
@@ -795,11 +777,12 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		ShowLights = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$('#modal').show();
+
+			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
+				$scope.broadcast_unsubscribe();
+				$scope.broadcast_unsubscribe = undefined;
+			}
 
 			var htmlcontent = '';
 			var bShowRoomplan = false;
@@ -1446,10 +1429,6 @@ define(['app', 'livesocket'], function (app) {
 					if (window.myglobals.ismobileint == false) {
 						$element.find(".span4").draggable({
 							drag: function () {
-								if (typeof $scope.mytimer != 'undefined') {
-									$interval.cancel($scope.mytimer);
-									$scope.mytimer = undefined;
-								}
 								$.devIdx = $(this).attr("id");
 								$(this).css("z-index", 2);
 							},
@@ -1576,7 +1555,7 @@ define(['app', 'livesocket'], function (app) {
 						levelname = select$.find('option[value="' + level + '"]').text(),
 						isprotected = select$.selectmenu("option", "isprotected");
 					// Send command
-					SwitchSelectorLevel(idx, unescape(levelname), level, RefreshLights, isprotected);
+					SwitchSelectorLevel(idx, unescape(levelname), level, isprotected);
 					// Synchronize buttons and select attributes
 					select$.data('level', level);
 					select$.data('levelname', levelname);
@@ -2426,9 +2405,9 @@ define(['app', 'livesocket'], function (app) {
 		};
 
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
+				$scope.broadcast_unsubscribe();
+				$scope.broadcast_unsubscribe = undefined;
 			}
 			$(window).off("resize");
 			var popup = $("#rgbw_popup");

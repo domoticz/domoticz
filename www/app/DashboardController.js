@@ -3,6 +3,8 @@ define(['app', 'livesocket'], function (app) {
 		var $element = $('#main-view #dashcontent').last();
 
 		$scope.LastUpdateTime = parseInt(0);
+		$scope.broadcast_unsubscribe_devices = undefined;
+		$scope.broadcast_unsubscribe_scenes = undefined;
 
 		//Evohome...
 		//FIXME move evohome functions to a shared js ...see temperaturecontroller.js and lightscontroller.js
@@ -1641,10 +1643,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		RefreshFavorites = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			var bFavorites = 1;
 			if (typeof window.myglobals.LastPlanSelected != 'undefined') {
 				if (window.myglobals.LastPlanSelected > 0) {
@@ -1669,7 +1667,8 @@ define(['app', 'livesocket'], function (app) {
 					});
 				}
 			});
-			$scope.$on('jsonupdate', function (event, data) {
+
+			$scope.broadcast_unsubscribe_devices = $scope.$on('jsonupdate', function (event, data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -1678,7 +1677,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 				RefreshItem(data.item);
 			});
-			$scope.$on('scene_update', function (event, data) {
+			$scope.broadcast_unsubscribe_scenes = $scope.$on('scene_update', function (event, data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -1690,10 +1689,15 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		ShowFavorites = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			if (typeof $scope.broadcast_unsubscribe_devices != 'undefined') {
+				$scope.broadcast_unsubscribe_devices();
+				$scope.broadcast_unsubscribe_devices = undefined;
 			}
+			if (typeof $scope.broadcast_unsubscribe_scenes != 'undefined') {
+				$scope.broadcast_unsubscribe_scenes();
+				$scope.broadcast_unsubscribe_scenes = undefined;
+			}
+
 			var totdevices = 0;
 			var jj = 0;
 			var bHaveAddedDivider = false;
@@ -4156,10 +4160,6 @@ define(['app', 'livesocket'], function (app) {
 					if (window.myglobals.ismobileint == false) {
 						$element.find(".movable").draggable({
 							drag: function () {
-								if (typeof $scope.mytimer != 'undefined') {
-									$interval.cancel($scope.mytimer);
-									$scope.mytimer = undefined;
-								}
 								$.devIdx = $(this).attr("id");
 								$(this).css("z-index", 2);
 							},
@@ -4172,9 +4172,7 @@ define(['app', 'livesocket'], function (app) {
 								var parts2 = $.devIdx.split('_');
 								if (parts1[0] != parts2[0]) {
 									bootbox.alert($.t('Only possible between Sensors of the same kind!'));
-									$scope.mytimer = $interval(function () {
-										ShowFavorites();
-									}, 10000);
+									ShowFavorites();
 								} else {
 									var roomid = 0;
 									if (typeof window.myglobals.LastPlanSelected != 'undefined') {
@@ -4233,9 +4231,13 @@ define(['app', 'livesocket'], function (app) {
 		};
 
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			if (typeof $scope.broadcast_unsubscribe_devices != 'undefined') {
+				$scope.broadcast_unsubscribe_devices();
+				$scope.broadcast_unsubscribe_devices = undefined;
+			}
+			if (typeof $scope.broadcast_unsubscribe_scenes != 'undefined') {
+				$scope.broadcast_unsubscribe_scenes();
+				$scope.broadcast_unsubscribe_scenes = undefined;
 			}
 			$(window).off("resize");
 			var popup = $("#rgbw_popup");

@@ -3,6 +3,7 @@ define(['app', 'livesocket'], function (app) {
 		var $element = $('#main-view #scenecontent').last();
 
 		var SceneIdx = 0;
+		$scope.broadcast_unsubscribe = undefined;
 
 		RemoveCode = function (idx, code) {
 			if ($element.find("#removecode").hasClass('disabled')) {
@@ -231,10 +232,6 @@ define(['app', 'livesocket'], function (app) {
 				return;
 			}
 
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.ajax({
 				url: "json.htm?type=command&param=makescenefavorite&idx=" + id + "&isfavorite=" + isfavorite,
 				async: false,
@@ -598,10 +595,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditSceneDevice = function (idx, name, description, havecode, type, bIsProtected, onaction, offaction) {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			SceneIdx = idx;
 
 			var bIsScene = (type == "Scene");
@@ -827,11 +820,6 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the websocket broadcast event.
 		RefreshScenes = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
-
 			livesocket.getJson("json.htm?type=scenes&lastupdate=" + $.LastUpdateTime, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
@@ -850,7 +838,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
-			$scope.$on('scene_update', function (event, data) {
+			$scope.broadcast_unsubscribe = $scope.$on('scene_update', function (event, data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -862,9 +850,9 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		ShowScenes = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
+				$scope.broadcast_unsubscribe();
+				$scope.broadcast_unsubscribe = undefined;
 			}
 
 			RefreshLightSwitchesComboArray();
@@ -1015,10 +1003,6 @@ define(['app', 'livesocket'], function (app) {
 					if (window.myglobals.ismobileint == false) {
 						$element.find(".span4").draggable({
 							drag: function () {
-								if (typeof $scope.mytimer != 'undefined') {
-									$interval.cancel($scope.mytimer);
-									$scope.mytimer = undefined;
-								}
 								SceneIdx = $(this).attr("id");
 								$(this).css("z-index", 2);
 							},
@@ -1098,9 +1082,9 @@ define(['app', 'livesocket'], function (app) {
 			ShowScenes();
 		};
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
+				$scope.broadcast_unsubscribe();
+				$scope.broadcast_unsubscribe = undefined;
 			}
 		});
 	});
