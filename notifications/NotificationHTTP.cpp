@@ -36,6 +36,12 @@ bool CNotificationHTTP::SendMessageImplementation(
 	const std::string &Sound,
 	const bool bFromNotification)
 {
+	std::string dSubject(Subject);
+	std::string dText(Text);
+
+	stdreplace(dSubject, "%", "");
+	stdreplace(dText, "%", "");
+
 	std::string destURL = _HTTPURL;
 	bool bSuccess = false;
 
@@ -54,8 +60,8 @@ bool CNotificationHTTP::SendMessageImplementation(
 		stdreplace(destURL, "#FIELD3", CURLEncode::URLEncode(_HTTPField3));
 		stdreplace(destURL, "#FIELD4", CURLEncode::URLEncode(_HTTPField4));
 		stdreplace(destURL, "#TO", CURLEncode::URLEncode(_HTTPTo));
-		stdreplace(destURL, "#SUBJECT", CURLEncode::URLEncode(Subject));
-		stdreplace(destURL, "#MESSAGE", CURLEncode::URLEncode(Text));
+		stdreplace(destURL, "#SUBJECT", CURLEncode::URLEncode(dSubject));
+		stdreplace(destURL, "#MESSAGE", CURLEncode::URLEncode(dText));
 		stdreplace(destURL, "#PRIORITY", CURLEncode::URLEncode(std::string(szPriority)));
 
 		std::string sResult;
@@ -78,8 +84,8 @@ bool CNotificationHTTP::SendMessageImplementation(
 			stdreplace(httpData, "#FIELD3", _HTTPField3);
 			stdreplace(httpData, "#FIELD4", _HTTPField4);
 			stdreplace(httpData, "#TO", _HTTPTo);
-			stdreplace(httpData, "#SUBJECT", Subject);
-			stdreplace(httpData, "#MESSAGE", Text);
+			stdreplace(httpData, "#SUBJECT", dSubject);
+			stdreplace(httpData, "#MESSAGE", dText);
 			stdreplace(httpData, "#PRIORITY", std::string(szPriority));
 			bSuccess = HTTPClient::POST(destURL, httpData, ExtraHeaders, sResult);
 		}
@@ -98,8 +104,8 @@ bool CNotificationHTTP::SendMessageImplementation(
 		stdreplace(destURL, "#FIELD3", _HTTPField3);
 		stdreplace(destURL, "#FIELD4", _HTTPField4);
 		stdreplace(destURL, "#TO", _HTTPTo);
-		stdreplace(destURL, "#SUBJECT", CURLEncode::URLDecode(Subject));
-		stdreplace(destURL, "#MESSAGE", CURLEncode::URLDecode(Text));
+		stdreplace(destURL, "#SUBJECT", CURLEncode::URLDecode(dSubject));
+		stdreplace(destURL, "#MESSAGE", CURLEncode::URLDecode(dText));
 
 		std::string scriptname = destURL.substr(9);
 		std::string scriptparams = "";

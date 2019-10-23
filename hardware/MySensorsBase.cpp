@@ -584,8 +584,8 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		_tMySensorChild *pChildBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE, pChild->groupID);
 		if (pChildHum && pChildBaro)
 		{
-			int Humidity;
-			float Baro;
+			int Humidity = 0;
+			float Baro = 0;
 			bool bHaveHumidity = pChildHum->GetValue(V_HUM, Humidity);
 			bool bHaveBaro = pChildBaro->GetValue(V_PRESSURE, Baro);
 			if (bHaveHumidity && bHaveBaro)
@@ -637,7 +637,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			}
 		}
 		else if (pChildHum) {
-			int Humidity;
+			int Humidity = 0;
 			bool bHaveHumidity = pChildHum->GetValue(V_HUM, Humidity);
 			if (bHaveHumidity)
 			{
@@ -735,7 +735,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	break;
 	case V_PRESSURE:
 	{
-		float Baro;
+		float Baro = 0;
 		pChild->GetValue(V_PRESSURE, Baro);
 		_tMySensorChild *pSensorTemp = FindChildWithValueType(pChild->nodeID, V_TEMP, pChild->groupID);
 		_tMySensorChild *pSensorHum = FindChildWithValueType(pChild->nodeID, V_HUM, pChild->groupID);
