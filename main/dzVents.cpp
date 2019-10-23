@@ -255,7 +255,7 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 {
 	bool bEventTrigger = false;
 	int nValue = -1, Protected = -1;
-	uint64_t idx = -1;
+	int idx = -1;
 	float delayTime = 0;
 	std::string sValue;
 
@@ -265,7 +265,7 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 		if (itt->type == TYPE_INTEGER)
 		{
 			if (itt->name == "idx")
-				idx = static_cast<uint64_t>(itt->iValue);
+				idx = itt->iValue;
 			else if (itt->name == "nValue")
 				nValue = itt->iValue;
 			else if (itt->name == "protected")
@@ -348,7 +348,7 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 	std::string variableValue;
 	float delayTime = 0;
 	bool bEventTrigger = false;
-	uint64_t idx;
+	int idx = 0;
 
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
@@ -356,7 +356,7 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 		if (itt->type == TYPE_INTEGER)
 		{
 			if (itt->name == "idx")
-				idx = static_cast<uint64_t>(itt->iValue);
+				idx = itt->iValue;
 			else if (itt->name == "_random")
 				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
 			else if (itt->name == "_after")
@@ -368,6 +368,9 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 		else if (itt->type == TYPE_BOOLEAN && itt->name == "_trigger")
 			bEventTrigger = true;
 	}
+	if (idx == 0)
+		return false;
+
 	if (bEventTrigger)
 		m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, delayTime);
 
@@ -378,7 +381,6 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 bool CdzVents::CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
 {
 	uint64_t idx;
-	int count = 0;
 	std::string type;
 
 	std::vector<_tLuaTableValues>::const_iterator itt;

@@ -3386,7 +3386,7 @@ void CSQLHelper::Do_Work()
 
 				HTTPClient::_eHTTPmethod method = static_cast<HTTPClient::_eHTTPmethod>(itt->_switchtype);
 
-				bool ret;
+				bool ret = false;
 				if (method == HTTPClient::HTTP_METHOD_GET)
 				{
 					ret = HTTPClient::GET(itt->_sValue, extraHeaders, response, headerData);
@@ -3395,6 +3395,8 @@ void CSQLHelper::Do_Work()
 				{
 					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData, true, true);
 				}
+				else
+					return; //unsupported method
 
 				if (m_bEnableEventSystem && !callback.empty())
 				{
@@ -3929,7 +3931,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 				std::string rID = std::string(ID);
 				padLeft(rID, 8, '0');
 				DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
-				if (DeviceRowIdx != -1)
+				if (DeviceRowIdx == (uint64_t)-1)
 				{
 					//Set the Label
 					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID==%" PRIu64 ")", soptions.c_str(), DeviceRowIdx);
@@ -3971,7 +3973,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 			unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
 			sprintf(ID, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
-			if (DeviceRowIdx != -1)
+			if (DeviceRowIdx == (uint64_t)-1)
 			{
 				//Set switch type to selector
 				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Selector, DeviceRowIdx);
@@ -3999,7 +4001,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 1, devname);
-			if (DeviceRowIdx != -1)
+			if (DeviceRowIdx == (uint64_t)-1)
 			{
 				//Set switch type to dimmer
 				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
@@ -4011,7 +4013,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	}
 	}
 
-	if (DeviceRowIdx != -1)
+	if (DeviceRowIdx == (uint64_t)-1)
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET Used=1 WHERE (ID==%" PRIu64 ")", DeviceRowIdx);
 		m_mainworker.m_eventsystem.GetCurrentStates();
@@ -4506,8 +4508,11 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			bool bIsLightSwitchOn = IsLightSwitchOn(lstatus);
 			std::string slevel = sd[6];
 
-			if ((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255) ||
-				(switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+			if (
+				((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255))
+				|| (switchtype == STYPE_BlindsPercentage)
+				|| (switchtype == STYPE_BlindsPercentageInverted)
+				)
 			{
 				if (switchtype == STYPE_BlindsPercentage || switchtype == STYPE_BlindsPercentageInverted)
 				{
@@ -7158,8 +7163,8 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 	}
 
 	//Check if all on/off
-	int totOn = 0;
-	int totOff = 0;
+	size_t totOn = 0;
+	size_t totOff = 0;
 
 	for (const auto & itt2 : _DeviceStatusResults)
 	{
@@ -7598,7 +7603,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 #endif
 			std::string scriptparams = "";
 			//Add parameters
-			int pindex = scriptname.find(' ');
+			size_t pindex = scriptname.find(' ');
 			if (pindex != std::string::npos)
 			{
 				scriptparams = scriptname.substr(pindex + 1);
@@ -7637,7 +7642,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 		std::string scriptparams = "";
-		int pindex = scriptname.find(' ');
+		size_t pindex = scriptname.find(' ');
 		if (pindex != std::string::npos)
 		{
 			scriptparams = scriptname.substr(pindex + 1);
@@ -8234,8 +8239,7 @@ bool CSQLHelper::CheckDateTimeSQL(const std::string &sDateTime)
 
 bool CSQLHelper::CheckTime(const std::string &sTime)
 {
-
-	int iSemiColon = sTime.find(':');
+	size_t iSemiColon = sTime.find(':');
 	if ((iSemiColon == std::string::npos) || (iSemiColon < 1) || (iSemiColon > 2) || (iSemiColon == sTime.length() - 1)) return false;
 	if ((sTime.length() < 3) || (sTime.length() > 5)) return false;
 	if (atoi(sTime.substr(0, iSemiColon).c_str()) >= 24) return false;
@@ -8320,7 +8324,7 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string &szZipFile, std::
 		if (fpath.find("__MACOSX") != std::string::npos)
 			continue;
 
-		int ipos = fpath.find("icons.txt");
+		size_t ipos = fpath.find("icons.txt");
 		if (ipos != std::string::npos)
 		{
 			std::string rpath;

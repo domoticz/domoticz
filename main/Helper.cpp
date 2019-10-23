@@ -97,7 +97,7 @@ void stdreplace(
 	const std::string& replaceWhat,
 	const std::string& replaceWithWhat)
 {
-	int pos = 0;
+	size_t pos = 0;
 	while (std::string::npos != (pos = inoutstring.find(replaceWhat, pos)))
 	{
 		inoutstring.replace(pos, replaceWhat.size(), replaceWithWhat);
