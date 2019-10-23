@@ -193,9 +193,21 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 {
 	try
 	{
-		if (m_TadoUsername.size() == 0 && !refreshUsingToken) throw std::runtime_error("No username specified.");
-		if (m_TadoPassword.size() == 0 && !refreshUsingToken) throw std::runtime_error("No password specified.");
-		if (m_bDoGetEnvironment) throw std::runtime_error("Environment not (yet) set up.");
+		if (m_TadoUsername.size() == 0 && !refreshUsingToken)
+		{
+			_log.Log(LOG_ERROR, "Tado: No username specified.");
+			return false;
+		}
+		if (m_TadoPassword.size() == 0 && !refreshUsingToken)
+		{
+			_log.Log(LOG_ERROR, "Tado: No password specified.");
+			return false;
+		}
+		if (m_bDoGetEnvironment)
+		{
+			_log.Log(LOG_ERROR, "Tado: Environment not (yet) set up.");
+			return false;
+		}
 
 		std::string _sUrl = m_TadoEnvironment["apiEndpoint"] + "/token";
 		std::ostringstream s;
@@ -235,10 +247,18 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 		}
 
 		authtoken = _jsRoot["access_token"].asString();
-		if (authtoken.size() == 0) throw std::runtime_error("Received token is zero length.");
+		if (authtoken.size() == 0)
+		{
+			_log.Log(LOG_ERROR, "Tado: Received token is zero length.");
+			return false;
+		}
 
 		refreshtoken = _jsRoot["refresh_token"].asString();
-		if (refreshtoken.size() == 0) throw std::runtime_error("Received refresh token is zero length.");
+		if (refreshtoken.size() == 0)
+		{
+			_log.Log(LOG_ERROR, "Tado: Received refresh token is zero length.");
+			return false;
+		}
 
 		_log.Log(LOG_STATUS, "Tado: Received access token from API.");
 		_log.Log(LOG_STATUS, "Tado: Received refresh token from API.");
@@ -848,7 +868,10 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 	try {
 		// If there is no token stored then there is no point in doing a request. Unless we specifically
 		// decide not to do authentication.
-		if (m_TadoAuthToken.size() == 0 && bSendAuthHeaders) throw std::runtime_error("No access token available.");
+		if (m_TadoAuthToken.size() == 0 && bSendAuthHeaders) {
+			_log.Log(LOG_ERROR, "Tado: No access token available.");
+			return false;
+		}
 
 		// Prepare the headers. Copy supplied vector.
 		std::vector<std::string> _vExtraHeaders = vExtraHeaders;
@@ -902,26 +925,33 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 				break;
 
 			default:
-				throw std::runtime_error("Unknown method specified.");
+				{
+					_log.Log(LOG_ERROR, "Tado: Unknown method specified.");
+					return false;
+				}
 		}
 
 		if (sResponse.size() == 0)
 		{
-			if (!bIgnoreEmptyResponse) throw std::runtime_error("Received an empty response from Api.");
+			if (!bIgnoreEmptyResponse) {
+				_log.Log(LOG_ERROR, "Tado: Received an empty response from Api.");
+				return false;
+			}
 		}
 
 		if (bDecodeJsonResponse) {
 			Json::Reader _jsReader;
 			if (!_jsReader.parse(sResponse, jsDecodedResponse)) {
-				throw std::runtime_error("Failed to decode Json response from Api.");
+				_log.Log(LOG_ERROR, "Tado: Failed to decode Json response from Api.");
+				return false;
 			}
 		}
-
-		return true;
 	}
 	catch (std::exception& e)
 	{
 		std::string what = e.what();
-		throw std::runtime_error(("Error sending information to Tado API: %s", what.c_str()));
+		_log.Log(LOG_ERROR, "Tado: Error sending information to Tado API: %s", what.c_str());
+		return false;
 	}
+	return true;
 }
