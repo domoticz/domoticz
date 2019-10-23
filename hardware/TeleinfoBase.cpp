@@ -90,7 +90,7 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, char* text)
 
 void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo &teleinfo)
 {
-	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR;
+	uint32_t m_pappHC = 0, m_pappHP = 0, m_pappHCJB = 0, m_pappHPJB = 0, m_pappHCJW = 0, m_pappHPJW = 0, m_pappHCJR = 0, m_pappHPJR = 0;
 	int rate_alert = 0, color_alert = 0, demain_alert = 0;
 	int alertI1, alertI2, alertI3, alertEJP, alertPPOT;
 	char szTmp[100];
