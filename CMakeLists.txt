@@ -60,6 +60,7 @@ ENDIF(USE_OPENSSL_STATIC)
 
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
+  message(STATUS "Use builtin lua library" )
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     add_definitions(-DLUA_USE_MACOSX)
   ENDIF()
@@ -284,6 +285,10 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
     ADD_CUSTOM_TARGET(${_targetName}_gch DEPENDS ${_output})
     ADD_DEPENDENCIES(${_targetName} ${_targetName}_gch)
     SET_TARGET_PROPERTIES(${_targetName} PROPERTIES COMPILE_FLAGS "-include ${_name} -Winvalid-pch")
+    IF(USE_BUILTIN_LUA)
+        # Add -rdynamic linker flag for exporting functions which is mandatory to use external lua modules
+        SET_TARGET_PROPERTIES(${_targetName} PROPERTIES ENABLE_EXPORTS ON)
+    ENDIF(USE_BUILTIN_LUA)
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO()
 
