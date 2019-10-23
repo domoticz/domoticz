@@ -8950,21 +8950,21 @@ void MainWorker::decode_Power(const int HwdID, const _eHardwareTypes HwdType, co
 	sprintf(szTmp, "%.3f", Voltage);
 	std::string tmpDevName;
 	uint64_t DevRowIdxAlt = m_sql.UpdateValue(HwdID, ID.c_str(), 1, pTypeGeneral, sTypeVoltage, SignalLevel, BatteryLevel, cmnd, szTmp, tmpDevName);
-	if (DevRowIdxAlt == -1)
+	if (DevRowIdxAlt == (uint64_t)-1)
 		return;
 	m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, tmpDevName, 1, pTypeGeneral, sTypeVoltage, Voltage);
 
 	//Powerfactor
 	sprintf(szTmp, "%.2f", (float)powerfactor);
 	DevRowIdxAlt = m_sql.UpdateValue(HwdID, ID.c_str(), 2, pTypeGeneral, sTypePercentage, SignalLevel, BatteryLevel, cmnd, szTmp, tmpDevName);
-	if (DevRowIdxAlt == -1)
+	if (DevRowIdxAlt == (uint64_t)-1)
 		return;
 	m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, tmpDevName, 2, pTypeGeneral, sTypePercentage, (float)powerfactor);
 
 	//Frequency
 	sprintf(szTmp, "%.2f", (float)frequency);
 	DevRowIdxAlt = m_sql.UpdateValue(HwdID, ID.c_str(), 3, pTypeGeneral, sTypePercentage, SignalLevel, BatteryLevel, cmnd, szTmp, tmpDevName);
-	if (DevRowIdxAlt == -1)
+	if (DevRowIdxAlt == (uint64_t)-1)
 		return;
 	m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, tmpDevName, 3, pTypeGeneral, sTypePercentage, frequency);
 
@@ -13594,7 +13594,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		devname,
 		false
 	);
-	if (devidx == -1)
+	if (devidx == (uint64_t)-1)
 	{
 		g_bUseEventTrigger = true;
 		return false;

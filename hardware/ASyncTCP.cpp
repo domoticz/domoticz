@@ -15,11 +15,11 @@ struct hostent;
 #define RECONNECT_TIME 30
 
 ASyncTCP::ASyncTCP(const bool secure) :
+	m_reconnect_delay(RECONNECT_TIME),
 	m_tcpwork(std::make_shared<boost::asio::io_service::work>(mIos)),
 	m_Resolver(mIos),
 	m_Socket(mIos),
 	mReconnectTimer(mIos),
-	m_reconnect_delay(RECONNECT_TIME),
 #ifdef WWW_ENABLE_SSL
 	mSecure(secure),
 	m_Context(boost::asio::ssl::context::sslv23)

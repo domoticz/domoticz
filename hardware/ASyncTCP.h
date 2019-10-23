@@ -86,14 +86,15 @@ private:
 	unsigned char 					m_rx_buffer[1024];
 
 	int								m_reconnect_delay;
-	boost::asio::deadline_timer		mReconnectTimer;
 
 	std::shared_ptr<std::thread> 	m_tcpthread;
 	std::shared_ptr<boost::asio::io_service::work> 	m_tcpwork; // Create some work to keep IO Service alive
 
-	boost::asio::ip::tcp::socket	m_Socket;
-	boost::asio::ip::tcp::endpoint	m_EndPoint;
 	boost::asio::ip::tcp::resolver	m_Resolver;
+	boost::asio::ip::tcp::socket	m_Socket;
+	boost::asio::deadline_timer		mReconnectTimer;
+
+	boost::asio::ip::tcp::endpoint	m_EndPoint;
 	std::deque<std::string>			m_writeQ; // we need a write queue to allow concurrent writes
 	std::string						m_MsgBuffer; // we keep the message buffer static so it keeps being available in between do_write and write_end (so boost has time to send it)
 	std::mutex						m_writeMutex; // to protect writeQ

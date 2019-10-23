@@ -380,18 +380,22 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 
 bool CdzVents::CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
 {
-	uint64_t idx;
+	int idx = 0;
 	std::string type;
 
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
 	{
 		if (itt->type == TYPE_INTEGER && itt->name == "idx")
-			idx = static_cast<uint64_t>(itt->iValue);
+			idx = itt->iValue;
 
 		else if (itt->type == TYPE_STRING && itt->name == "type")
 			type = itt->sValue;
 	}
+
+	if (idx == 0)
+		return false;
+
 	_tTaskItem tItem;
 	tItem._idx = idx;
 	tItem._DelayTime = 0;

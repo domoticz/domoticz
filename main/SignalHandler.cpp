@@ -237,7 +237,10 @@ static bool dumpstack_gdb(bool printAllThreads) {
 				if (worker_pid)
 				{
 					sprintf(tmp, "pkill -KILL -P %d", worker_pid);
-					system(tmp);
+					if (!system(tmp))
+					{
+						result = 0;
+					}
 				}
 			} else if (exited_pid == timeout_pid2) {
 				// Watchdog 2 timed out, give up

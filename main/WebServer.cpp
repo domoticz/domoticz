@@ -13647,7 +13647,10 @@ namespace http {
 							long long lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
 							time_t lastTime = 0;
 
-							long long firstUsage1, firstUsage2, firstDeliv1, firstDeliv2;
+							long long firstUsage1 = 0;
+							long long firstUsage2 = 0;
+							long long firstDeliv1 = 0;
+							long long firstDeliv2 = 0;
 
 							int nMeterType = 0;
 							m_sql.GetPreferencesVar("SmartMeterType", nMeterType);

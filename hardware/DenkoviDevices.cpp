@@ -666,10 +666,9 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char len
 }
 
 int CDenkoviDevices::DenkoviCheckForIO(std::string tmpstr, const std::string &tmpIoType) {
-	int pos1;
 	int Idx = -1;
 	std::string ioType = "<" + tmpIoType;
-	pos1 = tmpstr.find(ioType);
+	size_t pos1 = tmpstr.find(ioType);
 	if (pos1 != std::string::npos)
 	{
 		tmpstr = tmpstr.substr(pos1 + strlen(ioType.c_str()));
@@ -681,10 +680,9 @@ int CDenkoviDevices::DenkoviCheckForIO(std::string tmpstr, const std::string &tm
 }
 
 int CDenkoviDevices::DenkoviGetIntParameter(std::string tmpstr, const std::string &tmpParameter) {
-	int pos1;
 	int lValue = -1;
 	std::string parameter = "<" + tmpParameter + ">";
-	pos1 = tmpstr.find(parameter);
+	size_t pos1 = tmpstr.find(parameter);
 	if (pos1 != std::string::npos)
 	{
 		tmpstr = tmpstr.substr(pos1 + strlen(parameter.c_str()));
@@ -696,11 +694,10 @@ int CDenkoviDevices::DenkoviGetIntParameter(std::string tmpstr, const std::strin
 }
 
 std::string CDenkoviDevices::DenkoviGetStrParameter(std::string tmpstr, const std::string &tmpParameter) {
-	int pos1;
 	std::string sMeasure = "";
 	std::string parameter = "<" + tmpParameter + ">";
 
-	pos1 = tmpstr.find(parameter);
+	size_t pos1 = tmpstr.find(parameter);
 	if (pos1 != std::string::npos)
 	{
 		tmpstr = tmpstr.substr(pos1 + strlen(parameter.c_str()));
@@ -712,11 +709,10 @@ std::string CDenkoviDevices::DenkoviGetStrParameter(std::string tmpstr, const st
 }
 
 float CDenkoviDevices::DenkoviGetFloatParameter(std::string tmpstr, const std::string &tmpParameter) {
-	int pos1;
 	float value = NAN;
 	std::string parameter = "<" + tmpParameter + ">";
 
-	pos1 = tmpstr.find(parameter);
+	size_t pos1 = tmpstr.find(parameter);
 	if (pos1 != std::string::npos)
 	{
 		tmpstr = tmpstr.substr(pos1 + strlen(parameter.c_str()));
@@ -729,15 +725,15 @@ float CDenkoviDevices::DenkoviGetFloatParameter(std::string tmpstr, const std::s
 
 std::string CDenkoviDevices::DAEnetIP3GetIo(std::string tmpstr, const std::string &tmpParameter) {
 	std::string parameter = tmpParameter + "=";
-	int pos1 = tmpstr.find(parameter);
-	int pos2 = tmpstr.find(";", pos1);
+	size_t pos1 = tmpstr.find(parameter);
+	size_t pos2 = tmpstr.find(";", pos1);
 	return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str()))).c_str();
 }
 
 std::string CDenkoviDevices::DAEnetIP3GetAi(std::string tmpstr, const std::string &tmpParameter, const int &ciType) {
 	std::string parameter = tmpParameter + "=";
-	int pos1 = tmpstr.find(parameter);
-	int pos2;
+	size_t pos1 = tmpstr.find(parameter);
+	size_t pos2;
 	if (ciType == DAENETIP3_AI_VALUE) {
 		pos2 = tmpstr.find("[", pos1);
 		return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str()))).c_str();
@@ -752,7 +748,7 @@ std::string CDenkoviDevices::DAEnetIP3GetAi(std::string tmpstr, const std::strin
 
 uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(std::string tmpstr, const int &port) {
 	std::stringstream ss;
-	int pos1, pos2;
+	size_t pos1, pos2;
 	int b;
 	if (port == DAENETIP2_PORT_3_VAL) {
 		pos1 = tmpstr.find("(0x");
@@ -772,7 +768,7 @@ uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(std::string tmpstr, const int &port)
 }
 
 std::string CDenkoviDevices::DAEnetIP2GetName(std::string tmpstr, const int &nmr) {//nmr should be from 1 to 24
-	int pos1 = 0, pos2 = 0;
+	size_t pos1 = 0, pos2 = 0;
 	for (uint8_t ii = 0; ii < (((nmr - 1) * 2) + 1); ii++) {
 		pos1 = tmpstr.find("\"", pos1 + 1);
 	}
@@ -781,7 +777,7 @@ std::string CDenkoviDevices::DAEnetIP2GetName(std::string tmpstr, const int &nmr
 }
 
 uint16_t CDenkoviDevices::DAEnetIP2GetAiValue(std::string tmpstr, const int &aiNmr) {
-	int pos1 = 0, pos2 = 0;
+	size_t pos1 = 0, pos2 = 0;
 	std::stringstream ss;
 	int b = 0;
 	for (uint8_t ii = 0; ii < aiNmr + 3; ii++) {
