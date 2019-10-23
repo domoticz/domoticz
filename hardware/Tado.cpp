@@ -243,7 +243,8 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 		catch (std::exception& e)
 		{
 			std::string what = e.what();
-			throw std::runtime_error(("Failed to get token from Api: %s", what.c_str()));
+			_log.Log(LOG_ERROR, "Tado: Failed to get token from Api: %s", what.c_str());
+			return false;
 		}
 
 		authtoken = _jsRoot["access_token"].asString();
@@ -288,7 +289,8 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		catch (std::exception& e)
 		{
 			std::string what = e.what();
-			throw std::runtime_error(("Failed to get information on zone '%s': %s", zone.Name.c_str(), what.c_str()));
+			_log.Log(LOG_ERROR, "Tado: Failed to get information on zone '%s': % s", zone.Name.c_str(), what.c_str());
+			return false;
 		}
 
 		// Zone Home/away
@@ -370,7 +372,8 @@ bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
 		catch (std::exception& e)
 		{
 			std::string what = e.what();
-			throw std::runtime_error(("Failed to get state information on home '%s': %s", home.Name.c_str(), what.c_str()));
+			_log.Log(LOG_ERROR, "Tado: Failed to get state information on home '%s': %s", home.Name.c_str(), what.c_str());
+			return false;
 		}
 
 		// Home/away
@@ -896,7 +899,8 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 			case Put:
 				if (!HTTPClient::PUT(sUrl, sPostData, _vExtraHeaders, sResponse, bIgnoreEmptyResponse))
 				{
-					throw std::runtime_error(("Failed to perform PUT request to Tado Api: %s", sResponse.c_str()));
+					_log.Log(LOG_ERROR, "Tado: Failed to perform PUT request to Tado Api: %s", sResponse.c_str());
+					return false;
 				}
 				break;
 
@@ -904,7 +908,8 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 				if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders, true, bIgnoreEmptyResponse))
 				{
 					for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) _ssResponseHeaderString << _vResponseHeaders[i];
-					throw std::runtime_error(("Failed to perform POST request to Tado Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str()));
+					_log.Log(LOG_ERROR, "Tado: Failed to perform POST request to Tado Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str());
+					return false;
 				}
 				break;
 
@@ -912,14 +917,16 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 				if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, bIgnoreEmptyResponse))
 				{
 					for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) _ssResponseHeaderString << _vResponseHeaders[i];
-					throw std::runtime_error(("Failed to perform GET request to Tado Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str()));
+					_log.Log(LOG_ERROR, "Tado: Failed to perform GET request to Tado Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str());
+					return false;
 				}
 				break;
 
 			case Delete:
 				if (!HTTPClient::Delete(sUrl, sPostData, _vExtraHeaders, sResponse, bIgnoreEmptyResponse)) {
 					{
-						throw std::runtime_error(("Failed to perform DELETE request to Tado Api: %s", sResponse.c_str()));
+						_log.Log(LOG_ERROR, "Tado: Failed to perform DELETE request to Tado Api: %s", sResponse.c_str());
+						return false;
 					}
 				}
 				break;
