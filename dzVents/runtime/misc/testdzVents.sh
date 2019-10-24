@@ -32,7 +32,6 @@ if [ ! -f "$basedir/dzVents/runtime/integration-tests/testIntegration.lua" ]; th
 	exit 1
 fi
 
-
 NewVersion=$($basedir/domoticz --help | grep Giz | awk '{print $5}') 2>&1 >/dev/null
 export NewVersion
 if [[ $? -ne 0 ]];then
@@ -88,9 +87,11 @@ checkStarted()
 
 function cleanup
 	{
-		ps -ef | grep domoticz
-		rm domoticz.log[0-9][0-9]*
-		find . -type f -name 'domoticz.db_*' -mmin +30 -exec rm {} \;
+		ps -aux | grep [f]domoticz
+		if [[ $? -eq 1 ]]; then
+			rm domoticz.log[0-9][0-9]*
+			find . -type f -name 'domoticz.db_*' -mmin +30 -exec rm {} \;
+		fi
 	}
 
 function stopBackgroundProcesses
@@ -117,7 +118,7 @@ function fillTimes
 		ContactDoorLockInvertedSwitch_ExpectedSeconds=30
 		DelayedVariableScene_ExpectedSeconds=80
 		EventState_ExpectedSeconds=180
-		Integration_ExpectedSeconds=300
+		Integration_ExpectedSeconds=320
 		SelectorSwitch_ExpectedSeconds=100
 	}
 
@@ -163,11 +164,15 @@ suffix=".lua"
 factor=10               # performance factor (about 10 on Raspberry)
 
 cd $basedir/dzVents/runtime/integration-tests
+export NODE_NO_WARNINGS=1
 npm --silent start 2>&1 >/dev/null &
 checkStarted "server" 10
 
 # Just to be sure we do not destroy something important without a backup
 cp $basedir/domoticz.db $basedir/domoticz.db_$$
+
+# Make sure we start with a clean sheet
+rm -f $basedir/domoticz.db
 
 cd $basedir
 ./domoticz > domoticz.log$$ &
@@ -189,7 +194,6 @@ testDir
 echo
 echo
 
-
 cd $basedir
 expectedErrorCount=5
 grep "Results stage 2: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
@@ -197,12 +201,12 @@ if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 	if [[ $? -eq 0 ]];then
 		#echo Stage 1 and stage 2 of integration test Succeeded
-		errorCount=$(grep "Error" domoticz.log$$ | wc -l)
+		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | wc -l)
 		if [[ $errorCount -eq $expectedErrorCount ]];then
 			#echo Errors are to be expected
 			echo -n
 		else
-			grep -i Error domoticz.log$$
+			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken
 			stopBackgroundProcesses 1
 		fi		
 	else

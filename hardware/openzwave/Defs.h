@@ -31,26 +31,25 @@
 #include <stdio.h>
 #include <string>
 #include <stdint.h>
-
+#include <memory>
 
 // Compilation export flags
 #if (defined _WINDOWS || defined WIN32 || defined _MSC_VER) && (!defined MINGW && !defined __MINGW32__ && !defined __MINGW64__)
+// As discussd here https://github.com/OpenZWave/open-zwave/pull/1835
+// Disable certain  MSVC warnings here (instead of applying the pragma throughout the code as was done in the past).
+// Application and DLL should be built with same compiler and settings anyway.
+// See https://stackoverflow.com/questions/5661738/how-can-i-use-standard-library-stl-classes-in-my-dll-interface-or-abi
 #	if defined OPENZWAVE_MAKEDLL	// Create the dynamic library.
 #		define OPENZWAVE_EXPORT    __declspec(dllexport)
+		__pragma(warning(disable: 4251)) __pragma(warning(disable: 4275))
 #	elif defined OPENZWAVE_USEDLL	// Use the dynamic library
 #		define OPENZWAVE_EXPORT    __declspec(dllimport)
+		__pragma(warning(disable: 4251)) __pragma(warning(disable: 4275))
 #	else							// Create/Use the static library
 #		define OPENZWAVE_EXPORT
 #	endif
-// Disable export warnings
-#	define OPENZWAVE_EXPORT_WARNINGS_OFF	__pragma( warning(push) )\
-											__pragma( warning(disable: 4251) ) \
-											__pragma( warning(disable: 4275) )
-#	define OPENZWAVE_EXPORT_WARNINGS_ON		__pragma( warning(pop) )
 #else
 #	define OPENZWAVE_EXPORT
-#	define OPENZWAVE_EXPORT_WARNINGS_OFF
-#	define OPENZWAVE_EXPORT_WARNINGS_ON
 #endif
 
 #ifdef __GNUC__
@@ -61,7 +60,6 @@
 #pragma message("WARNING: You need to implement DEPRECATED for this compiler")
 #define DEPRECATED
 #endif
-
 
 #ifdef _MSC_VER
 #define OPENZWAVE_DEPRECATED_WARNINGS_OFF 	__pragma( warning(push) )\
@@ -77,38 +75,37 @@
 #define OPENZWAVE_DEPRECATED_WARNINGS_ON 	_Pragma ( "GCC diagnostic pop" )
 #endif
 
-
-
 #ifdef NULL
 #undef NULL
 #endif
 #define NULL 0
 
 // Basic types
-typedef signed char			int8;
-typedef unsigned char		uint8;
+typedef signed char int8;
+typedef unsigned char uint8;
 
-typedef signed short		int16;
-typedef unsigned short		uint16;
+typedef signed short int16;
+typedef unsigned short uint16;
 
-typedef signed int			int32;
-typedef unsigned int		uint32;
+typedef signed int int32;
+typedef unsigned int uint32;
 
 #ifdef _MSC_VER
-typedef signed __int64		int64;
-typedef unsigned __int64	uint64;
+typedef signed __int64 int64;
+typedef unsigned __int64 uint64;
 #endif
 
 #ifdef __GNUC__
-typedef signed long long	int64;
-typedef unsigned long long  uint64;
+typedef signed long long int64;
+typedef unsigned long long uint64;
 #endif
 
-typedef float				float32;
-typedef double				float64;
+typedef float float32;
+typedef double float64;
 
-typedef struct ozwversion {
-	uint32_t _v; /* major << 16  | minor */
+typedef struct ozwversion
+{
+		uint32_t _v; /* major << 16  | minor */
 } ozwversion;
 
 /**
@@ -116,7 +113,8 @@ typedef struct ozwversion {
  * \param v: the version number to obtain the major number from
  * \return the Major Version Number
  */
-static inline uint16_t version_major(struct ozwversion v) {
+static inline uint16_t version_major(struct ozwversion v)
+{
 	return (v._v & 0xFFFF0000) >> 16;
 }
 
@@ -125,7 +123,8 @@ static inline uint16_t version_major(struct ozwversion v) {
  * \param v: the version number to obtain the minor number from
  * \return the Minor Version Number
  */
-static inline uint16_t version_minor(const struct ozwversion &v) {
+static inline uint16_t version_minor(const struct ozwversion &v)
+{
 	return v._v & 0xFFFF;
 }
 
@@ -138,7 +137,7 @@ static inline uint16_t version_minor(const struct ozwversion &v) {
 static inline struct ozwversion version(uint16_t major, uint16_t minor)
 {
 	struct ozwversion v;
-	v._v = (uint32_t)(major << 16) | (uint32_t)minor;
+	v._v = (uint32_t) (major << 16) | (uint32_t) minor;
 	return v;
 }
 
@@ -157,7 +156,7 @@ static inline struct ozwversion version(uint16_t major, uint16_t minor)
  */
 static inline int version_cmp(struct ozwversion a, struct ozwversion b)
 {
-	return  (a._v == b._v) ? 0 : (a._v > b._v) ? 1 : - 1;
+	return (a._v == b._v) ? 0 : (a._v > b._v) ? 1 : -1;
 }
 
 #include "OZWException.h"
@@ -166,28 +165,27 @@ static inline int version_cmp(struct ozwversion a, struct ozwversion b)
 #else
 #  define __MYFUNCTION__ __FILE__
 #endif
-// Exceptions : define OPENZWAVE_ENABLE_EXCEPTIONS in compiler flags to enable exceptions instead of exit function
-#ifdef OPENZWAVE_ENABLE_EXCEPTIONS
 
 #  define OZW_FATAL_ERROR(exitCode, msg)   	Log::Write( LogLevel_Error,"Exception: %s:%d - %d - %s", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, exitCode, msg); \
 											throw OZWException(__MYFUNCTION__, __LINE__, exitCode, msg)
 #  define OZW_ERROR(exitCode, msg) 			Log::Write( LogLevel_Warning,"Exception: %s:%d - %d - %s", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, exitCode, msg); \
 											throw OZWException(__MYFUNCTION__, __LINE__, exitCode, msg)
 
-#else
-
-#  define OZW_FATAL_ERROR(exitCode, msg)   	Log::Write( LogLevel_Error,"Exception: %s:%d - %d - %s", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, exitCode, msg); \
-											std::cerr << "Error: "<< std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1) << ":" << __LINE__ << " - " << msg << std::endl; exit(exitCode)
-#  define OZW_ERROR(exitCode, msg)			Log::Write( LogLevel_Warning,"Exception: %s:%d - %d - %s", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, exitCode, msg);
-
-#endif
-
 // Declare the OpenZWave namespace
-namespace std {}
+namespace std
+{
+}
 namespace OpenZWave
 {
 	// Include the STL namespace
 	using namespace std;
+	namespace Internal
+	{
+		namespace CC
+		{
+
+		}
+	}
 }
 
 // Modifications for Microsoft compilers
@@ -202,10 +200,8 @@ namespace OpenZWave
 #define snprintf sprintf_s
 #define strcasecmp _stricmp
 #define sscanf sscanf_s
-#define strncpy strncpy_s
+#define strncpy(x, y, z) strncpy_s(x, sizeof(x), y, sizeof(x)-1)
 #define strncat strncat_s
-
-
 
 #endif
 
@@ -221,7 +217,6 @@ namespace OpenZWave
 #endif
 
 #define fopen_s fopen
-
 
 #endif
 
@@ -333,7 +328,6 @@ namespace OpenZWave
 #define FUNC_ID_PROPRIETARY_C                           0xFC
 #define FUNC_ID_PROPRIETARY_D                           0xFD
 #define FUNC_ID_PROPRIETARY_E                           0xFE
-
 
 #define ADD_NODE_ANY									0x01
 #define ADD_NODE_CONTROLLER								0x02
@@ -453,14 +447,14 @@ namespace OpenZWave
 /* RouteScheme Definitions */
 typedef enum TXSTATUS_ROUTING_SCHEME
 {
-  ROUTINGSCHEME_IDLE = 0,
-  ROUTINGSCHEME_DIRECT = 1,
-  ROUTINGSCHEME_CACHED_ROUTE_SR = 2,
-  ROUTINGSCHEME_CACHED_ROUTE = 3,
-  ROUTINGSCHEME_CACHED_ROUTE_NLWR = 4,
-  ROUTINGSCHEME_ROUTE = 5,
-  ROUTINGSCHEME_RESORT_DIRECT = 6,
-  ROUTINGSCHEME_RESORT_EXPLORE = 7
+	ROUTINGSCHEME_IDLE = 0,
+	ROUTINGSCHEME_DIRECT = 1,
+	ROUTINGSCHEME_CACHED_ROUTE_SR = 2,
+	ROUTINGSCHEME_CACHED_ROUTE = 3,
+	ROUTINGSCHEME_CACHED_ROUTE_NLWR = 4,
+	ROUTINGSCHEME_ROUTE = 5,
+	ROUTINGSCHEME_RESORT_DIRECT = 6,
+	ROUTINGSCHEME_RESORT_EXPLORE = 7
 } TXSTATUS_ROUTING_SCHEME;
 
 /* RouteSpeed Definitions */
@@ -471,6 +465,5 @@ typedef enum TXSTATUS_ROUTE_SPEED
 	ROUTE_SPEED_40K = 2,
 	ROUTE_SPEED_100K = 3,
 } TXSTATUS_ROUTE_SPEED;
-
 
 #endif // _Defs_H

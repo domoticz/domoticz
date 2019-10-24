@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-  <!--
-  Coolcam NAS-PD02ZE Motion Sensor (PIR) Version 2
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+  <MetaData>
+    <!--
+  Neo (Coolcam) NAS-PD02Z Motion Sensor (PIR) Version 2 aka NAS-PD02ZT
+  Model with or without temperature reporting
+  No official manual or website available
+  Parameters probably changed on firmware 3.80 of this device.
+  Does not figure on https://products.z-wavealliance.org
   -->
+    <ChangeLog>
+      <Entry author="Peter Gebruers - peter.gebruers@gmail.com" date="06 July 2019" revision="2">Fix parameters for temperature model, based on user feedback https://github.com/OpenZWave/open-zwave/issues/1866</Entry>
+    </ChangeLog>
+  </MetaData>
+
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value type="list" genre="config" instance="1" index="1" label="Motion detection sensitivity" value="12" min="8" max="255" size="1">
@@ -12,7 +22,7 @@
       <Item label="Lower Sensitivity" value="128" />
       <Item label="Lowest Sensitivity" value="255" />
     </Value>
-    
+
     <Value type="short" genre="config" instance="1" index="2" label="Motion detection ON time" units="second" value="30" min="5" max="600" size="2">
       <Help>This parameter can be determined how long the associated devices should stay ON status.
         For instance, this parameter is set to 30(second), the PIR detector will send a BASIC_SET Command to an associated device with value basic set level if PIR detector is triggered and the associated device will be turned on 30(second) before it is turned off.
@@ -28,7 +38,7 @@
         Available Settings: 0, 1 to 99 or 255.
       </Help>
     </Value>
-    
+
     <Value type="list" genre="config" instance="1" index="4" label="Motion detection function" value="1" size="1">
       <Help>
         Enable the motion detection (PIR) function.
@@ -36,8 +46,8 @@
       </Help>
       <Item label="Disable" value="0" />
       <Item label="Enable" value="255" />
-     </Value>
-    
+    </Value>
+
     <Value type="short" genre="config" instance="1" index="5" label="Ambient Illumination Lux Level" units="lux" value="100" min="0" max="1000" size="2">
       <Help>
         Define the illumination level value which determines when the 'Illumination switch ON function' is activated.
@@ -45,7 +55,7 @@
         0 to 1000(Lux).
       </Help>
     </Value>
-    
+
     <Value type="byte" genre="config" instance="1" index="6" label="Motion detection blind time" units="second" value="8" min="1" max="8" size="1">
       <Help>
         Period after motion detection in which the sensor is insensitive for new motion detection.
@@ -53,7 +63,7 @@
         Available Settings: 1 to 8(s).
       </Help>
     </Value>
-    
+
     <Value type="short" genre="config" instance="1" index="7" label="Illumination reporting interval" units="second" value="180" min="60" max="36000" size="2">
       <Help>
         Determine the time between illumination reports, even when value has not changed.
@@ -61,7 +71,7 @@
         Available Settings: 60 ~ 36000(second).
       </Help>
     </Value>
-    
+
     <Value type="list" genre="config" instance="1" index="8" label="Illumination function" value="0" size="1">
       <Help>
         Enable the function to switch on a associated device (group 2) once motion has been detected and the illumination level will be less than the value specified in 'Illumination switch ON level'.
@@ -69,17 +79,31 @@
       <Item label="Disable" value="0" />
       <Item label="Enable" value="1" />
     </Value>
-    
-    <Value type="byte" genre="config" instance="1" index="9" label="Illumination report threshold" units="lux" value="20" min="0" max="255" size="1">
+
+    <Value type="byte" genre="config" instance="1" index="9" label="Illumination report threshold" units="lux" value="25" min="0" max="255" size="1">
       <Help>This parameter defines by how much Lux Level must change, in lux, to be reported to the main controller.</Help>
     </Value>
-	
-    <Value type="list" genre="config" instance="1" index="10" label="Motion detection LED indication" value="1" size="1">
-      <Help>Enable LED/PIR to blink red when motion detected.</Help>
+
+    <Value type="byte" genre="config" instance="1" index="10" label="Ambient Temperature Differential Level Report or Led Blink Enable (0 or 1 - non-temperature version)" units="0.1 C" value="5" min="0" max="127" size="1">
+      <Help>This parameter is configured the value that differential between current measured and previous report value. If the differential value larger than the settings, device will report this measured temperature value to nodes associated in lifeline.</Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="11" label="Led Blink Enable (temperature reporting version)" value="1" size="1">
+      <Help>This parameter can enabled or disable the PIR led blinking function. </Help>
       <Item label="Disable" value="0" />
       <Item label="Enable" value="1" />
     </Value>
- 
+
+    <Value type="list" genre="config" instance="1" index="12" label="Motion Event Report One Time Enable (temperature reporting version)" value="1" size="1">
+      <Help>The motion detected event can be sent multiple times/only once until device report motion cleared event. </Help>
+      <Item label="multiple times" value="0" />
+      <Item label="only once" value="1" />
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="99" label="Ambient Light Intensity Calibration" value="1000" min="1" max="65536" size="2">
+      <Help>This parameter defines the calibrated scale for ambient light intensity.</Help>
+    </Value>
+
   </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">

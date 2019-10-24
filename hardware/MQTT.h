@@ -14,7 +14,7 @@
 class MQTT : public MySensorsBase, mosqpp::mosquittopp
 {
 public:
-	MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAFile, const int Topics);
+	MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAFile, const int TLS_Version, const int Topics);
 	~MQTT(void);
 	bool isConnected(){ return m_IsConnected; };
 
@@ -22,6 +22,9 @@ public:
 	void on_disconnect(int rc) override;
 	virtual void on_message(const struct mosquitto_message *message) override;
 	void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
+
+	void on_log(int level, const char* str) override;
+	void on_error() override;
 
 	void SendMessage(const std::string &Topic, const std::string &Message);
 
@@ -41,6 +44,7 @@ protected:
 	std::string m_UserName;
 	std::string m_Password;
 	std::string m_CAFilename;
+	int m_TLS_Version;
 	std::string m_TopicIn;
 	std::string m_TopicOut;
 	virtual bool StartHardware() override;

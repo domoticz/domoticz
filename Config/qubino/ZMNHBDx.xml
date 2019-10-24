@@ -1,4 +1,42 @@
-<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0051:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/qubino/ZMNHBDx.png</MetaDataItem>
+    <MetaDataItem id="0051" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1528/</MetaDataItem>
+    <MetaDataItem id="0051" name="Identifier" type="0002">ZMNHB</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only in the event that your network primary controller is missing or otherwise inoperable.
+
+If the service button S is pressed for mor ethan 6 seconds the module will be reset to the factory defoult state</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Module Exclusion/Reset (Removing from Z-Wave network)
+•	Connect module to power supply
+•	bring module within maximum 1 meter (3feet) of the main controller, 
+•	enable add/remove mode on main controller,
+•	press service button S for more than 6 second or
+•	press push button I1 five  times within 3s ( 5	times change switch state within 3 seconds) in the first 60 seconds after the module is connected to the power supply.
+By this function all parameters of the module are set to   default values and own ID is deleted.
+If service button S is pressed more than 2 and less than 6second module is excluded, but configuration parameters are not set to default values
+</MetaDataItem>
+    <MetaDataItem name="Description">Flush 2 relays module is used for switching on or off two electrical devices (e.g. lights, fans, etc ...). The module can be controlled either through Z-Wave network or through the wall switches.
+The module is designed to be mounted inside a “flush mounting box”, hidden behind a traditional wall switch.
+Module measures power consumption of two electrical devices and supports connection of digital temperature sensor. It is designed to act as repeater in order to improve range and stability of Z-wave network.
+</MetaDataItem>
+    <MetaDataItem id="0051" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Module Inclusion (Adding to Z-Wave network)
+•	Connect module to power supply (with 
+temperature sensor connected - if purchased),
+•	enable add/remove mode on main controller
+•	auto-inclusion (works for about 5 seconds after connected to power supply) or
+•	press service button S for more than 2 second or
+•	press push button I1 three times within 3s (3 times change switch state within 3 seconds).
+NOTE1: For auto-inclusion procedure, first set main controller into inclusion mode and then connect module to power supply.
+NOTE2: When connecting temperature sensor to module that has already been included, you have to exclude module first. Switch off power supply , connect the sensor and re-include the module.
+</MetaDataItem>
+    <MetaDataItem name="Name">Qubino Flush 2 relays</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1528/Qubino_Flush 2 Relay PLUS extended manual_eng_2.2.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1528/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Qubino: ZMNHBDx Flush 2 Relay -->
 <!-- http://www.vesternet.com/downloads/dl/file/id/636/z_wave_qubino_flush_relay_x_2_plus_manual.pdf -->
 

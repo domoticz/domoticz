@@ -261,7 +261,7 @@ void KMTronicTCP::ParseTemps(const std::string &sResult)
 	{
 		tmpstr = stdstring_trim(results[ii]);
 
-		int pos1;
+		size_t pos1;
 		pos1 = tmpstr.find("<name>");
 		if (pos1 != std::string::npos)
 		{

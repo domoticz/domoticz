@@ -1,4 +1,44 @@
-<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0052:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/qubino/ZMNHSDx.png</MetaDataItem>
+    <MetaDataItem id="0052" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/2252/</MetaDataItem>
+    <MetaDataItem id="0052" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ResetDescription">•	Press push button I1 five times within 3s (5 times change switch state within 3 seconds) in the first 60 seconds after the module is connected to the power supply or
+•	press service button S (only applicable for 24 V SELV supply voltage)  for more than 6 second.
+
+Please use this procedure only when the network primary controller is missing or otherwise inoperable. 
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">•	Connect module to power supply (with 
+temperature sensor connected - if purchased),
+•	enable add/remove mode on main controller
+•	auto-inclusion (works for about 5 seconds after connected to power supply) or
+•	press service button S for more than 2 second or
+•	press push button I1 three times within 3s (3 times change switch state within 3 seconds).
+
+NOTE1: For auto-inclusion procedure, first set main controller into inclusion mode and then connect module to power supply.
+NOTE2: When connecting temperature sensor to module that has already been included, you have to exclude module first. Switch off power supply, connect the sensor and re-include the module.
+ </MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2252/Qubino_DIN Dimmer PLUS extended manual_eng_2.3.pdf</MetaDataItem>
+    <MetaDataItem name="Name">DIN Dimmer</MetaDataItem>
+    <MetaDataItem name="Description">DIN Dimmer is a DIN rail mounted dimmer for light bulbs. You can control it either remotely through the Z-Wave network or through wall switches. It also measures power consumption and supports the connection of a digital temperature sensor.</MetaDataItem>
+    <MetaDataItem id="0052" name="Identifier" type="0001">ZMNHSD1</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">•	Connect module to power supply 
+•	bring module within maximum 1 meter (3 feet) of the main controller,
+•	enable add/remove mode on main controller,
+•	press push button I1 five times within 3s (5 times change switch state within 3 seconds) in the first 60 seconds after the module is connected to the power supply or
+•	press service button S (only applicable for 24 V SELV supply voltage)  for more than 6 second.
+By this function all parameters of the module are set to default values and own ID is deleted.
+If push button I1 is pressed three times within 3s (or service button S is pressed more than 2 and less than 6 seconds) module is excluded, but configuration parameters are not set to default values. 
+
+NOTE 1: If the module is included with parameter 1 value 3, 4 or 5 and module reset is done, wait at least 30s before next inclusion.
+
+NOTE 2: Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+ </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2252/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- 
 Qubino: ZMNHSDx Din Dimmer Z-Wave+
 ZMNHSD1 868,4 MHz

@@ -75,6 +75,7 @@ public:
 		std::string description;
 		std::string deviceID;
 		int batteryLevel;
+		int protection;
 		int signalLevel;
 		int unit;
 		int hardwareID;
@@ -99,6 +100,7 @@ public:
 		std::string scenesgroupName;
 		std::string scenesgroupValue;
 		int scenesgroupType;
+		int protection;
 		std::string lastUpdate;
 		std::vector<uint64_t> memberID;
 	};
@@ -131,7 +133,6 @@ public:
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
-	void UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger = false);
 	bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 
 	void TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback);

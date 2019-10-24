@@ -19,7 +19,7 @@ public:
 	virtual ~BleBox();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	int GetDeviceType(const std::string &IPAddress);
-	void AddNode(const std::string &name, const std::string &IPAddress);
+	void AddNode(const std::string &name, const std::string &IPAddress, bool reloadNodes);
 	void RemoveNode(const int id);
 	void RemoveAllNodes();
 	void SetSettings(const int pollIntervalsec);

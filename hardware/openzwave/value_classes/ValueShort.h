@@ -36,35 +36,43 @@ class TiXmlElement;
 
 namespace OpenZWave
 {
-	class Msg;
-	class Node;
-
-	/** \brief Short value sent to/received from a node.
-	 * \ingroup ValueID
-	 */
-	class ValueShort: public Value
+	namespace Internal
 	{
-	public:
-	  	ValueShort( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, int16 const _value, uint8 const _pollIntensity );
-		ValueShort();
-		virtual ~ValueShort(){}
+		namespace VC
+		{
 
-		bool Set( int16 const _value );
-		void OnValueRefreshed( int16 const _value );
+			/** \brief Short value sent to/received from a node.
+			 * \ingroup ValueID
+			 */
+			class ValueShort: public Value
+			{
+				public:
+					ValueShort(uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, int16 const _value, uint8 const _pollIntensity);
+					ValueShort();
+					virtual ~ValueShort()
+					{
+					}
 
-		// From Value
-		virtual string const GetAsString() const;
-		virtual bool SetFromString( string const& _value );
-		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );
-		virtual void WriteXML( TiXmlElement* _valueElement );
+					bool Set(int16 const _value);
+					void OnValueRefreshed(int16 const _value);
 
-		int16 GetValue()const{ return m_value; }
+					// From Value
+					virtual string const GetAsString() const;
+					virtual bool SetFromString(string const& _value);
+					virtual void ReadXML(uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement);
+					virtual void WriteXML(TiXmlElement* _valueElement);
 
-	private:
-		int16	m_value;				// the current value
-		int16	m_valueCheck;			// the previous value (used for double-checking spurious value reads)
-	};
+					int16 GetValue() const
+					{
+						return m_value;
+					}
 
+				private:
+					int16 m_value;				// the current value
+					int16 m_valueCheck;			// the previous value (used for double-checking spurious value reads)
+			};
+		} // namespace VC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

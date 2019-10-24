@@ -41,61 +41,65 @@
 
 namespace OpenZWave
 {
-	class Event;
-	class Mutex;
-	class Controller;
-	class Thread;
-
-
-	enum LookupType {
-		DNS_Lookup_ConfigRevision = 1
-	};
-
-	struct DNSLookup {
-			uint8 NodeID;
-			string lookup;
-			string result;
-			DNSError status;
-			LookupType type;
-
-	};
-
-
-	/** \brief the DNSThread provides Async DNS lookups for checking revision numbers of
-	 *  Config Files against the official database
-	 */
-	class OPENZWAVE_EXPORT DNSThread
+	namespace Internal
 	{
-			friend class Driver;
-		private:
-			DNSThread(Driver *);
-			virtual ~DNSThread();
+		namespace Platform
+		{
+			class Event;
+			class Mutex;
+			class Thread;
+		}
 
-			/**
-			 *  Entry point for DNSThread
-			 */
-			static void DNSThreadEntryPoint( Event* _exitEvent, void* _context );
-			/**
-			 *  DNSThreadProc for DNSThread.  This is where all the "action" takes place.
-			 */
-			void DNSThreadProc( Event* _exitEvent );
+		enum LookupType
+		{
+			DNS_Lookup_ConfigRevision = 1
+		};
 
-			/* submit a Request to the DNS List */
-			bool sendRequest(DNSLookup *);
+		struct DNSLookup
+		{
+				uint8 NodeID;
+				string lookup;
+				string result;
+				Internal::Platform::DNSError status;
+				LookupType type;
 
-			/* process the most recent request recieved */
-			void processResult();
+		};
 
-			Driver*			  m_driver;
-			Mutex*			  m_dnsMutex;
-			list<DNSLookup *> m_dnslist;
-			list<DNSLookup *> m_dnslistinprogress;
-			Event*			  m_dnsRequestEvent;
-			DNS				  m_dnsresolver;
+		/** \brief the DNSThread provides Async DNS lookups for checking revision numbers of
+		 *  Config Files against the official database
+		 */
+		class OPENZWAVE_EXPORT DNSThread
+		{
+				friend class OpenZWave::Driver;
+			private:
+				DNSThread(Driver *);
+				virtual ~DNSThread();
 
+				/**
+				 *  Entry point for DNSThread
+				 */
+				static void DNSThreadEntryPoint(Internal::Platform::Event* _exitEvent, void* _context);
+				/**
+				 *  DNSThreadProc for DNSThread.  This is where all the "action" takes place.
+				 */
+				void DNSThreadProc(Internal::Platform::Event* _exitEvent);
 
-	}; /* class DNSThread */
+				/* submit a Request to the DNS List */
+				bool sendRequest(DNSLookup *);
+
+				/* process the most recent request recieved */
+				void processResult();
+
+				Driver* m_driver;
+				Internal::Platform::Mutex* m_dnsMutex;
+				list<DNSLookup *> m_dnslist;
+				list<DNSLookup *> m_dnslistinprogress;
+				Internal::Platform::Event* m_dnsRequestEvent;
+				Internal::Platform::DNS m_dnsresolver;
+
+		};
+	/* class DNSThread */
+	} // namespace Internal
 } /* namespace OpenZWave */
-
 
 #endif

@@ -1,45 +1,42 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1002:0C02</MetaDataItem>
     <MetaDataItem name="ProductPic">images/fibaro/fgsd002.png</MetaDataItem>
     <MetaDataItem id="1002" name="ZWProductPage" type="0C02">https://products.z-wavealliance.org/products/1273/</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">Fibaro Smoke Sensor inclusion:
-1) Install the battery. Visual indicator will signal the Z-Wave network inclusion status
-(green - device included, red - device not included)
+    <MetaDataItem name="InclusionDescription">1) Install the battery. Visual indicator will signal the Z-Wave network adding status (green - device added, red - device not added).
 2) Make sure the device is located within direct range of the Z-Wave controller.
-3) Set the main controller into the learning mode
-(see main controllers operating manual).
-4) Quickly, triple click the B-button, located on Fibaro Smoke Sensors enclosure.
-5) Fibaro Smoke Sensor will be detected and included in the Z-Wave network.</MetaDataItem>
+3) Set the main controller in add mode (see main controller’s operating manual).
+4) Quickly, triple click the B-button, located on FIBARO Smoke Sensor enclosure.
+5) FIBARO Smoke Sensor will be detected and added to the Z-Wave network.
+</MetaDataItem>
     <MetaDataItem name="ResetDescription">Please use this procedure only in the event that the system primary controller is missing or otherwise inoperable.
-Fibaro Smoke Sensor reset procedure:
-1) Make sure the device has the battery installed.
+FIBARO Smoke Sensor reset procedure:
+1) Make sure the device is powered.
 2) Press and hold the B-button for 3 seconds. Visual indicator will glow white.
 3) You will hear a short signal.
 4) Release the B-button.
-5) Wait until the visual indicator glows yellow, signaling entering the 4th menu level.
-6) Press the B-button briefly to confirm menu level choice.  At the same time you will hear a short beep, the same sound as during the power connection.
-Successful reset will be confirmed with the visual indicator changing colour to red and
-fading. At the same time, short beep will sound, same as at the power connection.</MetaDataItem>
+</MetaDataItem>
     <MetaDataItem id="1002" name="Identifier" type="0C02">FGSD-002</MetaDataItem>
-    <MetaDataItem name="Description">The FIBARO Smoke Sensor is a universal, ultra-light, perfectly designed, optical Z-Wave smoke detector. Fire alarm is signaled by sound, visual indicator blinking and alarm reports sent to the other devices within Z-wave network. The optical sensor detects smoke at an early stage of fire, often before flames appear and temperature starts to rise significantly. Moreover, the device has a built-in temperature sensor, which is adjustable to allow detection of fire by exceeding given temperature threshold. The FIBARO Smoke Sensor is a battery powered device designed to be placed on the wall or ceiling. Visual indicator signals fire, operating mode and it is used to check if the device is within the Z-wave network using a built-in Z-Wave range tester. The Smoke Sensor is designed to operate in confined spaces, under normal conditions (lacking of smoke, dust or condensed water vapor).
-
+    <MetaDataItem name="Description">The FIBARO Smoke Sensor is a universal, ultra-light, perfectly designed, optical Z-Wave smoke detector. Fire alarm is signalled by sound, visual indicator blinking and alarm reports sent to the other devices within Z-wave network. The optical sensor detects smoke at an early stage of fire, often before flames appear and temperature starts to rise significantly. Moreover, the device has a built-in temperature sensor, which is adjustable to allow detection of fire by exceeding given temperature threshold. The FIBARO Smoke Sensor is a battery powered device designed to be placed on the wall or ceiling. Visual indicator signals fire, operating mode and it is used to check if the device is within the Z-wave network using a built-in Z-Wave range tester. The Smoke Sensor is designed to operate in confined spaces, under normal conditions (lacking of smoke, dust or condensed water vapor).
 
 Product video: 
-https://www.youtube.com/watch?v=50QGfkdUtns</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1273/FGSD-002-EN-A-v1.01 LQ-1.pdf</MetaDataItem>
-    <MetaDataItem name="WakeupDescription">The Smoke Sensor will wake up at defined time interval and
-will ALWAYS try to communicate with the main controller.  There is a possibility to wake the device up manually by triple-click the B-button.</MetaDataItem>
+https://www.youtube.com/watch?v=50QGfkdUtns
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2837/FGSD-002-EN-A-v1.1.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The Smoke Sensor will wake up at defined time interval and will ALWAYS try to communicate with the main controller.  There is a possibility to wake the device up manually by triple-clicking the B-button.</MetaDataItem>
     <MetaDataItem name="Name">FIBARO Smoke Sensor</MetaDataItem>
     <MetaDataItem id="1002" name="FrequencyName" type="0C02">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">1) Make sure there is a battery installed
-2) Set the main controller into the learning mode (see main controllers operating
-manual)
-3) Quickly, triple click the B-button, located on Fibaro Smoke Sensors enclosure.
+    <MetaDataItem name="ExclusionDescription">1) Make sure there is a battery installed.
+2) Set the main controller in remove mode (see main controller’s operating manual).
+3) Quickly, triple click the B-button, located on FIBARO Smoke Sensor enclosure.
 </MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1273/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2837/xml</Entry>
     </ChangeLog>
+    <MetaDataItem id="1003" name="ZWProductPage" type="0C02">https://products.z-wavealliance.org/products/2837/</MetaDataItem>
+    <MetaDataItem id="1003" name="Identifier" type="0C02">FGSD-002</MetaDataItem>
+    <MetaDataItem id="1003" name="FrequencyName" type="0C02">CEPT (Europe)</MetaDataItem>
   </MetaData>
   <!-- Configuration -->
   <CommandClass id="112">

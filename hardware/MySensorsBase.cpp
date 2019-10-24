@@ -2,6 +2,7 @@
 #include "MySensorsBase.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
@@ -583,8 +584,8 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		_tMySensorChild *pChildBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE, pChild->groupID);
 		if (pChildHum && pChildBaro)
 		{
-			int Humidity;
-			float Baro;
+			int Humidity = 0;
+			float Baro = 0;
 			bool bHaveHumidity = pChildHum->GetValue(V_HUM, Humidity);
 			bool bHaveBaro = pChildBaro->GetValue(V_PRESSURE, Baro);
 			if (bHaveHumidity && bHaveBaro)
@@ -636,7 +637,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			}
 		}
 		else if (pChildHum) {
-			int Humidity;
+			int Humidity = 0;
 			bool bHaveHumidity = pChildHum->GetValue(V_HUM, Humidity);
 			if (bHaveHumidity)
 			{
@@ -671,12 +672,12 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 				}
 			}
 		}
-		float Temp;
-		int Humidity;
+		float Temp = 0;
+		int Humidity = 0;
 		pChild->GetValue(V_HUM, Humidity);
 		if (pChildTemp && pChildBaro)
 		{
-			float Baro;
+			float Baro = 0;
 			bool bHaveTemp = pChildTemp->GetValue(V_TEMP, Temp);
 			bool bHaveBaro = pChildBaro->GetValue(V_PRESSURE, Baro);
 			if (bHaveTemp && bHaveBaro)
@@ -734,7 +735,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	break;
 	case V_PRESSURE:
 	{
-		float Baro;
+		float Baro = 0;
 		pChild->GetValue(V_PRESSURE, Baro);
 		_tMySensorChild *pSensorTemp = FindChildWithValueType(pChild->nodeID, V_TEMP, pChild->groupID);
 		_tMySensorChild *pSensorHum = FindChildWithValueType(pChild->nodeID, V_HUM, pChild->groupID);
@@ -751,8 +752,8 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		}
 		if (pSensorTemp && pSensorHum)
 		{
-			float Temp;
-			int Humidity;
+			float Temp = 0;
+			int Humidity  = 0;
 			bool bHaveTemp = pSensorTemp->GetValue(V_TEMP, Temp);
 			bool bHaveHumidity = pSensorHum->GetValue(V_HUM, Humidity);
 
@@ -989,10 +990,8 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			{
 				if (pChild->GetValue(V_FORECAST, stringValue))
 				{
-					std::stringstream sstr;
-					sstr << pChild->nodeID;
 					std::string devname = (!pChild->childName.empty()) ? pChild->childName : "Forecast";
-					m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pChild->childID, pTypeGeneral, sTypeTextStatus, 12, pChild->batValue, 0, stringValue.c_str(), devname);
+					SendTextSensor(pSensorBaro->nodeID, pSensorBaro->childID, pChild->batValue, stringValue, devname);
 				}
 			}
 		}
@@ -2545,7 +2544,7 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if (
 				(hwid == "") ||
 				(nodeid == "") ||

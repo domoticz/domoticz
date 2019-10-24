@@ -1,7 +1,42 @@
 <!-- 
 Heatit Z-Wave Thermostat Z-TRM2fx TF 056 
 https://products.z-wavealliance.org/products/3065
---><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/019B:0202:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/thermofloor/heatit056.png</MetaDataItem>
+    <MetaDataItem id="0202" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3065/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Adding the device:
+To add the thermostat to your home automation gateway, press Center (confirm) for 10 seconds. The display will show OFF. Press Right (down) 4 times till you see Con in the display. Now start add device in your home automation software. Start adding mode by pressing Center (confirm) button for approximately 2 seconds. The icon will appear in the display. Adding Mode is indicated in the display by some “circling” LED segments in the display until the timeout occurs after 20 seconds or the module has been added in the network. Confirmation will show Inc/EcL in the display. If adding fails, Err (error) will appear.</MetaDataItem>
+    <MetaDataItem id="0202" name="Identifier" type="0003">Z-TRM2fx</MetaDataItem>
+    <MetaDataItem name="Description">Heatit Z-TRM2fx is equipped with a single pole switch and it fits most System 55 frames (Elko RS16, Schneider Exxact, Gira, Jung etc.). The thermostat can withstand a load of max 13A /2900W at 230V. At higher loads the thermostat must control a contactor. The thermostat may be connected to two wired external sensors.
+The thermostat has the capacity of up to 8 associations (relays, wall plugs etc.).
+The thermostat is designed for electrical heating.
+FEATURES
+Floor sensor
+External room sensor
+Temperature limiter
+Weekly program/setback via gateway or pilot wire
+Multilevel sensor command class
+Firmware updates (OTA)
+Power metering
+LED-diode
+Can be used in connection with different NTC-sensors
+Lock mode/child lock
+Calibration
+8 associations
+Supports encryption mode: S0, S2 Authenticated Class, S2 Unauthenticated Class</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3065/Manual_Heatit_Z-TRM2fx_ENG_3.1.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Removing the device:
+To remove the thermostat to your home automation gateway, press Center (confirm) for 10 seconds. The display will show OFF. Press Right (down) 4 times till you see Con in the display. Now start remove device in your home automation software. Start removing mode by pressing Center (confirm) button for approximately 2 seconds. The icon will appear in the display. Removing Mode is indicated in the display by some “circling” LED segments in the display until the timeout occurs after 20 seconds or the module has been removed in the network. Confirmation will show Inc/EcL in the display. If removing fails, Err (error) will appear.</MetaDataItem>
+    <MetaDataItem id="0202" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ResetDescription">By pressing buttons Right and Center (down and confirm) for 20 seconds, the thermostat will perform a complete factory reset.
+NB! Please use this procedure only when the primary controller/ gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Name">Heatit Z-TRM2fx</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3065/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <CommandClass id="64">
     <Value genre="user" index="0" instance="1" label="Mode" max="0" min="0" read_only="false" type="list" units="" value="0" write_only="false">
       <Item label="Off" value="0"/>
@@ -36,20 +71,20 @@ https://products.z-wavealliance.org/products/3065
     </Compatibility>
   </CommandClass>
   <CommandClass id="112">
-    <Value genre="config" index="1" label="Operation mode" type="list" value="1" size="1">
+    <Value genre="config" index="1" label="Operation mode" size="1" type="list" value="1">
       <Help>Set operation mode</Help>
       <Item label="Off" value="0"/>
       <Item label="Heat" value="1"/>
       <Item label="Cooling Mode" value="2"/>
       <Item label="Heat Energy Saving" value="11"/>
     </Value>
-    <Value genre="config" index="2" instance="1" label="Sensor mode" type="list" value="1" size="1">
+    <Value genre="config" index="2" instance="1" label="Sensor mode" size="1" type="list" value="1">
       <Help>Set sensor mode</Help>
       <Item label="F - Floor sensor" value="0"/>
       <Item label="A2 - External room sensor" value="3"/>
       <Item label="A2F - External sensor with floor limitation" value="4"/>
     </Value>
-    <Value genre="config" index="3" instance="1" label="Floor sensor type" type="list" value="0" size="1">
+    <Value genre="config" index="3" instance="1" label="Floor sensor type" size="1" type="list" value="0">
       <Help>Floor sensor type (10K NTC Default)</Help>
       <Item label="10k ntc" value="0"/>
       <Item label="12k ntc" value="1"/>

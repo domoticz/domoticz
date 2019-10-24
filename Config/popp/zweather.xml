@@ -1,32 +1,54 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-	<!-- Popp: Z-Weather Wind and Weather Sensor -->
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0154:0400:0100</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/popp/zweather.png</MetaDataItem>
+    <MetaDataItem id="0400" name="ZWProductPage" type="0100">https://products.z-wavealliance.org/products/2102/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2102/POPE005206_en.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Push the button 3 times within 1.5 seconds.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Hold the button longer than 1.5 seconds and then release.
+The LED blinks longer than when pressing the button once.
+Z-Weather performs a factory reset and all configuration parameters are reset to their default values. Use this procedure only when the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem name="Name">Z-Weather</MetaDataItem>
+    <MetaDataItem id="0400" name="Identifier" type="0100">POPE005206</MetaDataItem>
+    <MetaDataItem id="0400" name="FrequencyName" type="0100">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Push the button 3 times within 1.5 seconds. The LED blinks once indicating that Z-Weather is. Z-Weather sends a Z-Wave Wakeup-Notification if has been added to the network. If Z-Weather has not yet been added to the network, no action is performed.</MetaDataItem>
+    <MetaDataItem name="Description">Z-Weather is a  multisensor device monitoring outside weather and environmental conditions. It continually measures the wind speed and can, for example, trigger closing of the awning and blinds if it is too windy. It also measures the amount of rotation, enabling calculation of the wind yield per day or per year. In addition, Z-Weather includes sensors for humidity, temperature, pressure and dew point, essentially providing the core sensors of a weather station.
+Z-Weather is powered by a solar cell and stores energy on an internal capacitor, enabling continuous operation, even with no wind for a couple of days. It does not use any batteries and is completely maintenance free. Using the built-in solar cell it also measures the ambient light and the solar yield. This information can be used to turn on the outdoor light at dusk time and turn the light off in the morning.
+Z-Weather‘s wind yield and solar yield metering can be used as a calculation base for planning a wind generator or a solar panel on the roof of a house.
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Push the button 3 times within 1.5 seconds. If the LED is not blinking after releasing the button, Z-Weather has not enough energy and must be charged for several hours in bright sunlight.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2102/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Popp: Z-Weather Wind and Weather Sensor -->
 	<!-- Configuration  -->
-	<CommandClass id="112">
-		<Value type="byte" genre="config" instance="1" index="1" label="Wind speed action threshold" size="1" min="0" max="30" units="ms" value="6">
-			<Help>
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Wind speed action threshold" max="30" min="0" size="1" type="byte" units="ms" value="6">
+      <Help>
 			Crossing this parameter on the rising edge, Z-Weather sends a basic set to the associated groups, serves the lifeline and sends a wake up notification. 
 			Valid values: 0-30 m/s, where 0 means no notification on too much wind. 
 			Default: 6
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="2" label="Twilight action threshold" size="1" min="0" max="100" units="%" value="37">
-			<Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Twilight action threshold" max="100" min="0" size="1" type="byte" units="%" value="37">
+      <Help>
 			Crossing this parameter from night to day, association group 3 is informed. 
 			Crossing this parameter from day to night, association group 4 is informed.
 			Valid values: 0-100 %, where 0 means off.
 			Default: 37 (street lightning)
 			</Help>
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->	
-	<CommandClass id="133">
-		<Associations num_groups="4">
-			<Group index="1" max_associations="1" label="Lifeline"/>
-			<Group index="2" max_associations="5" label="Too much wind" />
-			<Group index="3" max_associations="5" label="Getting bright" />
-			<Group index="4" max_associations="5" label="Getting dark" />
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Too much wind" max_associations="5"/>
+      <Group index="3" label="Getting bright" max_associations="5"/>
+      <Group index="4" label="Getting dark" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>
-

@@ -32,57 +32,62 @@
 
 namespace OpenZWave
 {
-	class MutexImpl;
-
-	/** \brief Implements a platform-independent mutex--for serializing access to a shared resource.
-	 * \ingroup Platform
-	 */
-	class Mutex: public Wait
+	namespace Internal
 	{
-	public:
-		/**
-		 * Constructor.
-		 * Creates a mutex object that can be used to serialize access to a shared resource.
-		 */
-		Mutex();
+		namespace Platform
+		{
+			class MutexImpl;
 
-		/**
-		 * Lock the mutex.
-		 * Attempts to lock the mutex.
-		 * There must be a matching call to Release for every call to Lock.
-		 * \param _bWait Defaults to true.  Set this argument to false if the method should return
-		 * immediately, even if the lock is not available.
-		 * \return True if the lock was obtained.
-		 * \see Unlock
-		 */
-		bool Lock( bool const _bWait = true );
+			/** \brief Implements a platform-independent mutex--for serializing access to a shared resource.
+			 * \ingroup Platform
+			 */
+			class Mutex: public Wait
+			{
+				public:
+					/**
+					 * Constructor.
+					 * Creates a mutex object that can be used to serialize access to a shared resource.
+					 */
+					Mutex();
 
-		/**
-		 * Releases the lock on the mutex.
-		 * There must be a matching call to Release for every call to Lock.
-		 * \see Lock
-		 */
-		void Unlock();
+					/**
+					 * Lock the mutex.
+					 * Attempts to lock the mutex.
+					 * There must be a matching call to Release for every call to Lock.
+					 * \param _bWait Defaults to true.  Set this argument to false if the method should return
+					 * immediately, even if the lock is not available.
+					 * \return True if the lock was obtained.
+					 * \see Unlock
+					 */
+					bool Lock(bool const _bWait = true);
 
-		/**
-		 * Used by the Wait class to test whether the mutex is free.
-		 */
-		virtual bool IsSignalled();
-	protected:
+					/**
+					 * Releases the lock on the mutex.
+					 * There must be a matching call to Release for every call to Lock.
+					 * \see Lock
+					 */
+					void Unlock();
 
-		/**
-		 * Destructor.
-		 * Destroys the mutex object.
-		 */
-		~Mutex();
+					/**
+					 * Used by the Wait class to test whether the mutex is free.
+					 */
+					virtual bool IsSignalled();
+				protected:
 
-	private:
-		Mutex( Mutex const&	);					// prevent copy
-		Mutex& operator = ( Mutex const& );		// prevent assignment
+					/**
+					 * Destructor.
+					 * Destroys the mutex object.
+					 */
+					~Mutex();
 
-		MutexImpl*	m_pImpl;					// Pointer to an object that encapsulates the platform-specific implementation of a mutex.
-	};
+				private:
+					Mutex(Mutex const&);					// prevent copy
+					Mutex& operator =(Mutex const&);		// prevent assignment
 
+					MutexImpl* m_pImpl;					// Pointer to an object that encapsulates the platform-specific implementation of a mutex.
+			};
+		} // namespace Platform
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif //_Mutex_H

@@ -178,7 +178,7 @@ bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char /*l
 	else if (packettype ==  pTypeGeneralSwitch)
 	{
 		const _tGeneralSwitch *xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
-		int ID = xcmd->id;
+		//int ID = xcmd->id;
 		int level = xcmd->level;
 		return AnnaSetPreset(level);
 	}
@@ -482,7 +482,7 @@ void CAnnaThermostat::GetMeterDetails()
 			Log(LOG_ERROR, "AnnaTherm: Cannot find logs in XML");
 			return;
 		}
-		TiXmlHandle hLogs = TiXmlHandle(pElem);
+		//TiXmlHandle hLogs = TiXmlHandle(pElem);
 		pElem = hAppliance.FirstChild("logs").Child("point_log", 0).ToElement();
 		if (!pElem)
 		{
@@ -753,7 +753,7 @@ bool CAnnaThermostat::CheckLoginData()
 		return false;
 	}
 	pLocation = pRoot->FirstChildElement("location");
-	TiXmlHandle hAppliance = TiXmlHandle(pLocation);
+	//TiXmlHandle hAppliance = TiXmlHandle(pLocation);
 	if (m_AnnaLocation.m_ALocationID.empty()) 
 	{
 		pAttribute = pLocation->FirstAttribute();

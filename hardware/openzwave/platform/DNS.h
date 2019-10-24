@@ -33,46 +33,50 @@
 #include "Defs.h"
 #include "platform/Log.h"
 
-
 namespace OpenZWave
 {
-	class DNSImpl;
-
-	/** \brief Return codes for DNS lookups
-	 * \ingroup Platform
-	 */
-	enum DNSError
+	namespace Internal
 	{
-		DNSError_None = 0,
-		DNSError_NotFound,					/**< No Record Exists - There for no Config File exists */
-		DNSError_DomainError,					/**< Domain didn't resolve etc */
-		DNSError_InternalError					/**< A Internal Error Occured */
-	};
+		namespace Platform
+		{
+			class DNSImpl;
 
-
-	/** \brief Implements platform-independent DNS lookup Operations.
-	 * \ingroup Platform
-	 */
-	class DNS
-	{
-	public:
-			DNS();
-			~DNS();
-			/**
-			 * \brief Starts a DNS lookup for a TXT record
-			 *
-			 * This function will lookup the TXT record for a address
-			 *
-			 * \param lookup the DNS address to lookup
-			 * \param result the result of the lookup request, or empty if the lookup failed.
-			 *
-			 * \return success/failure of the Lookup request
+			/** \brief Return codes for DNS lookups
+			 * \ingroup Platform
 			 */
-			bool LookupTxT(string lookup, string &result);
-			DNSError status;
-	private:
-			DNSImpl *m_pImpl;
-	};
-}
+			enum DNSError
+			{
+				DNSError_None = 0,
+				DNSError_NotFound, /**< No Record Exists - There for no Config File exists */
+				DNSError_DomainError, /**< Domain didn't resolve etc */
+				DNSError_InternalError /**< A Internal Error Occured */
+			};
+
+			/** \brief Implements platform-independent DNS lookup Operations.
+			 * \ingroup Platform
+			 */
+			class DNS
+			{
+				public:
+					DNS();
+					~DNS();
+					/**
+					 * \brief Starts a DNS lookup for a TXT record
+					 *
+					 * This function will lookup the TXT record for a address
+					 *
+					 * \param lookup the DNS address to lookup
+					 * \param result the result of the lookup request, or empty if the lookup failed.
+					 *
+					 * \return success/failure of the Lookup request
+					 */
+					bool LookupTxT(string lookup, string &result);
+					DNSError status;
+				private:
+					DNSImpl *m_pImpl;
+			};
+		} // namespace Platform
+	} // namespace Internal
+} // namespace OpenZWave
 
 #endif

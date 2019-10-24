@@ -32,60 +32,65 @@
 
 namespace OpenZWave
 {
-	class EventImpl;
-
-	/** \brief Platform-independent definition of event objects.
-	 * \ingroup Platform
-	 */
-	class Event: public Wait
+	namespace Internal
 	{
-		friend class SerialControllerImpl;
-		friend class Wait;
+		namespace Platform
+		{
+			class EventImpl;
 
-	public:
-		/**
-		 * Constructor.
-		 * Creates a cross-platform event object equivalent to the Windows manual-reset event
-		 */
-		Event();
+			/** \brief Platform-independent definition of event objects.
+			 * \ingroup Platform
+			 */
+			class Event: public Wait
+			{
+					friend class SerialControllerImpl;
+					friend class Wait;
 
-		/**
-		 * Set the event to signalled.
-		 * \see Reset, Wait
-		 */
-		void Set();
+				public:
+					/**
+					 * Constructor.
+					 * Creates a cross-platform event object equivalent to the Windows manual-reset event
+					 */
+					Event();
 
-		/**
-		 * Set the event to not signalled.
-		 * \see Set, Wait
-		 */
-		void Reset();
+					/**
+					 * Set the event to signalled.
+					 * \see Reset, Wait
+					 */
+					void Set();
 
-	protected:
-		/**
-		 * Used by the Wait class to test whether the event is set.
-		 */
-		virtual bool IsSignalled();
+					/**
+					 * Set the event to not signalled.
+					 * \see Set, Wait
+					 */
+					void Reset();
 
-		/**
-		 * Used by the Wait::Multiple method.
-		 * returns true if the event signalled, false if it timed out
-		 */
-		bool Wait( int32 _timeout );
+				protected:
+					/**
+					 * Used by the Wait class to test whether the event is set.
+					 */
+					virtual bool IsSignalled();
 
-		/**
-		 * Destructor.
-		 * Destroys the event object.
-		 */
-		~Event();
+					/**
+					 * Used by the Wait::Multiple method.
+					 * returns true if the event signalled, false if it timed out
+					 */
+					bool Wait(int32 _timeout);
 
-	private:
-		Event( Event const&	);					// prevent copy
-		Event& operator = ( Event const& );		// prevent assignment
+					/**
+					 * Destructor.
+					 * Destroys the event object.
+					 */
+					~Event();
 
-		EventImpl*	m_pImpl;	// Pointer to an object that encapsulates the platform-specific implementation of a event.
-	};
+				private:
+					Event(Event const&);					// prevent copy
+					Event& operator =(Event const&);		// prevent assignment
 
+					EventImpl* m_pImpl;	// Pointer to an object that encapsulates the platform-specific implementation of a event.
+			};
+		} // namespace Platform
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif //_Event_H

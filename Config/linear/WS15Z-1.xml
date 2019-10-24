@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="list" index="3" genre="config" label="LED Mode" size="1" value="0">
@@ -11,4 +11,9 @@
 			<Help>Change the top of the switch to OFF and the bottom of the switch to ON.</Help>
 		</Value>
 	</CommandClass>
+        <CommandClass id="133">
+          <Associations num_groups="1">
+            <Group index="1" label="Group 1" max_associations="5"/>
+          </Associations>
+        </CommandClass>
 </Product>

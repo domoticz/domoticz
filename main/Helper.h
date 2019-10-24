@@ -10,12 +10,26 @@ enum _eTimeFormat
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
 uint64_t hexstrtoui64(const std::string &str);
+std::string ToHexString(const uint8_t* pSource, const size_t length);
 void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
 	const std::string& replaceWithWhat);
-void stdupper(std::string &inoutstring);
-void stdlower(std::string &inoutstring);
+void stdupper(std::string& inoutstring);
+void stdlower(std::string& inoutstring);
+void stdupper(std::wstring& inoutstring);
+void stdlower(std::wstring& inoutstring);
+
+template< typename T > inline
+std::string int_to_hex(T i)
+{
+	std::stringstream stream;
+	stream << "0x"
+		<< std::setfill('0') << std::setw(sizeof(T) * 2)
+		<< std::hex << i;
+	return stream.str();
+}
+
 bool file_exist (const char *filename);
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);
 double CalculateAltitudeFromPressure(double pressure);
@@ -88,3 +102,4 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 #endif
 
 std::string GenerateUUID();
+double round_digits(double dIn, const int totDigits);

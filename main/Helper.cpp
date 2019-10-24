@@ -74,12 +74,30 @@ uint64_t hexstrtoui64(const std::string &str)
 	return ul;
 }
 
+std::string ToHexString(const uint8_t* pSource, const size_t length)
+{
+	if (pSource == nullptr)
+		return "";
+	std::string ret;
+	char szTmp[10];
+	size_t index = 0;
+	while (index < length)
+	{
+		sprintf(szTmp, "0x%02X", pSource[index]);
+		if (index)
+			ret += " ";
+		ret += szTmp;
+		index++;
+	}
+	return ret;
+}
+
 void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
 	const std::string& replaceWithWhat)
 {
-	int pos = 0;
+	size_t pos = 0;
 	while (std::string::npos != (pos = inoutstring.find(replaceWhat, pos)))
 	{
 		inoutstring.replace(pos, replaceWhat.size(), replaceWithWhat);
@@ -96,6 +114,17 @@ void stdupper(std::string &inoutstring)
 void stdlower(std::string &inoutstring)
 {
 	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::tolower);
+}
+
+void stdupper(std::wstring& inoutstring)
+{
+	for (size_t i = 0; i < inoutstring.size(); ++i)
+		inoutstring[i] = towupper(inoutstring[i]);
+}
+
+void stdlower(std::wstring& inoutstring)
+{
+	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::towlower);
 }
 
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
@@ -126,6 +155,48 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	if (bFoundPort)
 		return ret;
 
+	for (int ii = 1; ii < 255; ii++) // checking ports from COM0 to COM255
+	{
+		sprintf(szPortName, "COM%d", ii);
+
+		TCHAR lpTargetPath[200]; // buffer to store the path of the COMPORTS
+		if (QueryDosDevice(szPortName, (LPSTR)lpTargetPath, sizeof(lpTargetPath)))
+		{
+			ret.push_back(szPortName);
+		}
+	}
+
+	if (bFoundPort)
+		return ret;
+
+	typedef ULONG(__stdcall GETCOMMPORTS)(PULONG, ULONG, PULONG);
+	HMODULE hDLL = LoadLibrary("api-ms-win-core-comm-l1-1-0.dll");
+	if (hDLL != nullptr)
+	{
+		//Running Windows 10+
+		GETCOMMPORTS* pGetCommPorts = reinterpret_cast<GETCOMMPORTS*>(GetProcAddress(hDLL, "GetCommPorts"));
+		if (pGetCommPorts != nullptr)
+		{
+			std::vector<ULONG> intPorts;
+			intPorts.resize(255);
+			ULONG nPortNumbersFound = 0;
+			const ULONG nReturn = pGetCommPorts(&(intPorts[0]), static_cast<ULONG>(intPorts.size()), &nPortNumbersFound);
+			if (nReturn == ERROR_SUCCESS)
+			{
+				for (ULONG i = 0; i < nPortNumbersFound; i++)
+				{
+					sprintf(szPortName, "COM%d", intPorts[i]);
+					ret.push_back(szPortName);
+				}
+			}
+		}
+		FreeLibrary(hDLL);
+	}
+
+	if (bFoundPort)
+		return ret;
+
+/*
 	//Scan old fashion way (SLOW!)
 	COMMCONFIG cc;
 	DWORD dwSize = sizeof(COMMCONFIG);
@@ -179,6 +250,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			// --------------
 		}
 	}
+*/
 	// Method 3: EnumSerialPortsWindows, often fails
 	// ---------
 	if (!bFoundPort) {
@@ -809,6 +881,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeGeneralSwitch:
 	case pTypeHomeConfort:
 	case pTypeFS20:
+	case pTypeHunter:
 		bIsLightSwitch = true;
 		break;
 	case pTypeRadiator1:
@@ -1295,4 +1368,11 @@ std::string GenerateUUID() // DCE/RFC 4122
 		}
 	}
 	return uuid;
+}
+
+double round_digits(double dIn, const int totDigits)
+{
+	std::stringstream sstr;
+	sstr << std::setprecision(totDigits) << std::fixed << dIn;
+	return std::stod(sstr.str());
 }

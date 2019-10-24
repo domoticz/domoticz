@@ -36,47 +36,58 @@ class TiXmlElement;
 
 namespace OpenZWave
 {
-	class Msg;
-	class Node;
-
-	/** \brief Schedule sent to/received from a node.
-	 * \ingroup ValueID
-	 */
-	class ValueSchedule: public Value
+	namespace Internal
 	{
-	public:
-		ValueSchedule( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const _pollIntensity );
-		ValueSchedule();
-		virtual ~ValueSchedule(){}
-
-		bool SetSwitchPoint( uint8 const _hours, uint8 const _minutes, int8 const _setback );
-		bool RemoveSwitchPoint( uint8 const _idx );
-		void ClearSwitchPoints(){ m_numSwitchPoints = 0; }
-		bool GetSwitchPoint( uint8 const _idx, uint8* o_hours, uint8* o_minutes, int8* o_setback )const;
-		bool FindSwitchPoint( uint8 const _hours, uint8 const _minutes, uint8* o_idx )const;
-		uint8 GetNumSwitchPoints()const{ return m_numSwitchPoints; }
-
-		bool Set();
-		void OnValueRefreshed();
-
-		virtual string const GetAsString() const;
-
-		// From Value
-		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );
-		virtual void WriteXML( TiXmlElement* _valueElement );
-
-	private:
-		struct SwitchPoint
+		namespace VC
 		{
-			uint8	m_hours;
-			uint8	m_minutes;
-			int8	m_setback;
-		};
 
-		SwitchPoint		m_switchPoints[9];
-		uint8			m_numSwitchPoints;
-	};
+			/** \brief Schedule sent to/received from a node.
+			 * \ingroup ValueID
+			 */
+			class ValueSchedule: public Value
+			{
+				public:
+					ValueSchedule(uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const _pollIntensity);
+					ValueSchedule();
+					virtual ~ValueSchedule()
+					{
+					}
 
+					bool SetSwitchPoint(uint8 const _hours, uint8 const _minutes, int8 const _setback);
+					bool RemoveSwitchPoint(uint8 const _idx);
+					void ClearSwitchPoints()
+					{
+						m_numSwitchPoints = 0;
+					}
+					bool GetSwitchPoint(uint8 const _idx, uint8* o_hours, uint8* o_minutes, int8* o_setback) const;
+					bool FindSwitchPoint(uint8 const _hours, uint8 const _minutes, uint8* o_idx) const;
+					uint8 GetNumSwitchPoints() const
+					{
+						return m_numSwitchPoints;
+					}
+
+					bool Set();
+					void OnValueRefreshed();
+
+					virtual string const GetAsString() const;
+
+					// From Value
+					virtual void ReadXML(uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement);
+					virtual void WriteXML(TiXmlElement* _valueElement);
+
+				private:
+					struct SwitchPoint
+					{
+							uint8 m_hours;
+							uint8 m_minutes;
+							int8 m_setback;
+					};
+
+					SwitchPoint m_switchPoints[9];
+					uint8 m_numSwitchPoints;
+			};
+		} // namespace VC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

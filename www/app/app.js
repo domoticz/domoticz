@@ -4,32 +4,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		Notification.requestPermission();
 });
 
-define(['angularAMD', 'app.routes', 'app.constants', 'app.permissions', 'domoticz.api', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue', 'angular-websocket'], function (angularAMD, appRoutesModule, appConstantsModule, appPermissionsModule, apiModule, deviceFactory) {
-	var app = angular.module('domoticz', ['ngRoute', 'ngAnimate', 'ngGrid', 'highcharts-ng', 'treeControl', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue', 'ngWebsocket', appRoutesModule.name, appPermissionsModule.name, apiModule.name, appConstantsModule.name]);
+define(['angularAMD', 'app.routes', 'app.constants', 'app.permissions', 'domoticz.api', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appPermissionsModule, apiModule, deviceFactory) {
+	var app = angular.module('domoticz', ['ngRoute', 'ngAnimate', 'ngGrid', 'highcharts-ng', 'treeControl', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue', appRoutesModule.name, appPermissionsModule.name, apiModule.name, appConstantsModule.name]);
 
 	isOnline = false;
 	dashboardType = 1;
-
-	function notifyMe(title, body) {
-		if (typeof Notification == "undefined") {
-			console.log("Notification: " + title + ": " + body);
-			console.log('Desktop notifications not available in your browser. Try Chromium.');
-			return;
-		}
-
-		if (Notification.permission !== "granted")
-			Notification.requestPermission();
-		else {
-			var notification = new Notification(title, {
-				//icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
-				body: body,
-			});
-
-			notification.onclick = function () {
-				window.open("http://stackoverflow.com/a/13328397/1269037");
-			};
-		}
-	}
 
 	app.directive('sbLoad', ['$parse', function ($parse) {
 		return {
@@ -135,6 +114,71 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.permissions', 'domotic
         }
     });
 
+	/*
+		The notifyBrowser service sets and gets the browser notifications coming on from the domoticz websocket.
+		In livesocket.js the notifications are pushed to the message queue by using the notify() method.
+		Each notification times out in 2 seconds.
+		The alertarea directive reads the messagequeue using the messages() method.
+	*/
+	app.service('notifyBrowser', [ '$timeout', function ($timeout) {
+		var messagequeue = [];
+		return {
+			notify: function (title, body) {
+				var item = { "title": title, "body": body, "time": new Date() };
+				messagequeue.push(item);
+				$timeout(function () {
+					var index = messagequeue.indexOf(item);
+					if (index >= 0) {
+						messagequeue.splice(index, 1);
+					}
+				}, 2000);
+				if (typeof Notification == "undefined") {
+					console.log("Notification: " + title + ": " + body);
+					console.log('Desktop notifications not available in your browser. Try Chromium.');
+					return;
+				}
+
+				if (Notification.permission !== "granted")
+					Notification.requestPermission();
+				else {
+					var notification = new Notification(title, {
+						//icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
+						body: body,
+					});
+
+					notification.onclick = function () {
+						window.open("http://stackoverflow.com/a/13328397/1269037");
+					};
+				}
+			},
+			messages: function () {
+				return messagequeue;
+			}
+		};
+	}]);
+	
+	/*
+		The alertarea is on every page. It displays the browser notifications.
+		It uses the notifyBrowser service to collect the pending notifications.
+		Todo: Display them below each other instead of left to each other.
+		Todo: Make a "dropdown" css effect
+	*/
+	app.directive('alertarea', function () {
+		return {
+			template: '<div class="alerts" style="position: absolute; right: 10px;" ng-shw="messages.length>0"><div class="alert alert-{{(m.type)||\'info\'}} alert-dismissable fade in pull-right" ng-repeat="m in messages"><button type="button" class="close" data-dismiss="alert">×</button><label>{{m.title}}</label><div>{{m.body}}</div></div></div>',
+			restrict: "A",
+			scope: {
+			},
+			controller: function ($scope, notifyBrowser) {
+				$scope.messages = [];
+				$scope.messages = notifyBrowser.messages();
+					$scope.$watch(notifyBrowser.messages, function (messages) {
+						$scope.messages = messages;
+				});
+			}
+		};
+	});
+	
 	app.filter('translate', function() {
 		return function(input) {
 			return $.t(input);
@@ -210,145 +254,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.permissions', 'domotic
 			}
 		}
     });
-
-	app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
-		return {
-			initialised: false,
-			getJson: function (url, callback_fn) {
-				if (!callback_fn) {
-					callback_fn = function (data) {
-						$rootScope.$broadcast('jsonupdate', data);
-					};
-				}
-				var use_http = !(url.substr(0, 9) == "json.htm?");
-				if (use_http) {
-					var loc = window.location, http_uri;
-					if (loc.protocol === "https:") {
-						http_uri = "https:";
-					} else {
-						http_uri = "http:";
-					}
-					http_uri += "//" + loc.host;
-					http_uri += loc.pathname;
-					// get via json get
-					url = http_uri + url;
-					$http({
-						url: url,
-					}).then(function successCallback(response) {
-						callback_fn();
-					});
-				}
-				else {
-					var settings = {
-						url: url,
-						success: callback_fn
-					};
-					settings.context = settings;
-					return this.SendAsync(settings);
-				}
-			},
-			Init: function () {
-				if (this.initialised) {
-					return;
-				}
-				var self = this;
-				var loc = window.location, ws_uri;
-				if (loc.protocol === "https:") {
-					ws_uri = "wss:";
-				} else {
-					ws_uri = "ws:";
-				}
-				ws_uri += "//" + loc.host;
-				ws_uri += loc.pathname + "json";
-				this.websocket = $websocket.$new({
-					url: ws_uri,
-					protocols: ["domoticz"],
-					lazy: false,
-					reconnect: true,
-					reconnectInterval: 2000,
-					enqueue: true
-				});
-				this.websocket.callbackqueue = [];
-				this.websocket.$on('$open', function () {
-					console.log("websocket opened");
-				});
-				this.websocket.$on('$close', function () {
-					console.log("websocket closed");
-				});
-				this.websocket.$on('$error', function () {
-					console.log("websocket error");
-				});
-				this.websocket.$on('$message', function (msg) {
-					if (typeof msg == "string") {
-						msg = JSON.parse(msg);
-					}
-					switch (msg.event) {
-						case "notification":
-							notifyMe(msg.Subject, msg.Text);
-							return;
-					}
-					var requestid = msg.requestid;
-					if (requestid >= 0) {
-						var callback_obj = this.callbackqueue[requestid];
-						var settings = callback_obj.settings;
-						var data = msg.data || msg;
-						if (typeof data == "string") {
-							data = JSON.parse(data);
-						}
-						callback_obj.defer_object.resolveWith(settings.context, [settings.success, data]);
-					}
-					else {
-						var data = msg.data || msg;
-						if (typeof data == "string") {
-							data = JSON.parse(data);
-						}
-						//alert("req_id: " + requestid + "\ndata: " + msg.data + ", msg: " + msg + "\n, data: " + JSON.stringify(data));
-						var send = {
-							title: "Devices", // msg.title
-							item: (typeof data.result != 'undefined') ? data.result[0] : null,
-							ServerTime: data.ServerTime,
-							Sunrise: data.Sunrise,
-							Sunset: data.Sunset
-						}
-						$rootScope.$broadcast('jsonupdate', send);
-					}
-					if (!$rootScope.$$phase) { // prevents triggering a $digest if there's already one in progress
-						$rootScope.$digest();
-					}
-				});
-				this.initialised = true;
-			},
-			Close: function () {
-				if (!this.initialised) {
-					return;
-				}
-				this.websocket.$close();
-				this.initialised = false;
-			},
-			Send: function (data) {
-				this.Init();
-				this.websocket.$$send(data);
-				//this.websocket.$emit('message', data);
-			},
-			SendLoginInfo: function (sessionid) {
-				this.Send(new Blob["2", sessionid]);
-			},
-			/* mimic ajax call */
-			SendAsync: function (settings) {
-				this.Init();
-				var defer_object = new $.Deferred();
-				defer_object.done(function (fn, json) {
-					fn.call(this, json);
-				});
-				this.websocket.callbackqueue.push({ settings: settings, defer_object: defer_object });
-				var requestid = this.websocket.callbackqueue.length - 1;
-				var requestobj = { "event": "request", "requestid": requestid, "query": settings.url.substr(9) };
-				var content = JSON.stringify(requestobj);
-				this.Send(requestobj);
-				return defer_object.promise();
-			}
-		}
-	}]);
 
 	app.config(function ($httpProvider) {
 		var logsOutUserOn401 = ['$q', '$location', 'permissions', function ($q, $location, permissions) {
@@ -744,26 +649,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.permissions', 'domotic
                 }
             }
 		});
-
-			/* this doesnt run, for some reason */
-			app.run(function (livesocket) {
-				console.log(livesocket);
-				//alert('run');
-				livesocket.Init();
-			});
-			/*
-			var oAjax = $.ajax;
-			$.ajax = function (settings) {
-				if (settings.url.substr(0, 9) == "json.htm?" && settings.url.match(/type=devices/)) {
-					if (typeof settings.context === 'undefined') settings.context = settings;
-					return websocket.SendAsync(settings);
-				}
-				else {
-					return oAjax(settings);
-				}
-			};
-			*/
-			/* end ajax override */
 
 		// TODO: use <timesun /> component instead
 		$rootScope.SetTimeAndSun = function (sunRise, sunSet, ServerTime) {

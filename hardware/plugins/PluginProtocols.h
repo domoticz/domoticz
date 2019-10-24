@@ -54,6 +54,7 @@ namespace Plugins {
 		size_t			m_RemainingChunk;
 	protected:
 		void			ExtractHeaders(std::string*	pData);
+		void			Flush(CPlugin* pPlugin, PyObject* pConnection);
 	public:
 		CPluginProtocolHTTP(bool Secure) : m_ContentLength(0), m_Headers(NULL), m_Chunked(false), m_RemainingChunk(0) { m_Secure = Secure; };
 		virtual void				ProcessInbound(const ReadEvent* Message);

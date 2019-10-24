@@ -1005,3 +1005,22 @@ div.item.statusEvoSetPointMin td#name{
 .selectorlevels .ui-selectmenu-button.ui-widget {
 	font-size: 1.1em;
 }
+
+.zwave_label {
+	font-style: normal;
+	font-weight: bold;
+	color: #fff;
+}
+.zwave_no_info {
+	font-style: italic;
+	color: #ff5050;
+}
+.zwave_help {
+	font-style: normal;
+	color: #ddd;
+}
+.zwave_last_update {
+	font-style: italic;
+	font-size: smaller;
+	color: #e0c0ff;
+}

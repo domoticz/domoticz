@@ -1,19 +1,59 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
-    <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value genre="config" instance="1" index="BASIC" type="byte" label="Default light level" units="" size="1" min="1" max="99" value="99">
-            <Help>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0271:1A75:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/steinel/l810-led-ihf.png</MetaDataItem>
+    <MetaDataItem id="1A75" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/2309/</MetaDataItem>
+    <MetaDataItem id="1A75" name="Identifier" type="0001">50111677301</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2309/110050438 BDAL L 810 LED IHF SMARTHOME D-GB-F-I-NL.pdf</MetaDataItem>
+    <MetaDataItem name="Description">A high-quality product is cleverly thought through and made from materials that last. Its value also extends beyond today, it has permanency and constancy. The L 810 iHF outdoor SensorLight is an LED uplight and downlight that translates intelligent technology into form and function. For the first time, we have managed to make a light's sensor completely invisible – without compromising on first-class design and technological perfection. For stunning upward and downward lighting. New: optional manual override for 4 hours.
+
+Smart home included.
+The optional Smart Friends box and the free Smart Friends app make it easy to set the L 810 LED iHF Z-Wave via smart phone or tablet. The light can also be switched ON or OFF via app. Other Steinel products can also be interconnected. If you wish, this also works via remote control when you are out. That completes your own light management system.
+Along with STEINEL products, Smart Friends solutions from PAULMANN, SCHELLENBERG and ABUS can also integrated. Smart homes from a brand-name provider.</MetaDataItem>
+    <MetaDataItem id="1A75" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">L 810 LED iHF Z-Wave</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Inclusion = Add
+To start the light's inclusion mode, briefly press button (8)
+
+Adding L 810 LED iHF to the Smart Friends system:
+1) Download Smart Friends app from the App Store.
+2) In the rooms view, activate the edit mode.
+3) Select the chosen room and press the "Add device" button.
+4) Briefly press the device's button (8) to set the light to inclusion mode. The status LED (12) lights up to show that this mode is selected.
+5) The app displays a confirmation message once inclusion has been successfully completed.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Returning L 810 LED iHF to factory settings:
+
+Please only perform these steps if the main network controller is missing or not working for other reasons.
+
+1) Briefly press button (8) and directly afterwards keep it pressed for 5 seconds.
+2) Status LED (12) briefly flashes to show that the light has been reset.
+3) The device is now no longer included in the Z-Wave system and has been returned to factory settings.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Exclusion = Remove
+To start the light's exclusion mode, briefly press button (8)
+
+Removing L 810 LED iHF from the Smart Friends system:
+1) In the rooms view, activate the edit mode.
+2) Select the device in the chosen room and press the "delete" button. Press delete and follow the instructions in the app.
+3) Briefly press the device's button (8) to set the light to exclusion mode. The red status LED (12) lights up to show that this mode is selected.
+4) The app displays a confirmation message once exclusion has been successfully completed.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2309/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="BASIC" instance="1" label="Default light level" max="99" min="1" size="1" type="byte" units="" value="99">
+      <Help>
                 Range: 1-99 (default: 99).
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="1" type="short" label="Duration of light after motion detection" units="seconds" size="2" min="5" max="900" value="180">
-            <Help>
+    </Value>
+    <Value genre="config" index="1" instance="1" label="Duration of light after motion detection" max="900" min="5" size="2" type="short" units="seconds" value="180">
+      <Help>
                 Range: 5-900 (default: 180 seconds).
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="2" type="short" label="Light threshold" units="lx" size="2" min="0" max="2000" value="2000">
-            <Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Light threshold" max="2000" min="0" size="2" type="short" units="lx" value="2000">
+      <Help>
             	Range: 2-2000, 0 (default: 2000 lux / potentiometer state if present).
                 0      - run Learn ambient light sequence.
                 2-1999 - threshold [lux].
@@ -21,9 +61,9 @@
 
                 Value can be controlled via potentiometer (if present on device)  - potentiometer value is then used as the default value and any potentiometer movement rewrites the current setting. 
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="3" type="byte" label="Night dim mode and time" units="minutes" size="1" min="0" max="255" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Night dim mode and time" max="255" min="0" size="1" type="byte" units="minutes" value="0">
+      <Help>
             	Range: 0-60, -1 (default: 0 / potentiometer state if present).
                 0        - off (dim = basic light completely disabled).
                 1-60     - time [minutes] (enabled in night mode, starts after lamp is switched off after motion detection).
@@ -31,39 +71,39 @@
 
                 Dim mode is also disabled when local control is disabled as well as in Slave imode. 
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="4" type="short" label="Motion Radar Range" units="centimeters" size="2" min="100" max="500" value="500">
-            <Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Motion Radar Range" max="500" min="100" size="2" type="short" units="centimeters" value="500">
+      <Help>
                 Range: 100-500 (default: 500 cm / potentiometer state if present).
 
                 Value can be controlled via potentiometer (if present on device) - potentiometer value is then used as default value and any potentiometer movement rewrites the current setting.
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="5" type="byte" label="Motion Radar Sensitivity" units="%" size="1" min="2" max="100" value="100">
-            <Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Motion Radar Sensitivity" max="100" min="2" size="1" type="byte" units="%" value="100">
+      <Help>
                 Range: 2-100 (default: 100 % / potentiometer state if present).
 
                 Value can be controlled via potentiometer (if present on device) . potentiometer value is then used as the default value and any potentiometer movement rewrites the current setting.
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="6" type="byte" label="Brightness measuring interval" units="minutes" size="1" min="0" max="120" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Brightness measuring interval" max="120" min="0" size="1" type="byte" units="minutes" value="0">
+      <Help>
             	Range: 5-120, 0 (default: 0, disabled).
                 5-120 - Interval for ambient light measuring when lamp is on (lamp switches off shortly and measures).
                 0     - function is off.
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="8" type="list" label="Use external Ambient Light valu" units="" size="1" min="0" max="1" value="1">
-            <Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Use external Ambient Light valu" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
             	Range: 0/1 (default: 1, disabled).
 
                 When GLOBAL_LIGHT mode is ON - device overrides its own light sensor values and uses Light Report values from any Z-Wave light sensor instead - this has to be configured appropriately to send light automatically. If the last remote light level value is older than 30 minutes, the internal light value is used again until the next external value is receive.
             </Help>
-            <Item label="Enable" value="0" />
-            <Item label="Disable" value="1" />
-        </Value>
-        <Value genre="config" instance="1" index="9" type="list" label="Disable local control" units="bit field" size="1" min="0" max="4" value="2">
-            <Help>
+      <Item label="Enable" value="0"/>
+      <Item label="Disable" value="1"/>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Disable local control" max="4" min="0" size="1" type="list" units="bit field" value="2">
+      <Help>
             	Range: 0-4 (default: 2, Normal mode with lifeline error signalisation).
                 "Stupid mode" - lamp permanently on (bit 2 = 1):
                   - has higher priority then slave mode.
@@ -85,14 +125,14 @@
 
                 Be careful with this option, device stops using its own motion sensor in Slave and "Stupid" mode.
             </Help>
-            <Item label="Normal mode" value="0"/>
-            <Item label="Slave mode without gateway checking" value="1"/>
-            <Item label="Normal mode with lifeline error signalisation" value="2"/>
-            <Item label="Slave mode with gateway checking" value="3"/>
-            <Item label="Stupid mode - lamp permanently on" value="4"/>
-        </Value>
-        <Value genre="config" instance="1" index="10" type="short" label="Off behaviour (timeout)" units="" size="2" min="0" max="255" value="10">
-            <Help>
+      <Item label="Normal mode" value="0"/>
+      <Item label="Slave mode without gateway checking" value="1"/>
+      <Item label="Normal mode with lifeline error signalisation" value="2"/>
+      <Item label="Slave mode with gateway checking" value="3"/>
+      <Item label="Stupid mode - lamp permanently on" value="4"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Off behaviour (timeout)" max="255" min="0" size="2" type="short" units="" value="10">
+      <Help>
                 Behaviour after BASIC OFF (and similar commands). If a transition (even with zero change) with a non-default duration is to be processed, the transition cannot be interrupted by any motion event in any case.
 
                 Range: 0-209, 255 (default: 10 seconds).
@@ -105,9 +145,9 @@
                 210-254 - reserved.
                 255     - Lamp is switched off for TIME (cfg 1). It does not wait for a motion event and works normally via current motion evaluation.
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="11" type="short" label="On behaviour (timeout)" units="" size="2" min="0" max="255" value="255">
-            <Help>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="On behaviour (timeout)" max="255" min="0" size="2" type="short" units="" value="255">
+      <Help>
                 Behaviour after BASIC ON (and similar commands). If a transition (even with zero change) with a non-default duration is to be processed, the transition cannot be interrupted by any motion event in any case.
 
                 Range: 0-209, 255 (default: 255).
@@ -122,9 +162,9 @@
                 210-254 - reserved
                 255     - Lamp is switched on for TIME (cfg 1). It does not wait for a motion event and works normally via current motion evaluation.
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="12" type="short" label="On behaviour time over (timeout)" units="" size="2" min="0" max="255" value="204">
-            <Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="On behaviour time over (timeout)" max="255" min="0" size="2" type="short" units="" value="204">
+      <Help>
                 Time limit to stop waiting for motion after timeout of ON_BEHAVIOUR or OFF_ON_BEHAVIOUR (0-209) to prevent staying ON forever when there is no motion. 
 
                 Range: 0-209, 255 (default: 204, 4 hours).
@@ -135,9 +175,9 @@
                           201..209 - 1 hour (201) to 9 hours (209) in 1-hour resolution.
                 255   - Never stop waiting before motion.
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="13" type="short" label="Sequence On-Off behaviour (timeout)" units="" size="2" min="0" max="255" value="204">
-            <Help>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Sequence On-Off behaviour (timeout)" max="255" min="0" size="2" type="short" units="" value="204">
+      <Help>
             	Behaviour after a rapid sequence of BASIC ON and BASIC OFF commands. The intention is to use a much longer timeout value than the time after a single ON command which should then be followed by a short timeout value.
 
                 Range: 0-209,255 (default: 204, 4 hours).
@@ -150,9 +190,9 @@
                 210-254 - reserved.
                 255     - device ignores ON - OFF sequence and uses OFF behavior.
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="14" type="short" label="Sequence Off-On behaviour (timeout)" units="" size="2" min="0" max="255" value="204">
-            <Help>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Sequence Off-On behaviour (timeout)" max="255" min="0" size="2" type="short" units="" value="204">
+      <Help>
             	Behaviour after a rapid sequence of BASIC OFF and BASIC ON commands. The intention is to use a much longer timeout value than the time after a single OFF command which should then be followed by a short timeout value.
 
                 Range: 0-209, 255 (default: 204, 4 hours).
@@ -167,16 +207,16 @@
                 210-254 - reserved
                 255 device ignores OFF - ON sequence and uses ON behaviour.
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="15" type="byte" label="Sequence timing" units="" size="1" min="10" max="50" value="10">
-            <Help>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Sequence timing" max="50" min="10" size="1" type="byte" units="" value="10">
+      <Help>
                 Time in [100 miliseconds] of maximum delay between BASIC ON and BASIC OFF (and vice versa) to consider this as a sequence. It is typically 1 second, but can be exceptionally longer due to retransmissions and overload - in this case, a longer interval can be allowed (up to 5 seconds).
 
                 Range: 10-50 (default: 10, 1 scond).
             </Help>
-        </Value>
-        <Value genre="config" instance="1" index="16" type="short" label="Motion Off behaviour (timeout)" units="" size="2" min="0" max="255" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="16" instance="1" label="Motion Off behaviour (timeout)" max="255" min="0" size="2" type="short" units="" value="0">
+      <Help>
             	Motion disable timeout after BASIC SET to motion endpoint when the internal motion sensor is not used for evaluating the behaviour of the lamp. Events are, however, still transmitted to the Lifeline, and the device can be controlled via remote motion sensors.
 
                 Range: 0-209,255 (default: 0, disabled).
@@ -189,17 +229,15 @@
                 210-254 - reserved.
                 255     - BASIC SET to Motion sensor endpoint ignored, BASIC to root is mapped to relay endpoint, motion sensor still disabled.
             </Help>
-        </Value>
-    </CommandClass>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="4">
-            <Group index="1" label="Lifeline" max_associations="1" />
-            <Group index="2" label="On/Off Control" max_associations="16" />
-            <Group index="3" label="Notification Report" max_associations="16" />
-            <Group index="4" label="Ambient light" max_associations="15"/>
-        </Associations>
-    </CommandClass>
-
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="On/Off Control" max_associations="16"/>
+      <Group index="3" label="Notification Report" max_associations="16"/>
+      <Group index="4" label="Ambient light" max_associations="15"/>
+    </Associations>
+  </CommandClass>
 </Product>

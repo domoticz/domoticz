@@ -80,7 +80,7 @@ public:
   void saveValue(OpenZWave::ValueID id);
   int32 getValueCount();
   static MyValue *lookup(std::string id);
-  MyValue *getValue(uint8 n);
+  MyValue *getValue(size_t n);
   time_t getTime() { return mtime; }
   void setTime(time_t t) { mtime = t; }
   static bool getAnyChanged() { return nodechanged; }

@@ -7,6 +7,22 @@ if(NOT GIT_FOUND)
   MESSAGE(FATAL_ERROR "Git not found!.")
 endif()
 
+MACRO(History_GET_REVISION variable)
+  IF(EXISTS ${CMAKE_SOURCE_DIR}/History.txt)
+    MESSAGE(STATUS "Read ProjectRevision from History.txt")
+    CMAKE_POLICY(SET CMP0007 NEW)
+    FILE(STRINGS ${CMAKE_SOURCE_DIR}/History.txt AppVersionContent)
+    LIST(GET AppVersionContent 0 AppVersionContent)
+    STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
+    LIST(GET AppVersionContent 1 AppVersionContent)
+    STRING(REPLACE "." ";" AppVersionContent ${AppVersionContent})
+    LIST(GET AppVersionContent 1 ${variable})
+  ELSE(EXISTS ${CMAKE_SOURCE_DIR}/History.txt)
+    MESSAGE(STATUS "Failed to get ProjectRevision from History.txt, set it to 0")
+    set (${variable} 0)
+  ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/History.txt)
+ENDMACRO(History_GET_REVISION)
+
 MACRO(Gitversion_GET_REVISION dir variable)
   EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
     WORKING_DIRECTORY ${dir}
@@ -37,8 +53,7 @@ ENDMACRO(Gitversion_CHECK_DIRTY)
 
 Gitversion_GET_REVISION("${SOURCE_DIR}" ProjectRevision)
 IF(NOT ProjectRevision)
-  MESSAGE(STATUS "Failed to get ProjectRevision from git, set it to 0")
-  set (ProjectRevision 0)
+  History_GET_REVISION(ProjectRevision)
 ELSE(NOT ProjectRevision)
   MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 ENDIF(NOT ProjectRevision)
@@ -60,13 +75,6 @@ ENDIF(ProjectDirty)
 
 # write a file with the APPVERSION define
 file(WRITE ${SOURCE_DIR}/appversion.h.txt "#define APPVERSION ${ProjectRevision}\n#define APPHASH \"${ProjectHash}\"\n#define APPDATE ${ProjectDate}\n")
-
-# if ProjectDate is 0, create appversion.h.txt from a copy of appversion.default
-IF(NOT ProjectDate AND EXISTS ${SOURCE_DIR}/appversion.default)
-  MESSAGE(STATUS "ProjectDate is 0 and appversion.default exists, copy it")
-  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        ${SOURCE_DIR}/appversion.default ${SOURCE_DIR}/appversion.h.txt)
-ENDIF(NOT ProjectDate AND EXISTS ${SOURCE_DIR}/appversion.default)
 
 # copy the file to the final header only if the version changes
 # reduces needless rebuilds

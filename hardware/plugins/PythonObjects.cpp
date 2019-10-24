@@ -472,6 +472,36 @@ namespace Plugins {
 			SubType = sSwitchTypeSelector;
 			SwitchType = STYPE_Selector;
 		}
+		else if (sTypeName == "Push On")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_PushOn;
+		}
+		else if (sTypeName == "Push Off")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_PushOff;
+		}
+		else if (sTypeName == "Contact")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_Contact;
+		}
+		else if (sTypeName == "Dimmer")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_Dimmer;
+		}
+		else if (sTypeName == "Motion")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_Motion;
+		}
 		else if (sTypeName == "Custom")
 		{
 			SubType = sTypeCustom;
@@ -620,7 +650,7 @@ namespace Plugins {
 		{
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
+			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description, Color, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
 			if (!result.empty())
 			{
 				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
@@ -674,6 +704,7 @@ namespace Plugins {
 					self->Description = PyUnicode_FromString(sd[15].c_str());
 					Py_XDECREF(self->Color);
 					self->Color = PyUnicode_FromString(_tColor(std::string(sd[16])).toJSONString().c_str()); //Parse the color to detect incorrectly formatted color data
+					self->Used = atoi(sd[17].c_str());
 				}
 			}
 		}
@@ -830,64 +861,7 @@ namespace Plugins {
 				return Py_None;
 			}
 
-			if (self->pPlugin->m_bDebug & PDM_DEVICE)
-			{
-				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
-			}
-			if (!SuppressTriggers)
-			{
-				DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
-
-				// if this is an internal Security Panel then there are some extra updates required if state has changed
-				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
-				{
-					switch (nValue)
-					{
-					case sStatusArmHome:
-					case sStatusArmHomeDelayed:
-						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
-						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME);
-						break;
-					case sStatusArmAway:
-					case sStatusArmAwayDelayed:
-						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
-						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY);
-						break;
-					case sStatusDisarm:
-					case sStatusNormal:
-					case sStatusNormalDelayed:
-					case sStatusNormalTamper:
-					case sStatusNormalDelayedTamper:
-						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
-						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED);
-						break;
-					}
-				}
-
-				// Trigger any associated scene / groups
-				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue);
-
-				// Notify MQTT and various push mechanisms
-				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->m_Name, NULL);
-			}
-
 			std::string sID = std::to_string(self->ID);
-
-			if (TypeName) {
-				// Reset nValue and sValue when changing device types
-				nValue = 0;
-				std::string stdsValue = "";
-
-				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
-
-				if (!SuppressTriggers)
-				{
-					m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, stdsValue.c_str(), sName, true);
-				}
-
-				// Notify MQTT and various push mechanisms
-				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->m_Name, NULL);
-			}
 
 			// Name change
 			if (Name)
@@ -901,6 +875,16 @@ namespace Plugins {
 			{
 				std::string sDescription = Description;
 				m_sql.UpdateDeviceValue("Description", sDescription, sID);
+			}
+
+			// TypeName change - actually derives new Type, SubType and SwitchType values
+			if (TypeName) {
+				std::string stdsValue = "";
+				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
+
+				// Reset nValue and sValue when changing device types
+				m_sql.UpdateDeviceValue("nValue", 0, sID);
+				m_sql.UpdateDeviceValue("sValue", stdsValue, sID);
 			}
 
 			// Type change
@@ -938,9 +922,6 @@ namespace Plugins {
 			{
 				std::string	sColor = _tColor(std::string(Color)).toJSONString(); //Parse the color to detect incorrectly formatted color data
 				m_sql.UpdateDeviceValue("Color", sColor, sID);
-
-				// TODO: Notify MQTT and various push mechanisms?
-				//m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->m_Name, NULL);
 			}
 
 			// Options provided, assume change
@@ -979,15 +960,54 @@ namespace Plugins {
 				}
 			}
 
-			// TimedOut change
+			// TimedOut change (not stored in database, webserver calls back directly to check)
 			if (iTimedOut != self->TimedOut)
 			{
 				self->TimedOut = iTimedOut;
 			}
 
+			// Suppress Triggers updates non-key fields only (specifically NOT nValue or sValue)
 			if (!SuppressTriggers)
 			{
+				if (self->pPlugin->m_bDebug & PDM_DEVICE)
+				{
+					_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
+				}
+
+				DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
+
+				// if this is an internal Security Panel then there are some extra updates required if state has changed
+				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
+				{
+					switch (nValue)
+					{
+					case sStatusArmHome:
+					case sStatusArmHomeDelayed:
+						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME);
+						break;
+					case sStatusArmAway:
+					case sStatusArmAwayDelayed:
+						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY);
+						break;
+					case sStatusDisarm:
+					case sStatusNormal:
+					case sStatusNormalDelayed:
+					case sStatusNormalTamper:
+					case sStatusNormalDelayedTamper:
+						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED);
+						break;
+					}
+				}
+
+				// Notify MQTT and various push mechanisms and notifications
+				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->m_Name, NULL);
 				m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+
+				// Trigger any associated scene / groups
+				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue);
 			}
 
 			CDevice_refresh(self);

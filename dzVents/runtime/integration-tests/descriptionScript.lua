@@ -21,7 +21,6 @@ return {
 			}).afterSec(3)
 		end
 
-
 		if triggerItem.isGroup or triggerItem.isScene then
 			getScenes(triggerItem.name)
 		elseif triggerItem.isHTTPResponse then
@@ -32,7 +31,7 @@ return {
 				elseif rt[i].Name == 'scDescriptionScene' then
 					dz.devices('sceneDescriptionSwitch1').setDescription(rt[i].Description)
 				end
-				dz.log("Decription in ".. rt[i].Name .. " is " .. rt[i].Description,dz.LOG_FORCE)
+				dz.log("Description in ".. rt[i].Name .. " is " .. rt[i].Description,dz.LOG_FORCE)
 			end
 			return
 		end

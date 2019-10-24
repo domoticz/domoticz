@@ -140,6 +140,8 @@ bool CLogitechMediaServer::StopHardware()
 
 void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node, const _eMediaStatus nStatus, const std::string &sStatus, bool bPingOK)
 {
+	//This has to be rebuild! No direct poking in the database, please use CMainWorker::UpdateDevice
+
 	//Find out node, and update it's status
 	std::vector<LogitechMediaServerNode>::iterator itt;
 	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)

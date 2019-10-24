@@ -1,28 +1,28 @@
-<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/5254:8377:0101</MetaDataItem>
     <MetaDataItem name="ProductPic">images/remotec/zxt-120.png</MetaDataItem>
     <MetaDataItem id="8377" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/715/</MetaDataItem>
     <MetaDataItem id="8377" name="Identifier" type="0101">BW8377EU</MetaDataItem>
-    <MetaDataItem name="Name">Remotec ZXT-120EU AC Extender</MetaDataItem>
-    <MetaDataItem name="Description">l   Fully complaint to Z-Wave command class.
-l   Built-in AC IR code library with Configuration Learning capability. 
-l   Able to feedback room temperature.
-l   Build-in 5 direction IR emitters(hemispherical coverage),
-l   3.5mm jack for external wired IR emitter (optional).
-l   Transmit IR control code with a wide range of carrier frequency (15 to 455kHz).
-l   Programmable power level (LOW or HIGH) for external IR emitter to avoid saturation of IR receivers.
-l   Dual mode (FLiRS mode when working on battery, Always Listening mode when work on AC power)
-l   Frequency: US: 908.4MHz,  EU:868.4MHz, AU:921.4MHz
-l   Power Source: USB mini-B,5V DC Jack, or 3xAAA batteries.
-l   Dismountable battery box.
-l   Dimension: Extender unit: 70mm (diameter) *18mm(thickness)  
-l   Battery Box: 70mm(diameter) *15.5mm(thickness)</MetaDataItem>
+    <MetaDataItem name="Name">Remotec BW8377IL</MetaDataItem>
+    <MetaDataItem name="Description">Remotec BW8377IL</MetaDataItem>
     <MetaDataItem name="ProductPage">http://www.remotec.com.hk/zaspx/product_content.aspx?aboutno=36&amp;subaboutno=45&amp;main=f</MetaDataItem>
     <MetaDataItem id="8377" name="FrequencyName" type="0101">CEPT (Europe)</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/715/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1551/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1552/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1830/xml</Entry>
     </ChangeLog>
+    <MetaDataItem id="8377" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/1551/</MetaDataItem>
+    <MetaDataItem id="8377" name="Identifier" type="0102">BW8377AU</MetaDataItem>
+    <MetaDataItem id="8377" name="FrequencyName" type="0102">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="8377" name="ZWProductPage" type="0100">https://products.z-wavealliance.org/products/1552/</MetaDataItem>
+    <MetaDataItem id="8377" name="FrequencyName" type="0100">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="8377" name="Identifier" type="0100">BW8377US</MetaDataItem>
+    <MetaDataItem id="8377" name="ZWProductPage" type="0107">https://products.z-wavealliance.org/products/1830/</MetaDataItem>
+    <MetaDataItem id="8377" name="Identifier" type="0107">BW8377IL</MetaDataItem>
+    <MetaDataItem id="8377" name="FrequencyName" type="0107">Israel</MetaDataItem>
   </MetaData>
   <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
 	<!-- COMMAND_CLASS_THERMOSTAT_SETPOINT get is not supported -->

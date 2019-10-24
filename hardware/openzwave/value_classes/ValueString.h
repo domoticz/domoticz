@@ -36,36 +36,52 @@ class TiXmlElement;
 
 namespace OpenZWave
 {
-	class Msg;
-	class Node;
-
-	/** \brief String value sent to/received from a node.
-	 * \ingroup ValueID
-	 */
-	class ValueString: public Value
+	namespace Internal
 	{
-	public:
-		ValueString( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, string const& _value, uint8 const _pollIntensity );
-		ValueString(){}
-		virtual ~ValueString(){}
+		namespace VC
+		{
 
-		bool Set( string const& _value );
-		void OnValueRefreshed( string const& _value );
+			/** \brief String value sent to/received from a node.
+			 * \ingroup ValueID
+			 */
+			class ValueString: public Value
+			{
+				public:
+					ValueString(uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, string const& _value, uint8 const _pollIntensity);
+					ValueString()
+					{
+					}
+					virtual ~ValueString()
+					{
+					}
 
-		// From Value
-		virtual string const GetAsString() const { return GetValue(); }
-		virtual bool SetFromString( string const& _value ) { return Set( _value ); }
-		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );
-		virtual void WriteXML( TiXmlElement* _valueElement );
+					bool Set(string const& _value);
+					void OnValueRefreshed(string const& _value);
 
-		string GetValue()const{ return m_value; }
+					// From Value
+					virtual string const GetAsString() const
+					{
+						return GetValue();
+					}
+					virtual bool SetFromString(string const& _value)
+					{
+						return Set(_value);
+					}
+					virtual void ReadXML(uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement);
+					virtual void WriteXML(TiXmlElement* _valueElement);
 
-	private:
-		string	m_value;				// the current value
-		string	m_valueCheck;			// the previous value (used for double-checking spurious value reads)
-		string	m_newValue;				// a new value to be set on the appropriate device
-	};
+					string GetValue() const
+					{
+						return m_value;
+					}
 
+				private:
+					string m_value;				// the current value
+					string m_valueCheck;			// the previous value (used for double-checking spurious value reads)
+					string m_newValue;				// a new value to be set on the appropriate device
+			};
+		} // namespace VC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

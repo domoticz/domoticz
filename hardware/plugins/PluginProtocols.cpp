@@ -7,12 +7,12 @@
 
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
-#include "../main/Helper.h"
-#include "../main/Logger.h"
-#include "../webserver/Base64.h"
+#include "../../main/Helper.h"
+#include "../../main/Logger.h"
+#include "../../webserver/Base64.h"
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
-#include "../json/json.h"
+#include "../../json/json.h"
 
 namespace Plugins {
 
@@ -462,15 +462,27 @@ namespace Plugins {
 			}
 			PyObject* pObj = Py_BuildValue("s", sHeaderText.c_str());
 			PyObject* pPrevObj = PyDict_GetItemString((PyObject*)m_Headers, sHeaderName.c_str());
-			// If the header is not unique, we concatenate with '\n'. RFC2616 recommends comma, but it doesn't work for cookies for instance
+			// Encode multi headers in a list
 			if (pPrevObj != NULL) {
-				std::string sCombin = PyUnicode_AsUTF8(pPrevObj);
-				sCombin += '\n' + sHeaderText;
-				PyObject*   pObjCombin = Py_BuildValue("s", sCombin.c_str());
-				if (PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pObjCombin) == -1) {
-					_log.Log(LOG_ERROR, "(%s) failed to append key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
+				PyObject* pListObj = pPrevObj;
+				// First duplicate? Create a list and add previous value
+				if (!PyList_Check(pListObj))
+				{
+					pListObj = PyList_New(1);
+					if (!pListObj)
+					{
+						_log.Log(LOG_ERROR, "(%s) failed to create list to handle duplicate header. Name '%s'.", __func__, sHeaderName.c_str());
+						return;
+					}
+					PyList_SetItem(pListObj, 0, pPrevObj);
+					Py_INCREF(pPrevObj);
+					PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pListObj);
+					Py_DECREF(pListObj);
 				}
-				Py_DECREF(pObjCombin);
+				// Append new value to the list
+				if (PyList_Append(pListObj, pObj) == -1) {
+					_log.Log(LOG_ERROR, "(%s) failed to append to list key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
+				}
 			}
 			else if (PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pObj) == -1) {
 				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
@@ -480,14 +492,28 @@ namespace Plugins {
 		}
 	}
 
+	void CPluginProtocolHTTP::Flush(CPlugin* pPlugin, PyObject* pConnection)
+	{
+		if (m_sRetainedData.size())
+		{
+			// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
+			ProcessInbound(new ReadEvent(pPlugin, pConnection, 0, NULL));
+			m_sRetainedData.clear();
+		}
+	}
+
 	void CPluginProtocolHTTP::ProcessInbound(const ReadEvent* Message)
 	{
-		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
+		// There won't be a buffer if the connection closed
+		if (Message->m_Buffer.size())
+		{
+			m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
+		}
 
 		// HTML is non binary so use strings
 		std::string		sData(m_sRetainedData.begin(), m_sRetainedData.end());
 
-		m_ContentLength = 0;
+		m_ContentLength = -1;
 		m_Chunked = false;
 		m_RemainingChunk = 0;
 
@@ -540,7 +566,7 @@ namespace Plugins {
 				if (!m_Chunked)
 				{
 					// If full message then return it
-					if (m_ContentLength == sData.length())
+					if ((m_ContentLength == sData.length()) || (!Message->m_Buffer.size()))
 					{
 						PyObject*	pDataDict = PyDict_New();
 						PyObject*	pObj = Py_BuildValue("s", m_Status.c_str());
@@ -642,7 +668,8 @@ namespace Plugins {
 			if (sData.substr(0,2) == "\r\n")
 			{
 				std::string		sPayload = sData.substr(2);
-				if (!m_ContentLength || (m_ContentLength == sPayload.length()))
+				// No payload || we have the payload || the connection has closed
+				if ((m_ContentLength == -1) || (m_ContentLength == sPayload.length()) || !Message->m_Buffer.size())
 				{
 					PyObject* DataDict = PyDict_New();
 					std::string		sVerb = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
@@ -848,8 +875,46 @@ namespace Plugins {
 					while (PyDict_Next(pHeaders, &pos, &key, &value))
 					{
 						std::string	sKey = PyUnicode_AsUTF8(key);
-						std::string	sValue = PyUnicode_AsUTF8(value);
-						sHttp += sKey + ": " + sValue + "\r\n";
+						if (PyUnicode_Check(value))
+						{
+							std::string	sValue = PyUnicode_AsUTF8(value);
+							sHttp += sKey + ": " + sValue + "\r\n";
+						}
+						else if (PyBytes_Check(value))
+						{
+							const char* pBytes = PyBytes_AsString(value);
+							sHttp += sKey + ": " + pBytes + "\r\n";
+						}
+						else if (value->ob_type->tp_name == std::string("bytearray"))
+						{
+							const char* pByteArray = PyByteArray_AsString(value);
+							sHttp += sKey + ": " + pByteArray + "\r\n";
+						}
+						else if (PyList_Check(value))
+						{
+							PyObject* iterator = PyObject_GetIter(value);
+							PyObject* item;
+							while (item = PyIter_Next(iterator)) {
+								if (PyUnicode_Check(item))
+								{
+									std::string	sValue = PyUnicode_AsUTF8(item);
+									sHttp += sKey + ": " + sValue + "\r\n";
+								}
+								else if (PyBytes_Check(item))
+								{
+									const char* pBytes = PyBytes_AsString(item);
+									sHttp += sKey + ": " + pBytes + "\r\n";
+								}
+								else if (item->ob_type->tp_name == std::string("bytearray"))
+								{
+									const char* pByteArray = PyByteArray_AsString(item);
+									sHttp += sKey + ": " + pByteArray + "\r\n";
+								}
+								Py_DECREF(item);
+							}
+
+							Py_DECREF(iterator);
+						}
 					}
 				}
 				else
@@ -1834,11 +1899,12 @@ namespace Plugins {
 				iOffset += 4;
 			}
 
+			if (vMessage.size() < (iOffset + lPayloadLength))
+				return false;
+
 			// Append the payload to the existing (maybe) payload
 			if (lPayloadLength)
 			{
-				if (vMessage.size() < (iOffset + lPayloadLength))
-					return false;
 				vPayload.reserve(vPayload.size() + lPayloadLength);
 				for (int i = iOffset; i < iOffset + lPayloadLength; i++)
 				{
@@ -1942,35 +2008,23 @@ namespace Plugins {
 
 	void CPluginProtocolWS::ProcessInbound(const ReadEvent * Message)
 	{
-		//
-		//	If the message does not look like WebSocket traffic, send it to the HTTP parent
-		//
-		if ((m_sRetainedData.size()	&& (m_sRetainedData[0] & 0x7F) > 32) ||		// If there is already a partial message check that one
-			(Message->m_Buffer.size() && (Message->m_Buffer[0] & 0x7F) > 32))	// otherwise check the incoming message
+		//	Although messages can be fragmented, control messages can be inserted in between fragments
+		//	so try to process just the message first, then retained data and the message
+		std::vector<byte>	Buffer = Message->m_Buffer;
+		if (ProcessWholeMessage(Buffer, Message))
 		{
-			// Handle response to request websockets protocol
-			CPluginProtocolHTTP::ProcessInbound(Message);
+			return;		// Message processed
 		}
-		else
+
+		// Add new message to retained data, process all messages if this one is the finish of a message
+		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
+
+		// Always process the whole buffer because we can't know if we have whole, multiple or even complete messages unless we work through from the start
+		if (ProcessWholeMessage(m_sRetainedData, Message))
 		{
-			//	Although messages can be fragmented, control messages can be inserted in between fragments
-			//	so try to process just the message first, then retained data and the message
-			std::vector<byte>	Buffer = Message->m_Buffer;
-			if (ProcessWholeMessage(Buffer, Message))
-			{
-				return;		// Message processed
-			}
-
-			// Add new message to retained data, process all messages if this one is the finish of a message
-			m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
-
-			// Always process the whole buffer because we can't know if we have whole, multiple or even complete messages unless we work through from the start
-			if (ProcessWholeMessage(m_sRetainedData, Message))
-			{
-				return;		// Message processed
-			}
-
+			return;		// Message processed
 		}
+
 	}
 
 	std::vector<byte> CPluginProtocolWS::ProcessOutbound(const WriteDirective * WriteMessage)

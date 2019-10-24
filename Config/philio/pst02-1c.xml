@@ -1,33 +1,46 @@
-<!-- Philio: PST02-1C Slim Multi Sensor --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Philio: PST02-1C Slim Multi Sensor --><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:000E:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/philio/pst02-1c.png</MetaDataItem>
-    <MetaDataItem id="000E" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1092/</MetaDataItem>
-    <MetaDataItem name="Description">The slim multisensor PST02 has door/window, temperature and illumination, 3 sensors function in one,based on Z-Wave technology.</MetaDataItem>
-    <MetaDataItem name="ResetDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
-To reset the device: 
-Notice: Use this procedure only in the event that the primary controller is lost or otherwise inoperable.
-1. Pressing tamper key four times within 1.5 seconds and do not release the tamper key in the 4th  pressed, and the LED will light ON.
-2. After 3 seconds the LED will turn OFF, after that within 2 seconds, release the tamper key. If successful, the LED will light ON one second. Otherwise, the LED will flash once.
+    <MetaDataItem id="000E" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2872/</MetaDataItem>
+    <MetaDataItem name="Description">The slim multisensor PST02-1C has door/window, temperature and illumination, 3 sensors function in one,based on Z-Wave technology
+It is the Z-WaveTM plus product, it support the security, OTA... Those
+newest features of the Z-WaveTM technology. Z-WaveTM is a wireless
+communication protocol designed for home automation, specifically to
+remotely control applications in residential and light commercial
+environments. The technology uses a low-power RF radio embedded or
+retrofitted into home electronics devices and systems, such as lighting,
+home access control, entertainment systems and household appliances.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Notice: Use this procedure only in the event
+that the primary controller is lost or otherwise inoperable.
+1. Pressing tamper key four times within 1.5 seconds and do not release the tamper key on the 4th press, the LED lite will ON.
+2. After 3 seconds the LED will turn OFF, after that within 2 seconds, release the tamper key. If successful, the LED will light ON one second.
+Otherwise, the LED will flash once.
 3. IDs are excluded and all settings will reset to factory default.</MetaDataItem>
-    <MetaDataItem id="000E" name="Identifier" type="0002">PST02-1C</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1092/PST02_Manual-2014-08-15B.pdf</MetaDataItem>
-    <MetaDataItem name="WakeupDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
-Press any key once, the device will awake 10 seconds.</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
-To add into a Z-Wave network: 
-1. Have Z-Wave  Controller entered inclusion mode.
-2. Pressing tamper key three times within 1.5 seconds to enter the inclusion mode.
-3. After add successful, the device will wake to receive the setting command from Z-Wave Controller about 20 seconds.</MetaDataItem>
-    <MetaDataItem name="Name">Slim Multisensor</MetaDataItem>
-    <MetaDataItem id="000E" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
-To remove the device from a Z-Wave network: 
-1. Have Z-Wave  Controller entered exclusion mode.
-2. Pressing tamper key three times within 1.5 seconds to enter the exclusion mode.
+    <MetaDataItem id="000E" name="Identifier" type="0002">PST02-5C </MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2872/PST02_UserManual.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">After the device adding to the network, it will wake-up once per day in
+default. When it wakes-up it will broadcast the “Wake Up Notification”
+message to the network, and wake-up 10 seconds to receive the
+setting commands.
+The wake-up interval minimum setting is 30 minutes, and maximum
+setting is 120 hours. And the interval step is 30 minutes.
+If the user want to wake-up the device immediately, please remove the
+front cover, and press the tamper key once. The device will wake-up 10
+seconds.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Have Z-WaveTM Controller enter inclusion mode.
+2. Pressing tamper key three times within 1.5 seconds
+will enter the inclusion mode.
+3. After add successful, the device will wake to receive the setting command from Z-WaveTM Controller, about 20 seconds</MetaDataItem>
+    <MetaDataItem name="Name"> Датчик открытия (Door sensor) </MetaDataItem>
+    <MetaDataItem id="000E" name="FrequencyName" type="0002">CEPT (Europe) / Russia / Russia</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Have Z-WaveTM Controller enter exclusion mode.
+2. Pressing tamper key three times within 1.5 seconds will enter the exclusion mode.
 Node ID has been excluded.</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1092/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2839/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2872/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->

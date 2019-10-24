@@ -36,41 +36,48 @@ class TiXmlElement;
 
 namespace OpenZWave
 {
-	class Msg;
-	class Node;
-
-	/** \brief A collection of bytes sent to/received from a node.
-	 * \ingroup ValueID
-	 */
-	class ValueRaw: public Value
+	namespace Internal
 	{
-	public:
-		ValueRaw( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const* _value, uint8 const _length, uint8 const _pollIntensity );
-		ValueRaw();
-		virtual ~ValueRaw();
+		namespace VC
+		{
 
-		bool Set( uint8 const* _value, uint8 const _length );
-		void OnValueRefreshed( uint8 const* _value, uint8 const _length );
+			/** \brief A collection of bytes sent to/received from a node.
+			 * \ingroup ValueID
+			 */
+			class ValueRaw: public Value
+			{
+				public:
+					ValueRaw(uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const* _value, uint8 const _length, uint8 const _pollIntensity);
+					ValueRaw();
+					virtual ~ValueRaw();
 
-		// From Value
-		virtual string const GetAsString() const;
-		virtual bool SetFromString( string const& _value );
-		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );
-		virtual void WriteXML( TiXmlElement* _valueElement );
+					bool Set(uint8 const* _value, uint8 const _length);
+					void OnValueRefreshed(uint8 const* _value, uint8 const _length);
 
-		uint8* GetValue()const{ return m_value; }
-		uint8 GetLength()const{ return m_valueLength; }
+					// From Value
+					virtual string const GetAsString() const;
+					virtual bool SetFromString(string const& _value);
+					virtual void ReadXML(uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement);
+					virtual void WriteXML(TiXmlElement* _valueElement);
 
-	private:
-		uint8*	m_value;				// the current value
-		uint8	m_valueLength;				// fixed length for this instance
-		uint8*	m_valueCheck;				// the previous value (used for double-checking spurious value reads)
-		uint8	m_valueCheckLength;			// m_valueCheck array length
-	};
+					uint8* GetValue() const
+					{
+						return m_value;
+					}
+					uint8 GetLength() const
+					{
+						return m_valueLength;
+					}
 
+				private:
+					uint8* m_value;				// the current value
+					uint8 m_valueLength;				// fixed length for this instance
+					uint8* m_valueCheck;				// the previous value (used for double-checking spurious value reads)
+					uint8 m_valueCheckLength;			// m_valueCheck array length
+			};
+		} // namespace VC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif
-
-
 

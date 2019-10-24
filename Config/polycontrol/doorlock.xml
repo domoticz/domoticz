@@ -1,9 +1,9 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010E:0002:0008</MetaDataItem>
     <MetaDataItem name="ProductPic">images/polycontrol/doorlock.png</MetaDataItem>
-    <MetaDataItem id="0002" name="ZWProductPage" type="0008">https://products.z-wavealliance.org/products/1251/</MetaDataItem>
-    <MetaDataItem id="0002" name="Identifier" type="0008">DanalockBTZE100Circle</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0008">https://products.z-wavealliance.org/products/1855/</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0008"> Danalock V2 BTZJ</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">To remove or exclude the danalock into a Z-Wave network
 Set the controller in exclusion mode
 Touch the User Button until you hear two beeps.</MetaDataItem>
@@ -12,9 +12,9 @@ Set the controller in inclusion mode
 Touch the User Button until you hear two beeps.
 </MetaDataItem>
     <MetaDataItem name="ResetDescription">The danalock can be set to factory settings by holding the User Button for ten beeps. Please use this procedure only when the primary controller is missing or otherwise inoperable.</MetaDataItem>
-    <MetaDataItem name="Name">Danalock</MetaDataItem>
-    <MetaDataItem id="0002" name="FrequencyName" type="0008">U.S. / Canada / Mexico / CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1251/Danalock Product manual.pdf</MetaDataItem>
+    <MetaDataItem name="Name"> Danalock V2 BTZJ</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0008">U.S. / Canada / Mexico / CEPT (Europe) / U.S. / Canada / Mexico / U.S. / Canada / Mexico / U.S. / Canada / Mexico / Japan</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1855/Danalock_V2_Product_manual_Z_Wave_V_1.0.4.pdf</MetaDataItem>
     <MetaDataItem name="Description">Z-Wave Controlled door lock with keypad, and Bluetooth Smart.
 Operated by Z-Wave.
 Connect Danalock to your Z-Wave gateway -  Danalock interfaces with your existing Z-Wave network through the Danalock smartphone app.
@@ -24,6 +24,10 @@ Operate Danalock remotely by accessing your Z-Wave network from anywhere in the 
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1238/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1251/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1532/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1764/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1769/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1855/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Polycontrol: Danalock 150 door lock  -->

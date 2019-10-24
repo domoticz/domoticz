@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # This script can be used to upgrade/compile to the latest version
-# Please not that all modifications on the original files are lost
+# Please note that all modifications on the original files are lost
 
 echo "Updating to server revision..."
 git fetch --all

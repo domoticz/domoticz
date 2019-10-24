@@ -16,7 +16,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.20")
+	m_version("2.4.29")
 {
 	m_bdzVentsExist = false;
 }
@@ -255,7 +255,7 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 {
 	bool bEventTrigger = false;
 	int nValue = -1, Protected = -1;
-	uint64_t idx = -1;
+	int idx = -1;
 	float delayTime = 0;
 	std::string sValue;
 
@@ -265,7 +265,7 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 		if (itt->type == TYPE_INTEGER)
 		{
 			if (itt->name == "idx")
-				idx = static_cast<uint64_t>(itt->iValue);
+				idx = itt->iValue;
 			else if (itt->name == "nValue")
 				nValue = itt->iValue;
 			else if (itt->name == "protected")
@@ -348,7 +348,7 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 	std::string variableValue;
 	float delayTime = 0;
 	bool bEventTrigger = false;
-	uint64_t idx;
+	int idx = 0;
 
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
@@ -356,7 +356,7 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 		if (itt->type == TYPE_INTEGER)
 		{
 			if (itt->name == "idx")
-				idx = static_cast<uint64_t>(itt->iValue);
+				idx = itt->iValue;
 			else if (itt->name == "_random")
 				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
 			else if (itt->name == "_after")
@@ -368,6 +368,9 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 		else if (itt->type == TYPE_BOOLEAN && itt->name == "_trigger")
 			bEventTrigger = true;
 	}
+	if (idx == 0)
+		return false;
+
 	if (bEventTrigger)
 		m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, delayTime);
 
@@ -377,19 +380,22 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 
 bool CdzVents::CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
 {
-	uint64_t idx;
-	int count = 0;
+	int idx = 0;
 	std::string type;
 
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
 	{
 		if (itt->type == TYPE_INTEGER && itt->name == "idx")
-			idx = static_cast<uint64_t>(itt->iValue);
+			idx = itt->iValue;
 
 		else if (itt->type == TYPE_STRING && itt->name == "type")
 			type = itt->sValue;
 	}
+
+	if (idx == 0)
+		return false;
+
 	_tTaskItem tItem;
 	tItem._idx = idx;
 	tItem._DelayTime = 0;
@@ -688,10 +694,13 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, 11);
+		lua_createtable(lua_state, 1, 12);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "protected");
+		lua_pushboolean(lua_state, ((lua_Number)sitem.protection) == 1 );
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "id");
 		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
@@ -879,7 +888,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, 6);
+		lua_createtable(lua_state, 1, 7);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
@@ -892,6 +901,9 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "baseType");
 		lua_pushstring(lua_state, (sgitem.scenesgroupType == 0) ? "scene" : "group");
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "protected");
+		lua_pushboolean(lua_state, (lua_Number)sgitem.protection == 1);
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "lastUpdate");

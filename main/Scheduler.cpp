@@ -7,6 +7,7 @@
 #include "SQLHelper.h"
 #include "mainworker.h"
 #include "WebServer.h"
+#include "HTMLSanitizer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
@@ -2185,7 +2186,12 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			if (name.empty())
+			{
+				session.reply_status = reply::bad_request;
+				return;
+			}
 			root["status"] = "OK";
 			root["title"] = "AddTimerPlan";
 			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
@@ -2202,11 +2208,12 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = request::findValue(&req, "name");
-			if (
-				(name.empty())
-				)
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			if (name.empty())
+			{
+				session.reply_status = reply::bad_request;
 				return;
+			}
 
 			root["status"] = "OK";
 			root["title"] = "UpdateTimerPlan";
@@ -2258,7 +2265,7 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if (
 				(name.empty())
 				)
