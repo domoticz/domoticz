@@ -3931,7 +3931,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 				std::string rID = std::string(ID);
 				padLeft(rID, 8, '0');
 				DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
-				if (DeviceRowIdx == (uint64_t)-1)
+				if (DeviceRowIdx != (uint64_t)-1)
 				{
 					//Set the Label
 					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID==%" PRIu64 ")", soptions.c_str(), DeviceRowIdx);
@@ -3973,7 +3973,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 			unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
 			sprintf(ID, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
-			if (DeviceRowIdx == (uint64_t)-1)
+			if (DeviceRowIdx != (uint64_t)-1)
 			{
 				//Set switch type to selector
 				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Selector, DeviceRowIdx);
@@ -4001,7 +4001,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 1, devname);
-			if (DeviceRowIdx == (uint64_t)-1)
+			if (DeviceRowIdx != (uint64_t)-1)
 			{
 				//Set switch type to dimmer
 				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
@@ -4013,7 +4013,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	}
 	}
 
-	if (DeviceRowIdx == (uint64_t)-1)
+	if (DeviceRowIdx != (uint64_t)-1)
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET Used=1 WHERE (ID==%" PRIu64 ")", DeviceRowIdx);
 		m_mainworker.m_eventsystem.GetCurrentStates();

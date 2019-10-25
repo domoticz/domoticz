@@ -803,6 +803,16 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			return;
 #endif
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
+
+		uint8_t controller_command = _notification->GetCommand();
+		if (controller_command == OpenZWave::Driver::ControllerCommand_RemoveDevice)
+		{
+			uint8_t controler_state = _notification->GetEvent();
+			if (controler_state == OpenZWave::Driver::ControllerState::ControllerState_Failed)
+			{
+				m_LastRemovedNode = -1;
+			}
+		}
 	}
 	break;
 	/*
@@ -5478,7 +5488,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ZWaveIsNodeExcluded";
 				root["result"] = pOZWHardware->IsNodeExcluded();
-				root["node_id"] = pOZWHardware->m_LastRemovedNode;
+				root["node_id"] = (pOZWHardware->m_LastRemovedNode >0) ? std::to_string(pOZWHardware->m_LastRemovedNode) : "Failed!";
 			}
 		}
 

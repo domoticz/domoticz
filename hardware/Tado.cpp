@@ -289,7 +289,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		catch (std::exception& e)
 		{
 			std::string what = e.what();
-			_log.Log(LOG_ERROR, "Tado: Failed to get information on zone '%s': % s", zone.Name.c_str(), what.c_str());
+			_log.Log(LOG_ERROR, "Tado: Failed to get information on zone '%s': %s", zone.Name.c_str(), what.c_str());
 			return false;
 		}
 
