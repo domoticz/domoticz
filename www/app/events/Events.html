@@ -19,6 +19,7 @@
 					   ng-click="$ctrl.openEvent(event)"
 					>
 						<span class="label label-important" ng-if="event.eventstatus === '0'">{{:: 'Disabled' | translate }}</span>
+						<span class="label label-warning" ng-if="event.eventstatus === '2'">{{:: 'Error' | translate }}</span>
 						{{ event.name }}
 					</a>
 				</li>
