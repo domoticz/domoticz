@@ -126,7 +126,7 @@ public:
 	int m_LastIncludedNode;
 	std::string m_LastIncludedNodeType;
 	bool m_bHaveLastIncludedNodeInfo;
-	uint8_t m_LastRemovedNode;
+	int m_LastRemovedNode;
 	std::mutex m_NotificationMutex;
 private:
 	void Do_Work();
