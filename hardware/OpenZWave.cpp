@@ -1207,13 +1207,7 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 
 		if ((pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL) || (bHandleAsBinary))
 		{
-			//On/Off device
-			bool bFound = (GetValueByCommandClass(pDevice->nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true);
-			if (!bFound)
-				bFound = (GetValueByCommandClass(pDevice->nodeID, instanceID, COMMAND_CLASS_DOOR_LOCK, vID) == true);
-			if (!bFound)
-				bFound = (GetValueByCommandClassIndex(pDevice->nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, ValueID_Index_SwitchMultiLevel::Level, vID) == true);
-			if (bFound)
+			if (GetValueByCommandClassIndex(pDevice->nodeID, pDevice->orgInstanceID, pDevice->commandClassID, pDevice->orgIndexID, vID))
 			{
 				OpenZWave::ValueID::ValueType vType = vID.GetType();
 				_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command! NodeID: %d (0x%02x)", pDevice->nodeID, pDevice->nodeID);
@@ -1276,7 +1270,7 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 			//dimmable/color light  device
 			if ((svalue > 99) && (svalue != 255))
 				svalue = 99;
-			if (GetValueByCommandClassIndex(pDevice->nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, ValueID_Index_SwitchMultiLevel::Level, vID) == true)
+			if (GetValueByCommandClassIndex(pDevice->nodeID, pDevice->orgInstanceID, pDevice->commandClassID, pDevice->orgIndexID, vID) == true)
 			{
 				std::string vLabel = m_pManager->GetValueLabel(vID);
 
@@ -1312,33 +1306,6 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 					}
 				}
 
-			}
-			else if (GetValueByCommandClassIndex(pDevice->nodeID, instanceID, COMMAND_CLASS_PROPRIETARY, ValueID_Index_SwitchMultiLevel::Level, vID) == true)
-			{
-				if (
-					(pNode->Manufacturer_id == 0x010F)
-					&& (pNode->Product_id == 0x1000)
-					&& (pNode->Product_type == 0x0302)
-					)
-				{
-					//Fibaro FGRM222 Roller Shutter Controller 2
-					//Slat/Tilt position
-					pDevice->intvalue = svalue;
-					_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Slat/Tilt command!, Level: %d, NodeID: %d (0x%02x)", svalue, pDevice->nodeID, pDevice->nodeID);
-
-					if (vID.GetType() == OpenZWave::ValueID::ValueType_Byte)
-					{
-						if (!m_pManager->SetValue(vID, (uint8_t)svalue))
-						{
-							_log.Log(LOG_ERROR, "OpenZWave: Error setting Slat/Tilt Value! NodeID: %d (0x%02x)", pDevice->nodeID, pDevice->nodeID);
-						}
-					}
-					else
-					{
-						_log.Log(LOG_ERROR, "OpenZWave: SwitchLight, Unhandled value type: %d, %s:%d, NodeID: %d (0x%02x)", vID.GetType(), std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, pDevice->nodeID, pDevice->nodeID);
-						return false;
-					}
-				}
 			}
 			else
 			{
@@ -1679,6 +1646,15 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d, NodeID: %d (0x%02x)", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, NodeID, NodeID);
 			return;
+		}
+
+		if (IsFibaroFgrm222(_device))
+		{
+			// Handling Fibaro FGRM-222 Blind Binary Switch.
+			// Cannot use vOrgIndex or vOrginstanceID as instanceID because this overlaps with
+			// Domoticz device created for Switch Multilevel (in ZWaveBase::SendSwitchIfNotExists)
+			// Pick an instanceID, something that looks nice as a device ID in the browser and does not conflict...
+			_device.instanceID = 0x10;
 		}
 		InsertDevice(_device);
 	}
@@ -2355,20 +2331,32 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	}
 	else if (commandclass == COMMAND_CLASS_MANUFACTURER_PROPRIETARY)
 	{
-		//Could be anything
-		if (
-			(pNode->Manufacturer_id == 0x010F)
-			&& (pNode->Product_id == 0x1000)
-			&& (pNode->Product_type == 0x0302)
-			)
+		if (IsFibaroFgrm222(_device))
 		{
-			//Fibaro FGRM222 Roller Shutter Controller 2
-			//Slat/Tilt position
+			// Handling Fibaro FGRM-222 Ventian Blind mode.
+			// Cannot use vOrgIndex or vOrginstanceID as instanceID because this overlaps with
+			// Domoticz device created for Switch Binary (in ZWaveBase::SendSwitchIfNotExists)
+			// Pick an instanceID, something that looks nice as a device ID in the browser and does not conflict...
+			if (vIndex == ValueID_Index_ManufacturerProprietary::FibaroVenetianBlinds_Blinds)
+			{
+				// Blinds Position
+				_device.instanceID = 0x11;
+			}
+			else if (vIndex == ValueID_Index_ManufacturerProprietary::FibaroVenetianBlinds_Tilt)
+			{
+				// Blinds Tilt
+				_device.instanceID = 0x12;
+			}
+			else
+			{
+				return;
+			}
+
+			// Slat Tilt or Position
 			if (vType == OpenZWave::ValueID::ValueType_Byte)
 			{
 				if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
 				{
-					_device.instanceID = (uint8_t)vOrgIndex;
 					_device.devType = ZDTYPE_SWITCH_DIMMER;
 					_device.intvalue = byteValue;
 					InsertDevice(_device);
@@ -2380,6 +2368,11 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 				return;
 			}
 		}
+		else
+		{
+			_log.Log(LOG_STATUS, "OpenZWave: Unhandled COMMAND_CLASS_MANUFACTURER_PROPRIETARY type: %d, %s:%d, NodeID: %d (0x%02x)", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, NodeID, NodeID);
+		}
+		return;
 	}
 	else
 	{
@@ -3195,8 +3188,10 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	}
 	break;
 	case ZDTYPE_SWITCH_DIMMER:
-		if (vLabel.find("Level") == std::string::npos)
-			return;
+		// Next 2 lines are probably code from the OZW 1.4 ERA.
+		// Not all Multilevel Values have this word in the label.
+		//if (vLabel.find("Level") == std::string::npos)
+		//	return;
 		if (vType != OpenZWave::ValueID::ValueType_Byte)
 			return;
 		if (byteValue == 99)

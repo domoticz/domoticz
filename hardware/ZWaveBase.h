@@ -157,6 +157,8 @@ private:
 	virtual bool IsNodeIncluded() = 0;
 	virtual bool IsNodeExcluded() = 0;
 
+	bool IsFibaroFgrm222(const _tZWaveDevice &pDevice);
+
 	bool m_bControllerCommandInProgress;
 	bool m_bControllerCommandCanceled;
 	time_t m_ControllerCommandStartTime;

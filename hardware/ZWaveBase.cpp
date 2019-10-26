@@ -1176,3 +1176,8 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 	return true;
 }
 
+bool ZWaveBase::IsFibaroFgrm222(const _tZWaveDevice &pDevice)
+{
+	return (
+		(pDevice.Manufacturer_id == 0x010F) && ((pDevice.Product_type == 0x0301) || (pDevice.Product_type == 0x0302)));
+}
