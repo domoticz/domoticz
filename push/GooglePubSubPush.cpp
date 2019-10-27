@@ -104,13 +104,15 @@ boost::python::dict toPythonDict(std::map<K, V> map) {
 void CGooglePubSubPush::DoGooglePubSubPush()
 {
 	std::string googlePubSubData = "";
+#ifdef ENABLE_PYTHON_DECAP
+	bool googlePubSubDebugActive = false;
 
 	int googlePubSubDebugActiveInt = 0;
-	bool googlePubSubDebugActive = false;
 	m_sql.GetPreferencesVar("GooglePubSubDebug", googlePubSubDebugActiveInt);
 	if (googlePubSubDebugActiveInt == 1) {
 		googlePubSubDebugActive = true;
 	}
+#endif
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM GooglePubSubLink as A, DeviceStatus as B "
@@ -127,7 +129,6 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 				return;
 
 			std::vector<std::string> sd = *itt;
-			unsigned int deviceId = atoi(sd[0].c_str());
 			std::string sdeviceId = sd[0].c_str();
 			std::string ldelpos = sd[1].c_str();
 			int delpos = atoi(sd[1].c_str());
@@ -135,9 +136,9 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			int dSubType = atoi(sd[4].c_str());
 			int nValue = atoi(sd[5].c_str());
 			std::string sValue = sd[6].c_str();
-			int targetType = atoi(sd[7].c_str());
+			//int targetType = atoi(sd[7].c_str());
 			std::string targetVariable = sd[8].c_str();
-			int targetDeviceID = atoi(sd[9].c_str());
+			//int targetDeviceID = atoi(sd[9].c_str());
 			std::string targetProperty = sd[10].c_str();
 			int includeUnit = atoi(sd[11].c_str());
 			int metertype = atoi(sd[12].c_str());

@@ -479,7 +479,7 @@ void CBuienRadar::GetRainPrediction()
 	int total_rain_values_in_duration = 0;
 	double total_rain_next_hour = 0;
 	int total_rain_values_next_hour = 0;
-	int rain_time;
+	int rain_time = 0;
 
 	//values are between 0 (no rain) till 255 (heavy rain)
 	//mm/h = 10^((value -109)/32), 77 = 0.1 mm.h
@@ -496,12 +496,10 @@ void CBuienRadar::GetRainPrediction()
 	else {
 		start_of_rainshower = 0;
 	}
-	float total_rainmmh_in_next_rainshower = 0;
+	double total_rainmmh_in_next_rainshower = 0;
 	int total_rainvalues_in_next_rainshower = 0;
-	float max_rainmmh_in_next_rainshower = 0;
-	float avg_rainmmh_in_next_rainshower = 0;
-
-
+	double max_rainmmh_in_next_rainshower = 0;
+	double avg_rainmmh_in_next_rainshower = 0;
 
 	while (!iStream.eof())
 	{

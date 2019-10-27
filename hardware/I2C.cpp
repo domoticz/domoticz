@@ -397,7 +397,7 @@ void I2C::MCP23017_Init()
 	unsigned char nvalue;
 	uint16_t GPIO_reg = 0xFFFF;
 	int unit;
-	bool value;
+	bool value = false;
 
 	results = m_sql.safe_query("SELECT Unit, nValue FROM DeviceStatus WHERE (HardwareID = %d) AND (DeviceID like '000%02X%%');", m_HwdID, m_i2c_addr);
 	if (!results.empty())
@@ -450,7 +450,6 @@ void I2C::MCP23017_ReadChipDetails()
 	return;
 #else
 	//	uint16_t data = 0;
-	uint16_t cur_iodir = 0;
 	i2c_data data;
 	int rc;
 
@@ -479,7 +478,6 @@ int I2C::MCP23017_WritePin(uint8_t pin_number, uint8_t  value)
 #else
 	_log.Log(LOG_NORM, "GPIO: WRITE TO MCP23017 pin:%d, value: %d, i2c_address:%d", pin_number, value, m_i2c_addr);
 	uint16_t pin_mask = 0, iodir_mask = 0;
-	unsigned char gpio_port, iodir_port;
 	uint16_t new_data = 0;
 	i2c_data cur_data, cur_iodir;
 	int rc;
@@ -739,7 +737,6 @@ int I2C::I2CReadReg16(int fd, unsigned char reg, i2c_data *data)
 #ifndef HAVE_LINUX_I2C
 	return -1;
 #else
-	int rc;
 	//i2c_data data;
 	struct i2c_rdwr_ioctl_data messagebuffer;
 	struct i2c_msg read_reg[3] = {
@@ -749,11 +746,6 @@ int I2C::I2CReadReg16(int fd, unsigned char reg, i2c_data *data)
 	messagebuffer.nmsgs = 2;                  		//Two message/action
 	messagebuffer.msgs = read_reg;            		//load the 'read__reg' message into the buffer
 	return ioctl(fd, I2C_RDWR, &messagebuffer); 		//Send the buffer to the bus and returns a send status
-//	if (rc < 0) {
-//		_log.Log(LOG_NORM, "I2C::I2CReadReg16. %s, Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
-//		return rc;
-//	}
-	//return data.word ;
 #endif
 }
 

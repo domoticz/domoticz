@@ -803,6 +803,16 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			return;
 #endif
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
+
+		uint8_t controller_command = _notification->GetCommand();
+		if (controller_command == OpenZWave::Driver::ControllerCommand_RemoveDevice)
+		{
+			uint8_t controler_state = _notification->GetEvent();
+			if (controler_state == OpenZWave::Driver::ControllerState::ControllerState_Failed)
+			{
+				m_LastRemovedNode = -1;
+			}
+		}
 	}
 	break;
 	/*
@@ -5285,7 +5295,6 @@ namespace http {
 						root["result"][ii]["PollEnabled"] = (atoi(sd[5].c_str()) == 1) ? "true" : "false";
 						root["result"][ii]["Version"] = pNode->iVersion;
 						root["result"][ii]["Manufacturer_name"] = pNode->Manufacturer_name;
-
 						root["result"][ii]["Manufacturer_id"] = int_to_hex(pNode->Manufacturer_id);
 						root["result"][ii]["Product_type"] = int_to_hex(pNode->Product_type);
 						root["result"][ii]["Product_id"] = int_to_hex(pNode->Product_id);
@@ -5294,6 +5303,7 @@ namespace http {
 						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
 						root["result"][ii]["IsPlus"] = pNode->IsPlus;
 						root["result"][ii]["Generic_type"] = pOZWHardware->GetNodeGenericType(pNode->IsPlus, homeID, nodeID);
+						root["result"][ii]["Battery"] = (pNode->batValue == 255) ? "-" : std::to_string(pNode->batValue);
 
 						root["result"][ii]["LastUpdate"] = TimeToString(&pNode->LastSeen, TF_DateTime);
 
@@ -5478,7 +5488,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ZWaveIsNodeExcluded";
 				root["result"] = pOZWHardware->IsNodeExcluded();
-				root["node_id"] = pOZWHardware->m_LastRemovedNode;
+				root["node_id"] = (pOZWHardware->m_LastRemovedNode >0) ? std::to_string(pOZWHardware->m_LastRemovedNode) : "Failed!";
 			}
 		}
 

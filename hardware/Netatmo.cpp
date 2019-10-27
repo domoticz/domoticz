@@ -429,15 +429,15 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	bool bHaveWind = false;
 	bool bHaveSetpoint = false;
 
-	float temp, sp_temp;
-	int hum;
-	float baro;
-	int co2;
-	float rain;
-	int sound;
+	float temp = 0, sp_temp = 0;
+	int hum = 0;
+	float baro = 0;
+	int co2 = 0;
+	float rain  = 0;
+	int sound = 0;
 
 	int wind_angle = 0;
-	int wind_gust_angle = 0;
+	//int wind_gust_angle = 0;
 	float wind_strength = 0;
 	float wind_gust = 0;
 
@@ -540,7 +540,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 		{
 			bHaveWind = true;
 			wind_angle = root["WindAngle"].asInt();
-			wind_gust_angle = root["GustAngle"].asInt();
+			//wind_gust_angle = root["GustAngle"].asInt();
 			wind_strength = root["WindStrength"].asFloat() / 3.6f;
 			wind_gust = root["GustStrength"].asFloat() / 3.6f;
 		}
@@ -1387,7 +1387,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
 		return false;
 	}
-	bool bHaveDevices = true;
+	//bool bHaveDevices = true;
 	if (root["body"].empty())
 		return false;
 

@@ -4,15 +4,13 @@ define(['app', 'livesocket'], function (app) {
 
 		var ctrl = this;
 
+		$scope.broadcast_unsubscribe = undefined;
+
 		MakeFavorite = function (id, isfavorite) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
-			}
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
 			}
 			$.ajax({
 				url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
@@ -25,10 +23,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditTempDevice = function (idx, name, description, addjvalue) {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.devIdx = idx;
 			$("#dialog-edittempdevice #devicename").val(unescape(name));
 			$("#dialog-edittempdevice #devicedescription").val(unescape(description));
@@ -39,10 +33,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditTempDeviceSmall = function (idx, name, description, addjvalue) {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.devIdx = idx;
 			$("#dialog-edittempdevicesmall #devicename").val(unescape(name));
 			$("#dialog-edittempdevicesmall #devicedescription").val(unescape(description));
@@ -63,10 +53,6 @@ define(['app', 'livesocket'], function (app) {
 				bootbox.alert($.t('Can\'t change zone when the heating is off'));
 				return false;
 			}
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.devIdx = idx;
 			$("#dialog-editsetpoint #devicename").val(unescape(name));
 			$("#dialog-editsetpoint #devicedescription").val(unescape(description));
@@ -85,10 +71,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 		EditState = function (idx, name, description, state, mode, until, callback) {
 			//HeatingOff does not apply to dhw
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.devIdx = idx;
 			$("#dialog-editstate #devicename").val(unescape(name));
 			$("#dialog-editstate #devicedescription").val(unescape(description));
@@ -135,10 +117,6 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshTemps = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
@@ -158,7 +136,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
-			$scope.$on('jsonupdate', function (event, data) {
+			$scope.broadcast_unsubscribe = $scope.$on('jsonupdate', function (event, data) {
 				/*
 					When this event is caught, a widget status update is received.
 					We call RefreshItem to update the widget.
@@ -178,11 +156,12 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		ShowTemps = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$('#modal').show();
+
+			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
+				$scope.broadcast_unsubscribe();
+				$scope.broadcast_unsubscribe = undefined;
+			}
 
 			// TODO should belong to a global controller
 			ctrl.isNotMobile = function () {
@@ -220,10 +199,6 @@ define(['app', 'livesocket'], function (app) {
 		};
 
 		$scope.DragWidget = function (idx) {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.devIdx = idx;
 		};
 		$scope.DropWidget = function (idx) {
@@ -515,9 +490,10 @@ define(['app', 'livesocket'], function (app) {
 
 		};
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			//cleanup
+			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
+				$scope.broadcast_unsubscribe();
+				$scope.broadcast_unsubscribe = undefined;
 			}
 		});
 

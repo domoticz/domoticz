@@ -240,7 +240,6 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 
 void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;

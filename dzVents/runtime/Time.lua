@@ -978,6 +978,7 @@ local function Time(sDate, isUTC, _testMS)
 		end
 		local res
 		local total = false
+		local rule = rule:lower()
 
 		-- at least one processor should return something else than nil
 		-- a processor returns true, false or nil. It is nil when the

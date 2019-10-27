@@ -366,7 +366,7 @@ float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std
 		while (!file.eof())
 		{
 			getline(file, sLine);
-			int tpos;
+			size_t tpos;
 			if (sLine.find("crc=") != std::string::npos)
 			{
 				if (sLine.find("YES") != std::string::npos)
