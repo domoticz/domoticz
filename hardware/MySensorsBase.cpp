@@ -337,7 +337,7 @@ int MySensorsBase::FindNextNodeID()
 	return -1;
 }
 
-MySensorsBase::_tMySensorNode* MySensorsBase::FindNode(const int nodeID)
+MySensorsBase::_tMySensorNode* MySensorsBase::FindNode(const uint8_t nodeID)
 {
 	std::map<int, _tMySensorNode>::iterator itt;
 	itt = m_nodes.find(nodeID);
