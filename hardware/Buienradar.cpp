@@ -18,7 +18,7 @@
 #define BUIENRADAR_GRAFIEK_URL "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/" //station_id
 //#define BUIENRARA_GRAFIEK_HISTORY_URL "https://graphdata.buienradar.nl/1.0/actualarchive/weatherstation/6370?startDate=2019-09-15"
 
-#define BUIENRADAR_RAIN "https://gadgets.buienradar.nl/data/raintext/?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
+#define BUIENRADAR_RAIN "https://gpsgadget.buienradar.nl/data/raintext?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
 
 #define RAINSHOWER_LEADTIME 3
 #define RAINSHOWER_DURATION 4
@@ -216,7 +216,7 @@ bool CBuienRadar::FindNearestStationID()
 	bool bret = HTTPClient::GET(BUIENRADAR_URL, sResult);
 	if (!bret)
 	{
-		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
+		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! from %s", BUIENRADAR_URL );
 		return false;
 	}
 #ifdef DEBUG_BUIENRADARW
@@ -297,7 +297,7 @@ void CBuienRadar::GetMeterDetails()
 	bool bret = HTTPClient::GET(szUrl, sResult);
 	if (!bret)
 	{
-		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
+		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! from %s ", szUrl.c_str());
 		return;
 	}
 #ifdef DEBUG_BUIENRADARW
@@ -453,7 +453,7 @@ void CBuienRadar::GetRainPrediction()
 	bool bret = HTTPClient::GET(szUrl, sResult);
 	if (!bret)
 	{
-		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
+		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! from %s", szUrl.c_str());
 		return;
 	}
 #ifdef DEBUG_BUIENRADARW
