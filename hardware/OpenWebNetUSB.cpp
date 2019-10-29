@@ -356,12 +356,12 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		return false;
 	}
 
-	if (!writeRead(command.frame_open.c_str(), command.frame_open.length(), silent)) {
+	if (!writeRead(command.m_frameOpen.c_str(), command.m_frameOpen.length(), silent)) {
 		m_bWriting = false;
 		return false;
 	}
 	if (!silent) {
-		_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.frame_open.c_str(), m_readBuffer);
+		_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.m_frameOpen.c_str(), m_readBuffer);
 	}
 
 	if (!ParseData((char*)m_readBuffer, m_readBufferSize, response)) {
