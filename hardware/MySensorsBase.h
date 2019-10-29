@@ -420,7 +420,7 @@ public:
 	MySensorsBase(void);
 	~MySensorsBase(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	_tMySensorNode* FindNode(const int nodeID);
+	_tMySensorNode* FindNode(const uint8_t nodeID);
 	void UpdateNode(const int nodeID, const std::string &name);
 	void RemoveNode(const int nodeID);
 	void RemoveChild(const int nodeID, const int childID);
@@ -467,7 +467,7 @@ private:
 	_tMySensorChild* FindSensorWithPresentationType(const int nodeID, const _ePresentationType presType);
 	_tMySensorChild* FindChildWithValueType(const int nodeID, const _eSetType valType, const int groupID);
 	void UpdateNodeBatteryLevel(const int nodeID, const int Level);
-	void UpdateNodeHeartbeat(const int nodeID);
+	void UpdateNodeHeartbeat(const uint8_t nodeID);
 
 	void UpdateVar(const int NodeID, const int ChildID, const int VarID, const std::string &svalue);
 	bool GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue);

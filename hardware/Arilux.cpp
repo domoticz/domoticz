@@ -199,10 +199,10 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 		}
 		// No break, fall through to send combined color + brightness command
 	case Color_SetBrightnessLevel:
-		Arilux_RGBCommand_Command[1] = m_color.r * pLed->value / 100;
-		Arilux_RGBCommand_Command[2] = m_color.g * pLed->value / 100;
-		Arilux_RGBCommand_Command[3] = m_color.b * pLed->value / 100;
-		Arilux_RGBCommand_Command[4] = m_color.ww * pLed->value / 100;
+		Arilux_RGBCommand_Command[1] = static_cast<uint8_t>(m_color.r * pLed->value / 100);
+		Arilux_RGBCommand_Command[2] = static_cast<uint8_t>(m_color.g * pLed->value / 100);
+		Arilux_RGBCommand_Command[3] = static_cast<uint8_t>(m_color.b * pLed->value / 100);
+		Arilux_RGBCommand_Command[4] = static_cast<uint8_t>(m_color.ww * pLed->value / 100);
 		return SendTCPCommand(pLed->id, Arilux_RGBCommand_Command);
 	}
 	Log(LOG_STATUS, "This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");

@@ -139,7 +139,7 @@ void CPhilipsHue::Do_Work()
 	_log.Log(LOG_STATUS,"Philips Hue: Worker stopped...");
 }
 
-bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
+bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 

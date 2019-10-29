@@ -180,7 +180,7 @@ void MochadTCP::OnError(const boost::system::error_code& error)
 		_log.Log(LOG_ERROR, "Mochad: %s", error.message().c_str());
 }
 
-bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	//RBUF *m_mochad = (RBUF *)pdata;
 	if (!isConnected())
@@ -319,8 +319,8 @@ checkFunc:
 		else goto onError;
 		for (k=1;k<=16;k++) {
 			if (selected[currentHouse][k] >0) {
-				m_mochad.LIGHTING1.housecode = currentHouse+'A';
-				m_mochad.LIGHTING1.unitcode = k;
+				m_mochad.LIGHTING1.housecode = (BYTE)(currentHouse+'A');
+				m_mochad.LIGHTING1.unitcode = (BYTE)k;
 				sDecodeRXMessage(this, (const unsigned char *)&m_mochad, NULL, 255);
 				selected[currentHouse][k] = 0;
 			}

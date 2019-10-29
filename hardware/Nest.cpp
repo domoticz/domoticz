@@ -140,7 +140,6 @@ void CNest::SendSetPointSensor(const unsigned char Idx, const float Temp, const 
 // Creates and updates switch used to log Heating and/or Colling.
 void CNest::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
@@ -178,7 +177,7 @@ void CNest::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::str
 		level = 15;
 		lcmd.LIGHTING2.cmnd = light2_sOn;
 	}
-	lcmd.LIGHTING2.level = level;
+	lcmd.LIGHTING2.level = (BYTE)level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
@@ -255,7 +254,7 @@ void CNest::Logout()
 }
 
 
-bool CNest::WriteToHardware(const char *pdata, const unsigned char length)
+bool CNest::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	if (m_UserName.size() == 0)
 		return false;
@@ -273,13 +272,13 @@ bool CNest::WriteToHardware(const char *pdata, const unsigned char length)
 	if (node_id % 3 == 0)
 	{
 		//Away
-		return SetAway(node_id, bIsOn);
+		return SetAway((uint8_t)node_id, bIsOn);
 	}
 
 	if (node_id % 4 == 0)
 	{
 		//Manual Eco Mode
-		return SetManualEcoMode(node_id, bIsOn);
+		return SetManualEcoMode((uint8_t)node_id, bIsOn);
 	}
 
 	return false;
@@ -342,7 +341,7 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 		level = 15;
 		lcmd.LIGHTING2.cmnd = light2_sOn;
 	}
-	lcmd.LIGHTING2.level = level;
+	lcmd.LIGHTING2.level = (uint8_t)level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
 
@@ -533,7 +532,7 @@ void CNest::GetMeterDetails()
 				if (!bBool)
 					bIAlarm = true;
 			}
-			UpdateSmokeSensor(SwitchIndex, bIAlarm, devName);
+			UpdateSmokeSensor((uint8_t)SwitchIndex, bIAlarm, devName);
 			SwitchIndex++;
 		}
 	}
@@ -786,7 +785,7 @@ bool CNest::SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMod
 	return true;
 }
 
-void CNest::SetProgramState(const int newState)
+void CNest::SetProgramState(const int /*newState*/)
 {
 	if (m_UserName.size() == 0)
 		return;

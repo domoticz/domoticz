@@ -1962,7 +1962,7 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 		if (sz_retcode.empty()) // networking error
 			return "{\"error\":\"unable to connect to Evohome portal\"}";
 
-		std::string sz_response = "{\"error\":\"HTTP ";
+		sz_response = "{\"error\":\"HTTP ";
 		sz_response.append(sz_retcode);
 		sz_response.append("\",\"code\":\"");
 		sz_response.append(sz_retcode);

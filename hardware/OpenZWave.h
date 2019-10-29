@@ -65,9 +65,9 @@ public:
 		time_t							LastSeen;
 
 		//Thermostat settings
-		int								tClockDay;
-		int								tClockHour;
-		int								tClockMinute;
+		uint8_t							tClockDay;
+		uint8_t							tClockHour;
+		uint8_t							tClockMinute;
 		int								tMode;
 		int								tFanMode;
 		std::vector<std::string>				tModes;
@@ -148,10 +148,10 @@ private:
 	void UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID);
 	bool SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const int value);
 	bool SwitchColor(const uint8_t nodeID, const uint8_t instanceID, const std::string &ColorStr);
-	void SetThermostatSetPoint(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const float value);
-	void SetClock(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const int day, const int hour, const int minute);
-	void SetThermostatMode(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const int tMode);
-	void SetThermostatFanMode(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const int fMode);
+	void SetThermostatSetPoint(const uint8_t nodeID, const uint8_t instanceID, const uint8_t commandClass, const float value);
+	void SetClock(const uint8_t nodeID, const uint8_t instanceID, const uint8_t commandClass, const uint8_t day, const uint8_t hour, const uint8_t minute);
+	void SetThermostatMode(const uint8_t nodeID, const uint8_t instanceID, const uint8_t commandClass, const int tMode);
+	void SetThermostatFanMode(const uint8_t nodeID, const uint8_t instanceID, const uint8_t commandClass, const int fMode);
 	void UpdateDeviceBatteryStatus(const uint8_t nodeID, const int value);
 	void ForceUpdateForNodeDevices(const unsigned int homeID, const int nodeID);
 	bool IsNodeRGBW(const unsigned int homeID, const int nodeID);

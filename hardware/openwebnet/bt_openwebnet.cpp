@@ -464,16 +464,16 @@ void bt_openwebnet::tokenize(const std::string& strToTokenize, const char token,
 		str = str.substr(out_firstToken.length() + 1);
 
 		do {
-			std::string token;
+			std::string stoken;
 			if (str.find('#') != std::string::npos) {
-				token = FirstToken(str, "#");
+				stoken = FirstToken(str, "#");
 			}
 			else {
-				token = str;
+				stoken = str;
 			}
-			out_otherTokens.push_back(token);
-			if (token.length() < str.length()) {
-				str = str.substr(token.length() + 1);
+			out_otherTokens.push_back(stoken);
+			if (stoken.length() < str.length()) {
+				str = str.substr(stoken.length() + 1);
 			}
 			else {
 				str = "";
@@ -1700,8 +1700,8 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 
 		int iWhat = atoi(what.c_str());
 		if (iWhat >= 0 && iWhat <= 31) {
-			int iFirstDial = (iWhat - 300) / 10;
-			int iSecondDial = iWhat - 300 - 10 * iFirstDial;
+			//int iFirstDial = (iWhat - 300) / 10;
+			//int iSecondDial = iWhat - 300 - 10 * iFirstDial;
 			std::stringstream sstr;
 			sstr << "button number" << iWhat;
 		}

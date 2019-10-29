@@ -166,7 +166,7 @@ void CBuienRadar::Do_Work()
 	_log.Log(LOG_STATUS, "BuienRadar: Worker stopped...");
 }
 
-bool CBuienRadar::WriteToHardware(const char* pdata, const unsigned char length)
+bool CBuienRadar::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
@@ -338,7 +338,7 @@ void CBuienRadar::GetMeterDetails()
 	float temp = -999.9f;
 	int humidity = 0;
 	float barometric = 0;
-	int barometric_forcast = wsbaroforcast_unknown;
+	uint8_t barometric_forecast = wsbaroforecast_unknown;
 
 	if (!root["temperature"].empty())
 	{
@@ -353,19 +353,19 @@ void CBuienRadar::GetMeterDetails()
 		barometric = root["airpressure"].asFloat();
 		if (barometric < 1000)
 		{
-			barometric_forcast = wsbaroforcast_rain;
+			barometric_forecast = wsbaroforecast_rain;
 			if (temp != -999.9f)
 			{
 				if (temp <= 0)
-					barometric_forcast = wsbaroforcast_snow;
+					barometric_forecast = wsbaroforecast_snow;
 			}
 		}
 		else if (barometric < 1020)
-			barometric_forcast = wsbaroforcast_cloudy;
+			barometric_forecast = wsbaroforecast_cloudy;
 		else if (barometric < 1030)
-			barometric_forcast = wsbaroforcast_some_clouds;
+			barometric_forecast = wsbaroforecast_some_clouds;
 		else
-			barometric_forcast = wsbaroforcast_sunny;
+			barometric_forecast = wsbaroforecast_sunny;
 	}
 	if (
 		(temp != -999.9f)
@@ -373,7 +373,7 @@ void CBuienRadar::GetMeterDetails()
 		&& (barometric != 0)
 		)
 	{
-		SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forcast, "TempHumBaro");
+		SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forecast, "TempHumBaro");
 	}
 	else if (
 		(temp != -999.9f)

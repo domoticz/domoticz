@@ -158,7 +158,7 @@ void Meteostick::readCallback(const char *data, size_t len)
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
-bool Meteostick::WriteToHardware(const char *pdata, const unsigned char length)
+bool Meteostick::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
@@ -260,7 +260,7 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeLeafWetness;
 	gdevice.intval1 = Wetness;
-	gdevice.id = finalID;
+	gdevice.id = (uint8_t)finalID;
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255);
 }
 

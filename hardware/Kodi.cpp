@@ -382,7 +382,6 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (root["result"]["item"].isMember("label"))			m_CurrentStatus.Label(root["result"]["item"]["label"].asCString());
 							if ((m_CurrentStatus.PlayerID() != "") && (m_CurrentStatus.Type() != "picture")) // request final details
 							{
-								std::string	sMessage;
 								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetProperties\",\"id\":1002,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"live\",\"percentage\",\"speed\"]}}";
 								handleWrite(sMessage);
 							}
@@ -414,7 +413,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (sAction != "Nothing")
 							{
 								m_Stoppable = true;
-								std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System." + sAction + "\",\"id\":1008}";
+								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System." + sAction + "\",\"id\":1008}";
 								handleWrite(sMessage);
 							}
 						}
@@ -1003,7 +1002,7 @@ void CKodi::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPingTimeoutms = PingTimeoutms;
 }
 
-bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
+bool CKodi::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 

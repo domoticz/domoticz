@@ -158,7 +158,7 @@ void CDenkoviUSBDevices::Do_Work()
 	_log.Log(LOG_STATUS, "Denkovi: Worker stopped...");
 }
 
-bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	m_updateIo = true;
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);

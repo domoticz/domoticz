@@ -757,7 +757,7 @@ int I2C::HTU21D_checkCRC8(uint16_t data)
 	{
 		if (data & 0x8000)
 		{
-			data = (data << 1) ^ HTU21D_CRC8_POLYNOMINAL;
+			data = (uint16_t)((data << 1) ^ HTU21D_CRC8_POLYNOMINAL);
 		}
 		else
 		{
@@ -1089,7 +1089,7 @@ double I2C::bmp_ppl_DensityAlt(double PAlt, double Temp) {
 #define FC_BMP085_UNKNOWN 5			//
 
 //Should be called every minute
-int I2C::bmp_CalculateForecast(const float pressure)
+uint8_t I2C::bmp_CalculateForecast(const float pressure)
 {
 	double dP_dt = 0;
 
@@ -1192,9 +1192,9 @@ int I2C::bmp_CalculateForecast(const float pressure)
 		return FC_BMP085_UNKNOWN; // Unknown
 }
 
-int I2C::CalculateForcast(const float pressure)
+uint8_t I2C::CalculateForecast(const float pressure)
 {
-	int forecast = bmp_CalculateForecast(pressure);
+	uint8_t forecast = bmp_CalculateForecast(pressure);
 	if (forecast != m_LastForecast)
 	{
 		m_LastForecast = forecast;
@@ -1231,7 +1231,7 @@ int I2C::CalculateForcast(const float pressure)
 				nforecast = bmpbaroforecast_rain;
 			else if (pressure >= 1029)
 				nforecast = bmpbaroforecast_sunny;
-			m_LastSendForecast = nforecast;
+			m_LastSendForecast = (unsigned char)nforecast;
 		}
 		break;
 		}
@@ -1286,7 +1286,7 @@ void I2C::bmp_Read_BMP_SensorDetails()
 	//this is probably not good, need to take the rising/falling of the pressure into account?
 	//any help would be welcome!
 
-	tsensor.forecast = CalculateForcast(((float)pressure) * 10.0f);
+	tsensor.forecast = CalculateForecast(((float)pressure) * 10.0f);
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor, NULL, 255);
 }
 
@@ -1469,36 +1469,36 @@ void I2C::bmp_Read_BME_SensorDetails()
 	}
 	close(fd);
 #endif
-	int forecast = CalculateForcast(((float)pressure) * 10.0f);
+	uint8_t forecast = CalculateForecast(((float)pressure) * 10.0f);
 	//We are using the TempHumBaro Float type now, convert the forecast
-	int nforecast = wsbaroforcast_some_clouds;
+	int nforecast = wsbaroforecast_some_clouds;
 	if (pressure <= 980)
-		nforecast = wsbaroforcast_heavy_rain;
+		nforecast = wsbaroforecast_heavy_rain;
 	else if (pressure <= 995)
 	{
 		if (temperature > 1)
-			nforecast = wsbaroforcast_rain;
+			nforecast = wsbaroforecast_rain;
 		else
-			nforecast = wsbaroforcast_snow;
+			nforecast = wsbaroforecast_snow;
 	}
 	else if (pressure >= 1029)
-		nforecast = wsbaroforcast_sunny;
+		nforecast = wsbaroforecast_sunny;
 	switch (forecast)
 	{
 	case bmpbaroforecast_sunny:
-		nforecast = wsbaroforcast_sunny;
+		nforecast = wsbaroforecast_sunny;
 		break;
 	case bmpbaroforecast_cloudy:
-		nforecast = wsbaroforcast_cloudy;
+		nforecast = wsbaroforecast_cloudy;
 		break;
 	case bmpbaroforecast_thunderstorm:
-		nforecast = wsbaroforcast_heavy_rain;
+		nforecast = wsbaroforecast_heavy_rain;
 		break;
 	case bmpbaroforecast_rain:
 		if (temperature > 1)
-			nforecast = wsbaroforcast_rain;
+			nforecast = wsbaroforecast_rain;
 		else
-			nforecast = wsbaroforcast_snow;
+			nforecast = wsbaroforecast_snow;
 		break;
 	}
 

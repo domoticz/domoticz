@@ -258,8 +258,8 @@ bool CPhilipsHue::StatesSimilar(const _tHueLightState &s1, const _tHueLightState
 				break;
 			case HLMODE_HS:
 			{
-				uint16_t h1 = s1.hue;
-				uint16_t h2 = s2.hue;
+				uint16_t h1 = (uint16_t) s1.hue;
+				uint16_t h2 = (uint16_t) s2.hue;
 				res = abs(int16_t(h1-h2)) < 655 && // 655 is 1% of 65535, the range of hue
 					  abs(s1.sat - s2.sat) <= 3;   // 3 is 1% of 255, the range of sat
 				  break;

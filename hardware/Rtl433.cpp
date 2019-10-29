@@ -344,7 +344,7 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 			state = data["command"] == "On";
 		unsigned int switchidx = (id & 0xfffffff) | ((channel & 0xf) << 28);
 		SendSwitch(switchidx,
-			unit,
+			(const uint8_t)unit,
 			batterylevel,
 			state,
 			0,
@@ -414,7 +414,7 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	}
 	if (havePower)
 	{
-		SendWattMeter(sensoridx, unit, batterylevel, power, model);
+		SendWattMeter((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model);
 		bHandled = true;
 	}
 
@@ -536,8 +536,8 @@ void CRtl433::Do_Work()
 	_log.Log(LOG_STATUS, "Rtl433: Worker stopped...");
 }
 
-bool CRtl433::WriteToHardware(const char *pdata, const unsigned char length)
+bool CRtl433::WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/)
 {
-	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
+	//const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 	return false;
 }

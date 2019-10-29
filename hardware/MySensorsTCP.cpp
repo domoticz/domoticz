@@ -72,7 +72,6 @@ void MySensorsTCP::OnDisconnect()
 
 void MySensorsTCP::Do_Work()
 {
-	bool bFirstTime = true;
 	int sec_counter = 0;
 	_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	connect(m_szIPAddress, m_usIPPort);

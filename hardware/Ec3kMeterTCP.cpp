@@ -103,7 +103,6 @@ void Ec3kMeterTCP::OnDisconnect()
 
 void Ec3kMeterTCP::Do_Work()
 {
-	bool bFirstTime=true;
 	int sec_counter = 0;
 	connect(m_szIPAddress,m_usIPPort);
 	while (!IsStopRequested(1000))

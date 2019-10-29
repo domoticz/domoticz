@@ -100,7 +100,7 @@ void KMTronicTCP::Do_Work()
 	_log.Log(LOG_STATUS, "KMTronic: TCP/IP Worker stopped...");
 }
 
-bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	if (m_bIsTempDevice)
 		return false;
@@ -149,7 +149,7 @@ bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-bool KMTronicTCP::WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn)
+bool KMTronicTCP::WriteInt(const unsigned char * /*data*/, const size_t /*len*/, const bool /*bWaitForReturn*/)
 {
 	return true;
 }

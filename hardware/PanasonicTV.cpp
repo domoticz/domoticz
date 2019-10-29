@@ -408,8 +408,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	{
 		//_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Exception in Write/Read message: %s", m_Name.c_str(), e.what());
 		socket.close();
-		std::string error = "ERROR";
-		return error;
+		return std::string("ERROR");
 	}
 }
 
@@ -838,7 +837,7 @@ void CPanasonic::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPingTimeoutms = PingTimeoutms;
 }
 
-bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)
+bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -1244,7 +1243,7 @@ namespace http {
 			pHardware->RemoveAllNodes();
 		}
 
-		void CWebServer::Cmd_PanasonicMediaCommand(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PanasonicMediaCommand(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
 			std::string sIdx = request::findValue(&req, "idx");
 			std::string sAction = request::findValue(&req, "action");
