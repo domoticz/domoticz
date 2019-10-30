@@ -64,8 +64,10 @@ private:
 	bool GetGroups(const Json::Value &root);
 	bool GetScenes(const Json::Value &root);
 	bool GetSensors(const Json::Value &root);
-	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string &modelid, const bool AddMissingDevice);
-	void InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bIsOn, const std::string &Name, const uint8_t BatteryLevel);
+	void InsertUpdateLamp(const int NodeID, const _eHueLightType LType, const _tHueLightState tstate, const std::string& Name, const std::string& Options, const std::string& modelid, const bool AddMissingDevice);
+	bool InsertUpdateSelectorSwitch(const int NodeID, const uint8_t Unitcode, const uint8_t selectorLevel, const std::string& Name, const uint8_t BatteryLevel);
+	void InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, const _eSwitchType SType, const bool bIsOn, const std::string &Name, const uint8_t BatteryLevel);
+	void SetSwitchOptions(const int NodeID, const uint8_t Unitcode, const std::map<std::string, std::string> options);
 	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue, const int svalue2 = 0, const int svalue3 = 0);
 	static void LightStateFromJSON(const Json::Value &lightstate, _tHueLightState &tlight, _eHueLightType &LType);
 	static void RgbFromXY(const double x, const double y, const double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8);
