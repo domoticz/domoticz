@@ -744,7 +744,10 @@ else()
   target_link_libraries(domoticz -lrt -lresolv ${EXECINFO_LIBRARIES})
 ENDIF()
 
-ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
+option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
+if(USE_PRECOMPILED_HEADER)
+  ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
+ENDIF(USE_PRECOMPILED_HEADER)
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
   option(USE_STATIC_LIBSTDCXX "Build with static libgcc/libstdc++ libraries" YES)
