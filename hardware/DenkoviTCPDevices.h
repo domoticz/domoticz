@@ -49,7 +49,6 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-	void readCallBack(const char * data, size_t len);
 	void ConvertResponse(const std::string pData, const size_t length);
 	void CreateRequest(uint8_t * pData, size_t length);
 private:
@@ -73,6 +72,5 @@ protected:
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const std::exception e) override;
 	void OnError(const boost::system::error_code& error) override;
 };
