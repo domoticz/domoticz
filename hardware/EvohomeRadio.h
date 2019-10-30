@@ -102,7 +102,6 @@ protected:
 	std::shared_ptr<std::thread> m_thread;
 	int m_retrycntr;
 	int m_nBufPtr;
-	bool m_bDoRestart;
 
 	unsigned int MultiControllerID[5];
 	bool AllSensors;

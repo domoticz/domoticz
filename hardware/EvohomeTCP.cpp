@@ -41,7 +41,6 @@ void CEvohomeTCP::OnConnect()
 {
     CEvohomeRadio::OnConnect();
 	_log.Log(LOG_STATUS,"evohome TCP/IP: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bDoRestart=false;
 	m_bIsStarted=true;
 	sOnConnected(this);
 }
@@ -49,7 +48,6 @@ void CEvohomeTCP::OnConnect()
 void CEvohomeTCP::OnDisconnect()
 {
 	_log.Log(LOG_STATUS,"evohome TCP/IP: disconnected");
-	m_bDoRestart = true;
 }
 
 void CEvohomeTCP::Do_Work()
@@ -73,6 +71,9 @@ void CEvohomeTCP::Do_Work()
 
 		Idle_Work();
 	}
+
+	terminate();
+
 	_log.Log(LOG_STATUS,"evohome TCP/IP: TCP/IP Worker stopped...");
 }
 
@@ -92,11 +93,6 @@ void CEvohomeTCP::OnData(const unsigned char *pData, size_t length)
 void CEvohomeTCP::Do_Send(std::string str)
 {
     write(str);
-}
-
-void CEvohomeTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"evohome TCP/IP: Error: %s",e.what());
 }
 
 void CEvohomeTCP::OnError(const boost::system::error_code& error)
