@@ -18,7 +18,7 @@
 #define BUIENRADAR_GRAFIEK_URL "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/" //station_id
 //#define BUIENRARA_GRAFIEK_HISTORY_URL "https://graphdata.buienradar.nl/1.0/actualarchive/weatherstation/6370?startDate=2019-09-15"
 
-#define BUIENRADAR_RAIN "https://gadgets.buienradar.nl/data/raintext/?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
+#define BUIENRADAR_RAIN "https://gpsgadget.buienradar.nl/data/raintext/?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
 
 #define RAINSHOWER_LEADTIME 3
 #define RAINSHOWER_DURATION 4
@@ -173,7 +173,7 @@ bool CBuienRadar::WriteToHardware(const char* /*pdata*/, const unsigned char /*l
 
 std::string CBuienRadar::GetForecastURL()
 {
-	std::string szURL = "https://gadgets.buienradar.nl/gadget/forecastandstation/" + std::to_string(m_iNearestStationID);
+	std::string szURL = "https://gpsgadget.buienradar.nl/gadget/forecastandstation/" + std::to_string(m_iNearestStationID);
 	return szURL;
 }
 
@@ -449,10 +449,19 @@ void CBuienRadar::GetRainPrediction()
 #ifdef DEBUG_BUIENRADARR
 	sResult = ReadFile("E:\\br_rain.txt");
 #else
-	std::string szUrl = BUIENRADAR_RAIN + m_szMyLatitude + "&lon=" + m_szMyLongitude;
-	bool bret = HTTPClient::GET(szUrl, sResult);
-	if (!bret)
+	int totRetry = 0;
+	bool bret = false;
+	while ((!bret) && (totRetry < 2))
 	{
+		std::string szUrl = BUIENRADAR_RAIN + m_szMyLatitude + "&lon=" + m_szMyLongitude;
+		bret = HTTPClient::GET(szUrl, sResult);
+		if (!bret)
+		{
+			totRetry++;
+			sleep_seconds(2);
+		}
+	}
+	if (!bret) {
 		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
 		return;
 	}
