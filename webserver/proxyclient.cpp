@@ -469,7 +469,7 @@ namespace http {
 
 		void CProxyClient::Disconnect()
 		{
-			disconnect();
+			terminate();
 		}
 
 		bool CProxyClient::Enabled()
