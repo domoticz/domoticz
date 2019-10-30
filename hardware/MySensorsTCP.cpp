@@ -103,11 +103,6 @@ void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData, length);
 }
 
-void MySensorsTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR, "MySensors: %s", e.what());
-}
-
 void MySensorsTCP::OnError(const boost::system::error_code& error)
 {
 	if (

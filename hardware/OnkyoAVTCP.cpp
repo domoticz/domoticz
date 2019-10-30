@@ -212,11 +212,6 @@ void OnkyoAVTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData,length);
 }
 
-void OnkyoAVTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"OnkyoAVTCP: Error: %s",e.what());
-}
-
 void OnkyoAVTCP::OnError(const boost::system::error_code& error)
 {
 	if (
