@@ -1,3 +1,6 @@
+[2.5.0]
+- Prepared for Lua 5.3
+
 [2.4.29]
 - Add error message including affected module when module got corrupted on disk.
 - Add setLevel method for switchTypes.

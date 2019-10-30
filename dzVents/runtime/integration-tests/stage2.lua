@@ -40,7 +40,11 @@ local checkAttributes = function(item, attributes)
 	for attr, value in pairs(attributes) do
 		res = res and expectEql(item[attr], value, attr)
 	end
-	return res
+    if res then return res
+    else 
+        print(item[attr], value, attr)
+        return res
+    end
 end
 
 local testAirQuality = function(name)

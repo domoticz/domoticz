@@ -4,7 +4,8 @@ return {
 			logging = { level = domoticz.LOG_DEBUG, marker = 'rename'},
 
 	execute = function(dz, item )
-
+        
+        
 		local ok 
 		if item.name == 'vdRenameSwitch' then
 				item.rename('vdRenameSwitch renamed').afterSec(3)
@@ -14,7 +15,7 @@ return {
 				dz.variables('varRename').rename('varRename renamed')
 				return
 		elseif item.name == 'vdRenameSwitch renamed' then
-				ok = dz.scenes('scRenameScene renamed') and
+                ok = dz.scenes('scRenameScene renamed') and
 					 dz.groups('gpRenameGroup renamed') and
 					 dz.variables('varRename renamed')
 		end
