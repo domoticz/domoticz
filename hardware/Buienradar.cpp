@@ -157,7 +157,7 @@ void CBuienRadar::Do_Work()
 		}
 		else {
 			// Decrease rainshower every minute (if it is not zer)
-			if ((m_rainShowerLeadTime > 0) and (sec_counter % 60 == 0)) {
+			if ((m_rainShowerLeadTime > 0) && (sec_counter % 60 == 0)) {
 				m_rainShowerLeadTime--;
 				SendCustomSensor(RAINSHOWER_LEADTIME, 1, 255, static_cast<float>(m_rainShowerLeadTime), "Expected Rainshower Leadtime", "minutes");
 			}
@@ -575,7 +575,7 @@ void CBuienRadar::GetRainPrediction()
 						}
 					}
 				}
-				else if ((start_of_rainshower == 0) and (rain_value > 0))
+				else if ((start_of_rainshower == 0) && (rain_value > 0))
 				{
 					// Start Of RainShower Detected
 					start_of_rainshower = rain_time;
