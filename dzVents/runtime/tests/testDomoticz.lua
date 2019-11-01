@@ -396,7 +396,7 @@ describe('Domoticz', function()
 			collection.forEach(function(device)
 				table.insert(res, device.name)
 			end)
-			assert.is_same({ "device1", "device3", "device7", "device8", "device4", "device9", "device9", "device2", "device5", "device6" }, res)
+			assert.is_same({ "device1", "device2", "device3", "device4", "device5", "device6", "device7", "device8", "device9", "device9" }, res)
 
 
 			local found = collection.find(function(device)
@@ -502,7 +502,7 @@ describe('Domoticz', function()
 			collection.forEach(function(scene)
 				table.insert(res, scene.name)
 			end)
-			assert.is_same({ "Scene2", "Scene1" }, res)
+			assert.is_same({ "Scene1", "Scene2" }, res)
 
 
 			local filtered = collection.filter(function(scene)

@@ -2071,6 +2071,8 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+##[2.5.0]
+- Prepared for Lua 5.3
 
 ##[2.4.29]
 - Add error message including affected module when module got corrupted on disk.

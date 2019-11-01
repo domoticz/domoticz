@@ -79,7 +79,6 @@ return {
 		device.isHTTPResponse = false
 		device.isSecurity = false
 
-
 		if (data.baseType == 'device') then
 
 			local bat
@@ -200,7 +199,11 @@ return {
 
 		for attribute, value in pairs(data.data) do
 			if (device[attribute] == nil) then
-				device[attribute] = value
+				if type(value) == 'number' then
+					device[attribute] = math.tointeger(value) or value
+				else
+					device[attribute] = value
+				end
 			end
 		end
 
