@@ -81,7 +81,7 @@ void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSys
 			else
 				secstatusw = "Disarmed";
 
-			lua_pushinteger(lua_state, (lua_Number)index);
+			lua_pushinteger(lua_state, index);
 			lua_pushstring(lua_state, secstatusw.c_str());
 			lua_rawset(lua_state, -3);
 			index++;
@@ -104,7 +104,7 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 	{
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_URL)
 		{
-			lua_pushinteger(lua_state, (lua_Number)index); // Is this an option here ?
+			lua_pushinteger(lua_state, index); // Is this an option here ?
 			lua_createtable(lua_state, 0, 0);
 			lua_pushstring(lua_state, "headers");
 			lua_createtable(lua_state, (int)itt->vData.size() + 2, 0); // status is split into 3 parts
@@ -480,7 +480,7 @@ void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<
 		else if (std::string(luaL_typename(lua_state, -1)) == "number")
 		{
 			item.type = TYPE_INTEGER;
-			item.iValue = lua_tointeger(lua_state, -1);
+			item.iValue = (int)lua_tointeger(lua_state, -1);
 			item.name = std::string(lua_tostring(lua_state, -2));
 		}
 		else if (std::string(luaL_typename(lua_state, -1)) == "boolean")
@@ -625,7 +625,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	lua_pushstring(lua_state, TimeToString(NULL, TF_DateTimeMs).c_str());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "systemUptime");
-	lua_pushinteger(lua_state, (lua_Number)SystemUptime());
+	lua_pushinteger(lua_state, SystemUptime());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "domoticz_version");
 	lua_pushstring(lua_state, szAppVersion.c_str());
@@ -689,7 +689,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
 		bool timed_out = (now - checktime >= SensorTimeOut * 60);
 
-		lua_pushinteger(lua_state, (lua_Number)index);
+		lua_pushinteger(lua_state, index);
 
 		lua_createtable(lua_state, 1, 12);
 
@@ -700,7 +700,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_pushboolean(lua_state, ((lua_Number)sitem.protection) == 1 );
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "id");
-		lua_pushinteger(lua_state, (lua_Number)sitem.ID);
+		lua_pushinteger(lua_state, sitem.ID);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "baseType");
 		lua_pushstring(lua_state, "device");
@@ -715,13 +715,13 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_pushstring(lua_state, Switch_Type_Desc((_eSwitchType)sitem.switchtype));
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "switchTypeValue");
-		lua_pushinteger(lua_state, (lua_Number)sitem.switchtype);
+		lua_pushinteger(lua_state, sitem.switchtype);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "lastUpdate");
 		lua_pushstring(lua_state, sitem.lastUpdate.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "lastLevel");
-		lua_pushinteger(lua_state, (lua_Number)sitem.lastLevel);
+		lua_pushinteger(lua_state, sitem.lastLevel);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "changed");
 		lua_pushboolean(lua_state, triggerDevice);
@@ -739,7 +739,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 		for (uint8_t i = 0; i < strarray.size(); i++)
 		{
-			lua_pushinteger(lua_state, (lua_Number)i + 1);
+			lua_pushinteger(lua_state, i + 1);
 			lua_pushstring(lua_state, strarray[i].c_str());
 			lua_rawset(lua_state, -3);
 		}
@@ -752,10 +752,10 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_pushstring(lua_state, sitem.description.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "batteryLevel");
-		lua_pushinteger(lua_state, (lua_Number)sitem.batteryLevel);
+		lua_pushinteger(lua_state, sitem.batteryLevel);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "signalLevel");
-		lua_pushinteger(lua_state, (lua_Number)sitem.signalLevel);
+		lua_pushinteger(lua_state, sitem.signalLevel);
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "data");
@@ -766,11 +766,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "_nValue");
-		lua_pushinteger(lua_state, (lua_Number)sitem.nValue);
+		lua_pushinteger(lua_state, sitem.nValue);
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "hardwareID");
-		lua_pushinteger(lua_state, (lua_Number)sitem.hardwareID);
+		lua_pushinteger(lua_state, sitem.hardwareID);
 		lua_rawset(lua_state, -3);
 
 		// Lux does not have it's own field yet.
@@ -778,7 +778,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		{
 			lua_pushstring(lua_state, "lux");
 			if (strarray.size() > 0)
-				lua_pushinteger(lua_state, (lua_Number)atoi(strarray[0].c_str()));
+				lua_pushinteger(lua_state, atoi(strarray[0].c_str()));
 			else
 				lua_pushnumber(lua_state, (lua_Number)0);
 			lua_rawset(lua_state, -3);
@@ -882,7 +882,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		else
 			description = result[0][0].c_str();
 
-		lua_pushinteger(lua_state, (lua_Number)index);
+		lua_pushinteger(lua_state, index);
 
 		lua_createtable(lua_state, 1, 7);
 
@@ -890,7 +890,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "id");
-		lua_pushinteger(lua_state, (lua_Number)sgitem.ID);
+		lua_pushinteger(lua_state, sgitem.ID);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "description");
 		lua_pushstring(lua_state, description);
@@ -926,8 +926,8 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			int index = 1;
 			for (itt2 = sgitem.memberID.begin(); itt2 != sgitem.memberID.end(); ++itt2)
 			{
-				lua_pushinteger(lua_state, (lua_Number)index);
-				lua_pushinteger(lua_state, (lua_Number)*itt2);
+				lua_pushinteger(lua_state, index);
+				lua_pushinteger(lua_state, *itt2);
 				lua_rawset(lua_state, -3);
 				index++;
 			}
@@ -959,7 +959,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			}
 		}
 
-		lua_pushinteger(lua_state, (lua_Number)index);
+		lua_pushinteger(lua_state, index);
 
 		lua_createtable(lua_state, 1, 5);
 
@@ -967,7 +967,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_pushstring(lua_state, uvitem.variableName.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "id");
-		lua_pushinteger(lua_state, (lua_Number)uvitem.ID);
+		lua_pushinteger(lua_state, uvitem.ID);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "baseType");
 		lua_pushstring(lua_state, "uservariable");
@@ -1029,7 +1029,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
-			lua_pushinteger(lua_state, (lua_Number)index);
+			lua_pushinteger(lua_state, index);
 			lua_createtable(lua_state, 1, 3);
 
 			lua_pushstring(lua_state, "name");
