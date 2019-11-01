@@ -1,4 +1,4 @@
-make_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6)
 
 SET(CORE lapi.c lcode.c lctype.c ldebug.c ldo.c ldump.c lfunc.c lgc.c llex.c
 	lmem.c lobject.c lopcodes.c lparser.c lstate.c lstring.c ltable.c
