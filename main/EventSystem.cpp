@@ -1730,7 +1730,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator) {
 		_tDeviceStatus sitem = iterator->second;
-		lua_pushinteger(lua_state, (lua_Number)sitem.ID);
+		lua_pushinteger(lua_state, (lua_Integer)sitem.ID);
 		lua_pushstring(lua_state, sitem.nValueWording.c_str());
 		lua_rawset(lua_state, -3);
 	}
@@ -1745,19 +1745,19 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		_tUserVariable uvitem = ittvar->second;
 		if (uvitem.variableType == 0) {
 			//Integer
-			lua_pushinteger(lua_state, (lua_Number)uvitem.ID);
+			lua_pushinteger(lua_state, (lua_Integer)uvitem.ID);
 			lua_pushinteger(lua_state, atoi(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else if (uvitem.variableType == 1) {
 			//Float
-			lua_pushinteger(lua_state, (lua_Number)uvitem.ID);
+			lua_pushinteger(lua_state, (lua_Integer)uvitem.ID);
 			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else {
 			//String,Date,Time
-			lua_pushinteger(lua_state, (lua_Number)uvitem.ID);
+			lua_pushinteger(lua_state, (lua_Integer)uvitem.ID);
 			lua_pushstring(lua_state, uvitem.variableValue.c_str());
 			lua_rawset(lua_state, -3);
 		}
@@ -2730,7 +2730,7 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQu
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
-		lua_pushinteger(lua_state, (lua_Number)iterator->second.ID);
+		lua_pushinteger(lua_state, (lua_Integer)iterator->second.ID);
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_idx");
@@ -3146,7 +3146,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	{
 		_tScenesGroups sgitem = it_scgr->second;
 		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
-		lua_pushinteger(lua_state, (lua_Number)sgitem.ID);
+		lua_pushinteger(lua_state, (lua_Integer)sgitem.ID);
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_scenesgroups_idx");
