@@ -29,17 +29,17 @@ public:
 	std::map<std::string, std::string> GetButtonOptions();
 
 	std::string m_lastupdated;
-	int m_buttonevent{ 0 };
-	bool m_presence{ false };
-	int m_temperature{ 0 };
-	int m_lightlevel{ 0 };
-	bool m_dark{ false };
-	bool m_daylight{ false };
-	bool m_button_valid{ false };
-	int m_button_count{ 0 };
-	bool m_button_can_long_press{ false };
-	int m_button_nr{ 0 };
-	int m_button_eventtype{ SensorZLLSwitchEventSimple };
+	int m_buttonevent = 0;
+	bool m_presence = false;
+	int m_temperature = 0;
+	int m_lightlevel = 0;
+	bool m_dark = false;
+	bool m_daylight = false;
+	bool m_button_valid = false;
+	int m_button_count = 0;
+	bool m_button_can_long_press = false;
+	int m_button_nr = 0;
+	int m_button_eventtype = SensorZLLSwitchEventSimple;
 
 };
 
@@ -49,14 +49,14 @@ public:
 	CPHSensorConfig() {};
 	CPHSensorConfig(const Json::Value& config);
 
-	bool m_on{ false };
-	bool m_reachable{ false };
-	int m_battery{ 255 };
-	int m_tholddark{ 0 };
-	int m_tholdoffset{ 0 };
-	int m_sunriseoffset{ 0 };
-	int m_sunsetoffset{ 0 };
-	bool m_configured{ false };
+	bool m_on = false;
+	bool m_reachable = false;
+	int m_battery = 255;
+	int m_tholddark = 0;
+	int m_tholdoffset = 0;
+	int m_sunriseoffset = 0;
+	int m_sunsetoffset = 0;
+	bool m_configured = false;
 };
 
 
