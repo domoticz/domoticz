@@ -62,16 +62,16 @@ private:
 	void process_connection();
 	void process_error(const boost::system::error_code& error);
 
-	bool							mIsConnected{ false };
-	bool							mIsReconnecting{ false };
-	bool							mIsTerminating{ false };
+	bool							mIsConnected = false;
+	bool							mIsReconnecting = false;
+	bool							mIsTerminating = false;
 
 	boost::asio::io_service::strand mSendStrand{ mIos };
 	std::deque<std::string>			mWriteQ; // we need a write queue to allow concurrent writes
 
 	uint8_t 						mRxBuffer[1024];
 
-	int								mReconnectDelay{ DEFAULT_RECONNECT_TIME };
+	int								mReconnectDelay = DEFAULT_RECONNECT_TIME;
 	boost::asio::deadline_timer		mReconnectTimer{ mIos };
 
 	std::shared_ptr<std::thread> 	mTcpthread;
