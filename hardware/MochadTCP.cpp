@@ -152,11 +152,6 @@ void MochadTCP::Do_Work()
 	_log.Log(LOG_STATUS,"Mochad: TCP/IP Worker stopped...");
 }
 
-void MochadTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR, "Mochad: Error: %s", e.what());
-}
-
 void MochadTCP::OnError(const boost::system::error_code& error)
 {
 	if (

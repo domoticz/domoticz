@@ -110,11 +110,6 @@ void CRFLinkTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData((const char*)pData,length);
 }
 
-void CRFLinkTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"RFLink: Error: %s",e.what());
-}
-
 void CRFLinkTCP::OnError(const boost::system::error_code& error)
 {
 	if (

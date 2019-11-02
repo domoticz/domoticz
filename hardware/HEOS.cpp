@@ -600,11 +600,6 @@ void CHEOS::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData, length);
 }
 
-void CHEOS::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR, "HEOS by DENON: Error: %s", e.what());
-}
-
 void CHEOS::OnError(const boost::system::error_code& error)
 {
 	if (

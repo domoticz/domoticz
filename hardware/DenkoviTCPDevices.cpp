@@ -195,18 +195,6 @@ void CDenkoviTCPDevices::OnDisconnect() {
 	}
 }
 
-void CDenkoviTCPDevices::OnError(const std::exception e)
-{
-	switch (m_iModel) {
-	case DDEV_WIFI_16R:
-		_log.Log(LOG_STATUS, "WiFi 16 Relays-VCP: Error: %s", e.what());
-		break;
-	case DDEV_WIFI_16R_Modbus:
-		_log.Log(LOG_STATUS, "WiFi 16 Relays-TCP Modbus: Error: %s", e.what());
-		break;
-	}
-}
-
 void CDenkoviTCPDevices::OnError(const boost::system::error_code& /*error*/) {
 	switch (m_iModel) {
 	case DDEV_WIFI_16R:

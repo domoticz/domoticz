@@ -123,11 +123,6 @@ void Ec3kMeterTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData,length);
 }
 
-void Ec3kMeterTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"Ec3kMeter: Error: %s",e.what());
-}
-
 void Ec3kMeterTCP::OnError(const boost::system::error_code& error)
 {
 	if (

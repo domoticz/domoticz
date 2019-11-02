@@ -714,13 +714,6 @@ void RelayNet::OnData(const unsigned char *pData, size_t length)
 
 //===========================================================================
 
-void RelayNet::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR, "RelayNet: Error: %s", e.what());
-}
-
-//===========================================================================
-
 void RelayNet::OnError(const boost::system::error_code& error)
 {
 	if ((error == boost::asio::error::address_in_use) ||

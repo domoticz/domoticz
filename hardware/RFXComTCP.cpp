@@ -86,11 +86,6 @@ void RFXComTCP::OnData(const unsigned char *pData, size_t length)
 	onInternalMessage(pData, length);
 }
 
-void RFXComTCP::OnError(const std::exception e)
-{
-	Log(LOG_ERROR, "Error: %s", e.what());
-}
-
 void RFXComTCP::OnError(const boost::system::error_code& error)
 {
 	if (
