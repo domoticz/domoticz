@@ -1567,7 +1567,7 @@ namespace http {
 				return false;
 			};
 			// we only have one service until now
-			if (req.uri != "/json")
+			if (req.uri.find("/json") == std::string::npos)
 			{
 				// todo: request uri could be an absolute URI as well!!!
 				rep = reply::stock_reply(reply::not_found);

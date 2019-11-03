@@ -44,7 +44,7 @@ struct reply
     not_implemented = 501,
     bad_gateway = 502,
     service_unavailable = 503
-  } status;
+  } status = bad_request;
 
   /// The headers to be included in the reply.
   std::vector<header> headers;
