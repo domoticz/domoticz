@@ -19,6 +19,14 @@
         <table class="display table-details" id="paramstable" ng-if="::vm.device">
             <tr>
                 <td>
+                    <label>Idx: </label>
+                </td>
+                <td>
+                    <span>{{ vm.device.idx }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
                     <label for="devicename">{{ :: 'Name' | translate}}: </label>
                 </td>
                 <td>

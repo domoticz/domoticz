@@ -72,6 +72,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EditUtilityDevice = function (idx, name, description) {
 			$.devIdx = idx;
+			$("#dialog-editutilitydevice #deviceidx").text(idx);
 			$("#dialog-editutilitydevice #devicename").val(unescape(name));
 			$("#dialog-editutilitydevice #devicedescription").val(unescape(description));
 			$("#dialog-editutilitydevice").i18n();
@@ -82,6 +83,7 @@ define(['app', 'livesocket'], function (app) {
 			ConfigureEditCustomSensorDialog();
 			$.devIdx = idx;
 			$.sensorType = sensortype;
+			$("#dialog-editcustomsensordevice #deviceidx").text(idx);
 			$("#dialog-editcustomsensordevice #devicename").val(unescape(name));
 			$("#dialog-editcustomsensordevice #sensoraxis").val(unescape(axislabel));
 
@@ -107,6 +109,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EditDistanceDevice = function (idx, name, description, switchtype) {
 			$.devIdx = idx;
+			$("#dialog-editdistancedevice #deviceidx").text(idx);
 			$("#dialog-editdistancedevice #devicename").val(unescape(name));
 			$("#dialog-editdistancedevice #devicedescription").val(unescape(description));
 			$("#dialog-editdistancedevice #combometertype").val(switchtype);
@@ -116,6 +119,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, meterdivider, valuequantity, valueunits) {
 			$.devIdx = idx;
+			$("#dialog-editmeterdevice #deviceidx").text(idx);
 			$("#dialog-editmeterdevice #devicename").val(unescape(name));
 			$("#dialog-editmeterdevice #devicedescription").val(unescape(description));
 			$("#dialog-editmeterdevice #combometertype").val(switchtype);
@@ -146,6 +150,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EditEnergyDevice = function (idx, name, description, switchtype, EnergyMeterMode) {
 			$.devIdx = idx;
+			$("#dialog-editenergydevice #deviceidx").text(idx);
 			$("#dialog-editenergydevice #devicename").val(unescape(name));
 			$("#dialog-editenergydevice #devicedescription").val(unescape(description));
 			$("#dialog-editenergydevice #combometertype").val(switchtype);
@@ -160,6 +165,7 @@ define(['app', 'livesocket'], function (app) {
 		EditSetPoint = function (idx, name, description, setpoint, isprotected) {
 			HandleProtection(isprotected, function () {
 				$.devIdx = idx;
+				$("#dialog-editsetpointdevice #deviceidx").text(idx);
 				$("#dialog-editsetpointdevice #devicename").val(unescape(name));
 				$("#dialog-editsetpointdevice #devicedescription").val(unescape(description));
 				$('#dialog-editsetpointdevice #protected').prop('checked', (isprotected == true));
@@ -174,6 +180,7 @@ define(['app', 'livesocket'], function (app) {
 			HandleProtection(isprotected, function () {
 				var sarray = daytime.split(";");
 				$.devIdx = idx;
+				$("#dialog-editthermostatclockdevice #deviceidx").text(idx);
 				$("#dialog-editthermostatclockdevice #devicename").val(unescape(name));
 				$("#dialog-editthermostatclockdevice #devicedescription").val(unescape(description));
 				$('#dialog-editthermostatclockdevice #protected').prop('checked', (isprotected == true));
@@ -190,6 +197,7 @@ define(['app', 'livesocket'], function (app) {
 				var sarray = modes.split(";");
 				$.devIdx = idx;
 				$.isFan = false;
+				$("#dialog-editthermostatmode #deviceidx").text(idx);
 				$("#dialog-editthermostatmode #devicename").val(unescape(name));
 				$("#dialog-editthermostatmode #devicedescription").val(unescape(description));
 				$('#dialog-editthermostatmode #protected').prop('checked', (isprotected == true));
@@ -213,6 +221,7 @@ define(['app', 'livesocket'], function (app) {
 				var sarray = modes.split(";");
 				$.devIdx = idx;
 				$.isFan = true;
+				$("#dialog-editthermostatmode #deviceidx").text(idx);
 				$("#dialog-editthermostatmode #devicename").val(unescape(name));
 				$("#dialog-editthermostatmode #devicedescription").val(unescape(description));
 				$('#dialog-editthermostatmode #protected').prop('checked', (isprotected == true));

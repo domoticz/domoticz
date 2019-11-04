@@ -23,6 +23,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EditRainDevice = function (idx, name, description, addjmulti) {
 			$.devIdx = idx;
+			$("#dialog-editraindevice #deviceidx").text(idx);
 			$("#dialog-editraindevice #devicename").val(unescape(name));
 			$("#dialog-editraindevice #devicedescription").val(unescape(description));
 			$("#dialog-editraindevice #multiply").val(addjmulti);
@@ -32,6 +33,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EditBaroDevice = function (idx, name, description, addjvalue) {
 			$.devIdx = idx;
+			$("#dialog-editbarodevice #deviceidx").text(idx);
 			$("#dialog-editbarodevice #devicename").val(unescape(name));
 			$("#dialog-editbarodevice #devicedescription").val(unescape(description));
 			$("#dialog-editbarodevice #adjustment").val(addjvalue);
@@ -41,6 +43,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EditVisibilityDevice = function (idx, name, description, switchtype) {
 			$.devIdx = idx;
+			$("#dialog-editvisibilitydevice #deviceidx").text(idx);
 			$("#dialog-editvisibilitydevice #devicename").val(unescape(name));
 			$("#dialog-editvisibilitydevice #devicedescription").val(unescape(description));
 			$("#dialog-editvisibilitydevice #combometertype").val(switchtype);
@@ -50,6 +53,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EditWeatherDevice = function (idx, name, description) {
 			$.devIdx = idx;
+			$("#dialog-editweatherdevice #deviceidx").text(idx);
 			$("#dialog-editweatherdevice #devicename").val(unescape(name));
 			$("#dialog-editweatherdevice #devicedescription").val(unescape(description));
 			$("#dialog-editweatherdevice").i18n();

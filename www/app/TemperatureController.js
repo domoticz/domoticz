@@ -24,6 +24,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EditTempDevice = function (idx, name, description, addjvalue) {
 			$.devIdx = idx;
+			$("#dialog-edittempdevice #deviceidx").text(idx);
 			$("#dialog-edittempdevice #devicename").val(unescape(name));
 			$("#dialog-edittempdevice #devicedescription").val(unescape(description));
 			$("#dialog-edittempdevice #adjustment").val(addjvalue);
@@ -34,6 +35,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EditTempDeviceSmall = function (idx, name, description, addjvalue) {
 			$.devIdx = idx;
+			$("#dialog-edittempdevicesmall #deviceidx").text(idx);
 			$("#dialog-edittempdevicesmall #devicename").val(unescape(name));
 			$("#dialog-edittempdevicesmall #devicedescription").val(unescape(description));
 			$("#dialog-edittempdevicesmall").i18n();
@@ -54,6 +56,7 @@ define(['app', 'livesocket'], function (app) {
 				return false;
 			}
 			$.devIdx = idx;
+			$("#dialog-editsetpoint #deviceidx").text(idx);
 			$("#dialog-editsetpoint #devicename").val(unescape(name));
 			$("#dialog-editsetpoint #devicedescription").val(unescape(description));
 			$("#dialog-editsetpoint #setpoint").val(setpoint);

@@ -657,6 +657,7 @@ define(['app', 'livesocket'], function (app) {
 				"sPaginationType": "full_numbers",
 				language: $.DataTableLanguage
 			});
+			$element.find("#deviceidx").text(idx);
 			$element.find("#devicename").val(unescape(name));
 			$element.find("#devicedescription").val(unescape(description));
 
