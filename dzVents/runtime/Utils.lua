@@ -11,6 +11,11 @@ local self = {
 	DZVERSION = '2.5.0', -- for Lua 5.3
 }
 
+function math.pow(x, y)
+	self.log('Function math.pow(x, y) has been deprecated in Lua 5.3. Please consider changing code to x^y', self.LOG_FORCE)
+	return x^y 
+end
+
 function self.rightPad(str, len, char)
 	if char == nil then char = ' ' end
 	return str .. string.rep(char, len - #str)
