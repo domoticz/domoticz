@@ -199,13 +199,14 @@ return {
 
 		for attribute, value in pairs(data.data) do
 			if (device[attribute] == nil) then
-				if type(value) == 'number' then
-					device[attribute] = math.tointeger(value) or value
+				if type(value) == 'number' and math.floor(value) == value then
+					device[attribute] = math.floor(value)
 				else
 					device[attribute] = value
 				end
 			end
 		end
+
 
 		return device
 
