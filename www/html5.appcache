@@ -632,6 +632,7 @@ js/angular-websocket.js
 js/angular.min.js
 js/angularAMD.min.js
 js/babel-polyfill-6.26.0.js
+js/base64.min.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js

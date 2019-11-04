@@ -501,7 +501,7 @@ define(['app'], function (app) {
 
 				$list.each(function () {
 					var id = $(this).prop("id");      // get id
-					var value = encodeURIComponent(btoa($(this).prop("value")));      // get value
+					var value = encodeURIComponent(Base64.encode($(this).prop("value")));      // get value
 
 					valueList += id + "_" + value + "_";
 				});
@@ -514,7 +514,7 @@ define(['app'], function (app) {
 				// Now loop through list of controls
 				$list.each(function () {
 					var id = $(this).prop("id");      // get id
-					var value = encodeURIComponent(btoa($(this).find(":selected").text()));      // get value
+					var value = encodeURIComponent(Base64.encode($(this).find(":selected").text()));      // get value
 					valueList += id + "_" + value + "_";
 				});
 			}
