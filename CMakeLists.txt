@@ -69,7 +69,7 @@ IF(USE_BUILTIN_LUA)
     DEFINITION LUA_LIBRARIES)
 ELSE(USE_BUILTIN_LUA)
   find_package(PkgConfig)
-  pkg_search_module(LUA lua5.2>=5.2 lua>=5.2 lua-5.2)
+  pkg_search_module(LUA lua5.3>=5.3 lua>=5.3 lua-5.3)
   IF(LUA_FOUND)
     # Lua 5.2 pkg-config is broken.
     # Depending on whether the used distro fixed that to
