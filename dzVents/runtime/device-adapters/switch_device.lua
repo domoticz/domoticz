@@ -130,14 +130,16 @@ return {
 				local levels = {}
 				for i=1, #device.levelNames do
 					levels[device.levelNames[(i)]] = i * 10 - 10
-				end 
+				end
 				level = levels[level]
 			end
 
-			if not level and sLevel then
-				utils.log('levelname ' .. sLevel .. ' does not exist', domoticz.LOG_ERROR )
-			elseif device.switchType ~= "Selector" then 
+			if device.switchType ~= "Selector" then
 				utils.log('method switchSelector not available for type ' .. device.switchType, domoticz.LOG_ERROR )
+			elseif not level and sLevel then
+				utils.log('levelname ' .. sLevel .. ' does not exist', domoticz.LOG_ERROR )
+			elseif not level then
+				utils.log('level cannot be nil', domoticz.LOG_ERROR )
 			else
 				return TimedCommand(domoticz, device.name, 'Set Level ' .. guardLevel(level), 'device' )
 			end
