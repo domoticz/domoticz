@@ -42,7 +42,6 @@ ASyncTCP::~ASyncTCP(void)
 			mTcpthread.reset();
 		}
 	}
-	mTcpwork.reset();
 }
 
 void ASyncTCP::SetReconnectDelay(int32_t Delay)
@@ -59,6 +58,10 @@ void ASyncTCP::connect(const std::string& ip, uint16_t port)
 		terminate();
 	}
 
+	// RK: We reset mIos here because it might have been stopped in terminate()
+	mIos.reset();
+	// RK: After the reset, we need to provide it work anew
+	mTcpwork = std::make_shared<boost::asio::io_service::work>(mIos);
 	if (!mTcpthread)
 		mTcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
 
@@ -181,6 +184,7 @@ void ASyncTCP::terminate(const bool silent)
 {
 	mIsTerminating = true;
 	disconnect(silent);
+	mTcpwork.reset();
 	mIos.stop();
 	if (mTcpthread)
 	{
@@ -334,8 +338,15 @@ void ASyncTCP::cb_write_done(const boost::system::error_code& error)
 void ASyncTCP::process_connection()
 {
 	mIsConnected = true;
-	boost::asio::socket_base::keep_alive option(true);
-	mSocket.set_option(option);
+#ifdef WWW_ENABLE_SSL
+
+	if (!mSecure)
+#endif
+	{
+		// RK: only if non-secure
+		boost::asio::socket_base::keep_alive option(true);
+		mSocket.set_option(option);
+	}
 	OnConnect();
 	do_read_start();
 	do_write_start();

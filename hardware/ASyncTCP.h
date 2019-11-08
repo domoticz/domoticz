@@ -75,7 +75,7 @@ private:
 	boost::asio::deadline_timer		mReconnectTimer{ mIos };
 
 	std::shared_ptr<std::thread> 	mTcpthread;
-	std::shared_ptr<boost::asio::io_service::work> 	mTcpwork{ std::make_shared<boost::asio::io_service::work>(mIos) };
+	std::shared_ptr<boost::asio::io_service::work> 	mTcpwork;
 
 #ifdef WWW_ENABLE_SSL
 	const bool						mSecure;
