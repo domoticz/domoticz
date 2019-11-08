@@ -277,10 +277,10 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
     ENDFOREACH(item)
 
     SEPARATE_ARGUMENTS(_compiler_FLAGS)
-    MESSAGE("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}")
+    MESSAGE("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -c -o ${_output} ${_source}")
     ADD_CUSTOM_COMMAND(
       OUTPUT ${_output}
-      COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}
+      COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -c -o ${_output} ${_source}
       DEPENDS ${_source} )
     ADD_CUSTOM_TARGET(${_targetName}_gch DEPENDS ${_output})
     ADD_DEPENDENCIES(${_targetName} ${_targetName}_gch)
