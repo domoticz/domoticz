@@ -594,6 +594,10 @@ namespace http {
 		void connection::handle_abandoned_timeout(const boost::system::error_code& error) {
 			if (error != boost::asio::error::operation_aborted) {
 				_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_endpoint_address_.c_str(), status_);
+				if (connection_type==connection_websocket)
+				{
+					websocket_parser.Stop();
+				}
 				connection_manager_.stop(shared_from_this());
 			}
 		}
