@@ -398,7 +398,10 @@ namespace Plugins {
 			//m_TLSSock->set_verify_callback(boost::bind(&CPluginTransportTCPSecure::VerifyCertificate, this, _1, _2));
 			try
 			{
+#ifdef WWW_ENABLE_SSL
+				// RK: todo: What if openssl is not compiled in?
 				m_TLSSock->handshake(ssl_socket::client);
+#endif
 
 				m_bConnected = true;
 				pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
