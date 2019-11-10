@@ -118,7 +118,7 @@ void COpenWeatherMap::Do_Work()
 	_log.Log(LOG_STATUS,"OpenWeatherMap: Worker stopped...");
 }
 
-bool COpenWeatherMap::WriteToHardware(const char *pdata, const unsigned char length)
+bool COpenWeatherMap::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }

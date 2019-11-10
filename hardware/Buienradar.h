@@ -24,7 +24,7 @@ private:
 	std::shared_ptr<std::thread> m_thread;
 	int m_iForecast = 15;
 	int m_iThreshold = 25;
-	time_t m_actDay = 0;
-	float m_lastRainCount = 0;
+	bool m_itIsRaining = false;
+	int m_rainShowerLeadTime = 0;
 };
 

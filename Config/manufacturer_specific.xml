@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="51" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="54" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -679,6 +679,7 @@
     <Product config="fibaro/fgfs101zw5.xml" id="1002" name="FGFS101 Zwave+ Flood Sensor" type="0b01"/>
     <Product config="fibaro/fgfs101zw5.xml" id="1003" name="FGFS101 Zwave+ Flood Sensor" type="0b01"/>
     <Product config="fibaro/fgfs101zw5.xml" id="2002" name="FGFS101 Zwave+ Flood Sensor" type="0b01"/>
+    <Product config="fibaro/fgfs101zw5.xml" id="3002" name="FGFS101 Zwave+ Flood Sensor" type="0b01"/>
     <Product config="fibaro/fgrgbwm441.xml" id="1000" name="FGRGBWM441 RGBW Controller" type="0900"/>
     <Product config="fibaro/fgrgbwm441.xml" id="2000" name="FGRGBWM441 RGBW Controller" type="0900"/>
     <Product config="fibaro/fgrgbwm441.xml" id="3000" name="FGRGBWM441 RGBW Controller" type="0900"/>
@@ -756,6 +757,7 @@
     <Product config="ge/12724-dimmer.xml" id="3033" name="12729 3-Way Dimmer Switch" type="4944"/>
     <Product config="ge/12724-dimmer.xml" id="3034" name="12730 Fan Control Switch" type="4944"/>
     <Product config="ge/12724-dimmer.xml" id="3131" name="14287 Fan Control Switch" type="4944"/>
+    <Product config="ge/12724-dimmer.xml" id="3032" name="12725 In-Wall 1000W Dimmer" type="4944"/>
     <Product config="ge/14288-outlet.xml" id="3134" name="14288 In-Wall Tamper Resistant Smart Outlet" type="4952"/>
     <Product config="ge/14294-dimmer.xml" id="3038" name="14294 In-Wall Smart Dimmer" type="4944"/>
     <Product config="ge/14294-dimmer.xml" id="3039" name="14299 In-Wall 1000W Smart Dimmer" type="4944"/>
@@ -763,6 +765,7 @@
     <Product config="ge/26931-motion-switch.xml" id="3032" name="26931 Smart Motion Switch" type="494d"/>
     <Product config="ge/26933-motion-dimmer.xml" id="3034" name="26933 Smart Motion Dimmer" type="494d"/>
     <Product config="ge/14291-switch.xml" id="3036" name="14291 In-Wall Smart Switch" type="4952"/>
+    <Product config="ge/46201-switch.xml" id="3135" name="46201 In-Wall Smart Switch" type="4952"/>
     <Product config="ge/14292-toggle-switch.xml" id="3037" name="14292 In-Wall Smart Toggle Switch" type="4952"/>
     <Product config="ge/14292-toggle-switch.xml" id="3038" name="14293 In-Wall Smart Toggle Switch" type="4952"/>
     <Product config="ge/45604.xml" id="3030" name="45603 Plugin Appliance Module" type="5250"/>
@@ -810,7 +813,9 @@
   <Manufacturer id="016D" name="Guangzhou Ruixiang M&amp;E Co. Ltd"></Manufacturer>
   <Manufacturer id="0158" name="GuangZhou Zeewave Information Technology Co. Ltd"></Manufacturer>
   <Manufacturer id="0395" name="Guangzhou_SIMT Limited"></Manufacturer>
-  <Manufacturer id="037B" name="Guardtec Inc"></Manufacturer>
+  <Manufacturer id="037B" name="Guardtec Inc">
+    <Product type="0002" id="0001" name="GKW-2000D Door Lock" config="guardtec/gkw2000d.xml"/>
+  </Manufacturer>
   <Manufacturer id="0287" name="HAB Home Intelligence LLC"></Manufacturer>
   <Manufacturer id="030D" name="Hampoo"></Manufacturer>
   <Manufacturer id="040A" name="Hangzhou Hikvision Digital Technology Co. Ltd"></Manufacturer>
@@ -926,7 +931,7 @@
   <Manufacturer id="0011" name="iCOM Technology b.v."></Manufacturer>
   <Manufacturer id="0106" name="Icontrol Networks"></Manufacturer>
   <Manufacturer id="0373" name="ID Lock AS">
-    <Product config="idlock/idlock150.xml" id="0001" name="150" type="0003"/>
+    <Product config="idlock/idlock150.xml" id="0001" name="ID-150 Z-Wave Module" type="0003"/>
   </Manufacturer>
   <Manufacturer id="019E" name="iEXERGY GmbH"></Manufacturer>
   <Manufacturer id="031C" name="Ilevia srl"></Manufacturer>
@@ -963,7 +968,10 @@
     <Product config="inovelli/nzw96.xml" id="6000" name="NZW96 1-Channel Outdoor Smart Plug" type="6000"/>
     <Product config="inovelli/nzw97.xml" id="6100" name="NZW97 2-Channel Outdoor Smart Plug" type="6100"/>
   </Manufacturer>
-  <Manufacturer id="031E" name="Inovelli"></Manufacturer>
+  <Manufacturer id="031E" name="Inovelli">
+    <Product type="0002" id="0001" name="LZW30-SN Switch Red Series" config="inovelli/lzw30-sn.xml"/>
+    <Product type="0004" id="0001" name="LZW30 Switch" config="inovelli/lzw30.xml"/>
+  </Manufacturer>
   <Manufacturer id="0100" name="Insignia"></Manufacturer>
   <Manufacturer id="0006" name="Intel"></Manufacturer>
   <Manufacturer id="001c" name="IntelliCon"></Manufacturer>

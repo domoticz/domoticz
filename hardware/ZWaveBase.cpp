@@ -621,19 +621,19 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		const _tZWaveDevice* pHumDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_HUMIDITY);
 		if (pTempDevice && pHumDevice)
 		{
-			int nforecast = wsbaroforcast_some_clouds;
+			int nforecast = wsbaroforecast_some_clouds;
 			float pressure = pDevice->floatValue;
 			if (pressure <= 980)
-				nforecast = wsbaroforcast_heavy_rain;
+				nforecast = wsbaroforecast_heavy_rain;
 			else if (pressure <= 995)
 			{
 				if (pDevice->floatValue > 1)
-					nforecast = wsbaroforcast_rain;
+					nforecast = wsbaroforecast_rain;
 				else
-					nforecast = wsbaroforcast_snow;
+					nforecast = wsbaroforecast_snow;
 			}
 			else if (pressure >= 1029)
-				nforecast = wsbaroforcast_sunny;
+				nforecast = wsbaroforecast_sunny;
 			SendTempHumBaroSensorFloat(pDevice->nodeID, BatLevel, pTempDevice->floatValue, pHumDevice->intvalue, pDevice->floatValue, nforecast, "TempHumBaro");
 		}
 	}

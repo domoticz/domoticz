@@ -41,7 +41,6 @@ namespace OpenZWave
  * (such as passing incorrect ValueID's to the Manager::SetValue methods) or
  */
 
-OPENZWAVE_EXPORT_WARNINGS_OFF
 class OPENZWAVE_EXPORT OZWException : public std::runtime_error
 {
 	public:
@@ -124,7 +123,6 @@ class OPENZWAVE_EXPORT OZWException : public std::runtime_error
 	uint32 m_line;
 	std::string m_msg;
 };
-OPENZWAVE_EXPORT_WARNINGS_ON
 }
 
 #endif // _FatalErrorException_H

@@ -1433,7 +1433,7 @@ std::string COpenZWaveControlPanel::DoSceneCommand(const std::string& fun, const
 		std::string s;
 		int cnt;
 		int i;
-		uint8 sid;
+		uint8 sid = 0;
 		TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "utf-8", "");
 		doc.LinkEndChild(decl);
 		TiXmlElement* scenesElement = new TiXmlElement("scenes");

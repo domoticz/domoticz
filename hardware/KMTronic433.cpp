@@ -47,8 +47,6 @@ bool KMTronic433::StartHardware()
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
-
-	return true;
 }
 
 bool KMTronic433::StopHardware()

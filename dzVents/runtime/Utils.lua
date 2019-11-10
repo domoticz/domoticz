@@ -8,8 +8,13 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.4.29',
+	DZVERSION = '2.5.0', -- for Lua 5.3
 }
+
+function math.pow(x, y)
+	self.log('Function math.pow(x, y) has been deprecated in Lua 5.3. Please consider changing code to x^y', self.LOG_FORCE)
+	return x^y 
+end
 
 function self.rightPad(str, len, char)
 	if char == nil then char = ' ' end
@@ -69,7 +74,8 @@ function self.inTable(searchTable, element)
 end
 
 function self.round(x, n)
-	n = math.pow(10, n or 0)
+	-- n = math.pow(10, n or 0)
+	n = 10^(n or 0)
 	x = x * n
 	if x >= 0 then
 		x = math.floor(x + 0.5)

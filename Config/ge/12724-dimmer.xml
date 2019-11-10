@@ -1,4 +1,4 @@
-<!-- GE(Jasco) 12724 3-Way Dimmer Switch --><Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- GE(Jasco) 12724 3-Way Dimmer Switch --><Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3031:4944</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/12724-dimmer.png</MetaDataItem>
@@ -8,7 +8,11 @@
     <MetaDataItem name="Name">In-Wall Smart Fan Control </MetaDataItem>
     <MetaDataItem name="ProductPage">http://www.ezzwave.com</MetaDataItem>
     <MetaDataItem id="3031" name="Identifier" type="4944">12724 / ZW3005</MetaDataItem>
+    <MetaDataItem id="3032" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/1198/</MetaDataItem>
+    <MetaDataItem id="3032" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3032" name="Identifier" type="4944">12725 / ZW3006</MetaDataItem>
     <ChangeLog>
+       <Entry author="Shaun Feakes" date="04 Sep 2019" revision="9">Update for 3032</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1197/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1201/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1202/xml</Entry>

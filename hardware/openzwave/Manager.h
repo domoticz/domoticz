@@ -366,11 +366,8 @@ namespace OpenZWave
 		private:
 			Driver* GetDriver(uint32 const _homeId); /**< Get a pointer to a Driver object from the HomeID.  Only to be used by OpenZWave. */
 			void SetDriverReady(Driver* _driver, bool success); /**< Indicate that the Driver is ready to be used, and send the notification callback. */
-
-			OPENZWAVE_EXPORT_WARNINGS_OFF
 			list<Driver*> m_pendingDrivers; /**< Drivers that are in the process of reading saved data and querying their Z-Wave network for basic information. */
 			map<uint32, Driver*> m_readyDrivers; /**< Drivers that are ready to be used by the application. */
-		OPENZWAVE_EXPORT_WARNINGS_ON
 
 		//-----------------------------------------------------------------------------
 		//	Polling Z-Wave devices
@@ -1676,6 +1673,9 @@ namespace OpenZWave
 			/**
 			 * \brief Gets the associations for a group.
 			 * Makes a copy of the list of associated nodes in the group, and returns it in an array of InstanceAssociation's.
+			 * struct InstanceAssociation is defined in Group.h and contains
+			 * a (NodeID, End Point) pair. See SDS13783-11B Z-Wave Transport-Encapsulation Command Class Specification
+			 * chapter 2.3.1 Terminology for the definition of "End Point" and "Multi Channel Encapsulation"
 			 * The caller is responsible for freeing the array memory with a call to delete [].
 			 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 			 * \param _nodeId The ID of the node whose associations we are interested in.
@@ -1790,10 +1790,8 @@ namespace OpenZWave
 					}
 			};
 
-			OPENZWAVE_EXPORT_WARNINGS_OFF
 			list<Watcher*> m_watchers;							// List of all the registered watchers.
 			list<list<Watcher*>::iterator*> m_watcherIterators;					// Iterators currently operating on the list of watchers
-			OPENZWAVE_EXPORT_WARNINGS_ON
 			Internal::Platform::Mutex* m_notificationMutex;
 
 			//-----------------------------------------------------------------------------

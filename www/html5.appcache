@@ -632,6 +632,7 @@ js/angular-websocket.js
 js/angular.min.js
 js/angularAMD.min.js
 js/babel-polyfill-6.26.0.js
+js/base64.min.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
@@ -643,7 +644,7 @@ js/FileSaver.js
 js/highcharts-ng.min.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
-js/jquery-3.3.1.min.js
+js/jquery-3.4.1.min.js
 js/jquery-ui.min.js
 js/jquery.ddslick.min.js
 js/jquery.isotope.min.js

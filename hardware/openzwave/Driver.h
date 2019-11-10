@@ -328,7 +328,6 @@ namespace OpenZWave
 			string m_controllerPath;							// name or path used to open the controller hardware.
 			Internal::Platform::Controller* m_controller;								// Handles communications with the controller hardware.
 			uint32 m_homeId;									// Home ID of the Z-Wave controller.  Not valid until the DriverReady notification has been received.
-
 			string m_libraryVersion;							// Version of the Z-Wave Library used by the controller.
 			string m_libraryTypeName;							// Name describing the library type.
 			uint8 m_libraryType;								// Type of library used by the controller.
@@ -452,9 +451,8 @@ namespace OpenZWave
 			{
 					ValueID m_id;
 					uint8 m_pollCounter;
-			};OPENZWAVE_EXPORT_WARNINGS_OFF
+			};
 			list<PollEntry> m_pollList;									// List of nodes that need to be polled
-			OPENZWAVE_EXPORT_WARNINGS_ON
 			Internal::Platform::Mutex* m_pollMutex;								// Serialize access to the polling list
 			int32 m_pollInterval;								// Time interval during which all nodes must be polled
 			bool m_bIntervalBetweenPolls;					// if true, the library intersperses m_pollInterval between polls; if false, the library attempts to complete all polls within m_pollInterval
@@ -789,8 +787,7 @@ namespace OpenZWave
 					ControllerCommandItem* m_cci;
 			};
 
-			OPENZWAVE_EXPORT_WARNINGS_OFF
-			list<MsgQueueItem> m_msgQueue[MsgQueue_Count];OPENZWAVE_EXPORT_WARNINGS_ON
+			list<MsgQueueItem> m_msgQueue[MsgQueue_Count];
 			Internal::Platform::Event* m_queueEvent[MsgQueue_Count];		// Events for each queue, which are signaled when the queue is not empty
 			Internal::Platform::Mutex* m_sendMutex;						// Serialize access to the queues
 			Internal::Msg* m_currentMsg;
@@ -862,10 +859,7 @@ namespace OpenZWave
 		private:
 			void QueueNotification(Notification* _notification);				// Adds a notification to the list.  Notifications are queued until a point in the thread where we know we do not have any nodes locked.
 			void NotifyWatchers();												// Passes the notifications to all the registered watcher callbacks in turn.
-
-			OPENZWAVE_EXPORT_WARNINGS_OFF
 			list<Notification*> m_notifications;
-			OPENZWAVE_EXPORT_WARNINGS_ON
 			Internal::Platform::Event* m_notificationsEvent;
 
 			//-----------------------------------------------------------------------------
@@ -969,9 +963,7 @@ namespace OpenZWave
 
 			void SubmitEventMsg(EventMsg *);
 			void ProcessEventMsg();
-
-			OPENZWAVE_EXPORT_WARNINGS_OFF
-			list<EventMsg *> m_eventQueueMsg;OPENZWAVE_EXPORT_WARNINGS_ON
+			list<EventMsg *> m_eventQueueMsg;
 			Internal::Platform::Event* m_queueMsgEvent;				// Events for each queue, which are signalled when the queue is not empty
 			Internal::Platform::Mutex* m_eventMutex;						// Serialize access to the queues
 

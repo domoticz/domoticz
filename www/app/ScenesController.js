@@ -3,6 +3,7 @@ define(['app', 'livesocket'], function (app) {
 		var $element = $('#main-view #scenecontent').last();
 
 		var SceneIdx = 0;
+		$scope.broadcast_unsubscribe = undefined;
 
 		RemoveCode = function (idx, code) {
 			if ($element.find("#removecode").hasClass('disabled')) {
@@ -231,10 +232,6 @@ define(['app', 'livesocket'], function (app) {
 				return;
 			}
 
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.ajax({
 				url: "json.htm?type=command&param=makescenefavorite&idx=" + id + "&isfavorite=" + isfavorite,
 				async: false,
@@ -598,10 +595,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditSceneDevice = function (idx, name, description, havecode, type, bIsProtected, onaction, offaction) {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			SceneIdx = idx;
 
 			var bIsScene = (type == "Scene");
@@ -664,6 +657,7 @@ define(['app', 'livesocket'], function (app) {
 				"sPaginationType": "full_numbers",
 				language: $.DataTableLanguage
 			});
+			$element.find("#deviceidx").text(idx);
 			$element.find("#devicename").val(unescape(name));
 			$element.find("#devicedescription").val(unescape(description));
 
@@ -783,7 +777,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 
 				if (item.Type == "Scene") {
-					img1 = '<img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+					img1 = '<img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
 				}
 				else {
 					var onclass = "";
@@ -797,8 +791,8 @@ define(['app', 'livesocket'], function (app) {
 						offclass = "transimg";
 					}
 
-					img1 = '<img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
-					img2 = '<img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
+					img1 = '<img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" height="48" width="48">';
+					img2 = '<img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\', ' + item.Protected + ');" height="48" width="48">';
 					if ($(id + " #img2").html() != img2) {
 						$(id + " #img2").html(img2);
 					}
@@ -827,11 +821,6 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the websocket broadcast event.
 		RefreshScenes = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
-
 			livesocket.getJson("json.htm?type=scenes&lastupdate=" + $.LastUpdateTime, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
@@ -850,7 +839,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
-			$scope.$on('scene_update', function (event, data) {
+			$scope.broadcast_unsubscribe = $scope.$on('scene_update', function (event, data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -862,9 +851,9 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		ShowScenes = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
+				$scope.broadcast_unsubscribe();
+				$scope.broadcast_unsubscribe = undefined;
 			}
 
 			RefreshLightSwitchesComboArray();
@@ -942,7 +931,7 @@ define(['app', 'livesocket'], function (app) {
 							xhtm += bigtext + '</td>\n';
 
 							if (item.Type == "Scene") {
-								xhtm += '<td id="img1" class="img img1"><img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+								xhtm += '<td id="img1" class="img img1"><img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 								xhtm += '\t      <td id="status" class="status"><span>&nbsp;</span></td>\n';
 							}
 							else {
@@ -957,8 +946,8 @@ define(['app', 'livesocket'], function (app) {
 									offclass = "transimg";
 								}
 
-								xhtm += '<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
-								xhtm += '<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
+								xhtm += '<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" height="48" width="48"></td>\n';
+								xhtm += '<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\', ' + item.Protected + ');" height="48" width="48"></td>\n';
 								xhtm += '\t      <td id="status" class="status">&nbsp;</td>\n';
 							}
 							xhtm +=
@@ -1015,10 +1004,6 @@ define(['app', 'livesocket'], function (app) {
 					if (window.myglobals.ismobileint == false) {
 						$element.find(".span4").draggable({
 							drag: function () {
-								if (typeof $scope.mytimer != 'undefined') {
-									$interval.cancel($scope.mytimer);
-									$scope.mytimer = undefined;
-								}
 								SceneIdx = $(this).attr("id");
 								$(this).css("z-index", 2);
 							},
@@ -1098,9 +1083,9 @@ define(['app', 'livesocket'], function (app) {
 			ShowScenes();
 		};
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
+				$scope.broadcast_unsubscribe();
+				$scope.broadcast_unsubscribe = undefined;
 			}
 		});
 	});

@@ -224,7 +224,7 @@ void CNefitEasy::Do_Work()
 	_log.Log(LOG_STATUS, "NefitEasy: Worker stopped...");
 }
 
-bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char length)
+bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
@@ -784,7 +784,7 @@ bool CNefitEasy::GetGasUsage()
 	return true;
 }
 
-void CNefitEasy::SetSetpoint(const int idx, const float temp)
+void CNefitEasy::SetSetpoint(const int /*idx*/, const float temp)
 {
 	Json::Value root;
 	root["value"] = temp;

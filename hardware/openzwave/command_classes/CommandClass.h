@@ -238,9 +238,9 @@ namespace OpenZWave
 				private:
 					uint32 m_homeId;
 					uint8 m_nodeId;
-					Bitfield m_instances;OPENZWAVE_EXPORT_WARNINGS_OFF
+					Bitfield m_instances;
 					map<uint8, uint8> m_endPointMap;
-					map<uint8, string> m_instanceLabel;OPENZWAVE_EXPORT_WARNINGS_ON
+					map<uint8, string> m_instanceLabel;
 					bool m_SecureSupport; 	// Does this commandclass support secure encryption (eg, the Security CC doesn't encrypt itself, so it doesn't support encryption)
 					std::vector<RefreshValue *> m_RefreshClassValues; // what Command Class Values should we refresh ?
 					string m_commandClassLabel;

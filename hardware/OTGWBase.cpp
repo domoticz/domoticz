@@ -34,7 +34,7 @@ OTGWBase::~OTGWBase(void)
 {
 }
 
-void OTGWBase::SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+void OTGWBase::SetModes(const int Mode1, const int /*Mode2*/, const int /*Mode3*/, const int /*Mode4*/, const int /*Mode5*/, const int /*Mode6*/)
 {
 	m_OutsideTemperatureIdx=Mode1;
 }
@@ -105,7 +105,7 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 		level=15;
 		lcmd.LIGHTING2.cmnd=light2_sOn;
 	}
-	lcmd.LIGHTING2.level=level;
+	lcmd.LIGHTING2.level= (uint8_t)level;
 	lcmd.LIGHTING2.filler=0;
 	lcmd.LIGHTING2.rssi=12;
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
@@ -151,7 +151,7 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	return true;
 }
 
-bool OTGWBase::SwitchLight(const int idx, const std::string &LCmd, const int svalue)
+bool OTGWBase::SwitchLight(const int idx, const std::string &LCmd, const int /*svalue*/)
 {
 	char szCmd[100];
 	char szOTGWCommand[3] = "-";
@@ -191,7 +191,7 @@ bool OTGWBase::SwitchLight(const int idx, const std::string &LCmd, const int sva
 	return true;
 }
 
-bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char length)
+bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -295,7 +295,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		_log.Log(LOG_STATUS, "OTGW: Setting Room SetPoint to: %.1f", temp);
 		sprintf(szCmd, "TT=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
-		UpdateSetPointSensor(idx, temp, "Room Setpoint");
+		UpdateSetPointSensor((uint8_t)idx, temp, "Room Setpoint");
 	}
 	else if (idx == 15)
 	{
@@ -303,7 +303,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		_log.Log(LOG_STATUS, "OTGW: Setting Heating SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SW=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
-		UpdateSetPointSensor(idx, temp, "DHW Setpoint");
+		UpdateSetPointSensor((uint8_t)idx, temp, "DHW Setpoint");
 	}
 	else if (idx == 16)
 	{
@@ -311,7 +311,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		_log.Log(LOG_STATUS, "OTGW: Setting Max CH water SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SH=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
-		UpdateSetPointSensor(idx, temp, "Max_CH Water Setpoint");
+		UpdateSetPointSensor((uint8_t)idx, temp, "Max_CH Water Setpoint");
 	}
 	GetGatewayDetails();
 }
@@ -382,7 +382,7 @@ void OTGWBase::ParseLine()
 			SendPercentageSensor(idx - 1, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
 		}
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
-		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, ((m_OverrideTemperature!=0.0f) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
+		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor((uint8_t)idx - 1, ((m_OverrideTemperature!=0.0f) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
 		_status.Relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
 		bExists = CheckPercentageSensorExists(idx - 1, 1);
 		if ((_status.Relative_modulation_level != 0) || (bExists))
@@ -405,12 +405,12 @@ void OTGWBase::ParseLine()
 		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str())); 
 		if (_status.DHW_setpoint != 0.0f)
 		{
-			UpdateSetPointSensor(idx - 1, _status.DHW_setpoint, "DHW Setpoint");
+			UpdateSetPointSensor((uint8_t)idx - 1, _status.DHW_setpoint, "DHW Setpoint");
 		}
 		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));		
 		if (_status.Max_CH_water_setpoint != 0.0f)
 		{
-			UpdateSetPointSensor(idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
+			UpdateSetPointSensor((uint8_t)idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
 		}
 		_status.Burner_starts=atol(results[idx++].c_str());
 		_status.CH_pump_starts=atol(results[idx++].c_str());

@@ -52,7 +52,7 @@ describe('event helpers', function()
 
 			utils.log('something')
 
-			assert.is_same('Info:  something', printed)
+			assert.is_same('Info: something', printed)
 		end)
 
 		it('shoud not log above level', function()

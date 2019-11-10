@@ -92,7 +92,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 			lastreceived(0)
 		{
 			sequence_number=1;
-			nodeID=-1;
+			nodeID=(uint8_t)-1;
 			scaleMultiply=1.0f;
 			isListening=false;
 			hasWakeup=false;
@@ -107,9 +107,9 @@ class ZWaveBase : public CDomoticzHardwareBase
 			orgIndexID=0;
 			devType = ZDTYPE_SWITCH_NORMAL;
 			basicType=0;
-			Manufacturer_id = -1;
-			Product_id = -1;
-			Product_type = -1;
+			Manufacturer_id = (uint16_t)-1;
+			Product_id = (uint16_t)-1;
+			Product_type = (uint16_t)-1;
 			Alarm_Type = -1;
 		}
 	};
@@ -126,7 +126,7 @@ public:
 	int m_LastIncludedNode;
 	std::string m_LastIncludedNodeType;
 	bool m_bHaveLastIncludedNodeInfo;
-	uint8_t m_LastRemovedNode;
+	int m_LastRemovedNode;
 	std::mutex m_NotificationMutex;
 private:
 	void Do_Work();
@@ -143,10 +143,10 @@ private:
 	unsigned char Convert_Battery_To_PercInt(const unsigned char level);
 	virtual bool SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const int value)=0;
 	virtual bool SwitchColor(const uint8_t nodeID, const uint8_t instanceID, const std::string &ColorStr) = 0;
-	virtual void SetThermostatSetPoint(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const float value)=0;
-	virtual void SetClock(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
-	virtual void SetThermostatMode(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const int tMode) = 0;
-	virtual void SetThermostatFanMode(const uint8_t nodeID, const uint8_t instanceID, const int commandClass, const int fMode) = 0;
+	virtual void SetThermostatSetPoint(const uint8_t nodeID, const uint8_t instanceID, const uint8_t commandClass, const float value)=0;
+	virtual void SetClock(const uint8_t nodeID, const uint8_t instanceID, const uint8_t commandClass, const uint8_t day, const uint8_t hour, const uint8_t minute)=0;
+	virtual void SetThermostatMode(const uint8_t nodeID, const uint8_t instanceID, const uint8_t commandClass, const int tMode) = 0;
+	virtual void SetThermostatFanMode(const uint8_t nodeID, const uint8_t instanceID, const uint8_t commandClass, const int fMode) = 0;
 	virtual std::string GetSupportedThermostatFanModes(const unsigned long ID) = 0;
 	virtual void StopHardwareIntern() = 0;
 	virtual bool IncludeDevice(const bool bSecure) = 0;

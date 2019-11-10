@@ -36,7 +36,7 @@ public:
 private:
 	bool ConnectInt();
 	bool ConnectIntEx();
-	void SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
+	void SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
 	void SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName);
 protected:
 	std::string m_szIPAddress;

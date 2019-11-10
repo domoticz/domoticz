@@ -438,6 +438,25 @@ namespace http {
 						}
 						return true;
 					}
+					else if (
+						(strstr(pContent_Type, "text/plain") != NULL)
+						|| (strstr(pContent_Type, "application/json") != NULL)
+						|| (strstr(pContent_Type, "application/xml") != NULL)
+						)
+					{
+						//Raw data
+						req.parameters.insert(std::pair< std::string, std::string >("data", req.content));
+						// call the function
+						try
+						{
+							pfun->second(session, req, req.uri);
+						}
+						catch (...)
+						{
+
+						}
+						return true;
+					}
 				}
 				uri = req.content;
 				q = 0;
@@ -1529,11 +1548,13 @@ namespace http {
 			{
 				return false;
 			}
+/*
 			std::string connection_header = h;
 			if (!boost::iequals(connection_header, "upgrade"))
 			{
 				return false;
 			};
+*/
 			// client MUST include Upgrade: websocket
 			h = request::get_req_header(&req, "Upgrade");
 			if (!h)
@@ -1546,7 +1567,7 @@ namespace http {
 				return false;
 			};
 			// we only have one service until now
-			if (req.uri != "/json")
+			if (req.uri.find("/json") == std::string::npos)
 			{
 				// todo: request uri could be an absolute URI as well!!!
 				rep = reply::stock_reply(reply::not_found);

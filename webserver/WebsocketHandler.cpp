@@ -67,7 +67,7 @@ namespace http {
 				request req;
 				req.method = "GET";
 				std::string querystring = value["query"].asString();
-				req.uri = "/json.htm?" + querystring;
+				req.uri = myWebem->GetWebRoot() + "/json.htm?" + querystring;
 				req.http_version_major = 1;
 				req.http_version_minor = 1;
 				req.headers.resize(0); // todo: do we need any headers?

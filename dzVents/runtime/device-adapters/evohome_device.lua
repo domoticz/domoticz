@@ -26,7 +26,7 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		if (device.deviceSubType == "Hot Water" ) then
+		if device.deviceSubType == "Hot Water" then
 
 			if device.rawData[2] == "On" then device.state = "On" else device.state = "Off" end
 			device.mode = tostring(device.rawData[3] or "n/a")
@@ -43,6 +43,14 @@ return {
 					"&used=true"
 				return domoticz.openURL(url)
 			end
+		elseif device.deviceSubType == "Relay" then 
+            if device._state == "On" then 
+                device.state = "On" 
+                device.active = true 
+            else 
+                device.state = "Off" 
+                device.active = false 
+            end
 		else
 			device.state = device.rawData[2]
 			device.setPoint = tonumber(device.rawData[1] or 0)
@@ -56,6 +64,7 @@ return {
 					tostring(mode) .. '#' ..
 					tostring(untilDate) , 'setpoint')
 			end
+
 			function device.setMode(mode, dParm, action, ooc)
 
 				local function checkTimeAndReturnISO(tm)

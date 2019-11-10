@@ -1,4 +1,4 @@
-<!-- GE(Jasco) 26933 Z-Wave Plus Smart Motion Dimmer --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- GE(Jasco) 26933 Z-Wave Plus Smart Motion Dimmer --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3034:494D</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/26933-motion-dimmer.png</MetaDataItem>
@@ -31,6 +31,7 @@ network.</MetaDataItem>
     <MetaDataItem name="Name">In-Wall Smart Motion Dimmer</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2108/xml</Entry>
+      <Entry author="Peter Gebruers - peter.gebruers@gmail.com on behalf of tech165" date="12 Oct 2019" revision="4">Fix paraleter size as per https://github.com/OpenZWave/open-zwave/pull/1968</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters - per http://products.z-wavealliance.org/products/2108 -->
@@ -66,19 +67,19 @@ network.</MetaDataItem>
     <Value genre="config" index="7" label="Z-Wave Command Dim Step" max="99" min="1" type="byte" units="" value="1">
       <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
     </Value>
-    <Value genre="config" index="8" label="Z-Wave Command Dim Rate" max="255" min="1" type="byte" units="x 10 milliseconds" value="3">
+    <Value genre="config" index="8" label="Z-Wave Command Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
       <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
     </Value>
     <Value genre="config" index="9" label="Local Control Dim Step" max="99" min="1" type="byte" units="" value="1">
       <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
     </Value>
-    <Value genre="config" index="10" label="Local Control Dim Rate" max="255" min="1" type="byte" units="x 10 milliseconds" value="3">
+    <Value genre="config" index="10" label="Local Control Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
       <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
     </Value>
     <Value genre="config" index="11" label="ALL ON/ALL OFF Dim Step" max="99" min="1" type="byte" units="" value="1">
       <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
     </Value>
-    <Value genre="config" index="12" label="ALL ON/ALL OFF Dim Rate" max="255" min="1" type="byte" units="x 10 milliseconds" value="3">
+    <Value genre="config" index="12" label="ALL ON/ALL OFF Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
       <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
     </Value>
     <Value genre="config" index="13" label="Motion sensing sensitivity" max="3" min="1" size="1" type="list" value="3">
@@ -90,7 +91,7 @@ network.</MetaDataItem>
       <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="1"/>
     </Value>
-    <Value genre="config" index="15" label="Reset cycle" max="110" min="0" size="4" type="int" units="" value="2">
+    <Value genre="config" index="15" label="Reset cycle" max="110" min="0" type="short" units="" value="2">
       <Help>0 = disable
                   1 = 10 seconds
                   2 = 20 seconds

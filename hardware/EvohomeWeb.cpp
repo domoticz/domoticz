@@ -1455,7 +1455,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 			if (((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_tryday))
 				found = true;
 		}
-		if (!found)
+		if ((!found) || (j_day == nullptr))
 			continue;
 
 		found = false;
@@ -1494,7 +1494,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 				if (((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_tryday))
 					found = true;
 			}
-			if (!found)
+			if ((!found) || (j_day == nullptr))
 				continue;
 
 			found = false;
@@ -1962,7 +1962,7 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 		if (sz_retcode.empty()) // networking error
 			return "{\"error\":\"unable to connect to Evohome portal\"}";
 
-		std::string sz_response = "{\"error\":\"HTTP ";
+		sz_response = "{\"error\":\"HTTP ";
 		sz_response.append(sz_retcode);
 		sz_response.append("\",\"code\":\"");
 		sz_response.append(sz_retcode);

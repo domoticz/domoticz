@@ -450,8 +450,8 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				bool bHaveTemp = vTemp.isObject();
 				bool bHaveHumidity = vHum.isObject();
 				bool bHaveBaro = vBaro.isObject();
-				int nforecast = wsbaroforcast_some_clouds;
-				float temp, hum, baro;
+				int nforecast = wsbaroforecast_some_clouds;
+				float temp = 0, hum = 0, baro = 0;
 				if (bHaveTemp)
 				{
 					temp = vTemp["value"].asFloat();

@@ -538,7 +538,7 @@ bool COpenWebNetTCP::ownAuthentication(csocket *connectionSocket)
 		//_log.Log(LOG_STATUS, "COpenWebNetTCP: authentication OK, no password!");
 		return true;
 	}
-	_log.Log(LOG_ERROR, "COpenWebNetTCP: ERROR_FRAME? %d", responseNonce.frame_type);
+	_log.Log(LOG_ERROR, "COpenWebNetTCP: ERROR_FRAME? %d", responseNonce.m_frameType);
 	return false;
 }
 
@@ -815,12 +815,35 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeLighting2, sTypeAC, switch_type, 0, "", devname);
 	}
 
+	int cmd = -1;
+	switch (Command)
+	{
+	case AUTOMATION_WHAT_STOP:			// 0
+	case AUTOMATION_WHAT_STOP_ADVANCED: // 10
+		cmd = gswitch_sStop;
+		break;
+	case AUTOMATION_WHAT_UP:			// 1
+	case AUTOMATION_WHAT_DOWN_ADVANCED: // 12 INVERTED
+		cmd = light2_sOff;
+		break;
+	case AUTOMATION_WHAT_DOWN:			// 2
+	case AUTOMATION_WHAT_UP_ADVANCED:	// 11 INVERTED
+		cmd = light2_sOn;
+		break;
+	default:
+		_log.Log(LOG_ERROR, "COpenWebNetTCP: Command %d invalid!", Command);
+		return;
+	}
+	
+	_log.Log(LOG_ERROR, "COpenWebNetTCP: Command %d, cmd:%d", Command, cmd);
+
 	// if (iLevel < 0)  is a Normal Frame and device is standard
 	// if (iLevel >= 0) is a Meseaure Frame (percentual) and device is Advanced
 	/*TODO: verify level value for Advanced */
 	double level = (iLevel < 0) ? 0. : iLevel;
 	if (level == 100.) level -= 6.25;
-	SendSwitch(NodeID, iInterface, BatteryLevel, (bool)Command, level, devname);
+
+	SendSwitch(NodeID, iInterface, BatteryLevel, (iLevel == 0) ? 0 : 1, level, devname);
 }
 
 
@@ -832,6 +855,17 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
 	//NOTE: interface id (bus identifier) go in 'Unit' field
 	//make device ID
 	int NodeID = (int)((((int)who << 16) & 0xFFFF0000) | (((int)(where + (iAppValue * 2) + (what * 3))) & 0x0000FFFF));
+	char szIdx[10];
+	sprintf(szIdx, "%07X", NodeID);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
+
+	if (result.empty())
+	{
+		// First insert, set SwitchType = STYPE_Contact, so we have a correct contact device
+		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeLighting2, sTypeAC, STYPE_Contact, 0, "Unavailable", devname);
+	}
+
 	SendSwitch(NodeID, iInterface, BatteryLevel, (bool)Command, 0, devname);
 }
 
@@ -906,7 +940,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	case WHO_LIGHTING:									// 1
 		if (!iter->IsNormalFrame())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
 			return;
 		}
 
@@ -986,22 +1020,6 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			if (iAppValue == 1000) // What = 1000 (Command translation)
 				iAppValue = atoi(whatParam[0].c_str());
 
-			switch (iAppValue)
-			{
-			case AUTOMATION_WHAT_STOP:  // 0
-				iAppValue = gswitch_sStop;
-				break;
-			case AUTOMATION_WHAT_UP:    // 1
-				iAppValue = gswitch_sOff;
-				break;
-			case AUTOMATION_WHAT_DOWN:  // 2
-				iAppValue = gswitch_sOn;
-				break;
-			default:
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s, What=%s invalid!", who.c_str(), what.c_str());
-				return;
-			}
-
 			iWhere = atoi(where.c_str());
 
 			devname = OPENWEBNET_AUTOMATION;
@@ -1067,7 +1085,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	case WHO_BURGLAR_ALARM:                         // 5
 		if (!iter->IsNormalFrame())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
 			return;
 		}
 		
@@ -1206,7 +1224,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	case WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION:              // 25
 		if (!iter->IsNormalFrame())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
 			return;
 		}
 
@@ -1283,6 +1301,12 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 		case ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER:
 			UpdateEnergy(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 1000.), atoi(sInterface.c_str()), 255, devname.c_str());
+			break;
+		case ENERGY_MANAGEMENT_DIMENSION_END_AUTOMATIC_UPDATE:			
+			if (atoi(value.c_str()))
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Start sending instantaneous consumption %s for %s minutes", where.c_str(), value.c_str());
+			else
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Stop sending instantaneous consumption %s", where.c_str());
 			break;
 		default:
 			_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
@@ -1385,11 +1409,14 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 				{
 					what = AUTOMATION_WHAT_DOWN;
 				}
-
 				else if (pCmd->LIGHTING2.cmnd == light2_sSetLevel)
 				{
 					// setting level of Blinds
-					Level = int(pCmd->LIGHTING2.level); // uint8_t, always >= 0
+					Level = int((pCmd->LIGHTING2.level * 100 / 15));
+				}
+				else if (pCmd->LIGHTING2.cmnd == gswitch_sStop)
+				{
+					what = AUTOMATION_WHAT_STOP;
 				}
 			}
 
@@ -1611,10 +1638,11 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		return false;
 	}
 	// Command session correctly open
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	//_log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	// Command session correctly open -> write command
-	ownWrite(commandSocket, command.frame_open.c_str(), command.frame_open.length());
+	_log.Log(LOG_STATUS, "COpenWebNetTCP: Command %s", command.m_frameOpen.c_str());
+	ownWrite(commandSocket, command.m_frameOpen.c_str(), command.m_frameOpen.length());
 
 	if (waitForResponse > 0) {
 		sleep_seconds(waitForResponse);
@@ -1622,7 +1650,7 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		char responseBuffer[OPENWEBNET_BUFFER_SIZE];
 		int read = ownRead(commandSocket, responseBuffer, OPENWEBNET_BUFFER_SIZE);
 		if (!silent) {
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: sent=%s received=%s", command.frame_open.c_str(), responseBuffer);
+			_log.Log(LOG_STATUS, "COpenWebNetTCP: sent=%s received=%s", command.m_frameOpen.c_str(), responseBuffer);
 		}
 
 		std::lock_guard<std::mutex> l(readQueueMutex);
@@ -1859,10 +1887,25 @@ void COpenWebNetTCP::Do_Work()
 {
 	while (!IsStopRequested(OPENWEBNET_HEARTBEAT_DELAY*1000))
 	{
-		if (isStatusSocketConnected() && mask_request_status)
+		if (isStatusSocketConnected())
 		{
-			scan_device();
-			mask_request_status = 0x0; // scan devices complete
+			if ((mytime(NULL) - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
+			{
+				requestAutomaticUpdatePower(255); // automatic update for 255 minutes
+				LastScanTimeEnergy = mytime(NULL);
+			}
+
+			if ((mytime(NULL) - LastScanTimeEnergyTot) > SCAN_TIME_REQ_ENERGY_TOTALIZER)
+			{
+				requestEnergyTotalizer();
+				LastScanTimeEnergyTot = mytime(NULL);
+			}
+
+			if (mask_request_status)
+			{
+				scan_device();
+				mask_request_status = 0x0; // scan devices complete
+			}
 		}
 
 		// every 5 minuts force scan ALL devices for refresh status
@@ -1871,18 +1914,6 @@ void COpenWebNetTCP::Do_Work()
 			if ((mask_request_status & 0x1) == 0)
 				_log.Log(LOG_STATUS, "COpenWebNetTCP: HEARTBEAT set scan devices ...");
 			mask_request_status = 0x1; // force scan devices
-		}
-
-		if ((mytime(NULL) - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
-		{
-			requestAutomaticUpdatePower(255); // automatic update for 255 minutes
-			LastScanTimeEnergy = mytime(NULL);
-		}
-
-		if ((mytime(NULL) - LastScanTimeEnergyTot) > SCAN_TIME_REQ_ENERGY_TOTALIZER)
-		{
-			requestEnergyTotalizer();
-			LastScanTimeEnergyTot = mytime(NULL);
 		}
 
 		m_LastHeartbeat = mytime(NULL);

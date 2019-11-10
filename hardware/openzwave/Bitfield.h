@@ -75,8 +75,7 @@ namespace OpenZWave
 				Iterator End() const;
 
 			private:
-				OPENZWAVE_EXPORT_WARNINGS_OFF
-				vector<uint32> m_bits;OPENZWAVE_EXPORT_WARNINGS_ON
+				vector<uint32> m_bits;
 				uint32 m_numSetBits;
 				uint32 m_value;
 		};

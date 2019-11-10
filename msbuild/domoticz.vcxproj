@@ -64,6 +64,7 @@
       <EnablePREfast>false</EnablePREfast>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -119,7 +120,10 @@
     <None Include="..\www\app\CustomIconsController.js" />
     <None Include="..\www\app\DashboardController.js" />
     <None Include="..\www\app\DeviceLightEdit.js" />
-    <None Include="..\www\app\DevicesController.js" />
+    <None Include="..\www\app\devices\deviceFactory.js" />
+    <None Include="..\www\app\devices\Devices.css" />
+    <None Include="..\www\app\devices\Devices.html" />
+    <None Include="..\www\app\devices\Devices.js" />
     <None Include="..\www\app\DPFibaroController.js" />
     <None Include="..\www\app\DPGooglePubSubController.js" />
     <None Include="..\www\app\DPHttpController.js" />

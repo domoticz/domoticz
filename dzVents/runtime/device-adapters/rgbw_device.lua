@@ -27,7 +27,7 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		if (device.deviceSubType == 'RGBWW') then
+		if (device.deviceSubType == 'RGBWW') or (device.deviceSubType == 'WW')  then
 			function device.setKelvin(kelvin)
 				local url
 				url = domoticz.settings['Domoticz url'] ..
@@ -94,14 +94,14 @@ return {
 		end
 
 		function device.setRGB(r, g, b)
-		  if not(validRGB(r, g, b)) then RGBError() return false end
-		  local h, s, b, isWhite = domoticz.utils.rgbToHSB(r, g, b)
-			url = domoticz.settings['Domoticz url'] ..
-				'/json.htm?param=setcolbrightnessvalue&type=command' ..
-				'&idx=' .. device.id   ..
-				'&hue=' .. tostring(h) ..
-				'&brightness=' .. tostring(b) ..
-				'&iswhite=' .. tostring(isWhite)
+			if not(validRGB(r, g, b)) then RGBError() return false end
+			local h, s, b, isWhite = domoticz.utils.rgbToHSB(r, g, b)
+			local url = domoticz.settings['Domoticz url'] ..
+						'/json.htm?param=setcolbrightnessvalue&type=command'  ..
+						'&idx=' .. device.id ..
+						'&hue=' .. math.floor(tonumber(h) + 0.5) .. 
+						'&brightness=' .. math.floor(tonumber(b) + 0.5) ..
+						'&iswhite=' .. tostring(isWhite)
 			return domoticz.openURL(url)
 		end
 

@@ -429,15 +429,15 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	bool bHaveWind = false;
 	bool bHaveSetpoint = false;
 
-	float temp, sp_temp;
-	int hum;
-	float baro;
-	int co2;
-	float rain;
-	int sound;
+	float temp = 0, sp_temp = 0;
+	int hum = 0;
+	float baro = 0;
+	int co2 = 0;
+	float rain  = 0;
+	int sound = 0;
 
 	int wind_angle = 0;
-	int wind_gust_angle = 0;
+	//int wind_gust_angle = 0;
 	float wind_strength = 0;
 	float wind_gust = 0;
 
@@ -540,7 +540,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 		{
 			bHaveWind = true;
 			wind_angle = root["WindAngle"].asInt();
-			wind_gust_angle = root["GustAngle"].asInt();
+			//wind_gust_angle = root["GustAngle"].asInt();
 			wind_strength = root["WindStrength"].asFloat() / 3.6f;
 			wind_gust = root["GustStrength"].asFloat() / 3.6f;
 		}
@@ -549,7 +549,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	if (bHaveTemp && bHaveHum && bHaveBaro)
 	{
 		int nforecast = m_forecast_calculators[ID].CalculateBaroForecast(temp, baro);
-		SendTempHumBaroSensorFloat(ID, batValue, temp, hum, baro, nforecast, name, rssiLevel);
+		SendTempHumBaroSensorFloat(ID, batValue, temp, hum, baro, (uint8_t)nforecast, name, rssiLevel);
 	}
 	else if (bHaveTemp && bHaveHum)
 	{
@@ -563,7 +563,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	if (bHaveSetpoint)
 	{
 		std::string sName = "SetPoint " + name;
-		SendSetPointSensor(DevIdx, 0, ID & 0xFF, sp_temp, sName);
+		SendSetPointSensor((const uint8_t)DevIdx, 0, ID & 0xFF, sp_temp, sName);
 	}
 
 	if (bHaveRain)
@@ -612,7 +612,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	return true;
 }
 
-bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char length)
+bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	if ((m_thermostatDeviceID.empty()) || (m_thermostatModuleID.empty()))
 	{
@@ -848,7 +848,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	m_bForceSetpointUpdate = true;
 }
 
-bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetatmoType NetatmoType, const bool bIsThermostat)
+bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetatmoType /*NetatmoType*/, const bool bIsThermostat)
 {
 	Json::Value root;
 	Json::Reader jReader;
@@ -961,7 +961,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 											std::string setpoint_mode = module["setpoint"]["setpoint_mode"].asString();
 											bool bIsAway = (setpoint_mode == "away");
 											std::string aName = "Away " + mname;
-											SendSwitch(3, 1 + iDevIndex, 255, bIsAway, 0, aName);
+											SendSwitch(3, (uint8_t)(1 + iDevIndex), 255, bIsAway, 0, aName);
 										}
 										//Check if setpoint was just set, and if yes, overrule the previous setpoint
 										if (!module["setpoint"]["setpoint_temp"].empty())
@@ -1027,7 +1027,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 		//Find the corresponding _tNetatmoDevice
 		_tNetatmoDevice nDevice;
 		bool bHaveFoundND = false;
-		int iDevIndex = 0;
+		iDevIndex = 0;
 		std::vector<_tNetatmoDevice>::const_iterator ittND;
 		for (ittND = _netatmo_devices.begin(); ittND != _netatmo_devices.end(); ++ittND)
 		{
@@ -1130,14 +1130,15 @@ void CNetatmo::GetMeterDetails()
 
 	std::string sResult;
 
+	bool bRet;
 #ifdef DEBUG_NetatmoWeatherStationR
 	//sResult = ReadFile("E:\\netatmo_mdetails.json");
 	sResult = ReadFile("E:\\netatmo_getstationdata.json");
-	bool ret = true;
+	bRet = true;
 #else
 	std::vector<std::string> ExtraHeaders;
-	bool ret = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
-	if (!ret)
+	bRet = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 		return;
@@ -1150,7 +1151,7 @@ void CNetatmo::GetMeterDetails()
 	//Check for error
 	Json::Value root;
 	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bRet = jReader.parse(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
@@ -1170,21 +1171,21 @@ void CNetatmo::GetMeterDetails()
 		if (m_bFirstTimeWeatherData)
 		{
 			m_bFirstTimeWeatherData = false;
+			bool bRet;
 #ifdef DEBUG_NetatmoWeatherStationR
 			//sResult = ReadFile("E:\\netatmo_mdetails.json");
 			sResult = ReadFile("E:\\gethomecoachsdata.json");
-			bool ret = true;
 #else
 			//Check if the user has an Home Coach device
 			httpUrl = MakeRequestURL(NETYPE_HOMECOACH);
-			bool ret = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
+			bRet = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
 #endif
-			if (!ret)
+			if (!bRet)
 			{
 				_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 				return;
 			}
-			bool bRet = jReader.parse(sResult, root);
+			bRet = jReader.parse(sResult, root);
 			if ((!bRet) || (!root.isObject()))
 			{
 				_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
@@ -1200,12 +1201,12 @@ void CNetatmo::GetMeterDetails()
 #ifdef DEBUG_NetatmoWeatherStationW
 			SaveString2Disk(sResult, "E:\\gethomecoachsdata.json");
 #endif
-			ret = ParseNetatmoGetResponse(sResult, NETYPE_HOMECOACH, false);
-			if (ret)
+			bRet = ParseNetatmoGetResponse(sResult, NETYPE_HOMECOACH, false);
+			if (bRet)
 			{
 				m_NetatmoType = NETYPE_HOMECOACH;
 			}
-			else if (!ret)
+			else
 			{
 				//Check if the user has an Enery device (thermostat)
 #ifdef DEBUG_NetatmoWeatherStationR
@@ -1214,14 +1215,14 @@ void CNetatmo::GetMeterDetails()
 				bool ret = true;
 #else
 				httpUrl = MakeRequestURL(NETYPE_ENERGY);
-				bool ret = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
+				bRet = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
 #endif
-				if (!ret)
+				if (!bRet)
 				{
 					_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 					return;
 				}
-				bool bRet = jReader.parse(sResult, root);
+				bRet = jReader.parse(sResult, root);
 				if ((!bRet) || (!root.isObject()))
 				{
 					_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
@@ -1237,8 +1238,8 @@ void CNetatmo::GetMeterDetails()
 #ifdef DEBUG_NetatmoWeatherStationW
 				SaveString2Disk(sResult, "E:\\homesdata.json");
 #endif
-				ret = ParseHomeData(sResult);
-				if (ret)
+				bRet = ParseHomeData(sResult);
+				if (bRet)
 				{
 					m_NetatmoType = NETYPE_ENERGY;
 					m_bPollThermostat = true;
@@ -1387,7 +1388,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
 		return false;
 	}
-	bool bHaveDevices = true;
+	//bool bHaveDevices = true;
 	if (root["body"].empty())
 		return false;
 
@@ -1489,7 +1490,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				}
 				if (!room["therm_setpoint_temperature"].empty())
 				{
-					SendSetPointSensor((roomID & 0XFF0000) >> 16, (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName);
+					SendSetPointSensor((uint8_t)((roomID & 0XFF0000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName);
 				}
 				if (!room["therm_setpoint_mode"].empty())
 				{

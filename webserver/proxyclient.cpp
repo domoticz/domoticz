@@ -8,6 +8,15 @@
 #include "../tcpserver/TCPServer.h"
 #include "sha1.hpp"
 
+// RK: some defines to make mydomoticz also work when openssl not compiled in
+#ifdef WWW_ENABLE_SSL
+#define PROXY_PORT 443
+#define PROXY_SECURE true
+#else
+#define PROXY_PORT 80
+#define PROXY_SECURE false
+#endif
+
 extern std::string szAppVersion;
 
 #define TIMEOUT 60
@@ -18,7 +27,7 @@ namespace http {
 
 		CProxySharedData sharedData;
 
-		CProxyClient::CProxyClient() : ASyncTCP(true)
+		CProxyClient::CProxyClient() : ASyncTCP(PROXY_SECURE)
 		{
 			m_pDomServ = NULL;
 		}
@@ -464,12 +473,12 @@ namespace http {
 		{
 			m_pWebEm = webEm;
 			SetReconnectDelay(15);
-			connect("proxy.mydomoticz.com", 443);
+			connect("proxy.mydomoticz.com", PROXY_PORT);
 		}
 
 		void CProxyClient::Disconnect()
 		{
-			disconnect();
+			terminate();
 		}
 
 		bool CProxyClient::Enabled()

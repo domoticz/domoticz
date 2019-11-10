@@ -1177,7 +1177,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 20;
 							on = true;
 						}
-						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") || (status == "free_fall")) {
+						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") ) {
 							level = 30;
 							on = true;
 						}

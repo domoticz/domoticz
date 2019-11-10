@@ -224,7 +224,6 @@ namespace OpenZWave
 			private:
 
 				void MultiEncap();						// Encapsulate the data inside a MultiInstance/Multicommand message
-
 				string m_logText;
 				bool m_bFinal;
 				bool m_bCallbackRequired;

@@ -125,12 +125,10 @@ const CEventSystem::_tJsonMap CEventSystem::JsonMap[] =
 	{ NULL,					NULL,						JTYPE_STRING	}
 };
 
-
 CEventSystem::CEventSystem(void)
 {
 	m_bEnabled = false;
 }
-
 
 CEventSystem::~CEventSystem(void)
 {
@@ -653,7 +651,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 			splitresults.clear();
 
 		float temp = 0;
-		float chill = 0;
 		int humidity = 0;
 		float barometer = 0;
 		float rainmm = 0;
@@ -671,7 +668,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 		bool isDew = false;
 		bool isHum = false;
 		bool isBaro = false;
-		bool isBaroFloat = false;
 		bool isUtility = false;
 		bool isWeather = false;
 		bool isRain = false;
@@ -738,15 +734,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			}
 			temp = static_cast<float>(atof(splitresults[0].c_str()));
 			humidity = atoi(splitresults[1].c_str());
-			if (sitem.subType == sTypeTHBFloat)
-			{
-				barometer = static_cast<float>(atof(splitresults[3].c_str()));
-				isBaroFloat = true;
-			}
-			else
-			{
-				barometer = static_cast<float>(atof(splitresults[3].c_str()));
-			}
+			barometer = static_cast<float>(atof(splitresults[3].c_str()));
 			dewpoint = (float)CalculateDewPoint(temp, humidity);
 			isTemp = true;
 			isHum = true;
@@ -817,7 +805,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				if ((sitem.subType == sTypeWIND4) || (sitem.subType == sTypeWINDNoTemp))
 				{
 					temp = static_cast<float>(atof(splitresults[4].c_str()));
-					chill = static_cast<float>(atof(splitresults[5].c_str()));
+					//chill = static_cast<float>(atof(splitresults[5].c_str()));
 					isTemp = true;
 				}
 			}
@@ -1342,7 +1330,6 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 	return bEventTrigger;
 }
 
-
 void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
@@ -1479,7 +1466,6 @@ void CEventSystem::EventQueueThread()
 
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread stopped...");
 }
-
 
 void CEventSystem::ProcessDevice(
 	const int HardwareID, 
@@ -1744,7 +1730,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator) {
 		_tDeviceStatus sitem = iterator->second;
-		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
+		lua_pushinteger(lua_state, (lua_Integer)sitem.ID);
 		lua_pushstring(lua_state, sitem.nValueWording.c_str());
 		lua_rawset(lua_state, -3);
 	}
@@ -1759,19 +1745,19 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		_tUserVariable uvitem = ittvar->second;
 		if (uvitem.variableType == 0) {
 			//Integer
-			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
-			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
+			lua_pushinteger(lua_state, (lua_Integer)uvitem.ID);
+			lua_pushinteger(lua_state, atoi(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else if (uvitem.variableType == 1) {
 			//Float
-			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
+			lua_pushinteger(lua_state, (lua_Integer)uvitem.ID);
 			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else {
 			//String,Date,Time
-			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
+			lua_pushinteger(lua_state, (lua_Integer)uvitem.ID);
 			lua_pushstring(lua_state, uvitem.variableValue.c_str());
 			lua_rawset(lua_state, -3);
 		}
@@ -2744,7 +2730,7 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQu
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
-		lua_pushnumber(lua_state, (lua_Number)iterator->second.ID);
+		lua_pushinteger(lua_state, (lua_Integer)iterator->second.ID);
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_idx");
@@ -2779,9 +2765,9 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		unsigned char thisDeviceHum = 0;
 		float thisDeviceBaro = 0;
 		float thisDeviceUtility = 0;
-		float thisDeviceWindDir = 0;
-		float thisDeviceWindSpeed = 0;
-		float thisDeviceWindGust = 0;
+		//float thisDeviceWindDir = 0;
+		//float thisDeviceWindSpeed = 0;
+		//float thisDeviceWindGust = 0;
 		float thisDeviceWeather = 0;
 		int thisZwaveAlarm = 0;
 
@@ -2914,9 +2900,9 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				if (p->first == item.devname) {
-					thisDeviceWindDir = p->second;
-				}
+				//if (p->first == item.devname) {
+					//thisDeviceWindDir = p->second;
+				//}
 			}
 			lua_setglobal(lua_state, "otherdevices_winddir");
 		}
@@ -2929,9 +2915,9 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				if (p->first == item.devname) {
-					thisDeviceWindSpeed = p->second;
-				}
+				//if (p->first == item.devname) {
+					//thisDeviceWindSpeed = p->second;
+				//}
 			}
 			lua_setglobal(lua_state, "otherdevices_windspeed");
 		}
@@ -2944,9 +2930,9 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				if (p->first == item.devname) {
-					thisDeviceWindGust = p->second;
-				}
+				//if (p->first == item.devname) {
+					//thisDeviceWindGust = p->second;
+				//}
 			}
 			lua_setglobal(lua_state, "otherdevices_windgust");
 		}
@@ -3064,7 +3050,6 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			lua_setglobal(lua_state, "devicechanged");
 
-
 			// BEGIN OTO: populate changed info
 			lua_createtable(lua_state, 3, 0);
 			lua_pushstring(lua_state, "idx");
@@ -3076,13 +3061,13 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			lua_rawset(lua_state, -3);
 
 			lua_pushstring(lua_state, "nvalue");
-			lua_pushnumber(lua_state, item.nValue);
+			lua_pushinteger(lua_state, item.nValue);
 			lua_rawset(lua_state, -3);
 
 			/* USELESS, WE HAVE THE DEVICE INDEX
 			// replace devicechanged =>
 			lua_pushstring(lua_state, "name");
-			lua_pushnumber(lua_state, nValue);
+			lua_pushinteger(lua_state, nValue);
 			lua_rawset(lua_state, -3);
 			*/
 			lua_setglobal(lua_state, "devicechanged_ext");
@@ -3101,7 +3086,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		if (uvitem.variableType == 0) {
 			//Integer
 			lua_pushstring(lua_state, uvitem.variableName.c_str());
-			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
+			lua_pushinteger(lua_state, atoi(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else if (uvitem.variableType == 1) {
@@ -3161,7 +3146,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	{
 		_tScenesGroups sgitem = it_scgr->second;
 		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
-		lua_pushnumber(lua_state, (lua_Number)sgitem.ID);
+		lua_pushinteger(lua_state, (lua_Integer)sgitem.ID);
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_scenesgroups_idx");
@@ -3246,12 +3231,12 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 
 	bool civilDaytTime = false;
 	bool civilNightTime = false;
-    if ((minutesSinceMidnight >= sunTimers[3]) && (minutesSinceMidnight < sunTimers[4])) {
-        civilDaytTime = true;
-    }
-    else {
-        civilNightTime = true;
-    }
+	if ((minutesSinceMidnight >= sunTimers[3]) && (minutesSinceMidnight < sunTimers[4])) {
+		civilDaytTime = true;
+	}
+	else {
+		civilNightTime = true;
+	}
 
 	lua_createtable(lua_state, 4, 0);
 	lua_pushstring(lua_state, "Daytime");
@@ -3267,34 +3252,34 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_pushboolean(lua_state, civilNightTime);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunriseInMinutes");
-	lua_pushnumber(lua_state, sunTimers[0]);
+	lua_pushinteger(lua_state, sunTimers[0]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunsetInMinutes");
-	lua_pushnumber(lua_state, sunTimers[1]);
+	lua_pushinteger(lua_state, sunTimers[1]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunAtSouthInMinutes");
-	lua_pushnumber(lua_state, sunTimers[2]);
+	lua_pushinteger(lua_state, sunTimers[2]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "CivTwilightStartInMinutes");
-	lua_pushnumber(lua_state, sunTimers[3]);
+	lua_pushinteger(lua_state, sunTimers[3]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "CivTwilightEndInMinutes");
-	lua_pushnumber(lua_state, sunTimers[4]);
+	lua_pushinteger(lua_state, sunTimers[4]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "NautTwilightStartInMinutes");
-	lua_pushnumber(lua_state, sunTimers[5]);
+	lua_pushinteger(lua_state, sunTimers[5]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "NautTwilightEndInMinutes");
-	lua_pushnumber(lua_state, sunTimers[6]);
+	lua_pushinteger(lua_state, sunTimers[6]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "AstrTwilightStartInMinutes");
-	lua_pushnumber(lua_state, sunTimers[7]);
+	lua_pushinteger(lua_state, sunTimers[7]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "AstrTwilightEndInMinutes");
-	lua_pushnumber(lua_state, sunTimers[8]);
+	lua_pushinteger(lua_state, sunTimers[8]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "DayLengthInMinutes");
-	lua_pushnumber(lua_state, sunTimers[9]);
+	lua_pushinteger(lua_state, sunTimers[9]);
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "timeofday");
 
@@ -3341,7 +3326,6 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 		status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
 	}
-
 
 	report_errors(lua_state, status);
 
@@ -3398,7 +3382,6 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 	lua_close(lua_state);
 
 }
-
 
 void CEventSystem::luaStop(lua_State *L, lua_Debug *ar)
 {
@@ -3765,7 +3748,6 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 	return false;
 }
 
-
 bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool isScene, const std::string &eventName, int sceneType)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
@@ -3826,7 +3808,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
-			CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			//CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			if (sParams.length() > 0)
 			{
 				level = atoi(sParams.c_str());
@@ -3871,7 +3853,6 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		}
 		iDeviceDelay = bIsOn ? iOnDelay : 0;
 	}
-
 
 	float fPreviousRandomTime = 0;
 	for (int iIndex = 0; iIndex < abs(oParseResults.iRepeat); iIndex++) {
@@ -3947,7 +3928,6 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	}
 	return true;
 }
-
 
 
 std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options)
@@ -4088,7 +4068,6 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	return lstatus;
 }
 
-
 int CEventSystem::l_domoticz_print(lua_State* lua_state)
 {
 	int nargs = lua_gettop(lua_state);
@@ -4126,7 +4105,6 @@ void CEventSystem::reportMissingDevice(const int deviceID, const _tEventItem &it
 	else
 	{
 		_log.Log(LOG_ERROR, "EventSystem: Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID, item.Name.c_str());
-
 
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '%" PRIu64 "')",
@@ -4199,7 +4177,6 @@ bool CEventSystem::isEventscheduled(const std::string &eventName)
 	}
 	return foundIt;
 }
-
 
 int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 {
@@ -4295,7 +4272,6 @@ namespace http {
 				return;
 
 			std::string eventid = CURLEncode::URLDecode(request::findValue(&req, "eventid"));
-
 
 			std::string eventlogic = CURLEncode::URLDecode(request::findValue(&req, "logicarray"));
 			if ((interpreter == "Blockly") && (eventlogic == ""))
@@ -4550,7 +4526,6 @@ namespace http {
 					return;
 
 				std::string eventid = request::findValue(&req, "eventid");
-
 
 				std::string eventlogic = request::findValue(&req, "logicarray");
 				if ((interpreter == "Blockly") && (eventlogic == ""))

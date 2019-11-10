@@ -60,6 +60,7 @@ ENDIF(USE_OPENSSL_STATIC)
 
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
+  message(STATUS "Use builtin lua library" )
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     add_definitions(-DLUA_USE_MACOSX)
   ENDIF()
@@ -68,7 +69,7 @@ IF(USE_BUILTIN_LUA)
     DEFINITION LUA_LIBRARIES)
 ELSE(USE_BUILTIN_LUA)
   find_package(PkgConfig)
-  pkg_search_module(LUA lua5.2>=5.2 lua>=5.2 lua-5.2)
+  pkg_search_module(LUA lua5.3>=5.3 lua>=5.3 lua-5.3)
   IF(LUA_FOUND)
     # Lua 5.2 pkg-config is broken.
     # Depending on whether the used distro fixed that to
@@ -276,14 +277,18 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
     ENDFOREACH(item)
 
     SEPARATE_ARGUMENTS(_compiler_FLAGS)
-    MESSAGE("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}")
+    MESSAGE("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -c -o ${_output} ${_source}")
     ADD_CUSTOM_COMMAND(
       OUTPUT ${_output}
-      COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}
+      COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -c -o ${_output} ${_source}
       DEPENDS ${_source} )
     ADD_CUSTOM_TARGET(${_targetName}_gch DEPENDS ${_output})
     ADD_DEPENDENCIES(${_targetName} ${_targetName}_gch)
     SET_TARGET_PROPERTIES(${_targetName} PROPERTIES COMPILE_FLAGS "-include ${_name} -Winvalid-pch")
+    IF(USE_BUILTIN_LUA)
+        # Add -rdynamic linker flag for exporting functions which is mandatory to use external lua modules
+        SET_TARGET_PROPERTIES(${_targetName} PROPERTIES ENABLE_EXPORTS ON)
+    ENDIF(USE_BUILTIN_LUA)
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO()
 
@@ -739,7 +744,10 @@ else()
   target_link_libraries(domoticz -lrt -lresolv ${EXECINFO_LIBRARIES})
 ENDIF()
 
-ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
+option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
+if(USE_PRECOMPILED_HEADER)
+  ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
+ENDIF(USE_PRECOMPILED_HEADER)
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
   option(USE_STATIC_LIBSTDCXX "Build with static libgcc/libstdc++ libraries" YES)

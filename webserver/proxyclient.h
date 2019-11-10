@@ -49,7 +49,6 @@ namespace http {
 			void GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
 			void SendServDisconnect(const std::string &token, int reason);
 
-			void PduHandler(const CProxyPduBase *pdu);
 			/* Algorithm execution class */
 #define PDUSTRING(name)
 #define PDULONG(name)
@@ -71,11 +70,10 @@ namespace http {
 			} connection_status;
 			std::map<unsigned long long, CWebsocketHandler *> websocket_handlers;
 		protected:
-			virtual void OnConnect();
-			virtual void OnData(const unsigned char *pData, size_t length);
-			virtual void OnDisconnect();
-			virtual void OnError(const std::exception e) {}; // todo
-			virtual void OnError(const boost::system::error_code& error);
+			void OnConnect() override;
+			void OnData(const unsigned char *pData, size_t length) override;
+			void OnDisconnect() override;
+			void OnError(const boost::system::error_code& error) override;
 		};
 
 		class CProxyManager {

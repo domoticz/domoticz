@@ -18,11 +18,16 @@
 #define BUIENRADAR_GRAFIEK_URL "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/" //station_id
 //#define BUIENRARA_GRAFIEK_HISTORY_URL "https://graphdata.buienradar.nl/1.0/actualarchive/weatherstation/6370?startDate=2019-09-15"
 
-#define BUIENRADAR_RAIN "https://gadgets.buienradar.nl/data/raintext/?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
+#define BUIENRADAR_RAIN "https://gpsgadget.buienradar.nl/data/raintext/?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
+
+#define RAINSHOWER_LEADTIME 3
+#define RAINSHOWER_DURATION 4
+#define RAINSHOWER_AVERAGE_MMH 5
+#define RAINSHOWER_MAX_MMH 6
 
 #ifdef _DEBUG
- #define DEBUG_BUIENRADARR
- #define DEBUG_BUIENRADARW
+// #define DEBUG_BUIENRADARR
+// #define DEBUG_BUIENRADARW
 #endif
 
 #ifdef DEBUG_BUIENRADARW
@@ -95,8 +100,7 @@ void CBuienRadar::Init()
 	struct tm ltime;
 	time_t now = mytime(0);
 	localtime_r(&now, &ltime);
-	m_actDay = ltime.tm_mday;
-	m_lastRainCount = 0;
+	m_itIsRaining = false;
 }
 
 bool CBuienRadar::StartHardware()
@@ -138,24 +142,8 @@ void CBuienRadar::Do_Work()
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
-		if (sec_counter % 10 == 0) {
-			time_t now = mytime(0);
-
-			m_LastHeartbeat = now;
-
-			struct tm ltime;
-			localtime_r(&now, &ltime);
-			if (ltime.tm_mday != m_actDay)
-			{
-				if (ltime.tm_min >= m_sql.m_ShortLogInterval - 1)
-				{
-					//reset our rain counter
-					m_actDay = ltime.tm_mday;
-					m_lastRainCount = 0;
-					SendRainSensorWU(1, 255, 0, 0, "Rain");
-				}
-			}
-		}
+		time_t now = mytime(0);
+		m_LastHeartbeat = now;
 
 		if (sec_counter % 600 == 0)
 		{
@@ -167,18 +155,25 @@ void CBuienRadar::Do_Work()
 			//Every 5 minutes
 			GetRainPrediction();
 		}
+		else {
+			// Decrease rainshower every minute (if it is not zer)
+			if ((m_rainShowerLeadTime > 0) && (sec_counter % 60 == 0)) {
+				m_rainShowerLeadTime--;
+				SendCustomSensor(RAINSHOWER_LEADTIME, 1, 255, static_cast<float>(m_rainShowerLeadTime), "Expected Rainshower Leadtime", "minutes");
+			}
+		}
 	}
 	_log.Log(LOG_STATUS, "BuienRadar: Worker stopped...");
 }
 
-bool CBuienRadar::WriteToHardware(const char* pdata, const unsigned char length)
+bool CBuienRadar::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
 
 std::string CBuienRadar::GetForecastURL()
 {
-	std::string szURL = "https://gadgets.buienradar.nl/gadget/forecastandstation/" + std::to_string(m_iNearestStationID);
+	std::string szURL = "https://gpsgadget.buienradar.nl/gadget/forecastandstation/" + std::to_string(m_iNearestStationID);
 	return szURL;
 }
 
@@ -249,7 +244,6 @@ bool CBuienRadar::FindNearestStationID()
 		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received, or no data returned!");
 		return false;
 	}
-
 
 	double shortest_distance_km = 200.0;//start with 200 km
 	std::string nearest_station_name("?");
@@ -338,19 +332,13 @@ void CBuienRadar::GetMeterDetails()
 		return;
 	}
 
-	//timestamp : "2019-08-22T08:30:00"
-	std::string szTimeStamp = root["timestamp"].asString();
-	int stampDay = std::stoi(szTimeStamp.substr(8, 2));
-	if (stampDay != m_actDay)
-		return;
-
 	//iconurl : "https://www.buienradar.nl/resources/images/icons/weather/30x30/a.png"
 	//graphUrl : "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/a"
 
 	float temp = -999.9f;
 	int humidity = 0;
 	float barometric = 0;
-	int barometric_forcast = wsbaroforcast_unknown;
+	uint8_t barometric_forecast = wsbaroforecast_unknown;
 
 	if (!root["temperature"].empty())
 	{
@@ -365,19 +353,19 @@ void CBuienRadar::GetMeterDetails()
 		barometric = root["airpressure"].asFloat();
 		if (barometric < 1000)
 		{
-			barometric_forcast = wsbaroforcast_rain;
+			barometric_forecast = wsbaroforecast_rain;
 			if (temp != -999.9f)
 			{
 				if (temp <= 0)
-					barometric_forcast = wsbaroforcast_snow;
+					barometric_forecast = wsbaroforecast_snow;
 			}
 		}
 		else if (barometric < 1020)
-			barometric_forcast = wsbaroforcast_cloudy;
+			barometric_forecast = wsbaroforecast_cloudy;
 		else if (barometric < 1030)
-			barometric_forcast = wsbaroforcast_some_clouds;
+			barometric_forecast = wsbaroforecast_some_clouds;
 		else
-			barometric_forcast = wsbaroforcast_sunny;
+			barometric_forecast = wsbaroforecast_sunny;
 	}
 	if (
 		(temp != -999.9f)
@@ -385,7 +373,7 @@ void CBuienRadar::GetMeterDetails()
 		&& (barometric != 0)
 		)
 	{
-		SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forcast, "TempHumBaro");
+		SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forecast, "TempHumBaro");
 	}
 	else if (
 		(temp != -999.9f)
@@ -444,25 +432,12 @@ void CBuienRadar::GetMeterDetails()
 		SendCustomSensor(2, 1, 255, sunpower, "Sun Power", "watt/m2");
 	}
 
-	float total_rain_today = -1;
-	float total_rain_last_hour = 0;
-
-	if (!root["rainFallLast24Hour"].empty())
+	if (!root["precipitationmm"].empty())
 	{
-		total_rain_today = root["rainFallLast24Hour"].asFloat();
-	}
-	if (!root["rainFallLastHour"].empty())
-	{
-		total_rain_last_hour = root["rainFallLastHour"].asFloat();
-	}
-	if (total_rain_today != -1)
-	{
-		//Make sure the 24 hour counter does not loop when our day is not finished yet (clocks could drift a few seconds/minutes)
-		if (total_rain_today >= m_lastRainCount)
-		{
-			m_lastRainCount = total_rain_today;
-			SendRainSensorWU(1, 255, total_rain_today, total_rain_last_hour, "Rain");
-		}
+		float precipitation = root["precipitationmm"].asFloat();
+		SendRainRateSensor(1, 255, precipitation, "Rain");
+		m_itIsRaining = precipitation > 0;
+		SendSwitch(1, 1, 255, m_itIsRaining, 0, "Is it Raining");
 	}
 }
 
@@ -474,10 +449,19 @@ void CBuienRadar::GetRainPrediction()
 #ifdef DEBUG_BUIENRADARR
 	sResult = ReadFile("E:\\br_rain.txt");
 #else
-	std::string szUrl = BUIENRADAR_RAIN + m_szMyLatitude + "&lon=" + m_szMyLongitude;
-	bool bret = HTTPClient::GET(szUrl, sResult);
-	if (!bret)
+	int totRetry = 0;
+	bool bret = false;
+	while ((!bret) && (totRetry < 2))
 	{
+		std::string szUrl = BUIENRADAR_RAIN + m_szMyLatitude + "&lon=" + m_szMyLongitude;
+		bret = HTTPClient::GET(szUrl, sResult);
+		if (!bret)
+		{
+			totRetry++;
+			sleep_seconds(2);
+		}
+	}
+	if (!bret) {
 		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
 		return;
 	}
@@ -504,9 +488,27 @@ void CBuienRadar::GetRainPrediction()
 	int total_rain_values_in_duration = 0;
 	double total_rain_next_hour = 0;
 	int total_rain_values_next_hour = 0;
+	int rain_time = 0;
 
 	//values are between 0 (no rain) till 255 (heavy rain)
 	//mm/h = 10^((value -109)/32), 77 = 0.1 mm.h
+
+	// vars for next rainshower calculation
+	int line = 0;
+	bool shower_detected = m_itIsRaining;
+	int start_of_rainshower;
+	int end_of_rainshower = 0;
+	if (shower_detected)
+	{
+		start_of_rainshower = startTime;
+	}
+	else {
+		start_of_rainshower = 0;
+	}
+	double total_rainmmh_in_next_rainshower = 0;
+	int total_rainvalues_in_next_rainshower = 0;
+	double max_rainmmh_in_next_rainshower = 0;
+	double avg_rainmmh_in_next_rainshower = 0;
 
 	while (!iStream.eof())
 	{
@@ -520,47 +522,143 @@ void CBuienRadar::GetRainPrediction()
 
 			int rain_value = std::stoi(strarray[0]);
 
-			StringSplit(strarray[1], ":", strarray);
-			if (strarray.size() != 2)
-				return;
-
-			int hour = std::stoi(strarray[0]);
-			int min = std::stoi(strarray[1]);
-
-			int rain_time = (hour * 60) + min;
-
-			if ((rain_time >= startTime) && (rain_time <= endTimeHour))
+			if (line == 0)
 			{
-				total_rain_next_hour += rain_value;
-				total_rain_values_next_hour++;
+				StringSplit(strarray[1], ":", strarray);
+				if (strarray.size() != 2)
+					return;
+
+				int hour = std::stoi(strarray[0]);
+				int min = std::stoi(strarray[1]);
+
+				rain_time = (hour * 60) + min;
+
+				// Check for 0.00 (in this case the difference between the timestamp is negative)
+				if ((rain_time - startTime) < 0)
+				{
+					rain_time += 24 * 60;
+				}
+
+				// check for invalid measurement, the next prediction should be within 5 minutes, for safety we check for a timestamp max 10 minutes in the futere
+				if ((rain_time - startTime) > 10)
+				{
+					// setting line to -1 to make sure line is ignored and we start again at the next line
+					line = -1;
+				}
+
+			}
+			else {
+				rain_time += 5;
 			}
 
-			if ((rain_time < startTime) || (rain_time > endTime))
-				continue;
+			if (line >= 0)
+			{
+				// calculate statistics
+				if (shower_detected)
+				{
+					if (end_of_rainshower == 0)
+					{
+						if (rain_value == 0)
+						{
+							// End Of RainShower detected
+							end_of_rainshower = rain_time;
+						}
+						else {
+							// add stats
+							double rain_rate = pow(10, ((double)(rain_value - 109) / 32));
+							total_rainvalues_in_next_rainshower++;
+							total_rainmmh_in_next_rainshower += rain_rate;
+							if (rain_rate > max_rainmmh_in_next_rainshower)
+							{
+								max_rainmmh_in_next_rainshower = rain_rate;
+							}
+						}
+					}
+				}
+				else if ((start_of_rainshower == 0) && (rain_value > 0))
+				{
+					// Start Of RainShower Detected
+					start_of_rainshower = rain_time;
+					shower_detected = true;
 
-			total_rain_in_duration += rain_value;
-			total_rain_values_in_duration++;
+					// add stats
+					double rain_rate = pow(10, ((double)(rain_value - 109) / 32));
+
+					total_rainvalues_in_next_rainshower++;
+					total_rainmmh_in_next_rainshower += rain_rate;
+					if (rain_rate > max_rainmmh_in_next_rainshower)
+					{
+						max_rainmmh_in_next_rainshower = rain_rate;
+					}
+				}
+
+				if ((rain_time >= startTime) && (rain_time <= endTimeHour))
+				{
+					total_rain_next_hour += rain_value;
+					total_rain_values_next_hour++;
+				}
+
+				if ((rain_time >= startTime) && (rain_time <= endTime))
+				{
+					total_rain_in_duration += rain_value;
+					total_rain_values_in_duration++;
+				}
+			}
+		}
+		line++;
+	}
+
+	if (line > 12) // ignore the outcome if we have less then 12 valid measurements (this would mean the data is more than an hour old)
+	{
+		// Correct for conditions if Sstart or End Of Rainshower was not found.
+		if (m_itIsRaining)
+		{
+			// We started with a rain condition so only checking if an end of shower was found
+			if (end_of_rainshower == 0)
+			{
+				// No end of rain deteted, correcting endttime to last measurement
+				end_of_rainshower = rain_time;
+			}
+		}
+		else if (start_of_rainshower == 0)
+		{
+			// No Start of Rain detect, correcting StartOfRainShower and EndOfRainShower to starttime (which will result in duration of 0)
+			start_of_rainshower = startTime;
+			end_of_rainshower = startTime;
+		}
+		else if (end_of_rainshower == 0)
+		{
+			// Start was detected, but End was not, Assuming EndOfRainshower is next meausurement after the last measurement (+5 min)
+			end_of_rainshower = rain_time + 5;
+		}
+
+		if (total_rainvalues_in_next_rainshower != 0)
+		{
+			avg_rainmmh_in_next_rainshower = total_rainmmh_in_next_rainshower / total_rainvalues_in_next_rainshower;
+		}
+
+		m_rainShowerLeadTime = start_of_rainshower - startTime;
+		SendCustomSensor(RAINSHOWER_LEADTIME, 1, 255, static_cast<float>(round_digits(m_rainShowerLeadTime, 1)), "Next Rainshower Leadtime", "min");
+		SendCustomSensor(RAINSHOWER_DURATION, 1, 255, static_cast<float>(round_digits(end_of_rainshower - start_of_rainshower, 1)), "Next Rainshower Duration", "min");
+		SendCustomSensor(RAINSHOWER_AVERAGE_MMH, 1, 255, static_cast<float>(round_digits(avg_rainmmh_in_next_rainshower, 1)), "Next Rainshower Avg Rainrate", "mm/h");
+		SendCustomSensor(RAINSHOWER_MAX_MMH, 1, 255, static_cast<float>(round_digits(max_rainmmh_in_next_rainshower, 1)), "Next Rainshower Max Rainrate", "mm/h");
+
+		if (total_rain_values_in_duration)
+		{
+			double rain_avg = total_rain_in_duration / total_rain_values_in_duration;
+			//double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
+			double rain_perc = (rain_avg == 0) ? 0 : (rain_avg * 0.392156862745098);
+			SendPercentageSensor(1, 1, 255, static_cast<float>(rain_perc), "Rain Intensity");
+			SendSwitch(2, 1, 255, (rain_perc >= m_iThreshold), 0, "Possible Rain");
+		}
+		if (total_rain_values_next_hour)
+		{
+			double rain_avg = total_rain_next_hour / total_rain_values_next_hour;
+			double rain_mm_hour = (rain_avg == 0) ? 0 : pow(10, ((rain_avg - 109) / 32));
+			SendCustomSensor(1, 1, 255, static_cast<float>(round_digits(rain_mm_hour, 1)), "Rainfall next Hour", "mm/h");
 		}
 	}
-
-	if (total_rain_values_in_duration) {
-		double rain_avg = total_rain_in_duration / total_rain_values_in_duration;
-		//double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
-		double rain_perc = (rain_avg == 0) ? 0 : (rain_avg * 0.392156862745098);
-		SendPercentageSensor(1, 1, 255, static_cast<float>(rain_perc), "Rain Intensity");
-		SendSwitch(1, 1, 255, (rain_perc >= m_iThreshold), 0, "Is it Raining");
+	else {
+		_log.Log(LOG_ERROR, "BuienRadar: RainPrediction has old data");
 	}
-	if (total_rain_values_next_hour)
-	{
-		double rain_avg = total_rain_next_hour / total_rain_values_next_hour;
-		double rain_mm_hour = (rain_avg == 0) ? 0 : pow(10, ((rain_avg - 109) / 32));
-
-		//round it to 1 decimal
-		std::stringstream sstr;
-		sstr << std::setprecision(1) << std::fixed << rain_mm_hour;
-		rain_mm_hour = std::stod(sstr.str());
-
-		SendCustomSensor(1, 1, 255, static_cast<float>(rain_mm_hour), "Rainfall next Hour", "mm/h");
-	}
-
 }

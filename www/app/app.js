@@ -414,8 +414,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.permissions', 'domotic
 			AllowWidgetOrdering: true,
 			FiveMinuteHistoryDays: 1,
 			DashboardType: 1,
-			Latitude: "52.216485",
-			Longitude: "5.169528",
 			MobileType: 0,
 			TempScale: 1.0,
 			DegreeDaysBaseTemperature: 18.0,
@@ -446,8 +444,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.permissions', 'domotic
 						$rootScope.config.AllowWidgetOrdering = data.AllowWidgetOrdering;
 						$rootScope.config.FiveMinuteHistoryDays = data.FiveMinuteHistoryDays;
 						$rootScope.config.DashboardType = data.DashboardType;
-						$rootScope.config.Latitude = data.Latitude;
-						$rootScope.config.Longitude = data.Longitude;
 						$rootScope.config.MobileType = data.MobileType;
 						$rootScope.config.TempScale = data.TempScale;
 						$rootScope.config.TempSign = data.TempSign;

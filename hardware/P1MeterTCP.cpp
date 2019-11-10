@@ -95,12 +95,6 @@ void P1MeterTCP::OnData(const unsigned char *pData, size_t length)
 }
 
 
-void P1MeterTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR, "P1MeterTCP: Error: %s", e.what());
-}
-
-
 void P1MeterTCP::OnError(const boost::system::error_code& error)
 {
 	if (

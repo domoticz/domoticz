@@ -6,29 +6,12 @@
  * applications, without requiring any in depth knowledge of the Z-Wave
  * protocol.
  * <p>
- * The Majority of the Z-Wave Protocol has been released into the public domain
- * on Sept, 2016. Prior to Sept, 2016, OpenZWave had reverse engineered the
- * protocol to allow applications to be created to interact with Z-Wave devices.
- * There is now ongoing work to update OpenZWave to be compliant with the Z-Wave
- * Specifications that are now released at http://zwavepublic.com
- * <p>
- * There is one part of the protocol that has not been released into the Public
- * Domain, namely, the "SerialAPI" protocol that specifies how to talk to
- * a USB Stick via a Serial COM Port. This portion of OpenZWave will continue to
- * be reverse engineered if needed in the future.
- * <p>
- * The goal of the project is to make a positive contribution to the Z-Wave
- * community by creating a library that supports as much of the Z-Wave
- * specification as possible, and that can be used as a "black-box" 
- * solution by anyone wanting to add Z-Wave to their application.
- * <p>
- * @image html zwalliance_250x100.jpg
- * <center>OpenZWave is a affiliate member of the Z-Wave Alliance (http://zwavealliance.org/)</center>
-
+ * For more information about the OpenZWave project: see README.md in the
+ * root of the OpenZWave repository.
  * \section ZWave Z-Wave Concepts
  * Z-Wave is a proprietary wireless communications protocol employing mesh
  * networking technology.  A mesh network allows low power devices to 
- * communicate over long ranges, and around radio blackspots by passing
+ * communicate over long ranges, and around radio black spots by passing
  * messages from one node to another.  It is important to note that not all
  * Z-Wave devices are active all the time, especially those that are battery
  * powered.  These nodes cannot take part in the forwarding of messages
@@ -36,10 +19,10 @@
  * <p>
  * Each Z-Wave device is known as "Node" in the network.  A Z-Wave network
  * can contain up to 232 nodes.  If more devices are required, then
- * multiple networks need to be set up using separate Z-Wave controller.
+ * multiple networks need to be set up using separate Z-Wave controllers.
  * OpenZWave supports multiple controllers, but on its own does not bridge
- * the networks allowing a device on one to directly control a device on
- * another.  This functionality would have to be supplied by the application.
+ * the networks, allowing a device on one to directly control a device on
+ * another. This functionality would have to be supplied by the application.
  * <p>
  * Z-Wave nodes can be divided into two types: Controllers and Slaves.  The
  * controllers are usually in the form of hand-held remote controls, or PC
@@ -48,7 +31,6 @@
  * Replication
  * Command Classes
  * Values
-
  * <hr>
  * \section Library The OpenZWave Library
  * \subsection Overview Overview
@@ -92,7 +74,7 @@
  * to be reliable.  Do not rely on receiving a response to any request.
  *
  * - A Z-Wave network may change at any time.  The application's notification
- * callback handler must deal woth all notifications, and any representation
+ * callback handler must deal with all notifications, and any representation
  * of the state of the Z-Wave network held by the application must be
  * modified to match.  User interfaces should be built dynamically from the
  * information reported in the notification callbacks, and must be able to cope
@@ -111,23 +93,11 @@
  
  * <hr>
  * \section Licensing Licensing
- * OpenZWave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
- * <p>
- * OpenZWave is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * <p>
- * You should have received a copy of the GNU Lesser General Public License
- * along with OpenZWave.  If not, see <http://www.gnu.org/licenses/>.
+ * See README.md in the root of the OpenZWave project.
  
  * <hr>
  * \section Support Support
- * Assistance with all OpenZWave issues can be obtained by posting a message
- * to the OpenZWave Google Group (http://groups.google.com/group/openzwave)
+ * See README.md in the root of the OpenZWave project.
  * <p>
  */
 
