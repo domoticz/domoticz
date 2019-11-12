@@ -1239,8 +1239,7 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	if (m_eventtrigger.size() > 0)
 	{
 		time_t atime = mytime(NULL);
-		std::vector<_tEventTrigger>::iterator itt;
-		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
+		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end();)
 		{
 			if (itt->ID == ulDevID && itt->reason == reason)
 			{
@@ -1249,9 +1248,10 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 					m_eventtrigger.erase(itt);
 					return (!bEventTrigger ? true : false);
 				}
-				else
-					itt = m_eventtrigger.erase(itt) - 1;
+				itt = m_eventtrigger.erase(itt);
 			}
+			else
+				itt++;
 		}
 	}
 	return bEventTrigger;
