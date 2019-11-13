@@ -3946,66 +3946,85 @@ define(['app'], function (app) {
                 }
 				$("#hardwarecontent #divserial").show();
 			}
-			else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("Eco Devices") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Relay-Net") == -1 && text.indexOf("Satel Integra") == -1 && text.indexOf("eHouse") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1) {
-				$("#hardwarecontent #divremote").show();
-				if (text.indexOf("Eco Devices") >= 0) {
-					$("#hardwarecontent #divmodelecodevices").show();
-					$("#hardwarecontent #divratelimitp1").show();
-					$("#hardwarecontent #divlogin").show();
-				}
-				if (text.indexOf("P1 Smart Meter") >= 0) {
-					$("#hardwarecontent #divratelimitp1").show();
-					$("#hardwarecontent #divcrcp1").show();
-				}
-				if (text.indexOf("Evohome") >= 0) {
-					$("#hardwarecontent #divevohometcp").show();
-				}
-			}
-			else if ((text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Relay-Net") >= 0 || text.indexOf("Satel Integra") >= 0) || text.indexOf("eHouse") >= 0 || (text.indexOf("Xiaomi Gateway") >= 0) || text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
-				$("#hardwarecontent #divremote").show();
-				$("#hardwarecontent #divlogin").show();
-
-				if (text.indexOf("Relay-Net") >= 0) {
-					$("#hardwarecontent #username").show();
-					$("#hardwarecontent #lblusername").show();
-					$("#hardwarecontent #password").show();
-					$("#hardwarecontent #lblpassword").show();
-					$("#hardwarecontent #divrelaynet").show();
-				}
-				else if (text.indexOf("Satel Integra") >= 0) {
-					$("#hardwarecontent #divpollinterval").show();
-					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
-				}
-				else if (text.indexOf("eHouse") >= 0) {
-					$("#hardwarecontent #divpollinterval").show();
-					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
-					//$("#hardwarecontent #password").show();
-					//$("#hardwarecontent #lblpassword").show();
-					$("#hardwarecontent #divehouse").show();
-				}
-                else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
-                    $("#hardwarecontent #divratelimitp1").show();
-                    $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
-                    $("#hardwarecontent #divratelimitp1").val(300);
-				}
-				else if (text.indexOf("Denkovi") >= 0) {
-					$("#hardwarecontent #divpollinterval").show();
-					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(10000);
-					if (text.indexOf("Modules with LAN (HTTP)") >= 0)
-						$("#hardwarecontent #divmodeldenkovidevices").show();
-					else if (text.indexOf("Modules with LAN (TCP)") >= 0) {
-						$("#hardwarecontent #divmodeldenkovitcpdevices").show();
-						var board = $("#hardwarecontent #divmodeldenkovitcpdevices #combomodeldenkovitcpdevices option:selected").val();
-						if (board == 0) {
-							$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #lbldenkovislaveid").hide();
-							$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #denkovislaveid").hide();
-						}
-						else {
-							$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #lbldenkovislaveid").show();
-							$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #denkovislaveid").show();
-						}
+			else if (
+				(text.indexOf("LAN") >= 0 ||
+				text.indexOf("Harmony") >= 0 ||
+				text.indexOf("Eco Devices") >= 0 ||
+				text.indexOf("MySensors Gateway with MQTT") >= 0) &&
+				text.indexOf("YouLess") == -1 && 
+				text.indexOf("Denkovi") == -1 &&
+				text.indexOf("Relay-Net") == -1 &&
+				text.indexOf("Satel Integra") == -1 &&
+				text.indexOf("eHouse") == -1 &&
+				text.indexOf("MyHome OpenWebNet with LAN interface") == -1) {
+					$("#hardwarecontent #divremote").show();
+					if (text.indexOf("Eco Devices") >= 0) {
+						$("#hardwarecontent #divmodelecodevices").show();
+						$("#hardwarecontent #divratelimitp1").show();
+						$("#hardwarecontent #divlogin").show();
 					}
-				}
+					if (text.indexOf("P1 Smart Meter") >= 0) {
+						$("#hardwarecontent #divratelimitp1").show();
+						$("#hardwarecontent #divcrcp1").show();
+					}
+					if (text.indexOf("Evohome") >= 0) {
+						$("#hardwarecontent #divevohometcp").show();
+					}
+			}
+			else if (
+					(text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) &&
+					(text.indexOf("YouLess") >= 0 ||
+					text.indexOf("Denkovi") >= 0 ||
+					text.indexOf("Relay-Net") >= 0 ||
+					text.indexOf("Satel Integra") >= 0) ||
+					text.indexOf("eHouse") >= 0 ||
+					(text.indexOf("Xiaomi Gateway") >= 0) || text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+						$("#hardwarecontent #divremote").show();
+						$("#hardwarecontent #divlogin").show();
+
+						if (text.indexOf("Relay-Net") >= 0) {
+							$("#hardwarecontent #username").show();
+							$("#hardwarecontent #lblusername").show();
+							$("#hardwarecontent #password").show();
+							$("#hardwarecontent #lblpassword").show();
+							$("#hardwarecontent #divrelaynet").show();
+						}
+						else if (text.indexOf("Satel Integra") >= 0) {
+							$("#hardwarecontent #divpollinterval").show();
+							$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
+						}
+						else if (text.indexOf("eHouse") >= 0) {
+							$("#hardwarecontent #divpollinterval").show();
+							$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
+							//$("#hardwarecontent #password").show();
+							//$("#hardwarecontent #lblpassword").show();
+							$("#hardwarecontent #divehouse").show();
+						}
+						else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+							$("#hardwarecontent #divratelimitp1").show();
+							$("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
+							$("#hardwarecontent #divratelimitp1").val(300);
+						}
+						else if (text.indexOf("Denkovi") >= 0) {
+							$("#hardwarecontent #divpollinterval").show();
+							$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(10000);
+							if (text.indexOf("Modules with LAN (HTTP)") >= 0)
+								$("#hardwarecontent #divmodeldenkovidevices").show();
+							else if (text.indexOf("Modules with LAN (TCP)") >= 0) {
+								$("#hardwarecontent #divmodeldenkovitcpdevices").show();
+								var board = $("#hardwarecontent #divmodeldenkovitcpdevices #combomodeldenkovitcpdevices option:selected").val();
+								if (board == 0) {
+									$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #lbldenkovislaveid").hide();
+									$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #denkovislaveid").hide();
+								}
+								else {
+									$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #lbldenkovislaveid").show();
+									$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #denkovislaveid").show();
+								}
+							}
+							$("#hardwarecontent #username").hide();
+							$("#hardwarecontent #lblusername").hide();
+						}
 			}
 			else if (text.indexOf("Domoticz") >= 0) {
 				$("#hardwarecontent #divremote").show();
