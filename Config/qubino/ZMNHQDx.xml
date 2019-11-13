@@ -1,0 +1,105 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  
+  <MetaData>
+    <MetaDataItem name="Name">LUXY Smart Light</MetaDataItem>
+    <MetaDataItem name="Description">The Qubino LUXY Smart Light is ideal for gentle illumination of any room and for visual and sound notifications.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0051:0008</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://qubino.com</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://support.qubino.com/support/home</MetaDataItem>
+	
+	<MetaDataItem name="InclusionDescription">
+		Manual inclusion is triggered by the following procedure: 
+		Full white needs to be active (c-button 2). The user can select it by quickly pressing the c-button2 once.
+		When full white is enabled, press c-button3 and hold it for 5 seconds (while white is glowing, hold c-button3 for 5 seconds).
+		After 5 seconds, the device starts flashing, with the following pattern: green 1 second on, 0.5 second off.
+		Once the device receives a nodeId or after 10 seconds, it stops flashing and turns green. 
+	</MetaDataItem>
+		
+	<MetaDataItem name="ExclusionDescription">
+		Exclusion is triggered by the following procedure:		
+		Full white needs to be active (c-button 2).
+		When full white is enabled, press c-button3 and hold it for 5 seconds (while white is glowing hold c-button3 for 5 seconds).
+		After 5 seconds, the device starts flashing with the following pattern: red 1 second on, 0.5 second off. 
+		Once the device loses its nodeId or after 10 seconds, it stops flashing and turns red. 
+	</MetaDataItem>
+    
+	<MetaDataItem name="ResetDescription">
+		Reset is triggered after the following procedure:
+		Full white needs to be active (c-button 2).
+		When full white is enabled, press c-button5 and hold it for 10 seconds.
+		After 10 seconds, the device starts flashing with the following pattern: blue 1 second on, 0.5 second off.
+		After 10 seconds the device stops flashing and turns blue.
+		The procedure is available always.
+	</MetaDataItem>
+    
+	<ChangeLog>
+      <Entry author="K.Petrovcic@goap.si" date="18 October 2019" revision="1"></Entry>
+    </ChangeLog>
+  </MetaData>
+  
+  <!-- Configuration Command Class -->
+   <CommandClass id="112">
+	
+        <Value genre="config" index="1" instance="1" label="Digital input type" max="3" min="0" size="1" type="list" value="1">
+            <Help>Defines the type of input device, connected to digital input. </Help>
+            <Item label="Push-button" value="0"/>
+            <Item label="OnOff toggle switch" value="1"/>
+			<Item label="Motion sensor" value="2"/>
+			<Item label="Motion sensor with memory (turned off after the amount of time, defined in parameter #5." value="3"/>
+        </Value>
+		
+		<Value genre="config" index="3" instance="1" label="Turning off alarming" max="1" min="0" size="1" type="list" value="1">
+            <Help>With this parameter, you can determine, how to turn off the alarm.</Help>
+            <Item label="Only by Z-Wave alarm" value="0"/>
+            <Item label="By capacitive input or Z-Wave command" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="5" instance="1" label="Motion sensor memory timer" units="second" max="32535" min="0" size="2" type="short" value="10">
+            <Help>
+                Default value = 10.
+				0 – 32534 = 0-32534 seconds after which the LED will be turned off.
+				32535 – never turns off.
+			</Help>
+        </Value>
+		
+		<Value genre="config" index="10" instance="1" label="Auto on timer" units="second" max="32535" min="0" size="2" type="short" value="0">
+            <Help>
+				Default value = 0. 
+                0 – disabled.
+				1 – 32535 = 1 – 32535 seconds after which the device turns on.
+			</Help>
+        </Value>
+		
+		<Value genre="config" index="11" instance="1" label="Auto off timer" units="second" max="32535" min="0" size="2" type="short" value="0">
+            <Help>
+				Default value = 0 
+				0 – disabled
+				1 – 32535 = 1 – 32535 seconds after which the device turns off
+			</Help>
+        </Value>
+		
+		<Value genre="config" index="30" instance="1" label="Restore state on power failure" max="1" min="0" size="1" type="list" value="1">
+            <Help>With this parameter, the user can select if the state of the device should be restored, after a power failure.</Help>
+            <Item label="Enabled" value="0"/>
+            <Item label="Disabled" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="50" instance="1" label="Beeper enable/disable" max="1" min="0" size="1" type="list" value="1">
+            <Help>With this parameter, the user can select the operating mode of the beeper.</Help>
+            <Item label="Enabled" value="0"/>
+            <Item label="Disabled" value="1"/>
+        </Value>
+		
+	</CommandClass>
+  
+	<!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="4">
+            <Group index="1" label="Lifeline" max_associations="1"/>
+            <Group index="2" label="Basic OnOff" max_associations="5"/>
+            <Group index="3" label="StartStop level change" max_associations="5"/>
+            <Group index="4" label="Multilevel set" max_associations="5"/>
+        </Associations>
+    </CommandClass>
+
+</Product>

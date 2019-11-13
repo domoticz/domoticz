@@ -1,0 +1,98 @@
+<!-- Aeotec Recessed Door Sensor 7-->
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:00bb:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw187.png</MetaDataItem>
+    <MetaDataItem id="00bb" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/3694/</MetaDataItem>
+    <MetaDataItem id="00bb" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="00bb" name="Identifier" type="0002">ZW089-C</MetaDataItem>
+    <MetaDataItem id="00bb" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/3694/</MetaDataItem>
+    <MetaDataItem id="00bb" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="00bb" name="Identifier" type="0102">ZW089-A</MetaDataItem>
+    <MetaDataItem id="00bb" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/3694/</MetaDataItem>
+    <MetaDataItem id="00bb" name="FrequencyName" type="0202">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="00bb" name="Identifier" type="0202">ZW089-B</MetaDataItem>
+    <MetaDataItem name="Name">Recessed Door Sensor 7</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press and hold the Z-Wave button for 5 seconds will trigger sending the Wake up notification command and then keep waking up for 10 seconds after release the Z-Wave button.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3694/Recessed%20Door%20Sensor%207%20-%20Product%20Manual.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Z-Wave button that you can find in the back of the product.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Z-Wave button that you can find in back of the product for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Z-Wave button that you can find in back of the product.</MetaDataItem>
+    <MetaDataItem name="Description">The Aeotec Recessed Door Sensor 7 is a door sensor that can detect the state of the door's open/close. It will report the door state to your controller/ gateway/associated nodes in real time when the state of your door has a change.
+It’s a security Z-Wave device that supports security encryption. Also it supports the “Over the Air Firmware Updating” that allows you wirelessly update its firmware if needs. 
+It can be included and operated in any Z-Wave network with other Z-Wave certified devices from manufacturers and/or other applications.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jean-Francois Auger - nechry@gmail.com" date="05 nov 2019" revision="1">Initial version</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+    <!-- Alarm CC isn't supported on this device -->
+  <CommandClass action="remove" id="113"/>
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Sensor Binary Report" max="1" min="0" size="1" type="list" value="0">
+      <Help>Enable/Disable Binary Sensor Report. Allow for backward compatibility to report Binary if Notification Report cannot be used for status changes.</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Reverse Sensor Reports" max="1" min="0" size="1" type="list" value="0">
+      <Help>Reverse Sensor Reports (both Sensor Binary Report and Notification Report.)</Help>
+      <Item label="Open Status when Magnet is away, Close Status when magnet is near" value="0"/>
+      <Item label="Close Status when Magnet is away, Open Status when magnet is near" value="1"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Association Group 2 Settings" max="6" min="0" size="1" type="list" value="1">
+      <Help>Configure the Basic Set value. Determine the Basic Set value to control other Z-Wave devices directly when Magnet is away or near.</Help>
+      <Item label="Disable completely" value="0"/>
+      <Item label="Send Basic SET 0xFF when Magnet is away, and send Basic SET 0x00 when Magnet is near" value="1"/>
+      <Item label="Send Basic SET 0x00 when Magnet is away, and send Basic Set 0xFF when Magnet is near" value="2"/>
+      <Item label="Only send Basic SET 0xFF when Magnet is away" value="3"/>
+      <Item label="Only send Basic SET 0x00 when Magnet is near" value="4"/>
+      <Item label="Only send Basic SET 0x00 when Magnet is away" value="5"/>
+      <Item label="Only send Basic SET 0xFF when Magnet is near" value="6"/>
+    </Value>
+    <Value genre="config" index="4" label="Application Layer Retry" max="1535" min="0" size="2" type="short" value="0">
+      <Help>
+          Configure retry number and wait time.
+          The device supports an application retry mechanism when the application of the device has detected a transmission error when Basic Set, Sensor Binary Report or Notification Report (Access Control) message is sent out but fails to result in an ACK or a Supervision Report.
+          The Byte 1 is used to configure the number of retries. The valid value is 0-5. 0 means disable retry.
+          The Byte 2 is used to configure the wait time between retries. The valid value is 0-255. Unit is 100ms.
+      </Help>
+    </Value>
+    <Value genre="config" index="5" label="Supervision Report Wait Time" max="50" min="1" size="1" type="byte" units="0.1s" value="15">
+      <Help>
+          Configure Supervision Report Wait Time.
+          Unit is 100ms.
+          Note: Issuing Basic Set, Sensor Binary Report or Notification Report(Access Control) via association groups uses Supervision encapsulation only if sending commands with S2(or higher security) encapsulation.
+          In other word, this parameter can be configured in any network, but works only in S2 (or higher security) network.
+      </Help>
+    </Value>
+    <Value genre="config" index="81" label="Led Indicator" min="0" max="3" size="1" type="list" value="3">
+      <Help>
+          Control LED Indicator. Determine whether the LED flash or not when sending Basic Set, Sensor Binary Report, Notification Report (Access Control) or Wake Up Notification.
+      </Help>
+      <Item label="Completely disable LED" value="0"/>
+      <Item label="LED quickly flashes only when sending Basic Set, Sensor Binary Report or Notification Report" value="1"/>
+      <Item label="LED activates only when sending Wake Up Notification" value="2"/>
+      <Item label="LED quickly flashes when sending Basic Set, Sensor Binary Report or Notification Report (Access Control), and activates when sending Wake Up Notification." value="3"/>
+    </Value>
+    <Value genre="config" index="90" label="Low battery threshold" max="50" min="10" type="byte" units="%" value="30">
+      <Help>Configure the low battery threshold. Induce battery report when battery level is less than or equal to threshold. Forward low battery report.</Help>
+    </Value>
+    <Value genre="config" index="101" instance="1" label="Timed battery report" max="14400" min="1" size="2" type="short" units="minutes" value="70">
+      <Help>Set how often battery is reported in minutes.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report-->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Basic Set" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>
