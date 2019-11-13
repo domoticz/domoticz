@@ -400,11 +400,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		if (!HTTPClient::GET(szURL.str(), sResult)) {
 			_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Error sending command to: %s", m_szIPAddress.c_str());
 			return false;
-		}
-		if (sResult.find("window.location=\"io.htm\"") == std::string::npos) {
-			_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Error setting Digital Input/Output %u", io);
-			return false;
-		}
+		}		
 		return true;
 	}
 	case DDEV_DAEnet_IP2: {
@@ -458,11 +454,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		if (!HTTPClient::GET(szURL.str(), sResult)) {
 			_log.Log(LOG_ERROR, "DAEnetIP2: Error sending command to: %s", m_szIPAddress.c_str());
 			return false;
-		}
-		if (sResult.find("window.location=\"io.htm\"") == std::string::npos) {
-			_log.Log(LOG_ERROR, "DAEnetIP2: Error setting Digital Input/Output %u", io);
-			return false;
-		}
+		}		
 		return true;
 	}
 	case DDEV_DAEnet_IP3: {
@@ -1165,7 +1157,7 @@ void CDenkoviDevices::GetMeterDetails()
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 8 + 1);
 			name = "Relay " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_Relay, (uint8_t)(ii + 1), 255, ((port5&(0x01 << ii)) != 0) ? true : false, 0, name);
+			SendSwitch(DIOType_Relay, (uint8_t)(ii + 8 + 1), 255, ((port5&(0x01 << ii)) != 0) ? true : false, 0, name);
 		}
 		for (ii = 0; ii < 8; ii++)//8 analog inputs
 		{
