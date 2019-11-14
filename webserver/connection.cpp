@@ -566,6 +566,9 @@ namespace http {
 
 		/// schedule abandoned timeout timer
 		void connection::set_abandoned_timeout() {
+			if (connection_type == connection_websocket)
+				return; //disabled for now
+
 			abandoned_timer_.expires_from_now(boost::posix_time::seconds(default_abandoned_timeout_));
 			abandoned_timer_.async_wait(boost::bind(&connection::handle_abandoned_timeout, shared_from_this(), boost::asio::placeholders::error));
 		}
