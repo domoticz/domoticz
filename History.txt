@@ -6,6 +6,10 @@ Version 4.xxxxx (xxx 2019)
 - Implemented: RTL433, added Power (Watt) type
 - Implemented: RTL433, added rainfall_mm type
 - Implemented: OZW, JSON call to retrieve current battery levels for all nodes
+- Implemented: OZW, Support for Loudness sensor
+- Implemented: OZW, Support for Particulate_Mater_2_5 (Dust) sensor (ug/m3)
+- Implemented: OZW, Support for Smoke density (%)
+- Implemented: OZW, Support for Volatile_Organic_Compound (CO2, ppm)
 - Implemented: BuienRadar
 - Implemented: Sun/Rain icons
 - Fixed: Gui, Choosing Icon for ARC type switches

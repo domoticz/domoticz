@@ -496,7 +496,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_PERCENTAGE)
 	{
-		SendPercentageSensor(lID, 0, BatLevel, pDevice->floatValue, "Percentage");
+		SendPercentageSensor(lID, 0, BatLevel, pDevice->floatValue, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Percentage");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_AMPERE)
 	{
@@ -517,7 +517,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_UV)
 	{
-		SendUVSensor(pDevice->nodeID, pDevice->instanceID, BatLevel, pDevice->floatValue, "UV");
+		SendUVSensor(pDevice->nodeID, pDevice->instanceID, BatLevel, pDevice->floatValue, (!pDevice->label.empty()) ? pDevice->label.c_str() : "UV");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_TEMPERATURE)
 	{
@@ -532,12 +532,20 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 			if (!pHumDevice->bValidValue)
 				return;
 			uint16_t NodeID = (pDevice->nodeID << 8) | pDevice->instanceID;
-			SendTempHumSensor(NodeID, BatLevel, pDevice->floatValue, pHumDevice->intvalue, "TempHum");
+
+			std::string devName = "TempHum";
+
+			if ((!pHumDevice->label.empty()) && (!pDevice->label.empty()))
+			{
+				devName = pDevice->label + std::string("/") + pHumDevice->label;
+			}
+
+			SendTempHumSensor(NodeID, BatLevel, pDevice->floatValue, pHumDevice->intvalue, devName.c_str());
 		}
 		else
 		{
 			uint16_t NodeID = (pDevice->nodeID << 8) | pDevice->instanceID;
-			SendTempSensor(NodeID, BatLevel, pDevice->floatValue, "Temperature");
+			SendTempSensor(NodeID, BatLevel, pDevice->floatValue, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Temperature");
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_HUMIDITY)
@@ -555,12 +563,20 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 
 			//report it with the ID of the temperature sensor, else we get two sensors with the same value
 			uint16_t NodeID = (pTempDevice->nodeID << 8) | pTempDevice->instanceID;
-			SendTempHumSensor(NodeID, BatLevel, pTempDevice->floatValue, pDevice->intvalue, "TempHum");
+
+			std::string devName = "TempHum";
+
+			if ((!pTempDevice->label.empty()) && (!pDevice->label.empty()))
+			{
+				devName = pTempDevice->label + std::string("/") + pDevice->label;
+			}
+
+			SendTempHumSensor(NodeID, BatLevel, pTempDevice->floatValue, pDevice->intvalue, devName.c_str());
 		}
 		else
 		{
 			uint16_t NodeID = (pDevice->nodeID << 8) | pDevice->instanceID;
-			SendHumiditySensor(NodeID, BatLevel, pDevice->intvalue, "Humidity");
+			SendHumiditySensor(NodeID, BatLevel, pDevice->intvalue, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Humidity");
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VELOCITY)
@@ -647,7 +663,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		lmeter.dunit = 255;
 		lmeter.fLux = pDevice->floatValue;
 		lmeter.battery_level = BatLevel;
-		sDecodeRXMessage(this, (const unsigned char*)& lmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char*)& lmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Light", BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_GAS)
 	{
@@ -656,7 +672,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		m_p1gas.subtype = sTypeP1Gas;
 		m_p1gas.gasusage = (unsigned long)(pDevice->floatValue * 1000);
 		m_p1gas.ID = lID;
-		sDecodeRXMessage(this, (const unsigned char*)& m_p1gas, (!pDevice->label.empty()) ? pDevice->label.c_str() : NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char*)& m_p1gas, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Gas", BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_WATER)
 	{
@@ -665,7 +681,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_CO2)
 	{
-		SendAirQualitySensor(pDevice->nodeID, (uint8_t)pDevice->orgInstanceID, BatLevel, int(pDevice->floatValue), "CO2 Sensor");
+		SendAirQualitySensor(pDevice->nodeID, (uint8_t)pDevice->orgInstanceID, BatLevel, int(pDevice->floatValue), (!pDevice->label.empty()) ? pDevice->label.c_str() : "CO2 Sensor");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_MOISTURE)
 	{
@@ -673,7 +689,11 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_TANK_CAPACITY)
 	{
-		SendCustomSensor(pDevice->nodeID, pDevice->instanceID, BatLevel, pDevice->floatValue, "Tank Capacity", "l");
+		SendCustomSensor(pDevice->nodeID, pDevice->instanceID, BatLevel, pDevice->floatValue, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Tank Capacity", "l");
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_LOUDNESS)
+	{
+		SendSoundSensor(pDevice->nodeID, BatLevel, round(pDevice->floatValue), (!pDevice->label.empty()) ? pDevice->label.c_str() : "Loudness");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_SETPOINT)
 	{
@@ -686,7 +706,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		tmeter.dunit = 1;
 		tmeter.battery_level = BatLevel;
 		tmeter.temp = pDevice->floatValue;
-		sDecodeRXMessage(this, (const unsigned char*)& tmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char*)& tmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Setpoint", BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_CLOCK)
 	{
