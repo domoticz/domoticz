@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2009-2014 Roger Light <roger@atchoo.org>
+Copyright (c) 2009-2018 Roger Light <roger@atchoo.org>
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v1.0
@@ -17,12 +17,32 @@ Contributors:
 #ifndef MQTT3_H
 #define MQTT3_H
 
-#include "config.h"
+#include <config.h>
 #include <stdio.h>
 
-#include "mosquitto_internal.h"
-#include "mosquitto_plugin.h"
-#include "mosquitto.h"
+#ifdef WITH_WEBSOCKETS
+#  include <libwebsockets.h>
+
+#  if defined(LWS_LIBRARY_VERSION_NUMBER)
+#    define libwebsocket_callback_on_writable(A, B) lws_callback_on_writable((B))
+#    define libwebsocket_service(A, B) lws_service((A), (B))
+#    define libwebsocket_create_context(A) lws_create_context((A))
+#    define libwebsocket_context_destroy(A) lws_context_destroy((A))
+#    define libwebsocket_write(A, B, C, D) lws_write((A), (B), (C), (D))
+#    define libwebsocket_get_socket_fd(A) lws_get_socket_fd((A))
+#    define libwebsockets_return_http_status(A, B, C, D) lws_return_http_status((B), (C), (D))
+#    define libwebsockets_get_protocol(A) lws_get_protocol((A))
+
+#    define libwebsocket_context lws_context
+#    define libwebsocket_protocols lws_protocols
+#    define libwebsocket_callback_reasons lws_callback_reasons
+#    define libwebsocket lws
+#  endif
+#endif
+
+#include <mosquitto_internal.h>
+#include <mosquitto_plugin.h>
+#include <mosquitto.h>
 #include "tls_mosq.h"
 #include "uthash.h"
 
@@ -60,7 +80,7 @@ struct _mqtt3_listener {
 	int client_count;
 	enum mosquitto_protocol protocol;
 	bool use_username_as_clientid;
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	char *cafile;
 	char *capath;
 	char *certfile;
@@ -81,11 +101,11 @@ struct _mqtt3_listener {
 };
 
 struct mqtt3_config {
-	char *config_file;
 	char *acl_file;
 	bool allow_anonymous;
 	bool allow_duplicate_messages;
 	bool allow_zero_length_clientid;
+	bool auth_plugin_deny_special_chars;
 	char *auto_id_prefix;
 	int auto_id_prefix_len;
 	int autosave_interval;
@@ -116,7 +136,6 @@ struct mqtt3_config {
 	int sys_interval;
 	bool upgrade_outgoing_qos;
 	char *user;
-	bool verbose;
 #ifdef WITH_WEBSOCKETS
 	int websockets_log_level;
 	bool have_websockets_listener;
@@ -138,6 +157,7 @@ struct _mosquitto_subleaf {
 };
 
 struct _mosquitto_subhier {
+	struct _mosquitto_subhier *parent;
 	struct _mosquitto_subhier *children;
 	struct _mosquitto_subhier *next;
 	struct _mosquitto_subleaf *subs;
@@ -183,7 +203,7 @@ struct mosquitto_client_msg{
 struct _mosquitto_unpwd{
 	char *username;
 	char *password;
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	unsigned int password_len;
 	unsigned int salt_len;
 	unsigned char *salt;
@@ -238,9 +258,11 @@ struct mosquitto_db{
 	int bridge_count;
 #endif
 	int msg_store_count;
+	char *config_file;
 	struct mqtt3_config *config;
 	int persistence_changes;
 	struct _mosquitto_auth_plugin auth_plugin;
+	bool verbose;
 #ifdef WITH_SYS_TREE
 	int subscription_count;
 	int retained_count;
@@ -306,7 +328,8 @@ struct _mqtt3_bridge{
 	int threshold;
 	bool lazy_reconnect;
 	bool attempt_unsubscribe;
-#ifdef WWW_ENABLE_SSL
+	bool initial_notification_done;
+#ifdef WITH_TLS
 	char *tls_cafile;
 	char *tls_capath;
 	char *tls_certfile;
@@ -342,14 +365,14 @@ struct mosquitto_db *_mosquitto_get_db(void);
  * Config functions
  * ============================================================ */
 /* Initialise config struct to default values. */
-void mqtt3_config_init(struct mqtt3_config *config);
+void mqtt3_config_init(struct mosquitto_db *db, struct mqtt3_config *config);
 /* Parse command line options into config. */
-int mqtt3_config_parse_args(struct mqtt3_config *config, int argc, char *argv[]);
+int mqtt3_config_parse_args(struct mosquitto_db *db, struct mqtt3_config *config, int argc, char *argv[]);
 /* Read configuration data from config->config_file into config.
  * If reload is true, don't process config options that shouldn't be reloaded (listeners etc)
  * Returns 0 on success, 1 if there is a configuration error or if a file cannot be opened.
  */
-int mqtt3_config_read(struct mqtt3_config *config, bool reload);
+int mqtt3_config_read(struct mosquitto_db *db, struct mqtt3_config *config, bool reload);
 /* Free all config data. */
 void mqtt3_config_cleanup(struct mqtt3_config *config);
 
@@ -430,6 +453,7 @@ void mqtt3_context_cleanup(struct mosquitto_db *db, struct mosquitto *context, b
 void mqtt3_context_disconnect(struct mosquitto_db *db, struct mosquitto *context);
 void mosquitto__add_context_to_disused(struct mosquitto_db *db, struct mosquitto *context);
 void mosquitto__free_disused_contexts(struct mosquitto_db *db);
+void mqtt3_context_send_will(struct mosquitto_db *db, struct mosquitto *context);
 
 /* ============================================================
  * Logging functions
@@ -444,6 +468,8 @@ int _mosquitto_log_printf(struct mosquitto *mosq, int level, const char *fmt, ..
 #ifdef WITH_BRIDGE
 int mqtt3_bridge_new(struct mosquitto_db *db, struct _mqtt3_bridge *bridge);
 int mqtt3_bridge_connect(struct mosquitto_db *db, struct mosquitto *context);
+int mqtt3_bridge_connect_step1(struct mosquitto_db *db, struct mosquitto *context);
+int mqtt3_bridge_connect_step2(struct mosquitto_db *db, struct mosquitto *context);
 void mqtt3_bridge_packet_cleanup(struct mosquitto *context);
 #endif
 
@@ -480,7 +506,11 @@ void service_run(void);
  * Websockets related functions
  * ============================================================ */
 #ifdef WITH_WEBSOCKETS
+#  if defined(LWS_LIBRARY_VERSION_NUMBER)
+struct lws_context *mosq_websockets_init(struct _mqtt3_listener *listener, int log_level);
+#  else
 struct libwebsocket_context *mosq_websockets_init(struct _mqtt3_listener *listener, int log_level);
+#  endif
 #endif
 void do_disconnect(struct mosquitto_db *db, struct mosquitto *context);
 

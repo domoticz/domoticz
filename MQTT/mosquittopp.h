@@ -1,38 +1,71 @@
 /*
-Copyright (c) 2010-2013 Roger Light <roger@atchoo.org>
+Copyright (c) 2010-2019 Roger Light <roger@atchoo.org>
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v1.0
 and Eclipse Distribution License v1.0 which accompany this distribution.
- 
+
 The Eclipse Public License is available at
    http://www.eclipse.org/legal/epl-v10.html
 and the Eclipse Distribution License is available at
   http://www.eclipse.org/org/documents/edl-v10.php.
- 
+
 Contributors:
    Roger Light - initial implementation and documentation.
 */
 
-#ifndef _MOSQUITTOPP_H_
-#define _MOSQUITTOPP_H_
+#ifndef MOSQUITTOPP_H
+#define MOSQUITTOPP_H
 
-#	define mosqpp_EXPORT
+#define mosqpp_EXPORT
 
 #include <cstdlib>
+#include <mosquitto.h>
 #include <time.h>
-#include "mosquitto.h"
 
 namespace mosqpp {
 
-mosqpp_EXPORT const char *strerror(int mosq_errno);
-mosqpp_EXPORT const char *connack_string(int connack_code);
-mosqpp_EXPORT int sub_topic_tokenise(const char *subtopic, char ***topics, int *count);
-mosqpp_EXPORT int sub_topic_tokens_free(char ***topics, int count);
-mosqpp_EXPORT int lib_version(int *major, int *minor, int *revision);
-mosqpp_EXPORT int lib_init();
-mosqpp_EXPORT int lib_cleanup();
-mosqpp_EXPORT int topic_matches_sub(const char *sub, const char *topic, bool *result);
+
+const char * strerror(int mosq_errno);
+const char * connack_string(int connack_code);
+int sub_topic_tokenise(const char *subtopic, char ***topics, int *count);
+int sub_topic_tokens_free(char ***topics, int count);
+int lib_version(int *major, int *minor, int *revision);
+int lib_init();
+int lib_cleanup();
+int topic_matches_sub(const char *sub, const char *topic, bool *result);
+int validate_utf8(const char *str, int len);
+int subscribe_simple(
+		struct mosquitto_message **messages,
+		int msg_count,
+		bool retained,
+		const char *topic,
+		int qos=0,
+		const char *host="localhost",
+		int port=1883,
+		const char *client_id=NULL,
+		int keepalive=60,
+		bool clean_session=true,
+		const char *username=NULL,
+		const char *password=NULL,
+		const struct libmosquitto_will *will=NULL,
+		const struct libmosquitto_tls *tls=NULL);
+
+int subscribe_callback(
+		int (*callback)(struct mosquitto *, void *, const struct mosquitto_message *),
+		void *userdata,
+		const char *topic,
+		int qos=0,
+		bool retained=true,
+		const char *host="localhost",
+		int port=1883,
+		const char *client_id=NULL,
+		int keepalive=60,
+		bool clean_session=true,
+		const char *username=NULL,
+		const char *password=NULL,
+		const struct libmosquitto_will *will=NULL,
+		const struct libmosquitto_tls *tls=NULL);
 
 /*
  * Class: mosquittopp
@@ -41,13 +74,14 @@ mosqpp_EXPORT int topic_matches_sub(const char *sub, const char *topic, bool *re
  * library. Please see mosquitto.h for details of the functions.
  */
 class mosqpp_EXPORT mosquittopp {
-	private:
+	public:
 		struct mosquitto *m_mosq;
 	public:
 		mosquittopp(const char *id=NULL, bool clean_session=true);
 		virtual ~mosquittopp();
 
 		int reinitialise(const char *id, bool clean_session);
+		void clear_callbacks();
 		int socket();
 		int will_set(const char *topic, int payloadlen=0, const void *payload=NULL, int qos=0, bool retain=false);
 		int will_clear();
@@ -82,15 +116,17 @@ class mosqpp_EXPORT mosquittopp {
 		bool want_write();
 		int threaded_set(bool threaded=true);
 		int socks5_set(const char *host, int port=1080, const char *username=NULL, const char *password=NULL);
-		
-		virtual void on_connect(int rc) {return;};
-		virtual void on_disconnect(int rc) {return;};
-		virtual void on_publish(int mid) {return;};
-		virtual void on_message(const struct mosquitto_message *message) {return;};
-		virtual void on_subscribe(int mid, int qos_count, const int *granted_qos) {return;};
-		virtual void on_unsubscribe(int mid) {return;};
-		virtual void on_log(int level, const char *str) {return;};
-		virtual void on_error() {return;};
+
+		// names in the functions commented to prevent unused parameter warning
+		virtual void on_connect(int /*rc*/) {return;}
+		virtual void on_connect_with_flags(int /*rc*/, int /*flags*/) {return;}
+		virtual void on_disconnect(int /*rc*/) {return;}
+		virtual void on_publish(int /*mid*/) {return;}
+		virtual void on_message(const struct mosquitto_message * /*message*/) {return;}
+		virtual void on_subscribe(int /*mid*/, int /*qos_count*/, const int * /*granted_qos*/) {return;}
+		virtual void on_unsubscribe(int /*mid*/) {return;}
+		virtual void on_log(int /*level*/, const char * /*str*/) {return;}
+		virtual void on_error() {return;}
 };
 
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2010-2014 Roger Light <roger@atchoo.org>
+Copyright (c) 2010-2019 Roger Light <roger@atchoo.org>
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v1.0
@@ -15,44 +15,61 @@ Contributors:
 */
 
 #include <cstdlib>
-#include "mosquitto.h"
-#include "mosquittopp.h"
+#include <mosquitto.h>
+#include <mosquittopp.h>
+
+#define UNUSED(A) (void)(A)
 
 namespace mosqpp {
 
 static void on_connect_wrapper(struct mosquitto *mosq, void *userdata, int rc)
 {
 	class mosquittopp *m = (class mosquittopp *)userdata;
+
+	UNUSED(mosq);
+
 	m->on_connect(rc);
+}
+
+static void on_connect_with_flags_wrapper(struct mosquitto *mosq, void *userdata, int rc, int flags)
+{
+	class mosquittopp *m = (class mosquittopp *)userdata;
+	UNUSED(mosq);
+	m->on_connect_with_flags(rc, flags);
 }
 
 static void on_disconnect_wrapper(struct mosquitto *mosq, void *userdata, int rc)
 {
 	class mosquittopp *m = (class mosquittopp *)userdata;
+	UNUSED(mosq);
 	m->on_disconnect(rc);
 }
 
 static void on_publish_wrapper(struct mosquitto *mosq, void *userdata, int mid)
 {
 	class mosquittopp *m = (class mosquittopp *)userdata;
+	UNUSED(mosq);
 	m->on_publish(mid);
 }
 
 static void on_message_wrapper(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
 {
 	class mosquittopp *m = (class mosquittopp *)userdata;
+	UNUSED(mosq);
 	m->on_message(message);
 }
 
 static void on_subscribe_wrapper(struct mosquitto *mosq, void *userdata, int mid, int qos_count, const int *granted_qos)
 {
 	class mosquittopp *m = (class mosquittopp *)userdata;
+	UNUSED(mosq);
 	m->on_subscribe(mid, qos_count, granted_qos);
 }
 
 static void on_unsubscribe_wrapper(struct mosquitto *mosq, void *userdata, int mid)
 {
 	class mosquittopp *m = (class mosquittopp *)userdata;
+	UNUSED(mosq);
 	m->on_unsubscribe(mid);
 }
 
@@ -60,6 +77,7 @@ static void on_unsubscribe_wrapper(struct mosquitto *mosq, void *userdata, int m
 static void on_log_wrapper(struct mosquitto *mosq, void *userdata, int level, const char *str)
 {
 	class mosquittopp *m = (class mosquittopp *)userdata;
+	UNUSED(mosq);
 	m->on_log(level, str);
 }
 
@@ -106,10 +124,64 @@ int topic_matches_sub(const char *sub, const char *topic, bool *result)
 	return mosquitto_topic_matches_sub(sub, topic, result);
 }
 
+int validate_utf8(const char *str, int len)
+{
+	return mosquitto_validate_utf8(str, len);
+}
+
+int subscribe_simple(
+		struct mosquitto_message **messages,
+		int msg_count,
+		bool retained,
+		const char *topic,
+		int qos,
+		const char *host,
+		int port,
+		const char *client_id,
+		int keepalive,
+		bool clean_session,
+		const char *username,
+		const char *password,
+		const struct libmosquitto_will *will,
+		const struct libmosquitto_tls *tls)
+{
+	return mosquitto_subscribe_simple(
+			messages, msg_count, retained,
+			topic, qos,
+			host, port, client_id, keepalive, clean_session,
+			username, password,
+			will, tls);
+}
+
+mosqpp_EXPORT int subscribe_callback(
+		int (*callback)(struct mosquitto *, void *, const struct mosquitto_message *),
+		void *userdata,
+		const char *topic,
+		int qos,
+		const char *host,
+		int port,
+		const char *client_id,
+		int keepalive,
+		bool clean_session,
+		const char *username,
+		const char *password,
+		const struct libmosquitto_will *will,
+		const struct libmosquitto_tls *tls)
+{
+	return mosquitto_subscribe_callback(
+			callback, userdata,
+			topic, qos,
+			host, port, client_id, keepalive, clean_session,
+			username, password,
+			will, tls);
+}
+
+
 mosquittopp::mosquittopp(const char *id, bool clean_session)
 {
 	m_mosq = mosquitto_new(id, clean_session, this);
 	mosquitto_connect_callback_set(m_mosq, on_connect_wrapper);
+	mosquitto_connect_with_flags_callback_set(m_mosq, on_connect_with_flags_wrapper);
 	mosquitto_disconnect_callback_set(m_mosq, on_disconnect_wrapper);
 	mosquitto_publish_callback_set(m_mosq, on_publish_wrapper);
 	mosquitto_message_callback_set(m_mosq, on_message_wrapper);
@@ -129,6 +201,7 @@ int mosquittopp::reinitialise(const char *id, bool clean_session)
 	rc = mosquitto_reinitialise(m_mosq, id, clean_session, this);
 	if(rc == MOSQ_ERR_SUCCESS){
 		mosquitto_connect_callback_set(m_mosq, on_connect_wrapper);
+		mosquitto_connect_with_flags_callback_set(m_mosq, on_connect_with_flags_wrapper);
 		mosquitto_disconnect_callback_set(m_mosq, on_disconnect_wrapper);
 		mosquitto_publish_callback_set(m_mosq, on_publish_wrapper);
 		mosquitto_message_callback_set(m_mosq, on_message_wrapper);
@@ -137,6 +210,18 @@ int mosquittopp::reinitialise(const char *id, bool clean_session)
 		mosquitto_log_callback_set(m_mosq, on_log_wrapper);
 	}
 	return rc;
+}
+
+void mosquittopp::clear_callbacks()
+{
+	mosquitto_connect_callback_set(m_mosq, nullptr);
+	mosquitto_connect_with_flags_callback_set(m_mosq, nullptr);
+	mosquitto_disconnect_callback_set(m_mosq, nullptr);
+	mosquitto_publish_callback_set(m_mosq, nullptr);
+	mosquitto_message_callback_set(m_mosq, nullptr);
+	mosquitto_subscribe_callback_set(m_mosq, nullptr);
+	mosquitto_unsubscribe_callback_set(m_mosq, nullptr);
+	mosquitto_log_callback_set(m_mosq, nullptr);
 }
 
 int mosquittopp::connect(const char *host, int port, int keepalive)
@@ -281,11 +366,7 @@ void mosquittopp::user_data_set(void *userdata)
 
 int mosquittopp::socks5_set(const char *host, int port, const char *username, const char *password)
 {
-#ifdef WITH_SOCKS
 	return mosquitto_socks5_set(m_mosq, host, port, username, password);
-#else
-	return MOSQ_ERR_NOT_SUPPORTED;
-#endif
 }
 
 

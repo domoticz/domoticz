@@ -29,7 +29,8 @@ MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIP
 m_szIPAddress(IPAddress),
 m_UserName(Username),
 m_Password(Password),
-m_CAFilename(CAfilename)
+m_CAFilename(CAfilename),
+mosqpp::mosquittopp("Domoticz")
 {
 	m_HwdID=ID;
 	m_IsConnected = false;
@@ -42,6 +43,8 @@ m_CAFilename(CAfilename)
 	m_TopicOut = TOPIC_OUT;
 
 	m_TLS_Version = (TLS_Version < 3) ? TLS_Version : 0; //see szTLSVersions
+
+	threaded_set(true);
 }
 
 MQTT::~MQTT(void)
@@ -504,7 +507,7 @@ bool MQTT::ConnectIntEx()
 	_log.Log(LOG_STATUS, "MQTT: Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	int rc;
-	int keepalive = 60;
+	int keepalive = 40;
 
 	if (!m_CAFilename.empty()){
 		rc = tls_opts_set(SSL_VERIFY_PEER, szTLSVersions[m_TLS_Version], NULL);
@@ -540,16 +543,29 @@ void MQTT::Do_Work()
 	{
 		if (!bFirstTime)
 		{
-			int rc = loop();
-			if (rc) {
-				if (rc != MOSQ_ERR_NO_CONN)
-				{
-					if (!IsStopRequested(0))
+			try
+			{
+				int rc = loop();
+				if (rc) {
+					if (rc != MOSQ_ERR_NO_CONN)
 					{
-						if (!m_bDoReconnect)
+						if (!IsStopRequested(0))
 						{
-							reconnect();
+							if (!m_bDoReconnect)
+							{
+								reconnect();
+							}
 						}
+					}
+				}
+			}
+			catch (const std::exception&)
+			{
+				if (!IsStopRequested(0))
+				{
+					if (!m_bDoReconnect)
+					{
+						reconnect();
 					}
 				}
 			}
@@ -585,6 +601,11 @@ void MQTT::Do_Work()
 			}
 		}
 	}
+	clear_callbacks();
+
+	if (isConnected())
+		disconnect();
+
 	if (m_sDeviceReceivedConnection.connected())
 		m_sDeviceReceivedConnection.disconnect();
 	if (m_sSwitchSceneConnection.connected())

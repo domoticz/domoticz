@@ -1825,9 +1825,6 @@
     <ClInclude Include="..\MQTT\dummypthread.h">
       <Filter>MQTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\lib_load.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\MQTT\logging_mosq.h">
       <Filter>MQTT</Filter>
     </ClInclude>
@@ -1840,25 +1837,13 @@
     <ClInclude Include="..\MQTT\mosquitto.h">
       <Filter>MQTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto_broker.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\MQTT\mosquitto_internal.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto_plugin.h">
       <Filter>MQTT</Filter>
     </ClInclude>
     <ClInclude Include="..\MQTT\mosquittopp.h">
       <Filter>MQTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\mqtt3_protocol.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\MQTT\net_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\persist.h">
       <Filter>MQTT</Filter>
     </ClInclude>
     <ClInclude Include="..\MQTT\read_handle.h">
@@ -2266,6 +2251,24 @@
     <ClInclude Include="..\hardware\Buienradar.h">
       <Filter>Devices\Buienradar</Filter>
     </ClInclude>
+    <ClInclude Include="..\MQTT\alias_mosq.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\mqtt_protocol.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\packet_mosq.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\property_mosq.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\mosquitto_broker.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\mosquitto_plugin.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2611,15 +2614,6 @@
       <Filter>MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\MQTT\read_handle.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\read_handle_client.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\read_handle_shared.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_client_mosq.c">
       <Filter>MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\MQTT\send_mosq.c">
@@ -3050,6 +3044,90 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Buienradar.cpp">
       <Filter>Devices\Buienradar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\actions.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\alias_mosq.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\callbacks.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\connect.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_auth.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_connack.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_disconnect.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_ping.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_pubackcomp.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_publish.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_pubrec.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_pubrel.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_suback.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_unsuback.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\helpers.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\loop.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\net_mosq_ocsp.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\options.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\packet_datatypes.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\packet_mosq.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\property_mosq.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_connect.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_disconnect.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_publish.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_subscribe.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_unsubscribe.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\utf8_mosq.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\util_topic.c">
+      <Filter>MQTT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

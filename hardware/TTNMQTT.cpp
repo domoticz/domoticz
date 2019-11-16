@@ -14,7 +14,6 @@
 #define RETRY_DELAY 30
 
 #define CLIENTID	"Domoticz"
-#define QOS         1
 
 #ifdef _DEBUG
 //#define DEBUG_TTN_R
@@ -264,6 +263,11 @@ void CTTNMQTT::Do_Work()
 			}
 		}
 	}
+	clear_callbacks();
+
+	if (isConnected())
+		disconnect();
+
 	_log.Log(LOG_STATUS, "TTN_MQTT: Worker stopped...");
 }
 

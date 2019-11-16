@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2009-2014 Roger Light <roger@atchoo.org>
+Copyright (c) 2009-2019 Roger Light <roger@atchoo.org>
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v1.0
@@ -13,16 +13,19 @@ and the Eclipse Distribution License is available at
 Contributors:
    Roger Light - initial implementation and documentation.
 */
+
+#include "config.h"
+
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <mosquitto_internal.h>
-#include <mosquitto.h>
-#include <memory_mosq.h>
+#include "mosquitto_internal.h"
+#include "mosquitto.h"
+#include "memory_mosq.h"
 
-int _mosquitto_log_printf(struct mosquitto *mosq, int priority, const char *fmt, ...)
+int log__printf(struct mosquitto *mosq, int priority, const char *fmt, ...)
 {
 	va_list va;
 	char *s;
@@ -34,7 +37,7 @@ int _mosquitto_log_printf(struct mosquitto *mosq, int priority, const char *fmt,
 	pthread_mutex_lock(&mosq->log_callback_mutex);
 	if(mosq->on_log){
 		len = strlen(fmt) + 500;
-		s = _mosquitto_malloc(len*sizeof(char));
+		s = mosquitto__malloc(len*sizeof(char));
 		if(!s){
 			pthread_mutex_unlock(&mosq->log_callback_mutex);
 			return MOSQ_ERR_NOMEM;
@@ -47,7 +50,7 @@ int _mosquitto_log_printf(struct mosquitto *mosq, int priority, const char *fmt,
 
 		mosq->on_log(mosq, mosq->userdata, priority, s);
 
-		_mosquitto_free(s);
+		mosquitto__free(s);
 	}
 	pthread_mutex_unlock(&mosq->log_callback_mutex);
 
