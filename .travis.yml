@@ -34,7 +34,7 @@ matrix:
   include:
   # Linux x86_64
   - os: linux
-    dist: trusty
+    dist: bionic
     sudo: required
     compiler: gcc
     env:
