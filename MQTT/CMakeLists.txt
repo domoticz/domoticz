@@ -44,4 +44,4 @@ ADD_LIBRARY(mqtt STATIC ${LIB} ${CORE})
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 link_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
-target_link_libraries(mqtt OpenSSL::Crypto)
+target_link_libraries(mqtt OpenSSL::Crypto OpenSSL::SSL)
