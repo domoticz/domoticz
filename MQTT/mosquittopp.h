@@ -20,7 +20,7 @@ Contributors:
 #define mosqpp_EXPORT
 
 #include <cstdlib>
-#include <mosquitto.h>
+#include "mosquitto.h"
 #include <time.h>
 
 namespace mosqpp {

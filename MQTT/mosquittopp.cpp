@@ -14,9 +14,7 @@ Contributors:
    Roger Light - initial implementation and documentation.
 */
 
-#include <cstdlib>
-#include <mosquitto.h>
-#include <mosquittopp.h>
+#include "mosquittopp.h"
 
 #define UNUSED(A) (void)(A)
 
