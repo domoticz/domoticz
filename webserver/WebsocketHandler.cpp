@@ -29,7 +29,7 @@ namespace http {
 		boost::tribool CWebsocketHandler::Handle(const std::string &packet_data, bool outbound)
 		{
 			Json::Value jsonValue;
-			Json::StyledWriter writer;
+			Json::StreamWriterBuilder writer;
 
 			try
 			{
@@ -80,7 +80,7 @@ namespace http {
 						Json::Value::Int64 reqID = value["requestid"].asInt64();
 						jsonValue["requestid"] = reqID;
 						jsonValue["data"] = rep.content;
-						std::string response = writer.write(jsonValue);
+						std::string response = Json::writeString(writer, jsonValue);
 						MyWrite(response);
 						return true;
 					}
@@ -92,7 +92,7 @@ namespace http {
 			}
 
 			jsonValue["error"] = "Internal Server Error!!";
-			std::string response = writer.write(jsonValue);
+			std::string response = Json::writeString(writer, jsonValue);
 			MyWrite(response);
 			return true;
 		}
@@ -201,11 +201,12 @@ namespace http {
 			{
 				std::string query = "type=scenes&rid=" + std::to_string(SceneRowIdx);
 				Json::Value request;
-				Json::StyledWriter writer;
 				request["event"] = "scene_request";
 				request["requestid"] = -1;
 				request["query"] = query;
-				std::string packet = writer.write(request);
+
+				Json::StreamWriterBuilder writer;
+				std::string packet = Json::writeString(writer, request);
 				Handle(packet, true);
 			}
 			catch (std::exception& e)

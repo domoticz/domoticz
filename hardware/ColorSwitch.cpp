@@ -120,9 +120,9 @@ std::string _tColor::toJSONString() const
 
 	Json::Value root = toJSONValue();
 
-	Json::FastWriter fastwriter;
-	fastwriter.omitEndingLineFeed();
-	return fastwriter.write(root);
+	Json::StreamWriterBuilder writer;
+	writer["indentation"] = "";
+	return Json::writeString(writer, root);
 }
 
 std::string _tColor::toString() const

@@ -163,10 +163,11 @@ bool C1WireForWindows::IsAvailable()
    // Request
    Json::Value reqRoot;
    reqRoot["IsAvailable"]="";
-   Json::FastWriter writer;
 
    // Send request and wait for answer
-   std::string answer = ::SendAndReceive(theSocket,writer.write(reqRoot));
+   Json::StreamWriterBuilder writer;
+   writer["indentation"] = "";
+   std::string answer = ::SendAndReceive(theSocket, Json::writeString(writer, reqRoot));
 
    // Answer processing
    if (answer.empty())
@@ -216,10 +217,11 @@ void C1WireForWindows::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) co
    // Request
    Json::Value reqRoot;
    reqRoot["GetDevices"]="";
-   Json::FastWriter writer;
 
    // Send request and wait for answer
-   std::string answer = SendAndReceive(writer.write(reqRoot));
+   Json::StreamWriterBuilder writer;
+   writer["indentation"] = "";
+   std::string answer = SendAndReceive(Json::writeString(writer, reqRoot));
 
    // Answer processing
    Json::Value ansRoot;
@@ -253,10 +255,11 @@ Json::Value C1WireForWindows::readData(const _t1WireDevice& device,int unit) con
    Json::Value reqRoot;
    reqRoot["ReadData"]["Id"]=device.devid;
    reqRoot["ReadData"]["Unit"]=unit;
-   Json::FastWriter writer;
 
    // Send request and wait for answer
-   std::string answer = SendAndReceive(writer.write(reqRoot));
+   Json::StreamWriterBuilder writer;
+   writer["indentation"] = "";
+   std::string answer = SendAndReceive(Json::writeString(writer, reqRoot));
 
    // Answer processing
    Json::Value ansRoot;
@@ -278,10 +281,11 @@ unsigned int C1WireForWindows::readChanelsNb(const _t1WireDevice& device) const
    // Request
    Json::Value reqRoot;
    reqRoot["ReadChanelsNb"]["Id"]=device.devid;
-   Json::FastWriter writer;
 
    // Send request and wait for answer
-   std::string answer = SendAndReceive(writer.write(reqRoot));
+   Json::StreamWriterBuilder writer;
+   writer["indentation"] = "";
+   std::string answer = SendAndReceive(Json::writeString(writer, reqRoot));
 
    // Answer processing
    Json::Value ansRoot;
@@ -441,10 +445,11 @@ void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value,
    reqRoot["WriteData"]["Id"]=sId;
    reqRoot["WriteData"]["Unit"]=unit;
    reqRoot["WriteData"]["Value"]=!value;
-   Json::FastWriter writer;
 
    // Send request and wait for answer
-   SendAndReceive(writer.write(reqRoot));
+   Json::StreamWriterBuilder writer;
+   writer["indentation"] = "";
+   SendAndReceive(Json::writeString(writer, reqRoot));
 
    // No answer processing
 }
