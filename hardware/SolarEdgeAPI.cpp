@@ -171,8 +171,8 @@ bool SolarEdgeAPI::GetSite()
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");
@@ -225,8 +225,8 @@ void SolarEdgeAPI::GetInverters()
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");
@@ -326,8 +326,8 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings *pInverterSetting
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");

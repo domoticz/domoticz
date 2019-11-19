@@ -424,8 +424,8 @@ void CAtagOne::GetMeterDetails()
 #endif
 #endif
 	Json::Value root2;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root2);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root2, &errors);
 	if ((!ret) || (!root2.isObject()))
 	{
 		Log(LOG_ERROR, "Invalid/no data received...");

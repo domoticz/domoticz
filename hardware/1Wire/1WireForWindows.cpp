@@ -163,10 +163,12 @@ bool C1WireForWindows::IsAvailable()
    // Request
    Json::Value reqRoot;
    reqRoot["IsAvailable"]="";
-   Json::FastWriter writer;
+
+   Json::StreamWriterBuilder writer;
+   writer["indentation"] = "";
 
    // Send request and wait for answer
-   std::string answer = ::SendAndReceive(theSocket,writer.write(reqRoot));
+   std::string answer = ::SendAndReceive(theSocket, Json::writeString(writer, reqRoot));
 
    // Answer processing
    if (answer.empty())
@@ -177,8 +179,8 @@ bool C1WireForWindows::IsAvailable()
    }
 
    Json::Value ansRoot;
-   Json::Reader reader;
-   if (!reader.parse(answer,ansRoot))
+   std::string errors;
+   if (!parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(answer)), &ansRoot, &errors))
    {
       IsAvailable=false;
       DisconnectFromService(theSocket);
@@ -216,15 +218,17 @@ void C1WireForWindows::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) co
    // Request
    Json::Value reqRoot;
    reqRoot["GetDevices"]="";
-   Json::FastWriter writer;
+   Json::StreamWriterBuilder writer;
+   writer["indentation"] = "";
 
    // Send request and wait for answer
-   std::string answer = SendAndReceive(writer.write(reqRoot));
+   std::string answer = SendAndReceive(Json::writeString(writer, reqRoot));
 
    // Answer processing
    Json::Value ansRoot;
-   Json::Reader reader;
-   if (answer.empty() || !reader.parse(answer,ansRoot))
+
+   std::string errors;
+   if (answer.empty() || !parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(answer)), &ansRoot, &errors))
       return;
 
    if (!ansRoot["InvalidRequest"].isNull())
@@ -253,15 +257,17 @@ Json::Value C1WireForWindows::readData(const _t1WireDevice& device,int unit) con
    Json::Value reqRoot;
    reqRoot["ReadData"]["Id"]=device.devid;
    reqRoot["ReadData"]["Unit"]=unit;
-   Json::FastWriter writer;
+   Json::StreamWriterBuilder writer;
+   writer["indentation"] = "";
 
    // Send request and wait for answer
-   std::string answer = SendAndReceive(writer.write(reqRoot));
+   std::string answer = SendAndReceive(Json::writeString(writer, reqRoot));
 
    // Answer processing
    Json::Value ansRoot;
-   Json::Reader reader;
-   if (answer.empty() || !reader.parse(answer,ansRoot))
+   std::string errors;
+   bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(answer)), &ansRoot, &errors);
+   if (answer.empty() || !ret)
       throw C1WireForWindowsReadException("invalid answer");
 
    if (!ansRoot["InvalidRequestReason"].isNull())
@@ -278,15 +284,16 @@ unsigned int C1WireForWindows::readChanelsNb(const _t1WireDevice& device) const
    // Request
    Json::Value reqRoot;
    reqRoot["ReadChanelsNb"]["Id"]=device.devid;
-   Json::FastWriter writer;
+   Json::StreamWriterBuilder writer;
+   writer["indentation"] = "";
 
    // Send request and wait for answer
-   std::string answer = SendAndReceive(writer.write(reqRoot));
+   std::string answer = SendAndReceive(Json::writeString(writer, reqRoot));
 
    // Answer processing
    Json::Value ansRoot;
-   Json::Reader reader;
-   if (answer.empty() || !reader.parse(answer,ansRoot))
+   std::string errors;
+   if (answer.empty() || !parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(answer)), &ansRoot, &errors))
       throw C1WireForWindowsReadException("invalid answer");
 
 
@@ -441,10 +448,11 @@ void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value,
    reqRoot["WriteData"]["Id"]=sId;
    reqRoot["WriteData"]["Unit"]=unit;
    reqRoot["WriteData"]["Value"]=!value;
-   Json::FastWriter writer;
+   Json::StreamWriterBuilder writer;
+   writer["indentation"] = "";
 
    // Send request and wait for answer
-   SendAndReceive(writer.write(reqRoot));
+   SendAndReceive(Json::writeString(writer, reqRoot));
 
    // No answer processing
 }

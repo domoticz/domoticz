@@ -176,9 +176,8 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 #endif
 #endif
 
-	Json::Reader jReader;
-
-	bool ret = jReader.parse(sResult, result);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &result, &errors);
 	if ((!ret) || (!result.isObject()))
 	{
 		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");

@@ -965,9 +965,9 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 
 		std::string szJsonString = szQueryResponse->substr(pos + 8);
 		Json::Value j_result;
-		Json::Reader jReader;
 
-		bool ret = jReader.parse(szJsonString.c_str(), j_result);
+		std::string errors;
+		bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(szJsonString)), &j_result, &errors);
 		if ((!ret) || (!j_result.isObject()))
 		{
 			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");

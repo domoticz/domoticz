@@ -186,14 +186,15 @@ void CKodiNode::handleMessage(std::string& pMessage)
 {
 	try
 	{
-		Json::Reader jReader;
 		Json::Value root;
 		std::string	sMessage;
 		std::stringstream ssMessage;
 
 		_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
-		bool bRet = jReader.parse(pMessage, root);
-		if ((!bRet) || (!root.isObject()))
+
+		std::string errors;
+		bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(pMessage)), &root, &errors);
+		if ((!ret) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "Kodi: (%s) PARSE ERROR: '%s'", m_Name.c_str(), pMessage.c_str());
 		}

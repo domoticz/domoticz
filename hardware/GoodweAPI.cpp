@@ -325,9 +325,9 @@ void GoodweAPI::GetMeterDetails()
 #ifdef DEBUG_GoodweAPIW
 	SaveString2Disk(sResult, "/tmp/Goodwe2.json");
 #endif
-	Json::Reader jReader;
 	Json::Value root;
-	bool ret=jReader.parse(sResult,root);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received!");
@@ -378,8 +378,8 @@ void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string
 #endif
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "GoodweAPI: Invalid device list!");

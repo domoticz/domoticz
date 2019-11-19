@@ -226,8 +226,8 @@ bool CBuienRadar::FindNearestStationID()
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received! (Check Station ID!)");
@@ -306,8 +306,8 @@ void CBuienRadar::GetMeterDetails()
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received! (Check Station ID!)");

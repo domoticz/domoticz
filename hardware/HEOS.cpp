@@ -39,12 +39,12 @@ void CHEOS::ParseLine()
 
 	try
 	{
-		Json::Reader jReader;
 		Json::Value root;
 
 		_log.Debug(DEBUG_HARDWARE, "DENON by HEOS: Handling message: '%s'.", sLine.c_str());
 
-		bool bRetVal = jReader.parse(sLine, root);
+		std::string errors;
+		bool bRetVal = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sLine)), &root, &errors);
 		if ((!bRetVal) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "DENON by HEOS: PARSE ERROR: '%s'", sLine.c_str());

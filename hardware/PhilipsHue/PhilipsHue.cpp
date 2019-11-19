@@ -413,8 +413,8 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received (Switch Light/Scene), or invalid IPAddress/Username!");
@@ -455,8 +455,8 @@ std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsign
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
 	if (!ret)
 	{
 		retStr = "Error;Registration failed (Wrong IPAddress?)";
@@ -689,8 +689,8 @@ bool CPhilipsHue::GetStates()
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
@@ -884,9 +884,9 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		//No group all(0)
 		return true;
 	}
-	Json::Reader jReader;
 	Json::Value root2;
-	bool ret = jReader.parse(sResult, root2);
+	std::string errors;
+	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root2, &errors);
 	if ((!ret) || (!root2.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
