@@ -34,14 +34,13 @@ bool CNotificationPushbullet::SendMessageImplementation(
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 	Json::Value json;
+	Json::StyledWriter jsonWriter;
 
 	//Build the message in JSON
 	json["type"] = "note";
 	json["title"] = CURLEncode::URLDecode(cSubject);
 	json["body"] = CURLEncode::URLDecode(Text);
-
-	Json::StreamWriterBuilder jsonWriter;
-	sPostData = Json::writeString(jsonWriter, json);
+	sPostData = jsonWriter.write(json);
 
 	//Add the required Access Token and Content Type
 	sHeaderKey << "Access-Token: " << _apikey;

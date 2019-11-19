@@ -185,9 +185,9 @@ bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string & /*accesstoken
 	}
 
 	Json::Value root;
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
-	if ((!ret) || (!root.isObject()))
+	Json::Reader jReader;
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to parse received JSON data.");
 		return false;
@@ -398,9 +398,11 @@ void CNestOAuthAPI::GetMeterDetails()
 
 	Json::Value deviceRoot;
 	Json::Value structureRoot;
+	Json::Reader jReader;
 
 	std::vector<std::string> ExtraHeaders;
 	std::string sURL;
+	bool bRet;
 
 	// Get Data for structures
 	sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_OAuthApiAccessToken;
@@ -412,8 +414,7 @@ void CNestOAuthAPI::GetMeterDetails()
 		return;
 	}
 
-	std::string errors;
-	bool bRet = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &structureRoot, &errors);
+	bRet = jReader.parse(sResult, structureRoot);
 	if ((!bRet) || (!structureRoot.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid structures data received!");
@@ -431,7 +432,7 @@ void CNestOAuthAPI::GetMeterDetails()
 		return;
 	}
 
-	bRet = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &deviceRoot, &errors);
+	bRet = jReader.parse(sResult, deviceRoot);
 	if ((!bRet) || (!deviceRoot.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid devices data received!");
@@ -845,15 +846,13 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 
 		try
 		{
-			//_log.Log(LOG_NORM, "NestOAuthAPI: Will now parse result to JSON");
+			_log.Log(LOG_NORM, "NestOAuthAPI: Will now parse result to JSON");
 			Json::Value root;
-			std::string errors;
-			bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
-			//_log.Log(LOG_NORM, "NestOAuthAPI: JSON data parse call returned.");
+			Json::Reader jReader;
+			bool bRet = jReader.parse(sResult, root);
+			_log.Log(LOG_NORM, "NestOAuthAPI: JSON data parse call returned.");
 
-			if ((!ret) || (!root.isObject())) {
-				throw std::runtime_error("Failed to parse JSON data."); //GizMoCuz ?? Throw ? One error on the remote site and domoticz stops working !?
-			}
+			if ((!bRet) || (!root.isObject())) throw std::runtime_error("Failed to parse JSON data.");
 			_log.Log(LOG_NORM, "NestOAuthAPI: Parsing of JSON data apparently successful");
 
 			if (root.empty()) throw std::runtime_error("Parsed JSON data contains no elements.");

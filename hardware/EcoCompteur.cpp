@@ -110,12 +110,8 @@ void CEcoCompteur::GetScript()
 
 	// Parse inst.json
 	Json::Value root;
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sInst)), &root, &errors);
-	if (!ret)
-	{
-		return;
-	}
+	Json::Reader jReader;
+	jReader.parse(sInst, root);
 
 	// Parse log2.csv
 	if (sLog2.length() == 0)

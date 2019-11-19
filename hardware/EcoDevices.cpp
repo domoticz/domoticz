@@ -376,10 +376,9 @@ void CEcoDevices::GetMeterRT2Details()
 	}
 
 	Json::Value root;
-
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
-	if ((!ret) || (!root.isObject()))
+	Json::Reader jReader;
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", m_Name.c_str());
 		return;

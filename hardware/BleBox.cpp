@@ -1028,9 +1028,8 @@ Json::Value BleBox::SendCommand(const std::string & IPAddress, const std::string
 		return root;
 	}
 
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(result)), &root, &errors);
-	if (!ret)
+	Json::Reader jReader;
+	if (!jReader.parse(result, root))
 	{
 		Log(LOG_ERROR, "Invalid json received!");
 		return root;

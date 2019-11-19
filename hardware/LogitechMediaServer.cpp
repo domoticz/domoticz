@@ -72,9 +72,9 @@ Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort,
 	{
 		return root;
 	}
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
-	if ((!ret) || (!root.isObject()))
+	Json::Reader jReader;
+	bRetVal = jReader.parse(sResult, root);
+	if ((!bRetVal) || (!root.isObject()))
 	{
 		size_t aFind = sResult.find("401 Authorization Required");
 		if ((aFind > 0) && (aFind != std::string::npos))

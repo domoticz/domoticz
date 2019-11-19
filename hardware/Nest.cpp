@@ -209,9 +209,9 @@ bool CNest::Login()
 	}
 
 	Json::Value root;
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
-	if ((!ret) || (!root.isObject()))
+	Json::Reader jReader;
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
 		return false;
@@ -400,9 +400,9 @@ void CNest::GetMeterDetails()
 #endif
 
 	Json::Value root;
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
-	if ((!ret) || (!root.isObject()))
+	Json::Reader jReader;
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received!");
 		m_bDoLogin = true;

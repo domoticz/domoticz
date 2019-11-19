@@ -37,6 +37,7 @@ bool CNotificationTelegram::SendMessageImplementation(
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 	Json::Value json;
+	Json::StyledWriter jsonWriter;
 
 	//Build url
 	sBuildUrl << "https://api.telegram.org/bot" << _apikey << "/sendMessage";
@@ -53,9 +54,7 @@ bool CNotificationTelegram::SendMessageImplementation(
 
 	if ( Priority < 0 )
 		json["disable_notification"] = 1;
-
-	Json::StreamWriterBuilder jsonWriter;
-	sPostData = Json::writeString(jsonWriter, json);
+	sPostData = jsonWriter.write(json);
 
 	//Add the required Content Type
 	ExtraHeaders.push_back("Content-Type: application/json");

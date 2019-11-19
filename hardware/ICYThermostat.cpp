@@ -176,8 +176,8 @@ bool CICYThermostat::GetSerialAndToken()
 
 	Json::Value root;
 
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received, or invalid username/password!");
@@ -242,8 +242,8 @@ void CICYThermostat::GetMeterDetails()
 
 	Json::Value root;
 
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received!");

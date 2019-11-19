@@ -164,8 +164,9 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 	// Validty check on the received json
 
 	Json::Value root;
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(buffer)), &root, &errors);
+	Json::Reader jReader;
+
+	bool ret = jReader.parse(buffer, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Ec3kMeter: invalid data received!");

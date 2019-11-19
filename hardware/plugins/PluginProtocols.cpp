@@ -231,12 +231,12 @@ namespace Plugins {
 
 	PyObject* CPluginProtocolJSON::JSONtoPython(std::string	sData)
 	{
+		Json::Reader	jReader;
 		Json::Value		root;
 		PyObject* pRetVal = Py_None;
 
-		std::string errors;
-		bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sData)), &root, &errors);
-		if ((!ret) || (!root.isObject()))
+		bool bRet = jReader.parse(sData, root);
+		if ((!bRet) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
 			Py_INCREF(Py_None);
@@ -321,8 +321,7 @@ namespace Plugins {
 		std::string		sData(vData.begin(), vData.end());
 		int iPos = 1;
 		while (iPos) {
-			std::string errors;
-
+			Json::Reader	jReader;
 			Json::Value		root;
 			iPos = sData.find("}{", 0) + 1;		//  Look for message separater in case there is more than one
 			if (!iPos) // no, just one or part of one
@@ -330,8 +329,8 @@ namespace Plugins {
 				if ((sData.substr(sData.length() - 1, 1) == "}") &&
 					(std::count(sData.begin(), sData.end(), '{') == std::count(sData.begin(), sData.end(), '}'))) // whole message so queue the whole buffer
 				{
-					bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sData)), &root, &errors);
-					if ((!ret) || (!root.isObject()))
+					bool bRet = jReader.parse(sData, root);
+					if ((!bRet) || (!root.isObject()))
 					{
 						_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
 						Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sData));
@@ -348,8 +347,8 @@ namespace Plugins {
 			{
 				std::string sMessage = sData.substr(0, iPos);
 				sData = sData.substr(iPos);
-				bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sMessage)), &root, &errors);
-				if ((!ret) || (!root.isObject()))
+				bool bRet = jReader.parse(sMessage, root);
+				if ((!bRet) || (!root.isObject()))
 				{
 					_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
 					Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sMessage));

@@ -157,8 +157,8 @@ std::string CAccuWeather::GetLocationKey()
 	try
 	{
 		Json::Value root;
-		std::string errors;
-		bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
+		Json::Reader jReader;
+		bool ret = jReader.parse(sResult, root);
 		if (!ret)
 		{
 			Log(LOG_ERROR, "Invalid data received!");
@@ -226,8 +226,8 @@ void CAccuWeather::GetMeterDetails()
 	try
 	{
 		Json::Value root;
-		std::string errors;
-		bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
+		Json::Reader jReader;
+		bool ret = jReader.parse(sResult, root);
 		if (!ret)
 		{
 			Log(LOG_ERROR, "Invalid data received!");

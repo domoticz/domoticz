@@ -153,9 +153,9 @@ void CInComfort::SetProgramState(const int /*newState*/)
 void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 {
 	Json::Value root;
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(jsonData)), &root, &errors);
-	if ((!ret) || (!root.isObject()))
+	Json::Reader jReader;
+	bool bRet = jReader.parse(jsonData, root);
+	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Data is not json formatted.");
 		return;

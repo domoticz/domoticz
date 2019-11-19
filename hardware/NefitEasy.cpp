@@ -346,8 +346,8 @@ bool CNefitEasy::GetStatusDetails()
 	Json::Value root;
 	Json::Value root2;
 
-	std::string errors;
-	bool ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		if (sResult.find("Error: REQUEST_TIMEOUT") != std::string::npos)
@@ -464,6 +464,7 @@ bool CNefitEasy::GetStatusDetails()
 bool CNefitEasy::GetOutdoorTemp()
 {
 	std::string sResult;
+	Json::Reader jReader;
 	Json::Value root;
 	bool ret;
 
@@ -492,8 +493,7 @@ bool CNefitEasy::GetOutdoorTemp()
 #ifdef DEBUG_NefitEasyW
 	SaveString2Disk(sResult, "E:\\nefit_outdoor.json");
 #endif
-	std::string errors;
-	ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
+	ret = jReader.parse(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (ODT)");
@@ -518,6 +518,7 @@ bool CNefitEasy::GetOutdoorTemp()
 bool CNefitEasy::GetFlowTemp()
 {
 	std::string sResult;
+	Json::Reader jReader;
 	Json::Value root;
 	bool ret;
 
@@ -546,8 +547,7 @@ bool CNefitEasy::GetFlowTemp()
 #ifdef DEBUG_NefitEasyW
 	SaveString2Disk(sResult, "E:\\nefit_flow.json");
 #endif
-	std::string errors;
-	ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
+	ret = jReader.parse(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (FT)");
@@ -572,6 +572,7 @@ bool CNefitEasy::GetFlowTemp()
 bool CNefitEasy::GetPressure()
 {
 	std::string sResult;
+	Json::Reader jReader;
 	Json::Value root;
 	bool ret;
 
@@ -600,8 +601,7 @@ bool CNefitEasy::GetPressure()
 #ifdef DEBUG_NefitEasyW
 	SaveString2Disk(sResult, "E:\\nefit_uipres.json");
 #endif
-	std::string errors;
-	ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
+	ret = jReader.parse(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Press)");
@@ -625,6 +625,7 @@ bool CNefitEasy::GetPressure()
 bool CNefitEasy::GetDisplayCode()
 {
 	std::string sResult;
+	Json::Reader jReader;
 	Json::Value root;
 	bool ret;
 
@@ -652,8 +653,7 @@ bool CNefitEasy::GetDisplayCode()
 #ifdef DEBUG_NefitEasyW
 	SaveString2Disk(sResult, "E:\\nefit_displaycode.json");
 #endif
-	std::string errors;
-	ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
+	ret = jReader.parse(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (DP)");
@@ -726,6 +726,7 @@ bool CNefitEasy::GetDisplayCode()
 bool CNefitEasy::GetGasUsage()
 {
 	std::string sResult;
+	Json::Reader jReader;
 	Json::Value root;
 	bool ret;
 
@@ -754,8 +755,7 @@ bool CNefitEasy::GetGasUsage()
 #ifdef DEBUG_NefitEasyW
 	SaveString2Disk(sResult, "E:\\nefit_yearTotal.json");
 #endif
-	std::string errors;
-	ret = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(sResult)), &root, &errors);
+	ret = jReader.parse(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Gas)");

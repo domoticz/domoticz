@@ -79,14 +79,19 @@ void _tColor::fromJSON(const Json::Value &root)
 void _tColor::fromString(const std::string &s)
 {
 	Json::Value root;
-	std::string errors;
-	bool parsingSuccessful = parseFromStream(Json::CharReaderBuilder(), dynamic_cast<Json::IStream&>(std::istringstream(s)), &root, &errors);
-	if ( !parsingSuccessful )
-	{
-		mode = ColorModeNone;
-		return;
+	Json::Reader reader(Json::Features::strictMode());
+	mode = ColorModeNone;
+	try {
+		bool parsingSuccessful = reader.parse(s.c_str(), root);     //parse process
+		if ( !parsingSuccessful )
+		{
+			mode = ColorModeNone;
+			return;
+		}
+		fromJSON(root);
 	}
-	fromJSON(root);
+	catch (...) {
+	}
 }
 
 Json::Value _tColor::toJSONValue() const
@@ -115,9 +120,9 @@ std::string _tColor::toJSONString() const
 
 	Json::Value root = toJSONValue();
 
-	Json::StreamWriterBuilder writer;
-	writer["indentation"] = "";
-	return Json::writeString(writer, root);
+	Json::FastWriter fastwriter;
+	fastwriter.omitEndingLineFeed();
+	return fastwriter.write(root);
 }
 
 std::string _tColor::toString() const
