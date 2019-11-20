@@ -1485,8 +1485,9 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "ClearTimer";
 			m_sql.safe_query(
-				"DELETE FROM Timers WHERE (DeviceRowID == '%q')",
-				idx.c_str()
+				"DELETE FROM Timers WHERE ((DeviceRowID == '%q') AND (TimerPlan == %d))",
+				idx.c_str(),
+				m_sql.m_ActiveTimerPlan
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
