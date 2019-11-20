@@ -3132,6 +3132,9 @@
     <ClCompile Include="..\MQTT\util_topic.c">
       <Filter>MQTT</Filter>
     </ClCompile>
+    <ClCompile Include="..\main\json_helper.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="domoticz.rc">

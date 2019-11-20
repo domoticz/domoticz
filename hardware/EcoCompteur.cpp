@@ -5,7 +5,7 @@
 #include "../main/localtime_r.h"
 #include "hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/WebServer.h"
 
 /*
@@ -98,6 +98,13 @@ void CEcoCompteur::GetScript()
 		_log.Log(LOG_ERROR, "EcoCompteur: Error getting 'inst.json' from url : " + m_url);
 		return;
 	}
+	// Parse inst.json
+	Json::Value root;
+	if (!ParseJSon(sInst, root))
+	{
+		_log.Log(LOG_ERROR, "EcoCompteur: Error parsing JSON from url : " + m_url);
+		return;
+	}
 
 	// Download hourly report
 	std::stringstream szLogURL;
@@ -107,11 +114,6 @@ void CEcoCompteur::GetScript()
 		_log.Log(LOG_ERROR, "EcoCompteur: Error getting 'log2.csv' from url : " + m_url);
 		return;
 	}
-
-	// Parse inst.json
-	Json::Value root;
-	Json::Reader jReader;
-	jReader.parse(sInst, root);
 
 	// Parse log2.csv
 	if (sLog2.length() == 0)

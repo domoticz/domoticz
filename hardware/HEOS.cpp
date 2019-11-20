@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "HEOS.h"
 #include "../hardware/hardwaretypes.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -39,12 +39,11 @@ void CHEOS::ParseLine()
 
 	try
 	{
-		Json::Reader jReader;
 		Json::Value root;
 
 		_log.Debug(DEBUG_HARDWARE, "DENON by HEOS: Handling message: '%s'.", sLine.c_str());
 
-		bool bRetVal = jReader.parse(sLine, root);
+		bool bRetVal = ParseJSon(sLine, root);
 		if ((!bRetVal) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "DENON by HEOS: PARSE ERROR: '%s'", sLine.c_str());

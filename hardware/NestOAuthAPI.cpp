@@ -13,7 +13,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../webserver/Base64.h"
 
 
@@ -185,8 +185,7 @@ bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string & /*accesstoken
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to parse received JSON data.");
@@ -398,7 +397,6 @@ void CNestOAuthAPI::GetMeterDetails()
 
 	Json::Value deviceRoot;
 	Json::Value structureRoot;
-	Json::Reader jReader;
 
 	std::vector<std::string> ExtraHeaders;
 	std::string sURL;
@@ -414,7 +412,7 @@ void CNestOAuthAPI::GetMeterDetails()
 		return;
 	}
 
-	bRet = jReader.parse(sResult, structureRoot);
+	bRet = ParseJSon(sResult, structureRoot);
 	if ((!bRet) || (!structureRoot.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid structures data received!");
@@ -432,7 +430,7 @@ void CNestOAuthAPI::GetMeterDetails()
 		return;
 	}
 
-	bRet = jReader.parse(sResult, deviceRoot);
+	bRet = ParseJSon(sResult, deviceRoot);
 	if ((!bRet) || (!deviceRoot.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid devices data received!");
@@ -848,8 +846,7 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 		{
 			_log.Log(LOG_NORM, "NestOAuthAPI: Will now parse result to JSON");
 			Json::Value root;
-			Json::Reader jReader;
-			bool bRet = jReader.parse(sResult, root);
+			bool bRet = ParseJSon(sResult, root);
 			_log.Log(LOG_NORM, "NestOAuthAPI: JSON data parse call returned.");
 
 			if ((!bRet) || (!root.isObject())) throw std::runtime_error("Failed to parse JSON data.");

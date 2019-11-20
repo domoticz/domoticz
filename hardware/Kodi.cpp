@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Kodi.h"
 #include "../hardware/hardwaretypes.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/EventSystem.h"
 #include "../main/Helper.h"
 #include "../main/HTMLSanitizer.h"
@@ -186,13 +186,12 @@ void CKodiNode::handleMessage(std::string& pMessage)
 {
 	try
 	{
-		Json::Reader jReader;
 		Json::Value root;
 		std::string	sMessage;
 		std::stringstream ssMessage;
 
 		_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
-		bool bRet = jReader.parse(pMessage, root);
+		bool bRet = ParseJSon(pMessage, root);
 		if ((!bRet) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "Kodi: (%s) PARSE ERROR: '%s'", m_Name.c_str(), pMessage.c_str());

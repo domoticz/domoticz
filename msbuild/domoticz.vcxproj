@@ -902,6 +902,7 @@
     <ClCompile Include="..\main\EventSystem.cpp" />
     <ClCompile Include="..\main\HTMLSanitizer.cpp" />
     <ClCompile Include="..\main\IFTTT.cpp" />
+    <ClCompile Include="..\main\json_helper.cpp" />
     <ClCompile Include="..\main\localtime_r.cpp" />
     <ClCompile Include="..\hardware\P1MeterBase.cpp" />
     <ClCompile Include="..\hardware\P1MeterSerial.cpp" />

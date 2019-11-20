@@ -6,7 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 
@@ -153,8 +153,7 @@ void CDarkSky::GetMeterDetails()
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret=jReader.parse(sResult,root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		Log(LOG_ERROR,"Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");

@@ -6,7 +6,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../notifications/NotificationHelper.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -155,14 +155,13 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		return;
 
 	Json::Value root;
-	Json::Reader jReader;
 	std::string szCommand = "udevice";
 
 	std::vector<std::vector<std::string> > result;
 	
 	uint64_t idx = 0;
 
-	bool ret = jReader.parse(qMessage, root);
+	bool ret = ParseJSon(qMessage, root);
 	if ((!ret) || (!root.isObject()))
 		goto mqttinvaliddata;
 	try

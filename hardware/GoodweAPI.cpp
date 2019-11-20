@@ -7,7 +7,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #if defined(_WIN32) || defined(_WIN64)
@@ -325,9 +325,8 @@ void GoodweAPI::GetMeterDetails()
 #ifdef DEBUG_GoodweAPIW
 	SaveString2Disk(sResult, "/tmp/Goodwe2.json");
 #endif
-	Json::Reader jReader;
 	Json::Value root;
-	bool ret=jReader.parse(sResult,root);
+	bool ret= ParseJSon(sResult,root);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received!");
@@ -378,8 +377,7 @@ void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string
 #endif
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "GoodweAPI: Invalid device list!");
