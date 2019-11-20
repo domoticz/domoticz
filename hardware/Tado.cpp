@@ -19,7 +19,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../webserver/Base64.h"
 #include "Tado.h"
 
@@ -882,8 +882,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 		// If the supplied postdata validates as json, add an appropriate content type header
 		if (sPostData.size() > 0)
 		{
-			Json::Reader _jsReader;
-			if (_jsReader.parse(sPostData, *(new Json::Value))) {
+			if (ParseJSon(sPostData, *(new Json::Value))) {
 				_vExtraHeaders.push_back("Content-Type: application/json");
 			}
 		}
@@ -947,8 +946,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 		}
 
 		if (bDecodeJsonResponse) {
-			Json::Reader _jsReader;
-			if (!_jsReader.parse(sResponse, jsDecodedResponse)) {
+			if (!ParseJSon(sResponse, jsDecodedResponse)) {
 				_log.Log(LOG_ERROR, "Tado: Failed to decode Json response from Api.");
 				return false;
 			}

@@ -53,9 +53,8 @@ namespace http {
 					}
 
 
-				Json::Reader reader;
 				Json::Value value;
-				if (!reader.parse(packet_data, value)) {
+				if (!ParseJSon(packet_data, value)) {
 					return true;
 				}
 				std::string szEvent = value["event"].asString();

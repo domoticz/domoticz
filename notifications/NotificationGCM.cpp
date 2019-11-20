@@ -3,7 +3,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 #define GAPI_POST_URL "https://fcm.googleapis.com/fcm/send"
 #define GAPI "AIzaSyBnRMroiDaXCKbwPeOmoxkNiQfjWkGMre8"
@@ -107,8 +107,7 @@ bool CNotificationGCM::SendMessageImplementation(
 
 		Json::Value root;
 
-		Json::Reader jReader;
-		bool ret = jReader.parse(sResult, root);
+		bool ret = ParseJSon(sResult, root);
 		if (!ret)
 		{
 			_log.Log(LOG_ERROR, "GCM: Can not connect to GCM API URL");
@@ -151,8 +150,7 @@ bool CNotificationGCM::SendMessageImplementation(
 
 		Json::Value root;
 
-		Json::Reader jReader;
-		bool ret = jReader.parse(sResult, root);
+		bool ret = ParseJSon(sResult, root);
 		if (!ret)
 		{
 			_log.Log(LOG_ERROR, "GCM: Can not connect to GCM API URL");
