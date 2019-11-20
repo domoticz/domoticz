@@ -807,13 +807,18 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 	char szIdx[10];
 	sprintf(szIdx, "%07X", NodeID);
 
+	int switch_type;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
 	if (result.empty())
 	{
-		int switch_type = (iLevel < 0) ? STYPE_VenetianBlindsEU : STYPE_BlindsPercentageInverted;
+		switch_type = (iLevel < 0) ? STYPE_VenetianBlindsEU : STYPE_BlindsPercentageInverted;
 		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeLighting2, sTypeAC, switch_type, 0, "", devname);
 	}
+	else
+		switch_type = atoi(result[0][1].c_str());
+
+	if ((switch_type == STYPE_BlindsPercentageInverted) && (iLevel < 0)) return; // check normal frame received for BlindsPercentageInverted
 
 	int cmd = -1;
 	switch (Command)
@@ -839,7 +844,6 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 
 	// if (iLevel < 0)  is a Normal Frame and device is standard
 	// if (iLevel >= 0) is a Meseaure Frame (percentual) and device is Advanced
-	/*TODO: verify level value for Advanced */
 	double level = (iLevel < 0) ? 0. : iLevel;
 	if (level == 100.) level -= 6.25;
 
