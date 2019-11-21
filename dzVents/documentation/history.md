@@ -1,3 +1,7 @@
+[2.5.1]
+- Added `toXML` and `fromXML` methods to domoticz.utils.
+- Add attributes isXML, xmlVersion, xmlEncoding
+
 [2.5.0]
 - Prepared for Lua 5.3
 

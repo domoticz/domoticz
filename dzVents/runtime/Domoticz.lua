@@ -126,7 +126,7 @@ local function Domoticz(settings)
 		['STRING'] = 'string',
 		['DATE'] = 'date',
 		['TIME'] = 'time',
-		['NSS_FIREBASE'] = 'gcm', -- For the moment the change to fcm is only done in the url 
+		['NSS_FIREBASE'] = 'gcm', -- For the moment the change to fcm is only done in the url
 		['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',
 		['NSS_HTTP'] = 'http',
 		['NSS_KODI'] = 'kodi',
@@ -179,6 +179,14 @@ local function Domoticz(settings)
 
 			toJSON = function(luaTable)
 				return utils.toJSON(luaTable)
+			end,
+
+			fromXML = function(xml, fallback)
+				return utils.fromXML(xml, fallback)
+			end,
+
+			toXML = function( luaTable, header)
+				return utils.toXML(luaTable, header)
 			end,
 
 			rgbToHSB = function(r, g, b)

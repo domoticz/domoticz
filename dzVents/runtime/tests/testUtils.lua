@@ -5,7 +5,6 @@ local _ = require 'lodash'
 local scriptPath = ''
 package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;../../../scripts/lua/?.lua;'
 
-
 local LOG_INFO = 2
 local LOG_DEBUG = 3
 local LOG_ERROR = 1
@@ -85,21 +84,21 @@ describe('event helpers', function()
 		assert.is_same(utils.rightPad('string',7,'@'),'string@')
 		assert.is_same(utils.rightPad('string',2),'string')
 	end)
-    
+   
 	it('should left pad a string', function()
 		assert.is_same(utils.leftPad('string',7),' string')
 		assert.is_same(utils.leftPad('string',7,'@'),'@string')
 		assert.is_same(utils.leftPad('string',2),'string')
 	end)
-    
-    
+   
+   
 	it('should center and pad a string', function()
 		assert.is_same(utils.centerPad('string',8),' string ')
 		assert.is_same(utils.centerPad('string',8,'@'),'@string@')
 		assert.is_same(utils.centerPad('string',2),'string')
 	end)
-    
-        
+   
+	   
 	it('should pad a number with leading zeros', function()
 		assert.is_same(utils.leadingZeros(99,3),'099')
 		assert.is_same(utils.leadingZeros(999,2),'999')
@@ -140,12 +139,35 @@ describe('event helpers', function()
 
 	end)
 
+	it('should convert a xml to a table or fallback to fallback', function()
+		local xml = '<testXML>What a nice feature!</testXML>'
+		local t = utils.fromXML(xml, fallback)
+		assert.is_same('What a nice feature!', t.testXML)
+
+        local xml = nil
+		local fallback  = { a=1 }
+		local t = utils.fromXML(xml, fallback)
+		assert.is_same(1, t['a'])
+
+		local xml = nil
+		fallback  = nil
+		local t = utils.fromXML(xml, fallback)
+		assert.is_nil(t)
+
+	end)
+
 	it('should convert a table to json', function()
 		local t = { a= 1 }
 		local res = utils.toJSON(t)
 		assert.is_same('{"a":1}', res)
 	end)
-	
+
+	it('should convert a table to xml', function()
+		local t = { a= 1 }
+		local res = utils.toXML(t, 'busted')
+		assert.is_same('<busted>\n<a>1</a>\n</busted>\n', res)
+	end)
+
 	it('should dump a table to log', function()
 		local t = { a=1,b=2,c={d=3,e=4, "test"} }
 		local res = utils.dumpTable(t,"> ")

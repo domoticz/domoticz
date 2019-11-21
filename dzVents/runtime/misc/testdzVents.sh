@@ -40,6 +40,13 @@ if [[ $? -ne 0 ]];then
 else
 	echo dzVents will be tested against domoticz version $NewVersion.
 fi
+ 
+ currenttime=$(date +%H:%M)
+if [[ "$currenttime" > "00:00" ]] && [[ "$currenttime" < "00:31" ]]; then 
+	echo Script cannot be execute dbetween 00:00 and 00:30. Time checks will fail
+	exit 1
+fi	
+
 
 function leadingZero
 	{
@@ -132,7 +139,7 @@ function fillNumberOfTests
 		ScriptdzVentsDispatching_ExpectedTests=2
 		TimedCommand_ExpectedTests=42
 		Time_ExpectedTests=326
-		Utils_ExpectedTests=17
+		Utils_ExpectedTests=19
 		Variable_ExpectedTests=15
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
 		DelayedVariableScene_ExpectedTests=2
