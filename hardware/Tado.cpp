@@ -632,7 +632,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 	// Get the javascript response and split its lines
 	StringSplit(sJavascriptData, "\n", _sJavascriptDataLines);
 
-	_log.Debug(DEBUG_HARDWARE, "Tado: MatchValueFromJSKey: Got %lu lines from javascript data.", _sJavascriptDataLines.size());
+	_log.Debug(DEBUG_HARDWARE, "Tado: MatchValueFromJSKey: Got %zu lines from javascript data.", _sJavascriptDataLines.size());
 
 	if (_sJavascriptDataLines.size() <= 0)
 	{
