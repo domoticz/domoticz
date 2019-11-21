@@ -194,7 +194,7 @@ factor=10			   # performance factor (about 10 on Raspberry)
 
 cd $basedir/dzVents/runtime/integration-tests
 export NODE_NO_WARNINGS=1
-npm --silent start 2>&1 >/dev/null &
+npm --silent start --scripts-prepend-node-path 2>&1 >/dev/null &
 checkStarted "server" 10
 
 # Just to be sure we do not destroy something important without a backup
