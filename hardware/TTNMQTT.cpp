@@ -6,7 +6,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../webserver/Base64.h"
 #include "cayenne_lpp/CayenneLPP_Dec.h"
 #include <sstream>
@@ -377,8 +377,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 	try {
 		Json::Value root;
-		Json::Reader jReader;
-		bool ret = jReader.parse(qMessage, root);
+		bool ret = ParseJSon(qMessage, root);
 		if ((!ret) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "TTN_MQTT: Invalid data received!");

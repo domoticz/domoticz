@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "LogitechMediaServer.h"
 #include "../hardware/hardwaretypes.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
@@ -72,8 +72,7 @@ Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort,
 	{
 		return root;
 	}
-	Json::Reader jReader;
-	bRetVal = jReader.parse(sResult, root);
+	bRetVal = ParseJSon(sResult, root);
 	if ((!bRetVal) || (!root.isObject()))
 	{
 		size_t aFind = sResult.find("401 Authorization Required");

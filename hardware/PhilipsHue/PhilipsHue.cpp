@@ -10,7 +10,7 @@
 #include "../../main/WebServer.h"
 #include "../../webserver/cWebem.h"
 #include "../../httpclient/HTTPClient.h"
-#include "../../json/json.h"
+#include "../../main/json_helper.h"
 #include "../hardwaretypes.h"
 
 #define round(a) ( int ) ( a + .5 )
@@ -413,8 +413,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received (Switch Light/Scene), or invalid IPAddress/Username!");
@@ -455,8 +454,7 @@ std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsign
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if (!ret)
 	{
 		retStr = "Error;Registration failed (Wrong IPAddress?)";
@@ -689,8 +687,7 @@ bool CPhilipsHue::GetStates()
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
@@ -884,9 +881,8 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		//No group all(0)
 		return true;
 	}
-	Json::Reader jReader;
 	Json::Value root2;
-	bool ret = jReader.parse(sResult, root2);
+	bool ret = ParseJSon(sResult, root2);
 	if ((!ret) || (!root2.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");

@@ -7,7 +7,7 @@
 #include "../main/RFXtrx.h"
 #include "hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -276,8 +276,7 @@ bool CNetatmo::Login()
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	ret = jReader.parse(sResult, root);
+	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
@@ -339,8 +338,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	ret = jReader.parse(sResult, root);
+	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
@@ -851,8 +849,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetatmoType /*NetatmoType*/, const bool bIsThermostat)
 {
 	Json::Value root;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
@@ -1150,8 +1147,7 @@ void CNetatmo::GetMeterDetails()
 
 	//Check for error
 	Json::Value root;
-	Json::Reader jReader;
-	bRet = jReader.parse(sResult, root);
+	bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
@@ -1185,7 +1181,7 @@ void CNetatmo::GetMeterDetails()
 				_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 				return;
 			}
-			bRet = jReader.parse(sResult, root);
+			bRet = ParseJSon(sResult, root);
 			if ((!bRet) || (!root.isObject()))
 			{
 				_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
@@ -1222,7 +1218,7 @@ void CNetatmo::GetMeterDetails()
 					_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 					return;
 				}
-				bRet = jReader.parse(sResult, root);
+				bRet = ParseJSon(sResult, root);
 				if ((!bRet) || (!root.isObject()))
 				{
 					_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
@@ -1319,8 +1315,7 @@ void CNetatmo::GetThermostatDetails()
 bool CNetatmo::ParseHomeData(const std::string &sResult)
 {
 	Json::Value root;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
@@ -1381,8 +1376,7 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 {
 	Json::Value root;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");

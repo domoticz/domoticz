@@ -2,7 +2,7 @@
 #include "../main/Helper.h"
 #include "hardwaretypes.h"
 #include "ColorSwitch.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 _tColor::_tColor()
 {
@@ -79,10 +79,9 @@ void _tColor::fromJSON(const Json::Value &root)
 void _tColor::fromString(const std::string &s)
 {
 	Json::Value root;
-	Json::Reader reader(Json::Features::strictMode());
 	mode = ColorModeNone;
 	try {
-		bool parsingSuccessful = reader.parse(s.c_str(), root);     //parse process
+		bool parsingSuccessful = ParseJSonStrict(s.c_str(), root);
 		if ( !parsingSuccessful )
 		{
 			mode = ColorModeNone;
@@ -120,9 +119,7 @@ std::string _tColor::toJSONString() const
 
 	Json::Value root = toJSONValue();
 
-	Json::FastWriter fastwriter;
-	fastwriter.omitEndingLineFeed();
-	return fastwriter.write(root);
+	return JSonToRawString(root);
 }
 
 std::string _tColor::toString() const

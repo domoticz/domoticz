@@ -12,7 +12,7 @@
 #include "../../webserver/Base64.h"
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
-#include "../../json/json.h"
+#include "../main/json_helper.h"
 
 namespace Plugins {
 
@@ -231,11 +231,10 @@ namespace Plugins {
 
 	PyObject* CPluginProtocolJSON::JSONtoPython(std::string	sData)
 	{
-		Json::Reader	jReader;
 		Json::Value		root;
 		PyObject* pRetVal = Py_None;
 
-		bool bRet = jReader.parse(sData, root);
+		bool bRet = ParseJSon(sData, root);
 		if ((!bRet) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
@@ -321,7 +320,6 @@ namespace Plugins {
 		std::string		sData(vData.begin(), vData.end());
 		int iPos = 1;
 		while (iPos) {
-			Json::Reader	jReader;
 			Json::Value		root;
 			iPos = sData.find("}{", 0) + 1;		//  Look for message separater in case there is more than one
 			if (!iPos) // no, just one or part of one
@@ -329,7 +327,7 @@ namespace Plugins {
 				if ((sData.substr(sData.length() - 1, 1) == "}") &&
 					(std::count(sData.begin(), sData.end(), '{') == std::count(sData.begin(), sData.end(), '}'))) // whole message so queue the whole buffer
 				{
-					bool bRet = jReader.parse(sData, root);
+					bool bRet = ParseJSon(sData, root);
 					if ((!bRet) || (!root.isObject()))
 					{
 						_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
@@ -347,7 +345,7 @@ namespace Plugins {
 			{
 				std::string sMessage = sData.substr(0, iPos);
 				sData = sData.substr(iPos);
-				bool bRet = jReader.parse(sMessage, root);
+				bool bRet = ParseJSon(sMessage, root);
 				if ((!bRet) || (!root.isObject()))
 				{
 					_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());

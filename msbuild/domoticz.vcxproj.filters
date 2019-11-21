@@ -2269,6 +2269,9 @@
     <ClInclude Include="..\MQTT\mosquitto_plugin.h">
       <Filter>MQTT</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\json_helper.h">
+      <Filter>json</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -3128,6 +3131,9 @@
     </ClCompile>
     <ClCompile Include="..\MQTT\util_topic.c">
       <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\json_helper.cpp">
+      <Filter>json</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

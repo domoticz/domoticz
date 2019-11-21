@@ -6,7 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
@@ -165,8 +165,7 @@ void COpenWeatherMap::GetMeterDetails()
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret=jReader.parse(sResult,root);
+	bool ret= ParseJSon(sResult,root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR,"OpenWeatherMap: Invalid data received!");

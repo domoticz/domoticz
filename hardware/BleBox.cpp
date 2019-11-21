@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "BleBox.h"
 #include "hardwaretypes.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/Helper.h"
 #include "../main/HTMLSanitizer.h"
 #include "../main/localtime_r.h"
@@ -1028,8 +1028,7 @@ Json::Value BleBox::SendCommand(const std::string & IPAddress, const std::string
 		return root;
 	}
 
-	Json::Reader jReader;
-	if (!jReader.parse(result, root))
+	if (!ParseJSon(result, root))
 	{
 		Log(LOG_ERROR, "Invalid json received!");
 		return root;
