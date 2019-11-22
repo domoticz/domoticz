@@ -65,8 +65,7 @@ IF(USE_BUILTIN_LUA)
     add_definitions(-DLUA_USE_MACOSX)
   ENDIF()
   add_subdirectory (lua)
-  get_directory_property (LUA_LIBRARIES DIRECTORY lua
-    DEFINITION LUA_LIBRARIES)
+  get_directory_property (LUA_LIBRARIES DIRECTORY lua DEFINITION LUA_LIBRARIES)
 ELSE(USE_BUILTIN_LUA)
   find_package(PkgConfig)
   pkg_search_module(LUA lua5.3>=5.3 lua>=5.3 lua-5.3)
@@ -96,30 +95,26 @@ ENDIF(USE_BUILTIN_LUA)
 
 option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
 IF(USE_BUILTIN_MQTT)
-  message(STATUS "Using builtin Mosquitto library")
+  MESSAGE(STATUS "Using builtin Mosquitto library")
   add_subdirectory (MQTT)
-  get_directory_property (MQTT_LIBRARIES DIRECTORY MQTT
-      DEFINITION MQTT_LIBRARIES)
+  get_directory_property (MQTT_LIBRARIES DIRECTORY MQTT DEFINITION MQTT_LIBRARIES)
   add_definitions(-DBUILTIN_MQTT)
 ELSE(USE_BUILTIN_MQTT)
-  find_path(MQTT_INCLUDE_DIRS NAMES mosquittopp.h)
-  IF(MQTT_INCLUDE_DIRS)
-    message(STATUS "Found mosquittopp.h at: ${MQTT_INCLUDE_DIRS}")
-    find_library(MQTT_LIBRARIES NAMES libmosquittopp.so)
-    IF(MQTT_LIBRARIES)
-      message(STATUS "Found libmosquittopp at: ${MQTT_LIBRARIES}")
-    ENDIF(MQTT_LIBRARIES)
+  find_library(MQTT_LIBRARIES NAMES libmosquitto.so)
+  find_path(MQTT_INCLUDE_DIRS NAMES mosquitto.h)
+  IF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
+    MESSAGE(STATUS "MQTT libraries found at: ${MQTT_LIBRARIES}")
+    MESSAGE(STATUS "MQTT includes found at: ${MQTT_INCLUDE_DIRS}")
     INCLUDE_DIRECTORIES(${MQTT_INCLUDE_DIRS})
-  ELSE(MQTT_INCLUDE_DIRS)
-     message(FATAL_ERROR "Mosquitto includes or library cannot be found, and you ask to NOT use builtin")
-  ENDIF(MQTT_INCLUDE_DIRS)
+  ELSE(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
+     MESSAGE(FATAL_ERROR "Mosquitto library not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install libmosquitto-dev')")
+  ENDIF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
 ENDIF(USE_BUILTIN_MQTT)
 
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
 IF(USE_BUILTIN_SQLITE)
   add_subdirectory (sqlite)
-  get_directory_property (SQLite_LIBRARIES DIRECTORY sqlite
-      DEFINITION SQLite_LIBRARIES)
+  get_directory_property (SQLite_LIBRARIES DIRECTORY sqlite DEFINITION SQLite_LIBRARIES)
 ELSE(USE_BUILTIN_SQLITE)
   find_package(PkgConfig)
   pkg_check_modules(SQLite QUIET sqlite3)
@@ -328,6 +323,7 @@ main/Logger.cpp
 main/LuaCommon.cpp
 main/LuaHandler.cpp
 main/mainworker.cpp
+main/mosquitto_helper.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
 main/SignalHandler.cpp
@@ -577,7 +573,7 @@ if(NOT OPENSSL_FOUND)
     target_link_libraries(domoticz ${MD_LIBRARY})
   endif(MD_LIBRARY)
 else()
-  message(STATUS "OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
+  message(STATUS "OPENSSL libraries found at: ${OPENSSL_LIBRARIES}")
   add_definitions(-DWWW_ENABLE_SSL)
   add_definitions(-DWITH_TLS)
   include_directories(${OPENSSL_INCLUDE_DIR})
@@ -600,6 +596,13 @@ else(USE_STATIC_BOOST)
 endif(USE_STATIC_BOOST)
 
 find_package(Boost REQUIRED COMPONENTS thread system)
+if(Boost_FOUND)
+    MESSAGE(STATUS "BOOST libraries found at: ${Boost_LIBRARY_DIRS}")
+    MESSAGE(STATUS "Boost includes found at: ${Boost_INCLUDE_DIR}")
+else(Boost_FOUND)
+    MESSAGE(FATAL_ERROR "Boost thread/system library not found on your system, try to get this installed.")
+endif(Boost_FOUND)
+
 target_link_libraries(domoticz Boost::thread Boost::system)
 
 # compare found vs required libBoost version
@@ -623,7 +626,7 @@ else(USE_BUILTIN_ZLIB)
     MESSAGE(STATUS "ZLIB includes found at: ${ZLIB_INCLUDE_DIRS}")
     include_directories(${ZLIB_INCLUDE_DIRS})
   else()
-    MESSAGE(FATAL_ERROR "ZLIB not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install zlib1g-dev')")
+    MESSAGE(FATAL_ERROR "ZLIB not found on your system, try to get this installed. (for example 'sudo apt-get install zlib1g-dev')")
   endif(ZLIB_FOUND)
 endif(USE_BUILTIN_ZLIB)
 
@@ -644,7 +647,7 @@ else(USE_BUILTIN_MINIZIP)
     MESSAGE(STATUS "MINIZIP includes found at: ${MINIZIP_INCLUDE_DIRS}")
     include_directories(${MINIZIP_INCLUDE_DIRS})
   else()
-    MESSAGE(FATAL_ERROR "MINIZIP not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install libminizip-dev')")
+    MESSAGE(FATAL_ERROR "MINIZIP not found on your system, try to get this installed. (for example 'sudo apt-get install libminizip-dev')")
   endif(MINIZIP_FOUND)
 endif(USE_BUILTIN_MINIZIP)
 
@@ -657,7 +660,7 @@ IF(CURL_FOUND)
   MESSAGE(STATUS "Curl includes found at: ${CURL_INCLUDE_DIRS}")
   INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
 else()
-  MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-gnutls-dev')")
+  MESSAGE(FATAL_ERROR "cURL not found on your system, try to get this installed. (for example 'sudo apt-get install curl libcurl4-gnutls-dev')")
 ENDIF(CURL_FOUND)
 
 #
@@ -733,7 +736,7 @@ else()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 endif (TELLDUSCORE_INCLUDE)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${MQTT_LIBRARIES} ${LUA_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   target_link_libraries(domoticz -lresolv)
