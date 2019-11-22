@@ -7,9 +7,11 @@ based on the work of Roger Light <roger@atchoo.org>
 #ifndef MOSQUITTO_HELPER_H
 #define MOSQUITTO_HELPER_H
 
-#include <cstdlib>
-#include "mosquitto.h"
-#include <time.h>
+#if defined(BUILTIN_MQTT) || defined(WIN32)
+  #include "../MQTT/mosquitto.h"
+#else
+  #include <mosquitto.h>
+#endif
 
 namespace mosqdz {
 	const char* strerror(int mosq_errno);
