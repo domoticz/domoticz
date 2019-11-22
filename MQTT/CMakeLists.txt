@@ -33,8 +33,6 @@ SET(CORE mosquitto.c
 	send_subscribe.c send_unsubscribe.c socks_mosq.c srv_mosq.c thread_mosq.c time_mosq.c tls_mosq.c utf8_mosq.c util_mosq.c util_topic.c will_mosq.c
 )
 
-SET (LIB mosquittopp.cpp)
-
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	SET(OperatingSystem "Linux")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
