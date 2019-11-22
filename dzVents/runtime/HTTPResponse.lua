@@ -31,18 +31,26 @@ local function HTTPResponce(domoticz, responseData, testResponse)
 	self.isTimer = false
 	self.isVariable = false
 	self.isSecurity = false
-
+    self.isXML = false
+	self.isJSON = false
+	
 	self.callback = responseData.callback
 	self.trigger = responseData.callback
-
-	self.isJSON = false
-	if (string.match(self._contentType, 'application/json') and self.data) then
+    
+    if (self._contentType):match('application/json') and self.data then
 		local json = utils.fromJSON(self.data)
-
 		if (json) then
 			self.isJSON = true
 			self.json = json
 		end
+	elseif (self._contentType):find('text/xml') and self.data then
+         local xml = utils.fromXML(self.data)
+		 if (xml) then
+			self.isXML = true
+			self.xml = xml
+            self.xmlVersion = self.data:match([[<?xml version="(.-)"]])
+            self.xmlEncoding = self.data:match([[encoding="(.-)"]])
+		 end
 	end
 
 	return self

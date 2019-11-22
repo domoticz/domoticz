@@ -8,12 +8,12 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.5.0', -- for Lua 5.3
+	DZVERSION = '2.5.1', -- domoticz >= V4/11494 (Lua 5.3)
 }
 
 function math.pow(x, y)
 	self.log('Function math.pow(x, y) has been deprecated in Lua 5.3. Please consider changing code to x^y', self.LOG_FORCE)
-	return x^y 
+	return x^y
 end
 
 function self.rightPad(str, len, char)
@@ -38,7 +38,7 @@ end
 function self.numDecimals(num, int, dec)
 	if int == nil then int = 99 end
 	if dec == nil then dec = 0 end
-	local fmt = '%' .. int .. '.' .. dec .. 'f' 
+	local fmt = '%' .. int .. '.' .. dec .. 'f'
 	return string.format(fmt,num)
 end
 
@@ -153,6 +153,59 @@ function self.fromJSON(json, fallback)
 
 end
 
+function self.fromXML(xml, fallback)
+
+	local parseXML = function(x)
+		local xmlParser = xml2Lua.parser(xmlHandler)
+		xmlParser:parse(x)
+		return xmlHandler.root
+	end
+
+	if xml == nil then
+		return fallback
+	end
+
+	if xml2Lua == nil then
+		xml2Lua = require('xml2lua')
+	end
+
+	if xmlHandler == nil then
+		xmlHandler = require("xmlhandler.tree")
+	end
+
+	ok, results = pcall(parseXML, xml)
+
+	if (ok) then
+		return results
+	end
+
+	self.log('Error parsing XML to LUA table: ' .. results, self.LOG_ERROR)
+	return fallback
+
+end
+
+function self.toXML(luaTable, header)
+	if header == nil then header = 'LuaTable' end
+
+	local toXML = function(luaTable, header)
+		return xmlParser.toXml(luaTable, header)
+	end
+
+	if (xmlParser == nil) then
+		xmlParser = require('xml2lua')
+	end
+
+	ok, results = pcall(toXML, luaTable, header)
+
+	if (ok) then
+		return results
+	end
+
+	self.log('Error converting LUA table to XML: ' .. results, self.LOG_ERROR)
+	return nil
+
+end
+
 function self.toJSON(luaTable)
 
 	local toJSON = function(j)
@@ -243,7 +296,7 @@ end
 local function loopGlobal(parm, baseType)
 	local res = 'id'
 	if type(parm) == 'number' then res = 'name' end
-	for i, item in ipairs(_G.domoticzData) do 
+	for i, item in ipairs(_G.domoticzData) do
 		if item.baseType == baseType and ( item.id == parm or item.name == parm ) then return item[res] end
 	end
 	return false
@@ -284,7 +337,6 @@ function self.dumpTable(t, level)
 		end
 	end
 end
-
 function self.hsbToRGB(h, s, v)
 	local r, b, g, C, V, S, X, m, r1, b1, g1
 
