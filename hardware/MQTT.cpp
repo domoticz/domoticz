@@ -30,12 +30,12 @@ m_szIPAddress(IPAddress),
 m_UserName(Username),
 m_Password(Password),
 m_CAFilename(CAfilename),
-mosqpp::mosquittopp("Domoticz")
+mosqdz::mosquittodz("Domoticz")
 {
 	m_HwdID=ID;
 	m_IsConnected = false;
 	m_bDoReconnect = false;
-	mosqpp::lib_init();
+	mosqdz::lib_init();
 
 	m_usIPPort=usIPPort;
 	m_publish_topics = (_ePublishTopics)Topics;
@@ -49,7 +49,7 @@ mosqpp::mosquittopp("Domoticz")
 
 MQTT::~MQTT(void)
 {
-	mosqpp::lib_cleanup();
+	mosqdz::lib_cleanup();
 }
 
 bool MQTT::StartHardware()

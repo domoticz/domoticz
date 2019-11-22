@@ -1840,9 +1840,6 @@
     <ClInclude Include="..\MQTT\mosquitto_internal.h">
       <Filter>MQTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\mosquittopp.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\MQTT\net_mosq.h">
       <Filter>MQTT</Filter>
     </ClInclude>
@@ -2272,6 +2269,9 @@
     <ClInclude Include="..\main\json_helper.h">
       <Filter>json</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\mosquitto_helper.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2608,9 +2608,6 @@
       <Filter>MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\MQTT\mosquitto.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\mosquittopp.cpp">
       <Filter>MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\MQTT\net_mosq.c">
@@ -3134,6 +3131,9 @@
     </ClCompile>
     <ClCompile Include="..\main\json_helper.cpp">
       <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\mosquitto_helper.cpp">
+      <Filter>MQTT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -52,7 +52,7 @@ std::string ReadFile(std::string filename)
 
 
 CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename) :
-	mosquittopp(CLIENTID),
+	mosquittodz(CLIENTID),
 	m_szIPAddress(IPAddress),
 	m_UserName(Username),
 	m_Password(Password),
@@ -74,12 +74,12 @@ CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned sh
 	on_message(&mqtt_msg);
 #endif
 
-	mosqpp::lib_init();
+	mosqdz::lib_init();
 }
 
 CTTNMQTT::~CTTNMQTT(void)
 {
-	mosqpp::lib_cleanup();
+	mosqdz::lib_cleanup();
 }
 
 bool CTTNMQTT::StartHardware()

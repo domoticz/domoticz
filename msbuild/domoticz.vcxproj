@@ -616,6 +616,7 @@
     <ClInclude Include="..\main\LuaCommon.h" />
     <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
+    <ClInclude Include="..\main\mosquitto_helper.h" />
     <ClInclude Include="..\main\Noncopyable.h" />
     <ClInclude Include="..\main\StoppableTask.h" />
     <ClInclude Include="..\main\TrendCalculator.h" />
@@ -629,7 +630,6 @@
     <ClInclude Include="..\MQTT\memory_mosq.h" />
     <ClInclude Include="..\MQTT\messages_mosq.h" />
     <ClInclude Include="..\MQTT\mosquitto.h" />
-    <ClInclude Include="..\MQTT\mosquittopp.h" />
     <ClInclude Include="..\MQTT\mosquitto_broker.h" />
     <ClInclude Include="..\MQTT\mosquitto_internal.h" />
     <ClInclude Include="..\MQTT\mosquitto_plugin.h" />
@@ -910,6 +910,7 @@
     <ClCompile Include="..\main\Logger.cpp" />
     <ClCompile Include="..\main\LuaCommon.cpp" />
     <ClCompile Include="..\main\LuaHandler.cpp" />
+    <ClCompile Include="..\main\mosquitto_helper.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
     <ClCompile Include="..\main\SignalHandler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
@@ -1007,10 +1008,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\MQTT\mosquitto.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\mosquittopp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>

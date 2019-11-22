@@ -1,17 +1,9 @@
 #pragma once
 
 #include "MySensorsBase.h"
-#ifdef BUILTIN_MQTT
-#include "../MQTT/mosquittopp.h"
-#else
-#ifdef WIN32
-#include "../MQTT/mosquittopp.h"
-#else
-#include <mosquittopp.h>
-#endif
-#endif
+#include "../main/mosquitto_helper.h"
 
-class MQTT : public MySensorsBase, mosqpp::mosquittopp
+class MQTT : public MySensorsBase, mosqdz::mosquittodz
 {
 public:
 	MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAFile, const int TLS_Version, const int Topics);
