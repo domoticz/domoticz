@@ -188,6 +188,7 @@ namespace http {
 				}
 				else
 				{
+					_log.Log(LOG_ERROR, "connection::handle_handshake Error: %s", error.message().c_str());
 					connection_manager_.stop(shared_from_this());
 				}
 			}
@@ -450,6 +451,7 @@ namespace http {
 					}
 					else if (!result)
 					{
+						_log.Log(LOG_ERROR, "Error parsing http request.");
 						keepalive_ = false;
 						reply_ = reply::stock_reply(reply::bad_request);
 						MyWrite(reply_.to_string(request_.method));
@@ -485,8 +487,13 @@ namespace http {
 					break;
 				}
 			}
+			else if (error == boost::asio::error::eof)
+			{
+				connection_manager_.stop(shared_from_this());
+			}
 			else if (error != boost::asio::error::operation_aborted)
 			{
+				_log.Log(LOG_ERROR, "connection::handle_read Error: %s", error.message().c_str());
 				connection_manager_.stop(shared_from_this());
 			}
 		}
@@ -576,8 +583,13 @@ namespace http {
 				// For WebSockets that requested keep-alive, use a Server side Ping
 				websocket_parser.SendPing();
 			}
-			else if (error != boost::asio::error::operation_aborted) {
-				//_log.DEBUG(DEBUG_WEBSERVER, "%s -> handle read timeout", host_endpoint_address_.c_str());
+			else if (!error)
+			{
+				connection_manager_.stop(shared_from_this());
+			}
+			else if (error != boost::asio::error::operation_aborted)
+			{
+				_log.Log(LOG_ERROR, "connection::handle_read_timeout Error: %s", error.message().c_str());
 				connection_manager_.stop(shared_from_this());
 			}
 		}
