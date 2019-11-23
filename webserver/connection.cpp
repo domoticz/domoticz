@@ -496,22 +496,40 @@ namespace http {
 			std::unique_lock<std::mutex> lock(writeMutex);
 			write_buffer.clear();
 			write_in_progress = false;
-			if (!error) {
-				if (!writeQ.empty()) {
-					std::string buf = writeQ.front();
-					writeQ.pop_front();
-					SocketWrite(buf);
+			bool stopConnection = false;
+			if (!error && !writeQ.empty())
+			{
+				std::string buf = writeQ.front();
+				writeQ.pop_front();
+				SocketWrite(buf);
+				if (keepalive_)
+				{
+					reset_abandoned_timeout();
 				}
-				else if (!keepalive_) {
-					connection_manager_.stop(shared_from_this());
-				}
+				return;
 			}
-			if (!error && keepalive_) {
+
+			//Stop needs to be outside the lock. 
+			//There are flows it dead-locks in CWebSocketPush::Stop()
+			lock.unlock();
+
+			if (error == boost::asio::error::operation_aborted)
+			{
+				connection_manager_.stop(shared_from_this());
+			}
+			else if (error)
+			{
+				_log.Log(LOG_ERROR, "connection::handle_write Error: %s", error.message().c_str());
+				connection_manager_.stop(shared_from_this());
+			}
+			else if (keepalive_)
+			{
 				status_ = ENDING_WRITE;
-				// if a keep-alive connection is requested, we read the next request
 				reset_abandoned_timeout();
 			}
-			else {
+			else
+			{
+				//Everything has been send. Closing connection.
 				connection_manager_.stop(shared_from_this());
 			}
 		}
