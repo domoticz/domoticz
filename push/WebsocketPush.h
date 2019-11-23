@@ -32,6 +32,7 @@ private:
 	bool listenDeviceTable;
 	std::vector<unsigned long long> listenIdxs;
 	std::mutex listenMutex;
+	std::mutex handlerMutex;
 	http::server::CWebsocketHandler *m_sock;
 	bool isStarted;
 };
