@@ -2584,6 +2584,7 @@ namespace http {
 		}
 
 		void CWebServer::Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root)
+
 		{
 			root["status"] = "OK";
 			root["title"] = "GetVersion";
@@ -2607,6 +2608,10 @@ namespace http {
 				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
 				root["SystemName"] = m_mainworker.m_szSystemName;
 				root["Revision"] = m_mainworker.m_iRevision;
+
+				int databaseVersion = 0;
+				m_sql.GetPreferencesVar("DB_Version", databaseVersion);
+				root["database_version"] = databaseVersion;
 			}
 		}
 
