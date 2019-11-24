@@ -30,7 +30,7 @@ m_szIPAddress(IPAddress),
 m_UserName(Username),
 m_Password(Password),
 m_CAFilename(CAfilename),
-mosqdz::mosquittodz("Domoticz")
+mosqdz::mosquittodz("Domoticz-MQTT")
 {
 	m_HwdID=ID;
 	m_IsConnected = false;
