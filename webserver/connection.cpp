@@ -188,6 +188,7 @@ namespace http {
 				}
 				else
 				{
+					_log.Log(LOG_ERROR, "connection::handle_handshake Error: %s", error.message().c_str());
 					connection_manager_.stop(shared_from_this());
 				}
 			}
@@ -450,6 +451,7 @@ namespace http {
 					}
 					else if (!result)
 					{
+						_log.Log(LOG_ERROR, "Error parsing http request.");
 						keepalive_ = false;
 						reply_ = reply::stock_reply(reply::bad_request);
 						MyWrite(reply_.to_string(request_.method));
@@ -485,8 +487,13 @@ namespace http {
 					break;
 				}
 			}
+			else if (error == boost::asio::error::eof)
+			{
+				connection_manager_.stop(shared_from_this());
+			}
 			else if (error != boost::asio::error::operation_aborted)
 			{
+				_log.Log(LOG_ERROR, "connection::handle_read Error: %s", error.message().c_str());
 				connection_manager_.stop(shared_from_this());
 			}
 		}
@@ -496,22 +503,40 @@ namespace http {
 			std::unique_lock<std::mutex> lock(writeMutex);
 			write_buffer.clear();
 			write_in_progress = false;
-			if (!error) {
-				if (!writeQ.empty()) {
-					std::string buf = writeQ.front();
-					writeQ.pop_front();
-					SocketWrite(buf);
+			bool stopConnection = false;
+			if (!error && !writeQ.empty())
+			{
+				std::string buf = writeQ.front();
+				writeQ.pop_front();
+				SocketWrite(buf);
+				if (keepalive_)
+				{
+					reset_abandoned_timeout();
 				}
-				else if (!keepalive_) {
-					connection_manager_.stop(shared_from_this());
-				}
+				return;
 			}
-			if (!error && keepalive_) {
+
+			//Stop needs to be outside the lock. 
+			//There are flows it dead-locks in CWebSocketPush::Stop()
+			lock.unlock();
+
+			if (error == boost::asio::error::operation_aborted)
+			{
+				connection_manager_.stop(shared_from_this());
+			}
+			else if (error)
+			{
+				_log.Log(LOG_ERROR, "connection::handle_write Error: %s", error.message().c_str());
+				connection_manager_.stop(shared_from_this());
+			}
+			else if (keepalive_)
+			{
 				status_ = ENDING_WRITE;
-				// if a keep-alive connection is requested, we read the next request
 				reset_abandoned_timeout();
 			}
-			else {
+			else
+			{
+				//Everything has been send. Closing connection.
 				connection_manager_.stop(shared_from_this());
 			}
 		}
@@ -558,17 +583,19 @@ namespace http {
 				// For WebSockets that requested keep-alive, use a Server side Ping
 				websocket_parser.SendPing();
 			}
-			else if (error != boost::asio::error::operation_aborted) {
-				//_log.DEBUG(DEBUG_WEBSERVER, "%s -> handle read timeout", host_endpoint_address_.c_str());
+			else if (!error)
+			{
+				connection_manager_.stop(shared_from_this());
+			}
+			else if (error != boost::asio::error::operation_aborted)
+			{
+				_log.Log(LOG_ERROR, "connection::handle_read_timeout Error: %s", error.message().c_str());
 				connection_manager_.stop(shared_from_this());
 			}
 		}
 
 		/// schedule abandoned timeout timer
 		void connection::set_abandoned_timeout() {
-			if (connection_type == connection_websocket)
-				return; //disabled for now
-
 			abandoned_timer_.expires_from_now(boost::posix_time::seconds(default_abandoned_timeout_));
 			abandoned_timer_.async_wait(boost::bind(&connection::handle_abandoned_timeout, shared_from_this(), boost::asio::placeholders::error));
 		}
@@ -597,10 +624,6 @@ namespace http {
 		void connection::handle_abandoned_timeout(const boost::system::error_code& error) {
 			if (error != boost::asio::error::operation_aborted) {
 				_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_endpoint_address_.c_str(), status_);
-				if (connection_type==connection_websocket)
-				{
-					websocket_parser.Stop();
-				}
 				connection_manager_.stop(shared_from_this());
 			}
 		}
