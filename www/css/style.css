@@ -1618,7 +1618,7 @@ span.evomobile {
 
 	.sub-tabs > li > a {
 		color: #555555;
-		cursor: default;
+		cursor: pointer;
 		background-color: #ffffff;
 		border: 1px solid #ddd;
 		border-bottom-color: transparent;
