@@ -182,8 +182,7 @@ extern bool g_bUseUpdater;
 extern http::server::_eWebCompressionMode g_wwwCompressMode;
 extern http::server::CWebServerHelper m_webservers;
 extern bool g_bUseEventTrigger;
-
-
+extern std::string szRandomUUID;
 
 CFibaroPush m_fibaropush;
 CGooglePubSubPush m_googlepubsubpush;
@@ -789,7 +788,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode2, Mode1, "Domoticz");
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode2, Mode1, (std::string("Domoticz") + szRandomUUID).c_str());
 		break;
 	case HTYPE_eHouseTCP:
 		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway

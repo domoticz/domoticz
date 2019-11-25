@@ -137,6 +137,7 @@ std::string szAppDate="???";
 std::string szPyVersion="None";
 int ActYear;
 time_t m_StartTime=time(NULL);
+std::string szRandomUUID = "???";
 
 MainWorker m_mainworker;
 CLogger _log;
@@ -214,9 +215,6 @@ void daemonize(const char *rundir, const char *pidfile)
 		/* Could not fork */
 		exit(EXIT_FAILURE);
 	}
-    
-    /* call srand once for the entire app */
-    std::srand((unsigned int)std::time(nullptr));
     
 	if (pid > 0)
 	{
@@ -805,6 +803,11 @@ int main(int argc, char**argv)
 #if defined(__linux__)
 	g_bIsWSL = IsWSL();
 #endif
+
+	/* call srand once for the entire app */
+	std::srand((unsigned int)std::time(nullptr));
+	szRandomUUID = GenerateUUID();    
+
 	GetAppVersion();
 	DisplayAppVersion();
 
