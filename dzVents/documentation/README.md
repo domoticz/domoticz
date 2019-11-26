@@ -787,7 +787,8 @@ Note that if you do not find your specific device type here you can always inspe
  - **updateDistance(distance)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Electric usage
- - **WhActual**: *Number*. Current Watt usage.
+ - **actualWatt**: *Number*. Current Watt usage.
+ - **WhActual**: *Number*. Current Watt usage. (please use actualWatt)
  - **updateEnergy(energy)**: *Function*. In Watt. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Evohome (zones)
@@ -836,12 +837,14 @@ Note that if you do not find your specific device type here you can always inspe
  - **kodiSwitchOff()**: *Function*. Will turn the device off if this is supported in settings on the device.
 
 #### kWh, Electricity (instant and counter)
+ - **actualWatt**: *Number*. Actual usage in Watt.
  - **counterToday**: *Number*.
  - **updateElectricity(power, energy)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **usage**: *Number*.
  - **WhToday**: *Number*. Total Wh usage of the day. Note the unit is Wh and not kWh!
  - **WhTotal**: *Number*. Total Wh usage.
- - **WhActual**: *Number*. Actual reading.
+ - **WhActual**: *Number*. Actual reading in Watt. Please use actualWatt
+ 
 
 #### Leaf wetness
  - **wetness**: *Number*. Wetness value
@@ -895,6 +898,7 @@ See switch below.
  - **updateRain(rate, counter)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### RGBW(W) / Lighting Limitless/Applamp
+**Note**: not all methods are available for all hardwareTypes !
  - **decreaseBrightness()**: *Function*. <sup>2.4.0</sup> Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **getColor()**; *Function*. <sup>2.4.17</sup> Returns table with color attributes or nil when color field of device is not set.
  - **increaseBrightness()**: *Function*. <sup>2.4.0</sup> Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -2077,6 +2081,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+##[2.5.2]
+- Add actualWatt to replace WhActual (left in WhActual for compatibility reasons)
+- Add resilience to increaseBrightness() and decreaseBrightness() methods (only avaiable for Yeelight)
 
 ##[2.5.1]
 - Added `toXML` and `fromXML` methods to domoticz.utils.

@@ -41,12 +41,13 @@ else
 	echo dzVents will be tested against domoticz version $NewVersion.
 fi
  
- currenttime=$(date +%H:%M)
+currenttime=$(date +%H:%M)
 if [[ "$currenttime" > "00:00" ]] && [[ "$currenttime" < "00:31" ]]; then 
 	echo Script cannot be execute dbetween 00:00 and 00:30. Time checks will fail
 	exit 1
 fi	
 
+dzVersion=$(grep DZVERSION dzVents/runtime/Utils.lua | head -1 | grep -oP "'.*'"  | sed s/\'//g)
 
 function leadingZero
 	{
@@ -131,7 +132,7 @@ function fillTimes
 
 function fillNumberOfTests
 	{
-		Device_ExpectedTests=113
+		Device_ExpectedTests=115
 		Domoticz_ExpectedTests=70
 		EventHelpers_ExpectedTests=32
 		EventHelpersStorage_ExpectedTests=50
@@ -204,14 +205,13 @@ cp $basedir/domoticz.db $basedir/domoticz.db_$$
 rm -f $basedir/domoticz.db
 
 cd $basedir
-./domoticz > domoticz.log$$ &
+./domoticz  -www 8080 -sslwww 444 > domoticz.log$$ &
 checkStarted "domoticz" 20
 
 clear
-echo "========================= $NewVersion ================+========================== Tests ============================+"
-printf "|%6s %21s %83s " " time |" " test-script"  " | expected | tests | result | successful | failed |  seconds  |"
-echo
-echo "===================================================+=============================================================+"
+echo "========= domoticz $NewVersion, dzVents V$dzVersion =======+========================== Tests ==============================+"
+echo "  time  | test-script                              | expected | tests | result  | successful |  failed  | seconds  |"
+echo "===================================================+===============================================================+"
 
 fillTimes
 fillNumberOfTests
@@ -252,6 +252,6 @@ else
 fi
 
 echo Total tests: $totalTest
-echo Finished without erors after $(showTime)
+echo $(date)';' dzVents version $dzVersion tested without erors after $(showTime)
 stopBackgroundProcesses 0
 cleanup

@@ -1,3 +1,7 @@
+[2.5.2]
+- Add actualWatt to replace WhActual (left in WhActual for compatibility reasons)
+- Add resilience to increaseBrightness() and decreaseBrightness() methods (only avaiable for Yeelight)
+
 [2.5.1]
 - Added `toXML` and `fromXML` methods to domoticz.utils.
 - Add attributes isXML, xmlVersion, xmlEncoding
