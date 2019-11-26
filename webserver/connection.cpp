@@ -134,6 +134,7 @@ namespace http {
 				break;
 			case connection_websocket_closing:
 				// todo: wait for writeQ to flush, so client can receive the close frame
+				websocket_parser.Stop();
 				break;
 			}
 			// Cancel timers
@@ -493,7 +494,7 @@ namespace http {
 			}
 			else if (error != boost::asio::error::operation_aborted)
 			{
-				_log.Log(LOG_ERROR, "connection::handle_read Error: %s", error.message().c_str());
+				// _log.Log(LOG_ERROR, "connection::handle_read Error: %s", error.message().c_str());
 				connection_manager_.stop(shared_from_this());
 			}
 		}
@@ -526,7 +527,7 @@ namespace http {
 			}
 			else if (error)
 			{
-				_log.Log(LOG_ERROR, "connection::handle_write Error: %s", error.message().c_str());
+				// _log.Log(LOG_ERROR, "connection::handle_write Error: %s", error.message().c_str());
 				connection_manager_.stop(shared_from_this());
 			}
 			else if (keepalive_)
