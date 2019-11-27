@@ -189,7 +189,7 @@ namespace http {
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "connection::handle_handshake Error: %s", error.message().c_str());
+					// _log.Log(LOG_ERROR, "connection::handle_handshake Error: %s", error.message().c_str());
 					connection_manager_.stop(shared_from_this());
 				}
 			}
