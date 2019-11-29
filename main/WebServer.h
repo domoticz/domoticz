@@ -197,6 +197,7 @@ private:
 	void Cmd_SystemShutdown(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SystemReboot(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ExcecuteScript(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateApplication(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetCosts(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CheckForUpdate(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DownloadUpdate(WebEmSession & session, const request& req, Json::Value &root);

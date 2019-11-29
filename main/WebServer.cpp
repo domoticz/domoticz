@@ -66,6 +66,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 
@@ -522,6 +523,7 @@ namespace http {
 			RegisterCommandCode("checkforupdate", boost::bind(&CWebServer::Cmd_CheckForUpdate, this, _1, _2, _3));
 			RegisterCommandCode("downloadupdate", boost::bind(&CWebServer::Cmd_DownloadUpdate, this, _1, _2, _3));
 			RegisterCommandCode("downloadready", boost::bind(&CWebServer::Cmd_DownloadReady, this, _1, _2, _3));
+			RegisterCommandCode("update_application", boost::bind(&CWebServer::Cmd_UpdateApplication, this, _1, _2, _3));
 			RegisterCommandCode("deletedatapoint", boost::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1, _2, _3));
 
 			RegisterCommandCode("setactivetimerplan", boost::bind(&CWebServer::Cmd_SetActiveTimerPlan, this, _1, _2, _3));
@@ -3109,6 +3111,11 @@ namespace http {
 
 		void CWebServer::Cmd_ExcecuteScript(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string scriptname = request::findValue(&req, "scriptname");
 			if (scriptname.empty())
 				return;
@@ -3152,6 +3159,30 @@ namespace http {
 				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, strparm));
 			}
 			root["title"] = "ExecuteScript";
+			root["status"] = "OK";
+		}
+
+		//Only for Unix systems
+		void CWebServer::Cmd_UpdateApplication(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+#ifdef WIN32
+			//return;
+#endif
+			int nValue;
+			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+			bool bIsBetaChannel = (nValue != 0);
+
+			std::string scriptname(szStartupFolder);
+			scriptname += (bIsBetaChannel) ? "updatebeta" : "updaterelease";
+			std::string strparm = szStartupFolder;
+			//add script to background worker
+			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.3f, scriptname, strparm));
+			root["title"] = "UpdateApplication";
 			root["status"] = "OK";
 		}
 
