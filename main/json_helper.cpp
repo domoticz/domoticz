@@ -3,13 +3,21 @@
 
 bool ParseJSon(const std::string& inStr, Json::Value& json_output, std::string *errstr)
 {
+	bool result;
+	Json::CharReaderBuilder builder;
+	Json::CharReader *reader = builder.newCharReader();
+
 	if (inStr.empty())
 		return false;
 	
-	return Json::CharReaderBuilder().newCharReader()->parse(
+	result = reader->parse(
 		reinterpret_cast<const char*>(inStr.c_str()),
 		reinterpret_cast<const char*>(inStr.c_str() + inStr.size()), &json_output,
 		errstr);
+
+	delete reader;
+
+	return result;
 }
 
 bool ParseJSonStrict(const std::string& inStr, Json::Value& json_output, std::string* errstr)
