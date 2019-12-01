@@ -149,6 +149,10 @@ local function Domoticz(settings)
 		utils = {
 			_ = _,
 
+			setLogMarker = function(logMarker)
+				return utils.setLogMarker(logMarker)
+			end,
+
 			toCelsius = function(f, relative)
 				return utils.toCelsius(f, relative)
 			end,
@@ -187,6 +191,14 @@ local function Domoticz(settings)
 
 			toXML = function( luaTable, header)
 				return utils.toXML(luaTable, header)
+			end,
+
+			toBase64 = function (s)
+				return utils.toBase64(s)
+			end,
+
+			fromBase64 = function (s)
+				return utils.fromBase64(s)
 			end,
 
 			rgbToHSB = function(r, g, b)
