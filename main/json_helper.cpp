@@ -3,12 +3,13 @@
 
 bool ParseJSon(const std::string& inStr, Json::Value& json_output, std::string *errstr)
 {
+
+	if (inStr.empty())
+		return false;	
+	
 	bool result;
 	Json::CharReaderBuilder builder;
 	Json::CharReader *reader = builder.newCharReader();
-
-	if (inStr.empty())
-		return false;
 	
 	result = reader->parse(
 		reinterpret_cast<const char*>(inStr.c_str()),
