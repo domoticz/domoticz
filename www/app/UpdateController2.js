@@ -22,7 +22,7 @@ define(['app'], function (app) {
 			$http({
 				method : "GET",
 				url : "json.htm?type=command&param=getversion",
-				timeout: 1*60 * 1000
+				timeout: 5000
 			}).then(
 				function mySuccess(response) {
 					var data = response.data;
@@ -76,15 +76,13 @@ define(['app'], function (app) {
 			}
 		}
 
-		$scope.init = function() {
-			$scope.$watch('ProgressData', function (newValue, oldValue) {
-				newValue.percentage = newValue.label / 100;
-			}, true);
-
-			$scope.appVersion = $rootScope.config.appversion;
-
-			$scope.topText = $.t("Checking for updates....");
-			$scope.bottomText = $.t("Do not poweroff the system while updating !...");
+		$scope.StartUpdate = function() {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$scope.ProgressData.label = 0;
+			$("#updatecontent #divprogress").show();
 
 			$http({
 				method : "GET",
@@ -93,9 +91,6 @@ define(['app'], function (app) {
 				function mySuccess(response) {
 					var data = response.data;
 					if (data.status == "OK") {
-						$scope.ProgressData.label = 0;
-						$("#updatecontent #divprogress").show();
-
 						$scope.mytimer = $interval(function () {
 							$scope.progressupdatesystem();
 						}, 600);
@@ -110,6 +105,41 @@ define(['app'], function (app) {
 					$scope.topText = $.t("Error communicating with Server !...");
 				}
 			);
+		}
+
+		$scope.CheckForUpdate = function() {
+			$scope.statusText = "Getting version number...";
+			$http({
+				method : "GET",
+				url : "json.htm?type=command&param=checkforupdate&forced=true"
+			}).then(
+				function mySuccess(response) {
+					var data = response.data;
+					if (data.HaveUpdate == true) {
+						$scope.topText = $.t("Update Available... Downloading Update !...");
+						$scope.mytimer = $interval(function () {
+							$scope.StartUpdate();
+						}, 400);
+					} else {
+						$scope.topText = $.t("Could not start download,<br>check your internet connection or try again later !...");
+					}
+				},
+				function myError(response)   {
+					$scope.topText = $.t("Error communicating with Server !...");
+				});
+		}
+
+		$scope.init = function() {
+			$scope.$watch('ProgressData', function (newValue, oldValue) {
+				newValue.percentage = newValue.label / 100;
+			}, true);
+
+			$scope.appVersion = $rootScope.config.appversion;
+
+			$scope.topText = $.t("Checking for updates....");
+			$scope.bottomText = $.t("Do not poweroff the system while updating !...");
+
+			$scope.CheckForUpdate();
 		};
 		
 		$scope.init();

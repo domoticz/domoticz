@@ -3171,7 +3171,9 @@ namespace http {
 				return; //Only admin user allowed
 			}
 #ifdef WIN32
-			//return;
+#ifndef _DEBUG
+			return;
+#endif
 #endif
 			int nValue;
 			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
