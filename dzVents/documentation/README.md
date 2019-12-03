@@ -583,6 +583,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 
     - **dumpTable(table,[levelIndicator])**: *Function*: <sup>2.4.19</sup> print table structure and contents to log
     - **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
+	- **fromBase64(string)**: *Function*: <sup>2.5.2</sup>) Decode a base64 string
     - **fromJSON(json, fallback <sup>2.4.16</sup>)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
 	- **fromXML(xml, fallback )**: *Function*: <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: `local t = domoticz.utils.fromXML('<testtag>What a nice feature!</testtag>') Followed by: `print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.	
     - **groupExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid groupID or ID when entered with valid groupName or false when not a groupID or groupName of an existing group
@@ -600,7 +601,9 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **rightPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.
     - **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
     - **sceneExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid sceneID or ID when entered with valid sceneName or false when not a sceneID or sceneName of an existing scene
+	- **setLogMarker([marker])**: *Function*: <sup>2.5.2</sup> set logMarker to 'marker'. Defaults to scriptname. Can be used to change logMarker based on flow in script
     - **stringSplit(string, [separator ])**:<sup>2.4.19</sup> *Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words.
+    - **toBase64(string)**: *Function*: <sup>2.5.2</sup>) Encode a string to base64
     - **toCelsius(f, relative)**: *Function*. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So `toCelsius(5, true)` returns 5F*(1/1.8) = 2.78C.
     - **toJSON(luaTable)**: *Function*. <sup>2.4.0</sup> Converts a Lua table to a json string.
 	- **toXML(luaTable, [header])**: *Function*. <sup>2.5.1</sup> Converts a Lua table to a xml string.
@@ -787,7 +790,8 @@ Note that if you do not find your specific device type here you can always inspe
  - **updateDistance(distance)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Electric usage
- - **WhActual**: *Number*. Current Watt usage.
+ - **actualWatt**: *Number*. Current Watt usage.
+ - **WhActual**: *Number*. Current Watt usage. (please use actualWatt)
  - **updateEnergy(energy)**: *Function*. In Watt. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Evohome (zones)
@@ -836,12 +840,14 @@ Note that if you do not find your specific device type here you can always inspe
  - **kodiSwitchOff()**: *Function*. Will turn the device off if this is supported in settings on the device.
 
 #### kWh, Electricity (instant and counter)
+ - **actualWatt**: *Number*. Actual usage in Watt.
  - **counterToday**: *Number*.
  - **updateElectricity(power, energy)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **usage**: *Number*.
  - **WhToday**: *Number*. Total Wh usage of the day. Note the unit is Wh and not kWh!
  - **WhTotal**: *Number*. Total Wh usage.
- - **WhActual**: *Number*. Actual reading.
+ - **WhActual**: *Number*. Actual reading in Watt. Please use actualWatt
+ 
 
 #### Leaf wetness
  - **wetness**: *Number*. Wetness value
@@ -895,12 +901,12 @@ See switch below.
  - **updateRain(rate, counter)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### RGBW(W) / Lighting Limitless/Applamp
- - **decreaseBrightness()**: *Function*. <sup>2.4.0</sup> Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **decreaseBrightness()**: deprecated because only very limited supported and will be removed from API
  - **getColor()**; *Function*. <sup>2.4.17</sup> Returns table with color attributes or nil when color field of device is not set.
- - **increaseBrightness()**: *Function*. <sup>2.4.0</sup> Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **increaseBrightness()**: deprecated because only very limited supported and will be removed from API
  - **setColor(r, g, b, br, cw, ww, m, t)**: *Function*. <sup>2.4.16</sup> Sets the light to requested color.  r, g, b required, others optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). Meaning and limits of parms can be found [here](https://www.domoticz.com/wiki/Domoticz_API/JSON_URL's#Set_a_light_to_a_certain_color_or_color_temperature).
  - **setColorBrightness()**: same as setColor
- - **setDiscoMode(modeNum)**: *Function*. <sup>2.4.0</sup> Activate disco mode, `1 =< modeNum <= 9`. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **setDiscoMode(modeNum)**: deprecated because only very limited supported and will be removed from API
 - **setHex(r, g, b)**: *Function*. <sup>2.4.16</sup> Sets the light to requested color.  r, g, b required (decimal Values 0-255). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 - **setHue(hue, brightness, isWhite)**: *Function*. <sup>2.4.16</sup> Sets the light to requested Hue. Hue and brightness required. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setKelvin(Kelvin)**: *Function*. <sup>2.4.0</sup> Sets Kelvin level of the light (For RGBWW devices only). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -2077,6 +2083,12 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+##[2.5.2]
+- Add actualWatt to replace WhActual (left in WhActual for compatibility reasons)
+- Add toBase64 and fromBase64 function in utils
+- Add setLogMarker function in utils
+- Deprecated increaseBrightness(), decreaseBrightness(), discomode methods (only available for Yeelight and left devices stateless)
 
 ##[2.5.1]
 - Added `toXML` and `fromXML` methods to domoticz.utils.

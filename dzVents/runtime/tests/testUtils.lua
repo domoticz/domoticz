@@ -40,7 +40,7 @@ describe('event helpers', function()
 			assert.is_same('Error: (' .. utils.DZVERSION .. ') abc', printed)
 		end)
 
-		it('shoud log INFO by default', function()
+		it('should log INFO by default', function()
 			local printed
 
 			utils.print = function(msg)
@@ -54,7 +54,28 @@ describe('event helpers', function()
 			assert.is_same('Info: something', printed)
 		end)
 
-		it('shoud not log above level', function()
+		it('should log print with requested marker', function()
+			local printed
+
+			utils.print = function(msg)
+				printed = msg
+			end
+
+			_G.logLevel = utils.LOG_INFO
+			utils.log('something')
+			assert.is_same('Info: something', printed)
+
+			_G.moduleLabel = 'testUtils'
+			utils.setLogMarker()
+			utils.log('something')
+			assert.is_same('Info: testUtils: something', printed)
+
+			utils.setLogMarker('Busted')
+			utils.log('something')
+			assert.is_same('Info: Busted: something', printed)
+		end)
+
+		it('should not log above level', function()
 			local printed
 			utils.print = function(msg)
 				printed = msg
@@ -84,21 +105,21 @@ describe('event helpers', function()
 		assert.is_same(utils.rightPad('string',7,'@'),'string@')
 		assert.is_same(utils.rightPad('string',2),'string')
 	end)
-   
+
 	it('should left pad a string', function()
 		assert.is_same(utils.leftPad('string',7),' string')
 		assert.is_same(utils.leftPad('string',7,'@'),'@string')
 		assert.is_same(utils.leftPad('string',2),'string')
 	end)
-   
-   
+
+
 	it('should center and pad a string', function()
 		assert.is_same(utils.centerPad('string',8),' string ')
 		assert.is_same(utils.centerPad('string',8,'@'),'@string@')
 		assert.is_same(utils.centerPad('string',2),'string')
 	end)
-   
-	   
+
+
 	it('should pad a number with leading zeros', function()
 		assert.is_same(utils.leadingZeros(99,3),'099')
 		assert.is_same(utils.leadingZeros(999,2),'999')
@@ -144,7 +165,7 @@ describe('event helpers', function()
 		local t = utils.fromXML(xml, fallback)
 		assert.is_same('What a nice feature!', t.testXML)
 
-        local xml = nil
+		local xml = nil
 		local fallback  = { a=1 }
 		local t = utils.fromXML(xml, fallback)
 		assert.is_same(1, t['a'])
@@ -166,6 +187,49 @@ describe('event helpers', function()
 		local t = { a= 1 }
 		local res = utils.toXML(t, 'busted')
 		assert.is_same('<busted>\n<a>1</a>\n</busted>\n', res)
+	end)
+
+	it('should convert a string or number to base64Code', function()
+		local res = utils.toBase64('Busted in base64')
+		assert.is_same('QnVzdGVkIGluIGJhc2U2NA==', res)
+
+		local res = utils.toBase64(123.45)
+		assert.is_same('MTIzLjQ1', res)
+
+		local res = utils.toBase64(1234567890)
+		assert.is_same('MTIzNDU2Nzg5MA==', res)
+
+	end)
+
+	it('should send errormessage when sending table to toBase64', function()
+
+		utils.log = function(msg)
+			printed = msg
+		end
+
+		local t = { a= 1 }
+
+		local res = utils.toBase64(t)
+		assert.is_same('toBase64: parm should be a number or a string; you supplied a table', printed)
+
+	end)
+
+	it('should decode a base64 encoded string', function()
+		local res = utils.fromBase64('QnVzdGVkIGluIGJhc2U2NA==')
+		assert.is_same('Busted in base64', res)
+	end)
+
+	it('should send errormessage when sending table to fromBase64', function()
+
+		utils.log = function(msg)
+			printed = msg
+		end
+
+		local t = { a= 1 }
+
+		local res = utils.fromBase64(t)
+		assert.is_same('fromBase64: parm should be a string; you supplied a table', printed)
+
 	end)
 
 	it('should dump a table to log', function()

@@ -8,12 +8,16 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.5.1', -- domoticz >= V4/11494 (Lua 5.3)
+	DZVERSION = '2.5.2', 
 }
 
 function math.pow(x, y)
 	self.log('Function math.pow(x, y) has been deprecated in Lua 5.3. Please consider changing code to x^y', self.LOG_FORCE)
 	return x^y
+end
+
+function self.setLogMarker(logMarker)
+	_G.logMarker = logMarker or _G.moduleLabel
 end
 
 function self.rightPad(str, len, char)
@@ -151,6 +155,48 @@ function self.fromJSON(json, fallback)
 	self.log('Error parsing json to LUA table: ' .. results, self.LOG_ERROR)
 	return fallback
 
+end
+
+function self.fromBase64(codedString)  -- from http://lua-users.org/wiki/BaseSixtyFour
+	if type(codedString) ~= 'string' then 
+		self.log('fromBase64: parm should be a string; you supplied a ' .. type(codedString), self.LOG_ERROR)
+		return nil
+	end
+	local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	local data = string.gsub(codedString, '[^'.. b ..'=]', '')
+	return (data:gsub('.', function(x)
+		if (x == '=') then return '' end
+		local r, f = '',(b:find(x)-1)
+		for i = 6, 1, -1 do r = r .. (f%2^i-f%2^(i-1)>0 and '1' or '0') end
+		return r;
+	end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
+		if (#x ~= 8) then return '' end
+		local c = 0
+		for i = 1, 8 do c = c + (x:sub(i, i) == '1' and 2^(8-i) or 0) end
+		return string.char(c)
+	end))
+end
+
+function self.toBase64(s) -- from http://lua-users.org/wiki/BaseSixtyFour
+	if type(s) == 'number' then s = tostring(s)
+	elseif type(s) ~= 'string' then 
+		self.log('toBase64: parm should be a number or a string; you supplied a ' .. type(s), self.LOG_ERROR)
+		return nil
+	end
+	local bs = 
+	{	[0] =
+				'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+				'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+				'0','1','2','3','4','5','6','7','8','9',
+				'+','/'
+	}
+	local byte, rep = string.byte, string.rep
+	local pad = 2 - ((#s-1) % 3)
+	s = (s..rep('\0', pad)):gsub("...", function(cs)
+		local a, b, c = byte(cs, 1, 3)
+		return bs[a>>2] .. bs[(a&3)<<4|b>>4] .. bs[(b&15)<<2|c>>6] .. bs[c&63]
+	end)
+	return s:sub(1, #s-pad) .. rep('=', pad)
 end
 
 function self.fromXML(xml, fallback)
@@ -337,6 +383,7 @@ function self.dumpTable(t, level)
 		end
 	end
 end
+
 function self.hsbToRGB(h, s, v)
 	local r, b, g, C, V, S, X, m, r1, b1, g1
 
