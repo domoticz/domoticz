@@ -5,8 +5,11 @@ bool ParseJSon(const std::string& inStr, Json::Value& json_output, std::string *
 {
 	if (inStr.empty())
 		return false;
-	
-	return Json::CharReaderBuilder().newCharReader()->parse(
+
+	Json::CharReaderBuilder builder;
+	const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+
+	return reader->parse(
 		reinterpret_cast<const char*>(inStr.c_str()),
 		reinterpret_cast<const char*>(inStr.c_str() + inStr.size()), &json_output,
 		errstr);
