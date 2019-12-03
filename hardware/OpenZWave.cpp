@@ -1164,9 +1164,10 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 		}
 
 		if (
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0003)) ||
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0103)) ||
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0203))
+			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0003))
+			|| ((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0103))
+			|| ((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0203))
+			|| ((pDevice->Product_id == 0x00af) && (pDevice->Product_type == 0x0003))
 			)
 		{
 			//Special case for the Aeotec Smart Switch
