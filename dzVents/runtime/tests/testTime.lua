@@ -45,14 +45,12 @@ describe('Time', function()
 				tostring(localPast.sec) .. ms
 		localT = Time(localRaw, false)
 
-
 	end)
 
 	after_each(function()
 		utcT = nil
 		localT = nil
 	end)
-
 
 	it('should instantiate', function()
 		assert.not_is_nil(utcT)
@@ -101,8 +99,8 @@ describe('Time', function()
 			assert.is_same('01:02:03', t.rawTime)
 			assert.is_same('2017-01-01', t.rawDate)
 		end)
-        
-        it('should return proper formats', function()
+	   
+		it('should return proper formats', function()
 			local t = Time('2019-07-06 08:12:03')
 			assert.is_same('08:12:03', t.rawTime)
 			assert.is_same('2019-07-06', t.rawDate)
@@ -139,7 +137,6 @@ describe('Time', function()
 		it('should have a utc system time', function()
 			assert.is_same(os.date('!*t'), utcT.utcSystemTime)
 		end)
-
 
 	end)
 
@@ -494,7 +491,6 @@ describe('Time', function()
 					utils.print = function() end
 
 					local hours = _.range(1, 23, 1)
-
 
 					for i, h in pairs(hours) do
 
@@ -1128,8 +1124,6 @@ describe('Time', function()
 						assert.is_false(t.ruleMatchesBetweenRange('between 10:00 and 09:00'))
 					end)
 
-
-
 				end)
 
 				describe('twilight stuff', function()
@@ -1279,7 +1273,6 @@ describe('Time', function()
 						assert.is_true(t.ruleMatchesBetweenRange(rule))
 					end)
 				end)
-
 
 				describe('combined', function()
 
@@ -1453,7 +1446,7 @@ describe('Time', function()
 
 			describe('on date', function()
 
-				it('should return true when on date', function()
+				it('should return true when on date and false otherwise', function()
 					local t = Time('2017-06-05 02:04:00')
 					assert.is_true(t.ruleIsOnDate('on 5/6'))
 					assert.is_true(t.ruleIsOnDate('on 1/01-2/2,31/12,5/6,1/1'))
@@ -1463,6 +1456,17 @@ describe('Time', function()
 					assert.is_true(t.ruleIsOnDate('on 02/1'))
 					assert.is_true(t.ruleIsOnDate('on 2/01'))
 					assert.is_true(t.ruleIsOnDate('on 02/01'))
+
+					local t = Time('2017-06-05 02:04:00')
+					assert.is_false(t.ruleIsOnDate('on 6/5'))
+					assert.is_false(t.ruleIsOnDate('on 1/01-2/2,31/12,6/5,1/1'))
+ 
+					t = Time('2018-12-3 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 03/12'))
+					assert.is_true(t.ruleIsOnDate('on 3/12'))
+					assert.is_false(t.ruleIsOnDate('on 13/12'))
+					assert.is_false(t.ruleIsOnDate('on 23/12'))
+					assert.is_false(t.ruleIsOnDate('on 03/11'))
 				end)
 
 				it('should return true when */mm', function()
@@ -1518,7 +1522,7 @@ describe('Time', function()
 		describe('combis', function()
 
 			it('should return false when not on every second sunday between 1:00 and 1:30', function()
-				local t = Time('2018-12-30 01:04:00') -- on Sunday, odd week at 01:04 
+				local t = Time('2018-12-30 01:04:00') -- on Sunday, odd week at 01:04
 				assert.is_false(t.matchesRule('between 1:00 and 1:30 on sun every odd week'))
 				assert.is_false(t.matchesRule('between 2:00 and 2:30 on sun every odd week'))
 				assert.is_false(t.matchesRule('between 1:00 and 1:30 on sat every even week'))
@@ -1531,7 +1535,6 @@ describe('Time', function()
 				local t = Time('2017-06-05 02:04:00') -- on monday
 
 				assert.is_false(t.matchesRule('every minute on tue'))
-
 
 			end)
 
@@ -1629,17 +1632,17 @@ describe('Time', function()
 				assert.is_false(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
 
 			end)
-			
+		   
 			for fromMonth=1,12 do
 				for toMonth=math.min(fromMonth+1,12),12 do
 					it('at 08:00-23:00 on 01/' .. fromMonth .. '-31/' .. toMonth, function()
 						local t = Time()
 						if t.dDate > Time(t.year .. '-' .. fromMonth ..'-01 00:00:01').dDate and
 						   t.dDate < Time(t.year .. '-' .. toMonth ..'-31 23:59:59').dDate then
-							assert.is_true(t.matchesRule('at 00:30-23:55 on 01/' .. fromMonth .. '-31/' .. toMonth)) 
+							assert.is_true(t.matchesRule('at 00:30-23:55 on 01/' .. fromMonth .. '-31/' .. toMonth))
 						else
-							assert.is_false(t.matchesRule('at 00:30-23:55 on 01/' .. fromMonth .. '-31/' .. toMonth)) 
-						end						
+							assert.is_false(t.matchesRule('at 00:30-23:55 on 01/' .. fromMonth .. '-31/' .. toMonth))
+						end					   
 					end)
 				end
 			end
@@ -1650,14 +1653,14 @@ describe('Time', function()
 						local t = Time()
 						if  t.dDate > Time(t.year .. '-' .. fromMonth ..'-01 00:00:01').dDate and
 							t.dDate < Time(t.year .. '-' .. toMonth ..'-31 23:59:59').dDate then
-							assert.is_true(t.matchesRule('at 00:30-23:55 on */' .. fromMonth .. '-*/' .. toMonth)) 
+							assert.is_true(t.matchesRule('at 00:30-23:55 on */' .. fromMonth .. '-*/' .. toMonth))
 						else
-							assert.is_false(t.matchesRule('at 00:30-23:55 on */' .. fromMonth .. '-*/' .. toMonth)) 
-						end						
+							assert.is_false(t.matchesRule('at 00:30-23:55 on */' .. fromMonth .. '-*/' .. toMonth))
+						end					   
 					end)
 				end
 			end
-			
+		   
 			it('every 3 minutes on -15/4,15/10-', function()
 				local t = Time('2017-04-18 11:24:00')
 				assert.is_false(t.matchesRule('every 3 minutes on -15/4,15/10-'))
@@ -1734,9 +1737,7 @@ describe('Time', function()
 				assert.is_false(t.matchesRule('boe bahb ladsfak'))
 			end)
 
-
 		end)
-
 
 	end)
 
