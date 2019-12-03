@@ -2026,6 +2026,11 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			_device.custom_label = "m/s2";
 			_device.devType = ZDTYPE_SENSOR_CUSTOM;
 		}
+		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Frequency)
+		{
+			_device.custom_label = "Hz";
+			_device.devType = ZDTYPE_SENSOR_CUSTOM;
+		}
 		else
 		{
 			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s, Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", vLabel.c_str(), vUnits.c_str(), static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vOrgInstance, vOrgIndex);
