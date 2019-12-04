@@ -2,7 +2,7 @@
     <form>
         <table class="display" id="latlongtable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="name">Address: </label></td>
+          <td align="right" style="vertical-align:top"><label for="name">Address: </label></td>
           <td>
 			<input type="text" id="address" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
 			(Example: Streetname Number City Country)
@@ -12,10 +12,13 @@
 			<td></td>
 			<td><button id="getlatlong">GetLatLong</button></td>
         </tr>
-        <tr>
+        <tr id="georow">
           <td align="right"><label for="lbllat">Latitude: </label></td>
-          <td><input type="text" id="latitude" style="width: 90px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		    </tr>
+          <td>
+			<input type="text" id="latitude" style="width: 90px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+			<img id="geodetect" src="images/location.png" class="lcursor unselected" height="24" width="24">
+		  </td>
+	    </tr>
         <tr>
           <td align="right"><label for="lbllng">Longitude: </label></td>
           <td><input type="text" id="longitude" style="width: 90px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -51,7 +54,7 @@
 									<h2><span data-i18n="User Interface"></span>:</h2>
 									<table class="display" id="languagetable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:60px"><label for="Language">Language: </label></td>
+										<td align="right" style="width:120px"><label for="Language">Language: </label></td>
 										<td>
 											<select id="combolanguage" name="Language" style="width:200px" class="combobox ui-corner-all">
 											<!--#embed combolanguage -->
@@ -59,11 +62,31 @@
 										</td>
 									</tr>
 									<tr>
-										<td align="right" style="width:60px"><label for="Themes"><span data-i18n="Theme"></span>: </label></td>
+										<td align="right"><label for="Themes"><span data-i18n="Theme"></span>: </label></td>
 										<td>
 											<select id="combothemes" name="Themes" style="width:200px" class="combobox ui-corner-all">
 											</select>
 										</td>
+									</tr>
+									<tr>
+										<td align="right"><label><span data-i18n="Dashboard"></span>: </label></td>
+										<td><select id="combosdashtype" name="DashboardType" style="width:200px" class="combobox ui-corner-all">
+											<option data-i18n="Normal" value="0">Normal</option>
+											<option data-i18n="Compact" value="1">Compact</option>
+											<option data-i18n="Mobile" value="2">Mobile</option>
+											<option data-i18n="Floorplan" value="3">Floorplan</option>
+										</select></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td><input type="checkbox" id="AllowWidgetOrdering" name="AllowWidgetOrdering"/> <label for="AllowWidgetOrdering" data-i18n="AllowWidgetOrdering">Allow Widget Re-Order</label></td>
+									</tr>
+									<tr>
+										<td align="right"><label><span data-i18n="Mobile"></span>: </label></td>
+										<td><select id="combosmobiletype" name="MobileType" style="width:200px" class="combobox ui-corner-all">
+											<option data-i18n="Mobile" value="0">Mobile</option>
+											<option data-i18n="Dashboard" value="1">Dashboard</option>
+										</select></td>
 									</tr>
 									</table>
 								</div>
@@ -85,39 +108,6 @@
 											<input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
 											<span data-i18n="ToFindGeo"></span> <a class="norm-link" ng-click="GetGeoLocation();"><span class="norm-link" data-i18n="Here"></span></a>
 										</td>
-									</tr>
-									</table>
-								</div>
-							</div>
-							<br>
-							<div class="row-fluid">
-								<div class="span6">
-									<h2><span data-i18n="Dashboard"></span>:</h2>
-									<table class="display" id="dashmodetable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right" style="width:60px"><label><span data-i18n="Mode"></span>: </label></td>
-										<td><select id="combosdashtype" name="DashboardType" style="width:120px" class="combobox ui-corner-all">
-											<option data-i18n="Normal" value="0">Normal</option>
-											<option data-i18n="Compact" value="1">Compact</option>
-											<option data-i18n="Mobile" value="2">Mobile</option>
-											<option data-i18n="Floorplan" value="3">Floorplan</option>
-										</select></td>
-									</tr>
-									<tr>
-										<td></td>
-										<td><input type="checkbox" id="AllowWidgetOrdering" name="AllowWidgetOrdering"/> <label for="AllowWidgetOrdering" data-i18n="AllowWidgetOrdering">Allow Widget Re-Order</label></td>
-									</tr>
-									</table>
-								</div>
-								<div class="span6">
-									<h2><span data-i18n="Mobile"></span>:</h2>
-									<table class="display" id="mobilemodetable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right" style="width:60px"><label><span data-i18n="Mode"></span>: </label></td>
-										<td><select id="combosmobiletype" name="MobileType" style="width:120px" class="combobox ui-corner-all">
-											<option data-i18n="Mobile" value="0">Mobile</option>
-											<option data-i18n="Dashboard" value="1">Dashboard</option>
-										</select></td>
 									</tr>
 									</table>
 								</div>
@@ -245,7 +235,7 @@
 									<tr>
 										<td align="right" style="width:60px"><label><span data-i18n="IP Address"></span>: </label></td>
 										<td>
-											<input type="input" id="WebRemoteProxyIPs" name="WebRemoteProxyIPs" style="width: 300px; padding: .2em"/><br>
+											<input type="input" id="WebRemoteProxyIPs" name="WebRemoteProxyIPs" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
 											<span data-i18n="(Separate by a semicolon, For Example"></span>: 127.0.0.1;192.168.0.12)
 										</td>
 									</tr>
