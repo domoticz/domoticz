@@ -8283,6 +8283,11 @@ void CSQLHelper::UpdateDeviceValue(const char * FieldName, const float Value, co
 	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
 }
 
+void CSQLHelper::UpdateDeviceName(const std::string& Idx, const std::string& Name)
+{
+	safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%s' WHERE (ID == %s )", Name, TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+}
+
 bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage)
 {
 	//write file to disk

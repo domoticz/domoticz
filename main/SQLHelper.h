@@ -396,7 +396,8 @@ public:
 
 	void UpdateDeviceValue(const char * FieldName , const std::string &Value , const std::string &Idx );
 	void UpdateDeviceValue(const char * FieldName , const int Value , const std::string &Idx )   ;
-	void UpdateDeviceValue(const char * FieldName , const float Value , const std::string &Idx ) ;
+	void UpdateDeviceValue(const char* FieldName, const float Value, const std::string& Idx);
+	void UpdateDeviceName(const std::string& Idx, const std::string &Name);
 
 	bool GetPreferencesVar(const std::string &Key, double &Value);
 	void UpdatePreferencesVar(const std::string &Key, const double Value);
