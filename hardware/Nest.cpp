@@ -18,7 +18,7 @@ const std::string NEST_SET_SHARED = "/v2/put/shared.";
 const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
 const std::string NEST_SET_DEVICE = "/v2/put/device.";
 
-#define NEST_USER_AGENT_STRING "User-Agent: Nest/3.0.1.15 (iOS) os=6.0"
+#define NEST_USER_AGENT_STRING "User-Agent: Nest/3.0.1.15"
 
 #ifdef _DEBUG
 	//#define DEBUG_NextThermostatR
