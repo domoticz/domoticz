@@ -148,6 +148,12 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	double _tmpH;
 	result.DaylengthMins = static_cast<int>(round(modf(daylen, &_tmpH) * 60));
 	result.DaylengthHours = static_cast<int>(_tmpH);
+	//fix a possible rounding issue above
+	if (result.DaylengthMins > 59)
+	{
+		result.DaylengthMins = 0;
+		result.DaylengthHours = (result.DaylengthHours + 1) % 24;
+	}
 
 	rs = sun_rise_set(year, month, day, longit, latit, &rise, &set);
 	civ = civil_twilight(year, month, day, longit, latit, &civ_start, &civ_end);
@@ -195,6 +201,17 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 		result.CivilTwilightStartHour = static_cast<int>(_tmpH);
 		result.CivilTwilightEndMin = static_cast<int>(round(modf(civ_end, &_tmpH) * 60));
 		result.CivilTwilightEndHour = static_cast<int>(_tmpH);
+		//fix a possible rounding issue above
+		if (result.CivilTwilightStartMin > 59)
+		{
+			result.CivilTwilightStartMin = 0;
+			result.CivilTwilightStartHour = (result.CivilTwilightStartHour + 1) % 24;
+		}
+		if (result.CivilTwilightEndMin > 59)
+		{
+			result.CivilTwilightEndMin = 0;
+			result.CivilTwilightEndHour = (result.CivilTwilightEndHour + 1) % 24;
+		}
 		break;
 	case +1:
 	case -1:
@@ -214,6 +231,17 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 		result.NauticalTwilightStartHour = static_cast<int>(_tmpH);
 		result.NauticalTwilightEndMin = static_cast<int>(round(modf(naut_end, &_tmpH) * 60));
 		result.NauticalTwilightEndHour = static_cast<int>(_tmpH);
+		//fix a possible rounding issue above
+		if (result.CivilTwilightStartMin > 59)
+		{
+			result.NauticalTwilightStartMin = 0;
+			result.NauticalTwilightStartHour = (result.NauticalTwilightStartHour + 1) % 24;
+		}
+		if (result.NauticalTwilightEndMin > 59)
+		{
+			result.NauticalTwilightEndMin = 0;
+			result.NauticalTwilightEndHour = (result.NauticalTwilightEndHour + 1) % 24;
+		}
 		break;
 	case +1:
 	case -1:
@@ -233,6 +261,17 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 		result.AstronomicalTwilightStartHour = static_cast<int>(_tmpH);
 		result.AstronomicalTwilightEndMin = static_cast<int>(round(modf(astr_end, &_tmpH) * 60));
 		result.AstronomicalTwilightEndHour = static_cast<int>(_tmpH);
+		//fix a possible rounding issue above
+		if (result.AstronomicalTwilightStartMin > 59)
+		{
+			result.AstronomicalTwilightStartMin = 0;
+			result.AstronomicalTwilightStartHour = (result.AstronomicalTwilightStartHour + 1) % 24;
+		}
+		if (result.AstronomicalTwilightEndMin > 59)
+		{
+			result.AstronomicalTwilightEndMin = 0;
+			result.AstronomicalTwilightEndHour = (result.AstronomicalTwilightEndHour + 1) % 24;
+		}
 		break;
 	case +1:
 	case -1:
