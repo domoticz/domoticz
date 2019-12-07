@@ -111,6 +111,15 @@ double get_utc_offset() {
 	return utc_offset;
 }
 
+void SunRiseSet::fixRoundIssue(int* hour, int* minute)
+{
+	if (*minute > 59)
+	{
+		*minute = 0;
+		*hour = ( *hour + 1 ) % 24;
+	}
+}
+
 bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, _tSubRiseSetResults& result)
 {
 	time_t sekunnit;
@@ -125,6 +134,7 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, _tSubRis
 	return GetSunRiseSet(latit, longit, year, month, day, result);
 }
 
+
 bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const int year, const int month, const int day, _tSubRiseSetResults& result)
 {
 	result.latit = latit;
@@ -132,7 +142,7 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	result.year = year;
 	result.month = month;
 	result.day = day;
-
+	
 	double timezone = get_utc_offset();
 	// Assuming we now got the diff in hours and minutes here. Do we?
 
@@ -145,9 +155,12 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	//nautlen = day_nautical_twilight_length(year,month,day,longit,latit);
 	//astrlen = day_astronomical_twilight_length(year,month,day,longit,latit);
 
+
 	double _tmpH;
 	result.DaylengthMins = static_cast<int>(round(modf(daylen, &_tmpH) * 60));
 	result.DaylengthHours = static_cast<int>(_tmpH);
+	//fix a possible rounding issue above
+	SunRiseSet::fixRoundIssue(&result.DaylengthHours, &result.DaylengthMins);
 
 	rs = sun_rise_set(year, month, day, longit, latit, &rise, &set);
 	civ = civil_twilight(year, month, day, longit, latit, &civ_start, &civ_end);
@@ -166,16 +179,8 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 		result.SunSetMin = static_cast<int>(round(modf(set, &_tmpH) * 60));
 		result.SunSetHour = static_cast<int>(_tmpH);
 		//fix a possible rounding issue above
-		if (result.SunRiseMin > 59)
-		{
-			result.SunRiseMin = 0;
-			result.SunRiseHour = (result.SunRiseHour + 1) % 24;
-		}
-		if (result.SunSetMin > 59)
-		{
-			result.SunSetMin = 0;
-			result.SunSetHour = (result.SunSetHour + 1) % 24;
-		}
+		SunRiseSet::fixRoundIssue(&result.SunRiseHour, &result.SunRiseMin);
+		SunRiseSet::fixRoundIssue(&result.SunSetHour, &result.SunSetMin);
 		break;
 	case +1:
 	case -1:
@@ -195,6 +200,9 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 		result.CivilTwilightStartHour = static_cast<int>(_tmpH);
 		result.CivilTwilightEndMin = static_cast<int>(round(modf(civ_end, &_tmpH) * 60));
 		result.CivilTwilightEndHour = static_cast<int>(_tmpH);
+		//fix a possible rounding issue above
+		SunRiseSet::fixRoundIssue(&result.CivilTwilightStartHour, &result.CivilTwilightStartMin);
+		SunRiseSet::fixRoundIssue(&result.CivilTwilightEndHour, &result.CivilTwilightEndMin);
 		break;
 	case +1:
 	case -1:
@@ -214,6 +222,9 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 		result.NauticalTwilightStartHour = static_cast<int>(_tmpH);
 		result.NauticalTwilightEndMin = static_cast<int>(round(modf(naut_end, &_tmpH) * 60));
 		result.NauticalTwilightEndHour = static_cast<int>(_tmpH);
+		//fix a possible rounding issue above
+		SunRiseSet::fixRoundIssue(&result.NauticalTwilightStartHour, &result.NauticalTwilightStartMin);
+		SunRiseSet::fixRoundIssue(&result.NauticalTwilightEndHour, &result.NauticalTwilightEndMin);
 		break;
 	case +1:
 	case -1:
@@ -233,6 +244,9 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 		result.AstronomicalTwilightStartHour = static_cast<int>(_tmpH);
 		result.AstronomicalTwilightEndMin = static_cast<int>(round(modf(astr_end, &_tmpH) * 60));
 		result.AstronomicalTwilightEndHour = static_cast<int>(_tmpH);
+		//fix a possible rounding issue above
+		SunRiseSet::fixRoundIssue(&result.AstronomicalTwilightStartHour, &result.AstronomicalTwilightStartMin);
+		SunRiseSet::fixRoundIssue(&result.AstronomicalTwilightEndHour, &result.AstronomicalTwilightEndMin);
 		break;
 	case +1:
 	case -1:
@@ -246,6 +260,8 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 
 	return true;
 }
+
+
 /* The "workhorse" function for sun rise/set times */
 
 int SunRiseSet::__sunriset__(int year, int month, int day, double lon, double lat,
