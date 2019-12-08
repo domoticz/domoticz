@@ -491,8 +491,11 @@ namespace OpenZWave
 			uint8 GetNodeVersion(uint8 const _nodeId);
 			uint8 GetNodeSecurity(uint8 const _nodeId);
 			uint8 GetNodeBasic(uint8 const _nodeId);
-			uint8 GetNodeGeneric(uint8 const _nodeId);
-			uint8 GetNodeSpecific(uint8 const _nodeId);
+			string GetNodeBasicString(uint8 const _nodeId);
+			uint8 GetNodeGeneric(uint8 const _nodeId, uint8 _instance);
+			string GetNodeGenericString(uint8 const _nodeId, uint8 _instance);
+			uint8 GetNodeSpecific(uint8 const _nodeId, uint8 _instance);
+			string GetNodeSpecificString(uint8 const _nodeId, uint8 _instance);
 			string GetNodeType(uint8 const _nodeId);
 			uint32 GetNodeNeighbors(uint8 const _nodeId, uint8** o_neighbors);
 

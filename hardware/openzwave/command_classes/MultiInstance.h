@@ -96,6 +96,9 @@ namespace OpenZWave
 					}
 					void SetInstanceLabel(uint8 const _instance, char *label) override;
 
+					uint8 GetGenericInstanceDeviceType(uint8);
+					uint8 GetSpecificInstanceDeviceType(uint8);
+
 				private:
 					MultiInstance(uint32 const _homeId, uint8 const _nodeId);
 
@@ -114,7 +117,8 @@ namespace OpenZWave
 					uint8 m_endPointFindIndex;
 					uint8 m_numEndPointsFound;
 					set<uint8> m_endPointCommandClasses;
-
+					map<uint8, uint8> m_endPointGenericType;
+					map<uint8, uint8> m_endPointSpecificType;
 			};
 		} // namespace CC
 	} // namespace Internal

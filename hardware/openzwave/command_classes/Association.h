@@ -88,6 +88,7 @@ namespace OpenZWave
 
 					bool m_queryAll;			// When true, once a group has been queried, we request the next one.
 					uint8 m_numGroups;		// Number of groups supported by the device.  255 is reported by certain manufacturers and requires special handling.
+					uint8 m_currentGroupQuery; // The Current Group we are querying for. 
 					vector<uint8> m_pendingMembers;	// Used to build a list of group members from multiple reports
 			};
 		} // namespace CC

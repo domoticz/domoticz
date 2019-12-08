@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="57" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="59" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -1252,6 +1252,7 @@
     <Product config="philio/pan08.xml" id="0006" name="PAN08-1 In Wall Roller Shutter Controller" type="0001"/>
     <Product config="philio/pan03.xml" id="000f" name="PAN03 Switch Module with meter 3 KW X1" type="0001"/>
     <Product config="philio/pan11.xml" id="0011" name="PAN11 Smart Energy Plug In Switch" type="0001"/>
+    <Product config="philio/pan06.xml" id="0013" name="PAN06-1 In Wall Dual Relay (1 Way) Switch Module" type="0001"/>
     <Product config="philio/pan04.xml" id="0012" name="PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement" type="0001"/>
     <Product config="philio/pan08.xml" id="0015" name="PAN08-1 In Wall Roller Shutter Controller" type="0001"/>
     <Product config="philio/pan16.xml" id="0029" name="PAN16 Smart energy plug in switch" type="0001"/>
@@ -1765,6 +1766,7 @@
     <Product config="widom/UBS104.xml" id="0104" name="UBS104 Universal Relay Switch" type="0012"/>
     <Product config="widom/UME304C_S.xml" id="0304" name="UME304 Energy Driven Switch" type="1214"/>
     <Product config="widom/WDS.xml" id="0504" name="WDS Universal Double Switch" type="1214"/>
+    <Product config="widom/DRY.xml" id="0900" name="DRY Smart Dry Contact Switch" type="1214"/>
   </Manufacturer>
   <Manufacturer id="012D" name="Wilshine Holding"></Manufacturer>
   <Manufacturer id="017F" name="Wink"></Manufacturer>

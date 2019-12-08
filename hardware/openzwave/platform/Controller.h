@@ -77,13 +77,6 @@ namespace OpenZWave
 					}
 
 					/**
-					 * Queues a set of Z-Wave messages in the correct order needed to initialize the Controller implementation.
-					 * @param Pointer to the driver object that will handle the messages.
-					 * @see Driver::Init
-					 */
-					void PlayInitSequence(Driver* _driver);
-
-					/**
 					 * Open a controller.
 					 * Attempts to open a controller and initialize it with the specified paramters.
 					 * @param _controllerName The name of the port to open.  For example, ttyS1 on Linux, or \\.\COM2 in Windows.

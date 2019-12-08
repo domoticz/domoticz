@@ -559,20 +559,50 @@ namespace OpenZWave
 			uint8 GetNodeBasic(uint32 const _homeId, uint8 const _nodeId);
 
 			/**
+			 * \brief Get the basic type of a node.
+			 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+			 * \param _nodeId The ID of the node to query.
+			 * \return the node's basic type.
+			 */
+			string GetNodeBasicString(uint32 const _homeId, uint8 const _nodeId);
+
+
+			/**
 			 * \brief Get the generic type of a node.
 			 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 			 * \param _nodeId The ID of the node to query.
+			 * \param _instance If Specified, Get the Generic Type for a Instance
 			 * \return the node's generic type.
 			 */
-			uint8 GetNodeGeneric(uint32 const _homeId, uint8 const _nodeId);
+			uint8 GetNodeGeneric(uint32 const _homeId, uint8 const _nodeId, uint8 const _instance = 0);
+
+			/**
+			 * \brief Get the generic type of a node as a String
+			 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+			 * \param _nodeId The ID of the node to query.
+			 * \param _instance If Specified, Get the Generic Type for a Instance
+			 * \return the node's generic type.
+			 */
+			string GetNodeGenericString(uint32 const _homeId, uint8 const _nodeId, uint8 const _instance = 0);
 
 			/**
 			 * \brief Get the specific type of a node.
 			 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 			 * \param _nodeId The ID of the node to query.
+			 * \param _instance If Specified, Get the Specific Type for a Instance
 			 * \return the node's specific type.
 			 */
-			uint8 GetNodeSpecific(uint32 const _homeId, uint8 const _nodeId);
+			uint8 GetNodeSpecific(uint32 const _homeId, uint8 const _nodeId, uint8 const _instance = 0);
+
+			/**
+			 * \brief Get the specific type of a node as a string
+			 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+			 * \param _nodeId The ID of the node to query.
+			 * \param _instance If Specified, Get the Specific Type for a Instance
+			 * \return the node's specific type.
+			 */
+			string GetNodeSpecificString(uint32 const _homeId, uint8 const _nodeId, uint8 const _instance = 0);
+
 
 			/**
 			 * \brief Get a human-readable label describing the node
@@ -826,6 +856,14 @@ namespace OpenZWave
 			 * \return True if the node does have the class instantiated, will return name & version
 			 */
 			bool GetNodeClassInformation(uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, string *_className = NULL, uint8 *_classVersion = NULL);
+
+			/**
+			 * \brief Get a friendly name for the CommandClass ID
+			 * \param _commandClassId Id of the class to test for
+			 * \return String returning the CommandClass Name
+			 */
+			string GetCommandClassName(uint8 const _commandClassId);
+
 			/**
 			 * \brief Get whether the node is awake or asleep
 			 * \param _homeId The Home ID of the Z-Wave controller that manages the node.

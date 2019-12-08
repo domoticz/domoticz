@@ -75,14 +75,6 @@ namespace OpenZWave
 
 	class OPENZWAVE_EXPORT ValueID
 	{
-			friend class Manager;
-			friend class Driver;
-			friend class Node;
-			friend class Group;
-			friend class Internal::VC::Value;
-			friend class Internal::VC::ValueStore;
-			friend class Notification;
-
 		public:
 			/** 
 			 * Value Genres
@@ -302,7 +294,7 @@ namespace OpenZWave
 				m_id = ((uint32) (id & 0xFFFFFFFF));
 				m_id1 = (uint32) (id >> 32);
 			}
-		private:
+
 			// Construct a value id for use in notifications
 			ValueID(uint32 const _homeId, uint8 const _nodeId) :
 					m_id1(0), m_homeId(_homeId)
@@ -348,6 +340,8 @@ namespace OpenZWave
 
 				return key;
 			}
+
+		private:
 
 			// ID Packing:
 			// Bits

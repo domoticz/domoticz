@@ -351,14 +351,13 @@ namespace OpenZWave
 			{
 				return m_basic;
 			}
-			uint8 GetGeneric() const
-			{
-				return m_generic;
-			}
-			uint8 GetSpecific() const
-			{
-				return m_specific;
-			}
+			string GetBasicString();
+			uint8 GetGeneric(uint8 const _instance) const;
+			string GetGenericString(uint8 const _instance);
+			uint8 GetSpecific(uint8 const _instance) const;
+			string GetSpecificString(uint8 const _instance);
+			string GetEndPointDeviceClassLabel(uint8 const _generic, uint8 const _specific);
+
 			string const& GetType() const
 			{
 				return m_type;
@@ -531,6 +530,7 @@ namespace OpenZWave
 			 *
 			 */
 			uint8 GetNumInstances(uint8 const _ccid);
+			 
 		private:
 			/**
 			 * Creates the specified command class object and adds it to the node (via the
@@ -763,7 +763,6 @@ namespace OpenZWave
 			bool SetPlusDeviceClasses(uint8 const _role, uint8 const _nodeType, uint16 const _deviceType);	// Set the device class data for the node based on the Zwave+ info report
 			bool AddMandatoryCommandClasses(uint8 const* _commandClasses);							// Add mandatory command classes as specified in the device_classes.xml to the node.
 			void ReadDeviceClasses();																	// Read the static device class data from the device_classes.xml file
-			string GetEndPointDeviceClassLabel(uint8 const _generic, uint8 const _specific);
 
 			static bool s_deviceClassesLoaded;		// True if the xml file has already been loaded
 			static map<uint8, string> s_basicDeviceClasses;		// Map of basic device classes.
