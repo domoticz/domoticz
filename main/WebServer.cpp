@@ -3181,9 +3181,9 @@ namespace http {
 
 			std::string scriptname(szStartupFolder);
 			scriptname += (bIsBetaChannel) ? "updatebeta" : "updaterelease";
-			std::string strparm = szStartupFolder;
-			//add script to background worker
-			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.3f, scriptname, strparm));
+			//run script in background
+			std::string lscript = scriptname + " &";
+			int ret = system(lscript.c_str());
 			root["title"] = "UpdateApplication";
 			root["status"] = "OK";
 		}
