@@ -6,7 +6,7 @@ define(['app'], function (app) {
 		$scope.topText = "";
 		$scope.bottomText = "";
 		$scope.updateReady = false;
-		$scope.statusText = "-";
+		$scope.statusText = "";
 
 		$scope.ProgressData = {
 			label: 0,
@@ -18,7 +18,7 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer2);
 				$scope.mytimer2 = undefined;
 			}
-			$scope.statusText = "Getting version number...";
+			//$scope.statusText = "Getting version number...";
 			$http({
 				method : "GET",
 				url : "json.htm?type=command&param=getversion",
@@ -31,23 +31,23 @@ define(['app'], function (app) {
 						$("#appversion").text("V" + $scope.newVersion);
 						if ($scope.appVersion != $scope.newVersion) {
 							//We are ready !
-							$scope.statusText = "Got new version";
+							//$scope.statusText = "Got new version..";
 							$scope.updateReady = true;
 						} else {
-							$scope.statusText = "Got same version...";
+							//$scope.statusText = "Got same version...";
 							$scope.mytimer2 = $interval(function () {
 								$scope.CheckUpdateReader();
 							}, 1000);
 						}
 					} else {
-						$scope.statusText = "Got a error returned!...";
+						//$scope.statusText = "Got a error returned!...";
 						$scope.mytimer2 = $interval(function () {
 							$scope.CheckUpdateReader();
 						}, 1500);
 					}
 				},
 				function myError(response)   {
-					$scope.statusText = "Could not get version !";
+					//$scope.statusText = "Could not get version !";
 					$scope.mytimer2 = $interval(function () {
 						$scope.CheckUpdateReader();
 					}, 1000);
@@ -108,7 +108,7 @@ define(['app'], function (app) {
 		}
 
 		$scope.CheckForUpdate = function() {
-			$scope.statusText = "Getting version number...";
+			//$scope.statusText = "Getting version number...";
 			$http({
 				method : "GET",
 				url : "json.htm?type=command&param=checkforupdate&forced=true"
