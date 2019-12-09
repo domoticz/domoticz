@@ -6693,6 +6693,7 @@ namespace http {
 				if (result.empty())
 				{
 					//Switch not found!
+					_log.Log(LOG_ERROR, "User: %s, switch not found (idx=%s)!", Username.c_str(), idx.c_str());
 					return;
 				}
 				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
@@ -6742,7 +6743,7 @@ namespace http {
 				else
 				{
 					root["status"] = "ERROR";
-					root["message"] = "Error sending switch command, check device/hardware !";
+					root["message"] = "Error sending switch command, check device/hardware (idx=" + idx + ") !";
 				}
 			} //(rtype=="switchlight")
 			else if (cparam == "switchscene")
@@ -6767,6 +6768,7 @@ namespace http {
 				if (result.empty())
 				{
 					//Scene/Group not found!
+					_log.Log(LOG_ERROR, "User: %s, scene not found (idx=%s)!", Username.c_str(), idx.c_str());
 					return;
 				}
 				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
