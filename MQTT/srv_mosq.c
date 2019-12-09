@@ -16,6 +16,8 @@ Contributors:
 
 #include "config.h"
 
+#define UNUSED(A) (void)(A) 
+
 #ifdef WITH_SRV
 #  include <ares.h>
 

@@ -22,6 +22,8 @@ Contributors:
 #include "mosquitto.h"
 #include "mosquitto_internal.h"
 
+#define UNUSED(A) (void)(A) 
+
 struct userdata__callback {
 	const char *topic;
 	int (*callback)(struct mosquitto *, void *, const struct mosquitto_message *);

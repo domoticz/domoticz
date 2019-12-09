@@ -35,6 +35,8 @@ Contributors:
 #include "send_mosq.h"
 #include "util_mosq.h"
 
+#define UNUSED(A) (void)(A) 
+
 int handle__pubrec(struct mosquitto_db *db, struct mosquitto *mosq)
 {
 	uint8_t reason_code = 0;

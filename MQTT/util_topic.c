@@ -41,6 +41,8 @@ Contributors:
 #include "tls_mosq.h"
 #include "util_mosq.h"
 
+#define UNUSED(A) (void)(A) 
+
 /* Check that a topic used for publishing is valid.
  * Search for + or # in a topic. Return MOSQ_ERR_INVAL if found.
  * Also returns MOSQ_ERR_INVAL if the topic string is too long.
