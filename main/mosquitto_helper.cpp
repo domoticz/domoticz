@@ -3,6 +3,7 @@ Based on the work of Roger Light <roger@atchoo.org>
 */
 #include "stdafx.h"
 #include "mosquitto_helper.h"
+#include "Logger.h"
 
 #define UNUSED(A) (void)(A)
 
@@ -267,7 +268,16 @@ int mosquittodz::username_pw_set(const char *username, const char *password)
 
 int mosquittodz::publish(int *mid, const char *topic, int payloadlen, const void *payload, int qos, bool retain)
 {
-	return mosquitto_publish(m_mosq, mid, topic, payloadlen, payload, qos, retain);
+	try
+	{
+		return mosquitto_publish(m_mosq, mid, topic, payloadlen, payload, qos, retain);
+	}
+	catch (const std::exception& e)
+	{
+		_log.Log(LOG_ERROR, "mosquittodz: Error: %s", e.what());
+		return MOSQ_ERR_UNKNOWN;
+	}
+	return MOSQ_ERR_UNKNOWN;
 }
 
 void mosquittodz::reconnect_delay_set(unsigned int reconnect_delay, unsigned int reconnect_delay_max, bool reconnect_exponential_backoff)
@@ -297,7 +307,16 @@ int mosquittodz::unsubscribe(int *mid, const char *sub)
 
 int mosquittodz::loop(int timeout, int max_packets)
 {
-	return mosquitto_loop(m_mosq, timeout, max_packets);
+	try
+	{
+		return mosquitto_loop(m_mosq, timeout, max_packets);
+	}
+	catch (const std::exception & e)
+	{
+		_log.Log(LOG_ERROR, "mosquittodz: Error: %s", e.what());
+		return MOSQ_ERR_UNKNOWN;
+	}
+	return MOSQ_ERR_UNKNOWN;
 }
 
 int mosquittodz::loop_misc()

@@ -152,13 +152,13 @@ int handle__publish(struct mosquitto *mosq)
 			mosquitto_property_free_all(&properties);
 			return rc;
 		case 2:
+			message->properties = properties;
 			util__decrement_receive_quota(mosq);
 			rc = send__pubrec(mosq, message->msg.mid, 0);
 			pthread_mutex_lock(&mosq->msgs_in.mutex);
 			message->state = mosq_ms_wait_for_pubrel;
 			message__queue(mosq, message, mosq_md_in);
 			pthread_mutex_unlock(&mosq->msgs_in.mutex);
-			mosquitto_property_free_all(&properties);
 			return rc;
 		default:
 			message__cleanup(&message);

@@ -19,8 +19,7 @@ Contributors:
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "utlist.h"
+#include <utlist.h>
 
 #include "mosquitto_internal.h"
 #include "mosquitto.h"
@@ -29,6 +28,8 @@ Contributors:
 #include "send_mosq.h"
 #include "time_mosq.h"
 #include "util_mosq.h"
+
+#define UNUSED(A) (void)(A) 
 
 void message__cleanup(struct mosquitto_message_all **message)
 {
