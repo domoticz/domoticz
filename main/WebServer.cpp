@@ -11195,6 +11195,12 @@ namespace http {
 
 		void CWebServer::RType_CustomLightIcons(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			int ii = 0;
 
 			std::vector<_tCustomIcon> temp_custom_light_icons = m_custom_light_icons;
@@ -11214,6 +11220,12 @@ namespace http {
 
 		void CWebServer::RType_Plans(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			root["status"] = "OK";
 			root["title"] = "Plans";
 
@@ -11256,6 +11268,12 @@ namespace http {
 
 		void CWebServer::RType_FloorPlans(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			root["status"] = "OK";
 			root["title"] = "Floorplans";
 
@@ -11341,6 +11359,12 @@ namespace http {
 
 		void CWebServer::RType_Scenes(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			root["status"] = "OK";
 			root["title"] = "Scenes";
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
@@ -11463,6 +11487,12 @@ namespace http {
 
 		void CWebServer::RType_Hardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			root["status"] = "OK";
 			root["title"] = "Hardware";
 
@@ -11563,6 +11593,12 @@ namespace http {
 
 		void CWebServer::RType_Devices(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			std::string rfilter = request::findValue(&req, "filter");
 			std::string order = request::findValue(&req, "order");
 			std::string rused = request::findValue(&req, "used");
@@ -11600,6 +11636,12 @@ namespace http {
 
 		void CWebServer::RType_Users(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			bool bHaveUser = (session.username != "");
 			int urights = 3;
 			if (bHaveUser)
@@ -11637,6 +11679,12 @@ namespace http {
 
 		void CWebServer::RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			bool bHaveUser = (session.username != "");
 			int urights = 3;
 			if (bHaveUser)
@@ -12309,6 +12357,12 @@ namespace http {
 
 		void CWebServer::RType_GetTransfers(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			root["status"] = "OK";
 			root["title"] = "GetTransfers";
 
@@ -12360,6 +12414,12 @@ namespace http {
 		//then delete the NEW sensor
 		void CWebServer::RType_TransferDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
@@ -12417,6 +12477,12 @@ namespace http {
 
 		void CWebServer::RType_Notifications(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			root["status"] = "OK";
 			root["title"] = "Notifications";
 
@@ -12458,6 +12524,12 @@ namespace http {
 
 		void CWebServer::RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -12480,6 +12552,12 @@ namespace http {
 
 		void CWebServer::RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			std::string idx = request::findValue(&req, "idx");
 			std::string userdevices = request::findValue(&req, "devices");
 			if (idx.empty())
@@ -12828,6 +12906,12 @@ namespace http {
 
 		void CWebServer::RType_Settings(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			std::vector<std::vector<std::string> > result;
 			char szTmp[100];
 
@@ -13201,6 +13285,12 @@ namespace http {
 
 		void CWebServer::RType_LightLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
@@ -13361,6 +13451,12 @@ namespace http {
 
 		void CWebServer::RType_TextLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
@@ -13390,6 +13486,12 @@ namespace http {
 
 		void CWebServer::RType_SceneLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
@@ -13419,6 +13521,12 @@ namespace http {
 
 		void CWebServer::RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 0 )
+			{
+				session.reply_status = reply::unauthorized;
+				return; //Only access allowed when there are rights
+			}
+
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
