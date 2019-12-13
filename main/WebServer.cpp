@@ -11134,12 +11134,7 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "DeleteScene";
-			m_sql.safe_query("DELETE FROM Scenes WHERE (ID == '%q')", idx.c_str());
-			m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == '%q')", idx.c_str());
-			m_sql.safe_query("DELETE FROM SceneTimers WHERE (SceneRowID == '%q')", idx.c_str());
-			m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
-			uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
-			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
+			m_sql.DeleteScenes(idx);
 		}
 
 		void CWebServer::RType_UpdateScene(WebEmSession & session, const request& req, Json::Value &root)

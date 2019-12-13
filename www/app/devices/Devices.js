@@ -166,20 +166,41 @@ define(['app'], function (app) {
                 });
 
                 table.on('click', '.js-remove-selected', function () {
-                    var devices = [].map.call(table.api().rows({ selected: true }).data(), function (device) {
-                        return device.idx;
+                    var selected_items = [].map.call(table.api().rows({ selected: true }).data(), function (item) {
+						var obj = {
+							idx: item.idx,
+							type: item.Type
+						};
+                        return obj;
                     });
-
-                    if (devices.length === 0) {
-                        return bootbox.alert('No Devices selected to Delete!');
+                    if (selected_items.length === 0) {
+                        return bootbox.alert('No Items selected to Delete!');
                     }
+                    var devices = [];
+                    var scenes = [];
 
-                    bootbox.confirm($.t('Are you sure you want to delete the selected Devices?') + ' (' + devices.length + ')')
+					selected_items.forEach(function (item) {
+						if ((item.type != 'Group')&&(item.type != 'Scene')) {
+							devices.push(item.idx);
+						} else {
+							scenes.push(item.idx);
+						}
+					});
+                    
+                    bootbox.confirm($.t('Are you sure you want to delete the selected Devices?') + ' (' + (devices.length + scenes.length) + ')')
                         .then(function () {
-                            return deviceApi.removeDevice(devices);
+							ShowNotify($.t("Removing..."),30000);
+							if (devices.length > 0) {
+								ret = deviceApi.removeDevice(devices);
+							}
+							if (scenes.length > 0) {
+								ret = deviceApi.removeScene(scenes);
+							}
+							HideNotify();
+							return ret;
                         })
                         .then(function () {
-                            bootbox.alert(devices.length + ' ' + $.t('Devices deleted.'));
+                            bootbox.alert((devices.length + scenes.length) + ' ' + $.t('Devices deleted.'));
                             $ctrl.onUpdate();
                         });
                 });

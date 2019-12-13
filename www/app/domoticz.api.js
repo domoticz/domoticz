@@ -87,7 +87,8 @@ define(['app.permissions'], function (appPermissionsModule) {
             getDeviceInfo: getDeviceInfo,
             updateDeviceInfo: updateDeviceInfo,
             renameDevice: renameDevice,
-            removeDevice: dzNotification.withNotificationDecorator(removeDevice, 'Removing...'),
+            removeDevice: removeDevice,
+            removeScene: removeScene,
             includeDevice: includeDevice,
             excludeDevice: excludeDevice
         };
@@ -124,18 +125,16 @@ define(['app.permissions'], function (appPermissionsModule) {
         }
 
         function removeDevice(deviceIdx) {
-            // Looks like these 2 commands eventually do the same
             return domoticzApi.sendRequest({
                 type: 'deletedevice',
                 idx: Array.isArray(deviceIdx) ? deviceIdx.join(';') : deviceIdx
             }).then(domoticzApi.errorHandler);
-
-            // return domoticzApi.sendRequest({
-            //     idx: deviceIdx,
-            //     type: 'setused',
-            //     used: false,
-            //     RemoveSubDevices: true
-            // }).then(domoticzApi.errorHandler);
+        }
+        function removeScene(deviceIdx) {
+            return domoticzApi.sendRequest({
+                type: 'deletescene',
+                idx: Array.isArray(deviceIdx) ? deviceIdx.join(';') : deviceIdx
+            }).then(domoticzApi.errorHandler);
         }
 
         function includeDevice(deviceIdx, name, mainDeviceIdx) {
