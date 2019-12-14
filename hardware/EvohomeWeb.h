@@ -123,6 +123,7 @@ private:
 
 	// Evohome v1 API
 	bool v1_login(const std::string &user, const std::string &password);
+	void v1_renew_session();
 	void get_v1_temps();
 
 	// HTTP helpers
