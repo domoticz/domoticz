@@ -13,8 +13,6 @@
 
 #define RETRY_DELAY 30
 
-extern std::string szRandomUUID;
-
 #ifdef _DEBUG
 //#define DEBUG_TTN_R
 //#define DEBUG_TTN_W
@@ -52,7 +50,7 @@ std::string ReadFile(std::string filename)
 
 
 CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename) :
-	mosqdz::mosquittodz((std::string("Domoticz-TTN") + szRandomUUID).c_str()),
+	mosqdz::mosquittodz((std::string("Domoticz-TTN") +  std::string(GenerateUUID())).c_str()),
 	m_szIPAddress(IPAddress),
 	m_UserName(Username),
 	m_Password(Password),
