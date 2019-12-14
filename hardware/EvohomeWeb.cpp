@@ -1820,9 +1820,8 @@ void CEvohomeWeb::v1_renew_session()
 		sz_response[len] = ' ';
 	}
 
-	Json::Reader jReader;
 	Json::Value j_fi;
-	if (jReader.parse(sz_response.c_str(), j_fi))
+	if (ParseJSon(sz_response.c_str(), j_fi))
 	{
 		if (j_fi.isMember("code") && (j_fi["code"].asString() != "-1"))
 		{
