@@ -56,7 +56,7 @@ define(['app'], function (app) {
             onUpdate: '&'
         },
         template: '<table id="devices" class="display" width="100%"></table>',
-        controller: function ($scope, $element, $modal, $route, bootbox, dataTableDefaultSettings, deviceApi) {
+        controller: function ($scope, $element, $uibModal, $route, bootbox, dataTableDefaultSettings, deviceApi) {
             var $ctrl = this;
             var table;
 
@@ -114,7 +114,7 @@ define(['app'], function (app) {
                     var scope = $scope.$new(true);
                     scope.device = row;
 
-                    $modal
+                    $uibModal
                         .open(Object.assign({ scope: scope }, addDeviceModal)).result
                         .then($ctrl.onUpdate);
 
@@ -138,7 +138,7 @@ define(['app'], function (app) {
                     var scope = $scope.$new(true);
                     scope.device = row;
 
-                    $modal
+                    $uibModal
                         .open(Object.assign({ scope: scope }, renameDeviceModal)).result
                         .then($ctrl.onUpdate);
 
