@@ -185,6 +185,7 @@ namespace http {
 				webem_action_function fun );
 
 			void RegisterWhitelistURLString(const char* idname);
+			void RegisterWhitelistCommandsString(const char* idname);
 
 			bool IsAction(const request& req);
 			bool CheckForAction(WebEmSession & session, request& req);
@@ -228,6 +229,7 @@ namespace http {
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
+			std::vector < std::string > myWhitelistCommands;
 			std::map<std::string, WebEmSession> m_sessions;
 			server_settings m_settings;
 			// actual theme selected

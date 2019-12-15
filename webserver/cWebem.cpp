@@ -199,7 +199,11 @@ namespace http {
 		{
 			myWhitelistURLs.push_back(idname);
 		}
-
+		void cWebem::RegisterWhitelistCommandsString(const char* idname)
+		{
+			myWhitelistCommands.push_back(idname);
+		}
+		
 
 		/**
 
@@ -1638,16 +1642,18 @@ namespace http {
 			return true;
 		}
 
-		static void GetURICommandParameter(const std::string &uri, std::string &cmdparam)
+		static bool GetURICommandParameter(const std::string &uri, std::string &cmdparam)
 		{
-			cmdparam = uri;
+			if (uri.find("type=command") == std::string::npos)
+				return false;
 			size_t ppos1 = uri.find("&param=");
 			size_t ppos2 = uri.find("?param=");
 			if (
 				(ppos1 == std::string::npos) &&
 				(ppos2 == std::string::npos)
 				)
-				return;
+				return false;
+			cmdparam = uri;
 			size_t ppos = ppos1;
 			if (ppos == std::string::npos)
 				ppos = ppos2;
@@ -1662,6 +1668,7 @@ namespace http {
 			{
 				cmdparam = cmdparam.substr(0, ppos);
 			}
+			return true;
 		}
 
 		bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
@@ -1789,13 +1796,22 @@ namespace http {
 					if (myWebem->m_authmethod != AUTH_BASIC)
 					{
 						//Check if we need to bypass authentication (not when using basic-auth)
-						std::string cmdparam;
-						GetURICommandParameter(req.uri, cmdparam);
-						std::vector < std::string >::const_iterator itt;
-						for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
+						for (auto itt : myWebem->myWhitelistURLs)
 						{
-							if (cmdparam.find(*itt) == 0)
+							if (req.uri.find(itt) == 0)
+							{
 								return true;
+							}
+						}
+
+						std::string cmdparam;
+						if (GetURICommandParameter(req.uri, cmdparam))
+						{
+							for (auto itt : myWebem->myWhitelistCommands)
+							{
+								if (cmdparam.find(itt) == 0)
+									return true;
+							}
 						}
 						// Force login form
 						send_authorization_request(rep);
@@ -1841,14 +1857,22 @@ namespace http {
 			}
 
 			//Check if we need to bypass authentication (not when using basic-auth)
-			std::string cmdparam;
-			GetURICommandParameter(req.uri, cmdparam);
-			std::vector < std::string >::const_iterator itt;
-			for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
+			for (auto itt : myWebem->myWhitelistURLs)
 			{
-				if (cmdparam.find(*itt) == 0)
+				if (req.uri.find(itt) == 0)
 				{
 					return true;
+				}
+			}
+			std::string cmdparam;
+			if (GetURICommandParameter(req.uri, cmdparam))
+			{
+				for (auto itt : myWebem->myWhitelistCommands)
+				{
+					if (cmdparam.find(itt) == 0)
+					{
+						return true;
+					}
 				}
 			}
 
