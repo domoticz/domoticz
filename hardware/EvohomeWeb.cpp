@@ -1802,8 +1802,41 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 }
 
 
+void CEvohomeWeb::v1_renew_session()
+{
+	if (m_v1uid.empty()) {
+		v1_login(m_username, m_password);
+		return;
+	}
+
+	std::string sz_url = EVOHOME_HOST"/WebAPI/api/Session";
+	std::string sz_response = put_receive_data(sz_url, "", m_v1SessionHeaders);
+
+	if (sz_response[0] == '[') // response is an unnamed array - likely an error message
+	{
+		sz_response[0] = ' ';
+		size_t len = sz_response.size();
+		len--;
+		sz_response[len] = ' ';
+	}
+
+	Json::Value j_fi;
+	if (ParseJSon(sz_response.c_str(), j_fi))
+	{
+		if (j_fi.isMember("code") && (j_fi["code"].asString() != "-1"))
+		{
+			// session is no longer valid
+			_log.Debug(DEBUG_HARDWARE, "(%s) discard expired v1 API session ID", m_Name.c_str());
+			m_v1uid = "";
+		}
+	}
+}
+
+
 void CEvohomeWeb::get_v1_temps()
 {
+	v1_renew_session();
+
 	if (m_v1uid.empty() && !v1_login(m_username, m_password))
 		return;
 
@@ -1948,7 +1981,7 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 	if (sz_response.empty())
 	{
 		if (sz_retcode.empty()) // networking error
-			return "{\"error\":\"unable to connect to Evohome portal\"}";
+			return "{\"error\":\"Evohome portal did not return any data or status\",\"code\":\"-1\"}";
 
 		sz_response = "{\"error\":\"HTTP ";
 		sz_response.append(sz_retcode);
