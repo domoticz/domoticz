@@ -1,3 +1,7 @@
+[2.5.3]
+- Add timealert / errors for long running scripts
+- Add triggerHTTPResponse()
+
 [2.5.2]
 - Add actualWatt to replace WhActual (left in WhActual for compatibility reasons)
 - Add toBase64 and fromBase64 function in utils

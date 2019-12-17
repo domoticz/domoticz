@@ -227,6 +227,17 @@ describe('Domoticz', function()
 			assert.is_same({ { ['SendSMS'] = 'mes' } }, domoticz.commandArray)
 		end)
 
+	it('should create a url call when triggerHTTPResponse is called', function()
+		domoticz.commandArray = {}
+		domoticz.triggerHTTPResponse('call me Back',12,'hi there')
+		assert.is_same( { OpenURL = {	URL = 'http://127.0.0.1:8080/json.htm?type=command&param=addlogmessage&message=triggerHTTPResponse%3A+hi+there' ,
+										_after = 12,
+										_trigger = 'call me Back',
+										method = 'GET' 
+									} 
+						} , domoticz.commandArray[1])
+	end)
+
 		describe('openURL', function()
 
 			it('should open a simple url', function()
@@ -398,7 +409,6 @@ describe('Domoticz', function()
 			end)
 			assert.is_same({ "device1", "device2", "device3", "device4", "device5", "device6", "device7", "device8", "device9", "device9" }, res)
 
-
 			local found = collection.find(function(device)
 				return device.name == 'device8'
 			end)
@@ -504,7 +514,6 @@ describe('Domoticz', function()
 			end)
 			assert.is_same({ "Scene1", "Scene2" }, res)
 
-
 			local filtered = collection.filter(function(scene)
 				return scene.id < 2
 			end)
@@ -518,7 +527,6 @@ describe('Domoticz', function()
 			end)
 
 			assert.is_same({ 1 }, res2)
-
 
 			local reduced = collection.reduce(function(acc, device)
 				acc = acc + device.id
@@ -565,7 +573,6 @@ describe('Domoticz', function()
 				table.insert(res, group.name)
 			end)
 			assert.is_same({ "Group1", "Group2" }, values(res))
-
 
 			local filtered = collection.filter(function(group)
 				return group.id < 4
@@ -627,7 +634,6 @@ describe('Domoticz', function()
 			end)
 			assert.is_same({ "a", "b", "c", "var with spaces", "x", "y", "z"}, values(res))
 
-
 			local filtered = collection.filter(function(variable)
 				return variable.id < 4
 			end)
@@ -641,7 +647,6 @@ describe('Domoticz', function()
 			end)
 
 			assert.is_same({ 1, 2, 3 }, values(res2))
-
 
 			local reduced = collection.reduce(function(acc, device)
 				acc = acc + device.id
@@ -689,7 +694,6 @@ describe('Domoticz', function()
 			end)
 			assert.is_same({ "device1", "device2", "device5", "device6", "device7", "device8", "device9", "device9" }, values(res))
 
-
 			local filtered = collection.filter(function(device)
 				return device.id < 4
 			end)
@@ -703,7 +707,6 @@ describe('Domoticz', function()
 			end)
 
 			assert.is_same({ 1, 2}, res2)
-
 
 			local reduced = collection.reduce(function(acc, device)
 				acc = acc + device.id
@@ -751,7 +754,6 @@ describe('Domoticz', function()
 			end)
 			assert.is_same({ "a", "b", "c", "var with spaces", "x", "z",  }, values(res))
 
-
 			local filtered = collection.filter(function(var)
 				return var.id < 4
 			end)
@@ -765,7 +767,6 @@ describe('Domoticz', function()
 			end)
 
 			assert.is_same({ 1, 3 }, values(res2))
-
 
 			local reduced = collection.reduce(function(acc, var)
 				acc = acc + var.id
@@ -990,7 +991,7 @@ describe('Domoticz', function()
 		local res = domoticz.utils.toJSON(t)
 		assert.is_same('{"a":1}', res)
 	end)
-	
+
 	it('should dump a table to log', function()
 		local t = { a=1,b=2,c={d=3,e=4, "test"} }
 		local res = domoticz.utils.dumpTable(t,"> ")
@@ -1001,6 +1002,5 @@ describe('Domoticz', function()
 		assert.is_same(domoticz.utils.stringSplit("A-B-C", "-")[2],"B")
 		assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
 	end)
-
 
 end)
