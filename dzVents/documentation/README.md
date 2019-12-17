@@ -180,7 +180,7 @@ A list of one or more group-names or indexes. The same rules as devices apply.
 A list of one ore more time 'rules' like `every minute` or `at 17:*`. See [*timer* trigger rules](#timer_trigger_rules). If any or the rules matches with the current time/date then your execute function is called. E.g.: `on = { timer = { 'between 30 minutes before sunset and 30 minutes after sunrise' } }`.
 
 #### variables = { ... }
-A list of one or more user variable-names as defined in Domoticz ( *Setup > More options > User variables*). If any of the variables listed here changes, the script is executed. **Note**: Script will only execute when this variable is updated directly by dzVents or by a JSON. If updated with a standard Lua script (using commandArray) or in combination with a time option like afterXXX no event will be triggered.
+A list of one or more user variable-names as defined in Domoticz ( *Setup > More options > User variables*). If any of the variables listed here changes, the script is executed. **Note**: Script will only execute when this variable is updated directly by dzVents or by a JSON. If updated with a standard Lua script (using commandArray) or in combination with a time option like afterAAA no event will be triggered.
 
 #### security = { ... }
 A list of one or more of these security states:
@@ -513,7 +513,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **groups(idx/name)**: *Function*: A function returning a group by name or idx. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.groups()) do .. end`. Read more about [Groups](#Group).
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Shared helper functions](#Shared_helper_functions).
  - **log(message, [level])**: *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
- - **notify(subject, message, priority, sound, extra, subsystem)**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_xxx` types.
+ - **notify(subject, message, priority, sound, extra, subsystem)**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_subsystem` types.
  - **openURL(url/options)**: *Function*. Have Domoticz 'call' a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified.  If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about [asynchronous http requests](#Asynchronous_HTTP_requests)<sup>2.4.0</sup> with dzVents. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **scenes(idx/name)**: *Function*: A function returning a scene by name or id. Each scene has the same interface as a device. See [Device object API](#Device_object_API). To iterate over all scenes do: `domoticz.scenes().forEach(..)`. See [Looping through the collections: iterators]. (#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.scenes()) do .. end`. Read more about [Scenes](#Scene).
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
@@ -1093,11 +1093,11 @@ Many dzVents device methods support extra options, like controlling a delay or a
  - **forHour(hours), forMin(minutes), forSec(seconds)**: *Function*. Activates the command for the duration of hours, minutes or seconds. See table below for applicability and the warning on unexpected behavior of these functions.
  - **withinHour(hours), withinMin(minutes), withinSec(seconds)**: *Function*. Activates the command within a certain period (specified in hours, minutes or seconds) *randomly*. See table below for applicability.
  - **silent()**: *Function*. No follow-up events will be triggered: `mySwitch.switchOff().silent()`.
- - **repeatAfterHour(hours, [number]), repeatAfterMin(minutes, [number]), repeatAfterSec(seconds, [number])**: *Function*. Repeats the sequence *number* times after the specified duration (specified in hours, minutes, or seconds).  If no *number* is provided, 1 is used. **Note that `afterXXX()` and `withinXXX()` are only applied at the beginning of the sequence and not between the repeats!**
+ - **repeatAfterHour(hours, [number]), repeatAfterMin(minutes, [number]), repeatAfterSec(seconds, [number])**: *Function*. Repeats the sequence *number* times after the specified duration (specified in hours, minutes, or seconds).  If no *number* is provided, 1 is used. **Note that `afterAAA()` and `withinAAA()` are only applied at the beginning of the sequence and not between the repeats!**
 
 Note that the actual switching or changing of the device is done by Domoticz and not by dzVents. dzVents only tells Domoticz what to do; if the options are not carried out as expected, this is likely a Domoticz or hardware issue.
 
-**Important note when using forXXX()**: Let's say you have a light that is triggered by a motion detector.  Currently the light is `Off` and you do this: `light.switchOn().forMin(5)`. What happens inside Domoticz is this:  at t<sub>0</sub> Domoticz issues the `switchOn()` command and schedules a command to restore the **current** state at t<sub>5</sub> which is `Off`. So at t<sub>5</sub> it will switch the light off.
+**Important note when using forAAA()**: Let's say you have a light that is triggered by a motion detector.  Currently the light is `Off` and you do this: `light.switchOn().forMin(5)`. What happens inside Domoticz is this:  at t<sub>0</sub> Domoticz issues the `switchOn()` command and schedules a command to restore the **current** state at t<sub>5</sub> which is `Off`. So at t<sub>5</sub> it will switch the light off.
 
 If, however, *before the scheduled `switchOff()` happens at t<sub>5</sub>*, new motion is detected and you send this command again at t<sub>2</sub> then something unpredictable may seem to happen: *the light is never turned off!* This is what happens:
 
@@ -1122,16 +1122,16 @@ Some options are not available to all commands. All the options are available to
 
 | option                   | state changes            | update commands | user variables | updateSetpoint |  snapshot  | triggerIFTTT |
 |--------------------------|:------------------------:|:---------------:|:--------------:|:--------------:|:-----------|:-------------|
-| `afterXXX()`             |  •                       |  •              | •              | •              | •          | •            |
-| `forXXX()`               |  •                       |  n/a            | n/a            | n/a            | n/a        | n/a          |
-| `withinXXX()`            |  •                       |  •              | •              | •              | •          | n/a          |
+| `afterAAA()`             |  •                       |  •              | •              | •              | •          | •            |
+| `forAAA()`               |  •                       |  n/a            | n/a            | n/a            | n/a        | n/a          |
+| `withinAAA()`            |  •                       |  •              | •              | •              | •          | n/a          |
 | `silent()`               |  •                       |  •              | •              | n/a            | n/a        | n/a          |
-| `repeatAfterXXX()`       |  •                       |  n/a            | n/a            | n/a            | n/a        | n/a          |
+| `repeatAfterAAA()`       |  •                       |  n/a            | n/a            | n/a            | n/a        | n/a          |
 | `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            | n/a            | n/a        | n/a          |
 | `cancelQueuedCommands()` |  •                       |  •              | •              | n/a            | n/a        | n/a          |
 
-**Note**: XXX is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
-**Note**: for `domoticz.openURL()` only `afterXXX()` and `withinXXX()` is available.
+**Note**: AAA is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
+**Note**: for `domoticz.openURL()` only `afterAAA()` and `withinAAA()` is available.
 
 #### Follow-up event triggers
 Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add `.silent()` to your commands (exception is updateSetPoint).
@@ -1927,9 +1927,9 @@ When debug logging is enabled, every time dzVents kicks into action (Domoticz th
 Every time Domoticz starts dzVents and debug logging is enabled you should see these lines:
 ```
 dzVents version: x.y.z
-Event trigger type: xxxx
+Event trigger type: aaaa
 ```
-Where xxxx can be time, device, uservariable, security or scenegroup. That should give you a clue what kind of event is active. If you don't see this information then dzVents is not active (or debug logging is not active).
+Where aaaa can be time, device, uservariable, security or scenegroup. That should give you a clue what kind of event is active. If you don't see this information then dzVents is not active (or debug logging is not active).
 
 ### Script is still not executed
 If for some reason your script is not executed while all of the above is done, it is possible that your triggers are not correct. Either the time rule is not matching with the current time (try to set the rule to `every minute` or something simple), or the device name is not correct (check casing), or you use an id that doesn't exist. Note that in the `on` section, you cannot use the dzVents domoticz object!
@@ -2085,116 +2085,115 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
-
-##[2.5.3]
+## [2.5.3]
 - Add timealert / errors for long running scripts
 - Add triggerHTTPResponse()
 
-##[2.5.2]
+## [2.5.2]
 - Add actualWatt to replace WhActual (left in WhActual for compatibility reasons)
 - Add toBase64 and fromBase64 function in utils
 - Add setLogMarker function in utils
 - Deprecated increaseBrightness(), decreaseBrightness(), discomode methods (only available for Yeelight and left devices stateless)
 
-##[2.5.1]
+## [2.5.1]
 - Added `toXML` and `fromXML` methods to domoticz.utils.
 - Add attributes isXML, xmlVersion, xmlEncoding
 
-##[2.5.0]
+## [2.5.0]
 - Prepared for Lua 5.3
 
-##[2.4.29]
+## [2.4.29]
 - Add error message including affected module when module got corrupted on disk.
 - Add setLevel method for switchTypes.
 - Increased resilience against badly formatted type Time user-variables.
 - Use native domoticz command for increaseCounter method.
 - Set inverse of "set color" to Off to enable use of toggleSwitch for RGB type of devices.
 
-##[2.4.28]
+## [2.4.28]
 - Add deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods in utils
 - increased httpResponse resilience against different use of Upper-, Lowercase in headers['content-type'] to ensure JSON conversion to Lua table
 
-##[2.4.27]
+## [2.4.27]
 - Add attribute protected for devices / scenes and groups
 - Add methods protectionOn and protectionOff for devices / scenes and groups
 - Add functions rightPad, leftPad, centerPad, leadingZeros, numDecimals in utils
 
-##[2.4.26]
+## [2.4.26]
 - Add Smoke Detector device (activate and reset functions )
 
-##[2.4.25]
+## [2.4.25]
 - Add rawDateTime
 - fix for combined device / civil[day|night]time trigger rule
 - fix for checkFirst on stopped status
 
-##[2.4.24]
+## [2.4.24]
 - Add method rename for devices, user-variables , scenes and groups
 
-##[2.4.23]
+## [2.4.23]
 - Add method setMode for evohome device
 - Add method incrementCounter for incremental counter
 - Prepared for Firebase notifications. Firebase (fcm) is the replacement for Google Cloud Messaging gcm)
 - fix wildcard device
 
-##[2.4.22]
+## [2.4.22]
 - selector.switchSelector method accepts levelNames
 - increased selector.switchSelector resilience
 - fix wildcard timerule
 
-##[2.4.21]
+## [2.4.21]
 - fixed wrong direction for open() and close() for some types of blinds
 - Add inTable function to domoticz.utils
 - Add sValue attribute to devices
 
-##[2.4.20]
+## [2.4.20]
 - Add quietOn() and quietOff() method to switchType devices
 
-##[2.4.19]
+## [2.4.19]
 - Add stringSplit function to domoticz.utils.
 - Add statusText and protocol to HTTPResponse
 
-##[2.4.18]
+## [2.4.18]
 - Add triggerIFTTT() to domoticz
 
-##[2.4.17]
+## [2.4.17]
 - Add dumpTable() to domoticz.utils
 - Add setValues for devices
 - Add setIcon for devices
 
-##[2.4.16]
+## [2.4.16]
 - Add method dump() to domoticz (dumps settings)
 - Add setHue, setColor, setHex, getColor for RGBW(W) devices
 - Add setDescription for devices, groups and scenes
 - Add volumeUp / volumeDown for Logitech Media Server (LMS)
 - Changed domoticz.utils.fromJSON (add optional fallback param)
 
-##[2.4.15]
+## [2.4.15]
 - Add option to use camera name in snapshot command
 - Add domoticz.settings.domoticzVersion
 - Add domoticz.settings.dzVentsVersion
 
 
-##[2.4.14]
+## [2.4.14]
 - Added domoticz.settings.location.longitude and domoticz.settings.location.latitude
 - Added check for- and message when call to openURL cannot open local (127.0.0.1)
 - **BREAKING CHANGE** :Changed domoticz.settings.location to domoticz.settings.location.name (domoticz settings location Name)
 - prevent call to updateCounter with table
 
-##[2.4.13]
+## [2.4.13]
 - Added domoticz.settings.location (domoticz settings location Name)
 - Added domoticz.utils.urlDecode method to convert a string with escaped chars (%20, %3A and the likes) to human readable format
 
-##[2.4.12]
+## [2.4.12]
 - Added managed Counter (to counter)
 
-##[2.4.11]
-- Added snapshot command to send Email with camera snapshot ( afterXXX() and withinXXX() options available)
+## [2.4.11]
+- Added snapshot command to send Email with camera snapshot ( afterAAA() and withinAAA() options available)
 
-##[2.4.10]
-- Added option to use afterXXX() and withinXXX() functions to updateSetPoint() <sup>needs domoticz V4.10360 or newer</sup>
+## [2.4.10]
+- Added option to use afterAAA() and withinAAA() functions to updateSetPoint() <sup>needs domoticz V4.10360 or newer</sup>
 - Changed function updateMode to display mode as string in domoticz log
 
-##[2.4.9]
+## [2.4.9]
 - Added evohome hotwater device (state, mode, untilDate and setHotWater function)
 - Added mode and untilDate for evohome zone devices
 - Added EVOHOME_MODE_FOLLOW_SCHEDULE as mode for evohome devices
@@ -2203,39 +2202,39 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - bugfix for time ( twilightstart and twilightend handling)
 - Fixed some date-range rule checking
 
-##[2.4.8]
+## [2.4.8]
 - Added telegram as option for domoticz.notify
 
-##[2.4.7]
+## [2.4.7]
 - Added support for civil twilight in rules
 
-##[2.4.6]
+## [2.4.6]
 - Added Youless device
 - Added more to the documentation section for http requests
 - Made sure global_data is the first module to process. This fixes some unexpected issues if you need some globals initialized before the other scripts are loaded.
 
-##[2.4.5]
+## [2.4.5]
 - Fixed a bug in date ranges for timer triggers (http://domoticz.com/forum/viewtopic.php?f=59&t=23109).
 
-##[2.4.4]
+## [2.4.4]
 - Fixed rawTime and rawData so it shows leading zeros when values are below 10.
 - Fixed one wildcard issue. Should now work as expected.
 - Fixed a problem in Domoticz where you couldn't change the state of some door contact-like switches using the API or dzVents. That seems to work now.
 
-##[2.4.3]
+## [2.4.3]
 - Fixed trigger wildcards. Now you can do `*aa*bb*cc` or `a*` which will require the target to start with an `a`
 - Added more EvoHome device types to the EvoHome device adapter.
 
-##[2.4.2]
+## [2.4.2]
 - Fixed RGBW device adapter
 - Fixed EvoHome device adapter
 - Changed param ordering opentherm gateway command (https://www.domoticz.com/forum/viewtopic.php?f=59&t=21620&p=170469#p170469)
 
-##[2.4.1]
+## [2.4.1]
 - Fixed week number problems on Windows
 - Fixed 'on date' rules to support dd/mm format (e.g. 01/02)
 
-##[2.4.0]
+## [2.4.0]
 
 - **BREAKING CHANGE**: The second parameter passed to the execute function is no longer `nil` when the script was triggered by a timer or a security event. Please check your scripts. The second parameter has checks to determine the type. E.g. `execute = function(domoticz, item) .. end`. You can inspect `item` using: `item.isDevice`, `item.isTimer`, `item.isVariable`, `item.isScene`, `item.isGroup`, `item.isSecurity`, `item.isHTTPResponse`. Please read the documentation about the execute function.
 - Added ``.cancelQueuedCommands()`` to devices, groups, scenes and variables. Calling this method will cancel any scheduled future commands issued using for instance `.afterMin(10)` or `.repeatAfterMin(1, 4)`
@@ -2246,7 +2245,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - Moved utility functions from the domoticz object to `domoticz.utils` object. You will see a deprecation warning when using the old function like `round()`, `toCelsius()` etc.
 - Added `lodash` as a method to `domoticz.utils`: `domoticz.utils._`
 - Added `toJSON` and `fromJSON` methods to domoticz.utils.
-- Added `afterXXX()` and `withinXXX()` support for device-update commands. E.g.: `myTextDevice.updateText('Zork').afterMin(2)`.
+- Added `afterAAA()` and `withinAAA()` support for device-update commands. E.g.: `myTextDevice.updateText('Zork').afterMin(2)`.
 - Added support for Logitech Media Server devices (thanks to Eoreh).
 - Added new timer rules: date rules: `on 13/07`, `on */03`, `on 12/*`, `on 12/04-22/09`, `on -24/03`, `on 19/11-`, week rules: `in week 12,15,19-23,-48,53-`, `every even week`, `every odd week`. See documentation.
 - Added historical data helper `delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)` to have a bit more control over smoothing. You can specify if want to smooth either the start value (reference) and/or the to value (compared value).
@@ -2254,7 +2253,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness and discoMode. See the documentation.
 - Added device adapter for Onkyo receiver hardware.
 - Added `scriptName` to the triggerInfo object passed as the third parameter to the execute function. This holds the name of the script being executed.
-- Fixed bug in Domoticz where using forXXX() with selector switches didn't always work.
+- Fixed bug in Domoticz where using forAAA() with selector switches didn't always work.
 - Fixed bug in Domoticz where improper states were passed to the event scripts. This may happen on slower machines where several devices may have been updated before the event-system had a change to operate on them. In that case the event scripts received the current final state instead of the state at the moment of the actual event.
 - Added support for webroot. dzVents will now use the proper API url when domoticz is started with the -webroot switch.
 - Added support for event-bursts. If (on slower machines) events get queued up in Domoticz, they will be sent to dzVents in one-package. This makes event processing significantly faster.
@@ -2264,7 +2263,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - Added and documented `domoticz.settings.url`, `domoticz.settings.webRoot` and `domoticz.settings.serverPort`.
 - Removed fixed limit on historical variables if there is a limit specified.
 
-##[2.3.0]
+## [2.3.0]
 
  - Added `active` attribute to devices (more logical naming than the attribute 'bState'). `myDevice.active` is true or false depending on a set of known state values (like On, Off, Open, Closed etc). Use like `if mySwitch.active then .. end`
  - Added `domoticz.urlEncode` method on the `domoticz` object so you can prepare a string before using it with `openURL()`.
@@ -2294,7 +2293,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Fixed the confusing setting for enabling/disabling dzVents event system in Domoticz settings.
  - Fixed a problem where if you have two scripts for a device and one script uses the name and the other uses the id as trigger, the id-based script wasn't executed.
 
-##[2.2.0]
+## [2.2.0]
 
  - Fixed typo in the doc WActual > WhActual.
  - Updated switch adapter to match more switch-like devices.
@@ -2311,14 +2310,14 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Fixed bug in check battery levels example.
  - Fixed some irregularities with dimmer levels.
 
-##[2.1.1]
+## [2.1.1]
 
  - Fixed typo in the doc WActual > WhActual.
  - Updated switch adapter to match more switch-like devices.
  - Added Z-Wave Thermostat mode device adapter.
  - Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
 
-##[2.1.0]
+## [2.1.0]
 
  - Added support for switching RGB(W) devices (including Philips/Hue) to have toggleSwitch(), switchOn() and switchOff() and a proper level attribute.
  - Added support for Ampère 1 and 3-phase devices
@@ -2340,7 +2339,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Fixed boiler example to fallback to the current temperature when there is no history data yet when it calculates the average temperature.
  - Use different api command for setting setPoints in the Thermostat setpoint device adapter.
 
-##[2.0.0] Domoticz integration
+## [2.0.0] Domoticz integration
 
  - Almost a complete rewrite.
  - **BREAKING CHANGE**: Accessing a device, scene, group, variable, changedDevice, or changedVariable has been changed: instead of doing `domoticz.devices['myDevice']` you now have to call a function: `domoticz.devices('myDevice')`. This applies also for the other collections: `domoticz.scenes(), domoticz.groups(), domoticz.changedDevices(), domoticz.changedVariables()`. If you want to loop over these collection **you can no longer use the standard Lua for..pairs or for..ipairs construct**. You have to use the iterators like forEach, filter and reduce: `domoticz.devices().forEach(function() .. end)` (see [Looping through the collections: iterators](#Looping_through_the_collections:_iterators)). This was a necessary change to make dzVents a whole lot faster in processing your event scripts. **So please change your existing dzVents scripts!**
@@ -2371,18 +2370,18 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Add support for subsystem selection for domoticz.notify function.
  - Fixed a bug where a new persistent variable wasn't picked up when that variable was added to an already existing data section.
 
-##[1.1.2]
+## [1.1.2]
 
  - More robust way of updating devices.lua
  - Added device level information for non-dimmer-like devices
 
-##[1.1.1]
+## [1.1.1]
 
  - Added support for a devices table in the 'on' section.
  - Added extra log level for only showing information about the execution of a script module.
  - Added example script for System-alive checker notifications (preventing false negatives).
 
-##[1.1]
+## [1.1]
 
  - Added example script for controlling the temperature in a room with hysteresis control.
  - Fixed updateLux (thanks to neutrino)
@@ -2390,19 +2389,19 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Fixed updateCounter
  - Added counterToday and counterTotal attributes for counter devices. Only available when http fetching is enabled. See [Using dzVents with Domoticz](#Using_dzVents_with_Domoticz).
 
-##[1.0.2]
+## [1.0.2]
 
  - Added device description attribute.
  - Added support for setting the setpoint for opentherm gateway.
  - Added timedOut boolean attribute to devices. Requires http data fetching to be enabled. See [Using dzVents with Domoticz](#Using_dzVents_with_Domoticz).
  - Properly detects usage devices and their Wattage.
 
-##[1.0.1]
+## [1.0.1]
 
  - Added updateCustomSensor(value) method.
  - Fixed reset() for historical data.
 
-##[1.0][1.0-beta2]
+## [1.0][1.0-beta2]
 
  - Deprecated setNew(). Use add() instead. You can now add multiple values at once in a script by calling multiple add()s in succession.
  - Fixed printing device logs when a value was boolean or nil
@@ -2411,7 +2410,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Added couple of helper properties on Time object. See README.
  - Renamed the file dzVents_settings.lua to dzVents_settings_example.lua so you don't overwrite your settings when you copy over a new version of dzVents to your system.
 
-##[1.0-beta1]
+## [1.0-beta1]
 
  - Added data persistence for scripts between script runs (see readme for more info)
  - Added a time-line based data type for you scripts with historical information and many statistical functions for retreiving information like average, minumum, maximum, delta, data smoothing (averaging values over neighbours) etc. See readme for more information.
@@ -2429,33 +2428,33 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Added scenes and groups collections to the domoticz object
  - Added Quick Reference Guide.
 
-##[0.9.13]
+## [0.9.13]
 
  - Fixed some timer functions
 
-##[0.9.12]
+## [0.9.12]
 
  - Fixed a bug with log level printing. Now errors are printed.
  - Added setPoint, heatingMode, lux, WhTotal, WhToday, WActual attributes to devices that support it. No need to access rawData for these anymore.
 
-##[0.9.11]
+## [0.9.11]
 
  - Added log method to domoticz object. Using this to log message in the Domoticz log will respect the log level setting in the settings file. [dannybloe]
  - Updated readme. Better overview, more attributes described.
  - Added iterator functions (forEach and filter) to domoticz.devices, domoticz.changedDevices and domoticz.variables to iterate or filter more easily over these collections.
  - Added a couple of example scripts.
 
-##[0.9.10]
+## [0.9.10]
 
  - A little less verbose debug logging. Domoticz seems not to print all message in the log. If there are too many they may get lost. [dannybloe]
  - Added method fetchHttpDomoticzData to domoticz object so you can manually trigger getting device information from Domoticz through http. [dannybloe]
  - Added support for sounds in domoticz.notify(). [WebStarVenlo]
 
-##[0.9.9]
+## [0.9.9]
 
  - Fixed a bug where every trigger name was treated as a wild-carded name. Oopsidayzy...
 
-##[0.9.8]
+## [0.9.8]
 
  - Fixed a bug where a device can have underscores in its name.
  - Added dimTo(percentage) method to control dimmers.
