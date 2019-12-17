@@ -1,8 +1,9 @@
-Version 4.xxxxx (xxx 2019)
+Version 4.1xxxx (xxx 20xx) see https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 - Implemented: DarkSky CloudCover sensor
 - Implemented: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
 - Implemented: Floorplan, add support for SVG
 - Implemented: GUI, OpenZWave added Refresh Node Information button, styling
+- Implemented: Hue, Add Support for Geo fence sensor, dimmer switches and Hue LCG002 GU10 spot
 - Implemented: RTL433, added Power (Watt) type
 - Implemented: RTL433, added rainfall_mm type
 - Implemented: OZW, JSON call to retrieve current battery levels for all nodes
@@ -12,7 +13,9 @@ Version 4.xxxxx (xxx 2019)
 - Implemented: OZW, Support for Volatile_Organic_Compound (CO2, ppm)
 - Implemented: BuienRadar
 - Implemented: Sun/Rain icons
-- Fixed: Gui, Choosing Icon for ARC type switches
+- Implemented: Add support for Belgian and Luxembourgian P1 meters
+- Fixed: API, allow variabletype to be entered as text or integer in adduservariable and updateuservariable (#3320)
+- Fixed: GUI, Choosing Icon for ARC type switches
 - Fixed: GUI, Dashboard icon incremental counter (energy generated) not correct (#3231)
 - Fixed: GUI, device table initial order column
 - Fixed: GUI, Switch Log, date parsing in device log (#3206)
@@ -22,11 +25,16 @@ Version 4.xxxxx (xxx 2019)
 - Fixed: GUI, Weight Log now displays correct Unit (#3211)
 - Fixed: GUI, OpenZWave Abort Include/Exclude button
 - Fixed: Blockly, handling incorrect time field
-- Fixed: YouLess, possible buffer overflow (#3261)
-- Fixed: notification, Telegram error when odd number of underscores in text
-- Fixed: API, allow variabletype to be entered as text or integer in adduservariable and updateuservariable (#3320)
+- Fixed: Youless, possible buffer overflow (#3261)
+- Fixed: Evohome Web for updated library
+- Fixed: Telegram notification when odd number of underscores in text
+- Fixed: PhilipsHue
+- Updated: Translations
+- Updated: Update domoticz script now running directly in background
+- Updated: Mosquitto to 1.68
 - Updated: OpenZWave version 1.6
-- Updated: dzVents (version 2.5.2 for Lua 5.3) See dzVents/documentation/history.md)
+- Updated: Lua version 5.3
+- Updated: dzVents version 2.5.3 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)

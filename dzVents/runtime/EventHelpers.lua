@@ -29,7 +29,7 @@ local function EventHelpers(domoticz, mainMethod)
 	local _url = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
 
 	local settings = {
-		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or  1,
+		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or 1,
 		['Domoticz url'] = _url,
 		url = url,
 		webRoot = tostring(webRoot),
@@ -392,10 +392,19 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			triggerInfo = eventHandler.trigger and ', trigger: ' .. eventHandler.trigger or ''
-
-			utils.log('------ Start ' ..  scriptType ..  moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
+			local clockTimeStampAtStart = os.clock()
+			local timeStampAtStart = os.time()
+			utils.log('------ Start ' .. scriptType .. moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
 			self.callEventHandler(eventHandler, device, variable, security, scenegroup, httpResponse)
-			utils.log('------ Finished ' .. moduleLabel, utils.LOG_MODULE_EXEC_INFO)
+			local clockTimeSpend = os.clock() - clockTimeStampAtStart
+			local realTimeSpend = os.time() - timeStampAtStart
+			if realTimeSpend > 9 or clockTimeSpend > 7 then
+				utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_ERROR)
+			elseif realTimeSpend > 6 or clockTimeSpend > 5 then
+				utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_FORCE)
+			else
+				utils.log('------ Finished ' .. moduleLabel , utils.LOG_MODULE_EXEC_INFO)
+			end
 
 			restoreLogging()
 		end

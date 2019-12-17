@@ -25,7 +25,7 @@ end
 return {
 	on = {
 		devices = { 'vdHTTPSwitch' },
-		httpResponses = {'trigger1', 'trigger2','trigger3'}
+		httpResponses = {'trigger1', 'trigger2','trigger3', 'vdHTTPSwitch'}
 	},
 	execute = function(domoticz, item)
 
@@ -61,9 +61,15 @@ return {
 				res = res and expectEql(item.statusCode, 6, 'statusCode')
 				if (res) then domoticz.globalData.httpTrigger = domoticz.globalData.httpTrigger .. "OK"  end
 		
+            elseif (item.callback == 'vdHTTPSwitch') then
+				res = res and expectEql(item.statusCode, 200, 'statusCode')
+				if (res) then domoticz.globalData.httpTrigger = domoticz.globalData.httpTrigger .. "OK"  end
+		
 			end
 		
 		elseif item.isDevice then
+            domoticz.triggerHTTPResponse(item.name, 4, item.state )
+            
 			domoticz.openURL({
 				url = 'http://localhost:4000/testget?p=1',
 				method = 'GET',

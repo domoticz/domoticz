@@ -542,6 +542,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **sunsetInMinutes**: *Number*. Number of minutes since midnight when the sun will set.
     - **civTwilightStartInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.
     - **civTwilightEndInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
+ - **triggerHTTPResponse([httpResponse], [delay], [message])**: <sup>2.5.3</sup> *Function*. Creates a callback by sending a logmessage. httpResponse defaults to scriptname, delay defaults to 0 (immediate), message defaults to httpResponse.  
  - **triggerIFTTT(makerName [,sValue1, sValue2, sValue3])**: *Function*. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
        Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder.
@@ -608,6 +609,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **toJSON(luaTable)**: *Function*. <sup>2.4.0</sup> Converts a Lua table to a json string.
 	- **toXML(luaTable, [header])**: *Function*. <sup>2.5.1</sup> Converts a Lua table to a xml string.
     - **urlDecode(s)**: <sup>2.4.13</sup> *Function*. Simple deCoder to convert a string with escaped chars (%20, %3A and the likes) to human readable format
+
     - **urlEncode(s, [strSub])**: *Function*. Simple url encoder for string so you can use them in `openURL()`. `strSub` is optional and defaults to + but you can also pass %20 if you like/need.
     - **variableExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid variableID or ID when entered with valid variableName or false when not a variableID or variableName of an existing variable
     - **leadingZeros(number, length)**: *Function*: <sup>2.4.27</sup> Precede number with given zeros to given length.
@@ -2083,6 +2085,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+##[2.5.3]
+- Add timealert / errors for long running scripts
+- Add triggerHTTPResponse()
 
 ##[2.5.2]
 - Add actualWatt to replace WhActual (left in WhActual for compatibility reasons)

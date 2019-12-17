@@ -321,6 +321,20 @@ local function Domoticz(settings)
 		end
 	end
 
+	function self.triggerHTTPResponse(httpResponse, delay, message)
+		local httpResponse = httpResponse or _G.moduleLabel
+		local delay = delay or 0
+		local message = 'triggerHTTPResponse: ' .. (message or httpResponse)
+		local url = self.settings['Domoticz url'] .. '/json.htm?type=command&param=addlogmessage&message=' .. self.utils.urlEncode(message)
+				self.openURL  
+				(
+					{
+						url = url,
+						callback = httpResponse,
+					}
+				).afterSec(delay)
+	end
+
 	-- have domoticz send snapshot
 	function self.snapshot(cameraID, subject)
 		if tostring(cameraID):match("%a") then
