@@ -1138,18 +1138,78 @@ light.switchOn().checkFirst().forMin(5)
 #### Availability
 Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices and snapshot command silent() is not available.  See table below
 
-| option                   | state changes            | update commands | user variables | updateSetpoint |  snapshot  | triggerIFTTT |
-|--------------------------|:------------------------:|:---------------:|:--------------:|:--------------:|:-----------|:-------------|
-| `afterAAA()`             |  •                       |  •              | •              | •              | •          | •            |
-| `forAAA()`               |  •                       |  n/a            | n/a            | n/a            | n/a        | n/a          |
-| `withinAAA()`            |  •                       |  •              | •              | •              | •          | n/a          |
-| `silent()`               |  •                       |  •              | •              | n/a            | n/a        | n/a          |
-| `repeatAfterAAA()`       |  •                       |  n/a            | n/a            | n/a            | n/a        | n/a          |
-| `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            | n/a            | n/a        | n/a          |
-| `cancelQueuedCommands()` |  •                       |  •              | •              | n/a            | n/a        | n/a          |
+```{=mediawiki}
 
-**Note**: AAA is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
-**Note**: for `domoticz.openURL()` only `afterAAA()` and `withinAAA()` is available.
+{| class="wikitable" 
+!width="17%"| option
+!align="center" width="12%"| state changes
+!align="center" width="12%"| update commands
+!align="center" width="12%"| user variables
+!align="center" width="12%"| updateSetpoint
+!align="center" width="12%"| snapshot
+!align="center" width="12%"| triggerIFTTT
+|-
+| <code>afterAAA()</code><sup>1</sup>
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|-
+| <code>forAAA()</code>
+|align="center"| •
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|-
+| <code>withinAAA()</code>
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| n/a
+|-
+| <code>silent()</code>
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|-
+| <code>repeatAfterAAA()</code>
+|align="center"| •
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|-
+| <code>checkFirst()</code>
+|align="center"| • <sup>2</sup>
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|-
+| <code>cancelQueuedCommands()</code>
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| n/a
+|align="center"| n/a
+|align="center"| n/a
+|}
+```
+
+#### Notes on table
+ - **Note 1**: AAA is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
+ - **Note 2**: for `domoticz.openURL()` only `afterAAA()` and `withinAAA()` is available.
 
 #### Follow-up event triggers
 Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add `.silent()` to your commands (exception is updateSetPoint).
@@ -1634,28 +1694,116 @@ Suppose you store temperatures in the historical variable. These temperatures ma
     Range=1 for time10 = (25 + 31 + 29) / 3 = 28,3
     Range=2 for time10 = (16 + 25 + 31 + 29 + 26) / 5 = 25,4
 
-| Time | Raw | Range=1 | Range=2 |
-|------|-----|---------|---------|
-| 1    | 18  | 20,0    | 21,7    |
-| 2    | 22  | 21,7    | 25,0    |
-| 3    | 25  | 27,3    | 24,6    |
-| 4    | 35  | 27,7    | 26,6    |
-| 5    | 23  | 28,7    | 27,6    |
-| 6    | 28  | 26,0    | 25,8    |
-| 7    | 27  | 23,7    | 23,8    |
-| 8    | 16  | 22,7    | 25,4    |
-| 9    | 25  | 24,0    | 25,6    |
-| 10   | 31  | 28,3    | 25,4    |
-| 11   | 29  | 28,7    | 29,2    |
-| 12   | 26  | 30,0    | 30,2    |
-| 13   | 35  | 30,3    | 30,2    |
-| 14   | 30  | 32,0    | 30,4    |
-| 15   | 31  | 30,3    | 30,8    |
-| 16   | 30  | 29,7    | 28,2    |
-| 17   | 28  | 26,7    | 28,6    |
-| 18   | 22  | 27,3    | 26,2    |
-| 19   | 32  | 24,3    | 25,3    |
-| 20   | 19  | 25,5    | 24,3    |
+```{=mediawiki}
+
+{| class="wikitable" style="text-align: center; align="center" width="30% height:10px;"
+! style="text-align: center; background:darkblue; color:white" align="center" width="12%"| time
+! style="text-align: center; background:darkblue; color:white" align="center" width="12%"align="center" width="12%"| raw
+! style="text-align: center; background:darkblue; color:white" align="center" width="12%"align="center" width="12%"| range=1
+! style="text-align: center; background:darkblue; color:white" align="center" width="12%"align="center" width="12%"| range=2
+|-
+| '''1'''
+| 18
+| 20,0
+| 21,7
+|-
+| '''2'''
+| 22
+| 21,7
+| 25,0
+|-
+| '''3'''
+| 25
+| 27,3
+| 24,6
+|-
+| '''4'''
+| 35
+| 27,7
+| 26,6
+|-
+| '''5'''
+| 23
+| 28,7
+| 27,6
+|-
+| '''6'''
+| 28
+| 26,0
+| 25,8
+|-
+| '''7'''
+| 27
+| 23,7
+| 23,8
+|-
+| '''8'''
+| 16
+| 22,7
+| 25,4
+|-
+| '''9'''
+| 25
+| 24,0
+| 25,6
+|-
+| '''10'''
+| 31
+| 28,3
+| 25,4
+|-
+| '''11'''
+| 29
+| 28,7
+| 29,2
+|-
+| '''12'''
+| 26
+| 30,0
+| 30,2
+|-
+| '''13'''
+| 35
+| 30,3
+| 30,2
+|-
+| '''14'''
+| 30
+| 32,0
+| 30,4
+|-
+| '''15'''
+| 31
+| 30,3
+| 30,8
+|-
+| '''16'''
+| 30
+| 29,7
+| 28,2
+|-
+| '''17'''
+| 28
+| 26,7
+| 28,6
+|-
+| '''18'''
+| 22
+| 27,3
+| 26,2
+|-
+| '''19'''
+| 32
+| 24,3
+| 25,3
+|-
+| '''20'''
+| 19
+| 25,5
+| 24,3
+|}
+
+```
 
 A chart illustrates it more clearly. The red line is not smoothed and has more spikes than the others:
 
@@ -2483,6 +2631,6 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Added http request data from Domoticz to devices. Now you can check the battery level and switch type and more. Make sure to edit dzVents_settings.lua file first and check the readme for install instructions!!!
  - Added log level setting in dzVents_settings.lua
 
-#[0.9.7]
+## [0.9.7]
 
  - Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
