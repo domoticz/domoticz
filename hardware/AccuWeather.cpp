@@ -136,10 +136,7 @@ std::string CAccuWeather::GetLocationKey()
 	sURL << "https://dataservice.accuweather.com/locations/v1/search?apikey=" << m_APIKey << "&q=" << szLoc;
 	try
 	{
-		bool bret;
-		std::string szURL = sURL.str();
-		bret = HTTPClient::GET(szURL, sResult);
-		if (!bret)
+		if (!HTTPClient::GET(sURL.str(), sResult))
 		{
 			Log(LOG_ERROR, "Error getting http data!");
 			return "";
@@ -203,10 +200,7 @@ void CAccuWeather::GetMeterDetails()
 	sURL << "https://dataservice.accuweather.com/currentconditions/v1/" << szLoc << "?apikey=" << m_APIKey << "&details=true";
 	try
 	{
-		bool bret;
-		std::string szURL = sURL.str();
-		bret = HTTPClient::GET(szURL, sResult);
-		if (!bret)
+		if (!HTTPClient::GET(sURL.str(), sResult))
 		{
 			Log(LOG_ERROR, "Error getting http data!");
 			return;

@@ -163,10 +163,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 	std::stringstream sURL;
 	sURL << "http://" << m_szIPAddress << "/production.json";
 
-	bool bret;
-	std::string szURL = sURL.str();
-	bret = HTTPClient::GET(szURL, sResult);
-	if (!bret)
+	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
 		return false;

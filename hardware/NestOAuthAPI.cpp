@@ -162,25 +162,18 @@ bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string & /*accesstoken
 	std::string sResult;
 
 	// Let's get a list of structures to see if the supplied Access Token works
-	try {
-		std::string sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_OAuthApiAccessToken;
-		_log.Log(LOG_NORM, "NestOAuthAPI: Trying to access API on " + sURL);
-		std::vector<std::string> ExtraHeaders;
-		std::vector<std::string> vHeaderData;
+	std::string sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_OAuthApiAccessToken;
+	_log.Log(LOG_NORM, "NestOAuthAPI: Trying to access API on " + sURL);
+	std::vector<std::string> ExtraHeaders;
+	std::vector<std::string> vHeaderData;
 
-		HTTPClient::GET(sURL, ExtraHeaders, sResult, vHeaderData, false);
-		if (sResult.empty()) {
-			std::string sErrorMsg = "Got empty response body while getting structures. ";
-			if (!vHeaderData.empty()) {
-				sErrorMsg += "Response code: " + vHeaderData[0];
-			}
-			throw std::runtime_error(sErrorMsg.c_str());
-		}
-	}
-	catch (std::exception& e)
+	if ((!HTTPClient::GET(sURL, ExtraHeaders, sResult, vHeaderData, false))||(sResult.empty()))
 	{
-		std::string what = e.what();
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Error while performing login: " + what);
+		std::string sErrorMsg = "Got empty response body while getting structures.";
+		if (!vHeaderData.empty()) {
+			sErrorMsg += " Response code: " + vHeaderData[0];
+		}
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error while performing login: %s", sErrorMsg.c_str());
 		return false;
 	}
 

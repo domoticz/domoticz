@@ -113,32 +113,85 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_COOKIEJAR, domocookie.c_str());
 }
 
+struct _tHTTPErrors {
+	const uint16_t http_code;
+	const char* szMeaning;
+};
+
+const _tHTTPErrors HTTPCodes[] = {
+	{ 300, "Multiple Choices" },
+	{ 301, "Moved Permanently" },
+	{ 302, "Found" },
+	{ 303, "See Other" },
+	{ 304, "Not Modified" },
+	{ 305, "Use Proxy" },
+	{ 306, "(Unused)" },
+	{ 307, "Temporary Redirect" },
+	{ 308, "Permanent Redirect(experimental)" },
+	{ 400, "Bad Request" },
+	{ 401, "Unauthorized" },
+	{ 402, "Payment Required" },
+	{ 403, "Forbidden" },
+	{ 404, "Not Found" },
+	{ 405, "Method Not Allowed" },
+	{ 406, "Not Acceptable" },
+	{ 407, "Proxy Authentication Required" },
+	{ 408, "Request Timeout" },
+	{ 409, "Conflict" },
+	{ 410, "Gone" },
+	{ 411, "Length Required" },
+	{ 412, "Precondition Failed" },
+	{ 413, "Request Entity Too Large" },
+	{ 414, "Request - URI Too Long" },
+	{ 415, "Unsupported Media Type" },
+	{ 416, "Requested Range Not Satisfiable" },
+	{ 417, "Expectation Failed" },
+	{ 418, "I'm a teapot (RFC 2324)" },
+	{ 420, "Enhance Your Calm(Twitter)" },
+	{ 422, "Unprocessable Entity(WebDAV)" },
+	{ 423, "Locked(WebDAV)" },
+	{ 424, "Failed Dependency(WebDAV)" },
+	{ 425, "Reserved for WebDAV" },
+	{ 426, "Upgrade Required" },
+	{ 428, "Precondition Required" },
+	{ 429, "Too Many Requests" },
+	{ 431, "Request Header Fields Too Large" },
+	{ 444, "No Response(Nginx)" },
+	{ 449, "Retry With(Microsoft)" },
+	{ 450, "Blocked by Windows Parental Controls(Microsoft)" },
+	{ 451, "Unavailable For Legal Reasons" },
+	{ 499, "Client Closed Request(Nginx)" },
+	{ 500, "Internal Server Error" },
+	{ 501, "Not Implemented" },
+	{ 502, "Bad Gateway" },
+	{ 503, "Service Unavailable" },
+	{ 504, "Gateway Timeout" },
+	{ 505, "HTTP Version Not Supported" },
+	{ 506, "Variant Also Negotiates(Experimental)" },
+	{ 507, "Insufficient Storage(WebDAV)" },
+	{ 508, "Loop Detected(WebDAV)" },
+	{ 509, "Bandwidth Limit Exceeded(Apache)" },
+	{ 510, "Not Extended" },
+	{ 511, "Network Authentication Required" },
+	{ 598, "Network read timeout error" },
+	{ 599, "Network connect timeout error" },
+	{ 0, nullptr }
+};
+
 void HTTPClient::LogError(const long response_code)
 {
-	switch (response_code)
+	const _tHTTPErrors* pCodes = (const _tHTTPErrors*)&HTTPCodes;
+
+	while (pCodes[0].http_code != 0)
 	{
-	case 400:
-		_log.Debug(DEBUG_NORM, "HTTP 400: Bad Request");
-		break;
-	case 401:
-		_log.Debug(DEBUG_NORM, "HTTP 401: Unauthorized. Authentication is required, has failed or has not been provided");
-		break;
-	case 403:
-		_log.Debug(DEBUG_NORM, "HTTP 403: Forbidden. The request is valid, but the server is refusing action");
-		break;
-	case 404:
-		_log.Debug(DEBUG_NORM, "HTTP 404: Not Found");
-		break;
-	case 500:
-		_log.Debug(DEBUG_NORM, "HTTP 500: Internal Server Error");
-		break;
-	case 503:
-		_log.Debug(DEBUG_NORM, "HTTP 503: Service Unavailable");
-		break;
-	default:
-		_log.Debug(DEBUG_NORM, "HTTP return code is: %li", response_code);
-		break;
+		if (pCodes[0].http_code == response_code)
+		{
+			_log.Debug(DEBUG_NORM, "HTTP %d: %s", pCodes[0].http_code, pCodes[0].szMeaning);
+			return;
+		}
+		pCodes++;
 	}
+	_log.Debug(DEBUG_NORM, "HTTP return code is: %li", response_code);
 }
 
 
@@ -206,19 +259,23 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &vHeaderData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
 		res = curl_easy_perform(curl);
 
-		if (res != CURLE_OK)
+		bool bOK = false;
+		if (res == CURLE_OK)
 		{
-			if (res == CURLE_HTTP_RETURNED_ERROR)
+			long http_code = 0;
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+			bOK = ((http_code) && (http_code < 400));
+			if (!bOK)
 			{
-				//HTTP status code is already inside the header
-				long responseCode;
-				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-				LogError(responseCode);
+				LogError(http_code);
 			}
-			else
+		}
+		else
+		{
+			if (res != CURLE_HTTP_RETURNED_ERROR)
 			{
 				//Need to generate a header
 				std::stringstream ss;
@@ -233,7 +290,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 			curl_slist_free_all(headers); /* free the header list */
 		}
 
-		return (res == CURLE_OK);
+		return bOK;
 	}
 	catch (...)
 	{
@@ -493,14 +550,27 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_single_line);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
 		res = curl_easy_perform(curl);
 
-		if (res == CURLE_HTTP_RETURNED_ERROR)
+		if (
+			(res == CURLE_WRITE_ERROR) &&
+			(!response.empty())
+			)
 		{
-			long responseCode;
-			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-			LogError(responseCode);
+			res = CURLE_OK;
+		}
+
+		bool bOK = false;
+		if (res == CURLE_OK)
+		{
+			long http_code = 0;
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+			bOK = ((http_code) && (http_code < 400));
+			if (!bOK)
+			{
+				LogError(http_code);
+			}
 		}
 
 		curl_easy_cleanup(curl);
@@ -508,12 +578,7 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 		if (headers != NULL) {
 			curl_slist_free_all(headers); /* free the header list */
 		}
-		if (
-			(res == CURLE_WRITE_ERROR) &&
-			(!response.empty())
-			)
-			res = CURLE_OK;
-		return (res == CURLE_OK);
+		return bOK;
 	}
 	catch (...)
 	{
@@ -551,11 +616,12 @@ bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &Ext
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
-	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, vHeaderData, -1))
+	bool bOK = GETBinary(url, ExtraHeaders, vHTTPResponse, vHeaderData, -1);
+	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
+	if (!bOK)
 		return false;
 	if (!bIgnoreNoDataReturned && vHTTPResponse.empty())
 		return false;
-	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
