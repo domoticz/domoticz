@@ -1423,7 +1423,13 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				if (!module["boiler_status"].empty())
 				{
 					_log.Log(LOG_STATUS, "Netatmo: A002");
-					_log.Log(LOG_STATUS, "Netatmo: " + module["battery_level"].asString());
+					_log.Log(LOG_STATUS, "Netatmo: " + module["boiler_status"].asString());
+
+					std::string boiler_status = module["boiler_status"].asString();
+					bool bIsActive = (boiler_status == "true");
+					std::string aName = "Status";
+					SendSwitch(moduleID+1, 1, 255, bIsActive, 0, aName);
+
 					_log.Log(LOG_STATUS, "Netatmo: A003");
 				}
 
