@@ -1423,7 +1423,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				if (!module["boiler_status"].empty())
 				{
 					_log.Log(LOG_STATUS, "Netatmo: A002");
-					_log.Log(LOG_STATUS, "Netatmo: " + module["battery_level"].asString(););
+					_log.Log(LOG_STATUS, "Netatmo: " + module["battery_level"].asString());
 					_log.Log(LOG_STATUS, "Netatmo: A003");
 				}
 
