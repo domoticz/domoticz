@@ -900,6 +900,9 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 	}
 
 	m_v2refresh_token = j_login["refresh_token"].asString();
+	int v2token_expiration_time = atoi(j_login["expires_in"].asString().c_str());
+	m_sessiontimer = mytime(NULL) + v2token_expiration_time; // Honeywell will invalidate our session ID after an hour
+
 	std::stringstream atoken;
 	atoken << "Authorization: bearer " << j_login["access_token"].asString();
 
@@ -977,6 +980,9 @@ bool CEvohomeWeb::renew_login()
 	}
 
 	m_v2refresh_token = j_login["refresh_token"].asString();
+	int v2token_expiration_time = atoi(j_login["expires_in"].asString().c_str());
+	m_sessiontimer = mytime(NULL) + v2token_expiration_time; // Honeywell will invalidate our session ID after an hour
+
 	std::stringstream atoken;
 	atoken << "Authorization: bearer " << j_login["access_token"].asString();
 
@@ -1013,9 +1019,13 @@ bool CEvohomeWeb::user_account()
 		return false;
 	}
 
+	std::string szError;
+	if (j_account.isMember("error"))
+		szError = j_account["error"].asString();
 	if (j_account.isMember("message"))
+		szError = j_account["message"].asString();
+	if (!szError.empty())
 	{
-		std::string szError = j_account["message"].asString();
 		_log.Log(LOG_ERROR, "(%s) retrieve user account info failed with message: %s", m_Name.c_str(), szError.c_str());
 		return false;
 	}
@@ -1129,7 +1139,6 @@ bool CEvohomeWeb::full_installation()
 	sz_url.append("&includeTemperatureControlSystems=True");
 
 	std::string sz_response = send_receive_data(sz_url, m_SessionHeaders);
-
 	m_j_fi.clear();
 
 	bool parseOK;
@@ -1234,7 +1243,6 @@ bool CEvohomeWeb::get_status(int location)
 		len--;
 		sz_response[len] = ' ';
 	}
-
 	m_j_stat.clear();
 	if (!ParseJSon(sz_response, m_j_stat))
 	{
@@ -1376,7 +1384,6 @@ bool CEvohomeWeb::get_zone_schedule(const std::string &zoneId, const std::string
 	zone* hz = get_zone_by_ID(zoneId);
 	if (hz == NULL)
 		return false;
-
 	bool ret = ParseJSon(sz_response, hz->schedule);
 	if (ret)
 	{
@@ -1567,7 +1574,7 @@ bool CEvohomeWeb::set_system_mode(const std::string &systemId, int mode)
 			len--;
 			sz_response[len] = ' ';
 		}
-	
+
 		Json::Value j_response;
 		if (ParseJSon(sz_response.c_str(), j_response) && (j_response.isMember("message")))
 		{
@@ -1618,7 +1625,7 @@ bool CEvohomeWeb::set_temperature(const std::string &zoneId, const std::string &
 			len--;
 			sz_response[len] = ' ';
 		}
-	
+
 		Json::Value j_response;
 		if (ParseJSon(sz_response.c_str(), j_response) && (j_response.isMember("message")))
 		{
@@ -1653,7 +1660,7 @@ bool CEvohomeWeb::cancel_temperature_override(const std::string &zoneId)
 			len--;
 			sz_response[len] = ' ';
 		}
-	
+
 		Json::Value j_response;
 		if (ParseJSon(sz_response.c_str(), j_response) && (j_response.isMember("message")))
 		{
@@ -1718,7 +1725,7 @@ bool CEvohomeWeb::set_dhw_mode(const std::string &dhwId, const std::string &mode
 			len--;
 			sz_response[len] = ' ';
 		}
-	
+
 		Json::Value j_response;
 		if (ParseJSon(sz_response.c_str(), j_response) && (j_response.isMember("message")))
 		{
@@ -1842,7 +1849,6 @@ void CEvohomeWeb::get_v1_temps()
 	sz_url.append("&allData=True");
 
 	std::string sz_response = send_receive_data(sz_url, m_v1SessionHeaders);
-
 	Json::Value j_fi;
 	bool parseOK;
 	if (sz_response[0] == '[')
@@ -1868,10 +1874,13 @@ void CEvohomeWeb::get_v1_temps()
 	else
 		j_error = &j_fi;
 
+	std::string szError;
+	if ((*j_error).isMember("error"))
+		szError = (*j_error)["error"].asString();
 	if ((*j_error).isMember("message"))
+		szError = (*j_error)["message"].asString();
+	if (!szError.empty())
 	{
-		std::string szError = (*j_error)["message"].asString();
-
 		if ((*j_error).isMember("code") && ((*j_error)["code"].asString() == "401"))
 		{
 			// authorization error: session is no longer valid
@@ -1968,14 +1977,31 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 
 	if (vHeaderData.size() > 0)
 	{
-		if (vHeaderData[0][0] == 'H')
+
+		size_t pos = vHeaderData[0].find(" ");
+		if (pos != std::string::npos)
 		{
-			// HTTP return code
-			size_t pos = vHeaderData[0].find(" ");
-			sz_retcode = vHeaderData[0].substr(pos+1, 3);
+			pos++;
+			while (((vHeaderData[0][pos] & 0xF0) == 0x30) && ((vHeaderData[0][pos] & 0x0F) < 10))
+			{
+				sz_retcode.append(1,vHeaderData[0][pos]);
+				pos++;
+			}
 		}
-		else
+
+		if (sz_retcode.size() == 3)
+//		if (vHeaderData[0][0] == 'H')
+		{
+			// HTTPClient GET method sets httpOK to false if HTTP return code > 400
+			// reset the value to true - we want to process the body
+			httpOK = true;
+		}
+
+		if (sz_retcode.empty())
+		{
+			// fallthrough in case of an unexpected header content
 			sz_retcode = vHeaderData[0];
+		}
 
 		if (!httpOK)
 		{
@@ -1992,8 +2018,11 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 		{
 			// append code to the response so it will take preference over any existing (textual) message code
 			size_t pos = sz_response.find_last_of("}");
-			sz_response.insert(pos, ",\"code\":\"\"");
-			sz_response.insert(pos+9, sz_retcode);
+			if (pos != std::string::npos)
+			{
+				sz_response.insert(pos, ",\"code\":\"\"");
+				sz_response.insert(pos+9, sz_retcode);
+			}
 		}
 	}
 
