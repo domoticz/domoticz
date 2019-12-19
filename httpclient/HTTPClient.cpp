@@ -129,6 +129,12 @@ void HTTPClient::LogError(const long response_code)
 	case 404:
 		_log.Debug(DEBUG_NORM, "HTTP 404: Not Found");
 		break;
+	case 405:
+		_log.Debug(DEBUG_NORM, "HTTP 405: Method Not Allowed");
+		break;
+	case 406:
+		_log.Debug(DEBUG_NORM, "HTTP 406: Not Acceptable");
+		break;
 	case 500:
 		_log.Debug(DEBUG_NORM, "HTTP 500: Internal Server Error");
 		break;
@@ -206,19 +212,23 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &vHeaderData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
 		res = curl_easy_perform(curl);
 
-		if (res != CURLE_OK)
+		bool bOK = false;
+		if (res == CURLE_OK)
 		{
-			if (res == CURLE_HTTP_RETURNED_ERROR)
+			long http_code = 0;
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+			bOK = ((http_code) && (http_code < 400));
+			if (!bOK)
 			{
-				//HTTP status code is already inside the header
-				long responseCode;
-				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-				LogError(responseCode);
+				LogError(http_code);
 			}
-			else
+		}
+		else
+		{
+			if (res != CURLE_HTTP_RETURNED_ERROR)
 			{
 				//Need to generate a header
 				std::stringstream ss;
@@ -233,7 +243,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 			curl_slist_free_all(headers); /* free the header list */
 		}
 
-		return (res == CURLE_OK);
+		return bOK;
 	}
 	catch (...)
 	{
@@ -493,14 +503,27 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_single_line);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
 		res = curl_easy_perform(curl);
 
-		if (res == CURLE_HTTP_RETURNED_ERROR)
+		if (
+			(res == CURLE_WRITE_ERROR) &&
+			(!response.empty())
+			)
 		{
-			long responseCode;
-			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-			LogError(responseCode);
+			res = CURLE_OK;
+		}
+
+		bool bOK = false;
+		if (res == CURLE_OK)
+		{
+			long http_code = 0;
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+			bOK = ((http_code) && (http_code < 400));
+			if (!bOK)
+			{
+				LogError(http_code);
+			}
 		}
 
 		curl_easy_cleanup(curl);
@@ -508,12 +531,7 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 		if (headers != NULL) {
 			curl_slist_free_all(headers); /* free the header list */
 		}
-		if (
-			(res == CURLE_WRITE_ERROR) &&
-			(!response.empty())
-			)
-			res = CURLE_OK;
-		return (res == CURLE_OK);
+		return bOK;
 	}
 	catch (...)
 	{
@@ -551,11 +569,12 @@ bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &Ext
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
-	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, vHeaderData, -1))
+	bool bOK = GETBinary(url, ExtraHeaders, vHTTPResponse, vHeaderData, -1);
+	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
+	if (!bOK)
 		return false;
 	if (!bIgnoreNoDataReturned && vHTTPResponse.empty())
 		return false;
-	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
