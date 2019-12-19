@@ -1134,8 +1134,7 @@ void CNetatmo::GetMeterDetails()
 	bRet = true;
 #else
 	std::vector<std::string> ExtraHeaders;
-	bRet = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
-	if (!bRet)
+	if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 		return;
@@ -1167,21 +1166,19 @@ void CNetatmo::GetMeterDetails()
 		if (m_bFirstTimeWeatherData)
 		{
 			m_bFirstTimeWeatherData = false;
-			bool bRet;
 #ifdef DEBUG_NetatmoWeatherStationR
 			//sResult = ReadFile("E:\\netatmo_mdetails.json");
 			sResult = ReadFile("E:\\gethomecoachsdata.json");
 #else
 			//Check if the user has an Home Coach device
 			httpUrl = MakeRequestURL(NETYPE_HOMECOACH);
-			bRet = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
-#endif
-			if (!bRet)
+			if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
 			{
 				_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 				return;
 			}
-			bRet = ParseJSon(sResult, root);
+#endif
+			bool bRet = ParseJSon(sResult, root);
 			if ((!bRet) || (!root.isObject()))
 			{
 				_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
@@ -1208,16 +1205,14 @@ void CNetatmo::GetMeterDetails()
 #ifdef DEBUG_NetatmoWeatherStationR
 				//sResult = ReadFile("E:\\netatmo_mdetails.json");
 				sResult = ReadFile("E:\\homesdata.json");
-				bool ret = true;
 #else
 				httpUrl = MakeRequestURL(NETYPE_ENERGY);
-				bRet = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
-#endif
-				if (!bRet)
+				if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
 				{
 					_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 					return;
 				}
+#endif
 				bRet = ParseJSon(sResult, root);
 				if ((!bRet) || (!root.isObject()))
 				{

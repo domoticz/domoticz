@@ -325,9 +325,7 @@ bool CNefitEasy::GetStatusDetails()
 	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_STATUS_URL;
 	try
 	{
-		bool bret;
-		bret = HTTPClient::GET(szURL.str(), sResult);
-		if (!bret)
+		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -474,8 +472,7 @@ bool CNefitEasy::GetOutdoorTemp()
 	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_OUTDOORTEMP_URL;
 	try
 	{
-		ret = HTTPClient::GET(szURL2.str(), sResult);
-		if (!ret)
+		if (!HTTPClient::GET(szURL2.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -527,8 +524,7 @@ bool CNefitEasy::GetFlowTemp()
 	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_FLOWTEMP_URL;
 	try
 	{
-		ret = HTTPClient::GET(szURL2.str(), sResult);
-		if (!ret)
+		if (!HTTPClient::GET(szURL2.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -580,8 +576,7 @@ bool CNefitEasy::GetPressure()
 	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_PRESSURE_URL;
 	try
 	{
-		ret = HTTPClient::GET(szURL.str(), sResult);
-		if (!ret)
+		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -631,8 +626,7 @@ bool CNefitEasy::GetDisplayCode()
 	szURL3 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_DISPLAYCODE_URL;
 	try
 	{
-		ret = HTTPClient::GET(szURL3.str(), sResult);
-		if (!ret)
+		if (!HTTPClient::GET(szURL3.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -732,8 +726,7 @@ bool CNefitEasy::GetGasUsage()
 	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_GAS_URL;
 	try
 	{
-		ret = HTTPClient::GET(szURL.str(), sResult);
-		if (!ret)
+		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
