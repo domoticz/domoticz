@@ -7,7 +7,7 @@ define(['app', 'livesocket'], function (app) {
 		$scope.broadcast_unsubscribe = undefined;
 
 		MakeFavorite = function (id, isfavorite) {
-			if (!permissions.hasPermission("Admin")) {
+			if (permissions.hasPermission("Viewer")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;

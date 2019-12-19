@@ -4,6 +4,7 @@ Version 4.1xxxx (xxx 20xx) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Implemented: Floorplan, add support for SVG
 - Implemented: GUI, OpenZWave added Refresh Node Information button, styling
 - Implemented: Hue, Add Support for Geo fence sensor, dimmer switches and Hue LCG002 GU10 spot
+- Implemented: Per User favorites (with viewer rights)
 - Implemented: RTL433, added Power (Watt) type
 - Implemented: RTL433, added rainfall_mm type
 - Implemented: OZW, JSON call to retrieve current battery levels for all nodes

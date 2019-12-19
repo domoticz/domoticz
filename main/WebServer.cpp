@@ -6534,21 +6534,31 @@ namespace http {
 			} //learnsw
 			else if (cparam == "makefavorite")
 			{
-				if (session.rights < 2)
+				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
-
 				std::string idx = request::findValue(&req, "idx");
 				std::string sisfavorite = request::findValue(&req, "isfavorite");
 				if ((idx.empty()) || (sisfavorite.empty()))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
-				m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')",
-					isfavorite, idx.c_str());
+
 				root["status"] = "OK";
 				root["title"] = "MakeFavorite";
+
+				const int iUser = FindUser(session.username.c_str());
+				if (iUser != -1)
+				{
+					const _eUserRights urights = m_users[iUser].userrights;
+					if ((urights != URIGHTS_ADMIN) && (m_users[iUser].ID != 0xFFFF))
+					{
+						m_sql.safe_query("UPDATE SharedDevices SET Favorite=%d WHERE (DeviceRowID == '%q') AND (SharedUserID == %d)", isfavorite, idx.c_str(), m_users[iUser].ID);
+						return;
+					}
+				}
+				m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')", isfavorite, idx.c_str());
 			} //makefavorite
 			else if (cparam == "makescenefavorite")
 			{
@@ -8208,8 +8218,11 @@ namespace http {
 					_eUserRights urights = m_users[iUser].userrights;
 					if (urights != URIGHTS_ADMIN)
 					{
-						result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %lu)", m_users[iUser].ID);
-						totUserDevices = (unsigned int)result.size();
+						result = m_sql.safe_query("SELECT COUNT(*) FROM SharedDevices WHERE (SharedUserID == %lu)", m_users[iUser].ID);
+						if (!result.empty())
+						{
+							totUserDevices = (unsigned int)std::stoi(result[0][0]);
+						}
 						bShowScenes = (m_users[iUser].ActiveTabs&(1 << 1)) != 0;
 					}
 				}
@@ -8476,7 +8489,7 @@ namespace http {
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
-						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
+						" A.nValue, A.sValue, A.LastUpdate, B.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
@@ -8492,7 +8505,7 @@ namespace http {
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
-						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
+						" A.nValue, A.sValue, A.LastUpdate, B.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
@@ -8509,7 +8522,7 @@ namespace http {
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
-						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
+						" A.nValue, A.sValue, A.LastUpdate, B.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
@@ -8556,7 +8569,7 @@ namespace http {
 					szQuery = (
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
-						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
+						" A.nValue, A.sValue, A.LastUpdate, B.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"

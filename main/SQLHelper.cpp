@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 137
+#define DB_VERSION 138
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -401,11 +401,12 @@ const char *sqlCreateSetpointTimers =
 "[MDay] INTEGER DEFAULT 0, "
 "[Occurence] INTEGER DEFAULT 0);";
 
-const char *sqlCreateSharedDevices =
+const char* sqlCreateSharedDevices =
 "CREATE TABLE IF NOT EXISTS [SharedDevices] ("
 "[ID] INTEGER PRIMARY KEY,  "
 "[SharedUserID] BIGINT NOT NULL, "
-"[DeviceRowID] BIGINT NOT NULL);";
+"[DeviceRowID] BIGINT NOT NULL, "
+"[Favorite] INTEGER DEFAULT 0);";
 
 const char *sqlCreateEventMaster =
 "CREATE TABLE IF NOT EXISTS [EventMaster] ("
@@ -2657,7 +2658,7 @@ bool CSQLHelper::OpenDatabase()
         		}
 		} 
     
-    if (dbversion < 137)
+		if (dbversion < 137)
 		{
 			// Patch for OpenWebNetTCP: update unit and deviceID for Alert devices, update subtype for GeneralSwitch devices
 			std::stringstream szQuery;
@@ -2720,6 +2721,11 @@ bool CSQLHelper::OpenDatabase()
 					}
 				}
 			}
+		}
+		if (dbversion < 138)
+		{
+			query("ALTER TABLE SharedDevices ADD COLUMN [Favorite] INTEGER DEFAULT 0");
+			query("UPDATE SharedDevices SET Favorite = 1 WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE (Favorite=1))");
 		}
 	} 
 	else if (bNewInstall)
