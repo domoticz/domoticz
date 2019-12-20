@@ -1972,6 +1972,7 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 {
 	std::string sz_response;
 	std::string sz_retcode;
+	std::string sz_rettext;
 
 	sz_response.insert(sz_response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 
@@ -1987,6 +1988,9 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 				sz_retcode.append(1,vHeaderData[0][pos]);
 				pos++;
 			}
+			pos++;
+			if (pos < vHeaderData[0].size())
+				sz_rettext = vHeaderData[0].substr(pos);
 		}
 
 		if (sz_retcode.size() == 3)
@@ -2008,32 +2012,49 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 			 // sz_retcode contains a Curl status code
 			sz_response = "{\"code\":\"";
 			sz_response.append(sz_retcode);
-			sz_response.append("\",\"message\":\"HTTP client error ");
-			sz_response.append(sz_retcode);
+			sz_response.append("\",\"message\":\"");
+			if (!sz_rettext.empty())
+				sz_response.append(sz_rettext);
+			else
+			{
+				sz_response.append("HTTP client error ");
+				sz_response.append(sz_retcode);
+			}
                         sz_response.append("\"}");
 			return sz_response;
 		}
 
 		if ((sz_retcode != "200") && (!sz_response.empty()))
 		{
-			// append code to the response so it will take preference over any existing (textual) message code
-			size_t pos = sz_response.find_last_of("}");
-			if (pos != std::string::npos)
+			if ((sz_response[0] == '[') || (sz_response[0] == '{'))
 			{
-				sz_response.insert(pos, ",\"code\":\"\"");
-				sz_response.insert(pos+9, sz_retcode);
+				// append code to the json response so it will take preference over any existing (textual) message code
+				size_t pos = sz_response.find_last_of("}");
+				if (pos != std::string::npos)
+				{
+					sz_response.insert(pos, ",\"code\":\"\"");
+					sz_response.insert(pos+9, sz_retcode);
+					return sz_response;
+				}
 			}
 		}
 	}
 
 	if (sz_response.empty())
 	{
-		if (sz_retcode.empty()) // networking error
+		if (sz_retcode.empty())
 			return "{\"code\":\"-1\",\"message\":\"Evohome portal did not return any data or status\"}";
 
 		sz_response = "{\"code\":\"";
 		sz_response.append(sz_retcode);
-		sz_response.append("\",\"message\":\"HTTP ");
+		sz_response.append("\",\"message\":\"");
+		if (!sz_rettext.empty())
+			sz_response.append(sz_rettext);
+		else
+		{
+			sz_response.append("HTTP ");
+			sz_response.append(sz_retcode);
+		}
 		sz_response.append(sz_retcode);
 		sz_response.append("\"}");
 		return sz_response;
