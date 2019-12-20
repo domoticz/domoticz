@@ -14,6 +14,7 @@
 
 #define ASYNCTCP_THREAD_NAME "ASyncTCP"
 #define DEFAULT_RECONNECT_TIME 30
+#define DEFAULT_TIMEOUT_TIME 60
 
 namespace boost { namespace system { class error_code; } }
 
@@ -27,9 +28,10 @@ protected:
 	void disconnect(const bool silent = true);
 	void write(const std::string& msg);
 	void write(const uint8_t* pData, size_t length);
-	void SetReconnectDelay(const int32_t Delay = 30);
+	void SetReconnectDelay(const int32_t Delay = DEFAULT_RECONNECT_TIME);
 	bool isConnected() { return mIsConnected; };
 	void terminate(const bool silent = true);
+	void SetTimeout(const uint32_t Timeout = DEFAULT_TIMEOUT_TIME);
 
 	// Callback interface to implement in derived classes
 	virtual void OnConnect() = 0;
@@ -47,7 +49,12 @@ private:
 	void cb_handshake_done(const boost::system::error_code& error);
 #endif
 
+	/* timeout methods */
+	void timeout_start_timer();
+	void timeout_cancel_timer();
 	void reconnect_start_timer();
+	void timeout_handler(const boost::system::error_code& error);
+
 	void cb_reconnect_start(const boost::system::error_code& error);
 
 	void do_close();
@@ -72,7 +79,9 @@ private:
 	uint8_t 						mRxBuffer[1024];
 
 	int								mReconnectDelay = DEFAULT_RECONNECT_TIME;
+	int								mTimeoutDelay = 0;
 	boost::asio::deadline_timer		mReconnectTimer{ mIos };
+	boost::asio::deadline_timer		mTimeoutTimer{ mIos };
 
 	std::shared_ptr<std::thread> 	mTcpthread;
 	std::shared_ptr<boost::asio::io_service::work> 	mTcpwork;

@@ -19,7 +19,7 @@
 
 extern std::string szAppVersion;
 
-#define TIMEOUT 60
+#define PROXY_TIMEOUT 60
 #define PONG "PONG"
 
 namespace http {
@@ -30,6 +30,8 @@ namespace http {
 		CProxyClient::CProxyClient() : ASyncTCP(PROXY_SECURE)
 		{
 			m_pDomServ = NULL;
+			/* use default value for tcp timeouts */
+			SetTimeout(PROXY_TIMEOUT);
 		}
 
 		void CProxyClient::Reset()
