@@ -69,6 +69,7 @@ void ASyncTCP::connect(const std::string& ip, uint16_t port)
 	mPort = port;
 	std::string port_str = std::to_string(port);
 	boost::asio::ip::tcp::resolver::query query(ip, port_str);
+	timeout_start_timer();
 	mResolver.async_resolve(query, boost::bind(&ASyncTCP::cb_resolve_done, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 }
 
@@ -92,6 +93,7 @@ void ASyncTCP::connect_start(boost::asio::ip::tcp::resolver::iterator& endpoint_
 
 	mEndPoint = *endpoint_iterator++;
 
+	timeout_start_timer();
 #ifdef WWW_ENABLE_SSL
 	if (mSecure)
 	{
@@ -116,6 +118,7 @@ void ASyncTCP::cb_connect_done(const boost::system::error_code& error, boost::as
 #ifdef WWW_ENABLE_SSL
 		if (mSecure) 
 		{
+			timeout_start_timer();
 			mSslSocket->async_handshake(boost::asio::ssl::stream_base::client,
 				boost::bind(&ASyncTCP::cb_handshake_done, this,
 					boost::asio::placeholders::error));
@@ -171,6 +174,7 @@ void ASyncTCP::cb_reconnect_start(const boost::system::error_code& error)
 {
 	mIsReconnecting = false;
 	mReconnectTimer.cancel();
+	mTimeoutTimer.cancel();
 
 	if (mIsConnected) return;
 	if (error) return; // timer was cancelled
@@ -200,6 +204,7 @@ void ASyncTCP::terminate(const bool silent)
 void ASyncTCP::disconnect(const bool silent)
 {
 	mReconnectTimer.cancel();
+	mTimeoutTimer.cancel();
 	if (!mTcpthread) return;
 
 	try
@@ -217,7 +222,11 @@ void ASyncTCP::disconnect(const bool silent)
 
 void ASyncTCP::do_close()
 {
+	if (mIsReconnecting) {
+		return;
+	}
 	mReconnectTimer.cancel();
+	mTimeoutTimer.cancel();
 	boost::system::error_code ec;
 #ifdef WWW_ENABLE_SSL
 	if (mSecure)
@@ -243,6 +252,7 @@ void ASyncTCP::do_read_start()
 	if (mIsTerminating) return;
 	if (!mIsConnected) return;
 
+	timeout_start_timer();
 #ifdef WWW_ENABLE_SSL
 	if (mSecure)
 	{
@@ -304,6 +314,7 @@ void ASyncTCP::do_write_start()
 	if (!mIsConnected) return;
 	if (mWriteQ.size() == 0) return;
 
+	timeout_start_timer();
 #ifdef WWW_ENABLE_SSL
 	if (mSecure) 
 	{
@@ -366,4 +377,35 @@ void ASyncTCP::process_error(const boost::system::error_code& error)
 
 	OnError(error);
 	reconnect_start_timer();
+}
+
+/* timeout methods */
+void ASyncTCP::timeout_start_timer()
+{
+	if (0 == mTimeoutDelay) {
+		return;
+	}
+	timeout_cancel_timer();
+	mTimeoutTimer.expires_from_now(boost::posix_time::seconds(mTimeoutDelay));
+	mTimeoutTimer.async_wait(boost::bind(&ASyncTCP::timeout_handler, this, boost::asio::placeholders::error));
+}
+
+void ASyncTCP::timeout_cancel_timer()
+{
+	mTimeoutTimer.cancel();
+}
+
+void ASyncTCP::timeout_handler(const boost::system::error_code& error)
+{
+	if (error) {
+		// timer was cancelled on time
+		return;
+	}
+	boost::system::error_code err = make_error_code(boost::system::errc::timed_out);
+	process_error(err);
+}
+
+void ASyncTCP::SetTimeout(const uint32_t Timeout)
+{
+	mTimeoutDelay = Timeout;
 }
