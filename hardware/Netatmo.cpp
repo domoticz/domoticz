@@ -1441,7 +1441,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 					std::string boiler_status = module["boiler_status"].asString();
 					bool bIsActive = (boiler_status == "true");
 					std::string aName = "Status";
-					SendSwitch((uint8_t)((moduleID & 0XFF0000), boiler_switch_subtype, 255, bIsActive, 0, aName);
+					SendSwitch((uint8_t)((moduleID & 0XFF0000), 15, 255, bIsActive, 0, aName);
 				}
 
 				if (!module["battery_level"].empty())
@@ -1515,7 +1515,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 					std::string setpoint_mode = room["therm_setpoint_mode"].asString();
 					bool bIsAway = (setpoint_mode == "away");
 					std::string aName = "Away " + roomName;
-					SendSwitch(roomID & 0xFFFFFF, away_switch_childId, 255, bIsAway, 0, aName);
+					SendSwitch(roomID & 0xFFFFFF, 10, 255, bIsAway, 0, aName);
 				}
 			}
 			iDevIndex++;
