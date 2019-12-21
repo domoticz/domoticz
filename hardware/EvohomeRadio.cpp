@@ -1468,6 +1468,17 @@ bool CEvohomeRadio::DecodeActuatorCheck(CEvohomeMsg &msg)
 bool CEvohomeRadio::DecodeActuatorState(CEvohomeMsg &msg)
 {
 	char tag[] = "ACTUATOR_STATE";
+        // If there is an OT Bridge the controller RQs the OT Bridge every minute with a payload size of 1
+        if (msg.payloadsize == 1) {
+        //      A payload of size 1 is normally just 0x00
+                return true;
+        }
+        // The OT Bridge responds to the RQ with a RP with payload size of 6
+        if (msg.payloadsize == 6) {
+                Log(false, LOG_STATUS, "evohome: %s: Payload %02X%02X%02X%02X%02X%02X not decoded, packet size: %d", tag, msg.payload[0], msg.payload[1], msg.payload[2], msg.payload[3], msg.payload[4], msg.payload[5], msg.payloadsize);
+                return true;
+        }
+ 	// All other relays should have a payload size of 3	
 	if (msg.payloadsize != 3) {
 		Log(false, LOG_ERROR, "evohome: %s: Error decoding command, unknown packet size: %d", tag, msg.payloadsize);
 		return false;
