@@ -98,6 +98,10 @@ void CNetatmo::Init()
 	m_NetatmoType = NETYPE_WEATHER_STATION;
 
 	m_bForceLogin = false;
+
+	// Subtype needed to identify switch pressed from domoticz and differentiate between away and boiler switch
+	static unsigned int away_switch_childId = 10;
+	static unsigned int boiler_switch_childID = 15;
 }
 
 bool CNetatmo::StartHardware()
@@ -182,10 +186,6 @@ void CNetatmo::Do_Work()
 	}
 	_log.Log(LOG_STATUS, "Netatmo: Worker stopped...");
 }
-
-// Subtype needed to identify switch pressed from domoticz and differentiate between away and boiler switch
-static unsigned int away_switch_childId = 10;
-static unsigned int boiler_switch_childID = 15;
 
 static unsigned int crc32_tab[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -623,17 +623,17 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	}
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
-	_log.Log(LOG_ERROR, "NetatmoThermostat: A" + pCmd->LIGHTING2.packettype);
+	_log.Log(LOG_ERROR, "NetatmoThermostat: A" + pCmd->LIGHTING2.packettype.asString());
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
-	_log.Log(LOG_ERROR, "NetatmoThermostat: B" + pCmd->LIGHTING2.cmnd);
-	_log.Log(LOG_ERROR, "NetatmoThermostat: C" + pCmd->LIGHTING2.id1);
-	_log.Log(LOG_ERROR, "NetatmoThermostat: D" + pCmd->LIGHTING2.id2);
-	_log.Log(LOG_ERROR, "NetatmoThermostat: E" + pCmd->LIGHTING2.id3);
-	_log.Log(LOG_ERROR, "NetatmoThermostat: F" + pCmd->LIGHTING2.id4);
-	_log.Log(LOG_ERROR, "NetatmoThermostat: G" + pCmd->LIGHTING2.subtype);
-	_log.Log(LOG_ERROR, "NetatmoThermostat: H" + pCmd->LIGHTING2.unitcode);
+	_log.Log(LOG_ERROR, "NetatmoThermostat: B" + pCmd->LIGHTING2.cmnd.asString());
+	_log.Log(LOG_ERROR, "NetatmoThermostat: C" + pCmd->LIGHTING2.id1.asString());
+	_log.Log(LOG_ERROR, "NetatmoThermostat: D" + pCmd->LIGHTING2.id2.asString());
+	_log.Log(LOG_ERROR, "NetatmoThermostat: E" + pCmd->LIGHTING2.id3.asString());
+	_log.Log(LOG_ERROR, "NetatmoThermostat: F" + pCmd->LIGHTING2.id4.asString());
+	_log.Log(LOG_ERROR, "NetatmoThermostat: G" + pCmd->LIGHTING2.subtype.asString());
+	_log.Log(LOG_ERROR, "NetatmoThermostat: H" + pCmd->LIGHTING2.unitcode.asString());
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
 	if (m_NetatmoType != NETYPE_ENERGY)
