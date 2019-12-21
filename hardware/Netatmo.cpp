@@ -183,6 +183,10 @@ void CNetatmo::Do_Work()
 	_log.Log(LOG_STATUS, "Netatmo: Worker stopped...");
 }
 
+// Subtype needed to identify switch pressed from domoticz and differentiate between away and boiler switch
+static unsigned int away_switch_childId = 10;
+static unsigned int boiler_switch_childID = 15;
+
 static unsigned int crc32_tab[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
 	0xe963a535, 0x9e6495a3,	0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -619,9 +623,17 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	}
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
+	_log.Log(LOG_ERROR, "NetatmoThermostat: A" + pCmd->LIGHTING2.packettype);
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
+	_log.Log(LOG_ERROR, "NetatmoThermostat: B" + pCmd->LIGHTING2.cmnd);
+	_log.Log(LOG_ERROR, "NetatmoThermostat: C" + pCmd->LIGHTING2.id1);
+	_log.Log(LOG_ERROR, "NetatmoThermostat: D" + pCmd->LIGHTING2.id2);
+	_log.Log(LOG_ERROR, "NetatmoThermostat: E" + pCmd->LIGHTING2.id3);
+	_log.Log(LOG_ERROR, "NetatmoThermostat: F" + pCmd->LIGHTING2.id4);
+	_log.Log(LOG_ERROR, "NetatmoThermostat: G" + pCmd->LIGHTING2.subtype);
+	_log.Log(LOG_ERROR, "NetatmoThermostat: H" + pCmd->LIGHTING2.unitcode);
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
 	if (m_NetatmoType != NETYPE_ENERGY)
@@ -1424,7 +1436,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 					std::string boiler_status = module["boiler_status"].asString();
 					bool bIsActive = (boiler_status == "true");
 					std::string aName = "Status";
-					SendSwitch(moduleID+1, 1, 255, bIsActive, 0, aName);
+					SendSwitch((uint8_t)((moduleID & 0XFF0000), boiler_switch_subtype, 255, bIsActive, 0, aName);
 				}
 
 				if (!module["battery_level"].empty())
@@ -1498,7 +1510,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 					std::string setpoint_mode = room["therm_setpoint_mode"].asString();
 					bool bIsAway = (setpoint_mode == "away");
 					std::string aName = "Away " + roomName;
-					SendSwitch(roomID & 0xFFFFFF, 1, 255, bIsAway, 0, aName);
+					SendSwitch(roomID & 0xFFFFFF, away_switch_childId, 255, bIsAway, 0, aName);
 				}
 			}
 			iDevIndex++;
