@@ -1421,7 +1421,6 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				int batteryLevel = 255;
 				if (!module["boiler_status"].empty())
 				{
-					_log.Log(LOG_STATUS, "Netatmo: " + module["boiler_status"].asString());
 					std::string boiler_status = module["boiler_status"].asString();
 					bool bIsActive = (boiler_status == "true");
 					std::string aName = "Status";
