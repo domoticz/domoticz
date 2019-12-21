@@ -100,8 +100,8 @@ void CNetatmo::Init()
 	m_bForceLogin = false;
 
 	// Subtype needed to identify switch pressed from domoticz and differentiate between away and boiler switch
-	static unsigned int away_switch_childId = 10;
-	static unsigned int boiler_switch_childID = 15;
+	unsigned int away_switch_childId = 10;
+	unsigned int boiler_switch_childID = 15;
 }
 
 bool CNetatmo::StartHardware()
@@ -623,17 +623,22 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	}
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
-	_log.Log(LOG_ERROR, "NetatmoThermostat: A" + pCmd->LIGHTING2.packettype.asString());
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
-	_log.Log(LOG_ERROR, "NetatmoThermostat: B" + pCmd->LIGHTING2.cmnd.asString());
-	_log.Log(LOG_ERROR, "NetatmoThermostat: C" + pCmd->LIGHTING2.id1.asString());
-	_log.Log(LOG_ERROR, "NetatmoThermostat: D" + pCmd->LIGHTING2.id2.asString());
-	_log.Log(LOG_ERROR, "NetatmoThermostat: E" + pCmd->LIGHTING2.id3.asString());
-	_log.Log(LOG_ERROR, "NetatmoThermostat: F" + pCmd->LIGHTING2.id4.asString());
-	_log.Log(LOG_ERROR, "NetatmoThermostat: G" + pCmd->LIGHTING2.subtype.asString());
-	_log.Log(LOG_ERROR, "NetatmoThermostat: H" + pCmd->LIGHTING2.unitcode.asString());
+	if (pCmd->LIGHTING2.subtype == boiler_switch_childID){
+		_log.Log(LOG_ERROR, "NetatmoThermostat: A");
+	}
+	else if (	pCmd->LIGHTING2.subtype == away_switch_childId)
+	{
+		_log.Log(LOG_ERROR, "NetatmoThermostat: B");
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "NetatmoThermostat: C");
+	}
+	
+
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
 	if (m_NetatmoType != NETYPE_ENERGY)

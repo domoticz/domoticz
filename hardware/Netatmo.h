@@ -38,6 +38,9 @@ private:
 	bool m_bFirstTimeWeatherData;
 	bool m_bForceSetpointUpdate;
 	time_t m_tSetpointUpdateTime;
+	// Subtype needed to identify switch pressed from domoticz and differentiate between away and boiler switch
+	unsigned int away_switch_childId = 10;
+	unsigned int boiler_switch_childID = 15;
 
 	std::shared_ptr<std::thread> m_thread;
 
