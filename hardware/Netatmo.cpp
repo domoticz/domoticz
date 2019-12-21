@@ -161,7 +161,7 @@ void CNetatmo::Do_Work()
 				if (m_bPollThermostat)
 				{
 					//Thermostat data is updated every 10 minutes
-					if ((sec_counter % 60 == 0) || (bFirstTimeTH))
+					if ((sec_counter % 600 == 0) || (bFirstTimeTH))
 					{
 						bFirstTimeTH = false;
 						GetThermostatDetails();
@@ -1419,18 +1419,13 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				}
 
 				int batteryLevel = 255;
-				_log.Log(LOG_STATUS, "Netatmo: A001");
 				if (!module["boiler_status"].empty())
 				{
-					_log.Log(LOG_STATUS, "Netatmo: A002");
 					_log.Log(LOG_STATUS, "Netatmo: " + module["boiler_status"].asString());
-
 					std::string boiler_status = module["boiler_status"].asString();
 					bool bIsActive = (boiler_status == "true");
 					std::string aName = "Status";
 					SendSwitch(moduleID+1, 1, 255, bIsActive, 0, aName);
-
-					_log.Log(LOG_STATUS, "Netatmo: A003");
 				}
 
 				if (!module["battery_level"].empty())
