@@ -622,10 +622,10 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
-	if (pCmd->LIGHTING2.subtype == boiler_switch_childID){
+	if (pCmd->LIGHTING2.subtype == BOILER_SWITCH_CHILDID){
 		_log.Log(LOG_ERROR, "NetatmoThermostat: A");
 	}
-	else if (	pCmd->LIGHTING2.subtype == away_switch_childId)
+	else if (	pCmd->LIGHTING2.subtype == AWAY_SWITCH_CHILDID)
 	{
 		_log.Log(LOG_ERROR, "NetatmoThermostat: B");
 	}
