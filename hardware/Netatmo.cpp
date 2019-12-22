@@ -98,10 +98,6 @@ void CNetatmo::Init()
 	m_NetatmoType = NETYPE_WEATHER_STATION;
 
 	m_bForceLogin = false;
-
-	// Subtype needed to identify switch pressed from domoticz and differentiate between away and boiler switch
-	unsigned int away_switch_childId = 10;
-	unsigned int boiler_switch_childID = 15;
 }
 
 bool CNetatmo::StartHardware()
@@ -165,7 +161,7 @@ void CNetatmo::Do_Work()
 				if (m_bPollThermostat)
 				{
 					//Thermostat data is updated every 10 minutes
-					if ((sec_counter % 600 == 0) || (bFirstTimeTH))
+					if ((sec_counter % 60 == 0) || (bFirstTimeTH))
 					{
 						bFirstTimeTH = false;
 						GetThermostatDetails();
@@ -1441,7 +1437,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 					std::string boiler_status = module["boiler_status"].asString();
 					bool bIsActive = (boiler_status == "true");
 					std::string aName = "Status";
-					SendSwitch((uint8_t)((moduleID & 0XFF0000), 15, 255, bIsActive, 0, aName);
+					SendSwitch((uint8_t)(moduleID & 0XFF0000), BOILER_SWITCH_CHILDID, 255, bIsActive, 0, aName);
 				}
 
 				if (!module["battery_level"].empty())
@@ -1515,7 +1511,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 					std::string setpoint_mode = room["therm_setpoint_mode"].asString();
 					bool bIsAway = (setpoint_mode == "away");
 					std::string aName = "Away " + roomName;
-					SendSwitch(roomID & 0xFFFFFF, 10, 255, bIsAway, 0, aName);
+					SendSwitch(roomID & 0xFFFFFF, AWAY_SWITCH_CHILDID, 255, bIsAway, 0, aName);
 				}
 			}
 			iDevIndex++;

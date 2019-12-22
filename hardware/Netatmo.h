@@ -18,6 +18,12 @@ public:
 	void SetSetpoint(int idx, const float temp);
 	bool SetProgramState(const int idx, const int newState);
 private:
+	// Subtype needed to identify switch pressed from domoticz and differentiate between away and boiler switch
+	enum _eNetatmoChildID
+	{
+		AWAY_SWITCH_CHILDID = 10,
+		BOILER_SWITCH_CHILDID = 15
+	}
 	enum _eNetatmoType
 	{
 		NETYPE_WEATHER_STATION=0,
@@ -38,9 +44,6 @@ private:
 	bool m_bFirstTimeWeatherData;
 	bool m_bForceSetpointUpdate;
 	time_t m_tSetpointUpdateTime;
-	// Subtype needed to identify switch pressed from domoticz and differentiate between away and boiler switch
-	unsigned int away_switch_childId = 10;
-	unsigned int boiler_switch_childID = 15;
 
 	std::shared_ptr<std::thread> m_thread;
 
