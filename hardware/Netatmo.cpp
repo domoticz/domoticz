@@ -622,19 +622,6 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
-	if (pCmd->LIGHTING2.subtype == BOILER_SWITCH_CHILDID){
-		_log.Log(LOG_ERROR, "NetatmoThermostat: A");
-	}
-	else if (	pCmd->LIGHTING2.subtype == AWAY_SWITCH_CHILDID)
-	{
-		_log.Log(LOG_ERROR, "NetatmoThermostat: B");
-	}
-	else
-	{
-		_log.Log(LOG_ERROR, "NetatmoThermostat: C");
-	}
-	
-
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
 	if (m_NetatmoType != NETYPE_ENERGY)
@@ -1437,7 +1424,8 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 					std::string boiler_status = module["boiler_status"].asString();
 					bool bIsActive = (boiler_status == "true");
 					std::string aName = "Status";
-					SendSwitch((uint8_t)(moduleID & 0XFF0000), BOILER_SWITCH_CHILDID, 255, bIsActive, 0, aName);
+					SendPercentageSensor((uint8_t)(moduleID & 0XFF0000), BOILER_SWITCH_CHILDID, 255, (bIsActive == true) ? 100.0f : 0.0f, aName);
+					// SendSwitch((uint8_t)(moduleID & 0XFF0000), BOILER_SWITCH_CHILDID, 255, bIsActive, 0, aName);
 				}
 
 				if (!module["battery_level"].empty())
