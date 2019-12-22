@@ -23,7 +23,7 @@ private:
 	{
 		AWAY_SWITCH_CHILDID = 10,
 		BOILER_SWITCH_CHILDID = 15
-	}
+	};
 	enum _eNetatmoType
 	{
 		NETYPE_WEATHER_STATION=0,
