@@ -783,10 +783,14 @@ local function EventHelpers(domoticz, mainMethod)
 		for scriptTrigger, scripts in pairs(allEventScripts) do
 
 			if (string.find(scriptTrigger, '*')) then -- a wild-card was used
-				-- substitute 'magical chars' with a dot (a dot matches every char) and then turn it into a valid regexp and 
-				scriptTrigger = ('^' .. scriptTrigger:gsub("[%^$]","."):gsub("*", ".*") .. '$'):gsub('[^%w%s~{\\}:&(/)<>,?@#|_^*$]','.')
+				scriptTrigger = ('^' .. scriptTrigger:gsub("[%^$]","."):gsub("*", ".*") .. '$')
 
-				if (string.match(target, scriptTrigger)) then
+				local function sMatch(text, match) -- specialized sanitized match function to allow combination of Lua magic chars in wildcards
+					local sanitizedMatch = match:gsub("([%%%(%)%[%]%+%-%?])", "%%%1") -- escaping all 'magic' chars except *, ., ^ and $
+					return text:match(sanitizedMatch)
+				end
+
+				if sMatch(target, scriptTrigger) then
 					if modules == nil then modules = {} end
 
 					for i, mod in pairs(scripts) do

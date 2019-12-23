@@ -253,7 +253,7 @@ describe('device', function()
 		it('should deal with percentages', function()
 
 			local device = getDevice(domoticz, {
-				['name'] = 'myDevice',
+				['name'] = 'myDevice ()',
 				changed = true,
 				type = 'sometype',
 				subType = 'sub',
@@ -1643,32 +1643,32 @@ describe('device', function()
 					['state'] = 'Set Kelvin Level',
 					['subType'] = 'RGBWW',
 					['type'] = 'Color Switch',
-                    ['hardwareType'] = 'YeeLight LED',
+					['hardwareType'] = 'YeeLight LED',
 				})
 
 			it('should handle increaseBrightness method correctly', function()
-                commandArray = {}
+				commandArray = {}
 				domoticz.log = function(message)
 					msg = message
 				end
 
 				device.increaseBrightness()
 				assert.is_not_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessup&type=command&idx=1' }, commandArray)
-                assert.is_same('If you believe this is not correct, please report on the forum.', msg)
+				assert.is_same('If you believe this is not correct, please report on the forum.', msg)
 			end)
 
 			it('should handle decreaseBrightness method correctly', function()
-                commandArray = {}
+				commandArray = {}
 				domoticz.log = function(message)
 					msg = message
 				end
-				
-                device.decreaseBrightness()
-				assert.is_not_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessdown&type=command&idx=1' }, commandArray)
-                assert.is_same('If you believe this is not correct, please report on the forum.', msg)
-			end)
 			
-            it('should handle setNightMode method correctly', function()
+				device.decreaseBrightness()
+				assert.is_not_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessdown&type=command&idx=1' }, commandArray)
+				assert.is_same('If you believe this is not correct, please report on the forum.', msg)
+			end)
+		
+			it('should handle setNightMode method correctly', function()
 				commandArray = {}
 				device.setNightMode()
 				assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=nightlight&type=command&idx=1' }, commandArray)
@@ -1706,14 +1706,14 @@ describe('device', function()
 
 			it('should handle setDiscomode method correctly',function()
 				commandArray = {}
-				
-                domoticz.log = function(message)
+			
+				domoticz.log = function(message)
 					msg = message
 				end
-				
-                device.setDiscoMode(8)
+			
+				device.setDiscoMode(8)
 				assert.is_not_same({ 'http://127.0.0.1:8080/json.htm?param=discomodenum8&type=command&idx=1' }, commandArray)
-                assert.is_same('If you believe this is not correct, please report on the forum.', msg)
+				assert.is_same('If you believe this is not correct, please report on the forum.', msg)
 			end)
 
 			it('should handle setHue method correctly',function()

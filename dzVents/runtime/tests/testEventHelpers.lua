@@ -10,15 +10,15 @@ package.path = package.path ..
 local Time = require('Time')
 local function keys(t)
 	local keys = _.keys(t)
-	return _.sortBy(keys, function(k)
+		return _.sortBy(keys, function(k)
 		return tostring(k)
 	end)
 end
 
 local function values(t)
 	local values = _.values(t)
-	table.sort(values)
-	return values
+table.sort(values)
+	return values 
 end
 
 describe('event helpers', function()
@@ -212,6 +212,7 @@ describe('event helpers', function()
 		it('should return scripts for all triggers', function()
 			local modules = helpers.getEventBindings('device')
 			assert.are.same({
+				'*(test)*',
 				8,
 				'deviceGork',
 				'loggingstuff',
@@ -225,8 +226,8 @@ describe('event helpers', function()
 				'some*device',
 				'somedevice',
 				'wild*',
-				 }, keys(modules))
-			assert.are.same(13, _.size(modules))
+				}, keys(modules))
+			assert.are.same(14, _.size(modules))
 		end)
 
 		it('should detect erroneous modules', function()
@@ -307,7 +308,6 @@ describe('event helpers', function()
 			assert.are.same({ 'trigger1', 'trigger2',  }, keys(modules))
 		end)
 
-
 		it('should return an array of internal scripts for the same trigger', function()
 
 			local modules = helpers.getEventBindings()
@@ -326,6 +326,7 @@ describe('event helpers', function()
 		it('should return internal and external scripts for all triggers', function()
 			local modules = helpers.getEventBindings()
 			assert.are.same({
+				'*(test)*',
 				8,
 				'deviceGork',
 				'loggingstuff',
@@ -340,7 +341,7 @@ describe('event helpers', function()
 				'somedevice',
 				'wild*',
 				 }, keys(modules))
-			assert.are.same(13, _.size(modules))
+			assert.are.same(14, _.size(modules))
 		end)
 
 		it('should return scripts for a device that has time-constrained triggers', function()
@@ -358,7 +359,6 @@ describe('event helpers', function()
 			modules = helpers.getEventBindings('device', Time('2017-06-08 02:01:00'))
 			scripts = modules['deviceZork']
 			assert.is_nil(scripts)
-
 
 			modules = helpers.getEventBindings('device', Time('2017-06-04 02:01:00'))
 			scripts = modules['deviceDork']
@@ -406,11 +406,11 @@ describe('event helpers', function()
 		it('should have proper settings', function()
 			assert.are.same('http://127.0.0.1:8181', helpers.settings['Domoticz url'])
 		end)
-		
+	
 		it('should have proper location settings', function()
 			assert.are.same('Domoticz', helpers.settings.location.name)
 		end)
-		
+	
 		it('should add global helpers to the domoticz object', function()
 
 			local bindings = helpers.getEventBindings()
@@ -502,7 +502,6 @@ describe('event helpers', function()
 				"script_security_grouped"
 			}, modulesFound)
 
-
 			local res = helpers.callEventHandler(scriptSecurity,
 				nil,
 				nil,
@@ -590,6 +589,7 @@ describe('event helpers', function()
 				['onscript1'] = getDummy(1, 'onscript1', 'state1', 10),
 				['onscript4'] = getDummy(2, 'onscript4', 'state2', 20),
 				['wildcard'] = getDummy(3, 'wildcard', 'state3', 30),
+				['(test)'] = getDummy(3, 'blabla (test) blabla', 'state3', 30),
 				['someweirddevice'] = getDummy(4, 'someweirddevice', 'state4', 40),
 				--['8device'] = getDummy(8, '8device', 'state64', 404),
 				-- ['on_script_5_Temperature'] = 50,
@@ -636,11 +636,12 @@ describe('event helpers', function()
 				"script6",
 				"script_combined",
 				"script_wildcard1",
-				"script_wildcard2"
+				"script_wildcard2",
+				"script_wildcard3",
 			}, scripts)
 
-
 			assert.is_same({
+				"blabla (test) blabla",
 				"mydevice",
 				"onscript1",
 				"onscript4",
@@ -838,7 +839,6 @@ describe('event helpers', function()
 				'script_variable2',
 				'script_variable3'
 			}, scripts)
-
 
 			assert.is_same({
 				"myVar1",
