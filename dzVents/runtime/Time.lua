@@ -262,7 +262,8 @@ local function Time(sDate, isUTC, _testMS)
 	self['minutes'] = self.min
 	self['seconds'] = self.sec
 
-	self['secondsSinceMidnight'] = self.hour * 3600 + self.min * 60 + self.sec
+	self['minutesSinceMidnight'] = self.hour * 60 + self.min
+	self['secondsSinceMidnight'] = self.minutesSinceMidnight * 60 + self.sec
 	self['utils'] = utils
 	self['isUTC'] = isUTC
 	self['dDate'] = dDate
@@ -296,6 +297,31 @@ local function Time(sDate, isUTC, _testMS)
 		else
 			utils.log('Invalid time format passed to diff. Should a Time object', utils.LOG_ERROR)
 		end
+	end
+
+	function self.addSeconds(seconds, factor)
+		if type(seconds) ~= 'number' then 
+			self.utils.log(tostring(seconds) .. ' is not a valid parameter to this function. Please change to use a number value!', utils.LOG_ERROR)
+		else
+			factor = factor or 1
+			return Time( os.date("%Y-%m-%d %H:%M:%S", os.time() +  factor * math.floor(seconds) )) 
+		end
+	end
+
+	function self.addDays(days)
+		return self.addSeconds(days, 24 * 3600)
+	end
+
+	function self.addHours(hours)
+		return self.addSeconds(hours, 3600)
+	end
+
+	function self.addMinutes(minutes)
+		return self.addSeconds(minutes, 60)
+	end
+
+	function self.makeTime(sDate, isUTC)
+		return Time(sDate, isUTC)
 	end
 
 	-- return ISO format
