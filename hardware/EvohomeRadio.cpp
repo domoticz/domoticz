@@ -449,8 +449,10 @@ void CEvohomeRadio::SendExternalSensor()
 	{
 		std::vector<std::string> strarray;
 		StringSplit(result[0][0], ";", strarray);
-		if (!strarray.empty())
-			dbTemp = atof(strarray[0].c_str());
+		if (!strarray.empty()) {
+		    dbTemp = atof(strarray[0].c_str());
+            AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, GetGatewayID(), cmdExternalSensor).Add((uint8_t)2).Add(static_cast<int16_t>(dbTemp*100.0)).Add((uint8_t)1));
+        }
 		else
 			return;
 	}
@@ -459,12 +461,12 @@ void CEvohomeRadio::SendExternalSensor()
 
 	//FIXME no light level data available UV from WU is only thing vaguely close (on dev system) without a real sensor
 	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (Type==%d)", (int)pTypeUV);
-	if (!result.empty())
-		dbUV = atof(result[0][0].c_str());
+	if (!result.empty()) {
+	    dbUV = atof(result[0][0].c_str());
+        AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, GetGatewayID(), cmdExternalSensor).Add((uint8_t)0).Add(static_cast<uint16_t>(dbUV * 39)).Add((uint8_t)2));
+    }
 	else
 		return;
-
-	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, GetGatewayID(), cmdExternalSensor).Add((uint8_t)0).Add(static_cast<uint16_t>(dbUV * 39)).Add((uint8_t)2).Add((uint8_t)2).Add(static_cast<int16_t>(dbTemp*100.0)).Add((uint8_t)1));
 }
 
 
