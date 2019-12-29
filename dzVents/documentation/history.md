@@ -1,3 +1,6 @@
+[2.5.5]
+- Add Zwave fan to Zwave mode device adapter
+
 [2.5.4]
 - Add minutesSinceMidnight to domoticz Time object
 - Add domoticz.time.addSeconds(), -.addMinutes(), -.addHours(), -.addDays() , -.makeTime()

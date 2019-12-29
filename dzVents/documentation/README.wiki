@@ -525,7 +525,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 <li>'''helpers''': ''Table''. Collection of shared helper functions available to all your dzVents scripts. See [[#Shared_helper_functions|Shared helper functions]].</li>
 <li>'''log(message, [level])''': ''Function''. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: <code>domoticz.LOG_INFO</code>, <code>domoticz.LOG_DEBUG</code>, <code>domoticz.LOG_ERROR</code> or <code>domoticz.LOG_FORCE</code>. In Domoticz settings you can set the log level for dzVents.</li>
 <li>'''notify(subject, message, priority, sound, extra, subsystem)''': ''Function''. Send a notification (like Prowl). Priority can be like <code>domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY</code>. For sound see the SOUND constants below. <code>subsystem</code> can be a table containing one or more notification subsystems. See <code>domoticz.NSS_subsystem</code> types.</li>
-<li>'''openURL(url/options)''': ''Function''. Have Domoticz 'call' a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified. If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about [[#Asynchronous_HTTP_requests|asynchronous http requests]]<sup>2.4.0</sup> with dzVents. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].</li>
+<li>'''openURL(url/options)''': ''Function''. Have Domoticz ‘call’ a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified. If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about [[#Asynchronous_HTTP_requests|asynchronous http requests]]<sup>2.4.0</sup> with dzVents. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].</li>
 <li>'''scenes(idx/name)''': ''Function'': A function returning a scene by name or id. Each scene has the same interface as a device. See [[#Device_object_API|Device object API]]. To iterate over all scenes do: <code>domoticz.scenes().forEach(..)</code>. See [[#looping-through-the-collections-iterators|Looping through the collections: iterators]]. (#Looping_through_the_collections:_iterators). Note that you cannot do <code>for i, j in pairs(domoticz.scenes()) do .. end</code>. Read more about [[#Scene|Scenes]].</li>
 <li>'''security''': Holds the state of the security system e.g. <code>Armed Home</code> or <code>Armed Away</code>.</li>
 <li>'''sendCommand(command, value)''': Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. ''There is likely no need to use this directly. Use any of the device methods instead (see below).''</li>
@@ -561,18 +561,18 @@ The domoticz object holds all information about your Domoticz system. It has glo
 </li>
 <li>'''triggerHTTPResponse([httpResponse], [delay], [message])''': <sup>2.5.3</sup> ''Function''. Creates a callback by sending a logmessage. httpResponse defaults to scriptname, delay defaults to 0 (immediate), message defaults to httpResponse.<br />
 </li>
-<li>'''triggerIFTTT(makerName [,sValue1, sValue2, sValue3])''': ''Function''. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].</li>
-<li>'''utils''': <sup>2.4.0</sup>. A subset of handy utilities: Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example: <code>{.lua}    _u = domoticz.utils     print(_u.rightPad('test',10) .. '|||') -- =&gt;  test      |||</code>
-
+<li>'''triggerIFTTT(makerName [,sValue1, sValue2, sValue3])''': ''Function''. <sup>2.4.18</sup> Have Domoticz ‘call’ an IFTTT maker event. makerName is required, 0-3 sValue’s are optional. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].</li>
+<li><p>'''utils''': <sup>2.4.0</sup>. A subset of handy utilities: Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example:</p>
+<pre> ``` {.lua}
+_u = domoticz.utils
+ print(_u.rightPad('test',10) .. '|||') -- =&gt;  test      |||
+ ```</pre>
 <ul>
-<li><p>'''_lodash''': This is an entire collection with very handy Lua functions. Read more about [[#lodash_for_Lua|lodash]]. E.g.:</p>
-																   
-<pre>domoticz.utils._.size({'abc', 'def'}))` Returns 2.</pre></li>
+<li><p>'''_.lodash''': This is an entire collection with very handy Lua functions. Read more about [[#lodash_for_Lua|lodash]]. E.g.:</p>
+<source lang="lua">domoticz.utils._.size({'abc', 'def'}))` Returns 2.</source></li>
 <li>'''cameraExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid cameraID or ID when entered with valid cameraName or false when not a cameraID or cameraName of an existing camera</li>
 <li><p>'''deviceExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid deviceID or ID when entered with valid deviceName or false when not a deviceID or deviceName of an existing device.<br />
 example:</p>
-
-				   
 <source lang="lua">local dz = domoticz
 local _u = dz.utils
 if _u.deviceExists('myDevice') then 
@@ -580,14 +580,6 @@ if _u.deviceExists('myDevice') then
 else
    dz.log('Device myDevice does not exist!', dz.LOG_ERROR)
 end
-
-									   
-				  
-													  
-		
-														
-	   
-	   
 
 local myName = _u.deviceExists(123)
 if myName then
@@ -605,16 +597,18 @@ end</source></li>
 <li>'''inTable(table, searchString)''': ''Function'': <sup>2.4.21</sup> Returns <code>&quot;key&quot;</code> if table has searchString as a key, <code>&quot;value&quot;</code> if table has searchString as value and <code>false</code> otherwise.</li>
 <li>'''leftPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.</li>
 <li>'''centerPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.</li>
-<li><p>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation<br />
-Examples:</p>
-<source lang="lua">    domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,
-    domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
-    domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300</source></li>
+<li>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation<br />
+Examples:</li></ul>
+
+<source lang="lua">         domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,
+         domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
+         domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300</source>
+<ul>
 <li>'''osExecute(cmd)''': ''Function'': Execute an os command.</li>
 <li>'''rightPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.</li>
 <li>'''round(number, [decimalPlaces])''': ''Function''. Helper function to round numbers. Default decimalPlaces is 0.</li>
 <li>'''sceneExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid sceneID or ID when entered with valid sceneName or false when not a sceneID or sceneName of an existing scene</li>
-<li>'''setLogMarker([marker])''': ''Function'': <sup>2.5.2</sup> set logMarker to 'marker'. Defaults to scriptname. Can be used to change logMarker based on flow in script</li>
+<li>'''setLogMarker([marker])''': ''Function'': <sup>2.5.2</sup> set logMarker to ‘marker’. Defaults to scriptname. Can be used to change logMarker based on flow in script</li>
 <li>'''stringSplit(string, [separator ])''':<sup>2.4.19</sup> ''Function''. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words.</li>
 <li>'''toBase64(string)''': ''Function'': <sup>2.5.2</sup>) Encode a string to base64</li>
 <li>'''toCelsius(f, relative)''': ''Function''. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So <code>toCelsius(5, true)</code> returns 5F*(1/1.8) = 2.78C.</li>
@@ -624,7 +618,7 @@ Examples:</p>
 <li>'''urlEncode(s, [strSub])''': ''Function''. Simple url encoder for string so you can use them in <code>openURL()</code>. <code>strSub</code> is optional and defaults to + but you can also pass %20 if you like/need.</li>
 <li>'''variableExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid variableID or ID when entered with valid variableName or false when not a variableID or variableName of an existing variable</li>
 <li>'''leadingZeros(number, length)''': ''Function'': <sup>2.4.27</sup> Precede number with given zeros to given length.</li>
-<li><p>'''variables(idx/name)''': ''Function''. A function returning a variable by it's name or idx. See [Variable object API] (#Variable_object_API_.28user_variables.29) for the attributes. To iterate over all variables do: <code>domoticz.variables().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. '''Note that you cannot do <code>for i, j in pairs(domoticz.variables()) do .. end</code>'''.</p></li></ul>
+<li>'''variables(idx/name)''': ''Function''. A function returning a variable by it’s name or idx. See [Variable object API] (#Variable_object_API_.28user_variables.29) for the attributes. To iterate over all variables do: <code>domoticz.variables().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. '''Note that you cannot do <code>for i, j in pairs(domoticz.variables()) do .. end</code>'''.</li></ul>
 </li></ul>
 
 === Looping through the collections: iterators ===
@@ -1109,6 +1103,13 @@ There are many switch-like devices. Not all methods are applicable for all switc
 
 * '''setPoint''': ''Number''.
 * '''heatingMode''': ''String''.
+
+==== Z-Wave Fan mode <sup>2.5.5</sup> ====
+
+* '''mode''': ''Number''. Current mode number.
+* '''modeString''': ''String''. Mode name.
+* '''modes''': ''Table''. Lists all available modes.
+* '''updateMode(modeString)''': ''Function''. Set new mode. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 ==== Z-Wave Thermostat mode ====
 
@@ -2225,6 +2226,10 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you’re good to go.
 
 = History =
+
+== [2.5.5] ==
+
+* Add Zwave fan to Zwave mode device adapter
 
 == [2.5.4] ==
 
