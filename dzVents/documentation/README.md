@@ -566,18 +566,21 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **triggerHTTPResponse([httpResponse], [delay], [message])**: <sup>2.5.3</sup> *Function*. Creates a callback by sending a logmessage. httpResponse defaults to scriptname, delay defaults to 0 (immediate), message defaults to httpResponse.  
  - **triggerIFTTT(makerName [,sValue1, sValue2, sValue3])**: *Function*. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
-       Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder.
-        Example:
+       Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example:
+
         ``` {.lua}
        _u = domoticz.utils
         print(_u.rightPad('test',10) .. '|||') -- =>  test      |||
-```
-    - **\_lodash**: This is an entire collection with very handy
+        ```
+
+    - **\_.lodash**: This is an entire collection with very handy
         Lua functions. Read more about
         [lodash](#lodash_for_Lua "wikilink"). E.g.:
-```
+
+        ``` {.lua}
         domoticz.utils._.size({'abc', 'def'}))` Returns 2.
-```
+        ```
+
     - **cameraExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid cameraID or ID when entered with valid cameraName or false when not a cameraID or cameraName of an existing camera
     - **deviceExists(parm)**: *Function*: ^2.4.28^ returns name when
         entered with valid deviceID or ID when entered with valid
@@ -1072,6 +1075,12 @@ There are many switch-like devices. Not all methods are applicable for all switc
 #### Zone heating
  - **setPoint**: *Number*.
  - **heatingMode**: *String*.
+
+#### Z-Wave Fan mode <sup>2.5.5</sup>
+ - **mode**: *Number*. Current mode number.
+ - **modeString**: *String*. Mode name.
+ - **modes**: *Table*. Lists all available modes.
+ - **updateMode(modeString)**: *Function*. Set new mode. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Z-Wave Thermostat mode
  - **mode**: *Number*. Current mode number.
@@ -2261,6 +2270,9 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+## [2.5.5]
+- Add Zwave fan to Zwave mode device adapter
 
 ## [2.5.4]
 - Add minutesSinceMidnight to domoticz Time object
