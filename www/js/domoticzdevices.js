@@ -803,20 +803,19 @@ Device.initialise = function () {
 
         var cont = getSVGnode();
         if (cont != undefined) {
-            var devCont;
             if ($("#DeviceContainer")[0] == undefined) {
-                devCont = makeSVGnode('g', { id: 'DeviceContainer' }, '');
+                var devCont = makeSVGnode('g', { id: 'DeviceContainer' }, '');
                 cont.appendChild(devCont);
                 Device.checkDefs();
-            }
-            if ($("#DeviceIcons")[0] == undefined) {
-                devCont.appendChild(makeSVGnode('g', { id: 'DeviceIcons' }, ''));
-            }
-            if ($("#DeviceDetails")[0] == undefined) {
-                devCont.appendChild(makeSVGnode('g', { id: 'DeviceDetails' }, ''));
-            }
-            if ($("#DeviceData")[0] == undefined) {
-                devCont.appendChild(makeSVGnode('g', { id: 'DeviceData' }, ''));
+                if ($("#DeviceIcons")[0] == undefined) {
+                        devCont.appendChild(makeSVGnode('g', { id: 'DeviceIcons' }, ''));
+                }
+                if ($("#DeviceDetails")[0] == undefined) {
+                        devCont.appendChild(makeSVGnode('g', { id: 'DeviceDetails' }, ''));
+                }
+                if ($("#DeviceData")[0] == undefined) {
+                        devCont.appendChild(makeSVGnode('g', { id: 'DeviceData' }, ''));
+                }
             }
         }
     }
