@@ -9899,15 +9899,15 @@ namespace http {
 
 						std::vector<std::vector<std::string> > result2;
 						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+						result2 = m_sql.safe_query("SELECT MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date<='%q')", sd[0].c_str(), szDate);
 						if (!result2.empty())
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min = std::stoull(sd2[0]);
-							uint64_t total_max = std::stoull(sValue);
-							uint64_t total_real = total_max - total_min;
-							sprintf(szTmp, "%" PRIu64, total_real);
+							float total_min = std::strtof(sd2[0].c_str(), nullptr);
+							float total_max = std::strtof(sValue.c_str(), nullptr);
+							float total_real = total_max - total_min;
+							sprintf(szTmp, "%.2f", total_real);
 
 							float musage = 0;
 							switch (metertype)
@@ -9926,7 +9926,7 @@ namespace http {
 								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%" PRIu64, total_real);
+								sprintf(szTmp, "%.2f", total_real);
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
@@ -9967,7 +9967,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%" PRIu64 " %s", static_cast<uint64_t>(meteroffset + dvalue), ValueUnits.c_str());
+							sprintf(szTmp, "%.2f %s", (meteroffset + dvalue), ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;

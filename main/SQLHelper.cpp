@@ -257,15 +257,15 @@ const char *sqlCreateUsers =
 const char *sqlCreateMeter =
 "CREATE TABLE IF NOT EXISTS [Meter] ("
 "[DeviceRowID] BIGINT NOT NULL, "
-"[Value] BIGINT NOT NULL, "
-"[Usage] INTEGER DEFAULT 0, "
+"[Value] REAL NOT NULL, "
+"[Usage] REAL DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreateMeter_Calendar =
 "CREATE TABLE IF NOT EXISTS [Meter_Calendar] ("
 "[DeviceRowID] BIGINT NOT NULL, "
-"[Value] BIGINT NOT NULL, "
-"[Counter] BIGINT DEFAULT 0, "
+"[Value] REAL NOT NULL, "
+"[Counter] REAL DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreateLightSubDevices =
@@ -5747,7 +5747,7 @@ void CSQLHelper::UpdateMeter()
 			else if ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))
 			{
 				double fValue = atof(sValue.c_str());
-				sprintf(szTmp, "%.0f", fValue);
+				sprintf(szTmp, "%.2f", fValue);
 				sValue = szTmp;
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
@@ -5775,13 +5775,13 @@ void CSQLHelper::UpdateMeter()
 				sValue = szTmp;
 			}
 
-			long long MeterValue = std::strtoll(sValue.c_str(), nullptr, 10);
-			long long MeterUsage = std::strtoll(susage.c_str(), nullptr, 10);
+			float MeterValue = atof(sValue.c_str());
+			float MeterUsage = atof(susage.c_str());
 
 			//insert record
 			safe_query(
 				"INSERT INTO Meter (DeviceRowID, Value, [Usage]) "
-				"VALUES ('%" PRIu64 "', '%lld', '%lld')",
+				"VALUES ('%" PRIu64 "', '%.2f', '%.2f')",
 				ID,
 				MeterValue,
 				MeterUsage
