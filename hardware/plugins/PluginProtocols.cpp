@@ -778,7 +778,7 @@ namespace Plugins {
 
 			// If username &/or password specified then add a basic auth header (if one was not supplied)
 			PyObject* pHead = NULL;
-			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Authorization:Basic");
+			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Authorization");
 			if (!pHead)
 			{
 				std::string		User;
@@ -806,7 +806,7 @@ namespace Plugins {
 						auth += Pass;
 					}
 					std::string encodedAuth = base64_encode(auth);
-					sHttp += "Authorization:Basic " + encodedAuth + "\r\n";
+					sHttp += "Authorization: Basic " + encodedAuth + "\r\n";
 				}
 			}
 
