@@ -1511,47 +1511,55 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 	}
 	// The OT command response is in byte 4 and 5
 	int nOTResponse = msg.payload[3] << 8 | msg.payload[4];
-	double dbOTResponseTemp = nOTResponse / 256;
+	double dbOTResponse = (double) nOTResponse / 256.0;
 	
+	// Quick table to print binary values from HEX	
+	const char *bit_rep[16] = {
+    		[ 0] = "0000", [ 1] = "0001", [ 2] = "0010", [ 3] = "0011",
+    		[ 4] = "0100", [ 5] = "0101", [ 6] = "0110", [ 7] = "0111",
+    		[ 8] = "1000", [ 9] = "1001", [10] = "1010", [11] = "1011",
+    		[12] = "1100", [13] = "1101", [14] = "1110", [15] = "1111",
+	};
+
 	// The OT commands are as per the OT Specification
 	// 05 (ID.05) = Fault Code
 	if (msg.payload[2] == 0x05) {
-			Log(false, LOG_STATUS, "evohome: %s: Fault Code = %04X", tag, nOTResponse);
+			Log(false, LOG_STATUS, "evohome: %s: Application-specific flags = %s%s %d", tag, bit_rep[msg.payload[3] >> 4], bit_rep[msg.payload[3] & 0x0F],  msg.payload[4]);
 			return true;
 	}
 	// 11 (ID.17) = Relative Modulation Level
 	if (msg.payload[2] == 0x11) {
-			Log(false, LOG_STATUS, "evohome: %s: Relative Modulation Level = %04X", tag, nOTResponse);
+			Log(false, LOG_STATUS, "evohome: %s: Relative Modulation Level = %.2f %%", tag, dbOTResponse);
 			return true;
 	}
 	// 12 (ID.18) = CH water pressure
 	if (msg.payload[2] == 0x12) {
-			Log(false, LOG_STATUS, "evohome: %s: CH water pressure = %04X", tag, nOTResponse);
+			Log(false, LOG_STATUS, "evohome: %s: CH water pressure = %.2f bar", tag, dbOTResponse);
 			return true;
 	}
         // 13 (ID.19) = DHW flow rate
         if (msg.payload[2] == 0x13) {
-                        Log(false, LOG_STATUS, "evohome: %s: DHW flow rate = %04X", tag, nOTResponse);
+                        Log(false, LOG_STATUS, "evohome: %s: DHW flow rate = %.2f l/min", tag, dbOTResponse);
                         return true;
         }
 	// 19 (ID.25) = Flow water temperature.
 	if (msg.payload[2] == 0x19) {
-			Log(false, LOG_STATUS, "evohome: %s: Flow water temperature = %.2fC", tag, dbOTResponseTemp);
+			Log(false, LOG_STATUS, "evohome: %s: Flow water temperature = %.2f C", tag, dbOTResponse);
 			return true;
 	}
 	// 1A (ID.26) = DHW Temperature
 	if (msg.payload[2] == 0x1a) {
-			Log(false, LOG_STATUS, "evohome: %s: DHW Temperature = %.2fC", tag, dbOTResponseTemp);
+			Log(false, LOG_STATUS, "evohome: %s: DHW Temperature = %.2f C", tag, dbOTResponse);
 			return true;
 	}
 	// 1C (ID.28) = Return water temperature
 	if (msg.payload[2] == 0x1c) {
-			Log(false, LOG_STATUS, "evohome: %s: Return water temperature = %.2fC", tag, dbOTResponseTemp);
+			Log(false, LOG_STATUS, "evohome: %s: Return water temperature = %.2f C", tag, dbOTResponse);
 			return true;
 	}
 	// 73 (ID.115) = OEM diagnostic code
 	if (msg.payload[2] == 0x73) {
-			Log(false, LOG_STATUS, "evohome: %s: OEM diagnostic code = %04X", tag, nOTResponse);
+			Log(false, LOG_STATUS, "evohome: %s: OEM diagnostic code = %d", tag, nOTResponse);
 			return true;
 	}
 	return true;
