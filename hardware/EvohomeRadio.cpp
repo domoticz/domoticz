@@ -1511,7 +1511,7 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 	}
 	// The OT command response is in byte 4 and 5
 	int nOTResponse = msg.payload[3] << 8 | msg.payload[4];
-	double dbOTResponse = (double) nOTResponse / 256.0;
+	float fOTResponse = static_cast<float>(nOTResponse) / 256.0;
 	
 	// Quick table to print binary values from HEX	
 	const char *bit_rep[16] = {
@@ -1524,43 +1524,53 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 	// The OT commands are as per the OT Specification
 	// 05 (ID.05) = Fault Code
 	if (msg.payload[2] == 0x05) {
-			Log(false, LOG_STATUS, "evohome: %s: Application-specific flags = %s%s %d", tag, bit_rep[msg.payload[3] >> 4], bit_rep[msg.payload[3] & 0x0F],  msg.payload[4]);
-			return true;
+		Log(false, LOG_STATUS, "evohome: %s: Application-specific flags = %s%s %d", tag, bit_rep[msg.payload[3] >> 4], bit_rep[msg.payload[3] & 0x0F],  msg.payload[4]);
+		return true;
 	}
-	// 11 (ID.17) = Relative Modulation Level
-	if (msg.payload[2] == 0x11) {
-			Log(false, LOG_STATUS, "evohome: %s: Relative Modulation Level = %.2f %%", tag, dbOTResponse);
-			return true;
+	// 11 (ID.17) = Relative modulation level
+	if (msg.payload[2] == 0x11) { 			
+		bool bExists = CheckPercentageSensorExists(17, 1);
+		if ((fOTResponse != 0) || (bExists))
+		{
+			SendPercentageSensor(17, 1, 255, fOTResponse, "Relative modulation level");
+		}		
+		Log(true, LOG_STATUS, "evohome: %s: Relative modulation level = %.2f %%", tag, fOTResponse);
+		return true;
 	}
 	// 12 (ID.18) = CH water pressure
 	if (msg.payload[2] == 0x12) {
-			Log(false, LOG_STATUS, "evohome: %s: CH water pressure = %.2f bar", tag, dbOTResponse);
-			return true;
+		SendPressureSensor(0, 18, 255, fOTResponse, "CH Water Pressure");
+		Log(true, LOG_STATUS, "evohome: %s: CH water pressure = %.2f bar", tag, fOTResponse);
+		return true;
 	}
         // 13 (ID.19) = DHW flow rate
         if (msg.payload[2] == 0x13) {
-                        Log(false, LOG_STATUS, "evohome: %s: DHW flow rate = %.2f l/min", tag, dbOTResponse);
-                        return true;
+		SendWaterflowSensor(0, 19, 255, fOTResponse, "DHW flow rate");
+        	Log(true, LOG_STATUS, "evohome: %s: DHW flow rate = %.2f l/min", tag, fOTResponse);
+        	return true;
         }
-	// 19 (ID.25) = Flow water temperature.
+	// 19 (ID.25) = Boiler Water Temperature
 	if (msg.payload[2] == 0x19) {
-			Log(false, LOG_STATUS, "evohome: %s: Flow water temperature = %.2f C", tag, dbOTResponse);
-			return true;
+                SendTempSensor(25, 255, fOTResponse, "Boiler Water Temperature");
+ 		Log(true, LOG_STATUS, "evohome: %s: Boiler Water Temperature = %.2f C", tag, fOTResponse);
+		return true;
 	}
 	// 1A (ID.26) = DHW Temperature
 	if (msg.payload[2] == 0x1a) {
-			Log(false, LOG_STATUS, "evohome: %s: DHW Temperature = %.2f C", tag, dbOTResponse);
-			return true;
+		SendTempSensor(26, 255, fOTResponse, "DHW Temperature");
+		Log(true, LOG_STATUS, "evohome: %s: DHW Temperature = %.2f C", tag, fOTResponse);
+		return true;
 	}
-	// 1C (ID.28) = Return water temperature
+	// 1C (ID.28) = Return Water Temperature
 	if (msg.payload[2] == 0x1c) {
-			Log(false, LOG_STATUS, "evohome: %s: Return water temperature = %.2f C", tag, dbOTResponse);
-			return true;
+        	SendTempSensor(28, 255, fOTResponse, "Return Water Temperature");
+ 		Log(true, LOG_STATUS, "evohome: %s: Return Water Temperature = %.2f C", tag, fOTResponse);
+		return true;
 	}
 	// 73 (ID.115) = OEM diagnostic code
 	if (msg.payload[2] == 0x73) {
-			Log(false, LOG_STATUS, "evohome: %s: OEM diagnostic code = %d", tag, nOTResponse);
-			return true;
+		Log(false, LOG_STATUS, "evohome: %s: OEM diagnostic code = %d", tag, nOTResponse);
+		return true;
 	}
 	return true;
 }
