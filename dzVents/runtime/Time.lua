@@ -304,7 +304,7 @@ local function Time(sDate, isUTC, _testMS)
 			self.utils.log(tostring(seconds) .. ' is not a valid parameter to this function. Please change to use a number value!', utils.LOG_ERROR)
 		else
 			factor = factor or 1
-			return Time( os.date("%Y-%m-%d %H:%M:%S", os.time() +  factor * math.floor(seconds) )) 
+			return Time( os.date("%Y-%m-%d %X", self.dDate +  factor * math.floor(seconds) )) 
 		end
 	end
 
