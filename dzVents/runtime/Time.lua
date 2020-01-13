@@ -106,7 +106,7 @@ function getYearBeginDayOfWeek(tm)
 	return yearBeginDayOfWeek
 end
 
--- tm: date (as retruned fro os.time)
+-- tm: date (as returned fro os.time)
 -- returns basic correction to be add for counting number of week
 -- weekNum = math.floor((dayOfYear + returnedNumber) / 7) + 1
 -- (does not consider correction at begin and end of year)
@@ -406,7 +406,8 @@ local function Time(sDate, isUTC, _testMS)
 		local testM = self.min
 
 		if (( stopH * 24 + stopM ) < ( startH * 24 + startM ) ) then -- add 24 hours if endTime < startTime
-			local stopHOrg = stopH
+		-- self.utils.log('In function timeIs', utils.LOG_ERROR)	
+            local stopHOrg = stopH
 			stopH = stopH + 24
 			if (testH <= stopHOrg) then -- if endhours has increased the currenthour should also increase
 				testH = testH + 24
@@ -862,7 +863,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	-- returns true if self.time is in time range: at hh:mm-hh:mm
 	function self.ruleMatchesTimeRange(rule)
-		local fromH, fromM, toH, toM = string.match(rule, 'at% ([0-9%*]+):([0-9%*]+)-([0-9%*]+):([0-9%*]+)')
+		local fromH, fromM, toH, toM =  string.match(rule, 'at% ([0-9%*]+):([0-9%*]+)-([0-9%*]+):([0-9%*]+)') 
 
 		if (fromH ~= nil) then
 			-- all will be nil if fromH is nil
@@ -989,8 +990,17 @@ local function Time(sDate, isUTC, _testMS)
 
 		return timeIsInRange(fromHH, fromMM, toHH, toMM)
 	end
-
-	-- returns true if self.time matches the rule
+    
+    -- remove seconds from timeStrings 'at 12:23:56-23:45:00 ==>> 'at 12:23-23:45' to allow use of rawTime in matchesRule
+	local function sanitize(rule)
+        if not rule:match("(%w+%:%w+:%w+)") then return rule end
+        for strippedTime in rule:gmatch("(%w+%:%w+)") do
+            rule = rule:gsub(rule:match("(%w+%:%w+:%w+)"),rule:match(strippedTime))
+        end
+        return rule
+    end
+    
+    -- returns true if self.time matches the rule
 	function self.matchesRule(rule)
 		if (string.len(rule == nil and "" or rule) == 0) then
 			return false
@@ -1163,14 +1173,15 @@ local function Time(sDate, isUTC, _testMS)
 		end
 		updateTotal(res)
 
-		res = self.ruleMatchesTime(rule) -- moment / range
+        rule = sanitize(rule)    
+        res = self.ruleMatchesTime(rule) -- moment / range
 		if (res == false) then
 			-- rule had at hh:mm part but didn't match (or was invalid)
 			return false
 		end
 		updateTotal(res)
 
-		res = self.ruleMatchesTimeRange(rule) -- range
+		res = self.ruleMatchesTimeRange(sanitize(rule)) -- range
 		if (res == false) then
 			-- rule had at hh:mm-hh:mm but time is not in that range now
 			return false

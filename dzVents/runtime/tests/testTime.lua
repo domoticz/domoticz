@@ -172,7 +172,7 @@ describe('Time', function()
 	end)
 
 	describe('makeTime functions', function()
-		local t = Time( os.time()).makeTime('2017-06-05 02:04:00')
+        local t = Time( os.time()).makeTime('2017-06-05 02:04:00')
 		assert.is_same(23, t.week)
 		t = Time('2017-01-01 02:04:00')
 		assert.is_same(52, t.week)
