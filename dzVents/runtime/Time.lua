@@ -237,7 +237,8 @@ local function Time(sDate, isUTC, _testMS)
 	end
 
 	self.rawDate = self.year .. '-' .. string.format("%02d", self.month) .. '-' .. string.format("%02d", self.day)
-	self.rawTime = string.format("%02d", self.hour) .. ':' .. string.format("%02d", self.min) .. ':' .. string.format("%02d", self.sec)
+	self.time = string.format("%02d", self.hour) .. ':' .. string.format("%02d", self.min)
+    self.rawTime =  self.time .. ':' .. string.format("%02d", self.sec)
 	self.rawDateTime = self.rawDate .. ' ' .. self.rawTime
 	self.milliSeconds = ms
 	self.milliseconds = ms
@@ -404,7 +405,7 @@ local function Time(sDate, isUTC, _testMS)
 		local testH = self.hour
 		local testM = self.min
 
-		if (stopH < startH) then -- add 24 hours if endhours < startHours
+		if (( stopH * 24 + stopM ) < ( startH * 24 + startM ) ) then -- add 24 hours if endTime < startTime
 			local stopHOrg = stopH
 			stopH = stopH + 24
 			if (testH <= stopHOrg) then -- if endhours has increased the currenthour should also increase
