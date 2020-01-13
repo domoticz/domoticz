@@ -79,6 +79,7 @@ private:
 	bool DecodeZoneName(CEvohomeMsg &msg);
 	bool DecodeHeatDemand(CEvohomeMsg &msg);
 	bool DecodeOpenThermBridge(CEvohomeMsg &msg);
+        bool DecodeOpenThermSetpoint(CEvohomeMsg &msg);
 	bool DecodeZoneInfo(CEvohomeMsg &msg);
 	bool DecodeBinding(CEvohomeMsg &msg);
 	bool DecodeActuatorState(CEvohomeMsg &msg);

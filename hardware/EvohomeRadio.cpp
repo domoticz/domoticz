@@ -41,6 +41,7 @@ enum evoCommands
 	cmdControllerMode = 0x2E04,
 	cmdControllerHeatDemand = 0x0008,//Heat demand sent by the controller for CH / DHW / Boiler  (F9/FA/FC)
 	cmdOpenThermBridge = 0x3220,//OT Bridge Status messages
+        cmdOpenThermSetpoint = 0x22D9,//OT Bridge Control Setpoint
 	cmdActuatorState = 0x3EF0,
 	cmdActuatorCheck = 0x3B00,
 	cmdBinding = 0x1FC9,
@@ -95,6 +96,7 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string &UserContID)
 	RegisterDecoder(cmdZoneName, boost::bind(&CEvohomeRadio::DecodeZoneName, this, _1));
 	RegisterDecoder(cmdZoneHeatDemand, boost::bind(&CEvohomeRadio::DecodeHeatDemand, this, _1));
 	RegisterDecoder(cmdOpenThermBridge, boost::bind(&CEvohomeRadio::DecodeOpenThermBridge, this, _1));
+        RegisterDecoder(cmdOpenThermSetpoint, boost::bind(&CEvohomeRadio::DecodeOpenThermSetpoint, this, _1));
 	RegisterDecoder(cmdZoneInfo, boost::bind(&CEvohomeRadio::DecodeZoneInfo, this, _1));
 	RegisterDecoder(cmdControllerHeatDemand, boost::bind(&CEvohomeRadio::DecodeHeatDemand, this, _1));
 	RegisterDecoder(cmdBinding, boost::bind(&CEvohomeRadio::DecodeBinding, this, _1));
@@ -1573,6 +1575,29 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 		return true;
 	}
 	return true;
+}
+
+bool CEvohomeRadio::DecodeOpenThermSetpoint(CEvohomeMsg &msg)
+{
+        char tag[] = "OPENTHERM_SETPOINT";
+
+        // Only look for responses from the OT Bridge and Filter out messages from other controllers
+        if (msg.GetID(1) != GetControllerID())
+                return true;
+
+        // All OT messages should have a payload size of 3
+        if (msg.payloadsize != 3) {
+                Log(false, LOG_ERROR, "evohome: %s: Error decoding command, unknown packet size: %d", tag, msg.payloadsize);
+                return false;
+        }
+
+        // The OT Control Setpoint is in byte 2 and 3
+        float fOTSetpoint = static_cast<float>(msg.payload[1] << 8 | msg.payload[2]) / 100.0;
+
+	SendTempSensor(1, 255, fOTSetpoint, "Control Setpoint");
+        Log(true, LOG_STATUS, "evohome: %s: Boiler Water Temperature = %.2f C", tag, fOTSetpoint);
+
+        return true;
 }
 
 bool CEvohomeRadio::DecodeExternalSensor(CEvohomeMsg &msg)
