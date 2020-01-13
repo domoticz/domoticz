@@ -406,8 +406,7 @@ local function Time(sDate, isUTC, _testMS)
 		local testM = self.min
 
 		if (( stopH * 24 + stopM ) < ( startH * 24 + startM ) ) then -- add 24 hours if endTime < startTime
-		-- self.utils.log('In function timeIs', utils.LOG_ERROR)	
-            local stopHOrg = stopH
+            		local stopHOrg = stopH
 			stopH = stopH + 24
 			if (testH <= stopHOrg) then -- if endhours has increased the currenthour should also increase
 				testH = testH + 24
