@@ -1585,12 +1585,12 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 	if (msg.payload[2] == 0x05) {
 		if (msg.payload[3] != 0)
 		{
-			SendCustomSensor(0, 5, 255, msg.payload[3], "Application fault flags", ""); 
+			SendCustomSensor(0, 5, 255, static_cast<float>(msg.payload[3]), "Application fault flags", ""); 
 		}
 		// Note : Vaillant VR33 returns back 255 as normal 
                 if ((msg.payload[4] != 0) && (msg.payload[4] != 0xFF))
                 {
-                        SendCustomSensor(1, 5, 255, msg.payload[4], "OEM fault code", "");
+                        SendCustomSensor(1, 5, 255, static_cast<float>(msg.payload[4]), "OEM fault code", "");
                 }
 		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags = %s%s %d", tag, bit_rep[msg.payload[3] >> 4], bit_rep[msg.payload[3] & 0x0F],  msg.payload[4]);
 		return true;
