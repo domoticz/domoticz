@@ -1570,7 +1570,7 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 	}
 	// The OT command response is in byte 4 and 5
 	int nOTResponse = msg.payload[3] << 8 | msg.payload[4];
-	float fOTResponse = static_cast<float>(nOTResponse) / 256.0;
+	float fOTResponse = static_cast<float>(nOTResponse) / 256.0f;
 	
 	// Quick table to print binary values from HEX	
 	const char *bit_rep[16] = {
@@ -1596,12 +1596,12 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 		return true;
 	}
 	// 11 (ID.17) = Relative modulation level
-	if (msg.payload[2] == 0x11) { 			
+	if (msg.payload[2] == 0x11) {
 		bool bExists = CheckPercentageSensorExists(17, 1);
-		if ((fOTResponse != 0) || (bExists))		
+		if ((fOTResponse != 0) || (bExists))
 		{
 			SendPercentageSensor(17, 1, 255, fOTResponse, "Relative modulation level");
-		}		
+		}
 		Log(true, LOG_STATUS, "evohome: %s: Relative modulation level = %.2f %%", tag, fOTResponse);
 		return true;
 	}
@@ -1654,7 +1654,7 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 	if (msg.payload[2] == 0x73) {
                 if (nOTResponse != 0)
                 {
-                        SendCustomSensor(0, 115, 255, nOTResponse, "OEM diagnostic code", "");                
+                        SendCustomSensor(0, 115, 255, static_cast<float>(nOTResponse), "OEM diagnostic code", "");
 		} 
 		Log(true, LOG_STATUS, "evohome: %s: OEM diagnostic code = %d", tag, nOTResponse);
 		return true;
@@ -1677,7 +1677,7 @@ bool CEvohomeRadio::DecodeOpenThermSetpoint(CEvohomeMsg &msg)
         }
 
         // The OT Control Setpoint is in byte 2 and 3
-        float fOTSetpoint = static_cast<float>(msg.payload[1] << 8 | msg.payload[2]) / 100.0;
+        float fOTSetpoint = static_cast<float>(msg.payload[1] << 8 | msg.payload[2]) / 100.0f;
 
 	SendTempSensor(1, 255, fOTSetpoint, "Control Setpoint");
         Log(true, LOG_STATUS, "evohome: %s: Boiler Water Temperature = %.2f C", tag, fOTSetpoint);
