@@ -1584,7 +1584,7 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
                 {
                         SendCustomSensor(1, 5, 255, static_cast<float>(msg.payload[4]), "OEM fault code", "");
                 }
-		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags = %d %d", tag, msg.payload[3],  msg.payload[4]);
+		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags = %02X %d", tag, msg.payload[3],  msg.payload[4]);
 		return true;
 	}
 	// 11 (ID.17) = Relative modulation level
