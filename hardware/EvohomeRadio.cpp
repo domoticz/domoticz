@@ -1571,14 +1571,6 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 	// The OT command response is in byte 4 and 5
 	int nOTResponse = msg.payload[3] << 8 | msg.payload[4];
 	float fOTResponse = static_cast<float>(nOTResponse) / 256.0f;
-	
-	// Quick table to print binary values from HEX	
-	const char *bit_rep[16] = {
-    		[ 0] = "0000", [ 1] = "0001", [ 2] = "0010", [ 3] = "0011",
-    		[ 4] = "0100", [ 5] = "0101", [ 6] = "0110", [ 7] = "0111",
-    		[ 8] = "1000", [ 9] = "1001", [10] = "1010", [11] = "1011",
-    		[12] = "1100", [13] = "1101", [14] = "1110", [15] = "1111",
-	};
 
 	// The OT commands are as per the OT Specification
 	// 05 (ID.05) = Fault Code
@@ -1592,7 +1584,7 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
                 {
                         SendCustomSensor(1, 5, 255, static_cast<float>(msg.payload[4]), "OEM fault code", "");
                 }
-		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags = %s%s %d", tag, bit_rep[msg.payload[3] >> 4], bit_rep[msg.payload[3] & 0x0F],  msg.payload[4]);
+		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags = %d %d", tag, msg.payload[3],  msg.payload[4]);
 		return true;
 	}
 	// 11 (ID.17) = Relative modulation level
