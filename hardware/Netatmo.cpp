@@ -619,6 +619,18 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	}
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
+
+	tRBUF *pSen = (tRBUF*)pdata;
+	unsigned char packettype = pSen->ICMND.packettype;
+	std::string msgTypeS = "NetatmoThermostat packettype" + packettype;
+	_log.Log(LOG_ERROR, msgTypeS);
+	unsigned char subtype = pSen->ICMND.subtype;
+	std::string subtypeS = "NetatmoThermostat subtype" + subtype;
+	_log.Log(LOG_ERROR, subtypeS);
+	unsigned char cmnd = pSen->LIGHTING2.cmnd;
+	std::string cmndS = "NetatmoThermostat cmnd" + cmnd;
+	_log.Log(LOG_ERROR, cmndS);
+
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
@@ -1424,8 +1436,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 					std::string boiler_status = module["boiler_status"].asString();
 					bool bIsActive = (boiler_status == "true");
 					std::string aName = "Status";
-					SendPercentageSensor((uint8_t)(moduleID & 0XFF0000), BOILER_SWITCH_CHILDID, 255, (bIsActive == true) ? 100.0f : 0.0f, aName);
-					// SendSwitch((uint8_t)(moduleID & 0XFF0000), BOILER_SWITCH_CHILDID, 255, bIsActive, 0, aName);
+					SendSwitch(1, BOILER_SWITCH_CHILDID, 255, (bIsActive == true), 0, aName);
 				}
 
 				if (!module["battery_level"].empty())
