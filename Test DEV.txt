@@ -7,3 +7,4 @@ cmake         -DBUILD_SHARED_LIBS=True         -DCMAKE_BUILD_TYPE=Release       
 
 ps -eaf|grep abc
 pkill -9 -f '/var/lib/domoticz/domoticz'
+ps -eaf|grep abc
