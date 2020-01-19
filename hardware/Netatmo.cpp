@@ -620,15 +620,13 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 
-	tRBUF *pSen = (tRBUF*)pdata;
-	unsigned char packettype = pSen->ICMND.packettype;
-	std::string msgTypeS = "NetatmoThermostat packettype" + packettype;
+	std::string msgTypeS = "NetatmoThermostat packettype:" + pCmd->LIGHTING2.packettype;
 	_log.Log(LOG_ERROR, msgTypeS);
-	unsigned char subtype = pSen->ICMND.subtype;
-	std::string subtypeS = "NetatmoThermostat subtype" + subtype;
+	std::string subtypeS = "NetatmoThermostat subtype:" + pCmd->LIGHTING2.subtype;;
 	_log.Log(LOG_ERROR, subtypeS);
-	unsigned char cmnd = pSen->LIGHTING2.cmnd;
-	std::string cmndS = "NetatmoThermostat cmnd" + cmnd;
+	std::string seqnbrS = "NetatmoThermostat seqnbr:" + pCmd->LIGHTING2.seqnbr;
+	_log.Log(LOG_ERROR, seqnbrS);
+	std::string cmndS = "NetatmoThermostat cmnd:" + pCmd->LIGHTING2.cmnd;
 	_log.Log(LOG_ERROR, cmndS);
 
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
