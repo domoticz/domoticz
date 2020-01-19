@@ -620,7 +620,7 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 
-	std::string msgTypeS = "NetatmoThermostat unitcode:" + reinterpret_cast<int>(pCmd->LIGHTING2.unitcode);
+	std::string msgTypeS = "NetatmoThermostat unitcode:" + static_cast<int>(pCmd->LIGHTING2.unitcode);
 	_log.Log(LOG_ERROR, msgTypeS);
 	// std::string subtypeS = "NetatmoThermostat subtype:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.subtype);
 	// _log.Log(LOG_ERROR, subtypeS);
