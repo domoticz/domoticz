@@ -620,14 +620,14 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 
-	std::string msgTypeS = "NetatmoThermostat packettype:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.packettype);
+	std::string msgTypeS = "NetatmoThermostat unitcode:" + reinterpret_cast<int>(pCmd->LIGHTING2.unitcode);
 	_log.Log(LOG_ERROR, msgTypeS);
-	std::string subtypeS = "NetatmoThermostat subtype:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.subtype);
-	_log.Log(LOG_ERROR, subtypeS);
-	std::string seqnbrS = "NetatmoThermostat seqnbr:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.seqnbr);
-	_log.Log(LOG_ERROR, seqnbrS);
-	std::string cmndS = "NetatmoThermostat cmnd:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.cmnd);
-	_log.Log(LOG_ERROR, cmndS);
+	// std::string subtypeS = "NetatmoThermostat subtype:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.subtype);
+	// _log.Log(LOG_ERROR, subtypeS);
+	// std::string seqnbrS = "NetatmoThermostat seqnbr:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.seqnbr);
+	// _log.Log(LOG_ERROR, seqnbrS);
+	// std::string cmndS = "NetatmoThermostat cmnd:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.cmnd);
+	// _log.Log(LOG_ERROR, cmndS);
 
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
