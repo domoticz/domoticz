@@ -6311,6 +6311,13 @@ namespace http {
 						return;
 					}
 				}
+				//Check for duplicate user name
+				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", base64_encode(username).c_str());
+				if (!result.empty())
+				{
+					root["message"] = "Duplicate Username!";
+					return;
+				}
 				root["status"] = "OK";
 				root["title"] = "AddUser";
 				m_sql.safe_query(
@@ -6360,6 +6367,18 @@ namespace http {
 					}
 				}
 				std::string sHashedUsername = base64_encode(username);
+
+				//Check for duplicate user name
+				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", base64_encode(username).c_str());
+				if (!result.empty())
+				{
+					std::string oidx = result[0][0];
+					if (oidx != idx)
+					{
+						root["message"] = "Duplicate Username!";
+						return;
+					}
+				}
 
 				// Invalid user's sessions if username or password has changed
 				std::string sOldUsername;
