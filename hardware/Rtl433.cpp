@@ -174,6 +174,12 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	bool havePower = false;
 	float power = 0;
 
+	bool haveEnergy = false;
+	float energy = 0;
+
+	bool haveSequence = false;
+	float sequence = 0;
+
 	if (!data["id"].empty())
 	{
 		id = atoi(data["id"].c_str());
@@ -325,10 +331,22 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		moisture = atoi(data["moisture"].c_str());
 		haveMoisture = true;
 	}
-	else if (FindField(data, "power_W"))
-	{
-		power = (float)atof(data["power_W"].c_str());
-		havePower = true;
+	else {
+		if (FindField(data, "power_W"))
+		{
+			power = (float)atof(data["power_W"].c_str());
+			havePower = true;
+		}
+		if (FindField(data, "energy_kWh"))
+		{
+			energy = (float)atof(data["energy_kWh"].c_str());
+			haveEnergy = true;
+		}
+		if (FindField(data, "sequence"))
+		{
+			sequence = atoi(data["sequence"].c_str());
+			haveSequence = true;
+		}
 	}
 
 	std::string model = data["model"];
@@ -412,11 +430,23 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		SendMoistureSensor(sensoridx, batterylevel, moisture, model);
 		bHandled = true;
 	}
+
 	if (havePower)
 	{
 		SendWattMeter((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model);
 		bHandled = true;
 	}
+	if (haveEnergy && havePower)
+	{
+		if (haveSequence) {
+			if (sequence==0) { 
+				sensoridx = sensoridx + 1;
+			}
+			SendKwhMeter(sensoridx, unit, batterylevel, power, energy, model);
+			bHandled = true;
+		}
+	}
+
 
 	return bHandled; //not handled (Yet!)
 }
