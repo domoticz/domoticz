@@ -1236,13 +1236,19 @@ $(document).ready(function() {
 				<td align="right">
 					<span data-i18n="Year">Year</span>:
 					<select id="comboyear" style="width:74px" class="combobox ui-corner-all">
-						<option value="2012">2012</option>
-						<option value="2013">2013</option>
-						<option value="2014">2014</option>
-						<option value="2015">2015</option>
-						<option value="2016">2016</option>
-						<option value="2017">2017</option>
-						<option value="2018">2018</option>
+						<script>
+								document.getElementById('comboyear').options.length = 0;
+								var min = 2012
+								var max = new Date().getFullYear(),
+								select = document.getElementById('comboyear');
+
+							for (var i = min; i<=max; i++){
+								var opt = document.createElement('option');
+								opt.value = i;
+								opt.innerHTML = i;
+								select.appendChild(opt);
+							}
+						</script>
 					</select>
 				</td>
 			</tr>
