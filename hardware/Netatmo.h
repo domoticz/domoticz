@@ -18,12 +18,6 @@ public:
 	void SetSetpoint(int idx, const float temp);
 	bool SetProgramState(const int idx, const int newState);
 private:
-	// Subtype needed to identify switch pressed from domoticz and differentiate between away and boiler switch
-	enum _eNetatmoChildID
-	{
-		AWAY_SWITCH_CHILDID = 10,
-		BOILER_SWITCH_CHILDID = 15
-	};
 	enum _eNetatmoType
 	{
 		NETYPE_WEATHER_STATION=0,
