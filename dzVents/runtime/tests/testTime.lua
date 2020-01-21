@@ -90,6 +90,11 @@ describe('Time', function()
 			assert.is_same(42312, t.secondsSinceMidnight)
 		end)
 
+		it('should have minutesSinceMidnight', function()
+			local t = Time('2017-01-01 11:45:12')
+			assert.is_same(705, t.minutesSinceMidnight)
+		end)
+
 		it('should have a raw time', function()
 			assert.is_same(utcRaw, utcT.raw)
 		end)
@@ -138,6 +143,41 @@ describe('Time', function()
 			assert.is_same(os.date('!*t'), utcT.utcSystemTime)
 		end)
 
+	end)
+
+	describe('addTime functions', function()
+
+		local t = Time( os.time())
+		it('should have addSeconds ' , function()
+			assert.is_same((localNow.sec + 4) % 60 , t.addSeconds(4).seconds)
+		end)
+
+		it('should have addMinutes' , function()
+			assert.is_same((localNow.min + 4) % 60, t.addMinutes(4).minutes)
+		end)
+
+		it('should have addHours', function()
+			assert.is_same((localNow.hour + 4) % 24 , t.addHours(4).hour )
+		end)
+
+		it('should have addDays', function()
+			assert.is_same(localNow.day - 1 , t.addDays(-1).day)
+		end)
+
+		it('should return nil when called with a non number',function()
+			assert.is_nil( t.addDays(t))
+			assert.is_table( t.addDays(5))
+		end)
+
+	end)
+
+	describe('makeTime functions', function()
+        local t = Time( os.time()).makeTime('2017-06-05 02:04:00')
+		assert.is_same(23, t.week)
+		t = Time('2017-01-01 02:04:00')
+		assert.is_same(52, t.week)
+		t = Time('2016-01-01 02:04:00')
+		assert.is_same(53, t.week)
 	end)
 
 	describe('non UTC', function()

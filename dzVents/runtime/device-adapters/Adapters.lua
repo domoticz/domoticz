@@ -48,7 +48,7 @@ local deviceAdapters = {
 	'waterflow_device',
 	'wind_device',
 	'zone_heating_device',
-	'zwave_thermostat_mode_device',
+	'zwave_mode_type_device',
 	'kodi_device'
 }
 

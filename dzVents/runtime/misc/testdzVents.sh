@@ -45,7 +45,7 @@ currenttime=$(date +%H:%M)
 if [[ "$currenttime" > "00:00" ]] && [[ "$currenttime" < "00:31" ]]; then 
 	echo Script cannot be execute dbetween 00:00 and 00:30. Time checks will fail
 	exit 1
-fi	
+fi
 
 dzVersion=$(grep DZVERSION dzVents/runtime/Utils.lua | head -1 | grep -oP "'.*'"  | sed s/\'//g)
 
@@ -139,8 +139,8 @@ function fillNumberOfTests
 		HTTPResponse_ExpectedTests=6
 		ScriptdzVentsDispatching_ExpectedTests=2
 		TimedCommand_ExpectedTests=42
-		Time_ExpectedTests=326
-		Utils_ExpectedTests=24
+		Time_ExpectedTests=332
+		Utils_ExpectedTests=25
 		Variable_ExpectedTests=15
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
 		DelayedVariableScene_ExpectedTests=2
@@ -210,7 +210,7 @@ checkStarted "domoticz" 20
 
 clear
 echo "========= domoticz $NewVersion, dzVents V$dzVersion =======+========================== Tests ==============================+"
-echo "  time  | test-script                              | expected | tests | result  | successful |  failed  | seconds  |"
+echo "  time  | test-script	                           | expected | tests | result  | successful |  failed  | seconds  |"
 echo "===================================================+===============================================================+"
 
 fillTimes
@@ -237,7 +237,7 @@ if [[ $? -eq 0 ]];then
 		else
 			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken
 			stopBackgroundProcesses 1
-		fi	
+		fi
 	else
 		echo Stage 1 of integration test was not completely succesfull
 		grep -i fail domoticz.log$$

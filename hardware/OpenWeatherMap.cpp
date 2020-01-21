@@ -144,10 +144,7 @@ void COpenWeatherMap::GetMeterDetails()
 
 	try
 	{
-		bool bret;
-		std::string szURL = sURL.str();
-		bret = HTTPClient::GET(szURL, sResult);
-		if (!bret)
+		if (!HTTPClient::GET(sURL.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "OpenWeatherMap: Error getting http data!");
 			return;

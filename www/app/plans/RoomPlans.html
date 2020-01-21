@@ -1,0 +1,168 @@
+<div class="container">
+	<a class="btnstylerev" back-button>{{:: 'Back'|translate }}</a>
+	<page-loading-indicator ng-hide="::$ctrl.plans" />
+
+	<div ng-if="::$ctrl.plans">
+		<section>
+			<h2 class="page-header">{{:: 'Room plans'|translate }}</h2>
+
+			<div class="btn-panel align-right">
+				<button class="btn btn-default" ng-click="$ctrl.addPlan()">{{:: 'Add Plan' | translate }}</button>
+			</div>
+
+			<room-plans-table plans="$ctrl.plans" on-update="$ctrl.refreshPlans()" on-select="$ctrl.selectPlan(plan)"/>
+		</section>
+
+		<section ng-show="$ctrl.selectedPlan">
+			<h2 class="page-header">{{:: 'Devices' | translate }}</h2>
+
+			<div class="btn-panel align-right">
+				<button
+						class="btn btn-default"
+						ng-click="$ctrl.addDeviceToPlan()">
+					{{:: 'Add'|translate }}
+				</button>
+
+				<button
+						class="btn btn-default"
+						ng-click="$ctrl.removeAllDevicesFromPlan()">
+					{{:: 'Clear'|translate }}
+				</button>
+			</div>
+
+			<room-plan-devices-table
+					plan-id="$ctrl.selectedPlan.idx"
+					devices="$ctrl.planDevices"
+					on-update="$ctrl.refreshPlanDevices()"
+			/>
+		</section>
+	</div>
+</div>
+
+<script type="text/ng-template" id="app/plans/roomPlanAddModal.html">
+	<div class="modal-header">
+		<h3 class="modal-title">{{:: 'Add New Plan' | translate }}</h3>
+	</div>
+	<div class="modal-body">
+		<form class="form-horizontal" name="modalForm">
+			<div class="control-group">
+				<label class="control-label" for="new-plan-name">{{:: 'Name' | translate }}:</label>
+				<div class="controls">
+					<input type="text"
+						   id="new-plan-name"
+						   class="form-control"
+						   required
+						   minlength="1"
+						   maxlength="100"
+						   ng-model="$ctrl.planName"
+					/>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div class="modal-footer">
+		<button type="button"
+				class="btn btn-primary"
+				ng-disabled="modalForm.$invalid || $ctrl.isSaving"
+				ng-click="$ctrl.add()">
+			{{:: 'Add' | translate }}
+		</button>
+
+		<button type="button"
+				class="btn btn-default"
+				ng-click="$dismiss()">
+			{{:: 'Cancel' | translate }}
+		</button>
+	</div>
+</script>
+
+<script type="text/ng-template" id="app/plans/roomPlanEditModal.html">
+	<div class="modal-header">
+		<h3 class="modal-title">{{:: 'Edit Plan' | translate }}</h3>
+	</div>
+	<div class="modal-body">
+		<form class="form-horizontal" name="modalForm">
+			<div class="control-group">
+				<label class="control-label" for="plan-name">{{:: 'Name' | translate }}:</label>
+				<div class="controls">
+					<input type="text"
+						   id="plan-name"
+						   class="form-control"
+						   required
+						   minlength="1"
+						   maxlength="100"
+						   ng-model="$ctrl.planName"
+					/>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div class="modal-footer">
+		<button type="button"
+				class="btn btn-primary"
+				ng-disabled="modalForm.$invalid || $ctrl.isSaving"
+				ng-click="$ctrl.update()">
+			{{:: 'Update' | translate }}
+		</button>
+
+		<button type="button"
+				class="btn btn-default"
+				ng-click="$dismiss()">
+			{{:: 'Cancel' | translate }}
+		</button>
+	</div>
+</script>
+
+<script type="text/ng-template" id="app/plans/roomPlanDeviceSelectorModal.html">
+	<div class="modal-header">
+		<h3 class="modal-title">{{:: 'Select Device' | translate }}</h3>
+	</div>
+	<div class="modal-body">
+		<page-loading-indicator ng-hide="::$ctrl.devices" />
+		<room-plan-device-selector
+				ng-if="::$ctrl.devices"
+				devices="::$ctrl.devices"
+				on-select="$ctrl.selectDevice(device)"
+		/>
+	</div>
+	<div class="modal-footer">
+		<button type="button"
+				class="btn btn-primary"
+				ng-disabled="!$ctrl.selectedDevice"
+				ng-click="$close($ctrl.selectedDevice)">
+			{{:: 'Add' | translate }}
+		</button>
+
+		<button type="button"
+				class="btn btn-default"
+				ng-click="$dismiss()">
+			{{:: 'Cancel' | translate }}
+		</button>
+	</div>
+</script>
+
+<script type="text/ng-template" id="app/plans/roomPlanDeviceSelector.html">
+	<div class="device-selector">
+		<section class="device-selector__section device-selector__section_hardware">
+			<h2>{{:: 'Hardware' | translate }}</h2>
+			<div class="list-group list-group-sm device-selector-group ">
+				<a href="javascript:void(0)"
+				   class="list-group-item list-group-item-action"
+				   ng-class="{'active': item === $ctrl.hardwareFilter}"
+				   ng-click="$ctrl.filterByHardware(item)"
+				   ng-repeat="item in $ctrl.hardwareItems track by item"
+				>
+					{{ item }}
+				</a>
+			</div>
+		</section>
+
+		<section class="device-selector__section device-selector__section_devices">
+			<room-plans-device-selector-table
+					class="device-selector-group"
+					devices="$ctrl.filteredDevices"
+					on-select="$ctrl.selectDevice(value)"
+			/>
+		</section>
+	</div>
+</script>

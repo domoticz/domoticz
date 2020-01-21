@@ -8,7 +8,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.5.3', 
+	DZVERSION = '2.5.5',
 }
 
 function math.pow(x, y)
@@ -89,6 +89,11 @@ function self.round(x, n)
 	return x / n
 end
 
+function string.sMatch(text, match) -- add sanitized match function to string "library"
+	local sanitizedMatch = match:gsub("([%%%^%$%(%)%.%[%]%*%+%-%?])", "%%%1") -- escaping all 'magic' chars
+	return text:match(sanitizedMatch)
+end
+
 function self.toCelsius(f, relative)
 	if (relative) then
 		return f*(1/1.8)
@@ -158,7 +163,7 @@ function self.fromJSON(json, fallback)
 end
 
 function self.fromBase64(codedString)  -- from http://lua-users.org/wiki/BaseSixtyFour
-	if type(codedString) ~= 'string' then 
+	if type(codedString) ~= 'string' then
 		self.log('fromBase64: parm should be a string; you supplied a ' .. type(codedString), self.LOG_ERROR)
 		return nil
 	end
@@ -179,11 +184,11 @@ end
 
 function self.toBase64(s) -- from http://lua-users.org/wiki/BaseSixtyFour
 	if type(s) == 'number' then s = tostring(s)
-	elseif type(s) ~= 'string' then 
+	elseif type(s) ~= 'string' then
 		self.log('toBase64: parm should be a number or a string; you supplied a ' .. type(s), self.LOG_ERROR)
 		return nil
 	end
-	local bs = 
+	local bs =
 	{	[0] =
 				'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
 				'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',

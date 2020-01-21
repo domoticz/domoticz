@@ -2,10 +2,11 @@ return {
 
 	baseType = 'device',
 
-	name = 'Z-Wave Thermostat mode device adapter',
+	name = 'Z-Wave mode type device adapter',
 
 	matches = function(device, adapterManager)
-		local res = (device.deviceSubType == 'Thermostat Mode')
+		local res = (device.deviceSubType == 'Thermostat Mode') 
+				 or (device.deviceSubType == 'Thermostat Fan Mode')
 		if (not res) then
 			adapterManager.addDummyMethod(device, 'updateMode')
 		end

@@ -154,10 +154,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 #else
 			std::stringstream sURL;
 			sURL << "https://api.weather.com/v3/location/near?geocode=" << Latitude << "," << Longitude << "&product=pws&format=json&apiKey=" << m_APIKey;
-			bool bret;
-			std::string szURL = sURL.str();
-			bret = HTTPClient::GET(szURL, sResult);
-			if (!bret)
+			if (!HTTPClient::GET(sURL.str(), sResult))
 			{
 				_log.Log(LOG_ERROR, "Wunderground: Error getting location/near result! (Check API key!)");
 				return "";
@@ -220,10 +217,7 @@ void CWunderground::GetMeterDetails()
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
 	sURL << "https://api.weather.com/v2/pws/observations/current?stationId=" << szLoc << "&format=json&units=m&numericPrecision=decimal&apiKey=" << m_APIKey;
-	bool bret;
-	std::string szURL=sURL.str();
-	bret=HTTPClient::GET(szURL,sResult);
-	if (!bret)
+	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR,"Wunderground: Error getting http data! (Check API key!)");
 		return;

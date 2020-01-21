@@ -213,8 +213,7 @@ bool CBuienRadar::FindNearestStationID()
 #ifdef DEBUG_BUIENRADARR
 	sResult = ReadFile("E:\\br.json");
 #else
-	bool bret = HTTPClient::GET(BUIENRADAR_URL, sResult);
-	if (!bret)
+	if (!HTTPClient::GET(BUIENRADAR_URL, sResult))
 	{
 		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
 		return false;
@@ -293,8 +292,7 @@ void CBuienRadar::GetMeterDetails()
 	sResult = ReadFile("E:\\br_actual.json");
 #else
 	std::string szUrl = BUIENRADAR_ACTUAL_URL + std::to_string(m_iNearestStationID);
-	bool bret = HTTPClient::GET(szUrl, sResult);
-	if (!bret)
+	if (!HTTPClient::GET(szUrl, sResult))
 	{
 		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
 		return;

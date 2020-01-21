@@ -541,6 +541,9 @@ app/notifications/constants.js
 app/notifications/DeviceNotifications.js
 app/notifications/factories.js
 
+app/plans/RoomPlans.html
+app/plans/RoomPlans.js
+
 app/report/CounterReport.html
 app/report/CounterReport.js
 app/report/DeviceReport.html
@@ -587,7 +590,6 @@ app/main.js
 app/NotificationController.js
 app/OfflineController.js
 app/RestoreDatabaseController.js
-app/RoomplanController.js
 app/ScenesController.js
 app/SetupController.js
 app/TemperatureController.js
@@ -701,7 +703,6 @@ views/notification.html
 views/notifications.html
 views/offline.html
 views/restoredatabase.html
-views/roomplan.html
 views/scenes.html
 views/setup.html
 views/temperature.html

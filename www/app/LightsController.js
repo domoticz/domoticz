@@ -6,7 +6,7 @@ define(['app', 'livesocket'], function (app) {
 		$scope.broadcast_unsubscribe = undefined;
 
 		MakeFavorite = function (id, isfavorite) {
-			if (!permissions.hasPermission("Admin")) {
+			if (permissions.hasPermission("Viewer")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
@@ -23,7 +23,7 @@ define(['app', 'livesocket'], function (app) {
 
 		SetColValue = function (idx, color, brightness) {
 			clearInterval($.setColValue);
-			if (permissions.hasPermission("Viewer")) {
+			if (!permissions.hasPermission("User")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
@@ -596,10 +596,10 @@ define(['app', 'livesocket'], function (app) {
 				if (
 					(item.Status == 'On')
 				) {
-					img = '<img src="images/uvsunny.png" title="' + $.t("Daytime") + '" height="48" width="48">';
+					img = '<img src="images/uvdark.png" title="' + $.t("Nighttime") + '" height="48" width="48">';
 				}
 				else {
-					img = '<img src="images/uvdark.png" title="' + $.t("Nighttime") + '" height="48" width="48">';
+					img = '<img src="images/uvsunny.png" title="' + $.t("Daytime") + '" height="48" width="48">';
 				}
 			}
 			else if (item.SwitchType == "Media Player") {
@@ -1215,10 +1215,10 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SwitchType == "Dusk Sensor") {
 								bAddTimer = false;
 								if (item.Status == 'On') {
-									xhtm += '\t      <td id="img"><img src="images/uvsunny.png" title="' + $.t("Daytime") + '" height="48" width="48"></td>\n';
+									xhtm += '\t      <td id="img"><img src="images/uvdark.png" title="' + $.t("Nighttime") + '" height="48" width="48"></td>\n';
 								}
 								else {
-									xhtm += '\t      <td id="img"><img src="images/uvdark.png" title="' + $.t("Nighttime") + '" height="48" width="48"></td>\n';
+									xhtm += '\t      <td id="img"><img src="images/uvsunny.png" title="' + $.t("Daytime") + '" height="48" width="48"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Motion Sensor") {

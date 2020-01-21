@@ -515,6 +515,13 @@ namespace Plugins {
 		m_Chunked = false;
 		m_RemainingChunk = 0;
 
+		// Need at least the whole of the first line before going any further; otherwise attempting to parse it
+		// will end badly.
+		if (sData.find("\r\n") == std::string::npos)
+		{
+		        return;
+		}
+
 		//
 		//	Process server responses
 		//
@@ -596,18 +603,27 @@ namespace Plugins {
 				{
 					// Process available chunks
 					std::string		sPayload;
-					while (sData.length() && (sData != "\r\n"))
+					while (sData.length() >= 2 && (sData != "\r\n"))
 					{
 						if (!m_RemainingChunk)	// Not processing a chunk so we should be at the start of one
 						{
+						        // Skip terminating \r\n from previous chunk
 							if (sData[0] == '\r')
 							{
 								sData = sData.substr(sData.find_first_of('\n') + 1);
 							}
-							std::string		sChunkLine = sData.substr(0, sData.find_first_of('\r'));
+							// Stop if we have not received the complete chunk size terminator yet
+							size_t uSizeEnd = sData.find_first_of('\r');
+							if (uSizeEnd == std::string::npos || sData.find_first_of('\n', uSizeEnd + 1) == std::string::npos)
+							{
+							        break;
+							}
+							std::string		sChunkLine = sData.substr(0, uSizeEnd);
 							m_RemainingChunk = strtol(sChunkLine.c_str(), NULL, 16);
 							sData = sData.substr(sData.find_first_of('\n') + 1);
-							if (!m_RemainingChunk)	// last chunk is zero length
+
+							// last chunk is zero length, but still has a terminator.  We aren't done until we have received the terminator as well
+							if (m_RemainingChunk == 0 && (sData.find_first_of('\n') != std::string::npos))
 							{
 								PyObject* pDataDict = PyDict_New();
 								PyObject* pObj = Py_BuildValue("s", m_Status.c_str());
@@ -762,7 +778,7 @@ namespace Plugins {
 
 			// If username &/or password specified then add a basic auth header (if one was not supplied)
 			PyObject* pHead = NULL;
-			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Authorization:Basic");
+			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Authorization");
 			if (!pHead)
 			{
 				std::string		User;
@@ -790,7 +806,7 @@ namespace Plugins {
 						auth += Pass;
 					}
 					std::string encodedAuth = base64_encode(auth);
-					sHttp += "Authorization:Basic " + encodedAuth + "\r\n";
+					sHttp += "Authorization: Basic " + encodedAuth + "\r\n";
 				}
 			}
 
