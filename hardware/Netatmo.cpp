@@ -620,8 +620,12 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 
-	int node_id = pCmd->LIGHTING2.id4;
-	std::string output = "NetatmoThermostat id4:" + to_string(node_id);
+	std::stringstream sstr;
+	sstr << "id1=" << reinterpret_cast<int>(pCmd->LIGHTING2.id1);
+	sstr << "id2=" << reinterpret_cast<int>(pCmd->LIGHTING2.id2);
+	sstr << "id3=" << reinterpret_cast<int>(pCmd->LIGHTING2.id3);
+	sstr << "id4=" << reinterpret_cast<int>(pCmd->LIGHTING2.id4);
+	std::string output = "NetatmoThermostat id4:" + sstr.str();
 	_log.Log(LOG_ERROR, output);
 
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
@@ -631,7 +635,7 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 	if (m_NetatmoType != NETYPE_ENERGY)
 	{
-		node_id = pCmd->LIGHTING2.id4;
+		int node_id = pCmd->LIGHTING2.id4;
 		int therm_idx = pCmd->LIGHTING2.unitcode;
 		if ((node_id == 3) && (therm_idx >= 0))
 		{
