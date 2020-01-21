@@ -626,7 +626,7 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	sstr << " id3=" << (int)(pCmd->LIGHTING2.id3);
 	sstr << " id4=" << (int)(pCmd->LIGHTING2.id4);
 	
-	sstr << " Status 1:" << ((int)(pCmd->LIGHTING2.id1) >> 7);
+	sstr << " Status 1:" << ((int)(pCmd->LIGHTING2.id1) >> 4);
 	std::string output = "NetatmoThermostat" + sstr.str();
 	_log.Log(LOG_ERROR, output);
 
