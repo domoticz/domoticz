@@ -635,7 +635,7 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	if ((int)(pCmd->LIGHTING2.id1) >> 4){
 		//id1 == 0x10 means boiler_status switch => No action (refresh from Netatmo API)
 		GetThermostatDetails();
-		return;
+		return true;
 	}
 
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
