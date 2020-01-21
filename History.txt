@@ -1,4 +1,4 @@
-Version 4.1xxxx (xxx 20xx) see https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
+Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 - Implemented: DarkSky CloudCover sensor
 - Implemented: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
 - Implemented: Floorplan, add support for SVG
