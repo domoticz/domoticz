@@ -621,10 +621,10 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 
 	std::stringstream sstr;
-	sstr << "id1=" << reinterpret_cast<int>(pCmd->LIGHTING2.id1);
-	sstr << "id2=" << reinterpret_cast<int>(pCmd->LIGHTING2.id2);
-	sstr << "id3=" << reinterpret_cast<int>(pCmd->LIGHTING2.id3);
-	sstr << "id4=" << reinterpret_cast<int>(pCmd->LIGHTING2.id4);
+	sstr << "id1=" << (int)(pCmd->LIGHTING2.id1);
+	sstr << "id2=" << (int)(pCmd->LIGHTING2.id2);
+	sstr << "id3=" << (int)(pCmd->LIGHTING2.id3);
+	sstr << "id4=" << (int)(pCmd->LIGHTING2.id4);
 	std::string output = "NetatmoThermostat id4:" + sstr.str();
 	_log.Log(LOG_ERROR, output);
 
