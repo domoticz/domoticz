@@ -627,13 +627,13 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	sstr << " id4=" << (int)(pCmd->LIGHTING2.id4);
 	sstr << " Status 1:" << ((int)(pCmd->LIGHTING2.id1) >> 4);
 	std::string output = "NetatmoThermostat" + sstr.str();
-	_log.Log(LOG_ERROR, output);
+	_log.Log(LOG_STATUS, output);
 
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
 	if ((int)(pCmd->LIGHTING2.id1) >> 4){
-		//id1 == 0x10 means boiler_status switch => No action (refresh from Netatmo API)
+		//id1 == 0x10 means boiler_status switch => No action (just refresh from Netatmo API)
 		GetThermostatDetails();
 		return true;
 	}
@@ -1325,6 +1325,7 @@ void CNetatmo::GetThermostatDetails()
 
 bool CNetatmo::ParseHomeData(const std::string &sResult)
 {
+	_log.Log(LOG_STATUS, "Netatmo: ParseHomeData");
 	Json::Value root;
 	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
