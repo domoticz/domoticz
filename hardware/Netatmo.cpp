@@ -625,13 +625,15 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	sstr << " id2=" << (int)(pCmd->LIGHTING2.id2);
 	sstr << " id3=" << (int)(pCmd->LIGHTING2.id3);
 	sstr << " id4=" << (int)(pCmd->LIGHTING2.id4);
-	
 	sstr << " Status 1:" << ((int)(pCmd->LIGHTING2.id1) >> 4);
 	std::string output = "NetatmoThermostat" + sstr.str();
 	_log.Log(LOG_ERROR, output);
 
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
+
+	if ((int)(pCmd->LIGHTING2.id1) >> 4)
+		return false; //id1 at 1 means boiler_status switch => No action
 
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
