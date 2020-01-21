@@ -402,11 +402,12 @@ define(['app'], function (app) {
 			onSelect: '&'
 		},
 		templateUrl: 'app/plans/roomPlanDeviceSelector.html',
-		controller: function() {
+		controller: function($filter) {
 			var $ctrl = this;
 
 			$ctrl.$onInit = function() {
-				$ctrl.hardwareItems = []
+				$ctrl.hardwareFilter = '';
+				$ctrl.hardwareItems = [];
 				updateDevices();
 			};
 
@@ -417,17 +418,77 @@ define(['app'], function (app) {
 			};
 
 			$ctrl.selectDevice = function(device) {
-				if ($ctrl.selectedDevice === device) {
-					$ctrl.selectedDevice = null
-				} else {
-					$ctrl.selectedDevice = device;
-				}
-
+				$ctrl.selectedDevice = device;
 				$ctrl.onSelect({device: $ctrl.selectedDevice });
 			};
 
+			$ctrl.filterByHardware = function(hardware) {
+				$ctrl.hardwareFilter = $ctrl.hardwareFilter !== hardware ? hardware : '';
+
+				$ctrl.filteredDevices = $filter('filter')($ctrl.devices, {
+					Hardware: $ctrl.hardwareFilter
+				});
+			};
+
 			function updateDevices() {
-				$ctrl.hardwareItems = Array.from(new Set($ctrl.devices.map(device => device.Hardware))).sort()
+				$ctrl.hardwareItems = Array.from(new Set($ctrl.devices.map(device => device.Hardware))).sort();
+				$ctrl.filterByHardware($ctrl.hardwareFilter);
+			}
+		}
+	});
+
+	app.component('roomPlansDeviceSelectorTable', {
+		bindings: {
+			devices: '<',
+			onSelect: '&'
+		},
+		template: '<table id="roomPlansDeviceSelectorTable" class="display" width="100%"></table>',
+		controller: function($scope, $element, dataTableDefaultSettings) {
+			var $ctrl = this;
+			var table;
+
+			$ctrl.$onInit = function () {
+				table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
+					dom: '<"H"lfrC>t',
+					order: [[1, 'asc']],
+					paging: false,
+					columns: [
+						{title: $.t('Idx'), width: '40px', data: 'idx'},
+						{title: $.t('Name'), data: 'Name'},
+					]
+				}));
+
+				table.on('select.dt', function (e, dt, type, indexes) {
+					var item = dt.rows(indexes).data()[0];
+					$ctrl.onSelect({value: item});
+					$scope.$apply();
+				});
+
+				table.on('deselect.dt', function () {
+					$ctrl.onSelect(null);
+					$scope.$apply();
+				});
+
+				showDevices($ctrl.devices)
+			};
+
+			$ctrl.$onChanges = function (changes) {
+				if (changes.devices) {
+					showDevices($ctrl.devices)
+				}
+			};
+
+			function showDevices(devices) {
+				if (!table) {
+					return;
+				}
+
+				if (devices) {
+					table.api().clear();
+					table.api().rows
+						.add(devices)
+						.draw();
+				}
 			}
 		}
 	});

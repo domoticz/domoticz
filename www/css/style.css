@@ -2131,6 +2131,13 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 	margin-left: -320px;
 }
 
+@media (max-width: 767px) {
+	.modal.fade {
+		margin-left: 0;
+		width: auto;
+	}
+}
+
 .device-selector {
 	display: flex;
 	max-height: 400px;
@@ -2153,13 +2160,14 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 
 .device-selector__section_devices {
 	flex: 2;
-	max-width: 400px;
 }
 
-.device-selector__search {
-	padding: 4px;
-	margin-bottom: 4px;
-	margin-left: 0 !important;
+.device-selector__section .dataTables_filter {
+	width: 100%;
+}
+
+.device-selector__section .dataTables_wrapper {
+	margin-bottom: 0;
 }
 
 .device-selector-group {
