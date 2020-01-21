@@ -1415,6 +1415,13 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 
 				int batteryLevel = 255;
 
+				if (!module["boiler_status"].empty())
+				{
+					std::string aName = "Status";
+					bool bIsActive = (module["boiler_status"].asString() == "true");
+					batteryLevel = GetBatteryLevel(module["type"].asString(), batteryLevel);
+					SendSwitch(roomID & 0x00FFFFFF | 0x10000000, 1, 255, (bIsActive == true), 0, aName);
+				}
 				if (!module["battery_level"].empty())
 				{
 					batteryLevel = module["battery_level"].asInt();
@@ -1475,18 +1482,18 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 
 				if (!room["therm_measured_temperature"].empty())
 				{
-					SendTempSensor(roomID, 255, room["therm_measured_temperature"].asFloat(), roomName);
+					SendTempSensor(roomID & 0x00FFFFFF | 0x03000000, 255, room["therm_measured_temperature"].asFloat(), roomName);
 				}
 				if (!room["therm_setpoint_temperature"].empty())
 				{
-					SendSetPointSensor((uint8_t)((roomID & 0XFF0000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName);
+					SendSetPointSensor((uint8_t)((roomID & 0X00FF0000 | 0x02000000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName);
 				}
 				if (!room["therm_setpoint_mode"].empty())
 				{
 					std::string setpoint_mode = room["therm_setpoint_mode"].asString();
 					bool bIsAway = (setpoint_mode == "away");
 					std::string aName = "Away " + roomName;
-					SendSwitch(roomID & 0xFFFFFF, 1, 255, bIsAway, 0, aName);
+					SendSwitch(roomID & 0x00FFFFFF | 0x01000000, 1, 255, bIsAway, 0, aName);
 				}
 			}
 			iDevIndex++;
