@@ -620,14 +620,9 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 
-	std::string msgTypeS = "NetatmoThermostat unitcode:" + static_cast<int>(pCmd->LIGHTING2.unitcode);
-	_log.Log(LOG_ERROR, msgTypeS);
-	// std::string subtypeS = "NetatmoThermostat subtype:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.subtype);
-	// _log.Log(LOG_ERROR, subtypeS);
-	// std::string seqnbrS = "NetatmoThermostat seqnbr:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.seqnbr);
-	// _log.Log(LOG_ERROR, seqnbrS);
-	// std::string cmndS = "NetatmoThermostat cmnd:" + reinterpret_cast<std::string>(pCmd->LIGHTING2.cmnd);
-	// _log.Log(LOG_ERROR, cmndS);
+	int node_id = pCmd->LIGHTING2.id4;
+	std::string output = "NetatmoThermostat id4:" + to_string(node_id);
+	_log.Log(LOG_ERROR, output);
 
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
@@ -636,7 +631,7 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 	if (m_NetatmoType != NETYPE_ENERGY)
 	{
-		int node_id = pCmd->LIGHTING2.id4;
+		node_id = pCmd->LIGHTING2.id4;
 		int therm_idx = pCmd->LIGHTING2.unitcode;
 		if ((node_id == 3) && (therm_idx >= 0))
 		{

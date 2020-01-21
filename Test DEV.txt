@@ -1,5 +1,5 @@
 cd /tmp/domoticz
-curl -sX GET https://api.github.com/repos/olivierberthomme/domoticz/commits/development | grep date
+curl -sX GET https://api.github.com/repos/olivierberthomme/domoticz/commits/devel-perso | grep date
 
 git pull
 cmake         -DBUILD_SHARED_LIBS=True         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_INSTALL_PREFIX=/var/lib/domoticz         -DOpenZWave=/usr/lib/libopenzwave.so         -DUSE_BUILTIN_LUA=ON         -DUSE_BUILTIN_MQTT=ON         -DUSE_BUILTIN_SQLITE=OFF         -DUSE_STATIC_BOOST=OFF         -DUSE_STATIC_LIBSTDCXX=OFF         -DUSE_STATIC_OPENZWAVE=OFF         -Wno-dev &&  make &&  make install
