@@ -632,8 +632,11 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
-	if ((int)(pCmd->LIGHTING2.id1) >> 4)
-		return false; //id1 at 1 means boiler_status switch => No action
+	if ((int)(pCmd->LIGHTING2.id1) >> 4){
+		//id1 == 0x10 means boiler_status switch => No action (refresh from Netatmo API)
+		GetThermostatDetails();
+		return;
+	}
 
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
