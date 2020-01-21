@@ -620,20 +620,11 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 
-	std::stringstream sstr;
-	sstr << " id1=" << (int)(pCmd->LIGHTING2.id1);
-	sstr << " id2=" << (int)(pCmd->LIGHTING2.id2);
-	sstr << " id3=" << (int)(pCmd->LIGHTING2.id3);
-	sstr << " id4=" << (int)(pCmd->LIGHTING2.id4);
-	sstr << " Status 1:" << ((int)(pCmd->LIGHTING2.id1) >> 4);
-	std::string output = "NetatmoThermostat" + sstr.str();
-	_log.Log(LOG_STATUS, output);
-
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
 	if ((int)(pCmd->LIGHTING2.id1) >> 4){
-		//id1 == 0x10 means boiler_status switch => No action (just refresh from Netatmo API)
+		//id1 == 0x1### means boiler_status switch => No action (just refresh from Netatmo API)
 		GetThermostatDetails();
 		return true;
 	}
