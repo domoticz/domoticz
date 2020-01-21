@@ -177,9 +177,6 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	bool haveEnergy = false;
 	float energy = 0;
 
-	bool haveSequence = false;
-	float sequence = 0;
-
 	if (!data["id"].empty())
 	{
 		id = atoi(data["id"].c_str());
@@ -342,11 +339,6 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 			energy = (float)atof(data["energy_kWh"].c_str());
 			haveEnergy = true;
 		}
-		if (FindField(data, "sequence"))
-		{
-			sequence = atoi(data["sequence"].c_str());
-			haveSequence = true;
-		}
 	}
 
 	std::string model = data["model"];
@@ -438,13 +430,9 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	}
 	if (haveEnergy && havePower)
 	{
-		if (haveSequence) {
-			if (sequence==0) { 
-				sensoridx = sensoridx + 1;
-			}
-			SendKwhMeter(sensoridx, unit, batterylevel, power, energy, model);
-			bHandled = true;
-		}
+		sensoridx = sensoridx + 1;
+		SendKwhMeter(sensoridx, unit, batterylevel, power, energy, model);
+		bHandled = true;
 	}
 
 
