@@ -160,7 +160,7 @@ void CNetatmo::Do_Work()
 				}
 				if (m_bPollThermostat)
 				{
-					//Thermostat data is updated every hour
+					//Thermostat data is updated every 10 minutes
 					if ((sec_counter % 600 == 0) || (bFirstTimeTH))
 					{
 						bFirstTimeTH = false;
@@ -619,6 +619,15 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	}
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
+
+	std::stringstream sstr;
+	sstr << "id1=" << (int)(pCmd->LIGHTING2.id1);
+	sstr << "id2=" << (int)(pCmd->LIGHTING2.id2);
+	sstr << "id3=" << (int)(pCmd->LIGHTING2.id3);
+	sstr << "id4=" << (int)(pCmd->LIGHTING2.id4);
+	std::string output = "NetatmoThermostat id4:" + sstr.str();
+	_log.Log(LOG_ERROR, output);
+
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
@@ -1414,13 +1423,11 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				}
 
 				int batteryLevel = 255;
-
 				if (!module["boiler_status"].empty())
 				{
 					std::string aName = "Status";
 					bool bIsActive = (module["boiler_status"].asString() == "true");
-					batteryLevel = GetBatteryLevel(module["type"].asString(), batteryLevel);
-					SendSwitch(roomID & 0x00FFFFFF | 0x10000000, 1, 255, (bIsActive == true), 0, aName);
+					SendSwitch(moduleID & 0x00FFFFFF | 0x10000000, 1, 255, (bIsActive == true), 0, aName);
 				}
 				if (!module["battery_level"].empty())
 				{
