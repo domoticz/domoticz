@@ -16,11 +16,14 @@ local function getTimezone()
 	return diff
 end
 
-local LOOKUP = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
+local LOOKUPDAYABBROFWEEK = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
+local LOOKUPDAYNAME = { 'Sunday', 'Monday', 'Tuesday', 'WednesDay', 'Thursday', 'Friday', 'Saturday' }
+local LOOKUPMONTHABBR = { 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' }
+local LOOKUPMONTH = { 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' }
 
 local function getSMs(s)
 	local ms = 0
-	local parts = utils.stringSplit(s, '.') -- do string splittin instead of math stuff.. can't seem to get the floating points right
+	local parts = utils.stringSplit(s, '.') -- do string splitting instead of math stuff.. can't seem to get the floating points right
 	s = tonumber(parts[1])
 	if (parts[2] ~= nil) then
 		-- should always be three digits!!
@@ -106,7 +109,7 @@ function getYearBeginDayOfWeek(tm)
 	return yearBeginDayOfWeek
 end
 
--- tm: date (as returned fro os.time)
+-- tm: date (as returned from os.time)
 -- returns basic correction to be add for counting number of week
 -- weekNum = math.floor((dayOfYear + returnedNumber) / 7) + 1
 -- (does not consider correction at begin and end of year)
@@ -242,9 +245,12 @@ local function Time(sDate, isUTC, _testMS)
 	self.rawDateTime = self.rawDate .. ' ' .. self.rawTime
 	self.milliSeconds = ms
 	self.milliseconds = ms
-	self.dayAbbrOfWeek = LOOKUP[self.wday]
+	self.dayAbbrOfWeek = LOOKUPDAYABBROFWEEK[self.wday]
+	self.dayName = LOOKUPDAYNAME[self.wday]
+	self.monthAbbrName = LOOKUPMONTHABBR[self.month]
+	self.monthName = LOOKUPMONTH[self.month]
 
-	-- Note: %V doesn't work on Windows so we have to use a custum function here
+	-- Note: %V doesn't work on Windows so we have to use a custom function here
 	-- doesn't work: self.week = tonumber(os.date('%V', dDate))
 	self.week = getWeekNumberOfYear(dDate)
 

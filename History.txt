@@ -12,6 +12,7 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Implemented: OZW, Support for Particulate_Mater_2_5 (Dust) sensor (ug/m3)
 - Implemented: OZW, Support for Smoke density (%)
 - Implemented: OZW, Support for Volatile_Organic_Compound (CO2, ppm)
+- Implemented: OZW, Support for Frequency sensor
 - Implemented: BuienRadar
 - Implemented: Sun/Rain icons
 - Implemented: Add support for Belgian and Luxembourgian P1 meters
@@ -35,7 +36,7 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Updated: Mosquitto 1.68
 - Updated: OpenZWave version 1.6
 - Updated: Lua version 5.3
-- Updated: dzVents version 2.5.5 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: dzVents version 2.5.6 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)

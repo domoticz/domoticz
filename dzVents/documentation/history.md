@@ -1,3 +1,8 @@
+[2.5.6]
+- Add dayName, monthName, monthAbbrName and time as time attributes
+- Add _.round, _.isEqual functions to lodash.lua
+- Add testLodash.lua as testModule for lodash 
+
 [2.5.5]
 - Add Zwave fan to Zwave mode device adapter
 
