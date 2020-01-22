@@ -1,5 +1,5 @@
 define(['app', 'livesocket'], function (app) {
-	app.controller('TemperatureController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, permissions, livesocket) {
+	app.controller('TemperatureController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, deviceApi, permissions, livesocket) {
 		var $element = $('#main-view #tempcontent').last();
 
 		var ctrl = this;
@@ -7,20 +7,10 @@ define(['app', 'livesocket'], function (app) {
 		$scope.broadcast_unsubscribe = undefined;
 
 		MakeFavorite = function (id, isfavorite) {
-			if (permissions.hasPermission("Viewer")) {
-				HideNotify();
-				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
-				return;
-			}
-			$.ajax({
-				url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					ShowTemps();
-				}
+			deviceApi.makeFavorite(id, isfavorite).then(function() {
+				ShowTemps();
 			});
-		}
+		};
 
 		EditTempDevice = function (idx, name, description, addjvalue) {
 			$.devIdx = idx;

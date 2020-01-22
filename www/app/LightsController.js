@@ -1,25 +1,15 @@
 define(['app', 'livesocket'], function (app) {
-	app.controller('LightsController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, permissions, livesocket) {
+	app.controller('LightsController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
 		var $element = $('#main-view #lightcontent').last();
 
 		$scope.HasInitializedAddManualDialog = false;
 		$scope.broadcast_unsubscribe = undefined;
 
 		MakeFavorite = function (id, isfavorite) {
-			if (permissions.hasPermission("Viewer")) {
-				HideNotify();
-				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
-				return;
-			}
-			$.ajax({
-				url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					ShowLights();
-				}
+			deviceApi.makeFavorite(id, isfavorite).then(function() {
+				ShowLights();
 			});
-		}
+		};
 
 		SetColValue = function (idx, color, brightness) {
 			clearInterval($.setColValue);
