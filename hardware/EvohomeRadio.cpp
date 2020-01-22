@@ -1575,16 +1575,10 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 	// The OT commands are as per the OT Specification
 	// 05 (ID.05) = Fault Code
 	if (msg.payload[2] == 0x05) {
-		if (msg.payload[3] != 0)
-		{
-			SendCustomSensor(0, 5, 255, static_cast<float>(msg.payload[3]), "Application fault flags", ""); 
-		}
-		// Note : Vaillant VR33 returns back 255 as normal 
-                if ((msg.payload[4] != 0) && (msg.payload[4] != 0xFF))
-                {
-                        SendCustomSensor(1, 5, 255, static_cast<float>(msg.payload[4]), "OEM fault code", "");
-                }
-		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags = %02X %d", tag, msg.payload[3],  msg.payload[4]);
+		SendCustomSensor(0, 5, 255, static_cast<float>(msg.payload[3]), "Application fault flags", ""); 
+                SendCustomSensor(1, 5, 255, static_cast<float>(msg.payload[4]), "OEM fault code", "");
+
+		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags %02X OEM fault code %d", tag, msg.payload[3],  msg.payload[4]);
 		return true;
 	}
 	// 11 (ID.17) = Relative modulation level
@@ -1599,55 +1593,43 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg &msg)
 	}
 	// 12 (ID.18) = CH water pressure
 	if (msg.payload[2] == 0x12) {
-                if (fOTResponse != 0)
-                {
-			SendPressureSensor(0, 18, 255, fOTResponse, "CH Water Pressure");
-		}
+		SendPressureSensor(0, 18, 255, fOTResponse, "CH Water Pressure");
+		
 		Log(true, LOG_STATUS, "evohome: %s: CH water pressure = %.2f bar", tag, fOTResponse);
 		return true;
 	}
         // 13 (ID.19) = DHW flow rate
         if (msg.payload[2] == 0x13) {
-                if (fOTResponse != 0)
-                {
-			SendWaterflowSensor(0, 19, 255, fOTResponse, "DHW flow rate");
-		}
+		SendWaterflowSensor(0, 19, 255, fOTResponse, "DHW flow rate");
+		
         	Log(true, LOG_STATUS, "evohome: %s: DHW flow rate = %.2f l/min", tag, fOTResponse);
         	return true;
         }
 	// 19 (ID.25) = Boiler Water Temperature
 	if (msg.payload[2] == 0x19) {
-                if (fOTResponse != 0)
-                {
- 	        	SendTempSensor(25, 255, fOTResponse, "Boiler Water Temperature");
-		}
+ 	        SendTempSensor(25, 255, fOTResponse, "Boiler Water Temperature");
+		
  		Log(true, LOG_STATUS, "evohome: %s: Boiler Water Temperature = %.2f C", tag, fOTResponse);
 		return true;
 	}
 	// 1A (ID.26) = DHW Temperature
 	if (msg.payload[2] == 0x1a) {
-		if (fOTResponse != 0)
-                {
- 			SendTempSensor(26, 255, fOTResponse, "DHW Temperature");
-		}
+ 		SendTempSensor(26, 255, fOTResponse, "DHW Temperature");
+		
 		Log(true, LOG_STATUS, "evohome: %s: DHW Temperature = %.2f C", tag, fOTResponse);
 		return true;
 	}
 	// 1C (ID.28) = Return Water Temperature
 	if (msg.payload[2] == 0x1c) {
-                if (fOTResponse != 0)
-                {
-  			SendTempSensor(28, 255, fOTResponse, "Return Water Temperature");
-		}
+  		SendTempSensor(28, 255, fOTResponse, "Return Water Temperature");
+		
  		Log(true, LOG_STATUS, "evohome: %s: Return Water Temperature = %.2f C", tag, fOTResponse);
 		return true;
 	}
 	// 73 (ID.115) = OEM diagnostic code
 	if (msg.payload[2] == 0x73) {
-                if (nOTResponse != 0)
-                {
-                        SendCustomSensor(0, 115, 255, static_cast<float>(nOTResponse), "OEM diagnostic code", "");
-		} 
+                SendCustomSensor(0, 115, 255, static_cast<float>(nOTResponse), "OEM diagnostic code", "");
+	 
 		Log(true, LOG_STATUS, "evohome: %s: OEM diagnostic code = %d", tag, nOTResponse);
 		return true;
 	}
@@ -1718,7 +1700,46 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg &msg)
 		return true;
 	}
 	Log(true, LOG_STATUS, "evohome: %s: %d: Addr=%d ?=%d ID:0x%06x (%s)", tag, nDevNo, nAddr, nDevType, idDev.GetID(), idDev.GetStrID().c_str());
-	if (m_bStartup[1])
+
+	// Report the Fault Log entries for the devices
+        sprintf(tag, "FAULT_LOG");
+ 
+	uint8_t nFaultType, nFaultCode, nFaultYear, nFaultMonth, nFaultDay, nFaultHour, nFaultMinute, nFaultSecond;
+        uint64_t nFaultDateTime;
+	char sFaultType[15], sFaultCode[20], sDevType[15], sFaultDateTime[21];
+
+        msg.Get(nFaultType, 1).Get(nFaultCode, 4);
+	nFaultDateTime = static_cast<long>(msg.payload[10]) << 32 | static_cast<long>(msg.payload[11]) << 24 | msg.payload[12] << 16 | msg.payload[13] << 8 | msg.payload[14];
+
+	nFaultYear=(nFaultDateTime & 0b1111111UL << 24) >> 24;
+    	nFaultMonth=(nFaultDateTime & 0b1111UL << 36) >> 36;
+    	nFaultDay=(nFaultDateTime & 0b11111UL << 31) >> 31;
+    	nFaultHour=(nFaultDateTime & 0b11111UL << 19) >> 19;
+    	nFaultMinute=(nFaultDateTime & 0b111111UL << 13) >> 13;
+    	nFaultSecond=(nFaultDateTime & 0b111111UL << 7) >> 7;
+	sprintf(sFaultDateTime, "20%02d-%02d-%02d %02d:%02d:%02d", nFaultYear, nFaultMonth, nFaultDay, nFaultHour, nFaultMinute, nFaultSecond);
+
+	// Code to plain speak as used on the Controller Fault Logbook
+	if      (nFaultType == 0x00) 	{ sprintf(sFaultType, "FAULT");   			}
+	else if (nFaultType == 0x40) 	{ sprintf(sFaultType, "RESTORE"); 			}
+	else 			     	{ sprintf(sFaultType, "UNKNOWN(%02x)", nFaultType); 	}
+        
+	if (nFaultCode == 0x04) 	{ sprintf(sFaultCode, "BATTERY LOW"); 			}
+        else if (nFaultCode == 0x06) 	{ sprintf(sFaultCode, "COMMS FAULT"); 			}
+        else 				{ sprintf(sFaultCode, "UNKNOWN(%02x)", nFaultCode); 	}
+
+        if (nDevType == 0x04) 		{ sprintf(sDevType, "ACTUATOR"); 			}
+        else if (nDevType == 0x01) 	{ sprintf(sDevType, "SENSOR"); 				}
+        else 				{ sprintf(sDevType, "UNKNOWN(%02x)", nDevType); 	}
+
+        Log(false, LOG_STATUS, "evohome: %s: %s %s Zone:%d(%06x) %s %s", tag, sFaultDateTime, sFaultType, nDevNo+1, idDev.GetID(), sDevType, sFaultCode);
+
+	// Current error condition so put this on the error log
+        if (msg.GetID(2) == GetControllerID()) {
+		 Log(false, LOG_STATUS, "evohome: %s: %s %s Zone:%d(%06x) %s %s", tag, sFaultDateTime, sFaultType, nDevNo+1, idDev.GetID(), sDevType, sFaultCode);
+        }
+
+ 	if (m_bStartup[1])
 		RequestDeviceInfo(nAddr + 1);
 	return true;
 }
