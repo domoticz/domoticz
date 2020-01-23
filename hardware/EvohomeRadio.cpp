@@ -1749,7 +1749,7 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
         Log(false, LOG_STATUS, "evohome: %s: %s %s Device:%06x %s %s", tag, sFaultDateTime, sFaultType, idDev.GetID(), sDevType, sFaultCode);
 
 	// Log current error condition to an Alert device
-        if (msg.GetID(2) == GetControllerID()) {
+        if (nAddr == 0x00) {
 		char szAlertMsg[70];
 		sprintf(szAlertMsg, "%s: %s on %s(%06x) at %s", sFaultType, sFaultCode, sDevType, idDev.GetID(), sFaultDateTime);
 		SendAlertSensor(418, 255, nAlertType, szAlertMsg, "Fault Logbook");
