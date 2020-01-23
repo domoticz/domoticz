@@ -83,7 +83,7 @@ define(['app.permissions'], function (appPermissionsModule) {
 
     });
 
-    module.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun, dzNotification, Device) {
+    module.factory('deviceApi', function($q, domoticzApi, dzApiHelper, dzTimeAndSun, dzNotification, Device) {
         return {
             getLightsDevices: getLightsDevices,
             getDeviceInfo: getDeviceInfo,
@@ -92,7 +92,8 @@ define(['app.permissions'], function (appPermissionsModule) {
             removeDevice: removeDevice,
             removeScene: removeScene,
             includeDevice: includeDevice,
-            excludeDevice: excludeDevice
+            excludeDevice: excludeDevice,
+            makeFavorite: makeFavorite,
         };
 
         function getLightsDevices() {
@@ -132,6 +133,7 @@ define(['app.permissions'], function (appPermissionsModule) {
                 idx: Array.isArray(deviceIdx) ? deviceIdx.join(';') : deviceIdx
             }).then(domoticzApi.errorHandler);
         }
+
         function removeScene(deviceIdx) {
             return domoticzApi.sendRequest({
                 type: 'deletescene',
@@ -152,6 +154,15 @@ define(['app.permissions'], function (appPermissionsModule) {
         function excludeDevice(deviceIdx) {
             return domoticzApi.sendCommand('setunused', {
                 idx: deviceIdx,
+            });
+        }
+
+        function makeFavorite(deviceIdx, isFavorite) {
+            return dzApiHelper.checkUserPermissions().then(function() {
+                return domoticzApi.sendCommand('makefavorite', {
+                    idx: deviceIdx,
+                    isfavorite: isFavorite,
+                });
             });
         }
     });
