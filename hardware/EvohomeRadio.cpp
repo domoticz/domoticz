@@ -1699,13 +1699,14 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
 		m_bStartup[1] = false;
 		return true;
 	}
-	Log(true, LOG_STATUS, "evohome: %s: %d: Addr=%d ?=%d ID:0x%06x (%s)", tag, nDevNo, nAddr, nDevType, idDev.GetID(), idDev.GetStrID().c_str());
+	Log(true, LOG_STATUS, "evohome: %s: %d: Addr=%d Type=%d ID:0x%06x (%s)", tag, nDevNo, nAddr, nDevType, idDev.GetID(), idDev.GetStrID().c_str());
 
 	// Report the Fault Log entries for the devices
 	sprintf(tag, "FAULT_LOG");
 
 	uint8_t nFaultType, nFaultCode, nFaultYear, nFaultMonth, nFaultDay, nFaultHour, nFaultMinute, nFaultSecond;
 	uint64_t nFaultDateTime;
+	uint8_t nAlertType;
 	char sFaultType[15], sFaultCode[20], sDevType[15], sFaultDateTime[21];
 
 	msg.Get(nFaultType, 1).Get(nFaultCode, 4);
@@ -1720,24 +1721,39 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
 	sprintf(sFaultDateTime, "20%02d-%02d-%02d %02d:%02d:%02d", nFaultYear, nFaultMonth, nFaultDay, nFaultHour, nFaultMinute, nFaultSecond);
 
 	// Code to plain speak as used on the Controller Fault Logbook
-	if (nFaultType == 0x00) { sprintf(sFaultType, "FAULT"); }
-	else if (nFaultType == 0x40) { sprintf(sFaultType, "RESTORE"); }
-	else { sprintf(sFaultType, "UNKNOWN(%02x)", nFaultType); }
+	if ((nFaultType == 0x00) || (nFaultType == 0xc0)) {
+		sprintf(sFaultType, "FAULT");
+		nAlertType = 4;
+	}
+	else if (nFaultType == 0x40) {
+		sprintf(sFaultType, "RESTORE");
+		nAlertType = 0;
+	}
+	else { 
+		sprintf(sFaultType, "UNKNOWN(%02x)", nFaultType);
+		nAlertType = 2;
+	}
 
 	if (nFaultCode == 0x04) { sprintf(sFaultCode, "BATTERY LOW"); }
 	else if (nFaultCode == 0x06) { sprintf(sFaultCode, "COMMS FAULT"); }
+	else if (nFaultCode == 0x0a) { sprintf(sFaultCode, "SENSOR ERROR"); }
 	else { sprintf(sFaultCode, "UNKNOWN(%02x)", nFaultCode); }
 
 	if (nDevType == 0x04) { sprintf(sDevType, "ACTUATOR"); }
 	else if (nDevType == 0x01) { sprintf(sDevType, "SENSOR"); }
-	else { sprintf(sDevType, "UNKNOWN(%02x)", nDevType); }
+	else if (nDevType == 0x05) { sprintf(sDevType, "HOT WATER"); }
+        else if (nDevType == 0x00) { sprintf(sDevType, "CONTROLLER"); }
+ 	else { sprintf(sDevType, "UNKNOWN(%02x)", nDevType); }
 
-	Log(false, LOG_STATUS, "evohome: %s: %s %s Zone:%d(%06x) %s %s", tag, sFaultDateTime, sFaultType, nDevNo + 1, idDev.GetID(), sDevType, sFaultCode);
+	// Log all Fault Logbook entries to the Status log
+        Log(false, LOG_STATUS, "evohome: %s: %s %s Device:%06x %s %s", tag, sFaultDateTime, sFaultType, idDev.GetID(), sDevType, sFaultCode);
 
-	// Current error condition so put this on the error log
-	if (msg.GetID(2) == GetControllerID()) {
-		Log(false, LOG_STATUS, "evohome: %s: %s %s Zone:%d(%06x) %s %s", tag, sFaultDateTime, sFaultType, nDevNo + 1, idDev.GetID(), sDevType, sFaultCode);
-	}
+	// Log current error condition to an Alert device
+        if (msg.GetID(2) == GetControllerID()) {
+		char szAlertMsg[70];
+		sprintf(szAlertMsg, "%s: %s on %s(%06x) at %s", sFaultType, sFaultCode, sDevType, idDev.GetID(), sFaultDateTime);
+		SendAlertSensor(418, 255, nAlertType, szAlertMsg, "Fault Logbook");
+        }
 
 	if (m_bStartup[1])
 		RequestDeviceInfo(nAddr + 1);
