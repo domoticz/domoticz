@@ -241,7 +241,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	self.rawDate = self.year .. '-' .. string.format("%02d", self.month) .. '-' .. string.format("%02d", self.day)
 	self.time = string.format("%02d", self.hour) .. ':' .. string.format("%02d", self.min)
-    self.rawTime =  self.time .. ':' .. string.format("%02d", self.sec)
+	self.rawTime =  self.time .. ':' .. string.format("%02d", self.sec)
 	self.rawDateTime = self.rawDate .. ' ' .. self.rawTime
 	self.milliSeconds = ms
 	self.milliseconds = ms
@@ -403,26 +403,21 @@ local function Time(sDate, isUTC, _testMS)
 
 	-- returns true if the current time is within a time range: startH:startM and stopH:stopM
 	local function timeIsInRange(startH, startM, stopH, stopM)
-
+	
 		local function getMinutes(hours, minutes)
 			return (hours * 60) + minutes
 		end
 
-		local testH = self.hour
-		local testM = self.min
-
-		if (( stopH * 24 + stopM ) < ( startH * 24 + startM ) ) then -- add 24 hours if endTime < startTime
-            		local stopHOrg = stopH
-			stopH = stopH + 24
-			if (testH <= stopHOrg) then -- if endhours has increased the currenthour should also increase
-				testH = testH + 24
-			end
+		local currentMinutes = getMinutes(self.hour, self.min)
+		local startMinutes = getMinutes(startH, startM)
+		local stopMinutes = getMinutes(stopH, stopM)
+	
+		if stopMinutes < startMinutes then -- add 24 hours (1440 minutes ) if endTime < startTime
+			if currentMinutes < stopMinutes then currentMinutes = currentMinutes + 1440 end
+			stopMinutes = stopMinutes + 1440 
 		end
 
-		local startTVal = getMinutes(startH, startM)
-		local stopTVal = getMinutes(stopH, stopM)
-		local curTVal = getMinutes(testH, testM)
-		return (curTVal >= startTVal and curTVal <= stopTVal)
+		return ( currentMinutes >= startMinutes and currentMinutes <= stopMinutes )
 	end
 
 	-- returns true if self.day is on the rule: on day1,day2...
@@ -995,17 +990,17 @@ local function Time(sDate, isUTC, _testMS)
 
 		return timeIsInRange(fromHH, fromMM, toHH, toMM)
 	end
-    
-    -- remove seconds from timeStrings 'at 12:23:56-23:45:00 ==>> 'at 12:23-23:45' to allow use of rawTime in matchesRule
+
+	-- remove seconds from timeStrings 'at 12:23:56-23:45:00 ==>> 'at 12:23-23:45' to allow use of rawTime in matchesRule
 	local function sanitize(rule)
-        if not rule:match("(%w+%:%w+:%w+)") then return rule end
-        for strippedTime in rule:gmatch("(%w+%:%w+)") do
-            rule = rule:gsub(rule:match("(%w+%:%w+:%w+)"),rule:match(strippedTime))
-        end
-        return rule
-    end
-    
-    -- returns true if self.time matches the rule
+		if not rule:match("(%w+%:%w+:%w+)") then return rule end
+		for strippedTime in rule:gmatch("(%w+%:%w+)") do
+			if strippedTime:match("(%w+%:%w+:%w+)") then rule = rule:gsub(rule:match("(%w+%:%w+:%w+)"),rule:match(strippedTime)) end
+		end
+		return rule
+	end
+
+	-- returns true if self.time matches the rule
 	function self.matchesRule(rule)
 		if (string.len(rule == nil and "" or rule) == 0) then
 			return false
@@ -1178,8 +1173,8 @@ local function Time(sDate, isUTC, _testMS)
 		end
 		updateTotal(res)
 
-        rule = sanitize(rule)    
-        res = self.ruleMatchesTime(rule) -- moment / range
+		rule = sanitize(rule)
+		res = self.ruleMatchesTime(rule) -- moment / range
 		if (res == false) then
 			-- rule had at hh:mm part but didn't match (or was invalid)
 			return false
