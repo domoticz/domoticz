@@ -179,7 +179,6 @@ define(['app', 'livesocket'], function (app) {
 			//Lights
 			var isdimmer = false;
 			if (
-				(
 					(item.Type.indexOf('Light') == 0) ||
 					(item.Type.indexOf('Blind') == 0) ||
 					(item.Type.indexOf('Curtain') == 0) ||
@@ -194,8 +193,7 @@ define(['app', 'livesocket'], function (app) {
 					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Itho') == 0)) ||
 					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Lucci') == 0)) ||
 					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Westinghouse') == 0))
-				)
-				&& (item.Favorite != 0)) {
+				) {
 				id = "#light_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
@@ -939,7 +937,7 @@ define(['app', 'livesocket'], function (app) {
 			} //light devices
 
 			//security devices
-			if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
+			if (item.Type.indexOf('Security') == 0) {
 				id = "#security_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
@@ -1047,9 +1045,10 @@ define(['app', 'livesocket'], function (app) {
 
 			//Temperature Sensors
 			if (
-				((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined')) &&
-				(item.Favorite != 0)
-			) {
+				 (typeof item.Temp != 'undefined') ||
+				 (typeof item.Humidity != 'undefined') ||
+				  (typeof item.Chill != 'undefined')
+				) {
 				id = "#temp_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
@@ -1172,9 +1171,13 @@ define(['app', 'livesocket'], function (app) {
 
 			//Weather Sensors
 			if (
-				((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined')) &&
-				(item.Favorite != 0)
-			) {
+				 (typeof item.Rain != 'undefined') ||
+				 (typeof item.Visibility != 'undefined') ||
+				 (typeof item.UVI != 'undefined') ||
+				 (typeof item.Radiation != 'undefined') ||
+				 (typeof item.Direction != 'undefined') ||
+				 (typeof item.Barometer != 'undefined')
+				) {
 				id = "#weather_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
@@ -1334,38 +1337,35 @@ define(['app', 'livesocket'], function (app) {
 	
 			//Utility Sensors
 			if (
-				(
-					(typeof item.Counter != 'undefined') ||
-					(item.Type == "Current") ||
-					(item.Type == "Energy") ||
-					(item.Type == "Current/Energy") ||
-					(item.Type == "Power") ||
-					(item.Type == "Air Quality") ||
-					(item.Type == "Lux") ||
-					(item.Type == "Weight") ||
-					(item.Type == "Usage") ||
-					(item.SubType == "Percentage") ||
-					((item.Type == "Thermostat") && (item.SubType == "SetPoint")) ||
-					(item.SubType == "kWh") ||
-					(item.SubType == "Soil Moisture") ||
-					(item.SubType == "Leaf Wetness") ||
-					(item.SubType == "Voltage") ||
-					(item.SubType == "Distance") ||
-					(item.SubType == "Current") ||
-					(item.SubType == "Text") ||
-					(item.SubType == "Alert") ||
-					(item.SubType == "Pressure") ||
-					(item.SubType == "A/D") ||
-					(item.SubType == "Thermostat Mode") ||
-					(item.SubType == "Thermostat Fan Mode") ||
-					(item.SubType == "Fan") ||
-					(item.SubType == "Smartwares") ||
-					(item.SubType == "Waterflow") ||
-					(item.SubType == "Sound Level") ||
-					(item.SubType == "Custom Sensor")
-				) &&
-				(item.Favorite != 0)
-			) {
+				(typeof item.Counter != 'undefined') ||
+				(item.Type == "Current") ||
+				(item.Type == "Energy") ||
+				(item.Type == "Current/Energy") ||
+				(item.Type == "Power") ||
+				(item.Type == "Air Quality") ||
+				(item.Type == "Lux") ||
+				(item.Type == "Weight") ||
+				(item.Type == "Usage") ||
+				(item.SubType == "Percentage") ||
+				((item.Type == "Thermostat") && (item.SubType == "SetPoint")) ||
+				(item.SubType == "kWh") ||
+				(item.SubType == "Soil Moisture") ||
+				(item.SubType == "Leaf Wetness") ||
+				(item.SubType == "Voltage") ||
+				(item.SubType == "Distance") ||
+				(item.SubType == "Current") ||
+				(item.SubType == "Text") ||
+				(item.SubType == "Alert") ||
+				(item.SubType == "Pressure") ||
+				(item.SubType == "A/D") ||
+				(item.SubType == "Thermostat Mode") ||
+				(item.SubType == "Thermostat Fan Mode") ||
+				(item.SubType == "Fan") ||
+				(item.SubType == "Smartwares") ||
+				(item.SubType == "Waterflow") ||
+				(item.SubType == "Sound Level") ||
+				(item.SubType == "Custom Sensor")
+			   ) {
 				id = "#utility_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
