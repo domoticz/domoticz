@@ -1,3 +1,6 @@
+[2.5.7]
+- Add option checkFirst to switchSelector method
+
 [2.5.6]
 - Add dayName, monthName, monthAbbrName and time as time attributes
 - Add _.round, _.isEqual functions to lodash.lua

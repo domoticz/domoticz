@@ -1,11 +1,10 @@
 local scriptPath = _G.globalvariables['script_path']
-package.path    = package.path .. ';' .. scriptPath .. '?.lua'
+package.path	= package.path .. ';' .. scriptPath .. '?.lua'
 local TIMED_OPTIONS = require('TimedCommandOptions')
 
 local utils = require('Utils')
 
-
-local function TimedCommand(domoticz, commandName, value, mode, currentState)
+local function TimedCommand(domoticz, commandName, value, mode, currentState, currentLevel)
 
 	if (type(mode) == 'string') then
 		mode = TIMED_OPTIONS[mode]
@@ -23,7 +22,7 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState)
 
 		local command = {} -- array of command parts
 
-		if checkValue and currentState:find(valueValue) then
+		if checkValue and ( tostring(currentState):find(valueValue) or ( currentLevel and currentState == currentLevel )) then
 			-- do nothing
 			return nil
 		end

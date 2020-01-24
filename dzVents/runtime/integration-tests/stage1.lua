@@ -741,12 +741,15 @@ local testSelectorSwitch = function(name)
 	})
 
 	res = res and ( dz.logDevice(dev) == nil )
-	res = res and expectEql('Off',  dev.levelNames[1])
+	res = res and expectEql('Off', dev.levelNames[1])
 	res = res and expectEql('Level1', dev.levelNames[2])
 	res = res and expectEql('Level2', dev.levelNames[3])
 	res = res and expectEql('Level3', dev.levelNames[4])
 
 	dev.switchSelector(30) -- level3
+	dev.switchSelector('Level3').checkFirst().afterSec(2) -- Will be checked in stage 2 with a script
+	dev.switchSelector('Level3').checkFirst().afterSec(4)
+	dev.switchSelector('Level3').checkFirst().afterSec(6)
 	tstMsg('Test selector switch device', res)
 	return res
 end
@@ -980,8 +983,8 @@ local testThermostatSetpoint = function(name)
 	})
 
 	dev.updateSetPoint(11)
-	dev.updateSetPoint(22).afterSec(2)  --  20190112 Add afterSec
-	dev.updateSetPoint(33).afterSec(200)  --  20190112 Add afterSec
+	dev.updateSetPoint(22).afterSec(2)
+	dev.updateSetPoint(33).afterSec(200)
 	tstMsg('Test thermostat device', res)
 	return res
 end

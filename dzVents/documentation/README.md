@@ -1,6 +1,6 @@
 ﻿
 **Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
-Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice. 
+Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
 **Breaking change warning!!**: For people using with dzVents prior to version 2.4: Please read the [change log](#Change_log) below as there is an easy-to-fix breaking change regarding the second parameter passed to the execute function (it is no longer `nil` for timer/security triggers).
 
@@ -14,13 +14,13 @@ dzVents /diː ziː vɛnts/, short for Domoticz Easy Events, brings Lua scripting
 Let's start with an example. Say you have a switch that when activated, it should activate another switch but only if the room temperature is above a certain level. And when done, it should send a notification. This is how it looks in dzVents:
 
 ```Lua
-return 
+return
 {
-	on = 
+	on =
 	{
 		devices = { 'Room switch'}
 	},
-	
+
 	execute = function(domoticz, roomSwitch)
 		if (roomSwitch.active and domoticz.devices('Living room').temperature > 18) then
 		domoticz.devices('Another switch').switchOn()
@@ -28,16 +28,16 @@ return
 						'Turns out that it is getting warm here',
 						domoticz.PRIORITY_LOW)
 		end
-	
+
 }
 ```
 
 Or you have a timer script that should be executed every 10 minutes, but only on weekdays, and have it do something with some user variables and only during daytime:
 
 ```Lua
-return 
+return
 {
-	on = 
+	on =
 	{
 		timer = {'Every 10 minutes on mon,tue,wed,thu,fri'}
 	},
@@ -59,13 +59,13 @@ return
 Or you want to detect a humidity rise within the past 5 minutes:
 
 ```Lua
-return 
+return
 {
-	on = 
+	on =
 	{
 		timer = {'every 5 minutes'}
 	},
-	data = 
+	data =
 	{
 		previousHumidity = { initial = 100 }
 	},
@@ -129,13 +129,13 @@ See the examples folder `/path/to/domoticz/scripts/dzVents/examples` for more ex
 In order for your scripts to work with dzVents, they have to be turned into a Lua module with a specific structure. Basically you make sure it returns a Lua table (object) with predefined keys like `on` and `execute`. Here is an example:
 
 ```Lua
-return 
+return
 {
-	on = 
+	on =
 	{
 		devices = { 'My switch' }
 	},
-	
+
 	execute = function(domoticz, switch)
 		-- your script logic goes here, something like this:
 		if (switch.state == 'On') then
@@ -150,10 +150,10 @@ Simply said, the `on`-part defines the trigger and the `execute` part is what sh
 ## Sections in the script
 Each dzVents event script has this structure:
 ```Lua
-return 
+return
 {
 	active = true, -- optional
-	on = 
+	on =
 	{
 		-- at least one of these:
 		evices = { ... },
@@ -565,7 +565,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **sunsetInMinutes**: *Number*. Number of minutes since midnight when the sun will set.
     - **civTwilightStartInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.
     - **civTwilightEndInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
- - **triggerHTTPResponse([httpResponse], [delay], [message])**: <sup>2.5.3</sup> *Function*. Creates a callback by sending a logmessage. httpResponse defaults to scriptname, delay defaults to 0 (immediate), message defaults to httpResponse.  
+ - **triggerHTTPResponse([httpResponse], [delay], [message])**: <sup>2.5.3</sup> *Function*. Creates a callback by sending a logmessage. httpResponse defaults to scriptname, delay defaults to 0 (immediate), message defaults to httpResponse.
  - **triggerIFTTT(makerName [,sValue1, sValue2, sValue3])**: *Function*. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
        Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example:
@@ -586,13 +586,13 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **deviceExists(parm)**: *Function*: ^2.4.28^ returns name when
         entered with valid deviceID or ID when entered with valid
         deviceName or false when not a deviceID or deviceName of an
-        existing device.  
+        existing device.
         example:
 
         ``` {.lua}
         local dz = domoticz
         local _u = dz.utils
-        if _u.deviceExists('myDevice') then 
+        if _u.deviceExists('myDevice') then
            dz.devices('myDevice').switchOn()
         else
            dz.log('Device myDevice does not exist!', dz.LOG_ERROR)
@@ -610,12 +610,12 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
     - **fromBase64(string)**: *Function*: <sup>2.5.2</sup>) Decode a base64 string
     - **fromJSON(json, fallback <sup>2.4.16</sup>)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
-    - **fromXML(xml, fallback )**: *Function*: <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: `local t = domoticz.utils.fromXML('<testtag>What a nice feature!</testtag>') Followed by: `print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.	
+    - **fromXML(xml, fallback )**: *Function*: <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: `local t = domoticz.utils.fromXML('<testtag>What a nice feature!</testtag>') Followed by: `print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.
      - **groupExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid groupID or ID when entered with valid groupName or false when not a groupID or groupName of an existing group
     - **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
     - **leftPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.
     - **centerPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.
-    - **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation  
+    - **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation
       Examples:
  ```Lua
 			domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,
@@ -711,10 +711,10 @@ The domoticz object has these constants available for use in your code e.g. `dom
 **IMPORTANT:  you have to prefix these constants with the name of your domoticz object. Example: `domoticz.ALERTLEVEL_RED`**:
 
  - **ALERTLEVEL_GREY**, **ALERTLEVEL_GREEN**, **ALERTLEVEL_ORANGE**, **ALERTLEVEL_RED**, **ALERTLEVEL_YELLOW**: for updating text sensors.
- - **BASETYPE_DEVICE**, **BASETYPE_SCENE**, **BASETYPE_GROUP**, **BASETYPE_VARIABLE**, **BASETYPE_SECURITY**, **BASETYPE_TIMER**, **BASETYPE_HTTP_RESPONSE**: indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object:    
-   ```Lua 
+ - **BASETYPE_DEVICE**, **BASETYPE_SCENE**, **BASETYPE_GROUP**, **BASETYPE_VARIABLE**, **BASETYPE_SECURITY**, **BASETYPE_TIMER**, **BASETYPE_HTTP_RESPONSE**: indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object:
+   ```Lua
 	if (item.baseType == domoticz.BASETYPE_DEVICE) then ... end
-   ``` 
+   ```
 
  - **BARO_CLOUDY, BARO_CLOUDY_RAIN, BARO_STABLE, BARO_SUNNY, BARO_THUNDERSTORM, BARO_NOINFO, BARO_UNSTABLE**: for updating barometric values.
  - **EVENT_TYPE_DEVICE**, **EVENT_TYPE_VARIABLE**, **EVENT_TYPE_SECURITY**,  **EVENT_TYPE_HTTPRESPONSE**<sup>2.4.0</sup>, **EVENT_TYPE_TIMER**: triggerInfo types passed to the execute function in your scripts.
@@ -875,7 +875,7 @@ Note that if you do not find your specific device type here you can always inspe
  - **WhToday**: *Number*. Total Wh usage of the day. Note the unit is Wh and not kWh!
  - **WhTotal**: *Number*. Total Wh usage.
  - **WhActual**: *Number*. Actual reading in Watt. Please use actualWatt
- 
+
 
 #### Leaf wetness
  - **wetness**: *Number*. Wetness value
@@ -999,7 +999,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **open()**: *Function*. Set device to Open if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **quietOn()**: *Function*. <sup>2.4.20</sup> Set deviceStatus to on without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **quietOff()**: *Function*. <sup>2.4.20</sup> set deviceStatus to off without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **setLevel(percentage)**: *Function*. <sup>2.4.29</sup> Set device to a given level if it supports it (e.g. blinds percentage). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). 
+ - **setLevel(percentage)**: *Function*. <sup>2.4.29</sup> Set device to a given level if it supports it (e.g. blinds percentage). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **stop()**: *Function*. Set device to Stop if it supports it (e.g. blinds). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Switch device off it is supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: *Function*. Switch device on if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -1154,7 +1154,7 @@ Some options are not available to all commands. All the options are available to
 
 ```{=mediawiki}
 
-{| class="wikitable" 
+{| class="wikitable"
 !width="17%"| option
 !align="center" width="12%"| state changes
 !align="center" width="12%"| update commands
@@ -1321,7 +1321,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **day**: *Number*
  - **dayAbbrOfWeek**: *String*. sun,mon,tue,wed,thu,fri or sat
  - **daysAgo**: *Number*
- - **dayName**: *String*.<sup>2.5.6</sup>  complete name Sunday, Monday, etc  
+ - **dayName**: *String*.<sup>2.5.6</sup>  complete name Sunday, Monday, etc
  - **dDate**: *Number*. timestamp (seconds since 01/01/1970 00:00)
  - **getISO**: *Function*. Returns the ISO 8601 formatted date.
  - **hour**: *Number*
@@ -1333,10 +1333,10 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **millisecondsAgo**: *Number*. Number of milliseconds since the last update.
  - **minutes**: *Number*
  - **minutesAgo**: *Number*. Number of minutes since the last update.
- - **minutesSinceMidnight**: *Number* <sup>2.5.4</sup> 
+ - **minutesSinceMidnight**: *Number* <sup>2.5.4</sup>
  - **month**: *Number*
  - **monthAbbrName**: String. <sup>2.5.6</sup> jan, feb, mar, etc
- - **monthName**: *String*. <sup>2.5.6</sup>  January, February, etc 
+ - **monthName**: *String*. <sup>2.5.6</sup>  January, February, etc
  - **msAgo**: *Number*. Number of milliseconds since the last update.
  - **raw**: *String*. Generated by Domoticz
  - **rawDate**: *String*. Returns the date part of the raw data.
@@ -1363,7 +1363,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
     - **seconds**: *Number*
     - **year**: *Number*
  - **year**: *Number*
- - **wday**: *Number* day of the week. Sunday = 1, Saturday = 7  
+ - **wday**: *Number* day of the week. Sunday = 1, Saturday = 7
  - **week**: *Number* week of the year
 
 **Note: it is currently not possible to change the domoticz.time object instance.** ( but you can create a new one )
@@ -2281,10 +2281,13 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 # History
 
+## [2.5.7]
+- Add option checkFirst to switchSelector method
+
 ## [2.5.6]
 - Add dayName, monthName, monthAbbrName and time as time attributes
 - Add \_.round, \_.isEqual functions to lodash.lua
-- Add testLodash.lua as testModule for lodash  
+- Add testLodash.lua as testModule for lodash
 
 ## [2.5.5]
 - Add Zwave fan to Zwave mode device adapter
