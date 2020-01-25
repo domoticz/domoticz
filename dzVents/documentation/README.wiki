@@ -2236,6 +2236,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 = History =
 
+== [2.5.7] ==
+
+* Add option checkFirst to switchSelector method
+
 == [2.5.6] ==
 
 * Add dayName, monthName, monthAbbrName and time as time attributes
