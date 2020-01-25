@@ -78,6 +78,7 @@ struct _tTaskItem
 	std::string _sValue;
 	std::string _command;
 	std::string _sUntil;
+	std::string _sUser;
 	int _level;
 	_tColor _Color;
 	std::string _relatedEvent;
@@ -184,7 +185,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const int Level, const _tColor Color, const std::string &eventName)
+	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const int Level, const _tColor Color, const std::string &eventName, const std::string& User)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_EVENT;
@@ -194,11 +195,12 @@ struct _tTaskItem
 		tItem._level= Level;
 		tItem._Color=Color;
 		tItem._relatedEvent = eventName;
+		tItem._sUser = User;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SwitchSceneEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const std::string &eventName)
+	static _tTaskItem SwitchSceneEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const std::string &eventName, const std::string& User)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_SCENE;
@@ -206,6 +208,7 @@ struct _tTaskItem
 		tItem._idx=idx;
 		tItem._command= Command;
 		tItem._relatedEvent = eventName;
+		tItem._sUser = User;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
@@ -452,8 +455,8 @@ private:
 	void StopThread();
 	void Do_Work();
 
-	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color);
-	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color);
+	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string& User);
+	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color, const std::string& User);
 
 	void FixDaylightSavingTableSimple(const std::string &TableName);
 	void FixDaylightSaving();

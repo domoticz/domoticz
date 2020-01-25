@@ -273,7 +273,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				else
 					level = root["level"].asInt();
 			}
-			if (!m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, false, 0) == true)
+			if (!m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, false, 0, "MQTT") == true)
 			{
 				_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 			}
@@ -393,7 +393,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 			_log.Log(LOG_STATUS, "MQTT: setcolbrightnessvalue: ID: %" PRIx64 ", bri: %d, color: '%s'", idx, ival, color.toString().c_str());
 
-			if (!m_mainworker.SwitchLight(idx, "Set Color", ival, color, false, 0) == true)
+			if (!m_mainworker.SwitchLight(idx, "Set Color", ival, color, false, 0, "MQTT") == true)
 			{
 				_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 			}
@@ -403,7 +403,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			std::string switchcmd = root["switchcmd"].asString();
 			if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle"))
 				goto mqttinvaliddata;
-			if (!m_mainworker.SwitchScene(idx, switchcmd) == true)
+			if (!m_mainworker.SwitchScene(idx, switchcmd, "MQTT") == true)
 			{
 				_log.Log(LOG_ERROR, "MQTT: Error sending scene command!");
 			}

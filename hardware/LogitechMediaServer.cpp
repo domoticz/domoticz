@@ -181,7 +181,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 					std::string sLongStatus = Media_Player_States(nStatus);
 					if ((nStatus == MSTAT_PLAYING) || (nStatus == MSTAT_PAUSED) || (nStatus == MSTAT_STOPPED))
 						if (sShortStatus.length()) sLongStatus += " - " + sShortStatus;
-					result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", itt->ID, int(nStatus), sLongStatus.c_str());
+					result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) VALUES (%d, %d, '%q','%q')", itt->ID, int(nStatus), sLongStatus.c_str(), "Logitech");
 				}
 
 				// 3:	Trigger On/Off actions

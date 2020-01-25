@@ -15,7 +15,8 @@ define(['app'], function (app) {
             table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
                 columns: [
                     {title: $.t('Date'), data: 'Date', type: 'date-us'},
-                    {title: $.t('Data'), data: 'Data'}
+                    {title: $.t('Data'), data: 'Data'},
+                    {title: $.t('User'), data: 'User', width: 140}
                 ]
             })).api();
         };
