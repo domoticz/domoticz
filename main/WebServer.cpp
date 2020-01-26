@@ -2942,6 +2942,9 @@ namespace http {
 
 			std::string nvalue = request::findValue(&req, "nvalue");
 			std::string svalue = request::findValue(&req, "svalue");
+			std::string ptrigger = request::findValue(&req, "parsetrigger");
+
+			bool parseTrigger = (ptrigger != "false");
 
 			if ((nvalue.empty() && svalue.empty()))
 			{
@@ -2998,7 +3001,7 @@ namespace http {
 			{
 				batterylevel = atoi(sBatteryLevel.c_str());
 			}
-			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel))
+			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel, parseTrigger))
 			{
 				root["status"] = "OK";
 				root["title"] = "Update Device";
