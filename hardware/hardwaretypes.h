@@ -22,16 +22,16 @@
 #define sTypeWINDNoTemp 0x30    //Weather Station
 #define sTypeWINDNoTempNoChill 0x31    //Weather Station
 
-#define wsbaroforcast_heavy_snow 0x01
-#define wsbaroforcast_snow 0x01
-#define wsbaroforcast_heavy_rain 0x02
-#define wsbaroforcast_rain 0x03
-#define wsbaroforcast_cloudy 0x04
-#define wsbaroforcast_some_clouds 0x05
-#define wsbaroforcast_sunny 0x06
-#define wsbaroforcast_unknown 0x07
-#define wsbaroforcast_unstable 0x08
-#define wsbaroforcast_stable 0x09
+#define wsbaroforecast_heavy_snow 0x01
+#define wsbaroforecast_snow 0x01
+#define wsbaroforecast_heavy_rain 0x02
+#define wsbaroforecast_rain 0x03
+#define wsbaroforecast_cloudy 0x04
+#define wsbaroforecast_some_clouds 0x05
+#define wsbaroforecast_sunny 0x06
+#define wsbaroforecast_unknown 0x07
+#define wsbaroforecast_unstable 0x08
+#define wsbaroforecast_stable 0x09
 
 #define bmpbaroforecast_stable			0x00
 #define bmpbaroforecast_sunny			0x01
@@ -74,6 +74,7 @@
 #define sTypeCustom					0x1F
 #define sTypeZWaveAlarm				0x20
 #define sTypeManagedCounter			0x21
+#define sTypeZWaveThermostatOperatingState	0x23
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4

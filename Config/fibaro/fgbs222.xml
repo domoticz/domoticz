@@ -1,4 +1,68 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:0502</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgbs222.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="0502">https://products.z-wavealliance.org/products/3285/</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="0502">FGBS-222</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Smart Implant allows to enhance the functionality of wired sensors and other devices by adding Z-Wave network communication.
+You can connect binary sensors, analog sensors, DS18B20 temperature sensors or DHT22 humidity and temperature sensor to report their readings to the Z-Wave controller.
+It can also control devices by opening/closing output contacts independently of the inputs.
+
+Main features of FIBARO Smart Implant:
+- Compatible with any Z-Wave or Z-Wave+ Controller,
+- Supports Z-Wave network Security Modes: S0 with AES-128 encryption and S2 with PRNG-based encryption,
+- Allows for connecting sensors:
+   o	6 DS18B20 sensors, 
+   o	1 DHT sensor,
+   o	2 2-wire analog sensor,
+   o	2 3-wire analog sensor,
+   o	2 binary sensors. 
+- Works as a Z-Wave signal repeater,
+- Built-in temperature sensor.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove the device from the Z-Wave network:
+1.	Power the device.
+2.	Set the main controller into remove mode (see the controller’s manual).
+3.	Quickly, triple click button on the device housing or switch connected to IN1 or IN2.
+4.	LED will start blinking yellow, wait for the removing process to end.
+5.	Successful removing will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">FIBARO Smart Implant is powered using DC power supply unit so it is always awake.</MetaDataItem>
+    <MetaDataItem name="Name">Smart Implant</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add the device to the Z-Wave network manually:
+1.	Power the device.
+2.	Set the main controller in (Security/non-Security Mode) add mode (see the controller’s manual).
+3.	Quickly, triple click button on the device housing or switch connected to IN1 or IN2.
+4.	If you are adding in Security S2 Authenticated, scan the DSK QR code or input the 5-digit PIN code (label on the bottom of the box).
+5.	LED will start blinking yellow, wait for the adding process to end.
+6.	Successful adding will be confirmed by the Z-Wave controller’s message.
+ 
+To add the device to the Z-Wave network using Smart Start:
+1.	Set the main controller in Security S2 Authenticated add mode (see the controller’s manual). 
+2.	Scan the DSK QR code or input the 5-digit PIN code (label on the bottom of the box).
+3.	Power the device.
+4.	LED will start blinking yellow, wait for the adding process to end.
+5.	Successful adding will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="0502">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3285/FGBS-222-EN-T-v1.2c.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset procedure allows to restore the device back to its factory settings, which means all information about the Z-Wave controller and user configuration will be deleted.
+
+Resetting the device is not the recommended way of
+removing the device from the Z-Wave network. Use this procedure only when the network primary controller is missing or inoperable. Certain device removal can be achieved by the procedure of removing described.
+
+1.	Press and hold the button to enter the menu.
+2.	Release button when the device glows yellow.
+3.	Quickly click the button to confirm.
+4.	After few seconds the device will be restarted, which is signalled with the red colour.
+
+
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3195/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3285/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!--
     Fibaro Smart Implant
     https://www.fibaro.com/us/products/smart-implant/

@@ -2,7 +2,6 @@ local Time = require('Time')
 local TimedCommand = require('TimedCommand')
 
 local function Variable(domoticz, data)
-
 	local self = {
 		['value'] = data.data.value,
 		['name'] = data.name,
@@ -13,10 +12,10 @@ local function Variable(domoticz, data)
 		['baseType'] = domoticz.BASETYPE_VARIABLE,
 		isVariable = true,
 		isHTTPResponse = false,
-	    isDevice = false,
-	    isScene = false,
-	    isGroup = false,
-	    isTimer = false,
+		isDevice = false,
+		isScene = false,
+		isGroup = false,
+		isTimer = false,
 		isSecurity = false
 	}
 
@@ -28,7 +27,7 @@ local function Variable(domoticz, data)
 	end
 
 	if (data.variableType == 'date') then
-		local d, mon, y = string.match(data.data.value, "(%d+)%/(%d+)%/(%d+)")
+		local d, mon, y = string.match(data.data.value, "(%d+)[%p](%d+)[%p](%d+)")
 		local date = y .. '-' .. mon .. '-' .. d .. ' 00:00:00'
 		self['date'] = Time(date)
 	end
@@ -43,11 +42,15 @@ local function Variable(domoticz, data)
 		self['time'] = Time(time)
 	end
 
-
 	-- send an update to domoticz
 	function self.set(value)
-		if (value == nil) then value = '' end
-
+		 
+		if self.type == 'integer'  then 
+			value = math.floor(value)
+		elseif value == nil then 
+			value = '' 
+		end 
+	
 		-- return TimedCommand(domoticz, 'Variable:' .. data.name, tostring(value), 'variable')
 		return TimedCommand(domoticz, 'Variable', {
 			idx = data.id,
@@ -61,6 +64,19 @@ local function Variable(domoticz, data)
 			type = 'variable',
 			idx = data.id
 		})
+	end
+
+	function self.rename(newName)
+		local newValue = domoticz.utils.urlEncode(self.value)
+		if self.type == 'integer' then 
+			newValue = math.floor(self.value)
+		end
+		local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=updateuservariable' ..
+					'&idx=' .. data.id ..
+					'&vname=' .. domoticz.utils.urlEncode(newName) ..
+					'&vtype=' ..  self.type ..
+					'&vvalue=' .. newValue
+		domoticz.openURL(url)
 	end
 
 	return self

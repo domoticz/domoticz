@@ -2094,7 +2094,6 @@ void CEnOceanESP3::ParseRadioDatagram()
 					case 0x00:	// D2-03-00 Light, Switching and Blind Control Type
 						break;
 					case 0x0A:	// D2-03-0A Push Button – Single Button
-						while (1 == 0);
 						break;
 					case 0x10:	// D2-03-10 Mechanical Handle
 						break;

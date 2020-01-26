@@ -1,34 +1,20 @@
-define(['app'], function (app) {
-	app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', 'permissions', function ($scope, $rootScope, $location, $http, $interval, $window, permissions) {
+define(['app', 'livesocket'], function (app) {
+	app.controller('TemperatureController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, deviceApi, permissions, livesocket) {
+		var $element = $('#main-view #tempcontent').last();
 
 		var ctrl = this;
 
+		$scope.broadcast_unsubscribe = undefined;
+
 		MakeFavorite = function (id, isfavorite) {
-			if (!permissions.hasPermission("Admin")) {
-				HideNotify();
-				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
-				return;
-			}
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
-			$.ajax({
-				url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					ShowTemps();
-				}
+			deviceApi.makeFavorite(id, isfavorite).then(function() {
+				ShowTemps();
 			});
-		}
+		};
 
 		EditTempDevice = function (idx, name, description, addjvalue) {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.devIdx = idx;
+			$("#dialog-edittempdevice #deviceidx").text(idx);
 			$("#dialog-edittempdevice #devicename").val(unescape(name));
 			$("#dialog-edittempdevice #devicedescription").val(unescape(description));
 			$("#dialog-edittempdevice #adjustment").val(addjvalue);
@@ -38,11 +24,8 @@ define(['app'], function (app) {
 		}
 
 		EditTempDeviceSmall = function (idx, name, description, addjvalue) {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.devIdx = idx;
+			$("#dialog-edittempdevicesmall #deviceidx").text(idx);
 			$("#dialog-edittempdevicesmall #devicename").val(unescape(name));
 			$("#dialog-edittempdevicesmall #devicedescription").val(unescape(description));
 			$("#dialog-edittempdevicesmall").i18n();
@@ -62,11 +45,8 @@ define(['app'], function (app) {
 				bootbox.alert($.t('Can\'t change zone when the heating is off'));
 				return false;
 			}
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.devIdx = idx;
+			$("#dialog-editsetpoint #deviceidx").text(idx);
 			$("#dialog-editsetpoint #devicename").val(unescape(name));
 			$("#dialog-editsetpoint #devicedescription").val(unescape(description));
 			$("#dialog-editsetpoint #setpoint").val(setpoint);
@@ -84,10 +64,6 @@ define(['app'], function (app) {
 		}
 		EditState = function (idx, name, description, state, mode, until, callback) {
 			//HeatingOff does not apply to dhw
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.devIdx = idx;
 			$("#dialog-editstate #devicename").val(unescape(name));
 			$("#dialog-editstate #devicedescription").val(unescape(description));
@@ -121,45 +97,51 @@ define(['app'], function (app) {
 			bootbox.alert($.t('Please use the devices tab for this.'));
 		}
 
-		RefreshTemps = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
-			var id = "";
-			$.ajax({
-				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					if (typeof data.ServerTime != 'undefined') {
-						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
-					}
-
-					if (typeof data.result != 'undefined') {
-						if (typeof data.ActTime != 'undefined') {
-							$.LastUpdateTime = parseInt(data.ActTime);
-						}
-
-						// Change updated items in temperatures list
-						// TODO is there a better way to do this ?
-						data.result.forEach(function (newitem) {
-							ctrl.temperatures.forEach(function (olditem, oldindex, oldarray) {
-								if (olditem.idx == newitem.idx) {
-									oldarray[oldindex] = newitem;
-									if ($scope.config.ShowUpdatedEffect == true) {
-										$("#tempwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-									}
-								}
-							});
-						});
+		RefreshItem = function (item) {
+			ctrl.temperatures.forEach(function (olditem, oldindex, oldarray) {
+				if (olditem.idx == item.idx) {
+					oldarray[oldindex] = item;
+					if ($scope.config.ShowUpdatedEffect == true) {
+						$("#tempwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 					}
 				}
 			});
+		}
 
-			$scope.mytimer = $interval(function () {
-				RefreshTemps();
-			}, 10000);
+		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
+		RefreshTemps = function () {
+			livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+				}
+
+				if (typeof data.result != 'undefined') {
+					if (typeof data.ActTime != 'undefined') {
+						$.LastUpdateTime = parseInt(data.ActTime);
+					}
+
+					/*
+						Render all the widgets at once.
+					*/
+					$.each(data.result, function (i, item) {
+						RefreshItem(item);
+					});
+				}
+			});
+
+			$scope.broadcast_unsubscribe = $scope.$on('jsonupdate', function (event, data) {
+				/*
+					When this event is caught, a widget status update is received.
+					We call RefreshItem to update the widget.
+				*/
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+				}
+				if (typeof data.ActTime != 'undefined') {
+					$.LastUpdateTime = parseInt(data.ActTime);
+				}
+				RefreshItem(data.item);
+			});
 		}
 
 		ShowForecast = function () {
@@ -167,19 +149,22 @@ define(['app'], function (app) {
 		}
 
 		ShowTemps = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$('#modal').show();
+
+			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
+				$scope.broadcast_unsubscribe();
+				$scope.broadcast_unsubscribe = undefined;
+			}
 
 			// TODO should belong to a global controller
 			ctrl.isNotMobile = function () {
 				return $window.myglobals.ismobile == false;
 			};
 
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+
 			$.ajax({
-				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&plan=" + roomPlanId,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -198,22 +183,15 @@ define(['app'], function (app) {
 			$('#temptophtm').i18n();
 			$('#tempwidgets').show();
 			$('#tempwidgets').i18n();
-			$('#tempcontent').html("");
-			$('#tempcontent').i18n();
+			$element.html("");
+			$element.i18n();
 
 			$rootScope.RefreshTimeAndSun();
-
-			$scope.mytimer = $interval(function () {
-				RefreshTemps();
-			}, 10000);
+			RefreshTemps();
 			return false;
 		};
 
 		$scope.DragWidget = function (idx) {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.devIdx = idx;
 		};
 		$scope.DropWidget = function (idx) {
@@ -505,9 +483,10 @@ define(['app'], function (app) {
 
 		};
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			//cleanup
+			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
+				$scope.broadcast_unsubscribe();
+				$scope.broadcast_unsubscribe = undefined;
 			}
 		});
 
@@ -531,17 +510,24 @@ define(['app'], function (app) {
 			}
 		});
 
-		if (typeof window.myglobals.LastPlanSelected != 'undefined') {
-			ctrl.roomSelected = window.myglobals.LastPlanSelected;
+		var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+
+		if (typeof roomPlanId != 'undefined') {
+			ctrl.roomSelected = roomPlanId;
 		}
 		ctrl.changeRoom = function () {
 			var idx = ctrl.roomSelected;
 			window.myglobals.LastPlanSelected = idx;
-			ShowTemps();
+
+			$route.updateParams({
+					room: idx > 0 ? idx : undefined
+				});
+				$location.replace();
+				$scope.$apply();
 		};
 
-	}])
-		.directive('dztemperaturewidget', ['$rootScope', '$location', function ($rootScope,$location) {
+	})
+		.directive('dztemperaturewidget', function ($rootScope,$location) {
 			return {
 				priority: 0,
 				restrict: 'E',
@@ -726,5 +712,5 @@ define(['app'], function (app) {
 
 				}
 			};
-		}]);
+		});
 });

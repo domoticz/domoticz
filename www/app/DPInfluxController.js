@@ -266,9 +266,8 @@ define(['app'], function (app) {
 			  "bProcessing": true,
 			  "bStateSave": true,
 			  "bJQueryUI": true,
-              "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-			  "iDisplayLength" : 25,
-			  'bLengthChange': false,
+			  "aLengthMenu": [[15, 50, 100, -1], [15, 50, 100, "All"]],
+			  "iDisplayLength" : 15,
 			  "sPaginationType": "full_numbers",
 			  language: $.DataTableLanguage
 			} );

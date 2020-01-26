@@ -310,8 +310,7 @@ bool SatelIntegra::ReadNewData()
 {
 	unsigned char cmd[2];
 	cmd[0] = 0x7F; // list of new data
-	cmd[1] = 0x00;
-	if (SendCommand(cmd, 2, m_newData, 7) > 0)
+	if (SendCommand(cmd, 1, m_newData, 6) > 0)
 	{
 		return true;
 	}
@@ -354,7 +353,7 @@ bool SatelIntegra::GetInfo()
 				cmd[0] = 0x7C; // INT-RS/ETHM version
 				if (SendCommand(cmd, 1, buffer, 13) > 0)
 				{
-					m_data32 = ((buffer[12] & 1) == 1) && (m_modelIndex == 72); // supported and required 256 PLUS
+					m_data32 = ((buffer[12] & 2) == 2) && (m_modelIndex == 72); // supported and required 256 PLUS
 
 					_log.Log(LOG_STATUS, "Satel Integra: ETHM-1 ver. %c.%c%c %c%c%c%c-%c%c-%c%c (32 bytes mode = %s)",
 						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10], buffer[11], m_data32 ? "true" : "false");
@@ -401,9 +400,9 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 		zonesCount = 128;
 	}
 
-	unsigned char cmd[1];
+	unsigned char cmd[2];
 	cmd[0] = 0x00; // read zones violation
-	if (SendCommand(cmd, 1, buffer, 17 + m_data32 * 16) > 0)
+	if (SendCommand(cmd, 1 + m_data32, buffer, 17 + m_data32 * 16) > 0)
 	{
 		bool violate;
 		unsigned int byteNumber;
@@ -542,9 +541,9 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 #endif
 	unsigned char buffer[33];
 
-	unsigned char cmd[1];
+	unsigned char cmd[2];
 	cmd[0] = 0x17; // read outputs state
-	if (SendCommand(cmd, 1, buffer, 17 + m_data32 * 16) > 0)
+	if (SendCommand(cmd, 1 + m_data32, buffer, 17 + m_data32 * 16) > 0)
 	{
 		bool findBlindOutput = false;
 		bool outputState;
@@ -1159,7 +1158,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 		totalRet += ret;
 		if ((ret <= 0) || (totalRet >= MAX_LENGTH_OF_ANSWER))
 		{
-			_log.Log(LOG_ERROR, "Satel Integra: bad data length received (-1)");
+			_log.Log(LOG_ERROR, "Satel Integra: bad data length received (totalRet %d)", totalRet);
 			DestroySocket();
 			return -1;
 		}
@@ -1182,10 +1181,10 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	{
 		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[totalRet - 1] == 0x0D && buffer[totalRet - 2] == 0xFE) // check prefix and sufix
 		{
-			if ((buffer[2] != 0xEF)
-				&& ((totalRet - 6) != expectedLength))
+			if ((buffer[2] != 0xEF) && ((totalRet - 6) != expectedLength))
 			{
-				_log.Log(LOG_ERROR, "Satel Integra: bad data length received");
+				_log.Log(LOG_ERROR, "Satel Integra: bad data length received (expectedLength %d, totalRet %d, cmd %X, cmdLength %d)", expectedLength, totalRet - 6, cmd[0], cmdLength);
+				DestroySocket();
 				return -1;
 			}
 

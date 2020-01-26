@@ -1,4 +1,42 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="15" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010E:0001:0009</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/polycontrol/doorlockv3.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0009">https://products.z-wavealliance.org/products/3340/</MetaDataItem>
+    <MetaDataItem name="Name">Danalock V3-BTZU-IL</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Set the controller in inclusion mode
+2. Push the switch once.
+3. Wait 5 seconds.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Set the controller in exclusion mode
+2. Push the switch once.
+3. Wait 5 seconds.</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0009">Danalock V3-BTZU-IL</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3340/Danalock_V3_Product_manual_Z_Wave_V_0.9.4.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">The Danalock can be set to factory settings by pushing the switch ten times. Please use this procedure only when the primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0009">CEPT (Europe) / U.S. / Canada / Mexico / Australia / New Zealand / Japan / Australia / New Zealand / CEPT (Europe) / U.S. / Canada / Mexico / Australia / New Zealand / Japan / Brazil / South Korea / Russia / Israel</MetaDataItem>
+    <MetaDataItem name="Description">Danalock supports:
+- S0/S2 Z-Wave Security
+- Bluetooth Smart 
+- Twist Assist
+- Auto Lock
+- Hold And Release
+- Back To Back</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2556/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2601/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2629/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2630/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2644/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3217/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3295/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3311/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="11">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3312/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="12">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3337/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="13">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3338/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="14">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3339/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="15">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3340/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!--
     Polycontrol: Danalock V3 door lock
     https://products.z-wavealliance.org/products/2556

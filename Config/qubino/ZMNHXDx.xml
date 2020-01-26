@@ -1,9 +1,22 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
-  <!--
-Qubino: ZMNHXDx 3-phase Smart Meter
--->
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">3-PHASE SMART METER</MetaDataItem>
+    <MetaDataItem name="Description">USER MANUAL EN.QUBINO 3-PHASE SMART METERThe Qubino 3-Phase Smart Meter is an extremely versatile and powerful Z-Wave devicefor measuring energy in a three-phase electrical power network of up to 3 x 65A.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0007:0054</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://qubino.com/products/3-phase-smart-meter/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://qubino.com/support/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/qubino/zmnhxdx.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://qubino.com/wp-content/uploads/2019/06/Qubino_3-Phase-Smart-Meter-PLUS-extended-manual_eng_3.4.pdf?cf_id=2255</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Toggle the Service button S between 0.2 and 3seconds</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Press and hold the S service button between 0.2 and 3seconds</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the S service button between 6 seconds and 20 seconds</MetaDataItem>
+    <MetaDataItem id="0054" name="FrequencyName" type="0007">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0054" name="Identifier" type="0007">ZMNHXDx</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="12 June 2019" revision="4">Update to Support OZW 1.6 with Instance Label Names</Entry>
+    </ChangeLog>
+  </MetaData>
 
-	<!-- Configuration -->
   <CommandClass id="112">
     <Value genre="config" index="7" instance="1" label="Input switch function selection" max="5" min="0" size="1" type="list" value="0">
       <Help></Help>
@@ -49,11 +62,6 @@ Qubino: ZMNHXDx 3-phase Smart Meter
       <Group index="1" label="Lifeline" max_associations="1"/>
     </Associations>
   </CommandClass>
-  <CommandClass id="142">
-    <Compatibility>
-      <ForceInstances>true</ForceInstances>
-    </Compatibility>
-  </CommandClass>
   <!-- Remove COMMAND_CLASS_BASIC -->
   <CommandClass action="remove" id="32"/>
   <!-- Map endpoints to instances -->
@@ -61,5 +69,11 @@ Qubino: ZMNHXDx 3-phase Smart Meter
     <Compatibility>
       <MapRootToEndpoint>true</MapRootToEndpoint>
     </Compatibility>
+    <Instance index="1" label="Total Readings"/>
+    <Instance index="2" label="Phase 1"/>
+    <Instance index="3" label="Phase 2"/>
+    <Instance index="4" label="Phase 3"/>
+    <Instance index="5" label="External Relay"/>
+    <Instance index="6" label="External IR Relay"/>
   </CommandClass>
 </Product>

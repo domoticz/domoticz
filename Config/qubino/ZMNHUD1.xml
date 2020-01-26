@@ -1,4 +1,4 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <!-- Qubino: ZMNHUD1 DIN Pilot Wire Z-Wave Plus-->
 	<!-- Configuration -->
   <CommandClass id="112">
@@ -12,7 +12,7 @@
       <Item label="Normally Open" value="0"/>
       <Item label="Normally Close" value="1"/>
     </Value>
-    <Value genre="config" index="11" instance="1" label=" Input 1 operation mode 1" max="6" min="0" size="1" type="list" value="1">
+    <Value genre="config" index="11" instance="1" label="Input 1 operation mode 1" max="6" min="0" size="1" type="list" value="1">
       <Help/>
       <Item label="No modification with Input 1" value="0"/>
       <Item label="Confort" value="1"/>
@@ -22,7 +22,7 @@
       <Item label="Frost Protection" value="5"/>
       <Item label="Stop" value="6"/>
     </Value>
-    <Value genre="config" index="12" instance="1" label=" Input 1 operation mode 2" max="6" min="0" size="1" type="list" value="4">
+    <Value genre="config" index="12" instance="1" label="Input 1 operation mode 2" max="6" min="0" size="1" type="list" value="4">
       <Help/>
       <Item label="No modification with Input 1" value="0"/>
       <Item label="Confort" value="1"/>

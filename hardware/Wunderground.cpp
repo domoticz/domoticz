@@ -6,7 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
@@ -154,10 +154,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 #else
 			std::stringstream sURL;
 			sURL << "https://api.weather.com/v3/location/near?geocode=" << Latitude << "," << Longitude << "&product=pws&format=json&apiKey=" << m_APIKey;
-			bool bret;
-			std::string szURL = sURL.str();
-			bret = HTTPClient::GET(szURL, sResult);
-			if (!bret)
+			if (!HTTPClient::GET(sURL.str(), sResult))
 			{
 				_log.Log(LOG_ERROR, "Wunderground: Error getting location/near result! (Check API key!)");
 				return "";
@@ -168,8 +165,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 #endif
 			Json::Value root;
 
-			Json::Reader jReader;
-			bool ret = jReader.parse(sResult, root);
+			bool ret = ParseJSon(sResult, root);
 			if ((!ret) || (!root.isObject()))
 			{
 				_log.Log(LOG_ERROR, "WUnderground: Problem getting location/near result. Invalid data received! (Check Station ID!)");
@@ -220,11 +216,8 @@ void CWunderground::GetMeterDetails()
 #else
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL << "https://api.weather.com/v2/pws/observations/current?stationId=" << szLoc << "&format=json&units=m&apiKey=" << m_APIKey;
-	bool bret;
-	std::string szURL=sURL.str();
-	bret=HTTPClient::GET(szURL,sResult);
-	if (!bret)
+	sURL << "https://api.weather.com/v2/pws/observations/current?stationId=" << szLoc << "&format=json&units=m&numericPrecision=decimal&apiKey=" << m_APIKey;
+	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR,"Wunderground: Error getting http data! (Check API key!)");
 		return;
@@ -235,8 +228,7 @@ void CWunderground::GetMeterDetails()
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret=jReader.parse(sResult,root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR,"WUnderground: Invalid data received! (Check Station ID!)");

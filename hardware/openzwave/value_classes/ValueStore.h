@@ -36,36 +36,48 @@ class TiXmlElement;
 
 namespace OpenZWave
 {
-	class Value;
-
-	/** \brief Container that holds all of the values associated with a given node.
-	 * \ingroup ValueID
-	 */
-	class ValueStore
+	namespace Internal
 	{
-	public:
-		
-		typedef map<uint32,Value*>::const_iterator Iterator;
+		namespace VC
+		{
 
-		Iterator Begin(){ return m_values.begin(); }
-		Iterator End(){ return m_values.end(); }
-		
-		ValueStore(){}
-		~ValueStore();
+			class Value;
 
-		bool AddValue( Value* _value );
-		bool RemoveValue( uint32 const& _key );
-		Value* GetValue( uint32 const& _key )const;
+			/** \brief Container that holds all of the values associated with a given node.
+			 * \ingroup ValueID
+			 */
+			class ValueStore
+			{
+				public:
 
-		void RemoveCommandClassValues( uint8 const _commandClassId );		// Remove all the values associated with a command class
+					typedef map<uint32, Value*>::const_iterator Iterator;
 
-	private:
-		map<uint32,Value*>	m_values;
-	};
+					Iterator Begin()
+					{
+						return m_values.begin();
+					}
+					Iterator End()
+					{
+						return m_values.end();
+					}
 
+					ValueStore()
+					{
+					}
+					~ValueStore();
+
+					bool AddValue(Value* _value);
+					bool RemoveValue(uint32 const& _key);
+					Value* GetValue(uint32 const& _key) const;
+
+					void RemoveCommandClassValues(uint8 const _commandClassId);		// Remove all the values associated with a command class
+
+				private:
+					map<uint32, Value*> m_values;
+			};
+		} // namespace VC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif
-
-
 

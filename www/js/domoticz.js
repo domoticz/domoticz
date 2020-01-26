@@ -191,7 +191,7 @@ function CalculateTrendLine(data) {
 	return dReturn;
 };
 
-function SendX10Command(idx, switchcmd, refreshfunction, passcode) {
+function SendX10Command(idx, switchcmd, passcode) {
 	ShowNotify($.t('Switching') + ' ' + $.t(switchcmd));
 	$.ajax({
 		url: "json.htm?type=command&param=switchlight&idx=" + $.devIdx +
@@ -208,7 +208,6 @@ function SendX10Command(idx, switchcmd, refreshfunction, passcode) {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -218,7 +217,7 @@ function SendX10Command(idx, switchcmd, refreshfunction, passcode) {
 	});
 }
 
-function ArmSystemInt(idx, switchcmd, refreshfunction, passcode) {
+function ArmSystemInt(idx, switchcmd, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 
 	$.devIdx = idx;
@@ -233,21 +232,21 @@ function ArmSystemInt(idx, switchcmd, refreshfunction, passcode) {
 				text: $.t("Arm Home"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Home", refreshfunction, passcode)
+					SendX10Command(idx, "Arm Home", passcode)
 				}
 			},
 			{
 				text: $.t("Arm Away"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Away", refreshfunction, passcode)
+					SendX10Command(idx, "Arm Away", passcode)
 				}
 			}
 		]
 	});
 }
 
-function ArmSystem(idx, switchcmd, refreshfunction, isprotected) {
+function ArmSystem(idx, switchcmd, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -265,20 +264,20 @@ function ArmSystem(idx, switchcmd, refreshfunction, isprotected) {
 						return;
 					}
 					passcode = result;
-					ArmSystemInt(idx, switchcmd, refreshfunction, passcode);
+					ArmSystemInt(idx, switchcmd, passcode);
 				}
 			});
 		}
 		else {
-			ArmSystemInt(idx, switchcmd, refreshfunction, passcode);
+			ArmSystemInt(idx, switchcmd, passcode);
 		}
 	}
 	else {
-		ArmSystemInt(idx, switchcmd, refreshfunction, passcode);
+		ArmSystemInt(idx, switchcmd, passcode);
 	}
 }
 
-function ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode) {
+function ArmSystemMeiantechInt(idx, switchcmd, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 
 	$.devIdx = idx;
@@ -294,7 +293,7 @@ function ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode) {
 				click: function () {
 					$dialog.remove();
 					switchcmd = "Arm Home";
-					SendX10Command(idx, "Arm Home", refreshfunction, passcode)
+					SendX10Command(idx, "Arm Home", passcode)
 				}
 			},
 			{
@@ -302,7 +301,7 @@ function ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode) {
 				click: function () {
 					$dialog.remove();
 					switchcmd = "Arm Away";
-					SendX10Command(idx, "Arm Away", refreshfunction, passcode)
+					SendX10Command(idx, "Arm Away", passcode)
 				}
 			},
 			{
@@ -310,7 +309,7 @@ function ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode) {
 				click: function () {
 					$dialog.remove();
 					switchcmd = "Panic";
-					SendX10Command(idx, "Panic", refreshfunction, passcode)
+					SendX10Command(idx, "Panic", passcode)
 				}
 			},
 			{
@@ -318,14 +317,14 @@ function ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode) {
 				click: function () {
 					$dialog.remove();
 					switchcmd = "Disarm";
-					SendX10Command(idx, "Disarm", refreshfunction, passcode)
+					SendX10Command(idx, "Disarm", passcode)
 				}
 			}
 		]
 	});
 }
 
-function ArmSystemMeiantech(idx, switchcmd, refreshfunction, isprotected) {
+function ArmSystemMeiantech(idx, switchcmd, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -343,20 +342,20 @@ function ArmSystemMeiantech(idx, switchcmd, refreshfunction, isprotected) {
 						return;
 					}
 					passcode = result;
-					ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode);
+					ArmSystemMeiantechInt(idx, switchcmd, passcode);
 				}
 			});
 		}
 		else {
-			ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode);
+			ArmSystemMeiantechInt(idx, switchcmd, passcode);
 		}
 	}
 	else {
-		ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode);
+		ArmSystemMeiantechInt(idx, switchcmd, passcode);
 	}
 }
 
-function ArmSystemX10Int(idx, switchcmd, refreshfunction, passcode) {
+function ArmSystemX10Int(idx, switchcmd, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 
 	$.devIdx = idx;
@@ -371,91 +370,91 @@ function ArmSystemX10Int(idx, switchcmd, refreshfunction, passcode) {
 				text: $.t("Normal"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Normal", refreshfunction, passcode);
+					SendX10Command(idx, "Normal", passcode);
 				}
 			},
 			{
 				text: $.t("Alarm"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Alarm", refreshfunction, passcode);
+					SendX10Command(idx, "Alarm", passcode);
 				}
 			},
 			{
 				text: $.t("Arm Home"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Home", refreshfunction, passcode);
+					SendX10Command(idx, "Arm Home", passcode);
 				}
 			},
 			{
 				text: $.t("Arm Home Delayed"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Home Delayed", refreshfunction, passcode);
+					SendX10Command(idx, "Arm Home Delayed", passcode);
 				}
 			},
 			{
 				text: $.t("Arm Away"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Away", refreshfunction, passcode);
+					SendX10Command(idx, "Arm Away", passcode);
 				}
 			},
 			{
 				text: $.t("Arm Away Delayed"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Away Delayed", refreshfunction, passcode);
+					SendX10Command(idx, "Arm Away Delayed", passcode);
 				}
 			},
 			{
 				text: $.t("Panic"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Panic", refreshfunction, passcode);
+					SendX10Command(idx, "Panic", passcode);
 				}
 			},
 			{
 				text: $.t("Disarm"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Disarm", refreshfunction, passcode);
+					SendX10Command(idx, "Disarm", passcode);
 				}
 			},
 			{
 				text: $.t("Light On"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Light On", refreshfunction, passcode);
+					SendX10Command(idx, "Light On", passcode);
 				}
 			},
 			{
 				text: $.t("Light Off"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Light Off", refreshfunction, passcode);
+					SendX10Command(idx, "Light Off", passcode);
 				}
 			},
 			{
 				text: $.t("Light 2 On"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Light 2 On", refreshfunction, passcode);
+					SendX10Command(idx, "Light 2 On", passcode);
 				}
 			},
 			{
 				text: $.t("Light 2 Off"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Light 2 Off", refreshfunction, passcode);
+					SendX10Command(idx, "Light 2 Off", passcode);
 				}
 			}
 		]
 	});
 }
 
-function ArmSystemX10(idx, switchcmd, refreshfunction, isprotected) {
+function ArmSystemX10(idx, switchcmd, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -473,20 +472,20 @@ function ArmSystemX10(idx, switchcmd, refreshfunction, isprotected) {
 						return;
 					}
 					passcode = result;
-					ArmSystemX10Int(idx, switchcmd, refreshfunction, passcode);
+					ArmSystemX10Int(idx, switchcmd, passcode);
 				}
 			});
 		}
 		else {
-			ArmSystemX10Int(idx, switchcmd, refreshfunction, passcode);
+			ArmSystemX10Int(idx, switchcmd, passcode);
 		}
 	}
 	else {
-		ArmSystemX10Int(idx, switchcmd, refreshfunction, passcode);
+		ArmSystemX10Int(idx, switchcmd, passcode);
 	}
 }
 
-function SwitchLightInt(idx, switchcmd, refreshfunction, passcode) {
+function SwitchLightInt(idx, switchcmd, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 
 	ShowNotify($.t('Switching') + ' ' + $.t(switchcmd));
@@ -507,7 +506,6 @@ function SwitchLightInt(idx, switchcmd, refreshfunction, passcode) {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -517,7 +515,7 @@ function SwitchLightInt(idx, switchcmd, refreshfunction, passcode) {
 	});
 }
 
-function SwitchLight(idx, switchcmd, refreshfunction, isprotected) {
+function SwitchLight(idx, switchcmd, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -535,19 +533,19 @@ function SwitchLight(idx, switchcmd, refreshfunction, isprotected) {
 						return;
 					}
 					passcode = result;
-					SwitchLightInt(idx, switchcmd, refreshfunction, passcode);
+					SwitchLightInt(idx, switchcmd, passcode);
 				}
 			});
 		}
 		else {
-			SwitchLightInt(idx, switchcmd, refreshfunction, passcode);
+			SwitchLightInt(idx, switchcmd, passcode);
 		}
 	}
 	else {
-		SwitchLightInt(idx, switchcmd, refreshfunction, passcode);
+		SwitchLightInt(idx, switchcmd, passcode);
 	}
 }
-function SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, passcode) {
+function SwitchSelectorLevelInt(idx, levelName, levelValue, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 
 	ShowNotify($.t('Switching') + ' ' + levelName);
@@ -567,7 +565,6 @@ function SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, pas
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -577,7 +574,7 @@ function SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, pas
 	});
 }
 
-function SwitchSelectorLevel(idx, levelName, levelValue, refreshfunction, isprotected) {
+function SwitchSelectorLevel(idx, levelName, levelValue, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -595,20 +592,20 @@ function SwitchSelectorLevel(idx, levelName, levelValue, refreshfunction, isprot
 						return;
 					}
 					passcode = result;
-					SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, passcode);
+					SwitchSelectorLevelInt(idx, levelName, levelValue, passcode);
 				}
 			});
 		}
 		else {
-			SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, passcode);
+			SwitchSelectorLevelInt(idx, levelName, levelValue, passcode);
 		}
 	}
 	else {
-		SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, passcode);
+		SwitchSelectorLevelInt(idx, levelName, levelValue, passcode);
 	}
 }
 
-function SwitchSceneInt(idx, switchcmd, refreshfunction, passcode) {
+function SwitchSceneInt(idx, switchcmd, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 	ShowNotify($.t('Switching') + ' ' + $.t(switchcmd));
 
@@ -626,7 +623,6 @@ function SwitchSceneInt(idx, switchcmd, refreshfunction, passcode) {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -636,7 +632,7 @@ function SwitchSceneInt(idx, switchcmd, refreshfunction, passcode) {
 	});
 }
 
-function SwitchScene(idx, switchcmd, refreshfunction, isprotected) {
+function SwitchScene(idx, switchcmd, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -653,20 +649,20 @@ function SwitchScene(idx, switchcmd, refreshfunction, isprotected) {
 						return;
 					}
 					passcode = result;
-					SwitchSceneInt(idx, switchcmd, refreshfunction, passcode);
+					SwitchSceneInt(idx, switchcmd, passcode);
 				}
 			});
 		}
 		else {
-			SwitchSceneInt(idx, switchcmd, refreshfunction, passcode);
+			SwitchSceneInt(idx, switchcmd, passcode);
 		}
 	}
 	else {
-		SwitchSceneInt(idx, switchcmd, refreshfunction, passcode);
+		SwitchSceneInt(idx, switchcmd, passcode);
 	}
 }
 
-function ResetSecurityStatus(idx, switchcmd, refreshfunction) {
+function ResetSecurityStatus(idx, switchcmd) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -684,7 +680,6 @@ function ResetSecurityStatus(idx, switchcmd, refreshfunction) {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -856,6 +851,13 @@ function checkLength(o, min, max) {
 		return true;
 	}
 }
+function checkLengthText(text, min, max) {
+	if (text.length > max || text.length < min) {
+		return false;
+	} else {
+		return true;
+	}
+}
 
 function SetDimValue(idx, value) {
 	clearInterval($.setDimValue);
@@ -976,25 +978,14 @@ function GetTemp48Item(temp) {
 }
 
 function generate_noty(ntype, ntext, ntimeout) {
-	return noty({
-		text: ntext,
+	return new Noty({
 		type: ntype,
-		dismissQueue: true,
-		timeout: ntimeout,
 		layout: 'topRight',
-		theme: 'defaultTheme'
-	});
-}
-
-function generate_noty_tl(ntype, ntext, ntimeout) {
-	return noty({
 		text: ntext,
-		type: ntype,
 		dismissQueue: true,
 		timeout: ntimeout,
-		layout: 'topLeft',
-		theme: 'defaultTheme'
-	});
+		theme: 'relax'
+	}).show();
 }
 
 function rgb2hex(rgb) {
@@ -1242,6 +1233,9 @@ function TranslateStatus(status) {
 }
 
 function TranslateStatusShort(status) {
+	if (typeof status == 'undefined')
+		return "-?-";
+
 	//will remove the Set Level
 	if (status.indexOf("Set Level") != -1) {
 		if (status.substring(11) == "100 %") {
@@ -1619,35 +1613,6 @@ function AddDataToTempChart(data, chart, isday, isthermostat) {
 			series.setData(datatableTrendline, false);
 		}
 	}
-	return;
-	if (datatabledp.length != 0) {
-		chart.addSeries({
-			id: 'dewpoint',
-			name: $.t('Dew Point'),
-			color: 'blue',
-			yAxis: 0,
-			tooltip: {
-				valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-				valueDecimals: 1
-			}
-		}, false);
-		series = chart.get('dewpoint');
-		series.setData(datatabledp, false);
-	}
-	if (datatableba.length != 0) {
-		chart.addSeries({
-			id: 'baro',
-			name: $.t('Barometer'),
-			color: 'pink',
-			yAxis: 2,
-			tooltip: {
-				valueSuffix: ' hPa',
-				valueDecimals: 1
-			}
-		}, false);
-		series = chart.get('baro');
-		series.setData(datatableba, false);
-	}
 }
 
 function load_cam_video() {
@@ -1676,31 +1641,26 @@ function ShowCameraLiveStream(Name, camIdx) {
 	$('#dialog-camera-live #camfeed').attr("src", "images/camera_default.png");
 	//$('#dialog-camera-live #camfeed').attr("src", FeedURL);
 
-	var dwidth = $(window).width() / 2;
-	var dheight = $(window).height() / 2;
+	var windowWidth = $(window).width() - 20;
+	var windowHeight = $(window).height() - 150;
+	
+	var AspectSource = 4 / 3;
 
-	if (dwidth > 630) {
-		dwidth = 630;
-		dheight = parseInt((dwidth / 16) * 9);
+	var height = windowHeight;
+	var width = Math.round(height * AspectSource) & ~1;
+	if (width > windowWidth) {
+		width = windowWidth;
+		height = Math.round(width / AspectSource) & ~1;
 	}
-	if (dheight > 470) {
-		dheight = 470;
-		dwidth = parseInt((dheight / 9) * 16);
-	}
-	if (dwidth > dheight) {
-		dwidth = parseInt((dheight / 9) * 16);
-	}
-	else {
-		dheight = parseInt((dwidth / 16) * 9);
-	}
+	
 	//Set inner Camera feed width/height
-	$("#dialog-camera-live #camfeed").width(dwidth - 30);
-	$("#dialog-camera-live #camfeed").height(dheight - 16);
+	$("#dialog-camera-live #camfeed").width(width - 30);
+	$("#dialog-camera-live #camfeed").height(height - 16);
 
 	$("#dialog-camera-live").dialog({
 		resizable: false,
-		width: dwidth + 2,
-		height: dheight + 118,
+		width: width + 2,
+		height: height + 50,
 		position: {
 			my: "center",
 			at: "center",
@@ -1708,11 +1668,6 @@ function ShowCameraLiveStream(Name, camIdx) {
 		},
 		modal: true,
 		title: unescape(Name),
-		buttons: {
-			"OK": function () {
-				$(this).dialog("close");
-			}
-		},
 		open: function () {
 			load_cam_video();
 		},
@@ -7149,8 +7104,8 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 	});
 }
 
-function SwitchLightPopup(idx, switchcmd, refreshfunction, isprotected) {
-	SwitchLight(idx, switchcmd, refreshfunction, isprotected);
+function SwitchLightPopup(idx, switchcmd, isprotected) {
+	SwitchLight(idx, switchcmd, isprotected);
 	$("#rgbw_popup").hide();
 }
 
@@ -7430,15 +7385,15 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	});
 }
 
-function ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, colorJSON, SubType, DimmerType) {
+function ShowRGBWPopupInt(mouseX, mouseY, idx, Protected, MaxDimLevel, LevelInt, colorJSON, SubType, DimmerType) {
 	var ledType = getLEDType(SubType);
 	var devIdx = idx;
 
 	ShowRGBWPicker("#rgbw_popup", idx, Protected, MaxDimLevel, LevelInt, colorJSON, SubType, DimmerType);
 
 	// Setup on and Off buttons
-	$('#rgbw_popup #popup_switch_on').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'On\',' + refreshfunction + ',' + Protected + ');');
-	$('#rgbw_popup #popup_switch_off').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'Off\',' + refreshfunction + ',' + Protected + ');');
+	$('#rgbw_popup #popup_switch_on').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'On\',' + Protected + ');');
+	$('#rgbw_popup #popup_switch_off').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'Off\',' + Protected + ');');
 
 	// Show brightness and temperature buttons
 	$('#rgbw_popup #popup_bright_up').hide();
@@ -7498,7 +7453,7 @@ function ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDi
 function CloseRGBWPopup() {
 	$("#rgbw_popup").hide();
 }
-function ShowRGBWPopup(event, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType) {
+function ShowRGBWPopup(event, idx, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType) {
 	clearInterval($.setColValue);
 	var event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
@@ -7520,19 +7475,19 @@ function ShowRGBWPopup(event, idx, refreshfunction, Protected, MaxDimLevel, Leve
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function () {
-		ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType);
+		ShowRGBWPopupInt(mouseX, mouseY, idx, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType);
 	});
 }
 
-function SwitchTherm3Popup(idx, switchcmd, refreshfunction) {
-	SwitchLightInt(idx, switchcmd, refreshfunction, $.devpwd);
+function SwitchTherm3Popup(idx, switchcmd) {
+	SwitchLightInt(idx, switchcmd, $.devpwd);
 	$("#thermostat3_popup").hide();
 }
-function ShowTherm3PopupInt(mouseX, mouseY, idx, refreshfunction, pwd) {
+function ShowTherm3PopupInt(mouseX, mouseY, idx, pwd) {
 	$.devIdx = idx;
 	$.devpwd = pwd;
-	$('#thermostat3_popup #popup_therm_on').attr("href", 'javascript:SwitchTherm3Popup(' + idx + ',\'On\',' + refreshfunction + ');');
-	$('#thermostat3_popup #popup_therm_off').attr("href", 'javascript:SwitchTherm3Popup(' + idx + ',\'Off\',' + refreshfunction + ');');
+	$('#thermostat3_popup #popup_therm_on').attr("href", 'javascript:SwitchTherm3Popup(' + idx + ',\'On\');');
+	$('#thermostat3_popup #popup_therm_off').attr("href", 'javascript:SwitchTherm3Popup(' + idx + ',\'Off\');');
 
 	$("#thermostat3_popup").css({
 		"top": mouseY,
@@ -7644,7 +7599,7 @@ function ThermStop() {
 	});
 }
 
-function ShowTherm3Popup(event, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, hue) {
+function ShowTherm3Popup(event, idx, Protected, MaxDimLevel, LevelInt, hue) {
 	clearInterval($.setColValue);
 	var event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
@@ -7666,7 +7621,7 @@ function ShowTherm3Popup(event, idx, refreshfunction, Protected, MaxDimLevel, Le
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function (pwd) {
-		ShowTherm3PopupInt(mouseX, mouseY, idx, refreshfunction, pwd);
+		ShowTherm3PopupInt(mouseX, mouseY, idx, pwd);
 	});
 }
 
@@ -7710,7 +7665,6 @@ function SetSetpoint() {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				$.refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -7726,12 +7680,11 @@ function RFYEnableSunWind(bDoEnable) {
 		switchcmd = "DisableSunWind";
 	}
 	$("#rfy_popup").hide();
-	SwitchLight($.devIdx, switchcmd, $.refreshfunction, $.Protected);
+	SwitchLight($.devIdx, switchcmd, $.Protected);
 }
 
-function ShowSetpointPopupInt(mouseX, mouseY, idx, refreshfunction, currentvalue, ismobile) {
+function ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile) {
 	$.devIdx = idx;
-	$.refreshfunction = refreshfunction;
 	var curValue = parseFloat(currentvalue).toFixed(1);
 	$('#setpoint_popup #actual_value').html(curValue);
 	$('#setpoint_popup #popup_setpoint').val(curValue);
@@ -7762,7 +7715,7 @@ function ShowSetpointPopupInt(mouseX, mouseY, idx, refreshfunction, currentvalue
 	$("#setpoint_popup").show();
 }
 
-function ShowSetpointPopup(event, idx, refreshfunction, Protected, currentvalue, ismobile) {
+function ShowSetpointPopup(event, idx, Protected, currentvalue, ismobile) {
 	$.Protected = Protected;
 	event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
@@ -7783,16 +7736,15 @@ function ShowSetpointPopup(event, idx, refreshfunction, Protected, currentvalue,
 	var mouseX = event.pageX;
 	var mouseY = event.pageY;
 
-	ShowSetpointPopupInt(mouseX, mouseY, idx, refreshfunction, currentvalue, ismobile);
+	ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile);
 }
 
 function CloseRFYPopup() {
 	$("#rfy_popup").hide();
 }
 
-function ShowRFYPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
+function ShowRFYPopupInt(mouseX, mouseY, idx, ismobile) {
 	$.devIdx = idx;
-	$.refreshfunction = refreshfunction;
 
 	if (typeof ismobile == 'undefined') {
 		$("#rfy_popup").css({
@@ -7820,7 +7772,7 @@ function ShowRFYPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
 	$("#rfy_popup").show();
 }
 
-function ShowRFYPopup(event, idx, refreshfunction, Protected, ismobile) {
+function ShowRFYPopup(event, idx, Protected, ismobile) {
 	event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
 	// calculate pageX/Y - logic taken from jQuery.
@@ -7841,7 +7793,7 @@ function ShowRFYPopup(event, idx, refreshfunction, Protected, ismobile) {
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function () {
-		ShowRFYPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile);
+		ShowRFYPopupInt(mouseX, mouseY, idx, ismobile);
 	});
 }
 
@@ -7852,12 +7804,11 @@ function CloseIthoPopup() {
 function IthoSendCommand(itho_cmnd) {
 	var switchcmd = itho_cmnd;
 	$("#itho_popup").hide();
-	SwitchLight($.devIdx, switchcmd, $.refreshfunction, $.Protected);
+	SwitchLight($.devIdx, switchcmd, $.Protected);
 }
 
-function ShowIthoPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
+function ShowIthoPopupInt(mouseX, mouseY, idx, ismobile) {
 	$.devIdx = idx;
-	$.refreshfunction = refreshfunction;
 
 	if (typeof ismobile == 'undefined') {
 		$("#itho_popup").css({
@@ -7885,7 +7836,7 @@ function ShowIthoPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
 	$("#itho_popup").show();
 }
 
-function ShowIthoPopup(event, idx, refreshfunction, Protected, ismobile) {
+function ShowIthoPopup(event, idx, Protected, ismobile) {
 	event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
 	// calculate pageX/Y - logic taken from jQuery.
@@ -7906,7 +7857,7 @@ function ShowIthoPopup(event, idx, refreshfunction, Protected, ismobile) {
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function () {
-		ShowIthoPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile);
+		ShowIthoPopupInt(mouseX, mouseY, idx, ismobile);
 	});
 }
 
@@ -7920,12 +7871,11 @@ function LucciSendCommand(lucci_cmnd) {
 	var switchcmd = lucci_cmnd;
 	$("#lucci_popup").hide();
 	$("#lucci_dc_popup").hide();
-	SwitchLight($.devIdx, switchcmd, $.refreshfunction, $.Protected);
+	SwitchLight($.devIdx, switchcmd, $.Protected);
 }
 
-function ShowLucciPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
+function ShowLucciPopupInt(mouseX, mouseY, idx, ismobile) {
 	$.devIdx = idx;
-	$.refreshfunction = refreshfunction;
 
 	if (typeof ismobile == 'undefined') {
 		$("#lucci_popup").css({
@@ -7953,7 +7903,7 @@ function ShowLucciPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
 	$("#lucci_popup").show();
 }
 
-function ShowLucciPopup(event, idx, refreshfunction, Protected, ismobile) {
+function ShowLucciPopup(event, idx, Protected, ismobile) {
 	event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
 	// calculate pageX/Y - logic taken from jQuery.
@@ -7974,13 +7924,12 @@ function ShowLucciPopup(event, idx, refreshfunction, Protected, ismobile) {
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function () {
-		ShowLucciPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile);
+		ShowLucciPopupInt(mouseX, mouseY, idx, ismobile);
 	});
 }
 
-function ShowLucciDCPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
+function ShowLucciDCPopupInt(mouseX, mouseY, idx, ismobile) {
     $.devIdx = idx;
-    $.refreshfunction = refreshfunction;
 
     if (typeof ismobile == 'undefined') {
         $("#lucci_dc_popup").css({
@@ -8008,7 +7957,7 @@ function ShowLucciDCPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
     $("#lucci_dc_popup").show();
 }
 
-function ShowLucciDCPopup(event, idx, refreshfunction, Protected, ismobile) {
+function ShowLucciDCPopup(event, idx, Protected, ismobile) {
     event = event || window.event;
     // If pageX/Y aren't available and clientX/Y are,
     // calculate pageX/Y - logic taken from jQuery.
@@ -8029,7 +7978,7 @@ function ShowLucciDCPopup(event, idx, refreshfunction, Protected, ismobile) {
     var mouseY = event.pageY;
 
     HandleProtection(Protected, function () {
-        ShowLucciDCPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile);
+        ShowLucciDCPopupInt(mouseX, mouseY, idx, ismobile);
     });
 }
 

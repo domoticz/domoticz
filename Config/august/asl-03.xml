@@ -1,10 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="2">
-			<Group index="1" max_associations="5" label="Lifeline" />
-			<Group index="2" max_associations="5" label="Doorlock OP" />
-		</Associations>
-	</CommandClass>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/033F:0001:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/august/asl-03.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/2624/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2624/August Z-Wave Required Documentation.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Any operation (manual, RF, etc.) will wake up the lock.</MetaDataItem>
+    <MetaDataItem name="Name">August Smart Lock Rev 3</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">In order to include the August Smart Lock on to a Z-Wave network the user will have to do the following:
+1. Open the August app
+2. Go to the Lock Settings screen
+3. Select Z-Wave Settings
+4. Select Add To A Z-Wave Network
+5. Put the controller into inclusion mode and select My Hub is in Inclusion Mode on the August app</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">In order to exclude  the August Smart Lock from a Z-Wave network the user will have to do the following:
+1. Open the August app
+2. Go to the Lock Settings screen
+3. Select Z-Wave Settings
+4. Select Remove Z-Wave Device
+5. Put the controller into exclusion mode and select My Hub is in Exlusion Mode on the August app</MetaDataItem>
+    <MetaDataItem name="Description">Give your customer total control over their front door, from anywhere. The August Smart Lock Pro is the leading Z-Wave Plus retrofit smart lock. You can lock and unlock your door, create virtual keys for guests, and keep track of who comes and goes with a 24/7 activity log, all from your iOS or Android smartphone. The August Smart Lock Pro features Z-Wave Plus and BLE and it is the only lock to support the three leading voice-assistants, Siri, Google Assistant, and Amazon Alexa. The lock quickly installs on the inside of your door with just a screwdriver. Keep your exterior door hardware exactly as it is and use your traditional key any
+time.</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">ASL-03</MetaDataItem>
+    <MetaDataItem name="ResetDescription">In order to reset the August Smart Lock the user will have to do the following:
+1. Open the August app
+2. Go to the Lock Settings screen
+3. Select Z-Wave Settings
+4. Select Remove Z-Wave device
+5. Select My Hub Is No Longer Working
+6. Caution: Resetting a Z-Wave device without telling the hub can cause performance issues. Use this procedure only when the Z-Wave hub is missing or otherwise inoperable. 
+7. Select Reset Z-Wave Device
+8. On the Reset Z-Wave Device? prompt select Reset</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2624/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Doorlock OP" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

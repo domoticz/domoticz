@@ -35,7 +35,6 @@ private:
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const std::exception e) override;
 	void OnError(const boost::system::error_code& error) override;
 
 	void ParseData(const unsigned char *pData, int Len);

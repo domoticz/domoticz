@@ -1,26 +1,31 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:1F20:201F</MetaDataItem>
-    <MetaDataItem name="ProductPic">images/vision/zd2301.png</MetaDataItem>
-    <MetaDataItem id="1F20" name="ZWProductPage" type="201F">https://products.z-wavealliance.org/products/1334/</MetaDataItem>
-    <MetaDataItem name="WakeupDescription">Awake Mode:
-Press the Program SW, the LED will flash one time and ZD2301 will send “Wake Up Notification” after 5 seconds. If ZD2301 received “Wake Up No More Information” command then the ZD2301 will go to sleep or it will wait 10 seconds then go to sleep. It will precede all the commands after sending the “Wake Up Notification”
-</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zipato/zd2301.png</MetaDataItem>
+    <MetaDataItem id="1F20" name="ZWProductPage" type="201F">https://products.z-wavealliance.org/products/2346/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press the Program SW, the LED will flash one time and ZD2301 will send “Wake Up Notification” after 5 seconds. If ZD2301 received “Wake Up No More Information” command then the ZD2301 will go to sleep or it will wait 10 seconds then go to sleep. It will precede all the commands after sending the “Wake Up Notification”</MetaDataItem>
     <MetaDataItem id="1F20" name="FrequencyName" type="201F">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="ResetDescription">Factory Default Reset: 
-*Open the rear cover to send the Alarm Report and then press the program switch 10 times in 10 seconds, ZD2301 will send the “Device Reset Locally” command and reset to the factory default. 
-*Please use this procedure only in the event that the network primary controller is missing or otherwise inoperable.</MetaDataItem>
-    <MetaDataItem name="Name">4 in 1 Door Sensor</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">5.	For “Exclusion” from (removing from) a network: Put the Z-Wave™ Interface Controller into “exclusion” mode, and following its instruction to delete the ZD2301 from your controller.  Press the program switch of ZD2301 for 1 second at least to be excluded.
-Note: All user and network settings will be cleared and the device reset to factory defaults when the device is excluded. 
+    <MetaDataItem name="ResetDescription">All user and network settings will be cleared and the device reset to factory
+defaults when the device is excluded.
+
+Please use this procedure only in the event if the network
+controller is missing or is otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Name">Zipato 4 in 1 Door Sensor</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Put the Z-WaveTM Interface
+Controller into “exclusion” mode, and following its instruction to delete the ZD2301 from your controller. Press the program switch of ZD2301 for 1 second at least to be excluded.</MetaDataItem>
+    <MetaDataItem name="Description">Door/Window, humidity, temperature and luminance sensor. 
+* Primarily used as dry contact door/window sensor.
+* Very low power consumption
+* LED indicator
+* Easy installation
 </MetaDataItem>
-    <MetaDataItem name="Description">Vision’s wireless 4 in 1 Multi-Sensor (door window contact sensor, humidity sensor, temperature sensor, and light sensor) of the home security device. This sensor is a Z-Wave™ enabled device two-way (interoperable, RF mesh networking technology) and is fully compatible with any Z-Wave™ enabled network and its security framework. Every main powered Z-Wave enabled device acts as a signal repeater and multiple devices result in more possible transmission routes which helps eliminate “RF dead-spots”
-This door sensor sends Z-Wave™ signal when door or window is opened and closed or humidity, temperature, luminous change.  When the device is secure included into Z-Wave network, above communication will be encrypted. Security enabled_ Z-Wave controller must be used to fully utilize the product.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1334/ZD 2301-5_20150603.pdf</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">4.	For “Inclusion” in (adding to) a network: Put the Z-Wave™ Interface Controller into “inclusion” mode, and following its instruction to add the ZD2301 to your controller. To get in the “inclusion” mode, the distance between sensor and controller is suggested to be in one meter. Press the program switch of ZD2301 for sending the NIF.  After sending NIF, Z-Wave will send the auto inclusion; otherwise, ZD2301 will go to sleep after 20 seconds.</MetaDataItem>
-    <MetaDataItem id="1F20" name="Identifier" type="201F">ZD2301EU-5</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2346/zp2301.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Put the Z-WaveTM Interface Controller into
+“inclusion” mode, and following its instruction to add the ZD2301 to your controller. To get in the “inclusion” mode, the distance between sensor and controller is suggested to be one meter. Press the program switch of ZD2301 for sending the NIF. After sending NIF, Z-Wave will send the auto inclusion; otherwise, ZD2301 will go to sleep after 20 seconds.</MetaDataItem>
+    <MetaDataItem id="1F20" name="Identifier" type="201F">vs-zd2301.eu</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1334/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2346/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Vision ZD2301 Multisensor 4in1 -->

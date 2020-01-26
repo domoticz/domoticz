@@ -90,11 +90,6 @@ void S0MeterTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData((const unsigned char*)pData,length);
 }
 
-void S0MeterTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"S0 Meter: Error: %s",e.what());
-}
-
 void S0MeterTCP::OnError(const boost::system::error_code& error)
 {
 	if (

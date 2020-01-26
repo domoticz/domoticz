@@ -6,7 +6,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../notifications/NotificationHelper.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -18,26 +18,38 @@
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
-MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int Topics) :
+const char* szTLSVersions[3] =
+{
+	"tlsv1",
+	"tlsv1.1",
+	"tlsv1.2"
+};
+
+MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int TLS_Version, const int Topics, const std::string& MQTTClientID) :
 m_szIPAddress(IPAddress),
 m_UserName(Username),
 m_Password(Password),
-m_CAFilename(CAfilename)
+m_CAFilename(CAfilename),
+mosqdz::mosquittodz(MQTTClientID.c_str())
 {
 	m_HwdID=ID;
 	m_IsConnected = false;
 	m_bDoReconnect = false;
-	mosqpp::lib_init();
+	mosqdz::lib_init();
 
 	m_usIPPort=usIPPort;
 	m_publish_topics = (_ePublishTopics)Topics;
 	m_TopicIn = TOPIC_IN;
 	m_TopicOut = TOPIC_OUT;
+
+	m_TLS_Version = (TLS_Version < 3) ? TLS_Version : 0; //see szTLSVersions
+
+	threaded_set(true);
 }
 
 MQTT::~MQTT(void)
 {
-	mosqpp::lib_cleanup();
+	mosqdz::lib_cleanup();
 }
 
 bool MQTT::StartHardware()
@@ -76,10 +88,30 @@ bool MQTT::StopHardware()
 	return true;
 }
 
-void MQTT::on_subscribe(int mid, int qos_count, const int *granted_qos)
+void MQTT::on_subscribe(int /*mid*/, int /*qos_count*/, const int* /*granted_qos*/)
 {
 	_log.Log(LOG_STATUS, "MQTT: Subscribed");
 	m_IsConnected = true;
+}
+
+void MQTT::on_log(int level, const char* str)
+{
+	if (level & MOSQ_LOG_DEBUG)
+		return;
+	_eLogLevel llevel = LOG_NORM;
+	switch (level)
+	{
+	case MOSQ_LOG_NOTICE:
+		llevel = LOG_STATUS;
+		break;
+	default:
+		llevel = LOG_ERROR;
+	}
+	_log.Log(llevel, "MQTT: %s", str);
+}
+
+void MQTT::on_error()
+{
 }
 
 void MQTT::on_connect(int rc)
@@ -123,14 +155,13 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		return;
 
 	Json::Value root;
-	Json::Reader jReader;
 	std::string szCommand = "udevice";
 
 	std::vector<std::vector<std::string> > result;
 	
 	uint64_t idx = 0;
 
-	bool ret = jReader.parse(qMessage, root);
+	bool ret = ParseJSon(qMessage, root);
 	if ((!ret) || (!root.isObject()))
 		goto mqttinvaliddata;
 	try
@@ -242,7 +273,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				else
 					level = root["level"].asInt();
 			}
-			if (!m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, false, 0) == true)
+			if (!m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, false, 0, "MQTT") == true)
 			{
 				_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 			}
@@ -250,20 +281,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		else if (szCommand == "setcolbrightnessvalue")
 		{
 			idx = (uint64_t)root["idx"].asInt64();
-
-			if (root["switchcmd"].empty())
-				root["switchcmd"] = "On";
-
-			std::string switchcmd = root["switchcmd"].asString();
-			if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle") && (switchcmd != "Set Level") && (switchcmd != "Set Color"))
-				goto mqttinvaliddata;
-
 			_tColor color;
 
 			std::string hex = root["hex"].asString();
 			std::string hue = root["hue"].asString();
 			std::string sat = root["sat"].asString();
-			std::string brightness = root["level"].asString();
+			std::string brightness = root["brightness"].asString();
 			std::string iswhite;
 			if (!root["isWhite"].empty())
 			{
@@ -288,9 +311,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 					int r, g, b;
 					rgb2hsb(color.r, color.g, color.b, hsb);
 					hsb2rgb(hsb[0]*360.0f, hsb[1], 1.0f, r, g, b, 255);
-					color.r = r;
-					color.g = g;
-					color.b = b;
+					color.r = (uint8_t)r;
+					color.g = (uint8_t)g;
+					color.b = (uint8_t)b;
 					brightnessAdj = hsb[2];
 				}
 				//_log.Debug(DEBUG_NORM, "MQTT: setcolbrightnessvalue: color: '%s', bri: '%s'", color.toString().c_str(), brightness.c_str());
@@ -315,9 +338,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 						rgb2hsb(r, g, b, hsb);
 						// Normalize RGB to full brightness
 						hsb2rgb(hsb[0]*360.0f, hsb[1], 1.0f, tr, tg, tb, 255);
-						r = tr;
-						g = tg;
-						b = tb;
+						r = (uint8_t)tr;
+						g = (uint8_t)tg;
+						b = (uint8_t)tb;
 						brightnessAdj = hsb[2];
 						// Backwards compatibility: set iswhite for unsaturated colors
 						iswhite = (hsb[1] < (20.0 / 255.0)) ? "true" : "false";
@@ -352,7 +375,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				if (!sat.empty()) iSat = float(atof(sat.c_str()));
 				hsb2rgb(iHue, iSat/100.0f, 1.0f, r, g, b, 255);
 
-				color = _tColor(r, g, b, 0, 0, ColorModeRGB);
+				color = _tColor((uint8_t)r, (uint8_t)g, (uint8_t)b, 0, 0, ColorModeRGB);
 				if (iswhite == "true") color.mode = ColorModeWhite;
 				//_log.Debug(DEBUG_NORM, "MQTT: setcolbrightnessvalue2: hue: %f, rgb: %02x%02x%02x, color: '%s'", iHue, r, g, b, color.toString().c_str());
 			}
@@ -370,7 +393,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 			_log.Log(LOG_STATUS, "MQTT: setcolbrightnessvalue: ID: %" PRIx64 ", bri: %d, color: '%s'", idx, ival, color.toString().c_str());
 
-			if (!m_mainworker.SwitchLight(idx, switchcmd, ival, color, false, 0) == true)
+			if (!m_mainworker.SwitchLight(idx, "Set Color", ival, color, false, 0, "MQTT") == true)
 			{
 				_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 			}
@@ -380,7 +403,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			std::string switchcmd = root["switchcmd"].asString();
 			if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle"))
 				goto mqttinvaliddata;
-			if (!m_mainworker.SwitchScene(idx, switchcmd) == true)
+			if (!m_mainworker.SwitchScene(idx, switchcmd, "MQTT") == true)
 			{
 				_log.Log(LOG_ERROR, "MQTT: Error sending scene command!");
 			}
@@ -483,9 +506,10 @@ bool MQTT::ConnectIntEx()
 	_log.Log(LOG_STATUS, "MQTT: Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	int rc;
-	int keepalive = 60;
+	int keepalive = 40;
 
 	if (!m_CAFilename.empty()){
+		rc = tls_opts_set(SSL_VERIFY_PEER, szTLSVersions[m_TLS_Version], NULL);
 		rc = tls_set(m_CAFilename.c_str());
 
 		if ( rc != MOSQ_ERR_SUCCESS)
@@ -518,16 +542,29 @@ void MQTT::Do_Work()
 	{
 		if (!bFirstTime)
 		{
-			int rc = loop();
-			if (rc) {
-				if (rc != MOSQ_ERR_NO_CONN)
-				{
-					if (!IsStopRequested(0))
+			try
+			{
+				int rc = loop();
+				if (rc) {
+					if (rc != MOSQ_ERR_NO_CONN)
 					{
-						if (!m_bDoReconnect)
+						if (!IsStopRequested(0))
 						{
-							reconnect();
+							if (!m_bDoReconnect)
+							{
+								reconnect();
+							}
 						}
+					}
+				}
+			}
+			catch (const std::exception&)
+			{
+				if (!IsStopRequested(0))
+				{
+					if (!m_bDoReconnect)
+					{
+						reconnect();
 					}
 				}
 			}
@@ -563,6 +600,11 @@ void MQTT::Do_Work()
 			}
 		}
 	}
+	clear_callbacks();
+
+	if (isConnected())
+		disconnect();
+
 	if (m_sDeviceReceivedConnection.connected())
 		m_sDeviceReceivedConnection.disconnect();
 	if (m_sSwitchSceneConnection.connected())
@@ -601,38 +643,41 @@ void MQTT::WriteInt(const std::string &sendStr)
 	SendMessage(m_TopicOut, sMessage);
 }
 
-void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const std::string& /*DeviceName*/, const unsigned char* /*pRXCommand*/)
 {
 	if (!m_IsConnected)
 		return;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", m_HwdID, DeviceRowIdx);
+	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", HwdID, DeviceRowIdx);
 	if (!result.empty())
 	{
+		int iIndex = 0;
 		std::vector<std::string> sd = result[0];
-		std::string did = sd[0];
-		int dunit = atoi(sd[1].c_str());
-		std::string name = sd[2];
-		int dType = atoi(sd[3].c_str());
-		int dSubType = atoi(sd[4].c_str());
-		int nvalue = atoi(sd[5].c_str());
-		std::string svalue = sd[6];
-		_eSwitchType switchType = (_eSwitchType)atoi(sd[7].c_str());
-		int RSSI = atoi(sd[8].c_str());
-		int BatteryLevel = atoi(sd[9].c_str());
-		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
-		std::string description = sd[11];
-		int LastLevel = atoi(sd[12].c_str());
-		std::string sColor = sd[13];
+		std::string hwid = sd[iIndex++];
+		std::string did = sd[iIndex++];
+		int dunit = atoi(sd[iIndex++].c_str());
+		std::string name = sd[iIndex++];
+		int dType = atoi(sd[iIndex++].c_str());
+		int dSubType = atoi(sd[iIndex++].c_str());
+		int nvalue = atoi(sd[iIndex++].c_str());
+		std::string svalue = sd[iIndex++];
+		_eSwitchType switchType = (_eSwitchType)atoi(sd[iIndex++].c_str());
+		int RSSI = atoi(sd[iIndex++].c_str());
+		int BatteryLevel = atoi(sd[iIndex++].c_str());
+		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[iIndex++]);
+		std::string description = sd[iIndex++];
+		int LastLevel = atoi(sd[iIndex++].c_str());
+		std::string sColor = sd[iIndex++];
 
 		Json::Value root;
 
 		root["idx"] = DeviceRowIdx;
+		root["hwid"] = hwid;
 		root["id"] = did;
 		root["unit"] = dunit;
 		root["name"] = name;
-		root["dtype"] = RFX_Type_Desc(dType,1);
-		root["stype"] = RFX_Type_SubType_Desc(dType, dSubType);
+		root["dtype"] = RFX_Type_Desc((uint8_t)dType,1);
+		root["stype"] = RFX_Type_SubType_Desc((uint8_t)dType, (uint8_t)dSubType);
 
 		if (IsLightOrSwitch(dType, dSubType) == true) {
 			root["switchType"] = Switch_Type_Desc(switchType);
@@ -685,7 +730,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 			result = m_sql.safe_query("SELECT F.Name, P.Name, M.DeviceRowID FROM Plans as P, Floorplans as F, DeviceToPlansMap as M WHERE P.FloorplanID=F.ID and M.PlanID=P.ID and M.DeviceRowID=='%" PRIu64 "'", DeviceRowIdx);
 			for(size_t i=0 ; i<result.size(); i++)
 			{
-				std::vector<std::string> sd = result[i];
+				sd = result[i];
 				std::string floor = sd[0];
 				std::string room =  sd[1];
 				std::stringstream topic;
@@ -697,7 +742,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 	}
 }
 
-void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
+void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &/*SceneName*/)
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes WHERE (ID==%" PRIu64 ") ORDER BY [Order]", SceneIdx);
@@ -708,8 +753,8 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
 	std::string sName = sd[1];
 	std::string sLastUpdate = sd[6].c_str();
 
-	unsigned char nValue = atoi(sd[4].c_str());
-	unsigned char scenetype = atoi(sd[5].c_str());
+	unsigned char nValue = (uint8_t)atoi(sd[4].c_str());
+	unsigned char scenetype = (uint8_t)atoi(sd[5].c_str());
 	//int iProtected = atoi(sd[7].c_str());
 
 	//std::string onaction = base64_encode((sd[8]);

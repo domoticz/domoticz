@@ -210,6 +210,7 @@ images/Light48_Off.png
 images/Light48_On.png
 images/lightbulb.png
 images/lightbulboff.png
+images/location.png
 images/lock_closed.png
 images/lock_open.png
 images/log.png
@@ -268,7 +269,8 @@ images/PV48.png
 images/radiation.png
 images/radiation48.png
 images/rain.png
-images/rain48.png
+images/Rain48_On.png
+images/Rain48_Off.png
 images/rainraining.png
 images/remote.png
 images/remote48.png
@@ -305,6 +307,9 @@ images/Speaker.png
 images/Speaker48_Off.png
 images/Speaker48_On.png
 images/Stop48.png
+images/Sun.png
+images/Sun48_On.png
+images/Sun48_Off.png
 images/switch.png
 images/temp-0-5.png
 images/temp-10-15.png
@@ -376,6 +381,7 @@ images/evohome/DayOffInv.png
 images/evohome/HeatingOff.png
 images/evohome/HeatingOffInv.png
 images/evohome/Off.png
+images/evohome/Offline.png
 images/evohome/On.png
 images/evohome/OpenWindow.png
 images/evohome/PermanentOverride.png
@@ -535,6 +541,9 @@ app/notifications/constants.js
 app/notifications/DeviceNotifications.js
 app/notifications/factories.js
 
+app/plans/RoomPlans.html
+app/plans/RoomPlans.js
+
 app/report/CounterReport.html
 app/report/CounterReport.js
 app/report/DeviceReport.html
@@ -573,6 +582,7 @@ app/ForecastController.js
 app/FrontpageController.js
 app/HistoryController.js
 app/LightsController.js
+app/livesocket.js
 app/LogController.js
 app/LoginController.js
 app/LogoutController.js
@@ -580,13 +590,13 @@ app/main.js
 app/NotificationController.js
 app/OfflineController.js
 app/RestoreDatabaseController.js
-app/RoomplanController.js
 app/ScenesController.js
 app/SetupController.js
 app/TemperatureController.js
 app/TemperatureCustomLogController.js
 app/TimerplanController.js
 app/UpdateController.js
+app/UpdateController2.js
 app/UsersController.js
 app/UserVariablesController.js
 app/UtilityController.js
@@ -606,15 +616,15 @@ js/data-tables/jquery.dataTables.min.js.gz
 
 js/highcharts/highcharts.js
 js/highcharts/highcharts-more.js
+js/highcharts/modules/dependency-wheel.js
 js/highcharts/modules/exporting.js
+js/highcharts/modules/sankey.js
 js/highcharts/modules/xrange.js
 js/highcharts/themes/dark-unica.js
 
-js/noty/jquery.noty.js
-js/noty/layouts/top.js
-js/noty/layouts/topLeft.js
-js/noty/layouts/topRight.js
-js/noty/themes/default.js
+js/noty/noty.min.js
+js/noty/noty.css
+js/noty/relax.css
 
 js/angular-animate.min.js
 js/angular-md5-min.js
@@ -627,10 +637,10 @@ js/angular-websocket.js
 js/angular.min.js
 js/angularAMD.min.js
 js/babel-polyfill-6.26.0.js
+js/base64.min.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
-js/d3.min.js
 js/date.format.js
 js/domoticz.js
 js/domoticzdevices.js
@@ -639,7 +649,7 @@ js/FileSaver.js
 js/highcharts-ng.min.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
-js/jquery-3.3.1.min.js
+js/jquery-3.4.1.min.js
 js/jquery-ui.min.js
 js/jquery.ddslick.min.js
 js/jquery.isotope.min.js
@@ -693,7 +703,6 @@ views/notification.html
 views/notifications.html
 views/offline.html
 views/restoredatabase.html
-views/roomplan.html
 views/scenes.html
 views/setup.html
 views/temperature.html
@@ -702,11 +711,11 @@ views/temperature_custom_temp_log.html
 views/timerplan.html
 views/timers.html
 views/update.html
+views/update2.html
 views/users.html
 views/utility.html
 views/weather.html
 views/weather_widget.html
-zwavetopology.html
 secpanel/index.html
 views/login.html
 

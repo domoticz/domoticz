@@ -1,4 +1,33 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/5254:8490:0100</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/remotec/zxt-600.png</MetaDataItem>
+    <MetaDataItem id="8490" name="ZWProductPage" type="0100">https://products.z-wavealliance.org/products/2445/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1, Refer to your primary controller to enter into the Inclusion Mode or Exclusion Mode
+2, When it is prompted to enter it, please triple click the “PROG” button within 1 second.
+3, Green Indicator flashes TWICE then stay off</MetaDataItem>
+    <MetaDataItem name="Name">AC MASTER</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1, Refer to your primary controller to enter into the Inclusion Mode or Exclusion Mode
+2, When it is prompted to enter it, please triple click the “PROG” button within 1 second.
+3, Green Indicator flashes TWICE then stay off</MetaDataItem>
+    <MetaDataItem name="Description">ZXT-600 AC Master is a Z-Wave plus certified IR Bridge for split air conditioner control by receiving Z-Wave command and translating to Infrared command and flawlessly work with any Z-Wave compliant gateway.
+With its over 250 brands built-in code library and ever-green up to date cloud IR database supporting advanced code learning search, ZXT-600 can easily set up and smart control most of AC brands and models actively worldwide by Z-Wave gateway.
+The battery powered device will allow you to mount it anywhere you want such as wall, ceiling or put it on table and never compromise on the form factor. By supporting OTA function, gateway can enable ZXT-600 to update firmware if newest available.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and Hold “PROG” button for 3 seconds on AC Master, the Green Indicator will light up. DO NOT Release the “PROG” Button until Green Indicator flashes TWICE.
+Remark : Please use this procedure only when the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="8490" name="FrequencyName" type="0100">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2553/BW8490_Installation_Guide_201700807.pdf</MetaDataItem>
+    <MetaDataItem id="8490" name="Identifier" type="0100">ZXT-600US</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2445/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2553/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="8490" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/2553/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press the "PROG" button to wakeup the unit </MetaDataItem>
+    <MetaDataItem id="8490" name="Identifier" type="0101">ZXT-600EU</MetaDataItem>
+    <MetaDataItem id="8490" name="FrequencyName" type="0101">CEPT (Europe)</MetaDataItem>
+  </MetaData>
   <!--
     Remotec ZXT-600 AC MASTER
     https://products.z-wavealliance.org/products/2445

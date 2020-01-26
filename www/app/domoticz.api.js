@@ -28,11 +28,13 @@ define(['app.permissions'], function (appPermissionsModule) {
 
     module.factory('dzApiHelper', function($q, permissions) {
         return {
-            checkPersmissions: checkPersmissions
+            checkViewerPermissions: checkPermissions.bind(this, 'Viewer'),
+            checkUserPermissions: checkPermissions.bind(this, 'User'),
+            checkAdminPermissions: checkPermissions.bind(this, 'Admin')
         };
 
-        function checkPersmissions() {
-            if (permissions.hasPermission('Viewer')) {
+        function checkPermissions(value) {
+            if (!permissions.hasPermission(value)) {
                 var message = $.t('You do not have permission to do that!');
                 HideNotify();
                 ShowNotify(message, 2500, true);
@@ -54,7 +56,7 @@ define(['app.permissions'], function (appPermissionsModule) {
             return function (deviceIdx) {
                 var notification = dzNotification.show($.t('Switching') + ' ' + $.t(command));
 
-                return dzApiHelper.checkPersmissions().then(function () {
+                return dzApiHelper.checkUserPermissions().then(function () {
                     var promise = domoticzApi.sendCommand('switchscene', {
                         idx: deviceIdx,
                         switchcmd: command
@@ -81,15 +83,17 @@ define(['app.permissions'], function (appPermissionsModule) {
 
     });
 
-    module.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun, dzNotification, Device) {
+    module.factory('deviceApi', function($q, domoticzApi, dzApiHelper, dzTimeAndSun, dzNotification, Device) {
         return {
             getLightsDevices: getLightsDevices,
             getDeviceInfo: getDeviceInfo,
             updateDeviceInfo: updateDeviceInfo,
             renameDevice: renameDevice,
-            removeDevice: dzNotification.withNotificationDecorator(removeDevice, 'Removing...'),
+            removeDevice: removeDevice,
+            removeScene: removeScene,
             includeDevice: includeDevice,
-            excludeDevice: excludeDevice
+            excludeDevice: excludeDevice,
+            makeFavorite: makeFavorite,
         };
 
         function getLightsDevices() {
@@ -124,18 +128,17 @@ define(['app.permissions'], function (appPermissionsModule) {
         }
 
         function removeDevice(deviceIdx) {
-            // Looks like these 2 commands eventually do the same
             return domoticzApi.sendRequest({
                 type: 'deletedevice',
                 idx: Array.isArray(deviceIdx) ? deviceIdx.join(';') : deviceIdx
             }).then(domoticzApi.errorHandler);
+        }
 
-            // return domoticzApi.sendRequest({
-            //     idx: deviceIdx,
-            //     type: 'setused',
-            //     used: false,
-            //     RemoveSubDevices: true
-            // }).then(domoticzApi.errorHandler);
+        function removeScene(deviceIdx) {
+            return domoticzApi.sendRequest({
+                type: 'deletescene',
+                idx: Array.isArray(deviceIdx) ? deviceIdx.join(';') : deviceIdx
+            }).then(domoticzApi.errorHandler);
         }
 
         function includeDevice(deviceIdx, name, mainDeviceIdx) {
@@ -151,6 +154,15 @@ define(['app.permissions'], function (appPermissionsModule) {
         function excludeDevice(deviceIdx) {
             return domoticzApi.sendCommand('setunused', {
                 idx: deviceIdx,
+            });
+        }
+
+        function makeFavorite(deviceIdx, isFavorite) {
+            return dzApiHelper.checkUserPermissions().then(function() {
+                return domoticzApi.sendCommand('makefavorite', {
+                    idx: deviceIdx,
+                    isfavorite: isFavorite,
+                });
             });
         }
     });
@@ -178,7 +190,7 @@ define(['app.permissions'], function (appPermissionsModule) {
 
         function createCommand(command) {
             return function(deviceIdx) {
-                return dzApiHelper.checkPersmissions().then(function () {
+                return dzApiHelper.checkUserPermissions().then(function () {
                     return domoticzApi.sendCommand(command, {
                         idx: deviceIdx
                     });
@@ -188,7 +200,7 @@ define(['app.permissions'], function (appPermissionsModule) {
 
         function createSwitchCommand(command) {
             return dzNotification.withNotificationDecorator(function (deviceIdx) {
-                return dzApiHelper.checkPersmissions().then(function () {
+                return dzApiHelper.checkUserPermissions().then(function () {
                     var promise = domoticzApi.sendCommand('switchlight', {
                         idx: deviceIdx,
                         switchcmd: command
@@ -204,7 +216,7 @@ define(['app.permissions'], function (appPermissionsModule) {
         }
 
         function setColor(deviceIdx, color, brightness) {
-            return dzApiHelper.checkPersmissions().then(function () {
+            return dzApiHelper.checkUserPermissions().then(function () {
                 return domoticzApi.sendCommand('setcolbrightnessvalue', {
                     idx: deviceIdx,
                     color: color,

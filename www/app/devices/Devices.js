@@ -56,7 +56,7 @@ define(['app'], function (app) {
             onUpdate: '&'
         },
         template: '<table id="devices" class="display" width="100%"></table>',
-        controller: function ($scope, $element, $modal, $route, bootbox, dataTableDefaultSettings, deviceApi) {
+        controller: function ($scope, $element, $uibModal, $route, bootbox, dataTableDefaultSettings, deviceApi) {
             var $ctrl = this;
             var table;
 
@@ -67,7 +67,7 @@ define(['app'], function (app) {
                         className: 'row_selected',
                         selector: '.js-select-row'
                     },
-                    order: [[2, 'asc']],
+                    order: [[13, 'desc']],
                     columns: [
                         {
                             title: renderSelectorTitle(),
@@ -114,7 +114,7 @@ define(['app'], function (app) {
                     var scope = $scope.$new(true);
                     scope.device = row;
 
-                    $modal
+                    $uibModal
                         .open(Object.assign({ scope: scope }, addDeviceModal)).result
                         .then($ctrl.onUpdate);
 
@@ -138,7 +138,7 @@ define(['app'], function (app) {
                     var scope = $scope.$new(true);
                     scope.device = row;
 
-                    $modal
+                    $uibModal
                         .open(Object.assign({ scope: scope }, renameDeviceModal)).result
                         .then($ctrl.onUpdate);
 
@@ -166,20 +166,41 @@ define(['app'], function (app) {
                 });
 
                 table.on('click', '.js-remove-selected', function () {
-                    var devices = [].map.call(table.api().rows({ selected: true }).data(), function (device) {
-                        return device.idx;
+                    var selected_items = [].map.call(table.api().rows({ selected: true }).data(), function (item) {
+						var obj = {
+							idx: item.idx,
+							type: item.Type
+						};
+                        return obj;
                     });
-
-                    if (devices.length === 0) {
-                        return bootbox.alert('No Devices selected to Delete!');
+                    if (selected_items.length === 0) {
+                        return bootbox.alert('No Items selected to Delete!');
                     }
+                    var devices = [];
+                    var scenes = [];
 
-                    bootbox.confirm($.t('Are you sure you want to delete the selected Devices?') + ' (' + devices.length + ')')
+					selected_items.forEach(function (item) {
+						if ((item.type != 'Group')&&(item.type != 'Scene')) {
+							devices.push(item.idx);
+						} else {
+							scenes.push(item.idx);
+						}
+					});
+                    
+                    bootbox.confirm($.t('Are you sure you want to delete the selected Devices?') + ' (' + (devices.length + scenes.length) + ')')
                         .then(function () {
-                            return deviceApi.removeDevice(devices);
+							ShowNotify($.t("Removing..."),30000);
+							if (devices.length > 0) {
+								ret = deviceApi.removeDevice(devices);
+							}
+							if (scenes.length > 0) {
+								ret = deviceApi.removeScene(scenes);
+							}
+							HideNotify();
+							return ret;
                         })
                         .then(function () {
-                            bootbox.alert(devices.length + ' ' + $.t('Devices deleted.'));
+                            bootbox.alert((devices.length + scenes.length) + ' ' + $.t('Devices deleted.'));
                             $ctrl.onUpdate();
                         });
                 });
@@ -564,23 +585,26 @@ Not sure why this was used
             })
                 .then(domoticzApi.errorHandler)
                 .then(function (response) {
-                    $ctrl.devices = response.result
-                        .map(function (item) {
-                            var isScene = ['Group', 'Scene'].includes(item.Type);
+					if (response.result !== undefined) {
+						$ctrl.devices = response.result
+							.map(function (item) {
+								var isScene = ['Group', 'Scene'].includes(item.Type);
 
-                            if (isScene) {
-                                item.HardwareName = 'Domoticz';
-                                item.ID = '-';
-                                item.Unit = '-';
-                                item.SubType = '-';
-                                item.SignalLevel = '-';
-                                item.BatteryLevel = 255;
-                            }
+								if (isScene) {
+									item.HardwareName = 'Domoticz';
+									item.ID = '-';
+									item.Unit = '-';
+									item.SubType = '-';
+									item.SignalLevel = '-';
+									item.BatteryLevel = 255;
+								}
 
-                            return new Device(item)
-                        });
-
-                    $ctrl.applyFilter();
+								return new Device(item)
+							});
+					} else {
+						$ctrl.devices = [];
+					}
+					$ctrl.applyFilter();
                 });
         }
 

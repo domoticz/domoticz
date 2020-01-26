@@ -1,5 +1,5 @@
-define(['app'], function (app) {
-	app.controller('FloorplanController', ['$scope', '$rootScope', '$location', '$window', '$http', '$interval', '$timeout', '$compile', 'permissions', function ($scope, $rootScope, $location, $window, $http, $interval, $timeout, $compile, permissions) {
+define(['app', 'livesocket'], function (app) {
+	app.controller('FloorplanController', function ($scope, $rootScope, $location, $window, $http, $interval, $timeout, $compile, permissions, livesocket) {
 
 		$scope.debug = 0;
 		$scope.floorPlans;
@@ -7,7 +7,7 @@ define(['app'], function (app) {
 		$scope.actFloorplan;
 		$scope.browser = "unknown";
 		$scope.lastUpdateTime = 0;
-		$scope.isScrolling = false;	// used on tablets & phones
+		$scope.isScrolling = false;		// used on tablets & phones
 		$scope.pendingScroll = false;	// used on tablets & phones
 		$scope.lastTouch = 0;			// used on tablets & phones
 
@@ -104,6 +104,7 @@ define(['app'], function (app) {
 						var svgCont = document.getElementById(tagName + '_svg');
 						svgCont.setAttribute("viewBox", "0 0 " + target.naturalWidth + " " + target.naturalHeight);
 						svgCont.appendChild(makeSVGnode('g', { id: tagName + '_grp', transform: 'translate(0,0) scale(1)', style: "", zoomed: "false" }, ''));
+						//svgCont.childNodes[0].appendChild(makeSVGnode('rect', { width: "100%", height: "100%", fill: "white" }, ''));
 						svgCont.childNodes[0].appendChild(makeSVGnode('image', { width: "100%", height: "100%", "xlink:href": $scope.floorPlans[i].Image }, ''));
 						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id: tagName + '_Content', 'class': 'FloorContent' }, ''));
 						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id: tagName + '_Rooms', 'class': 'FloorRooms' }, ''));
@@ -125,11 +126,20 @@ define(['app'], function (app) {
 				if (AllLoaded == true) {
 					Device.checkDefs();
 					$(".FloorRooms").click(function (event) { $scope.RoomClick(event) });
-					$scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
+					RefreshFPDevices();
 					$scope.FloorplanResize();
 				}
 			}
 			else generate_noty('error', '<b>ImageLoaded Error</b><br>Element not found: ' + tagName, false);
+		}
+
+		$scope.GetFloorplanIdx = function (floorID) {
+			for (i = 0; i < $scope.floorPlans.length; i++) { 
+				if ($scope.floorPlans[i].floorID == floorID) {
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		$scope.FloorplanResize = function () {
@@ -144,7 +154,7 @@ define(['app'], function (app) {
 					$("#floorplancontent").offset({ top: 0 });
 				}
 				$("#floorplancontent").width($("#main-view").width()).height(wrpHeight);
-				if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Window: ' + $window.innerWidth + 'x' + $window.innerHeight + '</b><br/><b>View: ' + $("#floorplancontent").width() + 'x' + wrpHeight + '</b>', 10000);
+				if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Window: ' + $window.innerWidth + 'x' + $window.innerHeight + '</b><br/><b>View: ' + $("#floorplancontent").width() + 'x' + wrpHeight + '</b>', 1000);
 				$(".imageparent").each(function (i) { $("#" + $(this).attr('id') + '_svg').width($("#floorplancontent").width()).height(wrpHeight); });
 				if ($scope.FloorplanCount > 1) {
 					$("#BulletGroup:first").css("left", ($window.innerWidth - $("#BulletGroup:first").width()) / 2)
@@ -253,59 +263,69 @@ define(['app'], function (app) {
 			}
 		}
 
-		RefreshFPDevices = function (pOneOff) {
-			var bOneOff = true;
-			if (arguments.length > 1) {
-				bOneOff = pOneOff;
-			}
+		RefreshItem = function (item) {
+			var compoundDevice = (item.Type.indexOf('+') >= 0);
+			$(".Device_" + item.idx).each(function () {
+				var aSplit = $(this).attr("id").split("_");
+				item.FloorID = aSplit[1];
+				item.PlanID = aSplit[2];
+				item.Scale = $scope.floorPlans[$scope.GetFloorplanIdx(item.FloorID)].scaleFactor;
+				if (compoundDevice) {
+					item.Type = aSplit[0];					// handle multi value sensors (Baro, Humidity, Temp etc)
+					item.CustomImage = 1;
+					item.Image = aSplit[0].toLowerCase();
+				}
+				try {
+					var dev = Device.create(item);
+					var existing = document.getElementById(dev.uniquename);
+					if (existing != undefined) {
+						if ($scope.debug > 2) $.cachenoty = generate_noty('info', '<b>Refreshing Device ' + dev.name + ((compoundDevice) ? ' - ' + item.Type : '') + '</b>', 2000);
+						dev.htmlMinimum(existing.parentNode);
+					}
+				}
+				catch (err) {
+					$.cachenoty = generate_noty('error', '<b>Device refresh error</b> ' + dev.name + '<br>' + err, 5000);
+				}
+			});
+		}
 
-			if ((bOneOff != true) && (typeof $scope.mytimer != 'undefined')) {
+		RefreshFPDevices = function () {
+			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 
-			$http({
-				url: "json.htm?type=devices&filter=all&used=true&order=Name&lastupdate=" + $scope.lastUpdateTime
-			}).then(function successCallback(response) {
-				var data = response.data;
-				if (typeof data.ActTime != 'undefined') {
-					$scope.lastUpdateTime = data.ActTime;
+			livesocket.getJson("json.htm?type=devices&filter=all&used=true&order=Name&lastupdate=" + $.LastUpdateTime, function (data) {
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
-				// update devices that already exist in the DOM
+
 				if (typeof data.result != 'undefined') {
+					if (typeof data.ActTime != 'undefined') {
+						$scope.lastUpdateTime = data.ActTime;
+					}
+
+					/*
+						Render all the widgets at once.
+					*/
 					$.each(data.result, function (i, item) {
-						var compoundDevice = (item.Type.indexOf('+') >= 0);
-						item.Scale = $scope.floorPlans[$scope.actFloorplan].scaleFactor;
-						$(".Device_" + item.idx).each(function () {
-							var aSplit = $(this).attr("id").split("_");
-							item.FloorID = aSplit[1];
-							item.PlanID = aSplit[2];
-							if (compoundDevice) {
-								item.Type = aSplit[0];					// handle multi value sensors (Baro, Humidity, Temp etc)
-								item.CustomImage = 1;
-								item.Image = aSplit[0].toLowerCase();
-							}
-							try {
-								var dev = Device.create(item);
-								var existing = document.getElementById(dev.uniquename);
-								if (existing != undefined) {
-									if ($scope.debug > 2) $.cachenoty = generate_noty('info', '<b>Refreshing Device ' + dev.name + ((compoundDevice) ? ' - ' + item.Type : '') + '</b>', 2000);
-									dev.htmlMinimum(existing.parentNode);
-								}
-							}
-							catch (err) {
-								$.cachenoty = generate_noty('error', '<b>Device refresh error</b> ' + dev.name + '<br>' + err, 5000);
-							}
-						});
+						RefreshItem(item);
 					});
 				}
-				if (bOneOff != true) {
-					$scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
+			});
+
+			$scope.$on('jsonupdate', function (event, data) {
+				/*
+					When this event is caught, a widget status update is received.
+					We call RefreshItem to update the widget.
+				*/
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
-			}, function errorCallback(response) {
-				if (bOneOff != true) {
-					$scope.mytimer = $interval(function () { RefreshFPDevices(false); }, 10000);
+				if (typeof data.ActTime != 'undefined') {
+					$.LastUpdateTime = parseInt(data.ActTime);
 				}
+				RefreshItem(data.item);
 			});
 		}
 
@@ -340,9 +360,10 @@ define(['app'], function (app) {
 								item.Image = sDev.toLowerCase();
 								item.XOffset = Math.abs(item.XOffset) + ((k == 0) ? 0 : (50 * $scope.floorPlans[floorIdx].scaleFactor));
 								dev = Device.create(item);
+								var existing = document.getElementById(dev.uniquename);
 								if (dev.onFloorplan == true) {
 									try {
-										dev.htmlMinimum(elDevices);
+										dev.htmlMinimum(existing);
 									}
 									catch (err) {
 										generate_noty('error', '<b>Device draw error</b><br>' + err, false);
@@ -352,9 +373,10 @@ define(['app'], function (app) {
 						}
 						else {
 							dev = Device.create(item);
+							var existing = document.getElementById(dev.uniquename);
 							if (dev.onFloorplan == true) {
 								try {
-									dev.htmlMinimum(elDevices);
+									dev.htmlMinimum(existing);
 								}
 								catch (err) {
 									generate_noty('error', '<b>Device draw error</b><br>' + err, false);
@@ -391,7 +413,7 @@ define(['app'], function (app) {
 			$scope.ShowFPDevices(floorIdx);
 		}
 
-		ShowFloorplans = function (floorIdx) {
+		ShowFloorplans = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -476,6 +498,8 @@ define(['app'], function (app) {
 							$("#BulletImages").append($scope.makeHTMLnode('img', { id: $scope.floorPlans[i].tagName + '_bullet', 'src': item.Image, related: $scope.floorPlans[i].tagName }));
 						}
 					});
+
+					RefreshFPDevices();
 				}
 
 				$(".bulletcell").hover(function () {
@@ -538,24 +562,33 @@ define(['app'], function (app) {
 				});
 		}
 
-		init();
+		$scope.debugOn = function () {
+			$scope.debug = 1;
+		}
+		
+		$scope.debugOff = function () {
+			$scope.debug = 0;
+		}
 
 		function init() {
 			try {
 				$scope.MakeGlobalConfig();
 				ShowFloorplans();
+				document.getElementById("cFloorplans").addEventListener("mouseover", $scope.debugOn);
+				document.getElementById("cFloorplans").addEventListener("mouseout", $scope.debugOff);
 			}
 			catch (err) {
 				generate_noty('error', '<b>Error Initialising Page</b><br>' + err, false);
 			}
 		};
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
+			$interval.cancel($scope.mytimer);
+			$scope.mytimer = undefined;
+			document.getElementById("cFloorplans").removeEventListener("mouseover", $scope.debugOn);
+			document.getElementById("cFloorplans").removeEventListener("mouseout", $scope.debugOff);
 			$("body").trigger("pageexit");
 		});
 
-	}]);
+		init();
+	});
 });

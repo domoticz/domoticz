@@ -1,26 +1,26 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0098:0106:6401</MetaDataItem>
     <MetaDataItem name="ProductPic">images/2gig/ct100.png</MetaDataItem>
     <MetaDataItem id="0106" name="ZWProductPage" type="6401">https://products.z-wavealliance.org/products/795/</MetaDataItem>
     <MetaDataItem id="0106" name="FrequencyName" type="6401">Australia / New Zealand / U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem name="Name">CT100-US Thermostat</MetaDataItem>
-    <MetaDataItem name="Description">ENERGY MANAGEMENT MADE EASY. 
-
-The CT100 brings together everything you need to create an energy-intelligent home: remote control, seven-day programming, and seamless integration with the Go!Control panel. 
-
-•	Ultra Slim Form Factor 
-•	Two Year Battery Life 
-•	4 Stage Heat, 2 Cool 
-•	Bright Display with Touch Screen 
-•	Improved Z-Wave Range 
-•	Auto Mode 
-•	Improved User Experience </MetaDataItem>
+    <MetaDataItem name="Name">CT100 Plus</MetaDataItem>
+    <MetaDataItem name="Description">The CT100 Plus is a sleek, modern thermostat design for home automation systems.  It’s clean user interface compliments app-enabled systems.  It features adjustable real-time alerts to enable cloud triggers, a robust data stream of HVAC information for cloud monitoring, and configurable comfort response settings to customize home control scenes.  The CT100 Plus is compatible with all popular HVAC systems and is battery-operated without the need for a C-wire. </MetaDataItem>
     <MetaDataItem id="0106" name="Identifier" type="6401">CT100-US</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/782/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/795/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1798/xml</Entry>
     </ChangeLog>
+    <MetaDataItem id="0001" name="ZWProductPage" type="6402">https://products.z-wavealliance.org/products/1798/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Switch the thermostat to Off Mode.  Press and hold the lower left corner of touch screen for five (5) seconds. The thermostat then resets itself, displays its current firmware version, and restarts in Off Mode.  Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="6402">CT100</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Same process as inclusion.   Similarly, when you are trying to exclude from a network, the LINK icon disappears when the node has successfully excluded the network.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1798/CT100_Plus_UserGuide_20160504.pdf</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="6402">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">When included into a Z-Wave network on battery power, this device is a FLiRS device.  The Thermostat will wake up for communication when it receives a valid Z-Wave beam.  </MetaDataItem>
+    <MetaDataItem name="InclusionDescription">From the CT100’s Menu screen, touch MATE under the radio icon. The Network Include screen displays a large r1.  Touch MATE again. This initiates the network inclusion process. The MATE icon and the status indicator LEDs will blink.  When the CT100 has successfully included into a Z-Wave network, the
+MATE icon is replaced by the LINK icon under the radio tower.</MetaDataItem>
   </MetaData>
   <!--
 	Radio Thermostat Company of America CT100 Plus Thermostat manual available at:
@@ -116,6 +116,7 @@ The CT100 brings together everything you need to create an energy-intelligent ho
       <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="19005954"/>
       <!-- 0x01,0x2,0x2,0x02,0x02 -->
       <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="35783170"/>
+    
     
     
     <!-- 0x02,0x2,0x2,0x02,0x02 -->

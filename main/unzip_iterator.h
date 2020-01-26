@@ -39,6 +39,7 @@
 #include <iterator>
 #include <string>
 #include <unzip.h>
+#include <zlib.h>
 #include "unzip_stream.h"
 
 namespace clx {

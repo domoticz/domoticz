@@ -1,54 +1,86 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-    <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="list" index="3" genre="config" label="Sets bottom LED operation" min="0" max="1" size="1" value="1">
-            <Help>Sets bottom LED operation (in normal mode)</Help>
-            <Item label="LED on if load is off" value="0"/>
-            <Item label="LED off if load is off" value="1"/>
-        </Value>
-        <Value type="list" index="4" genre="config" label="Invert switch" min="0" max="1" size="1" value="0">
-            <Help>Change the top of the switch to OFF and the bottom of the switch to ON if the switch was installed upside down.</Help>
-            <Item label="No" value="0"/>
-            <Item label="Yes" value="1"/>
-        </Value>
-        <Value type="list" index="13" genre="config" label="LED mode" min="0" max="1" size="1" value="0">
-            <Help>Normal mode (load status) or status mode (custom status)</Help>
-            <Item label="Normal mode" value="0"/>
-            <Item label="Status mode" value="1"/>
-        </Value>
-        <Value type="list" index="14" genre="config" label="Normal mode LED color" min="0" max="6" size="1" value="0">
-            <Help>Sets the Normal mode LED color</Help>
-            <Item label="White" value="0"/>
-            <Item label="Red" value="1"/>
-            <Item label="Green" value="2"/>
-            <Item label="Blue" value="3"/>
-            <Item label="Magenta" value="4"/>
-            <Item label="Yellow" value="5"/>
-            <Item label="Cyan" value="6"/>
-        </Value>
-        <Value type="list" index="21" genre="config" label="Status mode LED color" min="0" max="7" size="1" value="0">
-            <Help>Sets the Status mode LED color</Help>
-            <Item label="Off" value="0"/>
-            <Item label="Red" value="1"/>
-            <Item label="Green" value="2"/>
-            <Item label="Blue" value="3"/>
-            <Item label="Magenta" value="4"/>
-            <Item label="Yellow" value="5"/>
-            <Item label="Cyan" value="6"/>
-            <Item label="White" value="7"/>
-        </Value>
-        <Value type="byte" index="31" genre="config" label="LED blink frequency" min="0" max="255" value="0">
-            <Help>Sets the blink frequency of the LED
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/000C:3035:4447</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/homeseer/hs-ws200plus.png</MetaDataItem>
+    <MetaDataItem id="3035" name="ZWProductPage" type="4447">https://products.z-wavealliance.org/products/2675/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Turn the connected appliance ON/OFF by tapping the switch. Tapping and releasing the upper part of the rocker turns the appliance ON. Tapping and releasing the lower part of the rocker turns the appliance OFF.
+2. Delete(Exclude) the module to/from your Z-Wave network with your primary controller. Please refer to the instructions manual of your gateway or remote controller for details and procedures on how these actions can be done. Normally, the sequence is as follows: when the exclusion process is prompted by your primary controller, single click and release the rocker switch.  The controller should show that the action was successful. If the controller shows it was a fail, repeat the procedure.</MetaDataItem>
+    <MetaDataItem id="3035" name="FrequencyName" type="4447">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2675/HS-WS200-Manual-v4.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only in the event that the network primary controller is lost or otherwise inoperable.
+
+All Configuration Parameters can all be restored to their factory
+default settings by using your primary controller to delete/reset
+the device.   To manually reset, tap the ON button twice quickly and then tap the OFF button twice quickly.  Repeat the procedure to restore the settings to the factory default.
+</MetaDataItem>
+    <MetaDataItem name="Description">HS-WS200+ In Wall On/Off Switch
+- Works with incandescent, florescent (CFL), or most LED lighting and appliances
+- ON/OFF status and location LED indicator
+- Includes Z-Wave controllable RGB LED indicator
+- Fits into standard single or multiple gang junction box
+- Keypad can be replaced manually to match color with other wall switches 
+- Over-The-Air firmware upgrade available with compatible gateway, Z-Wave static controller, or PC and software.
+- Internal resettable fuse to protect from surge current
+- Manual reset capability
+- Support Central Scene</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave Wall Switch with RGB LED</MetaDataItem>
+    <MetaDataItem id="3035" name="Identifier" type="4447">HS-WS200+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Turn the connected appliance ON/OFF by tapping the switch. Tapping and releasing the upper part of the rocker turns the appliance ON. Tapping and releasing the lower part of the rocker turns the appliance OFF.
+2. Add(Include) the module to/from your Z-Wave network with your primary controller. Please refer to the instructions manual of your gateway or remote controller for details and procedures on how these actions can be done. 
+3. Normally, the sequence is as follows: when the inclusion process is prompted by your primary controller, single click and release the rocker switch to ON or OFF position.  The controller should show that the action was successful.  If the controller shows it was a fail, repeat the procedure.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2675/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="Sets bottom LED operation" max="1" min="0" size="1" type="list" value="1">
+      <Help>Sets bottom LED operation (in normal mode)</Help>
+      <Item label="LED on if load is off" value="0"/>
+      <Item label="LED off if load is off" value="1"/>
+    </Value>
+    <Value genre="config" index="4" label="Invert switch" max="1" min="0" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON if the switch was installed upside down.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="13" label="LED mode" max="1" min="0" size="1" type="list" value="0">
+      <Help>Normal mode (load status) or status mode (custom status)</Help>
+      <Item label="Normal mode" value="0"/>
+      <Item label="Status mode" value="1"/>
+    </Value>
+    <Value genre="config" index="14" label="Normal mode LED color" max="6" min="0" size="1" type="list" value="0">
+      <Help>Sets the Normal mode LED color</Help>
+      <Item label="White" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Magenta" value="4"/>
+      <Item label="Yellow" value="5"/>
+      <Item label="Cyan" value="6"/>
+    </Value>
+    <Value genre="config" index="21" label="Status mode LED color" max="7" min="0" size="1" type="list" value="0">
+      <Help>Sets the Status mode LED color</Help>
+      <Item label="Off" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Magenta" value="4"/>
+      <Item label="Yellow" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="White" value="7"/>
+    </Value>
+    <Value genre="config" index="31" label="LED blink frequency" max="255" min="0" type="byte" value="0">
+      <Help>Sets the blink frequency of the LED
               0 = No Blink
               1 = 100ms ON then 100ms OFF
             </Help>
-        </Value>
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="1">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-        </Associations>
-    </CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

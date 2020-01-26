@@ -241,10 +241,11 @@ function PollReply()
 	    var current = values[j].getAttribute('current');
 	    nodes[id].values[k].value = new Array();
 	    for (var l = 0; l < items.length; l++) {
-	      nodes[id].values[k].value[l] = {item: items[l].firstChild.nodeValue, selected: (current == items[l].firstChild.nodeValue)};
+			if (items[l].firstChild)
+				nodes[id].values[k].value[l] = {item: items[l].firstChild.nodeValue, selected: (current == items[l].firstChild.nodeValue)};
 	    }
 	  } else if (values[j].firstChild != null)
-	    nodes[id].values[k].value = values[j].firstChild.nodeValue;
+	    nodes[id].values[k].value = values[j].firstChild.nodeValue.trim();
 	  else
 	    nodes[id].values[k].value = '0';
 	  k++;

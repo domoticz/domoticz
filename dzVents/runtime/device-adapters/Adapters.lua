@@ -1,4 +1,5 @@
 local genericAdapter = require('generic_device')
+local utils = require('Utils')
 
 local deviceAdapters = {
 	'airquality_device',
@@ -29,6 +30,7 @@ local deviceAdapters = {
 	'scaleweight_device',
 	'scene_device',
 	'security_device',
+	'smoke_detector_device',
 	'solar_radiation_device',
 	'soilmoisture_device',
 	'soundlevel_device',
@@ -46,18 +48,9 @@ local deviceAdapters = {
 	'waterflow_device',
 	'wind_device',
 	'zone_heating_device',
-	'zwave_thermostat_mode_device',
+	'zwave_mode_type_device',
 	'kodi_device'
 }
-
-local utils = require('Utils')
-
-function string:split(sep)
-	local sep, fields = sep or ":", {}
-	local pattern = string.format("([^%s]+)", sep)
-	self:gsub(pattern, function(c) fields[#fields + 1] = c end)
-	return fields
-end
 
 local function DeviceAdapters(dummyLogger)
 
@@ -92,7 +85,7 @@ local function DeviceAdapters(dummyLogger)
 
 	function self.parseFormatted (sValue, radixSeparator)
 
-		local splitted = string.split(sValue, ' ')
+		local splitted = utils.stringSplit(sValue, ' ')
 
 		local sV = splitted[1]
 		local unit = splitted[2]
@@ -134,21 +127,13 @@ local function DeviceAdapters(dummyLogger)
 		end
 	end
 
-	function self.round(num, numDecimalPlaces)
-		if (num == nil) then
-			--print(debug.traceback())
-			num = 0
-		end
-		local mult = 10 ^ (numDecimalPlaces or 0)
-		return math.floor(num * mult + 0.5) / mult
-	end
-
 	self.states = {
 		on = { b = true, inv = 'Off' },
 		open = { b = true, inv = 'Off' },
 		['group on'] = { b = true },
 		panic = { b = true, inv = 'Off' },
 		normal = { b = true, inv = 'Alarm' },
+		detected = { b = true, inv = 'Off'},
 		alarm = { b = true, inv = 'Normal' },
 		chime = { b = true },
 		video = { b = true },
@@ -168,10 +153,10 @@ local function DeviceAdapters(dummyLogger)
 		paused = { b = false, inv = 'Play' },
 		['all on'] = { b = true, inv = 'All Off' },
 		['all off'] = { b = false, inv = 'All On' },
-		['nightmode'] = { b = true, inv = 'Off' },
+		nightmode = { b = true, inv = 'Off' },
 		['set to white'] = { b = true, inv = 'Off' },
 		['set kelvin level'] = { b = true, inv = 'Off' },
-		['set color'] = { b = true },
+		['set color'] = { b = true, inv = 'Off' },
 	}
 
 	return self

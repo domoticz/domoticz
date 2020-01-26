@@ -28,16 +28,16 @@ void bt_openwebnet::IsCorrect()
   std::string field;
 
   // if frame ACK -->
-  if (frame_open.compare(OPENWEBNET_MSG_OPEN_OK) == 0)
+  if (m_frameOpen.compare(OPENWEBNET_MSG_OPEN_OK) == 0)
   {
-    frame_type = OK_FRAME;
+    m_frameType = OK_FRAME;
     return;
   }
 
   // if frame NACK -->
-  if (frame_open.compare(OPENWEBNET_MSG_OPEN_KO) == 0)
+  if (m_frameOpen.compare(OPENWEBNET_MSG_OPEN_KO) == 0)
   {
-    frame_type = KO_FRAME;
+	  m_frameType = KO_FRAME;
     return;
   }
 
@@ -45,23 +45,23 @@ void bt_openwebnet::IsCorrect()
   //if the first character is not *
   //or the frame is too long
   //or the frame does not end with two '#'
-  if ((frame_open[0] != '*') ||
-      (length_frame_open >	MAX_LENGTH_OPEN) ||
-      (frame_open[length_frame_open-1] != '#') ||
-      (frame_open[length_frame_open-2] != '#'))
+  if ((m_frameOpen[0] != '*') ||
+      (m_lengthFrameOpen > MAX_LENGTH_OPEN) ||
+      (m_frameOpen[m_lengthFrameOpen -1] != '#') ||
+      (m_frameOpen[m_lengthFrameOpen -2] != '#'))
   {
-    frame_type = ERROR_FRAME;
+	  m_frameType = ERROR_FRAME;
     return;
   }
 
   //Check if there are bad character
-  for (j=0;j<length_frame_open;j++)
+  for (j=0;j< m_lengthFrameOpen;j++)
   {
-    if(!isdigit(frame_open[j]))
+    if(!isdigit(m_frameOpen[j]))
     {
-      if((frame_open[j] != '*') && (frame_open[j] != '#'))
+      if((m_frameOpen[j] != '*') && (m_frameOpen[j] != '#'))
       {
-        frame_type = ERROR_FRAME;
+		  m_frameType = ERROR_FRAME;
         return;
       }
     }
@@ -69,9 +69,9 @@ void bt_openwebnet::IsCorrect()
 
   // normal frame...
   //*who#address*what*where#level#address*when##
-  if (frame_open[1] != '#')
+  if (m_frameOpen[1] != '#')
   {
-    frame_type = NORMAL_FRAME;
+    m_frameType = NORMAL_FRAME;
     //extract the various fields of the open frame in the first mode (who + address and where + level + interface)
     Set_who_what_where_when();
     //extract any address values
@@ -83,29 +83,29 @@ void bt_openwebnet::IsCorrect()
 
   // frame password ...
   //*#pwd##
-  if(frame_open.find('*', 2) == std::string::npos)
+  if(m_frameOpen.find('*', 2) == std::string::npos)
   {
-    frame_type = PWD_FRAME;
+    m_frameType = PWD_FRAME;
     //I extract the who
     Set_who();
     return;
   }
 
   //for other types of frames
-  sup = frame_open.substr(2);
+  sup = m_frameOpen.substr(2);
   field = FirstToken(sup, "*");
-  sup = frame_open.substr(2 + field.length() + 1);
+  sup = m_frameOpen.substr(2 + field.length() + 1);
   if (sup.at(0) != '*')
   {
 	  field = field + FirstToken(sup, "*");
-	  sup = frame_open.substr(2 + field.length() + 1);
+	  sup = m_frameOpen.substr(2 + field.length() + 1);
   }
 
   //frame request was ...
   //*#who*where##
   if(sup[0] != '*')
   {
-    frame_type = STATE_FRAME;
+    m_frameType = STATE_FRAME;
 	//extract the various fields of the open frame in the first mode (who + address and where + level + interface)
     Set_who_where();
 	//extract any address values
@@ -121,7 +121,7 @@ void bt_openwebnet::IsCorrect()
     //or *#who**dimension*value1*value2*value3*value4## example: *#13**0*01*40*07*001##
     if(sup[1] != '#')
     {
-      frame_type = MEASURE_FRAME;
+      m_frameType = MEASURE_FRAME;
       //extract the various fields of the open frame in the first mode (who + address and where + level + interface)
 	  Set_who_where_dimension();
 	  //extract any address values
@@ -134,7 +134,7 @@ void bt_openwebnet::IsCorrect()
     //*#who*where*#dimension*valueN##
     else
     {
-      frame_type = WRITE_FRAME;
+      m_frameType = WRITE_FRAME;
       //extract the different fields of the open frame in the first mode (who+address and where+level+interface)
       Set_who_where_dimension_values();
 	  //extract any address values
@@ -146,7 +146,7 @@ void bt_openwebnet::IsCorrect()
   }
 
   //error frame !!!
-  frame_type = ERROR_FRAME;
+  m_frameType = ERROR_FRAME;
   return;
 }
 
@@ -157,41 +157,41 @@ void bt_openwebnet::Set_who_where_dimension()
 	std::string sup;
    
   // WHO
-  sup = frame_open.substr(2);
+  sup = m_frameOpen.substr(2);
   if (sup.at(0) != '*') {
-	  who = FirstToken(sup, "*");
+	  m_who = FirstToken(sup, "*");
   }
   // WHERE
-  sup = frame_open.substr(2 + who.length() + 1);
+  sup = m_frameOpen.substr(2 + m_who.length() + 1);
   if(sup.find("*") == std::string::npos)
-    where = sup.substr(0, sup.length()-2);
+	  m_where = sup.substr(0, sup.length() - 2);
   else
   {
     if(sup.at(0) != '*')
-      where = FirstToken(sup, "*");
+		m_where = FirstToken(sup, "*");
     // DIMENSION
-    sup = frame_open.substr(2+who.length()+1+where.length()+1);
+    sup = m_frameOpen.substr(2 + m_who.length() + 1 + m_where.length() + 1);
     if(sup.find("*") == std::string::npos)
-		dimension = sup.substr(0, sup.length() - 2);
+		m_dimension = sup.substr(0, sup.length() - 2);
     else
     {
 		if (sup.at(0) != '*') {
-			dimension = FirstToken(sup, "*");
+			m_dimension = FirstToken(sup, "*");
 		}
       // VALUES **##
-      sup = frame_open.substr(2+ who.length() + 1 + where.length() + 1 +dimension.length()+1);
-      size_t len = 2 + who.length() + 1 + where.length() + 1 + dimension.length() + 1;
+      sup = m_frameOpen.substr(2 + m_who.length() + 1 + m_where.length() + 1 + m_dimension.length() + 1);
+      size_t len = 2 + m_who.length() + 1 + m_where.length() + 1 + m_dimension.length() + 1;
       while ((sup.find("*") != std::string::npos) && (sup.at(0) != '*'))
       {
 		std::string strValue = FirstToken(sup, "*");
-		values.push_back(strValue);
-        len = len+ strValue.length()+1;
-        sup = frame_open.substr(len);
+		m_values.push_back(strValue);
+        len = len + strValue.length() + 1;
+        sup = m_frameOpen.substr(len);
       }
       if ((sup[0] != '*') && (sup[0] != '#'))
       {
 		  std::string strValue = sup.substr(0, sup.length()-2);
-		  values.push_back(strValue);
+		  m_values.push_back(strValue);
       }
     }
   }
@@ -208,18 +208,18 @@ void bt_openwebnet::Set_who_where()
   std::string sup;
 
   // WHO
-  sup = frame_open.substr(2);
+  sup = m_frameOpen.substr(2);
   if (sup.at(0) != '*') {
-	  who = FirstToken(sup, "*");
+	  m_who = FirstToken(sup, "*");
   }
   // WHERE
-  sup = frame_open.substr(2 + who.length() + 1);
+  sup = m_frameOpen.substr(2 + m_who.length() + 1);
   if (sup.find("*") == std::string::npos) {
-	  where = sup.substr(0, sup.length() - 2);
+	  m_where = sup.substr(0, sup.length() - 2);
   }
   else {
 	  if (sup.at(0) != '*') {
-		  where = FirstToken(sup, "*");
+		  m_where = FirstToken(sup, "*");
 	  }
   }
 
@@ -235,36 +235,36 @@ void bt_openwebnet::Set_who_what_where_when()
 	std::string sup;
 
 	// who
-	sup = frame_open.substr(1);
+	sup = m_frameOpen.substr(1);
 	if (sup.at(0) != '*') {
-		who = FirstToken(sup, "*");
+		m_who = FirstToken(sup, "*");
 	}
 	// what
-	sup = frame_open.substr(1 + who.length() + 1);
+	sup = m_frameOpen.substr(1 + m_who.length() + 1);
 	if (sup.find("*") == std::string::npos) {
-		what = sup.substr(0, sup.length() - 2);
+		m_what = sup.substr(0, sup.length() - 2);
 	}
 	else {
 		if (sup[0] != '*')
-			what = FirstToken(sup, "*");
+			m_what = FirstToken(sup, "*");
 		// where
-		sup = frame_open.substr(1 + who.length() + 1 + what.length() + 1);
+		sup = m_frameOpen.substr(1 + m_who.length() + 1 + m_what.length() + 1);
 		if (sup.find("*") == std::string::npos) {
-			where = sup.substr(0, sup.length() - 2);
+			m_where = sup.substr(0, sup.length() - 2);
 		}
 		else
 		{
 			if (sup[0] != '*')
-				where = FirstToken(sup, "*");
+				m_where = FirstToken(sup, "*");
 
 			// when
-			sup = frame_open.substr(1 + who.length() + 1 + what.length() + 1 + where.length() + 1);
+			sup = m_frameOpen.substr(1 + m_who.length() + 1 + m_what.length() + 1 + m_where.length() + 1);
 			if (sup.find("*") == std::string::npos) {
-				when = sup.substr(0, sup.length() - 2);
+				m_when = sup.substr(0, sup.length() - 2);
 			}
 			else
 				if (sup[0] != '*')
-					when = FirstToken(sup, "*");
+					m_when = FirstToken(sup, "*");
 		}
 	}
 
@@ -279,46 +279,46 @@ void bt_openwebnet::Set_who_where_dimension_values()
   //DIMENSION WRITING : *#WHO*WHERE*#DIMENSION*VAL1*VAL2*...*VALn##
 	std::string sup;
   // WHO
-  sup = frame_open.substr(2);
+  sup = m_frameOpen.substr(2);
   if(sup[0] != '*')
-    who = FirstToken(sup, "*");
+    m_who = FirstToken(sup, "*");
   // WHERE
-  sup =  frame_open.substr(2+who.length()+1);
+  sup = m_frameOpen.substr(2 + m_who.length() + 1);
   if(sup.find('*') == std::string::npos)
-    where = sup.substr(0,sup.length()-2);
+	  m_where = sup.substr(0,sup.length() - 2);
   else
   {
     if(sup.at(0) != '*')
-      where =FirstToken(sup, "*");
+		m_where =FirstToken(sup, "*");
     // DIMENSION
-    sup = frame_open.substr(2+who.length()+1+where.length()+2);
+    sup = m_frameOpen.substr(2 + m_who.length() + 1 + m_where.length() + 2);
     if(sup.find('*') == std::string::npos)
-      frame_type = ERROR_FRAME;
+		m_frameType = ERROR_FRAME;
     else
     {
       if(sup.at(0) != '*')
-        dimension = FirstToken(sup, "*");
+        m_dimension = FirstToken(sup, "*");
       // VALUES
-	  size_t len = 2 + who.length() + 1 + where.length() + 2 + dimension.length() + 1;
-	  sup = frame_open.substr(len);
+	  size_t len = 2 + m_who.length() + 1 + m_where.length() + 2 + m_dimension.length() + 1;
+	  sup = m_frameOpen.substr(len);
       while (sup.find('*') != std::string::npos && (sup.at(0) != '*'))
       {
 		  std::string newValue = FirstToken(sup, "*");
-		  values.push_back(newValue);
+		  m_values.push_back(newValue);
 			len = len+ newValue.length() +1;
-			sup = frame_open.substr(len);
+			sup = m_frameOpen.substr(len);
         while(sup.at(0) == '*')
         {
           len++;
-		  sup = frame_open.substr(len);
-		  values.push_back("");
+		  sup = m_frameOpen.substr(len);
+		  m_values.push_back("");
         }
         if (sup.at(0) != '*')
-			values.push_back("");
+			m_values.push_back("");
       }
       if ((sup.at(0) != '*') && (sup.at(0) != '#'))
       {
-		  values.push_back(sup.substr(0, sup.length()-2));
+		  m_values.push_back(sup.substr(0, sup.length()-2));
       }
     }
   }
@@ -334,17 +334,17 @@ void bt_openwebnet::Set_who()
 	std::string sup;
 
 	// WHO
-	sup = frame_open.substr(2);
+	sup = m_frameOpen.substr(2);
 	if (sup.at(0) != '#') {
-		who = FirstToken(sup, "#");
+		m_who = FirstToken(sup, "#");
 	}
 	else {
-		frame_type = ERROR_FRAME;
+		m_frameType = ERROR_FRAME;
 	}
 
-	sup = frame_open.substr(2+who.length());
+	sup = m_frameOpen.substr(2 + m_who.length());
 	if (sup.at(1) != '#') {
-		frame_type = ERROR_FRAME;
+		m_frameType = ERROR_FRAME;
 	}
 
   return;
@@ -356,34 +356,34 @@ void bt_openwebnet::Set_level_interface()
 	std::string sup;
 	std::string orig;
 
-  if (!where.length()) return;
+  if (!m_where.length()) return;
 
   // WHERE
-  if (where.at(0) == '#')
-	  sup = where.substr(1);
+  if (m_where.at(0) == '#')
+	  sup = m_where.substr(1);
   else
-	  sup = where;
-  orig = where;
+	  sup = m_where;
+  orig = m_where;
   if(sup.find('#') != std::string::npos)
   {
-    extended = true;
+    m_extended = true;
     if(orig.at(0) == '#')
-      where = "#" +  FirstToken(sup, "#");
+		m_where = "#" +  FirstToken(sup, "#");
     else
-      where = FirstToken(sup, "#");
+		m_where = FirstToken(sup, "#");
     // LEVEL + INTERFACE
-    sup= orig.substr(where.length()+1);
+    sup= orig.substr(m_where.length() + 1);
     if(sup.find('#') != std::string::npos)
     {
-      level = FirstToken(sup, "#");
-      sInterface = orig.substr(where.length()+1+level.length()+1);
-      if(sInterface.length() == 0)
-        frame_type = ERROR_FRAME;
+      m_level = FirstToken(sup, "#");
+      m_sInterface = orig.substr(m_where.length() + 1 + m_level.length() + 1);
+      if(m_sInterface.length() == 0)
+		  m_frameType = ERROR_FRAME;
     }
     else
       //Modified by Bt_vctMM for "accensione telecamere esetrne" (*6*0*4000#2*##)
       //frame_type = ERROR_FRAME;
-      level = sup;
+      m_level = sup;
   }
 
   return;
@@ -394,57 +394,57 @@ void bt_openwebnet::Set_address()
 {
 	std::string sup;
 	std::string orig;
-	addresses.reserve(4);
+	m_addresses.reserve(4);
 
 	// WHO
-	sup = who;
-	orig = who;
+	sup = m_who;
+	orig = m_who;
 
 	if (sup.find("#") != std::string::npos)
 	{
-		who = FirstToken(sup, "#");
+		m_who = FirstToken(sup, "#");
 		// ADDRESS
-		addresses.clear();
-		sup = orig.substr(who.length() + 1);
+		m_addresses.clear();
+		sup = orig.substr(m_who.length() + 1);
 		if (sup.find('#') == std::string::npos)
 		{
 			// unique serial address
 			if (sup.length() != 0)
-				addresses.push_back(sup);
+				m_addresses.push_back(sup);
 			else
-				frame_type = ERROR_FRAME;
+				m_frameType = ERROR_FRAME;
 		}
 		else
 		{
 		  // IP address
-		  addresses[0] = FirstToken(sup, "#");
-		  sup = orig.substr(who.length() + 1 + addresses[0].length() + 1);
+		  m_addresses[0] = FirstToken(sup, "#");
+		  sup = orig.substr(m_who.length() + 1 + m_addresses[0].length() + 1);
 		  if(sup.find('#') != std::string::npos)
 		  {
 			// IP address
-			addresses[1] = FirstToken(sup, "#");
-			sup = orig.substr(who.length() + 1 + addresses[0].length() + 1 + addresses[1].length() + 1);
+			m_addresses[1] = FirstToken(sup, "#");
+			sup = orig.substr(m_who.length() + 1 + m_addresses[0].length() + 1 + m_addresses[1].length() + 1);
 			if(sup.find('#') != std::string::npos)
 			{
 			  // IP address
-			  addresses[2] = FirstToken(sup, "#");
-			  sup = orig.substr(who.length() + 1 + addresses[0].length() + 1 + addresses[1].length() + 1 + addresses[2].length() + 1);
+			  m_addresses[2] = FirstToken(sup, "#");
+			  sup = orig.substr(m_who.length() + 1 + m_addresses[0].length() + 1 + m_addresses[1].length() + 1 + m_addresses[2].length() + 1);
 			  if(sup.find('#') == std::string::npos)
 			  {
 				// IP address
 				if(sup.length() != 0)
-				  addresses[3] = sup;
+					m_addresses[3] = sup;
 				else
-				  frame_type = ERROR_FRAME;
+					m_frameType = ERROR_FRAME;
 			  }
 			  else
-				frame_type = ERROR_FRAME;
+				  m_frameType = ERROR_FRAME;
 			}
 			else
-			  frame_type = ERROR_FRAME;
+				m_frameType = ERROR_FRAME;
 		  }
 		  else
-			frame_type = ERROR_FRAME;
+			m_frameType = ERROR_FRAME;
 		}
   }
 
@@ -464,16 +464,16 @@ void bt_openwebnet::tokenize(const std::string& strToTokenize, const char token,
 		str = str.substr(out_firstToken.length() + 1);
 
 		do {
-			std::string token;
+			std::string stoken;
 			if (str.find('#') != std::string::npos) {
-				token = FirstToken(str, "#");
+				stoken = FirstToken(str, "#");
 			}
 			else {
-				token = str;
+				stoken = str;
 			}
-			out_otherTokens.push_back(token);
-			if (token.length() < str.length()) {
-				str = str.substr(token.length() + 1);
+			out_otherTokens.push_back(stoken);
+			if (stoken.length() < str.length()) {
+				str = str.substr(stoken.length() + 1);
 			}
 			else {
 				str = "";
@@ -486,14 +486,14 @@ void bt_openwebnet::tokenize(const std::string& strToTokenize, const char token,
 void bt_openwebnet::Set_whatParameters()
 {
 	//The WHAT tag can contain other parameters : WHAT#PAR1#PAR2...#PARn
-	tokenize(what, '#', what, whatParameters);
+	tokenize(m_what, '#', m_what, m_whatParameters);
 }
 
 // assign whereParameters
 void bt_openwebnet::Set_whereParameters()
 {
 	//The WHERE tag can contain other parameters : WHERE#PAR1#PAR2...#PARn
-	tokenize(where, '#', where, whereParameters);
+	tokenize(m_where, '#', m_where, m_whereParameters);
 }
 
 // public methods ......
@@ -588,8 +588,8 @@ void bt_openwebnet::CreateMsgOpen(const std::string& who, const std::string& wha
   }
   frame << "##";
 
-  frame_open = DeleteControlCharacters(frame.str());
-  length_frame_open = frame_open.length();
+  m_frameOpen = DeleteControlCharacters(frame.str());
+  m_lengthFrameOpen = m_frameOpen.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -620,8 +620,8 @@ void bt_openwebnet::CreateMsgOpen(const std::string& who, const std::string& wha
   }
   frame << "##";
 
-  frame_open = DeleteControlCharacters(frame.str());
-  length_frame_open = frame_open.length();
+  m_frameOpen = DeleteControlCharacters(frame.str());
+  m_lengthFrameOpen = m_frameOpen.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -632,25 +632,25 @@ void bt_openwebnet::CreateNullMsgOpen()
 {
   //Counter to reset the values
   // clears everything
-  frame_open = "";
-  frame_type = NULL_FRAME;
+  m_frameOpen = "";
+  m_frameType = NULL_FRAME;
 
-  length_frame_open = 0;
+  m_lengthFrameOpen = 0;
 
-  extended = false;
+  m_extended = false;
 
   // clears everything
-  who = "";
-  addresses.clear();
-  what = "";
-  whatParameters.clear();
-  where = "";
-  whereParameters.clear();
-  level = "";
-  sInterface = "";
-  when = "";
-  dimension = "";
-  values.clear();
+  m_who = "";
+  m_addresses.clear();
+  m_what = "";
+  m_whatParameters.clear();
+  m_where = "";
+  m_whereParameters.clear();
+  m_level = "";
+  m_sInterface = "";
+  m_when = "";
+  m_dimension = "";
+  m_values.clear();
 }
 
 //creates the OPEN message *#who*where##
@@ -666,8 +666,8 @@ void bt_openwebnet::CreateStateMsgOpen(const std::string& who, const std::string
   frame << who;  frame << "*";
   frame << where; frame << "##";
 
-  frame_open = DeleteControlCharacters(frame.str());
-  length_frame_open = frame_open.length();
+  m_frameOpen = DeleteControlCharacters(frame.str());
+  m_lengthFrameOpen = m_frameOpen.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -678,7 +678,7 @@ std::string bt_openwebnet::DeleteControlCharacters(const std::string& in_frame)
 	std::string out_frame = in_frame;
 
 	// delete control characters ....
-	while ((out_frame.at(out_frame.length() - 1) == '\n') || ((out_frame.at(out_frame.length() - 1) == '\r')))
+	while (out_frame.length() && ((out_frame.at(out_frame.length() - 1) == '\n') || ((out_frame.at(out_frame.length() - 1) == '\r'))))
 	{
 		out_frame.erase(out_frame.length() - 1, 1);
 	}
@@ -704,8 +704,8 @@ void bt_openwebnet::CreateStateMsgOpen(const std::string& who, const std::string
   frame << "#"; frame << interf;
   frame << "##";
 
-  frame_open = DeleteControlCharacters(frame.str());
-  length_frame_open = frame_open.length();
+  m_frameOpen = DeleteControlCharacters(frame.str());
+  m_lengthFrameOpen = m_frameOpen.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -720,8 +720,8 @@ void bt_openwebnet::CreateTimeReqMsgOpen()
   std::stringstream frame;
 
   frame << "*#13**0##";
-  frame_open = DeleteControlCharacters(frame.str());
-  length_frame_open = frame_open.length();
+  m_frameOpen = DeleteControlCharacters(frame.str());
+  m_lengthFrameOpen = m_frameOpen.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -739,8 +739,8 @@ void bt_openwebnet::CreateSetTimeMsgOpen()
 	strftime(frame_dt, sizeof(frame_dt)-1, "*#13**#22*%H*%M*%S*001*%u*%d*%m*%Y##", &ltime); //set date time 
 	std::stringstream frame;
 	frame << frame_dt;
-	frame_open = DeleteControlCharacters(frame.str());
-	length_frame_open = frame_open.length();
+	m_frameOpen = DeleteControlCharacters(frame.str());
+	m_lengthFrameOpen = m_frameOpen.length();
 
  	IsCorrect();
 }
@@ -764,8 +764,8 @@ void bt_openwebnet::CreateDimensionMsgOpen(const std::string& who, const std::st
   }
   frame << "##";
 
-  frame_open = DeleteControlCharacters(frame.str());
-  length_frame_open = frame_open.length();
+  m_frameOpen = DeleteControlCharacters(frame.str());
+  m_lengthFrameOpen = m_frameOpen.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -794,8 +794,8 @@ void bt_openwebnet::CreateDimensionMsgOpen(const std::string& who, const std::st
 	  frame << "*";
   frame << dimension; frame << "##";
 
-  frame_open = DeleteControlCharacters(frame.str());
-  length_frame_open = frame_open.length();
+  m_frameOpen = DeleteControlCharacters(frame.str());
+  m_lengthFrameOpen = m_frameOpen.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -821,8 +821,8 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::
   }
   frame << "##";
 
-  frame_open = DeleteControlCharacters(frame.str());
-  length_frame_open = frame_open.length();
+  m_frameOpen = DeleteControlCharacters(frame.str());
+  m_lengthFrameOpen = m_frameOpen.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -851,8 +851,8 @@ void bt_openwebnet::CreateWrDimensionMsgOpen2(const std::string& who, const std:
 	}
 	frame << "##";
 
-	frame_open = DeleteControlCharacters(frame.str());
-	length_frame_open = frame_open.length();
+	m_frameOpen = DeleteControlCharacters(frame.str());
+	m_lengthFrameOpen = m_frameOpen.length();
 
 	// checks for correct syntax ...
 	IsCorrect();
@@ -889,8 +889,8 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::
   }
   frame << "##";
 
-  frame_open = DeleteControlCharacters(frame.str());
-  length_frame_open = frame_open.length();
+  m_frameOpen = DeleteControlCharacters(frame.str());
+  m_lengthFrameOpen = m_frameOpen.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -903,10 +903,10 @@ void bt_openwebnet::CreateMsgOpen(const std::string& message)
   CreateNullMsgOpen();
 
   // saves the type of frame and its length
-  frame_open = message;
+  m_frameOpen = message;
 
-  frame_open = DeleteControlCharacters(frame_open);
-  length_frame_open = frame_open.length();
+  m_frameOpen = DeleteControlCharacters(m_frameOpen);
+  m_lengthFrameOpen = m_frameOpen.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -918,33 +918,33 @@ bool bt_openwebnet::IsEqual(const bt_openwebnet& msg_to_compare)
   IsCorrect();
 
   //control that is the same type
-  if(msg_to_compare.frame_type != frame_type)
+  if(msg_to_compare.m_frameType != m_frameType)
     return false;
 
   //control that are both two frames extended or not
-  if(msg_to_compare.extended != extended)
+  if(msg_to_compare.m_extended != m_extended)
     return false;
 
-  if(!extended)
+  if(!m_extended)
   {
-    if ((msg_to_compare.Extract_who().compare(who) == 0) &&
-        (msg_to_compare.Extract_what().compare(what) == 0) &&
-        (msg_to_compare.Extract_where().compare(where) == 0) &&
-        (msg_to_compare.Extract_when().compare(when) == 0) &&
-        (msg_to_compare.Extract_dimension().compare(dimension) == 0))
+    if ((msg_to_compare.Extract_who().compare(m_who) == 0) &&
+        (msg_to_compare.Extract_what().compare(m_what) == 0) &&
+        (msg_to_compare.Extract_where().compare(m_where) == 0) &&
+        (msg_to_compare.Extract_when().compare(m_when) == 0) &&
+        (msg_to_compare.Extract_dimension().compare(m_dimension) == 0))
       return true;
     else
       return false;
   }
   else
   {
-    if ((msg_to_compare.Extract_who().compare(who) == 0) &&
-        (msg_to_compare.Extract_what().compare(what) == 0) &&
-        (msg_to_compare.Extract_where().compare(where) == 0) &&
-        (msg_to_compare.Extract_level().compare(level) == 0) &&
-        (msg_to_compare.Extract_interface().compare(sInterface) == 0) &&
-        (msg_to_compare.Extract_when().compare(when) == 0) &&
-        (msg_to_compare.Extract_dimension().compare(dimension) == 0))
+    if ((msg_to_compare.Extract_who().compare(m_who) == 0) &&
+        (msg_to_compare.Extract_what().compare(m_what) == 0) &&
+        (msg_to_compare.Extract_where().compare(m_where) == 0) &&
+        (msg_to_compare.Extract_level().compare(m_level) == 0) &&
+        (msg_to_compare.Extract_interface().compare(m_sInterface) == 0) &&
+        (msg_to_compare.Extract_when().compare(m_when) == 0) &&
+        (msg_to_compare.Extract_dimension().compare(m_dimension) == 0))
       return true;
     else
       return false;
@@ -954,80 +954,80 @@ bool bt_openwebnet::IsEqual(const bt_openwebnet& msg_to_compare)
   // extract who, addresses, what, where, level, interface, when, dimension and values of frame_open
 std::string bt_openwebnet::Extract_who() const
 {
-	return who;
+	return m_who;
 }
 
 std::string bt_openwebnet::Extract_address(unsigned int i) const
 {
-	if (i < addresses.size())
+	if (i < m_addresses.size())
 	{
-		return addresses.at(i);
+		return m_addresses.at(i);
 	}
 	return "";
 }
 
 std::string bt_openwebnet::Extract_what() const
 {
-	return what;
+	return m_what;
 }
 
 std::string bt_openwebnet::Extract_where() const
 {
-	return where;
+	return m_where;
 }
 
 std::string bt_openwebnet::Extract_level() const
 {
-	return level;
+	return m_level;
 }
 
 std::string bt_openwebnet::Extract_interface() const
 {
-	return sInterface;
+	return m_sInterface;
 }
 
 std::string bt_openwebnet::Extract_when() const
 {
-	return when;
+	return m_when;
 }
 
 std::string bt_openwebnet::Extract_dimension() const
 {
-	return dimension;
+	return m_dimension;
 }
 
 std::string bt_openwebnet::Extract_value(unsigned int i) const
 {
-	if (i < values.size())
+	if (i < m_values.size())
 	{
-		return values.at(i);
+		return m_values.at(i);
 	}
 	return "";
 }
 
 std::vector<std::string>  bt_openwebnet::Extract_addresses() const
 {
-	return addresses; 
+	return m_addresses; 
 }
 
 std::vector<std::string> bt_openwebnet::Extract_whatParameters() const
 {
-	return whatParameters;
+	return m_whatParameters;
 }
 
 std::vector<std::string> bt_openwebnet::Extract_whereParameters() const
 {
-	return whereParameters;
+	return m_whereParameters;
 }
 
 std::vector<std::string> bt_openwebnet::Extract_values() const
 {
-	return values;
+	return m_values;
 }
 
 std::string bt_openwebnet::Extract_frame() const
 {
-	return frame_open;
+	return m_frameOpen;
 }
 
 std::string bt_openwebnet::Extract_OpenOK()
@@ -1044,47 +1044,47 @@ std::string bt_openwebnet::Extract_OpenKO()
 
 bool bt_openwebnet::IsErrorFrame() const
 {
-	return (frame_type == ERROR_FRAME);
+	return (m_frameType == ERROR_FRAME);
 }
 
 bool bt_openwebnet::IsNullFrame() const
 {
-	return (frame_type == NULL_FRAME);
+	return (m_frameType == NULL_FRAME);
 }
 
 bool bt_openwebnet::IsNormalFrame() const
 {
-	return (frame_type == NORMAL_FRAME);
+	return (m_frameType == NORMAL_FRAME);
 }
 
 bool bt_openwebnet::IsMeasureFrame() const
 {
-	return (frame_type == MEASURE_FRAME);
+	return (m_frameType == MEASURE_FRAME);
 }
 
 bool bt_openwebnet::IsStateFrame() const
 {
-	return (frame_type == STATE_FRAME);
+	return (m_frameType == STATE_FRAME);
 }
 
 bool bt_openwebnet::IsWriteFrame() const
 {
-	return (frame_type == WRITE_FRAME);
+	return (m_frameType == WRITE_FRAME);
 }
 
 bool bt_openwebnet::IsPwdFrame() const
 {
-	return (frame_type == PWD_FRAME);
+	return (m_frameType == PWD_FRAME);
 }
 
 bool bt_openwebnet::IsOKFrame() const
 {
-	return (frame_type == OK_FRAME);
+	return (m_frameType == OK_FRAME);
 }
 
 bool bt_openwebnet::IsKOFrame() const
 {
-	return (frame_type == KO_FRAME);
+	return (m_frameType == KO_FRAME);
 }
 
 std::string bt_openwebnet::getWhoDescription(const std::string& who)
@@ -1700,8 +1700,8 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 
 		int iWhat = atoi(what.c_str());
 		if (iWhat >= 0 && iWhat <= 31) {
-			int iFirstDial = (iWhat - 300) / 10;
-			int iSecondDial = iWhat - 300 - 10 * iFirstDial;
+			//int iFirstDial = (iWhat - 300) / 10;
+			//int iSecondDial = iWhat - 300 - 10 * iFirstDial;
 			std::stringstream sstr;
 			sstr << "button number" << iWhat;
 		}
@@ -2528,7 +2528,7 @@ std::string bt_openwebnet::frameToString(const bt_openwebnet& frame)
 {
 	std::stringstream frameStr;
 
-	frameStr << frame.frame_open;
+	frameStr << frame.m_frameOpen;
 	frameStr << " : ";
 
 	if (frame.IsErrorFrame())
@@ -2567,7 +2567,7 @@ std::string bt_openwebnet::frameToString(const bt_openwebnet& frame)
 	{
 		frameStr << "NORMAL FRAME";
 
-		if (frame.extended) {
+		if (frame.m_extended) {
 			//bus interconnection
 			frameStr << " - EXTENDED : ";
 			frameStr << " level=" << frame.Extract_level();

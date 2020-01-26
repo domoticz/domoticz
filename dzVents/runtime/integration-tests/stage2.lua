@@ -40,7 +40,11 @@ local checkAttributes = function(item, attributes)
 	for attr, value in pairs(attributes) do
 		res = res and expectEql(item[attr], value, attr)
 	end
-	return res
+    if res then return res
+    else 
+        print(item[attr], value, attr)
+        return res
+    end
 end
 
 local testAirQuality = function(name)
@@ -68,7 +72,7 @@ local testDimmer = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 40,
+		["id"] = 43,
 		["state"] = "On",
 		["lastLevel"] = 75, -- this script is NOT triggered by the dimmer so lastLevel is the current level
 		["level"] = 75;
@@ -115,9 +119,10 @@ local testCounterIncremental = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["counter"] = 1.234;
+		["counter"] = 1.244;
 		["counterToday"] = 0;
 	})
+
 	handleResult('Test counter incremental device', res)
 	return res
 end
@@ -200,7 +205,6 @@ local testLux = function(name)
 	return res
 end
 
-
 local testManagedCounter = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -211,7 +215,6 @@ local testManagedCounter = function(name)
 	handleResult('Test managed counter', res)
 	return res
 end
-
 
 local testP1SmartMeter = function(name)
 	local dev = dz.devices(name)
@@ -356,7 +359,6 @@ local testAPITemperature = function(name)
 	handleResult('Test API temperature device', res)
 	return res
 end
-
 
 local testTempHum = function(name)
 	local dev = dz.devices(name)
@@ -675,12 +677,13 @@ local testLastUpdates = function(stage2Trigger)
 			if (device.name ~= 'endResult' and
 				device.name ~= 'stage1Trigger' and
 				device.name ~= 'vdRepeatSwitch' and
-				device.anme ~= 'vdText' and
+				device.name ~= 'vdText' and
+				device.name ~= 'vdWildcardsSwitch' and
 				device.name ~= 'stage2Trigger') then
 				local delta = stage1SecsAgo - device.lastUpdate.secondsAgo
 
 				-- test if lastUpdate for the device is close to stage1Time
-				local ok = (delta <= 10)
+				local ok = (delta <= 20)
 				acc = acc and ok -- should be significantly less that the time between stage1 and stage2
 				if (not expectEql(true, ok, device.name .. ' lastUpdate is not in the past')) then
 					print('stage1Time:' .. stage1Time.secondsSinceMidnight .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)
@@ -698,9 +701,17 @@ end
 
 local testVarCancelled = function(name)
 	local res = true
-	local var = dz.variables('varCancelled')
+	local var = dz.variables(name)
 	res = res and expectEql(0, var.value)
-	handleResult('Test cancelled variable', res)
+	handleResult('Test ' .. name .. ' variable', res)
+	return res
+end
+
+local testVarDocumentation = function(name)
+	local res = true
+	local var = dz.variables(name)
+	res = res and expectEql(0, var.value)
+	handleResult('Test ' .. name .. ' variable', res)
 	return res
 end
 
@@ -751,7 +762,7 @@ end
 
 local testIFTTT = function(event)
 	res = true
-	print('triggerIFTTT should fail now because IFTTT is disabled before stage 2'  )
+	print('triggerIFTTT should fail now because IFTTT is disabled before stage 2')
 	dz.triggerIFTTT(event) 
 	dz.triggerIFTTT(event).afterSec(3) 
 	handleResult('Test IFTTT call', res)
@@ -769,7 +780,7 @@ end
 local testHTTPSwitch = function(name)
 	local res = true
 	local trigger = dz.globalData.httpTrigger
-	res = res and expectEql('OKOKOK', trigger)
+	res = res and expectEql('OKOKOKOK', trigger)
 	handleResult('Test http trigger switch device', res)
 	return res
 end
@@ -804,13 +815,63 @@ local testQuietOff = function(name)
 	return res
 end
 
-
 local testVersion = function(name)
 	local res = true
 	local utils = require('Utils')
 	res = res and expectEql(utils.DZVERSION , dz.settings.dzVentsVersion)
-	handleResult('Test version strings to equal (' .. utils.DZVERSION .. ') and (' ..  dz.settings.dzVentsVersion .. ')',res)
+	handleResult('Test version strings to equal (' .. utils.DZVERSION .. ') and (' .. dz.settings.dzVentsVersion .. ')',res)
 	return res
+end
+
+local testExistUtils = function()
+	local interimResult 
+	local res = {}
+	local utils = require('Utils')
+
+	interimResult = utils.deviceExists(1)
+	res[#res + 1] = interimResult 
+	handleResult('Test Device exists',interimResult ~= false)
+
+	interimResult = not(utils.deviceExists('none existing'))
+	res[#res + 1] = interimResult
+	handleResult('Test Device not exists',interimResult)
+
+	interimResult = utils.sceneExists(1)
+	res[#res + 1] = interimResult
+	handleResult('Test Scene exists',interimResult ~= false)
+
+	interimResult = not(utils.sceneExists(112))
+	res[#res + 1] = interimResult
+	handleResult('Test Scene not exists',interimResult)
+
+	interimResult = utils.groupExists(2)
+	res[#res + 1] = interimResult
+	handleResult('Test Group exists',interimResult ~= false)
+
+	interimResult = not(utils.groupExists(112))
+	res[#res + 1] = interimResult
+	handleResult('Test Group not exists',interimResult)
+
+	interimResult = utils.variableExists(1)
+	res[#res + 1] = interimResult
+	handleResult('Test Variable exists',interimResult ~= false)
+
+	interimResult = not(utils.variableExists('dummyVar'))
+	res[#res + 1] = interimResult
+	handleResult('Test Variable not exists',interimResult)
+
+	interimResult = utils.cameraExists(1)
+	res[#res + 1] = interimResult
+	handleResult('Test Camera exists',interimResult ~= false)
+
+	interimResult = not(utils.cameraExists('Cannnon'))
+	res[#res + 1] = interimResult
+	handleResult('Test Camera not exists',interimResult)
+
+	for _, bool in ipairs(res) do 
+		if not(bool) then return false end
+	end
+	return true
 end
 
 local writeResultsTofile = function(file, resTable)
@@ -891,6 +952,7 @@ return {
 		res = res and testLastUpdates(stage2Trigger)
 		res = res and testRepeatSwitch('vdRepeatSwitch')
 		res = res and testVarCancelled('varCancelled')
+		res = res and testVarDocumentation('varUpdateDocument')
 		res = res and testCancelledScene('scCancelledScene')
 		res = res and testHTTPSwitch('vdHTTPSwitch');
 		res = res and testDescription('vdDescriptionSwitch', descriptionString, "device")
@@ -901,6 +963,7 @@ return {
 		res = res and testSettingsDump()
 		res = res and testIFTTT('myEvent')
 		res = res and testVersion('version')
+		res = res and testExistUtils()
 
 		-- test a require
 		local m = require('some_module')

@@ -7,7 +7,7 @@
 #   It then does a subsequent GET on the Location specified in the 302 response and receives a 200 response.
 #
 """
-<plugin key="Google" name="Google Home page example" author="Dnpwwo" version="2.2.6" externallink="https://www.google.com">
+<plugin key="Google" name="Google Home page example" author="Dnpwwo" version="2.2.7" externallink="https://www.google.com">
     <description>
         <h2>Google Home page example</h2><br/>
         Will hit the supplied URL every 5 heartbeats in the request protocol.  Redirects are handled.
@@ -112,6 +112,7 @@ class BasePlugin:
         Domoticz.Log("onDisconnect called for connection to: "+Connection.Address+":"+Connection.Port)
 
     def onHeartbeat(self):
+        #Domoticz.Trace(True)
         if (self.httpConn != None and (self.httpConn.Connecting() or self.httpConn.Connected())):
             Domoticz.Debug("onHeartbeat called, Connection is alive.")
         else:
@@ -123,6 +124,7 @@ class BasePlugin:
                 self.runAgain = 6
             else:
                 Domoticz.Debug("onHeartbeat called, run again in "+str(self.runAgain)+" heartbeats.")
+        #Domoticz.Trace(False)
 
 global _plugin
 _plugin = BasePlugin()
@@ -181,13 +183,20 @@ def DumpConfigToLog():
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
 
-def DumpHTTPResponseToLog(httpDict):
-    if isinstance(httpDict, dict):
-        Domoticz.Debug("HTTP Details ("+str(len(httpDict))+"):")
-        for x in httpDict:
-            if isinstance(httpDict[x], dict):
-                Domoticz.Debug("--->'"+x+" ("+str(len(httpDict[x]))+"):")
-                for y in httpDict[x]:
-                    Domoticz.Debug("------->'" + y + "':'" + str(httpDict[x][y]) + "'")
+def DumpHTTPResponseToLog(httpResp, level=0):
+    if (level==0): Domoticz.Debug("HTTP Details ("+str(len(httpResp))+"):")
+    indentStr = ""
+    for x in range(level):
+        indentStr += "----"
+    if isinstance(httpResp, dict):
+        for x in httpResp:
+            if not isinstance(httpResp[x], dict) and not isinstance(httpResp[x], list):
+                Domoticz.Debug(indentStr + ">'" + x + "':'" + str(httpResp[x]) + "'")
             else:
-                Domoticz.Debug("--->'" + x + "':'" + str(httpDict[x]) + "'")
+                Domoticz.Debug(indentStr + ">'" + x + "':")
+                DumpHTTPResponseToLog(httpResp[x], level+1)
+    elif isinstance(httpResp, list):
+        for x in httpResp:
+            Domoticz.Debug(indentStr + "['" + x + "']")
+    else:
+        Domoticz.Debug(indentStr + ">'" + x + "':'" + str(httpResp[x]) + "'")

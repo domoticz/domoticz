@@ -35,7 +35,7 @@ Version history
 #include "../httpclient/HTTPClient.h"
 #include <../tinyxpath/xpath_static.h>
 #include "../webserver/Base64.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include <sstream>
 
 #ifdef _DEBUG
@@ -376,8 +376,7 @@ void CEcoDevices::GetMeterRT2Details()
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", m_Name.c_str());

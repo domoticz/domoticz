@@ -53,6 +53,15 @@
                 </button>
             </div>
 
+            <a class="btn btn-default"
+               href="https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting"
+               target="_blank"
+               title="{{:: 'dzVents Documentation' | translate}}"
+               ng-if="$ctrl.eventData.interpreter === 'dzVents'"
+            >
+               <i class="icon-question-sign" /> {{:: 'Help' | translate }}
+            </a>
+
             <div class="btn-group">
                 <button class="btn btn-primary"
                         type="button"

@@ -98,8 +98,26 @@ bool CNotificationHTTP::SendMessageImplementation(
 		stdreplace(destURL, "#FIELD3", _HTTPField3);
 		stdreplace(destURL, "#FIELD4", _HTTPField4);
 		stdreplace(destURL, "#TO", _HTTPTo);
-		stdreplace(destURL, "#SUBJECT", CURLEncode::URLDecode(Subject));
-		stdreplace(destURL, "#MESSAGE", CURLEncode::URLDecode(Text));
+
+		if (destURL.find("#SUBJECT") != std::string::npos)
+		{
+			//Make sure the subject is surrounded by quotes "#SUBJECT"
+			if (destURL.find("\"#SUBJECT\"") == std::string::npos)
+			{
+				stdreplace(destURL, "#SUBJECT", "\"#SUBJECT\"");
+			}
+		}
+		if (destURL.find("#MESSAGE") != std::string::npos)
+		{
+			//Make sure the message is surrounded by quotes "#MESSAGE"
+			if (destURL.find("\"#MESSAGE\"") == std::string::npos)
+			{
+				stdreplace(destURL, "#MESSAGE", "\"#MESSAGE\"");
+			}
+		}
+
+		stdreplace(destURL, "#SUBJECT", Subject);
+		stdreplace(destURL, "#MESSAGE", Text);
 
 		std::string scriptname = destURL.substr(9);
 		std::string scriptparams = "";

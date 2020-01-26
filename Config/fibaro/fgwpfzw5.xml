@@ -1,4 +1,61 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1001:0602</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgwpfzw5.png</MetaDataItem>
+    <MetaDataItem id="1001" name="ZWProductPage" type="0602">https://products.z-wavealliance.org/products/1653/</MetaDataItem>
+    <MetaDataItem id="1001" name="Identifier" type="0602">FGWPE/F-102</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Resetting the device is not the recommended way of removing the device from the
+Z-Wave network. Use reset procedure only if the primary controller is missing or
+inoperable. Certain device removal can be achieved by the procedure of removing
+described in “Adding/ removing the device”on page 6.
+
+1) Make sure the device is powered.
+2) Press and hold the B-button.
+3) Wait for the LED ring to glow yellow (4th menu position).
+4) Release the B-button.
+5) Click the B-button once to confirm selection.
+6) After few seconds the device will restart with factory settings, which is signalled with the red ring colour.
+
+
+
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1) Plug the device into a socket nearby the main Z-Wave controller.
+2) The LED ring will glow green signalling being added (removing is not necessary otherwise).
+3) Set the main Z-Wave controller into remove mode (see the controller’s manual).
+4) Quickly, triple click the B-button located on the casing.
+5) Wait for the removing process to end.
+6) Successful removing will be confirmed by the Z-Wave controller.
+</MetaDataItem>
+    <MetaDataItem name="Name">FIBARO Wall Plug E/F</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Wakeup Description
+FIBARO Wall Plug is powered with mains voltage so it is always awake.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2818/FGWPEF-102-EN-A-v2.1.pdf</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Wall Plug is a universal, Z-Wave Plus compatible, remotely controlled outlet adapter. This device may be applied wherever you want to control electrical devices with up to 2500W load. The Wall Plug is equipped with a power and energy metering function. It uses a LED ring to visualize the current load with colour changing illumination and operating mode. This is the smallest and most attractive device of this type available in the world. The Wall Plug may be operated using the B-button located on its casing or via any Z-Wave compatible controller.
+
+Main features:
+• Compatible with any Z-Wave or Z-Wave Plus Controller.
+• Supports protected mode (Z-Wave network security mode) with AES-128 encryption.
+• Extremely easy installation - simply plug the device into the mains socket.
+• Works as a Z-Wave signal repeater.
+• Active power and energy consumption metering.
+• Current value of the load and operating mode are indicated by the multi-colour LED ring.
+</MetaDataItem>
+    <MetaDataItem id="1001" name="FrequencyName" type="0602">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1) Plug the device into a socket nearby the main Z-Wave controller.
+2) The LED ring will glow red signalling not being added (remove the device otherwise).
+3) Set the main Z-Wave controller into adding mode (see the controller’s manual).
+4) Quickly, triple click the B-button located on the casing.
+5) Wait for the adding process to end.
+6) Successful adding will be confirmed by the Z-Wave controller.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1653/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2818/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="1003" name="ZWProductPage" type="0602">https://products.z-wavealliance.org/products/2818/</MetaDataItem>
+    <MetaDataItem id="1003" name="Identifier" type="0602">FGWPE/F-102</MetaDataItem>
+    <MetaDataItem id="1003" name="FrequencyName" type="0602">CEPT (Europe)</MetaDataItem>
+  </MetaData>
   <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
 	<!-- CommandClass id="113" action="remove" /> -->
 

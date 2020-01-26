@@ -106,11 +106,6 @@ void DomoticzTCP::OnData(const unsigned char *pData, size_t length)
 	onInternalMessage((const unsigned char *)pData, length, false); // Do not check validity, this might be non RFX-message
 }
 
-void DomoticzTCP::OnError(const std::exception e)
-{
-	Log(LOG_ERROR, "Error: %s", e.what());
-}
-
 void DomoticzTCP::OnError(const boost::system::error_code& error)
 {
 	if (

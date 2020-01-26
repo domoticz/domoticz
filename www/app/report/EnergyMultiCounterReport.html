@@ -24,13 +24,17 @@
     <div>{{:: 'Total Usage' | translate }}:
         {{:: 'T1' | translate }}: {{:: $ctrl.data.usage1.usage.toFixed(3) }} {{:: $ctrl.unit}},
         {{:: 'T2' | translate }}: {{:: $ctrl.data.usage2.usage.toFixed(3) }} {{:: $ctrl.unit}},
-        {{:: 'Total' | translate }}: {{:: $ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}
+        {{:: 'Total' | translate }}: {{:: ($ctrl.data.usage1.usage + $ctrl.data.usage2.usage).toFixed(3) }} {{:: $ctrl.unit}}
     </div>
 
     <div ng-if="::$ctrl.hasReturn">{{:: 'Total Return' | translate }}:
         {{:: 'R1' | translate }}: {{:: $ctrl.data.return1.usage.toFixed(3) }} {{:: $ctrl.unit}},
         {{:: 'R2' | translate }}: {{:: $ctrl.data.return2.usage.toFixed(3) }} {{:: $ctrl.unit}},
-        {{:: 'Total' | translate }}: {{:: $ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}
+        {{:: 'Total' | translate }}: {{:: ($ctrl.data.return1.usage + $ctrl.data.return2.usage).toFixed(3) }} {{:: $ctrl.unit}}
+    </div>
+
+    <div ng-if="::$ctrl.hasReturn">
+	    {{:: 'Total' | translate }}: {{$ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}
     </div>
 
     <div>{{:: 'Monthly Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>

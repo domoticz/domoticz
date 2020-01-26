@@ -1,16 +1,16 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0060:0103</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw096.png</MetaDataItem>
-    <MetaDataItem id="0060" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/1312/</MetaDataItem>
+    <MetaDataItem id="0060" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/3093/</MetaDataItem>
     <MetaDataItem name="Name">Smart Switch 6</MetaDataItem>
     <MetaDataItem name="WakeupDescription">N/A</MetaDataItem>
-    <MetaDataItem name="ResetDescription">Press and hold the Action button that you can find on the product's housing for 20 seconds and then release. This procedure should only be used when the primary controller is missing or inoperable.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Action button that you can find on the product's housing for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
     <MetaDataItem name="Description">Aeotec Smart Switch 6 is a low-cost Z-Wave Switch plug-in module specifically used to enable Z-Wave command and control (on/off) of any plug-in tool. It can report immediate wattage consumption or kWh energy usage over a period of time. In the event of power failure, non-volatile memory retains all programmed information relating to the unit’s operating status.
 Its surface has a Smart RGB LED, which can be used for indicating the output load status or strength of the wireless signal. You can configure its indication colour according to your favour.
-The Smart Switch 6 is also a security Z-wave device and supports Over The Air (OTA) feature for the products firmware upgrade.
+The Plug is also a security Z-wave device and supports Over The Air (OTA) feature for the products firmware upgrade.
 </MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1425/Aeon Labs Smart Switch 6 manual (2) .pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3119/Instructions - Aeon Labs Smart Switch 6 (2).pdf</MetaDataItem>
     <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
     <MetaDataItem id="0060" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
@@ -19,11 +19,14 @@ The Smart Switch 6 is also a security Z-wave device and supports Over The Air (O
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1312/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1331/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1425/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3093/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3104/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3119/xml</Entry>
     </ChangeLog>
-    <MetaDataItem id="0060" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/1331/</MetaDataItem>
+    <MetaDataItem id="0060" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/3119/</MetaDataItem>
     <MetaDataItem id="0060" name="FrequencyName" type="0203">Australia / New Zealand</MetaDataItem>
     <MetaDataItem id="0060" name="Identifier" type="0203">ZW096-B09</MetaDataItem>
-    <MetaDataItem id="0060" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1425/</MetaDataItem>
+    <MetaDataItem id="0060" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3104/</MetaDataItem>
     <MetaDataItem id="0060" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
     <MetaDataItem id="0060" name="Identifier" type="0003">ZW096-C16</MetaDataItem>
   </MetaData>

@@ -372,22 +372,8 @@ function Device(item) {
         this.level = (typeof item.LevelInt != 'undefined') ? parseInt(item.LevelInt) : 0;
         this.levelMax = (typeof item.MaxDimLevel != 'undefined') ? parseInt(item.MaxDimLevel) : 0;
         if (this.level > this.levelMax) this.levelMax = this.level;
-
-        if (this.subtype == "Alert" || this.subtype == "Text") {
-            this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-
-            if (this.data.indexOf("<br />") != -1) {
-                this.hasNewLine = true;
-                console.log("YES!");
-            }
-            else {
-                this.hasNewLine = false;
-            }
-        }
-        else {
-            this.data = (typeof item.Data != 'undefined') ? item.Data : '';
-            this.hasNewLine = false;
-        }
+        this.data = (typeof item.Data != 'undefined') ? item.Data : '';
+        this.hasNewLine = false;
 
         this.smallStatus = this.data;
         if (typeof item.Usage != 'undefined') {
@@ -473,9 +459,6 @@ function Device(item) {
                         Device.elementPadding * 2.5 + 1
                     );
                 }
-
-
-
 
                 var maxSpan = getMaxSpanWidth(oText);
                 el = makeSVGnode('g', { id: this.uniquename + "_Tile", 'class': 'DeviceTile', style: (maxSpan == 0) ? 'display:none' : 'display:inline' }, '');
@@ -820,20 +803,19 @@ Device.initialise = function () {
 
         var cont = getSVGnode();
         if (cont != undefined) {
-            var devCont;
             if ($("#DeviceContainer")[0] == undefined) {
-                devCont = makeSVGnode('g', { id: 'DeviceContainer' }, '');
+                var devCont = makeSVGnode('g', { id: 'DeviceContainer' }, '');
                 cont.appendChild(devCont);
                 Device.checkDefs();
-            }
-            if ($("#DeviceIcons")[0] == undefined) {
-                devCont.appendChild(makeSVGnode('g', { id: 'DeviceIcons' }, ''));
-            }
-            if ($("#DeviceDetails")[0] == undefined) {
-                devCont.appendChild(makeSVGnode('g', { id: 'DeviceDetails' }, ''));
-            }
-            if ($("#DeviceData")[0] == undefined) {
-                devCont.appendChild(makeSVGnode('g', { id: 'DeviceData' }, ''));
+                if ($("#DeviceIcons")[0] == undefined) {
+                        devCont.appendChild(makeSVGnode('g', { id: 'DeviceIcons' }, ''));
+                }
+                if ($("#DeviceDetails")[0] == undefined) {
+                        devCont.appendChild(makeSVGnode('g', { id: 'DeviceDetails' }, ''));
+                }
+                if ($("#DeviceData")[0] == undefined) {
+                        devCont.appendChild(makeSVGnode('g', { id: 'DeviceData' }, ''));
+                }
             }
         }
     }
@@ -846,7 +828,6 @@ Device.create = function (item) {
     if (typeof item === 'string') {
         item = JSON.parse(item);
     }
-
     // Anomalies in device pattern (Scenes & Dusk sensors say they are  lights(???)
     if (item.Type === 'Scene') {
         type = 'scene';
@@ -854,6 +835,8 @@ Device.create = function (item) {
         type = 'group';
     } else if ((item.Type === 'General') && (item.SubType === 'Barometer')) {
         type = 'baro';
+    } else if ((item.Type === 'General') && (item.SubType === 'Custom Sensor')) {
+        type = 'custom';
     } else if (
         (item.SwitchType === 'Dusk Sensor') ||
         (item.SwitchType === 'Selector')
@@ -1226,17 +1209,24 @@ WeatherSensor.inheritsFrom(VariableSensor);
 function Switch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.imagetext = "Activate switch";
-        this.controlable = true;
-        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
+
+        var bIsOff = (
+			(this.status == "Off")
+			|| (item.Status == 'Closed')
+			|| (item.Status == 'Locked')
+        );
+        
         if (item.CustomImage != 0) {
-            this.image = (this.status == "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
+            this.image = (bIsOff) ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
         } else {
-            this.image = (this.status == "Off") ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
+            this.image = (bIsOff) ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
         }
-        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        this.showStatus = (Device.showSwitchValues == true);
         this.data = '';
+        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
+		this.showStatus = (Device.showSwitchValues == true);
+		this.imagetext = "Activate switch";
+		this.controlable = true;
+		this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + this.protected + ");";
     }
 }
 Switch.inheritsFrom(Sensor);
@@ -1244,7 +1234,7 @@ Switch.inheritsFrom(Sensor);
 function BinarySwitch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
+        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + this.protected + ");";
     }
 }
 BinarySwitch.inheritsFrom(Switch);
@@ -1254,7 +1244,11 @@ function Alert(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        this.NotifyLink = "";
+        this.NotifyLink = "";	
+		this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+		if (this.data.indexOf("<br />") != -1) {
+			this.hasNewLine = true;
+		}		
         this.status = this.data;
         this.data = "";
         if (typeof item.Level != 'undefined') {
@@ -1292,16 +1286,14 @@ function Blinds(item) {
         this.data = '';
         if (item.Status == 'Closed') {
             this.image = 'images/blinds48sel.png';
-            this.onClick = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'On' : 'Off') + "'," + Device.switchFunction + ',' + this.protected + ');';
             this.image2 = 'images/blindsopen48.png';
-            this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'Off' : 'On') + "'," + Device.switchFunction + ',' + this.protected + ');';
         }
         else {
             this.image = 'images/blindsopen48sel.png';
-            this.onClick = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType != "Blinds Inverted") ? 'On' : 'Off') + "'," + Device.switchFunction + ',' + this.protected + ');';
             this.image2 = 'images/blinds48.png';
-            this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType != "Blinds Inverted") ? 'Off' : 'On') + "'," + Device.switchFunction + ',' + this.protected + ');';
         }
+		this.onClick = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'On' : 'Off') + "'," + this.protected + ');';
+		this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'Off' : 'On') + "'," + this.protected + ');';
         if (item.SwitchType == "Blinds Percentage") {
             this.haveDimmer = true;
             this.image2 = '';
@@ -1395,15 +1387,18 @@ function Current(item) {
 Current.inheritsFrom(UtilitySensor);
 
 function Custom(item) {
-        if (arguments.length != 0) {
-        this.parent.constructor(item);
-                this.image = "images/Custom.png";
-                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
-                this.data = '';
-        }
+	if (arguments.length != 0) {
+		this.parent.constructor(item);
+		if (item.CustomImage != 0) {
+			this.image = "images/" + item.Image + "48_On.png";
+		} else {
+			this.image = "images/Custom.png";
+		}
+		this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+		this.data = '';
+	}
 }
 Custom.inheritsFrom(UtilitySensor);
-
 
 function Dimmer(item) {
     if (arguments.length != 0) {
@@ -1446,7 +1441,7 @@ function DoorContact(item) {
         this.data = '';
     }
 }
-DoorContact.inheritsFrom(BinarySwitch);
+DoorContact.inheritsFrom(BinarySensor);
 
 function Doorbell(item) {
     if (arguments.length != 0) {
@@ -1562,7 +1557,7 @@ function Pushon(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
 		this.image = "images/" + item.Image + "48_On.png";
-        this.onClick = "SwitchLight(" + this.index + ",'On'," + Device.switchFunction + "," + this.protected + ");";
+        this.onClick = "SwitchLight(" + this.index + ",'On'," + this.protected + ");";
     }
 }
 Pushon.inheritsFrom(BinarySwitch);
@@ -1571,7 +1566,7 @@ function Pushoff(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = "images/" + item.Image + "48_Off.png";
-        this.onClick = "SwitchLight(" + this.index + ",'Off'," + Device.switchFunction + "," + this.protected + ");";
+        this.onClick = "SwitchLight(" + this.index + ",'Off'," + this.protected + ");";
     }
 }
 Pushoff.inheritsFrom(BinarySwitch);
@@ -1667,6 +1662,10 @@ function Text(item) {
         this.parent.constructor(item);
         this.imagetext = "";
         this.NotifyLink = this.LogLink = this.onClick = "";
+		this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+		if (this.data.indexOf("<br />") != -1) {
+			this.hasNewLine = true;
+		}		
         this.status = this.data;
         this.data = "";
     }

@@ -169,10 +169,14 @@ namespace http {
 
 			void RegisterPageCode(
 				const char* pageurl,
-				webem_page_function fun );
+				webem_page_function fun,
+				bool bypassAuthentication = false
+			);
 			void RegisterPageCodeW(
 				const char* pageurl,
-				webem_page_function fun );
+				webem_page_function fun,
+				bool bypassAuthentication = false
+			);
 
 			bool Include( std::string& reply );
 
@@ -181,6 +185,7 @@ namespace http {
 				webem_action_function fun );
 
 			void RegisterWhitelistURLString(const char* idname);
+			void RegisterWhitelistCommandsString(const char* idname);
 
 			bool IsAction(const request& req);
 			bool CheckForAction(WebEmSession & session, request& req);
@@ -215,6 +220,7 @@ namespace http {
 
 			std::string m_zippassword;
 			const std::string GetPort();
+			const std::string GetWebRoot();
 			WebEmSession * GetSession(const std::string & ssid);
 			void AddSession(const WebEmSession & session);
 			void RemoveSession(const WebEmSession & session);
@@ -223,6 +229,7 @@ namespace http {
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
+			std::vector < std::string > myWhitelistCommands;
 			std::map<std::string, WebEmSession> m_sessions;
 			server_settings m_settings;
 			// actual theme selected

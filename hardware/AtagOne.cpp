@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 extern http::server::CWebServerHelper m_webservers;
 
@@ -424,8 +424,7 @@ void CAtagOne::GetMeterDetails()
 #endif
 #endif
 	Json::Value root2;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root2);
+	bool ret = ParseJSon(sResult, root2);
 	if ((!ret) || (!root2.isObject()))
 	{
 		Log(LOG_ERROR, "Invalid/no data received...");

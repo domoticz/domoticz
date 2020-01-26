@@ -36,38 +36,49 @@ class TiXmlElement;
 
 namespace OpenZWave
 {
-	class Msg;
-	class Node;
-	class CommandClass;
-
-	/** \brief Button value
-	 * \ingroup ValueID
-	 */
-	class ValueButton: public Value
+	namespace Internal
 	{
-	public:
-		ValueButton( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, uint8 const _pollIntensity );
-		ValueButton(): m_pressed( false ){}
-		virtual ~ValueButton(){}
+		namespace VC
+		{
 
-		bool PressButton();
-		bool ReleaseButton();
+			/** \brief Button value
+			 * \ingroup ValueID
+			 */
+			class ValueButton: public Value
+			{
+				public:
+					ValueButton(uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, uint8 const _pollIntensity);
+					ValueButton() :
+							m_pressed(false)
+					{
+					}
+					virtual ~ValueButton()
+					{
+					}
 
-		virtual string const GetAsString() const { return ( IsPressed() ? "true" : "false" ); }
+					bool PressButton();
+					bool ReleaseButton();
 
-		// From Value
-		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );
-		virtual void WriteXML( TiXmlElement* _valueElement );
+					virtual string const GetAsString() const
+					{
+						return (IsPressed() ? "true" : "false");
+					}
 
-		bool IsPressed()const{ return m_pressed; }
+					// From Value
+					virtual void ReadXML(uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement);
+					virtual void WriteXML(TiXmlElement* _valueElement);
 
-	private:
-		bool	m_pressed;
-	};
+					bool IsPressed() const
+					{
+						return m_pressed;
+					}
 
+				private:
+					bool m_pressed;
+			};
+		} // namespace VC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif
-
-
 

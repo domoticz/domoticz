@@ -157,8 +157,10 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 permission: 'Admin'
             }))
             .when('/Roomplan', angularAMD.route({
-                templateUrl: 'views/roomplan.html',
-                controller: 'RoomplanController',
+                templateUrl: 'app/plans/RoomPlans.html',
+                controller: 'RoomPlansController',
+                controllerUrl: 'app/plans/RoomPlans.js',
+                controllerAs: '$ctrl',
                 permission: 'Admin'
             }))
             .when('/Timerplan', angularAMD.route({
@@ -200,6 +202,11 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
             .when('/Update', angularAMD.route({
                 templateUrl: 'views/update.html',
                 controller: 'UpdateController',
+                permission: 'Admin'
+            }))
+            .when('/Update2', angularAMD.route({
+                templateUrl: 'views/update2.html',
+                controller: 'UpdateController2',
                 permission: 'Admin'
             }))
             .when('/Users', angularAMD.route({

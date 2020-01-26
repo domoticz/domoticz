@@ -504,8 +504,8 @@ public:
 
 	static const uint8_t m_nMaxZones = 12;
 
-	int GetControllerID();
-	int GetGatewayID();
+	unsigned int GetControllerID();
+	unsigned int GetGatewayID();
 	uint8_t GetZoneCount();
 	uint8_t GetControllerMode();
 	std::string GetControllerName();
@@ -524,8 +524,8 @@ public:
 	static void Log(const char *szMsg, CEvohomeMsg &msg);
 
 private:
-	void SetControllerID(int nID);
-	void SetGatewayID(int nID);
+	void SetControllerID(unsigned int nID);
+	void SetGatewayID(unsigned int nID);
 
 	bool SetMaxZoneCount(uint8_t nZoneCount);
 	bool SetZoneCount(uint8_t nZoneCount);

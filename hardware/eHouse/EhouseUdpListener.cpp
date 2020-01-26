@@ -3328,7 +3328,6 @@ void eHouseTCP::Do_Work()
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	LOG(LOG_STATUS, "END LISTENER TCP Client");
 	m_bIsStarted = false;
-	//pthread_exit(NULL);
 	return;
 }
 

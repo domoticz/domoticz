@@ -14,7 +14,7 @@
     <ProjectGuid>{4BE7B0D1-871C-4801-845A-8B6643E3D35D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>LuaMSVS</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -103,6 +103,7 @@
     <ClCompile Include="..\ltablib.c" />
     <ClCompile Include="..\ltm.c" />
     <ClCompile Include="..\lundump.c" />
+    <ClCompile Include="..\lutf8lib.c" />
     <ClCompile Include="..\lvm.c" />
     <ClCompile Include="..\lzio.c" />
   </ItemGroup>

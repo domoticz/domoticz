@@ -1,66 +1,99 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Aeotec ZW141 Nano Shutter, base on Engineering Spec 1/4/2018
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 
--->
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-    <!-- Configuration Parameters -->
-    <CommandClass id="112">
-		<Value type="byte" index="35" genre="config" label="Set the moving time" min="1" max="127" units="seconds" value="30">
-			<Help>
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:008D:0103</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw141.png</MetaDataItem>
+    <MetaDataItem id="008D" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/3075/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3075/Aeon Labs Nano Shutter -manual - 2.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Action button that you can find on the product's housing for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, quick press the product’s Action button 6 times that you can find on the product's housing or toggle the external manual switch 2 times in fast succession.
+
+If the Nano Dimmer has been successfully removed from your Z-Wave network, its RGB LED will remain colorful gradient. If the removal was unsuccessful, the RGB LED will still be solid (following the state of the output load), repeat the instructions above from step 1.</MetaDataItem>
+    <MetaDataItem name="Name">Nano Shutter</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec Nano Shutter is a Z-Wave motor controller specifically used to enable Z-Wave command and control (up/down/stop) for existing window covering motors.
+It can connect to 2 external manual switches/buttons to control the motor up/down/stop independently. Its surface has a pin socket, which can be used for connecting to the touch panel, so you can also use the touch panel to control the Nano Shutter.
+The wireless module is powered from the mains supply. In the event of power failure, non-volatile memory retains all programmed information relating to the units operating status.
+Nano Shutter is also a security Z-Wave plus device and supports Over The Air (OTA) feature for the products firmware upgrade.
+It can be a repeater in the Z-Wave network. Acting as a bridge for communication, it will forward Z-Wave command messages to their destinations if the originating controller is out of range from the destination node. 
+By taking advantage of the Z-Wave mesh network, commands can be routed to their destination via intermediary “listening” Z-Wave products. Products that are Z-Wave certified can be used and communicate with other Z-Wave certified devices.</MetaDataItem>
+    <MetaDataItem id="008D" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="008D" name="Identifier" type="0103">ZW141-A</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Action button that you can find on the product's housing.
+
+If the Nano Dimmer has been successfully added to your Z-Wave network, its RGB LED will be solid. If unsuccessful, the red LED will be on for 2 seconds and then remain a colorful gradient, repeat the instructions above from step 1.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2903/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2907/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2953/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3075/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="008D" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/2907/</MetaDataItem>
+    <MetaDataItem id="008D" name="Identifier" type="0203">ZW141-B</MetaDataItem>
+    <MetaDataItem id="008D" name="FrequencyName" type="0203">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="008D" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2953/</MetaDataItem>
+    <MetaDataItem id="008D" name="Identifier" type="0003">ZW141-C</MetaDataItem>
+    <MetaDataItem id="008D" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="35" label="Set the moving time" max="127" min="1" type="byte" units="seconds" value="30">
+      <Help>
 				Set the moving time from up (left) to down (right) for curtain.
 			</Help>
-		</Value>
-        <Value type="list" index="80" genre="config" label="Notification report association group 1" units="" size="1" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="80" label="Notification report association group 1" size="1" type="list" units="" value="0">
+      <Help>
                 To set which report would be sent to the associated nodes in association group 1 when the state of output load is changed.
                 Note: When just only one channel load state is changed, the report message Basic Report CC would be Multi Channel encapsulated.
             </Help>
-            <Item label="Nothing" value="0"/>
-            <Item label="Basic Report CC" value="1"/>
-        </Value>
-        <Value type="list" index="85" genre="config" label="External switch operation mode" units="" size="1" value="0">
-            <Help>
+      <Item label="Nothing" value="0"/>
+      <Item label="Basic Report CC" value="1"/>
+    </Value>
+    <Value genre="config" index="85" label="External switch operation mode" size="1" type="list" units="" value="0">
+      <Help>
                 Set the operation mode of external switch.
                 For detailed instructions for Operation Mode 1 and 2, see end of this table.
             </Help>
-            <Item label="Operation Mode 1" value="0"/>
-            <Item label="Operation Mode 2" value="1"/>
-        </Value>
-        <Value type="list" index="120" genre="config" label="Set the external switch mode for S1" units="" min="0" max="4" size="1" value="0">
-            <Help>When the mode is determined, this mode value will not be reset after exclusion</Help>
-            <Item label="Unidentified" value="0"/>
-			<Item label="Reserved" value="1"/>
-			<Item label="3-way switch" value="2"/>
-			<Item label="Push button" value="3"/>
-			<Item label="Automatic identification mode" value="4"/>
-        </Value>
-        <Value type="list" index="121" genre="config" label="Set the external switch mode for S2" units="" min="0" max="4" size="1" value="0">
-            <Help>When the mode is determined, this mode value will not be reset after exclusion</Help>
-            <Item label="Unidentified" value="0"/>
-			<Item label="Reserved" value="1"/>
-			<Item label="3-way switch" value="2"/>
-			<Item label="Push button" value="3"/>
-			<Item label="Automatic identification mode" value="4"/>
-        </Value>
-        <Value type="list" index="252" genre="config" label="Configuration Locked" units="" min="0" max="1" size="1" value="0">
-            <Help>Enable/disable Configuration Locked</Help>
-            <Item label="Disable" value="0"/>
-            <Item label="Enable" value="1"/>
-        </Value>
-        <Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
-            <Help>Reset to factory defaults</Help>
-            <Item label="Reset to factory default setting" value="0"/>
-            <Item label="Normal" value="1"/>
-            <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
-        </Value>
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="2">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="Retransmit"/>
-        </Associations>
-    </CommandClass>
+      <Item label="Operation Mode 1" value="0"/>
+      <Item label="Operation Mode 2" value="1"/>
+    </Value>
+    <Value genre="config" index="120" label="Set the external switch mode for S1" max="4" min="0" size="1" type="list" units="" value="0">
+      <Help>When the mode is determined, this mode value will not be reset after exclusion</Help>
+      <Item label="Unidentified" value="0"/>
+      <Item label="Reserved" value="1"/>
+      <Item label="3-way switch" value="2"/>
+      <Item label="Push button" value="3"/>
+      <Item label="Automatic identification mode" value="4"/>
+    </Value>
+    <Value genre="config" index="121" label="Set the external switch mode for S2" max="4" min="0" size="1" type="list" units="" value="0">
+      <Help>When the mode is determined, this mode value will not be reset after exclusion</Help>
+      <Item label="Unidentified" value="0"/>
+      <Item label="Reserved" value="1"/>
+      <Item label="3-way switch" value="2"/>
+      <Item label="Push button" value="3"/>
+      <Item label="Automatic identification mode" value="4"/>
+    </Value>
+    <Value genre="config" index="252" label="Configuration Locked" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Enable/disable Configuration Locked</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Retransmit" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

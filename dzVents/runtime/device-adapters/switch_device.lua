@@ -36,16 +36,19 @@ return {
 			adapterManager.addDummyMethod(device, 'open')
 			adapterManager.addDummyMethod(device, 'stop')
 			adapterManager.addDummyMethod(device, 'dimTo')
+			adapterManager.addDummyMethod(device, 'setLevel')
 			adapterManager.addDummyMethod(device, 'switchSelector')
 			adapterManager.addDummyMethod(device, 'toggleSwitch')
 			adapterManager.addDummyMethod(device, 'quietOn')
 			adapterManager.addDummyMethod(device, 'quietOff')
+		else
+			blindsOff2Close = { "Venetian Blinds US", "Venetian Blinds EU", "Blinds Percentage", "Blinds" }
 		end
+
 		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)
-
 		-- from data: levelName, levelOffHidden, levelActions, maxDimLevel
 
 		if (data.lastLevel ~= nil) then
@@ -71,7 +74,6 @@ return {
 			end
 		end
 
-
 		function device.toggleSwitch()
 			local current, inv
 			if (device.state ~= nil) then
@@ -95,11 +97,11 @@ return {
 		end
 
 		function device.close()
-			return TimedCommand(domoticz, device.name, 'Off', 'device', device.state)
+			return TimedCommand(domoticz, device.name, ( utils.inTable(blindsOff2Close, device.switchType ) and 'On') or 'Off', 'device', device.state)
 		end
 
 		function device.open()
-			return TimedCommand(domoticz, device.name, 'On', 'device', device.state)
+			return TimedCommand(domoticz, device.name, ( utils.inTable(blindsOff2Close, device.switchType ) and 'Off') or 'On', 'device', device.state)
 		end
 
 		function device.stop() -- blinds
@@ -110,17 +112,45 @@ return {
 			return TimedCommand(domoticz, device.name, 'Set Level ' .. tostring(percentage), 'device')
 		end
 
+		function device.setLevel(percentage)
+			return TimedCommand(domoticz, device.name, 'Set Level ' .. tostring(percentage), 'device')
+		end
+
 		function device.switchSelector(level)
-			return TimedCommand(domoticz, device.name, 'Set Level ' .. tostring(level), 'device')
+
+			local function guardLevel(val)
+				local maxLevel = #device.levelNames * 10 - 10
+				val = ( val % 10 ~= 0 ) and ( utils.round(val / 10) * 10 ) or val
+				return math.floor(( math.min(math.max(val,0),maxLevel) ))
+			end
+
+			local sLevel
+			if type(level) == 'string' then
+				sLevel = level
+				local levels = {}
+				for i=1, #device.levelNames do
+					levels[device.levelNames[(i)]] = i * 10 - 10
+				end
+				level = levels[level]
+			end
+
+			if device.switchType ~= "Selector" then
+				utils.log('method switchSelector not available for type ' .. device.switchType, domoticz.LOG_ERROR )
+			elseif not level and sLevel then
+				utils.log('levelname ' .. sLevel .. ' does not exist', domoticz.LOG_ERROR )
+			elseif not level then
+				utils.log('level cannot be nil', domoticz.LOG_ERROR )
+			else
+				return TimedCommand(domoticz, device.name, 'Set Level ' .. guardLevel(level), 'device', level, device.level)
+			end
+
 		end
 
 		if (device.switchType == 'Selector') then
-			device.levelNames = device.levelNames and string.split(device.levelNames, '|') or {}
+			device.levelNames = device.levelNames and utils.stringSplit(device.levelNames, '|') or {}
 			device.level = tonumber(device.rawData[1])
 			device.levelName = device.state
-
 		end
 
 	end
-
 }

@@ -545,7 +545,8 @@ bool eHouseTCP::StartHardware()
 #endif
 
 #ifdef UDP_USE_THREAD
-	pthread_create(&ThEhouseUDP, NULL, UDPListener, (void *)&ThEhouseUDPdta); //for eHouse4ethernet or eHouse1 under CommManager supervision, eHouse Pro server in main thread
+	//please use normal std::thread!
+	thread_create(&ThEhouseUDP, NULL, UDPListener, (void *)&ThEhouseUDPdta); //for eHouse4ethernet or eHouse1 under CommManager supervision, eHouse Pro server in main thread
 #else
 
 #endif

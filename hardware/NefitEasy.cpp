@@ -6,7 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #include "../webserver/Base64.h"
@@ -224,7 +224,7 @@ void CNefitEasy::Do_Work()
 	_log.Log(LOG_STATUS, "NefitEasy: Worker stopped...");
 }
 
-bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char length)
+bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
@@ -325,9 +325,7 @@ bool CNefitEasy::GetStatusDetails()
 	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_STATUS_URL;
 	try
 	{
-		bool bret;
-		bret = HTTPClient::GET(szURL.str(), sResult);
-		if (!bret)
+		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -346,8 +344,7 @@ bool CNefitEasy::GetStatusDetails()
 	Json::Value root;
 	Json::Value root2;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		if (sResult.find("Error: REQUEST_TIMEOUT") != std::string::npos)
@@ -464,7 +461,6 @@ bool CNefitEasy::GetStatusDetails()
 bool CNefitEasy::GetOutdoorTemp()
 {
 	std::string sResult;
-	Json::Reader jReader;
 	Json::Value root;
 	bool ret;
 
@@ -476,8 +472,7 @@ bool CNefitEasy::GetOutdoorTemp()
 	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_OUTDOORTEMP_URL;
 	try
 	{
-		ret = HTTPClient::GET(szURL2.str(), sResult);
-		if (!ret)
+		if (!HTTPClient::GET(szURL2.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -493,7 +488,7 @@ bool CNefitEasy::GetOutdoorTemp()
 #ifdef DEBUG_NefitEasyW
 	SaveString2Disk(sResult, "E:\\nefit_outdoor.json");
 #endif
-	ret = jReader.parse(sResult, root);
+	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (ODT)");
@@ -518,7 +513,6 @@ bool CNefitEasy::GetOutdoorTemp()
 bool CNefitEasy::GetFlowTemp()
 {
 	std::string sResult;
-	Json::Reader jReader;
 	Json::Value root;
 	bool ret;
 
@@ -530,8 +524,7 @@ bool CNefitEasy::GetFlowTemp()
 	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_FLOWTEMP_URL;
 	try
 	{
-		ret = HTTPClient::GET(szURL2.str(), sResult);
-		if (!ret)
+		if (!HTTPClient::GET(szURL2.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -547,7 +540,7 @@ bool CNefitEasy::GetFlowTemp()
 #ifdef DEBUG_NefitEasyW
 	SaveString2Disk(sResult, "E:\\nefit_flow.json");
 #endif
-	ret = jReader.parse(sResult, root);
+	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (FT)");
@@ -572,7 +565,6 @@ bool CNefitEasy::GetFlowTemp()
 bool CNefitEasy::GetPressure()
 {
 	std::string sResult;
-	Json::Reader jReader;
 	Json::Value root;
 	bool ret;
 
@@ -584,8 +576,7 @@ bool CNefitEasy::GetPressure()
 	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_PRESSURE_URL;
 	try
 	{
-		ret = HTTPClient::GET(szURL.str(), sResult);
-		if (!ret)
+		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -601,7 +592,7 @@ bool CNefitEasy::GetPressure()
 #ifdef DEBUG_NefitEasyW
 	SaveString2Disk(sResult, "E:\\nefit_uipres.json");
 #endif
-	ret = jReader.parse(sResult, root);
+	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Press)");
@@ -625,7 +616,6 @@ bool CNefitEasy::GetPressure()
 bool CNefitEasy::GetDisplayCode()
 {
 	std::string sResult;
-	Json::Reader jReader;
 	Json::Value root;
 	bool ret;
 
@@ -636,8 +626,7 @@ bool CNefitEasy::GetDisplayCode()
 	szURL3 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_DISPLAYCODE_URL;
 	try
 	{
-		ret = HTTPClient::GET(szURL3.str(), sResult);
-		if (!ret)
+		if (!HTTPClient::GET(szURL3.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -653,7 +642,7 @@ bool CNefitEasy::GetDisplayCode()
 #ifdef DEBUG_NefitEasyW
 	SaveString2Disk(sResult, "E:\\nefit_displaycode.json");
 #endif
-	ret = jReader.parse(sResult, root);
+	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (DP)");
@@ -726,7 +715,6 @@ bool CNefitEasy::GetDisplayCode()
 bool CNefitEasy::GetGasUsage()
 {
 	std::string sResult;
-	Json::Reader jReader;
 	Json::Value root;
 	bool ret;
 
@@ -738,8 +726,7 @@ bool CNefitEasy::GetGasUsage()
 	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_GAS_URL;
 	try
 	{
-		ret = HTTPClient::GET(szURL.str(), sResult);
-		if (!ret)
+		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -755,7 +742,7 @@ bool CNefitEasy::GetGasUsage()
 #ifdef DEBUG_NefitEasyW
 	SaveString2Disk(sResult, "E:\\nefit_yearTotal.json");
 #endif
-	ret = jReader.parse(sResult, root);
+	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Gas)");
@@ -784,7 +771,7 @@ bool CNefitEasy::GetGasUsage()
 	return true;
 }
 
-void CNefitEasy::SetSetpoint(const int idx, const float temp)
+void CNefitEasy::SetSetpoint(const int /*idx*/, const float temp)
 {
 	Json::Value root;
 	root["value"] = temp;

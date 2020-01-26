@@ -7,7 +7,7 @@ class CRFLinkTCP: public CRFLinkBase, ASyncTCP
 {
 public:
 	CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~CRFLinkTCP(void);
+	virtual ~CRFLinkTCP(void);
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
@@ -25,7 +25,6 @@ protected:
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const std::exception e) override;
 	void OnError(const boost::system::error_code& error) override;
 
 	std::shared_ptr<std::thread> m_thread;

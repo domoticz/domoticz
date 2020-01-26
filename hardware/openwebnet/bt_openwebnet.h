@@ -11,6 +11,8 @@
 #define OPENWEBNET_MSG_OPEN_KO  "*#*0##"
 #define OPENWEBNET_COMMAND_SESSION "*99*0##"
 #define OPENWEBNET_EVENT_SESSION "*99*1##"
+#define OPENWEBNET_AUTH_REQ_SHA1 "*98*1##"
+#define OPENWEBNET_AUTH_REQ_SHA2 "*98*2##"
 #define OPENWEBNET_END_FRAME "##"
 #define OPENWEBNET_COMMAND_SOCKET_DURATION 30
 
@@ -353,31 +355,31 @@ private:
   static std::string getWhoDescription(const std::string& who);
 
   // contents of normal frame
-  std::string who;
-  std::vector<std::string> addresses;
-  std::string what;
-  std::vector<std::string> whatParameters;
-  std::string where;
-  std::vector<std::string> whereParameters;
-  std::string level;
-  std::string sInterface;
-  std::string when;
-  std::string dimension;
-  std::vector<std::string> values;
+  std::string m_who;
+  std::vector<std::string> m_addresses;
+  std::string m_what;
+  std::vector<std::string> m_whatParameters;
+  std::string m_where;
+  std::vector<std::string> m_whereParameters;
+  std::string m_level;
+  std::string m_sInterface;
+  std::string m_when;
+  std::string m_dimension;
+  std::vector<std::string> m_values;
 
   // frame length
-  int length_frame_open;
+  int m_lengthFrameOpen;
 
 public:
 
   // frame
-	std::string frame_open;
+  std::string m_frameOpen;
 
   // type of frame open
-  int frame_type;
+  int m_frameType;
 
   //indicates extended frame
-  bool extended;
+  bool m_extended;
 
   // constructors
   bt_openwebnet();
@@ -401,8 +403,8 @@ public:
   void CreateWrDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& lev, const std::string& strInterface, const std::string& dimension, const std::vector<std::string>& value);
   
   void CreateTimeReqMsgOpen();
+  void CreateSetTimeMsgOpen();
 
-	void CreateSetTimeMsgOpen();
   //general message
   void CreateMsgOpen(const std::string& message);
 

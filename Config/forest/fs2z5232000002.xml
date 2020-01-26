@@ -1,32 +1,35 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0207:0100:0027</MetaDataItem>
     <MetaDataItem name="ProductPic">images/forest/fs2z5232000002.png</MetaDataItem>
-    <MetaDataItem id="0100" name="ZWProductPage" type="0027">https://products.z-wavealliance.org/products/1294/</MetaDataItem>
+    <MetaDataItem id="0100" name="ZWProductPage" type="0027">https://products.z-wavealliance.org/products/3185/</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Press configuration button 3 times. LED3 is ON.
 Press and hold once more for 4 seconds.</MetaDataItem>
     <MetaDataItem name="ResetDescription">Press configuration button 25x times. LED 1 is ON. Press and hold once more for 4 seconds to confirm.
 Please use this procedure only when your network primary controller is missing or otherwise inoperable.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1294/Installing the FOREST SHUTTLE  S - L  Z-wave V1_0EN.pdf</MetaDataItem>
-    <MetaDataItem id="0100" name="Identifier" type="0027">FS2Z</MetaDataItem>
-    <MetaDataItem id="0100" name="FrequencyName" type="0027">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="Description">Forest Shuttle L  Z-Wave and the Forest motorized curtain track systems (FMS) make an unbeatable combination when it comes to noiseless operated motorized curtains. The smooth and silent running curtain track system can, in addition to remote operation, also be operated by hand. Thanks to Forest’s special Touch Impulse Technology, a gentle pull on the curtain is enough to activate the motor. The Forest Shuttle L  Z-Wave also makes sure that your curtains will always hang  beautifully smooth and supple. Opened as well as closed!
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3185/Installing_the_FOREST_SHUTTLE_S-M-L _Z-wave_V1_6EN.pdf</MetaDataItem>
+    <MetaDataItem id="0100" name="Identifier" type="0027">FS2Z5232000007</MetaDataItem>
+    <MetaDataItem id="0100" name="FrequencyName" type="0027">CEPT (Europe) / U.S. / Canada / Mexico / India / Australia / New Zealand</MetaDataItem>
+    <MetaDataItem name="Description">Forest Shuttle L Z-wave, Shuttle S Z-wave (US) and Forest motorized curtain track systems (FMS) make an unbeatable combination when it comes to noiseless operated motorized curtains. The smooth and silent running curtain track system can, in addition to remote operation, also be operated by hand. Thanks to Forest’s special Touch Impulse Technology, a gentle pull on the curtain is enough to activate the motor. The Forest Shuttle L Z-wave, Shuttle S Z-Wave (US) makes sure that your curtains will always hang beautifully smooth and supple. Opened as well as closed!
 • Touch Impulse Technology, gently pulling the curtain will activate the motor.
 • Integrated Emergency Control ensures manual operation of the curtain in case of power failure.
 • Modular motor, different modules can be attached for various control options: Radio Frequency, Switch, Infrared, Domotics, Building/Hotel Automation, Serial Communication, Z-Wave, etc.
-• Forest Shuttle L  Z-Wave will have an internal Z-Wave receiver and BUS connection.
+• Forest Shuttle L  Z-Wave and Shuttle S Z-wave (US) will have an internal Z-Wave receiver and BUS connection.
 • Silent motor, speeds: 14 and 17 cm/sec., with slow start and slow stop.
 • Full automatic setting of the limits.
 • Stack-back position programmable to every desired setting.
-• Forest Shuttle L  Z-Wave has an integrated power supply.
+• Forest Shuttle L  Z-Wave and Shuttle S Z-wave (US) have an integrated power supply.
 • Motor pulley connects motor and FMS track. Also available in upside down version to conceal the motor into the ceiling.
-• Available track lenghts: 5.80 meters and 7.00 meters. FMS track and components available in white and black.
+• Available track lenghts: 5.80 meters and 7.00 meters. FMS track and components available in white, grey and black.
 </MetaDataItem>
-    <MetaDataItem name="Name">Forest Shuttle L Z-Wave</MetaDataItem>
+    <MetaDataItem name="Name">Forest Shuttle LZ ANZ</MetaDataItem>
     <MetaDataItem name="InclusionDescription">Press configuration button 3 times. LED3 is ON.
 Press and hold once more for 4 seconds.</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1294/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2548/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3184/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3185/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Forest Shuttle L Z-Wave -->

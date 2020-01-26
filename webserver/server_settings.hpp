@@ -18,31 +18,22 @@ namespace server {
 
 struct server_settings {
 public:
-	std::string www_root;
-	std::string listening_address;
-	std::string listening_port;
-
-	std::string php_cgi_path; //if not empty, php files are handled
-	//feature
-	//std::string fastcgi_php_server; (like nginx)
-
-
 	server_settings() :
 		is_secure_(false) {}
 	server_settings(const server_settings & s) :
-		is_secure_(s.is_secure_),
 		www_root(s.www_root),
 		listening_address(s.listening_address),
 		listening_port(s.listening_port),
-		php_cgi_path(s.php_cgi_path)
+		php_cgi_path(s.php_cgi_path),
+		is_secure_(s.is_secure_)
 		{}
 	virtual ~server_settings() {}
 	server_settings & operator=(const server_settings & s) {
-		is_secure_ = s.is_secure_;
 		www_root = s.www_root;
 		listening_address = s.listening_address;
 		listening_port = s.listening_port;
 		php_cgi_path = s.php_cgi_path;
+		is_secure_ = s.is_secure_;
 		return *this;
 	}
 	bool is_secure() const {
@@ -85,6 +76,14 @@ protected:
 		}
 		return old_value;
 	}
+public:
+	std::string www_root;
+	std::string listening_address;
+	std::string listening_port;
+
+	std::string php_cgi_path; //if not empty, php files are handled
+	//feature
+	//std::string fastcgi_php_server; (like nginx)
 private:
 	bool is_secure_;
 };

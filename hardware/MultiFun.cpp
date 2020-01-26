@@ -189,7 +189,7 @@ void MultiFun::Do_Work()
 	DestroySocket();
 }
 
-bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
+bool MultiFun::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *output = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -225,7 +225,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 			cmd[11] = 0x01;
 			cmd[12] = 0x02; // number of bytes
 			cmd[13] = 0x00;
-			cmd[14] = change;
+			cmd[14] = (uint8_t)change;
 
 			int ret = SendCommand(cmd, 15, buffer, true);
 			if (ret == 4)
@@ -263,7 +263,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 		cmd[11] = 0x01;
 		cmd[12] = 0x02; // number of bytes
 		cmd[13] = 0x00;
-		cmd[14] = calculatedTemp;
+		cmd[14] = (uint8_t)calculatedTemp;
 
 		int ret = SendCommand(cmd, 15, buffer, true);
 		if (ret == 4)
@@ -486,7 +486,7 @@ void MultiFun::GetRegisters(bool firstTime)
 						temp = (float)((value & 0x0FFF) * 0.2);
 					}
 					m_isWeatherWork[i - 0x1C] = (value & 0x8000) == 0x8000;
-					SendSetPointSensor(i, 1, 1, temp, name);
+					SendSetPointSensor((uint8_t)i, 1, 1, temp, name);
 					break;
 				}
 
@@ -505,7 +505,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					if (m_isSensorExists[i - 0x1F])
 					{
 						float temp = (float)((value & 0x0FFF) * 0.2);
-						SendSetPointSensor(i, 1, 1, temp, name);
+						SendSetPointSensor((uint8_t)i, 1, 1, temp, name);
 					}
 					else
 					{
@@ -557,7 +557,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 	unsigned char databuffer[BUFFER_LENGHT];
 	int ret = -1;
 
-	if (m_socket->write((char*)cmd, cmdLength) != cmdLength)
+	if (m_socket->write((char*)cmd, cmdLength) != (int)cmdLength)
 	{
 		_log.Log(LOG_ERROR, "MultiFun: Send command failed");
 		DestroySocket();
@@ -591,7 +591,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 				}
 				answerLength = ret - 8; // answer = frame - prefix
 
-				if ((int)databuffer[4] * 256 + (int)databuffer[5] == answerLength + 2)
+				if ((int)databuffer[4] * 256 + (int)databuffer[5] == (unsigned char)(answerLength + 2))
 				{
 					if (write)
 					{

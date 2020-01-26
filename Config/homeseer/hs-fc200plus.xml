@@ -1,4 +1,38 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/000C:0001:0203</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/homeseer/hs-fc200plus.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/2957/</MetaDataItem>
+    <MetaDataItem name="Description">HS-FC200+ is a Z-Wave controllable wired fan controller for use with 3-speed or 4-speed ceiling fans. It has a vertical row of LED’s that indicate the fan speed level.
+
+• Works with 3-speed or 4-speed fans only
+• 4 segment LED dim level indicator
+• Remotely or manually turns ON or OFF, or fan speed level
+• Fits standard wall plates (wall plate not included)
+• Works with any certified gateway supporting Z-Wave</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Inclusion: Add the device into your network by a Z-Wave certified controller. HS-FC200+ supports the latest S2 security offered by Z-Wave certified controllers. If your controller supports S2, please refer to the user guide of the controller for detailed instructions on adding devices to the network. You should be able to add HS-FC200+ into your network using the unique QR code or the DSK 5 digit pin located on the product or packaging. In addition, the device can be added or removed using the following 2-step procedure:
+
+1. Put your Z-Wave controller into Inclusion mode. Consult your controller manual if you're unsure how to do this.
+2. Tap the paddle of your new HomeSeer switch to begin the inclusion process. This will take a few moments to complete.</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0203">HS-FC200+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Exclusion: Remove the device from your network by a Z-Wave certified controller. HS-FC200+ supports the latest S2 security offered by Z-Wave certified controllers. If your controller supports S2, please refer to the user guide of the controller for detailed instructions on removing devices from the network. You should be able to remove HS-FC200+ into your network using the unique QR code or the DSK 5 digit pin located on the product or packaging. In addition, the device can be added or removed using the following 2-step procedure:
+
+1. Put your Z-Wave controller into Exclusion mode. Consult your controller manual if you're unsure how to do this.
+2. Tap the paddle of your new HomeSeer switch to begin the Exclusion process. This will take a few moments to complete.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2957/HS FC200 Manual Market Cert v1.pdf</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0203">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave RGB Fan Controller</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To be used only in the event that the network primary controller is lost or otherwise inoperable. 
+
+(1) Turn switch on by tapping the top of the paddle once. 
+(2) Quickly ap top of the paddle 3 times. 
+(3) Quickly tap bottom of paddle 3 times. 
+(4) If the LED turns off then on again, switch is reset. If not, repeat manual rest.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2957/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!--
     HomeSeer HS-FC200+ Z-Wave Plus RGB Smart Fan Speed Controller Switch
     https://products.z-wavealliance.org/products/2957

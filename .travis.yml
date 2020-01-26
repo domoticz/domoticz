@@ -34,7 +34,7 @@ matrix:
   include:
   # Linux x86_64
   - os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     compiler: gcc
     env:
@@ -72,7 +72,8 @@ matrix:
       - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - cd ..
       - (cd open-zwave-read-only; make)
-      - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL_STATIC="NO" -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
+      - (cd open-zwave-read-only; git checkout 76e21d80a140c321413a46a2b62ea6c11dd6ace0; make)
+      - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
       - make
   # Apple OSX
   # - os: osx

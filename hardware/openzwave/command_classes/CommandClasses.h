@@ -35,52 +35,56 @@
 
 namespace OpenZWave
 {
-	class CommandClass;
-
-	/** \brief Manages a map of command classes supported by a specific Z-Wave node.
-	 * \ingroup CommandClass
-	 */
-	class CommandClasses
+	namespace Internal
 	{
-	public:
-		typedef CommandClass* (*pfnCreateCommandClass_t)( uint32 const _homeId, uint8 const _nodeId );
-
-		static void RegisterCommandClasses();
-		static CommandClass* CreateCommandClass( uint8 const _commandClassId, uint32 const _homeId, uint8 const _nodeId );
-
-		static bool IsSupported( uint8 const _commandClassId );
-		static string GetName(uint8 const _commandClassId);
-		static list<uint8> GetAdvertisedCommandClasses();
-	private:
-		CommandClasses();
-		CommandClasses( CommandClasses const&	);					// prevent copy
-		CommandClasses& operator = ( CommandClasses const& );		// prevent assignment
-
-		static CommandClasses& Get()
+		namespace CC
 		{
-			static CommandClasses instance;
-			return instance;
-		}
+			class CommandClass;
 
-		void Register( uint8 const _commandClassId, string const& _commandClassName, pfnCreateCommandClass_t _create, bool advertised = false );
-		void ParseCommandClassOption( string const& _optionStr, bool const _include );
-		uint8 GetCommandClassId( string const& _name );
+			/** \brief Manages a map of command classes supported by a specific Z-Wave node.
+			 * \ingroup CommandClass
+			 */
+			class CommandClasses
+			{
+				public:
+					typedef CommandClass* (*pfnCreateCommandClass_t)(uint32 const _homeId, uint8 const _nodeId);
 
-		pfnCreateCommandClass_t m_commandClassCreators[256];
-		map<string,uint8>		m_namesToIDs;
-		/* a list of CommandClasses that are advertised on the controllers NIF packet and can be controlled
-		 * via other Nodes
-		 */
-		list<uint8>				m_advertisedCommandClasses;
+					static void RegisterCommandClasses();
+					static CommandClass* CreateCommandClass(uint8 const _commandClassId, uint32 const _homeId, uint8 const _nodeId);
 
-		// m_supportedCommandClasses uses single bits to mark whether OpenZWave supports a command class
-		// Checking this is not the same as looking for non-NULL entried in m_commandClassCreators, since
-		// this may be modified by the program options --Include and --Ingnore to filter out support
-		// for unwanted command classes.
-		uint32					m_supportedCommandClasses[8];
-	};
+					static bool IsSupported(uint8 const _commandClassId);
+					static string GetName(uint8 const _commandClassId);
+					static list<uint8> GetAdvertisedCommandClasses();
+				private:
+					CommandClasses();
+					CommandClasses(CommandClasses const&);					// prevent copy
+					CommandClasses& operator =(CommandClasses const&);		// prevent assignment
 
+					static CommandClasses& Get()
+					{
+						static CommandClasses instance;
+						return instance;
+					}
+
+					void Register(uint8 const _commandClassId, string const& _commandClassName, pfnCreateCommandClass_t _create, bool advertised = false);
+					void ParseCommandClassOption(string const& _optionStr, bool const _include);
+					uint8 GetCommandClassId(string const& _name);
+
+					pfnCreateCommandClass_t m_commandClassCreators[256];
+					map<string, uint8> m_namesToIDs;
+					/* a list of CommandClasses that are advertised on the controllers NIF packet and can be controlled
+					 * via other Nodes
+					 */
+					list<uint8> m_advertisedCommandClasses;
+
+					// m_supportedCommandClasses uses single bits to mark whether OpenZWave supports a command class
+					// Checking this is not the same as looking for non-NULL entried in m_commandClassCreators, since
+					// this may be modified by the program options --Include and --Ingnore to filter out support
+					// for unwanted command classes.
+					uint32 m_supportedCommandClasses[8];
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
-
 
 #endif

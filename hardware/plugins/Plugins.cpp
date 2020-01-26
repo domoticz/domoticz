@@ -1712,6 +1712,13 @@ Error:
 	{
 		DisconnectedEvent*	pMessage = (DisconnectedEvent*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+
+		// Return any partial data to plugin
+		if (pConnection->pProtocol)
+		{
+			pConnection->pProtocol->Flush(pMessage->m_pPlugin, (PyObject*)pConnection);
+		}
+
 		if (pConnection->pTransport)
 		{
 			if (m_bDebug & PDM_CONNECTION)

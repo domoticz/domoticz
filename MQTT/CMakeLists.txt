@@ -27,11 +27,11 @@ else()
 endif()
 
 SET(CORE mosquitto.c
-	logging_mosq.c memory_mosq.c messages_mosq.c net_mosq.c read_handle.c read_handle_client.c read_handle_shared.c
-	send_client_mosq.c send_mosq.c socks_mosq.c srv_mosq.c thread_mosq.c time_mosq.c tls_mosq.c util_mosq.c will_mosq.c
+	actions.c alias_mosq.c callbacks.c connect.c handle_auth.c handle_connack.c handle_disconnect.c handle_ping.c handle_pubackcomp.c handle_publish.c
+	handle_pubrec.c handle_pubrel.c handle_suback.c handle_unsuback.c helpers.c logging_mosq.c loop.c memory_mosq.c messages_mosq.c net_mosq.c
+	net_mosq_ocsp.c options.c packet_datatypes.c packet_mosq.c property_mosq.c read_handle.c send_connect.c send_disconnect.c send_mosq.c send_publish.c
+	send_subscribe.c send_unsubscribe.c socks_mosq.c srv_mosq.c thread_mosq.c time_mosq.c tls_mosq.c utf8_mosq.c util_mosq.c util_topic.c will_mosq.c
 )
-
-SET (LIB mosquittopp.cpp)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	SET(OperatingSystem "Linux")
@@ -41,3 +41,5 @@ ADD_LIBRARY(mqtt STATIC ${LIB} ${CORE})
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 link_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+
+target_link_libraries(mqtt OpenSSL::Crypto OpenSSL::SSL)

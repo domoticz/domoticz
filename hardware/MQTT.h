@@ -1,20 +1,12 @@
 #pragma once
 
 #include "MySensorsBase.h"
-#ifdef BUILTIN_MQTT
-#include "../MQTT/mosquittopp.h"
-#else
-#ifdef WIN32
-#include "../MQTT/mosquittopp.h"
-#else
-#include <mosquittopp.h>
-#endif
-#endif
+#include "../main/mosquitto_helper.h"
 
-class MQTT : public MySensorsBase, mosqpp::mosquittopp
+class MQTT : public MySensorsBase, mosqdz::mosquittodz
 {
 public:
-	MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAFile, const int Topics);
+	MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAFile, const int TLS_Version, const int Topics, const std::string &MQTTClientID);
 	~MQTT(void);
 	bool isConnected(){ return m_IsConnected; };
 
@@ -22,6 +14,9 @@ public:
 	void on_disconnect(int rc) override;
 	virtual void on_message(const struct mosquitto_message *message) override;
 	void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
+
+	void on_log(int level, const char* str) override;
+	void on_error() override;
 
 	void SendMessage(const std::string &Topic, const std::string &Message);
 
@@ -33,7 +28,7 @@ public:
 private:
 	bool ConnectInt();
 	bool ConnectIntEx();
-	void SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
+	void SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
 	void SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName);
 protected:
 	std::string m_szIPAddress;
@@ -41,6 +36,7 @@ protected:
 	std::string m_UserName;
 	std::string m_Password;
 	std::string m_CAFilename;
+	int m_TLS_Version;
 	std::string m_TopicIn;
 	std::string m_TopicOut;
 	virtual bool StartHardware() override;
