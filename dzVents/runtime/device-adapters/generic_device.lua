@@ -118,8 +118,9 @@ return {
 		end
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then
+			device['lastUpdatedBy'] = data.lastUpdatedBy
 			device['description'] = data.description
-			device['protected'] = data.protected 
+			device['protected'] = data.protected
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = { [1] = data.data._state }
 			device['changed'] = data.changed
@@ -144,18 +145,18 @@ return {
 		end
 
 		function device.setIcon(iconNumber)
-			local url = domoticz.settings['Domoticz url'] .. 
-				'/json.htm?type=setused&used=true&name=' .. 
+			local url = domoticz.settings['Domoticz url'] ..
+				'/json.htm?type=setused&used=true&name=' ..
 				 utils.urlEncode(device.name) ..
 				'&description=' .. utils.urlEncode(device.description) ..
-				'&idx=' .. device.id .. 
+				'&idx=' .. device.id ..
 				'&switchtype=' .. device.switchTypeValue ..
 				'&customimage=' .. iconNumber
 			return domoticz.openURL(url)
 		end
 
 		function device.rename(newName)
-			local url = domoticz.settings['Domoticz url'] ..  
+			local url = domoticz.settings['Domoticz url'] ..
 						"/json.htm?type=command&param=renamedevice" ..
 						"&idx=" .. device.idx ..
 						"&name=" .. utils.urlEncode(newName)
@@ -163,14 +164,14 @@ return {
 		end
 
 		function device.protectionOn()
-			local url = domoticz.settings['Domoticz url'] ..  
+			local url = domoticz.settings['Domoticz url'] ..
 						"/json.htm?type=setused&used=true&protected=true" ..
 						"&idx=" .. device.idx
 			return domoticz.openURL(url)
 		end
 
 		function device.protectionOff()
-			local url = domoticz.settings['Domoticz url'] ..  
+			local url = domoticz.settings['Domoticz url'] ..
 						"/json.htm?type=setused&used=true&protected=false" ..
 						"&idx=" .. device.idx
 			return domoticz.openURL(url)
@@ -182,13 +183,13 @@ return {
 			for _,value in ipairs(args) do
 				sValue	= sValue .. tostring(value) .. ';'
 			end
-			if #sValue > 1 then 
+			if #sValue > 1 then
 				sValue = sValue:sub(1,-2)
 			end
 			local url = domoticz.settings['Domoticz url'] ..
-				'/json.htm?type=command&param=udevice&idx=' .. device.id .. 
+				'/json.htm?type=command&param=udevice&idx=' .. device.id ..
 				'&nvalue=' .. (nValue or device.nValue) ..
-				'&svalue=' .. sValue 
+				'&svalue=' .. sValue
 			return domoticz.openURL(url)
 		end
 
@@ -206,7 +207,6 @@ return {
 				end
 			end
 		end
-
 
 		return device
 

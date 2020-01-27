@@ -62,32 +62,35 @@ local function getDevice_(
 	local data = 
 	{
 		["id"] = 1,
-		["name"] = name,
-		["description"] = "Description 1",
 		["batteryLevel"] = batteryLevel and batteryLevel or 50,
+		["description"] = "Description 1",
+		["deviceID"] = "123abc",
+		["deviceType"] = type and type or "someSubType",
+		["lastUpdate"] = "2016-03-20 12:23:00",
+		["name"] = name,
 		["protected"] = true,
 		["signalLevel"] = signalLevel and signalLevel or 55,
-		["deviceType"] = type and type or "someSubType",
-		["deviceID"] = "123abc",
 		["subType"] = subType and subType or "someDeviceType",
-		["timedOut"] = true,
 		["switchType"] = "Contact",
 		["switchTypeValue"] = 2,
-		["lastUpdate"] = "2016-03-20 12:23:00",
-		["data"] = {
-		["_state"] = state,
-		["hardwareName"] = "hw1",
-		["hardwareType"] = hardwareType,
-		["hardwareTypeValue"] = hardwaryTypeValue,
-		["hardwareID"] = 1,
-		['protected'] = true,
-		['_nValue'] = 123,
-		['unit'] = 1
-		},
-		["rawData"] = rawData,
-		["baseType"] = baseType ~= nil and baseType or "device",
-		["changed"] = changed,
-		["changedAttribute"] = 'temperature' --tbd
+		["timedOut"] = true,
+        ["baseType"] = baseType ~= nil and baseType or "device",
+        ["changed"] = changed,
+        ["changedAttribute"] = 'temperature', --tbd
+        ["rawData"] = rawData,
+		["data"] = 
+        {
+            ["_state"] = state,
+            ["hardwareID"] = 1,
+            ["hardwareName"] = "hw1",
+            ["hardwareType"] = hardwareType,
+            ["hardwareTypeValue"] = hardwaryTypeValue,
+            ["lastUpdatedBy"] = 'dzVents',
+            ['_nValue'] = 123,
+            ['protected'] = true,
+            ['unit'] = 1,
+        },
+        
 	}
 
 	for attribute, value in pairs(additionalRootData) do
@@ -202,6 +205,7 @@ describe('device', function()
 			})
 
 			assert.is_same(true, device.changed)
+			assert.is_same('dzVents', device.lastUpdatedBy)
 			assert.is_same('Description 1', device.description)
 			assert.is_same('sometype', device.deviceType)
 			assert.is_same('hw1', device.hardwareName)
@@ -1389,9 +1393,11 @@ describe('device', function()
 				local scene = getDevice(domoticz, {
 					['baseType'] = 'scene',
 					['name'] = 'myScene',
+					['lastUpdatedBy'] = 'dzVents',
 				})
 
 				assert.is_same('Description 1', scene.description)
+				assert.is_same('dzVents', scene.lastUpdatedBy)
 
 				scene.switchOn()
 				assert.is_same({ { ['Scene:myScene'] = 'On' } }, commandArray)
@@ -1436,6 +1442,7 @@ describe('device', function()
 					['baseType'] = 'scene',
 					['name'] = 'myScene',
 					['state'] = 'On',
+					['lastUpdatedBy'] = 'dzVents',
 					['id'] = 1,
 				})
 				local res;
@@ -1463,6 +1470,7 @@ describe('device', function()
 				local group = getDevice(domoticz, {
 					['baseType'] = 'group',
 					['name'] = 'myGroup',
+					['lastUpdatedBy'] = 'dzVents',
 					['state'] = 'On'
 				})
 
@@ -1475,6 +1483,7 @@ describe('device', function()
 				assert.is_false(group.isSecurity)
 
 				assert.is_same('Description 1', group.description)
+				assert.is_same('dzVents', group.lastUpdatedBy)
 
 				group.switchOn()
 				assert.is_same({ { ['Group:myGroup'] = 'On' } }, commandArray)

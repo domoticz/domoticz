@@ -16,7 +16,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.5.7")
+	m_version("2.5.8")
 {
 	m_bdzVentsExist = false;
 }
@@ -431,7 +431,7 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 
 		else if (lCommand == "Cancel")
 			scriptTrue = CancelItem(lua_state, vLuaTable);
-	
+
 		else if (lCommand == "TriggerIFTTT")
 			scriptTrue = TriggerIFTTT(lua_state, vLuaTable);
 	}
@@ -647,6 +647,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	localtime_r(&now, &tLastUpdate);
 	int SensorTimeOut = 60;
 	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
+	const char *lastUpdatedBy = "";
 
 	struct tm ntime;
 	time_t checktime;
@@ -690,7 +691,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		bool timed_out = (now - checktime >= SensorTimeOut * 60);
 
 		lua_pushinteger(lua_state, index);
-
 		lua_createtable(lua_state, 1, 12);
 
 		lua_pushstring(lua_state, "name");
@@ -772,6 +772,20 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_pushstring(lua_state, "hardwareID");
 		lua_pushinteger(lua_state, sitem.hardwareID);
 		lua_rawset(lua_state, -3);
+
+		if ( dev_type == "Light/Switch" || sub_type == "Text" )
+		{
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT user FROM LightingLog WHERE deviceRowID = '%d' AND user <> '' ORDER BY DATE DESC LIMIT 1" , sitem.ID);
+			if (result.empty())
+				lastUpdatedBy = "";
+			else
+				lastUpdatedBy = result[0][0].c_str();
+
+			lua_pushstring(lua_state, "lastUpdatedBy");
+			lua_pushstring(lua_state, lastUpdatedBy);
+			lua_rawset(lua_state, -3);
+		}
 
 		// Lux does not have it's own field yet.
 		if (sitem.devType == pTypeLux && sitem.subType == sTypeLux)
@@ -882,22 +896,35 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		else
 			description = result[0][0].c_str();
 
-		lua_pushinteger(lua_state, index);
+		result = m_sql.safe_query("SELECT user FROM SceneLog WHERE SceneRowID = '%d' AND user <> '' ORDER BY DATE DESC LIMIT 1" , sgitem.ID);
+		if (result.empty())
+			lastUpdatedBy = "";
+		else
+			lastUpdatedBy = result[0][0].c_str();
 
-		lua_createtable(lua_state, 1, 7);
+		lua_pushinteger(lua_state, index);
+		lua_createtable(lua_state, 1, 8);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
 		lua_rawset(lua_state, -3);
+
 		lua_pushstring(lua_state, "id");
 		lua_pushinteger(lua_state, sgitem.ID);
 		lua_rawset(lua_state, -3);
+
 		lua_pushstring(lua_state, "description");
 		lua_pushstring(lua_state, description);
 		lua_rawset(lua_state, -3);
+
+		lua_pushstring(lua_state, "lastUpdatedBy");
+		lua_pushstring(lua_state, lastUpdatedBy);
+		lua_rawset(lua_state, -3);
+
 		lua_pushstring(lua_state, "baseType");
 		lua_pushstring(lua_state, (sgitem.scenesgroupType == 0) ? "scene" : "group");
 		lua_rawset(lua_state, -3);
+
 		lua_pushstring(lua_state, "protected");
 		lua_pushboolean(lua_state, (lua_Number)sgitem.protection == 1);
 		lua_rawset(lua_state, -3);
@@ -913,12 +940,14 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_pushstring(lua_state, "data");
 		lua_createtable(lua_state, 0, 0);
 
+
 		lua_pushstring(lua_state, "_state");
 		lua_pushstring(lua_state, sgitem.scenesgroupValue.c_str());
 		lua_rawset(lua_state, -3);
-		lua_rawset(lua_state, -3);
 
+		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "deviceIDs");
+
 		lua_createtable(lua_state, 0, 0);
 		std::vector<uint64_t>::const_iterator itt2;
 		if (sgitem.memberID.size() > 0)

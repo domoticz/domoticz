@@ -844,6 +844,7 @@ Note that if you do not find your specific device type here you can always inspe
 
 #### Group
  - **devices()**: *Function*. Returns the collection of associated devices. Supports the same iterators as for `domoticz.devices()`: `forEach()`, `filter()`, `find()`, `reduce()`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that the function doesn't allow you to get a device by its name or id. Use `domoticz.devices()` for that.
+ - **lastUpdatedBy**: *String*. <sup>2.5.8</sup> username of user who operated the Group. Shows Admin for user-less access. 
  - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
  - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
  - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current group-name to new group-name Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -948,6 +949,7 @@ See switch below.
 
 #### Scene
  - **devices()**: *Function*. Returns the collection of associated devices. Supports the same iterators as for `domoticz.devices()`: `forEach()`, `filter()`, `find()`, `reduce()`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that the function doesn't allow you to get a device by its name or id. Use `domoticz.devices()` for that.
+ - **lastUpdatedBy**: *String*. <sup>2.5.8</sup> username of user who operated the Scene. Shows Admin for user-less access. 
  - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
  - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
  - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current scene-name to new scene-name Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -995,6 +997,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **levelActions**: *String*. |-separated list of url actions for selector switches.
  - **levelName**: *String*. Current level name for selector switches.
  - **levelNames**: *Table*. Table holding the level names for selector switch devices.
+ - **lastUpdatedBy**: *String*. <sup>2.5.8</sup> username of user who operated the Switch. Shows Admin for user-less access. 
  - **maxDimLevel**: *Number*.
  - **open()**: *Function*. Set device to Open if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **quietOn()**: *Function*. <sup>2.4.20</sup> Set deviceStatus to on without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -1037,6 +1040,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **updateTempHum(temperature, humidity, status)**: *Function*. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Text
+ - **lastUpdatedBy**: *String*. <sup>2.5.8</sup> username of user who updated the Text sensor. Shows Admin for user-less access. 
  - **text**: *String*
  - **updateText(text)**: Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
@@ -2280,6 +2284,9 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+## [2.5.8]
+- Add attribute lastUpdatedBy to text and switch type devices and to groups and scenes
 
 ## [2.5.7]
 - Add option checkFirst to switchSelector method

@@ -1,3 +1,6 @@
+[2.5.8]
+- Add attribute lastUpdatedBy to text and switch type devices and to groups and scenes
+
 [2.5.7]
 - Add option checkFirst to switchSelector method
 

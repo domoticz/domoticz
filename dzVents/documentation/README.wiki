@@ -12,13 +12,13 @@ dzVents /diː ziː vɛnts/, short for Domoticz Easy Events, brings Lua scripting
 
 Let’s start with an example. Say you have a switch that when activated, it should activate another switch but only if the room temperature is above a certain level. And when done, it should send a notification. This is how it looks in dzVents:
 
-<source lang="lua">return 
+<source lang="lua">return
 {
-    on = 
+    on =
     {
         devices = { 'Room switch'}
     },
-    
+
     execute = function(domoticz, roomSwitch)
         if (roomSwitch.active and domoticz.devices('Living room').temperature > 18) then
         domoticz.devices('Another switch').switchOn()
@@ -26,13 +26,13 @@ Let’s start with an example. Say you have a switch that when activated, it sho
                         'Turns out that it is getting warm here',
                         domoticz.PRIORITY_LOW)
         end
-    
+
 }</source>
 Or you have a timer script that should be executed every 10 minutes, but only on weekdays, and have it do something with some user variables and only during daytime:
 
-<source lang="lua">return 
+<source lang="lua">return
 {
-    on = 
+    on =
     {
         timer = {'Every 10 minutes on mon,tue,wed,thu,fri'}
     },
@@ -51,13 +51,13 @@ Or you have a timer script that should be executed every 10 minutes, but only on
 }</source>
 Or you want to detect a humidity rise within the past 5 minutes:
 
-<source lang="lua">return 
+<source lang="lua">return
 {
-    on = 
+    on =
     {
         timer = {'every 5 minutes'}
     },
-    data = 
+    data =
     {
         previousHumidity = { initial = 100 }
     },
@@ -119,13 +119,13 @@ See the examples folder <code>/path/to/domoticz/scripts/dzVents/examples</code> 
 
 In order for your scripts to work with dzVents, they have to be turned into a Lua module with a specific structure. Basically you make sure it returns a Lua table (object) with predefined keys like <code>on</code> and <code>execute</code>. Here is an example:
 
-<source lang="lua">return 
+<source lang="lua">return
 {
-    on = 
+    on =
     {
         devices = { 'My switch' }
     },
-    
+
     execute = function(domoticz, switch)
         -- your script logic goes here, something like this:
         if (switch.state == 'On') then
@@ -139,10 +139,10 @@ Simply said, the <code>on</code>-part defines the trigger and the <code>execute<
 
 Each dzVents event script has this structure:
 
-<source lang="lua">return 
+<source lang="lua">return
 {
     active = true, -- optional
-    on = 
+    on =
     {
         -- at least one of these:
         evices = { ... },
@@ -561,8 +561,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 <li>'''civTwilightStartInMinutes''': ''Number''. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.</li>
 <li>'''civTwilightEndInMinutes''': ''Number''. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.</li></ul>
 </li>
-<li><p>'''triggerHTTPResponse([httpResponse], [delay], [message])''': <sup>2.5.3</sup> ''Function''. Creates a callback by sending a logmessage. httpResponse defaults to scriptname, delay defaults to 0 (immediate), message defaults to httpResponse.<br />
-</p></li>
+<li><p>'''triggerHTTPResponse([httpResponse], [delay], [message])''': <sup>2.5.3</sup> ''Function''. Creates a callback by sending a logmessage. httpResponse defaults to scriptname, delay defaults to 0 (immediate), message defaults to httpResponse.</p></li>
 <li><p>'''triggerIFTTT(makerName [,sValue1, sValue2, sValue3])''': ''Function''. <sup>2.4.18</sup> Have Domoticz ‘call’ an IFTTT maker event. makerName is required, 0-3 sValue’s are optional. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].</p></li>
 <li><p>'''utils''': <sup>2.4.0</sup>. A subset of handy utilities: Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example:</p>
 <source lang="lua"> _u = domoticz.utils
@@ -570,11 +569,10 @@ The domoticz object holds all information about your Domoticz system. It has glo
 <ul>
 <li><p>'''_.lodash''': This is an entire collection with very handy Lua functions. Read more about [[#lodash_for_Lua|lodash]]. E.g.: <code>{.lua}      domoticz.utils._.size({'abc', 'def'}))` Returns 2.</code></p></li>
 <li><p>'''cameraExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid cameraID or ID when entered with valid cameraName or false when not a cameraID or cameraName of an existing camera</p></li>
-<li><p>'''deviceExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid deviceID or ID when entered with valid deviceName or false when not a deviceID or deviceName of an existing device.<br />
-example:</p>
+<li><p>'''deviceExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid deviceID or ID when entered with valid deviceName or false when not a deviceID or deviceName of an existing device. example:</p>
 <source lang="lua">local dz = domoticz
 local _u = dz.utils
-if _u.deviceExists('myDevice') then 
+if _u.deviceExists('myDevice') then
    dz.devices('myDevice').switchOn()
 else
    dz.log('Device myDevice does not exist!', dz.LOG_ERROR)
@@ -590,14 +588,12 @@ end</source></li>
 <li><p>'''fileExists(path)''': ''Function'': <sup>2.4.0</sup> Returns <code>true</code> if the file (with full path) exists.</p></li>
 <li><p>'''fromBase64(string)''': ''Function'': <sup>2.5.2</sup>) Decode a base64 string</p></li>
 <li><p>'''fromJSON(json, fallback <sup>2.4.16</sup>)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.</p></li>
-<li><p>'''fromXML(xml, fallback )''': ''Function'': <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: <code>local t = domoticz.utils.fromXML('&lt;testtag&gt;What a nice feature!&lt;/testtag&gt;') Followed by:</code>print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.<br />
-</p></li>
+<li><p>'''fromXML(xml, fallback )''': ''Function'': <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: <code>local t = domoticz.utils.fromXML('&lt;testtag&gt;What a nice feature!&lt;/testtag&gt;') Followed by:</code>print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.</p></li>
 <li><p>'''groupExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid groupID or ID when entered with valid groupName or false when not a groupID or groupName of an existing group</p></li>
 <li><p>'''inTable(table, searchString)''': ''Function'': <sup>2.4.21</sup> Returns <code>&quot;key&quot;</code> if table has searchString as a key, <code>&quot;value&quot;</code> if table has searchString as value and <code>false</code> otherwise.</p></li>
 <li><p>'''leftPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.</p></li>
 <li><p>'''centerPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.</p></li>
-<li><p>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation<br />
-Examples:</p></li></ul>
+<li><p>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation Examples:</p></li></ul>
 
 <source lang="lua">        domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,
         domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
@@ -834,6 +830,7 @@ Note that if you do not find your specific device type here you can always inspe
 ==== Group ====
 
 * '''devices()''': ''Function''. Returns the collection of associated devices. Supports the same iterators as for <code>domoticz.devices()</code>: <code>forEach()</code>, <code>filter()</code>, <code>find()</code>, <code>reduce()</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that the function doesn’t allow you to get a device by its name or id. Use <code>domoticz.devices()</code> for that.
+* '''lastUpdatedBy''': ''String''. <sup>2.5.8</sup> username of user who operated the Group. Shows Admin for user-less access.
 * '''protectionOff()''': ''Function''. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
 * '''protectionOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
 * '''rename(newName)''': ''Function''. <sup>2.4.24</sup> Change current group-name to new group-name Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -953,6 +950,7 @@ See switch below.
 ==== Scene ====
 
 * '''devices()''': ''Function''. Returns the collection of associated devices. Supports the same iterators as for <code>domoticz.devices()</code>: <code>forEach()</code>, <code>filter()</code>, <code>find()</code>, <code>reduce()</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that the function doesn’t allow you to get a device by its name or id. Use <code>domoticz.devices()</code> for that.
+* '''lastUpdatedBy''': ''String''. <sup>2.5.8</sup> username of user who operated the Scene. Shows Admin for user-less access.
 * '''protectionOff()''': ''Function''. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
 * '''protectionOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
 * '''rename(newName)''': ''Function''. <sup>2.4.24</sup> Change current scene-name to new scene-name Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -1006,6 +1004,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''levelActions''': ''String''. |-separated list of url actions for selector switches.
 * '''levelName''': ''String''. Current level name for selector switches.
 * '''levelNames''': ''Table''. Table holding the level names for selector switch devices.
+* '''lastUpdatedBy''': ''String''. <sup>2.5.8</sup> username of user who operated the Switch. Shows Admin for user-less access.
 * '''maxDimLevel''': ''Number''.
 * '''open()''': ''Function''. Set device to Open if it supports it. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''quietOn()''': ''Function''. <sup>2.4.20</sup> Set deviceStatus to on without physically switching it. Subsequent Events are triggered. Supports some [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -1053,6 +1052,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 
 ==== Text ====
 
+* '''lastUpdatedBy''': ''String''. <sup>2.5.8</sup> username of user who updated the Text sensor. Shows Admin for user-less access.
 * '''text''': ''String''
 * '''updateText(text)''': Function*. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
@@ -1171,7 +1171,7 @@ light.switchOn().checkFirst().forMin(5)</source>
 Some options are not available to all commands. All the options are available to device switch-like commands like <code>myDevice.switchOff()</code>, <code>myGroup.switchOn()</code> or <code>myBlinds.open()</code>. For updating (usually Dummy ) devices like a text device <code>myTextDevice.updateText('zork')</code> you can only use <code>silent()</code>. For thermostat setpoint devices and snapshot command silent() is not available. See table below
 
 
-{| class="wikitable" 
+{| class="wikitable"
 !width="17%"| option
 !align="center" width="12%"| state changes
 !align="center" width="12%"| update commands
@@ -1328,8 +1328,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 * '''day''': ''Number''
 * '''dayAbbrOfWeek''': ''String''. sun,mon,tue,wed,thu,fri or sat
 * '''daysAgo''': ''Number''
-* '''dayName''': ''String''.<sup>2.5.6</sup> complete name Sunday, Monday, etc<br />
-
+* '''dayName''': ''String''.<sup>2.5.6</sup> complete name Sunday, Monday, etc
 * '''dDate''': ''Number''. timestamp (seconds since 01/01/1970 00:00)
 * '''getISO''': ''Function''. Returns the ISO 8601 formatted date.
 * '''hour''': ''Number''
@@ -1371,8 +1370,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 ** '''seconds''': ''Number''
 ** '''year''': ''Number''
 * '''year''': ''Number''
-* '''wday''': ''Number'' day of the week. Sunday = 1, Saturday = 7<br />
-
+* '''wday''': ''Number'' day of the week. Sunday = 1, Saturday = 7
 * '''week''': ''Number'' week of the year
 
 '''Note: it is currently not possible to change the domoticz.time object instance.''' ( but you can create a new one )
@@ -2235,6 +2233,10 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you’re good to go.
 
 = History =
+
+== [2.5.8] ==
+
+* Add attribute lastUpdatedBy to text and switch type devices and to groups and scenes
 
 == [2.5.7] ==
 

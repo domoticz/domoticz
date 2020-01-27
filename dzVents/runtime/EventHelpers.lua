@@ -813,7 +813,7 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 		end
 
-		return modules
+		if modules then return _.uniq(modules) end -- _.unique to fix a bug if scenes, groups and/or devices use the same wildcard. Same script will be executed more then 1 time
 	end
 
 	function self.dispatchDeviceEventsToScripts(domoticz)
