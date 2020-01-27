@@ -8390,12 +8390,13 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string &szZipFile, std::
 			std::string _defFile = std::string(pFBuf, pFBuf + fsize);
 			free(pFBuf);
 
+			_defFile.erase(std::remove(_defFile.begin(), _defFile.end(), '\r'), _defFile.end());
+
 			std::vector<std::string> _Lines;
 			StringSplit(_defFile, "\n", _Lines);
 			for (const auto & itt : _Lines)
 			{
 				std::string sLine = itt;
-				sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
 				std::vector<std::string> splitresult;
 				StringSplit(sLine, ";", splitresult);
 				if (splitresult.size() == 3)
