@@ -1552,6 +1552,16 @@ bool CEvohomeRadio::DecodeActuatorState(CEvohomeMsg& msg)
 
 	Log(true, LOG_STATUS, "evohome: %s: ID:0x%06x (%s) DevNo 0x%02x: %d", tag, msg.GetID(0), msg.GetStrID(0).c_str(), nDevNo, nDemand);
 	RXRelay(static_cast<uint8_t>(0xFF), static_cast<uint8_t>(nDemand));//devno is always 0 and therefore not valid
+	
+	//Log all received relay activity (green led) to a device, note this is different from Heat Demand
+        bool bRelayOn( false );
+        if (nDemand == 0xc8) {
+                bRelayOn = true;
+        }
+        char zstrname[40];
+        sprintf(zstrname, "Zone Relay %06x", msg.GetID(0));
+        UpdateSwitch(msg.GetID(0), bRelayOn, zstrname);
+
 	return true;
 }
 
