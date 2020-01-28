@@ -6189,19 +6189,6 @@ namespace http {
 				}
 			}
 		}
-
-		void CWebServer::ZWaveCPSaveConfig(WebEmSession& /*session*/, const request& /*req*/, reply& rep)
-		{
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
-			if (pHardware != NULL)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-				reply::set_content(&rep, pOZWHardware->m_ozwcp.SaveConfig());
-			}
-		}
 		void CWebServer::ZWaveCPGetTopo(WebEmSession& /*session*/, const request& /*req*/, reply& rep)
 		{
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -6226,28 +6213,6 @@ namespace http {
 				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 				reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
 				reply::add_header_attachment(&rep, "stats.xml");
-			}
-		}
-		void CWebServer::ZWaveCPSceneCommand(WebEmSession& /*session*/, const request& req, reply& rep)
-		{
-			if (req.content.find("fun") == std::string::npos)
-				return;
-			std::multimap<std::string, std::string> values;
-			request::makeValuesFromPostContent(&req, values);
-			std::string sArg1 = request::findValue(&values, "fun");
-			std::string sArg2 = request::findValue(&values, "id");
-			std::string sVid = request::findValue(&values, "vid");
-			std::string sLabel = request::findValue(&values, "label");
-			std::string sArg3 = (!sVid.empty()) ? sVid : sLabel;
-			std::string sArg4 = request::findValue(&values, "value");
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
-			if (pHardware != NULL)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-				reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
 			}
 		}
 
