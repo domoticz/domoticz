@@ -162,7 +162,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         bindings: {
             device: '<',
             selectedYear: '<',
-            selectedMonth: '<'
+            selectedMonth: '<',
+            isOnlyUsage: '<'
         },
         templateUrl: 'app/report/EnergyMultiCounterReport.html',
         controller: DeviceCounterReportController
@@ -254,7 +255,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 if (!checkDataKey(data, item[0])) {
                     return;
                 }
-                if (vm.isMonthView) {
+                if (vm.isMonthView && !vm.isOnlyUsage) {
                     columns.push({ title: $.t(item[2]), data: item[0]+'.counter', render: counterRenderer });
                 }
 

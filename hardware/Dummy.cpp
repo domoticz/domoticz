@@ -87,6 +87,7 @@ namespace http {
 			{ 246, pTypeLux, sTypeLux }, //Lux
 			{ 250, pTypeP1Power, sTypeP1Power}, //P1 Smart Meter (Electric)
 			{ 1005,pTypeGeneral, sTypeManagedCounter }, //Managed Counter
+			{ 1006,pTypeGeneral, sTypeManagedMultiCounter }, //Managed Counter
 			{ 2,   pTypeGeneral, sTypePercentage }, //Percentage
 			{ 1,   pTypeGeneral, sTypePressure }, //Pressure (Bar)
 			{ 85,  pTypeRAIN, sTypeRAIN3 }, //Rain

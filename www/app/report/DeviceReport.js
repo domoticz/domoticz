@@ -66,7 +66,7 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
                 return undefined;
             }
             return ['Power', 'Energy', 'RFXMeter'].includes(vm.device.Type)
-                || isOnlyUsage()
+                || ['Managed Counter'].includes(vm.device.SubType)
                 || ['kWh'].includes(vm.device.SubType)
                 || ['YouLess counter'].includes(vm.device.SubType)
                 || ['Counter Incremental'].includes(vm.device.SubType)
@@ -77,7 +77,8 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
             if (!vm.device) {
                 return undefined;
             }
-            return ['Managed Counter'].includes(vm.device.SubType);
+            return ['Managed Counter'].includes(vm.device.SubType)
+                || ['Managed Multi Counter'].includes(vm.device.SubType);
         }
 
         function isEnergyMultiCounterReport() {
@@ -86,6 +87,7 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
             }
 
             return (vm.device.Type === 'P1 Smart Meter' && vm.device.SubType === 'Energy')
+                || ['Managed Multi Counter'].includes(vm.device.SubType);
         }
 
         function isNoReport() {

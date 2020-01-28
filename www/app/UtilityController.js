@@ -748,7 +748,7 @@ define(['app', 'livesocket'], function (app) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 
 								if (permissions.hasPermission("Admin")) {
-									if (item.Type == "P1 Smart Meter") {
+									if ((item.Type == "P1 Smart Meter") || (item.SubType == "Managed Multi Counter")) {
 										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 									}
 									else {

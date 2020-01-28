@@ -134,7 +134,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             device: '<',
             selectedYear: '<',
             selectedMonth: '<',
-            isOnlyUsage: '<',
+            isOnlyUsage: '<'
         },
         templateUrl: 'app/report/CounterReport.html',
         controller: DeviceCounterReportController

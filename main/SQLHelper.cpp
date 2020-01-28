@@ -3854,6 +3854,9 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		case sTypeManagedCounter:
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "-1;0", devname);
 			break;
+		case sTypeManagedMultiCounter:
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;0;0;0;0;0;0;0;0;0", devname);
+			break;
 		case sTypeVoltage:		//Voltage
 		{
 			std::string rID = std::string(ID);
@@ -4427,6 +4430,29 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 						shortLog = true;
 					}
 					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, shortLog, atoll(parts[0].c_str()), atoll(parts[1].c_str()), parts[2].c_str());
+					return ulID;
+				}
+			}
+			else if ((devType == pTypeGeneral) && (subType == sTypeManagedMultiCounter)) {
+				std::vector<std::string> parts, parts2;
+				StringSplit(sValue, ";", parts);
+				if (parts.size() > 6) {
+					StringSplit(parts[6].c_str(), " ", parts2);
+					// second part is date only, or date with hour with space
+					bool shortLog = false;
+					if (parts2.size() > 1) {
+						shortLog = true;
+					}
+					// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+					// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
+					UpdateCalendarMultiMeter(HardwareID, ID, unit, devType, subType, shortLog, 
+						std::strtoll(parts[0].c_str(), nullptr, 10),
+						std::strtoll(parts[2].c_str(), nullptr, 10),
+						std::strtoll(parts[4].c_str(), nullptr, 10),
+						std::strtoll(parts[5].c_str(), nullptr, 10),
+						std::strtoll(parts[1].c_str(), nullptr, 10),
+						std::strtoll(parts[3].c_str(), nullptr, 10),
+						parts[6].c_str());
 					return ulID;
 				}
 			}
@@ -5502,9 +5528,9 @@ bool CSQLHelper::UpdateCalendarMeter(
 		else
 		{
 			safe_query(
-				"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%lld', Usage='%lld', Date='%q' "
+				"UPDATE Meter SET Value='%lld', Usage='%lld' "
 				"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-				DeviceRowID, (MeterValue < 0) ? 0 : MeterValue, (MeterUsage < 0) ? 0 : MeterUsage, date,
+				(MeterValue < 0) ? 0 : MeterValue, (MeterUsage < 0) ? 0 : MeterUsage,
 				DeviceRowID, date
 			);
 		}
@@ -5531,9 +5557,9 @@ bool CSQLHelper::UpdateCalendarMeter(
 		else
 		{
 			safe_query(
-				"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Counter='%lld', Value='%lld', Date='%q' "
+				"UPDATE Meter_Calendar SET DCounter='%lld', Value='%lld' "
 				"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
-				DeviceRowID, (MeterValue < 0) ? 0 : MeterValue, (MeterUsage < 0) ? 0 : MeterUsage, date,
+				(MeterValue < 0) ? 0 : MeterValue, (MeterUsage < 0) ? 0 : MeterUsage,
 				DeviceRowID, date
 			);
 		}
@@ -5788,6 +5814,93 @@ void CSQLHelper::UpdateMeter()
 			);
 		}
 	}
+}
+
+bool CSQLHelper::UpdateCalendarMultiMeter(
+	const int HardwareID,
+	const char* DeviceID,
+	const unsigned char unit,
+	const unsigned char devType,
+	const unsigned char subType,
+	const bool shortLog,
+	const long long value1,
+	const long long value2,
+	const long long value3,
+	const long long value4,
+	const long long value5,
+	const long long value6,
+	const char* date)
+{
+	std::vector<std::vector<std::string> > result;
+	char MultiMeterTable[] = "MultiMeter";
+	char MultiMeter_CalendarTable[] = "MultiMeter_Calendar";
+	char *table;
+	
+	result = safe_query("SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, DeviceID, unit, devType, subType);
+	if (result.empty()) {
+		return false;
+	}
+
+	std::vector<std::string> sd = result[0];
+	uint64_t DeviceRowID = std::strtoull(sd[0].c_str(), nullptr, 10);
+	//std::string devname = sd[1];
+	//_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
+	
+	if (shortLog)
+	{
+		if (!CheckDateTimeSQL(date)) {
+			_log.Log(LOG_ERROR, "UpdateCalendarMultiMeter(): incorrect date time format received, YYYY-MM-DD HH:mm:ss expected!");
+			return false;
+		}
+		table = MultiMeterTable;
+	}
+	else {
+		if (!CheckDateSQL(date)) {
+			_log.Log(LOG_ERROR, "UpdateCalendarMultiMeter(): incorrect date time format received, YYYY-MM-DD HH:mm:ss expected!");
+			return false;
+		}
+		table = MultiMeter_CalendarTable;
+	}
+
+	//insert or replace record
+	result = safe_query(
+		"SELECT DeviceRowID FROM %q "
+		"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
+		table, DeviceRowID, date
+	);
+	if (result.empty())
+	{
+		safe_query(
+			"INSERT INTO %q (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
+			"VALUES ('%" PRIu64 "', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%q')",
+			table,
+			DeviceRowID,
+			(value1 < 0) ? 0 : value1,
+			(value2 < 0) ? 0 : value2,
+			(value3 < 0) ? 0 : value3,
+			(value4 < 0) ? 0 : value4,
+			(value5 < 0) ? 0 : value5,
+			(value6 < 0) ? 0 : value6,
+			date
+		);
+	}
+	else
+	{
+		safe_query(
+			"UPDATE %q SET Value1='%lld', Value2='%lld', Value3='%lld', Value4='%lld', Value5='%lld', Value6='%lld' "
+			"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
+			table,
+			(value1 < 0) ? 0 : value1,
+			(value2 < 0) ? 0 : value2,
+			(value3 < 0) ? 0 : value3,
+			(value4 < 0) ? 0 : value4,
+			(value5 < 0) ? 0 : value5,
+			(value6 < 0) ? 0 : value6,
+			DeviceRowID,
+			date
+		);
+	}
+	return true;
 }
 
 void CSQLHelper::UpdateMultiMeter()
@@ -6222,6 +6335,11 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		_eSwitchType switchtype = (_eSwitchType)atoi(sd[6].c_str());
 		_eMeterType metertype = (_eMeterType)switchtype;
 
+		//Do not update for managed counter
+		if ((devType == pTypeGeneral) && (subType == sTypeManagedCounter)) {
+				continue;
+		}
+
 		float tGasDivider = GasDivider;
 
 		if (devType == pTypeP1Power)
@@ -6417,6 +6535,11 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		unsigned char subType = atoi(sd[5].c_str());
 		//_eSwitchType switchtype=(_eSwitchType) atoi(sd[6].c_str());
 		//_eMeterType metertype=(_eMeterType)switchtype;
+
+		//Do not update for managed counter
+		if ((devType == pTypeGeneral) && (subType == sTypeManagedMultiCounter)) {
+				continue;
+		}
 
 		result = safe_query(
 			"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value3), MAX(Value3), MIN(Value4), MAX(Value4), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<'%q')",

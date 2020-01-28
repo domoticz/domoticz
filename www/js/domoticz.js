@@ -6130,7 +6130,7 @@ function GetGraphUnit(uname) {
 	return '?';
 }
 
-function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
+function ShowSmartLog(contentdiv, backfunction, id, name, switchtype, bar = false) {
 	clearInterval($.myglobals.refreshTimer);
 	$(window).scrollTop(0);
 	$('#modal').show();
@@ -6180,7 +6180,7 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 	$.DayChart = $($.content + ' #daygraph');
 	$.DayChart.highcharts({
 		chart: {
-			type: 'spline',
+			type: bar ? 'column' : 'spline',
 			zoomType: 'x',
 			resetZoomButton: {
 				position: {
@@ -6214,7 +6214,7 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 		},
 		{
 			title: {
-				text: $.t('Power') + ' (Watt)'
+				text: bar ? $.t('Usage') + ' (Wh)' : $.t('Power') + ' (Watt)'
 			},
 			min: 0,
 			opposite: true

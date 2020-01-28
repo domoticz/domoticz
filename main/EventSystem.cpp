@@ -991,6 +991,14 @@ void CEventSystem::GetCurrentMeasurementStates()
 						isUtility = true;
 					}
 				}
+				else if (sitem.subType == sTypeManagedMultiCounter)
+				{
+					if (splitresults.size() == 6)
+					{
+						utilityval = static_cast<float>(atof(splitresults[4].c_str()));
+						isUtility = true;
+					}
+				}
 			}
 		}
 		break;

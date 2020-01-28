@@ -4,7 +4,7 @@
         {{:: 'T2' | translate }}: {{:: $ctrl.data.usage2.usage.toFixed(3) }} {{:: $ctrl.unit}},
         {{:: 'Total' | translate }}: {{:: $ctrl.data.totalUsage.toFixed(3) }} {{:: $ctrl.unit}}
     </div>
-    <div>{{:: 'Counter' | translate }}:
+    <div ng-if="::!$ctrl.isOnlyUsage">{{:: 'Counter' | translate }}:
         {{:: 'T1' | translate }}: {{:: $ctrl.data.usage1.counter.toFixed(3) }} {{:: $ctrl.unit}},
         {{:: 'T2' | translate }}: {{:: $ctrl.data.usage2.counter.toFixed(3) }} {{:: $ctrl.unit}}
     </div>
@@ -13,7 +13,7 @@
         {{:: 'R2' | translate }}: {{:: $ctrl.data.return2.usage.toFixed(3) }} {{:: $ctrl.unit}},
         {{:: 'Total' | translate }}: {{:: $ctrl.data.totalReturn.toFixed(3) }} {{:: $ctrl.unit}}
     </div>
-    <div ng-if="::$ctrl.hasReturn">{{:: 'Counter Return' | translate }}:
+    <div ng-if="::$ctrl.hasReturn && ::!$ctrl.isOnlyUsage">{{:: 'Counter Return' | translate }}:
         {{:: 'R1' | translate }}: {{:: $ctrl.data.return1.counter.toFixed(3) }} {{:: $ctrl.unit}},
         {{:: 'R2' | translate }}: {{:: $ctrl.data.return2.counter.toFixed(3) }} {{:: $ctrl.unit}}
     </div>

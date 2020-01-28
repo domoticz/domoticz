@@ -123,6 +123,8 @@ define(function () {
                     return 'kWh';
                 } else if (this.Type === 'General' && this.SubType === 'Managed Counter') {
                     return 'kWh';
+                } else if (this.Type === 'General' && this.SubType === 'Managed Multi Counter') {
+                    return 'kWh';
                 } else if (this.Type === 'General' && this.SubType === 'Counter Incremental') {
                     return '';
                 } else if (this.Type === 'P1 Smart Meter' && this.SubType === 'Energy') {

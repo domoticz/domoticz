@@ -1588,7 +1588,7 @@ define(['app', 'livesocket'], function (app) {
 						}
 						if (typeof item.Usage != 'undefined') {
 							bigtext = item.Usage;
-							if (item.Type != "P1 Smart Meter") {
+							if ((item.Type != "P1 Smart Meter") && (item.SubType != "Managed Multi Counter")) {
 								if ($scope.config.DashboardType == 0) {
 									if (typeof item.CounterToday != 'undefined') {
 										status += $.t("Today") + ': ' + item.CounterToday;
@@ -3836,7 +3836,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 
 									if (typeof item.Usage != 'undefined') {
-										if (item.Type != "P1 Smart Meter") {
+										if ((item.Type != "P1 Smart Meter") && (item.SubType != "Managed Multi Counter")) {
 											if ($scope.config.DashboardType == 0) {
 												//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 												if (typeof item.CounterToday != 'undefined') {

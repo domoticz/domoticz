@@ -8765,6 +8765,7 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeKwh))) &&
 								(dType != pTypeCURRENT) &&
 								(dType != pTypeCURRENTENERGY) &&
@@ -8929,6 +8930,8 @@ namespace http {
 							(dType == pTypeAirQuality) ||
 							(dType == pTypeRFXSensor) ||
 							(dType == pTypeP1Power) ||
+							((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)) ||
+							((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter)) ||
 							(dType == pTypeP1Gas)
 							)
 						{
@@ -10005,8 +10008,6 @@ namespace http {
 								dvalue = static_cast<double>(atof(splitresults[0].c_str()));
 							}
 						}
-						root["result"][ii]["Data"] = root["result"][ii]["Counter"];
-
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["TypeImg"] = "counter";
@@ -10021,32 +10022,28 @@ namespace http {
 						case MTYPE_ENERGY_GENERATED:
 							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
 							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
 							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
 							root["result"][ii]["ValueUnits"] = ValueUnits;
 							break;
 						default:
 							root["result"][ii]["Data"] = "?";
-							root["result"][ii]["Counter"] = "?";
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
 							root["result"][ii]["ValueUnits"] = ValueUnits;
 							break;
 						}
+						root["result"][ii]["Counter"] = root["result"][ii]["Data"];
 					}
 					else if (dType == pTypeYouLess)
 					{
@@ -10191,6 +10188,72 @@ namespace http {
 						root["result"][ii]["Usage"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 					}
+					else if ((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter))
+					{
+						root["result"][ii]["TypeImg"] = "counter";
+						root["result"][ii]["ShowNotifications"] = false;
+						root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+						std::vector<std::string> splitresults;
+						StringSplit(sValue, ";", splitresults);
+						if (splitresults.size() != 6)
+						{
+							root["result"][ii]["Usage"] = "Invalid";
+							root["result"][ii]["UsageDeliv"] = "Invalid";
+							root["result"][ii]["Data"] = "Invalid!: " + sValue;
+							root["result"][ii]["HaveTimeout"] = true;
+							root["result"][ii]["CounterToday"] = "Invalid";
+							root["result"][ii]["CounterDelivToday"] = "Invalid";
+						}
+						else
+						{
+							float EnergyDivider = 1000.0f;
+							int tValue;
+							if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+							{
+								EnergyDivider = float(tValue);
+							}
+
+							// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+							// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
+							unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
+							unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
+							unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
+							unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
+							unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
+							unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
+
+							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
+							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
+
+							unsigned long long powerusage = powerusage1 + powerusage2;
+							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
+							if (powerdeliv < 2)
+								powerdeliv = 0;
+
+							double musage = 0;
+
+							musage = double(powerusage) / EnergyDivider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["Counter"] = szTmp;
+							musage = double(powerdeliv) / EnergyDivider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["CounterDeliv"] = szTmp;
+
+							if (bHaveTimeout)
+							{
+								usagecurrent = 0;
+								delivcurrent = 0;
+							}
+							sprintf(szTmp, "%llu Watt", usagecurrent);
+							root["result"][ii]["Usage"] = szTmp;
+							root["result"][ii]["CounterToday"] = szTmp;
+							sprintf(szTmp, "%llu Watt", delivcurrent);
+							root["result"][ii]["UsageDeliv"] = szTmp;
+							root["result"][ii]["CounterDelivToday"] = szTmp;
+							root["result"][ii]["Data"] = sValue;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
+					}
 					else if (dType == pTypeP1Power)
 					{
 						std::vector<std::string> splitresults;
@@ -10216,6 +10279,8 @@ namespace http {
 								EnergyDivider = float(tValue);
 							}
 
+							// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+							// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
 							unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
 							unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
 							unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
@@ -13460,6 +13525,8 @@ namespace http {
 				(dType == pTypeENERGY) ||
 				(dType == pTypePOWER) ||
 				(dType == pTypeCURRENTENERGY) ||
+				((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)) ||
+				((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter)) ||
 				((dType == pTypeGeneral) && (dSubType == sTypeKwh))
 				)
 			{
@@ -13471,7 +13538,7 @@ namespace http {
 				metertype = MTYPE_COUNTER;
 
 			// Special case of managed counter: Usage instead of Value in Meter table, and we don't want to calculate last value
-			bool bIsManagedCounter = (dType == pTypeGeneral) && (dSubType == sTypeManagedCounter);
+			bool bIsManagedCounter = (dType == pTypeGeneral) && ((dSubType == sTypeManagedCounter) || (dSubType == sTypeManagedMultiCounter));
 
 			double AddjValue = atof(result[0][3].c_str());
 			double AddjMulti = atof(result[0][4].c_str());
@@ -13493,7 +13560,7 @@ namespace http {
 					dbasetable = "Fan";
 				else if (sensor == "counter")
 				{
-					if ((dType == pTypeP1Power) || (dType == pTypeCURRENT) || (dType == pTypeCURRENTENERGY))
+					if ((dType == pTypeP1Power) || (dType == pTypeCURRENT) || (dType == pTypeCURRENTENERGY) || ((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter)))
 					{
 						dbasetable = "MultiMeter";
 					}
@@ -13538,6 +13605,7 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter)) ||
 						(dType == pTypeLux) ||
 						(dType == pTypeWEIGHT) ||
 						(dType == pTypeUsage)
@@ -13829,6 +13897,110 @@ namespace http {
 									root["result"][ii]["r1"] = sd[3];
 									ii++;
 
+								}
+							}
+							if (bHaveDeliverd)
+							{
+								root["delivered"] = true;
+							}
+						}
+					}
+					else if ((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter)) {
+						root["status"] = "OK";
+						root["title"] = "Graph " + sensor + " " + srange;
+
+						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						if (!result.empty())
+						{
+							int ii = 0;
+							bool bHaveDeliverd = false;
+							bool bHaveFirstValue = false;
+							time_t lastTime = 0;
+							int lastDay = 0;
+
+							long accUsage1 = 0;
+							long accUsage2 = 0;
+							long accDeliv1 = 0;
+							long accDeliv2 = 0;
+
+							for (const auto & itt : result)
+							{
+								std::vector<std::string> sd = itt;
+
+								// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+								// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
+								long curUsage1 = std::strtol(sd[0].c_str(), nullptr, 10);
+								long curUsage2 = std::strtol(sd[4].c_str(), nullptr, 10);
+								long curDeliv1 = std::strtol(sd[1].c_str(), nullptr, 10);
+								long curDeliv2 = std::strtol(sd[5].c_str(), nullptr, 10);
+								curDeliv1 = (curDeliv1 < 10) ? 0 : curDeliv1;
+								curDeliv2 = (curDeliv2 < 10) ? 0 : curDeliv2;
+
+								std::string stime = sd[6];
+								struct tm ntime;
+								time_t atime;
+								ParseSQLdatetime(atime, ntime, stime, -1);
+
+								float tdiff = static_cast<float>(difftime(atime, lastTime));
+								if (tdiff == 0)
+									tdiff = 1;
+								float tlaps = 3600.0f / tdiff;
+
+								if (!bHaveFirstValue) {
+									bHaveFirstValue = true;
+									tlaps = 1.0;
+								}
+
+								if ((curUsage1 < 0) || (curUsage1 > 100000))
+									curUsage1 = 0;
+								if ((curUsage2 < 0) || (curUsage2 > 100000))
+									curUsage2 = 0;
+								if ((curDeliv1 < 0) || (curDeliv1 > 100000))
+									curDeliv1 = 0;
+								if ((curDeliv2 < 0) || (curDeliv2 > 100000))
+									curDeliv2 = 0;
+
+								curUsage1 *= int(tlaps);
+								curUsage2 *= int(tlaps);
+								curDeliv1 *= int(tlaps);
+								curDeliv2 *= int(tlaps);
+
+								root["result"][ii]["d"] = sd[6].substr(0, 16);
+
+								if ((curDeliv1 != 0) || (curDeliv2 != 0))
+									bHaveDeliverd = true;
+
+								sprintf(szTmp, "%ld", curUsage1);
+								root["result"][ii]["v"] = szTmp;
+								sprintf(szTmp, "%ld", curUsage2);
+								root["result"][ii]["v2"] = szTmp;
+								sprintf(szTmp, "%ld", curDeliv1);
+								root["result"][ii]["r1"] = szTmp;
+								sprintf(szTmp, "%ld", curDeliv2);
+								root["result"][ii]["r2"] = szTmp;
+
+								accUsage1 += curUsage1;
+								accUsage2 += curUsage2;
+
+								sprintf(szTmp, "%ld", accUsage1 + accUsage2);
+								root["result"][ii]["eu"] = szTmp;
+								if (bHaveDeliverd)
+								{
+									accDeliv1 += curDeliv1;
+									accDeliv2 += curDeliv2;
+									sprintf(szTmp, "%ld", accDeliv1 + accDeliv2);
+									root["result"][ii]["eg"] = szTmp;
+								}
+
+								ii++;
+								ParseSQLdatetime(atime, ntime, stime, -1);
+								lastTime = atime;
+								if (lastDay != ntime.tm_mday) {
+									lastDay = ntime.tm_mday;
+									accUsage1 = 0;
+									accUsage2 = 0;
+									accDeliv1 = 0;
+									accDeliv2 = 0;
 								}
 							}
 							if (bHaveDeliverd)
@@ -14895,8 +15067,10 @@ namespace http {
 					sprintf(szDateStart, "%04d-%02d-%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday);
 
 					int ii = 0;
-					if (dType == pTypeP1Power)
-					{
+					if (
+						((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter))
+						|| (dType == pTypeP1Power)
+					) {
 						result = m_sql.safe_query("SELECT Value1,Value2,Value5,Value6,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
@@ -14905,6 +15079,8 @@ namespace http {
 							{
 								std::vector<std::string> sd = itt;
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
+								// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+								// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
 								std::string szValueUsage1 = sd[0];
 								std::string szValueDeliv1 = sd[1];
 								std::string szValueUsage2 = sd[2];
@@ -15613,8 +15789,10 @@ namespace http {
 
 					int ii = 0;
 					iPrev = 0;
-					if (dType == pTypeP1Power)
-					{
+					if (
+						((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter))
+						|| (dType == pTypeP1Power)
+					) {
 						//Actual Year
 						result = m_sql.safe_query(
 							"SELECT Value1,Value2,Value5,Value6, Date,"
@@ -15636,6 +15814,8 @@ namespace http {
 								double counter_3 = atof(sd[7].c_str());
 								double counter_4 = atof(sd[8].c_str());
 
+								// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+								// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
 								std::string szUsage1 = sd[0];
 								std::string szDeliv1 = sd[1];
 								std::string szUsage2 = sd[2];
@@ -17071,8 +17251,10 @@ namespace http {
 					root["ValueUnits"] = options["ValueUnits"];
 
 					int ii = 0;
-					if (dType == pTypeP1Power)
-					{
+					if (
+						((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter))
+						|| (dType == pTypeP1Power)
+					) {
 						result = m_sql.safe_query(
 							"SELECT Value1,Value2,Value5,Value6, Date "
 							"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
@@ -17087,6 +17269,8 @@ namespace http {
 
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 
+								// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+								// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
 								std::string szUsage1 = sd[0];
 								std::string szDeliv1 = sd[1];
 								std::string szUsage2 = sd[2];

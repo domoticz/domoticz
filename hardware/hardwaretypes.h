@@ -74,6 +74,7 @@
 #define sTypeCustom					0x1F
 #define sTypeZWaveAlarm				0x20
 #define sTypeManagedCounter			0x21
+#define sTypeManagedMultiCounter	0x22
 #define sTypeZWaveThermostatOperatingState	0x23
 
 //General Switch

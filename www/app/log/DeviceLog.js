@@ -19,6 +19,8 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
 
                 if (isSmartLog()) {
                     ShowSmartLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
+                } else if (isSmartBarLog()) {
+                    ShowSmartLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal, true);
                 } else if (isCounterLogSpline()) {
                     ShowCounterLogSpline('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
                 } else if (isCounterLog()) {
@@ -91,7 +93,19 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 return undefined;
             }
 
-            return (vm.device.Type == 'P1 Smart Meter' && vm.device.SubType == 'Energy')
+            return (
+              (vm.device.Type == 'P1 Smart Meter' && vm.device.SubType == 'Energy')
+            )
+        }
+
+        function isSmartBarLog() {
+            if (!vm.device) {
+                return undefined;
+            }
+
+            return (
+              (vm.device.Type == 'General' && vm.device.SubType == 'Managed Multi Counter')
+            )
         }
 
         function isCounterLog() {
