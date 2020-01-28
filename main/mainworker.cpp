@@ -1031,7 +1031,12 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new COpenWebNetTCP(ID, Address, Port, Password, Mode1);
 		break;
 	case HTYPE_BleBox:
-		pHardware = new BleBox(ID, Mode1);
+		try {
+			pHardware = new BleBox(ID, Address, Mode1);
+		} catch (std::exception &ex) {
+			_log.Log(LOG_ERROR, "failed to setup BleBox hardware at: %s, because: %s",
+					Address.c_str(), ex.what());
+		}
 		break;
 	case HTYPE_OpenWeatherMap:
 		pHardware = new COpenWeatherMap(ID, Username, Password);
@@ -2105,7 +2110,14 @@ void MainWorker::Do_Work_On_Rx_Messages()
 	{
 		// Wait and pop next message or timeout
 		_tRxQueueItem rxQItem;
-		bool hasPopped = m_rxMessageQueue.timed_wait_and_pop<std::chrono::duration<int> >(rxQItem, std::chrono::duration<int>(5));
+		bool hasPopped =
+#ifdef UNIT_TESTING
+			m_rxMessageQueue.timed_wait_and_pop<std::chrono::milliseconds>(
+					rxQItem, std::chrono::milliseconds(1));
+#else
+		m_rxMessageQueue.timed_wait_and_pop<std::chrono::duration<int>>(
+				rxQItem, std::chrono::duration<int>(5));
+#endif
 		// (if no message for 5 seconds, returns anyway to check m_TaskRXMessage.IsStopRequested)
 
 		if (!hasPopped) {

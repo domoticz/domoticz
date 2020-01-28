@@ -2,61 +2,108 @@
 
 // implememtation for devices : http://blebox.eu/
 // by Fantom (szczukot@poczta.onet.pl)
+// rewritten by gadgetmobile (the_gadget_mobile@yahoo.com)
 
-#include "DomoticzHardware.h"
-#include "hardwaretypes.h"
-#include "../main/RFXtrx.h"
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <mutex>
+#include <stdexcept>
+#include <string>
+#include <thread>
 
-namespace Json
-{
-	class Value;
-};
+#include "../main/RFXNames.h"
 
-class BleBox : public CDomoticzHardwareBase
-{
+#include "../hardware/DomoticzHardware.h" // for base class
+#include "blebox/ip.h"
+
+namespace Json {
+class Value;
+}
+
+namespace blebox {
+class box;
+class session;
+namespace db {
+bool migrate(blebox::session *session = 0);
+}
+} // namespace blebox
+
+class BleBox : public CDomoticzHardwareBase {
 public:
-	BleBox(const int id, const int pollIntervalsec);
-	virtual ~BleBox();
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	int GetDeviceType(const std::string &IPAddress);
-	void AddNode(const std::string &name, const std::string &IPAddress, bool reloadNodes);
-	void RemoveNode(const int id);
-	void RemoveAllNodes();
-	void SetSettings(const int pollIntervalsec);
-	void UpdateFirmware();
-	Json::Value GetApiDeviceState(const std::string &IPAddress);
-	bool DoesNodeExists(const Json::Value &root, const std::string &node);
-	bool DoesNodeExists(const Json::Value &root, const std::string &node, const std::string &value);
-	std::string GetUptime(const std::string &IPAddress);
-	void SearchNodes(const std::string &pattern);
+  // TODO: make configurable?
+  const int DefaultFirmwareTimeout = 2;
+
+  // TODO: each box should have a minimal poll time, so that this could be
+  // even every second without worrying about recommendations
+  static const int DefaultPollInterval = 30;
+
+  // called by Domoticz
+  BleBox(const int hw_id, const std::string &address, const int pollIntervalsec,
+         blebox::session *session = nullptr);
+
+  // called by search
+  BleBox(::blebox::ip ip, const int hw_id, const int pollIntervalsec,
+         blebox::session *session);
+
+  ~BleBox() override;
+
+  int hw_id() const {
+    if (!m_HwdID)
+      throw std::invalid_argument("incomplete BleBox hardware instance");
+
+    return m_HwdID;
+  }
+
+  int poll_interval() const { return _poll_interval; };
+
+  bool WriteToHardware(const char *pdata, const unsigned char length) final;
+
+  // Called from web
+  void UpgradeFirmware();
+
+  void FetchAllFeatures(Json::Value &root);
+  void AsyncRemoveFeature(int device_record_id);
+  void AsyncRemoveAllFeatures();
+  void DetectFeatures();
+  void RefreshFeatures();
+  void UseFeatures();
+
+  static void SearchNetwork(const std::string &pattern);
+
+  // public only for tests
+  auto session() -> blebox::session &;
+
+  // Defined only so it can be replaced in tests
+  // NOTE: overridable, but probably not worth doing so (inconvenient to use)
+  // NOTE: there's a special version of this is in stubs.cpp (for testing)
+  // Public, but only used by blebox::widgets::widget
+  virtual void InternalDecodeRX(const std::string &default_name,
+                                const uint8_t *cmd, const size_t size);
+
+  // Used by search, adding by user and db migration
+  static bool AddOrUpdateHardware(const std::string &name, blebox::ip ip,
+                                  bool silent, bool migration,
+                                  blebox::session *session);
+
 private:
-	bool StartHardware() override;
-	bool StopHardware() override;
-	void Do_Work();
+  int _poll_interval;
+  std::shared_ptr<std::thread> m_thread;
+  std::unique_ptr<blebox::box> _box;
+  std::mutex m_mutex;
+  std::string _unique_id;
+  ::blebox::ip _ip;
+  ::blebox::session *_session{nullptr};
+  ::blebox::session *_internal_session{nullptr};
 
-	std::string IdentifyDevice(const std::string &IPAddress);
-	int GetDeviceTypeByApiName(const std::string &apiName);
-	std::string GetDeviceIP(const tRBUF *id);
-	std::string GetDeviceRevertIP(const tRBUF *id);
-	std::string GetDeviceIP(const std::string &id);
-	std::string IPToHex(const std::string &IPAddress, const int type);
-	Json::Value SendCommand(const std::string &IPAddress, const std::string &command, const int timeOut = 3);
-	void GetDevicesState();
+  bool StartHardware() final;
+  bool StopHardware() final;
 
-	void SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
+  // helper method for thread management
+  void Do_Work();
 
-	void ReloadNodes();
-	void UnloadNodes();
-	bool LoadNodes();
-private:
-	int m_PollInterval;
-	std::shared_ptr<std::thread> m_thread;
-	std::map<const std::string, const int> m_devices;
-	std::mutex m_mutex;
+  void SetSettings(const int pollIntervalsec);
 
-	_tColor m_RGBWColorState;
-	bool m_RGBWisWhiteState;
-	int m_RGBWbrightnessState;
-
-	bool PrepareHostList(const std::string& pattern, std::vector<std::string>& hosts);
+  void reset_box();
+  auto box() -> blebox::box &;
 };

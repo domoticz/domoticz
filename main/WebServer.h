@@ -272,13 +272,15 @@ private:
 	void Cmd_AddYeeLight(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddArilux(WebEmSession & session, const request& req, Json::Value &root);
 
-	void Cmd_BleBoxSetMode(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_BleBoxGetNodes(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_BleBoxAddNode(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_BleBoxAutoSearchingNodes(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_BleBoxUpdateFirmware(WebEmSession & session, const request& req, Json::Value &root);
+	static void Cmd_BleBoxDetectHardware(WebEmSession &session, const request &req, Json::Value &root);
+	static void Cmd_BleBoxUpgradeFirmware(WebEmSession &session, const request &req, Json::Value &root);
+	static void Cmd_BleBoxBestIpPattern(WebEmSession &session, const request &req, Json::Value &root);
+	static void Cmd_BleBoxRemoveFeature(WebEmSession &session, const request &req, Json::Value &root);
+	static void Cmd_BleBoxClearFeatures(WebEmSession &session, const request &req, Json::Value &root);
+	static void Cmd_BleBoxGetFeatures(WebEmSession &session, const request &req, Json::Value &root);
+	static void Cmd_BleBoxDetectFeatures(WebEmSession &session, const request &req, Json::Value &root);
+	static void Cmd_BleBoxRefreshFeatures(WebEmSession &session, const request &req, Json::Value &root);
+	static void Cmd_BleBoxUseFeatures(WebEmSession &session, const request &req, Json::Value &root);
 
 	void Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root);

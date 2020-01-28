@@ -371,7 +371,6 @@ hardware/Arilux.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
-hardware/BleBox.cpp
 hardware/Buienradar.cpp
 hardware/cayenne_lpp/CayenneLPP_Dec.cpp
 hardware/ColorSwitch.cpp
@@ -566,7 +565,12 @@ tinyxpath/xpath_stack.cpp
 tinyxpath/xpath_static.cpp
 tinyxpath/xpath_syntax.cpp
 )
-add_executable(domoticz ${domoticz_SRCS})
+add_executable(domoticz ${domoticz_SRCS}
+  $<TARGET_OBJECTS:blebox>
+  $<TARGET_OBJECTS:blebox_hardware>
+  )
+
+add_subdirectory(hardware/blebox)
 
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)

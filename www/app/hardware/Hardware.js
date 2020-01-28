@@ -150,6 +150,16 @@ define(['app'], function (app) {
 					i2cinvert = $("#hardwareparami2cinvert #i2cinvert").prop("checked") ? 1 : 0;
 					Mode1 = encodeURIComponent(i2cinvert);
 				}
+				if (text.indexOf('BleBox') >= 0) {
+					try {
+						var data = BleBoxSettingsFromInputs();
+						var i2caddress = data.addresses;
+						var Mode1 = data.polling;
+					} catch (e) {
+						ShowNotify(e.message, 2500, true);
+						return;
+					}
+				}
 				if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 					var gpiodebounce = $("#hardwareparamsgpio #gpiodebounce").val();
 					var gpioperiod = $("#hardwareparamsgpio #gpioperiod").val();
@@ -1356,7 +1366,6 @@ define(['app'], function (app) {
 			}
 			else if (
 				(text.indexOf("Panasonic") >= 0) ||
-				(text.indexOf("BleBox") >= 0) ||
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
@@ -1380,6 +1389,8 @@ define(['app'], function (app) {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					}
 				});
+			} else if (text.indexOf('BleBox') >= 0) {
+				BleBoxAddUserHardware(name, bEnabled, datatimeout, hardwaretype);
 			}
 			else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 				var gpiodebounce = $("#hardwarecontent #hardwareparamsgpio #gpiodebounce").val();
@@ -3209,7 +3220,7 @@ define(['app'], function (app) {
                                 HwTypeStr += ' ' + hardwareSetupLink;
 							}
 							else if (HwTypeStr.indexOf("BleBox") >= 0) {
-								HwTypeStr += ' ' + hardwareSetupLink;
+								HwTypeStr = BleBoxFullProductName(item.Extra) + ' ' + hardwareSetupLink;
 							}
 							else if (HwTypeStr.indexOf("Logitech Media Server") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditLMS(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
@@ -3746,6 +3757,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divevohomeweb #comboevogateway").val((Location >>> 8) & 15);
 							$("#hardwarecontent #divevohomeweb #comboevotcs").val((Location >>> 4) & 15);
 						}
+						if (data['Type'].indexOf('BleBox') >= 0) BleBoxOnHardwareSelected(data);
 					}
 				}
 			});
@@ -3887,6 +3899,8 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
 			$("#hardwarecontent #divhttppoller").hide();
+			$("#hardwarecontent #divblebox").hide();
+			$("#hardwarecontent #divbleboxsearch").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
@@ -4112,6 +4126,8 @@ define(['app'], function (app) {
 			else if (text.indexOf("Evohome via Web") >= 0) {
 				$("#hardwarecontent #divevohomeweb").show();
 				$("#hardwarecontent #divlogin").show();
+			} else if (text.indexOf('BleBox devices') >= 0) {
+				BleBoxUpdateOptions();
 			}
 			if (
 				(text.indexOf("ETH8020") >= 0) ||
@@ -4343,8 +4359,160 @@ define(['app'], function (app) {
 					$("#hardwareparamsi2clocal #comboi2clocal").append(option);
 				}
 			});
-
+			BleBoxInit();
 			ShowHardware();
+		}
+		BleBoxValidIpAddress = function(ip) {
+			return /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/.test(ip);
+		}
+		BleBoxAddUserHardware = function(name, bEnabled, datatimeout, hardwaretype) {
+			var data;
+			try {
+				data = BleBoxSettingsFromInputs();
+			} catch(e) {
+				ShowNotify(e.message, 2500, true);
+				return;
+			}
+
+			ip_address = data.ip_address;
+			if(!BleBoxValidIpAddress(ip_address)){
+				ShowNotify($.t("Invalid ip address"), 2500, true);
+				return;
+			}
+			polling = data.polling;
+			$.ajax({
+				dataType: 'json',
+				url: 'json.htm?' + $.param({
+					type: 'command',
+					param: 'addhardware',
+					htype: hardwaretype, // should always be HTYPE_BleBox (82)
+					address: ip_address,
+					Mode1: polling,
+					name: name,
+					enabled: bEnabled,
+					datatimeout: datatimeout
+				}),
+				async: false,
+				success: function(data) {
+					RefreshHardwareTable();
+				},
+				error: function() {
+					ShowNotify($.t('Problem adding hardware!'), 2500, true);
+				}
+			});
+		};
+		BleBoxDetectHardware = function() {
+			var pattern = BleBoxGetIpPattern();
+			if (pattern == '') {
+				ShowNotify($.t('Please enter an IP pattern!'), 2500, true);
+				return;
+			}
+			BleBoxSetSearching(true);
+			$.ajax({
+				dataType: 'json',
+				url: 'json.htm?' + $.param({
+					type: 'command',
+					param: 'bleboxdetecthardware',
+					ipmask: pattern
+				}),
+				async: true,
+				success: function(data) {
+					RefreshHardwareTable();
+					BleBoxSetSearching(false);
+				},
+				error: function(data) {
+					BleBoxSetSearching(false);
+				}
+			});
+		};
+		BleBoxUpgradeFirmware = function(idx) {
+			ShowNotify($.t('Please wait. Updating ....!'), 2500, true);
+			$.ajax({
+				dataType: 'json',
+				url: 'json.htm?' + $.param({
+					type: 'command',
+					param: 'bleboxupgradefirmware',
+					idx: idx
+				}),
+				async: false,
+				success: function(data) {
+					RefreshHardwareTable();
+				}
+			});
+		};
+		function BleBoxInit() {
+			BleBoxDetectBestIpPattern();
+		}
+		function BleBoxUpdateOptions() {
+			BleBoxSetSearching(false);
+			$('#divblebox').show();
+			$('#divbleboxsearch').show();
+			BleBoxSetIpPattern(BleBoxGetIpPattern());
+		}
+		function BleBoxOnHardwareSelected(data) {
+			var result = data['Address'].split(':', 2);
+			var hw_address = result[0];
+			var address = result[1];
+			$('#divblebox #blebox_mac').text(hw_address);
+			$('#divblebox #blebox_address').val(address);
+			$('#divblebox #blebox_polling').val(data['Mode1']);
+			BleBoxSetIpPattern(address);
+			var idx = data['DT_RowId'];
+			$('#divbleboxsearch #blebox_upgrade_firmware').attr('href', 'javascript:BleBoxUpgradeFirmware(' + idx + ')');
+		}
+		function BleBoxSettingsFromInputs() {
+			var hw_address = $('#hardwarecontent #divblebox #blebox_mac').text();
+			var address = $('#divblebox #blebox_address').val();
+			var polling = $('#divblebox #blebox_polling').val();
+			if (address == '') throw Error($.t('Please enter an Address!'));
+			var addresses = hw_address + ':' + address;
+			return {
+				polling: polling,
+				addresses: addresses,
+				hw_address: hw_address,
+				ip_address: address
+			};
+		}
+		function BleBoxSetIpPattern(pattern) {
+			if(typeof pattern == 'undefined')
+				return;
+			var new_pattern = pattern == '' ? BleBoxDefaultIpPattern() : pattern;
+			$('#divbleboxsearch #ipmask').val(BleBoxIpPattern(new_pattern));
+		}
+		function BleBoxIpPattern(address_or_pattern) {
+			return address_or_pattern.split('.', 3).join('.') + '.*';
+		}
+		function BleBoxDefaultIpPattern() {
+			return $.blebox_default_ip_pattern;
+		}
+		function BleBoxDetectBestIpPattern() {
+			$.blebox_default_ip_pattern = '192.168.1.*';
+			$.ajax({
+				dataType: 'json',
+				url: 'json.htm?' + $.param({
+					type: 'command',
+					param: 'bleboxgetbestippattern'
+				}),
+				async: true,
+				success: function(data) {
+					if (typeof data.result != 'undefined') {
+						$.blebox_default_ip_pattern = BleBoxIpPattern(data.result.ip);
+					}
+				}
+			});
+		}
+		function BleBoxGetIpPattern() {
+			return $('#divbleboxsearch #ipmask').val();
+		}
+		function BleBoxSetSearching(searching) {
+			var path = '#divbleboxsearch #autosearching';
+			$(path).text(searching? '(Searching...)' : 'Search for BleBox devices');
+			$(path).attr('class', searching ? 'btnstyle3-dis' : 'btnstyle3');
+		}
+		function BleBoxFullProductName(extra) {
+			if(extra == '')
+				return 'BleBox devices';
+			return 'BleBox ' + JSON.parse(extra)['type'];
 		}
 
         $scope.$on('$viewContentLoaded', function(){

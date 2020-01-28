@@ -14,6 +14,8 @@
 #include "../sqlite/sqlite3.h"
 #endif
 #include "../hardware/hardwaretypes.h"
+#include "../hardware/BleBox.h"
+
 #include "../smtpclient/SMTPClient.h"
 #include "WebServerHelper.h"
 #include "../webserver/Base64.h"
@@ -35,7 +37,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 139
+#define DB_VERSION 140
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2736,7 +2738,20 @@ bool CSQLHelper::OpenDatabase()
 				query("ALTER TABLE SceneLog ADD COLUMN [User] VARCHAR(100) DEFAULT ('')");
 			}
 		}
-	} 
+		if (dbversion < 140) {
+			query("BEGIN TRANSACTION");
+			if(!blebox::db::migrate()) {
+				query("ROLLBACK");
+				_log.Log(
+						LOG_ERROR,
+						"BleBox devices migration failed. See the error logs for details.");
+				sqlite3_close(m_dbase);
+				m_dbase = nullptr;
+				return false;
+			}
+			query("COMMIT");
+		}
+	}
 	else if (bNewInstall)
 	{
 		//place here actions that needs to be performed on new databases

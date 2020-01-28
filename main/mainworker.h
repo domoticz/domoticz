@@ -201,8 +201,15 @@ private:
 	// RxMessage queue resources
 	volatile unsigned long m_rxMessageIdx;
 	std::shared_ptr<std::thread> m_rxMessageThread;
+#ifdef UNIT_TESTING
+public:
+#endif
 	StoppableTask m_TaskRXMessage;
 	void Do_Work_On_Rx_Messages();
+#ifdef UNIT_TESTING
+private:
+#endif
+
 	struct _tRxQueueItem {
 		std::string Name;
 		int BatteryLevel;
@@ -216,7 +223,16 @@ private:
 	void UnlockRxMessageQueue();
 	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel);
 	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel, const bool wait);
+
+#ifdef UNIT_TESTING
+public:
+#endif
+
 	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel); //battery level: 0-100, 255=no battery, -1 = don't set
+
+#ifdef UNIT_TESTING
+private:
+#endif
 
 	struct _tRxMessageProcessingResult {
 		std::string DeviceName;

@@ -440,13 +440,23 @@ namespace http {
 
 			RegisterCommandCode("onkyoeiscpcommand", boost::bind(&CWebServer::Cmd_OnkyoEiscpCommand, this, _1, _2, _3));
 
-			RegisterCommandCode("bleboxsetmode", boost::bind(&CWebServer::Cmd_BleBoxSetMode, this, _1, _2, _3));
-			RegisterCommandCode("bleboxgetnodes", boost::bind(&CWebServer::Cmd_BleBoxGetNodes, this, _1, _2, _3));
-			RegisterCommandCode("bleboxaddnode", boost::bind(&CWebServer::Cmd_BleBoxAddNode, this, _1, _2, _3));
-			RegisterCommandCode("bleboxremovenode", boost::bind(&CWebServer::Cmd_BleBoxRemoveNode, this, _1, _2, _3));
-			RegisterCommandCode("bleboxclearnodes", boost::bind(&CWebServer::Cmd_BleBoxClearNodes, this, _1, _2, _3));
-			RegisterCommandCode("bleboxautosearchingnodes", boost::bind(&CWebServer::Cmd_BleBoxAutoSearchingNodes, this, _1, _2, _3));
-			RegisterCommandCode("bleboxupdatefirmware", boost::bind(&CWebServer::Cmd_BleBoxUpdateFirmware, this, _1, _2, _3));
+#define handle_blebox(n, m)                                                    \
+  (RegisterCommandCode("blebox" n, boost::bind(&Cmd_BleBox##m, _1, _2, _3)))
+			{
+			  // ---------- BleBox API for hardware page ----------
+			  handle_blebox("detecthardware", DetectHardware);
+			  handle_blebox("upgradefirmware", UpgradeFirmware);
+			  handle_blebox("getbestippattern", BestIpPattern);
+
+			  // ---------- BleBox API for hardware setup page ----
+			  handle_blebox("removefeature", RemoveFeature);
+			  handle_blebox("clearfeatures", ClearFeatures);
+			  handle_blebox("getfeatures", GetFeatures);
+			  handle_blebox("detectfeatures", DetectFeatures);
+			  handle_blebox("refreshfeatures", RefreshFeatures);
+			  handle_blebox("usefeatures", UseFeatures);
+			}
+#undef handle_blebox
 
 			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1, _2, _3));
 			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1, _2, _3));
