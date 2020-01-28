@@ -215,6 +215,11 @@ namespace OpenZWave
 			{
 				return (uint64) (((uint64) m_id1 << 32) | m_id);
 			}
+			/**
+			 * GetAsString returns a string representing the ValueID in human readable form
+			 * \return a std::string
+			 */
+			string const GetAsString() const;
 
 			// Comparison Operators
 			bool operator ==(ValueID const& _other) const
