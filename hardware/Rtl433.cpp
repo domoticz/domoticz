@@ -259,7 +259,17 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 
 	if (FindField(data, "rain_total"))
 	{
+		bool bInInches = false;
+		if (FindField(data, "model"))
+		{
+			bInInches = data["model"].find("PCR800") != std::string::npos;
+		}
 		rain = (float)atof(data["rain_total"].c_str());
+		if (bInInches)
+		{
+			//convert to mm
+			rain *= 25.4f;
+		}
 		haveRain = true;
 	}
 
