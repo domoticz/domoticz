@@ -3093,7 +3093,7 @@ define(['app'], function (app) {
 		RefreshHardwareTable = function () {
 			$('#modal').show();
 
-			$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
+			$("#hardwarecontent #hardwareupdate").attr("class", "btnstyle3-dis");
 			$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
 
 			var oTable = $('#hardwaretable').dataTable();
@@ -3345,24 +3345,24 @@ define(['app'], function (app) {
 			$("#hardwaretable tbody").on('click', 'tr', function () {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
+					$("#hardwarecontent #hardwareupdate").attr("class", "btnstyle3-dis");
 					$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
 				}
 				else {
 					var oTable = $('#hardwaretable').dataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
-					$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
+					$("#hardwarecontent #hardwareupdate").attr("class", "btnstyle3");
 					$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
 						var idx = data["DT_RowId"];
 						if (data["Type"] != "PLUGIN") { // Plugins can have non-numeric Mode data
-							$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + "," + data["Mode6"] + ")");
+							$("#hardwarecontent #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + "," + data["Mode6"] + ")");
 						}
 						else {
-							$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + ",'" + data["Mode1"] + "','" + data["Mode2"] + "','" + data["Mode3"] + "','" + data["Mode4"] + "','" + data["Mode5"] + "','" + data["Mode6"] + "')");
+							$("#hardwarecontent #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + ",'" + data["Mode1"] + "','" + data["Mode2"] + "','" + data["Mode3"] + "','" + data["Mode4"] + "','" + data["Mode5"] + "','" + data["Mode6"] + "')");
 						}
 						$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
 						$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["Name"]);
