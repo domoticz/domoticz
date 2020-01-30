@@ -480,7 +480,7 @@ describe('Integration test',
 	end)
 
 	describe('ManagedCounter', function()
-	 it('should create a Managed counter', function()
+	 it('should create a Managed Counter', function()
 			local ok
 			ok = TestTools.createManagedCounter('vdManagedCounter')
 			assert.is_true(ok)

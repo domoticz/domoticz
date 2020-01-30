@@ -16,7 +16,7 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Implemented: BuienRadar
 - Implemented: Sun/Rain icons
 - Implemented: Add support for Belgian and Luxembourgian P1 meters
-- Implemented: New Managed multi meter type
+- Implemented: New Managed Multi Counter type
 - Fixed: API, allow variabletype to be entered as text or integer in adduservariable and updateuservariable (#3320)
 - Fixed: GUI, Choosing Icon for ARC type switches
 - Fixed: GUI, Dashboard icon incremental counter (energy generated) not correct (#3231)
