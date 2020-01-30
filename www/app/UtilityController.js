@@ -256,11 +256,30 @@ define(['app', 'livesocket'], function (app) {
 				var status = "";
 				var bigtext = "";
 
-				if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
-					bigtext = item.Usage;
+				if (item.SubType != "Managed Multi Counter") {
+					if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
+						bigtext = item.Usage;
+					}
 				}
 
-				if (typeof item.Counter != 'undefined') {
+				if (item.SubType == "Managed Multi Counter") {
+					if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
+						bigtext = item.Usage + '-' + item.UsageDeliv;
+					}
+					else if ((typeof item.Usage != 'undefined')) {
+						bigtext = item.Usage;
+					}
+					else if ((typeof item.UsageDeliv != 'undefined')) {
+						bigtext = item.UsageDeliv;
+					}
+					if (typeof item.Counter != 'undefined') {
+						status = item.Counter;
+					}
+					if (typeof item.CounterDeliv != 'undefined') {
+						status += '<br>' + $.t("Return") + ': ' + item.CounterDeliv;
+					}
+				}
+				else if (typeof item.Counter != 'undefined') {
 					if (
 						(item.SubType == "Gas") ||
 						(item.SubType == "RFXMeter counter") ||
@@ -361,18 +380,20 @@ define(['app', 'livesocket'], function (app) {
 					bigtext = item.Data;
 				}
 
-				if (typeof item.Usage != 'undefined') {
-					bigtext = item.Usage;
-				}
-				if (typeof item.CounterDeliv != 'undefined') {
-					if (item.CounterDeliv != 0) {
-						status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
-						if (item.UsageDeliv.charAt(0) != 0) {
-							if (parseInt(item.Usage) != 0) {
-								bigtext += ', -' + item.UsageDeliv;
-							}
-							else {
-								bigtext = '-' + item.UsageDeliv;
+				if (item.SubType != "Managed Multi Counter") {
+					if (typeof item.Usage != 'undefined') {
+						bigtext = item.Usage;
+					}
+					if (typeof item.CounterDeliv != 'undefined') {
+						if (item.CounterDeliv != 0) {
+							status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
+							if (item.UsageDeliv.charAt(0) != 0) {
+								if (parseInt(item.Usage) != 0) {
+									bigtext += ', -' + item.UsageDeliv;
+								}
+								else {
+									bigtext = '-' + item.UsageDeliv;
+								}
 							}
 						}
 					}
@@ -534,15 +555,28 @@ define(['app', 'livesocket'], function (app) {
 
 							xhtm += '\t      <td id="name">' + item.Name + '</td>\n';
 							xhtm += '\t      <td id="bigtext">';
-							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
-								xhtm += item.Usage;
-							}
-							else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
-								if ((item.UsageDeliv.charAt(0) == 0) || (parseInt(item.Usage) != 0)) {
+							if (item.SubType != "Managed Multi Counter") {
+								if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 									xhtm += item.Usage;
 								}
-								if (item.UsageDeliv.charAt(0) != 0) {
-									xhtm += '-' + item.UsageDeliv;
+								else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
+									if ((item.UsageDeliv.charAt(0) == 0) || (parseInt(item.Usage) != 0)) {
+										xhtm += item.Usage;
+									}
+									if (item.UsageDeliv.charAt(0) != 0) {
+										xhtm += '-' + item.UsageDeliv;
+									}
+								}
+							}
+							if (item.SubType == "Managed Multi Counter") {
+								if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
+									xhtm += item.Usage + '-' + item.UsageDeliv;
+								}
+								else if ((typeof item.Usage != 'undefined')) {
+									xhtm += item.Usage;
+								}
+								else if ((typeof item.UsageDeliv != 'undefined')) {
+									xhtm += item.UsageDeliv;
 								}
 							}
 							else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
@@ -593,7 +627,16 @@ define(['app', 'livesocket'], function (app) {
 							xhtm += '</td>\n';
 							xhtm += '\t      <td id="img">';
 							var status = "";
-							if (typeof item.Counter != 'undefined') {
+							if (item.SubType == "Managed Multi Counter") {
+								xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
+								if (typeof item.Counter != 'undefined') {
+									status = item.Counter;
+								}
+								if (typeof item.CounterDeliv != 'undefined') {
+									status += '<br>' + $.t("Return") + ': ' + item.CounterDeliv;
+								}
+							}
+							else if (typeof item.Counter != 'undefined') {
 								if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
 									if (item.SwitchTypeVal == 1) {
 										xhtm += '<img src="images/Gas48.png" height="48" width="48"></td>\n';
@@ -725,8 +768,8 @@ define(['app', 'livesocket'], function (app) {
 								xhtm += '<img src="images/moisture48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
-							if (typeof item.CounterDeliv != 'undefined') {
-								if (item.CounterDeliv != 0) {
+							if (item.SubType != "Managed Multi Counter") {
+								if (typeof item.CounterDeliv != 'undefined') {
 									status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
 								}
 							}
@@ -744,7 +787,7 @@ define(['app', 'livesocket'], function (app) {
 									'<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 							}
 
-							if (typeof item.Counter != 'undefined') {
+							if ((typeof item.Counter != 'undefined') || (item.SubType == "Managed Multi Counter")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 
 								if (permissions.hasPermission("Admin")) {

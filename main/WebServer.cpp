@@ -10197,6 +10197,8 @@ namespace http {
 						StringSplit(sValue, ";", splitresults);
 						if (splitresults.size() != 6)
 						{
+							root["result"][ii]["Counter"] = "0";
+							root["result"][ii]["CounterDeliv"] = "0";
 							root["result"][ii]["Usage"] = "Invalid";
 							root["result"][ii]["UsageDeliv"] = "Invalid";
 							root["result"][ii]["Data"] = "Invalid!: " + sValue;
@@ -10215,41 +10217,42 @@ namespace http {
 
 							// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
 							// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
-							unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
-							unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
-							unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
-							unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
-							unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
-							unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
+							long long powerusage1 = std::strtoll(splitresults[0].c_str(), nullptr, 10);
+							long long powerusage2 = std::strtoll(splitresults[1].c_str(), nullptr, 10);
+							long long powerdeliv1 = std::strtoll(splitresults[2].c_str(), nullptr, 10);
+							long long powerdeliv2 = std::strtoll(splitresults[3].c_str(), nullptr, 10);
+							long long usagecurrent = std::strtoll(splitresults[4].c_str(), nullptr, 10);
+							long long delivcurrent = std::strtoll(splitresults[5].c_str(), nullptr, 10);
 
-							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
-							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
-
-							unsigned long long powerusage = powerusage1 + powerusage2;
-							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
-							if (powerdeliv < 2)
-								powerdeliv = 0;
+							long long powerusage = powerusage1 + powerusage2;
+							long long powerdeliv = powerdeliv1 + powerdeliv2;
 
 							double musage = 0;
 
-							musage = double(powerusage) / EnergyDivider;
-							sprintf(szTmp, "%.03f", musage);
-							root["result"][ii]["Counter"] = szTmp;
-							musage = double(powerdeliv) / EnergyDivider;
-							sprintf(szTmp, "%.03f", musage);
-							root["result"][ii]["CounterDeliv"] = szTmp;
-
-							if (bHaveTimeout)
-							{
-								usagecurrent = 0;
-								delivcurrent = 0;
+							if (usagecurrent >= 0) {
+								sprintf(szTmp, "%llu Watt", usagecurrent);
+								root["result"][ii]["Usage"] = szTmp;
 							}
-							sprintf(szTmp, "%llu Watt", usagecurrent);
-							root["result"][ii]["Usage"] = szTmp;
-							root["result"][ii]["CounterToday"] = szTmp;
-							sprintf(szTmp, "%llu Watt", delivcurrent);
-							root["result"][ii]["UsageDeliv"] = szTmp;
-							root["result"][ii]["CounterDelivToday"] = szTmp;
+
+							if (delivcurrent >= 0) {
+								sprintf(szTmp, "%llu Watt", delivcurrent);
+								root["result"][ii]["UsageDeliv"] = szTmp;
+							}
+
+							musage = double(powerusage) / EnergyDivider;
+							if (musage >= 0) {
+								sprintf(szTmp, "%.3f kWh", musage);
+								root["result"][ii]["Counter"] = szTmp;
+								root["result"][ii]["CounterToday"] = szTmp;
+							}
+
+							musage = double(powerdeliv) / EnergyDivider;
+							if (musage >= 0) {
+								sprintf(szTmp, "%.3f kWh", musage);
+								root["result"][ii]["CounterDeliv"] = szTmp;
+								root["result"][ii]["CounterDelivToday"] = szTmp;
+							}
+
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}

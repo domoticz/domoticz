@@ -1305,6 +1305,14 @@ local testManagedCounter = function(name)
 	return res
 end
 
+local testManagedMultiCounter = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = dev.updateCounter(1234).afterSec(2)
+	tstMsg('Test managed multi counter',res)
+	return res
+end
+
 local testSetIconSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -1563,6 +1571,7 @@ return {
 		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
 		res = res and testSnapshot();
 		res = res and testManagedCounter('vdManagedCounter');
+		res = res and testManagedMultiCounter('vdManagedMultiCounter');
 
 		storeLastUpdates()
 

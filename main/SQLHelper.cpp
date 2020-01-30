@@ -3855,7 +3855,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "-1;0", devname);
 			break;
 		case sTypeManagedMultiCounter:
-			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;0;0;0;0;0;0;0;0;0", devname);
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "-1;-1;-1;-1;-1;-1", devname);
 			break;
 		case sTypeVoltage:		//Voltage
 		{
@@ -6337,7 +6337,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 		//Do not update for managed counter
 		if ((devType == pTypeGeneral) && (subType == sTypeManagedCounter)) {
-				continue;
+			continue;
 		}
 
 		float tGasDivider = GasDivider;
@@ -6538,7 +6538,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 
 		//Do not update for managed counter
 		if ((devType == pTypeGeneral) && (subType == sTypeManagedMultiCounter)) {
-				continue;
+			continue;
 		}
 
 		result = safe_query(

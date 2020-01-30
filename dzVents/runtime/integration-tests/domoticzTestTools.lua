@@ -107,6 +107,12 @@ local function DomoticzTestTools(port, debug, webroot)
 		return ok, json, result, respcode, respheaders, respstatus
 	end
 
+	function self.createManagedMultiCounter(name)
+		local url = "type=createdevice&idx=" .. DUMMY_HW_ID .."&sensorname=" .. name .. "&sensormappedtype=0xF322"
+		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
+		return ok, json, result, respcode, respheaders, respstatus
+	end
+
 	function self.createCamera()
 		local url = "type=command&param=addcamera&address=192.168.192.123&port=8083&name=camera1&enabled=true&imageurl=aW1hZ2UuanBn&protocol=0"
 		--&username=&password=&imageurl=aW1hZ2UuanBn&protocol=0

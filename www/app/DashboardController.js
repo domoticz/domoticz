@@ -1344,6 +1344,7 @@ define(['app', 'livesocket'], function (app) {
 			if (
 				(
 					(typeof item.Counter != 'undefined') ||
+					(item.SubType != "Managed Multi Counter")
 					(item.Type == "Current") ||
 					(item.Type == "Energy") ||
 					(item.Type == "Current/Energy") ||
@@ -1379,7 +1380,28 @@ define(['app', 'livesocket'], function (app) {
 				if (typeof obj != 'undefined') {
 					if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 						var status = "";
-						if (typeof item.Counter != 'undefined') {
+						if (item.SubType == "Managed Multi Counter") {
+							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
+								status += 'U: ' + item.Usage + '-' + item.UsageDeliv;
+							}
+							else if (typeof item.Usage != 'undefined') {
+								status += 'U: ' + item.Usage;
+							}
+							else if (typeof item.UsageDeliv != 'undefined') {
+								status += 'U: ' + item.UsageDeliv;
+							}
+							status += '<br>';
+							if ((typeof item.Counter != 'undefined') && (typeof item.CounterDeliv != 'undefined')) {
+								status += item.Counter + '-R: ' + item.CounterDeliv;
+							}
+							else if (typeof item.Counter != 'undefined') {
+								status += item.Counter;
+							}
+							else if (typeof item.CounterDeliv != 'undefined') {
+								status += 'R: ' + item.CounterDeliv;
+							}
+						}
+						else if (typeof item.Counter != 'undefined') {
 							if ($scope.config.DashboardType == 0) {
 								if (item.SubType == "Managed Counter") {
 									status += '' + item.Counter;
@@ -1447,36 +1469,38 @@ define(['app', 'livesocket'], function (app) {
 							status += item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
 
-						var bHaveReturnUsage = false;
-						if (typeof item.CounterDeliv != 'undefined') {
-							if (item.UsageDeliv.charAt(0) != 0) {
-								bHaveReturnUsage = true;
-							}
-						}
-						if (!bHaveReturnUsage) {
-							if (typeof item.Usage != 'undefined') {
-								if ($scope.config.DashboardType == 0) {
-									status += '<br>' + $.t("Actual") + ': ' + item.Usage;
-								}
-								else {
-									status += ", A: " + item.Usage;
+						if (item.SubType != "Managed Multi Counter") {
+							var bHaveReturnUsage = false;
+							if (typeof item.CounterDeliv != 'undefined') {
+								if (item.UsageDeliv.charAt(0) != 0) {
+									bHaveReturnUsage = true;
 								}
 							}
-						}
-						if (typeof item.CounterDeliv != 'undefined') {
-							if (item.CounterDeliv != 0) {
-								if ($scope.config.DashboardType == 0) {
-									status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
-									status += '<br>' + $.t("Actual") + ': ' + item.UsageDeliv;
+							if (!bHaveReturnUsage) {
+								if (typeof item.Usage != 'undefined') {
+									if ($scope.config.DashboardType == 0) {
+										status += '<br>' + $.t("Actual") + ': ' + item.Usage;
+									}
+									else {
+										status += ", A: " + item.Usage;
+									}
 								}
-								else {
-									status += '<br>R: T: ' + item.CounterDelivToday;
-									if (bHaveReturnUsage) {
-										status += ", A: ";
-										if (parseInt(item.UsageDeliv) > 0) {
-											status += "-";
+							}
+							if (typeof item.CounterDeliv != 'undefined') {
+								if (item.CounterDeliv != 0) {
+									if ($scope.config.DashboardType == 0) {
+										status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
+										status += '<br>' + $.t("Actual") + ': ' + item.UsageDeliv;
+									}
+									else {
+										status += '<br>R: T: ' + item.CounterDelivToday;
+										if (bHaveReturnUsage) {
+											status += ", A: ";
+											if (parseInt(item.UsageDeliv) > 0) {
+												status += "-";
+											}
+											status += item.UsageDeliv;
 										}
-										status += item.UsageDeliv;
 									}
 								}
 							}
@@ -1491,7 +1515,25 @@ define(['app', 'livesocket'], function (app) {
 						var bigtext = "";
 						var img = "";
 
-						if (typeof item.Counter != 'undefined') {
+						if (item.SubType == "Managed Multi Counter") {
+							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
+								bigtext += item.Usage + '-' + item.UsageDeliv;
+							}
+							else if (typeof item.Usage != 'undefined') {
+								bigtext += item.Usage;
+							}
+							else if (typeof item.UsageDeliv != 'undefined') {
+								bigtext += item.UsageDeliv;
+							}
+							if (typeof item.Counter != 'undefined') {
+								status += item.Counter;
+							}
+							if (typeof item.CounterDeliv != 'undefined') {
+								status += '<br>';
+								status += '' + $.t("Return") + ': ' + item.CounterDeliv;
+							}
+						}
+						else if (typeof item.Counter != 'undefined') {
 							if (
 								(item.SubType == "Gas") ||
 								(item.SubType == "RFXMeter counter") ||
@@ -1586,32 +1628,34 @@ define(['app', 'livesocket'], function (app) {
 							status = "";
 							bigtext = item.Data;
 						}
-						if (typeof item.Usage != 'undefined') {
-							bigtext = item.Usage;
-							if ((item.Type != "P1 Smart Meter") && (item.SubType != "Managed Multi Counter")) {
-								if ($scope.config.DashboardType == 0) {
-									if (typeof item.CounterToday != 'undefined') {
-										status += $.t("Today") + ': ' + item.CounterToday;
+						if (item.SubType != "Managed Multi Counter") {
+							if (typeof item.Usage != 'undefined') {
+								bigtext = item.Usage;
+								if (item.Type != "P1 Smart Meter") {
+									if ($scope.config.DashboardType == 0) {
+										if (typeof item.CounterToday != 'undefined') {
+											status += $.t("Today") + ': ' + item.CounterToday;
+										}
 									}
-								}
-								else {
-									if (typeof item.CounterToday != 'undefined') {
-										status += 'T: ' + item.CounterToday;
+									else {
+										if (typeof item.CounterToday != 'undefined') {
+											status += 'T: ' + item.CounterToday;
+										}
 									}
 								}
 							}
-						}
-						if (typeof item.CounterDeliv != 'undefined') {
-							if (item.CounterDeliv != 0) {
-								if (item.UsageDeliv.charAt(0) != 0) {
-									bigtext = '-' + item.UsageDeliv;
-								}
-								status += '<br>';
-								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
-									status += 'R: ' + item.CounterDelivToday;
-								}
-								else {
-									status += '' + $.t("Return") + ': ' + item.CounterDelivToday;
+							if (typeof item.CounterDeliv != 'undefined') {
+								if (item.CounterDeliv != 0) {
+									if (item.UsageDeliv.charAt(0) != 0) {
+										bigtext = '-' + item.UsageDeliv;
+									}
+									status += '<br>';
+									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+										status += 'R: ' + item.CounterDelivToday;
+									}
+									else {
+										status += '' + $.t("Return") + ': ' + item.CounterDelivToday;
+									}
 								}
 							}
 						}
@@ -3382,6 +3426,7 @@ define(['app', 'livesocket'], function (app) {
 							if (
 								(
 									(typeof item.Counter != 'undefined') ||
+									(item.SubType == "Managed Multi Counter") ||
 									(item.Type == "Current") ||
 									(item.Type == "Energy") ||
 									(item.SubType == "kWh") ||
@@ -3445,7 +3490,10 @@ define(['app', 'livesocket'], function (app) {
 								var xhtm = "";
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									var vname = item.Name;
-									if (typeof item.Counter != 'undefined') {
+									if (item.SubType == "Managed Multi Counter") {
+										vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
+									}
+									else if (typeof item.Counter != 'undefined') {
 										vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 									}
 									else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
@@ -3501,7 +3549,28 @@ define(['app', 'livesocket'], function (app) {
 									}
 
 									var status = "";
-									if (typeof item.Counter != 'undefined') {
+									if (item.SubType == "Managed Multi Counter") {
+										if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
+											status += 'U: ' + item.Usage + '-' + item.UsageDeliv;
+										}
+										else if (typeof item.Usage != 'undefined') {
+											status += 'U: ' + item.Usage;
+										}
+										else if (typeof item.UsageDeliv != 'undefined') {
+											status += 'U: ' + item.UsageDeliv;
+										}
+										status += '<br>';
+										if ((typeof item.Counter != 'undefined') && (typeof item.CounterDeliv != 'undefined')) {
+											status += item.Counter + '-R: ' + item.CounterDeliv;
+										}
+										else if (typeof item.Counter != 'undefined') {
+											status += item.Counter;
+										}
+										else if (typeof item.CounterDeliv != 'undefined') {
+											status += 'R: ' + item.CounterDeliv;
+										}
+									}
+									else if (typeof item.Counter != 'undefined') {
 										if ($scope.config.DashboardType == 0) {
 											if (item.SubType == "Managed Counter") {
 												status = '' + item.Counter;
@@ -3574,38 +3643,40 @@ define(['app', 'livesocket'], function (app) {
 										status = item.Data;
 									}
 
-									var bHaveReturnUsage = false;
-									if (typeof item.CounterDeliv != 'undefined') {
-										if (item.UsageDeliv.charAt(0) != 0) {
-											bHaveReturnUsage = true;
-										}
-									}
-
-									if (typeof item.Usage != 'undefined') {
-										if ($scope.config.DashboardType == 0) {
-											status += '<br>' + $.t("Actual") + ': ' + item.Usage;
-										}
-										else {
-											if (!bHaveReturnUsage) {
-												status += ", A: " + item.Usage;
+									if (item.SubType != "Managed Multi Counter") {
+										var bHaveReturnUsage = false;
+										if (typeof item.CounterDeliv != 'undefined') {
+											if (item.UsageDeliv.charAt(0) != 0) {
+												bHaveReturnUsage = true;
 											}
 										}
-									}
 
-									if (typeof item.CounterDeliv != 'undefined') {
-										if (item.CounterDeliv != 0) {
+										if (typeof item.Usage != 'undefined') {
 											if ($scope.config.DashboardType == 0) {
-												status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
-												status += '<br>' + $.t("Actual") + ': -' + item.UsageDeliv;
+												status += '<br>' + $.t("Actual") + ': ' + item.Usage;
 											}
 											else {
-												status += '<br>R: T: ' + item.CounterDelivToday;
-												if (bHaveReturnUsage) {
-													status += ", A: ";
-													if (parseInt(item.UsageDeliv) > 0) {
-														status += "-";
+												if (!bHaveReturnUsage) {
+													status += ", A: " + item.Usage;
+												}
+											}
+										}
+
+										if (typeof item.CounterDeliv != 'undefined') {
+											if (item.CounterDeliv != 0) {
+												if ($scope.config.DashboardType == 0) {
+													status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
+													status += '<br>' + $.t("Actual") + ': -' + item.UsageDeliv;
+												}
+												else {
+													status += '<br>R: T: ' + item.CounterDelivToday;
+													if (bHaveReturnUsage) {
+														status += ", A: ";
+														if (parseInt(item.UsageDeliv) > 0) {
+															status += "-";
+														}
+														status += item.UsageDeliv;
 													}
-													status += item.UsageDeliv;
 												}
 											}
 										}
@@ -3643,7 +3714,18 @@ define(['app', 'livesocket'], function (app) {
 									/* generate bigtext html */
 									var bigtexthtml = "";
 									bigtexthtml += '<span class="value1">';
-									if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
+									if (item.SubType == "Managed Multi Counter") {
+										if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
+											bigtexthtml += item.Usage + '-' + item.UsageDeliv;
+										}
+										else if (typeof item.Usage != 'undefined') {
+											bigtexthtml += item.Usage;
+										}
+										else if (typeof item.UsageDeliv != 'undefined') {
+											bigtexthtml += item.UsageDeliv;
+										}
+									}
+									else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 										bigtexthtml += item.Usage;
 									}
 									else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
@@ -3700,7 +3782,17 @@ define(['app', 'livesocket'], function (app) {
 									var statushtml = "";
 									var imagehtml = '<img src="images/';
 
-									if (typeof item.Counter != 'undefined') {
+									if (item.SubType == "Managed Multi Counter") {
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Counter48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										if (typeof item.Counter != 'undefined') {
+											statushtml += item.Counter;
+										}
+										if (typeof item.CounterDeliv != 'undefined') {
+											statushtml += '<br>';
+											statushtml += '' + $.t("Return") + ': ' + item.CounterDeliv;
+										}
+									}
+									else if (typeof item.Counter != 'undefined') {
 										if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
 											if (item.SwitchTypeVal == 1) {
                                                 imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Gas48.png" class="lcursor" height="40" width="40"></a></td>\n';
@@ -3835,26 +3927,28 @@ define(['app', 'livesocket'], function (app) {
 										statushtml = "";
 									}
 
-									if (typeof item.Usage != 'undefined') {
-										if ((item.Type != "P1 Smart Meter") && (item.SubType != "Managed Multi Counter")) {
-											if ($scope.config.DashboardType == 0) {
-												//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
-												if (typeof item.CounterToday != 'undefined') {
-													statushtml += $.t("Today") + ': ' + item.CounterToday;
+									if (item.SubType != "Managed Multi Counter") {
+										if (typeof item.Usage != 'undefined') {
+											if ((item.Type != "P1 Smart Meter") && (item.SubType != "Managed Multi Counter")) {
+												if ($scope.config.DashboardType == 0) {
+													//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
+													if (typeof item.CounterToday != 'undefined') {
+														statushtml += $.t("Today") + ': ' + item.CounterToday;
+													}
 												}
-											}
-											else {
-												//status+=", A: " + item.Usage;
-												if (typeof item.CounterToday != 'undefined') {
-													statushtml += 'T: ' + item.CounterToday;
+												else {
+													//status+=", A: " + item.Usage;
+													if (typeof item.CounterToday != 'undefined') {
+														statushtml += 'T: ' + item.CounterToday;
+													}
 												}
 											}
 										}
-									}
-									if (typeof item.CounterDeliv != 'undefined') {
-										if (item.CounterDeliv != 0) {
-											statushtml += '</span><span class="value2">';
-											statushtml += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
+										if (typeof item.CounterDeliv != 'undefined') {
+											if (item.CounterDeliv != 0) {
+												statushtml += '</span><span class="value2">';
+												statushtml += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
+											}
 										}
 									}
 									statushtml = '<span class="value1">' + statushtml + '</span>';
