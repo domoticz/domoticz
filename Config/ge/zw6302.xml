@@ -1,4 +1,4 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3133:4953</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/zw6302.png</MetaDataItem>
@@ -24,6 +24,7 @@ Note: This should only be done in the event your primary controller is missing o
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1902/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2124/xml</Entry>
+      <Entry author="Peter Gebruers - peter.gebruers@gmail.com" date="22 Dec 2019" revision="4">Update min/max PIR parameter https://github.com/OpenZWave/open-zwave/issues/2041</Entry>
     </ChangeLog>
     <MetaDataItem id="3134" name="ZWProductPage" type="4953">https://products.z-wavealliance.org/products/2124/</MetaDataItem>
     <MetaDataItem id="3134" name="FrequencyName" type="4953">U.S. / Canada / Mexico</MetaDataItem>
@@ -41,7 +42,7 @@ https://products.z-wavealliance.org/products/1902
       <Item label="Medium" value="2"/>
       <Item label="High" value="3"/>
     </Value>
-    <Value genre="config" index="18" label="PIR Timeout Duration" max="1" min="0" size="1" type="byte" units="" value="1">
+    <Value genre="config" index="18" label="PIR Timeout Duration" max="255" min="1" size="1" type="byte" units="" value="1">
       <Help>
                 1 to 60 => 1 min to 60 min.
                 255 => 5 seconds.

@@ -64,14 +64,15 @@ matrix:
       - curl -sSL https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
       - sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
       - export PATH=/usr/local/bin:$PATH;
-      - wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz >> /dev/null 2>&1
-      - tar xfz boost_1_70_0.tar.gz
-      - cd boost_1_70_0/
+      - wget https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz >> /dev/null 2>&1
+      - tar xfz boost_1_72_0.tar.gz
+      - cd boost_1_72_0/
       - ./bootstrap.sh
       - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - cd ..
       - (cd open-zwave-read-only; make)
+      - (cd open-zwave-read-only; git checkout 76e21d80a140c321413a46a2b62ea6c11dd6ace0; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
       - make
   # Apple OSX

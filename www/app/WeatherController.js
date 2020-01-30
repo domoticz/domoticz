@@ -1,25 +1,14 @@
 define(['app', 'livesocket'], function (app) {
-	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
+	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, deviceApi, permissions, livesocket) {
 
 		var ctrl = this;
 		$scope.broadcast_unsubscribe = undefined;
 
 		MakeFavorite = function (id, isfavorite) {
-			if (permissions.hasPermission("Viewer")) {
-				HideNotify();
-				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
-				return;
-			}
-
-			$.ajax({
-				url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					ShowWeathers();
-				}
+			deviceApi.makeFavorite(id, isfavorite).then(function() {
+				ShowWeathers();
 			});
-		}
+		};
 
 		EditRainDevice = function (idx, name, description, addjmulti) {
 			$.devIdx = idx;

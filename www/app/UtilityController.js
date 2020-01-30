@@ -1,5 +1,5 @@
 define(['app', 'livesocket'], function (app) {
-	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, permissions, livesocket) {
+	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
 		var $element = $('#main-view #utilitycontent').last();
 		
 		$scope.HasInitializedEditCustomSensorDialog = false;
@@ -15,21 +15,10 @@ define(['app', 'livesocket'], function (app) {
 		};
 
 		MakeFavorite = function (id, isfavorite) {
-			if (permissions.hasPermission("Viewer")) {
-				HideNotify();
-				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
-				return;
-			}
-
-			$.ajax({
-				url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					ShowUtilities();
-				}
+			deviceApi.makeFavorite(id, isfavorite).then(function() {
+				ShowUtilities();
 			});
-		}
+		};
 
 		ConfigureEditCustomSensorDialog = function () {
 			if ($scope.HasInitializedEditCustomSensorDialog == true) {

@@ -118,6 +118,7 @@ function fillTimes
 		EventHelpers_ExpectedSeconds=10
 		EventHelpersStorage_ExpectedSeconds=10
 		HTTPResponse_ExpectedSeconds=10
+		Lodash_ExpectedSeconds=10
 		ScriptdzVentsDispatching_ExpectedSeconds=10
 		TimedCommand_ExpectedSeconds=10
 		Time_ExpectedSeconds=30
@@ -137,9 +138,10 @@ function fillNumberOfTests
 		EventHelpers_ExpectedTests=32
 		EventHelpersStorage_ExpectedTests=50
 		HTTPResponse_ExpectedTests=6
+		Lodash_ExpectedTests=100
 		ScriptdzVentsDispatching_ExpectedTests=2
 		TimedCommand_ExpectedTests=42
-		Time_ExpectedTests=332
+		Time_ExpectedTests=340
 		Utils_ExpectedTests=25
 		Variable_ExpectedTests=15
 		ContactDoorLockInvertedSwitch_ExpectedTests=2

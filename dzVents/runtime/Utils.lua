@@ -8,7 +8,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.5.5',
+	DZVERSION = '2.5.7',
 }
 
 function math.pow(x, y)

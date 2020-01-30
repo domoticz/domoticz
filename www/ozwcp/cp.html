@@ -41,16 +41,6 @@
     </div>
     <div style="width: 100%; height: 170px;">
       <div style="padding: 0pt; width: 42%; float: left;">
-	<div style="margin-left: auto; margin-right: auto; width: 350px; height: 100px;">
-	  <fieldset>
-	    <legend> Controller </legend>
-			<div style="text-align: center;">
-				<button name="reset" type="submit" style="text-align: center;" onclick="var r=confirm('Do you really want to completely reset the  interface?'); if (r) return DoDevPost('reset'); else return false;">Reset</button>
-				<button name="sreset" type="submit" style="text-align: center;" onclick="return DoDevPost('sreset');">Soft Reset</button>
-			</div>
-	    </form>
-	  </fieldset>
-	</div>
       </div>
       <div style="padding: 0pt; width: 34%; float: left;">
 	<div style="margin-left: auto; margin-right: auto; width: 280px; height: 100px;">
@@ -101,19 +91,6 @@
 	</div>
       </div>
       <div style="padding: 0pt; width: 24%; float: left;">
-	<div style="margin-left: auto; margin-right: auto; width: 200px;">
-	  <fieldset> <legend> Backup Controller </legend>
-	    <form name="BackPost" method="post"> 
-	      <input name="devhidden" class="hide" value="hidden">
-	      <div class="stack" style="position: relative;">
-		<button id="save" name="save" onclick="return DoSavePost();" type="submit">Save...</button>
-	      </div>
-	      <div class="stack" style="position: relative; height: 30px;"> 
-		<span id="saveinfo" name="saveinfo" class="legend" style="display: none;">Changes need saving...</span>
-	      </div>
-	    </form>
-	  </fieldset>
-	</div>
       </div>
     </div>
     <div id="network" style="float: left; width: 100%;">
@@ -123,7 +100,6 @@
 	  <div class="esb" style="margin-left: 14px; width: 180px;">
 	    <select id="netops" onchange="return DoNetHelp();">
 	      <option value="choice" selected="true">Select an operation:</option>
-	      <option value="scen">Scenes</option>
 	      <option value="topo">Topology</option>
 	      <option value="stat">Statistics</option>
 	      <option value="test">Test & Heal</option>
@@ -131,90 +107,6 @@
 	  </div>
 	  <div class="rsb" style="margin-left: 10px;">
 	    <span id="netinfo" name="netinfo" class="admmsg" style="display: none;"></span>
-	  </div>
-	  <div id="scencntl" name="scencntl" class="rsb" style="display: none; margin-right: 10px;">
-	    <div class="rsb" style="margin-left: 10px;">
-	      <table>
-		<tr>
-		  <td style="float: right;">
-		    <div class="stack">
-		      <label><span style="font-family: Arial; font-size: 24px; vertical-align: top;">&nbsp;</span></label>
-		    </div>
-		    <div class="stack">
-		      <button id="scenecreate" name="scenecreate" onclick="return SceneLoad('create');" type="submit">Create</button>
-		    </div>
-		    <div class="stack">
-		      <button id="scenedelete" name="scenedelete" onclick="var ret = SceneLoad('delete'); curscene = null; return ret;" type="Delete">Delete</button>
-		    </div>
-		    <div class="stack">
-		      <button id="sceneexecute" name="sceneexecute" onclick="return SceneLoad('execute');" type="submit">Execute</button>
-		    </div>
-		  </td>
-		  <td>
-		    <div style="width: 165px; vertical-align: top;">
-		      <div class="stack">
-			<label><span class="legend" style="font-size: 12px;">Scene IDs</span></label>
-		      </div>
-		      <div class="stack">
-			<select id="sceneids" size="6" onchange="curscene = this.options[this.selectedIndex].text; return SceneLoad('values');" style="margin-left: 5px;">
-			</select>
-			<div class="stack">
-			  <label><span class="legend" style="font-size: 12px;">Label:</span></label>
-			  <input id="scenelabeltext" type="text" size="8" class="legend">
-			  <button id="updatescenelabel" onclick="return SceneLoad('label');" style="text-align: center;" type="submit">Update</button>
-			</div>
-		      </div>
-		    </div>
-		  </td>
-		  <td>
-		    <div style="width: 160px; vertical-align: top;">
-		      <div class="stack">
-			<label><span class="legend" style="font-size: 12px;">Values</span></label>
-		      </div>
-		      <div class="stack">
-			<select id="scenevalues" size="3" onchange="return DisplaySceneValue(this.options[this.selectedIndex]);" style="margin-left: 5px;">
-			</select>
-		      </div>
-		      <div class="stack">
-			<input id="valuetext" type="text" size="8" class="legend">
-			<select id="valueselect" style="display: none;"></select>
-			<label><span class="legend" style="font-size: 12px;" id="valueunits"></span></label>
-		      </div>
-		    </div>
-		  </td>
-		  <td>
-		    <div style="vertical-align: top;">
-		      <div class="stack">
-			<label><span class="legend" style="font-size: 32px;">&nbsp;</span></label>
-		      </div>
-		      <div class="stack">
-			<button id="savescenevalue" onclick="return SceneLoad('addvalue');" style="text-align: center;" type="submit">Add -&gt;</button>
-		      </div>
-		      <div class="stack">
-			<button id="removescenevalue" onclick="return SceneLoad('remove');" style="text-align: center;" type="submit">&lt;- Remove</button>
-		      </div>
-		    </div>
-		  </td>
-		  <td>
-		    <div style="width: 175px; vertical-align: top;">
-		      <div class="stack">
-			<label><span class="legend" style="font-size: 12px; vertical-align: top;">Scene Values</span></label>
-		      </div>
-		      <div class="stack">
-			<select id="scenescenevalues" size="6" onchange="return DisplaySceneSceneValue(this.options[this.selectedIndex]);" style="margin-left: 5px;">
-			</select>
-		      </div>
-		      <div class="stack">
-			<input id="scenevaluetext" type="text" size="8" class="legend">
-			<select id="scenevalueselect" style="display: none;"></select>
-			<label><span class="legend" style="font-size: 12px;" id="scenevalueunits"></span></label>
-			<button id="updatescenevalue" onclick="return SceneLoad('update');" style="text-align: center;" type="submit">Update</button>
-		      </div>
-		    </div>
-		  </td>
-		</tr>
-	      </table>
-	    </div>
 	  </div>
 	  <div id="topocntl" name="topocntl" class="rsb" style="display: none; margin-right: 5px;">
 	    <div class="rsb" style="margin-left: 5px;">

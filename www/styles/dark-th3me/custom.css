@@ -688,9 +688,18 @@ input[type="search"] {
   background: #353535;
 }
 
-.btn-primary,
+.btn-primary {
+  background: #375a7f;
+}
+
+.btn-primary:hover,
 .btn-primary:focus {
-  background: #0088cc;
+  background: #2b4764;
+}
+
+.btn-primary:disabled {
+  background: #375a7f;
+  opacity: 0.65;
 }
 
 .btn-danger {
@@ -1007,10 +1016,15 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
   border-color: #FFF;
 }
 
-.modal-content {
-  color: #fff;
+.modal {
   background-color: #303030;
   border: 1px solid #444;
+  border-radius: 2px !important;
+  box-shadow: none;
+}
+
+.modal-dialog {
+  border-radius: 2px !important;
 }
 
 .modal-header {
@@ -1034,4 +1048,19 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
   background-color: #fff;
   padding: 0.125rem 0.25rem;
   border: 1px solid transparent;
+}
+
+.list-group-item {
+  background-color: #303030;
+  border-color: #444;
+}
+
+.list-group-item.active {
+  color: #fff;
+  background-color: #375a7f;
+  border-color: #375a7f;
+}
+
+.list-group-item-action {
+  color: #444;
 }

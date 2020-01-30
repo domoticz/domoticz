@@ -1209,10 +1209,17 @@ WeatherSensor.inheritsFrom(VariableSensor);
 function Switch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
+
+        var bIsOff = (
+			(this.status == "Off")
+			|| (item.Status == 'Closed')
+			|| (item.Status == 'Locked')
+        );
+        
         if (item.CustomImage != 0) {
-            this.image = (this.status == "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
+            this.image = (bIsOff) ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
         } else {
-            this.image = (this.status == "Off") ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
+            this.image = (bIsOff) ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
         }
         this.data = '';
         this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";

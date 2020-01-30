@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 138
+#define DB_VERSION 139
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -88,6 +88,7 @@ const char *sqlCreateSceneLog =
 "CREATE TABLE IF NOT EXISTS [SceneLog] ("
 "[SceneRowID] BIGINT(10) NOT NULL, "
 "[nValue] INTEGER DEFAULT 0, "
+"[User] VARCHAR(100) DEFAULT (''), "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreatePreferences =
@@ -2727,6 +2728,13 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE SharedDevices ADD COLUMN [Favorite] INTEGER DEFAULT 0");
 			query("UPDATE SharedDevices SET Favorite = 1 WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE (Favorite=1))");
 		}
+		if (dbversion < 139)
+		{
+			if (!DoesColumnExistsInTable("User", "SceneLog"))
+			{
+				query("ALTER TABLE SceneLog ADD COLUMN [User] VARCHAR(100) DEFAULT ('')");
+			}
+		}
 	} 
 	else if (bNewInstall)
 	{
@@ -3226,13 +3234,13 @@ bool CSQLHelper::StartThread()
 	return (m_thread != NULL);
 }
 
-bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color)
+bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string& User)
 {
 	_tColor ocolor(color);
-	return SwitchLightFromTasker(std::stoull(idx), switchcmd, atoi(level.c_str()), ocolor);
+	return SwitchLightFromTasker(std::stoull(idx), switchcmd, atoi(level.c_str()), ocolor, User);
 }
 
-bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color)
+bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color, const std::string& User)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -3241,7 +3249,7 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string &switchcm
 		return false;
 
 	std::vector<std::string> sd = result[0];
-	return m_mainworker.SwitchLightInt(sd, switchcmd, level, color, false);
+	return m_mainworker.SwitchLightInt(sd, switchcmd, level, color, false, User);
 }
 
 void CSQLHelper::Do_Work()
@@ -3325,13 +3333,13 @@ void CSQLHelper::Do_Work()
 					case pTypeGeneralSwitch:
 					case pTypeHomeConfort:
 					case pTypeFS20:
-						SwitchLightFromTasker(itt->_idx, "Off", 0, NoColor);
+						SwitchLightFromTasker(itt->_idx, "Off", 0, NoColor, itt->_sUser);
 						break;
 					case pTypeSecurity1:
 						switch (itt->_subType)
 						{
 						case sTypeSecX10M:
-							SwitchLightFromTasker(itt->_idx, "No Motion", 0, NoColor);
+							SwitchLightFromTasker(itt->_idx, "No Motion", 0, NoColor, itt->_sUser);
 							break;
 						default:
 							//just update internally
@@ -3358,7 +3366,7 @@ void CSQLHelper::Do_Work()
 						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
 					}
 					else
-						SwitchLightFromTasker(itt->_idx, "Off", 0, NoColor);
+						SwitchLightFromTasker(itt->_idx, "Off", 0, NoColor, itt->_sUser);
 				}
 			}
 			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
@@ -3470,12 +3478,12 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
 			{
-				SwitchLightFromTasker(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Color);
+				SwitchLightFromTasker(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Color, itt->_sUser);
 			}
 
 			else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)
 			{
-				m_mainworker.SwitchScene(itt->_idx, itt->_command.c_str());
+				m_mainworker.SwitchScene(itt->_idx, itt->_command.c_str(), itt->_sUser);
 			}
 			else if (itt->_ItemType == TITEM_SET_VARIABLE)
 			{
@@ -4513,10 +4521,12 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		m_LastSwitchID = ID;
 		m_LastSwitchRowID = ulID;
 		result = safe_query(
-			"INSERT INTO LightingLog (DeviceRowID, nValue, sValue) "
-			"VALUES ('%" PRIu64 "', '%d', '%q')",
+			"INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) "
+			"VALUES ('%" PRIu64 "', '%d', '%q', '%q')",
 			ulID,
-			nValue, sValue);
+			nValue, sValue,
+			m_mainworker.m_szLastSwitchUser.c_str()
+			);
 
 		if (!bDeviceUsed)
 			return ulID;	//don't process further as the device is not used
@@ -8503,12 +8513,13 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string &szZipFile, std::
 			std::string _defFile = std::string(pFBuf, pFBuf + fsize);
 			free(pFBuf);
 
+			_defFile.erase(std::remove(_defFile.begin(), _defFile.end(), '\r'), _defFile.end());
+
 			std::vector<std::string> _Lines;
 			StringSplit(_defFile, "\n", _Lines);
 			for (const auto & itt : _Lines)
 			{
 				std::string sLine = itt;
-				sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
 				std::vector<std::string> splitresult;
 				StringSplit(sLine, ";", splitresult);
 				if (splitresult.size() == 3)

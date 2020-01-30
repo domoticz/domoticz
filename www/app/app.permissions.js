@@ -11,17 +11,17 @@ define(['angular'], function () {
                 };
                 $rootScope.$broadcast('permissionsChanged');
             },
-            hasPermission: function (permission) {
-                if (permission === 'Admin') {
+            hasPermission: function (role) {
+                if (role === 'Admin') {
                     return (permissionList.rights == 2);
                 }
-                if (permission === 'User') {
+                if (role === 'User') {
+                    return (permissionList.rights >= 1);
+                }
+                if (role === 'Viewer') {
                     return (permissionList.rights >= 0);
                 }
-                if (permission === 'Viewer') {
-                    return (permissionList.rights == 0);
-                }
-                alert('Unknown permission request: ' + permission);
+                alert('Unknown permission request: ' + role);
                 return false;
             },
             hasLogin: function (isloggedin) {

@@ -90,6 +90,35 @@ describe('Time', function()
 			assert.is_same(42312, t.secondsSinceMidnight)
 		end)
 
+		it('should have monthNames', function()
+			local t = Time('2017-01-01 11:45:12')
+			assert.is_same('January', t.monthName)
+		end)
+
+		it('should have abbreviated monthNames', function()
+			local t = Time('2017-01-01 11:45:12')
+			assert.is_same('jan', t.monthAbbrName)
+		end)
+
+		it('should have abbreviated day of week Names', function()
+			local t = Time('2017-01-01 11:45:12')
+			assert.is_same('sun', t.dayAbbrOfWeek)
+		end)
+
+		it('should have day of week Names', function()
+			local t = Time('2017-01-01 11:45:12')
+			assert.is_same('Sunday', t.dayName)
+		end)
+
+		it('should have secondsSinceMidnight', function()
+			local t = Time('2017-01-01 11:45:12')
+			assert.is_same(42312, t.secondsSinceMidnight)
+		end)
+		it('should have secondsSinceMidnight', function()
+			local t = Time('2017-01-01 11:45:12')
+			assert.is_same(42312, t.secondsSinceMidnight)
+		end)
+
 		it('should have minutesSinceMidnight', function()
 			local t = Time('2017-01-01 11:45:12')
 			assert.is_same(705, t.minutesSinceMidnight)
@@ -104,7 +133,7 @@ describe('Time', function()
 			assert.is_same('01:02:03', t.rawTime)
 			assert.is_same('2017-01-01', t.rawDate)
 		end)
-	   
+
 		it('should return proper formats', function()
 			local t = Time('2019-07-06 08:12:03')
 			assert.is_same('08:12:03', t.rawTime)
@@ -453,6 +482,51 @@ describe('Time', function()
 					assert.is_true(t.ruleMatchesTimeRange('blab ablab ab at 10:00-09:00 blabjablabjabj'))
 				end)
 
+				it('should return proper result', function()
+					local t = Time('2020-01-22 19:33:21')
+							local atRules = 
+							{
+								{rule = 'at 20:45-21:00', expected = false },
+								{rule = 'at 23:00-01:30', expected = false },
+								{rule = 'at 22:00-20:00', expected = true  },
+								{rule = 'at 01:30-01:35', expected = false },
+								{rule = 'at 07:05-07:10', expected = false },
+								{rule = 'at 07:10-07:15', expected = false },
+								{rule = 'at 07:15-07:20', expected = false },
+								{rule = 'at 07:20-07:25', expected = false },
+								{rule = 'at 17:25-19:34', expected = true  },
+								{rule = 'at 07:30-07:35', expected = false },
+								{rule = 'at 07:35-07:40', expected = false },
+								{rule = 'at 07:40-07:45', expected = false },
+								{rule = 'at 07:45-07:50', expected = false },
+								{rule = 'at 07:50-07:55', expected = false },
+								{rule = 'at 07:55-08:00', expected = false },
+								{rule = 'at 08:00-08:00', expected = false },
+								{rule = 'at 19:00-08:15', expected = true },
+								{rule = 'at 19:15-19:30', expected = false },
+								{rule = 'at 19:30-19:45', expected = true },
+								{rule = 'at 19:30-19:45', expected = true },
+								{rule = 'at 20:00-20:15', expected = false },
+								{rule = 'at 20:15-20:30', expected = false },
+								{rule = 'at 20:30-20:45', expected = false },
+								{rule = 'at 20:45-21:00', expected = false },
+								{rule = 'at 21:00-21:15', expected = false },
+								{rule = 'at 21:15-22:00', expected = false },
+								{rule = 'at 21:30-21:45', expected = false },
+								{rule = 'at 21:45-22:00', expected = false },
+								{rule = 'at 22:00-22:15', expected = false },
+								{rule = 'at 22:15-22:30', expected = false },
+								{rule = 'at 22:30-23:00', expected = false },
+								{rule = 'at 08:01-22:23', expected = true },
+						}
+					for index, ruleRow in ipairs(atRules) do
+						if ruleRow.expected == false then
+							assert.is_false(t.matchesRule(ruleRow.rule))
+						else
+							assert.is_true(t.matchesRule(ruleRow.rule))
+						end
+					end
+				end)
 			end)
 
 			describe('at hh:mm', function()
@@ -1312,6 +1386,53 @@ describe('Time', function()
 
 						assert.is_true(t.ruleMatchesBetweenRange(rule))
 					end)
+	
+					it('between two times', function()
+						local t = Time('2020-01-22 19:33:21')
+							local betweenRules = 
+							{
+								{rule = 'between 20:45 and 21:00',		expected = false },
+								{rule = 'between 23:00 and 01:30',		expected = false },
+								{rule = 'between 22:00 and 20:00',		expected = true  },
+								{rule = 'between 01:30 and 01:35',		expected = false },
+								{rule = 'between 07:05 and 07:10',		expected = false },
+								{rule = 'between 07:10 and 07:15',		expected = false },
+								{rule = 'between 07:15 and 07:20',		expected = false },
+								{rule = 'between 07:20 and 07:25',		expected = false },
+								{rule = 'between 17:25 and 19:33',		expected = true  },
+								{rule = 'between 07:30 and 07:35',		expected = false },
+								{rule = 'between 07:35 and 07:40',		expected = false },
+								{rule = 'between 07:40 and 07:45',		expected = false },
+								{rule = 'between 07:45 and 07:50',		expected = false },
+								{rule = 'between 07:50 and 07:55',		expected = false },
+								{rule = 'between 07:55 and 08:00',		expected = false },
+								{rule = 'between 08:00 and 08:00:00',		expected = false },
+								{rule = 'between 19:00 and 08:15',		expected = true },
+								{rule = 'between 19:15 and 19:30:00',		expected = false },
+								{rule = 'between 19:30 and 19:45:00',		expected = true },
+								{rule = 'between 19:30:00 and 19:45',		expected = true },
+								{rule = 'between 20:00 and 20:15',		expected = false },
+								{rule = 'between 20:15 and 20:30:00',		expected = false },
+								{rule = 'between 20:30 and 20:45',		expected = false },
+								{rule = 'between 20:45 and 21:00:00',		expected = false },
+								{rule = 'between 21:00 and 21:15',		expected = false },
+								{rule = 'between 21:15:00 and 21:30:00',	expected = false },
+								{rule = 'between 21:30:00 and 21:45',		expected = false },
+								{rule = 'between 21:45:00 and 22:00:00',	expected = false },
+								{rule = 'between 22:00 and 22:15',		expected = false },
+								{rule = 'between 22:15 and 22:30',		expected = false },
+								{rule = 'between 22:30 and 23:00',		expected = false },
+								{rule = 'between 00:00 and 23:23',		expected = true }, 
+							}
+		
+						for index, ruleRow in ipairs(betweenRules) do
+							if ruleRow.expected == false then
+								assert.is_false(t.matchesRule(ruleRow.rule))
+							else
+								assert.is_true(t.matchesRule(ruleRow.rule))
+							end
+						end
+					end)
 				end)
 
 				describe('combined', function()
@@ -1672,17 +1793,17 @@ describe('Time', function()
 				assert.is_false(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
 
 			end)
-		   
+
 			for fromMonth=1,12 do
 				for toMonth=math.min(fromMonth+1,12),12 do
 					it('at 08:00-23:00 on 01/' .. fromMonth .. '-31/' .. toMonth, function()
 						local t = Time()
 						if t.dDate > Time(t.year .. '-' .. fromMonth ..'-01 00:00:01').dDate and
-						   t.dDate < Time(t.year .. '-' .. toMonth ..'-31 23:59:59').dDate then
+							t.dDate < Time(t.year .. '-' .. toMonth ..'-31 23:59:59').dDate then
 							assert.is_true(t.matchesRule('at 00:30-23:55 on 01/' .. fromMonth .. '-31/' .. toMonth))
 						else
 							assert.is_false(t.matchesRule('at 00:30-23:55 on 01/' .. fromMonth .. '-31/' .. toMonth))
-						end					   
+						end			
 					end)
 				end
 			end
@@ -1696,11 +1817,11 @@ describe('Time', function()
 							assert.is_true(t.matchesRule('at 00:30-23:55 on */' .. fromMonth .. '-*/' .. toMonth))
 						else
 							assert.is_false(t.matchesRule('at 00:30-23:55 on */' .. fromMonth .. '-*/' .. toMonth))
-						end					   
+						end			
 					end)
 				end
 			end
-		   
+
 			it('every 3 minutes on -15/4,15/10-', function()
 				local t = Time('2017-04-18 11:24:00')
 				assert.is_false(t.matchesRule('every 3 minutes on -15/4,15/10-'))

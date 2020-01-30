@@ -121,9 +121,7 @@ public:
 	std::string SetNodeButton(const std::string &arg1, const std::string &arg2);
 	std::string DoAdminCommand(const std::string &fun, const int node_id, const int button_id);
 	std::string DoNodeChange(const std::string &fun, const int node_id, const std::string &svalue);
-	std::string DoSceneCommand(const std::string &fun, const std::string &arg1, const std::string &arg2, const std::string &arg3);
 	std::string UpdateGroup(const std::string &fun, const int node_id, const int group_id, const std::string &gList);
-	std::string SaveConfig();
 	std::string GetCPTopo();
 	std::string GetCPStats();
 	std::string DoTestNetwork(const int node_id, const int cnt);

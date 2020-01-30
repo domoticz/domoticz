@@ -141,7 +141,7 @@ return {
 			elseif not level then
 				utils.log('level cannot be nil', domoticz.LOG_ERROR )
 			else
-				return TimedCommand(domoticz, device.name, 'Set Level ' .. guardLevel(level), 'device' )
+				return TimedCommand(domoticz, device.name, 'Set Level ' .. guardLevel(level), 'device', level, device.level)
 			end
 
 		end

@@ -260,7 +260,7 @@ define(['app', 'livesocket'], function (app) {
 
 		SetColValue = function (idx, color, brightness) {
 			clearInterval($.setColValue);
-			if (permissions.hasPermission("Viewer")) {
+			if (!permissions.hasPermission("User")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;

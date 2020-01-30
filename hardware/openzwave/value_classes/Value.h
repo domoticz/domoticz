@@ -125,6 +125,15 @@ namespace OpenZWave
 						return m_verifyChanges;
 					}
 
+					void SetRefreshAfterSet(bool _refreshAfterSet)
+					{
+						m_refreshAfterSet = _refreshAfterSet;
+					}
+					bool GetRefreshAfterSet()
+					{
+						return m_refreshAfterSet;
+					}
+
 					virtual string const GetAsString() const
 					{
 						return "";
@@ -173,6 +182,7 @@ namespace OpenZWave
 
 					time_t m_refreshTime;			// time_t identifying when this value was last refreshed
 					bool m_verifyChanges;		// if true, apparent changes are verified; otherwise, they're not
+					bool m_refreshAfterSet;		// if true, all value sets are followed by a get to refresh the value manually
 					ValueID m_id;
 
 				private:
