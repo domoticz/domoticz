@@ -1,6 +1,3 @@
-[2.5.6]
-- Added Managed multi counter (to counter)
-
 [2.5.5]
 - Add Zwave fan to Zwave mode device adapter
 

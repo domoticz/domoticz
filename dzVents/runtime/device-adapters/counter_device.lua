@@ -7,8 +7,7 @@ return {
 	matches = function (device, adapterManager)
 		local res = ( device.deviceSubType == 'RFXMeter counter' 
 						or  device.deviceSubType == 'Counter Incremental'
-						or  device.deviceSubType == 'Managed Counter'
-						or  device.deviceSubType == 'Managed Multi Counter')
+						or  device.deviceSubType == 'Managed Counter')
 
 		if (not res) then
 			adapterManager.addDummyMethod(device, 'updateCounter')
@@ -31,10 +30,6 @@ return {
 		device['counter'] = info['value']
 
 		if device.deviceSubType == 'Managed Counter' and ( device.valueUnits == nil or device.valueUnits == "" ) then
-			device.valueUnits = string.match(device._data.data.counter, "%a+%d*") or ''  
-		end
-
-		if device.deviceSubType == 'Managed Multi Counter' and ( device.valueUnits == nil or device.valueUnits == "" ) then
 			device.valueUnits = string.match(device._data.data.counter, "%a+%d*") or ''  
 		end
 

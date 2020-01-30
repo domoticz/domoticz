@@ -487,14 +487,6 @@ describe('Integration test',
 		end)
 	end)
 
-	describe('ManagedMultiCounter', function()
-	 it('should create a Managed Multi Counter', function()
-			local ok
-			ok = TestTools.createManagedCounter('vdManagedMultiCounter')
-			assert.is_true(ok)
-		end)
-	end)
-
 	describe('Groups and scenes', function()
 		-- increment SECPANEL_INDEX when adding a new one !!!!!!!!!!
 		it('should create a scene', function()

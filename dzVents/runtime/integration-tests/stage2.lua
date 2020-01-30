@@ -216,17 +216,6 @@ local testManagedCounter = function(name)
 	return res
 end
 
-local testManagedMultiCounter = function(name)
-	local dev = dz.devices(name)
-	local res = true
-	res = res and checkAttributes(dev, {
-		["counter"] = 1.234;
-		["counterToday"] = 0;
-	})
-	handleResult('Test managed multi counter', res)
-	return res
-end
-
 local testP1SmartMeter = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -959,7 +948,6 @@ return {
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testAPITemperature('vdAPITemperature')
 		res = res and testManagedCounter('vdManagedCounter')
-		res = res and testManagedCounter('vdManagedMultiCounter')
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch')
 		res = res and testLastUpdates(stage2Trigger)
 		res = res and testRepeatSwitch('vdRepeatSwitch')
