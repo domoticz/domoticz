@@ -32,7 +32,7 @@ private:
 
 	YouLessMeter	m_meter;
 	bool m_bCheckP1;
-	bool m_bHaveP1;
+	bool m_bHaveP1OrS0;
 	P1Power	m_p1power;
 	P1Gas	m_p1gas;
 	unsigned long m_lastgasusage;
