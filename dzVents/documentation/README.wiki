@@ -145,7 +145,7 @@ Each dzVents event script has this structure:
     on = 
     {
         -- at least one of these:
-        evices = { ... },
+        devices = { ... },
         variables = { ... },
         timer = { ... },
         security = { ... },
