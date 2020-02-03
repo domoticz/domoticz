@@ -649,18 +649,24 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 					// tilt/vibrate/free fall
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Tilt|Vibrate|Free Fall", false));
 				}
-				else if (Name == "Xiaomi Wireless Dual Wall Switch") {
-					//for Aqara wireless switch, 2 buttons support
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both Click|Switch 1 Double Click|Switch 2 Double Click|Both Double Click|Switch 1 Long Click|Switch 2 Long Click|Both Long Click", false));
-				}
+				
 				else if (Name == "Xiaomi Wired Single Wall Switch") {
 					//for Aqara wired switch, single button support
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch1 On|Switch1 Off", false));
 				}
 				else if (Name == "Xiaomi Wireless Single Wall Switch") {
 					//for Aqara wireless switch, single button support
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click|Long Click", false));
 				}
+				else if (Name == "Xiaomi Wired Dual Wall Switch") {
+					//for Aqara wired switch, 2 buttons support
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both Click|Switch 1 Double Click|Switch 2 Double Click|Both Double Click|Switch 1 Long Click|Switch 2 Long Click|Both Long Click", false));
+				}
+				else if (Name == "Xiaomi Wireless Dual Wall Switch") {
+					// for Aqara wireless switch, 2 buttons support
+					// need to write
+				}
+				
 				else if (Name == "Xiaomi Gateway Alarm Ringtone") {
 					//for the Gateway Audio
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:1;LevelNames:Off|Police siren 1|Police siren 2|Accident tone|Missle countdown|Ghost|Sniper|War|Air Strike|Barking dogs", false));
@@ -1077,28 +1083,28 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Aqara Cube";
 						type = STYPE_Selector;
 					}
-					else if (model == "86sw2" || model == "remote.b286acn01") {
-						name = "Xiaomi Wireless Dual Wall Switch";
-						type = STYPE_Selector;
-					}
 					else if (model == "vibration") {
 						name = "Aqara Vibration Sensor";
 						type = STYPE_Selector;
 					}
-					else if (model == "ctrl_neutral2" || model == "ctrl_ln2" || model == "ctrl_ln2.aq1") {
-						name = "Xiaomi Wired Dual Wall Switch";
-						//type = STYPE_Selector;
-					}
-					else if (model == "gateway" || model == "gateway.v3" || model == "acpartner.v3") {
-						name = "Xiaomi RGB Gateway";
-					}
 					else if (model == "ctrl_neutral1" || model == "ctrl_ln1" || model == "ctrl_ln1.aq1") {
 						name = "Xiaomi Wired Single Wall Switch";
-						//type = STYPE_Selector;
+						type = STYPE_OnOff;
 					}
 					else if (model == "86sw1" || model == "remote.b186acn01") {
 						name = "Xiaomi Wireless Single Wall Switch";
-						type = STYPE_PushOn;
+						type = STYPE_Selector;
+					}
+					else if (model == "ctrl_neutral2" || model == "ctrl_ln2" || model == "ctrl_ln2.aq1") {
+						name = "Xiaomi Wired Dual Wall Switch";
+						type = STYPE_OnOff;
+					}
+					else if (model == "86sw2" || model == "remote.b286acn01") {
+						name = "Xiaomi Wireless Dual Wall Switch";
+						type = STYPE_Selector;
+					}
+					else if (model == "gateway" || model == "gateway.v3" || model == "acpartner.v3") {
+						name = "Xiaomi RGB Gateway";
 					}
 					else if (model == "smoke") {
 						name = "Xiaomi Smoke Detector";
