@@ -75,6 +75,7 @@ matrix:
       - (cd open-zwave-read-only; git checkout 76e21d80a140c321413a46a2b62ea6c11dd6ace0; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
       - make
+      - mkdir build_tests && cd build_tests && CC=gcc-6 CXX=g++-6 cmake ../tests && make && ./testDomoticz || /bin/true
   # Apple OSX
   # - os: osx
   #   osx_image: xcode8.3
