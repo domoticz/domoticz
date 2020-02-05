@@ -43,18 +43,25 @@ return {
 					"&used=true"
 				return domoticz.openURL(url)
 			end
-		elseif device.deviceSubType == "Relay" then 
-            if device._state == "On" then 
-                device.state = "On" 
-                device.active = true 
-            else 
-                device.state = "Off" 
-                device.active = false 
-            end
+
+		elseif device.deviceSubType == "Relay" then
+
+			if device._state == "On" then
+				device.state = "On"
+				device.active = true
+			else
+				device.state = "Off"
+				device.active = false
+			end
+
 		else
-			device.state = device.rawData[2]
+			if device.hardwareTypeValue == 75 and device.deviceType == 'Heating' and device.deviceSubType == 'Evohome' then
+				device.mode = device._state
+			else
+				device.state = device.rawData[2]
+				device.mode = tostring(device.rawData[3])
+			end
 			device.setPoint = tonumber(device.rawData[1] or 0)
-			device.mode = tostring(device.rawData[3])
 			device.untilDate = tostring(device.rawData[4] or "n/a")
 
 			function device.updateSetPoint(setPoint, mode, untilDate)
@@ -84,11 +91,13 @@ return {
 						return epoch >= now.dDate and tmISO
 					end
 
-					if type(tm) == 'string' and tm:find(iso8601Pattern) then return inFuture(tm) end                -- Something like '2016-04-29T06:32:58Z'
-					if type(tm) == 'table' and tm.getISO then return inFuture(tm.getISO()) end                      -- a dzVents time object
+					if type(tm) == 'string' and tm:find(iso8601Pattern) then return inFuture(tm) end	-- Something like '2016-04-29T06:32:58Z'
+					if type(tm) == 'table' and tm.getISO then return inFuture(tm.getISO()) end				  -- a dzVents time object
 					if type(tm) == 'table' and tm.day then return inFuture(os.date(iso8601Format,os.time(tm))) end  -- a standard time object
 					if type(tm) == 'number' and tm > now.dDate then return inFuture(os.date(iso8601Format,tm)) end  -- seconds since epoch
-					if type(tm) == 'number' and tm > 0 and tm < ( 365 * 24 * 60 ) then return inFuture(os.date(iso8601Format,now.dDate + ( tm * 60 ))) end  -- seconds since epoch + tm
+					if type(tm) == 'number' and tm > 0 and tm < ( 365 * 24 * 60 ) then
+						return inFuture(os.date(iso8601Format,now.dDate + ( tm * 60 )))
+					end  -- seconds since epoch + tm
 
 					domoticz.log('dParm ' .. tostring(dParm) .. ' cannot be processed. (it will be ignored)',utils.LOG_ERROR)
 					return false -- not a time as we know it
@@ -99,7 +108,7 @@ return {
 						local res =  type(value) == 'string' and value == mode
 						if res then return res end
 					end
-					return mode == 'Busted' or false 
+					return mode == 'Busted' or false
 				end
 
 				local function binary(num, default)
@@ -108,14 +117,14 @@ return {
 
 				if isValid( tostring(mode) ) then -- is it in the list of valid modes ?
 					local dParm = dParm and checkTimeAndReturnISO(dParm) -- if there is a dParm then check if valid and make a valid ISO date
-					dParm = ( dParm and '&until=' .. dParm ) or '' 
-					local action = ( action and '&action=' .. binary(action, 1) ) or '&action=1' 
+					dParm = ( dParm and '&until=' .. dParm ) or ''
+					local action = ( action and '&action=' .. binary(action, 1) ) or '&action=1'
 					local ooc = ( ooc and '&ooc=' .. binary(ooc, 0) ) or '&ooc=0'
-					
+
 					local url = domoticz.settings['Domoticz url'] ..
 								'/json.htm?type=command&param=switchmodal&idx=' .. device.id ..
 								"&status=" .. mode ..
-								dParm .. 
+								dParm ..
 								action ..
 								ooc
 					return domoticz.openURL(url)
