@@ -187,6 +187,22 @@ IF (INCLUDE_SPI)
 	ENDIF (HAVE_LINUX_SPI_H)
 ENDIF (INCLUDE_SPI)
 
+option(USE_BUILTIN_CEREAL "Build with built-in cereal" YES)
+include(CheckIncludeFileCXX)
+if(USE_BUILTIN_CEREAL)
+  find_path(cereal_INCLUDE_DIR cereal/cereal.hpp PATHS ${CMAKE_CURRENT_LIST_DIR})
+else()
+  find_path(cereal_INCLUDE_DIR cereal/cereal.hpp)
+endif()
+mark_as_advanced(cereal_INCLUDE_DIR)
+include_directories(${cereal_INCLUDE_DIR})
+set(CMAKE_REQUIRED_INCLUDES "${cereal_INCLUDE_DIR}")
+check_include_file_cxx("cereal/cereal.hpp" cereal_FOUND)
+if(NOT cereal_FOUND)
+  MESSAGE(FATAL_ERROR "cereal missing. install e.g. libcereal-dev")
+endif()
+
+
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 # Macro for setting up precompiled headers. Usage:
