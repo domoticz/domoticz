@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <map>
+#include <vector>
 
 #define sTypeTH_LC_TC 0xA0   //La Cross Temp_Hum combined
 #define sTypeTEMP_SYSTEM 0xA0  //Internal sensor
