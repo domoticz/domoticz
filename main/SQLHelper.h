@@ -1,6 +1,11 @@
 #pragma once
 
 #include <string>
+#include <iomanip>
+#include <map>
+#include <thread>
+#include <vector>
+
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
 #include "Helper.h"

@@ -4,6 +4,9 @@
 #include <list>
 #include <string>
 #include <fstream>
+#include <mutex>
+#include <map>
+#include <sstream>
 
 enum _eLogLevel : uint32_t
 {
