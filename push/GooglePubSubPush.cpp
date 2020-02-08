@@ -115,8 +115,8 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 #endif
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM GooglePubSubLink as A, DeviceStatus as B "
-		"WHERE (A.DeviceID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
+		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name, H.Type FROM GooglePubSubLink as A, DeviceStatus as B, Hardware as H "
+		"WHERE (A.DeviceID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceID==B.ID AND B.HardwareID == H.ID)",
 		m_DeviceRowIdx);
 	if (!result.empty())
 	{
@@ -167,6 +167,8 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			char szLocalTimeUtcMs[21];
 			sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
 
+			int hw_type = atoi(sd[22].c_str());
+
 			std::string llastUpdate = get_lastUpdate(localTimeUtc);
 
 			// Replace keywords
@@ -189,7 +191,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 
 			std::string lunit = getUnit(delpos, metertype);
 			std::string lType = RFX_Type_Desc(dType, 1);
-			std::string lSubType = RFX_Type_SubType_Desc(dType, dSubType);
+			std::string lSubType = RFX_Type_SubType_Desc(dType, dSubType, hw_type);
 
 			char hostname[256];
 			gethostname(hostname, sizeof(hostname));

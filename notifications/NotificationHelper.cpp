@@ -463,10 +463,10 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 	}
 
 	if (nexpected > 0) {
-		_log.Log(LOG_STATUS, "Warning: Expecting svalue with at least %d elements separated by semicolon, %d elements received (\"%s\"), notification not sent (Hardware: %d - %s, ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s)", nexpected, nsize, sValue.c_str(), HardwareID, hName.c_str(), ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+		_log.Log(LOG_STATUS, "Warning: Expecting svalue with at least %d elements separated by semicolon, %d elements received (\"%s\"), notification not sent (Hardware: %d - %s, ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s)", nexpected, nsize, sValue.c_str(), HardwareID, hName.c_str(), ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType, pHardware->HwdType));
 	}
 	else {
-		_log.Log(LOG_STATUS, "Warning: Notification NOT handled (Hardware: %d - %s, ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s), please report on GitHub!", HardwareID, hName.c_str(), ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+		_log.Log(LOG_STATUS, "Warning: Notification NOT handled (Hardware: %d - %s, ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s), please report on GitHub!", HardwareID, hName.c_str(), ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType, pHardware->HwdType));
 	}
 
 	return false;

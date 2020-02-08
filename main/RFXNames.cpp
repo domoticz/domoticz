@@ -540,7 +540,19 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 	return findTableIDSingle2(Table, i);
 }
 
-const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType)
+// TODO: check for any non-RFX hardware, not just BleBox
+// (invert the logic - return true only if HTYPE_RFX*, etc.)
+static bool Is_Rfx_HardwareType(int hw_type) {
+  switch (hw_type) {
+  case HTYPE_BleBox:
+    return false;
+
+  default:
+    return true;
+  }
+}
+
+const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType, int hw_type)
 {
 	static const STR_TABLE_ID1_ID2	Table[] =
 	{
@@ -954,7 +966,22 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeGeneralSwitch, sSwitchTypeV2Phoenix, "V2Phoenix" },
 	{ 0,0,NULL }
 	};
-	return findTableID1ID2(Table, dType, sType);
+
+  if (!Is_Rfx_HardwareType(hw_type)) {
+    static const STR_TABLE_SINGLE GenericTypesTable[] = {
+        {pTypeTEMP, "Generic temperature sensor"},
+        {pTypeAirQuality, "Generic air quality sensor"},
+    };
+
+    auto t = GenericTypesTable;
+    while (t->str1) {
+      if (t->id == dType)
+        return t->str1;
+      t++;
+    }
+  }
+
+  return findTableID1ID2(Table, dType, sType);
 }
 
 const char* Media_Player_States(const _eMediaStatus Status)

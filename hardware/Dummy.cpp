@@ -52,7 +52,7 @@ bool CDummy::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pdata[1] == pTypeGeneral)
 	{
 		const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice*>(pdata);
-		sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
+		sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype, 0));
 	}
 	Log(LOG_STATUS, "Received null operation for %s", sdevicetype.c_str());
 #endif
