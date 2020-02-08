@@ -2480,7 +2480,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 		if (pRXCommand[1] == pTypeGeneral)
 		{
 			const _tGeneralDevice* pMeter = reinterpret_cast<const _tGeneralDevice*>(pRXCommand);
-			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
+			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype, pHardware->HwdType));
 		}
 		std::stringstream sTmp;
 		sTmp << "(" << pHardware->m_Name << ") " << sdevicetype << " (" << DeviceName << ")";

@@ -429,6 +429,7 @@ public:
 	bool SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & options);
 
 	float GetCounterDivider(const int metertype, const int dType, const float DefaultValue);
+	int GetHardwareType(int hw_id) const;
 public:
 	std::string m_LastSwitchID;	//for learning command
 	uint64_t m_LastSwitchRowID;

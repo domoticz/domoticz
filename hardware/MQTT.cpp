@@ -663,7 +663,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 	if (!m_IsConnected)
 		return;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", HwdID, DeviceRowIdx);
+	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, D.Name, D.Type, SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color, H.Type FROM DeviceStatus D, Hardware H WHERE (HardwareID==%d) AND (HardwareID==H.ID) AND (D.ID==%" PRIu64 ")", HwdID, DeviceRowIdx);
 	if (!result.empty())
 	{
 		int iIndex = 0;
@@ -683,6 +683,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		std::string description = sd[iIndex++];
 		int LastLevel = atoi(sd[iIndex++].c_str());
 		std::string sColor = sd[iIndex++];
+		int hw_type = atoi(sd[iIndex++].c_str());
 
 		Json::Value root;
 
@@ -692,7 +693,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		root["unit"] = dunit;
 		root["name"] = name;
 		root["dtype"] = RFX_Type_Desc((uint8_t)dType,1);
-		root["stype"] = RFX_Type_SubType_Desc((uint8_t)dType, (uint8_t)dSubType);
+		root["stype"] = RFX_Type_SubType_Desc((uint8_t)dType, (uint8_t)dSubType, hw_type);
 
 		if (IsLightOrSwitch(dType, dSubType) == true) {
 			root["switchType"] = Switch_Type_Desc(switchType);

@@ -788,8 +788,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	for (iterator = m_mainworker.m_eventsystem.m_devicestates.begin(); iterator != m_mainworker.m_eventsystem.m_devicestates.end(); ++iterator)
 	{
 		CEventSystem::_tDeviceStatus sitem = iterator->second;
+
+		int hw_type = m_sql.GetHardwareType(sitem.hardwareID);
+
 		const char *dev_type = RFX_Type_Desc(sitem.devType, 1);
-		const char *sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
+		const char *sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType, hw_type);
 
 		bool triggerDevice = false;
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;

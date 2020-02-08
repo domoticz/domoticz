@@ -2290,7 +2290,7 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			std::vector<std::vector<std::string> > result2;
-			result = m_sql.safe_query("SELECT T1.[ID], T1.[Name], T1.[Type], T1.[SubType], T2.[Name] AS HardwareName FROM DeviceStatus as T1, Hardware as T2 WHERE (T1.[Used]==1) AND (T2.[ID]==T1.[HardwareID]) ORDER BY T2.[Name], T1.[Name]");
+			result = m_sql.safe_query("SELECT T1.ID, T1.Name, T1.Type, T1.SubType, T2.Name, T2.Type AS HardwareName FROM DeviceStatus as T1, Hardware as T2 WHERE (T1.Used==1) AND (T2.ID==T1.HardwareID) ORDER BY T2.Name, T1.Name");
 			if (!result.empty())
 			{
 				for (const auto & itt : result)
@@ -2307,7 +2307,8 @@ namespace http {
 					if (bDoAdd)
 					{
 						int _dtype = atoi(sd[2].c_str());
-						std::string Name = "[" + sd[4] + "] " + sd[1] + " (" + RFX_Type_Desc(_dtype, 1) + "/" + RFX_Type_SubType_Desc(_dtype, atoi(sd[3].c_str())) + ")";
+            int hw_type = atoi(sd[5].c_str());
+						std::string Name = "[" + sd[4] + "] " + sd[1] + " (" + RFX_Type_Desc(_dtype, 1) + "/" + RFX_Type_SubType_Desc(_dtype, atoi(sd[3].c_str()), hw_type) + ")";
 						root["result"][ii]["type"] = 0;
 						root["result"][ii]["idx"] = sd[0];
 						root["result"][ii]["Name"] = Name;
@@ -3666,7 +3667,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetSceneDevices";
 
-				result = m_sql.safe_query("SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Color, a.OnDelay, a.OffDelay, b.SwitchType FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='%q') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]",
+				result = m_sql.safe_query("SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.Order, a.Color, a.OnDelay, a.OffDelay, b.SwitchType, h.Type FROM SceneDevices a, DeviceStatus b, Hardware h WHERE (a.SceneRowID=='%q') AND (b.ID == a.DeviceRowID) AND (h.ID == h.HardwareID) ORDER BY a.Order",
 					idx.c_str());
 				if (!result.empty())
 				{
@@ -3684,6 +3685,7 @@ namespace http {
 						root["result"][ii]["OffDelay"] = atoi(sd[13].c_str());
 
 						_eSwitchType switchtype = (_eSwitchType)atoi(sd[14].c_str());
+						int hw_type = atoi(sd[15].c_str());
 
 						unsigned char devType = atoi(sd[3].c_str());
 
@@ -3708,7 +3710,7 @@ namespace http {
 						root["result"][ii]["Level"] = level;
 						root["result"][ii]["Color"] = _tColor(sd[11]).toJSONString();
 						root["result"][ii]["Type"] = RFX_Type_Desc(devType, 1);
-						root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(devType, subType);
+						root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(devType, subType, hw_type);
 						ii++;
 					}
 				}
@@ -3890,7 +3892,7 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "GetLightSwitches";
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name");
+				result = m_sql.safe_query("SELECT D.ID, D.Name, D.Type, D.SubType, D.Used, D.SwitchType, D.Options, H.Type FROM DeviceStatus D, Hardware H WHERE (D.HardwareID == H.ID) ORDER BY D.Name");
 				if (!result.empty())
 				{
 					int ii = 0;
@@ -3905,6 +3907,7 @@ namespace http {
 						int used = atoi(sd[4].c_str());
 						_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 						std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[6]);
+						int hw_type = atoi(sd[7].c_str());
 						bool bdoAdd = false;
 						switch (Type)
 						{
@@ -3954,7 +3957,7 @@ namespace http {
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = Name;
 								root["result"][ii]["Type"] = RFX_Type_Desc(Type, 1);
-								root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(Type, SubType);
+								root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(Type, SubType, hw_type);
 								bool bIsDimmer = (
 									(switchtype == STYPE_Dimmer) ||
 									(switchtype == STYPE_BlindsPercentage) ||
@@ -9166,7 +9169,7 @@ namespace http {
 					}
 					root["result"][ii]["Unit"] = atoi(sd[2].c_str());
 					root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
-					root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType);
+					root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType, pHardware ? pHardware->HwdType : 0);
 					root["result"][ii]["TypeImg"] = RFX_Type_Desc(dType, 2);
 					root["result"][ii]["Name"] = sDeviceName;
 					root["result"][ii]["Description"] = Description;

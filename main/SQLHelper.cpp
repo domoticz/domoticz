@@ -8694,3 +8694,13 @@ float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const 
 	}
 	return divider;
 }
+
+// NOTE: used only for obtaining devices names, so returning 0 is ok
+int CSQLHelper::GetHardwareType(int hw_id) const {
+	try {
+		const char *query = "SELECT Type FROM Hardware WHERE ID==%d";
+		return std::stoi(m_sql.safe_query(query, hw_id).at(0).at(0));
+	} catch (std::out_of_range &) { return 0; } catch (std::invalid_argument &) {
+		return 0;
+	}
+}

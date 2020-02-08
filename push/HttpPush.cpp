@@ -71,8 +71,8 @@ void CHttpPush::DoHttpPush()
 	}
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM HttpLink as A, DeviceStatus as B "
-		"WHERE (A.DeviceID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
+		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name, H.Type FROM HttpLink as A, DeviceStatus as B , Hardware as H "
+		"WHERE (A.DeviceID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceID==B.ID AND B.HardwareID == H.ID)",
 		m_DeviceRowIdx);
 	if (!result.empty())
 	{
@@ -105,6 +105,7 @@ void CHttpPush::DoHttpPush()
 			std::string ltargetVariable = sd[8].c_str();
 			std::string ltargetDeviceId = sd[9].c_str();
 			std::string lname = sd[14].c_str();
+			int hw_type = atoi(sd[15].c_str());
 			sendValue = sValue;
 
 			unsigned long tzoffset = get_tzoffset();
@@ -148,7 +149,7 @@ void CHttpPush::DoHttpPush()
 
 			std::string lunit = getUnit(delpos, metertype);
 			std::string lType = RFX_Type_Desc(dType, 1);
-			std::string lSubType = RFX_Type_SubType_Desc(dType, dSubType);
+			std::string lSubType = RFX_Type_SubType_Desc(dType, dSubType, hw_type);
 
 			char hostname[256];
 			gethostname(hostname, sizeof(hostname));
