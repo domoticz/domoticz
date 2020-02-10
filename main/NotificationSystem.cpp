@@ -64,24 +64,15 @@ void CNotificationSystem::UnlockNotificationQueueThread()
 
 std::string const CNotificationSystem::GetTypeString(const int type)
 {
-	if (type <= 255) // constants defined in Notification::_eType
-	{
-		if (type < sizeof(typeTable) / sizeof(typeTable[0]))
-			return typeTable[type].name;
-	}
-	else
-	{
-		uint8_t shiftType = (type >> 8) - 1; // shift back to get correct value from custom type vector
-		if (shiftType < m_customTypes.size())
-			return m_customTypes[shiftType];
-	}
+	if (type < sizeof(typeTable) / sizeof(typeTable[0]))
+		return typeTable[type].name;
 	return "unknown";
 }
 
 std::string const CNotificationSystem::GetStatusString(const int status)
 {
 	if (status < sizeof(statusTable) / sizeof(statusTable[0]))
-			return statusTable[status].name;
+		return statusTable[status].name;
 	return "unknown";
 }
 
@@ -104,24 +95,6 @@ void CNotificationSystem::QueueThread()
 
 	m_notificationqueue.clear();
 	_log.Log(LOG_STATUS, "NotificationSystem: thread stopped...");
-}
-
-void CNotificationSystem::Notify(const std::string &type, const uint64_t id)
-{
-	bool found = false;
-	uint16_t i = 0;
-	for (; i < m_customTypes.size(); i++)
-	{
-		if (m_customTypes[i] == type)
-		{
-			found = true;
-			break;
-		}
-	}
-	if (!found && m_customTypes.size() < 255)
-		m_customTypes.push_back(type);
-
-	Notify(static_cast<Notification::_eType>(++i << 8), Notification::STATUS_INFO, id, "", NULL);  // first byte reserved for constant types
 }
 
 void CNotificationSystem::Notify(const Notification::_eType type)

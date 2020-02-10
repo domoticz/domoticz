@@ -1943,7 +1943,6 @@ lua_State *CEventSystem::ParseBlocklyLua(lua_State *lua_state, const _tEventItem
 	}
 	else
 	{
-		_log.Log(LOG_STATUS, lua_tostring(lua_state, -1));
 		lua_Number ruleTrue = lua_tonumber(lua_state, -1);
 		if (ruleTrue != 0)
 		{

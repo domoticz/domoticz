@@ -26,7 +26,6 @@ public:
 
 	CNotificationSystem(void);
 	~CNotificationSystem(void);
-	void Notify(const std::string &type, const uint64_t id);
 	void Notify(const Notification::_eType type);
 	void Notify(const Notification::_eType type, const Notification::_eStatus status);
 	void Notify(const Notification::_eType type, const Notification::_eStatus status, const std::string &message);
@@ -77,11 +76,8 @@ private:
 	concurrent_queue<_tNotificationQueue> m_notificationqueue;
 	std::shared_ptr<std::thread> m_pQueueThread;
 
-	std::vector<std::string> m_customTypes;
-
 	static const _tNotificationTypeTable typeTable[];
 	static const _tNotificationStatusTable statusTable[];
 };
 
-// extern CNotificationSystem m_notificationsystem;
 
