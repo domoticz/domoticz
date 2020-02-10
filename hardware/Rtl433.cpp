@@ -30,10 +30,16 @@ CRtl433::CRtl433(const int ID, const std::string &cmdline) :
 	m_time_last_received = 0;
 /*
 	#ifdef _DEBUG
-		std::string headerline = "time,msg,codes,model,button,id,channel,battery,temperature_C,mic,subtype,rid,humidity,state,status,brand,rain_rate,rain_rate_mm_h,rain_rate_in_h,rain_total,rain_mm,rain_in,gust,average,direction,wind_max_m_s,wind_avg_m_s,wind_dir_deg,pressure_hPa,uv,power_W,energy_kWh,unit,group_call,command,dim,dim_value,wind_speed,wind_gust,wind_direction,wind_avg_km_h,wind_max_km_h,dipswitch,rbutton,device,temperature_F,battery_ok,setpoint_C,switch,cmd,cmd_id,tristate,direction_deg,speed,rain,msg_type,signal,radio_clock,sensor_code,uv_status,uv_index,lux,wm,seq,rainfall_mm,wind_speed_ms,gust_speed_ms,current,interval,learn,sensor_id,battery_low,sequence_num,message_type,wind_speed_mph,wind_speed_kph,wind_avg_mi_h,rain_inch,rc,gust_speed_mph,wind_max_mi_h,wind_approach,flags,maybetemp,binding_countdown,depth,depth_cm,dev_id,power0,power1,power2,node,ct1,ct2,ct3,ct4,Vrms/batt,batt_Vrms,temp1_C,temp2_C,temp3_C,temp4_C,temp5_C,temp6_C,pulse,address,button1,button2,button3,button4,data,sid,group,transmit,moisture,type,pressure_PSI,battery_mV,pressure_kPa,pulses,energy,len,to,from,payload,event,heartbeat,temperature1_C,temperature2_C,temperature_1_C,temperature_2_C,test,probe,water,humidity_1,ptemperature_C,phumidity,newbattery,heating,heating_temp,uvi,light_lux,pm2_5_ug_m3,pm10_ug_m3,counter,code,alarm,repeat,maybe_battery,device_type,raw_message,switch1,switch2,switch3,switch4,switch5,extradata,house_id,module_id,sensor_type,sensor_count,alarms,sensor_value,battery_voltage,failed,class,alert,secret_knock,relay,wind_dev_deg,exposure_mins,transmit_s,device_id,button_id,button_name";
-		std::vector<std::string> headers = ParseCSVLine(headerline.c_str());
-		std::string line = "2019-07-03 16:22:59,,,LaCrosse WS,,32,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,909.090,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
-		ParseLine(headers, line.c_str());
+	Registered 135 out of 141 device decoding protocols [ 1-4 6-8 10-17 19-26 29-64 67-141 ]
+	std::string headerline = time,msg,codes,model,button,id,channel,battery_ok,temperature_C,mic,subtype,rid,humidity,state,status,brand,rain_rate,rain_rate_mm_h,rain_total,rain_mm,gust,average,direction,wind_max_m_s,wind_avg_m_s,wind_dir_deg,pressure_hPa,uv,power_W,energy_kWh,radio_clock,sequence,unit,group_call,command,dim,dim_value,wind_speed,wind_gust,wind_direction,wind_avg_km_h,wind_max_km_h,dipswitch,rbutton,device,setpoint_C,switch,cmd,cmd_id,tristate,direction_deg,speed,rain,msg_type,signal,sensor_code,uv_status,uv_index,lux,wm,seq,rainfall_mm,wind_speed_ms,gust_speed_ms,current,interval,learn,message_type,sensor_id,sequence_num,battery_low,wind_speed_mph,wind_speed_kph,rain_inch,rc,gust_speed_mph,wind_approach,flags,maybetemp,binding_countdown,depth,depth_cm,dev_id,sensor_type,power0,power1,power2,node,ct1,ct2,ct3,ct4,Vrms/batt,batt_Vrms,temp1_C,temp2_C,temp3_C,temp4_C,temp5_C,temp6_C,pulse,address,button1,button2,button3,button4,data,sid,group,transmit,moisture,type,pressure_kPa,battery_mV,pulses,pulsecount,energy,len,to,from,payload,event,alarm,tamper,heartbeat,temperature1_C,temperature2_C,temperature_1_C,temperature_2_C,test,probe,water,humidity_1,ptemperature_C,phumidity,newbattery,heating,heating_temp,uvi,light_lux,pm2_5_ug_m3,pm10_0_ug_m3,counter,code,repeat,maybe_battery,device_type,raw_message,switch1,switch2,switch3,switch4,switch5,extradata,house_id,module_id,sensor_count,alarms,sensor_value,battery_voltage,mode,version,type_string,failed,class,alert,secret_knock,relay,wind_dev_deg,exposure_mins,transmit_s,button_id,button_name,encrypted,misc,current_A,voltage_V,pairing,connected,gap,impulses,triggered,storage
+	std::vector<std::string> headers = ParseCSVLine(headerline.c_str());
+	std::string line = "2020-02-10 17:15:14,,,Oregon-THN132N,,183,1,1,20.800,,,,,,,OS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
+	std::string line = "2020-02-10 17:15:14,,,Oregon-THN132N,,183,1,1,20.800,,,,,,,OS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
+	std::string line = "2020-02-10 17:15:15,,,Oregon-CM180,,47856,,1,,,,,,,,OS,,,,,,,,,,,,,982,,,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
+	std::string line = "2020-02-10 17:15:21,,,Oregon-RTGR328N,,241,3,0,17.500,,,,33,,,OS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
+	std::string line = "2020-02-10 17:15:27,,,Oregon-CM180,,47856,,1,,,,,,,,OS,,,,,,,,,,,,,1062,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
+	std::string line = "2020-02-10 17:15:32,,,Nexus-TH,,3,3,1,14.600,,,,54,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
+	ParseLine(headers, line.c_str());
 	#endif
 */
 }
@@ -159,8 +165,8 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	bool haveDepth = false;
 	float depth = 0;
 
-	bool haveWind_Strength = false;
-	float wind_strength = 0;
+	bool haveWind_Speed = false;
+	float wind_speed = 0;
 
 	bool haveWind_Gust = false;
 	float wind_gust = 0;
@@ -177,15 +183,13 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	bool haveEnergy = false;
 	float energy = 0;
 
+	bool haveSequence = false;
+	float sequence = 0;
+
 	if (!data["id"].empty())
 	{
 		id = atoi(data["id"].c_str());
 	}
-	else if (!data["rc"].empty())
-	{
-		id = atoi(data["rc"].c_str());
-	}
-
 
 	if (FindField(data, "unit"))
 	{
@@ -197,13 +201,13 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		channel = atoi(data["channel"].c_str());
 		haveChannel = true;
 	}
-	if (FindField(data, "battery"))
+	if (FindField(data, "battery_ok"))
 	{
-		if (data["battery"] == "LOW") {
+		if (data["battery_ok"] == "0") {
 			batterylevel = 10;
 			haveBattery = true;
 		}
-		else if (data["battery"] == "OK") {
+		else if (data["battery_ok"] == "1") {
 			batterylevel = 100;
 			haveBattery = true;
 		}
@@ -214,15 +218,10 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		tempC = (float)atof(data["temperature_C"].c_str());
 		haveTemp = true;
 	}
-	else if (FindField(data, "temperature_F"))
-	{
-		tempC = (float)ConvertToCelsius(atof(data["temperature_F"].c_str()));
-		haveTemp = true;
-	}
 
 	if (FindField(data, "humidity"))
 	{
-		if (data["humidity"] == "HH")
+		if (data["humidity"] == "HH") // "HH" and "LL" are specific to WT_GT-02 and WT-GT-03 see issue 1996
 		{
 			humidity = 90;
 			haveHumidity = true;
@@ -244,32 +243,15 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		pressure = (float)atof(data["pressure_hPa"].c_str());
 		havePressure = true;
 	}
-
-	if (FindField(data, "rain"))
+	if (FindField(data, "pressure_kPa"))
 	{
-		rain = (float)atof(data["rain"].c_str());
-		haveRain = true;
+		pressure = 10.0f*(float)atof(data["pressure_kPa"].c_str()); // convert to hPA
+		havePressure = true;
 	}
 
-	if (FindField(data, "rainfall_mm"))
+	if (FindField(data, "rain_mm"))
 	{
-		rain = (float)atof(data["rainfall_mm"].c_str());
-		haveRain = true;
-	}
-
-	if (FindField(data, "rain_total"))
-	{
-		bool bInInches = false;
-		if (FindField(data, "model"))
-		{
-			bInInches = data["model"].find("PCR800") != std::string::npos;
-		}
-		rain = (float)atof(data["rain_total"].c_str());
-		if (bInInches)
-		{
-			//convert to mm
-			rain *= 25.4f;
-		}
+		rain = (float)atof(data["rain_mm"].c_str());
 		haveRain = true;
 	}
 
@@ -279,79 +261,48 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		haveDepth_CM = true;
 	}
 
-	if (FindField(data, "depth"))
+	if (FindField(data, "wind_avg_km_h")) // wind speed average (should not encounter wind_avg_kph) // does domoticz assume it is km/h ?
 	{
-		depth = (float)atof(data["depth"].c_str());
-		haveDepth = true;
+		wind_speed = (float)atof(data["wind_avg_km_h"].c_str());
+		haveWind_Speed = true;
 	}
 
-	if (FindField(data, "windstrength") || FindField(data, "wind_speed"))
-	{
-		//Based on current knowledge it's not possible to have both wind strength and wind_speed at the same time.
-		if (FindField(data, "windstrength"))
-		{
-			wind_strength = (float)atof(data["windstrength"].c_str());
-		}
-		else if (FindField(data, "wind_speed"))
-		{
-			wind_strength = (float)atof(data["wind_speed"].c_str());
-		}
-		haveWind_Strength = true;
-	}
-	else if (FindField(data, "average"))
-	{
-		wind_strength = (float)atof(data["average"].c_str());
-		haveWind_Strength = true;
-	}
 
-	if (FindField(data, "winddirection") || FindField(data, "wind_direction"))
+	if (FindField(data, "wind_dir_deg"))
 	{
-		//Based on current knowledge it's not possible to have both wind direction and wind_direction at the same time.
-		if (FindField(data, "winddirection"))
-		{
-			wind_dir = atoi(data["winddirection"].c_str());
-		}
-		else if (FindField(data, "wind_direction"))
-		{
-			wind_dir = atoi(data["wind_direction"].c_str());
-		}
-		haveWind_Dir = true;
-	}
-	else if (FindField(data, "direction"))
-	{
-		wind_dir = atoi(data["direction"].c_str());
+		wind_dir = atoi(data["wind_dir_deg"].c_str()); // does domoticz assume it is degree ? (and not rad or something else)
 		haveWind_Dir = true;
 	}
 
-	if (FindField(data, "wind_gust"))
+	if (FindField(data, "wind_max_km_h")) // idem, check that domoticz assume km/h
 	{
-		wind_gust = (float)atof(data["wind_gust"].c_str());
+		wind_gust = (float)atof(data["wind_max_km_h"].c_str());
 		haveWind_Gust = true;
 	}
-	else if (FindField(data, "gust"))
-	{
-		wind_gust = (float)atof(data["gust"].c_str());
-		haveWind_Gust = true;
-	}
-	else if (FindField(data, "moisture"))
+        else if (FindField(data, "moisture"))
 	{
 		moisture = atoi(data["moisture"].c_str());
 		haveMoisture = true;
 	}
 	else {
-		if (FindField(data, "power_W"))
+		if (FindField(data, "power_W")) // -- power_W,energy_kWh,radio_clock,sequence,
 		{
 			power = (float)atof(data["power_W"].c_str());
 			havePower = true;
 		}
-		if (FindField(data, "energy_kWh"))
+		if (FindField(data, "energy_kWh")) // sensor type general subtype electric counter
 		{
 			energy = (float)atof(data["energy_kWh"].c_str());
 			haveEnergy = true;
 		}
+		if (FindField(data, "sequence")) // please do not remove : to be added in future PR for data in sensor (for fiability reporting)
+		{
+			sequence = atoi(data["sequence"].c_str());
+			haveSequence = true;
+		}
 	}
 
-	std::string model = data["model"];
+	std::string model = data["model"]; // new model format normalized from the 201 different devices presently supported by rtl_433
 
 	bool hasstate = FindField(data, "state") || FindField(data, "command");
 
@@ -407,9 +358,9 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 			bHandled = true;
 		}
 	}
-	if (haveWind_Strength || haveWind_Gust || haveWind_Dir)
+	if (haveWind_Speed || haveWind_Gust || haveWind_Dir)
 	{
-		SendWind(sensoridx, batterylevel, wind_dir, wind_strength, wind_gust, tempC, 0, haveTemp, false, model);
+		SendWind(sensoridx, batterylevel, wind_dir, wind_speed, wind_gust, tempC, 0, haveTemp, false, model);
 		bHandled = true;
 	}
 	if (haveRain)
@@ -440,7 +391,9 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	}
 	if (haveEnergy && havePower)
 	{
+		//can remove this comment : _log.Log(LOG_STATUS, "Rtl433: : CM180 haveSequence(%d) sensoridx(%d) havePower(%d) haveEnergy(%d))", haveSequence, sensoridx, havePower, haveEnergy);
 		sensoridx = sensoridx + 1;
+		//can rmeove this comment : _log.Log(LOG_STATUS, "Rtl433: : CM180 sensoridx(%d) unit(%d) batterylevel(%d) power(%f) energy(%f) model(%s)", sensoridx, unit, batterylevel, power, energy, model.c_str());
 		SendKwhMeter(sensoridx, unit, batterylevel, power, energy, model);
 		bHandled = true;
 	}
@@ -465,7 +418,7 @@ void CRtl433::Do_Work()
 		std::string headerLine = "";
 		m_sLastLine = "";
 
-		std::string szFlags = "-F csv " + m_cmdline; // -f 433.92e6 -f 868.24e6 -H 60 -d 0
+		std::string szFlags = "-F csv -M newmodel -C si " + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
 		m_hPipe = _popen(szCommand.c_str(), "r");
