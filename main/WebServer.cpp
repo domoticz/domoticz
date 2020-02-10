@@ -525,6 +525,7 @@ namespace http {
 			RegisterCommandCode("downloadready", boost::bind(&CWebServer::Cmd_DownloadReady, this, _1, _2, _3));
 			RegisterCommandCode("update_application", boost::bind(&CWebServer::Cmd_UpdateApplication, this, _1, _2, _3));
 			RegisterCommandCode("deletedatapoint", boost::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1, _2, _3));
+			RegisterCommandCode("customevent", boost::bind(&CWebServer::Cmd_CustomEvent, this, _1, _2, _3));
 
 			RegisterCommandCode("setactivetimerplan", boost::bind(&CWebServer::Cmd_SetActiveTimerPlan, this, _1, _2, _3));
 			RegisterCommandCode("addtimer", boost::bind(&CWebServer::Cmd_AddTimer, this, _1, _2, _3));
@@ -3031,6 +3032,29 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "Update Device";
 			}
+		}
+
+		void CWebServer::Cmd_CustomEvent(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights < 1)
+			{
+				session.reply_status = reply::forbidden;
+				return; //only user or higher allowed
+			}
+
+			CNotificationSystem::_tNotificationCustomEvent* eventInfo = new CNotificationSystem::_tNotificationCustomEvent;
+			eventInfo->name = request::findValue(&req, "event");
+			eventInfo->sValue = request::findValue(&req, "data");
+
+			if (eventInfo->name.empty())
+			{
+				return;
+			}
+
+			m_mainworker.m_notificationsystem.Notify(Notification::DZ_CUSTOM, Notification::STATUS_INFO, reinterpret_cast<void*>(eventInfo));
+
+			root["status"] = "OK";
+			root["title"] = "Custom Event";
 		}
 
 		void CWebServer::Cmd_SetThermostatState(WebEmSession & session, const request& req, Json::Value &root)
@@ -11252,12 +11276,15 @@ namespace http {
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
+			time_t now = mytime(NULL);
+			CNotificationSystem::_tNotificationBackup *backupInfo = new CNotificationSystem::_tNotificationBackup;
+			backupInfo->type = "Web";
 #ifdef WIN32
-			std::string OutputFileName = szUserDataFolder + "backup.db";
+			backupInfo->location = szUserDataFolder + "backup.db";
 #else
-			std::string OutputFileName = "/tmp/backup.db";
+			backupInfo->location = "/tmp/backup.db";
 #endif
-			if (m_sql.BackupDatabase(OutputFileName))
+			if (m_sql.BackupDatabase(backupInfo->location))
 			{
 				std::string szAttachmentName = "domoticz.db";
 				std::string szVar;
@@ -11270,7 +11297,9 @@ namespace http {
 						szAttachmentName = szVar + ".db";
 					}
 				}
-				reply::set_download_file(&rep, OutputFileName, szAttachmentName);
+				reply::set_download_file(&rep, backupInfo->location, szAttachmentName);
+				backupInfo->duration = mytime(NULL) - now;
+				m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, Notification::STATUS_INFO, reinterpret_cast<void*>(backupInfo));
 			}
 		}
 

@@ -615,9 +615,12 @@
     <ClInclude Include="..\main\Logger.h" />
     <ClInclude Include="..\main\LuaCommon.h" />
     <ClInclude Include="..\main\LuaHandler.h" />
+    <ClInclude Include="..\main\LuaTable.h" />
     <ClInclude Include="..\main\mainstructs.h" />
     <ClInclude Include="..\main\mosquitto_helper.h" />
     <ClInclude Include="..\main\Noncopyable.h" />
+    <ClInclude Include="..\main\NotificationObserver.h" />
+    <ClInclude Include="..\main\NotificationSystem.h" />
     <ClInclude Include="..\main\StoppableTask.h" />
     <ClInclude Include="..\main\TrendCalculator.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
@@ -910,7 +913,10 @@
     <ClCompile Include="..\main\Logger.cpp" />
     <ClCompile Include="..\main\LuaCommon.cpp" />
     <ClCompile Include="..\main\LuaHandler.cpp" />
+    <ClCompile Include="..\main\LuaTable.cpp" />
     <ClCompile Include="..\main\mosquitto_helper.cpp" />
+    <ClCompile Include="..\main\NotificationObserver.cpp" />
+    <ClCompile Include="..\main\NotificationSystem.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
     <ClCompile Include="..\main\SignalHandler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />

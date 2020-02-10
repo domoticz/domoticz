@@ -428,6 +428,26 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			std::string msg = root["message"].asString();
 			_log.Log(LOG_STATUS, "MQTT MSG: %s", msg.c_str());
 		}
+		else if (szCommand == "customevent")
+		{
+			std::string event = root["event"].asString();
+			std::string data = root["data"].asString();
+
+			_log.Log(LOG_STATUS, "MQTT customevent: %s, data: %s", event.c_str(), data.c_str() );
+			
+			CNotificationSystem::_tNotificationCustomEvent* eventInfo = new CNotificationSystem::_tNotificationCustomEvent;
+			eventInfo->name = event;
+			eventInfo->sValue = data;
+
+			if (eventInfo->name.empty())
+			{
+				return;
+			}
+			
+			
+			m_mainworker.m_notificationsystem.Notify(Notification::DZ_CUSTOM, Notification::STATUS_INFO, reinterpret_cast<void*>(eventInfo));
+
+		}
 		else if (szCommand == "sendnotification")
 		{
 			std::string subject, body, sound;

@@ -7,6 +7,7 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Implemented: Per User favorites (with viewer rights)
 - Implemented: RTL433, added Power (Watt) type
 - Implemented: RTL433, added rainfall_mm type
+- Implemented: Xiaomi, added Wireless Single Wall Switch
 - Implemented: OZW, JSON call to retrieve current battery levels for all nodes
 - Implemented: OZW, Support for Loudness sensor
 - Implemented: OZW, Support for Particulate_Mater_2_5 (Dust) sensor (ug/m3)
@@ -36,7 +37,7 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Updated: Mosquitto 1.68
 - Updated: OpenZWave version 1.6
 - Updated: Lua version 5.3
-- Updated: dzVents version 2.5.7 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: dzVents version 3.0.0 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)

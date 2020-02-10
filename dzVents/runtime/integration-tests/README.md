@@ -47,7 +47,7 @@ dzVents: Info:  Results stage 2: SUCCEEDED
 ```
 Also check the domoticz log. Some errors are to be expected
 
-for Raspberrie Debian buster like systems a bash script is available: '/runtime/misc/testdzVents.sh' this script will execute all tests and integration tests. and
+for Raspberry Debian buster like systems a bash script is available: '/runtime/misc/testdzVents.sh' this script will execute all tests and integration tests. and
 present the outcome to your screen.
 
 ========================= V4.11426 ================+========================== Tests ============================+
@@ -76,4 +76,3 @@ Terminated
 
 
 
- 

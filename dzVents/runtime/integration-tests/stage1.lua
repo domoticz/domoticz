@@ -850,6 +850,29 @@ local testTemperature = function(name)
 	return res
 end
 
+local testBackup = function()
+	local res = true
+
+	dz.openURL(dz.settings['Domoticz url'] .. '/backupdatabase.php')
+
+	tstMsg('Test Backup', res)
+	return res
+end
+
+local testEmit = function()
+	local res = true
+
+	dz.openURL(dz.settings['Domoticz url'] .."/json.htm?type=command%26param=customevent%26event=myEvents2%26data=someencodedstring" )
+
+	local myEventTable = { a ='a', b = '2'}
+	dz.emitEvent('myEvents3').afterSec(2)
+	dz.emitEvent('myEvents4','myEventString').afterSec(4)
+	dz.emitEvent('myEvents5',myEventTable).afterSec(6)
+
+	tstMsg('Test Emits', res)
+	return res
+end
+
 local testAPITemperature = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -1496,6 +1519,8 @@ return {
 		res = res and testAlert('vdAlert')
 		res = res and testAmpere3('vdAmpere3')
 		res = res and testAmpere1('vdAmpere1')
+		res = res and testBackup()
+		res = res and testEmit()
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testBarometer('vdBarometer')
 		res = res and testCounter('vdCounter')

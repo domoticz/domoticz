@@ -1,8 +1,8 @@
 *.orig
 msbuild
 *.db
-*.db-shm
-*.db-wal
+*.db_*
+*.db-*
 *.bak
 appversion.h
 appversion.h.txt
@@ -27,6 +27,7 @@ Config/zwscene.xml
 backups/
 domocookie.txt
 domoticz.exe
+nohup.out
 /Config/zwcfg_*.xml
 /makebetarob
 /plugins/manifest.xml

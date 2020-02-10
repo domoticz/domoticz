@@ -773,7 +773,7 @@ local testCancelledScene = function(name)
 	local res = true
 	local count = dz.globalData.cancelledScene
 	res = res and expectEql(2, count)
-	handleResult('Test cancelled repeat scene', res)
+	handleResult('Test cancelled repeat scene' .. dz.globalData.cancelledScene, res)
 	return res
 end
 

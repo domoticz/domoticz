@@ -4,6 +4,7 @@
 #include "../hardware/DomoticzHardware.h"
 #include "Scheduler.h"
 #include "EventSystem.h"
+#include "NotificationSystem.h"
 #include "Camera.h"
 #include <deque>
 #include "WindCalculation.h"
@@ -110,6 +111,7 @@ public:
 
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
+	CNotificationSystem m_notificationsystem;
 #ifdef ENABLE_PYTHON
 	Plugins::CPluginSystem m_pluginsystem;
 #endif

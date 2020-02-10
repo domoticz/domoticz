@@ -190,7 +190,9 @@ describe('Time', function()
 		end)
 
 		it('should have addDays', function()
-			assert.is_same(localNow.day - 1 , t.addDays(-1).day)
+            if localNow.day ~= 1 then 
+                assert.is_same(localNow.day - 1 , t.addDays(-1).day )
+            end
 		end)
 
 		it('should return nil when called with a non number',function()

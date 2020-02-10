@@ -20,8 +20,8 @@ local function Device(domoticz, data, dummyLogger)
 		return TimedCommand(domoticz, 'UpdateDevice', params, 'updatedevice')
 	end
 
-	function self.dump()
-		domoticz.logDevice(self)
+	function self.dump( filename )
+		domoticz.logDevice(self, filename)
 	end
 
 	self['name'] = data.name
