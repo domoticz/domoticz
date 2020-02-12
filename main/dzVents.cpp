@@ -6,6 +6,7 @@
 #include "../main/Logger.h"
 #include "../main/WebServerHelper.h"
 #include "../main/LuaTable.h"
+#include "../main/json_helper.h"
 #include "dzVents.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -81,29 +82,41 @@ void CdzVents::ProcessNotificationItem(CLuaTable *luaTable, int &index, const CE
 	type = m_mainworker.m_notificationsystem.GetTypeString(item.nValue);
 	status = m_mainworker.m_notificationsystem.GetStatusString(item.lastLevel);
 
-	if (item.genericPtr == NULL)
+	if (item.sValue.empty())
 	{
-		luaTable->AddString("message", item.sValue);
+		luaTable->AddString("message", "");
 	}
 	else
 	{
-		luaTable->AddString("message", item.sValue);
+		luaTable->AddString("message", "");
 		luaTable->OpenSubTableEntry("data", 0, 0);
 		if (item.nValue >= Notification::HW_TIMEOUT && item.nValue <= Notification::HW_THREAD_ENDED)
 		{
-			luaTable->AddInteger("id", reinterpret_cast<const CDomoticzHardwareBase*>(item.genericPtr)->m_HwdID);
-			luaTable->AddString("name", reinterpret_cast<const CDomoticzHardwareBase*>(item.genericPtr)->m_Name);
+			Json::Value eventdata;
+			if (ParseJSon(item.sValue, eventdata))
+			{
+				luaTable->AddInteger("id", eventdata["m_HwdID"].asInt());
+				luaTable->AddString("name", eventdata["m_Name"].asString());
+			}
 		}
 		else if (item.nValue == Notification::DZ_BACKUP_DONE)
 		{
-			type = type + reinterpret_cast<const CNotificationSystem::_tNotificationBackup*>(item.genericPtr)->type;
-			luaTable->AddInteger("duration", reinterpret_cast<const CNotificationSystem::_tNotificationBackup*>(item.genericPtr)->duration);
-			luaTable->AddString("location", reinterpret_cast<const CNotificationSystem::_tNotificationBackup*>(item.genericPtr)->location);
+			Json::Value eventdata;
+			if(ParseJSon(item.sValue, eventdata))
+			{
+				type = type + eventdata["type"].asString();
+				luaTable->AddInteger("duration", eventdata["duration"].asInt());
+				luaTable->AddString("location", eventdata["location"].asString());
+			}
 		}
 		else if (item.nValue == Notification::DZ_CUSTOM)
 		{
-			luaTable->AddString("name", reinterpret_cast<const CNotificationSystem::_tNotificationCustomEvent*>(item.genericPtr)->name);
-			luaTable->AddString("data", reinterpret_cast<const CNotificationSystem::_tNotificationCustomEvent*>(item.genericPtr)->sValue);
+			Json::Value eventdata;
+			if (ParseJSon(item.sValue, eventdata))
+			{
+				luaTable->AddString("name", eventdata["name"].asString());
+				luaTable->AddString("data", eventdata["data"].asString());
+			}
 		}
 		luaTable->CloseSubTableEntry();
 	}

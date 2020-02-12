@@ -26,7 +26,7 @@ public:
 
 	CNotificationObserver();
 	~CNotificationObserver();
-	virtual bool Update(const _eType type, const _eStatus status, const uint64_t id, const std::string &message, const void *genericPtr) = 0;
+	virtual bool Update(const _eType type, const _eStatus status, const std::string &eventdata = "") = 0;
 };
 
 typedef CNotificationObserver Notification;

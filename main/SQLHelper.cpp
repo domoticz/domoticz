@@ -7,6 +7,7 @@
 #include "localtime_r.h"
 #include "Logger.h"
 #include "mainworker.h"
+#include "../main/json_helper.h"
 #ifdef WITH_EXTERNAL_SQLITE
 #include <sqlite3.h>
 #else
@@ -3557,10 +3558,10 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_CUSTOM_EVENT)
 			{
-				CNotificationSystem::_tNotificationCustomEvent* eventInfo = new CNotificationSystem::_tNotificationCustomEvent;
-				eventInfo->name = itt->_ID;
-				eventInfo->sValue = itt->_sValue;
-				m_mainworker.m_notificationsystem.Notify(Notification::DZ_CUSTOM, Notification::STATUS_INFO, reinterpret_cast<void*>(eventInfo));
+				Json::Value eventInfo;
+				eventInfo["name"] = itt->_ID;
+				eventInfo["data"] = itt->_sValue;
+				m_mainworker.m_notificationsystem.Notify(Notification::DZ_CUSTOM, Notification::STATUS_INFO, JSonToRawString(eventInfo));
 			}
 
 			++itt;

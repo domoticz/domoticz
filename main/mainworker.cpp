@@ -14,6 +14,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../webserver/Base64.h"
 #include <boost/algorithm/string/join.hpp>
+#include "../main/json_helper.h"
 
 #include <boost/crc.hpp>
 #include <algorithm>
@@ -1201,7 +1202,7 @@ bool MainWorker::Stop()
 {
 	if (m_thread)
 	{
-		m_notificationsystem.NotifyWait(Notification::DZ_STOP); // blocking call
+		m_notificationsystem.NotifyWait(Notification::DZ_STOP, Notification::STATUS_INFO); // blocking call
 	}
 
 	if (m_rxMessageThread) {
@@ -1413,14 +1414,14 @@ void MainWorker::HandleAutomaticBackups()
 
 		if ((lDir = opendir(sbackup_DirH.c_str())) != NULL)
 		{
-			CNotificationSystem::_tNotificationBackup* backupInfo = new CNotificationSystem::_tNotificationBackup;
+			Json::Value backupInfo;
 			std::stringstream sTmp;
 			sTmp << "backup-hour-" << std::setw(2) << std::setfill('0') << hour << "-" << szInstanceName << ".db";
 
-			backupInfo->type = "Hour";
-			backupInfo->location = sbackup_DirH + sTmp.str();
-			if (m_sql.BackupDatabase(backupInfo->location)) {
-				m_sql.SetLastBackupNo(backupInfo->type.c_str(), hour);
+			backupInfo["type"] = "Hour";
+			backupInfo["location"] = sbackup_DirH + sTmp.str();
+			if (m_sql.BackupDatabase(backupInfo["location"].asString())) {
+				m_sql.SetLastBackupNo(backupInfo["type"].asString().c_str(), hour);
 
 				backupStatus=Notification::STATUS_OK;
 			}
@@ -1429,8 +1430,8 @@ void MainWorker::HandleAutomaticBackups()
 				_log.Log(LOG_ERROR, "Error writing automatic hourly backup file");
 			}
 			closedir(lDir);
-			backupInfo->duration = mytime(NULL) - now;
-			m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, backupStatus, reinterpret_cast<void*>(backupInfo));
+			backupInfo["duration"] = mytime(NULL) - now;
+			m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, backupStatus, JSonToRawString(backupInfo));
 		}
 		else {
 			_log.Log(LOG_ERROR, "Error accessing automatic backup directories");
@@ -1441,14 +1442,14 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lDir = opendir(sbackup_DirD.c_str())) != NULL)
 		{
 			now = mytime(NULL);
-			CNotificationSystem::_tNotificationBackup* backupInfo = new CNotificationSystem::_tNotificationBackup;
+			Json::Value backupInfo;
 			std::stringstream sTmp;
 			sTmp << "backup-day-" << std::setw(2) << std::setfill('0') << day << "-" << szInstanceName << ".db";
 
-			backupInfo->type = "Day";
-			backupInfo->location = sbackup_DirD + sTmp.str();
-			if (m_sql.BackupDatabase(backupInfo->location)) {
-				m_sql.SetLastBackupNo(backupInfo->type.c_str(), day);
+			backupInfo["type"] = "Day";
+			backupInfo["location"] = sbackup_DirD + sTmp.str();
+			if (m_sql.BackupDatabase(backupInfo["location"].asString())) {
+				m_sql.SetLastBackupNo(backupInfo["type"].asString().c_str(), day);
 				backupStatus = Notification::STATUS_OK;
 			}
 			else {
@@ -1456,8 +1457,8 @@ void MainWorker::HandleAutomaticBackups()
 				_log.Log(LOG_ERROR, "Error writing automatic daily backup file");
 			}
 			closedir(lDir);
-			backupInfo->duration = mytime(NULL) - now;
-			m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, backupStatus, reinterpret_cast<void*>(backupInfo));
+			backupInfo["duration"] = mytime(NULL) - now;
+			m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, backupStatus, JSonToRawString(backupInfo));
 		}
 		else {
 			_log.Log(LOG_ERROR, "Error accessing automatic backup directories");
@@ -1467,14 +1468,14 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lDir = opendir(sbackup_DirM.c_str())) != NULL)
 		{
 			now = mytime(NULL);
-			CNotificationSystem::_tNotificationBackup* backupInfo = new CNotificationSystem::_tNotificationBackup;
+			Json::Value backupInfo;
 			std::stringstream sTmp;
 			sTmp << "backup-month-" << std::setw(2) << std::setfill('0') << month + 1 << "-" << szInstanceName << ".db";
 
-			backupInfo->type = "Month";
-			backupInfo->location = sbackup_DirM + sTmp.str();
-			if (m_sql.BackupDatabase(backupInfo->location)) {
-				m_sql.SetLastBackupNo(backupInfo->type.c_str(), month);
+			backupInfo["type"] = "Month";
+			backupInfo["location"] = sbackup_DirM + sTmp.str();
+			if (m_sql.BackupDatabase(backupInfo["location"].asString())) {
+				m_sql.SetLastBackupNo(backupInfo["type"].asString().c_str(), month);
 				backupStatus = Notification::STATUS_OK;
 			}
 			else {
@@ -1482,8 +1483,8 @@ void MainWorker::HandleAutomaticBackups()
 				_log.Log(LOG_ERROR, "Error writing automatic monthly backup file");
 			}
 			closedir(lDir);
-			backupInfo->duration = mytime(NULL) - now;
-			m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, backupStatus, reinterpret_cast<void*>(backupInfo));
+			backupInfo["duration"] = mytime(NULL) - now;
+			m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, backupStatus, JSonToRawString(backupInfo));
 		}
 		else {
 			_log.Log(LOG_ERROR, "Error accessing automatic backup directories");
@@ -1636,7 +1637,7 @@ void MainWorker::Do_Work()
 				m_notificationsystem.Start();
 				m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
 				m_eventsystem.StartEventSystem();
-				m_notificationsystem.Notify(Notification::DZ_START);
+				m_notificationsystem.Notify(Notification::DZ_START, Notification::STATUS_INFO);
 			}
 		}
 		if (m_devicestorestart.size() > 0)

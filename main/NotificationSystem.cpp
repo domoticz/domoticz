@@ -90,74 +90,28 @@ void CNotificationSystem::QueueThread()
 
 		boost::unique_lock<boost::shared_mutex> lock(m_mutex);
 		for (size_t i = 0; i < m_notifiers.size(); i++)
-			m_notifiers[i]->Update(item.type, item.status, item.id, item.message, item.genericPtr);
+			m_notifiers[i]->Update(item.type, item.status, item.eventdata);
 	}
 
 	m_notificationqueue.clear();
 	_log.Log(LOG_STATUS, "NotificationSystem: thread stopped...");
 }
 
-void CNotificationSystem::Notify(const Notification::_eType type)
-{
-	Notify(type, Notification::STATUS_INFO, 0, "", NULL);
-}
-void CNotificationSystem::Notify(const Notification::_eType type, const Notification::_eStatus status)
-{
-	Notify(type, status, 0, "", NULL);
-}
-void CNotificationSystem::Notify(const Notification::_eType type, const Notification::_eStatus status, const std::string &message)
-{
-	Notify(type, status, 0, message, NULL);
-}
-void CNotificationSystem::Notify(const Notification::_eType type, const Notification::_eStatus status, const char *message)
-{
-	Notify(type, status, 0, message, NULL);
-}
-void CNotificationSystem::Notify(const Notification::_eType type, const Notification::_eStatus status, const void *genericPtr)
-{
-	Notify(type, status, 0, "", genericPtr);
-}
-void CNotificationSystem::Notify(const Notification::_eType type, const Notification::_eStatus status, const uint64_t id, const std::string &message)
-{
-	Notify(type, status, id, message, NULL);
-}
-void CNotificationSystem::Notify(const Notification::_eType type, const Notification::_eStatus status, const uint64_t id, const std::string &message, const void *genericPtr)
+void CNotificationSystem::Notify(const Notification::_eType type, const Notification::_eStatus status, const std::string& eventdata)
 {
 	_tNotificationQueue item;
-	item.id = id;
 	item.type = type;
 	item.status = status;
-	item.message = message;
-	item.genericPtr = genericPtr;
+	item.eventdata = eventdata;
 	m_notificationqueue.push(item);
 }
 
-bool CNotificationSystem::NotifyWait(const Notification::_eType type)
-{
-	return NotifyWait(type, Notification::STATUS_INFO, 0, "", NULL);
-}
-bool CNotificationSystem::NotifyWait(const Notification::_eType type, const Notification::_eStatus status)
-{
-	return NotifyWait(type, status, 0, "", NULL);
-}
-bool CNotificationSystem::NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const std::string &message)
-{
-	return NotifyWait(type, status, 0, message, NULL);
-}
-bool CNotificationSystem::NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const char *message)
-{
-	return NotifyWait(type, status, 0, message, NULL);
-}
-bool CNotificationSystem::NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const void *genericPtr)
-{
-	return NotifyWait(type, status, 0, "", genericPtr);
-}
-bool CNotificationSystem::NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const uint64_t id, const std::string &message, const void *genericPtr)
+bool CNotificationSystem::NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const std::string& eventdata)
 {
 	bool response = false;
 	boost::unique_lock<boost::shared_mutex> lock(m_mutex);
 	for (size_t i = 0; i < m_notifiers.size(); i++)
-		response |= m_notifiers[i]->Update(type, status, id, message, genericPtr);
+		response |= m_notifiers[i]->Update(type, status);
 	return response;
 }
 

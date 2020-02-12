@@ -172,7 +172,6 @@ private:
 		std::string nValueWording;
 		std::string lastUpdate;
 		uint8_t lastLevel;
-		const void *genericPtr;
 		std::vector<std::string> vData;
 		std::map<uint8_t, int> JsonMapInt;
 		std::map<uint8_t, float> JsonMapFloat;
@@ -281,5 +280,5 @@ private:
 	std::string SpaceToUnderscore(std::string sResult);
 	std::string LowerCase(std::string sResult);
 
-	bool Update(const Notification::_eType type, const Notification::_eStatus status, const uint64_t id, const std::string &message, const void *genericPtr) override;
+	bool Update(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata) override;
 };

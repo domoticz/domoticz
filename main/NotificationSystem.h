@@ -11,34 +11,10 @@ class CNotificationSystem: public StoppableTask
 {
 public:
 
-	struct _tNotificationBackup
-	{
-		std::string type;
-		uint64_t duration;
-		std::string location;
-	};
-
-	struct _tNotificationCustomEvent
-	{
-		std::string name;
-		std::string sValue;
-	};
-
 	CNotificationSystem(void);
 	~CNotificationSystem(void);
-	void Notify(const Notification::_eType type);
-	void Notify(const Notification::_eType type, const Notification::_eStatus status);
-	void Notify(const Notification::_eType type, const Notification::_eStatus status, const std::string &message);
-	void Notify(const Notification::_eType type, const Notification::_eStatus status, const char *message);
-	void Notify(const Notification::_eType type, const Notification::_eStatus status, const void *genericPtr);
-	void Notify(const Notification::_eType type, const Notification::_eStatus status, const uint64_t id, const std::string &message);
-	void Notify(const Notification::_eType type, const Notification::_eStatus status, const uint64_t id, const std::string &message, const void *genericPtr);
-	bool NotifyWait(const Notification::_eType type);
-	bool NotifyWait(const Notification::_eType type, const Notification::_eStatus status);
-	bool NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const std::string &message);
-	bool NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const char *message);
-	bool NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const void *genericPtr);
-	bool NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const uint64_t id, const std::string &message, const void *genericPtr);
+	void Notify(const Notification::_eType type, const Notification::_eStatus status, const std::string& eventdata = "");
+	bool NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const std::string& eventdata = "");
 	bool Register(CNotificationObserver* pNotifier);
 	bool Unregister(CNotificationObserver* pNotifier);
 	std::string const GetTypeString(const int type);
@@ -49,11 +25,9 @@ public:
 private:
 	struct _tNotificationQueue
 	{
-		uint64_t id;
 		Notification::_eType type;
 		Notification::_eStatus status;
-		std::string message;
-		const void *genericPtr;
+		std::string eventdata;
 		queue_element_trigger* trigger;
 	};
 	struct _tNotificationTypeTable

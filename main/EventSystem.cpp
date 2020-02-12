@@ -1262,17 +1262,15 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	return bEventTrigger;
 }
 
-bool CEventSystem::Update(const Notification::_eType type, const Notification::_eStatus status, const uint64_t id, const std::string &message, const void *genericPtr)
+bool CEventSystem::Update(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata)
 {
 	if (!m_bEnabled)
 		return false;
 	_tEventQueue item;
 	item.reason = REASON_NOTIFICATION;
-	item.id = id;
 	item.nValue = static_cast<int>(type);
-	item.sValue = message;
+	item.sValue = eventdata;
 	item.lastLevel = static_cast<uint8_t>(status);
-	item.genericPtr = genericPtr;
 	if (type != Notification::DZ_STOP)
 		m_eventqueue.push(item);
 	else // blocking call on application shutdown

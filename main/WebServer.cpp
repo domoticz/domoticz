@@ -43,6 +43,7 @@
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/json.h"
+#include "../main/json_helper.h"
 #include "Logger.h"
 #include "SQLHelper.h"
 #include "../push/BasePush.h"
@@ -3041,17 +3042,16 @@ namespace http {
 				session.reply_status = reply::forbidden;
 				return; //only user or higher allowed
 			}
+			Json::Value eventInfo;
+			eventInfo["name"] = request::findValue(&req, "event");
+			eventInfo["data"] = request::findValue(&req, "data");
 
-			CNotificationSystem::_tNotificationCustomEvent* eventInfo = new CNotificationSystem::_tNotificationCustomEvent;
-			eventInfo->name = request::findValue(&req, "event");
-			eventInfo->sValue = request::findValue(&req, "data");
-
-			if (eventInfo->name.empty())
+			if (eventInfo["name"].empty())
 			{
 				return;
 			}
 
-			m_mainworker.m_notificationsystem.Notify(Notification::DZ_CUSTOM, Notification::STATUS_INFO, reinterpret_cast<void*>(eventInfo));
+			m_mainworker.m_notificationsystem.Notify(Notification::DZ_CUSTOM, Notification::STATUS_INFO, JSonToRawString(eventInfo));
 
 			root["status"] = "OK";
 			root["title"] = "Custom Event";
@@ -11277,14 +11277,15 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			time_t now = mytime(NULL);
-			CNotificationSystem::_tNotificationBackup *backupInfo = new CNotificationSystem::_tNotificationBackup;
-			backupInfo->type = "Web";
+			Json::Value backupInfo;
+
+			backupInfo["type"] = "Web";
 #ifdef WIN32
-			backupInfo->location = szUserDataFolder + "backup.db";
+			backupInfo["location"] = szUserDataFolder + "backup.db";
 #else
-			backupInfo->location = "/tmp/backup.db";
+			backupInfo["location"] = "/tmp/backup.db";
 #endif
-			if (m_sql.BackupDatabase(backupInfo->location))
+			if (m_sql.BackupDatabase(backupInfo["location"].asString()))
 			{
 				std::string szAttachmentName = "domoticz.db";
 				std::string szVar;
@@ -11297,9 +11298,9 @@ namespace http {
 						szAttachmentName = szVar + ".db";
 					}
 				}
-				reply::set_download_file(&rep, backupInfo->location, szAttachmentName);
-				backupInfo->duration = mytime(NULL) - now;
-				m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, Notification::STATUS_INFO, reinterpret_cast<void*>(backupInfo));
+				reply::set_download_file(&rep, backupInfo["location"].asString(), szAttachmentName);
+				backupInfo["duration"] = mytime(NULL) - now;
+				m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, Notification::STATUS_INFO, JSonToRawString(backupInfo));
 			}
 		}
 
