@@ -265,7 +265,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 			elseif (baseType == domoticz.BASETYPE_SYSTEM_EVENT) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_DOMOTICZ)
-				info.trigger = info.type
+				info.trigger = subject.type
 				local dze = SystemEvent(self.domoticz, subject)
 				ok, res = pcall(eventHandler['execute'], self.domoticz, dze, info)
 			elseif (baseType == domoticz.BASETYPE_CUSTOM_EVENT) then
