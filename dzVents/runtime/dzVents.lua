@@ -1,5 +1,5 @@
-local TESTMODE = true
-globalvariables['testmode'] = true
+local TESTMODE = false
+globalvariables['testmode'] = false
 --globalvariables['dzVents_log_level'] = 4 --debug
 
 if (_G.TESTMODE) then
@@ -34,7 +34,7 @@ local utils = require('Utils')
 
 
 if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMODE) then
-	-- print('Debug: Dumping domoticz data to ' .. scriptPath .. 'domoticzData.lua')
+	print('Debug: Dumping domoticz data to ' .. scriptPath .. 'domoticzData.lua')
 	local persistence = require('persistence')
 	persistence.store(scriptPath .. 'domoticzData.lua', domoticzData)
 	--persistence.store(scriptPath .. 'globalvariables.lua', globalvariables)

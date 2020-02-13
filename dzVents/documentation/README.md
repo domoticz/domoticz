@@ -1,4 +1,5 @@
 ﻿
+
 **Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
@@ -188,7 +189,7 @@ So, `active` can either be:
 The `on` section tells dzVents *when* the execute function has to be executed. It holds all the events/**triggers** that are monitored by dzVents. If any of the events or triggers match with the current event coming from Domoticz, then the `execute` part of the script is executed by dzVents.
 The `on` section has many kinds of subsections that *can all be used simultaneously* :
 
-#### customEvents = { ... }
+#### customEvents = { ... } <sup>3.0.0</sup>
 A list of  one or more custom event triggers. This eventTrigger can be activate by a json/api call, a MQTT message (when domoticz is setup to listen to such messages on the hardware tab) or by the dzVents internal command domoticz.emitEvent
 	JSON: /json.htm?type=command&param=customevent&event=MyEvent&data=myData
 	MQTT: {"command" : "customevent", "event" : "MyEvent" , "data" : "myData" } 
@@ -260,7 +261,7 @@ When all the above conditions are met (active == true and the on section has at 
 
 Since you can define multiple on-triggers in your script, it is not always clear what the type is of this second parameter. In your code you need to know this in order to properly respond to the different events. To help you inspect the object you can use these attributes like `if (item.isDevice) then ... end`:
 
- - **isCustomEvent**: . returns `true` if the item is a customEvent.
+ - **isCustomEvent**: <sup>3.0.0</sup>. returns `true` if the item is a customEvent.
  - **isDevice**: . returns `true` if the item is a Device object.
  - **isGroup**: . returns `true` if the item is a Group object.
  - **isHTTPResponse**: .  returns `true` if the item is an HTTPResponse object.
@@ -2383,16 +2384,21 @@ On the other hand, you have to make sure that dzVents can access the json withou
 # History
 
 ## [3.0.0]
-- Add system-events triggers as option to the on = { ... } section. Scripts can now be triggered based on these system-events.
-	start, stop, manualBackupFinished, dailyBackupFinished, hourlyBackupFinished, monthlyBackupFinished,
-- Add custom-events triggers as option to the on = { ... } section. You can now send an event trigger to start subscribed dzVents scripts.
-	customEvents can be triggered by:
-	dzVents domoticz.emitEvent(name, data ) command  (data = optional)
-	JSON: json.htm?type=command&param=customevent&event=MyEvent&data=myData   ( data = optional )
-	MQTT: {"command" : "customevent", "event" : "MyEvent" , "data" : "myData" }  ( data = opional )
-- Add method  domoticz.emitEvent()
-- Add attribute `mode` to Evohome controller
-- Add option to dumpTable() and ([device][uservariable][scene][group].dump() to os file
+ - Add system-events triggers as option to the on = { ... } section. Scripts can now be triggered based on these system-events: 
+	 - start
+	 - stop
+	 - manualBackupFinished,
+	 - dailyBackupFinished
+	 - hourlyBackupFinished
+	 - monthlyBackupFinished
+
+ - Add custom-events triggers as option to the on = { ... } section. You can now send an event trigger to start subscribed dzVents scripts. customEvents can be triggered by:
+	 - dzVents domoticz.emitEvent(name, data )  --  command  (data = optional)
+	 - JSON: json.htm?type=command&param=customevent&event=MyEvent&data=myData ( data = optional )
+	 - MQTT: {"command" : "customevent", "event" :    "MyEvent" , "data" : "myData" } ( data = opt ional )
+ - Add method  domoticz.emitEvent()
+ - Add attribute `mode` to Evohome controller
+ - Add option to dumpTable() and ([device][uservariable][scene][group].dump() to os file
 
 ## [2.5.7]
 - Add option checkFirst to switchSelector method
@@ -2792,5 +2798,6 @@ On the other hand, you have to make sure that dzVents can access the json withou
 ## [0.9.7]
 
  - Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
+
 
 

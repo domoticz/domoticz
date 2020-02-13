@@ -176,7 +176,7 @@ So, <code>active</code> can either be:
 
 The <code>on</code> section tells dzVents ''when'' the execute function has to be executed. It holds all the events/'''triggers''' that are monitored by dzVents. If any of the events or triggers match with the current event coming from Domoticz, then the <code>execute</code> part of the script is executed by dzVents. The <code>on</code> section has many kinds of subsections that ''can all be used simultaneously'' :
 
-==== customEvents = { … } ====
+==== customEvents = { … } <sup>3.0.0</sup> ====
 
 A list of one or more custom event triggers. This eventTrigger can be activate by a json/api call, a MQTT message (when domoticz is setup to listen to such messages on the hardware tab) or by the dzVents internal command domoticz.emitEvent JSON: /json.htm?type=command&amp;param=customevent&amp;event=MyEvent&amp;data=myData MQTT: {“command” : “customevent”, “event” : “MyEvent” , “data” : “myData” } emitEvent: domoticz.emitEvent(‘customEvent name’,(optional) data) See example and emitEvent for more information.
 
@@ -255,7 +255,7 @@ Depending on what actually triggered the script, <code>item</code> is either a:
 
 Since you can define multiple on-triggers in your script, it is not always clear what the type is of this second parameter. In your code you need to know this in order to properly respond to the different events. To help you inspect the object you can use these attributes like <code>if (item.isDevice) then ... end</code>:
 
-* '''isCustomEvent''': . returns <code>true</code> if the item is a customEvent.
+* '''isCustomEvent''': <sup>3.0.0</sup>. returns <code>true</code> if the item is a customEvent.
 * '''isDevice''': . returns <code>true</code> if the item is a Device object.
 * '''isGroup''': . returns <code>true</code> if the item is a Group object.
 * '''isHTTPResponse''': . returns <code>true</code> if the item is an HTTPResponse object.
@@ -2343,8 +2343,17 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 == [3.0.0] ==
 
-* Add system-events triggers as option to the on = { … } section. Scripts can now be triggered based on these system-events. start, stop, manualBackupFinished, dailyBackupFinished, hourlyBackupFinished, monthlyBackupFinished,
-* Add custom-events triggers as option to the on = { … } section. You can now send an event trigger to start subscribed dzVents scripts. customEvents can be triggered by: dzVents domoticz.emitEvent(name, data ) command (data = optional) JSON: json.htm?type=command&amp;param=customevent&amp;event=MyEvent&amp;data=myData ( data = optional ) MQTT: {“command” : “customevent”, “event” : “MyEvent” , “data” : “myData” } ( data = opional )
+* Add system-events triggers as option to the on = { … } section. Scripts can now be triggered based on these system-events:
+** start
+** stop
+** manualBackupFinished,
+** dailyBackupFinished
+** hourlyBackupFinished
+** monthlyBackupFinished
+* Add custom-events triggers as option to the on = { … } section. You can now send an event trigger to start subscribed dzVents scripts. customEvents can be triggered by:
+** dzVents domoticz.emitEvent(name, data ) – command (data = optional)
+** JSON: json.htm?type=command&amp;param=customevent&amp;event=MyEvent&amp;data=myData ( data = optional )
+** MQTT: {“command” : “customevent”, “event” : “MyEvent” , “data” : “myData” } ( data = opt ional )
 * Add method domoticz.emitEvent()
 * Add attribute <code>mode</code> to Evohome controller
 * Add option to dumpTable() and ([device][uservariable][[#group|scene]].dump() to os file
