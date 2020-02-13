@@ -1,4 +1,4 @@
-  _ = require('lodash')
+local _ = require('lodash')
 local GLOBAL_DATA_MODULE = 'global_data'
 local utils = require('Utils')
 local persistence = require('persistence')
@@ -1030,7 +1030,6 @@ local function EventHelpers(domoticz, mainMethod)
 		if (systemEvents ~= nil) then
 			for i, event in pairs(systemEvents) do
 
-				
 				local trigger = SystemEvent(self.domoticz, event)["type"]
 				event.baseType = domoticz.BASETYPE_SYSTEM_EVENT
 

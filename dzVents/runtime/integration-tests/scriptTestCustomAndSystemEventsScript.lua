@@ -11,7 +11,7 @@ return
 		dz = domoticz
 
 		local filename = 'eventsIntegrationtests.triggers' 
-	  
+
 		if item.trigger == 'start' then 
 			os.execute('rm -f ' .. _G.dataFolderPath .. '/../dumps/' .. filename)
 		end
