@@ -7,6 +7,7 @@
 #include "localtime_r.h"
 #include "Logger.h"
 #include "mainworker.h"
+#include "../main/json_helper.h"
 #ifdef WITH_EXTERNAL_SQLITE
 #include <sqlite3.h>
 #else
@@ -3554,6 +3555,13 @@ void CSQLHelper::Do_Work()
 			else if (itt->_ItemType == TITEM_CUSTOM_COMMAND)
 			{
 				m_mainworker.m_eventsystem.CustomCommand(itt->_idx, itt->_command);
+			}
+			else if (itt->_ItemType == TITEM_CUSTOM_EVENT)
+			{
+				Json::Value eventInfo;
+				eventInfo["name"] = itt->_ID;
+				eventInfo["data"] = itt->_sValue;
+				m_mainworker.m_notificationsystem.Notify(Notification::DZ_CUSTOM, Notification::STATUS_INFO, JSonToRawString(eventInfo));
 			}
 
 			++itt;
@@ -7466,6 +7474,7 @@ bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 	// Close the database connection opened on database file zFilename
 	// and return the result of this function.
 	sqlite3_close(pFile);
+
 	return (rc == SQLITE_OK);
 }
 

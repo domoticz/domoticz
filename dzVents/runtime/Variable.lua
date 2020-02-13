@@ -1,5 +1,6 @@
 local Time = require('Time')
 local TimedCommand = require('TimedCommand')
+local evenItemIdentifier = require('eventItemIdentifier')
 
 local function Variable(domoticz, data)
 	local self = {
@@ -9,15 +10,9 @@ local function Variable(domoticz, data)
 		['changed'] = data.changed,
 		['id'] = data.id,
 		['lastUpdate'] = Time(data.lastUpdate),
-		['baseType'] = domoticz.BASETYPE_VARIABLE,
-		isVariable = true,
-		isHTTPResponse = false,
-		isDevice = false,
-		isScene = false,
-		isGroup = false,
-		isTimer = false,
-		isSecurity = false
 	}
+
+	evenItemIdentifier.setType(self, 'isVariable', domoticz.BASETYPE_VARIABLE, data.name)
 
 	if (data.variableType == 'float' or data.variableType == 'integer') then
 		-- actually this isn't needed as value is already in the
@@ -35,22 +30,22 @@ local function Variable(domoticz, data)
 	if (data.variableType == 'time') then
 		local now = os.date('*t')
 		local time = tostring(now.year) ..
-				'-' .. tostring(now.month) ..
-				'-' .. tostring(now.day) ..
-				' ' .. data.data.value ..
-				':00'
+			'-' .. tostring(now.month) ..
+			'-' .. tostring(now.day) ..
+			' ' .. data.data.value ..
+			':00'
 		self['time'] = Time(time)
 	end
 
 	-- send an update to domoticz
 	function self.set(value)
-		 
-		if self.type == 'integer'  then 
+
+		if self.type == 'integer'  then
 			value = math.floor(value)
-		elseif value == nil then 
-			value = '' 
-		end 
-	
+		elseif value == nil then
+			value = ''
+		end
+
 		-- return TimedCommand(domoticz, 'Variable:' .. data.name, tostring(value), 'variable')
 		return TimedCommand(domoticz, 'Variable', {
 			idx = data.id,
@@ -68,14 +63,16 @@ local function Variable(domoticz, data)
 
 	function self.rename(newName)
 		local newValue = domoticz.utils.urlEncode(self.value)
-		if self.type == 'integer' then 
+
+		if self.type == 'integer' then
 			newValue = math.floor(self.value)
 		end
+
 		local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=updateuservariable' ..
-					'&idx=' .. data.id ..
-					'&vname=' .. domoticz.utils.urlEncode(newName) ..
-					'&vtype=' ..  self.type ..
-					'&vvalue=' .. newValue
+			'&idx=' .. data.id ..
+			'&vname=' .. domoticz.utils.urlEncode(newName) ..
+			'&vtype=' ..  self.type ..
+			'&vvalue=' .. newValue
 		domoticz.openURL(url)
 	end
 

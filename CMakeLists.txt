@@ -322,8 +322,11 @@ main/localtime_r.cpp
 main/Logger.cpp
 main/LuaCommon.cpp
 main/LuaHandler.cpp
+main/LuaTable.cpp
 main/mainworker.cpp
 main/mosquitto_helper.cpp
+main/NotificationObserver.cpp
+main/NotificationSystem.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
 main/SignalHandler.cpp

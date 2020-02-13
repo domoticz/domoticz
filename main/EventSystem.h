@@ -19,8 +19,9 @@ extern "C" {
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
 #include "StoppableTask.h"
+#include "NotificationObserver.h"
 
-class CEventSystem : public CLuaCommon, StoppableTask
+class CEventSystem : public CLuaCommon, StoppableTask, CNotificationObserver
 {
 	friend class CdzVents;
 	friend class CLuaHandler;
@@ -54,10 +55,11 @@ public:
 	{
 		REASON_DEVICE,			// 0
 		REASON_SCENEGROUP,		// 1
-		REASON_USERVARIABLE,	// 2
+		REASON_USERVARIABLE,		// 2
 		REASON_TIME,			// 3
 		REASON_SECURITY,		// 4
-		REASON_URL				// 5
+		REASON_URL,			// 5
+		REASON_NOTIFICATION		// 6
 	};
 
 	struct _tDeviceStatus
@@ -277,4 +279,6 @@ private:
 	void StripQuotes(std::string &sString);
 	std::string SpaceToUnderscore(std::string sResult);
 	std::string LowerCase(std::string sResult);
+
+	bool Update(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata) override;
 };

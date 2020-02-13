@@ -1,6 +1,13 @@
-
-local jsonParser
+local jsonParser = require('JSON')
 local _ = require('lodash')
+
+function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
+	if type(value_of_unsupported_type) == 'function' then
+		return '"Function"'
+	else
+		return nil
+	end
+end
 
 local self = {
 	LOG_ERROR = 1,
@@ -8,7 +15,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.5.7',
+	DZVERSION = '3.0.0',
 }
 
 function math.pow(x, y)
@@ -47,13 +54,14 @@ function self.numDecimals(num, int, dec)
 end
 
 function self.fileExists(name)
-	local f = io.open(name, "r")
-	if f ~= nil then
-		io.close(f)
-		return true
-	else
-		return false
-	end
+   local ok, err, code = os.rename(name, name)
+   if not ok then
+	  if code == 13 then
+		 -- Permission denied, but it exists
+		 return true
+	  end
+   end
+   return ok or false
 end
 
 function self.stringSplit(text, sep)
@@ -106,9 +114,18 @@ function self.osExecute(cmd)
 	os.execute(cmd)
 end
 
-function self.print(msg)
+function self.print(msg, filename)
 	if (_G.TESTMODE) then return end
-	print(msg)
+	if filename == nil then print(msg) return end
+
+	local targetDirectory = _G.dataFolderPath .. '/../dumps/'
+	if not( self.fileExists(targetDirectory)) then
+		os.execute( 'mkdir ' .. targetDirectory )
+	end
+
+	local f = io.open(_G.dataFolderPath .. '/../dumps/' .. filename, 'a' )
+	f:write(msg,'\n')
+	f:close()
 end
 
 function self.urlEncode(str, strSub)
@@ -147,9 +164,9 @@ function self.fromJSON(json, fallback)
 		return fallback
 	end
 
-	if (jsonParser == nil) then
-		jsonParser = require('JSON')
-	end
+	--if (jsonParser == nil) then
+	--	jsonParser = require('JSON')
+	--end
 
 	ok, results = pcall(parse, json)
 
@@ -263,9 +280,9 @@ function self.toJSON(luaTable)
 		return jsonParser:encode(j)
 	end
 
-	if (jsonParser == nil) then
-		jsonParser = require('JSON')
-	end
+	--if (jsonParser == nil) then
+	--	jsonParser = require('JSON')
+	--end
 
 	ok, results = pcall(toJSON, luaTable)
 
@@ -373,18 +390,18 @@ function self.cameraExists(parm)
 	return loopGlobal(parm, 'camera')
 end
 
-function self.dumpTable(t, level)
+function self.dumpTable(t, level, filename)
 	local level = level or "> "
 	for attr, value in pairs(t or {}) do
 		if (type(value) ~= 'function') then
 			if (type(value) == 'table') then
-				self.print(level .. attr .. ':')
-				self.dumpTable(value, level .. '	')
+				self.print(level .. attr .. ':', filename)
+				self.dumpTable(value, level .. '	', filename)
 			else
-				self.print(level .. attr .. ': ' .. tostring(value))
+				self.print(level .. attr .. ': ' .. tostring(value), filename)
 			end
 		else
-			self.print(level .. attr .. '()')
+			self.print(level .. attr .. '()', filename)
 		end
 	end
 end

@@ -2,7 +2,7 @@ _G._ = require 'lodash'
 
 local scriptPath = ''
 
-package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;../../../scripts/lua/?.lua;'
+package.path = "../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;../../../scripts/lua/?.lua;' .. package.path
 
 local testData = require('tstData')
 
@@ -59,7 +59,7 @@ local function getDevice_(
 		hardwareTypeValue = 'ht1'
 	end
 
-	local data = 
+	local data =
 	{
 		["id"] = 1,
 		["name"] = name,
@@ -638,7 +638,7 @@ describe('device', function()
 
 			assert.is_function(device.protectionOff)
 			assert.is_function(device.protectionOn)
-			assert.is_function(device.setDescription) 
+			assert.is_function(device.setDescription)
 			assert.is_function(device.setIcon)
 			assert.is_function(device.setValues)
 			assert.is_function(device.rename)
@@ -1330,7 +1330,7 @@ describe('device', function()
 					['type'] = 'Light/Switch',
 					['name'] = 's1',
 					['additionalRootData'] = { ['switchType'] = 'Selector'},
-					['additionalDataData'] = 
+					['additionalDataData'] =
 					{ levelNames = "Off|bb|cc|dd|ee|ff|gg|hh|ii|jj|kk|ll|mm|nn|oo|pp|qq|rr|ss|tt" },
 				})
 
@@ -1352,7 +1352,7 @@ describe('device', function()
 					['type'] = 'Light/Switch',
 					['name'] = 's1',
 					['additionalRootData'] = { ['switchType'] = 'Selector'},
-					['additionalDataData'] = 
+					['additionalDataData'] =
 					{ levelNames = "Off|bb|cc|dd|ee|ff|gg|hh|ii|jj|kk|ll|mm|nn|oo|pp|qq|rr|ss|tt" },
 				})
 				commandArray = {} ;switch.switchSelector('bb')
@@ -1425,7 +1425,7 @@ describe('device', function()
 				})
 					assert.is_function(scene.protectionOff)
 					assert.is_function(scene.protectionOn)
-					assert.is_function(scene.setDescription) 
+					assert.is_function(scene.setDescription)
 					assert.is_function(scene.setIcon)
 					assert.is_function(scene.setValues)
 					assert.is_function(scene.rename)
@@ -1468,7 +1468,7 @@ describe('device', function()
 
 				assert.is_false(group.isHTTPResponse)
 				assert.is_false(group.isVariable)
-				assert.is_false(group.isTimer) 
+				assert.is_false(group.isTimer)
 				assert.is_false(group.isScene)
 				assert.is_false(group.isDevice)
 				assert.is_true(group.isGroup)
@@ -1498,7 +1498,7 @@ describe('device', function()
 				})
 					assert.is_function(group.protectionOff)
 					assert.is_function(group.protectionOn)
-					assert.is_function(group.setDescription) 
+					assert.is_function(group.setDescription)
 					assert.is_function(group.rename)
 			end)
 
@@ -1662,12 +1662,12 @@ describe('device', function()
 				domoticz.log = function(message)
 					msg = message
 				end
-			
+
 				device.decreaseBrightness()
 				assert.is_not_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessdown&type=command&idx=1' }, commandArray)
 				assert.is_same('If you believe this is not correct, please report on the forum.', msg)
 			end)
-		
+
 			it('should handle setNightMode method correctly', function()
 				commandArray = {}
 				device.setNightMode()
@@ -1706,11 +1706,11 @@ describe('device', function()
 
 			it('should handle setDiscomode method correctly',function()
 				commandArray = {}
-			
+
 				domoticz.log = function(message)
 					msg = message
 				end
-			
+
 				device.setDiscoMode(8)
 				assert.is_not_same({ 'http://127.0.0.1:8080/json.htm?param=discomodenum8&type=command&idx=1' }, commandArray)
 				assert.is_same('If you believe this is not correct, please report on the forum.', msg)

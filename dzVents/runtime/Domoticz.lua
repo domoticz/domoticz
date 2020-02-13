@@ -1,5 +1,5 @@
 local scriptPath = globalvariables['script_path']
-package.path = package.path .. ';' .. scriptPath .. '?.lua'
+package.path = scriptPath .. '?.lua' .. ';' .. package.path 
 
 local Camera = require('Camera')
 local Device = require('Device')
@@ -8,6 +8,13 @@ local Time = require('Time')
 local TimedCommand = require('TimedCommand')
 local utils = require('Utils')
 local _ = require('lodash')
+local constants = require('constants');
+
+local function merge(toTable, fromTable)
+	for k, v in pairs(fromTable) do
+		toTable[k] = v
+	end
+end
 
 -- main class
 local function Domoticz(settings)
@@ -50,219 +57,18 @@ local function Domoticz(settings)
 		['startTime'] = Time(globalvariables['domoticz_start_time']),
 		['systemUptime'] = tonumber(globalvariables['systemUptime']),
 		['variables'] = {},
-		['PRIORITY_LOW'] = -2,
-		['PRIORITY_MODERATE'] = -1,
-		['PRIORITY_NORMAL'] = 0,
-		['PRIORITY_HIGH'] = 1,
-		['PRIORITY_EMERGENCY'] = 2,
-		['SOUND_DEFAULT'] = 'pushover',
-		['SOUND_BIKE'] = 'bike',
-		['SOUND_BUGLE'] = 'bugle',
-		['SOUND_CASH_REGISTER'] = 'cashregister',
-		['SOUND_CLASSICAL'] = 'classical',
-		['SOUND_COSMIC'] = 'cosmic',
-		['SOUND_FALLING'] = 'falling',
-		['SOUND_GAMELAN'] = 'gamelan',
-		['SOUND_INCOMING'] = 'incoming',
-		['SOUND_INTERMISSION'] = 'intermission',
-		['SOUND_MAGIC'] = 'magic',
-		['SOUND_MECHANICAL'] = 'mechanical',
-		['SOUND_PIANOBAR'] = 'pianobar',
-		['SOUND_SIREN'] = 'siren',
-		['SOUND_SPACEALARM'] = 'spacealarm',
-		['SOUND_TUGBOAT'] = 'tugboat',
-		['SOUND_ALIEN'] = 'alien',
-		['SOUND_CLIMB'] = 'climb',
-		['SOUND_PERSISTENT'] = 'persistent',
-		['SOUND_ECHO'] = 'echo',
-		['SOUND_UPDOWN'] = 'updown',
-		['SOUND_NONE'] = 'none',
-		['HUM_NORMAL'] = 0,
-		['HUM_COMFORTABLE'] = 1,
-		['HUM_DRY'] = 2,
-		['HUM_WET'] = 3,
-		-- true mapping to numbers is done in the device adapters for
-		-- baro and temphumbaro devices
-		['BARO_STABLE'] = 'stable',
-		['BARO_SUNNY'] = 'sunny',
-		['BARO_CLOUDY'] = 'cloudy',
-		['BARO_UNSTABLE'] = 'unstable',
-		['BARO_THUNDERSTORM'] = 'thunderstorm',
-		['BARO_NOINFO'] = 'noinfo',
-		['BARO_PARTLYCLOUDY'] = 'partlycloudy',
-		['BARO_RAIN'] = 'rain',
-		['ALERTLEVEL_GREY'] = 0,
-		['ALERTLEVEL_GREEN'] = 1,
-		['ALERTLEVEL_YELLOW'] = 2,
-		['ALERTLEVEL_ORANGE'] = 3,
-		['ALERTLEVEL_RED'] = 4,
-		['SECURITY_DISARMED'] = 'Disarmed',
-		['SECURITY_ARMEDAWAY'] = 'Armed Away',
-		['SECURITY_ARMEDHOME'] = 'Armed Home',
 		['LOG_INFO'] = utils.LOG_INFO,
 		['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
 		['LOG_DEBUG'] = utils.LOG_DEBUG,
 		['LOG_ERROR'] = utils.LOG_ERROR,
 		['LOG_FORCE'] = utils.LOG_FORCE,
-		['EVENT_TYPE_TIMER'] = 'timer',
-		['EVENT_TYPE_DEVICE'] = 'device',
-		['EVENT_TYPE_VARIABLE'] = 'variable',
-		['EVENT_TYPE_SECURITY'] = 'security',
-		['EVENT_TYPE_SCENE'] = 'scene',
-		['EVENT_TYPE_GROUP'] = 'group',
-		['EVENT_TYPE_HTTPRESPONSE'] = 'httpResponse',
-		['EVOHOME_MODE_AUTO'] = 'Auto',
-		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
-		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
-		['EVOHOME_MODE_FOLLOW_SCHEDULE'] = 'FollowSchedule',
-		['EVOHOME_MODE_AUTOWITHRESET'] = 'AutoWithReset',
-		['EVOHOME_MODE_AUTOWITHECO'] = 'AutoWithEco',
-		['EVOHOME_MODE_AWAY'] = 'Away',
-		['EVOHOME_MODE_DAYOFF'] = 'DayOff',
-		['EVOHOME_MODE_CUSTOM'] = 'Custom',
-		['EVOHOME_MODE_HEATINGOFF'] = 'HeatingOff',
-		['INTEGER'] = 'integer',
-		['FLOAT'] = 'float',
-		['STRING'] = 'string',
-		['DATE'] = 'date',
-		['TIME'] = 'time',
-		['NSS_FIREBASE'] = 'gcm', -- For the moment the change to fcm is only done in the url
-		['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',
-		['NSS_HTTP'] = 'http',
-		['NSS_KODI'] = 'kodi',
-		['NSS_LOGITECH_MEDIASERVER'] = 'lms',
-		['NSS_NMA'] = 'nma',
-		['NSS_PROWL'] = 'prowl',
-		['NSS_PUSHALOT'] = 'pushalot',
-		['NSS_PUSHBULLET'] = 'pushbullet',
-		['NSS_PUSHOVER'] = 'pushover',
-		['NSS_PUSHSAFER'] = 'pushsafer',
-		['NSS_TELEGRAM'] = 'telegram',
-		['BASETYPE_DEVICE'] = 'device',
-		['BASETYPE_SCENE'] = 'scene',
-		['BASETYPE_GROUP'] = 'group',
-		['BASETYPE_VARIABLE'] = 'variable',
-		['BASETYPE_SECURITY'] = 'security',
-		['BASETYPE_TIMER'] = 'timer',
-		['BASETYPE_HTTP_RESPONSE'] = 'httpResponse',
-
 		utils = {
-			_ = _,
-
-			setLogMarker = function(logMarker)
-				return utils.setLogMarker(logMarker)
-			end,
-
-			toCelsius = function(f, relative)
-				return utils.toCelsius(f, relative)
-			end,
-
-			urlEncode = function(s, strSub)
-				return utils.urlEncode(s, strSub)
-			end,
-
-			urlDecode = function(s)
-				return utils.urlDecode(s)
-			end,
-
-			round = function(x,n)
-				return utils.round(x,n)
-			end,
-
-			osExecute = function(cmd)
-				utils.osExecute(cmd)
-			end,
-
-			fileExists = function(path)
-				return utils.fileExists(path)
-			end,
-
-			fromJSON = function(json, fallback)
-				return utils.fromJSON(json, fallback)
-			end,
-
-			toJSON = function(luaTable)
-				return utils.toJSON(luaTable)
-			end,
-
-			fromXML = function(xml, fallback)
-				return utils.fromXML(xml, fallback)
-			end,
-
-			toXML = function( luaTable, header)
-				return utils.toXML(luaTable, header)
-			end,
-
-			toBase64 = function (s)
-				return utils.toBase64(s)
-			end,
-
-			fromBase64 = function (s)
-				return utils.fromBase64(s)
-			end,
-
-			rgbToHSB = function(r, g, b)
-				return utils.rgbToHSB(r,g,b)
-			end,
-
-			hsbToRGB = function(h, s, b)
-				return utils.hsbToRGB(h,s,b)
-			end,
-
-			dumpTable = function(t, level)
-				return utils.dumpTable(t, level)
-			end,
-
-			stringSplit = function(text, sep)
-				return utils.stringSplit(text, sep)
-			end,
-
-			inTable = function(t, searchItem)
-				return utils.inTable(t, searchItem)
-			end,
-
-			rightPad = function(text, length, char)
-				return utils.rightPad(text, length, char)
-			end,
-
-			leftPad = function(text, length, char)
-				return utils.leftPad(text, length, char)
-			end,
-
-			centerPad = function(text, length, char)
-				return utils.centerPad(text, length, char)
-			end,
-
-			leadingZeros = function(num, length)
-				return utils.leadingZeros(num, length)
-			end,
-
-			numDecimals = function(num, int, dec)
-				return utils.numDecimals(num, int, dec)
-			end,
-
-			deviceExists = function (parm)
-				return utils.deviceExists(parm)
-			end,
-
-			sceneExists = function (parm)
-				return utils.sceneExists(parm)
-			end,
-
-			groupExists = function (parm)
-				return utils.groupExists(parm)
-			end,
-
-			variableExists = function (parm)
-				return utils.variableExists(parm)
-			end,
-
-			cameraExists = function (parm)
-				return utils.cameraExists(parm)
-			end,
-
+			_ = _
 		}
 	}
+
+	merge(self, constants)
+	merge(self.utils, utils)
 
 	-- add domoticz commands to the commandArray
 	function self.sendCommand(command, value)
@@ -326,7 +132,7 @@ local function Domoticz(settings)
 		local delay = delay or 0
 		local message = 'triggerHTTPResponse: ' .. (message or httpResponse)
 		local url = self.settings['Domoticz url'] .. '/json.htm?type=command&param=addlogmessage&message=' .. self.utils.urlEncode(message)
-				self.openURL  
+				self.openURL
 				(
 					{
 						url = url,
@@ -347,6 +153,17 @@ local function Domoticz(settings)
 	-- have domoticz send an sms
 	function self.sms(message)
 		self.sendCommand('SendSMS', message)
+	end
+
+	function self.emitEvent(eventname, data)
+
+		if (type(data) == 'table') then data = utils.toJSON(data) end
+
+		local eventinfo = {
+			name = eventname,
+			data = data
+		}
+		return TimedCommand(self, 'CustomEvent', eventinfo, 'emitEvent')
 	end
 
 	-- have domoticz open a url
@@ -459,16 +276,16 @@ local function Domoticz(settings)
 		return self.utils.round(x, n)
 	 end
 
-	function self.dump()
-		self.utils.dumpTable(settings, '> ')
+	function self.dump( file )
+		self.utils.dumpTable(settings, '> ', file)
 	end
 
-	function self.logDevice(device)
-		self.utils.dumpTable(device, '> ')
+	function self.logDevice(device, file)
+		self.utils.dumpTable(device, '> ', file)
 	end
 
-	function self.logCamera(camera)
-		self.utils.dumpTable(camera, '> ')
+	function self.logCamera(camera, file)
+		self.utils.dumpTable(camera, '> ', file)
 	end
 
 	self.__cameras = {}
