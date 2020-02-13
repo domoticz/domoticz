@@ -16583,25 +16583,34 @@ namespace http {
 
 							root["result"][ii]["d"] = szDateEnd;
 
-							std::string szValue;
-
-							sprintf(szTmp, "%llu", total_real_usage_1);
-							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", (float)(total_real_usage_1 / divider));
 							root["result"][ii]["v"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_usage_2);
-							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", (float)(total_real_usage_2 / divider));
 							root["result"][ii]["v2"] = szTmp;
 
-							sprintf(szTmp, "%llu", total_real_deliv_1);
-							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", (float)(total_real_deliv_1 / divider));
 							root["result"][ii]["r1"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_deliv_2);
-							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", (float)(total_real_deliv_2 / divider));
 							root["result"][ii]["r2"] = szTmp;
+
+							sprintf(szTmp, "%.3f", (float)(total_min_usage_1 / divider));
+							root["result"][ii]["c1"] = szTmp;
+							sprintf(szTmp, "%.3f", (float)(total_min_usage_2 / divider));
+							root["result"][ii]["c3"] = szTmp;
+
+							if (total_max_deliv_2 != 0)
+							{
+								sprintf(szTmp, "%.3f", (float)(total_min_deliv_1 / divider));
+								root["result"][ii]["c2"] = szTmp;
+								sprintf(szTmp, "%.3f", (float)(total_min_deliv_2 / divider));
+								root["result"][ii]["c4"] = szTmp;
+							}
+							else
+							{
+								strcpy(szTmp, "0");
+								root["result"][ii]["c2"] = szTmp;
+								root["result"][ii]["c4"] = szTmp;
+							}
 
 							ii++;
 						}
