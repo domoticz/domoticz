@@ -1001,7 +1001,7 @@ local function EventHelpers(domoticz, mainMethod)
 				local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling httpResponse-events for: "' .. callback, utils.LOG_INFO)
+					utils.log('Handling httpResponse-events for: "' .. callback .. '"', utils.LOG_INFO)
 					self.handleEvents(scriptsToExecute, response)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end
@@ -1038,7 +1038,7 @@ local function EventHelpers(domoticz, mainMethod)
 				local scriptsToExecute = self.findScriptForTarget(trigger, systemEventScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling system event for: "' .. trigger, utils.LOG_INFO)
+					utils.log('Handling system event for: "' .. trigger .. '"', utils.LOG_INFO)
 					self.handleEvents(scriptsToExecute, event)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end
@@ -1072,7 +1072,7 @@ local function EventHelpers(domoticz, mainMethod)
 				local scriptsToExecute = self.findScriptForTarget(trigger, customEventScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling Domoticz custom event for: "' .. trigger, utils.LOG_INFO)
+					utils.log('Handling Domoticz custom event for: "' .. trigger .. '"', utils.LOG_INFO)
 					self.handleEvents(scriptsToExecute, customEvent)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end

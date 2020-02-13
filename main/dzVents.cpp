@@ -57,7 +57,7 @@ void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSys
 
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_NOTIFICATION)
 		{
-			_log.Log(LOG_STATUS, "Notification raised: %d(%s)", itt->nValue, m_mainworker.m_notificationsystem.GetTypeString(itt->nValue).c_str());
+			// _log.Log(LOG_STATUS, "Notification raised: %d(%s)", itt->nValue, m_mainworker.m_notificationsystem.GetTypeString(itt->nValue).c_str());
 			reasonNotification = true;
 		}
 	}
@@ -397,7 +397,7 @@ bool CdzVents::TriggerCustomEvent(lua_State* lua_state, const std::vector<_tLuaT
 			else if (itt->name == "_after")
 			{
 				delayTime = static_cast<float>(itt->iValue);
-				_log.Log(LOG_STATUS, "dzVents: delayed custom event for %d seconds", itt->iValue);
+				// _log.Log(LOG_STATUS, "dzVents: delayed custom event for %d seconds", itt->iValue);
 			}
 		}
 	}
