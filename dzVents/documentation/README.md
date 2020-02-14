@@ -1,5 +1,6 @@
 ﻿
 
+
 **Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
@@ -166,7 +167,7 @@ return
 		system = { ... },
 		timer = { ... },
 		variables = { ... },
-		
+
 	},
 	data = { ... }, -- optional
 	logging = { ... }, -- optional
@@ -191,10 +192,17 @@ The `on` section has many kinds of subsections that *can all be used simultaneou
 
 #### customEvents = { ... } <sup>3.0.0</sup>
 A list of  one or more custom event triggers. This eventTrigger can be activate by a json/api call, a MQTT message (when domoticz is setup to listen to such messages on the hardware tab) or by the dzVents internal command domoticz.emitEvent
-	JSON: /json.htm?type=command&param=customevent&event=MyEvent&data=myData
-	MQTT: {"command" : "customevent", "event" : "MyEvent" , "data" : "myData" } 
-	emitEvent: domoticz.emitEvent('customEvent name',(optional) data)
-See example and emitEvent for more information.
+ - The name of the custom-event
+ - The name of the custom-event followed by a time constraint, such as:
+	`['start']  = { 'at 15:*', 'at 22:* on sat, sun' }` The script will be executed if domoticz is  started, **and** it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [time trigger rules](#timer_trigger_rules).
+
+	- JSON: **< domoticzIP : domoticz port >**/json.htm?type=command&param=customevent&event=MyEvent&data=myData
+	- MQTT: {"command" : "customevent", "event" : "MyEvent" , "data" :    "myData" }  
+	- emitEvent: domoticz.emitEvent('myCustomEvent' [,])
+
+		`domoticz.emitEvent('myEvent') -- no data`
+		`domoticz.emitEvent('another event', 'some data')`
+		`domoticz.emitEvent('hugeEvent', { a = 10, b = 20, some = 'text', sub = { x = 10, y = 20 } })`
 
 #### devices = { ... }
 A list of device-names or indexes. If a device in your system was updated (e.g. switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. **Note**: update does not necessarily means the device state or value has changed. Each device can be:
@@ -225,14 +233,23 @@ If the security state in Domoticz changes and it matches with any of the states 
 #### system = { ...} <sup>3.0.0</sup>
 A list of  one or more system triggers.
 
- - `stop`,
- - `start`,
- - `manualBackupFinished`,
- - `dailyBackupFinished`,
- - `hourlyBackupFinished`,
- - `monthlyBackupFinished`
- 
-start is the first trigger after domoticz started. stop is the last trigger just before domoticz stops. 
+- `stop`,
+`start`,
+`manualBackupFinished`,
+`dailyBackupFinished`,
+`hourlyBackupFinished`,
+`monthlyBackupFinished`,
+
+ - The name of the system-event followed by a time constraint, such as:
+	`['start']  = { 'at 15:*', 'at 22:* on sat, sun' }` The script will be executed if domoticz is  started, **and** it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [time trigger rules](#timer_trigger_rules).
+	-   **start**  - fired when Domoticz has started.
+	-   **stop**  - fired when Domoticz is shutting down. As you probably can imagine you have only a limited amount of time - also depending on the load on your system -  to have Domoticz do stuff when your script has been completed. Some commands will probably not be executed. Just give it a try.
+	-  **Backups** - the trigger item (2nd parameter of the execute function) is a table that holds information about the newly created backup (location,  duration in seconds and type).  You could use this information to copy the file to some other location or for another purpose.
+		-   **dailyBackupFinished**    - automatic backup when set in domoticz
+		-   **hourlyBackupFinished** 	 -						    " "
+		-   **monthlyBackupFinished** - " "
+		-   **manualBackupFinished**  - fired when you start a backup using the Domoticz GUI or via **< domoticz IP:domoticz port >**/backupdatabase.php
+
 
 #### timer = { ... }
 A list of one ore more time 'rules' like `every minute` or `at 17:*`. See [*timer* trigger rules](#timer_trigger_rules). If any or the rules matches with the current time/date then your execute function is called. E.g.: `on = { timer = { 'between 30 minutes before sunset and 30 minutes after sunrise' } }`.
@@ -249,13 +266,13 @@ When all the above conditions are met (active == true and the on section has at 
 #### 2. (domoticz, **item**, triggerInfo)
  Depending on what actually triggered the script, `item` is either a:
 
- - [customEvents] <sup>3.0.0</sup>
+ - [customEvent](#Custom_event_API) <sup>3.0.0</sup>
  - [device](#Device_object_API),
  - [variable](#Variable_object_API_.28user_variables.29),
  - [scene](#Scene),
  - [group](#Group),
- - timer,
- - [system], <sup>3.0.0</sup>
+ - [timer](#timer_=_{_..._} ),
+ - [system](#System_event_API), <sup>3.0.0</sup>
  - [security](#Security_Panel) or
  - [httpResponse](#Asynchronous_HTTP_requests)
 
@@ -333,18 +350,18 @@ return
 {
 	on =
 	{
-		timer = 
+		timer =
 		{
 			'every minute',
 		},
-		
-		customEvents = 
+
+		customEvents =
 		{
 			'delayed',
 		},
 },
 	execute = function(domoticz, item)
-		if item.isTimer then 
+		if item.isTimer then
 			domoticz.emitEvent('delayed', domoticz.time.rawTime ).afterSec(30)
 		else
 			domoticz.notify('Delayed', 'Event was emitted at ' .. item.data, domoticz.PRIORITY_LOW)
@@ -492,7 +509,7 @@ return
 			'start',
 			'backupDoneDaily',
 		},
-	
+
 	},
 
 	execute = function(domoticz, system)
@@ -582,11 +599,11 @@ There are several options for time triggers. It is important to know that Domoti
 			'on */2,15/*',				-- every day in February or
 										-- every 15th day of the month
 			'on -3/4,4/7-',				-- before 3/4 or after 4/7
-			
+
 			-- or if you want to go really wild and combine them:
 				'at nighttime at 21:32-05:44 every 5 minutes on sat, sun',
 				'every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,fri,tue on 20/5-18/8'
-			
+
 			-- or just do it yourself:
 				function(domoticz)
 				-- you can use domoticz.time to get the current time
@@ -717,7 +734,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 			domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
 			domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300
  ```
- 
+
    - **osExecute(cmd)**: *Function*:  Execute an os command.
 	- **rightPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.
 	- **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
@@ -824,7 +841,8 @@ The domoticz object has these constants available for use in your code e.g. `dom
  - **SECURITY_ARMEDAWAY**, **SECURITY_ARMEDHOME**, **SECURITY_DISARMED**: for security state.
  - **SOUND_ALIEN** , **SOUND_BIKE**, **SOUND_BUGLE**, **SOUND_CASH_REGISTER**, **SOUND_CLASSICAL**, **SOUND_CLIMB** , **SOUND_COSMIC**, **SOUND_DEFAULT** , **SOUND_ECHO**, **SOUND_FALLING**  , **SOUND_GAMELAN**, **SOUND_INCOMING**, **SOUND_INTERMISSION**, **SOUND_MAGIC** , **SOUND_MECHANICAL**, **SOUND_NONE**, **SOUND_PERSISTENT**, **SOUND_PIANOBAR** , **SOUND_SIREN** , **SOUND_SPACEALARM**, **SOUND_TUGBOAT**  , **SOUND_UPDOWN**: for notification sounds.
 
-## Device object API
+## Custom event API
+If you have a dzVents script that is triggered by a customEvent in Domoticz then the second parameter passed to the execute function will be a *notification* object. The object.type = customEvent (isCustomEvent: true) and object.data contains the passed data to this script. object.trigger is the name of the customEvent that triggered the script.## Device object API
 If you have a dzVents script that is triggered by switching a device in Domoticz then the second parameter passed to the execute function will be a *device* object. Also, each device in Domoticz can be found in the `domoticz.devices()` collection (see above). The device object has a set of fixed attributes like *name* and *idx*. Many devices, however, have different attributes and methods depending on their (hardware)type, subtype and other device specific identifiers. It is possible that you will get an error if you call a method on a device that doesn't support it, so please check the device properties for your specific hardware to see which are supported (can also be done in your script code!).
 
 dzVents recognizes most of the different device types in Domoticz and creates the proper attributes and methods. It is possible that your device type has attributes that are not recognized; if that's the case, please create a ticket in the Domoticz [issue tracker on GitHub](https://github.com/domoticz/domoticz/issues), and an adapter for that device will be added.
@@ -1246,7 +1264,10 @@ light.switchOn().checkFirst().forMin(5)
 ```
 
 #### Availability
-Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices and snapshot command silent() is not available.  See table below
+Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices and snapshot command silent() is not available.  For commands for which dzVents must use openURL, only afterAAA() method is available. These commands are mainly the setAaaaa() commands for RGBW type devices.
+
+
+See table below
 
 ```{=mediawiki}
 
@@ -1395,8 +1416,11 @@ Use this in combination with the various dzVents time attributes:
 	-- very powerful if you want to compare two time instances:
 	local anotherTime = Time('...') -- fill-in some time here
 	print(t.compare(anotherTime).secs) -- diff in seconds between t and anotherTime.
-
 ```
+
+### System event API
+If you have a dzVents script that is triggered by a system-event in Domoticz then the second parameter passed to the execute function will be a *system* object. The object.type = system-event that triggered the script. ( object.isSystemEvent: true) For backups the object also contains location and durationin seconds.
+
 ### Time properties and methods
 
 Creation:
@@ -2384,7 +2408,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 # History
 
 ## [3.0.0]
- - Add system-events triggers as option to the on = { ... } section. Scripts can now be triggered based on these system-events: 
+ - Add system-events triggers as option to the on = { ... } section. Scripts can now be triggered based on these system-events:
 	 - start
 	 - stop
 	 - manualBackupFinished,
@@ -2798,6 +2822,4 @@ On the other hand, you have to make sure that dzVents can access the json withou
 ## [0.9.7]
 
  - Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
-
-
 

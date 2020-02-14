@@ -105,7 +105,7 @@ void CdzVents::ProcessNotificationItem(CLuaTable *luaTable, int &index, const CE
 			if(ParseJSon(item.sValue, eventdata))
 			{
 				type = type + eventdata["type"].asString();
-				luaTable->AddInteger("duration", eventdata["duration"].asInt());
+				luaTable->AddNumber("duration", eventdata["duration"].asFloat());
 				luaTable->AddString("location", eventdata["location"].asString());
 			}
 		}

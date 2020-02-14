@@ -1430,7 +1430,7 @@ void MainWorker::HandleAutomaticBackups()
 				_log.Log(LOG_ERROR, "Error writing automatic hourly backup file");
 			}
 			closedir(lDir);
-			backupInfo["duration"] = mytime(NULL) - now;
+			backupInfo["duration"] = difftime(mytime(NULL),now);
 			m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, backupStatus, JSonToRawString(backupInfo));
 		}
 		else {
@@ -1457,7 +1457,7 @@ void MainWorker::HandleAutomaticBackups()
 				_log.Log(LOG_ERROR, "Error writing automatic daily backup file");
 			}
 			closedir(lDir);
-			backupInfo["duration"] = mytime(NULL) - now;
+			backupInfo["duration"] = difftime(mytime(NULL),now);
 			m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, backupStatus, JSonToRawString(backupInfo));
 		}
 		else {
@@ -1483,7 +1483,7 @@ void MainWorker::HandleAutomaticBackups()
 				_log.Log(LOG_ERROR, "Error writing automatic monthly backup file");
 			}
 			closedir(lDir);
-			backupInfo["duration"] = mytime(NULL) - now;
+			backupInfo["duration"] = difftime(mytime(NULL),now);
 			m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, backupStatus, JSonToRawString(backupInfo));
 		}
 		else {
