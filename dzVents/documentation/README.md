@@ -1350,6 +1350,7 @@ See table below
 #### Notes on table
  - **Note 1**: AAA is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
  - **Note 2**: for `domoticz.openURL()` only `afterAAA()` and `withinAAA()` is available.
+ - **Note 3**: Note 2 also applies for all commands depending on openURL (like rgbwwDevice.setAaa() commands).
 
 #### Follow-up event triggers
 Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add `.silent()` to your commands (exception is updateSetPoint).

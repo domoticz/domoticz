@@ -3,9 +3,9 @@ local evenItemIdentifier = require('eventItemIdentifier')
 
 local eventMapping = {
 	backupDoneWeb = 'manualBackupFinished',
-	backupDoneDaily = 'dailyBackupFinished',
-	backupDoneHourly = 'hourlyBackupFinished',
-	backupDoneMonthly = 'monthlyBackupFinished',
+	backupDoneDay = 'dailyBackupFinished',
+	backupDoneHour = 'hourlyBackupFinished',
+	backupDoneMonth = 'monthlyBackupFinished',
 	start = 'start',
 	stop = 'stop'
 }

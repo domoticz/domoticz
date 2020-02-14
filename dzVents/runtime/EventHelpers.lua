@@ -380,6 +380,7 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 
 		if (type(events) ~= 'table') then
+			restoreLogging()
 			return
 		end
 
@@ -418,16 +419,17 @@ local function EventHelpers(domoticz, mainMethod)
 			elseif (baseType == domoticz.BASETYPE_HTTP_RESPONSE) then
 				moduleLabelInfo = ' HTTPResponse: "' .. subject.callback .. '"'
 			elseif (baseType == domoticz.BASETYPE_SYSTEM_EVENT) then
-				moduleLabelInfo = ' Domoticz event: "' .. subject.type .. '"'
+				moduleLabelInfo = ' Domoticz event: "' .. subject.name .. '"'
+			elseif (baseType == domoticz.BASETYPE_CUSTOM_EVENT) then
+				moduleLabelInfo = ' Custom event: "' .. subject.name .. '"'
 			end
 
-			triggerInfo = eventHandler.trigger and ', trigger: ' .. eventHandler.trigger or ''
+			triggerInfo = eventHandler.trigger and ( ', trigger: "' .. eventHandler.trigger .. '"' ) or ''
 
 			local clockTimeStampAtStart = os.clock()
 			local timeStampAtStart = os.time()
 
 			utils.log('------ Start ' .. scriptType .. moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
-
 			self.callEventHandler(eventHandler, subject)
 
 			local clockTimeSpend = os.clock() - clockTimeStampAtStart
@@ -861,7 +863,7 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling events for: "' .. device.name .. '", value: "' .. tostring(device.state) .. '"', utils.LOG_INFO)
+				utils.log('Handling events for: "' .. device.name .. '", value: "' .. tostring(device.state) .. '"', utils.LOG_MODULE_EXEC_INFO)
 				self.handleEvents(scriptsToExecute, device)
 				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
@@ -897,7 +899,7 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling events for: "' .. item.name .. '", value: "' .. tostring(item.state) .. '"', utils.LOG_INFO)
+				utils.log('Handling events for: "' .. item.name .. '", value: "' .. tostring(item.state) .. '"', utils.LOG_MODULE_EXEC_INFO)
 				self.handleEvents(scriptsToExecute, item)
 				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
@@ -961,19 +963,18 @@ local function EventHelpers(domoticz, mainMethod)
 
 		domoticz.changedVariables().forEach(function(variable)
 
-			local scriptsToExecute
 			local caSize = _.size(self.domoticz.commandArray)
 
 			-- first search by name
 
-			scriptsToExecute = self.findScriptForTarget(variable.name, allEventScripts)
+			local scriptsToExecute = self.findScriptForTarget(variable.name, allEventScripts)
 			if (scriptsToExecute == nil) then
 				-- search by id
 				scriptsToExecute = allEventScripts[variable.id]
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. tostring(variable.value) .. '"', utils.LOG_INFO)
+				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. tostring(variable.value) .. '"', utils.LOG_MODULE_EXEC_INFO)
 				self.handleEvents(scriptsToExecute, variable)
 				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
@@ -1001,7 +1002,7 @@ local function EventHelpers(domoticz, mainMethod)
 				local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling httpResponse-events for: "' .. callback .. '"', utils.LOG_INFO)
+					utils.log('Handling httpResponse-events for: "' .. callback .. '"', utils.LOG_MODULE_EXEC_INFO)
 					self.handleEvents(scriptsToExecute, response)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end
@@ -1030,17 +1031,20 @@ local function EventHelpers(domoticz, mainMethod)
 		if (systemEvents ~= nil) then
 			for i, event in pairs(systemEvents) do
 
-				local trigger = SystemEvent(self.domoticz, event)["type"]
-				event.baseType = domoticz.BASETYPE_SYSTEM_EVENT
+				event.name = SystemEvent(self.domoticz, event)["type"]
+				if event.name == nil then
+					utils.log('System event "' .. event.type .. '" is not supported yet.', utils.LOG_ERROR)
+				else
+					event.baseType = domoticz.BASETYPE_SYSTEM_EVENT
 
-				local caSize = _.size(self.domoticz.commandArray)
+					local caSize = _.size(self.domoticz.commandArray)
+					local scriptsToExecute = self.findScriptForTarget(event.name, systemEventScripts)
 
-				local scriptsToExecute = self.findScriptForTarget(trigger, systemEventScripts)
-
-				if (scriptsToExecute ~= nil) then
-					utils.log('Handling system event for: "' .. trigger .. '"', utils.LOG_INFO)
-					self.handleEvents(scriptsToExecute, event)
-					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
+					if (scriptsToExecute ~= nil) then
+						utils.log('Handling system event for: "' .. event.name .. '"', utils.LOG_MODULE_EXEC_INFO)
+						self.handleEvents(scriptsToExecute, event)
+						self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
+					end
 				end
 			end
 		end
@@ -1064,15 +1068,15 @@ local function EventHelpers(domoticz, mainMethod)
 		if (customEvents ~= nil) then
 			for i, customEvent in pairs(customEvents) do
 
-				local trigger = customEvent.data.name
+				customEvent.name = customEvent.data.name
 				customEvent.baseType = domoticz.BASETYPE_CUSTOM_EVENT
 
 				local caSize = _.size(self.domoticz.commandArray)
 
-				local scriptsToExecute = self.findScriptForTarget(trigger, customEventScripts)
+				local scriptsToExecute = self.findScriptForTarget(customEvent.name, customEventScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling Domoticz custom event for: "' .. trigger .. '"', utils.LOG_INFO)
+					utils.log('Handling Domoticz custom event for: "' .. customEvent.name .. '"', utils.LOG_MODULE_EXEC_INFO)
 					self.handleEvents(scriptsToExecute, customEvent)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end

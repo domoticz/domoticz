@@ -1348,6 +1348,7 @@ See table below
 
 * '''Note 1''': AAA is a placeholder for <code>Min/Sec/Hour</code> affix e.g. <code>afterMin()</code>.
 * '''Note 2''': for <code>domoticz.openURL()</code> only <code>afterAAA()</code> and <code>withinAAA()</code> is available.
+* '''Note 3''': Note 2 also applies for all commands depending on openURL (like rgbwwDevice.setAaa() commands).
 
 ==== Follow-up event triggers ====
 
