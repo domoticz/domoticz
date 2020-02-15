@@ -12,7 +12,9 @@ public:
 	// constructors
 	CLuaTable(lua_State *lua_state, std::string Name, int NrCols, int NrRows);
 	CLuaTable(lua_State *lua_state, std::string Name);
-	
+
+	void InitTable(lua_State* lua_state, std::string Name, int NrCols, int NrRows);
+
 	// string labels
 	void AddString(std::string Label, std::string Value);
 	void AddBool(std::string Label, bool Value);
@@ -70,6 +72,5 @@ private:
 	std::vector<_tEntry> m_luatable;
 	int m_subtable_level;
 
-	void InitTable(lua_State *lua_state, std::string Name, int NrCols, int NrRows);
 	void PushRow(std::vector<_tEntry>::iterator table_entry);
 };

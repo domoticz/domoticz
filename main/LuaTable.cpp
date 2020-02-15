@@ -88,7 +88,7 @@ void CLuaTable::AddInteger(long long Index, long long Value)
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_INDEX;
 	tableEntry.value_type = TYPE_INTEGER;
-	tableEntry.label = std::to_string(Index);
+	//tableEntry.label = std::to_string(Index);
 	tableEntry.index = Index;
 	tableEntry.iValue = Value;
 	m_luatable.push_back(tableEntry);
@@ -99,7 +99,7 @@ void CLuaTable::AddString(long long Index, std::string Value)
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_INDEX;
 	tableEntry.value_type = TYPE_STRING;
-	tableEntry.label = std::to_string(Index);
+	//tableEntry.label = std::to_string(Index);
 	tableEntry.index = Index;
 	tableEntry.sValue = Value;
 	m_luatable.push_back(tableEntry);
@@ -110,7 +110,7 @@ void CLuaTable::AddNumber(long long Index, long double Value)
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_INDEX;
 	tableEntry.value_type = TYPE_NUMBER;
-	tableEntry.label = std::to_string(Index);
+	//tableEntry.label = std::to_string(Index);
 	tableEntry.index = Index;
 	tableEntry.dValue = Value;
 	m_luatable.push_back(tableEntry);
@@ -121,7 +121,7 @@ void CLuaTable::AddBool(long long Index, bool Value)
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_INDEX;
 	tableEntry.value_type = TYPE_BOOL;
-	tableEntry.label = std::to_string(Index);
+	//tableEntry.label = std::to_string(Index);
 	tableEntry.index = Index;
 	tableEntry.bValue = Value;
 	m_luatable.push_back(tableEntry);
@@ -131,7 +131,7 @@ void CLuaTable::OpenSubTableEntry(long long Index, int NrCols, int NrRows)
 {
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_SUBTABLE_OPEN_INDEX;
-	tableEntry.label = std::to_string(Index);
+	//tableEntry.label = std::to_string(Index);
 	tableEntry.index = Index;
 	tableEntry.nrCols = NrCols;
 	tableEntry.nrRows = NrRows;
@@ -216,6 +216,7 @@ void CLuaTable::Publish()
 			}
 		}
 		lua_setglobal(m_lua_state, m_name.c_str());
+		m_luatable.clear();
 	}
 	else
 		_log.Log(LOG_ERROR, "Lua table %s is not published. Not all sub tables are closed!", m_name.c_str());	
