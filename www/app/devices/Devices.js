@@ -1,4 +1,4 @@
-define(['app'], function (app) {
+define(['app', 'livesocket'], function (app) {
 
     var addDeviceModal = {
         templateUrl: 'app/devices/deviceAddModal.html',
@@ -186,7 +186,7 @@ define(['app'], function (app) {
 							scenes.push(item.idx);
 						}
 					});
-                    
+
                     bootbox.confirm($.t('Are you sure you want to delete the selected Devices?') + ' (' + (devices.length + scenes.length) + ')')
                         .then(function () {
 							ShowNotify($.t("Removing..."),30000);
@@ -274,19 +274,19 @@ define(['app'], function (app) {
 					return "-";
 				}
 				var ID = device.ID;
-				if (typeof(device.HardwareTypeVal) != 'undefined' && device.HardwareTypeVal == 21) {	
-					if (device.ID.substr(-4, 2) == '00') {	
-						ID = device.ID.substr(1,device.ID.length-2) + '<span class="ui-state-default">' + device.ID.substr(-2, 2) + '</span>';	
-					} else {	
-						ID = device.ID.substr(1,device.ID.length-4) + '<span class="ui-state-default">' + device.ID.substr(-4, 2) + '</span>' + device.ID.substr(-2, 2);	
-					}	
-				}	
+				if (typeof(device.HardwareTypeVal) != 'undefined' && device.HardwareTypeVal == 21) {
+					if (device.ID.substr(-4, 2) == '00') {
+						ID = device.ID.substr(1,device.ID.length-2) + '<span class="ui-state-default">' + device.ID.substr(-2, 2) + '</span>';
+					} else {
+						ID = device.ID.substr(1,device.ID.length-4) + '<span class="ui-state-default">' + device.ID.substr(-4, 2) + '</span>' + device.ID.substr(-2, 2);
+					}
+				}
 /*
 Not sure why this was used
-				if (device.Type == "Lighting 1") {	
-					ID = String.fromCharCode(device.ID);	
+				if (device.Type == "Lighting 1") {
+					ID = String.fromCharCode(device.ID);
 				}
-*/				
+*/
 				return ID;
             }
 
@@ -563,7 +563,7 @@ Not sure why this was used
         }
     });
 
-    app.controller('DevicesController', function ($scope, domoticzApi, Device) {
+    app.controller('DevicesController', function ($scope, domoticzApi, livesocket, Device) {
         var $ctrl = this;
         $ctrl.refreshDevices = refreshDevices;
         $ctrl.applyFilter = applyFilter;
@@ -574,6 +574,20 @@ Not sure why this was used
             $ctrl.isListExpanded = false;
             $ctrl.filter = {};
             $ctrl.refreshDevices();
+
+            $scope.$on('device_update', function (event, deviceData) {
+                var device = $ctrl.devices.find(function (device) {
+                    return device.idx === deviceData.idx;
+                });
+
+                if (device) {
+                    Object.assign(device, deviceData);
+                } else {
+                    $ctrl.devices.push(new Device(deviceData))
+                }
+
+                $ctrl.applyFilter();
+            });
         }
 
         function refreshDevices() {
