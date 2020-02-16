@@ -539,10 +539,10 @@ void CPanasonicNode::Do_Work()
 	_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) started.", m_Name.c_str());
 	int	iPollCount = 9;
 
-	while (!IsStopRequested(500))
+	while (!IsStopRequested(1000))
 	{
 		iPollCount++;
-		if (iPollCount >= 10)
+		if (iPollCount >= m_iPollIntSec)
 		{
 			iPollCount = 0;
 			try
@@ -801,9 +801,9 @@ void CPanasonic::Do_Work()
 
 	ReloadNodes();
 
-	while (!IsStopRequested(500))
+	while (!IsStopRequested(1000))
 	{
-		if (scounter++ >= (m_iPollInterval * 2))
+		if (scounter++ >= m_iPollInterval)
 		{
 			std::lock_guard<std::mutex> l(m_mutex);
 
