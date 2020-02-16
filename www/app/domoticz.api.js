@@ -1,7 +1,7 @@
-define(['app.permissions'], function (appPermissionsModule) {
-    var module = angular.module('domoticz.api', [appPermissionsModule.name]);
+define(['app.permissions', 'livesocket'], function (appPermissionsModule, websocketModule) {
+    var module = angular.module('domoticz.api', [appPermissionsModule.name, websocketModule.name]);
 
-    module.factory('domoticzApi', ['$q', '$http', function ($q, $http) {
+    module.factory('domoticzApi', function ($q, $http, $httpParamSerializer, livesocket) {
         return {
             sendRequest: sendRequest,
             sendCommand: sendCommand,
@@ -9,24 +9,21 @@ define(['app.permissions'], function (appPermissionsModule) {
         };
 
         function sendRequest(data) {
-            return $http.get('json.htm', {
-                params: data
-            }).then(function (response) {
-                return response.data;
-            });
+            const query = $httpParamSerializer(data);
+            return livesocket.sendRequest(query);
         }
 
         function sendCommand(command, data) {
-            var commandParams = { type: 'command', param: command };
+            var commandParams = {type: 'command', param: command};
             return sendRequest(Object.assign({}, commandParams, data)).then(errorHandler);
         }
 
         function errorHandler(response) {
             return response && response.status !== 'OK' ? $q.reject(response) : response;
         }
-    }]);
+    });
 
-    module.factory('dzApiHelper', function($q, permissions) {
+    module.factory('dzApiHelper', function ($q, permissions) {
         return {
             checkViewerPermissions: checkPermissions.bind(this, 'Viewer'),
             checkUserPermissions: checkPermissions.bind(this, 'User'),
@@ -45,7 +42,7 @@ define(['app.permissions'], function (appPermissionsModule) {
         }
     });
 
-    module.factory('sceneApi', function(bootbox, domoticzApi, dzApiHelper, dzNotification) {
+    module.factory('sceneApi', function (bootbox, domoticzApi, dzApiHelper, dzNotification) {
         return {
             switchOn: createSwitchCommand('On'),
             switchOff: createSwitchCommand('Off'),
@@ -62,9 +59,9 @@ define(['app.permissions'], function (appPermissionsModule) {
                         switchcmd: command
                     });
 
-                    promise.catch(function(result) {
+                    promise.catch(function (result) {
                         bootbox.alert(result.message || 'Problem sending switch command');
-                    }).finally(function() {
+                    }).finally(function () {
                         notification.hide();
                     });
 
@@ -83,7 +80,7 @@ define(['app.permissions'], function (appPermissionsModule) {
 
     });
 
-    module.factory('deviceApi', function($q, domoticzApi, dzApiHelper, dzTimeAndSun, dzNotification, Device) {
+    module.factory('deviceApi', function ($q, domoticzApi, dzApiHelper, dzTimeAndSun, dzNotification, Device) {
         return {
             getLightsDevices: getLightsDevices,
             getDeviceInfo: getDeviceInfo,
@@ -104,7 +101,7 @@ define(['app.permissions'], function (appPermissionsModule) {
         }
 
         function getDeviceInfo(deviceIdx) {
-            return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
+            return domoticzApi.sendRequest({type: 'devices', rid: deviceIdx})
                 .then(function (data) {
                     dzTimeAndSun.updateData(data);
 
@@ -158,7 +155,7 @@ define(['app.permissions'], function (appPermissionsModule) {
         }
 
         function makeFavorite(deviceIdx, isFavorite) {
-            return dzApiHelper.checkUserPermissions().then(function() {
+            return dzApiHelper.checkUserPermissions().then(function () {
                 return domoticzApi.sendCommand('makefavorite', {
                     idx: deviceIdx,
                     isfavorite: isFavorite,
@@ -189,7 +186,7 @@ define(['app.permissions'], function (appPermissionsModule) {
         };
 
         function createCommand(command) {
-            return function(deviceIdx) {
+            return function (deviceIdx) {
                 return dzApiHelper.checkUserPermissions().then(function () {
                     return domoticzApi.sendCommand(command, {
                         idx: deviceIdx
@@ -206,7 +203,7 @@ define(['app.permissions'], function (appPermissionsModule) {
                         switchcmd: command
                     });
 
-                    promise.catch(function(result) {
+                    promise.catch(function (result) {
                         bootbox.alert(result.message || 'Problem sending switch command');
                     });
 

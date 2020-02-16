@@ -4,8 +4,6 @@ define(['app', 'livesocket'], function (app) {
 
 		var ctrl = this;
 
-		$scope.broadcast_unsubscribe = undefined;
-
 		MakeFavorite = function (id, isfavorite) {
 			deviceApi.makeFavorite(id, isfavorite).then(function() {
 				ShowTemps();
@@ -128,20 +126,6 @@ define(['app', 'livesocket'], function (app) {
 					});
 				}
 			});
-
-			$scope.broadcast_unsubscribe = $scope.$on('jsonupdate', function (event, data) {
-				/*
-					When this event is caught, a widget status update is received.
-					We call RefreshItem to update the widget.
-				*/
-				if (typeof data.ServerTime != 'undefined') {
-					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
-				}
-				if (typeof data.ActTime != 'undefined') {
-					$.LastUpdateTime = parseInt(data.ActTime);
-				}
-				RefreshItem(data.item);
-			});
 		}
 
 		ShowForecast = function () {
@@ -150,11 +134,6 @@ define(['app', 'livesocket'], function (app) {
 
 		ShowTemps = function () {
 			$('#modal').show();
-
-			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
-				$scope.broadcast_unsubscribe();
-				$scope.broadcast_unsubscribe = undefined;
-			}
 
 			// TODO should belong to a global controller
 			ctrl.isNotMobile = function () {
@@ -218,6 +197,10 @@ define(['app', 'livesocket'], function (app) {
 			$.LastUpdateTime = parseInt(0);
 
 			$scope.MakeGlobalConfig();
+
+			$scope.$on('device_update', function (event, deviceData) {
+				RefreshItem(deviceData);
+			});
 
 			var dialog_edittempdevice_buttons = {};
 			dialog_edittempdevice_buttons[$.t("Update")] = function () {
@@ -482,13 +465,6 @@ define(['app', 'livesocket'], function (app) {
 
 
 		};
-		$scope.$on('$destroy', function () {
-			//cleanup
-			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
-				$scope.broadcast_unsubscribe();
-				$scope.broadcast_unsubscribe = undefined;
-			}
-		});
 
 		ctrl.RoomPlans = [{ idx: 0, name: $.t("All") }];
 		$.ajax({
