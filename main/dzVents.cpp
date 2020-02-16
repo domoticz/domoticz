@@ -74,29 +74,29 @@ void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSys
 		ProcessNotification(lua_state, items);
 }
 
-void CdzVents::ProcessNotificationItem(CLuaTable *luaTable, int &index, const CEventSystem::_tEventQueue& item)
+void CdzVents::ProcessNotificationItem(CLuaTable &luaTable, int &index, const CEventSystem::_tEventQueue& item)
 {
 	std::string type, status;
 
-	luaTable->OpenSubTableEntry(index, 1, 4);
+	luaTable.OpenSubTableEntry(index, 1, 4);
 	type = m_mainworker.m_notificationsystem.GetTypeString(item.nValue);
 	status = m_mainworker.m_notificationsystem.GetStatusString(item.lastLevel);
 
 	if (item.sValue.empty())
 	{
-		luaTable->AddString("message", "");
+		luaTable.AddString("message", "");
 	}
 	else
 	{
-		luaTable->AddString("message", "");
-		luaTable->OpenSubTableEntry("data", 0, 0);
+		luaTable.AddString("message", "");
+		luaTable.OpenSubTableEntry("data", 0, 0);
 		if (item.nValue >= Notification::HW_TIMEOUT && item.nValue <= Notification::HW_THREAD_ENDED)
 		{
 			Json::Value eventdata;
 			if (ParseJSon(item.sValue, eventdata))
 			{
-				luaTable->AddInteger("id", eventdata["m_HwdID"].asInt());
-				luaTable->AddString("name", eventdata["m_Name"].asString());
+				luaTable.AddInteger("id", eventdata["m_HwdID"].asInt());
+				luaTable.AddString("name", eventdata["m_Name"].asString());
 			}
 		}
 		else if (item.nValue == Notification::DZ_BACKUP_DONE)
@@ -105,8 +105,8 @@ void CdzVents::ProcessNotificationItem(CLuaTable *luaTable, int &index, const CE
 			if(ParseJSon(item.sValue, eventdata))
 			{
 				type = type + eventdata["type"].asString();
-				luaTable->AddNumber("duration", eventdata["duration"].asFloat());
-				luaTable->AddString("location", eventdata["location"].asString());
+				luaTable.AddNumber("duration", eventdata["duration"].asFloat());
+				luaTable.AddString("location", eventdata["location"].asString());
 			}
 		}
 		else if (item.nValue == Notification::DZ_CUSTOM)
@@ -114,15 +114,15 @@ void CdzVents::ProcessNotificationItem(CLuaTable *luaTable, int &index, const CE
 			Json::Value eventdata;
 			if (ParseJSon(item.sValue, eventdata))
 			{
-				luaTable->AddString("name", eventdata["name"].asString());
-				luaTable->AddString("data", eventdata["data"].asString());
+				luaTable.AddString("name", eventdata["name"].asString());
+				luaTable.AddString("data", eventdata["data"].asString());
 			}
 		}
-		luaTable->CloseSubTableEntry();
+		luaTable.CloseSubTableEntry();
 	}
-	luaTable->AddString("type", type);
-	luaTable->AddString("status", status);
-	luaTable->CloseSubTableEntry();
+	luaTable.AddString("type", type);
+	luaTable.AddString("status", status);
+	luaTable.CloseSubTableEntry();
 	index++;
 	//_log.Log(LOG_STATUS, "dzVents notification: type: %s, status: %s, message: %s", type.c_str(), status.c_str(), item.sValue.c_str());
 }
@@ -132,9 +132,9 @@ void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEven
 	int index = 1;
 	bool bHardware = false;
 	bool bCustomEvent = false;
-	CLuaTable* luaTable = new CLuaTable(lua_state, "notification");
+	CLuaTable luaTable(lua_state, "notification");
 
-	luaTable->OpenSubTableEntry("domoticz", 0, 0);
+	luaTable.OpenSubTableEntry("domoticz", 0, 0);
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); itt++)
 	{
@@ -157,9 +157,9 @@ void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEven
 			}
 		}
 	}
-	luaTable->CloseSubTableEntry();
+	luaTable.CloseSubTableEntry();
 
-	luaTable->OpenSubTableEntry("hardware", 0, 0);
+	luaTable.OpenSubTableEntry("hardware", 0, 0);
 	if (bHardware)
 	{
 		for (itt = items.begin(); itt != items.end(); itt++)
@@ -178,9 +178,9 @@ void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEven
 			}
 		}
 	}
-	luaTable->CloseSubTableEntry();
+	luaTable.CloseSubTableEntry();
 
-	luaTable->OpenSubTableEntry("customevent", 0, 0);
+	luaTable.OpenSubTableEntry("customevent", 0, 0);
 	if (bCustomEvent)
 	{
 		for (itt = items.begin(); itt != items.end(); itt++)
@@ -195,9 +195,9 @@ void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEven
 			}
 		}
 	}
-	luaTable->CloseSubTableEntry();
+	luaTable.CloseSubTableEntry();
 
-	luaTable->Publish();
+	luaTable.Publish();
 }
 
 void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
@@ -206,7 +206,7 @@ void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSys
 	int secstatus = 0;
 	std::string secstatusw = "";
 
-	CLuaTable* luaTable = new CLuaTable(lua_state, "securityupdates");
+	CLuaTable luaTable(lua_state, "securityupdates");
 
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); ++itt)
@@ -220,11 +220,11 @@ void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSys
 				secstatusw = "Armed Away";
 			else
 				secstatusw = "Disarmed";
-			luaTable->AddString(index, secstatusw);
+			luaTable.AddString(index, secstatusw);
 			index++;
 		}
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 }
 
 void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEventSystem::_tEventQueue>& items)
@@ -235,15 +235,15 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 	std::string protocol;
 	std::string statusText;
 
-	CLuaTable* luaTable = new CLuaTable(lua_state, "httpresponse");
+	CLuaTable luaTable(lua_state, "httpresponse");
 
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); ++itt)
 	{
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_URL)
 		{
-			luaTable->OpenSubTableEntry(index, 0, 0);
-			luaTable->OpenSubTableEntry("headers", (int)itt->vData.size() + 2, 0); // status is split into 3 parts
+			luaTable.OpenSubTableEntry(index, 0, 0);
+			luaTable.OpenSubTableEntry("headers", (int)itt->vData.size() + 2, 0); // status is split into 3 parts
 			if (!itt->vData.empty())
 			{
 				std::vector<std::string>::const_iterator itt2;
@@ -254,7 +254,7 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 					size_t pos = header.find(": ");
 					if (pos != std::string::npos)
 					{
-						luaTable->AddString(header.substr(0, pos), header.substr(pos + 2));
+						luaTable.AddString(header.substr(0, pos), header.substr(pos + 2));
 					}
 					else
 					{
@@ -280,18 +280,18 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 					}
 				}
 			}
-			luaTable->CloseSubTableEntry(); // headers, why rawset was done here???
+			luaTable.CloseSubTableEntry(); // headers, why rawset was done here???
 		
-			luaTable->AddString("protocol", protocol);
-			luaTable->AddString("statusText", statusText);
-			luaTable->AddInteger("statusCode", statusCode);
-			luaTable->AddString("data", itt->sValue);
-			luaTable->AddString("callback", itt->nValueWording);
-			luaTable->CloseSubTableEntry(); // index entry
+			luaTable.AddString("protocol", protocol);
+			luaTable.AddString("statusText", statusText);
+			luaTable.AddInteger("statusCode", statusCode);
+			luaTable.AddString("data", itt->sValue);
+			luaTable.AddString("callback", itt->nValueWording);
+			luaTable.CloseSubTableEntry(); // index entry
 			index++;
 		}
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 }
 
 bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
@@ -702,33 +702,33 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	"dzVents/runtime/";
 #endif
 
-	CLuaTable* luaTable = new CLuaTable(lua_state, "globalvariables");
-	luaTable->AddString("Security", m_mainworker.m_eventsystem.m_szSecStatus[secStatus]);
-	luaTable->AddString("script_path", lua_DirT.str());
-	luaTable->AddString("runtime_path", runtime_DirT.str());
-	luaTable->AddBool("isTimeEvent", reasonTime);
+	CLuaTable luaTable(lua_state, "globalvariables");
+	luaTable.AddString("Security", m_mainworker.m_eventsystem.m_szSecStatus[secStatus]);
+	luaTable.AddString("script_path", lua_DirT.str());
+	luaTable.AddString("runtime_path", runtime_DirT.str());
+	luaTable.AddBool("isTimeEvent", reasonTime);
 
 	char szTmp[10];
 	sprintf(szTmp, "%.02f", 1.23f);
-	luaTable->AddString("radix_separator", std::string(1,szTmp[1]));
+	luaTable.AddString("radix_separator", std::string(1,szTmp[1]));
 
 	sprintf(szTmp, "%.02f", 1234.56f);
 	if (szTmp[1] == '2')
 	{
-		luaTable->AddString("group_separator", "");
+		luaTable.AddString("group_separator", "");
 	}
 	else
 	{
-		luaTable->AddString("group_separator", std::string(1,szTmp[1]));
+		luaTable.AddString("group_separator", std::string(1,szTmp[1]));
 	}
 
 	int rnvalue = 0;
 	m_sql.GetPreferencesVar("DzVentsLogLevel", rnvalue);
-	luaTable->AddInteger("dzVents_log_level", rnvalue);
+	luaTable.AddInteger("dzVents_log_level", rnvalue);
 
 	std::string sTitle;
 	m_sql.GetPreferencesVar("Title", sTitle);
-	luaTable->AddString("domoticz_title", sTitle);
+	luaTable.AddString("domoticz_title", sTitle);
 
 	// Only when webLocalNetworks has local network defined
 	// Add latitude / longitude to table
@@ -745,23 +745,23 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 		{
 			// Only when location entered in the settings
 			// Add to table
-			luaTable->AddString("latitude", strarray[0]);
-			luaTable->AddString("longitude", strarray[1]);
+			luaTable.AddString("latitude", strarray[0]);
+			luaTable.AddString("longitude", strarray[1]);
 		}
 	}
 
-	luaTable->AddString("domoticz_listening_port", m_webservers.our_listener_port);
-	luaTable->AddString("domoticz_webroot", szWebRoot);
-	luaTable->AddString("domoticz_start_time", m_mainworker.m_eventsystem.m_szStartTime);
-	luaTable->AddString("currentTime", TimeToString(NULL, TF_DateTimeMs));
-	luaTable->AddInteger("systemUptime", SystemUptime());
-	luaTable->AddString("domoticz_version", szAppVersion);
-	luaTable->AddString("dzVents_version", GetVersion());
+	luaTable.AddString("domoticz_listening_port", m_webservers.our_listener_port);
+	luaTable.AddString("domoticz_webroot", szWebRoot);
+	luaTable.AddString("domoticz_start_time", m_mainworker.m_eventsystem.m_szStartTime);
+	luaTable.AddString("currentTime", TimeToString(NULL, TF_DateTimeMs));
+	luaTable.AddInteger("systemUptime", SystemUptime());
+	luaTable.AddString("domoticz_version", szAppVersion);
+	luaTable.AddString("dzVents_version", GetVersion());
 
-	luaTable->Publish();
+	luaTable.Publish();
 }
 
-void CdzVents::ExportHardwareData(CLuaTable* luaTable, int& index, const std::vector<CEventSystem::_tEventQueue>& items)
+void CdzVents::ExportHardwareData(CLuaTable &luaTable, int& index, const std::vector<CEventSystem::_tEventQueue>& items)
 {
 	;// to be implemented when hardware notification support is added
 }
@@ -781,7 +781,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	struct tm ntime;
 	time_t checktime;
 
-	CLuaTable* luaTable = new CLuaTable(lua_state, "domoticzData");
+	CLuaTable luaTable(lua_state, "domoticzData");
 
 	// First export all the devices.
 	std::map<uint64_t, CEventSystem::_tDeviceStatus>::iterator iterator;
@@ -819,41 +819,41 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
 		bool timed_out = (now - checktime >= SensorTimeOut * 60);
 
-		luaTable->OpenSubTableEntry(index, 1, 12);
+		luaTable.OpenSubTableEntry(index, 1, 12);
 	
-		luaTable->AddString("name", sitem.deviceName);
-		luaTable->AddBool("protected", (sitem.protection == 1) );
-		luaTable->AddInteger("id", sitem.ID);
-		luaTable->AddString("baseType","device");
-		luaTable->AddString("deviceType", dev_type);
-		luaTable->AddString("subType", sub_type);
-		luaTable->AddString("switchType", Switch_Type_Desc((_eSwitchType)sitem.switchtype));
-		luaTable->AddInteger("switchTypeValue", sitem.switchtype);
-		luaTable->AddString("lastUpdate", sitem.lastUpdate);
-		luaTable->AddInteger("lastLevel", sitem.lastLevel);
-		luaTable->AddBool("changed", triggerDevice);
-		luaTable->AddBool("timedOut", timed_out);
+		luaTable.AddString("name", sitem.deviceName);
+		luaTable.AddBool("protected", (sitem.protection == 1) );
+		luaTable.AddInteger("id", sitem.ID);
+		luaTable.AddString("baseType","device");
+		luaTable.AddString("deviceType", dev_type);
+		luaTable.AddString("subType", sub_type);
+		luaTable.AddString("switchType", Switch_Type_Desc((_eSwitchType)sitem.switchtype));
+		luaTable.AddInteger("switchTypeValue", sitem.switchtype);
+		luaTable.AddString("lastUpdate", sitem.lastUpdate);
+		luaTable.AddInteger("lastLevel", sitem.lastLevel);
+		luaTable.AddBool("changed", triggerDevice);
+		luaTable.AddBool("timedOut", timed_out);
 
 		//get all svalues separate
 		std::vector<std::string> strarray;
 		StringSplit(sitem.sValue, ";", strarray);
 
-		luaTable->OpenSubTableEntry("rawData", 0, 0);
+		luaTable.OpenSubTableEntry("rawData", 0, 0);
 		for (uint8_t i = 0; i < strarray.size(); i++)
 		{
-			luaTable->AddString(i + 1, strarray[i]);
+			luaTable.AddString(i + 1, strarray[i]);
 		}
-		luaTable->CloseSubTableEntry(); // rawData table
+		luaTable.CloseSubTableEntry(); // rawData table
 	
-		luaTable->AddString("deviceID", sitem.deviceID);
-		luaTable->AddString("description", sitem.description);
-		luaTable->AddInteger("batteryLevel", sitem.batteryLevel);
-		luaTable->AddInteger("signalLevel", sitem.signalLevel);
+		luaTable.AddString("deviceID", sitem.deviceID);
+		luaTable.AddString("description", sitem.description);
+		luaTable.AddInteger("batteryLevel", sitem.batteryLevel);
+		luaTable.AddInteger("signalLevel", sitem.signalLevel);
 
-		luaTable->OpenSubTableEntry("data", 0, 0);
-		luaTable->AddString("_state", sitem.nValueWording);
-		luaTable->AddInteger("_nValue", sitem.nValue);
-		luaTable->AddInteger("hardwareID", sitem.hardwareID);
+		luaTable.OpenSubTableEntry("data", 0, 0);
+		luaTable.AddString("_state", sitem.nValueWording);
+		luaTable.AddInteger("_nValue", sitem.nValue);
+		luaTable.AddInteger("hardwareID", sitem.hardwareID);
 
 		// Lux does not have it's own field yet.
 		if (sitem.devType == pTypeLux && sitem.subType == sTypeLux)
@@ -861,7 +861,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			int lux = 0;
 			if (strarray.size() > 0)
 				lux = atoi(strarray[0].c_str());
-			luaTable->AddNumber("lux", lux);
+			luaTable.AddNumber("lux", lux);
 		}
 
 		if (sitem.devType == pTypeGeneral && sitem.subType == sTypeKwh)
@@ -869,11 +869,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			long double value = 0.0f;
 			if (strarray.size() > 1)
 				value = atof(strarray[1].c_str());
-			luaTable->AddNumber("whTotal", value);
+			luaTable.AddNumber("whTotal", value);
 			value = 0.0f;
 			if (strarray.size() > 0)
 				value = atof(strarray[0].c_str());
-			luaTable->AddNumber("whActual", value);
+			luaTable.AddNumber("whActual", value);
 		}
 
 		// Now see if we have additional fields from the JSON data
@@ -884,11 +884,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			{
 				if (strcmp(m_mainworker.m_eventsystem.JsonMap[itt->first].szOriginal, "LevelNames") == 0 ||
 					strcmp(m_mainworker.m_eventsystem.JsonMap[itt->first].szOriginal, "LevelActions") == 0)
-					luaTable->AddString(
+					luaTable.AddString(
 						m_mainworker.m_eventsystem.JsonMap[itt->first].szNew,
 						base64_decode(itt->second));
 				else
-					luaTable->AddString(
+					luaTable.AddString(
 						m_mainworker.m_eventsystem.JsonMap[itt->first].szNew,
 						itt->second);
 			}
@@ -899,7 +899,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			std::map<uint8_t, float>::const_iterator itt;
 			for (itt = sitem.JsonMapFloat.begin(); itt != sitem.JsonMapFloat.end(); ++itt)
 			{
-				luaTable->AddNumber(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
+				luaTable.AddNumber(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
 			}
 		}
 
@@ -908,7 +908,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			std::map<uint8_t, int>::const_iterator itt;
 			for (itt = sitem.JsonMapInt.begin(); itt != sitem.JsonMapInt.end(); ++itt)
 			{
-				luaTable->AddInteger(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
+				luaTable.AddInteger(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
 			}
 		}
 
@@ -917,12 +917,12 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			std::map<uint8_t, bool>::const_iterator itt;
 			for (itt = sitem.JsonMapBool.begin(); itt != sitem.JsonMapBool.end(); ++itt)
 			{
-				luaTable->AddBool(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
+				luaTable.AddBool(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
 			}
 		}
 	
-		luaTable->CloseSubTableEntry(); // data table
-		luaTable->CloseSubTableEntry(); // device entry
+		luaTable.CloseSubTableEntry(); // data table
+		luaTable.CloseSubTableEntry(); // device entry
 		index++;
 	}
 	devicestatesMutexLock.unlock();
@@ -954,36 +954,36 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		else
 			description = result[0][0].c_str();
 
-		luaTable->OpenSubTableEntry(index, 1, 7);
+		luaTable.OpenSubTableEntry(index, 1, 7);
 	
-		luaTable->AddString("name", sgitem.scenesgroupName);
-		luaTable->AddInteger("id", sgitem.ID);
-		luaTable->AddString("description", description);
-		luaTable->AddString("baseType", (sgitem.scenesgroupType == 0) ? "scene" : "group");
-		luaTable->AddBool("protected", (lua_Number)sgitem.protection == 1);
-		luaTable->AddString("lastUpdate", sgitem.lastUpdate);
-		luaTable->AddBool("changed", triggerScene);
+		luaTable.AddString("name", sgitem.scenesgroupName);
+		luaTable.AddInteger("id", sgitem.ID);
+		luaTable.AddString("description", description);
+		luaTable.AddString("baseType", (sgitem.scenesgroupType == 0) ? "scene" : "group");
+		luaTable.AddBool("protected", (lua_Number)sgitem.protection == 1);
+		luaTable.AddString("lastUpdate", sgitem.lastUpdate);
+		luaTable.AddBool("changed", triggerScene);
 
-		luaTable->OpenSubTableEntry("data", 0, 0);
+		luaTable.OpenSubTableEntry("data", 0, 0);
 	
-		luaTable->AddString("_state", sgitem.scenesgroupValue);
+		luaTable.AddString("_state", sgitem.scenesgroupValue);
 
-		luaTable->CloseSubTableEntry(); // data, why rawset was done here???
+		luaTable.CloseSubTableEntry(); // data, why rawset was done here???
 
-		luaTable->OpenSubTableEntry("deviceIDs", 0, 0);
+		luaTable.OpenSubTableEntry("deviceIDs", 0, 0);
 		std::vector<uint64_t>::const_iterator itt2;
 		if (sgitem.memberID.size() > 0)
 		{
 			int index = 1;
 			for (itt2 = sgitem.memberID.begin(); itt2 != sgitem.memberID.end(); ++itt2)
 			{
-				luaTable->AddInteger(index, *itt2);
+				luaTable.AddInteger(index, *itt2);
 				index++;
 			}
 		}
 
-		luaTable->CloseSubTableEntry(); // device table
-		luaTable->CloseSubTableEntry(); // end entry
+		luaTable.CloseSubTableEntry(); // device table
+		luaTable.CloseSubTableEntry(); // end entry
 		index++;
 	}
 	scenesgroupsMutexLock.unlock();
@@ -1008,31 +1008,31 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			}
 		}
 
-		luaTable->OpenSubTableEntry(index, 1, 5);
+		luaTable.OpenSubTableEntry(index, 1, 5);
 	
-		luaTable->AddString("name", uvitem.variableName);
-		luaTable->AddInteger("id", uvitem.ID);
-		luaTable->AddString("baseType", "uservariable");
-		luaTable->AddString("lastUpdate", uvitem.lastUpdate);
-		luaTable->AddBool("changed", triggerVar);
+		luaTable.AddString("name", uvitem.variableName);
+		luaTable.AddInteger("id", uvitem.ID);
+		luaTable.AddString("baseType", "uservariable");
+		luaTable.AddString("lastUpdate", uvitem.lastUpdate);
+		luaTable.AddBool("changed", triggerVar);
 
-		luaTable->OpenSubTableEntry("data", 0, 0);
+		luaTable.OpenSubTableEntry("data", 0, 0);
 
 		if (uvitem.variableType == 0)
 		{
-			luaTable->AddInteger("value", atoi(uvitem.variableValue.c_str()));
+			luaTable.AddInteger("value", atoi(uvitem.variableValue.c_str()));
 			vtype = "integer";
 		}
 		else if (uvitem.variableType == 1)
 		{
 			//Float
-			luaTable->AddNumber("value", atof(uvitem.variableValue.c_str()));
+			luaTable.AddNumber("value", atof(uvitem.variableValue.c_str()));
 			vtype = "float";
 		}
 		else
 		{
 			//String,Date,Time
-			luaTable->AddString("value", uvitem.variableValue);
+			luaTable.AddString("value", uvitem.variableValue);
 			if (uvitem.variableType == 2)
 				vtype = "string";
 			else if (uvitem.variableType == 3)
@@ -1043,11 +1043,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 				vtype = "unknown";
 		}
 
-		luaTable->CloseSubTableEntry(); // data table
+		luaTable.CloseSubTableEntry(); // data table
 
-		luaTable->AddString("variableType", vtype);
+		luaTable.AddString("variableType", vtype);
 
-		luaTable->CloseSubTableEntry(); // end entry
+		luaTable.CloseSubTableEntry(); // end entry
 
 		index++;
 	}
@@ -1061,16 +1061,16 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		{
 			std::vector<std::string> sd = itt;
 		
-			luaTable->OpenSubTableEntry(index, 1, 3);
-			luaTable->AddString("name", sd[1]);
-			luaTable->AddInteger("id", atoi(sd[0].c_str()));
-			luaTable->AddString("baseType", "camera");
-			luaTable->CloseSubTableEntry(); // end entry
+			luaTable.OpenSubTableEntry(index, 1, 3);
+			luaTable.AddString("name", sd[1]);
+			luaTable.AddInteger("id", atoi(sd[0].c_str()));
+			luaTable.AddString("baseType", "camera");
+			luaTable.CloseSubTableEntry(); // end entry
 
 			index++;
 		}
 	}
 	ExportHardwareData(luaTable, index, items);
 
-	luaTable->Publish();
+	luaTable.Publish();
 }
