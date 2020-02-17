@@ -1752,158 +1752,158 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	
-	CLuaTable* luaTable = new CLuaTable(lua_state, "device", (int)m_devicestates.size(), 0);
+	CLuaTable luaTable(lua_state, "device", (int)m_devicestates.size(), 0);
 	
 	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator) {
 		_tDeviceStatus sitem = iterator->second;
-		luaTable->AddString(sitem.ID, sitem. nValueWording);
+		luaTable.AddString(sitem.ID, sitem. nValueWording);
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 	devicestatesMutexLock.unlock();
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	
-	luaTable = new CLuaTable(lua_state, "variable", (int)m_uservariables.size(), 0);
+	luaTable.InitTable(lua_state, "variable", (int)m_uservariables.size(), 0);
 
 	std::map<uint64_t, _tUserVariable>::const_iterator ittvar;
 	for (ittvar = m_uservariables.begin(); ittvar != m_uservariables.end(); ++ittvar) {
 		_tUserVariable uvitem = ittvar->second;
 		if (uvitem.variableType == 0) {
 			//Integer
-			luaTable->AddInteger(uvitem.ID, atoi(uvitem.variableValue.c_str()));
+			luaTable.AddInteger(uvitem.ID, atoi(uvitem.variableValue.c_str()));
 		}
 		else if (uvitem.variableType == 1) {
 			//Float
-			luaTable->AddNumber(uvitem.ID, atof(uvitem.variableValue.c_str()));
+			luaTable.AddNumber(uvitem.ID, atof(uvitem.variableValue.c_str()));
 		}
 		else {
 			//String,Date,Time
-			luaTable->AddString(uvitem.ID, uvitem.variableValue.c_str());
+			luaTable.AddString(uvitem.ID, uvitem.variableValue.c_str());
 		}
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 	uservariablesMutexLock.unlock();
 
 	std::lock_guard<std::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 	GetCurrentMeasurementStates();
 
 	if (m_tempValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "temperaturedevice", (int)m_tempValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "temperaturedevice", (int)m_tempValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_tempValuesByID.begin(); p != m_tempValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_dewValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "dewpointdevice", (int)m_dewValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "dewpointdevice", (int)m_dewValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_dewValuesByID.begin(); p != m_dewValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_humValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "humiditydevice", (int)m_humValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "humiditydevice", (int)m_humValuesByID.size(), 0);
 		std::map<uint64_t, int>::iterator p;
 		for (p = m_humValuesByID.begin(); p != m_humValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_baroValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "barometerdevice", (int)m_baroValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "barometerdevice", (int)m_baroValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_baroValuesByID.begin(); p != m_baroValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_utilityValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "utilitydevice", (int)m_utilityValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "utilitydevice", (int)m_utilityValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_utilityValuesByID.begin(); p != m_utilityValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_weatherValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "weatherdevice", (int)m_weatherValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "weatherdevice", (int)m_weatherValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_weatherValuesByID.begin(); p != m_weatherValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_rainValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "raindevice", (int)m_rainValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "raindevice", (int)m_rainValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_rainValuesByID.begin(); p != m_rainValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_rainLastHourValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "rainlasthourdevice", (int)m_rainLastHourValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "rainlasthourdevice", (int)m_rainLastHourValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_rainLastHourValuesByID.begin(); p != m_rainLastHourValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_uvValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "uvdevice", (int)m_uvValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "uvdevice", (int)m_uvValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_uvValuesByID.begin(); p != m_uvValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_winddirValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "winddirdevice", (int)m_winddirValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "winddirdevice", (int)m_winddirValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_winddirValuesByID.begin(); p != m_winddirValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_windspeedValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "windspeeddevice", (int)m_windspeedValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "windspeeddevice", (int)m_windspeedValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_windspeedValuesByID.begin(); p != m_windspeedValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_windgustValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "windgustdevice", (int)m_windgustValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "windgustdevice", (int)m_windgustValuesByID.size(), 0);
 		std::map<uint64_t, float>::iterator p;
 		for (p = m_windgustValuesByID.begin(); p != m_windgustValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 	if (m_zwaveAlarmValuesByID.size() > 0) {
-		luaTable = new CLuaTable(lua_state, "zwavealarms", (int)m_zwaveAlarmValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "zwavealarms", (int)m_zwaveAlarmValuesByID.size(), 0);
 		std::map<uint64_t, int>::iterator p;
 		for (p = m_zwaveAlarmValuesByID.begin(); p != m_zwaveAlarmValuesByID.end(); ++p)
 		{
-			luaTable->AddNumber(p->first, p->second);
+			luaTable.AddNumber(p->first, p->second);
 		}
-		luaTable->Publish();
+		luaTable.Publish();
 	}
 
 	lua_pushnumber(lua_state, (lua_Number)m_SecStatus);
@@ -2690,45 +2690,45 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQu
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
-	CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices", (int)m_devicestates.size(), 0);
+	CLuaTable luaTable(lua_state, "otherdevices", (int)m_devicestates.size(), 0);
 	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		luaTable->AddString(iterator->second.deviceName, (iterator->first == item.id && item.reason == REASON_DEVICE) ?
+		luaTable.AddString(iterator->second.deviceName, (iterator->first == item.id && item.reason == REASON_DEVICE) ?
 			item.nValueWording : iterator->second.nValueWording);
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 
-	luaTable = new CLuaTable(lua_state, "otherdevices_lastupdate", (int)m_devicestates.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_lastupdate", (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		luaTable->AddString(iterator->second.deviceName, (iterator->first == item.id && item.reason == REASON_DEVICE) ?
+		luaTable.AddString(iterator->second.deviceName, (iterator->first == item.id && item.reason == REASON_DEVICE) ?
 			item.lastUpdate : iterator->second.lastUpdate);
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 
-	luaTable = new CLuaTable(lua_state, "otherdevices_svalues", (int)m_devicestates.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_svalues", (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		luaTable->AddString(iterator->second.deviceName, (iterator->first == item.id && item.reason == REASON_DEVICE) ?
+		luaTable.AddString(iterator->second.deviceName, (iterator->first == item.id && item.reason == REASON_DEVICE) ?
 			item.sValue : iterator->second.sValue);
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 	
-	luaTable = new CLuaTable(lua_state, "otherdevices_idx", (int)m_devicestates.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_idx", (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		luaTable->AddInteger(iterator->second.deviceName, iterator->second.ID);
+		luaTable.AddInteger(iterator->second.deviceName, iterator->second.ID);
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 
-	luaTable = new CLuaTable(lua_state, "otherdevices_lastlevel", (int)m_devicestates.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_lastlevel", (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		luaTable->AddNumber(iterator->second.deviceName, (iterator->first == item.id && item.reason == REASON_DEVICE) ?
+		luaTable.AddNumber(iterator->second.deviceName, (iterator->first == item.id && item.reason == REASON_DEVICE) ?
 			item.lastLevel : iterator->second.lastLevel);
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 }
 
 void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, const int secStatus)
@@ -2758,246 +2758,246 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 
 		if (m_tempValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_temperature", (int)m_tempValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_temperature", (int)m_tempValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_tempValuesByName.begin(); p != m_tempValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				if (p->first == item.devname) {
 					thisDeviceTemp = p->second;
 				}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_dewValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_dewpoint", (int)m_dewValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_dewpoint", (int)m_dewValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_dewValuesByName.begin(); p != m_dewValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				if (p->first == item.devname) {
 					thisDeviceDew = p->second;
 				}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_humValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_humidity", (int)m_humValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_humidity", (int)m_humValuesByName.size(), 0);
 			std::map<std::string, int>::iterator p;
 			for (p = m_humValuesByName.begin(); p != m_humValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				if (p->first == item.devname) {
 					thisDeviceHum = p->second;
 				}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_baroValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_barometer", (int)m_baroValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_barometer", (int)m_baroValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_baroValuesByName.begin(); p != m_baroValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				if (p->first == item.devname) {
 					thisDeviceBaro = (float)p->second;
 				}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_utilityValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_utility", (int)m_utilityValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_utility", (int)m_utilityValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_utilityValuesByName.begin(); p != m_utilityValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				if (p->first == item.devname) {
 					thisDeviceUtility = p->second;
 				}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_rainValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_rain", (int)m_rainValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_rain", (int)m_rainValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_rainValuesByName.begin(); p != m_rainValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				if (p->first == item.devname) {
 					thisDeviceRain = p->second;
 				}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_rainLastHourValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_rain_lasthour", (int)m_rainLastHourValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_rain_lasthour", (int)m_rainLastHourValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_rainLastHourValuesByName.begin(); p != m_rainLastHourValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				if (p->first == item.devname) {
 					thisDeviceRainLastHour = p->second;
 				}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_uvValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_uv", (int)m_uvValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_uv", (int)m_uvValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_uvValuesByName.begin(); p != m_uvValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				if (p->first == item.devname) {
 					thisDeviceUV = p->second;
 				}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_winddirValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_winddir", (int)m_winddirValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_winddir", (int)m_winddirValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_winddirValuesByName.begin(); p != m_winddirValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				//if (p->first == item.devname) {
 					//thisDeviceWindDir = p->second;
 				//}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_windspeedValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_windspeed", (int)m_windspeedValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_windspeed", (int)m_windspeedValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_windspeedValuesByName.begin(); p != m_windspeedValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				//if (p->first == item.devname) {
 					//thisDeviceWindSpeed = p->second;
 				//}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_windgustValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_windgust", (int)m_windgustValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_windgust", (int)m_windgustValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_windgustValuesByName.begin(); p != m_windgustValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				//if (p->first == item.devname) {
 					//thisDeviceWindGust = p->second;
 				//}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_weatherValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_weather", (int)m_weatherValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_weather", (int)m_weatherValuesByName.size(), 0);
 			std::map<std::string, float>::iterator p;
 			for (p = m_weatherValuesByName.begin(); p != m_weatherValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				if (p->first == item.devname) {
 					thisDeviceWeather = p->second;
 				}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 		if (m_zwaveAlarmValuesByName.size() > 0)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "otherdevices_zwavealarms", (int)m_zwaveAlarmValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_zwavealarms", (int)m_zwaveAlarmValuesByName.size(), 0);
 			std::map<std::string, int>::iterator p;
 			for (p = m_zwaveAlarmValuesByName.begin(); p != m_zwaveAlarmValuesByName.end(); ++p)
 			{
-				luaTable->AddNumber(p->first, p->second);
+				luaTable.AddNumber(p->first, p->second);
 				if (p->first == item.devname) {
 					thisZwaveAlarm = p->second;
 				}
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 		}
 
 		if (item.reason == REASON_DEVICE)
 		{
-			CLuaTable* luaTable = new CLuaTable(lua_state, "devicechanged", 1, 0);
-			luaTable->AddString(item.devname, item.nValueWording);
+			CLuaTable luaTable(lua_state, "devicechanged", 1, 0);
+			luaTable.AddString(item.devname, item.nValueWording);
 			if (thisDeviceTemp != 0)
 			{
 				std::string tempName = item.devname;
 				tempName += "_Temperature";
-				luaTable->AddNumber(tempName, thisDeviceTemp);
+				luaTable.AddNumber(tempName, thisDeviceTemp);
 			}
 			if (thisDeviceDew != 0)
 			{
 				std::string tempName = item.devname;
 				tempName += "_Dewpoint";
-				luaTable->AddNumber(tempName, thisDeviceDew);
+				luaTable.AddNumber(tempName, thisDeviceDew);
 			}
 			if (thisDeviceHum != 0) {
 				std::string humName = item.devname;
 				humName += "_Humidity";
-				luaTable->AddNumber(humName, thisDeviceHum);
+				luaTable.AddNumber(humName, thisDeviceHum);
 			}
 			if (thisDeviceBaro != 0) {
 				std::string baroName = item.devname;
 				baroName += "_Barometer";
-				luaTable->AddNumber(baroName, thisDeviceBaro);
+				luaTable.AddNumber(baroName, thisDeviceBaro);
 			}
 			if (thisDeviceUtility != 0) {
 				std::string utilityName = item.devname;
 				utilityName += "_Utility";
-				luaTable->AddNumber(utilityName, thisDeviceUtility);
+				luaTable.AddNumber(utilityName, thisDeviceUtility);
 			}
 			if (thisDeviceWeather != 0) {
 				std::string weatherName = item.devname;
 				weatherName += "_Weather";
-				luaTable->AddNumber(weatherName, thisDeviceWeather);
+				luaTable.AddNumber(weatherName, thisDeviceWeather);
 			}
 			if (thisDeviceRain != 0)
 			{
 				std::string tempName = item.devname;
 				tempName += "_Rain";
-				luaTable->AddNumber(tempName, thisDeviceRain);
+				luaTable.AddNumber(tempName, thisDeviceRain);
 			}
 			if (thisDeviceRainLastHour != 0)
 			{
 				std::string tempName = item.devname;
 				tempName += "_RainLastHour";
-				luaTable->AddNumber(tempName, thisDeviceRainLastHour);
+				luaTable.AddNumber(tempName, thisDeviceRainLastHour);
 			}
 			if (thisDeviceUV != 0)
 			{
 				std::string tempName = item.devname;
 				tempName += "_UV";
-				luaTable->AddNumber(tempName, thisDeviceUV);
+				luaTable.AddNumber(tempName, thisDeviceUV);
 			}
 			if (thisZwaveAlarm != 0) {
 				std::string alarmName = item.devname;
 				alarmName += "_ZWaveAlarm";
-				luaTable->AddNumber(alarmName, thisZwaveAlarm);
+				luaTable.AddNumber(alarmName, thisZwaveAlarm);
 			}
-			luaTable->Publish();
+			luaTable.Publish();
 
 			// BEGIN OTO: populate changed info
-			luaTable = new CLuaTable(lua_state, "devicechanged_ext", 3, 0);
-			luaTable->AddInteger("idx", item.id);
-			luaTable->AddString("svalue", item.sValue);
-			luaTable->AddInteger("nvalue", item.nValue);
+			luaTable.InitTable(lua_state, "devicechanged_ext", 3, 0);
+			luaTable.AddInteger("idx", item.id);
+			luaTable.AddString("svalue", item.sValue);
+			luaTable.AddInteger("nvalue", item.nValue);
 
 			/* USELESS, WE HAVE THE DEVICE INDEX
 			// replace devicechanged =>
 			luaTable.AddInteger("name", nValue);
 			*/
-			luaTable->Publish();
+			luaTable.Publish();
 			// END OTO
 		}
 	}
@@ -3006,42 +3006,42 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
-	CLuaTable* luaTable = new CLuaTable(lua_state, "uservariables", (int)m_uservariables.size(), 0);
+	CLuaTable luaTable(lua_state, "uservariables", (int)m_uservariables.size(), 0);
 
 	std::map<uint64_t, _tUserVariable>::const_iterator it_var;
 	for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var) {
 		_tUserVariable uvitem = it_var->second;
 		if (uvitem.variableType == 0) {
 			//Integer
-			luaTable->AddInteger(uvitem.variableName, atoi(uvitem.variableValue.c_str()));
+			luaTable.AddInteger(uvitem.variableName, atoi(uvitem.variableValue.c_str()));
 		}
 		else if (uvitem.variableType == 1) {
 			//Float
-			luaTable->AddNumber(uvitem.variableName, atof(uvitem.variableValue.c_str()));
+			luaTable.AddNumber(uvitem.variableName, atof(uvitem.variableValue.c_str()));
 		}
 		else {
 			//String,Date,Time
-			luaTable->AddString(uvitem.variableName, uvitem.variableValue);
+			luaTable.AddString(uvitem.variableName, uvitem.variableValue);
 		}
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 
-	luaTable = new CLuaTable(lua_state, "uservariables_lastupdate", (int)m_uservariables.size(), 0);
+	luaTable.InitTable(lua_state, "uservariables_lastupdate", (int)m_uservariables.size(), 0);
 
 	for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var) {
 		_tUserVariable uvitem = it_var->second;
-		luaTable->AddString(uvitem.variableName, uvitem.lastUpdate);
+		luaTable.AddString(uvitem.variableName, uvitem.lastUpdate);
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 
 	if (item.reason == REASON_USERVARIABLE) {
 		if (item.id > 0) {
 			for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var) {
 				_tUserVariable uvitem = it_var->second;
 				if (uvitem.ID == item.id) {
-					luaTable = new CLuaTable(lua_state, "uservariablechanged", 1, 0);
-					luaTable->AddString(uvitem.variableName, uvitem.variableValue);
-					luaTable->Publish();
+					luaTable.InitTable(lua_state, "uservariablechanged", 1, 0);
+					luaTable.AddString(uvitem.variableName, uvitem.variableValue);
+					luaTable.Publish();
 				}
 			}
 		}
@@ -3049,35 +3049,35 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	uservariablesMutexLock.unlock();
 
 	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
-	luaTable = new CLuaTable(lua_state, "otherdevices_scenesgroups", (int)m_scenesgroups.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_scenesgroups", (int)m_scenesgroups.size(), 0);
 	std::map<uint64_t, _tScenesGroups>::const_iterator it_scgr;
 	for (it_scgr = m_scenesgroups.begin(); it_scgr != m_scenesgroups.end(); ++it_scgr) {
 		_tScenesGroups sgitem = it_scgr->second;
-		luaTable->AddString(sgitem.scenesgroupName, sgitem.scenesgroupValue);
+		luaTable.AddString(sgitem.scenesgroupName, sgitem.scenesgroupValue);
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 
-	luaTable = new CLuaTable(lua_state, "otherdevices_scenesgroups_idx", (int)m_scenesgroups.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_scenesgroups_idx", (int)m_scenesgroups.size(), 0);
 	for (it_scgr = m_scenesgroups.begin(); it_scgr != m_scenesgroups.end(); ++it_scgr)
 	{
 		_tScenesGroups sgitem = it_scgr->second;
-		luaTable->AddInteger(sgitem.scenesgroupName, sgitem.ID);
+		luaTable.AddInteger(sgitem.scenesgroupName, sgitem.ID);
 	}
-	luaTable->Publish();
+	luaTable.Publish();
 	scenesgroupsMutexLock.unlock();
 
-	luaTable = new CLuaTable(lua_state, "globalvariables", 0, 0);
-	luaTable->AddString("Security", m_szSecStatus[secStatus]);
-	luaTable->Publish();
+	luaTable.InitTable(lua_state, "globalvariables", 0, 0);
+	luaTable.AddString("Security", m_szSecStatus[secStatus]);
+	luaTable.Publish();
 
 	if (item.reason == REASON_NOTIFICATION)
 	{
-		luaTable = new CLuaTable(lua_state, "notification", 0, 0);
-		luaTable->AddInteger("id", item.id);
-		luaTable->AddString("type", m_mainworker.m_notificationsystem.GetTypeString(item.nValue));
-		luaTable->AddString("status", m_mainworker.m_notificationsystem.GetStatusString(item.lastLevel));
-		luaTable->AddString("message", item.sValue);
-		luaTable->Publish();
+		luaTable.InitTable(lua_state, "notification", 0, 0);
+		luaTable.AddInteger("id", item.id);
+		luaTable.AddString("type", m_mainworker.m_notificationsystem.GetTypeString(item.nValue));
+		luaTable.AddString("status", m_mainworker.m_notificationsystem.GetStatusString(item.lastLevel));
+		luaTable.AddString("message", item.sValue);
+		luaTable.Publish();
 	}
 }
 
@@ -3160,22 +3160,22 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		civilNightTime = true;
 	}
 
-	CLuaTable *luaTable = new CLuaTable(lua_state, "timeofday", 4, 0);
-	luaTable->AddBool("Daytime", dayTimeBool);
-	luaTable->AddBool("Nighttime", nightTimeBool);
-	luaTable->AddBool("Civildaytime", civilDaytTime);
-	luaTable->AddBool("Civilnighttime", civilNightTime);
-	luaTable->AddInteger("SunriseInMinutes", sunTimers[0]);
-	luaTable->AddInteger("SunsetInMinutes", sunTimers[1]);
-	luaTable->AddInteger("SunAtSouthInMinutes", sunTimers[2]);
-	luaTable->AddInteger("CivTwilightStartInMinutes", sunTimers[3]);
-	luaTable->AddInteger("CivTwilightEndInMinutes", sunTimers[4]);
-	luaTable->AddInteger("NautTwilightStartInMinutes", sunTimers[5]);
-	luaTable->AddInteger("NautTwilightEndInMinutes", sunTimers[6]);
-	luaTable->AddInteger("AstrTwilightStartInMinutes", sunTimers[7]);
-	luaTable->AddInteger("AstrTwilightEndInMinutes", sunTimers[8]);
-	luaTable->AddInteger("DayLengthInMinutes", sunTimers[9]);
-	luaTable->Publish();
+	CLuaTable luaTable(lua_state, "timeofday", 4, 0);
+	luaTable.AddBool("Daytime", dayTimeBool);
+	luaTable.AddBool("Nighttime", nightTimeBool);
+	luaTable.AddBool("Civildaytime", civilDaytTime);
+	luaTable.AddBool("Civilnighttime", civilNightTime);
+	luaTable.AddInteger("SunriseInMinutes", sunTimers[0]);
+	luaTable.AddInteger("SunsetInMinutes", sunTimers[1]);
+	luaTable.AddInteger("SunAtSouthInMinutes", sunTimers[2]);
+	luaTable.AddInteger("CivTwilightStartInMinutes", sunTimers[3]);
+	luaTable.AddInteger("CivTwilightEndInMinutes", sunTimers[4]);
+	luaTable.AddInteger("NautTwilightStartInMinutes", sunTimers[5]);
+	luaTable.AddInteger("NautTwilightEndInMinutes", sunTimers[6]);
+	luaTable.AddInteger("AstrTwilightStartInMinutes", sunTimers[7]);
+	luaTable.AddInteger("AstrTwilightEndInMinutes", sunTimers[8]);
+	luaTable.AddInteger("DayLengthInMinutes", sunTimers[9]);
+	luaTable.Publish();
 
 	int secstatus = 0;
 	m_sql.GetPreferencesVar("SecStatus", secstatus);

@@ -42,14 +42,14 @@ private:
 	bool CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool TriggerIFTTT(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool TriggerCustomEvent(lua_State *lua_state, const std::vector<_tLuaTableValues>& vLuaTable);
-	void ExportHardwareData(CLuaTable* luaTable, int& index, const std::vector<CEventSystem::_tEventQueue>& items);
+	void ExportHardwareData(CLuaTable &luaTable, int& index, const std::vector<CEventSystem::_tEventQueue>& items);
 	void ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void IterateTable(lua_State *lua_state, const int tIndex, std::vector<_tLuaTableValues> &vLuaTable);
 	void SetGlobalVariables(lua_State *lua_state, const bool reasonTime, const int secStatus);
 	void ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void ProcessNotification(lua_State* lua_state, const std::vector<CEventSystem::_tEventQueue>& items);
-	void ProcessNotificationItem(CLuaTable* luaTable, int &index, const CEventSystem::_tEventQueue& item);
+	void ProcessNotificationItem(CLuaTable &luaTable, int &index, const CEventSystem::_tEventQueue& item);
 	static int l_domoticz_print(lua_State* lua_state);
 	static CdzVents m_dzvents;
 	std::string m_version;

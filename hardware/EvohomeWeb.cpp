@@ -2100,7 +2100,7 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 		else
 			ss_error << "-1";
 		ss_error << "\",\"message\":\"";
-		int i = 0;
+		size_t i = 0;
 		char* html = &sz_response[0];
 		char c;
 		while (i < sz_response.size())

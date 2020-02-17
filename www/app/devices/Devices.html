@@ -28,7 +28,7 @@
                 <i ng-class="{'icon-chevron-left': $ctrl.isListExpanded, 'icon-chevron-right': !$ctrl.isListExpanded}"></i>
             </button>
 
-            <devices-table class="devices-table" devices="$ctrl.filteredDevices" on-update="$ctrl.refreshDevices()"/>
+            <devices-table class="devices-table" devices="$ctrl.filteredDevices" />
         </section>
     </div>
 </div>
