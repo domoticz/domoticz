@@ -232,6 +232,16 @@ define(['app', 'livesocket'], function (app) {
                     $scope.$apply();
                 });
 
+                $scope.$on('device_update', function (event, deviceData) {
+                    table.api().rows().every(function() {
+                        var device = this.data();
+
+                        if (device.idx === deviceData.idx) {
+                            this.data(Object.assign(device, deviceData))
+                        }
+                    });
+                });
+
                 table.api().rows
                     .add($ctrl.devices)
                     .draw();
@@ -585,8 +595,6 @@ Not sure why this was used
                 } else {
                     $ctrl.devices.push(new Device(deviceData))
                 }
-
-                $ctrl.applyFilter();
             });
         }
 
