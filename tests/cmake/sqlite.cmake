@@ -1,4 +1,4 @@
-option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
+option(USE_BUILTIN_SQLITE "Use builtin sqlite library" NO)
 macro(libsqlite target)
 if(USE_BUILTIN_SQLITE)
   add_subdirectory (../sqlite build_sqlite3)
