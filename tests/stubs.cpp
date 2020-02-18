@@ -941,6 +941,8 @@ auto CEventSystem::UpdateSceneGroup(
   throw std::runtime_error("stubbed: "s + BOOST_CURRENT_FUNCTION);
 }
 
+bool CEventSystem::Update(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata) {}
+
 void CEventSystem::WWWUpdateSecurityState(int) {
   using namespace std::literals;
   throw std::runtime_error("stubbed: "s + BOOST_CURRENT_FUNCTION);
@@ -4355,3 +4357,16 @@ void Comm5TCP::queryRelayState() {
       using namespace std::literals;
   throw std::runtime_error("stubbed: "s + BOOST_CURRENT_FUNCTION);
 }
+
+CNotificationObserver::CNotificationObserver() { }
+CNotificationObserver::~CNotificationObserver() { }
+CNotificationSystem::CNotificationSystem() { }
+
+void CNotificationSystem::Start() { }
+void CNotificationSystem::Stop() { }
+bool CNotificationSystem::NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const std::string& eventdata) {}
+CNotificationSystem::~CNotificationSystem() { }
+void CNotificationSystem::Notify(const Notification::_eType type, const Notification::_eStatus status, const std::string& eventdata) {
+}
+
+
