@@ -439,6 +439,11 @@ blebox::widgets::widget::fetch_or_post(blebox::session &session,
 
 void blebox::widgets::widget::verify_response_value_matches(
     const Json::Value &jvalue, const Json::Value &root) {
+
+  // special case, pretty much just for airSensor.kick api method
+  if(root["_blebox.domoticz.info"] == "empty response")
+    return;
+
   const auto &value = box::follow(root, post_field());
 
   if (value != jvalue) {

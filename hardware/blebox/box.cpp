@@ -593,6 +593,10 @@ blebox::widgets::widget &blebox::box::widget_at(std::byte unit,
 
 void blebox::box::update_state_from_response(BleBox &bb,
                                              const Json::Value &data) {
+
+  if(data["_blebox.domoticz.info"] == "empty response")
+    return;
+
   load_state_from_response(data);
 
   auto &&result = db::device_status::all_for_hw(bb.hw_id());

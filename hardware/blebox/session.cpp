@@ -35,14 +35,9 @@ static auto extract_result(const std::string &result, const std::string &url) {
   using namespace std::literals;
 
   if (result.empty()) {
-    auto msg = "empty response from: "s + url + " JSON: "s + "'"s +
-               std::string(result, 0, 1000) + "'";
-#ifndef UNIT_TESTING
-    throw blebox::errors::response::invalid(msg);
-#else
-    // boost::debug::debugger_break();
-    throw std::runtime_error(msg);
-#endif
+    Json::Value root;
+    root["_blebox.domoticz.info"] = "empty response";
+    return root;
   }
 
   Json::Value root;
@@ -89,7 +84,7 @@ std::string blebox::session::fetch_raw(const std::string &path) const {
 #ifndef UNIT_TESTING
   auto &&url = make_url(_ip, path);
   std::string result;
-  if (!HTTPClient::GET(url, result))
+  if (!HTTPClient::GET(url, result, true))
     throw blebox::errors::request_failed(url);
   return result;
 #else

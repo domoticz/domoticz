@@ -79,35 +79,5 @@ const char *airSensor_state_error_but_one_ok = R"(
 }
 )";
 
-const char *airSensor_state_after_kick = R"(
-{
-  "air": {
-    "sensors": [
-      {
-        "type": "pm1",
-        "value": 138,
-        "trend": 2,
-        "state": 0,
-        "qualityLevel": 2,
-        "elaspedTimeS": -1
-      },
-      {
-        "type": "pm2.5",
-        "value": 387,
-        "trend": 0,
-        "state": 0,
-        "qualityLevel": 3,
-        "elaspedTimeS": -1
-      },
-      {
-        "type": "pm10",
-        "value": 105,
-        "trend": 2,
-        "state": 0,
-        "qualityLevel": 6,
-        "elaspedTimeS": -1
-      }
-    ]
-  }
-}
-)";
+// NOTE: in reality, it's a 204 (no content)
+const char *airSensor_state_after_kick = "";

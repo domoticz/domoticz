@@ -226,19 +226,19 @@ TEST_F(WebControlledAirSensor, Kick) {
     std::set<test_helper::device_status> all_expected;
     {
       auto expected = features::pm1();
-      expected.numeric_value = 138;
+      expected.numeric_value = 111;
       BOOST_ASSERT(all_expected.insert(expected).second);
     }
 
     {
       auto expected = features::pm2();
-      expected.numeric_value = 387;
+      expected.numeric_value = 222;
       BOOST_ASSERT(all_expected.insert(expected).second);
     }
 
     {
       auto expected = features::pm10();
-      expected.numeric_value = 105;
+      expected.numeric_value = 333;
       BOOST_ASSERT(all_expected.insert(expected).second);
     }
 
