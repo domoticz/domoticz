@@ -9154,7 +9154,7 @@ namespace http {
 					}
 					root["result"][ii]["Unit"] = atoi(sd[2].c_str());
 					root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
-					root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType, pHardware->HwdType);
+					root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType, pHardware ? pHardware->HwdType : 0);
 					root["result"][ii]["TypeImg"] = RFX_Type_Desc(dType, 2);
 					root["result"][ii]["Name"] = sDeviceName;
 					root["result"][ii]["Description"] = Description;
