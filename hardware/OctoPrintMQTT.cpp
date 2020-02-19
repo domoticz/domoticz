@@ -388,6 +388,29 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 				int crcID = Crc32(0, (const unsigned char*)szSensorName.c_str(), szSensorName.length());
 				SendTempSensor(crcID, 255, std::stof(root["actual"].asString()), szSensorName);
 			}
+			else if (szMsgType == "progress")
+			{
+				if (strarray.size() < 3)
+				{
+					_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid event received!");
+					return;
+				}
+				std::string szProgrssName = strarray[2];
+				if (szProgrssName == "printing")
+				{
+					if (root["progress"].empty())
+					{
+						_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid progress data received! (no progress field in JSON payload ?)");
+						return;
+					}
+					SendPercentageSensor(1, 1, 255, std::stof(root["progress"].asString()), "Printing Progress");
+
+					//It is possible to enable extended data, this will be in a 'printer_data' object
+					//for example:
+					//	[printer_data][progress][completion] (percetage like 0.008484)
+					//	[printer_data][progress][printTimeLeft] in seconds
+				}
+			}
 			else if (szMsgType == "event")
 			{
 				if (strarray.size() < 3)
@@ -399,7 +422,18 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 
 				//There are many events, not all of them are handled (or need to be handled)
 				//http://docs.octoprint.org/en/devel/events/index.html#available-events
-				
+
+				//Ignore the following events
+				if (
+					(szEventName == "CaptureStart")
+					|| (szEventName == "CaptureDone")
+					)
+				{
+					//we get these every xx seconds
+					return;
+				}
+
+
 				UpdateUserVariable("LastEvent", szEventName);
 				UpdateUserVariable("LastEventData", qMessage);
 
