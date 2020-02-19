@@ -3049,7 +3049,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	uservariablesMutexLock.unlock();
 
 	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
-	luaTable.InitTable(lua_state, "uservariables_lastupdate", (int)m_scenesgroups.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_scenesgroups", (int)m_scenesgroups.size(), 0);
 	std::map<uint64_t, _tScenesGroups>::const_iterator it_scgr;
 	for (it_scgr = m_scenesgroups.begin(); it_scgr != m_scenesgroups.end(); ++it_scgr) {
 		_tScenesGroups sgitem = it_scgr->second;
