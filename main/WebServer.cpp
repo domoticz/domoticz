@@ -10211,8 +10211,8 @@ namespace http {
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["TypeImg"] = "counter";
-						root["result"][ii]["ValueQuantity"] = "";
-						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
 						root["result"][ii]["ShowNotifications"] = false;
 						double meteroffset = AddjValue;
 
@@ -10390,9 +10390,19 @@ namespace http {
 					}
 					else if ((dType == pTypeGeneral) && (dSubType == sTypeManagedMultiCounter))
 					{
+						std::string ValueQuantity = options["ValueQuantity"];
+						std::string ValueUnits = options["ValueUnits"];
+						if (ValueQuantity.empty()) {
+							ValueQuantity.assign("");
+						}
+						if (ValueUnits.empty()) {
+							ValueUnits.assign("");
+						}
 						root["result"][ii]["TypeImg"] = "counter";
 						root["result"][ii]["ShowNotifications"] = false;
 						root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
 						std::vector<std::string> splitresults;
 						StringSplit(sValue, ";", splitresults);
 						if (splitresults.size() != 6)
@@ -10430,12 +10440,22 @@ namespace http {
 							double musage = 0;
 
 							if (usagecurrent >= 0) {
-								sprintf(szTmp, "%llu Watt", usagecurrent);
+								if (ValueUnits.empty()) {
+									sprintf(szTmp, "%llu Watt", usagecurrent);
+								}
+								else {
+									sprintf(szTmp, "%llu %s", usagecurrent, ValueUnits.c_str());
+								}
 								root["result"][ii]["Usage"] = szTmp;
 							}
 
 							if (delivcurrent >= 0) {
-								sprintf(szTmp, "%llu Watt", delivcurrent);
+								if (ValueUnits.empty()) {
+									sprintf(szTmp, "%llu Watt", delivcurrent);
+								}
+								else {
+									sprintf(szTmp, "%llu %s", delivcurrent, ValueUnits.c_str());
+								}
 								root["result"][ii]["UsageDeliv"] = szTmp;
 							}
 
