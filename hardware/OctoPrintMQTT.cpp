@@ -403,7 +403,19 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 						_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid progress data received! (no progress field in JSON payload ?)");
 						return;
 					}
-					SendPercentageSensor(1, 1, 255, std::stof(root["progress"].asString()), "Printing Progress");
+
+					if (!root["printer_data"].empty())
+					{
+						//extended information
+						Json::Value rootProgress = root["printer_data"];
+						SendPercentageSensor(1, 1, 255, rootProgress["progress"]["completion"].asFloat(), "Printing Progress");
+						if (!rootProgress["currentZ"].empty())
+						{
+							SendCustomSensor(1, 1, 255, rootProgress["currentZ"].asFloat(), "ZPos", "Z");
+						}
+					}
+					else
+						SendPercentageSensor(1, 1, 255, std::stof(root["progress"].asString()), "Printing Progress");
 
 					//It is possible to enable extended data, this will be in a 'printer_data' object
 					//for example:
@@ -476,7 +488,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 						_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid ZChange data received! (no new field in JSON payload ?)");
 						return;
 					}
-					SendCustomSensor(1, 1, 255, std::stof(root["new"].asString()), "ZPos", "Z");
+					//SendCustomSensor(1, 1, 255, std::stof(root["new"].asString()), "ZChange", "Z");
 				}
 			}
 		}
