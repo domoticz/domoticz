@@ -496,6 +496,7 @@
     <ClInclude Include="..\hardware\HardwareCereal.h" />
     <ClInclude Include="..\hardware\Honeywell.h" />
     <ClInclude Include="..\hardware\NestOAuthAPI.h" />
+    <ClInclude Include="..\hardware\OctoPrintMQTT.h" />
     <ClInclude Include="..\hardware\Rtl433.h" />
     <ClInclude Include="..\hardware\SysfsGpio.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
@@ -798,6 +799,7 @@
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\Honeywell.cpp" />
     <ClCompile Include="..\hardware\NestOAuthAPI.cpp" />
+    <ClCompile Include="..\hardware\OctoPrintMQTT.cpp" />
     <ClCompile Include="..\hardware\Rtl433.cpp" />
     <ClCompile Include="..\hardware\SysfsGpio.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />

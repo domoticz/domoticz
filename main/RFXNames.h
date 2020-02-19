@@ -213,9 +213,10 @@ enum _eHardwareTypes {
 	HTYPE_EcoCompteur,			//113
 	HTYPE_Honeywell,			//114
 	HTYPE_Tado,					//115
-	HTYPE_DenkoviHTTPDevices,		//116
+	HTYPE_DenkoviHTTPDevices,	//116
 	HTYPE_DenkoviUSBDevices,	//117
 	HTYPE_DenkoviTCPDevices,	//118
+	HTYPE_OctoPrint,			//119
 	HTYPE_END
 };
 

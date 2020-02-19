@@ -278,6 +278,7 @@ static const STR_TABLE_SINGLE	HardwareTypeTable[] =
 	{ HTYPE_DenkoviHTTPDevices, "Denkovi Modules with LAN (HTTP) Interface",		"Denkovi" },
 	{ HTYPE_DenkoviUSBDevices, "Denkovi Modules with USB Interface",				"Denkovi" },
 	{ HTYPE_DenkoviTCPDevices, "Denkovi Modules with LAN (TCP) Interface",			"Denkovi" },
+	{ HTYPE_OctoPrint, "OctoPrint (MQTT/Gina H‰uﬂge) with LAN interface",			"OctoPrint" },
 	{ 0, NULL, NULL }
 };
 
@@ -3706,6 +3707,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_eHouseTCP:
 	case HTYPE_TTN_MQTT:
 	case HTYPE_S0SmartMeterTCP:
+	case HTYPE_OctoPrint:
 		return true;
 	default:
 		return false;

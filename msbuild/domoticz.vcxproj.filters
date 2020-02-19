@@ -516,6 +516,9 @@
     <Filter Include="www\app\devices">
       <UniqueIdentifier>{ae84d173-7ab3-47ac-bafd-145b034278f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\OctoPrint">
+      <UniqueIdentifier>{bafd6feb-6df6-4592-aded-780e24eeea7c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2281,6 +2284,9 @@
     <ClInclude Include="..\main\LuaTable.h">
       <Filter>EventSystem\Lua</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\OctoPrintMQTT.h">
+      <Filter>Devices\OctoPrint</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -3152,6 +3158,9 @@
     </ClCompile>
     <ClCompile Include="..\main\NotificationSystem.cpp">
       <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OctoPrintMQTT.cpp">
+      <Filter>Devices\OctoPrint</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

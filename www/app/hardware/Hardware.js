@@ -4134,7 +4134,10 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("MQTT") >= 0) {
 			    $("#hardwarecontent #divmqtt").show();
-			    if (text.indexOf("The Things Network (MQTT") >= 0) {
+			    if (
+					(text.indexOf("The Things Network (MQTT") >= 0)
+					||(text.indexOf("OctoPrint") >= 0)
+					) {
 			        $("#hardwarecontent #divmqtt #mqtt_publish").hide();
 			    }
 			    else {

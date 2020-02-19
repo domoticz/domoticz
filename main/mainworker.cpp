@@ -140,6 +140,7 @@
 #include "../hardware/Honeywell.h"
 #include "../hardware/TTNMQTT.h"
 #include "../hardware/Buienradar.h"
+#include "../hardware/OctoPrintMQTT.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -1087,6 +1088,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_BuienRadar:
 		pHardware = new CBuienRadar(ID, Mode1, Mode2);
+		break;
+	case HTYPE_OctoPrint:
+		pHardware = new COctoPrintMQTT(ID, Address, Port, Username, Password, Extra);
 		break;
 	}
 
