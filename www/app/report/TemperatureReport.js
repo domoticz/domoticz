@@ -249,14 +249,20 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             var columns = [];
 
             var humidityRenderer = function (data) {
-                return data.toFixed(0);
+				if (typeof data !== 'undefined')
+					return data.toFixed(0);
+				return 0;
             };
 
             var baroRenderer = function (data) {
-                return data.toFixed(1);
+				if (typeof data !== 'undefined')
+					return data.toFixed(1);
+				return 0;
             };
             var temperatureRenderer = function (data) {
-                return data.toFixed(1);
+				if (typeof data !== 'undefined')
+					return data.toFixed(1);
+				return 0;
             };
 
             if (vm.isMonthView) {
