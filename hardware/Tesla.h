@@ -25,11 +25,11 @@ private:
 	};
 
 	enum eAlertType {
-		Disconnected,
+		NotHome,
 		Charging,
-		WakingUp,
 		NotCharging,
-		Offline
+		Home,
+		Offline,
 	};
 
 	struct tTesla {

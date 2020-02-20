@@ -289,13 +289,13 @@ bool CTesla::WakeUp()
 		Log(LOG_STATUS, "Waking up car.");
 
 	if (m_trycounter > 0 && m_car.is_home)
-		SendAlertSensor(TESLA_ALERT_STATUS, 255, WakingUp, "Waking up", m_Name + " State");	
+		SendAlertSensor(TESLA_ALERT_STATUS, 255, Offline, "At home, Waking up", m_Name + " State");	
 
 	if (m_api.SendCommand(CTeslaApi::Wake_Up))
 	{
 		m_car.awake = true;
 		if (m_trycounter > 0 && m_car.is_home)
-			SendAlertSensor(TESLA_ALERT_STATUS, 255, Disconnected, "Online", m_Name + " State");
+			SendAlertSensor(TESLA_ALERT_STATUS, 255, Home, "At home", m_Name + " State");
 		m_trycounter = 0;
 		return true;
 	}
@@ -444,14 +444,14 @@ bool CTesla::GetDriveStatus()
 		}
 
 		if (!m_car.is_home)
-			SendAlertSensor(TESLA_ALERT_STATUS, 255, Offline, "Not home", m_Name + " State");
+			SendAlertSensor(TESLA_ALERT_STATUS, 255, NotHome, "Not home", m_Name + " State");
 		else
-			SendAlertSensor(TESLA_ALERT_STATUS, 255, Disconnected, "Online", m_Name + " State");
+			SendAlertSensor(TESLA_ALERT_STATUS, 255, Home, "At home", m_Name + " State");
 
 		return true;
 	}
 
-	SendAlertSensor(TESLA_ALERT_STATUS, 255, Offline, "Not home", m_Name + " State");
+	SendAlertSensor(TESLA_ALERT_STATUS, 255, NotHome, "Not home", m_Name + " State");
 	return Reset("drive status");
 }
 
@@ -487,11 +487,11 @@ bool CTesla::GetChargeStatus()
 		if(m_car.is_home)
 		{
 			if (!m_car.connected)
-				SendAlertSensor(TESLA_ALERT_STATUS, 255, Disconnected, "Charge cable disconnected", m_Name + " State");
+				SendAlertSensor(TESLA_ALERT_STATUS, 255, Home, "At home, No cable connected", m_Name + " State");
 			else if (m_car.charging)
-				SendAlertSensor(TESLA_ALERT_STATUS, 255, Charging, charge_state, m_Name + " State");
+				SendAlertSensor(TESLA_ALERT_STATUS, 255, Charging, "At home, " + charge_state, m_Name + " State");
 			else
-				SendAlertSensor(TESLA_ALERT_STATUS, 255, NotCharging, charge_state, m_Name + " State");
+				SendAlertSensor(TESLA_ALERT_STATUS, 255, NotCharging, "At home, " + charge_state, m_Name + " State");
 		}
 		SendSwitch(TESLA_SWITCH_CHARGE, 1, 255, m_car.charging, 0, m_Name + " Charge switch");
 		return true;
