@@ -243,7 +243,8 @@ define(['app', 'livesocket'], function(app) {
                         var device = this.data();
 
                         if (device.idx === deviceData.idx) {
-                            this.data(Object.assign(device, deviceData))
+                            this.data(Object.assign(device, deviceData));
+                            table.find('.row_selected .js-select-row').prop('checked', true);
                         }
                     });
                 });
@@ -281,6 +282,7 @@ define(['app', 'livesocket'], function(app) {
             }
 
             function selectorRenderer() {
+                // console.log(arguments)
                 return '<input type="checkbox" class="noscheck js-select-row" />';
             }
 
