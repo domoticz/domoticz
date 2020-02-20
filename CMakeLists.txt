@@ -476,6 +476,8 @@ hardware/TeleinfoBase.cpp
 hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/TellstickFactory.cpp
+hardware/TeslaApi.cpp
+hardware/Tesla.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
 hardware/TTNMQTT.cpp

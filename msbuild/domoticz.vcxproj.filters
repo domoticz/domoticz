@@ -516,8 +516,13 @@
     <Filter Include="www\app\devices">
       <UniqueIdentifier>{ae84d173-7ab3-47ac-bafd-145b034278f0}</UniqueIdentifier>
     </Filter>
+<<<<<<< HEAD
+    <Filter Include="Devices\Tesla">
+      <UniqueIdentifier>{3404548b-df3a-4958-b308-34c7e7c15e59}</UniqueIdentifier>
+=======
     <Filter Include="Devices\OctoPrint">
       <UniqueIdentifier>{bafd6feb-6df6-4592-aded-780e24eeea7c}</UniqueIdentifier>
+>>>>>>> e47613f3756d600bdeb2057bdd6f1aced7aab415
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -2284,8 +2289,16 @@
     <ClInclude Include="..\main\LuaTable.h">
       <Filter>EventSystem\Lua</Filter>
     </ClInclude>
+<<<<<<< HEAD
+    <ClInclude Include="..\hardware\Tesla.h">
+      <Filter>Devices\Tesla</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TeslaApi.h">
+      <Filter>Devices\Tesla</Filter>
+=======
     <ClInclude Include="..\hardware\OctoPrintMQTT.h">
       <Filter>Devices\OctoPrint</Filter>
+>>>>>>> e47613f3756d600bdeb2057bdd6f1aced7aab415
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3159,8 +3172,16 @@
     <ClCompile Include="..\main\NotificationSystem.cpp">
       <Filter>EventSystem</Filter>
     </ClCompile>
+<<<<<<< HEAD
+    <ClCompile Include="..\hardware\Tesla.cpp">
+      <Filter>Devices\Tesla</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TeslaApi.cpp">
+      <Filter>Devices\Tesla</Filter>
+=======
     <ClCompile Include="..\hardware\OctoPrintMQTT.cpp">
       <Filter>Devices\OctoPrint</Filter>
+>>>>>>> e47613f3756d600bdeb2057bdd6f1aced7aab415
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -89,6 +89,7 @@
 #include "../hardware/NestOAuthAPI.h"
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Tado.h"
+#include "../hardware/Tesla.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
 #include "../hardware/HttpPoller.h"
@@ -973,6 +974,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Tado:
 		pHardware = new CTado(ID, Username, Password);
+		break;
+	case HTYPE_Tesla:
+		pHardware = new CTesla(ID, Username, Password, Extra);
 		break;
 	case HTYPE_Honeywell:
 		pHardware = new CHoneywell(ID, Username, Password, Extra);
