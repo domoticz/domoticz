@@ -924,6 +924,29 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Tesla") >= 0) {
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var vinnr = $("#hardwarecontent #divtesla #vinnr").val();
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&extra=" + vinnr,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (
 				(text.indexOf("ICY") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
@@ -2102,6 +2125,28 @@ define(['app'], function (app) {
 					"&enabled=" + bEnabled +
 					"&datatimeout=" + datatimeout +
 					"&Mode1=" + agreement,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Tesla") >= 0) {
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var vinnr = encodeURIComponent($("#hardwarecontent #divtesla #vinnr").val());
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout +
+					"&extra=" + vinnr,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3611,6 +3656,9 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Toon") >= 0) {
 							$("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);
 						}
+						else if (data["Type"].indexOf("Tesla") >= 0) {
+							$("#hardwarecontent #hardwareparamstesla #vinnr").val(data["Extra"]);
+						}
 						else if (data["Type"].indexOf("Satel Integra") >= 0) {
 							$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
 						}
@@ -3712,6 +3760,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("HTTP") >= 0) ||
 							(data["Type"].indexOf("Thermosmart") >= 0) ||
                             (data["Type"].indexOf("Tado") >= 0) ||
+                            (data["Type"].indexOf("Tesla") >= 0) ||
 							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
 							(data["Type"].indexOf("HEOS by DENON") >= 0) ||
 							(data["Type"].indexOf("Razberry") >= 0) ||
@@ -3868,6 +3917,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divsolaredgeapi").hide();
 			$("#hardwarecontent #divnestoauthapi").hide();
 			$("#hardwarecontent #divenecotoon").hide();
+			$("#hardwarecontent #divtesla").hide();
 			$("#hardwarecontent #div1wire").hide();
 			$("#hardwarecontent #divgoodweweb").hide();
 			$("#hardwarecontent #divi2clocal").hide();
@@ -4040,6 +4090,10 @@ define(['app'], function (app) {
 			else if (text.indexOf("Toon") >= 0) {
 				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #divenecotoon").show();
+			}
+			else if (text.indexOf("Tesla") >= 0) {
+				$("#hardwarecontent #divlogin").show();
+				$("#hardwarecontent #divtesla").show();
 			}
 			else if (text.indexOf("SBFSpot") >= 0) {
 				$("#hardwarecontent #divlocation").show();

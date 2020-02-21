@@ -1249,6 +1249,7 @@ namespace http {
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
+				(htype == HTYPE_Tesla) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -1643,6 +1644,7 @@ namespace http {
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
+				(htype == HTYPE_Tesla) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
