@@ -135,9 +135,6 @@ void CTesla::Do_Work()
 
 	while (!IsStopRequested(interval))
 	{
-		if (IsStopRequested(0))
-			break;
-
 		interval = 1000;
 		sec_counter++;
 		time_t now = mytime(0);

@@ -2,7 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include "TeslaApi.h"
-#include "../main/json_helper.h"
 #include "../main/concurrent_queue.h"
 
 class CTesla : public CDomoticzHardwareBase
