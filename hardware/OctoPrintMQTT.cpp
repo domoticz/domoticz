@@ -18,6 +18,8 @@
 #endif
 
 #define OCTOPRINT_MQTT_TOPIC "octoPrint"
+#define TID_PRINTING 1
+#define TID_PATH 1
 
 #ifdef DEBUG_OCTO_W
 void SaveString2Disk(std::string str, std::string filename)
@@ -321,6 +323,8 @@ void COctoPrintMQTT::UpdateUserVariable(const std::string &varName, const std::s
 
 void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 {
+	if (message->retain)
+		return; //not interested in the last will
 	std::string topic = message->topic;
 
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
@@ -413,9 +417,19 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 						{
 							SendCustomSensor(1, 1, 255, rootProgress["currentZ"].asFloat(), "ZPos", "Z");
 						}
+						if (!rootProgress["progress"]["printTimeLeft"].isNull())
+						{
+							//in seconds
+							int totSecondsLeft = rootProgress["progress"]["printTimeLeft"].asInt();
+						}
 					}
 					else
 						SendPercentageSensor(1, 1, 255, std::stof(root["progress"].asString()), "Printing Progress");
+
+					if (!root["path"].empty())
+					{
+						SendTextSensor(TID_PATH, 1, 255, root["path"].asString(), "File Path");
+					}
 
 					//It is possible to enable extended data, this will be in a 'printer_data' object
 					//for example:
@@ -453,32 +467,32 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 				if (szEventName == "PrintStarted")
 				{
 					SendSwitch(1, 1, 255, true, 0, "Printing");
-					SendTextSensor(1, 1, 255, szEventName, "Print Status");
+					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
 				}
 				else if (szEventName == "PrintFailed")
 				{
 					SendSwitch(1, 1, 255, false, 0, "Printing");
-					SendTextSensor(1, 1, 255, szEventName, "Print Status");
+					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
 				}
 				else if (szEventName == "PrintDone")
 				{
 					SendSwitch(1, 1, 255, false, 0, "Printing");
-					SendTextSensor(1, 1, 255, szEventName, "Print Status");
+					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
 				}
 				else if (szEventName == "PrintCancelled")
 				{
 					SendSwitch(1, 1, 255, false, 0, "Printing");
-					SendTextSensor(1, 1, 255, szEventName, "Print Status");
+					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
 				}
 				else if (szEventName == "PrintPaused")
 				{
 					SendSwitch(1, 1, 255, false, 0, "Printing");
-					SendTextSensor(1, 1, 255, szEventName, "Print Status");
+					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
 				}
 				else if (szEventName == "PrintResumed")
 				{
 					SendSwitch(1, 1, 255, true, 0, "Printing");
-					SendTextSensor(1, 1, 255, szEventName, "Print Status");
+					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
 				}
 				else if (szEventName == "ZChange")
 				{
