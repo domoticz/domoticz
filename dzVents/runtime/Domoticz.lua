@@ -157,7 +157,11 @@ local function Domoticz(settings)
 
 	function self.emitEvent(eventname, data)
 
-		if (type(data) == 'table') then data = utils.toJSON(data) end
+		if (type(data) == 'table') then
+			data = utils.toJSON(data)
+		else
+			data = tostring(data)
+		end
 
 		local eventinfo = {
 			name = eventname,
