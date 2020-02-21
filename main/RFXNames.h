@@ -217,6 +217,7 @@ enum _eHardwareTypes {
 	HTYPE_DenkoviUSBDevices,	//117
 	HTYPE_DenkoviTCPDevices,	//118
 	HTYPE_OctoPrint,			//119
+	HTYPE_Tesla,                //120
 	HTYPE_END
 };
 
