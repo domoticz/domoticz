@@ -213,7 +213,7 @@ define(['app', 'livesocket'], function(app) {
 
                 table.on('click', '.js-toggle-state', function() {
                     var device = table.api().row($(this).closest('tr')).data();
-                    device.toggle().then($ctrl.onUpdate);
+                    device.toggle();
                     $scope.$apply();
                 });
 
