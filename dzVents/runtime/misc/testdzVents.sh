@@ -141,7 +141,7 @@ function fillNumberOfTests
 		HTTPResponse_ExpectedTests=6
 		Lodash_ExpectedTests=100
 		ScriptdzVentsDispatching_ExpectedTests=2
-		TimedCommand_ExpectedTests=42
+		TimedCommand_ExpectedTests=46
 		Time_ExpectedTests=340
 		Utils_ExpectedTests=25
 		Variable_ExpectedTests=15
@@ -246,7 +246,7 @@ if [[ $? -eq 0 ]];then
 	if [[ $? -eq 0 ]];then
 		#echo Stage 1 and stage 2 of integration test Succeeded
 		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | wc -l)
-		if [[ $errorCount -eq $expectedErrorCount ]];then
+		if [[ $errorCount -le $expectedErrorCount ]];then
 			#echo Errors are to be expected
 			echo -n
 		else

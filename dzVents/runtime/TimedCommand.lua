@@ -11,19 +11,17 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState, cu
 	end
 
 	math.randomseed(os.time())
-
 	-- mode can be 'device', 'updatedevice' or 'variable'
 
 	local valueValue = value
-	local afterValue, forValue, randomValue, silentValue, repeatValue, repeatIntervalValue, checkValue
-	local _for, _after, _within, _rpt, _silent, _repeatAfter
+	local atValue, afterValue, forValue, randomValue, silentValue, repeatValue, repeatIntervalValue, checkValue
+	local _for, _after, _within, _rpt, _silent, _repeatAfter, _at
 
 	local constructCommand = function()
 
 		local command = {} -- array of command parts
 
 		if checkValue and ( tostring(currentState):find(valueValue) or ( currentLevel and currentState == currentLevel )) then
-			-- do nothing
 			return nil
 		end
 
@@ -140,6 +138,13 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState, cu
 				res.withinMin = _within(60)
 				res.withinHour = _within(3600)
 			end
+		
+			if (mode._at == true) then
+				res.at = _after(1)
+				res.afterSec = _after(1)
+				res.afterMin = _after(60)
+				res.afterHour = _after(3600)
+			end
 		end
 
 		if (mode._silent == true and silentValue == nil) then
@@ -166,8 +171,20 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState, cu
 	_after = function(factor)
 		return function(value)
 			_checkValue(value, "No value given for 'afterXXX' command")
-			afterValue = value * factor
+			if type(value) == 'string' then value = utils.stringToSeconds(value) end -- called by 'at()' 
+			afterValue = value * ( factor or 1 )
 			updateCommand()
+			return factory()
+		end
+	end
+
+	_at = function(str)
+		return function(str)
+			_checkValue(str, "No value given for 'at' command")
+			afterValue =  str
+
+			updateCommand()
+
 			return factory()
 		end
 	end

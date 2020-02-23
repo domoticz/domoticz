@@ -2,15 +2,17 @@ local TIMED_OPTIONS = {
 	device = {
 		_for = true,
 		_after = true,
+		_at = true,
 		_within = true,
 		_silent = true,
 		_triggerMode = 'NOTRIGGER',
 		_repeat = true,
-		_checkState = true
+		_checkState = true,
 	},
 	variable = {
 		_for = false,
 		_after = true,
+		_at = true,
 		_within = true,
 		_silent = true,
 		_triggerMode = 'TRIGGER',
@@ -20,6 +22,7 @@ local TIMED_OPTIONS = {
 	updatedevice = {
 		_for = false,
 		_after = true,
+		_at = true,
 		_within = true,
 		_silent = true,
 		_triggerMode = 'TRIGGER',
@@ -29,24 +32,28 @@ local TIMED_OPTIONS = {
 	setpoint = {
 		_silent = true,
 		_after = true,
+		_at = true,
 		_within = true,
 		_triggerMode = 'NOTRIGGER'
 	},
 	camera = {
 		_silent = false,
 		_after = true,
+		_at = true,
 		_within = true,
 		_triggerMode = ''
 	},
 	triggerIFTTT = {
 		_silent = false,
 		_after = true,
+		_at = true,
 		_within = true,
 		_triggerMode = ''
 	},
 		emitEvent = {
 		_silent = false,
 		_after = true,
+		_at = true,
 		_within = true,
 		_triggerMode = ''
 	},

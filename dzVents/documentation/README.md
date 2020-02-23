@@ -1,6 +1,7 @@
 ﻿
 
 
+
 **Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
@@ -1209,9 +1210,14 @@ There are many switch-like devices. Not all methods are applicable for all switc
 
 ### Command options (delay, duration, event triggering)
 Many dzVents device methods support extra options, like controlling a delay or a duration:
+```Lua
 
 	-- switch on for 2 minutes after 10 seconds
 	device.switchOn().afterSec(10).forMin(2)
+
+	-- switch on at a specic time / day 
+	device.switchOn().at('09:00')                  -- earliest momemt is will be 09:00 hr.
+	device.switchOn().at('08:53:30 on Friday')     -- next Friday at 08:53:30  
 
 	-- switch on for 2 minutes after a randomized delay of 1-10 minutes
 	device.switchOff().withinMin(10).forMin(2)
@@ -1231,8 +1237,10 @@ Many dzVents device methods support extra options, like controlling a delay or a
 	if (device.state == 'Off') then
 	  devices.switchOn()
 	end
+```
 
 #### Options
+ - **at(hh:mm[:ss][ on [ ddd|dddd ] )**: *Function*.<sup>3.0.1</sup> Activates the command at a certain time [ on a certain day] 
  - **afterHour(hours), afterMin(minutes), afterSec(seconds)**: *Function*. Activates the command after a certain number of hours, minutes or seconds.
  - **cancelQueuedCommands()**: *Function*.  Cancels queued commands. E.g. you switch on a device after 10 minutes:  `myDevice.switchOn().afterMin(10)`. Within those 10 minutes you can cancel that command by calling:  `myDevice.cancelQueuedCommands()`.
  - **checkFirst()**: *Function*. Checks if the **current** state of the device is different than the desired new state. If the target state is the same, no command is sent. If you do `mySwitch.switchOn().checkFirst()`, then no switch command is sent if the switch is already on. This command only works with switch-like devices. It is not available for toggle and dim commands, either.
@@ -1264,7 +1272,7 @@ light.switchOn().checkFirst().forMin(5)
 ```
 
 #### Availability
-Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices and snapshot command silent() is not available.  For commands for which dzVents must use openURL, only afterAAA() method is available. These commands are mainly the setAaaaa() commands for RGBW type devices.
+Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices and snapshot command silent() is not available.  For commands for which dzVents must use openURL, only  `at()` and  `afterAAA()` methods are available. These commands are mainly the setAaaaa() commands for RGBW type devices.
 
 
 See table below
@@ -1282,6 +1290,15 @@ See table below
 !align="center" width="12%"| emitEvent
 |-
 | <code>afterAAA()</code><sup>1</sup>
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|-
+| <code>at()</code>
 |align="center"| •
 |align="center"| •
 |align="center"| •
@@ -1349,7 +1366,7 @@ See table below
 
 #### Notes on table
  - **Note 1**: AAA is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
- - **Note 2**: for `domoticz.openURL()` only `afterAAA()` and `withinAAA()` is available.
+ - **Note 2**: for `domoticz.openURL()` only `at()`, `afterAAA()` and `withinAAA()` is available.
  - **Note 3**: Note 2 also applies for all commands depending on openURL (like rgbwwDevice.setAaa() commands).
 
 #### Follow-up event triggers
@@ -2407,6 +2424,9 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+## [3.0.1] 
+- Add option `at()` to the various commands/methods
 
 ## [3.0.0]
  - Add system-events triggers as option to the on = { ... } section. Scripts can now be triggered based on these system-events:
