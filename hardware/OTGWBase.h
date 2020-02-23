@@ -42,7 +42,7 @@ public:
 	~OTGWBase(void);
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
 	virtual bool WriteInt(const unsigned char *pData, const unsigned char Len) = 0;
 	std::string m_Version;
@@ -58,11 +58,14 @@ protected:
 	void GetVersion();
 	void SendTime();
 	void SendOutsideTemperature();
-protected:
 	unsigned char m_buffer[1028];
-	int m_bufferpos;
 	bool m_bRequestVersion;
+	int m_bufferpos;
 	int m_OutsideTemperatureIdx;
 	float m_OverrideTemperature;
+	float msgDataToFloat(std::string msg);
+	long msgDataToUInt(std::string msg);
+	int msgDataToHInt(std::string msg);
+	int msgDataToLInt(std::string msg);
 };
 
