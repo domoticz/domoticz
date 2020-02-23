@@ -19,4 +19,3 @@ private:
 	std::shared_ptr<std::thread> m_thread;
     void readCallback(const char *data, size_t len);
 };
-
