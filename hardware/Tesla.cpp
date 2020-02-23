@@ -219,7 +219,7 @@ void CTesla::Do_Work()
 		}
 		else if (sec_counter % 60 == 0)
 		{
-			if (m_car.charging || m_car.climate_on || m_car.defrost)
+			if (m_car.is_home && (m_car.charging || m_car.climate_on || m_car.defrost))
 			{
 				// check relevant statuses every minute
 				m_commands.push(Get_Drive);
@@ -406,6 +406,7 @@ bool CTesla::DoSetCommand(eCommandType command)
 bool CTesla::GetDriveStatus()
 {
 	Json::Value reply;
+	bool car_old_state = m_car.is_home;
 
 	if (m_api.GetData(CTeslaApi::Drive_State, reply))
 	{
@@ -440,15 +441,15 @@ bool CTesla::GetDriveStatus()
 
 		}
 
-		if (!m_car.is_home)
+		if(!m_car.is_home)
 			SendAlertSensor(TESLA_ALERT_STATUS, 255, NotHome, "Not home", m_Name + " State");
 		else
-			SendAlertSensor(TESLA_ALERT_STATUS, 255, Home, "At home", m_Name + " State");
+			if (car_old_state != m_car.is_home)
+				SendAlertSensor(TESLA_ALERT_STATUS, 255, Home, "At home", m_Name + " State");
 
 		return true;
 	}
 
-	SendAlertSensor(TESLA_ALERT_STATUS, 255, NotHome, "Not home", m_Name + " State");
 	return Reset("drive status");
 }
 
