@@ -159,9 +159,6 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	bool haveRain = false;
 	float rain = 0;
 
-	bool haveDepth_CM = false;
-	float depth_cm = 0;
-
 	bool haveDepth = false;
 	float depth = 0;
 
@@ -257,13 +254,13 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 
 	if (FindField(data, "depth_cm"))
 	{
-		depth_cm = (float)atof(data["depth_cm"].c_str());
-		haveDepth_CM = true;
+		depth = (float)atof(data["depth_cm"].c_str());
+		haveDepth = true;
 	}
 
-	if (FindField(data, "wind_avg_km_h")) // wind speed average (should not encounter wind_avg_kph) // does domoticz assume it is km/h ?
+	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s) 
 	{
-		wind_speed = (float)atof(data["wind_avg_km_h"].c_str());
+		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str()))/3.6f;
 		haveWind_Speed = true;
 	}
 
@@ -274,9 +271,9 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		haveWind_Dir = true;
 	}
 
-	if (FindField(data, "wind_max_km_h")) // idem, check that domoticz assume km/h
+	if (FindField(data, "wind_max_km_h")) // idem, converting to m/s
 	{
-		wind_gust = (float)atof(data["wind_max_km_h"].c_str());
+		wind_gust = ((float)atof(data["wind_max_km_h"].c_str()))/3.6f;
 		haveWind_Gust = true;
 	}
         else if (FindField(data, "moisture"))
@@ -366,11 +363,6 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	if (haveRain)
 	{
 		SendRainSensor(sensoridx, batterylevel, rain, model);
-		bHandled = true;
-	}
-	if (haveDepth_CM)
-	{
-		SendDistanceSensor(sensoridx, unit, batterylevel, depth_cm, model);
 		bHandled = true;
 	}
 	if (haveDepth)
