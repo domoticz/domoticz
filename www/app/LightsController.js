@@ -573,7 +573,7 @@ define(['app', 'livesocket'], function (app) {
 				var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 				isdimmer = true;
 				if (
-					(item.Status == 'On')
+					(item.Status != 'Off')
 				) {
 					img = '<img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor"') + ' height="48" width="48">';
 				}
@@ -1175,7 +1175,7 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SwitchType == "TPI") {
 								var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 								bIsDimmer = true;
-								if (item.Status == 'On') {
+								if (item.Status != 'Off') {
 									xhtm += '\t      <td id="img"><img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor"') + ' height="48" width="48"></td>\n';
 								}
 								else {
