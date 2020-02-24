@@ -1213,29 +1213,35 @@ There are many switch-like devices. Not all methods are applicable for all switc
 
 Many dzVents device methods support extra options, like controlling a delay or a duration:
 
-<pre>-- switch on for 2 minutes after 10 seconds
-device.switchOn().afterSec(10).forMin(2)
+<source lang="lua">
+    -- switch on for 2 minutes after 10 seconds
+    device.switchOn().afterSec(10).forMin(2)
 
--- switch on for 2 minutes after a randomized delay of 1-10 minutes
-device.switchOff().withinMin(10).forMin(2)
-device.close().forMin(15)
-device.open().afterSec(20)
-device.open().afterMin(2)
+    -- switch on at a specic time / day 
+    device.switchOn().at('09:00')               -- earliest moment it will be 09:00 hr.
+    device.switchOn().at('08:53:30 on fri')     -- next Friday at 08:53:30  
 
--- switch on but do not trigger follow up events
-device.switchOn().silent()
+    -- switch on for 2 minutes after a randomized delay of 1-10 minutes
+    device.switchOff().withinMin(10).forMin(2)
+    device.close().forMin(15)
+    device.open().afterSec(20)
+    device.open().afterMin(2)
 
--- flash a light for 3 times
-device.switchOn().forSec(2).repeatAfterSec(1, 3)
+    -- switch on but do not trigger follow up events
+    device.switchOn().silent()
 
--- switch the device on but only if the current state isn't already on:
-device.switchOn().checkFirst()
--- this is a short for:
-if (device.state == 'Off') then
-  devices.switchOn()
-end</pre>
+    -- flash a light for 3 times
+    device.switchOn().forSec(2).repeatAfterSec(1, 3)
+
+    -- switch the device on but only if the current state isn't already on:
+    device.switchOn().checkFirst()
+    -- this is a short for:
+    if (device.state == 'Off') then
+      devices.switchOn()
+    end</source>
 ==== Options ====
 
+* '''at(hh:mm[:ss][ on [ ddd|dddd ] )''': ''Function''.<sup>3.0.1</sup> Activates the command at a certain time [ on a certain day]
 * '''afterHour(hours), afterMin(minutes), afterSec(seconds)''': ''Function''. Activates the command after a certain number of hours, minutes or seconds.
 * '''cancelQueuedCommands()''': ''Function''. Cancels queued commands. E.g. you switch on a device after 10 minutes: <code>myDevice.switchOn().afterMin(10)</code>. Within those 10 minutes you can cancel that command by calling: <code>myDevice.cancelQueuedCommands()</code>.
 * '''checkFirst()''': ''Function''. Checks if the '''current''' state of the device is different than the desired new state. If the target state is the same, no command is sent. If you do <code>mySwitch.switchOn().checkFirst()</code>, then no switch command is sent if the switch is already on. This command only works with switch-like devices. It is not available for toggle and dim commands, either.
@@ -1265,7 +1271,7 @@ or issue these two commands ''both'' as they are mutually exclusive:
 light.switchOn().checkFirst().forMin(5)</source>
 ==== Availability ====
 
-Some options are not available to all commands. All the options are available to device switch-like commands like <code>myDevice.switchOff()</code>, <code>myGroup.switchOn()</code> or <code>myBlinds.open()</code>. For updating (usually Dummy ) devices like a text device <code>myTextDevice.updateText('zork')</code> you can only use <code>silent()</code>. For thermostat setpoint devices and snapshot command silent() is not available. For commands for which dzVents must use openURL, only afterAAA() method is available. These commands are mainly the setAaaaa() commands for RGBW type devices.
+Some options are not available to all commands. All the options are available to device switch-like commands like <code>myDevice.switchOff()</code>, <code>myGroup.switchOn()</code> or <code>myBlinds.open()</code>. For updating (usually Dummy ) devices like a text device <code>myTextDevice.updateText('zork')</code> you can only use <code>silent()</code>. For thermostat setpoint devices and snapshot command silent() is not available. For commands for which dzVents must use openURL, only <code>at()</code> and <code>afterAAA()</code> methods are available. These commands are mainly the setAaaaa() commands for RGBW type devices.
 
 See table below
 
@@ -1281,6 +1287,15 @@ See table below
 !align="center" width="12%"| emitEvent
 |-
 | <code>afterAAA()</code><sup>1</sup>
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|align="center"| •
+|-
+| <code>at()</code>
 |align="center"| •
 |align="center"| •
 |align="center"| •
@@ -1347,7 +1362,7 @@ See table below
 ==== Notes on table ====
 
 * '''Note 1''': AAA is a placeholder for <code>Min/Sec/Hour</code> affix e.g. <code>afterMin()</code>.
-* '''Note 2''': for <code>domoticz.openURL()</code> only <code>afterAAA()</code> and <code>withinAAA()</code> is available.
+* '''Note 2''': for <code>domoticz.openURL()</code> only <code>at()</code>, <code>afterAAA()</code> and <code>withinAAA()</code> is available.
 * '''Note 3''': Note 2 also applies for all commands depending on openURL (like rgbwwDevice.setAaa() commands).
 
 ==== Follow-up event triggers ====
@@ -2354,6 +2369,10 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you’re good to go.
 
 = History =
+
+== [3.0.1] ==
+
+* Add option <code>at()</code> to the various commands/methods
 
 == [3.0.0] ==
 
