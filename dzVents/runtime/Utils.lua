@@ -54,14 +54,14 @@ function self.numDecimals(num, int, dec)
 end
 
 function self.fileExists(name)
-   local ok, err, code = os.rename(name, name)
-   if not ok then
-	  if code == 13 then
-		 -- Permission denied, but it exists
-		 return true
-	  end
-   end
-   return ok or false
+	local ok, err, code = os.rename(name, name)
+	if not ok then
+		if code == 13 then
+			-- Permission denied, but it exists
+			return true
+		end
+	end
+	return ok or false
 end
 
 function self.stringSplit(text, sep)
@@ -74,33 +74,40 @@ function self.stringSplit(text, sep)
 	return t
 end
 
-
 function self.stringToSeconds(str)
 
 	local now = os.date('*t')
+	local daySeconds = 24 * 3600
+	local weekSeconds = 7 * daySeconds
+	local num2Days = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
+	local days2Num = { sun = 1, mon = 2, tue = 3, wed = 4, thu = 5, fri = 6, sat = 7 }
 
-	local function dayDelta(str)
-		local daySeconds = 24 * 3600
-		local days2num = { sun = 1, mon = 2,tue = 3,wed = 4,thu = 5, fri = 6, sat = 7 }
-		local num2days = { 'sun' , 'mon' ,'tue' ,'wed','thu' , 'fri' , 'sat' , }
-
-		local result = str:match('on (%w%w%w)') or num2days[now.wday]
-		return (( days2num[result:lower()] - now.wday + 7 ) % 7 * daySeconds ) 
-	end
-
-	local function timeDelta(str)
-		local hours, minutes, seconds = 0, 0, 0
-		if str:match('%d+:%d%%d:%d%d') then 
-			hours, minutes, seconds = str:match("(%d+):(%d%d):(%d%d)")
-		else
-			hours, minutes = str:match("(%d+):(%d%d)")
+	local function calcDelta(str)
+		local function timeDelta(str)
+			local hours, minutes, seconds = 0, 0, 0
+			if str:match('%d+:%d%d:%d%d') then
+				hours, minutes, seconds = str:match("(%d+):(%d%d):(%d%d)")
+			else
+				hours, minutes = str:match("(%d+):(%d%d)")
+			end
+			return ( hours * 3600 + minutes * 60 + seconds - ( now.hour * 3600 + now.min * 60 + now.sec ))
 		end
-		return ( hours * 3600 + minutes * 60 + seconds - ( now.hour * 3600 + now.min * 60 + now.sec ))
+
+		local delta
+		local deltaT = timeDelta(str)
+		for _, day in ipairs(num2Days) do
+			if str:lower():find(day) then
+				local newDelta = ( days2Num[day] - now.wday + 7 ) % 7 * daySeconds + deltaT
+				if newDelta < 0 then newDelta = newDelta + weekSeconds end
+				if delta == nil or newDelta < delta then delta = newDelta end
+			end
+		end
+
+		if delta == nil and deltaT < 0 then deltaT = deltaT + weekSeconds end
+		return delta or deltaT
 	end
 
-	local delta = dayDelta(str) + timeDelta(str) 
-	if delta < 0 then delta = delta + 7 * 24 * 3600 end 
-	return math.tointeger(delta) 
+	return math.tointeger(calcDelta(str))
 end
 
 function self.inTable(searchTable, element)
@@ -113,7 +120,6 @@ function self.inTable(searchTable, element)
 	end
 	return false
 end
-
 
 function self.round(x, n)
 	-- n = math.pow(10, n or 0)

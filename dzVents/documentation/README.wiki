@@ -1218,8 +1218,9 @@ Many dzVents device methods support extra options, like controlling a delay or a
     device.switchOn().afterSec(10).forMin(2)
 
     -- switch on at a specic time / day 
-    device.switchOn().at('09:00')               -- earliest moment it will be 09:00 hr.
-    device.switchOn().at('08:53:30 on fri')     -- next Friday at 08:53:30  
+    device.switchOn().at('09:00')                 -- earliest moment it will be 09:00 hr.
+    device.switchOn().at('08:53:30 on fri')       -- earliest moment it will be Friday at 08:53:30  
+    device.switchOn().at('08:53:30 on sat, sun')  -- earliest moment it will be Saturday or Sunday at 08:53:30 (whatever comes first) 
 
     -- switch on for 2 minutes after a randomized delay of 1-10 minutes
     device.switchOff().withinMin(10).forMin(2)

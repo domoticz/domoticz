@@ -64,7 +64,7 @@ describe('timed commands', function()
 		end)
 
 		it('should return proper function when called at', function()
-			local res = cmd.at('23:35 on Friday')
+			local res = cmd.at('23:35 on fri, sun')
 			assert.is_function(res.forSec)
 			assert.is_function(res.forMin)
 			assert.is_function(res.forHour)
@@ -464,7 +464,13 @@ describe('timed commands', function()
 
 				assert.is_true (_.str(commandArray):gmatch('%.*On AFTER %d+ SECONDS%.*') ~= nil )
 				assert.is_true (_.str(commandArray):gmatch('%.*mySwitch%.*') ~= nil )
+				cmd.at('22:35:46 on fri, sat, sun')
+
+				assert.is_true (_.str(commandArray):gmatch('%.*On AFTER %d+ SECONDS%.*') ~= nil )
+				assert.is_true (_.str(commandArray):gmatch('%.*mySwitch%.*') ~= nil )
+
 			end)
+
 		end)
 
 		describe('after', function()
