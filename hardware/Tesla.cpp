@@ -17,6 +17,7 @@
 #define TESLA_SWITCH_DEFROST 3
 
 #define TESLA_TEMP_CLIMATE 1
+#define TESLA_TEMP_OUTSIDE 2
 #define TESLA_ALERT_STATUS 1
 #define TESLA_LEVEL_BATTERY 1
 
@@ -460,9 +461,11 @@ bool CTesla::GetClimateStatus()
 	if (m_api.GetData(CTeslaApi::Climate_State, reply))
 	{
 		float temp_inside = reply["response"]["inside_temp"].asFloat();
+		float temp_outside = reply["response"]["outside_temp"].asFloat();
 		m_car.climate_on = reply["response"]["is_climate_on"].asBool(); 
 		m_car.defrost = (reply["response"]["defrost_mode"].asInt() != 0);
 		SendTempSensor(TESLA_TEMP_CLIMATE, 255, static_cast<float>(temp_inside), m_Name + " Temperature");
+		SendTempSensor(TESLA_TEMP_OUTSIDE, 255, static_cast<float>(temp_outside), m_Name + " Outside Temperature");
 		SendSwitch(TESLA_SWITCH_CLIMATE, 1, 255, m_car.climate_on, 0, m_Name + " Climate switch");
 		SendSwitch(TESLA_SWITCH_DEFROST, 1, 255, m_car.defrost, 0, m_Name + " Defrost switch");
 		return true;
