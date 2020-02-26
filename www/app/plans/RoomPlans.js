@@ -326,7 +326,7 @@ define(['app'], function (app) {
 					order: [[2, 'asc']],
 					ordering: false,
 					columns: [
-						{title: $.t('Idx'), width: '40px', data: 'idx'},
+						{title: $.t('Idx'), width: '40px', data: 'devidx'},
 						{title: $.t('Name'), data: 'Name'},
 						{title: $.t('Order'), width: '50px', data: 'Order', render: orderRenderer},
 						{ title: '', className: 'actions-column', width: '40px', data: 'idx', render: actionsRenderer },
