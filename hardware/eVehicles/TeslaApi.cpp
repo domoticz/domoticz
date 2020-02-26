@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "TeslaApi.h"
-#include "../main/Logger.h"
-#include "../httpclient/UrlEncode.h"
-#include "../httpclient/HTTPClient.h"
-#include "../main/json_helper.h"
+#include "VehicleApi.h"
+#include "../../main/Logger.h"
+#include "../../httpclient/UrlEncode.h"
+#include "../../httpclient/HTTPClient.h"
+#include "../../main/json_helper.h"
 #include <sstream>
 #include <iomanip>
 
@@ -19,8 +20,11 @@
 
 #define TLAPITIMEOUT (30)
 
-CTeslaApi::CTeslaApi()
+CTeslaApi::CTeslaApi(const std::string username, const std::string password, const std::string vinnr)
 {
+	m_username = username;
+	m_password = password;
+	m_VIN = vinnr;
 	m_authtoken = "";
 	m_refreshtoken = "";
 	m_carid = 0;
@@ -31,12 +35,12 @@ CTeslaApi::~CTeslaApi()
 {
 }
 
-bool CTeslaApi::Login(const std::string username, const std::string password, const std::string vinnr)
+bool CTeslaApi::Login()
 {
 	_log.Log(LOG_NORM, "TeslaApi: Attempting login.");
-	if (GetAuthToken(username, password, false))
+	if (GetAuthToken(m_username, m_password, false))
 	{
-		if(GetCarInfo(vinnr))
+		if(FindCarInAccount())
 		{
 			_log.Log(LOG_NORM, "TeslaApi: Login successful.");
 			return true;
@@ -64,29 +68,89 @@ bool CTeslaApi::RefreshLogin()
 	return false;
 }
 
-bool CTeslaApi::GetData(eDataType datatype, Json::Value& reply)
+bool CTeslaApi::GetAllData(tAllCarData& data)
 {
-	std::string data;
-	switch (datatype)
-	{
-	case Climate_State:
-		data = "climate_state";
-		break;
-	case Charge_State:
-		data = "charge_state";
-		break;
-	case Drive_State:
-		data = "drive_state";
-		break;
-	}
+	Json::Value reply;
 
-	return(GetData(data, reply));
+	if (GetData("vehicle_data", reply))
+	{
+		GetLocationData(reply["response"]["drive_state"], data.location);
+		GetChargeData(reply["response"]["charge_state"], data.charge);
+		GetClimateData(reply["response"]["climate_state"], data.climate);
+		return true;
+	}
+	return false;
+}
+
+bool CTeslaApi::GetLocationData(tLocationData& data)
+{
+	Json::Value reply;
+
+	if (GetData("drive_state", reply))
+	{
+		GetLocationData(reply["response"], data);
+		return true;
+	}
+	return false;
+}
+
+void CTeslaApi::GetLocationData(Json::Value& jsondata, tLocationData& data)
+{
+	std::string CarLatitude = jsondata["latitude"].asString();
+	std::string CarLongitude = jsondata["longitude"].asString();
+	data.speed = jsondata["speed"].asInt();
+	data.is_driving = data.speed > 0;
+	data.latitude = std::stod(CarLatitude);
+	data.longitude = std::stod(CarLongitude);
+}
+
+bool CTeslaApi::GetChargeData(CVehicleApi::tChargeData& data)
+{
+	Json::Value reply;
+
+	if (GetData("charge_state", reply))
+	{
+		GetChargeData(reply["response"], data);
+		return true;
+	}
+	return false;
+}
+
+void CTeslaApi::GetChargeData(Json::Value& jsondata, CVehicleApi::tChargeData& data)
+{
+	data.battery_level = jsondata["battery_level"].asFloat();
+	data.status_string = jsondata["charging_state"].asString();
+	data.is_connected = (data.status_string != "Disconnected");
+	data.is_charging = (data.status_string == "Charging") || (data.status_string == "Starting");
+}
+
+bool CTeslaApi::GetClimateData(tClimateData& data)
+{
+	Json::Value reply;
+
+	if (GetData("climate_state", reply))
+	{
+		GetClimateData(reply["response"], data);
+		return true;
+	}
+	return false;
+}
+
+void CTeslaApi::GetClimateData(Json::Value& jsondata, tClimateData& data)
+{
+	data.inside_temp = jsondata["inside_temp"].asFloat();
+	data.outside_temp = jsondata["outside_temp"].asFloat();
+	data.is_climate_on = jsondata["is_climate_on"].asBool();
+	data.is_defrost_on = (jsondata["defrost_mode"].asInt() != 0);
 }
 
 bool CTeslaApi::GetData(std::string datatype, Json::Value& reply)
 {
 	std::stringstream ss;
-	ss << TESLA_URL << TESLA_API << "/" << m_carid << TESLA_API_REQUEST << datatype;
+	if(datatype == "vehicle_data")
+		ss << TESLA_URL << TESLA_API << "/" << m_carid << "/" << datatype;
+	else
+		ss << TESLA_URL << TESLA_API << "/" << m_carid << TESLA_API_REQUEST << datatype;
 	std::string _sUrl = ss.str();
 	std::string _sResponse;
 
@@ -96,13 +160,13 @@ bool CTeslaApi::GetData(std::string datatype, Json::Value& reply)
 		return false;
 	}
 
-	//		_log.Log(LOG_NORM, "TeslaApi: Get data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
+	//_log.Log(LOG_NORM, "TeslaApi: Get data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
 	_log.Debug(DEBUG_NORM, "TeslaApi: Get data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
 
 	return true;
 }
 
-bool CTeslaApi::GetCarInfo(const std::string vinnr)
+bool CTeslaApi::FindCarInAccount()
 {
 	std::stringstream ss;
 	ss << TESLA_URL << TESLA_API;
@@ -120,18 +184,39 @@ bool CTeslaApi::GetCarInfo(const std::string vinnr)
 	_log.Debug(DEBUG_NORM, "TeslaApi: Received %d vehicles from API: %s", _jsRoot["count"].asInt(), _sResponse.c_str());
 	for (int i = 0; i < _jsRoot["count"].asInt(); i++)
 	{
-		if (_jsRoot["response"][i]["vin"].asString() == vinnr)
+		if (_jsRoot["response"][i]["vin"].asString() == m_VIN)
 		{
 			m_carid = _jsRoot["response"][i]["id"].asInt64();
 			m_carname = _jsRoot["response"][i]["display_name"].asString();
 			car_found = true;
-			_log.Log(LOG_NORM, "TeslaApi: Car found in account: ID %lld VIN %s NAME %s", m_carid, vinnr.c_str(), m_carname.c_str());
+			_log.Log(LOG_NORM, "TeslaApi: Car found in account: ID %lld VIN %s NAME %s", m_carid, m_VIN.c_str(), m_carname.c_str());
 			return true;
 		}
 	}
 
-	_log.Log(LOG_ERROR, "TeslaApi: Car with VIN number %s NOT found in account.", vinnr.c_str());
+	_log.Log(LOG_ERROR, "TeslaApi: Car with VIN number %s NOT found in account.", m_VIN.c_str());
 	return car_found;
+}
+
+bool CTeslaApi::IsAwake()
+{
+	std::stringstream ss;
+	ss << TESLA_URL << TESLA_API << "/" << m_carid;
+	std::string _sUrl = ss.str();
+	std::string _sResponse;
+	Json::Value _jsRoot;
+	bool is_awake = false;
+
+	if (SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot, true))
+	{
+		_log.Log(LOG_NORM, "Awake state: %s", _jsRoot["response"]["state"].asString().c_str());
+		_log.Debug(DEBUG_NORM, "Awake state: %s", _jsRoot["response"]["state"].asString().c_str());
+		is_awake = (_jsRoot["response"]["state"] == "online");
+		return(is_awake);
+	}
+
+	_log.Log(LOG_ERROR, "TeslaApi: Failed to get awake state.");
+	return false;
 }
 
 bool CTeslaApi::SendCommand(eCommandType command)
@@ -151,7 +236,7 @@ bool CTeslaApi::SendCommand(eCommandType command)
 	case Climate_Off:
 		command_string = "auto_conditioning_stop";
 		break;
-	case Climate_Comfort:
+	case Climate_On:
 		command_string = "auto_conditioning_start";
 		break;
 	case Climate_Defrost:
@@ -184,7 +269,6 @@ bool CTeslaApi::SendCommand(eCommandType command)
 
 	return false;
 }
-
 
 bool CTeslaApi::SendCommand(std::string command, Json::Value& reply, std::string parameters)
 {

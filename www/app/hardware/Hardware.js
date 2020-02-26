@@ -928,6 +928,14 @@ define(['app'], function (app) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				var vinnr = $("#hardwarecontent #divtesla #vinnr").val();
+				var activeinterval = parseInt($("#hardwarecontent #divtesla #activeinterval").val());
+				if (activeinterval < 1) {
+					activeinterval = 1;
+				}
+				var defaultinterval = parseInt($("#hardwarecontent #divtesla #defaultinterval").val());
+				if (defaultinterval < 1) {
+					defaultinterval = 10;
+				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(username) +
@@ -936,7 +944,9 @@ define(['app'], function (app) {
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
-					"&extra=" + vinnr,
+					"&extra=" + vinnr +
+					"&Mode1=" + defaultinterval +
+					"&Mode2=" + activeinterval,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2139,6 +2149,14 @@ define(['app'], function (app) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				var vinnr = encodeURIComponent($("#hardwarecontent #divtesla #vinnr").val());
+				var activeinterval = parseInt($("#hardwarecontent #divtesla #activeinterval").val());
+				if (activeinterval < 1) {
+					activeinterval = 1;
+				}
+				var defaultinterval = parseInt($("#hardwarecontent #divtesla #defaultinterval").val());
+				if (defaultinterval < 1) {
+					defaultinterval = 1;
+				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(username) +
@@ -2146,7 +2164,9 @@ define(['app'], function (app) {
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&datatimeout=" + datatimeout +
-					"&extra=" + vinnr,
+					"&extra=" + vinnr +
+					"&Mode1=" + defaultinterval +
+					"&Mode2=" + activeinterval,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3658,6 +3678,8 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("Tesla") >= 0) {
 							$("#hardwarecontent #hardwareparamstesla #vinnr").val(data["Extra"]);
+							$("#hardwarecontent #hardwareparamstesla #defaultinterval").val(data["Mode1"]);
+							$("#hardwarecontent #hardwareparamstesla #activeinterval").val(data["Mode2"]);
 						}
 						else if (data["Type"].indexOf("Satel Integra") >= 0) {
 							$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);

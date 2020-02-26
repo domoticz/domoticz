@@ -516,11 +516,11 @@
     <Filter Include="www\app\devices">
       <UniqueIdentifier>{ae84d173-7ab3-47ac-bafd-145b034278f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Tesla">
-      <UniqueIdentifier>{3404548b-df3a-4958-b308-34c7e7c15e59}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\OctoPrint">
       <UniqueIdentifier>{bafd6feb-6df6-4592-aded-780e24eeea7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\eVehicles">
+      <UniqueIdentifier>{3404548b-df3a-4958-b308-34c7e7c15e59}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -2287,14 +2287,17 @@
     <ClInclude Include="..\main\LuaTable.h">
       <Filter>EventSystem\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\Tesla.h">
-      <Filter>Devices\Tesla</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\TeslaApi.h">
-      <Filter>Devices\Tesla</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\OctoPrintMQTT.h">
       <Filter>Devices\OctoPrint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\TeslaApi.h">
+      <Filter>Devices\eVehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\VehicleApi.h">
+      <Filter>Devices\eVehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\eVehicle.h">
+      <Filter>Devices\eVehicles</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3168,14 +3171,14 @@
     <ClCompile Include="..\main\NotificationSystem.cpp">
       <Filter>EventSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\Tesla.cpp">
-      <Filter>Devices\Tesla</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\TeslaApi.cpp">
-      <Filter>Devices\Tesla</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\OctoPrintMQTT.cpp">
       <Filter>Devices\OctoPrint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eVehicles\TeslaApi.cpp">
+      <Filter>Devices\eVehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eVehicles\eVehicle.cpp">
+      <Filter>Devices\eVehicles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

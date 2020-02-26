@@ -16,7 +16,7 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Implemented: RTL433, added Power (Watt) type
 - Implemented: RTL433, added rainfall_mm type
 - Implemented: Sun/Rain icons
-- Implemented: Tesla hardware module
+- Implemented: eVehicles framework, with Tesla as first hardware module
 - Implemented: Websockets: realtime update of devices page
 - Implemented: Xiaomi, added Wireless Single Wall Switch
 - Fixed: API, allow variabletype to be entered as text or integer in adduservariable and updateuservariable (#3320)
