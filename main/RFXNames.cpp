@@ -2008,7 +2008,13 @@ void GetLightStatus(
 			lstatus = "Off";
 			break;
 		case light1_sOn:
-			lstatus = "On";
+			sprintf(szTmp, "Set Level: %d %%", llevel);
+			if (llevel == 100) {
+				lstatus = "On";
+			}
+			else {
+				lstatus = szTmp;
+			}
 			break;
 		}
 		break;
