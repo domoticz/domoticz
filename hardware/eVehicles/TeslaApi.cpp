@@ -209,7 +209,7 @@ bool CTeslaApi::IsAwake()
 
 	if (SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot, true))
 	{
-		_log.Log(LOG_NORM, "Awake state: %s", _jsRoot["response"]["state"].asString().c_str());
+		//_log.Log(LOG_NORM, "Awake state: %s", _jsRoot["response"]["state"].asString().c_str());
 		_log.Debug(DEBUG_NORM, "Awake state: %s", _jsRoot["response"]["state"].asString().c_str());
 		is_awake = (_jsRoot["response"]["state"] == "online");
 		return(is_awake);
