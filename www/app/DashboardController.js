@@ -760,7 +760,7 @@ define(['app', 'livesocket'], function (app) {
 							var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 							isdimmer = true;
 							if (
-								(item.Status == 'On')
+								(item.Status != 'Off')
 							) {
 								img = '<img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor"') + ' height="40" width="40">';
 								$(id + " #div.item").removeClass('Off-fireplace').addClass('on-fireplace');
@@ -2563,7 +2563,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 									else if (item.SwitchType == "TPI") {
 										var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
-										if (item.Status == 'On') {
+										if (item.Status != 'Off') {
 											xhtm += '\t      <td id="img" class="img img1"><img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor"') + ' height="40" width="40"></td>\n';
 										}
 										else {
