@@ -189,7 +189,7 @@ bool CTeslaApi::FindCarInAccount()
 			m_carid = _jsRoot["response"][i]["id"].asInt64();
 			m_carname = _jsRoot["response"][i]["display_name"].asString();
 			car_found = true;
-			_log.Log(LOG_NORM, "TeslaApi: Car found in account: ID %lld VIN %s NAME %s", m_carid, m_VIN.c_str(), m_carname.c_str());
+			_log.Log(LOG_NORM, "TeslaApi: Car found in account: VIN %s NAME %s", m_VIN.c_str(), m_carname.c_str());
 			return true;
 		}
 	}

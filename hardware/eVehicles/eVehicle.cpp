@@ -38,8 +38,15 @@ CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& 
 		m_api = nullptr;
 		break;
 	}
-	m_defaultinterval = defaultinterval;
-	m_activeinterval = activeinterval;
+	if (defaultinterval > 0)
+		m_defaultinterval = defaultinterval;
+	else
+		m_defaultinterval = 10;
+
+	if (activeinterval > 0)
+		m_activeinterval = activeinterval;
+	else
+		m_activeinterval = 1;
 }
 
 CeVehicle::~CeVehicle(void)
@@ -80,7 +87,7 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 	else
 	{
 		if(command == Wake_Up)
-			Log(LOG_ERROR, "Car not yet awake. Will retry.", GetCommandString(command).c_str());
+			Log(LOG_ERROR, "Car not yet awake. Will retry.");
 		else
 			Log(LOG_ERROR, "Timeout requesting %s. Will retry.", GetCommandString(command).c_str());
 		m_trycounter++;
