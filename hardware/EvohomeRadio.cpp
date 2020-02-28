@@ -1720,11 +1720,11 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
 	char sFaultType[15], sFaultCode[20], sDevType[15], sFaultDateTime[21];
 
 	msg.Get(nFaultType, 1).Get(nFaultCode, 4);
-	nFaultDateTime = static_cast<long>(msg.payload[10]) << 32 | static_cast<long>(msg.payload[11]) << 24 | msg.payload[12] << 16 | msg.payload[13] << 8 | msg.payload[14];
+	nFaultDateTime = static_cast<long long>(msg.payload[10]) << 32 | static_cast<long>(msg.payload[11]) << 24 | msg.payload[12] << 16 | msg.payload[13] << 8 | msg.payload[14];
 
-	nFaultYear = (nFaultDateTime & 0b1111111UL << 24) >> 24;
-	nFaultMonth = (nFaultDateTime & 0b1111UL << 36) >> 36;
-	nFaultDay = (nFaultDateTime & 0b11111UL << 31) >> 31;
+	nFaultYear = static_cast<uint8_t>((nFaultDateTime & 0b1111111UL << 24) >> 24);
+	nFaultMonth = static_cast<uint8_t>((nFaultDateTime & 0b1111ULL << 36) >> 36);
+	nFaultDay = static_cast<uint8_t>((nFaultDateTime & 0b11111UL << 31) >> 31);
 	nFaultHour = static_cast<uint8_t>((nFaultDateTime & 0b11111UL << 19) >> 19);
 	nFaultMinute = static_cast<uint8_t>((nFaultDateTime & 0b111111UL << 13) >> 13);
 	nFaultSecond = static_cast<uint8_t>((nFaultDateTime & 0b111111UL << 7) >> 7);
