@@ -487,6 +487,38 @@ private:
 		const long long MeterUsage,
 		const char* date);
 
+	bool UpdateCalendarMultiMeterShort(
+		const int HardwareID,
+		const char* DeviceID,
+		const unsigned char unit,
+		const unsigned char devType,
+		const unsigned char subType,
+		const long long value1,
+		const long long value2,
+		const long long value3,
+		const long long value4,
+		const long long value5,
+		const long long value6,
+		const char* date);
+
+	bool UpdateCalendarMultiMeterLong(
+		const int HardwareID,
+		const char* DeviceID,
+		const unsigned char unit,
+		const unsigned char devType,
+		const unsigned char subType,
+		const long long value1,
+		const long long value2,
+		const long long value3,
+		const long long value4,
+		const long long value5,
+		const long long value6,
+		const char* date,
+		const long long counter1 = 0,
+		const long long counter2 = 0,
+		const long long counter3 = 0,
+		const long long counter4 = 0);
+
 	void CheckAndUpdateDeviceOrder();
 	void CheckAndUpdateSceneDeviceOrder();
 

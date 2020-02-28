@@ -19,6 +19,7 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Implemented: eVehicles framework, with Tesla as first hardware module
 - Implemented: Websockets: realtime update of devices page
 - Implemented: Xiaomi, added Wireless Single Wall Switch
+- Implemented: DisableLogAutoUpdate and EnableLogDBAccess device options for counters, to be enabled from plugins
 - Fixed: API, allow variabletype to be entered as text or integer in adduservariable and updateuservariable (#3320)
 - Fixed: GUI, Choosing Icon for ARC type switches
 - Fixed: GUI, Dashboard icon incremental counter (energy generated) not correct (#3231)
