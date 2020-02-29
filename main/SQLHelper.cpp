@@ -3410,6 +3410,14 @@ void CSQLHelper::Do_Work()
 				{
 					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData, true, true);
 				}
+				else if (method == HTTPClient::HTTP_METHOD_PUT)
+				{
+					ret = HTTPClient::PUT(itt->_sValue, postData, extraHeaders, response, headerData, true);
+				}
+				else if (method == HTTPClient::HTTP_METHOD_DELETE)
+				{
+					ret = HTTPClient::Delete(itt->_sValue, postData, extraHeaders, response, headerData, true);
+				}
 				else
 					return; //unsupported method
 
