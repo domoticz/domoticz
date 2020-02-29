@@ -366,12 +366,26 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 	}
 
 	HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
-	if (!method.empty() && method == "POST")
-		eMethod = HTTPClient::HTTP_METHOD_POST;
-
-	if (!postData.empty() && eMethod != HTTPClient::HTTP_METHOD_POST)
+	if (!method.empty())
 	{
-		_log.Log(LOG_ERROR, "dzVents: You can only use postdata with method POST..");
+		if (method == "GET")
+			eMethod = HTTPClient::HTTP_METHOD_GET;
+		else if (method == "POST")
+			eMethod = HTTPClient::HTTP_METHOD_POST;
+		else if (method == "PUT")
+			eMethod = HTTPClient::HTTP_METHOD_PUT;
+		else if (method == "DELETE")
+			eMethod = HTTPClient::HTTP_METHOD_DELETE;
+		else
+		{
+			_log.Log(LOG_ERROR, "dzVents: Invalid HTTP method '%s'", method.c_str());
+			return false;
+		}
+	}
+
+	if (!postData.empty() && eMethod == HTTPClient::HTTP_METHOD_GET)
+	{
+		_log.Log(LOG_ERROR, "dzVents: You cannot use postdata with method GET.");
 		return false;
 	}
 
