@@ -54,5 +54,8 @@ protected:
 		PT_floor_room = 0x02 	// publish on domoticz/<floor>/<room>
 	};
 	_ePublishTopics m_publish_topics;
+private:
+	uint64_t m_LastUpdatedDeviceRowIdx = 0;
+	uint64_t m_LastUpdatedSceneRowIdx = 0;
 };
 
