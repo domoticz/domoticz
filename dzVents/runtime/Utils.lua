@@ -55,13 +55,7 @@ end
 
 function self.fileExists(name)
 	local ok, err, code = os.rename(name, name)
-	if not ok then
-		if code == 13 then
-			-- Permission denied, but it exists
-			return true
-		end
-	end
-	return ok or false
+	return code ~= 2
 end
 
 function self.stringSplit(text, sep)
