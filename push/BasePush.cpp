@@ -501,7 +501,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	if ((vType == "Temperature") || (vType == "Temperature 1") || (vType == "Temperature 2") || (vType == "Set point"))
 	{
 		double tvalue = ConvertTemperature(atof(rawsendValue.c_str()), tempsign);
-		sprintf(szData, "%.1f", tvalue);
+		sprintf(szData, "%g", tvalue);
 	}
 	else if (vType == "Concentration")
 	{
@@ -520,7 +520,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Barometer")
 	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Forecast")
 	{
@@ -535,17 +535,17 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Altitude")
 	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "UV")
 	{
 		float UVI = static_cast<float>(atof(rawsendValue.c_str()));
-		sprintf(szData, "%.1f", UVI);
+		sprintf(szData, "%g", UVI);
 	}
 	else if (vType == "Direction")
 	{
 		float Direction = static_cast<float>(atof(rawsendValue.c_str()));
-		sprintf(szData, "%.1f", Direction);
+		sprintf(szData, "%g", Direction);
 	}
 	else if (vType == "Direction string")
 	{
@@ -556,7 +556,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 		int intSpeed = atoi(rawsendValue.c_str());
 		if (m_sql.m_windunit != WINDUNIT_Beaufort)
 		{
-			sprintf(szData, "%.1f", float(intSpeed) * m_sql.m_windscale);
+			sprintf(szData, "%g", float(intSpeed) * m_sql.m_windscale);
 		}
 		else
 		{
@@ -569,7 +569,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 		int intGust = atoi(rawsendValue.c_str());
 		if (m_sql.m_windunit != WINDUNIT_Beaufort)
 		{
-			sprintf(szData, "%.1f", float(intGust) *m_sql.m_windscale);
+			sprintf(szData, "%g", float(intGust) *m_sql.m_windscale);
 		}
 		else
 		{
@@ -580,15 +580,15 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	else if (vType == "Chill")
 	{
 		double tvalue = ConvertTemperature(atof(rawsendValue.c_str()), tempsign);
-		sprintf(szData, "%.1f", tvalue);
+		sprintf(szData, "%g", tvalue);
 	}
 	else if (vType == "Rain rate")
 	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Total rain")
 	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Counter")
 	{
@@ -612,11 +612,11 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if ((vType == "Current 1") || (vType == "Current 2") || (vType == "Current 3"))
 	{
-		sprintf(szData, "%.3f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Instant")
 	{
-		sprintf(szData, "%.3f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2"))
 	{
@@ -628,23 +628,23 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Usage current")
 	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Delivery current")
 	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Gas usage")
 	{
-		sprintf(szData, "%.3f", atof(rawsendValue.c_str()) / 1000.0f);
+		sprintf(szData, "%g", atof(rawsendValue.c_str()) / 1000.0f);
 	}
 	else if (vType == "Weight")
 	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Voltage")
 	{
-		sprintf(szData, "%.3f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Value")
 	{
@@ -656,18 +656,18 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 		if (metertype == 0)
 		{
 			//km
-			sprintf(szData, "%.1f", vis);
+			sprintf(szData, "%g", vis);
 		}
 		else
 		{
 			//miles
-			sprintf(szData, "%.1f", vis*0.6214f);
+			sprintf(szData, "%g", vis*0.6214f);
 		}
 	}
 	else if (vType == "Solar Radiation")
 	{
 		float radiation = static_cast<float>(atof(rawsendValue.c_str()));
-		sprintf(szData, "%.1f", radiation);
+		sprintf(szData, "%g", radiation);
 	}
 	else if (vType == "Soil Moisture")
 	{
@@ -679,7 +679,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Percentage")
 	{
-		sprintf(szData, "%.2f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Fanspeed")
 	{
@@ -687,11 +687,11 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Pressure")
 	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Lux")
 	{
-		sprintf(szData, "%.0f", atof(rawsendValue.c_str()));
+		sprintf(szData, "%g", atof(rawsendValue.c_str()));
 	}
 	if (szData[0] != 0)
 	{
