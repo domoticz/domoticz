@@ -1,9 +1,12 @@
 Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 - Implemented: BuienRadar
 - Implemented: DarkSky CloudCover sensor
+- Implemented: eVehicles framework, with Tesla as first hardware module
 - Implemented: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
 - Implemented: Floorplan, add support for SVG
 - Implemented: GUI, OpenZWave added Refresh Node Information button, styling
+- Implemented: GUI: real-time updates on Devices tab (Websockets)
+- Implemented: GUI: Sun/Rain icons
 - Implemented: Hue, Add Support for Geo fence sensor, dimmer switches and Hue LCG002 GU10 spot
 - Implemented: Octoprint hardware module 
 - Implemented: OZW, JSON call to retrieve current battery levels for all nodes
@@ -15,9 +18,6 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Implemented: Per User favorites (with viewer rights)
 - Implemented: RTL433, added Power (Watt) type
 - Implemented: RTL433, added rainfall_mm type
-- Implemented: Sun/Rain icons
-- Implemented: eVehicles framework, with Tesla as first hardware module
-- Implemented: Websockets: realtime update of devices page
 - Implemented: Xiaomi, added Wireless Single Wall Switch
 - Fixed: API, allow variabletype to be entered as text or integer in adduservariable and updateuservariable (#3320)
 - Fixed: GUI, Choosing Icon for ARC type switches
@@ -34,12 +34,14 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Fixed: Evohome Web for updated library
 - Fixed: PhilipsHue
 - Fixed: Telegram notification when odd number of underscores in text
+- Updated: domoticz script now running directly in background
+- Updated: dzVents version 3.0.1 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: Lua 5.3
 - Updated: Mosquitto 1.68
 - Updated: OpenZWave version 1.6
 - Updated: P1: Add support for Belgian and Luxembourgian meters
+- Updated: SQLite 3.31.1
 - Updated: Translations
-- Updated: Update domoticz script now running directly in background
-- Updated: dzVents version 3.0.1 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)
