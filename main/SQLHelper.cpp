@@ -4432,7 +4432,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					);
 			}
 
-			if ((devType == pTypeGeneral) && (subType == sTypeManagedCounter) || (options["EnableLogDBAccess"] == "true")) {
+			if ((devType == pTypeGeneral) && (subType == sTypeManagedCounter) || (options["AddDBLogEntry"] == "true")) {
 				std::vector<std::string> parts, parts2;
 				StringSplit(sValue, ";", parts);
 				if (parts.size() == 11) {

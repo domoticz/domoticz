@@ -13972,6 +13972,7 @@ namespace http {
 										long curUsage2 = (long)(actUsage2 - lastUsage2);
 										long curDeliv1 = (long)(actDeliv1 - lastDeliv1);
 										long curDeliv2 = (long)(actDeliv2 - lastDeliv2);
+                                        _log.Log(LOG_ERROR, "---> %ld %ld %ld %ld", curUsage1, curUsage2, curDeliv1, curDeliv2);
 
 										if ((curUsage1 < 0) || (curUsage1 > 100000))
 											curUsage1 = 0;
@@ -13990,6 +13991,7 @@ namespace http {
 										curUsage2 *= int(tlaps);
 										curDeliv1 *= int(tlaps);
 										curDeliv2 *= int(tlaps);
+                                        _log.Log(LOG_ERROR, "-2-> %ld %ld %ld %ld", curUsage1, curUsage2, curDeliv1, curDeliv2);
 
 										root["result"][ii]["d"] = sd[6].substr(0, 16);
 
@@ -14033,6 +14035,7 @@ namespace http {
 											int day = ltime.tm_mday;
 											sprintf(szTmp, "%04d-%02d-%02d", year, mon, day);
 											std::vector<std::vector<std::string> > result2;
+                                                _log.Log(LOG_ERROR, "---> looking %s", szTmp);
 											result2 = m_sql.safe_query(
 												"SELECT Counter1, Counter2, Counter3, Counter4 FROM Multimeter_Calendar WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q')",
 												idx, szTmp);
@@ -14044,6 +14047,7 @@ namespace http {
 												firstUsage2 = std::strtoll(sd[2].c_str(), nullptr, 10);
 												firstDeliv2 = std::strtoll(sd[3].c_str(), nullptr, 10);
 												lastDay = ntime.tm_mday;
+                                                _log.Log(LOG_ERROR, "---> %lld %lld %lld %lld %s", firstUsage1, firstDeliv1, firstUsage2, firstDeliv2, szTmp);
 											}
 										}
 
