@@ -10,7 +10,9 @@ public:
 	enum _eHTTPmethod
 	{
 		HTTP_METHOD_GET,
-		HTTP_METHOD_POST
+		HTTP_METHOD_POST,
+		HTTP_METHOD_PUT,
+		HTTP_METHOD_DELETE
 	};
 
 
