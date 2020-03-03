@@ -181,7 +181,7 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	float energy = 0;
 
 	bool haveSequence = false;
-	float sequence = 0;
+	int sequence = 0;
 
 	if (!data["id"].empty())
 	{
