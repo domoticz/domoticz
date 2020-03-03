@@ -2556,7 +2556,7 @@ bool CSQLHelper::OpenDatabase()
 					std::string EnergyMeterMode = sd[1];
 					if (EnergyMeterMode == "1")
 					{
-						uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
+						uint64_t ullidx = std::stoull(idx);
 						m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions("EnergyMeterMode:" + EnergyMeterMode, false));
 					}
 				}
@@ -4329,7 +4329,7 @@ uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const un
 		_log.Log(LOG_ERROR, "Serious database error, problem getting ID from DeviceStatus!");
 		return -1;
 	}
-	ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
+	ulID = std::stoull(result[0][0]);
 
 	return ulID;
 }
@@ -4379,7 +4379,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 	else
 	{
 		//Update
-		ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
+		ulID = std::stoull(result[0][0]);
 		std::string sOption = result[0][7];
 		auto options = BuildDeviceOptions(sOption);
 		devname = result[0][1];
@@ -4440,17 +4440,68 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					);
 			}
 
-			if ((devType == pTypeGeneral) && (subType == sTypeManagedCounter)) {
+			if ((devType == pTypeGeneral) && (subType == sTypeManagedCounter) || (options["AddDBLogEntry"] == "true")) {
 				std::vector<std::string> parts, parts2;
 				StringSplit(sValue, ";", parts);
-				if (parts.size() > 2) {
+				if (parts.size() == 11) {
+					// is last part date only, or date with hour with space?
+					StringSplit(parts[10].c_str(), " ", parts2);
+					bool shortLog = false;
+					if (parts2.size() > 1) {
+						shortLog = true;
+					}
+					// second part is date only, or date with hour with space
+					// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+					// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
+					// In MultiMeter_Calendar table, same as Multimeter table + counter1, counter2, counter3 and counter4 when shortlog is False
+					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
+						shortLog,
+						true,
+						parts[10].c_str(),
+						std::stoll(parts[0]),
+						std::stoll(parts[2]),
+						std::stoll(parts[4]),
+						std::stoll(parts[5]),
+						std::stoll(parts[1]),
+						std::stoll(parts[3]),
+						std::stoll(parts[6]),
+						std::stoll(parts[7]),
+						std::stoll(parts[8]),
+						std::stoll(parts[9])
+					);
+					return ulID;
+				}
+				else if (parts.size() == 7) {
+					// is last part date only, or date with hour with space?
+					StringSplit(parts[6].c_str(), " ", parts2);
+					bool shortLog = false;
+					if (parts2.size() > 1) {
+						shortLog = true;
+					}
+					// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+					// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
+					// In MultiMeter_Calendar table, same as Multimeter table + counter1, counter2, counter3 and counter4 when shortlog is False
+					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, 
+						shortLog,
+						true,
+						parts[6].c_str(),
+						std::stoll(parts[0]),
+						std::stoll(parts[2]),
+						std::stoll(parts[4]),
+						std::stoll(parts[5]),
+						std::stoll(parts[1]),
+						std::stoll(parts[3])
+					);
+					return ulID;
+				}
+				else if (parts.size() == 3) {
 					StringSplit(parts[2].c_str(), " ", parts2);
 					// second part is date only, or date with hour with space
 					bool shortLog = false;
 					if (parts2.size() > 1) {
 						shortLog = true;
 					}
-					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, shortLog, atoll(parts[0].c_str()), atoll(parts[1].c_str()), parts[2].c_str());
+					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, shortLog, false, parts[2].c_str(), std::stoll(parts[0]), std::stoll(parts[1]));
 					return ulID;
 				}
 			}
@@ -4980,7 +5031,7 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 	else
 	{
 		//Update
-		uint64_t ID = std::strtoull(result[0][0].c_str(), nullptr, 10);
+		uint64_t ID = std::stoull(result[0][0]);
 
 		safe_query(
 			"UPDATE BackupLog SET Key='%q', nValue=%d "
@@ -5024,7 +5075,7 @@ bool CSQLHelper::HasTimers(const uint64_t Idx)
 
 bool CSQLHelper::HasTimers(const std::string &Idx)
 {
-	uint64_t idxll = std::strtoull(Idx.c_str(), nullptr, 10);
+	uint64_t idxll = std::stoull(Idx);
 	return HasTimers(idxll);
 }
 
@@ -5045,7 +5096,7 @@ bool CSQLHelper::HasSceneTimers(const uint64_t Idx)
 
 bool CSQLHelper::HasSceneTimers(const std::string &Idx)
 {
-	uint64_t idxll = std::strtoull(Idx.c_str(), nullptr, 10);
+	uint64_t idxll = std::stoull(Idx);
 	return HasSceneTimers(idxll);
 }
 
@@ -5154,7 +5205,7 @@ void CSQLHelper::UpdateTemperatureLog()
 		{
 			std::vector<std::string> sd = itt;
 
-			uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
+			uint64_t ID = std::stoull(sd[0]);
 			unsigned char dType = atoi(sd[1].c_str());
 			unsigned char dSubType = atoi(sd[2].c_str());
 			int nValue = atoi(sd[3].c_str());
@@ -5318,7 +5369,7 @@ void CSQLHelper::UpdateRainLog()
 		{
 			std::vector<std::string> sd = itt;
 
-			uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
+			uint64_t ID = std::stoull(sd[0]);
 			//unsigned char dType=atoi(sd[1].c_str());
 			//unsigned char dSubType=atoi(sd[2].c_str());
 			//int nValue=atoi(sd[3].c_str());
@@ -5372,7 +5423,7 @@ void CSQLHelper::UpdateWindLog()
 		{
 			std::vector<std::string> sd = itt;
 
-			uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
+			uint64_t ID = std::stoull(sd[0]);
 
 			unsigned short DeviceID;
 			std::stringstream s_str2(sd[1]);
@@ -5449,7 +5500,7 @@ void CSQLHelper::UpdateUVLog()
 		{
 			std::vector<std::string> sd = itt;
 
-			uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
+			uint64_t ID = std::stoull(sd[0]);
 			//unsigned char dType=atoi(sd[1].c_str());
 			//unsigned char dSubType=atoi(sd[2].c_str());
 			//int nValue=atoi(sd[3].c_str());
@@ -5489,18 +5540,28 @@ bool CSQLHelper::UpdateCalendarMeter(
 	const unsigned char devType,
 	const unsigned char subType,
 	const bool shortLog,
-	const long long MeterValue,
-	const long long MeterUsage,
-	const char* date)
+	const bool multiMeter,
+	const char* date,
+	const long long value1,
+	const long long value2,
+	const long long value3,
+	const long long value4,
+	const long long value5,
+	const long long value6,
+	const long long counter1,
+	const long long counter2,
+	const long long counter3,
+	const long long counter4)
 {
 	std::vector<std::vector<std::string> > result;
+	
 	result = safe_query("SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, DeviceID, unit, devType, subType);
 	if (result.empty()) {
 		return false;
 	}
 
 	std::vector<std::string> sd = result[0];
-	uint64_t DeviceRowID = std::strtoull(sd[0].c_str(), nullptr, 10);
+	uint64_t DeviceRowID = std::stoull(sd[0]);
 	//std::string devname = sd[1];
 	//_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
 
@@ -5512,27 +5573,66 @@ bool CSQLHelper::UpdateCalendarMeter(
 		}
 
 		//insert or replace record
-		result = safe_query(
-			"SELECT DeviceRowID FROM Meter "
-			"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-			DeviceRowID, date
-		);
-		if (result.empty())
-		{
-			safe_query(
-				"INSERT INTO Meter (DeviceRowID, Value, Usage, Date) "
-				"VALUES ('%" PRIu64 "','%lld','%lld','%q')",
-				DeviceRowID, MeterValue, MeterUsage, date
-			);
-		}
-		else
-		{
-			safe_query(
-				"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%lld', Usage='%lld', Date='%q' "
+		if (multiMeter) {
+			result = safe_query(
+				"SELECT DeviceRowID FROM MultiMeter "
 				"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-				DeviceRowID, (MeterValue < 0) ? 0 : MeterValue, (MeterUsage < 0) ? 0 : MeterUsage, date,
 				DeviceRowID, date
 			);
+			if (result.empty())
+			{
+				safe_query(
+					"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
+					"VALUES ('%" PRIu64 "', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%q')",
+					DeviceRowID,
+					(value1 < 0) ? 0 : value1,
+					(value2 < 0) ? 0 : value2,
+					(value3 < 0) ? 0 : value3,
+					(value4 < 0) ? 0 : value4,
+					(value5 < 0) ? 0 : value5,
+					(value6 < 0) ? 0 : value6,
+					date
+				);
+			}
+			else
+			{
+				safe_query(
+					"UPDATE MultiMeter SET Value1='%lld', Value2='%lld', Value3='%lld', Value4='%lld', Value5='%lld', Value6='%lld' "
+					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
+					(value1 < 0) ? 0 : value1,
+					(value2 < 0) ? 0 : value2,
+					(value3 < 0) ? 0 : value3,
+					(value4 < 0) ? 0 : value4,
+					(value5 < 0) ? 0 : value5,
+					(value6 < 0) ? 0 : value6,
+					DeviceRowID,
+					date
+				);
+			}
+		}
+		else {
+			result = safe_query(
+				"SELECT DeviceRowID FROM Meter "
+				"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
+				DeviceRowID, date
+			);
+			if (result.empty())
+			{
+				safe_query(
+					"INSERT INTO Meter (DeviceRowID, Value, Usage, Date) "
+					"VALUES ('%" PRIu64 "','%lld','%lld','%q')",
+					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date
+				);
+			}
+			else
+			{
+				safe_query(
+					"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%lld', Usage='%lld', Date='%q' "
+					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
+					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date,
+					DeviceRowID, date
+				);
+			}
 		}
 	}
 	else
@@ -5541,27 +5641,74 @@ bool CSQLHelper::UpdateCalendarMeter(
 			_log.Log(LOG_ERROR, "UpdateCalendarMeter(): incorrect date format received, YYYY-MM-DD expected!");
 			return false;
 		}
-		result = safe_query(
-			"SELECT DeviceRowID FROM Meter_Calendar "
-			"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
-			DeviceRowID, date
-		);
-		if (result.empty())
-		{
-			safe_query(
-				"INSERT INTO Meter_Calendar (DeviceRowID, Counter, Value, Date) "
-				"VALUES ('%" PRIu64 "', '%lld', '%lld', '%q')",
-				DeviceRowID, (MeterValue < 0) ? 0 : MeterValue, (MeterUsage < 0) ? 0 : MeterUsage, date
-			);
-		}
-		else
-		{
-			safe_query(
-				"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Counter='%lld', Value='%lld', Date='%q' "
+		if (multiMeter) {
+			result = safe_query(
+				"SELECT DeviceRowID FROM MultiMeter_Calendar "
 				"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
-				DeviceRowID, (MeterValue < 0) ? 0 : MeterValue, (MeterUsage < 0) ? 0 : MeterUsage, date,
 				DeviceRowID, date
 			);
+			if (result.empty())
+			{
+				safe_query(
+					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
+					"VALUES ('%" PRIu64 "', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%q')",
+					DeviceRowID,
+					(value1 < 0) ? 0 : value1,
+					(value2 < 0) ? 0 : value2,
+					(value3 < 0) ? 0 : value3,
+					(value4 < 0) ? 0 : value4,
+					(value5 < 0) ? 0 : value5,
+					(value6 < 0) ? 0 : value6,
+					(counter1 < 0) ? 0 : counter1,
+					(counter2 < 0) ? 0 : counter2,
+					(counter3 < 0) ? 0 : counter3,
+					(counter4 < 0) ? 0 : counter4,
+					date
+				);
+			}
+			else
+			{
+				safe_query(
+					"UPDATE MultiMeter_Calendar SET Value1='%lld', Value2='%lld', Value3='%lld', Value4='%lld', Value5='%lld', Value6='%lld' , Counter1='%lld' , Counter2='%lld' , Counter3='%lld' , Counter4='%lld' "
+					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
+					(value1 < 0) ? 0 : value1,
+					(value2 < 0) ? 0 : value2,
+					(value3 < 0) ? 0 : value3,
+					(value4 < 0) ? 0 : value4,
+					(value5 < 0) ? 0 : value5,
+					(value6 < 0) ? 0 : value6,
+					(counter1 < 0) ? 0 : counter1,
+					(counter2 < 0) ? 0 : counter2,
+					(counter3 < 0) ? 0 : counter3,
+					(counter4 < 0) ? 0 : counter4,
+					DeviceRowID,
+					date
+				);
+			}
+		}
+		else {
+			result = safe_query(
+				"SELECT DeviceRowID FROM Meter_Calendar "
+				"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
+				DeviceRowID, date
+			);
+			if (result.empty())
+			{
+				safe_query(
+					"INSERT INTO Meter_Calendar (DeviceRowID, Counter, Value, Date) "
+					"VALUES ('%" PRIu64 "', '%lld', '%lld', '%q')",
+					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date
+				);
+			}
+			else
+			{
+				safe_query(
+					"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Counter='%lld', Value='%lld', Date='%q' "
+					"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
+					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date,
+					DeviceRowID, date
+				);
+			}
 		}
 	}
 	return true;
@@ -5582,7 +5729,7 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result2;
 
 	result = safe_query(
-		"SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE ("
+		"SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate,Options FROM DeviceStatus WHERE ("
 		"Type=%d OR " //pTypeRFXMeter
 		"Type=%d OR " //pTypeP1Gas
 		"Type=%d OR " //pTypeYouLess
@@ -5638,7 +5785,15 @@ void CSQLHelper::UpdateMeter()
 			char szTmp[200];
 			std::vector<std::string> sd = itt;
 
-			uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
+			std::string sOptions = sd[10];
+			std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+			// We don't want to update meter if externally managed
+			if (options["DisableLogAutoUpdate"] == "true")
+			{
+				continue;
+			}
+
+			uint64_t ID = std::stoull(sd[0]);
 			std::string devname = sd[1];
 			int hardwareID = atoi(sd[2].c_str());
 			std::string DeviceID = sd[3];
@@ -5801,8 +5956,8 @@ void CSQLHelper::UpdateMeter()
 				sValue = szTmp;
 			}
 
-			long long MeterValue = std::strtoll(sValue.c_str(), nullptr, 10);
-			long long MeterUsage = std::strtoll(susage.c_str(), nullptr, 10);
+			long long MeterValue = std::stoll(sValue);
+			long long MeterUsage = std::stoll(susage);
 
 			//insert record
 			safe_query(
@@ -5828,7 +5983,7 @@ void CSQLHelper::UpdateMultiMeter()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
+	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate,Options FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
 		pTypeP1Power,
 		pTypeCURRENT,
 		pTypeCURRENTENERGY
@@ -5839,7 +5994,15 @@ void CSQLHelper::UpdateMultiMeter()
 		{
 			std::vector<std::string> sd = itt;
 
-			uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
+			std::string sOptions = sd[10];
+			std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+			// We don't want to update meter if externally managed
+			if (options["DisableLogAutoUpdate"] == "true")
+			{
+				continue;
+			}
+
+			uint64_t ID = std::stoull(sd[0]);
 			unsigned char dType = atoi(sd[1].c_str());
 			unsigned char dSubType = atoi(sd[2].c_str());
 			//int nValue=atoi(sd[3].c_str());
@@ -5867,12 +6030,12 @@ void CSQLHelper::UpdateMultiMeter()
 			{
 				if (splitresults.size() != 6)
 					continue; //impossible
-				unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
-				unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
-				unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
-				unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
-				unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
-				unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
+				unsigned long long powerusage1 = std::stoull(splitresults[0]);
+				unsigned long long powerusage2 = std::stoull(splitresults[1]);
+				unsigned long long powerdeliv1 = std::stoull(splitresults[2]);
+				unsigned long long powerdeliv2 = std::stoull(splitresults[3]);
+				unsigned long long usagecurrent = std::stoull(splitresults[4]);
+				unsigned long long delivcurrent = std::stoull(splitresults[5]);
 
 				value1 = powerusage1;
 				value2 = powerdeliv1;
@@ -5942,7 +6105,7 @@ void CSQLHelper::UpdatePercentageLog()
 		{
 			std::vector<std::string> sd = itt;
 
-			uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
+			uint64_t ID = std::stoull(sd[0]);
 
 			//unsigned char dType=atoi(sd[1].c_str());
 			//unsigned char dSubType=atoi(sd[2].c_str());
@@ -5997,7 +6160,7 @@ void CSQLHelper::UpdateFanLog()
 		{
 			std::vector<std::string> sd = itt;
 
-			uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
+			uint64_t ID = std::stoull(sd[0]);
 
 			//unsigned char dType=atoi(sd[1].c_str());
 			//unsigned char dSubType=atoi(sd[2].c_str());
@@ -6058,7 +6221,7 @@ void CSQLHelper::AddCalendarTemperature()
 	for (const auto & itt : resultdevices)
 	{
 		std::vector<std::string> sddev = itt;
-		uint64_t ID = std::strtoull(sddev[0].c_str(), nullptr, 10);
+		uint64_t ID = std::stoull(sddev[0]);
 
 		result = safe_query("SELECT MIN(Temperature), MAX(Temperature), AVG(Temperature), MIN(Chill), MAX(Chill), AVG(Humidity), AVG(Barometer), MIN(DewPoint), MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) FROM Temperature WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
@@ -6127,7 +6290,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 	for (const auto & itt : resultdevices)
 	{
 		std::vector<std::string> sddev = itt;
-		uint64_t ID = std::strtoull(sddev[0].c_str(), nullptr, 10);
+		uint64_t ID = std::stoull(sddev[0]);
 
 		//Get Device Information
 		result = safe_query("SELECT SubType FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
@@ -6232,13 +6395,21 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	for (const auto & itt : resultdevices)
 	{
 		std::vector<std::string> sddev = itt;
-		uint64_t ID = std::strtoull(sddev[0].c_str(), nullptr, 10);
+		uint64_t ID = std::stoull(sddev[0]);
 
 		//Get Device Information
-		result = safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
+		result = safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
 		if (result.empty())
 			continue;
 		std::vector<std::string> sd = result[0];
+
+		std::string sOptions = sd[7];
+		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+		// We don't want to update meter if externally managed
+		if (options["DisableLogAutoUpdate"] == "true")
+		{
+			continue;
+		}
 		std::string devname = sd[0];
 		//int hardwareID= atoi(sd[1].c_str());
 		//std::string DeviceID=sd[2];
@@ -6427,13 +6598,21 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	for (const auto & itt : resultdevices)
 	{
 		std::vector<std::string> sddev = itt;
-		uint64_t ID = std::strtoull(sddev[0].c_str(), nullptr, 10);
+		uint64_t ID = std::stoull(sddev[0]);
 
 		//Get Device Information
-		result = safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
+		result = safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
 		if (result.empty())
 			continue;
 		std::vector<std::string> sd = result[0];
+
+		std::string sOptions = sd[7];
+		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+		// We don't want to update meter if externally managed
+		if (options["DisableLogAutoUpdate"] == "true")
+		{
+			continue;
+		}
 
 		std::string devname = sd[0];
 		//int hardwareID= atoi(sd[1].c_str());
@@ -6551,7 +6730,7 @@ void CSQLHelper::AddCalendarUpdateWind()
 	for (const auto & itt : resultdevices)
 	{
 		std::vector<std::string> sddev = itt;
-		uint64_t ID = std::strtoull(sddev[0].c_str(), nullptr, 10);
+		uint64_t ID = std::stoull(sddev[0]);
 
 		result = safe_query("SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
@@ -6609,7 +6788,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 	for (const auto & itt : resultdevices)
 	{
 		std::vector<std::string> sddev = itt;
-		uint64_t ID = std::strtoull(sddev[0].c_str(), nullptr, 10);
+		uint64_t ID = std::stoull(sddev[0]);
 
 		result = safe_query("SELECT MAX(Level) FROM UV WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
@@ -6659,7 +6838,7 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 	for (const auto & itt : resultdevices)
 	{
 		std::vector<std::string> sddev = itt;
-		uint64_t ID = std::strtoull(sddev[0].c_str(), nullptr, 10);
+		uint64_t ID = std::stoull(sddev[0]);
 
 		result = safe_query("SELECT MIN(Percentage), MAX(Percentage), AVG(Percentage) FROM Percentage WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
@@ -6713,7 +6892,7 @@ void CSQLHelper::AddCalendarUpdateFan()
 	for (const auto & itt : resultdevices)
 	{
 		std::vector<std::string> sddev = itt;
-		uint64_t ID = std::strtoull(sddev[0].c_str(), nullptr, 10);
+		uint64_t ID = std::stoull(sddev[0]);
 
 		result = safe_query("SELECT MIN(Speed), MAX(Speed), AVG(Speed) FROM Fan WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
@@ -6920,7 +7099,7 @@ void CSQLHelper::DeleteDevices(const std::string &idx)
 			safe_exec_no_return("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')", itt.c_str());
 			safe_exec_no_return("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')", itt.c_str());
 			//notify eventsystem device is no longer present
-			uint64_t ullidx = std::strtoull(itt.c_str(), nullptr, 10);
+			uint64_t ullidx = std::stoull(itt);
 			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_DEVICE);
 			//and now delete all records in the DeviceStatus table itself
 			safe_exec_no_return("DELETE FROM DeviceStatus WHERE (ID == '%q')", itt.c_str());
@@ -6966,7 +7145,7 @@ void CSQLHelper::DeleteScenes(const std::string& idx)
 			safe_exec_no_return("DELETE FROM SceneDevices WHERE (SceneRowID == '%q')", itt.c_str());
 			safe_exec_no_return("DELETE FROM SceneTimers WHERE (SceneRowID == '%q')", itt.c_str());
 			safe_exec_no_return("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", itt.c_str());
-			uint64_t ullidx = std::strtoull(itt.c_str(), nullptr, 10);
+			uint64_t ullidx = std::stoull(itt);
 			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -7178,7 +7357,7 @@ void CSQLHelper::CheckSceneStatusWithDevice(const uint64_t DevIdx)
 
 void CSQLHelper::CheckSceneStatus(const std::string &Idx)
 {
-	uint64_t idxll = std::strtoull(Idx.c_str(), nullptr, 10);
+	uint64_t idxll = std::stoull(Idx);
 	return CheckSceneStatus(idxll);
 }
 
@@ -7736,7 +7915,7 @@ void CSQLHelper::CheckBatteryLow()
 	for (const auto & itt : result)
 	{
 		std::vector<std::string> sd = itt;
-		uint64_t ulID = std::strtoull(sd[0].c_str(), nullptr, 10);
+		uint64_t ulID = std::stoull(sd[0]);
 		bool bDoSend = true;
 		std::map<uint64_t, int>::const_iterator sitt;
 		sitt = m_batterylowlastsend.find(ulID);
@@ -7817,7 +7996,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	for (const auto & itt : result)
 	{
 		std::vector<std::string> sd = itt;
-		uint64_t ulID = std::strtoull(sd[0].c_str(), nullptr, 10);
+		uint64_t ulID = std::stoull(sd[0]);
 		bool bDoSend = true;
 		std::map<uint64_t, int>::const_iterator sitt;
 		sitt = m_timeoutlastsend.find(ulID);
@@ -8146,7 +8325,7 @@ bool CSQLHelper::UpdateUserVariable(const std::string &idx, const std::string &v
 	);
 	if (m_bEnableEventSystem)
 	{
-		uint64_t vId = std::strtoull(idx.c_str(), nullptr, 10);
+		uint64_t vId = std::stoull(idx);
 		if (eventtrigger)
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
 		m_mainworker.m_eventsystem.UpdateUserVariable(vId, szVarValue, szLastUpdate);
@@ -8608,7 +8787,7 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 		return optionsMap;
 	}
 
-	uint64_t ulID = std::strtoull(idx.c_str(), nullptr, 10);
+	uint64_t ulID = std::stoull(idx);
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT Options FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulID);
 	if (!result.empty()) {
