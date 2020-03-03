@@ -5994,7 +5994,7 @@ void CSQLHelper::UpdateMultiMeter()
 		{
 			std::vector<std::string> sd = itt;
 
-			std::string sOptions = sd[10];
+			std::string sOptions = sd[6];
 			std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
 			// We don't want to update meter if externally managed
 			if (options["DisableLogAutoUpdate"] == "true")
