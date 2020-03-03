@@ -57,7 +57,6 @@ Source: "..\..\scripts\*"; DestDir: "{app}\scripts"; Flags: recursesubdirs creat
 Source: "..\..\dzVents\*"; DestDir: "{app}\dzVents"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\Debug\libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Windows Libraries\OpenZwave\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\..\Manual\DomoticzManual.pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\History.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\server_cert.pem"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall
@@ -66,7 +65,6 @@ Source: "..\..\server_cert.pem"; DestDir: "{app}"; Flags: onlyifdoesntexist unin
 Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "{code:GetParams}" ; Tasks: RunAsApp; 
 ;Name: "{group}\Start Domoticz service"; Filename: "sc"; Parameters: "start {#MyAppName}"; Tasks: RunAsService; 
 ;Name: "{group}\Stop Domoticz service"; Filename: "sc"; Parameters: "stop {#MyAppName}"; Tasks: RunAsService; 
-Name: "{group}\DomoticzManual.pdf"; Filename: "{app}\DomoticzManual.pdf"; 
 Name: "{group}\{cm:ProgramOnTheWeb,Domoticz}"; Filename: "{#MyAppURL}";
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; 
 Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-startupdelay 10 {code:GetParams}" ; Tasks: RunAsApp\startupicon
