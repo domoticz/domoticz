@@ -513,7 +513,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 			if (devType == pTypeHUM)
 				sprintf(szData, "%d", nValue);
 			else
-				sprintf(szData, "%d", std::stoi(rawsendValue));
+				sprintf(szData, "%g", std::stof(rawsendValue));
 		}
 		else if (vType == "Humidity Status")
 		{
