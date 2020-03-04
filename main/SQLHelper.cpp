@@ -4501,7 +4501,13 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					if (parts2.size() > 1) {
 						shortLog = true;
 					}
-					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, shortLog, false, parts[2].c_str(), std::stoll(parts[0]), std::stoll(parts[1]));
+					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, 
+						shortLog, 
+						false, 
+						parts[2].c_str(), 
+						std::stoll(parts[0]), 
+						std::stoll(parts[1])
+						);
 					return ulID;
 				}
 			}
@@ -5805,7 +5811,7 @@ void CSQLHelper::UpdateMeter()
 			std::string sValue = sd[8];
 			std::string sLastUpdate = sd[9];
 
-			std::string susage = "0";
+			std::string sUsage = "0";
 
 			//do not include sensors that have no reading within an hour
 			struct tm ntime;
@@ -5833,7 +5839,7 @@ void CSQLHelper::UpdateMeter()
 				if (splitresults.size() < 2)
 					continue;
 				sValue = splitresults[0];
-				susage = splitresults[1];
+				sUsage = splitresults[1];
 			}
 			else if (dType == pTypeENERGY)
 			{
@@ -5841,7 +5847,7 @@ void CSQLHelper::UpdateMeter()
 				StringSplit(sValue, ";", splitresults);
 				if (splitresults.size() < 2)
 					continue;
-				susage = splitresults[0];
+				sUsage = splitresults[0];
 				double fValue = atof(splitresults[1].c_str()) * 100;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
@@ -5852,7 +5858,7 @@ void CSQLHelper::UpdateMeter()
 				StringSplit(sValue, ";", splitresults);
 				if (splitresults.size() < 2)
 					continue;
-				susage = splitresults[0];
+				sUsage = splitresults[0];
 				double fValue = atof(splitresults[1].c_str()) * 100;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
@@ -5901,7 +5907,7 @@ void CSQLHelper::UpdateMeter()
 
 				double fValue = atof(splitresults[0].c_str())*10.0f;
 				sprintf(szTmp, "%.0f", fValue);
-				susage = szTmp;
+				sUsage = szTmp;
 
 				fValue = atof(splitresults[1].c_str());
 				sprintf(szTmp, "%.0f", fValue);
@@ -5956,8 +5962,18 @@ void CSQLHelper::UpdateMeter()
 				sValue = szTmp;
 			}
 
-			long long MeterValue = std::stoll(sValue);
-			long long MeterUsage = std::stoll(susage);
+			long long MeterValue = 0;
+			long long MeterUsage = 0;
+
+			try
+			{
+				MeterUsage = std::stoll(sUsage);
+				MeterValue = std::stoll(sValue);
+			}
+			catch (const std::exception&)
+			{
+				_log.Log(LOG_ERROR, "UpdateMeter: Error converting sValue/sUsage! (IDX: %s, sValue: '%s', sUsage: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), sUsage.c_str(), dType, dSubType);
+			}
 
 			//insert record
 			safe_query(
