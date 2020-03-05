@@ -3180,6 +3180,9 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 		case sTypeRAIN8:
 			WriteMessage("subtype       = RAIN8 - Davis");
 			break;
+		case sTypeRAIN9:
+			WriteMessage("subtype       = RAIN9 - TFA 30.3233.01");
+			break;
 		case sTypeRAINWU:
 			WriteMessage("subtype       = Weather Underground (Total Rain)");
 			break;
@@ -6412,6 +6415,12 @@ void MainWorker::decode_BLINDS1(const CDomoticzHardwareBase* pHardware, const tR
 			break;
 		case sTypeBlindsT16:
 			WriteMessage("subtype       = Zemismart");
+			break;
+		case sTypeBlindsT17:
+			WriteMessage("subtype       = Gaposa");
+			break;
+		case sTypeBlindsT18:
+			WriteMessage("subtype       = Cherubini");
 			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
@@ -11990,15 +11999,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.BLINDS1.id3 = ID3;
 		lcmd.BLINDS1.id4 = 0;
 		if (
-			(dSubType == sTypeBlindsT0) ||
-			(dSubType == sTypeBlindsT1) ||
-			(dSubType == sTypeBlindsT3) ||
-			(dSubType == sTypeBlindsT8) ||
-			(dSubType == sTypeBlindsT12) ||
-			(dSubType == sTypeBlindsT13) ||
-			(dSubType == sTypeBlindsT14) ||
-			(dSubType == sTypeBlindsT15) ||
-			(dSubType == sTypeBlindsT16)
+			(dSubType == sTypeBlindsT0)
+			|| (dSubType == sTypeBlindsT1)
+			|| (dSubType == sTypeBlindsT3)
+			|| (dSubType == sTypeBlindsT8)
+			|| (dSubType == sTypeBlindsT12)
+			|| (dSubType == sTypeBlindsT13)
+			|| (dSubType == sTypeBlindsT14)
+			|| (dSubType == sTypeBlindsT15)
+			|| (dSubType == sTypeBlindsT16)
+			|| (dSubType == sTypeBlindsT17)
+			|| (dSubType == sTypeBlindsT18)
 			)
 		{
 			lcmd.BLINDS1.unitcode = Unit;

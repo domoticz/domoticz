@@ -69,6 +69,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeRAIN, sTypeRAIN6, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAIN7, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAIN8, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN9, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAINWU, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAINByRate, "Rain rate,Total rain" },
 

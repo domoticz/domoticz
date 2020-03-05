@@ -15867,20 +15867,15 @@ namespace http {
 
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 
-								double counter_1 = atof(sd[5].c_str());
-								double counter_2 = atof(sd[6].c_str());
-								double counter_3 = atof(sd[7].c_str());
-								double counter_4 = atof(sd[8].c_str());
+								double counter_1 = std::stod(sd[5]);
+								double counter_2 = std::stod(sd[6]);
+								double counter_3 = std::stod(sd[7]);
+								double counter_4 = std::stod(sd[8]);
 
-								std::string szUsage1 = sd[0];
-								std::string szDeliv1 = sd[1];
-								std::string szUsage2 = sd[2];
-								std::string szDeliv2 = sd[3];
-
-								float fUsage_1 = static_cast<float>(atof(szUsage1.c_str()));
-								float fUsage_2 = static_cast<float>(atof(szUsage2.c_str()));
-								float fDeliv_1 = static_cast<float>(atof(szDeliv1.c_str()));
-								float fDeliv_2 = static_cast<float>(atof(szDeliv2.c_str()));
+								float fUsage_1 = std::stof(sd[0]);
+								float fUsage_2 = std::stof(sd[2]);
+								float fDeliv_1 = std::stof(sd[1]);
+								float fDeliv_2 = std::stof(sd[3]);
 
 								fDeliv_1 = (fDeliv_1 < 10) ? 0 : fDeliv_1;
 								fDeliv_2 = (fDeliv_2 < 10) ? 0 : fDeliv_2;
@@ -15958,15 +15953,10 @@ namespace http {
 
 								root["resultprev"][iPrev]["d"] = sd[4].substr(0, 16);
 
-								std::string szUsage1 = sd[0];
-								std::string szDeliv1 = sd[1];
-								std::string szUsage2 = sd[2];
-								std::string szDeliv2 = sd[3];
-
-								float fUsage_1 = static_cast<float>(atof(szUsage1.c_str()));
-								float fUsage_2 = static_cast<float>(atof(szUsage2.c_str()));
-								float fDeliv_1 = static_cast<float>(atof(szDeliv1.c_str()));
-								float fDeliv_2 = static_cast<float>(atof(szDeliv2.c_str()));
+								float fUsage_1 = std::stof(sd[0]);
+								float fUsage_2 = std::stof(sd[2]);
+								float fDeliv_1 = std::stof(sd[1]);
+								float fDeliv_2 = std::stof(sd[3]);
 
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;

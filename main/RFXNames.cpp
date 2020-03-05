@@ -590,6 +590,7 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeRAIN, sTypeRAIN6, "LaCrosse TX5" },
 	{ pTypeRAIN, sTypeRAIN7, "Alecto" },
 	{ pTypeRAIN, sTypeRAIN8, "Davis" },
+	{ pTypeRAIN, sTypeRAIN9, "TFA 30.3233.01" },
 	{ pTypeRAIN, sTypeRAINWU, "WWW" },
 	{ pTypeRAIN, sTypeRAINByRate, "RainByRate" },
 
@@ -678,6 +679,8 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeBlinds, sTypeBlindsT14, "Hualite" },
 	{ pTypeBlinds, sTypeBlindsT15, "RFU" },
 	{ pTypeBlinds, sTypeBlindsT16, "Zemismart" },
+	{ pTypeBlinds, sTypeBlindsT17, "Gaposa" },
+	{ pTypeBlinds, sTypeBlindsT18, "Cherubini" },
 
 	{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 	{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
