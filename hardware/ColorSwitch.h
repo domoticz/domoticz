@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cereal/cereal.hpp>
+
 namespace Json
 {
 	class Value;

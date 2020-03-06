@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../cereal/cereal.hpp"
+#include <cereal/cereal.hpp>
 //#include "../cereal/types/string.hpp"
 //#include "../cereal/types/utility.hpp"
 //#include "../cereal/types/memory.hpp"
