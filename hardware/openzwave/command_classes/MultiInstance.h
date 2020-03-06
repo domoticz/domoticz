@@ -99,6 +99,9 @@ namespace OpenZWave
 					uint8 GetGenericInstanceDeviceType(uint8);
 					uint8 GetSpecificInstanceDeviceType(uint8);
 
+					bool supportsMultiInstance() override {
+						return false;
+					}
 				private:
 					MultiInstance(uint32 const _homeId, uint8 const _nodeId);
 

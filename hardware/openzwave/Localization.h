@@ -104,7 +104,7 @@ namespace OpenZWave
 				Localization();
 				~Localization();
 
-				static void ReadXML();
+				static bool ReadXML();
 				static void ReadCCXMLLabel(uint8 ccID, const TiXmlElement *labelElement);
 				static void ReadXMLValue(uint8 node, uint8 ccID, const TiXmlElement *valueElement);
 				static void ReadXMLVIDItemLabel(uint8 node, uint8 ccID, uint16 indexId, uint32 pos, const TiXmlElement *labelElement);

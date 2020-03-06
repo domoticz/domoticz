@@ -75,7 +75,6 @@ namespace OpenZWave
 					virtual bool HandleIncomingMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
 					virtual bool SetValue(Internal::VC::Value const& _value) override;
 					virtual void SetValueBasic(uint8 const _instance, uint8 const _value) override;
-					virtual void SetVersion(uint8 const _version) override;
 
 					virtual uint8 GetMaxVersion() override
 					{

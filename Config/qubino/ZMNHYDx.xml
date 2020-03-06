@@ -1,4 +1,4 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0054:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/qubino/ZMNHYDx.png</MetaDataItem>
@@ -29,6 +29,7 @@ By resetting the device, all custom parameters previously set on the device will
     <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3146/Qubino_Smart Plug 16A PLUS extended manual_eng_2.5.pdf</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3146/xml</Entry>
+      <Entry author="Gert van Dijk - gertvdijk@gmail.com" date="10 January 2020" revision="3">Update description for configuration parameter 52 and fix typo</Entry>
     </ChangeLog>
   </MetaData>
   <!--
@@ -115,17 +116,17 @@ By resetting the device, all custom parameters previously set on the device will
                 0-4000 (0.0 to 4000.0W, 0 disables)
             </Help>
     </Value>
-    <Value genre="config" index="52" instance="1" label="Action in case of exceeding power values (param 51/52)" max="6" min="0" size="1" type="list" value="6">
+    <Value genre="config" index="52" instance="1" label="Action in case of exceeding power values (param 50/51)" max="6" min="0" size="1" type="list" value="6">
       <Help>
                 Parameter defines the way 3rd association group devices are controlled, depending on the current power load.
             </Help>
-      <Item label="Disbale" value="0"/>
-      <Item label="1 - Turn on once the power drop below param 50" value="1"/>
-      <Item label="2 - Turn off once the power drop below param 50" value="2"/>
-      <Item label="3 - Turn on once the power rises above param 51" value="3"/>
-      <Item label="4 - Turn off once the power rises above param 51" value="4"/>
+      <Item label="Disable" value="0"/>
+      <Item label="1 - Turn on once the power drops below value of param 50" value="1"/>
+      <Item label="2 - Turn off once the power drops below value of param 50" value="2"/>
+      <Item label="3 - Turn on once the power rises above value of param 51" value="3"/>
+      <Item label="4 - Turn off once the power rises above value of param 51" value="4"/>
       <Item label="1 and 4 combined" value="5"/>
-      <Item label="2 and 6 combined" value="6"/>
+      <Item label="2 and 3 combined" value="6"/>
     </Value>
     <Value genre="config" index="70" instance="1" label="Overload safety switch" max="4000" min="0" size="2" type="short" units="Watts" value="0">
       <Help>
@@ -138,7 +139,7 @@ By resetting the device, all custom parameters previously set on the device will
       <Help>
                 Using this parameter it is possible to enable/disable reporting after the set command (i.e. Basic set).
             </Help>
-      <Item label="Disbale" value="0"/>
+      <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
   </CommandClass>

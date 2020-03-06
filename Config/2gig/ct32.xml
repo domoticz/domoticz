@@ -1,4 +1,4 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0098:0100:2002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/2gig/ct32.png</MetaDataItem>
@@ -16,6 +16,7 @@
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1046/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1330/xml</Entry>
       <Entry author="Keith Pine - keith.pine@gmail.com" date="05 Dec 2019" revision="5">Force root instance to map to first endpoint via compat flag MapRootToEndpoint</Entry>
+      <Entry author="Keith Pine - keith.pine@gmail.com" date="21 Jan 2020" revision="6">Force Setpoint Interpretion A and update some config parameters.</Entry>
     </ChangeLog>
   </MetaData>
   <!--
@@ -26,6 +27,7 @@
   <CommandClass id="67">
     <Compatibility>
       <Base>0</Base>
+      <AltTypeInterpretation>false</AltTypeInterpretation>
     </Compatibility>
   </CommandClass>
   <CommandClass id="96">
@@ -34,7 +36,7 @@
     </Compatibility>
   </CommandClass>
   <CommandClass id="112">
-    <Value genre="config" index="1" label="Temperature Reporting Threshold" max="4" min="0" size="1" type="list" units="" value="0">
+    <Value genre="config" index="1" label="Temperature Reporting Threshold" max="4" min="0" size="1" type="list" units="" value="2">
       <Help>
         The Temperature Reporting Threshold Configuration Set Command sets the reporting threshold for changes in the ambient temperature as detected by the thermostat.
       </Help>
@@ -115,9 +117,7 @@
       <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="19005954"/>
       <!-- 0x01,0x2,0x2,0x02,0x02 -->
       <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="35783170"/>
-    
-    
-    <!-- 0x02,0x2,0x2,0x02,0x02 -->
+      <!-- 0x02,0x2,0x2,0x02,0x02 -->
     </Value>
     <Value genre="config" index="3" label="Utility Lock" max="1" min="0" size="1" type="list" units="" value="0">
       <Help>
@@ -135,9 +135,9 @@
       <Item label="C-Wire" value="1"/>
       <Item label="Battery" value="2"/>
     </Value>
-    <Value genre="config" index="5" label="Humidity Reporting Threshold" max="3" min="0" size="1" type="list" units="" value="0">
+    <Value genre="config" index="5" label="Humidity Reporting Threshold" max="3" min="0" size="1" type="list" units="" value="2">
       <Help>
-        The Temperature Reporting Threshold Configuration Set Command sets the reporting threshold for changes in the ambient temperature as detected by the thermostat.
+        The Humidity Reporting Threshold Configuration Set Command sets the reporting threshold for changes in the ambient humidity as detected by the thermostat.
       </Help>
       <Item label="Disabled" value="0"/>
       <Item label="3% RH" value="1"/>
@@ -155,13 +155,17 @@
       <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="1"/>
     </Value>
-    <Value genre="config" index="7" label="Thermostat Swing Temperature" max="8" min="1" size="1" type="list" units="" value="0">
+    <Value genre="config" index="7" label="Thermostat Swing Temperature" max="8" min="1" size="1" type="list" units="" value="2">
       <Help>
-        The Auxiliary/Emergency configuration command enables or disables auxiliary/emergency heating in the thermostat. Auxiliary/emergency heating is only available if the thermostat is configured in heat pump mode and with at least one stage of auxiliary heating. This command enables auxiliary / emergency heating when the thermostat is in Auto mode. The Thermostat Set Mode command with mode Auxiliary/Emergency Heat will enable emergency heating but only if the thermostat is in Heat
-        mode. This command should only be used on thermsotats that support Auxiliary/Emergency Heat thermostat mode.
+        The Temperate Swing (HVAC cycling rate) is the desired variance in temperature between the thermostat setting and the room temperature required before the heating or cooling system will turn on.
       </Help>
-      <Item label="0.05F" value="1"/>
-      <Item label="0.1F" value="2"/>
+      <Item label="0.5F" value="1"/>
+      <Item label="1.0F" value="2"/>
+      <Item label="1.5F" value="3"/>
+      <Item label="2.0F" value="4"/>
+      <Item label="2.5F" value="5"/>
+      <Item label="3.0F" value="6"/>
+      <Item label="3.5F" value="7"/>
       <Item label="4.0F" value="8"/>
     </Value>
     <Value genre="config" index="8" label="Thermostat Differential Temperature" max="32767" min="2" size="2" type="list" units="F" value="4">
@@ -217,14 +221,14 @@
     </Value>
     <Value genre="config" index="11" label="Simple UI Mode" max="1" min="0" size="1" type="list" units="" value="1">
       <Help>
-        Simple UI Mode Enable/Disable
+        If the value is set to Disable then Normal Mode is enabled. If the value is set to Enable then Simple Mode is enabled.
       </Help>
       <Item label="Enable" value="0"/>
       <Item label="Disable" value="1"/>
     </Value>
     <Value genre="config" index="12" label="Multicast" max="1" min="0" size="1" type="byte" units="" value="0">
       <Help>
-        Multicasting Enable/Disable
+        If set to 0, multicast is disabled, if set to 1, will enable the multicast.
       </Help>
     </Value>
   </CommandClass>

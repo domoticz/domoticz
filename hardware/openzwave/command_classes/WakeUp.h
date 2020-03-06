@@ -98,13 +98,15 @@ namespace OpenZWave
 					}
 					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
 					virtual bool SetValue(Internal::VC::Value const& _value) override;
-					virtual void SetVersion(uint8 const _version) override;
 
 					virtual uint8 GetMaxVersion() override
 					{
 						return 2;
 					}
 
+					bool supportsMultiInstance() override {
+						return false;
+					}
 				protected:
 					virtual void CreateVars(uint8 const _instance) override;
 
@@ -115,6 +117,8 @@ namespace OpenZWave
 					list<Driver::MsgQueueItem> m_pendingQueue;		// Messages waiting to be sent when the device wakes up
 					bool m_awake;
 					bool m_pollRequired;
+					uint32 m_interval;
+					
 			};
 		} // namespace CC
 	} // namespace Internal

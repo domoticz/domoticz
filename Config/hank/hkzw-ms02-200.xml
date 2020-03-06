@@ -1,4 +1,4 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0208:0012:0200</MetaDataItem>
     <MetaDataItem name="ProductPic">images/hank/hkzw-ms02-200.png</MetaDataItem>
@@ -43,6 +43,7 @@ The features list:
 </MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2578/xml</Entry>
+      <Entry author="Gert van Dijk - gertvdijk@gmail.com" date="10 January 2020" revision="3">Adjust description and units of configuration parameter 18 as per user manual</Entry>
     </ChangeLog>
   </MetaData>
   <!--
@@ -76,11 +77,8 @@ The features list:
       <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="1"/>
     </Value>
-    <Value genre="config" index="18" instance="1" label="Motion alarm cancellation delay" max="65535" min="0" size="2" type="short" units="lux" value="200">
-      <Help>
-                0 Reports are not sent.
-                1 to 65535 the change in luminance level resulting in luminance report being sent to the main controller.
-            </Help>
+    <Value genre="config" index="18" instance="1" label="Motion alarm cancellation delay" max="65535" min="0" size="2" type="short" units="seconds" value="30">
+      <Help>The number of seconds to delay the alarm cancellation after motion has not been detected any longer.</Help>
     </Value>
     <Value genre="config" index="32" instance="1" label="Level of low battery" max="50" min="10" size="1" type="byte" units="%" value="20">
       <Help>The low level from 10% to 50%</Help>

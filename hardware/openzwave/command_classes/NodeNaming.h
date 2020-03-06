@@ -89,6 +89,9 @@ namespace OpenZWave
 					void SetName(string const& _name);
 					void SetLocation(string const& _location);
 
+					bool supportsMultiInstance() override {
+						return false;
+					}
 				private:
 					NodeNaming(uint32 const _homeId, uint8 const _nodeId) :
 							CommandClass(_homeId, _nodeId)

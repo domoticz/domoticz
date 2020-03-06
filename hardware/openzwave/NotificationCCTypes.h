@@ -82,7 +82,7 @@ namespace OpenZWave
 			private:
 				NotificationCCTypes();
 				~NotificationCCTypes();
-				static void ReadXML();
+				static bool ReadXML();
 			public:
 				static NotificationCCTypes* Get();
 				static bool Create();

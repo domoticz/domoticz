@@ -146,6 +146,10 @@ namespace OpenZWave
 						return 0;
 					}
 
+					virtual bool supportsMultiInstance() {
+						return true;
+					}
+
 					void SetInstances(uint8 const _instances);
 					void SetInstance(uint8 const _endPoint);
 					/* overridden in the MultiInstance CC to set the Global Label for each Instance */
@@ -223,17 +227,13 @@ namespace OpenZWave
 					} RefreshValue;
 
 				protected:
-					virtual void CreateVars(uint8 const _instance)
-					{
-					}
+					virtual void CreateVars(uint8 const _instance);
 					void ReadValueRefreshXML(TiXmlElement const* _ccElement);
 					CompatOptionManager m_com;
 					CompatOptionManager m_dom;
 
 				public:
-					virtual void CreateVars(uint8 const _instance, uint8 const _index)
-					{
-					}
+					void CreateVars();
 
 				private:
 					uint32 m_homeId;

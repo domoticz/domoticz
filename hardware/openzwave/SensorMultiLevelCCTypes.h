@@ -65,7 +65,7 @@ namespace OpenZWave
 			private:
 				SensorMultiLevelCCTypes();
 				~SensorMultiLevelCCTypes();
-				static void ReadXML();
+				static bool ReadXML();
 			public:
 				static SensorMultiLevelCCTypes* Get();
 				static bool Create();

@@ -104,7 +104,7 @@ namespace OpenZWave
 					bool HandleSupportedReport(uint8 const* _data, uint32 const _length, uint32 const _instance = 1);
 
 					bool m_schemeagreed;
-					bool m_secured;
+					bool m_secured[255];
 
 			};
 		} // namespace CC

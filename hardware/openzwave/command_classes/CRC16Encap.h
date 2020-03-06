@@ -70,6 +70,9 @@ namespace OpenZWave
 					}
 					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
 
+					bool supportsMultiInstance() override {
+						return false;
+					}
 				private:
 					CRC16Encap(uint32 const _homeId, uint8 const _nodeId) :
 							CommandClass(_homeId, _nodeId)

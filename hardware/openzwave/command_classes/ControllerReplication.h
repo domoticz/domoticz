@@ -74,6 +74,9 @@ namespace OpenZWave
 
 					void SendNextData();
 
+					bool supportsMultiInstance() override {
+						return false;
+					}
 				protected:
 					virtual void CreateVars(uint8 const _instance) override;
 

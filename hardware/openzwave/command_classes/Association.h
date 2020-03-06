@@ -81,6 +81,9 @@ namespace OpenZWave
 					void Set(uint8 const _group, uint8 const _nodeId);
 					void Remove(uint8 const _group, uint8 const _nodeId);
 
+					bool supportsMultiInstance() override {
+						return false;
+					}
 				private:
 					Association(uint32 const _homeId, uint8 const _nodeId);
 					void QueryGroup(uint8 _groupIdx, uint32 const _requestFlags);

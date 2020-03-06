@@ -81,7 +81,7 @@ namespace OpenZWave
 					}
 
 				protected:
-					virtual void CreateVars(uint8 const _instance, uint8 const _index) override;
+					virtual void CreateVars(uint8 const _instance) override;
 
 				private:
 					ThermostatSetpoint(uint32 const _homeId, uint8 const _nodeId);

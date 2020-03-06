@@ -78,9 +78,6 @@ namespace OpenZWave
 						return 11;
 					}
 
-				protected:
-					virtual void CreateVars(uint8 const _instance) override;
-
 				private:
 					SensorMultilevel(uint32 const _homeId, uint8 const _nodeId) :
 							CommandClass(_homeId, _nodeId)

@@ -74,7 +74,9 @@ namespace OpenZWave
 					{
 						return m_deviceReset;
 					}
-					;
+					bool supportsMultiInstance() override {
+						return false;
+					}
 				private:
 					DeviceResetLocally(uint32 const _homeId, uint8 const _nodeId) :
 							CommandClass(_homeId, _nodeId), m_deviceReset(false)

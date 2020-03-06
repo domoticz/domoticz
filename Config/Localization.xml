@@ -807,7 +807,7 @@
 			<Label>Test Powerlevel</Label>
 		</Value>
 		<Value index="5">
-			<Help>How Many Messages to send to the Note for the Test</Help>
+			<Help>How Many Messages to send to the Node for the Test</Help>
 			<Label>Frame Count</Label>
 		</Value>
 		<Value index="6">
@@ -1020,8 +1020,8 @@
 			<Label>Target Temperature</Label>
 		</Value>
 		<Value index="35">
-			<Help>Particulate Mater 2.5 Sensor Value</Help>
-			<Label>Particulate Mater 2.5</Label>
+			<Help>Particulate Matter 2.5 Sensor Value</Help>
+			<Label>Particulate Matter 2.5</Label>
 		</Value>
 		<Value index="36">
 			<Help>Formaldehyde CH20 Level Sensor Value</Help>
@@ -1364,8 +1364,8 @@
 			<Label>Target Temperature Units</Label>
 		</Value>
 		<Value index="290">
-			<Help>Particulate Mater 2.5 Sensor Available Units</Help>
-			<Label>Particulate Mater 2.5 Units</Label>
+			<Help>Particulate Matter 2.5 Sensor Available Units</Help>
+			<Label>Particulate Matter 2.5 Units</Label>
 		</Value>
 		<Value index="291">
 			<Help>Formaldehyde CH20 Level Sensor Available Units</Help>
