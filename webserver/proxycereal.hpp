@@ -2,12 +2,21 @@
 #ifndef NOCLOUD
 #include <string>
 #include <sstream>
+#ifdef WIN32
+// type support
+#include "../cereal/types/string.hpp"
+#include "../cereal/types/memory.hpp"
+// the archiver
+#include "../cereal/archives/portable_binary.hpp"
+#include "../cereal/archives/json.hpp"
+#else
 // type support
 #include <cereal/types/string.hpp>
 #include <cereal/types/memory.hpp>
 // the archiver
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/archives/json.hpp>
+#endif
 #include <string>
 
 #define SUBSYSTEM_HTTP 0x01

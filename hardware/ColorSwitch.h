@@ -1,6 +1,10 @@
 #pragma once
 
+#ifdef WIN32
+#include "../cereal/cereal.hpp"
+#else
 #include <cereal/cereal.hpp>
+#endif
 
 namespace Json
 {

@@ -1,6 +1,10 @@
 #pragma once
 
+#ifdef WIN32
+#include "../cereal/cereal.hpp"
+#else
 #include <cereal/cereal.hpp>
+#endif
 //#include "../cereal/types/string.hpp"
 //#include "../cereal/types/utility.hpp"
 //#include "../cereal/types/memory.hpp"

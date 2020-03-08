@@ -3,11 +3,19 @@
 #include <boost/signals2.hpp>
 #include "../main/RFXNames.h"
 #include "../main/StoppableTask.h"
+#ifdef WIN32
+// type support
+#include "../cereal/types/string.hpp"
+#include "../cereal/types/memory.hpp"
+// the archiver
+#include "../cereal/archives/portable_binary.hpp"
+#else
 // type support
 #include <cereal/types/string.hpp>
 #include <cereal/types/memory.hpp>
 // the archiver
 #include <cereal/archives/portable_binary.hpp>
+#endif
 
 enum _eLogLevel : uint32_t;
 enum _eDebugLevel : uint32_t;
