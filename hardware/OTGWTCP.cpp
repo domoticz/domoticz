@@ -64,6 +64,7 @@ void OTGWTCP::Do_Work()
 {
 	int sec_counter = 25;
 	connect(m_szIPAddress,m_usIPPort);
+	int ps;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -84,6 +85,12 @@ void OTGWTCP::Do_Work()
 				SendOutsideTemperature();
 				SendTime();
 				GetGatewayDetails();
+				ps=1;
+			}
+			else if(ps==1)
+			{
+				ps=0;
+				SwitchToPS0();
 			}
 		}
 	}

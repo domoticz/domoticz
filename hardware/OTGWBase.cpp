@@ -27,6 +27,7 @@ OTGWBase::OTGWBase(void) :
 	m_OutsideTemperatureIdx=0;//use build in
 	m_bufferpos = 0;
 	m_OverrideTemperature = 0.0f;
+    m_OverrideControlTemperature = 0.0f;
 	m_bRequestVersion = true;
 }
 
@@ -120,9 +121,7 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 	thermos.id3=0;
 	thermos.id4=Idx;
 	thermos.dunit=0;
-
 	thermos.temp=Temp;
-
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
@@ -251,6 +250,14 @@ void OTGWBase::GetGatewayDetails()
 	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 }
 
+void OTGWBase::SwitchToPS0()
+{
+	char szCmd[30];
+	strcpy(szCmd, "PS=0\r\n");
+	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+}
+
+
 void OTGWBase::SendTime()
 {
 	time_t atime = mytime(NULL);
@@ -287,6 +294,8 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		_log.Log(LOG_STATUS, "OTGW: Setting Control SetPoint to: %.1f", temp);
 		sprintf(szCmd, "CS=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+		UpdateSetPointSensor((uint8_t)idx, temp, "Control Setpoint");
+		m_OverrideControlTemperature = temp;
 	}
 	else if (idx == 5)
 	{
@@ -373,7 +382,12 @@ void OTGWBase::ParseLine()
 			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');												UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
 		}
 
-		_status.Control_setpoint = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Control_setpoint, "Control Setpoint");
+		_status.Control_setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		if ((_status.Control_setpoint != 0.0f ) || (m_OverrideControlTemperature!=0))
+		{
+			UpdateSetPointSensor((uint8_t)idx - 1,  ((m_OverrideControlTemperature!=0.0f) ? m_OverrideControlTemperature :_status.Control_setpoint), "Control Setpoint");
+			Log(LOG_STATUS,"OTGW: setpoint %0.lf%",_status.Control_setpoint);
+		}
 		_status.Remote_parameter_flags=results[idx++];
 		_status.Maximum_relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
 		bool bExists = CheckPercentageSensorExists(idx - 1, 1);
@@ -382,7 +396,8 @@ void OTGWBase::ParseLine()
 			SendPercentageSensor(idx - 1, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
 		}
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
-		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor((uint8_t)idx - 1, ((m_OverrideTemperature!=0.0f) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
+		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		UpdateSetPointSensor((uint8_t)idx - 1, ((m_OverrideTemperature!=0.0f) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
 		_status.Relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
 		bExists = CheckPercentageSensorExists(idx - 1, 1);
 		if ((_status.Relative_modulation_level != 0) || (bExists))
@@ -395,11 +410,16 @@ void OTGWBase::ParseLine()
 			SendPressureSensor(0, idx - 1, 255, _status.CH_water_pressure, "CH Water Pressure");
 		}
 
-		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Room_temperature, "Room Temperature");
-		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(idx - 1, 255, _status.Boiler_water_temperature, "Boiler Water Temperature");
-		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));							SendTempSensor(idx - 1, 255, _status.DHW_temperature, "DHW Temperature");
-		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Outside_temperature, "Outside Temperature");
-		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(idx - 1, 255, _status.Return_water_temperature, "Return Water Temperature");
+		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));
+		SendTempSensor(idx - 1, 255, _status.Room_temperature, "Room Temperature");
+		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));
+		SendTempSensor(idx - 1, 255, _status.Boiler_water_temperature, "Boiler Water Temperature");
+		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));
+		SendTempSensor(idx - 1, 255, _status.DHW_temperature, "DHW Temperature");
+		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));
+		SendTempSensor(idx - 1, 255, _status.Outside_temperature, "Outside Temperature");
+		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));
+		SendTempSensor(idx - 1, 255, _status.Return_water_temperature, "Return Water Temperature");
 		_status.DHW_setpoint_boundaries=results[idx++];
 		_status.Max_CH_setpoint_boundaries=results[idx++];
 		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str())); 
@@ -407,7 +427,7 @@ void OTGWBase::ParseLine()
 		{
 			UpdateSetPointSensor((uint8_t)idx - 1, _status.DHW_setpoint, "DHW Setpoint");
 		}
-		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));		
+		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));
 		if (_status.Max_CH_water_setpoint != 0.0f)
 		{
 			UpdateSetPointSensor((uint8_t)idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");

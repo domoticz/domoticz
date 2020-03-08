@@ -55,6 +55,7 @@ protected:
 	bool GetOutsideTemperatureFromDomoticz(float &tvalue);
 	bool SwitchLight(const int idx, const std::string &LCmd, const int svalue);
 	void GetGatewayDetails();
+	void SwitchToPS0();
 	void GetVersion();
 	void SendTime();
 	void SendOutsideTemperature();
@@ -64,5 +65,6 @@ protected:
 	bool m_bRequestVersion;
 	int m_OutsideTemperatureIdx;
 	float m_OverrideTemperature;
+	float m_OverrideControlTemperature;
 };
 
