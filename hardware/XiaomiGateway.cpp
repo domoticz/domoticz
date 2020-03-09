@@ -1171,15 +1171,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 10;
 							on = true;
 						}
-						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake") || (status == "vibrate")) {
+						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake") || (status == "vibrate") || (aqara_wireless1 == "double_click")) {
 							level = 20;
 							on = true;
 						}
-						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") ) {
+						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") || (aqara_wireless1 == "long_click")) {
 							level = 30;
 							on = true;
 						}
-						else if ((status == "tap_twice") || (status == "long_click_release") || (aqara_wireless1 == "double_click")) {
+						else if ((status == "tap_twice") || (status == "long_click_release")) {
 							level = 40;
 							on = true;
 						}
@@ -1191,7 +1191,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 60;
 							on = true;
 						}
-						else if ((status == "alert") || (aqara_wireless1 == "long_click")) {
+						else if ((status == "alert")) {
 							level = 70;
 							on = true;
 						}
