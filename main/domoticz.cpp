@@ -445,9 +445,7 @@ static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
 
 void GetAppVersion()
 {
-	std::stringstream sstr;
-	sstr << VERSION_STRING << APPVERSION;
-	szAppVersion = sstr.str();
+	szAppVersion = VERSION_STRING;
 	szAppHash = APPHASH;
 	char szTmp[200];
 	struct tm ltime;

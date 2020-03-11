@@ -860,7 +860,7 @@ table.mobileitem {
 	text-decoration: none !important;
 	text-transform: none;
 	font-family: 'Oswald', sans-serif;
-	font-size: 1.5em;
+	font-size: 1.3em;
 	font-weight: 200;
 	color: #1C1C1C;
 }
@@ -868,10 +868,11 @@ table.mobileitem {
 .brand h2 {
 	text-decoration: none;
 	text-transform: none;
+	white-space: nowrap;
 	font-family: Georgia, "Times New Roman", Times, serif;
-	font-size: 0.6em;
+	font-size: 0.5em;
 	font-style: italic;
-	color: #444;
+	color: #666;
 }
 
 .dropdown-menu .divider {
