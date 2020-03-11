@@ -132,6 +132,7 @@ std::string szInternalCurrentCommand = "";
 
 
 std::string szAppVersion="???";
+int iAppRevision=0;
 std::string szAppHash="???";
 std::string szAppDate="???";
 std::string szPyVersion="None";
@@ -446,6 +447,7 @@ static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
 void GetAppVersion()
 {
 	szAppVersion = VERSION_STRING;
+	iAppRevision = APPVERSION;
 	szAppHash = APPHASH;
 	char szTmp[200];
 	struct tm ltime;

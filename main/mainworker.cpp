@@ -15,7 +15,6 @@
 #include "../webserver/Base64.h"
 #include <boost/algorithm/string/join.hpp>
 #include "../main/json_helper.h"
-#include "../appversion.h"
 
 #include <boost/crc.hpp>
 #include <algorithm>
@@ -180,7 +179,7 @@
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
-extern std::string szAppVersion;
+extern int iAppRevision;
 extern std::string szWebRoot;
 extern bool g_bUseUpdater;
 extern http::server::_eWebCompressionMode g_wwwCompressMode;
@@ -1334,7 +1333,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 #ifdef DEBUG_DOWNLOAD
 	m_bHaveUpdate = true;
 #else
-	m_bHaveUpdate = ((APPVERSION != m_iRevision) && (APPVERSION < m_iRevision));
+	m_bHaveUpdate = ((iAppRevision != m_iRevision) && (iAppRevision < m_iRevision));
 #endif
 	return m_bHaveUpdate;
 }
