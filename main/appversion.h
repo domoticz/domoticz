@@ -1,4 +1,4 @@
 #pragma once
 #include "../appversion.h"
 
-#define VERSION_STRING "4."
+#define VERSION_STRING "5."
