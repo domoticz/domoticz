@@ -11,6 +11,7 @@ public:
 
 	bool Login() override;
 	bool RefreshLogin() override;
+	int GetSleepInterval() override;
 	bool SendCommand(eCommandType command) override;
 	bool GetAllData(tAllCarData& data) override;
 	bool GetLocationData(tLocationData& data) override;

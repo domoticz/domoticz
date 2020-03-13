@@ -49,6 +49,8 @@ public:
 	virtual bool GetLocationData(tLocationData& data) = 0;
 	virtual bool GetChargeData(tChargeData& data) = 0;
 	virtual bool GetClimateData(tClimateData& data) = 0;
+	
+	virtual int GetSleepInterval() = 0;
 
 	std::string m_carname;
 };

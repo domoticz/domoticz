@@ -976,7 +976,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CTado(ID, Username, Password);
 		break;
 	case HTYPE_Tesla:
-		pHardware = new CeVehicle(ID, CeVehicle::Tesla, Username, Password, Mode1, Mode2, Extra);
+		pHardware = new CeVehicle(ID, CeVehicle::Tesla, Username, Password, Mode1, Mode2, Mode3, Extra);
 		break;
 	case HTYPE_Honeywell:
 		pHardware = new CHoneywell(ID, Username, Password, Extra);
