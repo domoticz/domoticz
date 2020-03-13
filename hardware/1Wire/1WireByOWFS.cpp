@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "1WireByOWFS.h"
 #include "../../main/mainworker.h"
-#include "../main/Logger.h"
+#include "../../main/Logger.h"
 
 #include <fstream>
 #include <algorithm>

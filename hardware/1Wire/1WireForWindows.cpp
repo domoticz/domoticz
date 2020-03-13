@@ -2,9 +2,9 @@
 #include "stdafx.h"
 #ifdef WIN32
 #include "1WireForWindows.h"
+#include "../../main/json_helper.h"
 #include "../../main/Logger.h"
 #include <boost/optional.hpp>
-#include "../main/json_helper.h"
 #include <WS2tcpip.h>
 
 #define _1WIRE_SERVICE_PORT "1664"
