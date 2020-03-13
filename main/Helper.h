@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <map>
+
 enum _eTimeFormat
 {
 	TF_Time = 0,	// 0

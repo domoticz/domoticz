@@ -44,12 +44,12 @@
 #include "../Node.h"
 #include "../Group.h"
 #include "../Notification.h"
-#include "..//main/Logger.h"
+#include "../../../main/Logger.h"
 
 #include <sys/stat.h>
 #include <fstream>
 #include <iostream>
-#include <tinyxml.h>
+#include "../../../tinyxpath/tinyxml.h"
 
 //#include "microhttpd.h"
 #include "ozwcp.h"

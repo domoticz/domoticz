@@ -5,7 +5,6 @@
 //
 #ifdef ENABLE_PYTHON
 
-#include <tinyxml.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -14,14 +13,15 @@
 #include "PluginMessages.h"
 #include "PluginTransports.h"
 
+#include "../../json/json.h"
+#include "../../main/EventSystem.h"
 #include "../../main/Helper.h"
+#include "../../main/mainworker.h"
+#include "../../main/localtime_r.h"
 #include "../../main/Logger.h"
 #include "../../main/SQLHelper.h"
 #include "../../main/WebServer.h"
-#include "../../main/mainworker.h"
-#include "../../main/EventSystem.h"
-#include "../../json/json.h"
-#include "../../main/localtime_r.h"
+#include "../../tinyxpath/tinyxml.h"
 #ifdef WIN32
 #	include <direct.h>
 #else

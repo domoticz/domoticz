@@ -33,7 +33,8 @@ Version history
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include <../tinyxpath/xpath_static.h>
+#include "../tinyxpath/tinyxml.h"
+#include "../tinyxpath/xpath_static.h"
 #include "../webserver/Base64.h"
 #include "../main/json_helper.h"
 #include <sstream>
