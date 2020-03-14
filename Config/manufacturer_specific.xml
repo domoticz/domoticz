@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="80" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="81" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -527,6 +527,8 @@
     <Product config="eurotronic/eur_spiritz.xml" id="0001" name="EUR_SPIRITZ Wall Radiator Thermostat" type="0003"/>
     <Product config="eurotronic/eur_spiritz.xml" id="0002" name="EUR_SPIRITZ Wall Radiator Thermostat" type="0003"/>
     <Product config="eurotronic/eur_spiritz.xml" id="0003" name="EUR_SPIRITZ Wall Radiator Thermostat" type="0003"/>
+    <Product config="eurotronic/eur_temphumin.xml" id="0001" name="Temperature and Humidity Sensor" type="0004"/>
+    <Product config="eurotronic/eur_airquality.xml" id="0001" name="Air Quality Sensor" type="0005"/>
   </Manufacturer>
   <Manufacturer id="0128" name="Eneco">
     <Product id="0000" name="ED2.0 Meter Adapter" type="0000"/>
