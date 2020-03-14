@@ -331,7 +331,7 @@ define(['app', 'livesocket'], function(app) {
                 var logLink = device.getLogLink();
                 var isScene = device.isScene();
 
-                if (device) {
+                if (isScene) {
                     actions.push('<img src="images/empty16.png">');
                 } else if (device.Used !== 0) {
                     actions.push('<button class="btn btn-icon js-exclude-device" title="' + $.t('Set Unused') + '"><img src="images/remove.png" /></button>');
