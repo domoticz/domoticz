@@ -50,8 +50,12 @@ define(function () {
                 return (this.SubType.indexOf('RGB') >= 0 || this.SubType.indexOf('WW') >= 0);
             };
 
+            this.isScene = function() {
+                return ['Group', 'Scene'].includes(this.Type)
+            };
+
             this.toggle = function () {
-                if (['Group', 'Scene'].includes(this.Type)) {
+                if (this.isScene()) {
                     return this.isActive()
                         ? sceneApi.switchOff(this.idx)
                         : sceneApi.switchOn(this.idx)
