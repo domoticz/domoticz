@@ -238,16 +238,8 @@ define(['app', 'livesocket'], function(app) {
                     $scope.$apply();
                 });
 
-                $scope.$on('device_update', function(event, deviceData) {
-                    table.api().rows().every(function() {
-                        var device = this.data();
-
-                        if (device.idx === deviceData.idx) {
-                            this.data(Object.assign(device, deviceData));
-                            table.find('.row_selected .js-select-row').prop('checked', true);
-                        }
-                    });
-                });
+                $scope.$on('device_update', updateItem);
+                $scope.$on('scene_update', updateItem);
 
                 table.api().rows
                     .add($ctrl.devices)
@@ -273,6 +265,17 @@ define(['app', 'livesocket'], function(app) {
                 return table.api().rows({ selected: true }).count()
             };
 
+            function updateItem(event, itemData) {
+                table.api().rows().every(function() {
+                    var device = this.data();
+
+                    if (device.idx === itemData.idx && device.Type === itemData.Type) {
+                        this.data(Object.assign(device, itemData));
+                        table.find('.row_selected .js-select-row').prop('checked', true);
+                    }
+                });
+            }
+
             function updateDeviceDeleteBtnState() {
                 if ($ctrl.getSelectedRecordsCounts() > 0) {
                     table.find('.js-remove-selected').show();
@@ -282,15 +285,14 @@ define(['app', 'livesocket'], function(app) {
             }
 
             function selectorRenderer() {
-                // console.log(arguments)
                 return '<input type="checkbox" class="noscheck js-select-row" />';
             }
 
             function idRenderer(value, type, device) {
-                var isScene = ['Group', 'Scene'].includes(device.Type);
-                if (isScene) {
+                if (device.isScene()) {
                     return "-";
                 }
+
                 var ID = device.ID;
                 if (typeof (device.HardwareTypeVal) != 'undefined' && device.HardwareTypeVal == 21) {
                     if (device.ID.substr(-4, 2) == '00') {
@@ -314,7 +316,7 @@ define(['app', 'livesocket'], function(app) {
                 var isToggleAvailable =
                     (['Light/Switch', 'Lighting 2'].includes(device.Type) && [0, 7, 9, 10].includes(device.SwitchTypeVal))
                     || device.Type === 'Color Switch'
-                    || (['Group', 'Scene'].includes(device.Type));
+                    || device.isScene();
 
                 if (isToggleAvailable) {
                     var title = device.isActive() ? $.t('Turn Off') : $.t('Turn On');
@@ -324,14 +326,14 @@ define(['app', 'livesocket'], function(app) {
                 }
             }
 
-            function actionsRenderer(value, type, item) {
+            function actionsRenderer(value, type, device) {
                 var actions = [];
-                var logLink = item.getLogLink();
-                var isScene = ['Group', 'Scene'].includes(item.Type);
+                var logLink = device.getLogLink();
+                var isScene = device.isScene();
 
                 if (isScene) {
                     actions.push('<img src="images/empty16.png">');
-                } else if (item.Used !== 0) {
+                } else if (device.Used !== 0) {
                     actions.push('<button class="btn btn-icon js-exclude-device" title="' + $.t('Set Unused') + '"><img src="images/remove.png" /></button>');
                 } else {
                     actions.push('<button class="btn btn-icon js-include-device" title="' + $.t('Add Device') + '"><img src="images/add.png" /></button>');
@@ -340,7 +342,7 @@ define(['app', 'livesocket'], function(app) {
                 actions.push('<button class="btn btn-icon js-rename-device" title="' + $.t('Rename Device') + '"><img src="images/rename.png" /></button>');
 
                 if (isScene) {
-                    actions.push('<a class="btn btn-icon" href="#/Scenes/' + item.idx + '/Log" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
+                    actions.push('<a class="btn btn-icon" href="#/Scenes/' + device.idx + '/Log" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
                 } else if (logLink) {
                     actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
                 } else {
@@ -593,17 +595,20 @@ define(['app', 'livesocket'], function(app) {
             $ctrl.filter = {};
             $ctrl.refreshDevices();
 
-            $scope.$on('device_update', function(event, deviceData) {
-                var device = $ctrl.devices.find(function(device) {
-                    return device.idx === deviceData.idx;
-                });
+            $scope.$on('device_update', updateItem);
+            $scope.$on('scene_update', updateItem);
+        }
 
-                if (device) {
-                    Object.assign(device, deviceData);
-                } else {
-                    $ctrl.devices.push(new Device(deviceData))
-                }
+        function updateItem(event, itemData) {
+            var device = $ctrl.devices.find(function(device) {
+                return device.idx === itemData.idx && device.Type === itemData.Type;
             });
+
+            if (device) {
+                Object.assign(device, itemData);
+            } else {
+                $ctrl.devices.push(new Device(itemData))
+            }
         }
 
         function refreshDevices() {
