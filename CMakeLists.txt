@@ -693,7 +693,6 @@ option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build 
 if(USE_PRECOMPILED_HEADER)
   message(STATUS "Using precompiled headers")
   target_precompile_headers(domoticz PRIVATE "main/stdafx.h")
-#  ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 ENDIF(USE_PRECOMPILED_HEADER)
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
