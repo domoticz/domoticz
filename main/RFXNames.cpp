@@ -807,6 +807,8 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeFan, sTypeFT1211R, "FT1211R" },
 	{ pTypeFan, sTypeFalmec, "Falmec" },
 	{ pTypeFan, sTypeLucciAirDCII, "Lucci Air DC II" },
+	{ pTypeFan, sTypeIthoECO, "Itho ECO" },
+	{ pTypeFan, sTypeNovy, "Novy" },
 
 	{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
