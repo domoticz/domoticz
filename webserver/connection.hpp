@@ -164,11 +164,12 @@ namespace http {
 
 			/// websocket stuff
 			CWebsocket websocket_parser;
-			enum {
+			enum class ConnectionType {
 				connection_http,
 				connection_websocket,
 				connection_websocket_closing
-			} connection_type;
+			};
+			ConnectionType connection_type;
 		};
 
 		typedef std::shared_ptr<connection> connection_ptr;

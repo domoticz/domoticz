@@ -41,7 +41,7 @@ namespace http {
 			secure_ = false;
 			keepalive_ = false;
 			write_in_progress = false;
-			connection_type = connection_http;
+			connection_type = ConnectionType::connection_http;
 #ifdef WWW_ENABLE_SSL
 			sslsocket_ = NULL;
 #endif
@@ -66,7 +66,7 @@ namespace http {
 			secure_ = true;
 			keepalive_ = false;
 			write_in_progress = false;
-			connection_type = connection_http;
+			connection_type = ConnectionType::connection_http;
 			socket_ = NULL;
 			sslsocket_ = new ssl_socket(io_service, context);
 		}
@@ -127,12 +127,12 @@ namespace http {
 		void connection::stop()
 		{
 			switch (connection_type) {
-			case connection_websocket:
+			case ConnectionType::connection_websocket:
 				// todo: send close frame and wait for writeQ to flush
 				//websocket_parser.SendClose("");
 				websocket_parser.Stop();
 				break;
-			case connection_websocket_closing:
+			case ConnectionType::connection_websocket_closing:
 				// todo: wait for writeQ to flush, so client can receive the close frame
 				websocket_parser.Stop();
 				break;
@@ -152,7 +152,7 @@ namespace http {
 		{
 			if (error != boost::asio::error::operation_aborted) {
 				switch (connection_type) {
-				case connection_http:
+				case ConnectionType::connection_http:
 					// Timers should be cancelled before stopping to remove tasks from the io_service.
 					// The io_service will stop naturally when every tasks are removed.
 					// If timers are not cancelled, the exception ERROR_ABANDONED_WAIT_0 is thrown up to the io_service::run() caller.
@@ -170,7 +170,7 @@ namespace http {
 						_log.Log(LOG_ERROR, "%s -> exception thrown while stopping connection", host_endpoint_address_.c_str());
 					}
 					break;
-				case connection_websocket:
+				case ConnectionType::connection_websocket:
 					websocket_parser.SendPing();
 					break;
 				}
@@ -243,16 +243,23 @@ namespace http {
 
 		}
 
-		void connection::WS_Write(const std::string& packet_data)
+		void connection::WS_Write(const std::string& resp)
 		{
-			MyWrite(CWebsocketFrame::Create(opcode_text, packet_data, false));
+			if (connection_type == ConnectionType::connection_websocket) {
+				MyWrite(CWebsocketFrame::Create(opcode_text, resp, false));
+			}
+			else {
+				// socket connection not set up yet, add to queue
+				std::unique_lock<std::mutex> lock(writeMutex);
+				writeQ.push_back(CWebsocketFrame::Create(opcode_text, resp, false));
+			}
 		}
 
 		void connection::MyWrite(const std::string& buf)
 		{
 			switch (connection_type) {
-			case connection_http:
-			case connection_websocket:
+			case ConnectionType::connection_http:
+			case ConnectionType::connection_websocket:
 				// we dont send data anymore in websocket closing state
 				std::unique_lock<std::mutex> lock(writeMutex);
 				if (write_in_progress) {
@@ -379,7 +386,7 @@ namespace http {
 
 				switch (connection_type)
 				{
-				case connection_http:
+				case ConnectionType::connection_http:
 					begin = boost::asio::buffer_cast<const char*>(_buf.data());
 					try
 					{
@@ -408,7 +415,7 @@ namespace http {
 
 						if (reply_.status == reply::switching_protocols) {
 							// this was an upgrade request
-							connection_type = connection_websocket;
+							connection_type = ConnectionType::connection_websocket;
 							// from now on we are a persistant connection
 							keepalive_ = true;
 							websocket_parser.Start();
@@ -442,7 +449,7 @@ namespace http {
 						MyWrite(reply_.to_string(request_.method));
 						if (reply_.status == reply::switching_protocols) {
 							// this was an upgrade request, set this value after MyWrite to allow the 101 response to go out
-							connection_type = connection_websocket;
+							connection_type = ConnectionType::connection_websocket;
 						}
 
 						if (keepalive_) {
@@ -465,8 +472,8 @@ namespace http {
 						read_more();
 					}
 					break;
-				case connection_websocket:
-				case connection_websocket_closing:
+				case ConnectionType::connection_websocket:
+				case ConnectionType::connection_websocket_closing:
 					begin = boost::asio::buffer_cast<const char*>(_buf.data());
 					result = websocket_parser.parse((const unsigned char*)begin, _buf.size(), bytes_consumed, keepalive_);
 					_buf.consume(bytes_consumed);
@@ -478,7 +485,7 @@ namespace http {
 						else {
 							// a connection close control packet was received
 							// todo: wait for writeQ to flush?
-							connection_type = connection_websocket_closing;
+							connection_type = ConnectionType::connection_websocket_closing;
 						}
 					}
 					else // if (!result)
@@ -580,7 +587,7 @@ namespace http {
 
 		/// stop connection on read timeout
 		void connection::handle_read_timeout(const boost::system::error_code& error) {
-			if (!error && keepalive_ && (connection_type == connection_websocket)) {
+			if (!error && keepalive_ && (connection_type == ConnectionType::connection_websocket)) {
 				// For WebSockets that requested keep-alive, use a Server side Ping
 				websocket_parser.SendPing();
 			}
