@@ -19,13 +19,5 @@ protected:
 private:
 	/* config vars */
 	std::string _clickatellApi;
-	std::string _clickatellUser;
-	std::string _clickatellPassword;
-	std::string _clickatellFrom;
 	std::string _clickatellTo;
-	/* default vars */
-	int _maxCredits;
-	int _escalate;
-	int _features;
-	int _concat;
 };
