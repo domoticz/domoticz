@@ -68,6 +68,11 @@ bool CTeslaApi::RefreshLogin()
 	return false;
 }
 
+int CTeslaApi::GetSleepInterval()
+{
+	return 20;
+}
+
 bool CTeslaApi::GetAllData(tAllCarData& data)
 {
 	Json::Value reply;
@@ -122,6 +127,9 @@ void CTeslaApi::GetChargeData(Json::Value& jsondata, CVehicleApi::tChargeData& d
 	data.status_string = jsondata["charging_state"].asString();
 	data.is_connected = (data.status_string != "Disconnected");
 	data.is_charging = (data.status_string == "Charging") || (data.status_string == "Starting");
+
+	if(data.status_string == "Disconnected")
+		data.status_string = "Charge Cable Disconnected";
 }
 
 bool CTeslaApi::GetClimateData(tClimateData& data)

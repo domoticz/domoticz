@@ -1033,17 +1033,37 @@
 			</tr>
 			<tr>
 				<td align="right" style="width:110px"><label><span data-i18n="Default interval"></span>:</label></td>
-				<td><input type="text" id="defaultinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="10"/>&nbsp;(<span data-i18n="Minutes"></span>)</td>
+				<td><input type="text" id="defaultinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="10" />&nbsp;(<span data-i18n="Minutes"></span>)</td>
 			</tr>
 			<tr>
 				<td align="right" style="width:110px"><label for="awayinterval"><span data-i18n="Active interval"></span>:</label></td>
-				<td><input type="text" id="activeinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="1"/>&nbsp;(<span data-i18n="Minutes"></span>).</td>
+				<td><input type="text" id="activeinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="1" />&nbsp;(<span data-i18n="Minutes"></span>).</td>
 			</tr>
 			<tr>
 				<td></td>
-				<td>Two interval types need to be specified:<ul>
-						<li>Default interval is used when the car is not at home, or home but not charging or using climate controls</li>
+				<td>
+					Two interval types need to be specified:<ul>
+						<li>Default interval is used when the car is not at home, or home but not charging or using climate controls<br />
+							Note that a too low interval (less than 20 minutes) will prevent the car to sleep.</li>
 						<li>Active interval is used when the car is home, and charging or using climate controls</li>
+					</ul>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label id="lblallowwakeup" for="name"><span data-i18n="Allow wake up"></span>:</label></td>
+				<td>
+					<select id="comboallowwakeup" style="width:60px" class="combobox ui-corner-all">
+						<option value="0">False</option>
+						<option value="1">True</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					If not allowed, the car will not be woken up when polled for status information to avoid battery drain. Exceptions:<ul>
+						<li>Commands sent to the car will always wake up the car</li>
+						<li>While the car is connected to a charger (home or not home), the car will always be woken up</li>
 					</ul>
 				</td>
 			</tr>

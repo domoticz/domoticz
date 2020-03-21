@@ -22,12 +22,15 @@
 
 #define VEHICLE_MAXTRIES 5
 
-CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& username, const std::string& password, int defaultinterval, int activeinterval, const std::string& carid)
+CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& username, const std::string& password, int defaultinterval, int activeinterval, bool allowwakeup, const std::string& carid)
 {
 	m_loggedin = false;
 	m_HwdID = ID;
 	Init();
 	m_commands.clear();
+	m_currentalert = Sleeping;
+	m_currentalerttext = "";
+
 	switch (vehicletype)
 	{
 	case Tesla:
@@ -39,14 +42,20 @@ CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& 
 		break;
 	}
 	if (defaultinterval > 0)
+	{
 		m_defaultinterval = defaultinterval;
+		if(m_defaultinterval < m_api->GetSleepInterval())
+			Log(LOG_ERROR, "Warning: default interval of %d minutes will prevent the car to sleep.", m_defaultinterval);
+	}
 	else
-		m_defaultinterval = 10;
+		m_defaultinterval = m_api->GetSleepInterval();
 
 	if (activeinterval > 0)
 		m_activeinterval = activeinterval;
 	else
 		m_activeinterval = 1;
+
+	m_allowwakeup = allowwakeup;
 }
 
 CeVehicle::~CeVehicle(void)
@@ -62,18 +71,77 @@ void CeVehicle::Init()
 	m_car.is_home = false;
 	m_car.climate_on = false;
 	m_car.defrost = false;
-	m_car.awake = false;
-	m_trycounter = 0;
+	m_car.wake_state = Asleep;
+	m_car.charge_state = "";
+	m_command_nr_tries = 0;
+	m_setcommand_scheduled = false;
 }
+
+void CeVehicle::SendAlert()
+{
+	eAlertType alert;
+	std::string title;
+
+	if (m_car.is_home && (m_car.wake_state != Asleep))
+	{
+		if (m_car.charging)
+		{
+			alert = Charging;
+			title = "Home";
+		}
+		else if (m_car.connected)
+		{
+			alert = NotCharging;
+			title = "Home";
+		}
+		else
+		{
+			alert = Idling;
+			if(m_car.wake_state == WakingUp)
+				title = "Waking Up";
+			else
+				title = "Home";
+		}
+		if (!m_car.charge_state.empty())
+			title = title + ", " + m_car.charge_state;
+	}
+	else if (m_car.wake_state == Asleep)
+	{
+		alert = Sleeping;
+		if (m_command_nr_tries > VEHICLE_MAXTRIES)
+			title = "Offline";
+		else
+			title = "Asleep";
+	}
+	else
+	{
+		alert = NotHome;
+		if (m_car.wake_state == WakingUp)
+			title = "Waking Up";
+		else
+			title = "Not Home";
+		if (m_car.charging && !m_car.charge_state.empty())
+			title = title + ", " + m_car.charge_state;
+	}
+
+	if((alert != m_currentalert) || (title != m_currentalerttext))
+	{
+		SendAlertSensor(VEHICLE_ALERT_STATUS, 255, alert, title, m_Name + " State");
+		m_currentalert = alert;
+		m_currentalerttext = title;
+	}
+}
+
 
 bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 {
 	if(commandOK)
 	{
-		m_trycounter = 0;
+		m_command_nr_tries = 0;
+		SendAlert();
 		return true;
 	}
-	else if(m_trycounter > VEHICLE_MAXTRIES)
+	else if(m_command_nr_tries > VEHICLE_MAXTRIES)
 	{
 		Init();
 		SendSwitch(VEHICLE_SWITCH_CHARGE, 1, 255, m_car.charging, 0, m_Name + " Charge switch");
@@ -81,16 +149,19 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 		SendSwitch(VEHICLE_SWITCH_DEFROST, 1, 255, m_car.defrost, 0, m_Name + " Defrost switch");
 		m_commands.clear();
 		Log(LOG_ERROR, "Multiple tries requesting %s. Assuming car offline.", GetCommandString(command).c_str());
-		SendAlertSensor(VEHICLE_ALERT_STATUS, 255, Offline, "Offline", m_Name + " State");
+		SendAlert();
 		return(false);
 	}
 	else
 	{
-		if(command == Wake_Up)
+		if (command == Wake_Up)
+		{
 			Log(LOG_ERROR, "Car not yet awake. Will retry.");
+			SendAlert();
+		}
 		else
 			Log(LOG_ERROR, "Timeout requesting %s. Will retry.", GetCommandString(command).c_str());
-		m_trycounter++;
+		m_command_nr_tries++;
 	}
 
 	return(true);
@@ -149,6 +220,8 @@ std::string CeVehicle::GetCommandString(const eApiCommandType command)
 		return("Get Location state");
 	case Wake_Up:
 		return("Wake Up");
+	case Get_Awake_State:
+		return("Get Awake state");
 	default:
 		return "";
 	}
@@ -156,9 +229,9 @@ std::string CeVehicle::GetCommandString(const eApiCommandType command)
 
 void CeVehicle::Do_Work()
 {
-	int sec_counter = (60 * m_defaultinterval) - 7; // to receive states after startup
-	bool waking_up = false;
+	int sec_counter = 0;
 	int interval = 1000;
+	bool initial_check = true;
 	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(interval))
@@ -171,79 +244,72 @@ void CeVehicle::Do_Work()
 		if (m_api == nullptr)
 			break;
 
-		// Only login if we should.
-		if (!m_loggedin)
+		// Only login if we should
+		if (!m_loggedin || (sec_counter % 68400 == 0))
 		{
-			m_loggedin = m_api->Login();
-			m_car.awake = m_api->IsAwake();
+			Login();
+			sec_counter = 1;
 			continue;
 		}
 
-		if (sec_counter % 68400 == 0)
+		// if commands scheduled, wake up car if needed and execute commands
+		if (!m_commands.empty())
 		{
-			m_loggedin = m_api->RefreshLogin();
-			sec_counter = 593;
-			continue;
-		}
-
-		// waking up the car if needed until it's awake
-		if (waking_up)
-		{
-			if (WakeUp())
+			if (IsAwake())
 			{
-				interval = 5000;
-				if(m_car.awake)
+				if(DoNextCommand())
 				{
-					waking_up = false;
+					// if failed try (e.g. timeout), wait a while
+					if (m_command_nr_tries > 0)
+					{
+						interval = 5000;
+					}
 				}
-				continue;
 			}
 			else
 			{
-				waking_up = false;
-				interval = 1000;
-				continue;
-			}
-		}
-
-		// if commands scheduled, wake up car and execute commands
-		if (!m_commands.empty())
-		{
-			m_car.awake = m_api->IsAwake();
-			if (m_car.awake)
-			{
-				// car is awake, execute command
-				eApiCommandType item;
-				m_commands.try_pop(item);
-				if(DoCommand(item))
+				// car should wake up first, if allowed
+				if (m_allowwakeup || m_car.charging || m_setcommand_scheduled)
 				{
-					// if failed try (e.g. timeout), reschedule command but wait a while
-					if (m_trycounter > 0)
-					{
-						interval = 5000;
-						m_commands.push(item);
-					}
+					if (WakeUp())
+						if(m_car.wake_state == Awake)
+							interval = 5000;
 				}
 				else
 				{
-					interval = 1000;
+					eApiCommandType item;
+					m_commands.try_pop(item);
+					Log(LOG_STATUS, "Car asleep, not allowed to wake up, command %s ignored.", GetCommandString(item).c_str());
 				}
-			}
-			else
-			{
-				// car should wake up first
-				waking_up = true;
 			}
 		}
 		else
 		{
-			// if no more commands scheduled, check if awake every minute
-			if ((sec_counter % 60) == 0)
-				m_car.awake = m_api->IsAwake();
+			m_setcommand_scheduled = false;
+		}
+
+		// now do wake state checks
+		if (initial_check)
+		{
+			if(IsAwake() || m_allowwakeup)
+				m_commands.push(Get_All_States);
+			initial_check = false;
+		}
+		else if ((sec_counter % 60) == 0)
+		{
+			// check awake state every minute
+			if (IsAwake())
+			{
+				if (!m_allowwakeup && m_car.wake_state == SelfAwake)
+				{
+					Log(LOG_STATUS, "Spontaneous wake up detected.");
+					m_commands.push(Get_All_States);
+				}
+			}
 		}
 
 		// now schedule timed commands
-		if (sec_counter % (60*m_defaultinterval) == 0)
+		if ((sec_counter % (60*m_defaultinterval) == 0))
 		{
 			// check all states every default interval
 			m_commands.push(Get_All_States);
@@ -280,6 +346,7 @@ bool CeVehicle::WriteToHardware(const char* pdata, const unsigned char length)
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
 	m_commands.push(Get_Location_State);
+	m_setcommand_scheduled = true;
 	switch (pCmd->LIGHTING2.id4)
 	{
 	case VEHICLE_SWITCH_CHARGE:
@@ -310,27 +377,67 @@ bool CeVehicle::WriteToHardware(const char* pdata, const unsigned char length)
 	return true;
 }
 
+void CeVehicle::Login()
+{
+	// Only login if we should.
+	if (!m_loggedin)
+	{
+		m_loggedin = m_api->Login();
+	}
+	else
+		m_loggedin = m_api->RefreshLogin();
+}
+
+
+bool CeVehicle::IsAwake()
+{
+	Log(LOG_STATUS, "Executing command: %s", GetCommandString(Get_Awake_State).c_str());
+
+	if (m_api->IsAwake())
+	{
+		if (m_car.wake_state == Asleep)
+			m_car.wake_state = SelfAwake;
+		else if (m_car.wake_state == WakingUp)
+			m_car.wake_state = Awake;
+		else if (m_car.wake_state == SelfAwake)
+			m_car.wake_state = Awake;
+		Log(LOG_NORM, "Car is awake");
+		return true;
+	}
+	else
+	{
+		if (m_car.wake_state == Awake)
+			m_car.wake_state = Asleep;
+		else if (m_car.wake_state == SelfAwake)
+			m_car.wake_state = Asleep;
+		Log(LOG_NORM, "Car is asleep");
+		SendAlert();
+	}
+	return false;
+}
+
 bool CeVehicle::WakeUp()
 {
-	if (m_trycounter == 0)
+	if (m_command_nr_tries == 0)
+	{
 		Log(LOG_STATUS, "Waking up car.");
-
-	if (m_trycounter > 0 && m_car.is_home)
-		SendAlertSensor(VEHICLE_ALERT_STATUS, 255, Offline, "At home, Waking up", m_Name + " State");	
+		m_car.wake_state = WakingUp;
+	}
 
 	if (m_api->SendCommand(CVehicleApi::Wake_Up))
 	{
-		m_car.awake = true;
-		if (m_trycounter > 0 && m_car.is_home)
-			SendAlertSensor(VEHICLE_ALERT_STATUS, 255, Home, "At home", m_Name + " State");
-		return ConditionalReturn(true, Wake_Up);
+		m_car.wake_state = Awake;
 	}
 
-	return ConditionalReturn(false, Wake_Up);
+	return ConditionalReturn(m_car.wake_state == Awake, Wake_Up);
 }
 
-bool CeVehicle::DoCommand(eApiCommandType command)
+bool CeVehicle::DoNextCommand()
 {
+	eApiCommandType command;
+	m_commands.try_pop(command);
+	bool commandOK = false;
+
 	Log(LOG_STATUS, "Executing command: %s", GetCommandString(command).c_str());
 
 	switch (command)
@@ -341,25 +448,31 @@ bool CeVehicle::DoCommand(eApiCommandType command)
 	case Send_Climate_Defrost_Off:
 	case Send_Charge_Start:
 	case Send_Charge_Stop:
-		return DoSetCommand(command);
+		commandOK = DoSetCommand(command);
 		break;
 	case Get_All_States:
-		return GetAllStates();
+		commandOK = GetAllStates();
 		break;
 	case Get_Climate_State:
-		return GetClimateState();
+		commandOK = GetClimateState();
 		break;
 	case Get_Charge_State:
-		return GetChargeState();
+		commandOK = GetChargeState();
 		break;
 	case Get_Location_State:
-		return GetLocationState();
+		commandOK = GetLocationState();
 		break;
 	default:
-		return false;
+		commandOK = false;
 	}
 
-	return false;
+	// if failed try (e.g. timeout), reschedule command
+	if (commandOK && m_command_nr_tries > 0)
+	{
+		m_commands.push(command);
+	}
+
+	return commandOK;
 }
 
 bool CeVehicle::DoSetCommand(eApiCommandType command)
@@ -416,16 +529,13 @@ bool CeVehicle::DoSetCommand(eApiCommandType command)
 		case Send_Charge_Start:
 		case Send_Charge_Stop:
 			m_commands.push(Get_Charge_State);
-			m_car.charging = true; // if check after command fails, this will result in fast retry
 			return true;
 		case Send_Climate_Off:
 		case Send_Climate_On:
 			m_commands.push(Get_Climate_State);
-			m_car.climate_on = true; // if check after command fails, this will result in fast retry
 			return true;
 		case Send_Climate_Defrost:
 		case Send_Climate_Defrost_Off:
-			m_car.defrost = true; // if check after command fails, this will result in fast retry
 			m_commands.push(Get_Climate_State);
 			return ConditionalReturn(true, command);
 		}
@@ -488,12 +598,6 @@ void CeVehicle::UpdateLocationData(CVehicleApi::tLocationData& data)
 		Log(LOG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, m_car.is_home ? "true" : "false");
 
 	}
-
-	if (!m_car.is_home)
-		SendAlertSensor(VEHICLE_ALERT_STATUS, 255, NotHome, "Not home", m_Name + " State");
-	else
-		if (car_old_state != m_car.is_home)
-			SendAlertSensor(VEHICLE_ALERT_STATUS, 255, Home, "At home", m_Name + " State");
 }
 
 bool CeVehicle::GetClimateState()
@@ -537,14 +641,6 @@ void CeVehicle::UpdateChargeData(CVehicleApi::tChargeData& data)
 	SendPercentageSensor(VEHICLE_LEVEL_BATTERY, 1, static_cast<int>(data.battery_level), data.battery_level, m_Name + " Battery Level");
 	m_car.connected = data.is_connected;
 	m_car.charging = data.is_charging;
-	if (m_car.is_home)
-	{
-		if (!m_car.connected)
-			SendAlertSensor(VEHICLE_ALERT_STATUS, 255, Home, "At home, No cable connected", m_Name + " State");
-		else if (m_car.charging)
-			SendAlertSensor(VEHICLE_ALERT_STATUS, 255, Charging, "At home, " + data.status_string, m_Name + " State");
-		else
-			SendAlertSensor(VEHICLE_ALERT_STATUS, 255, NotCharging, "At home, " + data.status_string, m_Name + " State");
-	}
+	m_car.charge_state = data.status_string;
 	SendSwitch(VEHICLE_SWITCH_CHARGE, 1, 255, m_car.charging, 0, m_Name + " Charge switch");
 }
