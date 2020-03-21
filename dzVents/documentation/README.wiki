@@ -178,12 +178,12 @@ The <code>on</code> section tells dzVents ''when'' the execute function has to b
 
 ==== customEvents = { … } <sup>3.0.0</sup> ====
 
-A list of one or more custom event triggers. This eventTrigger can be activate by a json/api call, a MQTT message (when domoticz is setup to listen to such messages on the hardware tab) or by the dzVents internal command domoticz.emitEvent - The name of the custom-event - The name of the custom-event followed by a time constraint, such as: <code>['start']  = { 'at 15:*', 'at 22:* on sat, sun' }</code> The script will be executed if domoticz is started, '''and''' it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [[#timer_trigger_rules|time trigger rules]].
+A list of one or more custom event triggers. This eventTrigger can be activate by a json/api call, a MQTT message (when domoticz is setup to listen to such messages on the hardware tab) or by the dzVents internal command domoticz.emitEvent - The name of the custom-event - The name of the custom-event followed by a time constraint, such as: <code>['start']  = { 'at 15:*', 'at 22:* on sat, sun' }</code> The script will be executed if domoticz is started, '''and''' it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [[#timer_trigger_rules|See time trigger rules]].
 
 <pre>- JSON: **&lt; domoticzIP : domoticz port &gt;**/json.htm?type=command&amp;param=customevent&amp;event=MyEvent&amp;data=myData
-- MQTT: {&quot;command&quot; : &quot;customevent&quot;, &quot;event&quot; : &quot;MyEvent&quot; , &quot;data&quot; :    &quot;myData&quot; }  
+- MQTT simple:  {&quot;command&quot;:&quot;customevent&quot;, &quot;event&quot;:&quot;MyEvent&quot;,&quot;data&quot;:&quot;myData&quot;}  
+- MQTT complex: {&quot;command&quot;:&quot;customevent&quot;,&quot;event&quot;:&quot;MyEvent&quot;,&quot;data&quot;:&quot;{\&quot;idx\&quot;:29,\&quot;test\&quot;:\&quot;ok\&quot;}&quot; }
 - emitEvent: domoticz.emitEvent('myCustomEvent' [,])
-
     `domoticz.emitEvent('myEvent') -- no data`
     `domoticz.emitEvent('another event', 'some data')`
     `domoticz.emitEvent('hugeEvent', { a = 10, b = 20, some = 'text', sub = { x = 10, y = 20 } })`</pre>
@@ -1104,7 +1104,8 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''stop()''': ''Function''. Set device to Stop if it supports it (e.g. blinds). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOff()''': ''Function''. Switch device off it is supports it. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOn()''': ''Function''. Switch device on if it supports it. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
-* '''switchSelector(&lt;[level]|[levelname] <sup>2.4.22</sup> &gt;)''': ''Function''. Switches a selector switch to a specific level ( levelname or level(numeric) required ) levelname must be exact, for level the closest fit will be picked. See the edit page in Domoticz for such a switch to get a list of the values). Levelname is only supported when level 0 (“Off”) is not removed Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* ’‘’switchSelector(&lt;[level]|[levelname] &gt;)’’’ :
+* '''switchSelector(&lt;[level]|[levelname] &gt;)''' <sup>levelname &gt;= 2.4.22</sup> : ''Function''. Switches a selector switch to a specific level ( levelname or level(numeric) required ) levelname must be exact, for level the closest fit will be picked. See the edit page in Domoticz for such a switch to get a list of the values). Levelname is only supported when level 0 (“Off”) is not removed Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''toggleSwitch()''': ''Function''. Toggles the state of the switch (if it is togglable) like On/Off, Open/Close etc.
 
 ==== Temperature sensor ====
@@ -2726,7 +2727,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * Extended the timer-rule with time range e.g. <code>at 16:45-21:00</code> and <code>at nighttime</code> and <code>at daytime</code> and you can provide a custom function. See documentation for examples. The timer rules can be combined as well.
 * Timer rules for <code>every xx minutes</code> or <code>every xx hours</code> are now limited to intervals that will reach *:00 minutes or hours. So for minutes you can only do these intervals: 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30. Likewise for hours.
 * The Time object (e.g. domoticz.time) now has a method <code>matchesRule(rule)</code>. <code>rule</code> is a string same as you use for timer options: <code>if (domoticz.time.matchesRule('at 16:32-21:33 on mon,tue,wed')) then ... end</code>. The rule matches if the current system time matches with the rule.
-* A device trigger can have a time-rule constraint: <code>on = { devices = { ['myDevice'] = 'at nighttime' } }</code>. This only triggers the script when myDevice was changed '''and''' the time is after sunset and before sunrise.
+* A device trigger can have a time-rule constraint: <code>on = { devices = { ['myDevice'] = { 'at nighttime' } }</code>. This only triggers the script when myDevice was changed '''and''' the time is after sunset and before sunrise.
 * Add support for subsystem selection for domoticz.notify function.
 * Fixed a bug where a new persistent variable wasn’t picked up when that variable was added to an already existing data section.
 
