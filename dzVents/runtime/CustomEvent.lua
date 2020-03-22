@@ -11,8 +11,8 @@ local function CustomEvent(domoticz, eventData)
 	self.status = eventData.status
 	self.message = eventData.message
 	self.trigger = eventData.data.name
-    if eventData.data.data:match('%b{}') then 
-		self.data = domoticz.utils.fromJSON(eventData.data.data)
+	if eventData.data.data:match('%b{}') then 
+		self.data = domoticz.utils.fromJSON((eventData.data.data):gsub("'",'"'))
 	else
 		self.data = eventData.data.data
 	end

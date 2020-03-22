@@ -27,7 +27,7 @@ local function HTTPResponce(domoticz, responseData, testResponse)
 		end
 	end
 
-    self.isXML = false
+	self.isXML = false
 	self.isJSON = false
 
 	self.callback = responseData.callback
@@ -40,13 +40,13 @@ local function HTTPResponce(domoticz, responseData, testResponse)
 			self.isJSON = true
 			self.json = json
 		end
-	elseif (self._contentType):find('text/xml') and self.data then
-         local xml = utils.fromXML(self.data)
+	elseif ((self._contentType):match('application/xml') or (self._contentType):find('text/xml')) and self.data then
+		 local xml = utils.fromXML(self.data)
 		 if (xml) then
 			self.isXML = true
 			self.xml = xml
-            self.xmlVersion = self.data:match([[<?xml version="(.-)"]])
-            self.xmlEncoding = self.data:match([[encoding="(.-)"]])
+			self.xmlVersion = self.data:match([[<?xml version="(.-)"]])
+			self.xmlEncoding = self.data:match([[encoding="(.-)"]])
 		 end
 	end
 
