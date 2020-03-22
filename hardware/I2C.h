@@ -54,8 +54,8 @@ private:
 
 	// BMP085 stuff
 	//Forecast
-	int bmp_CalculateForecast(const float pressure);
-	int CalculateForcast(const float pressure);
+	uint8_t bmp_CalculateForecast(const float pressure);
+	uint8_t CalculateForecast(const float pressure);
 	float m_LastPressure;
 	int m_LastMinute;
 	float m_pressureSamples[180];

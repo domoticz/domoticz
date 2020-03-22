@@ -9,7 +9,6 @@ local function Device(domoticz, data, dummyLogger)
 	local state
 	local adapterManager = Adapters(dummyLogger)
 
-
 	function self.update(nValue, sValue, protected)
 		local params = {
 			idx = self.id,
@@ -21,13 +20,13 @@ local function Device(domoticz, data, dummyLogger)
 		return TimedCommand(domoticz, 'UpdateDevice', params, 'updatedevice')
 	end
 
-	function self.dump()
-		domoticz.logDevice(self)
+	function self.dump( filename )
+		domoticz.logDevice(self, filename)
 	end
 
 	self['name'] = data.name
 	self['id'] = data.id -- actually, this is the idx
-	self['idx'] = data.id -- for completeness
+	self['idx'] = self.id -- for completeness
 	self['_data'] = data
 	self['baseType'] = data.baseType
 

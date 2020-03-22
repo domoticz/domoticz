@@ -27,7 +27,7 @@ private:
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	bool SetAway(const bool bIsAway);
 	bool AnnaToggleProximity(bool bToggle);
-	bool AnnaSetPreset(std::int8_t level);
+	bool AnnaSetPreset(uint8_t level);
 	bool AnnaGetLocation();
 	
 private:

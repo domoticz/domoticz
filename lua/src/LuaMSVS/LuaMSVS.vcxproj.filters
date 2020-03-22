@@ -111,6 +111,9 @@
     <ClCompile Include="..\lzio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\lutf8lib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lapi.h">

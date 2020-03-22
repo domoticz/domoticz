@@ -175,7 +175,7 @@ enum _eHardwareTypes {
 	HTYPE_EVOHOME_WEB,			//75
 	HTYPE_RAVEn,	    		//76
 	HTYPE_S0SmartMeterTCP,		//77
-	HTYPE_RESERVED_FOR_YOU_1,	//78
+	HTYPE_BuienRadar,			//78
 	HTYPE_AccuWeather,			//79
 	HTYPE_Comm5Serial,          //80
 	HTYPE_Ec3kMeterTCP,			//81
@@ -213,9 +213,11 @@ enum _eHardwareTypes {
 	HTYPE_EcoCompteur,			//113
 	HTYPE_Honeywell,			//114
 	HTYPE_Tado,					//115
-	HTYPE_DenkoviHTTPDevices,		//116
+	HTYPE_DenkoviHTTPDevices,	//116
 	HTYPE_DenkoviUSBDevices,	//117
 	HTYPE_DenkoviTCPDevices,	//118
+	HTYPE_OctoPrint,			//119
+	HTYPE_Tesla,                //120
 	HTYPE_END
 };
 

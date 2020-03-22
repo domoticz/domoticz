@@ -61,7 +61,7 @@ void KMTronicBase::ParseData(const unsigned char *pData, int Len)
 }
 
 
-bool KMTronicBase::WriteToHardware(const char *pdata, const unsigned char length)
+bool KMTronicBase::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
@@ -76,7 +76,7 @@ bool KMTronicBase::WriteToHardware(const char *pdata, const unsigned char length
 		{
 			unsigned char SendBuf[3];
 			SendBuf[0] = 0xFF;
-			SendBuf[1] = node_id;
+			SendBuf[1] = (uint8_t)node_id;
 			SendBuf[2] = (pCmd->LIGHTING2.cmnd == light2_sOn) ? 1 : 0;
 			WriteInt(SendBuf, 3,false);
 			return true;

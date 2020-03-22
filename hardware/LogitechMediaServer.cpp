@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "LogitechMediaServer.h"
 #include "../hardware/hardwaretypes.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
@@ -72,8 +72,7 @@ Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort,
 	{
 		return root;
 	}
-	Json::Reader jReader;
-	bRetVal = jReader.parse(sResult, root);
+	bRetVal = ParseJSon(sResult, root);
 	if ((!bRetVal) || (!root.isObject()))
 	{
 		size_t aFind = sResult.find("401 Authorization Required");
@@ -140,6 +139,8 @@ bool CLogitechMediaServer::StopHardware()
 
 void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node, const _eMediaStatus nStatus, const std::string &sStatus, bool bPingOK)
 {
+	//This has to be rebuild! No direct poking in the database, please use CMainWorker::UpdateDevice
+
 	//Find out node, and update it's status
 	std::vector<LogitechMediaServerNode>::iterator itt;
 	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
@@ -170,7 +171,6 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				localtime_r(&atime, &ltime);
 				char szLastUpdate[40];
 				sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
 					int(nStatus), sStatus.c_str(), szLastUpdate, m_HwdID, itt->szDevID, STYPE_Media);
 
@@ -181,7 +181,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 					std::string sLongStatus = Media_Player_States(nStatus);
 					if ((nStatus == MSTAT_PLAYING) || (nStatus == MSTAT_PAUSED) || (nStatus == MSTAT_STOPPED))
 						if (sShortStatus.length()) sLongStatus += " - " + sShortStatus;
-					result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", itt->ID, int(nStatus), sLongStatus.c_str());
+					result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) VALUES (%d, %d, '%q','%q')", itt->ID, int(nStatus), sLongStatus.c_str(), "Logitech");
 				}
 
 				// 3:	Trigger On/Off actions
@@ -502,7 +502,7 @@ void CLogitechMediaServer::SetSettings(const int PollIntervalsec)
 		m_iPollInterval = PollIntervalsec;
 }
 
-bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned char length)
+bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -832,7 +832,7 @@ namespace http {
 			pHardware->Restart();
 		}
 
-		void CWebServer::Cmd_LMSDeleteUnusedDevices(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_LMSDeleteUnusedDevices(WebEmSession & session, const request& req, Json::Value &/*root*/)
 		{
 			if (session.rights != 2)
 			{
@@ -890,7 +890,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_LMSGetPlaylists(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_LMSGetPlaylists(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
@@ -918,7 +918,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_LMSMediaCommand(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_LMSMediaCommand(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
 			std::string sIdx = request::findValue(&req, "idx");
 			std::string sAction = request::findValue(&req, "action");

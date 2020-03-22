@@ -7,7 +7,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 #define WINDDELEN_POLL_INTERVAL 30
 
@@ -147,8 +147,7 @@ void CWinddelen::GetMeterDetails()
 	try
 	{
 		Json::Value root;
-		Json::Reader jReader;
-		bool ret = jReader.parse(sResult, root);
+		bool ret = ParseJSon(sResult, root);
 		if (!ret)
 		{
 			_log.Log(LOG_ERROR, "Winddelen: Invalid data received!");

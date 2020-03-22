@@ -7,7 +7,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "XiaomiGateway.h"
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
@@ -408,13 +408,12 @@ bool XiaomiGateway::SendMessageToGateway(const std::string &controlmessage) {
 		std::string receivedString(recv_buffer_.data());
 
 		Json::Value root;
-		Json::Reader jReader;
-		bool ret = jReader.parse(receivedString, root);
+		bool ret = ParseJSon(receivedString, root);
 		if ((ret) && (root.isObject()))
 		{
 			std::string data = root["data"].asString();
 			Json::Value root2;
-			ret = jReader.parse(data.c_str(), root2);
+			ret = ParseJSon(data.c_str(), root2);
 			if ((ret) && (root2.isObject()))
 			{
 				std::string error = root2["error"].asString();
@@ -660,7 +659,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				}
 				else if (Name == "Xiaomi Wireless Single Wall Switch") {
 					//for Aqara wireless switch, single button support
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click|Long Click", false));
 				}
 				else if (Name == "Xiaomi Gateway Alarm Ringtone") {
 					//for the Gateway Audio
@@ -1010,9 +1009,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		_log.Log(LOG_STATUS, data_);
 #endif
 		Json::Value root;
-		Json::Reader jReader;
 		bool showmessage = true;
-		bool ret = jReader.parse(data_, root);
+		bool ret = ParseJSon(data_, root);
 		if ((!ret) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "XiaomiGateway: invalid data received!");
@@ -1028,7 +1026,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			if ((cmd == "report") || (cmd == "read_ack") || (cmd == "heartbeat"))
 			{
 				Json::Value root2;
-				ret = jReader.parse(data.c_str(), root2);
+				ret = ParseJSon(data.c_str(), root2);
 				if ((ret) || (!root2.isObject()))
 				{
 					_eSwitchType type = STYPE_END;
@@ -1100,7 +1098,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (model == "86sw1" || model == "remote.b186acn01") {
 						name = "Xiaomi Wireless Single Wall Switch";
-						type = STYPE_PushOn;
+						type = STYPE_Selector;
 					}
 					else if (model == "smoke") {
 						name = "Xiaomi Smoke Detector";
@@ -1173,15 +1171,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 10;
 							on = true;
 						}
-						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake") || (status == "vibrate")) {
+						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake") || (status == "vibrate") || (aqara_wireless1 == "double_click")) {
 							level = 20;
 							on = true;
 						}
-						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") || (status == "free_fall")) {
+						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") || (aqara_wireless1 == "long_click")) {
 							level = 30;
 							on = true;
 						}
-						else if ((status == "tap_twice") || (status == "long_click_release") || (aqara_wireless1 == "double_click")) {
+						else if ((status == "tap_twice") || (status == "long_click_release")) {
 							level = 40;
 							on = true;
 						}
@@ -1193,7 +1191,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 60;
 							on = true;
 						}
-						else if ((status == "alert") || (aqara_wireless1 == "long_click")) {
+						else if ((status == "alert")) {
 							level = 70;
 							on = true;
 						}
@@ -1357,7 +1355,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			else if (cmd == "get_id_list_ack")
 			{
 				Json::Value root2;
-				ret = jReader.parse(data.c_str(), root2);
+				ret = ParseJSon(data.c_str(), root2);
 				if ((ret) || (!root2.isObject()))
 				{
 					for (int i = 0; i < (int)root2.size(); i++) {

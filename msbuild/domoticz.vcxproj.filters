@@ -423,9 +423,6 @@
     <Filter Include="Devices\YeeLight">
       <UniqueIdentifier>{40997df4-ca83-46d7-ae42-d23049f98a0b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Python Plugins">
-      <UniqueIdentifier>{71bf66bf-20b6-4786-b8ff-f394e16d2d84}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\Xiaomi Gateway">
       <UniqueIdentifier>{5f68f493-7523-43aa-95db-f23ecc307771}</UniqueIdentifier>
     </Filter>
@@ -480,9 +477,6 @@
     <Filter Include="Devices\Honeywell">
       <UniqueIdentifier>{e7e4e799-6c58-424c-9ccb-6a18d44c25c6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="www\views\temperatures">
-      <UniqueIdentifier>{2e3e6e5c-40c2-4f24-a987-8077910d7945}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\Tado">
       <UniqueIdentifier>{5905109f-f97e-4e18-a1dd-8baf541d6f13}</UniqueIdentifier>
     </Filter>
@@ -497,6 +491,36 @@
     </Filter>
     <Filter Include="Logger">
       <UniqueIdentifier>{00a6f809-e840-406e-bb5e-4796d71ed4a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EventSystem\dzVents">
+      <UniqueIdentifier>{763ab753-e642-4d98-8736-0c49a11d637b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EventSystem\Lua">
+      <UniqueIdentifier>{330b5cf1-0528-4eaf-96b7-406823b99afe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EventSystem\Python">
+      <UniqueIdentifier>{5963621f-6d1b-49cd-9e55-f76a0f0d287d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\app\hardware">
+      <UniqueIdentifier>{35489dbf-0ffd-4619-95f6-31966e23f1d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\app\hardware\setup">
+      <UniqueIdentifier>{a48a127e-d23d-445b-a0d7-8105024adac4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Buienradar">
+      <UniqueIdentifier>{c18fadb6-e7e3-4f2b-bfa1-086da31231a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\views\log">
+      <UniqueIdentifier>{9ada1360-f5da-4120-9747-d95d1048ba43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\app\devices">
+      <UniqueIdentifier>{ae84d173-7ab3-47ac-bafd-145b034278f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\OctoPrint">
+      <UniqueIdentifier>{bafd6feb-6df6-4592-aded-780e24eeea7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\eVehicles">
+      <UniqueIdentifier>{3404548b-df3a-4958-b308-34c7e7c15e59}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -537,9 +561,6 @@
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\app\FrontpageController.js">
-      <Filter>www\app</Filter>
-    </None>
-    <None Include="..\www\app\HardwareController.js">
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\app\HistoryController.js">
@@ -615,9 +636,6 @@
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\app\DashboardController.js">
-      <Filter>www\app</Filter>
-    </None>
-    <None Include="..\www\app\DevicesController.js">
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\app\DPFibaroController.js">
@@ -1313,9 +1331,6 @@
     <None Include="..\www\js\angular-websocket.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\views\temperatures\temperatureWidget.html">
-      <Filter>www\views\temperatures</Filter>
-    </None>
     <None Include="..\www\js\domoticz.js">
       <Filter>www\js</Filter>
     </None>
@@ -1345,6 +1360,102 @@
     </None>
     <None Include="..\webserver\proxydef.def">
       <Filter>Webserver</Filter>
+    </None>
+    <None Include="..\www\app\hardware\Hardware.html">
+      <Filter>www\app\hardware</Filter>
+    </None>
+    <None Include="..\www\app\hardware\Hardware.js">
+      <Filter>www\app\hardware</Filter>
+    </None>
+    <None Include="..\www\app\hardware\HardwareSetup.html">
+      <Filter>www\app\hardware</Filter>
+    </None>
+    <None Include="..\www\app\hardware\HardwareSetup.js">
+      <Filter>www\app\hardware</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\BleBox.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\BleBox.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\Kodi.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\Kodi.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\MySensors.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\MySensors.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\PanasonicTV.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\PanasonicTV.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\Pinger.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\Pinger.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\WakeOnLan.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\WakeOnLan.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\ZWave.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\ZWave.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\livesocket.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\views\log\device_graph_log.html">
+      <Filter>www\views\log</Filter>
+    </None>
+    <None Include="..\www\views\log\device_temperature_log.html">
+      <Filter>www\views\log</Filter>
+    </None>
+    <None Include="..\www\views\device_light_edit.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\notifications.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\temperature_custom_temp_log.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\temperature_widget.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\timerplan.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\timers.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\weather_widget.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\app\devices\deviceFactory.js">
+      <Filter>www\app\devices</Filter>
+    </None>
+    <None Include="..\www\app\devices\Devices.css">
+      <Filter>www\app\devices</Filter>
+    </None>
+    <None Include="..\www\app\devices\Devices.html">
+      <Filter>www\app\devices</Filter>
+    </None>
+    <None Include="..\www\app\devices\Devices.js">
+      <Filter>www\app\devices</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1720,9 +1831,6 @@
     <ClInclude Include="..\MQTT\dummypthread.h">
       <Filter>MQTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\lib_load.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\MQTT\logging_mosq.h">
       <Filter>MQTT</Filter>
     </ClInclude>
@@ -1735,25 +1843,10 @@
     <ClInclude Include="..\MQTT\mosquitto.h">
       <Filter>MQTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto_broker.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\MQTT\mosquitto_internal.h">
       <Filter>MQTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto_plugin.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mosquittopp.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mqtt3_protocol.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\MQTT\net_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\persist.h">
       <Filter>MQTT</Filter>
     </ClInclude>
     <ClInclude Include="..\MQTT\read_handle.h">
@@ -1948,24 +2041,6 @@
     <ClInclude Include="..\hardware\MySensorsMQTT.h">
       <Filter>Devices\MySensors</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginManager.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\DelayedLink.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\Plugins.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginMessages.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginProtocols.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginTransports.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\XiaomiGateway.h">
       <Filter>Devices\Xiaomi Gateway</Filter>
     </ClInclude>
@@ -1999,20 +2074,11 @@
     <ClInclude Include="..\hardware\RelayNet.h">
       <Filter>Devices\RelayNet</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PythonObjects.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\SysfsGPIO.h">
       <Filter>Devices\SysfsGPIO</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\Rtl433.h">
       <Filter>Devices\RTL_433</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\EventsPythonDevice.h">
-      <Filter>EventSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\EventsPythonModule.h">
-      <Filter>EventSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\OnkyoAVTCP.h">
       <Filter>Devices\OnkyoAVTCP</Filter>
@@ -2061,15 +2127,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Honeywell.h">
       <Filter>Devices\Honeywell</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\dzVents.h">
-      <Filter>EventSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\LuaCommon.h">
-      <Filter>EventSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\LuaHandler.h">
-      <Filter>EventSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\EvohomeScript.h">
       <Filter>Devices\EvoHome</Filter>
@@ -2154,6 +2211,93 @@
     </ClInclude>
     <ClInclude Include="..\hardware\HardwareCereal.h">
       <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\dzVents.h">
+      <Filter>EventSystem\dzVents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaCommon.h">
+      <Filter>EventSystem\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaHandler.h">
+      <Filter>EventSystem\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventsPythonDevice.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventsPythonModule.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\DelayedLink.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginManager.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginMessages.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginProtocols.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\Plugins.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginTransports.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PythonObjects.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\HTMLSanitizer.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Buienradar.h">
+      <Filter>Devices\Buienradar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\alias_mosq.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\mqtt_protocol.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\packet_mosq.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\property_mosq.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\mosquitto_broker.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\mosquitto_plugin.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\json_helper.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\mosquitto_helper.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\NotificationObserver.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\NotificationSystem.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaTable.h">
+      <Filter>EventSystem\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OctoPrintMQTT.h">
+      <Filter>Devices\OctoPrint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\TeslaApi.h">
+      <Filter>Devices\eVehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\VehicleApi.h">
+      <Filter>Devices\eVehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\eVehicle.h">
+      <Filter>Devices\eVehicles</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2493,22 +2637,10 @@
     <ClCompile Include="..\MQTT\mosquitto.c">
       <Filter>MQTT</Filter>
     </ClCompile>
-    <ClCompile Include="..\MQTT\mosquittopp.cpp">
-      <Filter>MQTT</Filter>
-    </ClCompile>
     <ClCompile Include="..\MQTT\net_mosq.c">
       <Filter>MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\MQTT\read_handle.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\read_handle_client.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\read_handle_shared.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_client_mosq.c">
       <Filter>MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\MQTT\send_mosq.c">
@@ -2748,21 +2880,6 @@
     <ClCompile Include="..\hardware\MySensorsMQTT.cpp">
       <Filter>Devices\MySensors</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginManager.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\DelayedLink.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\Plugins.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginTransports.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\XiaomiGateway.cpp">
       <Filter>Devices\Xiaomi Gateway</Filter>
     </ClCompile>
@@ -2796,20 +2913,11 @@
     <ClCompile Include="..\hardware\RelayNet.cpp">
       <Filter>Devices\RelayNet</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\SysfsGPIO.cpp">
       <Filter>Devices\SysfsGPIO</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Rtl433.cpp">
       <Filter>Devices\RTL_433</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\EventsPythonDevice.cpp">
-      <Filter>EventSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\EventsPythonModule.cpp">
-      <Filter>EventSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\OnkyoAVTCP.cpp">
       <Filter>Devices\OnkyoAVTCP</Filter>
@@ -2861,15 +2969,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Tado.cpp">
       <Filter>Devices\Tado</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\dzVents.cpp">
-      <Filter>EventSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\LuaCommon.cpp">
-      <Filter>EventSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\LuaHandler.cpp">
-      <Filter>EventSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeScript.cpp">
       <Filter>Devices\EvoHome</Filter>
@@ -2933,6 +3032,153 @@
     </ClCompile>
     <ClCompile Include="..\webserver\proxycereal.cpp">
       <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\dzVents.cpp">
+      <Filter>EventSystem\dzVents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaCommon.cpp">
+      <Filter>EventSystem\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaHandler.cpp">
+      <Filter>EventSystem\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonDevice.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonModule.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\DelayedLink.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginManager.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\Plugins.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginTransports.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\HTMLSanitizer.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Buienradar.cpp">
+      <Filter>Devices\Buienradar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\actions.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\alias_mosq.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\callbacks.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\connect.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_auth.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_connack.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_disconnect.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_ping.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_pubackcomp.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_publish.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_pubrec.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_pubrel.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_suback.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_unsuback.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\helpers.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\loop.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\net_mosq_ocsp.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\options.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\packet_datatypes.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\packet_mosq.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\property_mosq.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_connect.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_disconnect.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_publish.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_subscribe.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_unsubscribe.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\utf8_mosq.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\util_topic.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\json_helper.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\mosquitto_helper.cpp">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaTable.cpp">
+      <Filter>EventSystem\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\NotificationObserver.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\NotificationSystem.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OctoPrintMQTT.cpp">
+      <Filter>Devices\OctoPrint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eVehicles\TeslaApi.cpp">
+      <Filter>Devices\eVehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eVehicles\eVehicle.cpp">
+      <Filter>Devices\eVehicles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

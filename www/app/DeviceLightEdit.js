@@ -231,7 +231,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
             ngModelCtrl: 'ngModel'
         },
         controllerAs: 'vm',
-        controller: function ($element, $scope, $modal, permissions) {
+        controller: function ($element, $scope, $uibModal, permissions) {
             var vm = this;
 
             vm.$onInit = init;
@@ -269,7 +269,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                     var scope = $scope.$new(true);
                     scope.name = row.name;
 
-                    $modal.open({
+                    $uibModal.open({
                         templateUrl: 'views/device/levelRenameModal.html',
                         scope: scope
                     }).result.then(function (name) {
@@ -386,7 +386,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         require: {
             ngModelCtrl: 'ngModel'
         },
-        controller: function ($element, $scope, $modal, permissions) {
+        controller: function ($element, $scope, $uibModal, permissions) {
             var vm = this;
 
             vm.$onInit = init;
@@ -415,7 +415,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                     var scope = $scope.$new(true);
                     scope.action = row.action;
 
-                    $modal.open({
+                    $uibModal.open({
                         templateUrl: 'views/device/editSelectorActionModal.html',
                         scope: scope
                     }).result.then(function (action) {
@@ -490,6 +490,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
         vm.updateDevice = updateDevice;
         vm.removeDevice = removeDevice;
+		vm.replaceDevice = replaceDevice;
         vm.isSecurityDevice = isSecurityDevice;
         vm.isMotionAvailable = isMotionAvailable;
         vm.isOnDelayAvailable = isOnDelayAvailable;
@@ -581,6 +582,9 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 });
             });
         }
+        function replaceDevice() {
+			ReplaceDevice(vm.deviceIdx, undefined);
+		}
 
         function isSecurityDevice() {
             return vm.device.Type === 'Security';

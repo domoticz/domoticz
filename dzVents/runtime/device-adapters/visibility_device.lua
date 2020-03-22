@@ -14,7 +14,7 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		device.visbility = adapterManager.round(data.data.visibility, 1)
+		device.visbility = utils.round(data.data.visibility, 1)
 
 		device['updateVisibility'] = function (visibility)
 			return device.update(0, visibility)

@@ -30,15 +30,12 @@ define(['app'], function (app) {
 			switch (subsystem) {
 				case "clickatell":
 					var ClickatellAPI = encodeURIComponent($("#smstable #ClickatellAPI").val());
-					var ClickatellUser = encodeURIComponent($("#smstable #ClickatellUser").val());
-					var ClickatellPassword = encodeURIComponent($("#smstable #ClickatellPassword").val());
 					var ClickatellTo = encodeURIComponent($("#smstable #ClickatellTo").val());
-					var ClickatellFrom = encodeURIComponent($("#smstable #ClickatellFrom").val());
-					if (ClickatellAPI == "" || ClickatellUser == "" || ClickatellPassword == "" || ClickatellTo == "" || ClickatellFrom == "") {
+					if (ClickatellAPI == "" || ClickatellTo == "") {
 						ShowNotify($.t('All Clickatell fields are required!...'), 3500, true);
 						return;
 					}
-					extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellUser=" + ClickatellUser + "&ClickatellPassword=" + ClickatellPassword + "&ClickatellTo=" + ClickatellTo + "&ClickatellFrom=" + ClickatellFrom;
+					extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellTo=" + ClickatellTo;
 					break;
 				case "http":
 					var HTTPField1 = encodeURIComponent($("#httptable #HTTPField1").val());
@@ -321,17 +318,8 @@ define(['app'], function (app) {
 					if (typeof data.ClickatellAPI != 'undefined') {
 						$("#smstable #ClickatellAPI").val(atob(data.ClickatellAPI));
 					}
-					if (typeof data.ClickatellUser != 'undefined') {
-						$("#smstable #ClickatellUser").val(atob(data.ClickatellUser));
-					}
-					if (typeof data.ClickatellPassword != 'undefined') {
-						$("#smstable #ClickatellPassword").val(atob(data.ClickatellPassword));
-					}
 					if (typeof data.ClickatellTo != 'undefined') {
 						$("#smstable #ClickatellTo").val(atob(data.ClickatellTo));
-					}
-					if (typeof data.ClickatellFrom != 'undefined') {
-						$("#smstable #ClickatellFrom").val(atob(data.ClickatellFrom));
 					}
 
 					if (typeof data.HTTPEnabled != 'undefined') {
@@ -404,10 +392,13 @@ define(['app'], function (app) {
 						$("#shortlogtable #comboshortloginterval").val(data.ShortLogInterval);
 					}
 					if (typeof data.DashboardType != 'undefined') {
-						$("#dashmodetable #combosdashtype").val(data.DashboardType);
+						$("#settingscontent #combosdashtype").val(data.DashboardType);
+					}
+					if (typeof data.AllowWidgetOrdering != 'undefined') {
+						$("#settingscontent #AllowWidgetOrdering").prop('checked', data.AllowWidgetOrdering == 1);
 					}
 					if (typeof data.MobileType != 'undefined') {
-						$("#mobilemodetable #combosmobiletype").val(data.MobileType);
+						$("#settingscontent #combosmobiletype").val(data.MobileType);
 					}
 					if (typeof data.WebUserName != 'undefined') {
 						$scope.OldAdminUser=data.WebUserName;
@@ -598,6 +589,9 @@ define(['app'], function (app) {
 					if (typeof data.LogEventScriptTrigger != 'undefined') {
 						$("#eventsystemtable #LogEventScriptTrigger").prop('checked', data.LogEventScriptTrigger == 1);
 					}
+					if (typeof data.EventSystemLogFullURL != 'undefined') {
+						$("#eventsystemtable #EventSystemLogFullURL").prop('checked', data.EventSystemLogFullURL == 1);
+					}
 
 					if (typeof data.FloorplanPopupDelay != 'undefined') {
 						$("#floorplanoptionstable #FloorplanPopupDelay").val(data.FloorplanPopupDelay);
@@ -625,10 +619,6 @@ define(['app'], function (app) {
 					}
 					if (typeof data.FloorplanInactiveOpacity != 'undefined') {
 						$("#floorplancolourtable #FloorplanInactiveOpacity").val(data.FloorplanInactiveOpacity);
-					}
-
-					if (typeof data.AllowWidgetOrdering != 'undefined') {
-						$("#dashmodetable #AllowWidgetOrdering").prop('checked', data.AllowWidgetOrdering == 1);
 					}
 					if (typeof data.SecOnDelay != 'undefined') {
 						$("#sectable #SecOnDelay").val(data.SecOnDelay);
@@ -733,11 +723,22 @@ define(['app'], function (app) {
 				}
 			}
 
-			$.post("storesettings.webem", $("#settings").serialize(), function (data) {
-				$scope.$apply(function () {
-					$window.location = '/#Dashboard';
-					$window.location.reload();
-				});
+			$http.post('storesettings', new FormData(document.querySelector("#settings")), {
+				transformRequest: angular.identity,
+				headers: { 'Content-Type': undefined }
+			}).then(function successCallback(response) {
+			    var data = response.data;
+			    if (data.status != "OK") {
+			        HideNotify();
+					ShowNotify($.t("Problem saving settings!"), 2000, true);
+					return;
+			    }
+				$window.location = '/#Dashboard';
+				$window.location.reload();
+			}, function errorCallback(response) {
+			    HideNotify();
+				ShowNotify($.t("Problem saving settings!"), 2000, true);
+				return;
 			});
 		}
 
@@ -835,6 +836,16 @@ define(['app'], function (app) {
 						});
 						return false;
 					});
+					if ('geolocation' in navigator) {
+						$('#geodetect').click(function () {
+							navigator.geolocation.getCurrentPosition(function (location) {
+								$('#dialog-findlatlong #latitude').val(location.coords.latitude);
+								$('#dialog-findlatlong #longitude').val(location.coords.longitude);
+							});
+						});
+					} else {
+						$('#georow').hide();
+					}
 				},
 				close: function () {
 					$(this).dialog("close");

@@ -19,8 +19,9 @@ extern "C" {
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
 #include "StoppableTask.h"
+#include "NotificationObserver.h"
 
-class CEventSystem : public CLuaCommon, StoppableTask
+class CEventSystem : public CLuaCommon, StoppableTask, CNotificationObserver
 {
 	friend class CdzVents;
 	friend class CLuaHandler;
@@ -54,10 +55,11 @@ public:
 	{
 		REASON_DEVICE,			// 0
 		REASON_SCENEGROUP,		// 1
-		REASON_USERVARIABLE,	// 2
+		REASON_USERVARIABLE,		// 2
 		REASON_TIME,			// 3
 		REASON_SECURITY,		// 4
-		REASON_URL				// 5
+		REASON_URL,			// 5
+		REASON_NOTIFICATION		// 6
 	};
 
 	struct _tDeviceStatus
@@ -75,6 +77,7 @@ public:
 		std::string description;
 		std::string deviceID;
 		int batteryLevel;
+		int protection;
 		int signalLevel;
 		int unit;
 		int hardwareID;
@@ -99,6 +102,7 @@ public:
 		std::string scenesgroupName;
 		std::string scenesgroupValue;
 		int scenesgroupType;
+		int protection;
 		std::string lastUpdate;
 		std::vector<uint64_t> memberID;
 	};
@@ -131,7 +135,6 @@ public:
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
-	void UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger = false);
 	bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 
 	void TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback);
@@ -276,4 +279,6 @@ private:
 	void StripQuotes(std::string &sString);
 	std::string SpaceToUnderscore(std::string sResult);
 	std::string LowerCase(std::string sResult);
+
+	bool Update(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata) override;
 };

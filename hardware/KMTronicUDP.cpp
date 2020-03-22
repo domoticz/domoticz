@@ -72,7 +72,7 @@ void KMTronicUDP::Do_Work()
 	_log.Log(LOG_STATUS, "KMTronic: UDP Worker stopped...");
 }
 
-bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char length)
+bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -105,7 +105,7 @@ bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char length)
 		udpClient.sin_addr = *((struct in_addr *)he->h_addr);
 
 		/** build the packet **/
-		buf[3]=Relay+'0';
+		buf[3]=(char)(Relay+'0');
 
 		if (pSen->LIGHTING2.cmnd == light2_sOn)
 		{
@@ -124,7 +124,7 @@ bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-bool KMTronicUDP::WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn)
+bool KMTronicUDP::WriteInt(const unsigned char* /*data*/, const size_t /*len*/, const bool /*bWaitForReturn*/)
 {
 	return true;
 }

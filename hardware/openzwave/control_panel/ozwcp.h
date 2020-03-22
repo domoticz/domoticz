@@ -37,8 +37,8 @@
 
 #include <list>
 #include <algorithm>
-#include "Driver.h"
-#include "Notification.h"
+#include "../Driver.h"
+#include "../Notification.h"
 
 #define MAX_NODES 255
 
@@ -80,7 +80,7 @@ public:
   void saveValue(OpenZWave::ValueID id);
   int32 getValueCount();
   static MyValue *lookup(std::string id);
-  MyValue *getValue(uint8 n);
+  MyValue *getValue(size_t n);
   time_t getTime() { return mtime; }
   void setTime(time_t t) { mtime = t; }
   static bool getAnyChanged() { return nodechanged; }
@@ -121,9 +121,7 @@ public:
 	std::string SetNodeButton(const std::string &arg1, const std::string &arg2);
 	std::string DoAdminCommand(const std::string &fun, const int node_id, const int button_id);
 	std::string DoNodeChange(const std::string &fun, const int node_id, const std::string &svalue);
-	std::string DoSceneCommand(const std::string &fun, const std::string &arg1, const std::string &arg2, const std::string &arg3);
 	std::string UpdateGroup(const std::string &fun, const int node_id, const int group_id, const std::string &gList);
-	std::string SaveConfig();
 	std::string GetCPTopo();
 	std::string GetCPStats();
 	std::string DoTestNetwork(const int node_id, const int cnt);

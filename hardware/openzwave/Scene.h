@@ -37,69 +37,83 @@ class TiXmlElement;
 
 namespace OpenZWave
 {
-	class ValueID;
-
-	/** \brief Collection of ValueIDs to be treated as a unit.
-	 */
-	class Scene
+	namespace Internal
 	{
-		friend class Manager;
-		friend class Driver;
-		friend class Node;
 
-	//-----------------------------------------------------------------------------
-	// Construction
-	//-----------------------------------------------------------------------------
-	private:
-		Scene( uint8 const _sceneId );
-		~Scene();
-
-		static void WriteXML( string const& _name );
-		static bool ReadScenes();
-		
-	//-----------------------------------------------------------------------------
-	// Scene functions
-	//-----------------------------------------------------------------------------
-	private:
-		static Scene* Get( uint8 const _sceneId );
-		static uint8 GetAllScenes( uint8** _sceneIds );
-
-		string const& GetLabel()const{ return m_label; }
-		void SetLabel( string const &_label ){ m_label = _label; }
-
-		bool AddValue( ValueID const& _valueId, string const& _value );
-		bool RemoveValue( ValueID const& _valueId );
-		void RemoveValues( uint32 const _homeId );
-		static void RemoveValues( uint32 const _homeId, uint8 const _nodeId );
-		int GetValues( vector<ValueID>* o_value );
-		bool GetValue( ValueID const& _valueId, string* o_value );
-		bool SetValue( ValueID const& _valueId, string const& _value );
-		bool Activate();
-
-	//-----------------------------------------------------------------------------
-	// ValueID/value storage
-	//-----------------------------------------------------------------------------
-	private:
-		class SceneStorage
+		/** \brief Collection of ValueIDs to be treated as a unit.
+		 */
+		class Scene
 		{
-		public:
-			SceneStorage( ValueID const& _id, string const& _value ): m_id( _id ), m_value( _value ) {};
-			~SceneStorage() {};
+				friend class OpenZWave::Manager;
+				friend class OpenZWave::Driver;
+				friend class OpenZWave::Node;
 
-			ValueID const m_id;
-			string m_value;
+				//-----------------------------------------------------------------------------
+				// Construction
+				//-----------------------------------------------------------------------------
+			private:
+				Scene(uint8 const _sceneId);
+				~Scene();
+
+				static void WriteXML(string const& _name);
+				static bool ReadScenes();
+
+				//-----------------------------------------------------------------------------
+				// Scene functions
+				//-----------------------------------------------------------------------------
+			private:
+				static Scene* Get(uint8 const _sceneId);
+				static uint8 GetAllScenes(uint8** _sceneIds);
+
+				string const& GetLabel() const
+				{
+					return m_label;
+				}
+				void SetLabel(string const &_label)
+				{
+					m_label = _label;
+				}
+
+				bool AddValue(ValueID const& _valueId, string const& _value);
+				bool RemoveValue(ValueID const& _valueId);
+				void RemoveValues(uint32 const _homeId);
+				static void RemoveValues(uint32 const _homeId, uint8 const _nodeId);
+				int GetValues(vector<ValueID>* o_value);
+				bool GetValue(ValueID const& _valueId, string* o_value);
+				bool SetValue(ValueID const& _valueId, string const& _value);
+				bool Activate();
+
+				//-----------------------------------------------------------------------------
+				// ValueID/value storage
+				//-----------------------------------------------------------------------------
+			private:
+				class SceneStorage
+				{
+					public:
+						SceneStorage(ValueID const& _id, string const& _value) :
+								m_id(_id), m_value(_value)
+						{
+						}
+						;
+						~SceneStorage()
+						{
+						}
+						;
+
+						ValueID const m_id;
+						string m_value;
+				};
+				//-----------------------------------------------------------------------------
+				// Member variables
+				//-----------------------------------------------------------------------------
+			private:
+				uint8 m_sceneId;
+				string m_label;
+				vector<SceneStorage*> m_values;
+				static uint8 s_sceneCnt;
+				static Scene* s_scenes[256];
 		};
-	//-----------------------------------------------------------------------------
-	// Member variables
-	//-----------------------------------------------------------------------------
-	private:
-		uint8					m_sceneId;
-		string					m_label;
-		vector<SceneStorage*>			m_values;
-		static uint8				s_sceneCnt;
-		static Scene*				s_scenes[256];
-	};
-
+	} // namespace Internal
 } //namespace OpenZWave
 
 #endif //_Scene_H

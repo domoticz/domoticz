@@ -6,7 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 
@@ -136,10 +136,7 @@ std::string CAccuWeather::GetLocationKey()
 	sURL << "https://dataservice.accuweather.com/locations/v1/search?apikey=" << m_APIKey << "&q=" << szLoc;
 	try
 	{
-		bool bret;
-		std::string szURL = sURL.str();
-		bret = HTTPClient::GET(szURL, sResult);
-		if (!bret)
+		if (!HTTPClient::GET(sURL.str(), sResult))
 		{
 			Log(LOG_ERROR, "Error getting http data!");
 			return "";
@@ -157,8 +154,7 @@ std::string CAccuWeather::GetLocationKey()
 	try
 	{
 		Json::Value root;
-		Json::Reader jReader;
-		bool ret = jReader.parse(sResult, root);
+		bool ret = ParseJSon(sResult, root);
 		if (!ret)
 		{
 			Log(LOG_ERROR, "Invalid data received!");
@@ -204,10 +200,7 @@ void CAccuWeather::GetMeterDetails()
 	sURL << "https://dataservice.accuweather.com/currentconditions/v1/" << szLoc << "?apikey=" << m_APIKey << "&details=true";
 	try
 	{
-		bool bret;
-		std::string szURL = sURL.str();
-		bret = HTTPClient::GET(szURL, sResult);
-		if (!bret)
+		if (!HTTPClient::GET(sURL.str(), sResult))
 		{
 			Log(LOG_ERROR, "Error getting http data!");
 			return;
@@ -226,8 +219,7 @@ void CAccuWeather::GetMeterDetails()
 	try
 	{
 		Json::Value root;
-		Json::Reader jReader;
-		bool ret = jReader.parse(sResult, root);
+		bool ret = ParseJSon(sResult, root);
 		if (!ret)
 		{
 			Log(LOG_ERROR, "Invalid data received!");

@@ -1,0 +1,140 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0154:0007:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/popp/dwt.png</MetaDataItem>
+    <MetaDataItem id="0007" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/3345/</MetaDataItem>
+    <MetaDataItem id="0007" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/3345/DoorWindowSensor_POPE700892_UserManual.pdf</MetaDataItem>
+    <MetaDataItem name="Description">POPP Door/Window Sensor is a small window position sensor for your smart home, it monitors window and their exact opening position and lets your know when a window is tilted or completely opened. It also supports connecting external binary sensors through the dry binary contact of the Door/ Window sensor.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Tripple click the tamper switch</MetaDataItem>
+    <MetaDataItem name="Name">Window/Door Sensor with Tilt Detection</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Tripple click the tamper switch</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Once Cover is removed and tamper switch is tripped, push the tamper for 5 seconds until red LED blinks. Then release tamper and push it again for 5 seconds until LED blinks</MetaDataItem>
+    <MetaDataItem id="0007" name="Identifier" type="0004">POPE700892</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Tristan Crispijn" date="2 Sep 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3345/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Popp: Window & Door Sensor with Tilt Detection -->
+  <!-- Configuration  -->
+  <CommandClass id="112">
+    <Value type="list" index="1" genre="config" label="Sensor Operation Mode" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        Defines if the internal magnet sensor or the external terminal input is detected and used to issue alarm notification. There is always one input active only. The other sensor input the deactivated.
+        Default Value: Internal Magnet Sensor Used
+      </Help>
+      <Item label="Internal Magnet Sensor Used" value="0" />
+      <Item label="External Terminal Inputs Used" value="1" />
+    </Value>
+    <Value type="list" index="2" genre="config" label="Sensor State Polarity" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        Defines the polarity of the magnet sensor.
+        Default Value: Closed when Magnet in proximity
+      </Help>
+      <Item label="Closed when Magnet in proximity" value="0" />
+      <Item label="Opened when Magnet in proximity" value="1" />
+    </Value>
+    <Value type="byte" index="3" genre="config" label="Visual LED Indications" units="" min="0" max="255" value="7" size="1">
+      <Help>
+        Defines when the red LED will indicate events. Disabling all indications may extend battery life.
+        Default Value: 7 (Bit 0, 1 and 2)
+
+        Bit 0: No Indications
+        Bit 1: Open/Close Status Change
+        Bit 2: Wake Up
+        Bit 4: Device Tampering
+      </Help>
+    </Value>
+    <Value type="list" index="4" genre="config" label="Range Test after double click" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        Allows to enable the activation of a Z-Wave range test with double clicking the tamper switch.
+        Default Value: Disabled
+      </Help>
+      <Item label="Disabled" value="0" />
+      <Item label="Enabled" value="1" />
+    </Value>
+    <Value type="list" index="5" genre="config" label="2nd Association Group Trigger" units="" min="0" max="2" value="0" size="1">
+      <Help>
+        Defines the status of the magnet switch that causes sending a BASIC command to all devices of Association Group 2.
+        Default Value: Switch after Open and Close
+      </Help>
+      <Item label="Switch after Open and Close" value="0" />
+      <Item label="Switch after Open" value="1" />
+      <Item label="Switch after Close" value="2" />
+    </Value>
+    <Value type="list" index="6" genre="config" label="Defines which commands is sent to 2nd Association Group" units="" min="0" max="2" value="2" size="1">
+      <Help>
+        Defines which commands is sent to 2nd Association Group.
+        Default Value: On and Off
+      </Help>
+      <Item label="On" value="0" />
+      <Item label="Off" value="1" />
+      <Item label="On and Off" value="2" />
+    </Value>
+    <Value type="byte" index="7" genre="config" label="BASIC command value sent to 2nd Association Group on On event" units="" min="0" max="255" value="255" size="1">
+      <Help>
+        This is the BASIC command value sent in case of an On event.
+        Default Value: 255
+        Value Range: 0 - 99 and 255
+      </Help>
+    </Value>
+    <Value type="byte" index="8" genre="config" label="BASIC command value sent to 2nd Association Group on Off event" units="" min="0" max="255" value="0" size="1">
+      <Help>
+        This is the BASIC command value sent in case of an Off event.
+        Default Value: 0
+        Value Range: 0 - 99 and 255
+      </Help>
+    </Value>
+    <Value type="short" index="9" genre="config" label="Time Delay command frame Off" units="seconds" min="0" max="32400" value="0" size="2">
+      <Help>
+        Off command is sent after a delay in seconds
+        Default Value: 0
+      </Help>
+    </Value>
+    <Value type="short" index="10" genre="config" label="Time Delay command frame Off" units="seconds" min="0" max="32400" value="0" size="2">
+      <Help>
+        Off command is sent after a delay in seconds
+        Default Value: 0
+      </Help>
+    </Value>
+    <Value type="short" index="11" genre="config" label="Delay of Tamper Alarm Cancellation" units="seconds" min="0" max="32400" value="0" size="2">
+      <Help>
+        Time a tamper alarm is delayed in seconds.
+        Default Value: 0
+      </Help>
+    </Value>
+    <Value type="list" index="12" genre="config" label="Reporting Tamper Alarm Cancellation" units="" min="0" max="1" value="1" size="1">
+      <Help>
+        Defines if the alarm cancellation event is reported.
+        Default Value: Send Report
+      </Help>
+      <Item label="Do not send Report" value="0" />
+      <Item label="Send Report" value="1" />
+    </Value>
+    <Value type="list" index="13" genre="config" label="Central Scene Event Functionality" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        Enables/disables the central scene function.
+        Default Value: Disabled
+      </Help>
+      <Item label="Disabled" value="0" />
+      <Item label="Enabled" value="1" />
+    </Value>
+    <Value type="list" index="14" genre="config" label="Tilt Sensor Functionality" units="" min="0" max="1" value="1" size="1">
+      <Help>
+        Enables/disables tilt function.
+        Default Value: Enabled
+      </Help>
+      <Item label="Disabled" value="0" />
+      <Item label="Enabled" value="1" />
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->   
+  <CommandClass id="133">
+    <Associations num_groups="4">
+       <Group index="1" max_associations="5" label="Lifeline" />
+       <Group index="2" max_associations="5" label="Control devices when magnet or external dry contacts trips" />
+       <Group index="3" max_associations="5" label="Sends our alarm message when magnet controlled or external dry sensor trips" />
+       <Group index="4" max_associations="5" label="Sends alarm messages when tamper is tripped" />
+    </Associations>
+  </CommandClass>
+</Product>

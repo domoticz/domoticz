@@ -1,18 +1,14 @@
+local evenItemIdentifier = require('eventItemIdentifier')
+
 local function Timer(domoticz, rule)
 
-    local self = {
-        baseType = domoticz.BASETYPE_TIMER,
-        trigger = rule,
-        isVariable = false,
-		isHTTPResponse = false,
-	    isDevice = false,
-	    isScene = false,
-	    isGroup = false,
-	    isTimer = true,
-        isSecurity = false
-    }
+	local self = {
+		baseType = domoticz.BASETYPE_TIMER,
+	}
 
-    return self
+	evenItemIdentifier.setType(self, 'isTimer', domoticz.BASETYPE_TIMER, rule)
+
+	return self
 
 end
 

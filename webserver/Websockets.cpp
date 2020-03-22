@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include "Websockets.hpp"
-// debug
-#include "../main/Logger.h"
 #include "../json/json.h"
 
 #define FIN_MASK 0x80
@@ -225,7 +223,7 @@ namespace http {
 		//       if everything works. We need a proper implementation here.
 		void CWebsocket::OnReceiveText(const std::string &packet_data)
 		{
-			boost::tribool result = handler.Handle(packet_data);
+			boost::tribool result = handler.Handle(packet_data, false);
 		}
 
 		void CWebsocket::OnReceiveBinary(const std::string &packet_data)

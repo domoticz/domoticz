@@ -1,0 +1,14 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0084:0111:0513</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fortrezz/gdc1_fortrezz_1501.png</MetaDataItem>
+    <MetaDataItem id="0111" name="ZWProductPage" type="0513">https://products.z-wavealliance.org/products/1242/</MetaDataItem>
+    <MetaDataItem id="0111" name="Identifier" type="0513">GDC1_FortrezZ_1501</MetaDataItem>
+    <MetaDataItem name="Name">FortrezZ GDC1</MetaDataItem>
+    <MetaDataItem name="Description">The GDC1 Module is an interface / bridge / siren strobe combination module with On/Off Switch outputs.</MetaDataItem>
+    <MetaDataItem id="0111" name="FrequencyName" type="0513">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1242/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

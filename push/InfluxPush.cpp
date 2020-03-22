@@ -141,7 +141,7 @@ void CInfluxPush::DoInfluxPush()
 
 			if (sendValue != "") {
 				std::string szKey;
-				std::string vType = CBasePush::DropdownOptionsValue(m_DeviceRowIdx, delpos);
+				std::string vType = CBasePush::DropdownOptionsValue(std::stoi(sd[0]), delpos);
 				stdreplace(vType, " ", "-");
 				stdreplace(name, " ", "-");
 				szKey = vType + ",idx=" + sd[0] + ",name=" + name;

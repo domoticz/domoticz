@@ -1,4 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-  <Protocol nodeinfosupported="false" />
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0001:3133:5246</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/act/lfm20.png</MetaDataItem>
+    <MetaDataItem id="3133" name="ZWProductPage" type="5246">https://products.z-wavealliance.org/products/134/</MetaDataItem>
+    <MetaDataItem name="Name">ZRF113 - Isolated Contact Fixture Module</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.act-solutions.com/Contact-Advanced-Control-Technologies.html</MetaDataItem>
+    <MetaDataItem id="3133" name="FrequencyName" type="5246">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3133" name="Identifier" type="5246">ZRF113</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.act-solutions.com/HomePro-Product-Matrix.html#Euro</MetaDataItem>
+    <MetaDataItem name="Description">- The relay on this device is isolated from the power line, so it can be used to switch any load, including low voltage. This can be used in areas where an X10 universal module may have been used.
+
+- The LED on the ZRF113 will turn on when the load attached is ON. The LED is user configured however to turn ON when the load attached is OFF, if so desired.
+
+- The ZRF113 supports the AS101 and AS001 auxiliary switch.
+
+- Max load 20 amps.
+
+- Supports Z-Wave 40Kbps speed
+
+- Signal (Frequency): 908.42 MHz </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/134/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <Protocol nodeinfosupported="false"/>
+  <CommandClass id="112"/>
 </Product>

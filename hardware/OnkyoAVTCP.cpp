@@ -94,8 +94,8 @@ static struct {
 	const char *iscpCmd;
 	const char *iscpMute;
 	const char *name;
-	int switchType;
-	int subtype;
+	uint8_t switchType;
+	uint8_t subtype;
 	int customImage;
 	const char *options;
 	struct selector_name *default_names;
@@ -212,11 +212,6 @@ void OnkyoAVTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData,length);
 }
 
-void OnkyoAVTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"OnkyoAVTCP: Error: %s",e.what());
-}
-
 void OnkyoAVTCP::OnError(const boost::system::error_code& error)
 {
 	if (
@@ -240,7 +235,7 @@ void OnkyoAVTCP::OnError(const boost::system::error_code& error)
 		_log.Log(LOG_ERROR, "OnkyoAVTCP: %s", error.message().c_str());
 }
 
-bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	if (!isConnected() || !pdata)
 	{
@@ -414,8 +409,8 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 	gswitch.subtype = switch_types[ID].subtype;
 	gswitch.id = ID;
 	gswitch.unitcode = 0;
-	gswitch.cmnd = action;
-	gswitch.level = level;
+	gswitch.cmnd = (uint8_t)action;
+	gswitch.level = (uint8_t)level;
 	gswitch.battery_level = 255;
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
@@ -641,7 +636,7 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 	m_pPartialPkt = new_partial;
 }
 
-bool OnkyoAVTCP::CustomCommand(const uint64_t idx, const std::string &sCommand)
+bool OnkyoAVTCP::CustomCommand(const uint64_t /*idx*/, const std::string &sCommand)
 {
 	return SendPacket(sCommand.c_str());
 }
@@ -661,7 +656,7 @@ namespace http {
 			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())
 				return;
-			int idx = atoi(sIdx.c_str());
+			//int idx = atoi(sIdx.c_str());
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT DS.SwitchType, DS.DeviceID, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());

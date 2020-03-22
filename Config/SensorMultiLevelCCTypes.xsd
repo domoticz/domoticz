@@ -1,0 +1,30 @@
+<?xml version='1.0'?>
+<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' targetNamespace='https://github.com/OpenZWave/open-zwave' xmlns:SensorTypes='https://github.com/OpenZWave/open-zwave' elementFormDefault='qualified'>
+
+	<xs:element name='SensorTypes'>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref='SensorTypes:SensorType' minOccurs='1' maxOccurs='unbounded' />
+			</xs:sequence>
+			<xs:attribute name='Revision' type='xs:integer' use='required' />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name='SensorType'>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref='SensorTypes:SensorScale' minOccurs='1' maxOccurs='unbounded' />
+			</xs:sequence>
+			<xs:attribute name='id' type='xs:string' use='required' />
+			<xs:attribute name='name' type='xs:string' use='required' />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name='SensorScale'>
+		<xs:complexType mixed='true'>
+			<xs:attribute name='id' type='xs:string' use='required' />
+			<xs:attribute name='name' type='xs:string' use='required' />
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>

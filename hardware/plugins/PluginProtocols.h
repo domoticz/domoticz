@@ -36,9 +36,11 @@ namespace Plugins {
 
 	class CPluginProtocolJSON : CPluginProtocol
 	{
-	private:
-		PyObject * JSONtoPython(Json::Value * pJSON);
+	protected:
+		PyObject* JSONtoPython(Json::Value* pJSON);
 	public:
+		PyObject * JSONtoPython(std::string sJSON);
+		std::string PythontoJSON(PyObject * pDict);
 		virtual void	ProcessInbound(const ReadEvent* Message);
 	};
 
@@ -52,6 +54,7 @@ namespace Plugins {
 		size_t			m_RemainingChunk;
 	protected:
 		void			ExtractHeaders(std::string*	pData);
+		void			Flush(CPlugin* pPlugin, PyObject* pConnection);
 	public:
 		CPluginProtocolHTTP(bool Secure) : m_ContentLength(0), m_Headers(NULL), m_Chunked(false), m_RemainingChunk(0) { m_Secure = Secure; };
 		virtual void				ProcessInbound(const ReadEvent* Message);

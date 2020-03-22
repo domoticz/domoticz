@@ -16,9 +16,9 @@ extern "C" {
 #endif
 }
 
-#include <xpath_processor.h>
+#include "../tinyxpath/xpath_processor.h"
 
-#include "../json/json.h"
+#include "json_helper.h"
 #include "SQLHelper.h"
 #include "mainworker.h"
 #include "../hardware/hardwaretypes.h"
@@ -76,8 +76,7 @@ int CLuaCommon::l_domoticz_applyJsonPath(lua_State* lua_state)
 			std::string jsonpath = lua_tostring(lua_state, 2);
 
 			Json::Value root;
-			Json::Reader jReader;
-			bool bRet = jReader.parse(buffer, root);
+			bool bRet = ParseJSon(buffer, root);
 			if (!bRet)
 			{
 				_log.Log(LOG_ERROR, "CLuaHandler (applyJsonPath from LUA) : Invalid Json data received");

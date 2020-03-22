@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -92,13 +92,13 @@ void CInComfort::Do_Work()
 	_log.Log(LOG_STATUS, "InComfort: Worker stopped...");
 }
 
-bool CInComfort::WriteToHardware(const char *pdata, const unsigned char length)
+bool CInComfort::WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/)
 {
 	return true;
 }
 
 
-void CInComfort::SetSetpoint(const int idx, const float temp)
+void CInComfort::SetSetpoint(const int /*idx*/, const float temp)
 {
 	_log.Log(LOG_NORM, "InComfort: Setpoint of sensor with idx idx changed to temp");
 	std::string jsonData = SetRoom1SetTemperature(temp);
@@ -146,15 +146,14 @@ void CInComfort::GetHeaterDetails()
 	ParseAndUpdateDevices(sResult);
 }
 
-void CInComfort::SetProgramState(const int newState)
+void CInComfort::SetProgramState(const int /*newState*/)
 {
 }
 
 void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 {
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(jsonData, root);
+	bool bRet = ParseJSon(jsonData, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Data is not json formatted.");
@@ -174,8 +173,8 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 	float room2OverrideTemperature = (root["room_set_ovr_2_lsb"].asInt() + root["room_set_ovr_2_msb"].asInt() * 256) / 100.0f;
 
 	int statusDisplayCode = root["displ_code"].asInt();
-	int rssi = root["rf_message_rssi"].asInt();
-	int rfStatusCounter = root["rfstatus_cntr"].asInt();
+	//int rssi = root["rf_message_rssi"].asInt();
+	//int rfStatusCounter = root["rfstatus_cntr"].asInt();
 
 	float centralHeatingTemperature = (root["ch_temp_lsb"].asInt() + root["ch_temp_msb"].asInt() * 256) / 100.0f;
 	float centralHeatingPressure = (root["ch_pressure_lsb"].asInt() + root["ch_pressure_msb"].asInt() * 256) / 100.0f;

@@ -9,7 +9,7 @@ The user-interface is a scalable HTML5 web frontend, and is automatically adapte
 Compatible with all recent browsers
 
 Some Information
-- Hardware: RFXCOM Transciever, Z-Wave, P1 Smart Meter, YouLess Meter, Pulse Counters, 1-Wire, Philips Hue and a lot more....
+- Hardware: RFXCOM Transceiver, Z-Wave, P1 Smart Meter, YouLess Meter, Pulse Counters, 1-Wire, Philips Hue and a lot more....
 - Extended logging
 - iPhone / Android / Windows 10 (Phone & Desktop) push notifications
 - Auto Learning sensors/switches
@@ -40,3 +40,4 @@ Status | Operating system
 ------------ | -------------
 [![Status Linux](https://travis-ci.org/domoticz/domoticz.svg?branch=master)](https://travis-ci.org/domoticz/domoticz) | Linux x86_64
 [![Status Windows](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true)](https://ci.appveyor.com/project/gizmocuz/domoticz) | Windows
+

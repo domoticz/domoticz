@@ -59,6 +59,7 @@ enum _eTaskItemType
 	TITEM_SEND_IFTTT_TRIGGER,
 	TITEM_UPDATEDEVICE,
 	TITEM_CUSTOM_COMMAND,
+	TITEM_CUSTOM_EVENT,
 };
 
 struct _tTaskItem
@@ -78,6 +79,7 @@ struct _tTaskItem
 	std::string _sValue;
 	std::string _command;
 	std::string _sUntil;
+	std::string _sUser;
 	int _level;
 	_tColor _Color;
 	std::string _relatedEvent;
@@ -184,7 +186,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const int Level, const _tColor Color, const std::string &eventName)
+	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const int Level, const _tColor Color, const std::string &eventName, const std::string& User)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_EVENT;
@@ -194,11 +196,12 @@ struct _tTaskItem
 		tItem._level= Level;
 		tItem._Color=Color;
 		tItem._relatedEvent = eventName;
+		tItem._sUser = User;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SwitchSceneEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const std::string &eventName)
+	static _tTaskItem SwitchSceneEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const std::string &eventName, const std::string& User)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_SCENE;
@@ -206,6 +209,7 @@ struct _tTaskItem
 		tItem._idx=idx;
 		tItem._command= Command;
 		tItem._relatedEvent = eventName;
+		tItem._sUser = User;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
@@ -277,6 +281,17 @@ struct _tTaskItem
 		tItem._DelayTime = DelayTime;
 		tItem._idx = idx;
 		tItem._command = cmdstr;
+		if (DelayTime)
+			getclock(&tItem._DelayTimeBegin);
+		return tItem;
+	}
+	static _tTaskItem CustomEvent(const float DelayTime, const std::string& namestr, const std::string parameterstr)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType = TITEM_CUSTOM_EVENT;
+		tItem._DelayTime = DelayTime;
+		tItem._ID = namestr;
+		tItem._sValue = parameterstr;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
@@ -364,7 +379,8 @@ public:
 
 	void DeleteEvent(const std::string &idx);
 
-	void DeleteDevices(const std::string &idx);
+	void DeleteDevices(const std::string& idx);
+	void DeleteScenes(const std::string& idx);
 
 	void TransferDevice(const std::string &oldidx, const std::string &newidx);
 
@@ -394,10 +410,10 @@ public:
 
 	uint64_t CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions);
 
-	void UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx );
-	void UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )   ;
-	void UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx ) ;
-	std::string GetDeviceValue(const char * FieldName , const char *Idx );
+	void UpdateDeviceValue(const char * FieldName , const std::string &Value , const std::string &Idx );
+	void UpdateDeviceValue(const char * FieldName , const int Value , const std::string &Idx )   ;
+	void UpdateDeviceValue(const char* FieldName, const float Value, const std::string& Idx);
+	void UpdateDeviceName(const std::string& Idx, const std::string &Name);
 
 	bool GetPreferencesVar(const std::string &Key, double &Value);
 	void UpdatePreferencesVar(const std::string &Key, const double Value);
@@ -429,6 +445,7 @@ public:
 	bool		m_bAllowWidgetOrdering;
 	int			m_ActiveTimerPlan;
 	bool		m_bEnableEventSystem;
+	bool		m_bEnableEventSystemFullURLLog;
 	int			m_ShortLogInterval;
 	bool		m_bLogEventScriptTrigger;
 	bool		m_bDisableDzVentsSystem;
@@ -450,8 +467,8 @@ private:
 	void StopThread();
 	void Do_Work();
 
-	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color);
-	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color);
+	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string& User);
+	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color, const std::string& User);
 
 	void FixDaylightSavingTableSimple(const std::string &TableName);
 	void FixDaylightSaving();
@@ -466,9 +483,18 @@ private:
 		const unsigned char devType,
 		const unsigned char subType,
 		const bool shortLog,
-		const long long MeterValue,
-		const long long MeterUsage,
-		const char* date);
+		const bool multiMeter,
+		const char* date,
+		const long long value1 = 0,
+		const long long value2 = 0,
+		const long long value3 = 0,
+		const long long value4 = 0,
+		const long long value5 = 0,
+		const long long value6 = 0,
+		const long long counter1 = 0,
+		const long long counter2 = 0,
+		const long long counter3 = 0,
+		const long long counter4 = 0);
 
 	void CheckAndUpdateDeviceOrder();
 	void CheckAndUpdateSceneDeviceOrder();

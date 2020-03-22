@@ -12,8 +12,8 @@
 #dim Version[4]
 #expr ParseVersion("..\Release\domoticz.exe", Version[0], Version[1], Version[2], Version[3])
 #define AppVersion Str(Version[0]) + "." + Str(Version[1]) + "." + Str(Version[2]) + "." + Str(Version[3])
-#define ShortAppVersion Str(Version[0]) + "." + Str(Version[3])
-#define ShortAppVersionUnderscore Str(Version[0]) + "_" + Str(Version[3])
+#define ShortAppVersion Str(Version[0]) + "." + Str(Version[1])
+#define ShortAppVersionUnderscore Str(Version[0]) + "_" + Str(Version[1])
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -26,7 +26,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={pf}\{#MyAppName}
+DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile=..\..\License.txt
@@ -57,7 +57,6 @@ Source: "..\..\scripts\*"; DestDir: "{app}\scripts"; Flags: recursesubdirs creat
 Source: "..\..\dzVents\*"; DestDir: "{app}\dzVents"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\Debug\libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Windows Libraries\OpenZwave\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\..\Manual\DomoticzManual.pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\History.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\server_cert.pem"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall
@@ -66,7 +65,6 @@ Source: "..\..\server_cert.pem"; DestDir: "{app}"; Flags: onlyifdoesntexist unin
 Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "{code:GetParams}" ; Tasks: RunAsApp; 
 ;Name: "{group}\Start Domoticz service"; Filename: "sc"; Parameters: "start {#MyAppName}"; Tasks: RunAsService; 
 ;Name: "{group}\Stop Domoticz service"; Filename: "sc"; Parameters: "stop {#MyAppName}"; Tasks: RunAsService; 
-Name: "{group}\DomoticzManual.pdf"; Filename: "{app}\DomoticzManual.pdf"; 
 Name: "{group}\{cm:ProgramOnTheWeb,Domoticz}"; Filename: "{#MyAppURL}";
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; 
 Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-startupdelay 10 {code:GetParams}" ; Tasks: RunAsApp\startupicon
@@ -76,6 +74,7 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filenam
 [Run]
 ;Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser; Tasks: RunAsApp
 Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""{code:GetParamsService}"""; Flags: runhidden; Tasks: RunAsService
+Filename: "{app}\{#NSSM}"; Parameters: "set {#MyAppName} DependOnService RpcSS LanmanWorkstation"; Flags: runhidden; Tasks: RunAsService
 Filename: "{sys}\net.exe"; Parameters: "start {#MyAppName}"; Flags: runhidden; Tasks: RunAsService
 
 [Dirs]

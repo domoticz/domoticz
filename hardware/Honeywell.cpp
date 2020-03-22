@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../webserver/Base64.h"
 
 #define round(a) ( int ) ( a + .5 )
@@ -187,8 +187,7 @@ bool CHoneywell::refreshToken()
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if (!ret) {
 		_log.Log(LOG_ERROR, "Honeywell: Invalid/no data received...");
 		return false;
@@ -234,8 +233,7 @@ void CHoneywell::GetThermostatData()
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if (!ret) {
 		_log.Log(LOG_ERROR, "Honeywell: Invalid/no data received...");
 		return;
@@ -345,12 +343,11 @@ void CHoneywell::SetPauseStatus(const int idx, bool bHeating, const int /*nodeid
 	reqRoot["heatSetpoint"] = mDeviceList[idx]["changeableValues"]["coolHeatpoint"].asInt();
 	reqRoot["coolSetpoint"] = mDeviceList[idx]["changeableValues"]["coolSetpoint"].asInt();
 	reqRoot["thermostatSetpointStatus"] = "TemporaryHold";
-	Json::FastWriter writer;
 
 	std::string sResult;
 	HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
 	HTTPClient::SetTimeout(HWAPITIMEOUT);
-	if (!HTTPClient::POST(url, writer.write(reqRoot), mSessionHeaders, sResult, true, true)) {
+	if (!HTTPClient::POST(url, JSonToRawString(reqRoot), mSessionHeaders, sResult, true, true)) {
 		_log.Log(LOG_ERROR, "Honeywell: Error setting thermostat data!");
 		return;
 	}
@@ -382,12 +379,11 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int /*nodeid
 	reqRoot["heatSetpoint"] = temp;
 	reqRoot["coolSetpoint"] = mDeviceList[idx]["changeableValues"]["coolSetpoint"].asInt();
 	reqRoot["thermostatSetpointStatus"] = "TemporaryHold";
-	Json::FastWriter writer;
 
 	std::string sResult;
 	HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
 	HTTPClient::SetTimeout(HWAPITIMEOUT);
-	if (!HTTPClient::POST(url, writer.write(reqRoot), mSessionHeaders, sResult, true, true)) {
+	if (!HTTPClient::POST(url, JSonToRawString(reqRoot), mSessionHeaders, sResult, true, true)) {
 		_log.Log(LOG_ERROR, "Honeywell: Error setting thermostat data!");
 		return;
 	}

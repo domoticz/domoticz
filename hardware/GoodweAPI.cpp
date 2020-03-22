@@ -7,7 +7,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #if defined(_WIN32) || defined(_WIN64)
@@ -182,7 +182,7 @@ bool GoodweAPI::WriteToHardware(const char* /*pdata*/, const unsigned char /*len
 	return false;
 }
 
-void GoodweAPI::SendCurrentSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Amp, const std::string &defaultname)
+void GoodweAPI::SendCurrentSensor(const int NodeID, const uint8_t ChildID, const int /*BatteryLevel*/, const float Amp, const std::string &defaultname)
 {
 
         _tGeneralDevice gDevice;
@@ -325,9 +325,8 @@ void GoodweAPI::GetMeterDetails()
 #ifdef DEBUG_GoodweAPIW
 	SaveString2Disk(sResult, "/tmp/Goodwe2.json");
 #endif
-	Json::Reader jReader;
 	Json::Value root;
-	bool ret=jReader.parse(sResult,root);
+	bool ret= ParseJSon(sResult,root);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received!");
@@ -378,8 +377,7 @@ void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string
 #endif
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "GoodweAPI: Invalid device list!");
@@ -467,7 +465,7 @@ void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStati
 		sStationName + " " + sDeviceSerial + " error");
 	SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L1, 255, fVoltagePhase1, 
 		sStationName + " " + sDeviceSerial + " Mains L1");
-	SendCurrentSensor(NodeID, ChildID + IDX_CUR_L1, 255, fCurrentPhase1, 
+	SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L1, 255, fCurrentPhase1,
 		sStationName + " " + sDeviceSerial + " Mains L1");
 
 	// Send data for L2 and L3 only when we detect a voltage
@@ -475,19 +473,19 @@ void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStati
 	if (fVoltagePhase2 > 0.1f) {
 		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L2, 255, fVoltagePhase2, 
 			sStationName + " " + sDeviceSerial + " Mains L2");
-		SendCurrentSensor(NodeID, ChildID + IDX_CUR_L2, 255, fCurrentPhase2, 
+		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L2, 255, fCurrentPhase2,
 			sStationName + " " + sDeviceSerial + " Mains L2");
 	}
 	if (fVoltagePhase3 > 0.1f) {
 		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L3, 255, fVoltagePhase3, 
 			sStationName + " " + sDeviceSerial + " Mains L3");
-		SendCurrentSensor(NodeID, ChildID + IDX_CUR_L3, 255, fCurrentPhase3, 
+		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L3, 255, fCurrentPhase3,
 			sStationName + " " + sDeviceSerial + " Mains L3");
 	}
 
 	SendVoltageSensor(NodeID, ChildID + IDX_VOLT_S1, 255, fVoltageString1, 
 		sStationName + " " + sDeviceSerial + "Input string 1");
-	SendCurrentSensor(NodeID, ChildID + IDX_CUR_S1, 255, fCurrentString1, 
+	SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_S1, 255, fCurrentString1,
 		sStationName + " " + sDeviceSerial + " Input String 1");
 
 	// Send data for string 2 only when we detect a voltage
@@ -495,7 +493,7 @@ void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStati
 	if (fVoltageString2 > 0.1f) {
 		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_S2, 255, fVoltageString2, 
 			sStationName + " " + sDeviceSerial + "Input string 2");
-		SendCurrentSensor(NodeID, ChildID + IDX_CUR_S2, 255, fCurrentString2, 
+		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_S2, 255, fCurrentString2,
 			sStationName + " " + sDeviceSerial + " Input String 2");
 	}
 }

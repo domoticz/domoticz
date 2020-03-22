@@ -6,7 +6,8 @@ return {
 		scenes = {},
 		groups = {},
 		security = {},
-		httpResponses = {}
+		httpResponses = {},
+		system = {}
 	},
 	data = {},
 	logger = {},

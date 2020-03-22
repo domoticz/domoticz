@@ -1,86 +1,116 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns="http://code.google.com/p/open-zwave/">
+<Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010E:0002:0008</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/polycontrol/doorlock.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0008">https://products.z-wavealliance.org/products/1855/</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0008"> Danalock V2 BTZJ</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove or exclude the danalock into a Z-Wave network
+Set the controller in exclusion mode
+Touch the User Button until you hear two beeps.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add or include the danalock into a Z-Wave network
+Set the controller in inclusion mode
+Touch the User Button until you hear two beeps.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">The danalock can be set to factory settings by holding the User Button for ten beeps. Please use this procedure only when the primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Name"> Danalock V2 BTZJ</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0008">U.S. / Canada / Mexico / CEPT (Europe) / U.S. / Canada / Mexico / U.S. / Canada / Mexico / U.S. / Canada / Mexico / Japan</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1855/Danalock_V2_Product_manual_Z_Wave_V_1.0.4.pdf</MetaDataItem>
+    <MetaDataItem name="Description">Z-Wave Controlled door lock with keypad, and Bluetooth Smart.
+Operated by Z-Wave.
+Connect Danalock to your Z-Wave gateway -  Danalock interfaces with your existing Z-Wave network through the Danalock smartphone app.
+Operate Danalock remotely by accessing your Z-Wave network from anywhere in the world with internet access.
 
-<!-- Polycontrol: Danalock 150 door lock  -->
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1238/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1251/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1532/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1764/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1769/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1855/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Polycontrol: Danalock 150 door lock  -->
 
 	<!-- COMMAND_CLASS_BASIC does not respond to requests -->
-	<CommandClass id="32" setasreport="true"/>
-
-	<CommandClass id="112">
-		<Value type="list" genre="config" instance="1" index="1" label="Direction" min="0" max="1" value="0" size="1">
-			<Help>0=The motor goes clockwise when unlatched; 1= The motor goes counterclockwise when unlatched</Help>
-			<Item label="Clockwise" value="0"/>
-			<Item label="Counterclockwise" value="1"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="2" label="Lock Speed" min="1" max="5" value="5" size="1">
-			<Help>Speed (Torque)</Help>
-			<Item label="Slowest" value="1"/>
-			<Item label="Slow" value="2"/>
-			<Item label="Normal" value="3"/>
-			<Item label="Fast" value="4"/>
-			<Item label="Fastest" value="5"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="3" label="Lock Mode" min="0" max="2" value="1" size="1">
-			<Help>0=Stepper motor mode wave drive (Power Saving); 1=Stepper motor mode full drive(Normal)</Help>
-			<Item label="Wave drive" value="0"/>
-			<Item label="Full drive" value="1"/>
-			<Item label="Relay mode" value="2"/>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="4" label="Lock Turn Degrees" min="1" max="100" value="9">
-			<Help>Factor 10 turn degree( 1 = degrees, 9 = 90 degres, etc. )</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="5" label="Auto Latch time" min="0" max="60" value="0">
-			<Help>How many seconds from the lock has been unlatched to it automatically close again. If 0 then it's disabled</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="6" label="Sound" min="0" max="1" value="1" size="1">
-			<Help>Disable or enable the beep sound from latch or unlatch operations(</Help>
-			<Item label="Disable" value="0"/>
-			<Item label="Enable" value="1"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="7" label="Battery Type" min="0" max="1" value="0" size="1">
-			<Help>Set the type of battery that powers the device. This affect the returned battery state.</Help>
-			<Item label="3.6V" value="0"/>
-			<Item label="3.0V" value="1"/>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="8" label="Battery Alarm Percent" min="0" max="100" value="0">
-			<Help>When the battery level is equal to, or under this value, the device will notify with a beep sound after latch or unlatch</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="9" label="Turn and Go" min="0" max="1" value="0" size="1">
-			<Help>Used if the lock is using a optional rotation sensor. Latch and Go on will turn automatically when manual turn is detected.</Help>
-			<Item label="Off" value="0"/>
-			<Item label="On" value="1"/>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="10" label="Brake and Go Back" min="0" max="15" value="0">
-			<Help>
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Direction" max="1" min="0" size="1" type="list" value="0">
+      <Help>0=The motor goes clockwise when unlatched; 1= The motor goes counterclockwise when unlatched</Help>
+      <Item label="Clockwise" value="0"/>
+      <Item label="Counterclockwise" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Lock Speed" max="5" min="1" size="1" type="list" value="5">
+      <Help>Speed (Torque)</Help>
+      <Item label="Slowest" value="1"/>
+      <Item label="Slow" value="2"/>
+      <Item label="Normal" value="3"/>
+      <Item label="Fast" value="4"/>
+      <Item label="Fastest" value="5"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Lock Mode" max="2" min="0" size="1" type="list" value="1">
+      <Help>0=Stepper motor mode wave drive (Power Saving); 1=Stepper motor mode full drive(Normal)</Help>
+      <Item label="Wave drive" value="0"/>
+      <Item label="Full drive" value="1"/>
+      <Item label="Relay mode" value="2"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Lock Turn Degrees" max="100" min="1" type="byte" value="9">
+      <Help>Factor 10 turn degree( 1 = degrees, 9 = 90 degres, etc. )</Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Auto Latch time" max="60" min="0" type="byte" value="0">
+      <Help>How many seconds from the lock has been unlatched to it automatically close again. If 0 then it's disabled</Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Sound" max="1" min="0" size="1" type="list" value="1">
+      <Help>Disable or enable the beep sound from latch or unlatch operations(</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Battery Type" max="1" min="0" size="1" type="list" value="0">
+      <Help>Set the type of battery that powers the device. This affect the returned battery state.</Help>
+      <Item label="3.6V" value="0"/>
+      <Item label="3.0V" value="1"/>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Battery Alarm Percent" max="100" min="0" type="byte" value="0">
+      <Help>When the battery level is equal to, or under this value, the device will notify with a beep sound after latch or unlatch</Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Turn and Go" max="1" min="0" size="1" type="list" value="0">
+      <Help>Used if the lock is using a optional rotation sensor. Latch and Go on will turn automatically when manual turn is detected.</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="1"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Brake and Go Back" max="15" min="0" type="byte" value="0">
+      <Help>
 			0 = Disabled. 
 			1-15 Seconds to brake. 
 			When used the lock will brake for x amount of seconds and then turn 75 degrees back. 
 			Made for special doors without door lever.(Only when unlatching).</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="11" label="Async" min="0" max="1" value="0" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Async" max="1" min="0" size="1" type="list" value="0">
+      <Help>
 			Used if the lock is using an optional rotation sensor. 
 			When async is enabled the lock will auto calibrate if already unlatched and asked to Unlatch again (used for special door locks where the key turn is asynced from the inside nob.)
 			</Help>
-			<Item label="Off" value="0"/>
-			<Item label="On" value="1"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="12" label="Door lock operation report type" min="0" max="2" value="0" size="1">
-			<Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="1"/>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Door lock operation report type" max="2" min="0" size="1" type="list" value="0">
+      <Help>
 			0 = Simple supported by all controllers that support door locks. 
 			1 = Advanced, more specific reports through notification Command Class. 
 			2 = No Door lock operation reports are sent unsolicited.
 			</Help>
-			<Item label="Simple" value="0"/>
-			<Item label="Advanced" value="1"/>
-			<Item label="Nothing" value="2"/>
-		</Value>
-	</CommandClass>
-
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="1" label="Lifeline" />
-		</Associations>
-	</CommandClass>
-
+      <Item label="Simple" value="0"/>
+      <Item label="Advanced" value="1"/>
+      <Item label="Nothing" value="2"/>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
 </Product>

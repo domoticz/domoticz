@@ -13,7 +13,7 @@
 		</tr>
 		<tr id="imagerow">
 			<td style="width:25%"><label for="imagefile" data-i18n="Image file">Image file</label>:</td>
-			<td><input type="file" file="file" id="imagefile" name="imagefile" accept=".jpg, .jpeg, .png"/></td>
+			<td><input type="file" file="file" id="imagefile" name="imagefile" accept=".jpg, .jpeg, .png, .svg"/></td>
 		</tr>
 	</table>
 </div>
@@ -54,9 +54,9 @@
     <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
 			<td align="left" width="100">
-				<label id="mouseX" align="center" style="width: 30px; padding: .2em;" class="ui-widget-content ui-corner-all">0</label>
+				<label align="center" style="width: 30px; padding: .2em;" class="ui-widget-content ui-corner-all">{{ MouseX }}</label>
 				/
-				<label id="mouseY" align="center" style="width: 30px; padding: .2em;" class="ui-widget-content ui-corner-all">0</label>
+				<label align="center" style="width: 30px; padding: .2em;" class="ui-widget-content ui-corner-all">{{ MouseY }}</label>
 			</td>
 			<td align="center">
 				<label><span data-i18n="Plan"></span></label>
@@ -76,7 +76,7 @@
 	</table>
 	<div id="floorplaneditor" class="imageparent" width="100%" height="100%">
 		<span id="helptext" data-i18n="Click on the image below to define room area, drag and drop devices">Click on the image below to define room area, drag and drop devices</span>
-		<img id="floorplanimagesize" width="100%" height="100%" src="" style="display:none" onload="ImageLoaded()">
+		<img id="floorplanimagesize" ng-click="FloorplanClick($event)" width="100%" height="100%" src="" style="display:none" onload="ImageLoaded()">
 		<style type="text/css">
 			.hoverable
 			{
@@ -123,42 +123,16 @@
 				font-family: Arial, Helvetica, sans-serif;
 			}
 		</style>
-		<svg id="svgcontainer" width="100%" height="100%" version="1.1"  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-			preserveAspectRatio="xMinYMin meet" style="display:none">
-            	<g id="floorplangroup" zoomed="false" >
+		<svg id="svgcontainer" ng-mousemove="SVGContainerMouseMove($event)" ng-mouseleave="SVGContainerMouseLeave()" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMinYMin meet" style="display:none">
+			<g id="floorplangroup" zoomed="false" >
+				<!--<rect width="100%" height="100%" fill="white"/>-->
 				<image id="floorplanimage"  width="100%" height="100%" xlink:href="" style="cursor:crosshair;"/>
-				<g id="guidelines"/>
+				<g id="guidelines" ng-click="FloorplanClick($event)"/>
 				<g id="roomplangroup"/>
-				<polygon id="roompolyarea" class="hoverable">
-					<title data-i18n="Click room to test">Click room to test</title>
-				</polygon>
-				<script>
-                    function MouseOut(evt) {
-						$("#guidelines").empty();
-                    }
-                    function MouseXY(evt) {
-                        if (!evt) var evt = window.event;
-						var parent = evt.target.parentNode;
-						var Scale = Device.xImageSize / $("#floorplaneditor").width();
-						var offset = $("#floorplanimage").offset();
-						var xoffset = Math.round((evt.pageX - offset.left) * Scale);
-						var yoffset = Math.round((evt.pageY - offset.top) * Scale);
-						$('#mouseX').text(xoffset);
-						$('#mouseY').text(yoffset);
-						if ($("#floorplangroup").attr("zoomed") == "false") {
-							if ($("#guidelines").children().length == 0) {
-								$("#guidelines").append(makeSVGnode('line', { id:"vertLine", x1:xoffset, y1:"0", x2:xoffset, y2:5000, style:"cursor:crosshair; stroke:rgb(255,0,0);stroke-width:2" }, '', ''));
-								$("#guidelines").append(makeSVGnode('line', { id:"horiLine", x1:"0", y1:yoffset, x2:5000, y2:yoffset, style:"cursor:crosshair; stroke:rgb(255,0,0);stroke-width:2" }, '', ''));
- 							} else {
-								$('#vertLine').attr("x1", xoffset);
-								$('#vertLine').attr("x2", xoffset);
-								$('#horiLine').attr("y1", yoffset);
-								$('#horiLine').attr("y2", yoffset);
-							}
-						} else $("#guidelines").empty();
-					}
-				</script>
-       			</g>
+				<polygon id="roompolyarea" class="hoverable" ng-click="PolyClick($event)">
+				<title data-i18n="Click room to test">Click room to test</title>
+			</polygon>
+			</g>
 		</svg>
 	</div>
 	<br>

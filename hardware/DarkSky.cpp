@@ -6,7 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 
@@ -132,10 +132,7 @@ void CDarkSky::GetMeterDetails()
 	sURL << "https://api.darksky.net/forecast/" << m_APIKey << "/" << szLoc << "?exclude=" << szExclude;
 	try
 	{
-		bool bret;
-		std::string szURL = sURL.str();
-		bret = HTTPClient::GET(szURL, sResult);
-		if (!bret)
+		if (!HTTPClient::GET(sURL.str(), sResult))
 		{
 			Log(LOG_ERROR, "Error getting http data!.");
 			return;
@@ -153,8 +150,7 @@ void CDarkSky::GetMeterDetails()
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret=jReader.parse(sResult,root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		Log(LOG_ERROR,"Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
@@ -384,6 +380,18 @@ void CDarkSky::GetMeterDetails()
 			if (radiation>=0.0f)
 			{
 				SendCustomSensor(1, 0, 255, radiation, "Ozone Sensor", "DU"); //(dobson units)
+			}
+		}
+	}
+	//Cloud Cover
+	if (root["currently"]["cloudCover"].empty() == false)
+	{
+		if ((root["currently"]["cloudCover"] != "N/A") && (root["currently"]["cloudCover"] != "--"))
+		{
+			float cloudcover = static_cast<float>(atof(root["currently"]["cloudCover"].asString().c_str()));
+			if (cloudcover >= 0.0f)
+			{
+				SendPercentageSensor(1, 0, 255, cloudcover * 100.0f, "Cloud Cover");
 			}
 		}
 	}

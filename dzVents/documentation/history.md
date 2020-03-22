@@ -1,3 +1,104 @@
+[3.0.1] 
+- Add option 'at' to the various commands/methods
+ 
+[3.0.0] 
+ - Add system-events triggers as option to the on = { ... } section. Scripts can now be triggered based on these system-events: 
+	 - start
+	 - stop
+	 - manualBackupFinished,
+	 - dailyBackupFinished
+	 - hourlyBackupFinished
+	 - monthlyBackupFinished
+
+ - Add custom-events triggers as option to the on = { ... } section. You can now send an event trigger to start subscribed dzVents scripts. customEvents can be triggered by:
+	 - dzVents domoticz.emitEvent(name, data )  --  command  (data = optional)
+	 - JSON: json.htm?type=command&param=customevent&event=MyEvent&data=myData ( data = optional )
+	 - MQTT: {"command" : "customevent", "event" :    "MyEvent" , "data" : "myData" } ( data = opt ional )
+ - Add method  domoticz.emitEvent()
+ - Add attribute `mode` to Evohome controller
+ - Add option to dumpTable() and ([device][uservariable][scene][group].dump() to os file
+
+[2.5.7]
+- Add option checkFirst to switchSelector method
+
+[2.5.6]
+- Add dayName, monthName, monthAbbrName and time as time attributes
+- Add _.round, _.isEqual functions to lodash.lua
+- Add testLodash.lua as testModule for lodash 
+
+[2.5.5]
+- Add Zwave fan to Zwave mode device adapter
+
+[2.5.4]
+- Add minutesSinceMidnight to domoticz Time object
+- Add domoticz.time.addSeconds(), -.addMinutes(), -.addHours(), -.addDays() , -.makeTime()
+- Add string.sMatch to utils
+- Made wildcard handling more resilient when magic chars are part of script triggers
+
+[2.5.3] 
+- Add timealert / errors for long running scripts
+- Add triggerHTTPResponse()
+
+[2.5.2]
+- Add actualWatt to replace WhActual (left in WhActual for compatibility reasons)
+- Add toBase64 and fromBase64 function in utils
+- Add setLogMarker function in utils
+- Deprecated increaseBrightness(), decreaseBrightness(), discomode methods (only available for Yeelight and when used leave the device stateless)
+
+[2.5.1]
+- Added `toXML` and `fromXML` methods to domoticz.utils.
+- Add attributes isXML, xmlVersion, xmlEncoding
+
+[2.5.0]
+- Prepared for Lua 5.3
+
+[2.4.29]
+- Add error message including affected module when module got corrupted on disk.
+- Add setLevel method for switchTypes.
+- Increased resilience against badly formatted type Time user-variables.
+- Use native domoticz command for increaseCounter method.
+- Set inverse of "set color" to Off to enable use of toggleSwitch for RGB type of devices.
+
+[2.4.28]
+- Add deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods
+- increased httpResponse resilience against different use of Upper-, Lowercase in headers['content-type'] to ensure JSON conversion to Lua table
+
+[2.4.27]
+
+- Add protect attribute for devices / scenes and groups
+- Add methods protectOn and protectOff for devices / scenes and groups
+- Add functions rightPad, leftPad, centerPad, leadingZeros, numDecimals in utils
+
+[2.4.26]
+- Add Smoke detector
+
+[2.4.25]
+- Add rawDateTime
+- fix for combined device / civil[day|night]time trigger rule 
+- fix for checkFirst on stopped status
+
+[2.4.24]
+- Add method rename for devices, user-variables , scenes and groups
+
+[2.4.23]
+- Add method setMode for evohome device
+- Add method incrementCounter for incremental counter
+- Prepared for Firebase notifications. Firebase (fcm) is the replacement for Google Cloud Messaging gcm)
+- fix wildcard device 
+
+[2.4.22]
+- selector.switchSelector method accepts levelNames
+- increased selector.switchSelector resilience
+- fix wildcard timerule 
+
+[2.4.21]
+- fixed wrong direction for open() and close() for some types of blinds
+- Add inTable function to domoticz.utils
+- Add sValue attribute to devices
+
+[2.4.20]
+- Add quietOn() and quietOff() method to switchType devices 
+
 [2.4.19]
 - Add stringSplit function to domoticz.utils.
 - Add statusText and protocol to HTTPResponse

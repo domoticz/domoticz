@@ -1,10 +1,11 @@
-define(['app'], function (app) {
-	app.controller('ScenesController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
+define(['app', 'livesocket'], function (app) {
+	app.controller('ScenesController', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
+		var $element = $('#main-view #scenecontent').last();
 
 		var SceneIdx = 0;
 
 		RemoveCode = function (idx, code) {
-			if ($("#scenecontent #removecode").hasClass('disabled')) {
+			if ($element.find("#removecode").hasClass('disabled')) {
 				return false;
 			}
 			bootbox.confirm($.t("Are you sure to delete this Device?\n\nThis action can not be undone..."), function (result) {
@@ -100,44 +101,54 @@ define(['app'], function (app) {
 
 		SaveScene = function () {
 			var bValid = true;
-			bValid = bValid && checkLength($("#scenecontent #devicename"), 2, 100);
+			bValid = bValid && checkLength($element.find("#devicename"), 2, 100);
 
-			var onaction = $("#scenecontent #onaction").val();
-			var offaction = $("#scenecontent #offaction").val();
+			var onaction = $element.find("#onaction").val();
+			var offaction = $element.find("#offaction").val();
 
 			if (onaction != "") {
-				if ((onaction.indexOf("http://") != 0) && (onaction.indexOf("https://") != 0) && (onaction.indexOf("script://") != 0)) {
-					bootbox.alert($.t("Invalid ON Action!"));
-					return;
-				}
-				else {
-					if (checkLength($("#scenecontent #onaction"), 10, 500) == false) {
+				if (
+					(onaction.indexOf("http://") == 0) || 
+					(onaction.indexOf("https://") == 0) ||
+					(onaction.indexOf("script://") == 0)
+					)
+				{
+					if (checkLength($element.find("#onaction"), 10, 500) == false) {
 						bootbox.alert($.t("Invalid ON Action!"));
 						return;
 					}
 				}
-			}
-			if (offaction != "") {
-				if ((offaction.indexOf("http://") != 0) && (offaction.indexOf("https://") != 0) && (offaction.indexOf("script://") != 0)) {
-					bootbox.alert($.t("Invalid Off Action!"));
+				else {
+					bootbox.alert($.t("Invalid ON Action!"));
 					return;
 				}
-				else {
-					if (checkLength($("#scenecontent #offaction"), 10, 500) == false) {
+			}
+			if (offaction != "") {
+				if (
+					(offaction.indexOf("http://") == 0) ||
+					(offaction.indexOf("https://") == 0) ||
+					(offaction.indexOf("script://") == 0)
+					)
+				{
+					if (checkLength($element.find("#offaction"), 10, 500) == false) {
 						bootbox.alert($.t("Invalid Off Action!"));
 						return;
 					}
 				}
+				else {
+					bootbox.alert($.t("Invalid Off Action!"));
+					return;
+				}
 			}
 
 			if (bValid) {
-				var SceneType = $("#scenecontent #combotype").val();
-				var bIsProtected = $('#scenecontent #protected').is(":checked");
+				var SceneType = $element.find("#combotype").val();
+				var bIsProtected = $element.find('#protected').is(":checked");
 				$.ajax({
 					url: "json.htm?type=updatescene&idx=" + SceneIdx +
 					"&scenetype=" + SceneType +
-					"&name=" + encodeURIComponent($("#scenecontent #devicename").val()) +
-					"&description=" + encodeURIComponent($("#scenecontent #devicedescription").val()) +
+					"&name=" + encodeURIComponent($element.find("#devicename").val()) +
+					"&description=" + encodeURIComponent($element.find("#devicedescription").val()) +
 					'&onaction=' + btoa(onaction) +
 					'&offaction=' + btoa(offaction) +
 					"&protected=" + bIsProtected,
@@ -151,32 +162,32 @@ define(['app'], function (app) {
 		}
 
 		AddDevice = function () {
-			var DeviceIdx = $("#scenecontent #combodevice option:selected").val();
+			var DeviceIdx = $element.find("#combodevice option:selected").val();
 			if (typeof DeviceIdx == 'undefined') {
 				bootbox.alert($.t('No Device Selected!'));
 				return;
 			}
 
-			var Command = $("#scenecontent #combocommand option:selected").val();
+			var Command = $element.find("#combocommand option:selected").val();
 
 			var level = 100;
 			var colorJSON = ""; // Empty string, intentionally illegal JSON
 			$.each($.LightsAndSwitches, function (i, item) {
 				if (item.idx == DeviceIdx) {
 					if (isLED(item.SubType)) {
-						var color = $('#scenecontent .colorpicker #popup_picker').wheelColorPicker('getColor');
+						var color = $element.find('.colorpicker #popup_picker').wheelColorPicker('getColor');
 						level = Math.round((color.m*99)+1); // 1..100
-						colorJSON = $('#scenecontent .colorpicker #popup_picker')[0].getJSONColor();
+						colorJSON = $element.find('.colorpicker #popup_picker')[0].getJSONColor();
 					}
 					else {
 						if (item.isdimmer == true) {
-							level = $("#scenecontent #combolevel").val();
+							level = $element.find("#combolevel").val();
 						}
 					}
 				}
 			});
-			var ondelay = $("#scenecontent #ondelaytime").val();
-			var offdelay = $("#scenecontent #offdelaytime").val();
+			var ondelay = $element.find("#ondelaytime").val();
+			var offdelay = $element.find("#offdelaytime").val();
 
 			$.ajax({
 				url: "json.htm?type=command&param=addscenedevice&idx=" + SceneIdx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&color=" + colorJSON + "&ondelay=" + ondelay + "&offdelay=" + offdelay,
@@ -220,10 +231,6 @@ define(['app'], function (app) {
 				return;
 			}
 
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$.ajax({
 				url: "json.htm?type=command&param=makescenefavorite&idx=" + id + "&isfavorite=" + isfavorite,
 				async: false,
@@ -252,7 +259,7 @@ define(['app'], function (app) {
 
 		SetColValue = function (idx, color, brightness) {
 			clearInterval($.setColValue);
-			if (permissions.hasPermission("Viewer")) {
+			if (!permissions.hasPermission("User")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
@@ -269,9 +276,9 @@ define(['app'], function (app) {
 		}
 
 		RefreshActivators = function () {
-			$('#scenecontent #delclract #removecode').attr("class", "btnstyle3-dis");
+			$element.find('#delclract #removecode').attr("class", "btnstyle3-dis");
 
-			var oTable = $('#scenecontent #scenedactivationtable').dataTable();
+			var oTable = $element.find('#scenedactivationtable').dataTable();
 			oTable.fnClearTable();
 
 			$.ajax({
@@ -294,24 +301,24 @@ define(['app'], function (app) {
 				}
 			});
 			/* Add a click handler to the rows - this could be used as a callback */
-			$("#scenecontent #scenedactivationtable tbody").off();
-			$("#scenecontent #scenedactivationtable tbody").on('click', 'tr', function () {
+			$element.find("#scenedactivationtable tbody").off();
+			$element.find("#scenedactivationtable tbody").on('click', 'tr', function () {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					$('#scenecontent #delclract #removecode').attr("class", "btnstyle3-dis");
+					$element.find('#delclract #removecode').attr("class", "btnstyle3-dis");
 				}
 				else {
-					var oTable = $('#scenecontent #scenedactivationtable').dataTable();
+					var oTable = $element.find('#scenedactivationtable').dataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 
-					$('#scenecontent #delclract #removecode').attr("class", "btnstyle3");
+					$element.find('#delclract #removecode').attr("class", "btnstyle3");
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
 						var idx = data["DT_RowId"];
 						var code = data["code"];
-						$("#scenecontent #delclract #removecode").attr("href", "javascript:RemoveCode(" + idx + ", " + code + ")");
+						$element.find("#delclract #removecode").attr("href", "javascript:RemoveCode(" + idx + ", " + code + ")");
 					}
 				}
 			});
@@ -322,10 +329,10 @@ define(['app'], function (app) {
 		RefreshDeviceTable = function (idx) {
 			$('#modal').show();
 
-			$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3-dis");
-			$('#scenecontent #delclr #updatedelete').attr("class", "btnstyle3-dis");
+			$element.find('#delclr #devicedelete').attr("class", "btnstyle3-dis");
+			$element.find('#delclr #updatedelete').attr("class", "btnstyle3-dis");
 
-			var oTable = $('#scenecontent #scenedevicestable').dataTable();
+			var oTable = $element.find('#scenedevicestable').dataTable();
 			oTable.fnClearTable();
 
 			$.ajax({
@@ -420,42 +427,42 @@ define(['app'], function (app) {
 				}
 			});
 			/* Add a click handler to the rows - this could be used as a callback */
-			$("#scenecontent #scenedevicestable tbody").off();
-			$("#scenecontent #scenedevicestable tbody").on('click', 'tr', function () {
+			$element.find("#scenedevicestable tbody").off();
+			$element.find("#scenedevicestable tbody").on('click', 'tr', function () {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3-dis");
-					$('#scenecontent #delclr #updatedelete').attr("class", "btnstyle3-dis");
+					$element.find('#delclr #devicedelete').attr("class", "btnstyle3-dis");
+					$element.find('#delclr #updatedelete').attr("class", "btnstyle3-dis");
 				}
 				else {
-					var oTable = $('#scenecontent #scenedevicestable').dataTable();
+					var oTable = $element.find('#scenedevicestable').dataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 
-					$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3");
+					$element.find('#delclr #devicedelete').attr("class", "btnstyle3");
 
-					$('#scenecontent #delclr #updatedelete').attr("class", "btnstyle3");
-					$('#scenecontent #delclr #updatedelete').show();
+					$element.find('#delclr #updatedelete').attr("class", "btnstyle3");
+					$element.find('#delclr #updatedelete').show();
 
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
 						var idx = data["DT_RowId"];
 						var devidx = data["RealIdx"];
-						$("#scenecontent #delclr #devicedelete").attr("href", "javascript:DeleteDevice(" + idx + ")");
-						$("#scenecontent #delclr #updatedelete").attr("href", "javascript:UpdateDevice(" + idx + "," + devidx + ")");
+						$element.find("#delclr #devicedelete").attr("href", "javascript:DeleteDevice(" + idx + ")");
+						$element.find("#delclr #updatedelete").attr("href", "javascript:UpdateDevice(" + idx + "," + devidx + ")");
 						$.lampIdx = devidx;
-						$("#scenecontent #combodevice").val(devidx);
+						$element.find("#combodevice").val(devidx);
 						if ($.isScene == true) {
-							$("#scenecontent #combocommand").val(data["Command"]);
+							$element.find("#combocommand").val(data["Command"]);
 						}
 						else {
-							$("#scenecontent #combocommand").val("On");
+							$element.find("#combocommand").val("On");
 						}
 						OnSelChangeDevice();
 
 						var level = data["Level"];
-						$("#scenecontent #combolevel").val(level);
+						$element.find("#combolevel").val(level);
 
 						var SubType = "";
 						var DimmerType = "";
@@ -469,8 +476,8 @@ define(['app'], function (app) {
 						if (isLED(SubType))
 							ShowRGBWPicker('#scenecontent #ScenesLedColor', devidx, 0, MaxDimLevel, level, data["Color"], SubType, DimmerType);
 
-						$("#scenecontent #ondelaytime").val(data["OnDelay"]);
-						$("#scenecontent #offdelaytime").val(data["OffDelay"]);
+						$element.find("#ondelaytime").val(data["OnDelay"]);
+						$element.find("#offdelaytime").val(data["OffDelay"]);
 					}
 				}
 			});
@@ -479,7 +486,7 @@ define(['app'], function (app) {
 		}
 
 		UpdateDevice = function (idx, devidx) {
-			var DeviceIdx = $("#scenecontent #combodevice option:selected").val();
+			var DeviceIdx = $element.find("#combodevice option:selected").val();
 			if (typeof DeviceIdx == 'undefined') {
 				bootbox.alert($.t('No Device Selected!'));
 				return;
@@ -489,23 +496,23 @@ define(['app'], function (app) {
 				return;
 			}
 
-			var Command = $("#scenecontent #combocommand option:selected").val();
+			var Command = $element.find("#combocommand option:selected").val();
 
 			var level = 100;
 			var colorJSON = ""; // Empty string, intentionally illegal JSON
-			var ondelay = $("#scenecontent #ondelaytime").val();
-			var offdelay = $("#scenecontent #offdelaytime").val();
+			var ondelay = $element.find("#ondelaytime").val();
+			var offdelay = $element.find("#offdelaytime").val();
 
 			$.each($.LightsAndSwitches, function (i, item) {
 				if (item.idx == DeviceIdx) {
 					if (isLED(item.SubType)) {
-						var color = $('#scenecontent .colorpicker #popup_picker').wheelColorPicker('getColor');
+						var color = $element.find('.colorpicker #popup_picker').wheelColorPicker('getColor');
 						level = Math.round((color.m*99)+1); // 1..100
-						colorJSON = $('#scenecontent .colorpicker #popup_picker')[0].getJSONColor();
+						colorJSON = $element.find('.colorpicker #popup_picker')[0].getJSONColor();
 					}
 					else {
 						if (item.isdimmer == true) {
-							level = $("#scenecontent #combolevel").val();
+							level = $element.find("#combolevel").val();
 						}
 					}
 				}
@@ -546,9 +553,9 @@ define(['app'], function (app) {
 		}
 
 		OnSelChangeDevice = function () {
-			var DeviceIdx = $("#scenecontent #combodevice option:selected").val();
+			var DeviceIdx = $element.find("#combodevice option:selected").val();
 			if (typeof DeviceIdx == 'undefined') {
-				$("#scenecontent #LevelDiv").hide();
+				$element.find("#LevelDiv").hide();
 				return;
 			}
 			var bShowLevel = false;
@@ -563,12 +570,12 @@ define(['app'], function (app) {
 			});
 
 			$("#ScenesLedColor").hide();
-			$("#scenecontent #LevelDiv").hide();
+			$element.find("#LevelDiv").hide();
 			if (isLED(SubType)) {
 				$("#ScenesLedColor").show();
 			}
 			if (bShowLevel == true && !isLED(SubType)) { // TODO: Show level combo box also for LED
-				var levelDiv$ = $("#scenecontent #LevelDiv");
+				var levelDiv$ = $element.find("#LevelDiv");
 				levelDiv$.find("option").show().end().show();
 
 				var dimmerValues = [];
@@ -581,16 +588,12 @@ define(['app'], function (app) {
 				for (var levelCounter = 0; levelCounter < dimmerValues.length; levelCounter++) {
 					var option = $('<option />');
 					option.attr('value', dimmerValues[levelCounter]).text(dimmerValues[levelCounter] + "%");
-					$("#scenecontent #combolevel").append(option);
+					$element.find("#combolevel").append(option);
 				}
 			}
 		}
 
 		EditSceneDevice = function (idx, name, description, havecode, type, bIsProtected, onaction, offaction) {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			SceneIdx = idx;
 
 			var bIsScene = (type == "Scene");
@@ -600,26 +603,26 @@ define(['app'], function (app) {
 			htmlcontent += $('#editscene').html();
 			$('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes') + htmlcontent);
 			$('#scenecontent').i18n();
-			$("#scenecontent #LevelDiv").hide();
+			$element.find("#LevelDiv").hide();
 			$("#ScenesLedColor").hide();
 
-			$("#scenecontent #onaction").val(atob(onaction));
-			$("#scenecontent #offaction").val(atob(offaction));
+			$element.find("#onaction").val(atob(onaction));
+			$element.find("#offaction").val(atob(offaction));
 
-			$('#scenecontent #protected').prop('checked', (bIsProtected == true));
+			$element.find('#protected').prop('checked', (bIsProtected == true));
 
 			if (bIsScene == true) {
-				$("#scenecontent #combotype").val(0);
-				$("#scenecontent #CommandDiv").show();
-				$("#scenecontent #CommandHeader").html($.t("Command"));
+				$element.find("#combotype").val(0);
+				$element.find("#CommandDiv").show();
+				$element.find("#CommandHeader").html($.t("Command"));
 			}
 			else {
-				$("#scenecontent #combotype").val(1);
-				$("#scenecontent #CommandDiv").hide();
-				$("#scenecontent #CommandHeader").html($.t("State"));
+				$element.find("#combotype").val(1);
+				$element.find("#CommandDiv").hide();
+				$element.find("#CommandHeader").html($.t("State"));
 			}
 
-			$('#scenecontent #scenedevicestable').dataTable({
+			$element.find('#scenedevicestable').dataTable({
 				"sDom": '<"H"lfrC>t<"F"ip>',
 				"oTableTools": {
 					"sRowSelect": "single",
@@ -636,7 +639,7 @@ define(['app'], function (app) {
 				"sPaginationType": "full_numbers",
 				language: $.DataTableLanguage
 			});
-			$('#scenecontent #scenedactivationtable').dataTable({
+			$element.find('#scenedactivationtable').dataTable({
 				"sDom": '<"H"lfrC>t<"F"ip>',
 				"oTableTools": {
 					"sRowSelect": "single",
@@ -653,28 +656,29 @@ define(['app'], function (app) {
 				"sPaginationType": "full_numbers",
 				language: $.DataTableLanguage
 			});
-			$("#scenecontent #devicename").val(unescape(name));
-			$("#scenecontent #devicedescription").val(unescape(description));
+			$element.find("#deviceidx").text(idx);
+			$element.find("#devicename").val(unescape(name));
+			$element.find("#devicedescription").val(unescape(description));
 
-			$("#scenecontent #combodevice").html("");
+			$element.find("#combodevice").html("");
 
 			if ($.isScene == false) {
-				$('#scenecontent #delclr #updatedelete').hide();
+				$element.find('#delclr #updatedelete').hide();
 			}
 			else {
-				$('#scenecontent #delclr #updatedelete').show();
+				$element.find('#delclr #updatedelete').show();
 			}
 
 			$.each($.LightsAndSwitches, function (i, item) {
 				var option = $('<option />');
 				option.attr('value', item.idx).text(item.name);
-				$("#scenecontent #combodevice").append(option);
+				$element.find("#combodevice").append(option);
 			});
 
-			$("#scenecontent #combodevice").change(function () {
+			$element.find("#combodevice").change(function () {
 				OnSelChangeDevice();
 
-				var DeviceIdx = $("#scenecontent #combodevice option:selected").val();
+				var DeviceIdx = $element.find("#combodevice option:selected").val();
 				if (typeof DeviceIdx != 'undefined') {
 					var SubType = "";
 					var DimmerType = "";
@@ -689,15 +693,15 @@ define(['app'], function (app) {
 						ShowRGBWPicker('#scenecontent #ScenesLedColor', DeviceIdx, 0, MaxDimLevel, 50, "", SubType, DimmerType);
 				}
 			});
-			$('#scenecontent #combodevice').keypress(function () {
+			$element.find('#combodevice').keypress(function () {
 				$(this).change();
 			});
 
-            $('#scenecontent #combodevice').trigger('change');
+            $element.find('#combodevice').trigger('change');
 
 			OnSelChangeDevice();
 
-			var DeviceIdx = $("#scenecontent #combodevice option:selected").val();
+			var DeviceIdx = $element.find("#combodevice option:selected").val();
 			if (typeof DeviceIdx != 'undefined') {
 				var SubType = "";
 				var DimmerType = "";
@@ -748,18 +752,75 @@ define(['app'], function (app) {
 			return o;
 		};
 
-		RefreshScenes = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+		RefreshItem = function (item) {
+			var id = "#" + item.idx;
+			var obj = $element.find(id);
+			if (typeof obj != 'undefined') {
+				if ($(id + " #name").html() != item.Name) {
+					$(id + " #name").html(item.Name);
+				}
+
+				var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+				obj.removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+				obj.addClass(backgroundClass);
+
+				var img1 = "";
+				var img2 = "";
+
+				var bigtext = TranslateStatusShort(item.Status);
+				
+				if (item.UsedByCamera == true) {
+					var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
+					streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+					bigtext += "&nbsp;" + streamurl;
+				}
+
+				if (item.Type == "Scene") {
+					img1 = '<img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
+				}
+				else {
+					var onclass = "";
+					var offclass = "";
+					if (item.Status == 'On') {
+						onclass = "transimg";
+						offclass = "";
+					}
+					else if (item.Status == 'Off') {
+						onclass = "";
+						offclass = "transimg";
+					}
+
+					img1 = '<img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" height="48" width="48">';
+					img2 = '<img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\', ' + item.Protected + ');" height="48" width="48">';
+					if ($(id + " #img2").html() != img2) {
+						$(id + " #img2").html(img2);
+					}
+
+					if ($(id + " #bigtext").html() != bigtext) {
+						$(id + " #bigtext").html(bigtext);
+					}
+
+					if ($(id + " #status").html() != TranslateStatus(item.Status)) {
+						$(id + " #status").html(TranslateStatus(item.Status));
+					}
+				}
+
+				if ($(id + " #img1").html() != img1) {
+					$(id + " #img1").html(img1);
+				}
+
+				if ($(id + " #lastupdate").html() != item.LastUpdate) {
+					$(id + " #lastupdate").html(item.LastUpdate);
+				}
+				if ($scope.config.ShowUpdatedEffect == true) {
+					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+				}
 			}
+		}
 
-			var id = "";
-
-			$http({
-				url: "json.htm?type=scenes&lastupdate=" + $.LastUpdateTime
-			}).then(function successCallback(response) {
-				var data = response.data;
+		//We only call this once. After this the widgets are being updated automatically by used of the websocket broadcast event.
+		RefreshScenes = function () {
+			livesocket.getJson("json.htm?type=scenes&lastupdate=" + $.LastUpdateTime, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -768,121 +829,41 @@ define(['app'], function (app) {
 						$.LastUpdateTime = parseInt(data.ActTime);
 					}
 
+					/*
+						Render all the widgets at once.
+					*/
 					$.each(data.result, function (i, item) {
-						id = "#scenecontent #" + item.idx;
-						var obj = $(id);
-						if (typeof obj != 'undefined') {
-							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-							$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
-							$(id).addClass(backgroundClass);
-
-
-							if ($(id + " #name > span").html() != item.Name) {
-								$(id + " #name > span").html(item.Name);
-							}
-							var img1 = "";
-							var img2 = "";
-
-							var bigtext = TranslateStatusShort(item.Status);
-							if (item.UsedByCamera == true) {
-								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-								streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
-								bigtext += "&nbsp;" + streamurl;
-							}
-
-							if (item.Type == "Scene") {
-								img1 = '<img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected + ');" class="lcursor" height="48" width="48">';
-							}
-							else {
-								var onclass = "";
-								var offclass = "";
-								if (item.Status == 'On') {
-									onclass = "transimg";
-									offclass = "";
-								}
-								else if (item.Status == 'Off') {
-									onclass = "";
-									offclass = "transimg";
-								}
-
-								img1 = '<img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
-								img2 = '<img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
-								if ($(id + " #img2").html() != img2) {
-									$(id + " #img2").html(img2);
-								}
-								if ($(id + " #status > span").html() != TranslateStatus(item.Status)) {
-									$(id + " #status > span").html(TranslateStatus(item.Status));
-									$(id + " #bigtext > span").html(bigtext);
-								}
-							}
-
-							if ($(id + " #img1").html() != img1) {
-								$(id + " #img1").html(img1);
-							}
-
-							if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
-								$(id + " #lastupdate > span").html(item.LastUpdate);
-							}
-							if ($scope.config.ShowUpdatedEffect == true) {
-								$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-							}
-						}
+						RefreshItem(item);
 					});
 				}
-				$scope.mytimer = $interval(function () {
-					RefreshScenes();
-				}, 10000);
-			}, function errorCallback(response) {
-				$scope.mytimer = $interval(function () {
-					RefreshScenes();
-				}, 10000);
 			});
 		}
 
 		ShowScenes = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
-
 			RefreshLightSwitchesComboArray();
-
-			$("body").removeClass();
-			$("body").addClass("scenes");
-			if ($scope.config.DashboardType == 0) {
-				$("body").addClass("3column");
-			}
-			if ($scope.config.DashboardType == 1) {
-				$("body").addClass("4column");
-			}
-			if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
-				$("body").addClass("dashMobile");
-			}
-			if ($scope.config.DashboardType == 3) {
-				$("body").addClass("dashFloorplan");
-			}
 
 			var htmlcontent = '';
 			var bHaveAddedDevider = false;
 			var bAllowWidgetReorder = true;
 
 			var tophtm = "";
+
+			tophtm +=
+				'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+				'\t<tr>\n' +
+				'\t  <td align="left" valign="top" id="timesun"></td>\n' +
+				'\t</tr>\n' +
+				'\t</table>\n';
+
 			if (permissions.hasPermission("Admin")) {
 				tophtm +=
-					'\t<div id="tophtm">' +
-					'\t<table id="prebannav" class="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">' +
-					'\t<tr>' +
-					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'\t</tr>' +
-					'\t</table>' +
 					'\t<table id="bannav" class="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">' +
 					'\t<tr>' +
 					'\t  <td align="left">' +
 					'\t    <a class="btnstyle addscenebtn" onclick="AddScene();" data-i18n="Add Scene">Add Scene</a>' +
 					'\t  </td>' +
 					'\t</tr>' +
-					'\t</table>' +
-					'\t</div>';
+					'\t</table>\n';
 			}
 
 			var i = 0;
@@ -913,7 +894,8 @@ define(['app'], function (app) {
 							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 							var bAddTimer = true;
 							var xhtm =
-								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n';
+								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
+								'\t  <section>\n';
 							if (item.Type == "Scene") {
 								xhtm += '\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
 							}
@@ -922,18 +904,18 @@ define(['app'], function (app) {
 							}
 							xhtm +=
 								'\t    <tr>\n' +
-								'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n' +
-								'\t      <td id="bigtext" class="bigtext"><span class="wrapper">';
+								'\t      <td id="name">' + item.Name + '</td>\n' +
+								'\t      <td id="bigtext">';
 							var bigtext = TranslateStatusShort(item.Status);
 							if (item.UsedByCamera == true) {
 								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
 								streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 								bigtext += "&nbsp;" + streamurl;
 							}
-							xhtm += bigtext + '</span></td>\n';
+							xhtm += bigtext + '</td>\n';
 
 							if (item.Type == "Scene") {
-								xhtm += '<td id="img1" class="img img1"><img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+								xhtm += '<td id="img1" class="img img1"><img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 								xhtm += '\t      <td id="status" class="status"><span>&nbsp;</span></td>\n';
 							}
 							else {
@@ -948,12 +930,12 @@ define(['app'], function (app) {
 									offclass = "transimg";
 								}
 
-								xhtm += '<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
-								xhtm += '<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
-								xhtm += '\t      <td id="status" class="status"><span class="wrapper">&nbsp;</span></td>\n';
+								xhtm += '<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" height="48" width="48"></td>\n';
+								xhtm += '<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\', ' + item.Protected + ');" height="48" width="48"></td>\n';
+								xhtm += '\t      <td id="status" class="status">&nbsp;</td>\n';
 							}
 							xhtm +=
-								'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+								'\t      <td id="lastupdate" class="lastupdate">' + item.LastUpdate + '</td>\n' +
 								'\t      <td id="type">' + $.t(item.Type) + '</td>\n';
 							xhtm += '\t      <td class="options">';
 							if (item.Favorite == 0) {
@@ -981,6 +963,7 @@ define(['app'], function (app) {
 								'</td>\n' +
 								'\t    </tr>\n' +
 								'\t    </table>\n' +
+								'\t  </section>\n' +
 								'\t</div>\n';
 							htmlcontent += xhtm;
 							j += 1;
@@ -995,26 +978,22 @@ define(['app'], function (app) {
 			if (htmlcontent == '') {
 				htmlcontent = '<h2>' + $.t('No Scenes defined yet...') + '</h2>';
 			}
-			$('#scenecontent').html(tophtm + htmlcontent); //tophtm+htmlcontent
-			$('#scenecontent').i18n();
+			$element.html(tophtm + htmlcontent);
+			$element.i18n();
 
 			$rootScope.RefreshTimeAndSun();
 
 			if (bAllowWidgetReorder == true) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint == false) {
-						$("#scenecontent .span4").draggable({
+						$element.find(".span4").draggable({
 							drag: function () {
-								if (typeof $scope.mytimer != 'undefined') {
-									$interval.cancel($scope.mytimer);
-									$scope.mytimer = undefined;
-								}
 								SceneIdx = $(this).attr("id");
 								$(this).css("z-index", 2);
 							},
 							revert: true
 						});
-						$("#scenecontent .span4").droppable({
+						$element.find(".span4").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
 								$.ajax({
@@ -1030,9 +1009,7 @@ define(['app'], function (app) {
 					}
 				}
 			}
-			$scope.mytimer = $interval(function () {
-				RefreshScenes();
-			}, 10000);
+			RefreshScenes();
 			return false;
 		}
 
@@ -1041,6 +1018,10 @@ define(['app'], function (app) {
 		function init() {
 			SceneIdx = 0;
 			$scope.MakeGlobalConfig();
+
+			$scope.$on('scene_update', function (event, sceneData) {
+				RefreshItem(sceneData);
+			});
 
 			$("#dialog-addscene").dialog({
 				autoOpen: false,
@@ -1089,11 +1070,6 @@ define(['app'], function (app) {
 			}).i18n();
 			ShowScenes();
 		};
-		$scope.$on('$destroy', function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
-		});
-	}]);
+
+	});
 });

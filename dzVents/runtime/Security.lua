@@ -1,17 +1,11 @@
+local evenItemIdentifier = require('eventItemIdentifier')
 local function Security(domoticz, rule)
 
     local self = {
-        baseType = domoticz.BASETYPE_SECURITY,
-        trigger = rule,
-        isVariable = false,
-		isHTTPResponse = false,
-	    isDevice = false,
-	    isScene = false,
-	    isGroup = false,
-	    isTimer = false,
-        isSecurity = true,
         state = domoticz.security
     }
+
+	evenItemIdentifier.setType(self, 'isSecurity', domoticz.BASETYPE_SECURITY, rule)
 
     return self
 

@@ -19,7 +19,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../webserver/Base64.h"
 #include "Tado.h"
 
@@ -193,9 +193,21 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 {
 	try
 	{
-		if (m_TadoUsername.size() == 0 && !refreshUsingToken) throw std::runtime_error("No username specified.");
-		if (m_TadoPassword.size() == 0 && !refreshUsingToken) throw std::runtime_error("No password specified.");
-		if (m_bDoGetEnvironment) throw std::runtime_error("Environment not (yet) set up.");
+		if (m_TadoUsername.size() == 0 && !refreshUsingToken)
+		{
+			_log.Log(LOG_ERROR, "Tado: No username specified.");
+			return false;
+		}
+		if (m_TadoPassword.size() == 0 && !refreshUsingToken)
+		{
+			_log.Log(LOG_ERROR, "Tado: No password specified.");
+			return false;
+		}
+		if (m_bDoGetEnvironment)
+		{
+			_log.Log(LOG_ERROR, "Tado: Environment not (yet) set up.");
+			return false;
+		}
 
 		std::string _sUrl = m_TadoEnvironment["apiEndpoint"] + "/token";
 		std::ostringstream s;
@@ -231,14 +243,23 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 		catch (std::exception& e)
 		{
 			std::string what = e.what();
-			throw std::runtime_error(("Failed to get token from Api: %s", what.c_str()));
+			_log.Log(LOG_ERROR, "Tado: Failed to get token from Api: %s", what.c_str());
+			return false;
 		}
 
 		authtoken = _jsRoot["access_token"].asString();
-		if (authtoken.size() == 0) throw std::runtime_error("Received token is zero length.");
+		if (authtoken.size() == 0)
+		{
+			_log.Log(LOG_ERROR, "Tado: Received token is zero length.");
+			return false;
+		}
 
 		refreshtoken = _jsRoot["refresh_token"].asString();
-		if (refreshtoken.size() == 0) throw std::runtime_error("Received refresh token is zero length.");
+		if (refreshtoken.size() == 0)
+		{
+			_log.Log(LOG_ERROR, "Tado: Received refresh token is zero length.");
+			return false;
+		}
 
 		_log.Log(LOG_STATUS, "Tado: Received access token from API.");
 		_log.Log(LOG_STATUS, "Tado: Received refresh token from API.");
@@ -268,7 +289,8 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		catch (std::exception& e)
 		{
 			std::string what = e.what();
-			throw std::runtime_error(("Failed to get information on zone '%s': %s", zone.Name.c_str(), what.c_str()));
+			_log.Log(LOG_ERROR, "Tado: Failed to get information on zone '%s': %s", zone.Name.c_str(), what.c_str());
+			return false;
 		}
 
 		// Zone Home/away
@@ -350,7 +372,8 @@ bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
 		catch (std::exception& e)
 		{
 			std::string what = e.what();
-			throw std::runtime_error(("Failed to get state information on home '%s': %s", home.Name.c_str(), what.c_str()));
+			_log.Log(LOG_ERROR, "Tado: Failed to get state information on home '%s': %s", home.Name.c_str(), what.c_str());
+			return false;
 		}
 
 		// Home/away
@@ -609,7 +632,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 	// Get the javascript response and split its lines
 	StringSplit(sJavascriptData, "\n", _sJavascriptDataLines);
 
-	_log.Debug(DEBUG_HARDWARE, "Tado: MatchValueFromJSKey: Got %lu lines from javascript data.", _sJavascriptDataLines.size());
+	_log.Debug(DEBUG_HARDWARE, "Tado: MatchValueFromJSKey: Got %zu lines from javascript data.", _sJavascriptDataLines.size());
 
 	if (_sJavascriptDataLines.size() <= 0)
 	{
@@ -848,7 +871,10 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 	try {
 		// If there is no token stored then there is no point in doing a request. Unless we specifically
 		// decide not to do authentication.
-		if (m_TadoAuthToken.size() == 0 && bSendAuthHeaders) throw std::runtime_error("No access token available.");
+		if (m_TadoAuthToken.size() == 0 && bSendAuthHeaders) {
+			_log.Log(LOG_ERROR, "Tado: No access token available.");
+			return false;
+		}
 
 		// Prepare the headers. Copy supplied vector.
 		std::vector<std::string> _vExtraHeaders = vExtraHeaders;
@@ -856,8 +882,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 		// If the supplied postdata validates as json, add an appropriate content type header
 		if (sPostData.size() > 0)
 		{
-			Json::Reader _jsReader;
-			if (_jsReader.parse(sPostData, *(new Json::Value))) {
+			if (ParseJSon(sPostData, *(new Json::Value))) {
 				_vExtraHeaders.push_back("Content-Type: application/json");
 			}
 		}
@@ -873,7 +898,8 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 			case Put:
 				if (!HTTPClient::PUT(sUrl, sPostData, _vExtraHeaders, sResponse, bIgnoreEmptyResponse))
 				{
-					throw std::runtime_error(("Failed to perform PUT request to Tado Api: %s", sResponse.c_str()));
+					_log.Log(LOG_ERROR, "Tado: Failed to perform PUT request to Tado Api: %s", sResponse.c_str());
+					return false;
 				}
 				break;
 
@@ -881,7 +907,8 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 				if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders, true, bIgnoreEmptyResponse))
 				{
 					for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) _ssResponseHeaderString << _vResponseHeaders[i];
-					throw std::runtime_error(("Failed to perform POST request to Tado Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str()));
+					_log.Log(LOG_ERROR, "Tado: Failed to perform POST request to Tado Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
+					return false;
 				}
 				break;
 
@@ -889,39 +916,47 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 				if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, bIgnoreEmptyResponse))
 				{
 					for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) _ssResponseHeaderString << _vResponseHeaders[i];
-					throw std::runtime_error(("Failed to perform GET request to Tado Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str()));
+					_log.Log(LOG_ERROR, "Tado: Failed to perform GET request to Tado Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
+					return false;
 				}
 				break;
 
 			case Delete:
 				if (!HTTPClient::Delete(sUrl, sPostData, _vExtraHeaders, sResponse, bIgnoreEmptyResponse)) {
 					{
-						throw std::runtime_error(("Failed to perform DELETE request to Tado Api: %s", sResponse.c_str()));
+						_log.Log(LOG_ERROR, "Tado: Failed to perform DELETE request to Tado Api: %s", sResponse.c_str());
+						return false;
 					}
 				}
 				break;
 
 			default:
-				throw std::runtime_error("Unknown method specified.");
+				{
+					_log.Log(LOG_ERROR, "Tado: Unknown method specified.");
+					return false;
+				}
 		}
 
 		if (sResponse.size() == 0)
 		{
-			if (!bIgnoreEmptyResponse) throw std::runtime_error("Received an empty response from Api.");
-		}
-
-		if (bDecodeJsonResponse) {
-			Json::Reader _jsReader;
-			if (!_jsReader.parse(sResponse, jsDecodedResponse)) {
-				throw std::runtime_error("Failed to decode Json response from Api.");
+			if (!bIgnoreEmptyResponse) {
+				_log.Log(LOG_ERROR, "Tado: Received an empty response from Api.");
+				return false;
 			}
 		}
 
-		return true;
+		if (bDecodeJsonResponse) {
+			if (!ParseJSon(sResponse, jsDecodedResponse)) {
+				_log.Log(LOG_ERROR, "Tado: Failed to decode Json response from Api.");
+				return false;
+			}
+		}
 	}
 	catch (std::exception& e)
 	{
 		std::string what = e.what();
-		throw std::runtime_error(("Error sending information to Tado API: %s", what.c_str()));
+		_log.Log(LOG_ERROR, "Tado: Error sending information to Tado API: %s", what.c_str());
+		return false;
 	}
+	return true;
 }

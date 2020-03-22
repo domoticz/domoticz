@@ -1,36 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns="http://code.google.com/p/open-zwave/">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value genre="config" index="3" value="0" label="LED Indicator Control" units="" size="1" min="0" max="255" type="list">
+    <Value genre="config" index="3" label="LED Indicator Control" max="255" min="0" size="1" type="list" units="" value="0">
       <Help>Choose if you want the LED indicator to turn on when switch is on or off or disable completely.</Help>
-      <Item value="0" label="LED on when switch is off"/>
-      <Item value="1" label="LED on when switch is on"/>
-      <Item value="2" label="LED is disabled"/>
+      <Item label="LED on when switch is off" value="0"/>
+      <Item label="LED on when switch is on" value="1"/>
+      <Item label="LED is disabled" value="2"/>
     </Value>
-    <Value genre="config" index="4" value="0" label="Orientation" units="" size="1" min="0" max="255" type="list">
+    <Value genre="config" index="4" label="Orientation" max="255" min="0" size="1" type="list" units="" value="0">
       <Help>Controls the on/off orientation of the rocker switch</Help>
-      <Item value="0" label="Normal"/>
-      <Item value="1" label="Inverted"/>
+      <Item label="Normal" value="0"/>
+      <Item label="Inverted" value="1"/>
     </Value>
-    <Value genre="config" index="5" value="0" label="Automatically turn switch off after interval" units="seconds" size="2" min="0" max="32767" type="short">
+    <Value genre="config" index="5" label="Automatically turn switch off after interval" max="32767" min="0" size="2" type="short" units="seconds" value="0">
       <Help>Automatically turn the switch off after this many seconds. 0 is disabled</Help>
     </Value>
   </CommandClass>
-
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" label="Lifeline" max_associations="5" />
-	    <Group index="2" label="Basic_Set" max_associations="5" />
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic_Set" max_associations="5"/>
     </Associations>
   </CommandClass>
-<!-- Central Scene Reports -->
-  <CommandClass id="91" name="COMMAND_CLASS_CENTRAL_SCENE" version="1" request_flags="4" scenecount="0">
-    <Instance index="1" />
-      <Value type="int" genre="system" instance="1" index="0" label="Scene Count" units="" read_only="true" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="2" />
-      <Value type="int" genre="user" instance="1" index="1" label="Top Button Scene" units="" read_only="false" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0" />
-      <Value type="int" genre="user" instance="1" index="2" label="Bottom Button Scene" units="" read_only="false" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0" />
-  </CommandClass>
-
 </Product>

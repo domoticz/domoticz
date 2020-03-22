@@ -280,7 +280,7 @@ void CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 		Log(LOG_ERROR, "Invalid response");
 		return;
 	}
-
+	SendSetPointSensor(20, 1, 1, temp, "Target Temperature");
 }
 
 

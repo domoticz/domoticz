@@ -43,15 +43,18 @@ return {
 	baseType = 'device',
 
 	match = function (device)
-		return true -- generic always matches
+		return true -- generic always matches?
 	end,
 
 	matches = function (device, adapterManager)
+		adapterManager.addDummyMethod(device, 'protectionOn')
+		adapterManager.addDummyMethod(device, 'protectionOff')
 		adapterManager.addDummyMethod(device, 'setDescription')
 		adapterManager.addDummyMethod(device, 'setIcon')
 		adapterManager.addDummyMethod(device, 'setValues')
+		adapterManager.addDummyMethod(device, 'rename')
 	end,
-	
+
 	process = function (device, data, domoticz, utils, adapterManager)
 		local _states = adapterManager.states
 
@@ -75,7 +78,6 @@ return {
 		device.isVariable = false
 		device.isHTTPResponse = false
 		device.isSecurity = false
-
 
 		if (data.baseType == 'device') then
 
@@ -104,7 +106,7 @@ return {
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = data.rawData
 			device['nValue'] = data.data._nValue
-
+			device['sValue'] = data.data._state
 			device['cancelQueuedCommands'] = function()
 				domoticz.sendCommand('Cancel', {
 					type = 'device',
@@ -117,6 +119,7 @@ return {
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then
 			device['description'] = data.description
+			device['protected'] = data.protected 
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = { [1] = data.data._state }
 			device['changed'] = data.changed
@@ -133,20 +136,43 @@ return {
 
 		function device.setDescription(description)
 			local url = domoticz.settings['Domoticz url'] ..
-				"/json.htm?description=" .. domoticz.utils.urlEncode(description) ..
+				"/json.htm?description=" .. utils.urlEncode(description) ..
 				"&idx=" .. device.id ..
-				"&name=".. domoticz.utils.urlEncode(device.name) ..
+				"&name=".. utils.urlEncode(device.name) ..
 				"&type=setused&used=true"
 			return domoticz.openURL(url)
 		end
-		
+
 		function device.setIcon(iconNumber)
 			local url = domoticz.settings['Domoticz url'] .. 
-				'/json.htm?type=setused&used=true&name=' .. domoticz.utils.urlEncode(device.name) ..
-				'&description=' .. domoticz.utils.urlEncode(device.description) ..
+				'/json.htm?type=setused&used=true&name=' .. 
+				 utils.urlEncode(device.name) ..
+				'&description=' .. utils.urlEncode(device.description) ..
 				'&idx=' .. device.id .. 
 				'&switchtype=' .. device.switchTypeValue ..
 				'&customimage=' .. iconNumber
+			return domoticz.openURL(url)
+		end
+
+		function device.rename(newName)
+			local url = domoticz.settings['Domoticz url'] ..  
+						"/json.htm?type=command&param=renamedevice" ..
+						"&idx=" .. device.idx ..
+						"&name=" .. utils.urlEncode(newName)
+			return domoticz.openURL(url)
+		end
+
+		function device.protectionOn()
+			local url = domoticz.settings['Domoticz url'] ..  
+						"/json.htm?type=setused&used=true&protected=true" ..
+						"&idx=" .. device.idx
+			return domoticz.openURL(url)
+		end
+
+		function device.protectionOff()
+			local url = domoticz.settings['Domoticz url'] ..  
+						"/json.htm?type=setused&used=true&protected=false" ..
+						"&idx=" .. device.idx
 			return domoticz.openURL(url)
 		end
 
@@ -173,9 +199,14 @@ return {
 
 		for attribute, value in pairs(data.data) do
 			if (device[attribute] == nil) then
-				device[attribute] = value
+				if type(value) == 'number' and math.floor(value) == value then
+					device[attribute] = math.floor(value)
+				else
+					device[attribute] = value
+				end
 			end
 		end
+
 
 		return device
 

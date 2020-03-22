@@ -1,9 +1,9 @@
-define(['app'], function (app) {
+define(['app', 'livesocket'], function(app) {
 
     var addDeviceModal = {
         templateUrl: 'app/devices/deviceAddModal.html',
         controllerAs: '$ctrl',
-        controller: function ($scope, deviceApi) {
+        controller: function($scope, deviceApi) {
             var $ctrl = this;
             init();
 
@@ -13,13 +13,13 @@ define(['app'], function (app) {
                 $ctrl.isMainDevice = true;
 
                 if ($ctrl.isLightDevice) {
-                    deviceApi.getLightsDevices().then(function (devices) {
+                    deviceApi.getLightsDevices().then(function(devices) {
                         $ctrl.mainDevices = devices;
                     });
                 }
             }
 
-            $ctrl.addDevice = function () {
+            $ctrl.addDevice = function() {
                 $ctrl.isSaving = true;
                 var mainDevice = $ctrl.isMainDevice ? undefined : $ctrl.mainDevice;
 
@@ -32,18 +32,18 @@ define(['app'], function (app) {
     var renameDeviceModal = {
         templateUrl: 'app/devices/deviceRenameModal.html',
         controllerAs: '$ctrl',
-        controller: function ($scope, deviceApi, sceneApi) {
+        controller: function($scope, deviceApi, sceneApi) {
             var $ctrl = this;
             $ctrl.device = Object.assign($scope.device);
 
-            $ctrl.renameDevice = function () {
+            $ctrl.renameDevice = function() {
                 $ctrl.isSaving = true;
 
                 var savingPromise = ['Scene', 'Group'].includes($ctrl.device.Type)
                     ? sceneApi.renameScene($ctrl.device.idx, $ctrl.device.Name)
                     : deviceApi.renameDevice($ctrl.device.idx, $ctrl.device.Name);
 
-                savingPromise.then(function () {
+                savingPromise.then(function() {
                     $scope.$close();
                 });
             }
@@ -56,18 +56,18 @@ define(['app'], function (app) {
             onUpdate: '&'
         },
         template: '<table id="devices" class="display" width="100%"></table>',
-        controller: function ($scope, $element, $modal, $route, bootbox, dataTableDefaultSettings, deviceApi) {
+        controller: function($scope, $element, $uibModal, $route, bootbox, dataTableDefaultSettings, deviceApi) {
             var $ctrl = this;
             var table;
 
-            $ctrl.$onInit = function () {
+            $ctrl.$onInit = function() {
                 table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
                     select: {
                         style: 'multi',
                         className: 'row_selected',
                         selector: '.js-select-row'
                     },
-                    order: [[2, 'asc']],
+                    order: [[13, 'desc']],
                     columns: [
                         {
                             title: renderSelectorTitle(),
@@ -75,10 +75,21 @@ define(['app'], function (app) {
                             orderable: false,
                             defaultContent: selectorRenderer()
                         },
-                        { title: renderDeviceStateTitle(), width: '16px', data: 'idx', orderable: false, render: iconRenderer },
+                        {
+                            title: renderDeviceStateTitle(),
+                            width: '16px',
+                            data: 'idx',
+                            orderable: false,
+                            render: iconRenderer
+                        },
                         { title: $.t('Idx'), width: '30px', data: 'idx' },
                         { title: $.t('Hardware'), width: '100px', data: 'HardwareName' },
-                        { title: $.t('ID'), width: '70px', data: 'ID' },
+                        {
+                            title: $.t('ID'),
+                            width: '70px',
+                            data: 'ID',
+                            render: idRenderer
+                        },
                         { title: $.t('Unit'), width: '40px', data: 'Unit' },
                         { title: $.t('Name'), width: '200px', data: 'Name' },
                         { title: $.t('Type'), width: '110px', data: 'Type' },
@@ -104,23 +115,23 @@ define(['app'], function (app) {
                     ]
                 }));
 
-                table.on('click', '.js-include-device', function () {
+                table.on('click', '.js-include-device', function() {
                     var row = table.api().row($(this).closest('tr')).data();
                     var scope = $scope.$new(true);
                     scope.device = row;
 
-                    $modal
+                    $uibModal
                         .open(Object.assign({ scope: scope }, addDeviceModal)).result
                         .then($ctrl.onUpdate);
 
                     $scope.$apply();
                 });
 
-                table.on('click', '.js-exclude-device', function () {
+                table.on('click', '.js-exclude-device', function() {
                     var row = table.api().row($(this).closest('tr')).data();
 
                     bootbox.confirm('Are you sure to remove this Device from your used devices?')
-                        .then(function () {
+                        .then(function() {
                             return deviceApi.excludeDevice(row.idx);
                         })
                         .then($ctrl.onUpdate);
@@ -128,64 +139,85 @@ define(['app'], function (app) {
                     $scope.$apply();
                 });
 
-                table.on('click', '.js-rename-device', function () {
+                table.on('click', '.js-rename-device', function() {
                     var row = table.api().row($(this).closest('tr')).data();
                     var scope = $scope.$new(true);
                     scope.device = row;
 
-                    $modal
+                    $uibModal
                         .open(Object.assign({ scope: scope }, renameDeviceModal)).result
                         .then($ctrl.onUpdate);
 
                     $scope.$apply();
                 });
 
-                table.on('click', '.js-show-log', function () {
+                table.on('click', '.js-show-log', function() {
                     var device = table.api().row($(this).closest('tr')).data();
 
-                    device.openCustomLog('#devicescontent', function () {
+                    device.openCustomLog('#devicescontent', function() {
                         $route.reload();
                     });
 
                     $scope.$apply();
                 });
 
-                table.on('click', '.js-remove-device', function () {
+                table.on('click', '.js-remove-device', function() {
                     var device = table.api().row($(this).closest('tr')).data();
 
                     bootbox.confirm('Are you sure to delete this Device?\n\nThis action can not be undone...')
-                        .then(function () {
+                        .then(function() {
                             return deviceApi.removeDevice(device.idx);
                         })
                         .then($ctrl.onUpdate);
                 });
 
-                table.on('click', '.js-remove-selected', function () {
-                    var devices = [].map.call(table.api().rows({ selected: true }).data(), function (device) {
-                        return device.idx;
+                table.on('click', '.js-remove-selected', function() {
+                    var selected_items = [].map.call(table.api().rows({ selected: true }).data(), function(item) {
+                        var obj = {
+                            idx: item.idx,
+                            type: item.Type
+                        };
+                        return obj;
+                    });
+                    if (selected_items.length === 0) {
+                        return bootbox.alert('No Items selected to Delete!');
+                    }
+                    var devices = [];
+                    var scenes = [];
+
+                    selected_items.forEach(function(item) {
+                        if ((item.type != 'Group') && (item.type != 'Scene')) {
+                            devices.push(item.idx);
+                        } else {
+                            scenes.push(item.idx);
+                        }
                     });
 
-                    if (devices.length === 0) {
-                        return bootbox.alert('No Devices selected to Delete!');
-                    }
-
-                    bootbox.confirm($.t('Are you sure you want to delete the selected Devices?') + ' (' + devices.length + ')')
-                        .then(function () {
-                            return deviceApi.removeDevice(devices);
+                    bootbox.confirm($.t('Are you sure you want to delete the selected Devices?') + ' (' + (devices.length + scenes.length) + ')')
+                        .then(function() {
+                            ShowNotify($.t("Removing..."), 30000);
+                            if (devices.length > 0) {
+                                ret = deviceApi.removeDevice(devices);
+                            }
+                            if (scenes.length > 0) {
+                                ret = deviceApi.removeScene(scenes);
+                            }
+                            HideNotify();
+                            return ret;
                         })
-                        .then(function () {
-                            bootbox.alert(devices.length + ' ' + $.t('Devices deleted.'));
+                        .then(function() {
+                            bootbox.alert((devices.length + scenes.length) + ' ' + $.t('Devices deleted.'));
                             $ctrl.onUpdate();
                         });
                 });
 
-                table.on('click', '.js-toggle-state', function () {
+                table.on('click', '.js-toggle-state', function() {
                     var device = table.api().row($(this).closest('tr')).data();
-                    device.toggle().then($ctrl.onUpdate);
+                    device.toggle();
                     $scope.$apply();
                 });
 
-                table.on('change', '.js-select-devices', function () {
+                table.on('change', '.js-select-devices', function() {
                     if (this.checked) {
                         table.api().rows({ page: 'current' }).select();
                     } else {
@@ -196,15 +228,18 @@ define(['app'], function (app) {
                     $scope.$apply();
                 });
 
-                table.on('select.dt', function () {
+                table.on('select.dt', function() {
                     updateDeviceDeleteBtnState();
                     $scope.$apply();
                 });
 
-                table.on('deselect.dt', function () {
+                table.on('deselect.dt', function() {
                     updateDeviceDeleteBtnState();
                     $scope.$apply();
                 });
+
+                $scope.$on('device_update', updateItem);
+                $scope.$on('scene_update', updateItem);
 
                 table.api().rows
                     .add($ctrl.devices)
@@ -213,7 +248,7 @@ define(['app'], function (app) {
                 updateDeviceDeleteBtnState();
             };
 
-            $ctrl.$onChanges = function (changes) {
+            $ctrl.$onChanges = function(changes) {
                 if (!table) {
                     return;
                 }
@@ -226,9 +261,20 @@ define(['app'], function (app) {
                 }
             };
 
-            $ctrl.getSelectedRecordsCounts = function () {
+            $ctrl.getSelectedRecordsCounts = function() {
                 return table.api().rows({ selected: true }).count()
             };
+
+            function updateItem(event, itemData) {
+                table.api().rows().every(function() {
+                    var device = this.data();
+
+                    if (device.idx === itemData.idx && device.Type === itemData.Type) {
+                        this.data(Object.assign(device, itemData));
+                        table.find('.row_selected .js-select-row').prop('checked', true);
+                    }
+                });
+            }
 
             function updateDeviceDeleteBtnState() {
                 if ($ctrl.getSelectedRecordsCounts() > 0) {
@@ -242,13 +288,35 @@ define(['app'], function (app) {
                 return '<input type="checkbox" class="noscheck js-select-row" />';
             }
 
+            function idRenderer(value, type, device) {
+                if (device.isScene()) {
+                    return "-";
+                }
+
+                var ID = device.ID;
+                if (typeof (device.HardwareTypeVal) != 'undefined' && device.HardwareTypeVal == 21) {
+                    if (device.ID.substr(-4, 2) == '00') {
+                        ID = device.ID.substr(1, device.ID.length - 2) + '<span class="ui-state-default">' + device.ID.substr(-2, 2) + '</span>';
+                    } else {
+                        ID = device.ID.substr(1, device.ID.length - 4) + '<span class="ui-state-default">' + device.ID.substr(-4, 2) + '</span>' + device.ID.substr(-2, 2);
+                    }
+                }
+                /*
+                Not sure why this was used
+                                if (device.Type == "Lighting 1") {
+                                    ID = String.fromCharCode(device.ID);
+                                }
+                */
+                return ID;
+            }
+
             function iconRenderer(value, type, device) {
                 var itemImage = '<img src="' + device.icon.getIcon() + '" width="16" height="16">';
 
                 var isToggleAvailable =
                     (['Light/Switch', 'Lighting 2'].includes(device.Type) && [0, 7, 9, 10].includes(device.SwitchTypeVal))
                     || device.Type === 'Color Switch'
-                    || (['Group', 'Scene'].includes(device.Type));
+                    || device.isScene();
 
                 if (isToggleAvailable) {
                     var title = device.isActive() ? $.t('Turn Off') : $.t('Turn On');
@@ -258,14 +326,14 @@ define(['app'], function (app) {
                 }
             }
 
-            function actionsRenderer(value, type, item) {
+            function actionsRenderer(value, type, device) {
                 var actions = [];
-                var logLink = item.getLogLink();
-                var isScene = ['Group', 'Scene'].includes(item.Type);
+                var logLink = device.getLogLink();
+                var isScene = device.isScene();
 
                 if (isScene) {
                     actions.push('<img src="images/empty16.png">');
-                } else if (item.Used !== 0) {
+                } else if (device.Used !== 0) {
                     actions.push('<button class="btn btn-icon js-exclude-device" title="' + $.t('Set Unused') + '"><img src="images/remove.png" /></button>');
                 } else {
                     actions.push('<button class="btn btn-icon js-include-device" title="' + $.t('Add Device') + '"><img src="images/add.png" /></button>');
@@ -274,7 +342,7 @@ define(['app'], function (app) {
                 actions.push('<button class="btn btn-icon js-rename-device" title="' + $.t('Rename Device') + '"><img src="images/rename.png" /></button>');
 
                 if (isScene) {
-                    actions.push('<a class="btn btn-icon" href="#/Scenes/' + item.idx + '/Log" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
+                    actions.push('<a class="btn btn-icon" href="#/Scenes/' + device.idx + '/Log" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
                 } else if (logLink) {
                     actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
                 } else {
@@ -328,7 +396,7 @@ define(['app'], function (app) {
             ngModelCtrl: 'ngModel'
         },
         templateUrl: 'app/devices/deviceFilters.html',
-        controller: function (domoticzApi) {
+        controller: function(domoticzApi) {
             var $ctrl = this;
             var filterAdditionalDataPromise;
 
@@ -336,10 +404,10 @@ define(['app'], function (app) {
                 {
                     field: 'Used',
                     name: $.t('Used'),
-                    display: function (value) {
+                    display: function(value) {
                         return value === 0 ? 'No' : 'Yes';
                     },
-                    parse: function (value) {
+                    parse: function(value) {
                         return parseInt(value, 10)
                     }
                 },
@@ -348,8 +416,8 @@ define(['app'], function (app) {
                 {
                     field: 'PlanIDs',
                     name: $.t('Room'),
-                    display: function (value) {
-                        var roomPlan = $ctrl.plans.find(function (item) {
+                    display: function(value) {
+                        var roomPlan = $ctrl.plans.find(function(item) {
                             return parseInt(item.idx) === value;
                         });
 
@@ -359,26 +427,26 @@ define(['app'], function (app) {
                             return $.t('- N/A -')
                         }
                     },
-                    parse: function (value) {
+                    parse: function(value) {
                         return parseInt(value, 10)
                     }
                 }
             ];
 
-            $ctrl.$onInit = function () {
-                $ctrl.filters = $ctrl.filters.map(function (filter) {
+            $ctrl.$onInit = function() {
+                $ctrl.filters = $ctrl.filters.map(function(filter) {
                     return Object.assign({ collapsed: false }, filter)
                 });
 
-                $ctrl.ngModelCtrl.$render = function () {
+                $ctrl.ngModelCtrl.$render = function() {
                     var value = $ctrl.ngModelCtrl.$modelValue;
 
                     $ctrl.filterValue = Object.keys(value)
-                        .filter(function (fieldName) {
+                        .filter(function(fieldName) {
                             return value[fieldName] !== undefined;
                         })
-                        .reduce(function (acc, fieldName) {
-                            var fieldFilterValue = value[fieldName].reduce(function (acc, fieldValue) {
+                        .reduce(function(acc, fieldName) {
+                            var fieldFilterValue = value[fieldName].reduce(function(acc, fieldValue) {
                                 acc[fieldValue] = true;
                                 return acc
                             }, {});
@@ -389,29 +457,29 @@ define(['app'], function (app) {
                 };
             };
 
-            $ctrl.$onChanges = function (changes) {
+            $ctrl.$onChanges = function(changes) {
                 if (!filterAdditionalDataPromise) {
                     filterAdditionalDataPromise = loadRooms();
                 }
 
                 if (changes.devices && changes.devices.currentValue) {
-                    filterAdditionalDataPromise.then(function () {
+                    filterAdditionalDataPromise.then(function() {
                         initFilters($ctrl.devices);
                     });
                 }
             };
 
-            $ctrl.updateFilterValue = function (filterValue) {
-                var value = Object.keys(filterValue).reduce(function (acc, fieldName) {
-                    var filter = $ctrl.filters.find(function (item) {
+            $ctrl.updateFilterValue = function(filterValue) {
+                var value = Object.keys(filterValue).reduce(function(acc, fieldName) {
+                    var filter = $ctrl.filters.find(function(item) {
                         return item.field === fieldName;
                     });
 
                     var filterFieldValue = Object.keys(filterValue[fieldName])
-                        .filter(function (item) {
+                        .filter(function(item) {
                             return filterValue[fieldName][item] === true
                         })
-                        .map(function (value) {
+                        .map(function(value) {
                             return filter.parse ? filter.parse(value) : value;
                         });
 
@@ -427,8 +495,8 @@ define(['app'], function (app) {
 
             function initFilters(devices) {
                 $ctrl.filterValues = (devices || [])
-                    .reduce(function (acc, device) {
-                        $ctrl.filters.forEach(function (item, index) {
+                    .reduce(function(acc, device) {
+                        $ctrl.filters.forEach(function(item, index) {
                             if (!acc[index]) {
                                 acc[index] = []
                             }
@@ -441,7 +509,7 @@ define(['app'], function (app) {
                                 ? device[item.field]
                                 : [device[item.field]];
 
-                            values.forEach(function (value) {
+                            values.forEach(function(value) {
                                 if (!acc[index].includes(value)) {
                                     acc[index].push(value)
                                 }
@@ -450,12 +518,12 @@ define(['app'], function (app) {
 
                         return acc;
                     }, [])
-                    .map(function (values, filterIndex) {
-                        var displayFn = $ctrl.filters[filterIndex].display || function (value) {
+                    .map(function(values, filterIndex) {
+                        var displayFn = $ctrl.filters[filterIndex].display || function(value) {
                             return value
                         };
 
-                        values.sort(function (value1, value2) {
+                        values.sort(function(value1, value2) {
                             return displayFn(value1) > displayFn(value2) ? 1 : -1;
                         });
 
@@ -469,7 +537,7 @@ define(['app'], function (app) {
                     displayhidden: 0,
                 })
                     .then(domoticzApi.errorHandler)
-                    .then(function (response) {
+                    .then(function(response) {
                         $ctrl.plans = response.result || []
                     });
             }
@@ -481,21 +549,21 @@ define(['app'], function (app) {
         require: {
             ngModelCtrl: 'ngModel'
         },
-        controller: function () {
+        controller: function() {
             var $ctrl = this;
 
-            $ctrl.$onInit = function () {
-                $ctrl.ngModelCtrl.$render = function () {
+            $ctrl.$onInit = function() {
+                $ctrl.ngModelCtrl.$render = function() {
                     $ctrl.value = $ctrl.ngModelCtrl.$viewValue;
                 };
 
-                $ctrl.ngModelCtrl.$parsers.push(function (value) {
+                $ctrl.ngModelCtrl.$parsers.push(function(value) {
                     return Object.assign({}, $ctrl.ngModelCtrl.$modelValue, {
                         Used: value && value.length === 1 ? value : undefined
                     });
                 });
 
-                $ctrl.ngModelCtrl.$formatters.push(function (value) {
+                $ctrl.ngModelCtrl.$formatters.push(function(value) {
                     var filterValue = value && value.Used;
 
                     return (Array.isArray(filterValue) && filterValue.length === 1)
@@ -504,7 +572,7 @@ define(['app'], function (app) {
                 });
             };
 
-            $ctrl.setFilter = function (value) {
+            $ctrl.setFilter = function(value) {
                 var filterValue = value !== undefined
                     ? [value]
                     : [0, 1];
@@ -515,7 +583,7 @@ define(['app'], function (app) {
         }
     });
 
-    app.controller('DevicesController', function ($scope, domoticzApi, Device) {
+    app.controller('DevicesController', function($scope, domoticzApi, livesocket, Device) {
         var $ctrl = this;
         $ctrl.refreshDevices = refreshDevices;
         $ctrl.applyFilter = applyFilter;
@@ -526,6 +594,21 @@ define(['app'], function (app) {
             $ctrl.isListExpanded = false;
             $ctrl.filter = {};
             $ctrl.refreshDevices();
+
+            $scope.$on('device_update', updateItem);
+            $scope.$on('scene_update', updateItem);
+        }
+
+        function updateItem(event, itemData) {
+            var device = $ctrl.devices.find(function(device) {
+                return device.idx === itemData.idx && device.Type === itemData.Type;
+            });
+
+            if (device) {
+                Object.assign(device, itemData);
+            } else {
+                $ctrl.devices.push(new Device(itemData))
+            }
         }
 
         function refreshDevices() {
@@ -536,36 +619,39 @@ define(['app'], function (app) {
                 used: 'all'
             })
                 .then(domoticzApi.errorHandler)
-                .then(function (response) {
-                    $ctrl.devices = response.result
-                        .map(function (item) {
-                            var isScene = ['Group', 'Scene'].includes(item.Type);
+                .then(function(response) {
+                    if (response.result !== undefined) {
+                        $ctrl.devices = response.result
+                            .map(function(item) {
+                                var isScene = ['Group', 'Scene'].includes(item.Type);
 
-                            if (isScene) {
-                                item.HardwareName = 'Domoticz';
-                                item.ID = '-';
-                                item.Unit = '-';
-                                item.SubType = '-';
-                                item.SignalLevel = '-';
-                                item.BatteryLevel = 255;
-                            }
+                                if (isScene) {
+                                    item.HardwareName = 'Domoticz';
+                                    item.ID = '-';
+                                    item.Unit = '-';
+                                    item.SubType = '-';
+                                    item.SignalLevel = '-';
+                                    item.BatteryLevel = 255;
+                                }
 
-                            return new Device(item)
-                        });
-
+                                return new Device(item)
+                            });
+                    } else {
+                        $ctrl.devices = [];
+                    }
                     $ctrl.applyFilter();
                 });
         }
 
         function applyFilter() {
-            $ctrl.filteredDevices = ($ctrl.devices || []).filter(function (device) {
+            $ctrl.filteredDevices = ($ctrl.devices || []).filter(function(device) {
                 return Object.keys($ctrl.filter)
-                    .filter(function (fieldName) {
+                    .filter(function(fieldName) {
                         return $ctrl.filter[fieldName] !== undefined
                     })
-                    .every(function (fieldName) {
+                    .every(function(fieldName) {
                         return Array.isArray(device[fieldName])
-                            ? device[fieldName].some(function (value) {
+                            ? device[fieldName].some(function(value) {
                                 return $ctrl.filter[fieldName].includes(value)
                             })
                             : $ctrl.filter[fieldName].includes(device[fieldName])

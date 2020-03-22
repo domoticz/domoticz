@@ -110,11 +110,6 @@ void FritzboxTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData,length);
 }
 
-void FritzboxTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"Fritzbox: Error: %s",e.what());
-}
-
 void FritzboxTCP::OnError(const boost::system::error_code& error)
 {
 	if (
@@ -257,7 +252,7 @@ void FritzboxTCP::ParseLine()
 		if (results.size() < 6)
 			return;
 		sstr << "Call From: " << results[4] << " to: " << results[5];
-		m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
+		SendTextSensor(1, 1, 255, sstr.str(), devname);
 	}
 	else if (Cmd == "RING")
 	{
@@ -266,7 +261,7 @@ void FritzboxTCP::ParseLine()
 		if (results.size() < 5)
 			return;
 		sstr << "Received From: " << results[3] << " to: " << results[4];
-		m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
+		SendTextSensor(1, 1, 255, sstr.str(), devname);
 	}
 	else if (Cmd == "CONNECT")
 	{
@@ -278,13 +273,7 @@ void FritzboxTCP::ParseLine()
 		UpdateSwitch(1, 1, true, 100, "Call");
 
 		sstr << "Connected ID: " << results[2] << " Number: " << results[4];
-		m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
-		//result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
-		//if (!result.empty())
-		//{
-		//	std::string idx = result[0][0];
-		//	m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('%q', '%q')", idx.c_str(), sstr.str().c_str());
-		//}
+		SendTextSensor(1, 1, 255, sstr.str(), devname);
 	}
 	else if (Cmd == "DISCONNECT")
 	{
@@ -296,12 +285,6 @@ void FritzboxTCP::ParseLine()
 		UpdateSwitch(1, 1, false, 100, "Call");
 
 		sstr << "Disconnect ID: " << results[2] << " Duration: " << results[3] << " seconds";
-		m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
-		//result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
-		//if (!result.empty())
-		//{
-		//	std::string idx = result[0][0];
-		//	m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('%q', '%q')", idx.c_str(), sstr.str().c_str());
-		//}
+		SendTextSensor(1, 1, 255, sstr.str(), devname);
 	}
 }

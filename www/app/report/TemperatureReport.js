@@ -19,6 +19,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                 var isHumidityAvailable = (typeof response.result[0].hu !== 'undefined');
                 var isOnlyHumidity = ((typeof response.result[0].ta === 'undefined') && isHumidityAvailable);
+                var isBaroAvailable = (typeof response.result[0].ba !== 'undefined');
 
                 var data = getGroupedData(response.result, isOnlyHumidity);
                 var source = month
@@ -34,6 +35,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 return {
                     isOnlyHumidity: isOnlyHumidity,
                     isHumidityAvailable: isHumidityAvailable,
+                    isBaroAvailable: isBaroAvailable,
                     min: source.min,
                     minDate: source.minDate,
                     max: source.max,
@@ -71,6 +73,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     ? {
                         date: item.d,
                         humidity: parseFloat(item.hu) || undefined,
+                        baro: parseFloat(item.ba) || undefined,
                         min: parseFloat(item.tm),
                         max: parseFloat(item.te),
                         avg: parseFloat(item.ta)
@@ -121,6 +124,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                         acc.total = (acc.total || 0) + item.avg;
                         acc.totalHumidity = (acc.totalHumidity || 0) + item.humidity;
+                        acc.totalBaro = (acc.totalBaro || 0) + item.baro;
 
                         return acc;
                     }, {});
@@ -133,6 +137,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     month.degreeDays = stats.degreeDays || 0;
                     month.humidity = stats.totalHumidity
                         ? (stats.totalHumidity / month.days.length)
+                        : undefined;
+                    month.baro = stats.totalBaro
+                        ? (stats.totalBaro / month.days.length)
                         : undefined;
                 });
 
@@ -242,11 +249,20 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             var columns = [];
 
             var humidityRenderer = function (data) {
-                return data.toFixed(0);
+				if (typeof data !== 'undefined')
+					return data.toFixed(0);
+				return 0;
             };
 
+            var baroRenderer = function (data) {
+				if (typeof data !== 'undefined')
+					return data.toFixed(1);
+				return 0;
+            };
             var temperatureRenderer = function (data) {
-                return data.toFixed(1);
+				if (typeof data !== 'undefined')
+					return data.toFixed(1);
+				return 0;
             };
 
             if (vm.isMonthView) {
@@ -278,6 +294,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
             if (data.isHumidityAvailable && !data.isOnlyHumidity) {
                 columns.push({ title: $.t('Humidity'), data: 'humidity', render: humidityRenderer })
+            }
+            if (data.isBaroAvailable) {
+				columns.push({ title: $.t('Avg. Baro (hPa)'), data: 'baro', render: baroRenderer });
             }
 
             if (data.isOnlyHumidity && vm.isMonthView) {

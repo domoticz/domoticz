@@ -195,19 +195,7 @@ void CDenkoviTCPDevices::OnDisconnect() {
 	}
 }
 
-void CDenkoviTCPDevices::OnError(const std::exception e)
-{
-	switch (m_iModel) {
-	case DDEV_WIFI_16R:
-		_log.Log(LOG_STATUS, "WiFi 16 Relays-VCP: Error: %s", e.what());
-		break;
-	case DDEV_WIFI_16R_Modbus:
-		_log.Log(LOG_STATUS, "WiFi 16 Relays-TCP Modbus: Error: %s", e.what());
-		break;
-	}
-}
-
-void CDenkoviTCPDevices::OnError(const boost::system::error_code& error) {
+void CDenkoviTCPDevices::OnError(const boost::system::error_code& /*error*/) {
 	switch (m_iModel) {
 	case DDEV_WIFI_16R:
 		_log.Log(LOG_STATUS, "WiFi 16 Relays-VCP: Error occured.");
@@ -259,7 +247,7 @@ void CDenkoviTCPDevices::Do_Work()
 	}
 }
 
-bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	m_bUpdateIo = true;
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
@@ -310,9 +298,9 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 		m_uiTransactionCounter++;
 		m_pReq.trId[0] = (uint8_t)(m_uiTransactionCounter >> 8);
 		m_pReq.trId[1] = (uint8_t)(m_uiTransactionCounter);
-		m_pReq.unitId = m_slaveId;
+		m_pReq.unitId = (uint8_t)m_slaveId;
 		m_pReq.address[0] = 0;
-		m_pReq.address[1] = io - 1;
+		m_pReq.address[1] = (uint8_t)(io - 1);
 		m_pReq.fc = DMODBUS_WRITE_SINGLE_COIL;
 		m_pReq.length[0] = 0;
 		m_pReq.length[1] = 6;
@@ -357,7 +345,7 @@ void CDenkoviTCPDevices::GetMeterDetails()
 		m_pReq.fc = DMODBUS_READ_COILS;
 		m_pReq.length[0] = 0;
 		m_pReq.length[1] = 6;
-		m_pReq.unitId = m_slaveId;
+		m_pReq.unitId = (uint8_t)m_slaveId;
 		m_pReq.data[0] = 0;
 		m_pReq.data[1] = 16;
 		size_t dataLength = m_pReq.length[1] + 6;
