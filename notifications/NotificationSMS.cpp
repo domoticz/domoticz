@@ -18,12 +18,12 @@ CNotificationSMS::~CNotificationSMS()
 
 bool CNotificationSMS::SendMessageImplementation(
 	const uint64_t Idx,
-	const std::string &Name,
-	const std::string &Subject,
-	const std::string &Text,
-	const std::string &ExtraData,
+	const std::string& Name,
+	const std::string& Subject,
+	const std::string& Text,
+	const std::string& ExtraData,
 	const int Priority,
-	const std::string &Sound,
+	const std::string& Sound,
 	const bool bFromNotification)
 {
 	//send message by Clickatell SMS
@@ -41,12 +41,12 @@ bool CNotificationSMS::SendMessageImplementation(
 	if (thisTo.empty())
 		return false;
 
-	std::string sResult;	
+	std::string sResult;
 	std::stringstream sPostData;
-    
-	sPostData 
-		<< "apiKey=" << _clickatellApi 
-		<< "&to=" << thisTo 
+
+	sPostData
+		<< "apiKey=" << _clickatellApi
+		<< "&to=" << thisTo
 		<< "&content=" << Text;
 
 	std::vector<std::string> ExtraHeaders;
