@@ -5,15 +5,9 @@
 #include "LuaHandler.h"
 
 extern "C" {
-#ifdef WITH_EXTERNAL_LUA
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
-#else
-#include "../lua/src/lua.h"
-#include "../lua/src/lualib.h"
-#include "../lua/src/lauxlib.h"
-#endif
 }
 
 #include "../tinyxpath/xpath_processor.h"
