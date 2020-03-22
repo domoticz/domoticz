@@ -30,15 +30,12 @@ define(['app'], function (app) {
 			switch (subsystem) {
 				case "clickatell":
 					var ClickatellAPI = encodeURIComponent($("#smstable #ClickatellAPI").val());
-					var ClickatellUser = encodeURIComponent($("#smstable #ClickatellUser").val());
-					var ClickatellPassword = encodeURIComponent($("#smstable #ClickatellPassword").val());
 					var ClickatellTo = encodeURIComponent($("#smstable #ClickatellTo").val());
-					var ClickatellFrom = encodeURIComponent($("#smstable #ClickatellFrom").val());
-					if (ClickatellAPI == "" || ClickatellUser == "" || ClickatellPassword == "" || ClickatellTo == "" || ClickatellFrom == "") {
+					if (ClickatellAPI == "" || ClickatellTo == "") {
 						ShowNotify($.t('All Clickatell fields are required!...'), 3500, true);
 						return;
 					}
-					extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellUser=" + ClickatellUser + "&ClickatellPassword=" + ClickatellPassword + "&ClickatellTo=" + ClickatellTo + "&ClickatellFrom=" + ClickatellFrom;
+					extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellTo=" + ClickatellTo;
 					break;
 				case "http":
 					var HTTPField1 = encodeURIComponent($("#httptable #HTTPField1").val());
@@ -321,17 +318,8 @@ define(['app'], function (app) {
 					if (typeof data.ClickatellAPI != 'undefined') {
 						$("#smstable #ClickatellAPI").val(atob(data.ClickatellAPI));
 					}
-					if (typeof data.ClickatellUser != 'undefined') {
-						$("#smstable #ClickatellUser").val(atob(data.ClickatellUser));
-					}
-					if (typeof data.ClickatellPassword != 'undefined') {
-						$("#smstable #ClickatellPassword").val(atob(data.ClickatellPassword));
-					}
 					if (typeof data.ClickatellTo != 'undefined') {
 						$("#smstable #ClickatellTo").val(atob(data.ClickatellTo));
-					}
-					if (typeof data.ClickatellFrom != 'undefined') {
-						$("#smstable #ClickatellFrom").val(atob(data.ClickatellFrom));
 					}
 
 					if (typeof data.HTTPEnabled != 'undefined') {

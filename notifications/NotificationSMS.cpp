@@ -9,16 +9,7 @@ CNotificationSMS::CNotificationSMS() : CNotificationBase(std::string("clickatell
 {
 	SetupConfig(std::string("ClickatellEnabled"), &m_IsEnabled);
 	SetupConfigBase64(std::string("ClickatellAPI"), _clickatellApi);
-	SetupConfigBase64(std::string("ClickatellUser"), _clickatellUser);
-	SetupConfigBase64(std::string("ClickatellPassword"), _clickatellPassword);
 	SetupConfigBase64(std::string("ClickatellTo"), _clickatellTo);
-	SetupConfigBase64(std::string("ClickatellFrom"), _clickatellFrom);
-
-	// standard defaults, see Clickatell developer docs:
-	_maxCredits = 10;
-	_escalate = 0; // valid values are 0 (OFF), 1 (60) or 2 (30).
-	_features = 0x0020 | 0x4000; // (Numeric sender id plus concatenation)
-	_concat = 3;
 }
 
 CNotificationSMS::~CNotificationSMS()
@@ -38,14 +29,6 @@ bool CNotificationSMS::SendMessageImplementation(
 	//send message by Clickatell SMS
 	bool bRet = false;
 
-	std::string MsgFrom = _clickatellFrom;
-	stdreplace(MsgFrom, "+", "");
-	stdreplace(MsgFrom, " ", "");
-	std::string rfrom = CURLEncode::URLDecode(MsgFrom);
-	MsgFrom = stdstring_trim(rfrom);
-	if (MsgFrom.empty())
-		return false;
-
 	std::string thisTo = CURLEncode::URLDecode(_clickatellTo);
 
 	stdreplace(thisTo, "+", "");
@@ -62,16 +45,9 @@ bool CNotificationSMS::SendMessageImplementation(
 	std::stringstream sPostData;
     
 	sPostData 
-		<< "api_id=" << _clickatellApi 
-		<< "&user=" << _clickatellUser 
-		<< "&password=" << _clickatellPassword 
-		<< "&from=" << MsgFrom 
-		<< "&max_credits=" << _maxCredits 
-		<< "&escalate=" << _escalate 
-		<< "&req_feat=" << _features 
-		<< "&concat=" << _concat 
+		<< "apiKey=" << _clickatellApi 
 		<< "&to=" << thisTo 
-		<< "&text=" << Text;
+		<< "&content=" << Text;
 
 	std::vector<std::string> ExtraHeaders;
 	bRet |= HTTPClient::POST("https://platform.clickatell.com/messages/http/send", sPostData.str(), ExtraHeaders, sResult);
@@ -86,5 +62,5 @@ bool CNotificationSMS::SendMessageImplementation(
 
 bool CNotificationSMS::IsConfigured()
 {
-	return (_clickatellApi != "" && _clickatellUser != "" && _clickatellPassword != "" && _clickatellTo != "" && _clickatellFrom != "");
+	return (_clickatellApi != "" && _clickatellTo != "");
 }
