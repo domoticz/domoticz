@@ -1,4 +1,4 @@
-Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
+Version 2020.1 (March 22th 2020)
 - Implemented: BuienRadar
 - Implemented: DarkSky CloudCover sensor
 - Implemented: eVehicles framework, with Tesla as first hardware module
@@ -8,14 +8,16 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Implemented: GUI: real-time updates on Devices tab (Websockets)
 - Implemented: GUI: Sun/Rain icons
 - Implemented: Hue, Add Support for Geo fence sensor, dimmer switches and Hue LCG002 GU10 spot
-- Implemented: Octoprint hardware module 
-- Implemented: OZW, JSON call to retrieve current battery levels for all nodes
-- Implemented: OZW, Support for Loudness sensor
-- Implemented: OZW, Support for Particulate_Mater_2_5 (Dust) sensor (ug/m3)
-- Implemented: OZW, Support for Smoke density (%)
-- Implemented: OZW, Support for Volatile_Organic_Compound (CO2, ppm)
-- Implemented: OZW, Support for Frequency sensor
+- Implemented: Octoprint hardware module
+- Implemented: OpenZWave, JSON call to retrieve current battery levels for all nodes
+- Implemented: OpenZWave, Support for Loudness sensor
+- Implemented: OpenZWave, Support for Particulate_Mater_2_5 (Dust) sensor (ug/m3)
+- Implemented: OpenZWave, Support for Smoke density (%)
+- Implemented: OpenZWave, Support for Volatile_Organic_Compound (CO2, ppm)
+- Implemented: OpenZWave, Support for Frequency sensor
+- Implemented: Option to replace switch with another (same type)
 - Implemented: Per User favorites (with viewer rights)
+- Implemented: RFXCom implemented datatimeout for external P1 sensor
 - Implemented: RTL433, added Power (Watt) type
 - Implemented: RTL433, added rainfall_mm type
 - Implemented: Xiaomi, added Wireless Single Wall Switch
@@ -31,18 +33,22 @@ Version 4.1xxxx (xxx 2020) see https://www.domoticz.com/wiki/Domoticz_versions_-
 - Fixed: GUI, Weight Log now displays correct Unit (#3211)
 - Fixed: GUI, OpenZWave Abort Include/Exclude button
 - Fixed: Blockly, handling incorrect time field
-- Fixed: Youless, possible buffer overflow (#3261)
 - Fixed: Evohome Web for updated library
-- Fixed: PhilipsHue
+- Fixed: Google Notification System
+  Fixed: PhilipsHue
+- Fixed: SMS Notification System
 - Fixed: Telegram notification when odd number of underscores in text
-- Updated: domoticz script now running directly in background
+- Fixed: Youless, possible buffer overflow (#3261)
+- Updated: Domoticz scripts now run directly in the background
 - Updated: dzVents version 3.0.1 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: HighCharts
 - Updated: Lua 5.3
 - Updated: Mosquitto 1.68
 - Updated: OpenZWave version 1.6
 - Updated: P1: Add support for Belgian and Luxembourgian meters
 - Updated: SQLite 3.31.1
 - Updated: Translations
+- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)

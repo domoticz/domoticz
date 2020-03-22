@@ -472,14 +472,9 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					$rootScope.config.pythonversion = data.python_version;
 					$rootScope.config.isproxied = data.isproxied;
 					$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
-					$("#appversion").text("V" + data.version);
-					//if (data.SystemName != "windows") {
-					    $rootScope.config.HaveUpdate = data.HaveUpdate;
-					    $rootScope.config.UseUpdate = data.UseUpdate;
-					//}
-					//else {
-					//    $rootScope.config.UseUpdate = false;
-					//}
+					$("#appversion").text(data.version);
+					$rootScope.config.HaveUpdate = data.HaveUpdate;
+					$rootScope.config.UseUpdate = data.UseUpdate;
 					if ((data.HaveUpdate == true) && (data.UseUpdate)) {
 						ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
 					}

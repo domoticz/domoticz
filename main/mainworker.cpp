@@ -179,7 +179,7 @@
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
-extern std::string szAppVersion;
+extern int iAppRevision;
 extern std::string szWebRoot;
 extern bool g_bUseUpdater;
 extern http::server::_eWebCompressionMode g_wwwCompressMode;
@@ -1329,12 +1329,11 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	if (strarray.size() != 3)
 		return false;
 
-	int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
 	m_iRevision = atoi(strarray[2].c_str());
 #ifdef DEBUG_DOWNLOAD
 	m_bHaveUpdate = true;
 #else
-	m_bHaveUpdate = ((version != m_iRevision) && (version < m_iRevision));
+	m_bHaveUpdate = ((iAppRevision != m_iRevision) && (iAppRevision < m_iRevision));
 #endif
 	return m_bHaveUpdate;
 }
