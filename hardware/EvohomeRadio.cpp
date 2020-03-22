@@ -1760,7 +1760,7 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
 
 	// Log current error condition to an Alert device
         if (nAddr == 0x00) {
-		char szAlertMsg[70];
+		char szAlertMsg[200];
 		sprintf(szAlertMsg, "%s: %s on %s(%06x) at %s", sFaultType, sFaultCode, sDevType, idDev.GetID(), sFaultDateTime);
 		SendAlertSensor(418, 255, nAlertType, szAlertMsg, "Fault Logbook");
         }

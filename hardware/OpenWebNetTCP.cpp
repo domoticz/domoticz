@@ -185,7 +185,7 @@ bool COpenWebNetTCP::ownWrite(csocket *connectionSocket, const char* pdata, size
 	int bytesWritten = connectionSocket->write(pdata, size);
 	if (bytesWritten != size) 
 	{
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: partial write: %u/%u", bytesWritten, size);
+		_log.Log(LOG_ERROR, "COpenWebNetTCP: partial write: %u/%u", bytesWritten, (unsigned int)size);
 		return (false);
 	}
 	return (true);
