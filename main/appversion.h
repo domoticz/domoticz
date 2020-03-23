@@ -1,6 +1,8 @@
 #pragma once
 #include "../appversion.h"
 
+//#define BUILD_MASTER
+
 #define VERSION_MAJOR               2020
 #define VERSION_MINOR               1
 #define VERSION_REVISION            1
@@ -9,7 +11,7 @@
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
-#ifdef _DEBUG
+#ifndef BUILD_MASTER
 #if (VERSION_REVISION < 2)
 #define VERSION_STRING  STRINGIZE(VERSION_MAJOR)        \
                         "." STRINGIZE(VERSION_MINOR)    \
