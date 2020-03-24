@@ -9,7 +9,7 @@
 #include "WebServer.h"
 #include "HTMLSanitizer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "boost/date_time/gregorian/gregorian.hpp"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>

@@ -12,6 +12,12 @@ enum _eDenkoviUSBDevice
 
 class CDenkoviUSBDevices : public CDomoticzHardwareBase, AsyncSerial
 {
+	enum class _edaeUsbState
+	{
+		RESPOND_RECEIVED = 0,		//0
+		DAE_USB16_UPDATE_IO,		//1
+		DAE_USB16_ASK_CMD			//2
+	};
 public:
 	CDenkoviUSBDevices(const int ID, const std::string& comPort, const int model);
 	~CDenkoviUSBDevices(void);
@@ -29,7 +35,7 @@ private:
 	int m_pollInterval;
 	int m_iModel;
 	std::shared_ptr<std::thread> m_thread;
-	int m_Cmd;
+	_edaeUsbState m_Cmd;
 	bool m_readingNow = false;
 	bool m_updateIo = false;
 

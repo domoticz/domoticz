@@ -39,6 +39,14 @@ struct _sDenkoviTCPModbusResponse {
 
 class CDenkoviTCPDevices : public CDomoticzHardwareBase, ASyncTCP
 {
+	enum class _eDaeTcpState
+	{
+		RESPOND_RECEIVED = 0,		//0
+		DAE_WIFI16_UPDATE_IO,		//1
+		DAE_WIFI16_ASK_CMD,			//2
+		DAE_READ_COILS_CMD,			//3
+		DAE_WRITE_COIL_CMD,			//4
+	};
 public:
 	CDenkoviTCPDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int pollInterval, const int model, const int slaveId);
 	~CDenkoviTCPDevices(void);
@@ -59,7 +67,7 @@ private:
 	int m_slaveId;
 	int m_iModel;
 	std::shared_ptr<std::thread> m_thread;
-	int m_Cmd;
+	_eDaeTcpState m_Cmd;
 	bool m_bReadingNow = false;
 	bool m_bUpdateIo = false;
 	_sDenkoviTCPModbusRequest m_pReq;

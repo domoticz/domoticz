@@ -8,7 +8,7 @@
 #define CRC16_ARC	0x8005
 #define CRC16_ARC_REFL	0xA001
 
-enum _eP1MatchType {
+enum class _eP1MatchType {
 	ID = 0,
 	EXCLMARK,
 	STD,
@@ -80,32 +80,32 @@ typedef struct {
 	int width;
 } P1Match;
 
-P1Match matchlist[] = {
-	{ID,		P1TYPE_SMID,			P1SMID,		"",			 0,  0},
-	{EXCLMARK,	P1TYPE_END,			P1EOT,		"",			 0,  0},
-	{STD,		P1TYPE_VERSION,			P1VER,		"version",		10,  2},
-	{STD,		P1TYPE_VERSION,			P1VERBE,	"versionBE",		11,  5},
-	{STD,		P1TYPE_POWERUSAGE,		P1PUSG,		"powerusage",		10,  9},
-	{STD,		P1TYPE_POWERDELIV,		P1PDLV,		"powerdeliv",		10,  9},
-	{STD,		P1TYPE_USAGECURRENT,		P1PUC,		"powerusagec",		10,  7},
-	{STD,		P1TYPE_DELIVCURRENT,		P1PDC,		"powerdelivc",		10,  7},
-	{STD,		P1TYPE_VOLTAGEL1,		P1VOLTL1,	"voltagel1",		11,  5},
-	{STD,		P1TYPE_VOLTAGEL2,		P1VOLTL2,	"voltagel2",		11,  5},
-	{STD,		P1TYPE_VOLTAGEL3,		P1VOLTL3,	"voltagel3",		11,  5},
-	{STD,		P1TYPE_AMPERAGEL1,		P1AMPEREL1,	"amperagel1",		11,  3},
-	{STD,		P1TYPE_AMPERAGEL2,		P1AMPEREL2,	"amperagel2",		11,  3},
-	{STD,		P1TYPE_AMPERAGEL3,		P1AMPEREL3,	"amperagel3",		11,  3},
-	{STD,		P1TYPE_POWERUSEL1,		P1POWUSL1,	"powerusel1",		11,  6},
-	{STD,		P1TYPE_POWERUSEL2,		P1POWUSL2,	"powerusel2",		11,  6},
-	{STD,		P1TYPE_POWERUSEL3,		P1POWUSL3,	"powerusel3",		11,  6},
-	{STD,		P1TYPE_POWERDELL1,		P1POWDLL1,	"powerdell1",		11,  6},
-	{STD,		P1TYPE_POWERDELL2,		P1POWDLL2,	"powerdell2",		11,  6},
-	{STD,		P1TYPE_POWERDELL3,		P1POWDLL3,	"powerdell3",		11,  6},
-	{DEVTYPE,	P1TYPE_MBUSDEVICETYPE,		P1MBTYPE,	"mbusdevicetype",	11,  3},
-	{GAS,		P1TYPE_GASUSAGEDSMR4,		P1GUDSMR4,	"gasusage",	 	26,  8},
-	{LINE17,	P1TYPE_GASTIMESTAMP,		P1GTS,		"gastimestamp",		11, 12},
-	{LINE18,	P1TYPE_GASUSAGE,		P1GUDSMR2,	"gasusage",		 1,  9}
-}; // must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of matchlist
+P1Match p1_matchlist[] = {
+	{_eP1MatchType::ID,			P1TYPE_SMID,			P1SMID,		"",					0,  0},
+	{_eP1MatchType::EXCLMARK,	P1TYPE_END,				P1EOT,		"",					0,  0},
+	{_eP1MatchType::STD,		P1TYPE_VERSION,			P1VER,		"version",			10,  2},
+	{_eP1MatchType::STD,		P1TYPE_VERSION,			P1VERBE,	"versionBE",		11,  5},
+	{_eP1MatchType::STD,		P1TYPE_POWERUSAGE,		P1PUSG,		"powerusage",		10,  9},
+	{_eP1MatchType::STD,		P1TYPE_POWERDELIV,		P1PDLV,		"powerdeliv",		10,  9},
+	{_eP1MatchType::STD,		P1TYPE_USAGECURRENT,	P1PUC,		"powerusagec",		10,  7},
+	{_eP1MatchType::STD,		P1TYPE_DELIVCURRENT,	P1PDC,		"powerdelivc",		10,  7},
+	{_eP1MatchType::STD,		P1TYPE_VOLTAGEL1,		P1VOLTL1,	"voltagel1",		11,  5},
+	{_eP1MatchType::STD,		P1TYPE_VOLTAGEL2,		P1VOLTL2,	"voltagel2",		11,  5},
+	{_eP1MatchType::STD,		P1TYPE_VOLTAGEL3,		P1VOLTL3,	"voltagel3",		11,  5},
+	{_eP1MatchType::STD,		P1TYPE_AMPERAGEL1,		P1AMPEREL1,	"amperagel1",		11,  3},
+	{_eP1MatchType::STD,		P1TYPE_AMPERAGEL2,		P1AMPEREL2,	"amperagel2",		11,  3},
+	{_eP1MatchType::STD,		P1TYPE_AMPERAGEL3,		P1AMPEREL3,	"amperagel3",		11,  3},
+	{_eP1MatchType::STD,		P1TYPE_POWERUSEL1,		P1POWUSL1,	"powerusel1",		11,  6},
+	{_eP1MatchType::STD,		P1TYPE_POWERUSEL2,		P1POWUSL2,	"powerusel2",		11,  6},
+	{_eP1MatchType::STD,		P1TYPE_POWERUSEL3,		P1POWUSL3,	"powerusel3",		11,  6},
+	{_eP1MatchType::STD,		P1TYPE_POWERDELL1,		P1POWDLL1,	"powerdell1",		11,  6},
+	{_eP1MatchType::STD,		P1TYPE_POWERDELL2,		P1POWDLL2,	"powerdell2",		11,  6},
+	{_eP1MatchType::STD,		P1TYPE_POWERDELL3,		P1POWDLL3,	"powerdell3",		11,  6},
+	{_eP1MatchType::DEVTYPE,	P1TYPE_MBUSDEVICETYPE,	P1MBTYPE,	"mbusdevicetype",	11,  3},
+	{_eP1MatchType::GAS,		P1TYPE_GASUSAGEDSMR4,	P1GUDSMR4,	"gasusage",	 		26,  8},
+	{_eP1MatchType::LINE17,		P1TYPE_GASTIMESTAMP,	P1GTS,		"gastimestamp",		11, 12},
+	{_eP1MatchType::LINE18,		P1TYPE_GASUSAGE,		P1GUDSMR2,	"gasusage",			1,  9}
+}; // must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of p1_matchlist
 
 P1MeterBase::P1MeterBase(void)
 {
@@ -197,12 +197,12 @@ bool P1MeterBase::MatchLine()
 	char value[20] = "";
 	std::string vString;
 
-	for (i = 0; (i < sizeof(matchlist) / sizeof(P1Match)) & (!found); i++)
+	for (i = 0; (i < sizeof(p1_matchlist) / sizeof(P1Match)) & (!found); i++)
 	{
-		t = &matchlist[i];
+		t = &p1_matchlist[i];
 		switch (t->matchtype)
 		{
-		case ID:
+		case _eP1MatchType::ID:
 			// start of data
 			if (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0)
 			{
@@ -211,7 +211,7 @@ bool P1MeterBase::MatchLine()
 			}
 			continue; // we do not process anything else on this line
 			break;
-		case EXCLMARK:
+		case _eP1MatchType::EXCLMARK:
 			// end of data
 			if (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0)
 			{
@@ -219,11 +219,11 @@ bool P1MeterBase::MatchLine()
 				found = 1;
 			}
 			break;
-		case STD:
+		case _eP1MatchType::STD:
 			if (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0)
 				found = 1;
 			break;
-		case DEVTYPE:
+		case _eP1MatchType::DEVTYPE:
 			if (m_gasmbuschannel == 0)
 			{
 				vString = (const char*)t->key + 3;
@@ -233,7 +233,7 @@ bool P1MeterBase::MatchLine()
 					i += 100; // skip matches with any other gas lines - we need to find the M0-Bus channel first
 			}
 			break;
-		case GAS:
+		case _eP1MatchType::GAS:
 			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)& l_buffer, strlen(t->key)) == 0)
 			{
 				// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
@@ -243,14 +243,14 @@ bool P1MeterBase::MatchLine()
 			if (m_p1version >= 4)
 				i += 100; // skip matches with any DSMR v2 gas lines
 			break;
-		case LINE17:
+		case _eP1MatchType::LINE17:
 			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)& l_buffer, strlen(t->key)) == 0)
 			{
 				m_linecount = 17;
 				found = 1;
 			}
 			break;
-		case LINE18:
+		case _eP1MatchType::LINE18:
 			if ((m_linecount == 18) && (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0))
 				found = 1;
 			break;
@@ -367,7 +367,7 @@ bool P1MeterBase::MatchLine()
 		else
 		{
 			vString = (const char*)& l_buffer + t->start;
-			int ePos = t->width;
+			size_t ePos = t->width;
 			ePos = vString.find_first_of("*)");
 
 			if (ePos == std::string::npos)

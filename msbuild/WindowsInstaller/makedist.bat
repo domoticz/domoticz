@@ -1,5 +1,3 @@
-@REM makes the sourceforge dist zip file
-
 set HIGHNAME=
 set VERSIONNO=
 for %%1 in (DomoticzSetup*.exe) do call :versionhighest %%1

@@ -8,11 +8,7 @@
 #include "Logger.h"
 #include "mainworker.h"
 #include "../main/json_helper.h"
-#ifdef WITH_EXTERNAL_SQLITE
 #include <sqlite3.h>
-#else
-#include "../sqlite/sqlite3.h"
-#endif
 #include "../hardware/hardwaretypes.h"
 #include "../smtpclient/SMTPClient.h"
 #include "WebServerHelper.h"

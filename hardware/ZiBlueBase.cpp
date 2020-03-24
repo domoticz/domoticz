@@ -10,7 +10,7 @@
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
 
 #include "ziblue_usb_frame_api.h"
 
@@ -90,7 +90,7 @@ const _tZiBlueStringIntHelper ziblue_switches[] =
 	{ "", -1 }
 };
 
-const _tZiBlueStringIntHelper rfswitchcommands[] =
+const _tZiBlueStringIntHelper ziBlueswitchcommands[] =
 {
 	{ "ON", gswitch_sOn },
 	{ "OFF", gswitch_sOff },
@@ -100,18 +100,6 @@ const _tZiBlueStringIntHelper rfswitchcommands[] =
 	{ "BRIGHT", gswitch_sBright },
 	{ "", -1 }
 };
-
-const _tZiBlueStringIntHelper rfblindcommands[] =
-{
-	{ "UP", blinds_sOpen },
-	{ "DOWN", blinds_sClose },
-	{ "STOP", blinds_sStop },
-	{ "CONFIRM", blinds_sConfirm },
-	{ "LIMIT", blinds_sLimit },
-	{ "", -1 }
-};
-
-
 
 int GetGeneralZiBlueFromString(const _tZiBlueStringIntHelper *pTable, const std::string &szType)
 {
@@ -186,7 +174,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 	if (pSwitch->type == pTypeGeneralSwitch)
 	{
-		std::string switchcmnd = GetGeneralZiBlueFromInt(rfswitchcommands, pSwitch->cmnd);
+		std::string switchcmnd = GetGeneralZiBlueFromInt(ziBlueswitchcommands, pSwitch->cmnd);
 
 		// check setlevel command
 		if (pSwitch->cmnd == gswitch_sSetLevel) {
@@ -301,7 +289,7 @@ bool CZiBlueBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 		return false;
 	}
 
-	int cmnd = GetGeneralZiBlueFromString(rfswitchcommands, switchcmd);
+	int cmnd = GetGeneralZiBlueFromString(ziBlueswitchcommands, switchcmd);
 
 	int svalue=level;
 	if (cmnd==-1) {

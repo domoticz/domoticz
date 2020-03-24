@@ -1,3 +1,4 @@
+#pragma once
 #ifdef WITH_OPENZWAVE
 //-----------------------------------------------------------------------------
 //
@@ -37,8 +38,8 @@
 
 #include <list>
 #include <algorithm>
-#include "../Driver.h"
-#include "../Notification.h"
+#include <openzwave/Driver.h>
+#include <openzwave/Notification.h>
 
 #define MAX_NODES 255
 
@@ -88,7 +89,7 @@ public:
   bool getChanged() { return changed; }
   void setChanged(bool ch) { changed = ch; nodechanged = ch; }
   static void addRemoved(uint8 node) { removed.push_back(node); }
-  static uint32 getRemovedCount() { return removed.size(); }
+  static uint32 getRemovedCount() { return (uint32)removed.size(); }
   static uint8 getRemoved();
   void addGroup(uint8 node, uint8 g, uint8 n, uint8 *v);
   MyGroup *getGroup(uint8 i);
