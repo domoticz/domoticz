@@ -20,12 +20,12 @@ private:
 	void GetBasicInfo();
 	void UpdateSwitchNew(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 	void InsertUpdateSwitchSelector(const unsigned char Idx, const bool bIsOn, const int level, const std::string &defaultname);
-	void SetSetpoint(const int idx, const float temp);
-	void SetGroupOnOFF(const bool OnOFF);
-	void SetLedOnOFF(const bool OnOFF);
-	void SetModeLevel(const int NewLevel);
-	void SetF_RateLevel(const int NewLevel);
-	void SetF_DirLevel(const int NewLevel);
+	bool SetSetpoint(const int idx, const float temp);
+	bool SetGroupOnOFF(const bool OnOFF);
+	bool SetLedOnOFF(const bool OnOFF);
+	bool SetModeLevel(const int NewLevel);
+	bool SetF_RateLevel(const int NewLevel);
+	bool SetF_DirLevel(const int NewLevel);
         void AggregateSetControlInfo(const char *Temp, const char *OnOFF, const char *ModeLevel, const char *FRateLevel, const char *FDirLevel, const char *Hum);
 	void HTTPSetControlInfo();
 private:
