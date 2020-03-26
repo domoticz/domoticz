@@ -161,7 +161,6 @@ void CDaikin::Do_Work()
 
 bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
-	
 	Debug(DEBUG_HARDWARE, "Worker %s, Write to Hardware...", m_szIPAddress.c_str());
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
