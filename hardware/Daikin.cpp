@@ -45,8 +45,8 @@
 #ifdef _DEBUG
 	//#define DEBUG_DaikinR
 	//#define DEBUG_DaikinR_File "C:\\TEMP\\Daikin_R_control_info.txt"
-	#define DEBUG_DaikinW
-	#define DEBUG_DaikinW_File "/tmp/Daikin_W_control_info.txt"
+	//#define DEBUG_DaikinW
+	//#define DEBUG_DaikinW_File "/tmp/Daikin_W_control_info.txt"
 #endif
 
 #ifdef DEBUG_DaikinW
@@ -159,8 +159,6 @@ void CDaikin::Do_Work()
 	Log(LOG_STATUS, "Worker stopped %s ...", m_szIPAddress.c_str());
 }
 
-// pData = _tThermostat
-
 bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	
@@ -168,8 +166,6 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
-
-	// hardware\MySensorsBase.cpp(1309)
 
 	if (packettype == pTypeLighting2)
 	{
@@ -196,7 +192,6 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 		bool command = pSwitch->cmnd;
 
 		Debug(DEBUG_HARDWARE, "Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(), node_id, command, pSwitch->level);
-
 
 		if (node_id == 1)
 		{
@@ -251,8 +246,6 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 	return true;
 }
 
-
-
 void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int /*SubUnit*/, const bool bOn, const double Level, const std::string &defaultname)
 {
 	_tGeneralSwitch gswitch;
@@ -273,7 +266,6 @@ void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int /*SubUnit*/, co
 	gswitch.rssi = 12;
 	sDecodeRXMessage(this, (const unsigned char *)&gswitch, defaultname.c_str(), 255);
 }
-
 
 void CDaikin::GetMeterDetails()
 {
@@ -361,10 +353,8 @@ void CDaikin::GetBasicInfo()
 				m_led = results2[1];
 				UpdateSwitchNew(2, -1, (m_led[0] == '0') ? true : false, 100, "Led indicator");
 			}
-
 		}
 	}
-
 }
 
 void CDaikin::GetControlInfo()
@@ -526,9 +516,7 @@ void CDaikin::GetControlInfo()
 
 		}
 		else if (results2[0] == "shum")
-		{
 			m_shum = results2[1];
-		}
                 else if (results2[0] == "dt1" )
                         m_dt[1] = results2[1];
                 else if (results2[0] == "dt2" )
@@ -554,7 +542,6 @@ void CDaikin::GetControlInfo()
                 else if (results2[0] == "dh7" )
                         m_dh[7] = results2[1];
 	}
-
 }
 
 void CDaikin::GetSensorInfo()
@@ -599,7 +586,6 @@ void CDaikin::GetSensorInfo()
 
 	 // ret=OK,htemp=21.0,hhum=-,otemp=9.0,err=0,cmpfreq=35
 	 // grp.update('compressorfreq', tonumber(data.cmpfreq))
-
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
@@ -653,9 +639,8 @@ void CDaikin::GetSensorInfo()
 	}
 	if (htemp != -1)
 	{
-		if (hhum != -1) {
+		if (hhum != -1)
 			SendTempHumSensor(m_HwdID, -1, htemp, hhum, "Home Temp+Hum");
-		}
 		else
 			SendTempSensor(11, -1, htemp, "Home Temperature");
 	}
@@ -702,11 +687,8 @@ void CDaikin::SetLedOnOFF(const bool OnOFF)
 	m_led = sLed;
 }
 
-
-
 void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bIsOn, const int level, const std::string &defaultname)
 {
-
 	unsigned int sID = Idx;
 
 	char szTmp[300];
@@ -819,32 +801,34 @@ void CDaikin::SetModeLevel(const int NewLevel)
 	Debug(DEBUG_HARDWARE, "Mode Level...");
 
         if (NewLevel == 0)
-                mode = "0"; //szURL << "&mode=0";
+                mode = "0"; //
         else if (NewLevel == 10)
-                mode = "1"; //szURL << "&mode=1"; /* 10-AUTO  1 */
+                mode = "1"; //10-AUTO  1
         else if (NewLevel == 20)
-                mode = "2"; //szURL << "&mode=2"; /* 20-DEHUM 2 */
+                mode = "2"; //20-DEHUM 2
         else if (NewLevel == 30)
-                mode = "3"; //szURL << "&mode=3"; /* 30-COLD  3 */
+                mode = "3"; //30-COLD  3
         else if (NewLevel == 40)
-                mode = "4"; //szURL << "&mode=4"; /* 40-HOT   4 */
+                mode = "4"; //40-HOT   4
         else if (NewLevel == 50)
-                mode = "6"; //szURL << "&mode=6"; /* 50-FAN   6 */
+                mode = "6"; //50-FAN   6
+	else
+		return; //Wrong level!
 
 	if (NewLevel == 0 ) // 0 is AUTO, but there is no dt0! So in case lets force to dt1 and dh1
         {
-                stemp = m_dt[1]; //szURL << "&stemp=" << m_dt[1];
-                shum = m_dh[1]; //szURL << "&shum=" << m_dh[1];
+                stemp = m_dt[1];
+                shum = m_dh[1];
         }
         else if (NewLevel == 6 ) // FAN mode, there is no temp/hum memorized.
         {
-                stemp = "20"; //szURL << "&stemp=" << "20";
-                shum = "0"; //szURL << "&shum=" << "0";
+                stemp = "20";
+                shum = "0";
         }
         else // DEHUMDIFICATOR, COLD, HOT ( 2,3,6 )
         {
-                stemp = m_dt[(NewLevel/10)]; //szURL << "&stemp=" << m_dt[(NewLevel/10)];
-                shum = m_dh[(NewLevel/10)]; //szURL << "&shum=" << m_dh[(NewLevel/10)];
+                stemp = m_dt[(NewLevel/10)];
+                shum = m_dh[(NewLevel/10)];
         }
         AggregateSetControlInfo(stemp.c_str(), NULL, mode.c_str(), NULL, NULL, shum.c_str()); // temp & hum are memorized value from the device itself, they can be modified by another command safely (does not have to fire 2 different http request in case of instantly modification on temp or hum
 }
@@ -855,34 +839,39 @@ void CDaikin::SetF_RateLevel(const int NewLevel)
 	Debug(DEBUG_HARDWARE, "Rate ...");
 
 	if (NewLevel == 10)
-		f_rate = "A"; //szURL << "&f_rate=A";
+		f_rate = "A";
 	else if (NewLevel == 20)
-		f_rate = "B"; //szURL << "&f_rate=B";
+		f_rate = "B";
 	else if (NewLevel == 30)
-		f_rate ="3"; //szURL << "&f_rate=3";
+		f_rate = "3";
 	else if (NewLevel == 40)
-		f_rate = "4"; //szURL << "&f_rate=4";
+		f_rate = "4";
 	else if (NewLevel == 50)
-		f_rate = "5"; //szURL << "&f_rate=5";
+		f_rate = "5";
 	else if (NewLevel == 60)
-		f_rate = "6"; //szURL << "&f_rate=6";
+		f_rate = "6";
 	else if (NewLevel == 70)
-		f_rate = "7"; //szURL << "&f_rate=7";
+		f_rate = "7";
+	else
+		return; //Wrong level !
         AggregateSetControlInfo(NULL, NULL, NULL, f_rate.c_str(), NULL, NULL);
 }
+
 void CDaikin::SetF_DirLevel(const int NewLevel)
 {
 	std::string f_dir;
 	Debug(DEBUG_HARDWARE, "Dir Level ...");
 
 	if (NewLevel == 10)
-		f_dir = "0"; //szURL << "&f_dir=0"; // All wings motion
+		f_dir = "0"; // All wings motion
 	else if (NewLevel == 20)
-		f_dir = "1"; //szURL << "&f_dir=1"; // Vertical wings motion
+		f_dir = "1"; // Vertical wings motion
 	else if (NewLevel == 30)
-		f_dir = "2"; //szURL << "&f_dir=2"; // Horizontal wings motion
+		f_dir = "2"; // Horizontal wings motion
 	else if (NewLevel == 40)
-		f_dir = "3"; //szURL << "&f_dir=3"; // vertical + horizontal wings motion
+		f_dir = "3"; // vertical + horizontal wings motion
+	else
+		return; //Wrong Level
         AggregateSetControlInfo(NULL, NULL, NULL, NULL, f_dir.c_str(), NULL);
 }
 
@@ -916,26 +905,32 @@ void CDaikin::AggregateSetControlInfo(const char *Temp/* setpoint */, const char
 			m_sci_Temp = Temp;
 		else
 			m_sci_Temp = m_stemp;
+
 		if (OnOFF != NULL)
 			m_sci_OnOFF = OnOFF;
 		else
 			m_sci_OnOFF = m_pow;
+
 		if (ModeLevel != NULL)
 			m_sci_ModeLevel = ModeLevel;
 		else
 			m_sci_ModeLevel = m_mode;
+
 		if (FRateLevel != NULL)
 			m_sci_FRateLevel = FRateLevel;
 		else
 			m_sci_FRateLevel = m_f_rate;
+
 		if (FDirLevel != NULL)
 			m_sci_FDirLevel = FDirLevel;
 		else
 			m_sci_FDirLevel = m_f_dir;
+
 		if (Hum != NULL)
 			m_sci_Hum = Hum;
 		else
 			m_sci_Hum = m_shum;
+
 		m_last_setcontrolinfo = cmd_time;
 		m_first_setcontrolinfo = cmd_time; // new set request, so mark the beginning
 	}
