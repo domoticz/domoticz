@@ -104,15 +104,6 @@ ELSE(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
   MESSAGE(FATAL_ERROR "LUA 5.3 not found! use sudo apt-get install liblua5.3-dev")
 ENDIF(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
 
-find_library(SQLite3_LIBRARIES NAMES libsqlite3.a)
-find_path(SQLite3_INCLUDE_DIR NAMES sqlite3.h)
-IF(SQLite3_LIBRARIES AND SQLite3_INCLUDE_DIR)
-  message(STATUS "SQLite3 includes found at: ${SQLite3_INCLUDE_DIR}")
-  INCLUDE_DIRECTORIES(${SQLite3_INCLUDE_DIR})
-ELSE(SQLite3_LIBRARIES AND SQLite3_INCLUDE_DIR)
-  MESSAGE(FATAL_ERROR "SQLite3 not found! try 'sudo apt-get install libsqlite3-dev'")
-ENDIF(SQLite3_LIBRARIES AND SQLite3_INCLUDE_DIR)
-
 option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
 IF(USE_PYTHON)
   find_package(PythonInterp 3.4)
@@ -463,6 +454,11 @@ option(WITH_STATIC_LIBRARIES "Build static versions of the libmosquitto/pp libra
 add_subdirectory (extern/mosquitto)
 target_link_libraries(domoticz libmosquitto_static)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/mosquitto/lib)
+
+# sqlite3
+add_subdirectory (extern/sqlite-amalgamation)
+target_link_libraries(domoticz SQLite3)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/sqlite-amalgamation)
 
 #
 # Find MD5/RMD160/SHA library
