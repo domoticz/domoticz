@@ -1,5 +1,5 @@
 #set to minimum version that supports clean build
-cmake_minimum_required(VERSION 3.14.0)
+cmake_minimum_required(VERSION 3.16.0)
 
 project(domoticz)
 
@@ -71,47 +71,47 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
 ENDIF()
 
+find_package(Git QUIET)
+if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+# Update submodules as needed
+    option(GIT_SUBMODULE "Check submodules during build" ON)
+    if(GIT_SUBMODULE)
+        message(STATUS "Submodule update")
+	execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+        endif()
+    endif()
+endif()
+
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/jsoncpp/CMakeLists.txt")
+    message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+endif()
+
 option(USE_OPENSSL_STATIC "Link OpenSSL static" YES)
 IF(USE_OPENSSL_STATIC)
 	set(OPENSSL_USE_STATIC_LIBS TRUE)
 ENDIF(USE_OPENSSL_STATIC)
 
-find_package(Lua "5.3")
-IF(LUA_FOUND)
-  message(STATUS "LUA includes found at: ${LUA_INCLUDE_DIR}")
-  INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR})
-  link_directories(${LUA_LIBRARY_DIR})
-ELSE(LUA_FOUND)
+find_library(LUA_LIBRARIES NAMES liblua5.3.a)
+find_path(LUA_INCLUDE_DIRS NAMES lua5.3/lua.h)
+IF(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
+  MESSAGE(STATUS "LUA includes found at: ${LUA_INCLUDE_DIRS}/lua5.3")
+  INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIRS}/lua5.3)
+ELSE(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
   MESSAGE(FATAL_ERROR "LUA 5.3 not found! use sudo apt-get install liblua5.3-dev")
-ENDIF(LUA_FOUND)
+ENDIF(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
 
-find_library(MQTT_LIBRARIES NAMES libmosquitto.so)
-find_path(MQTT_INCLUDE_DIRS NAMES mosquitto.h)
-IF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
-  MESSAGE(STATUS "MQTT includes found at: ${MQTT_INCLUDE_DIRS}")
-  INCLUDE_DIRECTORIES(${MQTT_INCLUDE_DIRS})
-ELSE(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
-  MESSAGE(FATAL_ERROR "Mosquitto library not found! try 'sudo apt-get install libmosquitto-dev'")
-ENDIF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
-
-find_package(SQLite3)
-IF(SQLite3_FOUND)
+find_library(SQLite3_LIBRARIES NAMES libsqlite3.a)
+find_path(SQLite3_INCLUDE_DIR NAMES sqlite3.h)
+IF(SQLite3_LIBRARIES AND SQLite3_INCLUDE_DIR)
   message(STATUS "SQLite3 includes found at: ${SQLite3_INCLUDE_DIR}")
   INCLUDE_DIRECTORIES(${SQLite3_INCLUDE_DIR})
-  link_directories(${SQLte3_LIBRARY_DIR})
-ELSE(SQLite3_FOUND)
+ELSE(SQLite3_LIBRARIES AND SQLite3_INCLUDE_DIR)
   MESSAGE(FATAL_ERROR "SQLite3 not found! try 'sudo apt-get install libsqlite3-dev'")
-ENDIF(SQLite3_FOUND)
-
-find_package(PkgConfig)
-pkg_check_modules(JSONCPP jsoncpp)
-IF(JSONCPP_FOUND)
-  INCLUDE_DIRECTORIES(${JSONCPP_INCLUDE_DIRS})
-  link_directories(${JSONCPP_LIBRARY_DIRS})
-  MESSAGE(STATUS "JSonCPP includes at ${JSONCPP_INCLUDE_DIRS}")
-ELSE(JSCONCPP_FOUND)
-  MESSAGE(FATAL_ERROR "JSonCPP not found! try 'sudo apt-get install libjsoncpp-dev'")
-ENDIF(JSONCPP_FOUND)
+ENDIF(SQLite3_LIBRARIES AND SQLite3_INCLUDE_DIR)
 
 option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
 IF(USE_PYTHON)
@@ -436,7 +436,7 @@ tinyxpath/xpath_stack.cpp
 tinyxpath/xpath_static.cpp
 tinyxpath/xpath_syntax.cpp
 )
-add_executable(domoticz ${domoticz_SRCS} ${domoticz_jsoncpp_SRCS})
+add_executable(domoticz ${domoticz_SRCS})
 
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
@@ -448,6 +448,21 @@ IF(${BIGENDIAN})
 ENDIF(${BIGENDIAN})
 
 ## Link libraries
+
+# jsoncpp
+set(JSONCPP_LIB_BUILD_SHARED OFF CACHE BOOL "Enable jsoncpp shared library" FORCE)
+set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Enable jsoncpp tests" FORCE)
+set(JSONCPP_WITH_POST_BUILD_UNITTEST OFF CACHE BOOL "Enable jsoncpp post build unit tests" FORCE)
+set(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF CACHE BOOL "Enable jsoncpp pkgconfig support" FORCE)
+add_subdirectory (extern/jsoncpp)
+target_link_libraries(domoticz jsoncpp_lib)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/jsoncpp/include)
+
+# mosquitto
+option(WITH_STATIC_LIBRARIES "Build static versions of the libmosquitto/pp libraries?" ON)
+add_subdirectory (extern/mosquitto)
+target_link_libraries(domoticz libmosquitto_static)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/mosquitto/lib)
 
 #
 # Find MD5/RMD160/SHA library
@@ -629,7 +644,7 @@ else()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 endif (TELLDUSCORE_INCLUDE)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${MQTT_LIBRARIES} ${LUA_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${JSONCPP_LIBRARIES})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${MQTT_LIBRARIES} ${LUA_LIBRARIES} ${SQLite3_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   target_link_libraries(domoticz -lresolv)

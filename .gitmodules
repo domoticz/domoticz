@@ -1,0 +1,6 @@
+[submodule "extern/jsoncpp"]
+	path = extern/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp.git
+[submodule "extern/mosquitto"]
+	path = extern/mosquitto
+	url = https://github.com/eclipse/mosquitto.git
