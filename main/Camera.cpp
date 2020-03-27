@@ -263,7 +263,7 @@ bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned cha
 		return TakeUVCSnapshot(pCamera->Username, camimage);
 
 	std::vector<std::string> ExtraHeaders;
-	return HTTPClient::GETBinary(szURL, ExtraHeaders, camimage, 5);
+	return HTTPClient::GETBinary(szURL, ExtraHeaders, camimage, 10);
 }
 
 std::string WrapBase64(const std::string &szSource, const size_t lsize = 72)
