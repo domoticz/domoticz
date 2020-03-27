@@ -417,7 +417,7 @@ ENDIF (INCLUDE_SPI)
 FIND_PROGRAM(GIT_EXECUTABLE git
   DOC "git command line client")
 
-#include_directories(${CMAKE_SOURCE_DIR}/main)
+include_directories(${CMAKE_SOURCE_DIR}/main)
 
 # a custom target that is always built
 ADD_CUSTOM_TARGET(revisiontag ALL)
@@ -498,14 +498,15 @@ IF(USE_BUILTIN_SQLITE)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/sqlite-amalgamation)
 ELSE(USE_BUILTIN_SQLITE)
   find_package(PkgConfig)
-  pkg_check_modules(SQLite sqlite3)
-  IF(SQLite_FOUND)
-    MESSAGE(STATUS "SQLite includes found at: ${SQLITE_INCLUDE_DIRS}")
-    INCLUDE_DIRECTORIES(${SQLite_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} ${SQLITE_LIBRARIES})
-  ELSE(SQLite_FOUND)
+  pkg_check_modules(SQLITE3 REQUIRED sqlite3)
+  IF(SQLITE3_FOUND)
+    MESSAGE(STATUS "SQLite library found at: ${SQLITE3_LIBRARIES}")
+    MESSAGE(STATUS "SQLite includes found at: ${SQLITE3_INCLUDE_DIRS}")
+    INCLUDE_DIRECTORIES(${SQLITE3_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} ${SQLITE3_LIBRARIES})
+  ELSE(SQLITE3_FOUND)
     MESSAGE(FATAL_ERROR "SQLite3 not found on your system! try 'sudo apt-get install libsqlite3-dev'")
-  ENDIF(SQLite_FOUND)
+  ENDIF(SQLITE3_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
 
 # minizip
