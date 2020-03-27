@@ -1,3 +1,6 @@
+[3.0.2]
+- Add `PUT` and `DELETE` support to `openURL`
+
 [3.0.1] 
 - Add option 'at' to the various commands/methods
  
