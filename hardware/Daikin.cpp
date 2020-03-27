@@ -52,7 +52,7 @@
 #ifdef DEBUG_DaikinW
 void SaveString2Disk(std::string str, std::string filename)
 {
-	FILE *fOut = fopen(filename.c_str(), "ab"); //"wb+");
+	FILE* fOut = fopen(filename.c_str(), "ab"); //"wb+");
 	if (fOut)
 	{
 		fwrite(str.c_str(), 1, str.size(), fOut);
@@ -80,13 +80,13 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CDaikin::CDaikin(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
-m_szIPAddress(IPAddress),
-m_Username(CURLEncode::URLEncode(username)),
-m_Password(CURLEncode::URLEncode(password))
+CDaikin::CDaikin(const int ID, const std::string& IPAddress, const unsigned short usIPPort, const std::string& username, const std::string& password) :
+	m_szIPAddress(IPAddress),
+	m_Username(CURLEncode::URLEncode(username)),
+	m_Password(CURLEncode::URLEncode(password))
 {
-	m_HwdID=ID;
-	m_usIPPort=usIPPort;
+	m_HwdID = ID;
+	m_usIPPort = usIPPort;
 	m_bOutputLog = false;
 	Init();
 }
@@ -107,7 +107,7 @@ bool CDaikin::StartHardware()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDaikin::Do_Work, this);
 	SetThreadNameInt(m_thread->native_handle());
-	m_bIsStarted=true;
+	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
 }
@@ -120,7 +120,7 @@ bool CDaikin::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	return true;
 }
 
@@ -138,39 +138,33 @@ void CDaikin::Do_Work()
 		m_sec_counter++;
 
 		if (m_sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(NULL);
 		}
 
 		if (m_sec_counter % Daikin_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
 		}
+
 		current_time = mytime(NULL);
 
-		
 		if (m_force_sci || ((current_time - m_last_setcontrolinfo > 2) && (last_sci_update < m_last_setcontrolinfo))) {
 			HTTPSetControlInfo(); // Fire HTTP request
 			m_force_sci = false;
 			m_last_setcontrolinfo = 0;
 			last_sci_update = current_time;
 		}
-		
 	}
 	Log(LOG_STATUS, "Worker stopped %s ...", m_szIPAddress.c_str());
 }
 
-// pData = _tThermostat
-
-bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
+bool CDaikin::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 {
-	
 	Debug(DEBUG_HARDWARE, "Worker %s, Write to Hardware...", m_szIPAddress.c_str());
-	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
+	const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
 	bool result = true;
-
-	// hardware\MySensorsBase.cpp(1309)
 
 	if (packettype == pTypeLighting2)
 	{
@@ -182,22 +176,20 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 		{
 			result = SetGroupOnOFF(command);
 		}
-		else if (node_id==2)
+		else if (node_id == 2)
 		{
 			result = SetLedOnOFF(command);
 		}
-
 	}
 	else if (packettype == pTypeGeneralSwitch)
 	{
 		//Light command
-		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+		const _tGeneralSwitch* pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 		int node_id = pSwitch->id;
 		//int child_sensor_id = pSwitch->unitcode;
 		bool command = pSwitch->cmnd;
 
 		Debug(DEBUG_HARDWARE, "Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(), node_id, command, pSwitch->level);
-
 
 		if (node_id == 1)
 		{
@@ -220,20 +212,10 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 			result = SetF_DirLevel(pSwitch->level);
 		}
 	}
-	else if (packettype == pTypeColorSwitch)
-	{
-		//RGW/RGBW command
-	}
-	else if (packettype == pTypeBlinds)
-	{
-		//Blinds/Window command
-		//int node_id = pCmd->BLINDS1.id3;
-		//int child_sensor_id = pCmd->BLINDS1.unitcode;
-	}
 	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
 	{
 		//Set Point
-		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat *>(pCmd);
+		const _tThermostat* pMeter = reinterpret_cast<const _tThermostat*>(pCmd);
 		int node_id = pMeter->id2;
 		//int child_sensor_id = pMeter->id3;
 
@@ -252,18 +234,13 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 	return result;
 }
 
-
-
-void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int /*SubUnit*/, const bool bOn, const double Level, const std::string &defaultname)
+void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int /*SubUnit*/, const bool bOn, const double Level, const std::string& defaultname)
 {
 	_tGeneralSwitch gswitch;
 	gswitch.subtype = sSwitchGeneralSwitch;
 	gswitch.type = pTypeGeneralSwitch;
 	gswitch.battery_level = 255;
 	gswitch.id = Idx;
-
-	// Get device level to set
-	//int level = static_cast<int>(Level);
 
 	// Now check the values
 	if (bOn)
@@ -272,9 +249,8 @@ void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int /*SubUnit*/, co
 		gswitch.cmnd = gswitch_sOn;
 	gswitch.level = static_cast<uint8_t>(Level);
 	gswitch.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&gswitch, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char*)&gswitch, defaultname.c_str(), 255);
 }
-
 
 void CDaikin::GetMeterDetails()
 {
@@ -299,15 +275,14 @@ void CDaikin::GetBasicInfo()
 
 	szURL << "/common/basic_info";
 #ifdef DEBUG_DaikinW
-	{std::stringstream sDebug; sDebug  << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "http command (" << szURL.str() << ")";
+	{std::stringstream sDebug; sDebug << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "http command (" << szURL.str() << ")";
 	SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
 #endif
-
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
 #ifdef DEBUG_DaikinW
-	{std::stringstream sDebug; sDebug  << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "Error connection to (" << m_szIPAddress << ")";
-	SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
+		{std::stringstream sDebug; sDebug << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "Error connection to (" << m_szIPAddress << ")";
+		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
 #endif
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
@@ -328,8 +303,8 @@ void CDaikin::GetBasicInfo()
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
 #ifdef DEBUG_DaikinW
-	{std::stringstream sDebug; sDebug  << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "Error getting data. http result" << sResult << ")";
-	SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
+		{std::stringstream sDebug; sDebug << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "Error getting data. http result" << sResult << ")";
+		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
 #endif
 		Log(LOG_ERROR, "Error getting data (check IP/Port)");
 		return;
@@ -339,17 +314,17 @@ void CDaikin::GetBasicInfo()
 	if (results.size() < 8)
 	{
 #ifdef DEBUG_DaikinW
-	{std::stringstream sDebug; sDebug  << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "INvalid data received. http result" << sResult << ")";
-	SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
+		{std::stringstream sDebug; sDebug << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "INvalid data received. http result" << sResult << ")";
+		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
 #endif
 		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
 #ifdef DEBUG_DaikinW
-	{std::stringstream sDebug; sDebug  << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "http result" << sResult << ")";
+	{std::stringstream sDebug; sDebug << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "http result" << sResult << ")";
 	SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
 #endif
-	for (const auto & itt : results)
+	for (const auto& itt : results)
 	{
 		std::string sVar = itt;
 		std::vector<std::string> results2;
@@ -358,14 +333,13 @@ void CDaikin::GetBasicInfo()
 			continue;
 		if (results2[0] == "led")
 		{
-			if (m_led!=results2[1]) { // update only if device led state was changed from other source than domoticz : direct http command for example
+			if (m_led != results2[1]) { // update only if device led state was changed from other source than domoticz : direct http command for example
 				m_led = results2[1];
 				UpdateSwitchNew(2, -1, (m_led[0] == '0') ? true : false, 100, "Led indicator");
 			}
 
 		}
 	}
-
 }
 
 void CDaikin::GetControlInfo()
@@ -387,18 +361,18 @@ void CDaikin::GetControlInfo()
 #ifdef DEBUG_DaikinW
 	{
 		std::stringstream sDebug;
-		sDebug  << "Date (" << mytime(NULL) << ") function GetControlInfo" << "http command (" << szURL.str() << ")";
+		sDebug << "Date (" << mytime(NULL) << ") function GetControlInfo" << "http command (" << szURL.str() << ")";
 		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
 	}
 #endif
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
 #ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug  << "Date (" << mytime(NULL) << ") function GetControlInfo" << "Error connecting to (" << m_szIPAddress << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-	}
+		{
+			std::stringstream sDebug;
+			sDebug << "Date (" << mytime(NULL) << ") function GetControlInfo" << "Error connecting to (" << m_szIPAddress << ")";
+			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
+		}
 #endif
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
@@ -424,11 +398,11 @@ void CDaikin::GetControlInfo()
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
 #ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug  << "Date (" << mytime(NULL) << ") function GetControlInfo" << "Error getting data (check IP/Port)) retour (" << sResult << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File)
-	};
+		{
+			std::stringstream sDebug;
+			sDebug << "Date (" << mytime(NULL) << ") function GetControlInfo" << "Error getting data (check IP/Port)) retour (" << sResult << ")";
+			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File)
+		};
 #endif
 		Log(LOG_ERROR, "Error getting data (check IP/Port)");
 		return;
@@ -436,7 +410,7 @@ void CDaikin::GetControlInfo()
 #ifdef DEBUG_DaikinW
 	{
 		std::stringstream sDebug;
-		sDebug  << "Date (" << mytime(NULL) << ") function GetControlInfo" << "http result (" << sResult << ")";
+		sDebug << "Date (" << mytime(NULL) << ") function GetControlInfo" << "http result (" << sResult << ")";
 		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
 	}
 #endif
@@ -447,7 +421,7 @@ void CDaikin::GetControlInfo()
 		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
-	for (const auto & itt : results)
+	for (const auto& itt : results)
 	{
 		std::string sVar = itt;
 		std::vector<std::string> results2;
@@ -466,20 +440,20 @@ void CDaikin::GetControlInfo()
 				//		0 - 1 - 7	AUTO
 				m_mode = results2[1];
 				if (m_mode == "2") // DEHUMDIFICATOR
-					InsertUpdateSwitchSelector(5,true,20,"Mode");
+					InsertUpdateSwitchSelector(5, true, 20, "Mode");
 				else if (m_mode == "3") // COLD
 					InsertUpdateSwitchSelector(5, true, 30, "Mode");
 				else if (m_mode == "4") // HOT
 					InsertUpdateSwitchSelector(5, true, 40, "Mode");
 				else if (m_mode == "6") // FAN
 					InsertUpdateSwitchSelector(5, true, 50, "Mode");
-				else if ((m_mode == "0") || (m_mode == "1" ) || ( m_mode == "7") ) // AUTO
+				else if ((m_mode == "0") || (m_mode == "1") || (m_mode == "7")) // AUTO
 					InsertUpdateSwitchSelector(5, true, 10, "Mode");
 			}
 		}
 		else if (results2[0] == "pow")
 		{
-			if (m_pow!=results2[1])// update only if device led state was changed from other source than domoticz : direct http command or daikin remote IR/wifi controller
+			if (m_pow != results2[1])// update only if device led state was changed from other source than domoticz : direct http command or daikin remote IR/wifi controller
 			{
 				m_pow = results2[1];
 				UpdateSwitchNew(1, -1, (results2[1][0] == '1') ? false : true, 100, "Power");
@@ -487,7 +461,7 @@ void CDaikin::GetControlInfo()
 		}
 		else if (results2[0] == "otemp")
 		{
-			if (m_otemp!=results2[1])
+			if (m_otemp != results2[1])
 			{
 				m_otemp = results2[1];
 				SendTempSensor(10, -1, static_cast<float>(atof(results2[1].c_str())), "Outside Temperature");
@@ -505,7 +479,7 @@ void CDaikin::GetControlInfo()
 		{
 			if (m_f_rate != results2[1])
 			{
-				m_f_rate=results2[1];
+				m_f_rate = results2[1];
 				if (m_f_rate == "A") // AUTOMATIC
 					InsertUpdateSwitchSelector(6, true, 10, "Ventillation");
 				else if (m_f_rate == "B") // SILENCE
@@ -536,38 +510,34 @@ void CDaikin::GetControlInfo()
 				else if (m_f_dir == "3") // Vertical and Horizontal wings in motion
 					InsertUpdateSwitchSelector(7, true, 40, "Winds");
 			}
-
 		}
 		else if (results2[0] == "shum")
-		{
 			m_shum = results2[1];
-		}
-                else if (results2[0] == "dt1" )
-                        m_dt[1] = results2[1];
-                else if (results2[0] == "dt2" )
-                        m_dt[2] = results2[1];
-                else if (results2[0] == "dt3" )
-                        m_dt[3] = results2[1];
-                else if (results2[0] == "dt4" )
-                        m_dt[4] = results2[1];
-                else if (results2[0] == "dt5" )
-                        m_dt[5] = results2[1];
-                else if (results2[0] == "dt7" )
-                        m_dt[7] = results2[1];
-                else if (results2[0] == "dh1" )
-                        m_dh[1] = results2[1];
-                else if (results2[0] == "dh2" )
-                        m_dh[2] = results2[1];
-                else if (results2[0] == "dh3" )
-                        m_dh[3] = results2[1];
-                else if (results2[0] == "dh4" )
-                        m_dh[4] = results2[1];
-                else if (results2[0] == "dh5" )
-                        m_dh[5] = results2[1];
-                else if (results2[0] == "dh7" )
-                        m_dh[7] = results2[1];
+		else if (results2[0] == "dt1")
+			m_dt[1] = results2[1];
+		else if (results2[0] == "dt2")
+			m_dt[2] = results2[1];
+		else if (results2[0] == "dt3")
+			m_dt[3] = results2[1];
+		else if (results2[0] == "dt4")
+			m_dt[4] = results2[1];
+		else if (results2[0] == "dt5")
+			m_dt[5] = results2[1];
+		else if (results2[0] == "dt7")
+			m_dt[7] = results2[1];
+		else if (results2[0] == "dh1")
+			m_dh[1] = results2[1];
+		else if (results2[0] == "dh2")
+			m_dh[2] = results2[1];
+		else if (results2[0] == "dh3")
+			m_dh[3] = results2[1];
+		else if (results2[0] == "dh4")
+			m_dh[4] = results2[1];
+		else if (results2[0] == "dh5")
+			m_dh[5] = results2[1];
+		else if (results2[0] == "dh7")
+			m_dh[7] = results2[1];
 	}
-
 }
 
 void CDaikin::GetSensorInfo()
@@ -592,36 +562,35 @@ void CDaikin::GetSensorInfo()
 #ifdef DEBUG_DaikinW
 	{
 		std::stringstream sDebug;
-		sDebug  << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "http command (" << szURL.str() << ")";
+		sDebug << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "http command (" << szURL.str() << ")";
 		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
 	}
 #endif
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
 #ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug  << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "Error connecting to (" << m_szIPAddress << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-	}
+		{
+			std::stringstream sDebug;
+			sDebug << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "Error connecting to (" << m_szIPAddress << ")";
+			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
+		}
 #endif
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 #endif
 
-	 // ret=OK,htemp=21.0,hhum=-,otemp=9.0,err=0,cmpfreq=35
-	 // grp.update('compressorfreq', tonumber(data.cmpfreq))
-
+	// ret=OK,htemp=21.0,hhum=-,otemp=9.0,err=0,cmpfreq=35
+	// grp.update('compressorfreq', tonumber(data.cmpfreq))
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
 #ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug  << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "Error getting data (check IP/Port)) retour http(" << sResult << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-	}
+		{
+			std::stringstream sDebug;
+			sDebug << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "Error getting data (check IP/Port)) retour http(" << sResult << ")";
+			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
+		}
 #endif
 		Log(LOG_ERROR, "Error getting data (check IP/Port)");
 		return;
@@ -629,7 +598,7 @@ void CDaikin::GetSensorInfo()
 #ifdef DEBUG_DaikinW
 	{
 		std::stringstream sDebug;
-		sDebug  << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "http result (" << sResult << ")";
+		sDebug << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "http result (" << sResult << ")";
 		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
 	}
 #endif
@@ -642,7 +611,7 @@ void CDaikin::GetSensorInfo()
 	}
 	float htemp = -1;
 	int hhum = -1;
-	for (const auto & itt : results)
+	for (const auto& itt : results)
 	{
 		std::string sVar = itt;
 		std::vector<std::string> results2;
@@ -655,7 +624,7 @@ void CDaikin::GetSensorInfo()
 		}
 		else if (results2[0] == "hhum")
 		{
-			if (results2[1]!="-")
+			if (results2[1] != "-")
 				hhum = static_cast<int>(atoi(results2[1].c_str()));
 		}
 		else if (results2[0] == "otemp")
@@ -666,9 +635,8 @@ void CDaikin::GetSensorInfo()
 	}
 	if (htemp != -1)
 	{
-		if (hhum != -1) {
+		if (hhum != -1)
 			SendTempHumSensor(m_HwdID, -1, htemp, hhum, "Home Temp+Hum");
-		}
 		else
 			SendTempSensor(11, -1, htemp, "Home Temperature");
 	}
@@ -716,15 +684,13 @@ bool CDaikin::SetLedOnOFF(const bool OnOFF)
 	return true;
 }
 
-
-
-void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bIsOn, const int level, const std::string &defaultname)
+void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx, const bool bIsOn, const int level, const std::string& defaultname)
 {
 	unsigned int sID = Idx;
 
 	char szTmp[300];
 	std::string ID;
-	sprintf (szTmp, "%c", Idx);
+	sprintf(szTmp, "%c", Idx);
 	ID = szTmp;
 
 	_tGeneralSwitch xcmd;
@@ -735,9 +701,9 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 	xcmd.unitcode = 1;
 	int customimage = 0;
 
-//	if ((xcmd.unitcode > 2) && (xcmd.unitcode < 8)) {
-//		customimage = 8; //speaker
-//	}
+	//	if ((xcmd.unitcode > 2) && (xcmd.unitcode < 8)) {
+	//		customimage = 8; //speaker
+	//	}
 
 	if (bIsOn) {
 		xcmd.cmnd = gswitch_sOn;
@@ -764,7 +730,7 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 	}
 
 	result = m_sql.safe_query("SELECT nValue, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, defaultname.c_str(), 255);
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, defaultname.c_str(), 255);
 	if (result.empty())
 	{
 		// New Hardware -> Create the corresponding devices Selector
@@ -799,7 +765,6 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 
 // https://github.com/ael-code/daikin-control
 // sample aircon/set_control_info?pow=1&mode=4&f_rate=A&f_dir=0&stemp=18.0&shum=0
-
 bool CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 {
 	Debug(DEBUG_HARDWARE, "Set Point...");
@@ -807,7 +772,7 @@ bool CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 	// cible température
 	char szTmp[100];
 	sprintf(szTmp, "%.1f", temp);
-        AggregateSetControlInfo(szTmp, NULL, NULL, NULL, NULL, NULL);
+	AggregateSetControlInfo(szTmp, NULL, NULL, NULL, NULL, NULL);
 
 	SendSetPointSensor(20, 1, 1, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface
 	return true;
@@ -833,37 +798,37 @@ bool CDaikin::SetModeLevel(const int NewLevel)
 	std::string shum;
 	Debug(DEBUG_HARDWARE, "Mode Level...");
 
-        if (NewLevel == 0)
-                mode = "0"; //szURL << "&mode=0";
-        else if (NewLevel == 10)
-                mode = "1"; //szURL << "&mode=1"; /* 10-AUTO  1 */
-        else if (NewLevel == 20)
-                mode = "2"; //szURL << "&mode=2"; /* 20-DEHUM 2 */
-        else if (NewLevel == 30)
-                mode = "3"; //szURL << "&mode=3"; /* 30-COLD  3 */
-        else if (NewLevel == 40)
-                mode = "4"; //szURL << "&mode=4"; /* 40-HOT   4 */
-        else if (NewLevel == 50)
-                mode = "6"; //szURL << "&mode=6"; /* 50-FAN   6 */
+	if (NewLevel == 0)
+		mode = "0"; //szURL << "&mode=0";
+	else if (NewLevel == 10)
+		mode = "1"; //szURL << "&mode=1"; /* 10-AUTO  1 */
+	else if (NewLevel == 20)
+		mode = "2"; //szURL << "&mode=2"; /* 20-DEHUM 2 */
+	else if (NewLevel == 30)
+		mode = "3"; //szURL << "&mode=3"; /* 30-COLD  3 */
+	else if (NewLevel == 40)
+		mode = "4"; //szURL << "&mode=4"; /* 40-HOT   4 */
+	else if (NewLevel == 50)
+		mode = "6"; //szURL << "&mode=6"; /* 50-FAN   6 */
 	else
 		return false;
 
-	if (NewLevel == 0 ) // 0 is AUTO, but there is no dt0! So in case lets force to dt1 and dh1
-        {
-                stemp = m_dt[1]; //szURL << "&stemp=" << m_dt[1];
-                shum = m_dh[1]; //szURL << "&shum=" << m_dh[1];
-        }
-        else if (NewLevel == 6 ) // FAN mode, there is no temp/hum memorized.
-        {
-                stemp = "20"; //szURL << "&stemp=" << "20";
-                shum = "0"; //szURL << "&shum=" << "0";
-        }
-        else // DEHUMDIFICATOR, COLD, HOT ( 2,3,6 )
-        {
-                stemp = m_dt[(NewLevel/10)]; //szURL << "&stemp=" << m_dt[(NewLevel/10)];
-                shum = m_dh[(NewLevel/10)]; //szURL << "&shum=" << m_dh[(NewLevel/10)];
-        }
-        AggregateSetControlInfo(stemp.c_str(), NULL, mode.c_str(), NULL, NULL, shum.c_str()); // temp & hum are memorized value from the device itself, they can be modified by another command safely (does not have to fire 2 different http request in case of instantly modification on temp or hum
+	if (NewLevel == 0) // 0 is AUTO, but there is no dt0! So in case lets force to dt1 and dh1
+	{
+		stemp = m_dt[1]; //szURL << "&stemp=" << m_dt[1];
+		shum = m_dh[1]; //szURL << "&shum=" << m_dh[1];
+	}
+	else if (NewLevel == 6) // FAN mode, there is no temp/hum memorized.
+	{
+		stemp = "20"; //szURL << "&stemp=" << "20";
+		shum = "0"; //szURL << "&shum=" << "0";
+	}
+	else // DEHUMDIFICATOR, COLD, HOT ( 2,3,6 )
+	{
+		stemp = m_dt[(NewLevel / 10)]; //szURL << "&stemp=" << m_dt[(NewLevel/10)];
+		shum = m_dh[(NewLevel / 10)]; //szURL << "&shum=" << m_dh[(NewLevel/10)];
+	}
+	AggregateSetControlInfo(stemp.c_str(), NULL, mode.c_str(), NULL, NULL, shum.c_str()); // temp & hum are memorized value from the device itself, they can be modified by another command safely (does not have to fire 2 different http request in case of instantly modification on temp or hum
 	return true;
 }
 
@@ -877,7 +842,7 @@ bool CDaikin::SetF_RateLevel(const int NewLevel)
 	else if (NewLevel == 20)
 		f_rate = "B"; //szURL << "&f_rate=B";
 	else if (NewLevel == 30)
-		f_rate ="3"; //szURL << "&f_rate=3";
+		f_rate = "3"; //szURL << "&f_rate=3";
 	else if (NewLevel == 40)
 		f_rate = "4"; //szURL << "&f_rate=4";
 	else if (NewLevel == 50)
@@ -888,7 +853,7 @@ bool CDaikin::SetF_RateLevel(const int NewLevel)
 		f_rate = "7"; //szURL << "&f_rate=7";
 	else
 		return false;
-        AggregateSetControlInfo(NULL, NULL, NULL, f_rate.c_str(), NULL, NULL);
+	AggregateSetControlInfo(NULL, NULL, NULL, f_rate.c_str(), NULL, NULL);
 	return true;
 }
 
@@ -907,11 +872,11 @@ bool CDaikin::SetF_DirLevel(const int NewLevel)
 		f_dir = "3"; //szURL << "&f_dir=3"; // vertical + horizontal wings motion
 	else
 		return false;
-        AggregateSetControlInfo(NULL, NULL, NULL, NULL, f_dir.c_str(), NULL);
+	AggregateSetControlInfo(NULL, NULL, NULL, NULL, f_dir.c_str(), NULL);
 	return true;
 }
 
-void CDaikin::AggregateSetControlInfo(const char *Temp/* setpoint */, const char *OnOFF /* group on/off */, const char *ModeLevel, const char *FRateLevel, const char *FDirLevel, const char *Hum)
+void CDaikin::AggregateSetControlInfo(const char* Temp/* setpoint */, const char* OnOFF /* group on/off */, const char* ModeLevel, const char* FRateLevel, const char* FDirLevel, const char* Hum)
 {
 	time_t cmd_time = mytime(NULL);
 	if (cmd_time - m_last_setcontrolinfo < 2) {
@@ -928,7 +893,7 @@ void CDaikin::AggregateSetControlInfo(const char *Temp/* setpoint */, const char
 			m_sci_FDirLevel = FDirLevel;
 		if (Hum != NULL)
 			m_sci_Hum = Hum;
-		
+
 		m_last_setcontrolinfo = cmd_time;
 		if (cmd_time - m_first_setcontrolinfo > 5) { // force http set request every 5 seconds in case of continious set resquest (which could be a bug, a external entry request (json) or  a misprogrammed lua script)
 			m_force_sci = true;
@@ -964,7 +929,6 @@ void CDaikin::AggregateSetControlInfo(const char *Temp/* setpoint */, const char
 		m_last_setcontrolinfo = cmd_time;
 		m_first_setcontrolinfo = cmd_time; // new set request, so mark the beginning
 	}
-
 }
 
 void CDaikin::HTTPSetControlInfo()
@@ -990,19 +954,19 @@ void CDaikin::HTTPSetControlInfo()
 
 #ifdef DEBUG_DaikinW
 	{
-		std::stringstream sDebug; 
-		sDebug  << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "http command (" << szURL.str() << ")";
+		std::stringstream sDebug;
+		sDebug << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "http command (" << szURL.str() << ")";
 		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
 	}
 #endif
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
 #ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug  << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "Error connecting to (" << m_szIPAddress << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-	}
+		{
+			std::stringstream sDebug;
+			sDebug << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "Error connecting to (" << m_szIPAddress << ")";
+			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
+		}
 #endif
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
@@ -1013,7 +977,7 @@ void CDaikin::HTTPSetControlInfo()
 #ifdef DEBUG_DaikinW
 		{
 			std::stringstream sDebug;
-			sDebug  << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "Invalid Response (" << sResult << ")";
+			sDebug << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "Invalid Response (" << sResult << ")";
 			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
 		}
 #endif
@@ -1023,7 +987,7 @@ void CDaikin::HTTPSetControlInfo()
 #ifdef DEBUG_DaikinW
 	{
 		std::stringstream sDebug;
-		sDebug  << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "http result (" << sResult << ")";
+		sDebug << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "http result (" << sResult << ")";
 		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
 	}
 #endif
