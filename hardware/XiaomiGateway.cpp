@@ -9,6 +9,7 @@
 #include "../webserver/cWebem.h"
 #include "../main/json_helper.h"
 #include "XiaomiGateway.h"
+#include "XiaomiHardware.h"
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -232,15 +233,15 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		//}
 
 
-		if (xcmd->unitcode == 8) {
+		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE) {
 			cmdchannel = "\\\"channel_0\\\":";
 			cmddevice = "ctrl_neutral1";
 		}
-		else if (xcmd->unitcode == 9) {
+		else if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0) {
 			cmdchannel = "\\\"channel_0\\\":";
 			cmddevice = "ctrl_neutral2";
 		}
-		else if (xcmd->unitcode == 10) {
+		else if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
 			cmdchannel = "\\\"channel_1\\\":";
 			cmddevice = "ctrl_neutral2";
 		}
@@ -251,10 +252,10 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			cmdcommand = "\\\"on";
 		}
 
-		if (xcmd->unitcode == 8 || xcmd->unitcode == 9 || xcmd->unitcode == 10) {
+		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
 			message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"158d00" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
-		else if ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == 1)) {
+		else if ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG)) {
 			std::string command = "on";
 			switch (xcmd->cmnd) {
 			case gswitch_sOff:
@@ -269,9 +270,9 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			}
 			message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
-		else if ((xcmd->subtype == sSwitchTypeSelector) && (xcmd->unitcode >= 3 && xcmd->unitcode <= 5) || (xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == 6)) {
+		else if ((xcmd->subtype == sSwitchTypeSelector) && (xcmd->unitcode >= XiaomiUnitCode::GATEWAY_SOUND_ALARM_RINGTONE && xcmd->unitcode <= XiaomiUnitCode::GATEWAY_SOUND_DOORBELL) || (xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_MP3)) {
 			std::stringstream ss;
-			if (xcmd->unitcode == 6) {
+			if (xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_MP3) {
 				if (xcmd->cmnd == 1) {
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiMP3')");
@@ -285,16 +286,13 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				int level = xcmd->level;
 				if (level == 0) { level = 10000; }
 				else {
-					if (xcmd->unitcode == 3) {
-						//Alarm Ringtone
+					if (xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_ALARM_RINGTONE) {
 						if (level > 0) { level = (level / 10) - 1; }
 					}
-					else if (xcmd->unitcode == 4) {
-						//Alarm Clock
+					else if (xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_ALARM_CLOCK) {
 						if (level > 0) { level = (level / 10) + 19; }
 					}
-					else if (xcmd->unitcode == 5) {
-						//Doorbell
+					else if (xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_DOORBELL) {
 						if (level > 0) { level = (level / 10) + 9; }
 					}
 				}
@@ -304,8 +302,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			//sid.insert(0, m_GatewayPrefix);
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"mid\\\":" + m_GatewayMusicId.c_str() + ",\\\"vol\\\":" + m_GatewayVolume.c_str() + ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
-		else if (xcmd->subtype == sSwitchGeneralSwitch && xcmd->unitcode == 7) {
-			//Xiaomi Gateway volume control
+		else if (xcmd->subtype == sSwitchGeneralSwitch && xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_VOLUME_CONTROL) {
 			m_GatewayVolume = std::to_string(xcmd->level);
 			//sid.insert(0, m_GatewayPrefix);
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"mid\\\":" + m_GatewayMusicId.c_str() + ",\\\"vol\\\":" + m_GatewayVolume.c_str() + ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
@@ -350,7 +347,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			}
 		}
 		else if ((xcmd->command == Color_SetBrightnessLevel) || (xcmd->command == Color_SetBrightUp) || (xcmd->command == Color_SetBrightDown)) {
-			//add the brightness
+			// Add the brightness
 			if (xcmd->command == Color_SetBrightUp) {
 				//m_GatewayBrightnessInt = std::min(m_GatewayBrightnessInt + 10, 100);
 			}
@@ -566,7 +563,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	int customimage = 0;
 
 	if ((xcmd.unitcode > 2) && (xcmd.unitcode < 8)) {
-		customimage = 8; //speaker
+		customimage = 8; // Speaker
 	}
 
 	if (bIsOn) {
@@ -606,7 +603,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, battery);
 		if (customimage == 0) {
 			if (switchtype == STYPE_OnOff) {
-				customimage = 1; //wall socket
+				customimage = 1; // Wall socket
 			}
 			else if (switchtype == STYPE_Selector) {
 				customimage = 9;
@@ -626,56 +623,45 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Unit == '%d')", m_HwdID, ID.c_str(), xcmd.type, xcmd.unitcode);
 			if (!result.empty()) {
 				std::string Idx = result[0][0];
-				if (Name == "Xiaomi Wireless Switch") {
+				if (Name == NAME_SELECTOR_WIRELESS_SINGLE) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click|Long Click|Long Click Release", false));
 				}
-				else if (Name == "Xiaomi Square Wireless Switch") {
-					// click/double click
+				else if (Name == NAME_SELECTOR_WIRELESS_SINGLE_SQUARE) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click", false));
 				}
-				else if (Name == "Xiaomi Smart Push Button") {
-					// click/double click
+				else if (Name == NAME_SELECTOR_WIRELESS_SINGLE_SMART_PUSH) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Shake", false));
 				}
-				else if (Name == "Xiaomi Cube") {
-					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall
+				else if (Name == NAME_SELECTOR_CUBE_V1) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|clock_wise|anti_clock_wise", false));
 				}
-				else if (Name == "Aqara Cube") {
-					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall/rotate
+				else if (Name == NAME_SELECTOR_CUBE_AQARA) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|rotate", false));
 				}
-				else if (Name == "Aqara Vibration Sensor") {
-					// tilt/vibrate/free fall
+				else if (Name == NAME_SENSOR_VIBRATION) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Tilt|Vibrate|Free Fall", false));
 				}
-				else if (Name == "Xiaomi Wireless Dual Wall Switch") {
-					//for Aqara wireless switch, 2 buttons support
+				else if (Name == NAME_SELECTOR_WIRELESS_WALL_DUAL) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both Click|Switch 1 Double Click|Switch 2 Double Click|Both Double Click|Switch 1 Long Click|Switch 2 Long Click|Both Long Click", false));
 				}
-				else if (Name == "Xiaomi Wired Single Wall Switch") {
-					//for Aqara wired switch, single button support
+				else if (Name == NAME_SELECTOR_WIRED_WALL_SINGLE) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch1 On|Switch1 Off", false));
 				}
-				else if (Name == "Xiaomi Wireless Single Wall Switch") {
-					//for Aqara wireless switch, single button support
+				else if (Name == NAME_SELECTOR_WIRELESS_WALL_SINGLE) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click|Long Click", false));
 				}
-				else if (Name == "Xiaomi Gateway Alarm Ringtone") {
-					//for the Gateway Audio
+				else if (Name == NAME_GATEWAY_SOUND_ALARM_RINGTONE) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:1;LevelNames:Off|Police siren 1|Police siren 2|Accident tone|Missle countdown|Ghost|Sniper|War|Air Strike|Barking dogs", false));
 				}
-				else if (Name == "Xiaomi Gateway Alarm Clock") {
-					//for the Gateway Audio
+				else if (Name == NAME_GATEWAY_SOUND_ALARM_CLOCK) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:1;LevelNames:Off|MiMix|Enthusiastic|GuitarClassic|IceWorldPiano|LeisureTime|Childhood|MorningStreamlet|MusicBox|Orange|Thinker", false));
 				}
-				else if (Name == "Xiaomi Gateway Doorbell") {
-					//for the Gateway Audio
+				else if (Name == NAME_GATEWAY_SOUND_DOORBELL) {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:1;LevelNames:Off|Doorbell ring tone|Knock on door|Hilarious|Alarm clock", false));
 				}
 			}
 		}
-		else if (switchtype == STYPE_OnOff && Name == "Xiaomi Gateway MP3") {
+		else if (switchtype == STYPE_OnOff && Name == NAME_GATEWAY_MP3) {
 			std::string errorMessage;
 			m_sql.AddUserVariable("XiaomiMP3", USERVARTYPE_INTEGER, "10001", errorMessage);
 		}
@@ -694,11 +680,11 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			}
 		}
 		else {
-			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == "Xiaomi Wired Dual Wall Switch") || (Name == "Xiaomi Wired Single Wall Switch") || (Name == "Xiaomi Curtain")) {
+			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == NAME_SELECTOR_WIRED_WALL_DUAL) || (Name == NAME_SELECTOR_WIRED_WALL_SINGLE) || (Name == NAME_ACT_BLINDS_CURTAIN)) {
 				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, BatteryLevel);
 			}
 		}
-		if ((Name == "Xiaomi Smart Plug") || (Name == "Xiaomi Smart Wall Plug")) {
+		if ((Name == NAME_ACT_ONOFF_PLUG) || (Name == NAME_ACT_ONOFF_PLUG_WALL)) {
 			if (load_power != "" && power_consumed != "") {
 				int power = atoi(load_power.c_str());
 				int consumed = atoi(power_consumed.c_str()) / 1000;
@@ -743,7 +729,7 @@ bool XiaomiGateway::StartHardware()
 
 	m_bDoRestart = false;
 
-	//force connect the next first time
+	// Force connect the next first time
 	m_bIsStarted = true;
 
 	m_GatewayMusicId = "10000";
@@ -763,13 +749,13 @@ bool XiaomiGateway::StartHardware()
 	m_GatewayRgbB = 255;
 	m_GatewayBrightnessInt = 100;
 	//m_GatewayPrefix = "f0b4";
-	//check for presence of Xiaomi user variable to enable message output
+	// Check for presence of Xiaomi user variable to enable message output
 	m_OutputMessage = false;
 	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiMessage')");
 	if (!result.empty()) {
 		m_OutputMessage = true;
 	}
-	//check for presence of Xiaomi user variable to enable additional voltage devices
+	// Check for presence of Xiaomi user variable to enable additional voltage devices
 	m_IncludeVoltage = false;
 	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiVoltage')");
 	if (!result.empty()) {
@@ -787,7 +773,7 @@ bool XiaomiGateway::StartHardware()
 		_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Selected as main Gateway", m_HwdID);
 	}
 
-	//Start worker thread
+	// Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
 	SetThreadNameInt(m_thread->native_handle());
 
@@ -810,7 +796,7 @@ void XiaomiGateway::Do_Work()
 {
 	_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Worker started...", m_HwdID);
 	boost::asio::io_service io_service;
-	//find the local ip address that is similar to the xiaomi gateway
+	// Find the local ip address that is similar to the xiaomi gateway
 	try {
 		boost::asio::ip::udp::resolver resolver(io_service);
 		boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), m_GatewayIp, "");
@@ -830,10 +816,10 @@ void XiaomiGateway::Do_Work()
 		_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not detect local IP address using Boost.Asio: %s", m_HwdID, e.what());
 	}
 
-	// try finding local ip using ifaddrs when Boost.Asio fails
+	// Try finding local ip using ifaddrs when Boost.Asio fails
 	if (m_LocalIp == "") {
 		try {
-			// get first 2 octets of Xiaomi gateway ip to search for similar ip address
+			// Get first 2 octets of Xiaomi gateway ip to search for similar ip address
 			std::string compareIp = m_GatewayIp.substr(0, (m_GatewayIp.length() - 3));
 			_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): XiaomiGateway IP address starts with: %s", m_HwdID, compareIp.c_str());
 
@@ -1030,90 +1016,90 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				if ((ret) || (!root2.isObject()))
 				{
 					_eSwitchType type = STYPE_END;
-					std::string name = "Xiaomi Switch";
-					if (model == "motion") {
+					std::string name = NAME_SELECTOR_XIAOMI;
+					if (model == MODEL_SENSOR_MOTION_XIAOMI) {
 						type = STYPE_Motion;
-						name = "Xiaomi Motion Sensor";
+						name = NAME_SENSOR_MOTION_XIAOMI;
 					}
-					else if (model == "sensor_motion.aq2") {
+					else if (model == MODEL_SENSOR_MOTION_AQARA) {
 						type = STYPE_Motion;
-						name = "Aqara Motion Sensor";
+						name = NAME_SENSOR_MOTION_AQARA;
 					}
-					else if ((model == "switch") || (model == "remote.b1acn01")) {
+					else if ((model == MODEL_SELECTOR_WIRELESS_SINGLE_1) || (model == MODEL_SELECTOR_WIRELESS_SINGLE_2)) {
 						type = STYPE_Selector;
-						name = "Xiaomi Wireless Switch";
+						name = NAME_SELECTOR_WIRELESS_SINGLE;
 					}
-					else if (model == "sensor_switch.aq2") {
+					else if (model == MODEL_SELECTOR_WIRELESS_SINGLE_SQUARE) {
 						type = STYPE_Selector;
-						name = "Xiaomi Square Wireless Switch";
+						name = NAME_SELECTOR_WIRELESS_SINGLE_SQUARE;
 					}
-					else if (model == "sensor_switch.aq3") {
+					else if (model == MODEL_SELECTOR_WIRELESS_SINGLE_SMART_PUSH) {
 						type = STYPE_Selector;
-						name = "Xiaomi Smart Push Button";
+						name = NAME_SELECTOR_WIRELESS_SINGLE_SMART_PUSH;
 					}
-					else if ((model == "magnet") || (model == "sensor_magnet.aq2")) {
+					else if ((model == MODEL_SENSOR_DOOR) || (model == MODEL_SENSOR_DOOR_AQARA)) {
 						type = STYPE_Contact;
-						name = "Xiaomi Door Sensor";
+						name = NAME_SENSOR_DOOR;
 					}
-					else if (model == "plug") {
+					else if (model == MODEL_ACT_ONOFF_PLUG) {
 						type = STYPE_OnOff;
-						name = "Xiaomi Smart Plug";
+						name = NAME_ACT_ONOFF_PLUG;
 					}
-					else if (model == "86plug" || model == "ctrl_86plug.aq1") {
+					else if (model == MODEL_ACT_ONOFF_PLUG_WALL_1 || model == MODEL_ACT_ONOFF_PLUG_WALL_2) {
 						type = STYPE_OnOff;
-						name = "Xiaomi Smart Wall Plug";
+						name = NAME_ACT_ONOFF_PLUG_WALL;
 					}
-					else if (model == "sensor_ht") {
-						name = "Xiaomi Temperature/Humidity";
+					else if (model == MODEL_SENSOR_TEMP_HUM_V1) {
+						name = NAME_SENSOR_TEMP_HUM_V1;
 					}
-					else if (model == "weather.v1") {
-						name = "Xiaomi Aqara Weather";
+					else if (model == MODEL_SENSOR_TEMP_HUM_AQARA) {
+						name = NAME_SENSOR_TEMP_HUM_AQARA;
 					}
-					else if (model == "cube") {
-						name = "Xiaomi Cube";
+					else if (model == MODEL_SELECTOR_CUBE_V1) {
+						name = NAME_SELECTOR_CUBE_V1;
 						type = STYPE_Selector;
 					}
-					else if (model == "sensor_cube.aqgl01") {
-						name = "Aqara Cube";
+					else if (model == MODEL_SELECTOR_CUBE_AQARA) {
+						name = NAME_SELECTOR_CUBE_AQARA;
 						type = STYPE_Selector;
 					}
-					else if (model == "86sw2" || model == "remote.b286acn01") {
-						name = "Xiaomi Wireless Dual Wall Switch";
+					else if (model == MODEL_SENSOR_VIBRATION) {
+						name = NAME_SENSOR_VIBRATION;
 						type = STYPE_Selector;
 					}
-					else if (model == "vibration") {
-						name = "Aqara Vibration Sensor";
-						type = STYPE_Selector;
+					else if (model == MODEL_GATEWAY_1 || model == MODEL_GATEWAY_2 || model == MODEL_GATEWAY_3) {
+						name = NAME_GATEWAY;
 					}
-					else if (model == "ctrl_neutral2" || model == "ctrl_ln2" || model == "ctrl_ln2.aq1") {
-						name = "Xiaomi Wired Dual Wall Switch";
+					else if (model == MODEL_SELECTOR_WIRED_WALL_SINGLE_1 || model == MODEL_SELECTOR_WIRED_WALL_SINGLE_2 || model == MODEL_SELECTOR_WIRED_WALL_SINGLE_3) {
+						name = NAME_SELECTOR_WIRED_WALL_SINGLE;
 						//type = STYPE_Selector;
 					}
-					else if (model == "gateway" || model == "gateway.v3" || model == "acpartner.v3") {
-						name = "Xiaomi RGB Gateway";
-					}
-					else if (model == "ctrl_neutral1" || model == "ctrl_ln1" || model == "ctrl_ln1.aq1") {
-						name = "Xiaomi Wired Single Wall Switch";
+					else if (model == MODEL_SELECTOR_WIRED_WALL_DUAL_1 || model == MODEL_SELECTOR_WIRED_WALL_DUAL_2 || model == MODEL_SELECTOR_WIRED_WALL_DUAL_3) {
+						name = NAME_SELECTOR_WIRED_WALL_DUAL;
 						//type = STYPE_Selector;
 					}
-					else if (model == "86sw1" || model == "remote.b186acn01") {
-						name = "Xiaomi Wireless Single Wall Switch";
+					else if (model == MODEL_SELECTOR_WIRELESS_WALL_SINGLE_1 || model == MODEL_SELECTOR_WIRELESS_WALL_SINGLE_2) {
+						name = NAME_SELECTOR_WIRELESS_WALL_SINGLE;
 						type = STYPE_Selector;
 					}
-					else if (model == "smoke") {
-						name = "Xiaomi Smoke Detector";
+					else if (model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_1 || model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_2) {
+						name = NAME_SELECTOR_WIRELESS_WALL_DUAL;
+						type = STYPE_Selector;
+					}
+					else if (model == MODEL_SENSOR_SMOKE) {
+						name = NAME_SENSOR_SMOKE;
 						type = STYPE_SMOKEDETECTOR;
 					}
-					else if (model == "natgas") {
-						name = "Xiaomi Gas Detector";
+					else if (model == MODEL_SENSOR_GAS) {
+						name = NAME_SENSOR_GAS;
 						type = STYPE_SMOKEDETECTOR;
 					}
-					else if (model == "sensor_wleak.aq1") {
-						name = "Xiaomi Water Leak Detector";
+					else if (model == MODEL_SENSOR_WATER) {
+						name = NAME_SENSOR_WATER;
 						type = STYPE_SMOKEDETECTOR;
 					}
-					else if (model == "curtain") {
-						name = "Xiaomi Curtain";
+					else if (model == MODEL_ACT_BLINDS_CURTAIN) {
+						name = NAME_ACT_BLINDS_CURTAIN;
 						type = STYPE_BlindsPercentage;
 					}
 					std::string voltage = root2["voltage"].asString();
@@ -1145,8 +1131,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if (model == "switch") {
 							level = 0;
 						}
-						else if (model == "smoke" || model == "natgas" || model == "sensor_wleak.aq1" || model == "sensor_cube.aqgl01") {
-							if (battery != 255 && (model == "sensor_wleak.aq1" || model == "sensor_cube.aqgl01")) {
+						else if (model == MODEL_SENSOR_SMOKE || model == MODEL_SENSOR_GAS|| model == MODEL_SENSOR_WATER || model == MODEL_SELECTOR_CUBE_AQARA) {
+							if (battery != 255 && (model ==  MODEL_SENSOR_WATER || model == MODEL_SELECTOR_CUBE_AQARA)) {
 								level = 0;
 							}
 							if ((alarm == "1") || (alarm == "2") || (status == "leak")) {
@@ -1217,11 +1203,11 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							TrueGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, unitcode, level, cmd, "", "", battery);
 						}
 						else {
-							if (model == "plug" || model == "86plug" || model == "ctrl_86plug.aq1") {
+							if (model == MODEL_ACT_ONOFF_PLUG || model == MODEL_ACT_ONOFF_PLUG_WALL_1 || model == MODEL_ACT_ONOFF_PLUG_WALL_2) {
 								sleep_milliseconds(100); //need to sleep here as the gateway will send 2 update messages, and need time for the database to update the state so that the event is not triggered twice
 								TrueGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, unitcode, level, cmd, load_power, power_consumed, battery);
 							}
-							else if ((model == "curtain") && (curtain != "")) {
+							else if ((model == MODEL_ACT_BLINDS_CURTAIN) && (curtain != "")) {
 								level = atoi(curtain.c_str());
 								TrueGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, unitcode, level, cmd, "", "", battery);
 							}
@@ -1238,7 +1224,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							}
 						}
 					}
-					else if ((name == "Xiaomi Wired Dual Wall Switch") || (name == "Xiaomi Wired Single Wall Switch"))
+					else if ((name == NAME_SELECTOR_WIRED_WALL_SINGLE) || (name == NAME_SELECTOR_WIRED_WALL_DUAL))
 					{
 						//aqara wired dual switch, bidirectional communiction support
 						type = STYPE_OnOff;
@@ -1248,30 +1234,30 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if ((aqara_wired1 == "on") || (aqara_wired2 == "on")) {
 							state = true;
 						}
-						unitcode = 8;
-						if (name == "Xiaomi Wired Single Wall Switch") {
-							unitcode = 8;
+						unitcode = XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE;
+						if (name == NAME_SELECTOR_WIRED_WALL_SINGLE) {
+							unitcode = XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE;
 						}
 						else {
-							unitcode = 9;
-							name = "Xiaomi Wired Dual Wall Switch Channel 0";
+							unitcode = XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0;
+							name = NAME_SELECTOR_WIRED_WALL_DUAL_CHANNEL_0;
 						}
 						if (aqara_wired1 != "") {
 							TrueGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, unitcode, 0, cmd, "", "", battery);
 						}
 						else if (aqara_wired2 != "") {
-							unitcode = 10;
-							name = "Xiaomi Wired Dual Wall Switch Channel 1";
+							unitcode = XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1;
+							name = NAME_SELECTOR_WIRED_WALL_DUAL_CHANNEL_1;
 							TrueGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, unitcode, 0, cmd, "", "", battery);
 						}
 					}
-					else if ((name == "Xiaomi Temperature/Humidity") || (name == "Xiaomi Aqara Weather"))
+					else if ((name == NAME_SENSOR_TEMP_HUM_V1) || (name == NAME_SENSOR_TEMP_HUM_AQARA))
 					{
 						std::string temperature = root2["temperature"].asString();
 						std::string humidity = root2["humidity"].asString();
 						float pressure = 0;
 
-						if (name == "Xiaomi Aqara Weather") {
+						if (name == NAME_SENSOR_TEMP_HUM_AQARA) {
 							std::string szPressure = root2["pressure"].asString();
 							pressure = static_cast<float>(atof(szPressure.c_str())) / 100.0f;
 						}
@@ -1303,7 +1289,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							}
 						}
 					}
-					else if (name == "Xiaomi RGB Gateway")
+					else if (name == NAME_GATEWAY)
 					{
 						std::string rgb = root2["rgb"].asString();
 						std::string illumination = root2["illumination"].asString();
@@ -1372,7 +1358,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			}
 			else if (cmd == "iam")
 			{
-				if (model == "gateway" || model == "gateway.v3" || model == "acpartner.v3")
+				if (model == MODEL_GATEWAY_1 || model == MODEL_GATEWAY_2 || model == MODEL_GATEWAY_3)
 				{
 					std::string ip = root["ip"].asString();
 					// Only add in the gateway that matches the IP address for this hardware.
