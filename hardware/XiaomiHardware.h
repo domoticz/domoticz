@@ -1,9 +1,5 @@
 #pragma once
 
-// Template
-#define MODEL_
-#define NAME_
-
 typedef enum {
     ACT_ONOFF_PLUG = 1, // TODO: also used for channel 0?
     ACT_ONOFF_WIRED_WALL, // TODO: what is this? single or dual channel wired wall switch?
