@@ -9,10 +9,6 @@ cache:
 - msbuild\vcpkg\installed -> msbuild\packages.bat
 - C:\Users\appveyor\clcache -> .appveyor.yml, msbuild\**
 
-install:
-- ps: |
-      cd msbuild
-      packages.bat
 #init:
 #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #
@@ -20,6 +16,9 @@ install:
 #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   
 before_build:
+- cd msbuild
+- packages.bat
+- cd ..
 - ps: >-
     nuget install Tools.InnoSetup
 
