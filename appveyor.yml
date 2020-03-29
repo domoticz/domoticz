@@ -11,15 +11,8 @@ cache:
 
 install:
 - ps: |
-      cd c:\tools\vcpkg
-      $env:GIT_REDIRECT_STDERR = '2>&1' # git is writing non-errors to STDERR when doing git pull. Send to STDOUT instead.
-      git pull origin master
-      git checkout $env:VCPKG_COMMIT_ID
-      .\bootstrap-vcpkg.bat
-      cd %APPVEYOR_BUILD_FOLDER%
       cd msbuild
       packages.bat
-      cd %APPVEYOR_BUILD_FOLDER%
 #init:
 #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #
