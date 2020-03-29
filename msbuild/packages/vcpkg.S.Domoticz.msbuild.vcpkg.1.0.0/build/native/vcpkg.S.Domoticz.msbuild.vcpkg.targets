@@ -1,0 +1,7 @@
+
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="S:\Domoticz\msbuild\vcpkg\scripts\buildsystems\msbuild\vcpkg.targets" Condition="Exists('S:\Domoticz\msbuild\vcpkg\scripts\buildsystems\msbuild\vcpkg.targets')" />
+  <Target Name="CheckValidPlatform" BeforeTargets="Build">
+    <Error Text="Unsupported architecture combination. Remove the 'vcpkg' nuget package." Condition="'$(VCPkgEnabled)' != 'true' and '$(VCPkgDisableError)' == ''"/>
+  </Target>
+</Project>
