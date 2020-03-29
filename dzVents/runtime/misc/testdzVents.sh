@@ -135,7 +135,7 @@ function fillTimes
 function fillNumberOfTests
 	{
 		Device_ExpectedTests=113
-		Domoticz_ExpectedTests=71
+		Domoticz_ExpectedTests=74
 		EventHelpers_ExpectedTests=32
 		EventHelpersStorage_ExpectedTests=50
 		HTTPResponse_ExpectedTests=6

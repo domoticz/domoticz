@@ -2082,10 +2082,10 @@ return {
  **domoticz.openURL(options)**: *options*	is a Lua table:
 
  - **url**: *String*.
- - **method**: *String*. Optional. Either `'GET'` (default) or `'POST'`.
+ - **method**: *String*. Optional. Either `'GET'` (default), `'POST'`, `'PUT'` or `'DELETE'`.
  - **callback**: *String*. Optional. A custom string that will be used by dzVents to find a the callback handler script.
  - **headers**: *Table*. Optional. A Lua table with additions http request-headers.
- - **postData**: Optional. When doing a `POST` this data will be the payload of the request (body). If you provide a Lua table then this will automatically be converted to json and the request-header `application/json` is set. So no need to do that manually.
+ - **postData**: Optional. When doing a `POST`, `PUT` or `DELETE` this data will be the payload of the request (body). If you provide a Lua table then this will automatically be converted to json and the request-header `application/json` is set. So no need to do that manually.
 
 Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
@@ -2426,6 +2426,11 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+## [3.0.2]
+- Add `PUT` and `DELETE` support to `openURL`
+- Ensure sending integer in nValue in update function
+- Fix sValue for custom sensor
 
 ## [3.0.1] 
 - Add option `at()` to the various commands/methods
