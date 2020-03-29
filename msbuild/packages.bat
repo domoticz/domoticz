@@ -3,5 +3,5 @@ git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 git pull
 call bootstrap-vcpkg.bat -disableMetrics
-vcpkg integrate install
+vcpkg integrate project
 vcpkg install boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
