@@ -14,11 +14,13 @@ cache:
 #
 #on_finish:
 #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  
-before_build:
+
+install:
 - cd msbuild
 - packages.bat
 - cd ..
+
+before_build:
 - ps: >-
     nuget install Tools.InnoSetup
 
