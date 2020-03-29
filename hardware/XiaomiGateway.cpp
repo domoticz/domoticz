@@ -243,7 +243,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				command = "on";
 				break;
 			default:
-				_log.Log(LOG_ERROR, "XiaomiGateway: Unknown command %d", xcmd->cmnd);
+				_log.Log(LOG_ERROR, "XiaomiGateway: Unknown command '%d'", xcmd->cmnd);
 				break;
 			}
 			message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
@@ -321,7 +321,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			}
 			else
 			{
-				_log.Log(LOG_STATUS, "XiaomiGateway: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", xcmd->color.mode);
+				_log.Log(LOG_STATUS, "XiaomiGateway: SetRGBColour - Color mode '%d' is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", xcmd->color.mode);
 			}
 		}
 		else if ((xcmd->command == Color_SetBrightnessLevel) || (xcmd->command == Color_SetBrightUp) || (xcmd->command == Color_SetBrightDown)) {
@@ -540,7 +540,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	xcmd.unitcode = unitcode;
 	int customimage = 0;
 
-	if ((xcmd.unitcode >= XiaomiUnitCode::GATEWAY_SOUND_ALARM_RINGTONE) && (xcmd.unitcode =< XiaomiUnitCode::GATEWAY_SOUND_VOLUME_CONTROL)) {
+	if ((xcmd.unitcode >= XiaomiUnitCode::GATEWAY_SOUND_ALARM_RINGTONE) && (xcmd.unitcode <= XiaomiUnitCode::GATEWAY_SOUND_VOLUME_CONTROL)) {
 		customimage = 8; // Speaker
 	}
 
@@ -632,7 +632,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				}
 			}
 		}
-		else if (switchtype == STYPE_OnOff && Name == NAME_GATEWAY_MP3) {
+		else if (switchtype == STYPE_OnOff && Name == NAME_GATEWAY_SOUND_MP3) {
 			std::string errorMessage;
 			m_sql.AddUserVariable("XiaomiMP3", USERVARTYPE_INTEGER, "10001", errorMessage);
 		}
@@ -983,7 +983,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				if ((ret) || (!root2.isObject()))
 				{
 					_eSwitchType type = STYPE_END;
-					std::string name = NAME_SELECTOR_XIAOMI;
+					std::string name = NAME_UNKNOWN_XIAOMI;
 					if (model == MODEL_SENSOR_MOTION_XIAOMI) {
 						type = STYPE_Motion;
 						name = NAME_SENSOR_MOTION_XIAOMI;
@@ -1280,12 +1280,12 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 									on = true;
 								}
 								TrueGateway->InsertUpdateRGBGateway(sid.c_str(), name + " (" + TrueGateway->GetGatewayIp() + ")", on, brightness, 0);
-								TrueGateway->InsertUpdateLux(sid.c_str(), "Xiaomi Gateway Lux", atoi(illumination.c_str()), 255);
-								TrueGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Ringtone", false, STYPE_Selector, 3, 0, cmd, "", "", 255);
-								TrueGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Clock", false, STYPE_Selector, 4, 0, cmd, "", "", 255);
-								TrueGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Doorbell", false, STYPE_Selector, 5, 0, cmd, "", "", 255);
-								TrueGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway MP3", false, STYPE_OnOff, 6, 0, cmd, "", "", 255);
-								TrueGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Volume", false, STYPE_Dimmer, 7, 0, cmd, "", "", 255);
+								TrueGateway->InsertUpdateLux(sid.c_str(), NAME_GATEWAY_LUX, atoi(illumination.c_str()), 255);
+								TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_ALARM_RINGTONE, false, STYPE_Selector, 3, 0, cmd, "", "", 255);
+								TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_ALARM_CLOCK, false, STYPE_Selector, 4, 0, cmd, "", "", 255);
+								TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_DOORBELL, false, STYPE_Selector, 5, 0, cmd, "", "", 255);
+								TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_MP3, false, STYPE_OnOff, 6, 0, cmd, "", "", 255);
+								TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_VOLUME_CONTROL, false, STYPE_Dimmer, 7, 0, cmd, "", "", 255);
 							}
 						}
 						else {
@@ -1301,7 +1301,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else
 					{
-						_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): unhandled model: %s, name: %s", TrueGateway->GetGatewayHardwareID(), model.c_str(), name.c_str());
+						_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): unhandled model: '%s', name: '%s'", TrueGateway->GetGatewayHardwareID(), model.c_str(), name.c_str());
+						//_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): unhandled model: '%s', name: '%s', sid: '%s', cmd: '%s', data: '%s'", TrueGateway->GetGatewayHardwareID(), model.c_str(), name.c_str(), sid.c_str(), cmd.c_str(), data.c_str());
 					}
 				}
 			}
@@ -1333,11 +1334,11 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					{
 						_log.Log(LOG_STATUS, "XiaomiGateway: RGB Gateway Detected");
 						TrueGateway->InsertUpdateRGBGateway(sid.c_str(), "Xiaomi RGB Gateway (" + ip + ")", false, 0, 100);
-						TrueGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Ringtone", false, STYPE_Selector, 3, 0, cmd, "", "", 255);
-						TrueGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Clock", false, STYPE_Selector, 4, 0, cmd, "", "", 255);
-						TrueGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Doorbell", false, STYPE_Selector, 5, 0, cmd, "", "", 255);
-						TrueGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway MP3", false, STYPE_OnOff, 6, 0, cmd, "", "", 255);
-						TrueGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Volume", false, STYPE_Dimmer, 7, 0, cmd, "", "", 255);
+						TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_ALARM_RINGTONE, false, STYPE_Selector, 3, 0, cmd, "", "", 255);
+						TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_ALARM_CLOCK, false, STYPE_Selector, 4, 0, cmd, "", "", 255);
+						TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_DOORBELL, false, STYPE_Selector, 5, 0, cmd, "", "", 255);
+						TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_MP3, false, STYPE_OnOff, 6, 0, cmd, "", "", 255);
+						TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_VOLUME_CONTROL, false, STYPE_Dimmer, 7, 0, cmd, "", "", 255);
 
 						// Query for list of devices
 						std::string message = "{\"cmd\" : \"get_id_list\"}";
@@ -1351,7 +1352,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			}
 			else
 			{
-				_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): unknown cmd received: %s, model: %s", TrueGateway->GetGatewayHardwareID(), cmd.c_str(), model.c_str());
+				_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): unknown cmd received: '%s', model: '%s'", TrueGateway->GetGatewayHardwareID(), cmd.c_str(), model.c_str());
 			}
 		}
 		if (showmessage && m_OutputMessage) {
@@ -1360,7 +1361,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		start_receive();
 	}
 	else {
-		_log.Log(LOG_ERROR, "XiaomiGateway: error in handle_receive %s", error.message().c_str());
+		_log.Log(LOG_ERROR, "XiaomiGateway: error in handle_receive '%s'", error.message().c_str());
 	}
 }
 
