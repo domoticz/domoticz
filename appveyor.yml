@@ -16,10 +16,10 @@ install:
       git pull origin master
       git checkout $env:VCPKG_COMMIT_ID
       .\bootstrap-vcpkg.bat
-      cd "$env:APPVEYOR_BUILD_FOLDER"
+      cd %APPVEYOR_BUILD_FOLDER%
       cd msbuild
       packages.bat
-      cd "$env:APPVEYOR_BUILD_FOLDER"
+      cd %APPVEYOR_BUILD_FOLDER%
 #init:
 #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #
