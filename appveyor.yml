@@ -18,7 +18,6 @@ cache:
 install:
 - cd msbuild
 - packages.bat
-- cd ..
 
 before_build:
 - ps: >-
