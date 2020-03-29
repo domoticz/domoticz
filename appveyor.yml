@@ -2,6 +2,23 @@ version: 1.0.{build}
 image: Visual Studio 2019
 configuration: Release
 
+environment:
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+
+cache:
+- msbuild\vcpkg\installed -> msbuild\packages.bat
+- C:\Users\appveyor\clcache -> .appveyor.yml, msbuild\**
+
+- ps: |
+      cd c:\tools\vcpkg
+      $env:GIT_REDIRECT_STDERR = '2>&1' # git is writing non-errors to STDERR when doing git pull. Send to STDOUT instead.
+      git pull origin master
+      git checkout $env:VCPKG_COMMIT_ID
+      .\bootstrap-vcpkg.bat
+      cd "$env:APPVEYOR_BUILD_FOLDER"
+      cd msbuild
+      packages.bat
+      cd "$env:APPVEYOR_BUILD_FOLDER"
 #init:
 #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #
@@ -11,15 +28,6 @@ configuration: Release
 before_build:
 - ps: >-
     nuget install Tools.InnoSetup
-    
-- cmd: >-    
-    cd msbuild
-    
-    appveyor DownloadFile https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z
-    
-    7z x WindowsLibraries.7z > NUL:
-    
-    cd ..
 
 build:
   parallel: true                  # enable MSBuild parallel builds
