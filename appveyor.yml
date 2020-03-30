@@ -1,12 +1,15 @@
 version: 1.0.{build}
 image: Visual Studio 2019
 configuration: Release
+platform: x86
 
 environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  VCPKG_INSTALL_PATH: 'C:\tools\vcpkg\installed'
+  VCPKG_COMMIT_ID: '7aebb481085de7387f8a9975652c26f9053f66df'
 
 cache:
-- msbuild\vcpkg\installed -> msbuild\packages.bat
+- C:\tools\vcpkg\installed -> msbuild\vcpkg-packages.txt
 - C:\Users\appveyor\clcache -> .appveyor.yml, msbuild\**
 
 #init:
@@ -16,8 +19,23 @@ cache:
 #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
-- cd msbuild
-- packages.bat
+- ps: |
+      $env:PACKAGES = Get-Content -Path msbuild\vcpkg-packages.txt
+      Write-Host "vcpkg list: $env:PACKAGES"
+      if(!(Test-Path -Path ($env:VCPKG_INSTALL_PATH))) {
+          cd c:\tools\vcpkg
+          $env:GIT_REDIRECT_STDERR = '2>&1' # git is writing non-errors to STDERR when doing git pull. Send to STDOUT instead.
+          git pull origin master
+          git checkout $env:VCPKG_COMMIT_ID
+          .\bootstrap-vcpkg.bat
+          Add-Content "C:\tools\vcpkg\triplets\$env:PLATFORM-windows.cmake" "set(VCPKG_BUILD_TYPE release)"
+          .\vcpkg install --triplet $env:PLATFORM-windows $env:PACKAGES.split() > $null
+          cd "$env:APPVEYOR_BUILD_FOLDER"
+      }
+      else {
+        Write-Host "required vcpkg packages already installed."
+      }
+      c:\tools\vcpkg\vcpkg integrate install
 
 before_build:
 - ps: >-
@@ -31,11 +49,8 @@ build:
 after_build:
 - cmd: >-
     cp appversion.h version_windows_x86.h
-    
     cp History.txt history_windows_x86.txt
-    
     Tools.InnoSetup.6.0.3\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
-    
     msbuild msbuild\package.proj
 
 artifacts:

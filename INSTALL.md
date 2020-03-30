@@ -37,8 +37,30 @@ https://www.domoticz.com/wiki/Installing_and_running_Domoticz_on_a_Raspberry_PI
 - You need Visual Studio 2019 (Community Edition is perfect and is free)
 - The project file for Visual Studio can be found inside the "msbuild" folder
 - For the Initial setup, Launch Visual Studio and from the 'Tools' menu choose 'Visual Studio Command Prompt'
-- Go to the "msbuild" folder and issue the commands inside "packages.bat" one by one (or execute the batch file, but i prefer step by step!)
-- You should now be able to compile Domoticz
+- Domoticz is using the excelent VCPKG C++ Library Manager, and you need to install the required packages that are in the file msbuild/packages.txt
+
+  First you need to get VCPKG and build it with:
+```
+  git clone https://github.com/microsoft/vcpkg.git
+  cd vcpkg
+  call bootstrap-vcpkg.bat -disableMetrics
+```
+  Now we are going to get/build all Domoticz dependencies
+```
+  set VCPKG_DEFAULT_TRIPLET=x86-windows
+```  
+  Copy/past the content of msbuild/packages.txt after the command below
+```  
+  vcpkg install <PASTE CONTENT HERE>
+```  
+  (For example vcpkg install boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib)
+
+  Integrate VCPKG system wide with:
+```  
+  vcpkg.exe integrate install
+```
+
+- You should now be able to compile Domoticz with Visual Studio
 - Make sure to check the projects configuration properties for Debugging/Working Directory, this should be set to "$(ProjectDir)/.."
 
 ### Synology
