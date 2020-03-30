@@ -2082,10 +2082,10 @@ return {
  **domoticz.openURL(options)**: *options*	is a Lua table:
 
  - **url**: *String*.
- - **method**: *String*. Optional. Either `'GET'` (default), `'POST'`, `'PUT'` or `'DELETE'`.
+ - **method**: *String*. Optional. Either `'GET'` (default), `'POST'`, `'PUT'`<sup>3.0.2</sup>  or `'DELETE'`<sup>3.0.2</sup> .
  - **callback**: *String*. Optional. A custom string that will be used by dzVents to find a the callback handler script.
  - **headers**: *Table*. Optional. A Lua table with additions http request-headers.
- - **postData**: Optional. When doing a `POST`, `PUT` or `DELETE` this data will be the payload of the request (body). If you provide a Lua table then this will automatically be converted to json and the request-header `application/json` is set. So no need to do that manually.
+ - **postData**: Optional. When doing a `POST`, `PUT` <sup>3.0.2</sup> or `DELETE`<sup>3.0.2</sup> this data will be the payload of the request (body). If you provide a Lua table then this will automatically be converted to json and the request-header `application/json` is set. So no need to do that manually.
 
 Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 

@@ -40,11 +40,11 @@ local checkAttributes = function(item, attributes)
 	for attr, value in pairs(attributes) do
 		res = res and expectEql(item[attr], value, attr)
 	end
-    if res then return res
-    else 
-        print(item[attr], value, attr)
-        return res
-    end
+	if res then return res
+	else 
+		print(item[attr], value, attr)
+		return res
+	end
 end
 
 local testAirQuality = function(name)
@@ -779,8 +779,11 @@ end
 
 local testHTTPSwitch = function(name)
 	local res = true
-	local trigger = dz.globalData.httpTrigger
-	res = res and expectEql('OKOKOKOK', trigger)
+	dz.utils.dumpTable(dz.globalData.httpTrigger)
+	for check, result in pairs(dz.globalData.httpTrigger) do
+		res = res and expectEql(result, "OK")
+        dz.log(check .. ':' .. result .. ' ==>> '.. tostring(res), dz.LOG_FORCE)
+	end
 	handleResult('Test http trigger switch device', res)
 	return res
 end
