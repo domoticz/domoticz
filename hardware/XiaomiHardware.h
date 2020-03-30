@@ -122,16 +122,16 @@ typedef enum {
 #define MODEL_ACT_BLINDS_CURTAIN "curtain"
 #define NAME_ACT_BLINDS_CURTAIN "Xiaomi Curtain"
 
-// [NEW] Aqara LED Light Bulb (Tunable White)
+// [NEW] Aqara LED Light Bulb (Tunable White) // TODO: not implemented yet
 #define MODEL_ACT_LIGHT "light.aqcb02"
 #define NAME_ACT_LIGHT "Light bulb"
 
-// [NEW] Aqara Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM
+// [NEW] Aqara Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM // TODO: not implemented yet
 #define MODEL_ACT_RELAIS "relay.c2acn01"
 #define NAME_ACT_RELAIS "Aqara Wireless Relay Controller"
 
 
-/*****************************************§***********************************
+/****************************************************************************
  ********************************* GATEWAY **********************************
  ****************************************************************************/
 

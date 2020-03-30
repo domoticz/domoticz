@@ -1262,7 +1262,6 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						std::string illumination = root2["illumination"].asString();
 						if (rgb != "") {
 							// Only add in the gateway that matches the SID for this hardware.
-							//if (m_XiaomiGateway->m_GatewaySID == sid) {
 							if (TrueGateway->GetGatewaySid() == sid)
 							{
 								std::stringstream ss;
@@ -1302,7 +1301,6 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					else
 					{
 						_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): unhandled model: '%s', name: '%s'", TrueGateway->GetGatewayHardwareID(), model.c_str(), name.c_str());
-						//_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): unhandled model: '%s', name: '%s', sid: '%s', cmd: '%s', data: '%s'", TrueGateway->GetGatewayHardwareID(), model.c_str(), name.c_str(), sid.c_str(), cmd.c_str(), data.c_str());
 					}
 				}
 			}
