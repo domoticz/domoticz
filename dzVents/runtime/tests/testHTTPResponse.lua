@@ -121,7 +121,7 @@ describe('HTTPResponse', function()
 			statusText = 'OK' ,
 			protocol = 'HTTP/1.4' ,
 			statusCode  = 200 ,
-			data  = '{"a":1}',
+			data  = "<note><to>Tove</to><from>Jani</from><heading>Reminder</heading><body>Don't forget me this weekend!</body></note>",
 			callback = 'trigger1',
 
 		},"testHTTPResponse")

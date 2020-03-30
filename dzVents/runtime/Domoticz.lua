@@ -188,7 +188,7 @@ local function Domoticz(settings)
 			local postData
 
 			-- process body data
-			if (method == 'POST') then
+			if (method ~= 'GET') then
 				postData = ''
 				if (options.postData ~= nil) then
 					if (type(options.postData) == 'table') then
