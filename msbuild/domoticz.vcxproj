@@ -1501,13 +1501,5 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\vcpkg.S.Domoticz.msbuild.vcpkg.1.0.0\build\native\vcpkg.S.Domoticz.msbuild.vcpkg.targets" Condition="Exists('packages\vcpkg.S.Domoticz.msbuild.vcpkg.1.0.0\build\native\vcpkg.S.Domoticz.msbuild.vcpkg.targets')" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\vcpkg.S.Domoticz.msbuild.vcpkg.1.0.0\build\native\vcpkg.S.Domoticz.msbuild.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.S.Domoticz.msbuild.vcpkg.1.0.0\build\native\vcpkg.S.Domoticz.msbuild.vcpkg.props'))" />
-    <Error Condition="!Exists('packages\vcpkg.S.Domoticz.msbuild.vcpkg.1.0.0\build\native\vcpkg.S.Domoticz.msbuild.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.S.Domoticz.msbuild.vcpkg.1.0.0\build\native\vcpkg.S.Domoticz.msbuild.vcpkg.targets'))" />
-  </Target>
 </Project>
