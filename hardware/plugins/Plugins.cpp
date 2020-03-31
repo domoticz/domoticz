@@ -1804,11 +1804,11 @@ Error:
 			PyErr_Clear();
 
 			// Stop Python
+			Py_XDECREF(m_PyModule);
 			if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
 			if (m_ImageDict) Py_XDECREF(m_ImageDict);
 			if (m_SettingsDict) Py_XDECREF(m_SettingsDict);
 			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
-			Py_XDECREF(m_PyModule);
 			PyEval_ReleaseLock();
 		}
 		catch (std::exception *e)
