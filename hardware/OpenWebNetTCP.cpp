@@ -794,6 +794,38 @@ void COpenWebNetTCP::UpdateAlarm(const int who, const int where, const int Comma
 	SendAlertSensor(NodeID, BatteryLevel, Command, sCommand, devname);
 }
 
+void COpenWebNetTCP::SendSwitchBlind(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const int cmd, const int level, const std::string& defaultname, const int RssiLevel /* =12 */)
+{
+	//make device ID
+	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
+	unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
+	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
+	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
+
+	int switch_type = 0;
+
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	
+	//Send as Lighting 2
+	tRBUF lcmd;
+	memset(&lcmd, 0, sizeof(RBUF));
+	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+	lcmd.LIGHTING2.packettype = pTypeLighting2;
+	lcmd.LIGHTING2.subtype = sTypeAC;
+	lcmd.LIGHTING2.id1 = ID1;
+	lcmd.LIGHTING2.id2 = ID2;
+	lcmd.LIGHTING2.id3 = ID3;
+	lcmd.LIGHTING2.id4 = ID4;
+	lcmd.LIGHTING2.unitcode = ChildID;
+	lcmd.LIGHTING2.cmnd = cmd;
+	
+	lcmd.LIGHTING2.level = level;
+	lcmd.LIGHTING2.filler = 0;
+	lcmd.LIGHTING2.rssi = RssiLevel;
+	sDecodeRXMessage(this, (const unsigned char*)& lcmd.LIGHTING2, defaultname.c_str(), BatteryLevel);
+}
+
 /**
 	Insert/Update blinds device
 **/
@@ -807,16 +839,22 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 	char szIdx[10];
 	sprintf(szIdx, "%07X", NodeID);
 
-	int switch_type;
+	int nvalue, slevel, switch_type;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
+	result = m_sql.safe_query("SELECT ID,nValue,sValue,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
 	if (result.empty())
 	{
+		nvalue = 0;
+		slevel = 0;
 		switch_type = (iLevel < 0) ? STYPE_VenetianBlindsEU : STYPE_BlindsPercentageInverted;
 		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeLighting2, sTypeAC, switch_type, 0, "", devname);
 	}
 	else
-		switch_type = atoi(result[0][1].c_str());
+	{
+		nvalue = atoi(result[0][1].c_str());
+		slevel = atoi(result[0][2].c_str());
+		switch_type = atoi(result[0][3].c_str());
+	}
 
 	if ((switch_type == STYPE_BlindsPercentageInverted) && (iLevel < 0)) return; // check normal frame received for BlindsPercentageInverted
 
@@ -840,14 +878,35 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		return;
 	}
 	
-	_log.Log(LOG_ERROR, "COpenWebNetTCP: Command %d, cmd:%d", Command, cmd);
+	_log.Log(LOG_STATUS, "COpenWebNetTCP: A-Command %d, cmd:%d", Command, cmd);
 
 	// if (iLevel < 0)  is a Normal Frame and device is standard
 	// if (iLevel >= 0) is a Meseaure Frame (percentual) and device is Advanced
 	double level = (iLevel < 0) ? 0. : iLevel;
 	if (level == 100.) level -= 6.25;
+	
+	double rlevel = (16.0 / 100.0) * level;
+	int ilevel = int(rlevel);
+	
+	//check if we have a change, if not do not update it
+	if (cmd == nvalue)
+	{
+		if (switch_type == STYPE_VenetianBlindsEU) 
+			return; // normal blind without change
 
-	SendSwitch(NodeID, iInterface, BatteryLevel, (iLevel == 0) ? 0 : 1, level, devname);
+		// Check Level percentage blind
+		if (slevel == ilevel)
+			return;
+	}
+
+	// verify command for advanced type
+	if (switch_type == STYPE_BlindsPercentageInverted)
+	{
+		cmd = (iLevel == 0) ? light2_sOff : light2_sSetLevel;
+	}
+
+	_log.Log(LOG_STATUS, "COpenWebNetTCP: B-Command %d, cmd:%d", Command, cmd);
+	SendSwitchBlind(NodeID, iInterface, BatteryLevel, cmd, ilevel, devname);
 }
 
 
