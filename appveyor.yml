@@ -22,9 +22,9 @@ install:
 - cd "C:\Tools\vcpkg"
 - git pull
 - .\bootstrap-vcpkg.bat
-- set VCPKG_BUILD_TYPE=release
-- .\vcpkg install --triplet %PLATFORM%-windows boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
+- .\vcpkg update
 - .\vcpkg upgrade --no-dry-run
+- .\vcpkg install --triplet %PLATFORM%-windows boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
 - .\vcpkg integrate install
 
 before_build:
