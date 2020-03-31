@@ -212,28 +212,17 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		sidtemp.insert(0, "158d00");
 
 		cmdchannel = DetermineChannel(xcmd->unitcode);
-
-		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE) {
-			cmdchannel = "\\\"channel_0\\\":";
-			cmddevice = "ctrl_neutral1";
-		}
-		else if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0) {
-			cmdchannel = "\\\"channel_0\\\":";
-			cmddevice = "ctrl_neutral2";
-		}
-		else if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
-			cmdchannel = "\\\"channel_1\\\":";
-			cmddevice = "ctrl_neutral2";
-		}
+		cmddevice = DetermineDevice(xcmd->unitcode);
+		
 		if (xcmd->cmnd == 0) {
-			cmdcommand = "\\\"off";
+			cmdcommand = "off";
 		}
 		else if (xcmd->cmnd == 1) {
-			cmdcommand = "\\\"on";
+			cmdcommand = "on";
 		}
 
 		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
-			message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"158d00" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"158d00" + sid + "\",\"short_id\":0,\"data\":\"{\\\"" + cmdchannel + "\\\":\\\"" + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG)) {
 			std::string command = "on";
@@ -248,7 +237,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				_log.Log(LOG_ERROR, "XiaomiGateway: Unknown command '%d'", xcmd->cmnd);
 				break;
 			}
-			message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"" + cmdchannel + "\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if ((xcmd->subtype == sSwitchTypeSelector) && (xcmd->unitcode >= XiaomiUnitCode::GATEWAY_SOUND_ALARM_RINGTONE && xcmd->unitcode <= XiaomiUnitCode::GATEWAY_SOUND_DOORBELL) || (xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_MP3)) {
 			std::stringstream ss;
@@ -352,7 +341,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		}
 	}
 	if (!message.empty()) {
-		_log.Debug(DEBUG_HARDWARE, "XiaomiGateway: message: '%s'", message.c_str());
+		//_log.Debug(DEBUG_HARDWARE, "XiaomiGateway: message: '%s'", message.c_str()); // TODO: do not deliver this
+		_log.Log(LOG_STATUS, "XiaomiGateway: message: '%s'", message.c_str());
 		result = SendMessageToGateway(message);
 		if (result == false) {
 			// Retry, send the message again
@@ -1419,13 +1409,31 @@ std::string XiaomiGateway::DetermineChannel(int32_t unitcode)
 {
 	std::string cmdchannel = "";
 	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE) {
-		cmdchannel = "\\\"channel_0\\\":";
+		cmdchannel = "channel_0";
 	}
+	else if (unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG) {
+		cmdchannel = "channel_0";
+	} 
 	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0) {
-		cmdchannel = "\\\"channel_0\\\":";
+		cmdchannel = "channel_0";
 	}
 	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
-		cmdchannel = "\\\"channel_1\\\":";
-	}
+		cmdchannel = "channel_1";
+	} 
 	return cmdchannel;
+}
+
+std::string XiaomiGateway::DetermineDevice(int32_t unitcode)
+{
+	std::string cmddevice = "";
+	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE) {
+		cmddevice = "ctrl_neutral1";
+	}
+	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0) {
+		cmddevice = "ctrl_neutral2";
+	}
+	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
+		cmddevice = "ctrl_neutral2";
+	}
+	return cmddevice;
 }

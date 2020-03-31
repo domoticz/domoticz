@@ -68,6 +68,7 @@ private:
 	int get_local_ipaddr(std::vector<std::string>& ip_addrs);
 
 	std::string DetermineChannel(int32_t unitcode);
+	std::string DetermineDevice(int32_t unitcode);
 	
 	class xiaomi_udp_server
 	{
