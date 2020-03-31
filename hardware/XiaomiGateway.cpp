@@ -213,31 +213,11 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 
 		cmdchannel = DetermineChannel(xcmd->unitcode);
 		cmddevice = DetermineDevice(xcmd->unitcode);
-		
-		if (xcmd->cmnd == 0) {
-			cmdcommand = "off";
-		}
-		else if (xcmd->cmnd == 1) {
-			cmdcommand = "on";
-		}
+		cmdcommand = DetermineCommand(xcmd->cmnd);
 
-		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
+		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 || 
+			xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1 || ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG))) {
 			message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"158d00" + sid + "\",\"short_id\":0,\"data\":\"{\\\"" + cmdchannel + "\\\":\\\"" + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
-		}
-		else if ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG)) {
-			std::string command = "on";
-			switch (xcmd->cmnd) {
-			case gswitch_sOff:
-				command = "off";
-				break;
-			case gswitch_sOn:
-				command = "on";
-				break;
-			default:
-				_log.Log(LOG_ERROR, "XiaomiGateway: Unknown command '%d'", xcmd->cmnd);
-				break;
-			}
-			message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"" + cmdchannel + "\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if ((xcmd->subtype == sSwitchTypeSelector) && (xcmd->unitcode >= XiaomiUnitCode::GATEWAY_SOUND_ALARM_RINGTONE && xcmd->unitcode <= XiaomiUnitCode::GATEWAY_SOUND_DOORBELL) || (xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_MP3)) {
 			std::stringstream ss;
@@ -1408,18 +1388,13 @@ std::string XiaomiGateway::XiaomiGatewayTokenManager::GetSID(const std::string &
 std::string XiaomiGateway::DetermineChannel(int32_t unitcode)
 {
 	std::string cmdchannel = "";
-	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE) {
-		cmdchannel = "channel_0";
-	}
-	else if (unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG) {
-		cmdchannel = "channel_0";
-	} 
-	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0) {
+	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG ||
+		unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_) {
 		cmdchannel = "channel_0";
 	}
 	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
 		cmdchannel = "channel_1";
-	} 
+	}
 	return cmdchannel;
 }
 
@@ -1429,11 +1404,28 @@ std::string XiaomiGateway::DetermineDevice(int32_t unitcode)
 	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE) {
 		cmddevice = "ctrl_neutral1";
 	}
-	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0) {
-		cmddevice = "ctrl_neutral2";
+	else if (unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG) {
+		cmddevice = "plug";
 	}
-	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
+	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 || unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
 		cmddevice = "ctrl_neutral2";
 	}
 	return cmddevice;
+}
+
+std::string XiaomiGateway::DetermineCommand(uint8_t commandcode)
+{
+	std::string command = "";
+	switch (commandcode) {
+		case gswitch_sOff:
+			command = "off";
+			break;
+		case gswitch_sOn:
+			command = "on";
+			break;
+		default:
+			command = "unknown command";
+			break;
+	}
+	return command;
 }
