@@ -13,10 +13,10 @@ cache:
 - C:\Users\appveyor\clcache -> .appveyor.yml, msbuild\**
 
 #init:
-#- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #
 #on_finish:
-#- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
 - ps: |
@@ -27,7 +27,7 @@ install:
           $env:GIT_REDIRECT_STDERR = '2>&1' # git is writing non-errors to STDERR when doing git pull. Send to STDOUT instead.
           git pull origin master
           git checkout $env:VCPKG_COMMIT_ID
-          .\bootstrap-vcpkg.bat
+          .\bootstrap-vcpkg.bat -disableMetrics
           Add-Content "C:\tools\vcpkg\triplets\$env:PLATFORM-windows.cmake" "set(VCPKG_BUILD_TYPE release)"
           .\vcpkg install --triplet $env:PLATFORM-windows $env:PACKAGES.split() > $null
           cd "$env:APPVEYOR_BUILD_FOLDER"
