@@ -12,30 +12,20 @@ cache:
 - C:\tools\vcpkg\installed -> msbuild\vcpkg-packages.txt
 - C:\Users\appveyor\clcache -> .appveyor.yml, msbuild\**
 
-init:
-- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#init:
+#- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #
-on_finish:
-- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#on_finish:
+#- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
-- ps: |
-      $env:PACKAGES = Get-Content -Path msbuild\vcpkg-packages.txt
-      Write-Host "vcpkg list: $env:PACKAGES"
-      if(!(Test-Path -Path ($env:VCPKG_INSTALL_PATH))) {
-          cd c:\tools\vcpkg
-          $env:GIT_REDIRECT_STDERR = '2>&1' # git is writing non-errors to STDERR when doing git pull. Send to STDOUT instead.
-          git pull origin master
-          git checkout $env:VCPKG_COMMIT_ID
-          .\bootstrap-vcpkg.bat -disableMetrics
-          Add-Content "C:\tools\vcpkg\triplets\$env:PLATFORM-windows.cmake" "set(VCPKG_BUILD_TYPE release)"
-          .\vcpkg install --triplet $env:PLATFORM-windows $env:PACKAGES.split() > $null
-          cd "$env:APPVEYOR_BUILD_FOLDER"
-      }
-      else {
-        Write-Host "required vcpkg packages already installed."
-      }
-      c:\tools\vcpkg\vcpkg integrate install
+- cd "C:\Tools\vcpkg"
+- git pull
+- .\bootstrap-vcpkg.bat
+- set VCPKG_BUILD_TYPE=release
+- .\vcpkg install --triplet %PLATFORM%-windows boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
+- .\vcpkg upgrade --no-dry-run
+- .\vcpkg integrate install
 
 before_build:
 - ps: >-
