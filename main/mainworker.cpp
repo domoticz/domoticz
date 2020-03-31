@@ -4955,6 +4955,9 @@ void MainWorker::decode_Lighting2(const CDomoticzHardwareBase* pHardware, const 
 				sprintf(szTmp, "Set Group Level: %d", level);
 				WriteMessage(szTmp);
 				break;
+			case gswitch_sStop:
+				WriteMessage("Stop");
+				break;
 			default:
 				WriteMessage("UNKNOWN");
 				break;

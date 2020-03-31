@@ -1197,6 +1197,9 @@ void GetLightStatus(
 				else
 					lstatus = "Off";
 				break;
+			case gswitch_sStop:
+				lstatus = "Stop";
+				break;
 			}
 			break;
 		}
