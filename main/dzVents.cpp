@@ -12,13 +12,19 @@
 #include <inttypes.h>
 #include "../webserver/Base64.h"
 
+extern "C" {
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+}
+
 extern std::string szUserDataFolder, szWebRoot, szStartupFolder, szAppVersion;
 extern http::server::CWebServerHelper m_webservers;
 
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("3.0.1")
+	m_version("3.0.2")
 {
 	m_bdzVentsExist = false;
 }
@@ -360,12 +366,26 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 	}
 
 	HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
-	if (!method.empty() && method == "POST")
-		eMethod = HTTPClient::HTTP_METHOD_POST;
-
-	if (!postData.empty() && eMethod != HTTPClient::HTTP_METHOD_POST)
+	if (!method.empty())
 	{
-		_log.Log(LOG_ERROR, "dzVents: You can only use postdata with method POST..");
+		if (method == "GET")
+			eMethod = HTTPClient::HTTP_METHOD_GET;
+		else if (method == "POST")
+			eMethod = HTTPClient::HTTP_METHOD_POST;
+		else if (method == "PUT")
+			eMethod = HTTPClient::HTTP_METHOD_PUT;
+		else if (method == "DELETE")
+			eMethod = HTTPClient::HTTP_METHOD_DELETE;
+		else
+		{
+			_log.Log(LOG_ERROR, "dzVents: Invalid HTTP method '%s'", method.c_str());
+			return false;
+		}
+	}
+
+	if (!postData.empty() && eMethod == HTTPClient::HTTP_METHOD_GET)
+	{
+		_log.Log(LOG_ERROR, "dzVents: You cannot use postdata with method GET.");
 		return false;
 	}
 

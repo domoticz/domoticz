@@ -10,6 +10,7 @@ local function Device(domoticz, data, dummyLogger)
 	local adapterManager = Adapters(dummyLogger)
 
 	function self.update(nValue, sValue, protected)
+		if math.type(tonumber(nValue)) == 'float' or type(nValue) == 'string' then nValue = math.floor( nValue + 0.5 ) end
 		local params = {
 			idx = self.id,
 			nValue = (nValue ~= nil and nValue ~= '')  and nValue or nil,

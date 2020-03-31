@@ -3,17 +3,6 @@
 #include <string>
 #include <boost/thread/shared_mutex.hpp>
 
-extern "C" {
-#ifdef WITH_EXTERNAL_LUA
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
-#else
-#include "../lua/src/lua.h"
-#include "../lua/src/lualib.h"
-#include "../lua/src/lauxlib.h"
-#endif
-}
 #include "../httpclient/HTTPClient.h"
 
 #include "LuaCommon.h"

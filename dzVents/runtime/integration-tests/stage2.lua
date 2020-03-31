@@ -40,11 +40,11 @@ local checkAttributes = function(item, attributes)
 	for attr, value in pairs(attributes) do
 		res = res and expectEql(item[attr], value, attr)
 	end
-    if res then return res
-    else 
-        print(item[attr], value, attr)
-        return res
-    end
+	if res then return res
+	else
+		print(item[attr], value, attr)
+		return res
+	end
 end
 
 local testAirQuality = function(name)
@@ -737,7 +737,7 @@ local testDeviceDump = function(name)
 	local utils = require('Utils')
 	local dev = dz.devices(name)
 	local res = true
-	res = res and ( utils.dumpTable(dev, '> ') == nil) 
+	res = res and ( utils.dumpTable(dev, '> ') == nil)
 	handleResult('Test device dump', res)
 	return res
 end
@@ -763,8 +763,8 @@ end
 local testIFTTT = function(event)
 	res = true
 	print('triggerIFTTT should fail now because IFTTT is disabled before stage 2')
-	dz.triggerIFTTT(event) 
-	dz.triggerIFTTT(event).afterSec(3) 
+	dz.triggerIFTTT(event)
+	dz.triggerIFTTT(event).afterSec(3)
 	handleResult('Test IFTTT call', res)
 	return res
 end
@@ -779,8 +779,9 @@ end
 
 local testHTTPSwitch = function(name)
 	local res = true
-	local trigger = dz.globalData.httpTrigger
-	res = res and expectEql('OKOKOKOK', trigger)
+	for check, result in pairs(dz.globalData.httpTrigger) do
+		res = res and expectEql(result, "OK")
+	end
 	handleResult('Test http trigger switch device', res)
 	return res
 end
@@ -824,12 +825,12 @@ local testVersion = function(name)
 end
 
 local testExistUtils = function()
-	local interimResult 
+	local interimResult
 	local res = {}
 	local utils = require('Utils')
 
 	interimResult = utils.deviceExists(1)
-	res[#res + 1] = interimResult 
+	res[#res + 1] = interimResult
 	handleResult('Test Device exists',interimResult ~= false)
 
 	interimResult = not(utils.deviceExists('none existing'))
@@ -868,7 +869,7 @@ local testExistUtils = function()
 	res[#res + 1] = interimResult
 	handleResult('Test Camera not exists',interimResult)
 
-	for _, bool in ipairs(res) do 
+	for _, bool in ipairs(res) do
 		if not(bool) then return false end
 	end
 	return true

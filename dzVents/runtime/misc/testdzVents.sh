@@ -32,7 +32,7 @@ if [ ! -f "$basedir/dzVents/runtime/integration-tests/testIntegration.lua" ]; th
 	exit 1
 fi
 
-NewVersion=$($basedir/domoticz --help | grep Giz | awk '{print $5}') 2>&1 >/dev/null
+NewVersion=$($basedir/domoticz --help | grep Giz | awk '{print $5 " (" $7}') 2>&1 >/dev/null
 export NewVersion
 if [[ $? -ne 0 ]];then
 	echo "This script requires an domoticz"
@@ -135,7 +135,7 @@ function fillTimes
 function fillNumberOfTests
 	{
 		Device_ExpectedTests=113
-		Domoticz_ExpectedTests=71
+		Domoticz_ExpectedTests=74
 		EventHelpers_ExpectedTests=32
 		EventHelpersStorage_ExpectedTests=50
 		HTTPResponse_ExpectedTests=6
@@ -168,7 +168,7 @@ function testDir
 			if test $i == 'testSystemAndCustomEvents.lua' ; then
 				tput sc # save cursor
 				stopBackgroundProcesses 
-				sleep 5
+				sleep 6
 				tput rc;tput el # rc
 			fi
 			echo -n $(showTime) " "
@@ -223,7 +223,7 @@ cd $basedir
 checkStarted "domoticz" 20
 
 clear
-echo "========= domoticz $NewVersion, dzVents V$dzVersion =======+========================== Tests ==============================+"
+echo "========= domoticz $NewVersion, dzVents V$dzVersion +========================== Tests ==============================+"
 echo "  time  | test-script	                           | expected | tests | result  | successful |  failed  | seconds  |"
 echo "===================================================+===============================================================+"
 
