@@ -211,6 +211,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		std::string sidtemp = sid;
 		sidtemp.insert(0, "158d00");
 
+		cmdchannel = DetermineChannel(xcmd->unitcode);
+
 		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE) {
 			cmdchannel = "\\\"channel_0\\\":";
 			cmddevice = "ctrl_neutral1";
@@ -1411,4 +1413,19 @@ std::string XiaomiGateway::XiaomiGatewayTokenManager::GetSID(const std::string &
 		}
 	}
 	return sid;
+}
+
+std::string XiaomiGateway::DetermineChannel(int32_t unitcode)
+{
+	std::string cmdchannel = "";
+	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE) {
+		cmdchannel = "\\\"channel_0\\\":";
+	}
+	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0) {
+		cmdchannel = "\\\"channel_0\\\":";
+	}
+	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
+		cmdchannel = "\\\"channel_1\\\":";
+	}
+	return cmdchannel;
 }
