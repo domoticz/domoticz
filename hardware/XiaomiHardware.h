@@ -146,3 +146,27 @@ typedef enum {
 #define NAME_GATEWAY_SOUND_ALARM_CLOCK "Xiaomi Gateway Alarm Clock"
 #define NAME_GATEWAY_SOUND_ALARM_RINGTONE "Xiaomi Gateway Alarm Ringtone"
 #define NAME_GATEWAY_SOUND_VOLUME_CONTROL "Xiaomi Gateway Volume"
+
+
+/****************************************************************************
+ ********************************* STATES ***********************************
+ ****************************************************************************/
+
+#define NAME_CHANNEL_0 "channel_0"
+#define NAME_CHANNEL_1 "channel_1"
+
+#define STATE_ON "on"
+#define STATE_OFF "off"
+
+#define STATE_OPEN "open"
+#define STATE_CLOSE "close"
+
+#define STATE_WATER_LEAK_YES "leak"
+#define STATE_WATER_LEAK_NO "no_leak"
+
+#define STATE_MOTION_YES "motion"
+#define STATE_MOTION_NO "no_motion"
+
+#define COMMAND_REPORT "report"
+#define COMMAND_READ_ACK "read_ack"
+#define COMMAND_HEARTBEAT "heartbeat"

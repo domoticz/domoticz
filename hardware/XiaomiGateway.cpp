@@ -321,8 +321,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		}
 	}
 	if (!message.empty()) {
-		//_log.Debug(DEBUG_HARDWARE, "XiaomiGateway: message: '%s'", message.c_str()); // TODO: do not deliver this
-		_log.Log(LOG_STATUS, "XiaomiGateway: message: '%s'", message.c_str());
+		_log.Debug(DEBUG_HARDWARE, "XiaomiGateway: message: '%s'", message.c_str());
 		result = SendMessageToGateway(message);
 		if (result == false) {
 			// Retry, send the message again
@@ -948,7 +947,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			std::string sid = root["sid"].asString();
 			std::string data = root["data"].asString();
 			int unitcode = 1;
-			if ((cmd == "report") || (cmd == "read_ack") || (cmd == "heartbeat"))
+			if ((cmd == COMMAND_REPORT) || (cmd == COMMAND_READ_ACK) || (cmd == COMMAND_HEARTBEAT))
 			{
 				Json::Value root2;
 				ret = ParseJSon(data.c_str(), root2);
@@ -1052,8 +1051,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						std::string no_close = root2["no_close"].asString();
 						std::string no_motion = root2["no_motion"].asString();
 						// Aqara's Wireless switch reports per channel
-						std::string aqara_wireless1 = root2["channel_0"].asString();
-						std::string aqara_wireless2 = root2["channel_1"].asString();
+						std::string aqara_wireless1 = root2[NAME_CHANNEL_0].asString();
+						std::string aqara_wireless2 = root2[NAME_CHANNEL_1].asString();
 						std::string aqara_wireless3 = root2["dual_channel"].asString();
 						// Smart plug usage
 						std::string load_power = root2["load_power"].asString();
@@ -1067,28 +1066,28 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						std::string curtain = root2["curtain_level"].asString();
 						bool on = false;
 						int level = -1;
-						if (model == "switch") {
+						if (model == MODEL_SELECTOR_WIRELESS_SINGLE_1) {
 							level = 0;
 						}
 						else if (model == MODEL_SENSOR_SMOKE || model == MODEL_SENSOR_GAS|| model == MODEL_SENSOR_WATER || model == MODEL_SELECTOR_CUBE_AQARA) {
 							if (battery != 255 && (model ==  MODEL_SENSOR_WATER || model == MODEL_SELECTOR_CUBE_AQARA)) {
 								level = 0;
 							}
-							if ((alarm == "1") || (alarm == "2") || (status == "leak")) {
+							if ((alarm == "1") || (alarm == "2") || (status == STATE_WATER_LEAK_YES)) {
 								level = 0;
 								on = true;
 							}
-							else if ((alarm == "0") || (status == "no_leak") || (status == "iam")) {
+							else if ((alarm == "0") || (status == STATE_WATER_LEAK_NO) || (status == "iam")) {
 								level = 0;
 							}
 							if (density != "")
 								level = atoi(density.c_str());
 						}
-						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on") || (no_close != "")) {
+						if ((status == STATE_MOTION_YES) || (status == STATE_OPEN) || (status == "no_close") || (status == STATE_ON) || (no_close != "")) {
 							level = 0;
 							on = true;
 						}
-						else if ((status == "no_motion") || (status == "close") || (status == "off") || (no_motion != "")) {
+						else if ((status == STATE_MOTION_NO) || (status == STATE_CLOSE) || (status == STATE_OFF) || (no_motion != "")) {
 							level = 0;
 							on = false;
 						}
@@ -1167,10 +1166,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					{
 						// Aqara wired dual switch, bidirectional communication support
 						type = STYPE_OnOff;
-						std::string aqara_wired1 = root2["channel_0"].asString();
-						std::string aqara_wired2 = root2["channel_1"].asString();
+						std::string aqara_wired1 = root2[NAME_CHANNEL_0].asString();
+						std::string aqara_wired2 = root2[NAME_CHANNEL_1].asString();
 						bool state = false;
-						if ((aqara_wired1 == "on") || (aqara_wired2 == "on")) {
+						if ((aqara_wired1 == STATE_ON) || (aqara_wired2 == STATE_ON)) {
 							state = true;
 						}
 						unitcode = XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE;
@@ -1390,10 +1389,10 @@ std::string XiaomiGateway::DetermineChannel(int32_t unitcode)
 	std::string cmdchannel = "";
 	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG ||
 		unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0) {
-		cmdchannel = "channel_0";
+		cmdchannel = NAME_CHANNEL_0;
 	}
 	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1) {
-		cmdchannel = "channel_1";
+		cmdchannel = NAME_CHANNEL_1;
 	}
 	return cmdchannel;
 }
@@ -1418,10 +1417,10 @@ std::string XiaomiGateway::DetermineCommand(uint8_t commandcode)
 	std::string command = "";
 	switch (commandcode) {
 		case gswitch_sOff:
-			command = "off";
+			command = STATE_OFF;
 			break;
 		case gswitch_sOn:
-			command = "on";
+			command = STATE_ON;
 			break;
 		default:
 			command = "unknown command";
