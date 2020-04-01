@@ -406,6 +406,8 @@ local function EventHelpers(domoticz, mainMethod)
 				moduleLabel = eventHandler.name .. ''
 			end
 
+			domoticz.moduleLabel = eventHandler.name:gsub('%.lua','') -- used in dynamic logmarker
+
 			local baseType = subject and subject.baseType or ''
 
 			if (baseType == domoticz.BASETYPE_DEVICE) then
