@@ -26,6 +26,7 @@ install:
 - .\vcpkg upgrade --no-dry-run
 - .\vcpkg install --triplet %PLATFORM%-windows boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
 - .\vcpkg integrate install
+- cd %APPVEYOR_BUILD_FOLDER%
 
 before_build:
 - ps: >-
@@ -37,6 +38,7 @@ build:
   verbosity: minimal
 
 after_build:
+- cd %APPVEYOR_BUILD_FOLDER%
 - cp appversion.h version_windows_x86.h
 - cp History.txt history_windows_x86.txt
 - Tools.InnoSetup.6.0.3\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
