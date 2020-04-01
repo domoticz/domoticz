@@ -994,52 +994,53 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = NAME_SENSOR_TEMP_HUM_AQARA;
 					}
 					else if (model == MODEL_SELECTOR_CUBE_V1) {
-						name = NAME_SELECTOR_CUBE_V1;
 						type = STYPE_Selector;
+						name = NAME_SELECTOR_CUBE_V1;
 					}
 					else if (model == MODEL_SELECTOR_CUBE_AQARA) {
-						name = NAME_SELECTOR_CUBE_AQARA;
 						type = STYPE_Selector;
+						name = NAME_SELECTOR_CUBE_AQARA;
 					}
 					else if (model == MODEL_SENSOR_VIBRATION) {
-						name = NAME_SENSOR_VIBRATION;
 						type = STYPE_Selector;
+						name = NAME_SENSOR_VIBRATION;
 					}
 					else if (model == MODEL_GATEWAY_1 || model == MODEL_GATEWAY_2 || model == MODEL_GATEWAY_3) {
 						name = NAME_GATEWAY;
 					}
 					else if (model == MODEL_SELECTOR_WIRED_WALL_SINGLE_1 || model == MODEL_SELECTOR_WIRED_WALL_SINGLE_2 || model == MODEL_SELECTOR_WIRED_WALL_SINGLE_3) {
+						type = STYPE_END; //type = STYPE_OnOff; // TODO: fix this hack
 						name = NAME_SELECTOR_WIRED_WALL_SINGLE;
-						//type = STYPE_Selector;
 					}
 					else if (model == MODEL_SELECTOR_WIRED_WALL_DUAL_1 || model == MODEL_SELECTOR_WIRED_WALL_DUAL_2 || model == MODEL_SELECTOR_WIRED_WALL_DUAL_3) {
+						type = STYPE_END; //type = STYPE_OnOff; // TODO: fix this hack
 						name = NAME_SELECTOR_WIRED_WALL_DUAL;
-						//type = STYPE_Selector;
 					}
 					else if (model == MODEL_SELECTOR_WIRELESS_WALL_SINGLE_1 || model == MODEL_SELECTOR_WIRELESS_WALL_SINGLE_2) {
-						name = NAME_SELECTOR_WIRELESS_WALL_SINGLE;
 						type = STYPE_Selector;
+						name = NAME_SELECTOR_WIRELESS_WALL_SINGLE;
 					}
 					else if (model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_1 || model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_2) {
-						name = NAME_SELECTOR_WIRELESS_WALL_DUAL;
 						type = STYPE_Selector;
+						name = NAME_SELECTOR_WIRELESS_WALL_DUAL;
 					}
 					else if (model == MODEL_SENSOR_SMOKE) {
-						name = NAME_SENSOR_SMOKE;
 						type = STYPE_SMOKEDETECTOR;
+						name = NAME_SENSOR_SMOKE;
 					}
 					else if (model == MODEL_SENSOR_GAS) {
-						name = NAME_SENSOR_GAS;
 						type = STYPE_SMOKEDETECTOR;
+						name = NAME_SENSOR_GAS;
 					}
 					else if (model == MODEL_SENSOR_WATER) {
-						name = NAME_SENSOR_WATER;
 						type = STYPE_SMOKEDETECTOR;
+						name = NAME_SENSOR_WATER;
 					}
 					else if (model == MODEL_ACT_BLINDS_CURTAIN) {
-						name = NAME_ACT_BLINDS_CURTAIN;
 						type = STYPE_BlindsPercentage;
+						name = NAME_ACT_BLINDS_CURTAIN;
 					}
+
 					std::string voltage = root2["voltage"].asString();
 					int battery = 255;
 					if (voltage != "" && voltage != "3600") {
@@ -1165,13 +1166,11 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					else if ((name == NAME_SELECTOR_WIRED_WALL_SINGLE) || (name == NAME_SELECTOR_WIRED_WALL_DUAL))
 					{
 						// Aqara wired dual switch, bidirectional communication support
-						type = STYPE_OnOff;
+						type = STYPE_OnOff; // TODO: Needs to be set above but need different way of executing this code without hack
 						std::string aqara_wired1 = root2[NAME_CHANNEL_0].asString();
 						std::string aqara_wired2 = root2[NAME_CHANNEL_1].asString();
-						bool state = false;
-						if ((aqara_wired1 == STATE_ON) || (aqara_wired2 == STATE_ON)) {
-							state = true;
-						}
+						bool state = (aqara_wired1 == STATE_ON) || (aqara_wired2 == STATE_ON);
+
 						unitcode = XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE;
 						if (name == NAME_SELECTOR_WIRED_WALL_SINGLE) {
 							unitcode = XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE;
