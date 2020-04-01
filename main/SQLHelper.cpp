@@ -7114,10 +7114,6 @@ void CSQLHelper::DeleteDevices(const std::string &idx)
 			safe_exec_no_return("DELETE FROM DeviceToPlansMap WHERE (DeviceRowID == '%q')", itt.c_str());
 			safe_exec_no_return("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')", itt.c_str());
 			safe_exec_no_return("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')", itt.c_str());
-			safe_exec_no_return("DELETE FROM PushLink WHERE (DeviceID== '%q')", itt.c_str());
-			safe_exec_no_return("DELETE FROM HttpLink  WHERE (DeviceID== '%q')", itt.c_str());
-			safe_exec_no_return("DELETE FROM FibaroLink WHERE (DeviceID== '%q')", itt.c_str());
-			safe_exec_no_return("DELETE FROM GooglePubSubLink WHERE (DeviceID== '%q')", itt.c_str());
 			//notify eventsystem device is no longer present
 			uint64_t ullidx = std::stoull(itt);
 			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_DEVICE);
