@@ -12,7 +12,7 @@ extern "C" {
 
 #include "../tinyxpath/xpath_processor.h"
 
-#include "../json/json.h"
+#include <json/json.h>
 #include "SQLHelper.h"
 #include "mainworker.h"
 #include "../hardware/hardwaretypes.h"

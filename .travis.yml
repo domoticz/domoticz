@@ -34,7 +34,7 @@ matrix:
   include:
   # Linux x86_64
   - os: linux
-    dist: xenial
+    dist: bionic
     sudo: required
     compiler: gcc
     env:
@@ -43,14 +43,11 @@ matrix:
     addons:
       apt:
         sources:
-          - george-edison55-precise-backports  # cmake
+#          - george-edison55-bionic-backports  # cmake
           - ubuntu-toolchain-r-test
         packages:
           - gcc-6
           - g++-6
-          - cmake
-          - cmake-data
-          - libsqlite3-dev
           - curl
           - libcurl4-gnutls-dev
           - libusb-dev
@@ -60,8 +57,11 @@ matrix:
           - git
           - libdigest-sha-perl
           - python3-dev
+          - liblua5.3-dev
+          - libcereal-dev
+          - uthash-dev
     script:
-      - curl -sSL https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.16.5-Linux-x86_64.tar.gz -o cmake.tar.gz;
+      - curl -sSL https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.tar.gz -o cmake.tar.gz;
       - sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
       - export PATH=/usr/local/bin:$PATH;
       - wget https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz >> /dev/null 2>&1
@@ -71,8 +71,7 @@ matrix:
       - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - cd ..
-      - (cd open-zwave-read-only; make)
-      - (cd open-zwave-read-only; git checkout 76e21d80a140c321413a46a2b62ea6c11dd6ace0; make)
+      - (cd open-zwave-read-only; make; sudo make install)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
       - make
   # Apple OSX

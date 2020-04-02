@@ -13,7 +13,7 @@
 #include "PluginMessages.h"
 #include "PluginTransports.h"
 
-#include "../../json/json.h"
+#include <json/json.h>
 #include "../../main/EventSystem.h"
 #include "../../main/Helper.h"
 #include "../../main/mainworker.h"

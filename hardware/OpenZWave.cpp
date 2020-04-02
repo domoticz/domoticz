@@ -18,14 +18,14 @@
 #include "../webserver/cWebem.h"
 #include "../main/mainworker.h"
 
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/localtime_r.h"
 
 //OpenZWave includes
-#include "openzwave/Options.h"
-#include "openzwave/Manager.h"
-#include "openzwave/platform/Log.h"
-#include "openzwave/ValueIDIndexesDefines.h"
+#include <openzwave/Options.h>
+#include <openzwave/Manager.h>
+#include <openzwave/platform/Log.h>
+#include <openzwave/ValueIDIndexesDefines.h>
 
 #include "ZWaveCommands.h"
 

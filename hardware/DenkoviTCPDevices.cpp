@@ -11,15 +11,6 @@
 
 #define MAX_POLL_INTERVAL 3600*1000
 
-enum _eDaeTcpState
-{
-	RESPOND_RECEIVED = 0,		//0
-	DAE_WIFI16_UPDATE_IO,		//1
-	DAE_WIFI16_ASK_CMD,			//2
-	DAE_READ_COILS_CMD,			//3
-	DAE_WRITE_COIL_CMD,			//4
-};
-
 #define DAE_IO_TYPE_RELAY			2
 
 #define READ_COILS_CMD_LENGTH				11
@@ -35,7 +26,7 @@ CDenkoviTCPDevices::CDenkoviTCPDevices(const int ID, const std::string &IPAddres
 	m_bOutputLog = false;
 	m_iModel = model;
 	m_slaveId = slaveId;
-	m_Cmd = 0;
+	m_Cmd = _eDaeTcpState::RESPOND_RECEIVED;
 	if (m_pollInterval < 500)
 		m_pollInterval = 500;
 	else if (m_pollInterval > MAX_POLL_INTERVAL)
@@ -113,7 +104,7 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 {
 	switch (m_iModel) {
 	case DDEV_WIFI_16R: {
-		if (m_Cmd == DAE_WIFI16_ASK_CMD) {
+		if (m_Cmd == _eDaeTcpState::DAE_WIFI16_ASK_CMD) {
 			uint8_t firstEight, secondEight;
 			if (length == 2) {
 				firstEight = (unsigned char)pData[0];
@@ -137,7 +128,7 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 		m_respBuff.append((const char * )pData, length);
 		m_uiReceivedDataLength += (uint16_t)length;
 
-		if (m_Cmd == DAE_READ_COILS_CMD && m_uiReceivedDataLength >= READ_COILS_CMD_LENGTH) {
+		if (m_Cmd == _eDaeTcpState::DAE_READ_COILS_CMD && m_uiReceivedDataLength >= READ_COILS_CMD_LENGTH) {
 			ConvertResponse(m_respBuff, m_uiReceivedDataLength);
 			m_respBuff.clear();
 			m_uiReceivedDataLength = 0;
@@ -159,7 +150,7 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 				SendSwitch(DAE_IO_TYPE_RELAY, 8 + ii, 255, (((secondEight >> (ii - 1)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8 + ii));
 			}
 		}
-		else if (m_Cmd == DAE_WRITE_COIL_CMD && m_uiReceivedDataLength >= WRITE_SINGLE_COIL_CMD_LENGTH) {
+		else if (m_Cmd == _eDaeTcpState::DAE_WRITE_COIL_CMD && m_uiReceivedDataLength >= WRITE_SINGLE_COIL_CMD_LENGTH) {
 			ConvertResponse(m_respBuff, m_uiReceivedDataLength);
 			m_respBuff.clear();
 			m_uiReceivedDataLength = 0;
@@ -277,7 +268,7 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 			szCmd << "-//";
 		else
 			szCmd << "+//";
-		m_Cmd = DAE_WIFI16_UPDATE_IO;
+		m_Cmd = _eDaeTcpState::DAE_WIFI16_UPDATE_IO;
 		write(szCmd.str());
 		return true;
 	}
@@ -311,7 +302,7 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 		m_pReq.data[1] = 0x00;
 		size_t dataLength = m_pReq.length[1] + 6;
 		CreateRequest(m_reqBuff,dataLength);
-		m_Cmd = DAE_WRITE_COIL_CMD;
+		m_Cmd = _eDaeTcpState::DAE_WRITE_COIL_CMD;
 		write("");
 		write("");
 		write("");
@@ -329,12 +320,12 @@ void CDenkoviTCPDevices::GetMeterDetails()
 {
 	switch (m_iModel) {
 	case DDEV_WIFI_16R: {
-		m_Cmd = DAE_WIFI16_ASK_CMD;
+		m_Cmd = _eDaeTcpState::DAE_WIFI16_ASK_CMD;
 		write("ask//");
 		break;
 	}
 	case DDEV_WIFI_16R_Modbus: {
-		m_Cmd = DAE_READ_COILS_CMD;
+		m_Cmd = _eDaeTcpState::DAE_READ_COILS_CMD;
 		m_pReq.prId[0] = 0;
 		m_pReq.prId[1] = 0;
 		m_uiTransactionCounter++;

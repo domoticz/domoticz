@@ -4511,7 +4511,7 @@ namespace http {
 				for (itt = devStates.begin(); itt != devStates.end(); ++itt)
 				{
 					root["title"] = "Current States";
-					root["result"][ii]["id"] = itt->ID;
+					root["result"][ii]["id"] = (Json::Value::UInt64)itt->ID;
 					root["result"][ii]["name"] = itt->deviceName;
 					root["result"][ii]["value"] = itt->nValueWording;
 					std::stringstream sstr;

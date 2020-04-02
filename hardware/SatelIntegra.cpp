@@ -19,16 +19,16 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-typedef struct tModel {
+typedef struct tSatelModel {
 	unsigned int id;
 	const char* name;
 	unsigned int zones;
 	unsigned int outputs;
-} Model;
+} SatelModel;
 
 #define TOT_MODELS 9
 
-static Model models[TOT_MODELS] =
+static SatelModel models[TOT_MODELS] =
 {
 	{ 0, "Integra 24", 24, 20 },
 	{ 1, "Integra 32", 32, 32 },
