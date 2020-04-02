@@ -189,6 +189,14 @@ define(['app', 'livesocket'], function (app) {
 			});
 		};
 
+		// Convert time format taking account the time zone offset. Improved version of toISOString() function.
+		// Example from "Wed Apr 01 2020 17:00:00 GMT+0100 (British Summer Time)" to "2020-04-01T17:00:00.000Z"
+		ConvertTimeWithTimeZoneOffset = function (tUnit) {
+			var tzoffset = (new Date(tUnit)).getTimezoneOffset() * 60000; //offset in millisecondos
+			var tUntilWithTimeZoneOffset = (new Date(tUnit.getTime() - tzoffset)).toISOString().slice(0, -1) + 'Z';
+			return tUntilWithTimeZoneOffset
+		};
+
 		init();
 
 		function init() {
@@ -279,7 +287,7 @@ define(['app', 'livesocket'], function (app) {
 						bootbox.alert($.t('Temporary set point date / time must be in the future'));
 						return false;
 					}
-					tUntil = selectedDate.toISOString();
+					tUntil = ConvertTimeWithTimeZoneOffset(selectedDate);
 				}
 				if (bValid) {
 					$(this).dialog("close");
@@ -607,10 +615,14 @@ define(['app', 'livesocket'], function (app) {
 					};
 					ctrl.dtUntil = function () {
 						if (angular.isDefined(item.Until)) {
-							var tUntil = item.Until.replace(/Z/, '').replace(/\..+/, '') + 'Z';
-							var dtUntil = new Date(tUntil);
-							dtUntil = new Date(dtUntil.getTime() - dtUntil.getTimezoneOffset() * 60000);
-							return dtUntil.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+							//var tUntil = item.Until.replace(/Z/, '').replace(/\..+/, '') + 'Z';
+							//console.log(tUntil + ' 2');
+							//var dtUntil = new Date(tUntil);
+							//dtUntil = new Date(dtUntil.getTime() - dtUntil.getTimezoneOffset() * 60000);
+							//var unitReturn_vaule = item.Until.replace(/T/, ' ').replace(/\..+/, '');
+							//console.log(unitReturn_vaule + ' 4');
+							//return unitReturn_vaule;
+							return item.Until.replace(/T/, ' ').replace(/\..+/, '');
 						}
 					};
 					ctrl.displayHumidityStatus = function () {
