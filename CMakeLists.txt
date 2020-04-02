@@ -85,7 +85,7 @@ IF(USE_BUILTIN_LUA)
   get_directory_property (LUA_LIBRARIES DIRECTORY lua DEFINITION LUA_LIBRARIES)
   IF(CMAKE_COMPILER_IS_GNUCXX)
     # Add -rdynamic linker flag for exporting functions which is mandatory to use external lua modules
-    SET_TARGET_PROPERTIES(${_targetName} PROPERTIES ENABLE_EXPORTS ON)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ELSE(USE_BUILTIN_LUA)
   find_package(Lua "5.3")
