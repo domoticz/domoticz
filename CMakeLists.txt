@@ -56,7 +56,7 @@ IF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 ENDIF()
 IF(CMAKE_COMPILER_IS_GNUCXX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-psabi")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-psabi -fPIC")
   #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
   #ADD_DEFINITIONS( -Wall -O0 -ggdb )
   #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
@@ -331,11 +331,6 @@ tinyxpath/xpath_syntax.cpp
 
 add_executable(domoticz ${domoticz_SRCS})
 
-option(USE_OPENSSL_STATIC "Link OpenSSL static" YES)
-IF(USE_OPENSSL_STATIC)
-  set(OPENSSL_USE_STATIC_LIBS TRUE)
-ENDIF(USE_OPENSSL_STATIC)
-
 #
 # LUA
 #
@@ -517,6 +512,11 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/minizip)
 #
 # Find MD5/RMD160/SHA library
 #
+option(USE_OPENSSL_STATIC "Link OpenSSL static" NO)
+IF(USE_OPENSSL_STATIC)
+  set(OPENSSL_USE_STATIC_LIBS TRUE)
+ENDIF(USE_OPENSSL_STATIC)
+
 find_package(OpenSSL REQUIRED)
 if(NOT OPENSSL_INCLUDE_DIR)
 	message(SEND_ERROR "Failed to find OpenSSL include files (ssl.h), no HTTPS support")
