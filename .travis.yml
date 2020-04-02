@@ -43,14 +43,11 @@ matrix:
     addons:
       apt:
         sources:
-          - george-edison55-precise-backports  # cmake
+#          - george-edison55-bionic-backports  # cmake
           - ubuntu-toolchain-r-test
         packages:
           - gcc-6
           - g++-6
-          - cmake
-          - cmake-data
-          - libsqlite3-dev
           - curl
           - libcurl4-gnutls-dev
           - libusb-dev
