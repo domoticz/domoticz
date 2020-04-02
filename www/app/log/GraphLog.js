@@ -3,7 +3,7 @@ define(['app', 'log/factories'], function (app) {
         bindings: {
             device: '<'
         },
-        templateUrl: 'views/log/device_graph_log.html',
+        templateUrl: 'app/log/GraphLog.html',
     });
 
     app.component('deviceLogChart', {
