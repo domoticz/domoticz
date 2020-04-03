@@ -171,7 +171,7 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState, cu
 	_after = function(factor)
 		return function(value)
 			_checkValue(value, "No value given for 'afterXXX' command")
-			if type(value) == 'string' then value = utils.stringToSeconds(value) end -- called by 'at()' 
+			if tonumber(value) == nil then value = utils.stringToSeconds(value) end -- No number so called by 'at()' 
 			afterValue = value * ( factor or 1 )
 			updateCommand()
 			return factory()
