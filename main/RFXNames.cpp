@@ -53,10 +53,10 @@ const char* RFX_Humidity_Status_Desc(const unsigned char status)
 	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ humstat_normal, "Normal" },
-	{ humstat_comfort, "Comfortable" },
-	{ humstat_dry, "Dry" },
-	{ humstat_wet, "Wet" },
-	{ 0,NULL,NULL }
+		{ humstat_comfort, "Comfortable" },
+		{ humstat_dry, "Dry" },
+		{ humstat_wet, "Wet" },
+		{ 0,NULL,NULL }
 	};
 	return findTableIDSingle1(Table, status);
 }

@@ -5,6 +5,8 @@
 
 namespace Plugins {
 
+	class CPlugin;
+
 	typedef struct {
 		PyObject_HEAD
 		int			ImageID;

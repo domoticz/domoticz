@@ -1,4 +1,4 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
     <MetaData>
         <MetaDataItem name="Name">LUXY Smart Light</MetaDataItem>
         <MetaDataItem name="Description">The Qubino LUXY Smart Light is ideal for gentle illumination of any room and for visual and sound notifications.</MetaDataItem>
@@ -28,8 +28,9 @@
             The procedure is available always.
         </MetaDataItem>
         <ChangeLog>
-            <Entry author="K.Petrovcic@goap.si" date="18 October 2019" revision="1"></Entry>
+            <Entry author="K.Petrovcic@goap.si" date="18 October 2019" revision="1">Initial Import</Entry>
             <Entry author="Jean-Francois Auger - nechry@gmail.com" date="29 December 2019" revision="2">Reformat and remove small typo</Entry>
+            <Entry author="Justin Hammond" date="23 March 2020" revision="3">Fix Empty ChangeLog Entry</Entry>
         </ChangeLog>
     </MetaData>
 

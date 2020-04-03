@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GooglePubSubPush.h"
 #include "../hardware/hardwaretypes.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
@@ -32,6 +32,7 @@ static struct PyModuleDef eventModuledef;
 
 CGooglePubSubPush::CGooglePubSubPush()
 {
+	m_PushType = PushType::PUSHTYPE_GOOGLE_PUB_SUB;
 	m_bLinkActive = false;
 }
 
@@ -115,8 +116,9 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 #endif
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM GooglePubSubLink as A, DeviceStatus as B "
-		"WHERE (A.DeviceID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
+		"SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM PushLink as A, DeviceStatus as B "
+		"WHERE (A.PushType==%d AND A.DeviceRowID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceRowID==B.ID)",
+		PushType::PUSHTYPE_GOOGLE_PUB_SUB,
 		m_DeviceRowIdx);
 	if (!result.empty())
 	{
@@ -365,7 +367,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM GooglePubSubLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
+			result = m_sql.safe_query("SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB);
 			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -416,7 +418,8 @@ namespace http {
 				return;
 			if (idx == "0") {
 				m_sql.safe_query(
-					"INSERT INTO GooglePubSubLink (DeviceID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%q','%d','%q','%d','%d')",
+					"INSERT INTO PushLink (PushType, DeviceRowID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%d','%q','%d','%q','%d','%d')",
+					CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB,
 					deviceidi,
 					atoi(valuetosend.c_str()),
 					targettypei,
@@ -429,7 +432,7 @@ namespace http {
 			}
 			else {
 				m_sql.safe_query(
-					"UPDATE GooglePubSubLink SET DeviceID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%q', TargetDeviceID=%d, TargetProperty='%q', IncludeUnit='%d', Enabled='%d' WHERE (ID == '%q')",
+					"UPDATE PushType SET DeviceRowID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%q', TargetDeviceID=%d, TargetProperty='%q', IncludeUnit='%d', Enabled='%d' WHERE (ID == '%q')",
 					deviceidi,
 					atoi(valuetosend.c_str()),
 					targettypei,
@@ -456,7 +459,7 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			m_sql.safe_query("DELETE FROM GooglePubSubLink WHERE (ID=='%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM PushType WHERE (ID=='%q')", idx.c_str());
 			root["status"] = "OK";
 			root["title"] = "DeleteGooglePubSubLink";
 		}

@@ -4,7 +4,7 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"

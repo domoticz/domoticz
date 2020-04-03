@@ -38,7 +38,7 @@
 //#include "config.h"
 #include <iterator>
 #include <string>
-#include <unzip.h>
+#include <minizip/unzip.h>
 #include <zlib.h>
 #include "unzip_stream.h"
 

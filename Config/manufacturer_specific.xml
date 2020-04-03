@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="80" xmlns="https://github.com/OpenZWave/open-zwave">
+
+<ManufacturerSpecificData Revision="84" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -220,6 +221,7 @@
     <Product config="aeotec/zw141.xml" id="008d" name="ZW141 Nano Shutter" type="0103"/>  
     <Product config="aeotec/zw141.xml" id="008d" name="ZW141 Nano Shutter" type="0203"/>  	  
     <Product config="aeotec/zw164.xml" id="00a4" name="ZW164 Indoor Siren 6" type="0003"/>
+    <Product config="aeotec/zw164.xml" id="00a4" name="ZW164 Indoor Siren 6" type="0103"/>
     <Product config="aeotec/zw175.xml" id="00af" name="ZW175 Smart Switch 7" type="0003"/>
     <Product config="aeotec/zw187.xml" id="00bb" name="ZW187 Recessed Door Sensor 7" type="0002"/>
     <Product config="aeotec/zw187.xml" id="00bb" name="ZW187 Recessed Door Sensor 7" type="0102"/>
@@ -527,6 +529,8 @@
     <Product config="eurotronic/eur_spiritz.xml" id="0001" name="EUR_SPIRITZ Wall Radiator Thermostat" type="0003"/>
     <Product config="eurotronic/eur_spiritz.xml" id="0002" name="EUR_SPIRITZ Wall Radiator Thermostat" type="0003"/>
     <Product config="eurotronic/eur_spiritz.xml" id="0003" name="EUR_SPIRITZ Wall Radiator Thermostat" type="0003"/>
+    <Product config="eurotronic/eur_temphumin.xml" id="0001" name="Temperature and Humidity Sensor" type="0004"/>
+    <Product config="eurotronic/eur_airquality.xml" id="0001" name="Air Quality Sensor" type="0005"/>
   </Manufacturer>
   <Manufacturer id="0128" name="Eneco">
     <Product id="0000" name="ED2.0 Meter Adapter" type="0000"/>
@@ -916,6 +920,7 @@
     <Product config="honeywell/th6320zw2003.xml" id="0008" name="TH6320ZW2003 T6 Pro Series Thermostat" type="0011"/>
     <Product config="honeywell/lynx-touch-l5100.xml" id="0003" name="Lynx Touch L5100 / L7000" type="0001"/>
     <Product config="honeywell/39351-ZW3005.xml" id="3038" name="39351 / ZW3005 In-Wall Smart Dimmer" type="4944"/>
+    <Product config="honeywell/39348-ZW4005.xml" id="3036" name="39348 / ZW4005 In-Wall Smart Switch" type="4952"/>
     <Product config="honeywell/39348-zw4008.xml" id="3135" name="39348 / ZW4008 In-Wall Smart Switch" type="4952"/>
     <Product config="honeywell/39357-ZW3004.xml" id="3130" name="39357 / ZW3004 In-Wall Smart Toggle Dimmer" type="4944"/>
     <Product config="honeywell/39351-ZW3010.xml" id="3235" name="39351 / ZW3010 In-Wall Smart Dimmer" type="4944"/>
@@ -1126,6 +1131,7 @@
   <Manufacturer id="0234" name="Logic Soft">
     <Product config="logicsoft/ZHC5010.xml" id="010a" name="ZHC5010 Wall switch" type="0003"/>
     <Product config="logicsoft/ZHC5002.xml" id="010c" name="ZHC5002 Z-Scene Controller" type="0003"/>
+    <Product config="logicsoft/ZDB5100.xml" id="0121" name="ZDB5100 Matrix" type="0003"/>
   </Manufacturer>
   <Manufacturer id="007f" name="Logitech"></Manufacturer>
   <Manufacturer id="0025" name="Loudwater Tech"></Manufacturer>
@@ -1383,7 +1389,8 @@
     <Product config="qubino/ZMNHZDx.xml" id="0053" name="ZMNHZDx Weather Station" type="0007"/>
     <Product config="qubino/ZMNHXDx.xml" id="0054" name="ZMNHXDx 3-phase Smart Meter" type="0007"/>
     <Product config="qubino/ZMNKIDx.xml" id="0054" name="ZMNKIDx OnOff Thermostat 2" type="0005"/>
-	<Product config="qubino/ZMNHQDx.xml" id="0051" name="ZMNHQDx LUXY Smart Light" type="0008"/>
+    <Product config="qubino/ZMNHQDx.xml" id="0051" name="ZMNHQDx LUXY Smart Light" type="0008"/>
+    <Product config="qubino/ZMNKADx.xml" id="0052" name="ZMNKADx LUXY Smart Switch" type="0008"/>
   </Manufacturer>
   <Manufacturer id="0130" name="Quby">
     <Product config="quby/qb2.xml" id="0001" name="Energy Management System" type="0001"/>

@@ -4,7 +4,7 @@ define(['app', 'log/factories'], function (app) {
         bindings: {
             device: '<',
         },
-        templateUrl: 'views/log/device_temperature_log.html',
+        templateUrl: 'app/log/TemperatureLog.html',
         controller: function() {
             var vm = this;
 

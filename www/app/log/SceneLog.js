@@ -1,5 +1,5 @@
 define(['app', 'scenes/factories', 'log/components/DeviceTextLogTable'], function (app) {
-    app.controller('SceneLogController', function ($routeParams, sceneApi) {
+    app.controller('SceneLogController', function ($scope, $routeParams, sceneApi) {
         var vm = this;
 
         vm.clearLog = clearLog;
@@ -7,10 +7,17 @@ define(['app', 'scenes/factories', 'log/components/DeviceTextLogTable'], functio
         init();
 
         function init() {
+            vm.autoRefresh = true;
             vm.sceneIdx = $routeParams.id;
 
             sceneApi.getSceneInfo(vm.sceneIdx).then(function (scene) {
                 vm.pageName = scene.Name;
+            });
+
+            $scope.$on('scene_update', function(event, scene) {
+                if (vm.autoRefresh && scene.idx === vm.sceneIdx) {
+                    refreshLog();
+                }
             });
 
             refreshLog();

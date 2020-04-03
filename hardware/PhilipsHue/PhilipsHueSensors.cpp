@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "PhilipsHueSensors.h"
 #include "../../main/mainworker.h"
-#include "../../json/json.h"
+#include <json/json.h>
 
 CPHSensorState::CPHSensorState(const Json::Value& state, const Json::Value& capabilities)
 {

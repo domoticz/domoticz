@@ -42,7 +42,7 @@
 #include "../hardware/Tellstick.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/json_helper.h"
 #include "Logger.h"
 #include "SQLHelper.h"

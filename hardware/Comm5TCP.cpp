@@ -17,12 +17,12 @@
 
 */
 
-static inline std::string &rtrim(std::string &s) {
+static inline std::string &c5_rtrim(std::string &s) {
 	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
 	return s;
 }
 
-static inline std::vector<std::string> tokenize(const std::string &s) {
+static inline std::vector<std::string> c5_tokenize(const std::string &s) {
 	std::vector<std::string> tokens;
 	std::istringstream iss(s);
 	std::copy(std::istream_iterator<std::string>(iss),
@@ -31,7 +31,7 @@ static inline std::vector<std::string> tokenize(const std::string &s) {
 	return tokens;
 }
 
-static inline bool startsWith(const std::string &haystack, const std::string &needle) {
+static inline bool c5_startsWith(const std::string &haystack, const std::string &needle) {
 	return needle.length() <= haystack.length()
 		&& std::equal(needle.begin(), needle.end(), haystack.begin());
 }
@@ -116,7 +116,7 @@ void Comm5TCP::Do_Work()
 
 void Comm5TCP::processSensorData(const std::string& line)
 {
-	std::vector<std::string> tokens = tokenize(line);
+	std::vector<std::string> tokens = c5_tokenize(line);
 	if (tokens.size() < 2)
 		return;
 
@@ -139,9 +139,9 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 	std::string line;
 
 	while (std::getline(stream, line, '\n')) {
-		line = rtrim(line);
-		if (startsWith(line, "211")) {
-			std::vector<std::string> tokens = tokenize(line);
+		line = c5_rtrim(line);
+		if (c5_startsWith(line, "211")) {
+			std::vector<std::string> tokens = c5_tokenize(line);
 			if (tokens.size() < 2)
 				break;
 
@@ -151,7 +151,7 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 				SendSwitch(i + 1, 1, 255, on, 0, "Relay " + std::to_string(i + 1));
 			}
 		}
-		else if (startsWith(line, "210") && (!startsWith(line, "210 OK"))) {
+		else if (c5_startsWith(line, "210") && (!c5_startsWith(line, "210 OK"))) {
 			processSensorData(line);
 		}
 	}
