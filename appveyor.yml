@@ -20,15 +20,15 @@ cache:
 
 # This part below needs to be uncommented if the cache needs to be refreshed
 # Building the packages could take an hour
-#install:
-#- cd "C:\Tools\vcpkg"
+install:
+- cd "C:\Tools\vcpkg"
 #- git pull
 #- .\bootstrap-vcpkg.bat
 #- .\vcpkg update
 #- .\vcpkg upgrade --no-dry-run
 #- .\vcpkg install --triplet %PLATFORM%-windows boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
-#- .\vcpkg integrate install
-#- cd %APPVEYOR_BUILD_FOLDER%
+- .\vcpkg integrate install
+- cd %APPVEYOR_BUILD_FOLDER%
 
 before_build:
 - ps: >-
