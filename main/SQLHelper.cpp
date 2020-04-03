@@ -31,7 +31,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 140
+#define DB_VERSION 141
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2732,9 +2732,9 @@ bool CSQLHelper::OpenDatabase()
 				"SELECT [PushType], [DeviceID], [DelimitedValue], [TargetType], [TargetVariable], [TargetDeviceID], [TargetProperty], [Enabled], [IncludeUnit] FROM tmp_PushLink");
 			query("DROP TABLE tmp_PushLink");
 		}
-    if (dbversion < 141)
-    {
-      // Patch for OpenWebNetTCP: update unit and deviceID for Alert devices, update subtype for GeneralSwitch devices
+		if (dbversion < 141)
+		{
+		  // Patch for OpenWebNetTCP: update unit and deviceID for Alert devices, update subtype for GeneralSwitch devices
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result, result2;
 			std::vector<std::string> sd;
@@ -2774,7 +2774,7 @@ bool CSQLHelper::OpenDatabase()
 					}
 				}
 			}
-    }
+		}
 	}
 	else if (bNewInstall)
 	{
