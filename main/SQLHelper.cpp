@@ -2750,7 +2750,7 @@ bool CSQLHelper::OpenDatabase()
 
 					szQuery.clear();
 					szQuery.str("");
-					szQuery << "SELECT ID, DeviceID, Type, SubType FROM DeviceStatus WHERE (HardwareID=" << sd[0] << ")";
+					szQuery << "SELECT ID, DeviceID, FROM DeviceStatus WHERE (Type=" << pTypeLighting2 << ") AND (SubType=" << sTypeAC << ") AND (HardwareID=" << sd[0] << ")";
 					result2 = query(szQuery.str());
 
 					if (!result2.empty())
@@ -2759,17 +2759,11 @@ bool CSQLHelper::OpenDatabase()
 						{
 							sd = itt2;
 
-							int type = atoi(sd[2].c_str());
-							int sub_type = atoi(sd[3].c_str());
-	
-							if ((type == pTypeLighting2) && (sub_type == sTypeAC))
-							{
-								_log.Log(LOG_STATUS, "COpenWebNetTCP: ID:%s, change type and subtype!", sd[0].c_str());
-								szQuery.clear();
-								szQuery.str("");
-								szQuery << "UPDATE DeviceStatus SET DeviceID='0" << sd[1] << "', Type='" << pTypeGeneralSwitch << "', SubType='" << sSwitchTypeAC << "' WHERE (ID=" << sd[0] << ")";
-								query(szQuery.str());
-							}
+							_log.Log(LOG_STATUS, "COpenWebNetTCP: ID:%s, change type and subtype!", sd[0].c_str());
+							szQuery.clear();
+							szQuery.str("");
+							szQuery << "UPDATE DeviceStatus SET DeviceID='0" << sd[1] << "', Type='" << pTypeGeneralSwitch << "', SubType='" << sSwitchTypeAC << "' WHERE (ID=" << sd[0] << ")";
+							query(szQuery.str());
 						}
 					}
 				}
