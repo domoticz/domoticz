@@ -2736,7 +2736,7 @@ bool CSQLHelper::OpenDatabase()
 		{
 		  // Patch for OpenWebNetTCP: update unit and deviceID for Alert devices, update subtype for GeneralSwitch devices
 			std::stringstream szQuery;
-			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::vector<std::string> > result;
 			std::vector<std::string> sd;
 			szQuery.clear();
 			szQuery.str("");
@@ -2747,10 +2747,7 @@ bool CSQLHelper::OpenDatabase()
 				for (const auto& itt : result)
 				{
 					sd = itt;
-					szQuery.clear();
-					szQuery.str("");
 					safe_query("UPDATE DeviceStatus SET Type=%d, SubType=%d WHERE (HardwareID=%s AND Type=%d AND SubType=%d)", pTypeGeneralSwitch, sSwitchTypeAC, sd[0].c_str(), pTypeLighting2, sTypeAC);
-					query(szQuery.str());
 				}
 			}
 		}
