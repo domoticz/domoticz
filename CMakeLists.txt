@@ -348,7 +348,7 @@ ELSE(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
   # We cannot find LUA using basic stuff, try using find_package()
   find_package(Lua "5.3")
   IF(LUA_FOUND)
-    MESSAGE(STATUS "LUA library found at : ${LUA_LIBRARIES}"}
+    MESSAGE(STATUS "LUA library found at : ${LUA_LIBRARIES}")
     INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIRS)) 
   ELSE(LUA_FOUND)
     MESSAGE(FATAL_ERROR "LUA 5.3 not found! use sudo apt-get install liblua5.3-dev")
