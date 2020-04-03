@@ -31,7 +31,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 140
+#define DB_VERSION 141
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2731,6 +2731,25 @@ bool CSQLHelper::OpenDatabase()
 				"INSERT INTO PushLink (PushType, DeviceRowID, DelimitedValue, TargetType, TargetVariable, TargetDeviceID, TargetProperty, Enabled, IncludeUnit) "
 				"SELECT [PushType], [DeviceID], [DelimitedValue], [TargetType], [TargetVariable], [TargetDeviceID], [TargetProperty], [Enabled], [IncludeUnit] FROM tmp_PushLink");
 			query("DROP TABLE tmp_PushLink");
+		}
+		if (dbversion < 141)
+		{
+		  // Patch for OpenWebNetTCP: update unit and deviceID for Alert devices, update subtype for GeneralSwitch devices
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::string> sd;
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_OpenWebNetTCP << ")";
+			result = query(szQuery.str());
+			if (!result.empty())
+			{
+				for (const auto& itt : result)
+				{
+					sd = itt;
+					safe_query("UPDATE DeviceStatus SET Type=%d, SubType=%d WHERE (HardwareID=%s AND Type=%d AND SubType=%d)", pTypeGeneralSwitch, sSwitchTypeAC, sd[0].c_str(), pTypeLighting2, sTypeAC);
+				}
+			}
 		}
 	}
 	else if (bNewInstall)
