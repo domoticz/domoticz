@@ -8,6 +8,7 @@ extern boost::signals2::signal<void(const std::string &Subject, const std::strin
 
 CWebSocketPush::CWebSocketPush(http::server::CWebsocketHandler *sock)
 {
+	m_PushType = PushType::PUSHTYPE_WEBSOCKET;
 	listenRoomplan = false;
 	listenDeviceTable = false;
 	m_sock = sock;

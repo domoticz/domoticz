@@ -1,6 +1,8 @@
 Version 202x.x ( 202x)
 - Fixed: Daikin wifi adaptor module
+- Fixed: Delete device now propagates to all relevant tables
 - Updated: dzVents version 3.0.2 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Changed: Removed external library dependencies from repository
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 
