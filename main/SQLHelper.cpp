@@ -2747,25 +2747,10 @@ bool CSQLHelper::OpenDatabase()
 				for (const auto& itt : result)
 				{
 					sd = itt;
-
 					szQuery.clear();
 					szQuery.str("");
-					szQuery << "SELECT ID, DeviceID, FROM DeviceStatus WHERE (Type=" << pTypeLighting2 << ") AND (SubType=" << sTypeAC << ") AND (HardwareID=" << sd[0] << ")";
-					result2 = query(szQuery.str());
-
-					if (!result2.empty())
-					{
-						for (const auto& itt2 : result2)
-						{
-							sd = itt2;
-
-							_log.Log(LOG_STATUS, "COpenWebNetTCP: ID:%s, change type and subtype!", sd[0].c_str());
-							szQuery.clear();
-							szQuery.str("");
-							szQuery << "UPDATE DeviceStatus SET DeviceID='0" << sd[1] << "', Type='" << pTypeGeneralSwitch << "', SubType='" << sSwitchTypeAC << "' WHERE (ID=" << sd[0] << ")";
-							query(szQuery.str());
-						}
-					}
+					safe_query("UPDATE DeviceStatus SET Type=%d, SubType=%d WHERE (HardwareID=%s AND Type=%d AND SubType=%d)", pTypeGeneralSwitch, sSwitchTypeAC, sd[0].c_str(), pTypeLighting2, sTypeAC);
+					query(szQuery.str());
 				}
 			}
 		}
