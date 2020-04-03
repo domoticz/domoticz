@@ -31,7 +31,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 139
+#define DB_VERSION 140
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -484,54 +484,18 @@ const char *sqlCreateEnoceanSensors =
 "[Profile] INTEGER NOT NULL, "
 "[Type] INTEGER NOT NULL);";
 
-const char *sqlCreateHttpLink =
-"CREATE TABLE IF NOT EXISTS [HttpLink] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[DeviceID]  BIGINT NOT NULL, "
-"[DelimitedValue] INTEGER DEFAULT 0, "
-"[TargetType] INTEGER DEFAULT 0, "
-"[TargetVariable] VARCHAR(100), "
-"[TargetDeviceID] INTEGER, "
-"[TargetProperty] VARCHAR(100), "
-"[Enabled] INTEGER DEFAULT 1, "
-"[IncludeUnit] INTEGER default 0); ";
-
 const char *sqlCreatePushLink =
 "CREATE TABLE IF NOT EXISTS [PushLink] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[PushType] INTEGER, "
-"[DeviceID]  BIGINT NOT NULL, "
+"[DeviceRowID] BIGINT NOT NULL, "
 "[DelimitedValue] INTEGER DEFAULT 0, "
 "[TargetType] INTEGER DEFAULT 0, "
 "[TargetVariable] VARCHAR(100), "
 "[TargetDeviceID] INTEGER, "
 "[TargetProperty] VARCHAR(100), "
 "[Enabled] INTEGER DEFAULT 1, "
-"[IncludeUnit] INTEGER default 0); ";
-
-const char *sqlCreateGooglePubSubLink =
-"CREATE TABLE IF NOT EXISTS [GooglePubSubLink] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[DeviceID]  BIGINT NOT NULL, "
-"[DelimitedValue] INTEGER DEFAULT 0, "
-"[TargetType] INTEGER DEFAULT 0, "
-"[TargetVariable] VARCHAR(100), "
-"[TargetDeviceID] INTEGER, "
-"[TargetProperty] VARCHAR(100), "
-"[Enabled] INTEGER DEFAULT 1, "
-"[IncludeUnit] INTEGER default 0); ";
-
-const char *sqlCreateFibaroLink =
-"CREATE TABLE IF NOT EXISTS [FibaroLink] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[DeviceID]  BIGINT NOT NULL, "
-"[DelimitedValue] INTEGER DEFAULT 0, "
-"[TargetType] INTEGER DEFAULT 0, "
-"[TargetVariable] VARCHAR(100), "
-"[TargetDeviceID] INTEGER, "
-"[TargetProperty] VARCHAR(100), "
-"[Enabled] INTEGER DEFAULT 1, "
-"[IncludeUnit] INTEGER default 0); ";
+"[IncludeUnit] INTEGER default 0);";
 
 const char *sqlCreateUserVariables =
 "CREATE TABLE IF NOT EXISTS [UserVariables] ("
@@ -732,10 +696,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFan_Calendar);
 	query(sqlCreateBackupLog);
 	query(sqlCreateEnoceanSensors);
-	query(sqlCreateFibaroLink);
-	query(sqlCreateHttpLink);
 	query(sqlCreatePushLink);
-	query(sqlCreateGooglePubSubLink);
 	query(sqlCreateUserVariables);
 	query(sqlCreateFloorplans);
 	query(sqlCreateFloorplanOrderTrigger);
@@ -2732,7 +2693,46 @@ bool CSQLHelper::OpenDatabase()
 				query("ALTER TABLE SceneLog ADD COLUMN [User] VARCHAR(100) DEFAULT ('')");
 			}
 		}
-	} 
+		if (dbversion < 140)
+		{
+			//Migrate all Pushers into one table
+			safe_query("UPDATE PushLink SET PushType = %d", CBasePush::PushType::PUSHTYPE_INFLUXDB);
+
+			struct _tPushHelper
+			{
+				std::string DBName;
+				CBasePush::PushType PushType;
+				_tPushHelper(const std::string& dbname, const CBasePush::PushType pushtype)
+				{
+					DBName = dbname;
+					PushType = pushtype;
+				}
+			};
+			std::vector<_tPushHelper> dbToMigrate;
+			dbToMigrate.push_back(_tPushHelper("HttpLink", CBasePush::PushType::PUSHTYPE_HTTP));
+			dbToMigrate.push_back(_tPushHelper("GooglePubSubLink", CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB));
+			dbToMigrate.push_back(_tPushHelper("FibaroLink", CBasePush::PushType::PUSHTYPE_FIBARO));
+
+			for (auto itt : dbToMigrate)
+			{
+				safe_query(
+					"INSERT INTO PushLink (PushType, DeviceID, DelimitedValue, TargetType, TargetVariable, TargetDeviceID, TargetProperty, Enabled, IncludeUnit) "
+					"SELECT %d, [DeviceID], [DelimitedValue], [TargetType], [TargetVariable], [TargetDeviceID], [TargetProperty], [Enabled], [IncludeUnit] FROM %s",
+					itt.PushType,
+					itt.DBName.c_str()
+					);
+				safe_query("DROP TABLE %s", itt.DBName.c_str());
+			}
+			//Change DeviceID to DeviceRowID
+			query("ALTER TABLE PushLink RENAME TO tmp_PushLink");
+			query(sqlCreatePushLink);
+			//Copy values from tmp_PushLink back into our new table
+			query(
+				"INSERT INTO PushLink (PushType, DeviceRowID, DelimitedValue, TargetType, TargetVariable, TargetDeviceID, TargetProperty, Enabled, IncludeUnit) "
+				"SELECT [PushType], [DeviceID], [DelimitedValue], [TargetType], [TargetVariable], [TargetDeviceID], [TargetProperty], [Enabled], [IncludeUnit] FROM tmp_PushLink");
+			query("DROP TABLE tmp_PushLink");
+		}
+	}
 	else if (bNewInstall)
 	{
 		//place here actions that needs to be performed on new databases
@@ -7110,6 +7110,7 @@ void CSQLHelper::DeleteDevices(const std::string &idx)
 			safe_exec_no_return("DELETE FROM DeviceToPlansMap WHERE (DeviceRowID == '%q')", itt.c_str());
 			safe_exec_no_return("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')", itt.c_str());
 			safe_exec_no_return("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')", itt.c_str());
+			safe_exec_no_return("DELETE FROM PushLink WHERE (DeviceRowID== '%q')", itt.c_str());
 			//notify eventsystem device is no longer present
 			uint64_t ullidx = std::stoull(itt);
 			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_DEVICE);
