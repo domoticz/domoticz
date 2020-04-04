@@ -1284,7 +1284,6 @@ void CEventSystem::TriggerURL(const std::string &result, const std::vector<std::
 	item.sValue = result;
 	item.nValueWording = callback;
 	item.vData = headerData;
-	item.trigger = NULL;
 	m_eventqueue.push(item);
 }
 
@@ -1340,7 +1339,6 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 			item.devname = replaceitem.scenesgroupName;
 			item.sValue = replaceitem.scenesgroupValue;
 			item.lastUpdate = itt->second.lastUpdate;
-			item.trigger = NULL;
 			m_eventqueue.push(item);
 		}
 		replaceitem.lastUpdate = lastUpdate;
@@ -1454,7 +1452,6 @@ void CEventSystem::UnlockEventQueueThread()
 	// Push dummy message to unlock queue
 	_tEventQueue item;
 	item.id = -1;
-	item.trigger = NULL;
 	m_eventqueue.push(item);
 }
 
@@ -1563,7 +1560,6 @@ void CEventSystem::ProcessDevice(
 		item.nValue = nValue;
 		item.sValue = osValue;
 		item.nValueWording = nValueWording;
-		item.trigger = nullptr;
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())

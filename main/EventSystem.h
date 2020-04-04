@@ -166,7 +166,7 @@ private:
 		std::map<uint8_t, float> JsonMapFloat;
 		std::map<uint8_t, bool> JsonMapBool;
 		std::map<uint8_t, std::string> JsonMapString;
-		queue_element_trigger* trigger;
+		queue_element_trigger* trigger = nullptr;
 	};
 	concurrent_queue<_tEventQueue> m_eventqueue;
 
