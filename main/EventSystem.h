@@ -193,7 +193,17 @@ private:
 	void Do_Work();
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
-	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
+	std::string UpdateSingleState(
+		const uint64_t ulDevID, 
+		const std::string &devname, 
+		const int nValue, const char* sValue, 
+		const unsigned char devType, const unsigned char subType, 
+		const _eSwitchType switchType, 
+		const std::string &lastUpdate, 
+		const unsigned char lastLevel, 
+		const unsigned char batteryLevel,
+		const std::map<std::string, std::string> & options
+	);
 	void EvaluateEvent(const std::vector<_tEventQueue> &items);
 	void EvaluateDatabaseEvents(const _tEventQueue &item);
 	lua_State *ParseBlocklyLua(lua_State *lua_state, const _tEventItem &item);

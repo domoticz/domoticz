@@ -1377,7 +1377,17 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 	itt->second = replaceitem;
 }
 
-std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options)
+std::string CEventSystem::UpdateSingleState(
+	const uint64_t ulDevID, 
+	const std::string &devname, 
+	const int nValue, const char* sValue, 
+	const unsigned char devType, const unsigned char subType, 
+	const _eSwitchType switchType, 
+	const std::string &lastUpdate, 
+	const unsigned char lastLevel, 
+	const unsigned char batteryLevel,
+	const std::map<std::string, std::string> & options
+)
 {
 	std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue, options);
 
@@ -1396,6 +1406,7 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 		//_log.Log(LOG_STATUS,"EventSystem: update device %" PRIu64 "",ulDevID);
 		_tDeviceStatus replaceitem = itt->second;
 		replaceitem.deviceName = l_deviceName;
+		replaceitem.batteryLevel = batteryLevel;
 		if (nValue != -1)
 			replaceitem.nValue = nValue;
 		if (strlen(sValue) > 0)
@@ -1427,6 +1438,7 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 		newitem.nValueWording = l_nValueWording;
 		newitem.lastUpdate = l_lastUpdate;
 		newitem.lastLevel = lastLevel;
+		newitem.batteryLevel = batteryLevel;
 
 		if (!m_sql.m_bDisableDzVentsSystem)
 		{
@@ -1540,6 +1552,8 @@ void CEventSystem::ProcessDevice(
 		}
 	}
 
+	std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, lastUpdate, lastLevel, batterylevel, options);
+
 	if (g_bUseEventTrigger && GetEventTrigger(ulDevID, REASON_DEVICE, true))
 	{
 		_tEventQueue item;
@@ -1548,7 +1562,7 @@ void CEventSystem::ProcessDevice(
 		item.devname = devname;
 		item.nValue = nValue;
 		item.sValue = osValue;
-		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, "", 255, options);
+		item.nValueWording = nValueWording;
 		item.trigger = nullptr;
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
@@ -1570,8 +1584,6 @@ void CEventSystem::ProcessDevice(
 		}
 		m_eventqueue.push(item);
 	}
-	else
-		UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, lastUpdate, lastLevel, options);
 }
 
 void CEventSystem::ProcessMinute()
