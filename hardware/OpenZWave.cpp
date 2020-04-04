@@ -2042,12 +2042,9 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	}
 	else if (commandclass == COMMAND_CLASS_BATTERY)
 	{
-		if (_device.isListening)
+		if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Byte)
-			{
-				UpdateDeviceBatteryStatus(NodeID, byteValue);
-			}
+			UpdateDeviceBatteryStatus(NodeID, byteValue);
 		}
 	}
 	else if (commandclass == COMMAND_CLASS_THERMOSTAT_SETPOINT)
