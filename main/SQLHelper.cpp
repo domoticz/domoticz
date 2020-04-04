@@ -2747,7 +2747,7 @@ bool CSQLHelper::OpenDatabase()
 				for (const auto& itt : result)
 				{
 					sd = itt;
-					safe_query("UPDATE DeviceStatus SET Type=%d, SubType=%d WHERE (HardwareID=%s AND Type=%d AND SubType=%d)", pTypeGeneralSwitch, sSwitchTypeAC, sd[0].c_str(), pTypeLighting2, sTypeAC);
+					safe_query("UPDATE DeviceStatus SET DeviceID='0' || DeviceID, Type=%d, SubType=%d WHERE (HardwareID=%s AND Type=%d AND SubType=%d)", pTypeGeneralSwitch, sSwitchTypeAC, sd[0].c_str(), pTypeLighting2, sTypeAC);
 				}
 			}
 		}
