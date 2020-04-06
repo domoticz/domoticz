@@ -13,9 +13,27 @@ SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
 ### USER-SETTABLE OPTIONS
 #
 #
+
+# Bundled libraries
 option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
 option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
+
+# Optional dependencies
+option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
+option(INCLUDE_LINUX_I2C "Include I2C support" YES)
+option(INCLUDE_SPI "Include SPI support" YES)
+option(WITH_LIBUSB "Enable libusb support" YES)
+
+# Link static or shared, external dependencies
+option(USE_LUA_STATIC "Link LUA static" YES)
+option(USE_OPENSSL_STATIC "Link OpenSSL static" NO)
+option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
+option(USE_STATIC_OPENZWAVE "Build with static OpenZwave libraries" YES)
+
+# Developer-oriented options
+option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
+option(GIT_SUBMODULE "Check submodules during build" ON)
 
 
 ### COMPILER SETTINGS
@@ -87,7 +105,6 @@ ENDIF(NOT ProjectRevision)
 #
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 # Update submodules as needed
-    option(GIT_SUBMODULE "Check submodules during build" ON)
     if(GIT_SUBMODULE)
         message(STATUS "Submodule update")
 	execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
@@ -356,7 +373,6 @@ add_executable(domoticz ${domoticz_SRCS})
 #
 # LUA
 #
-option(USE_LUA_STATIC "Link LUA static" YES)
 if(USE_LUA_STATIC)
   find_library(LUA_LIBRARIES NAMES liblua5.3.a)
 ELSE(USE_LUA_STATIC)
@@ -378,7 +394,6 @@ ELSE(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
   ENDIF(LUA_FOUND)
 ENDIF(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
 
-option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
 IF(USE_PYTHON)
   find_package(PythonInterp 3.4)
   find_package(PythonLibs 3.4)
@@ -417,7 +432,6 @@ ENDIF(HAVE_EXECINFO_H)
 
 INCLUDE(CheckIncludeFiles)
 
-option(INCLUDE_LINUX_I2C "Include I2C support" YES)
 IF (INCLUDE_LINUX_I2C)
 	CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
 	IF (HAVE_LINUX_I2C_H)
@@ -428,7 +442,6 @@ IF (INCLUDE_LINUX_I2C)
 	ENDIF (HAVE_LINUX_I2C_H)
 ENDIF (INCLUDE_LINUX_I2C)
 
-option(INCLUDE_SPI "Include SPI support" YES)
 IF (INCLUDE_SPI)
 	CHECK_INCLUDE_FILES ("sys/types.h;linux/spi/spidev.h" HAVE_LINUX_SPI_H)
 	IF (HAVE_LINUX_SPI_H)
@@ -539,7 +552,6 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/minizip)
 #
 # Find MD5/RMD160/SHA library
 #
-option(USE_OPENSSL_STATIC "Link OpenSSL static" NO)
 IF(USE_OPENSSL_STATIC)
   set(OPENSSL_USE_STATIC_LIBS TRUE)
 ENDIF(USE_OPENSSL_STATIC)
@@ -565,7 +577,6 @@ endif()
 #
 # Boost
 #
-option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
@@ -631,7 +642,6 @@ endif(CEREAL_INCLUDE_DIRS)
 #
 # USB
 #
-option(WITH_LIBUSB "Enable libusb support" YES)
 if(WITH_LIBUSB)
   find_path(LIBUSB_INCLUDE_DIR usb.h
      HINTS ${PC_LIBUSB_INCLUDEDIR} ${PC_LIBUSB_INCLUDE_DIRS})
@@ -659,7 +669,6 @@ endif(WITH_LIBUSB)
 # OpenZWave
 # try to find open-zwave, if found, include support
 #
-option(USE_STATIC_OPENZWAVE "Build with static OpenZwave libraries" YES)
 if(USE_STATIC_OPENZWAVE)
   find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../open-zwave-read-only/cpp/build")
   set(OPENZWAVE_LIB ${OpenZWave})
@@ -720,7 +729,6 @@ else()
   target_link_libraries(domoticz -lrt -lresolv ${EXECINFO_LIBRARIES})
 ENDIF()
 
-option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
 if(USE_PRECOMPILED_HEADER)
   message(STATUS "Using precompiled headers")
   target_precompile_headers(domoticz PRIVATE "main/stdafx.h")
