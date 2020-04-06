@@ -1020,8 +1020,13 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			{
 				switch (atoi(value.c_str()))
 				{
-				case LIGHTING_PARAM_LUMINOUS_INTENSITY_CHANGE:	// 1
-				case LIGHTING_PARAM_LIGHT_TEMPORIZATION:		// 2
+				case LIGHTING_DIMENSION_SET_UP_LEVEL_WITH_GIVEN_SPEED:				// 1
+				case LIGHTING_DIMENSION_TEMPORISATION:								// 2
+				case LIGHTING_DIMENSION_REQUIRED_ONLY_ON_LIGHT:						// 3
+				case LIGHTING_DIMENSION_STATUS_DIMMER_100_LEVELS_WITH_GIVEN_SPEED:	// 4
+				case LIGHTING_DIMENSION_WORKING_TIME_LAMP:							// 8
+				case LIGHTING_DIMENSION_MAX_WORKING_TIME_LAMP:						// 9
+					// TODO: manage lighting parameter..
 					return;
 				default:
 					_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s measure error -> param=%u", who.c_str(), atoi(value.c_str()));
