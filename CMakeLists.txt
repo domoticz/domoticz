@@ -3,9 +3,42 @@ cmake_minimum_required(VERSION 3.16.0)
 
 project(domoticz)
 
+### DEPENDENCY VERSIONS
+#
+#
 ## required min. libBoost version
 SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
 ##
+
+### COMPILER SETTINGS
+#
+#
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CXX_EXTENSIONS NO)
+endif()
+
+IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
+ENDIF()
+IF(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+ENDIF()
+IF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+ENDIF()
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-psabi -rdynamic")
+  #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
+  #ADD_DEFINITIONS( -Wall -O0 -ggdb )
+  #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
+ENDIF()
+
+
+### VERSIONING SUPPORT
+#
+#
 
 MACRO(History_GET_REVISION variable)
   IF(EXISTS ${CMAKE_SOURCE_DIR}/History.txt)
@@ -37,28 +70,6 @@ IF(NOT ProjectRevision)
 ELSE(NOT ProjectRevision)
   MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 ENDIF(NOT ProjectRevision)
-
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_STANDARD 11)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CXX_EXTENSIONS NO)
-endif()
-
-IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
-ENDIF()
-IF(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-ENDIF()
-IF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-ENDIF()
-IF(CMAKE_COMPILER_IS_GNUCXX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-psabi -rdynamic")
-  #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
-  #ADD_DEFINITIONS( -Wall -O0 -ggdb )
-  #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
-ENDIF()
 
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
