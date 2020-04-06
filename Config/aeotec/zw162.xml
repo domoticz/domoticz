@@ -1,6 +1,6 @@
 <!--
 ZW162 Doorbell 6
---><Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:00A2:0103</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw162.png</MetaDataItem>
@@ -57,6 +57,7 @@ Note:
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3291/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3292/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="07 Feb 2020" revision="7">Fix up MapRootToEndpoint and Basic Get Disabled</Entry>
+      <Entry author="Michael Bisbjerg - michael@mbwarez.dk" date="02 Apr 2020" revision="8">Add option 96, allow stopping playing chime</Entry>
     </ChangeLog>
     <MetaDataItem id="00A2" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/3291/</MetaDataItem>
     <MetaDataItem id="00A2" name="FrequencyName" type="0203">Australia / New Zealand</MetaDataItem>
@@ -67,7 +68,7 @@ Note:
   </MetaData>
   <!--
   Aeotec Doorbell 6
-  https://aeotec.freshdesk.com/helpdesk/attachments/6073850754
+  https://aeotec.freshdesk.com/helpdesk/attachments/6086176996
   -->
   <!-- Configuration Parameters -->
   <CommandClass id="112">
@@ -283,6 +284,9 @@ Please note that the Tone Play Mode needs to be configured to be 0 or 1 after th
     <Value genre="config" index="54" label="Get the information of #3 Button" read_only="true" type="int" value="0">
       <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
       </Help>
+    </Value>
+    <Value genre="config" index="96" label="Allow stopping chime with the action button" type="bool" value="0">
+      <Help>Enable or Disable the ability that click the Action Button to stop a playing tone.</Help>
     </Value>
     <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
       <Help>Reset to factory defaults</Help>
