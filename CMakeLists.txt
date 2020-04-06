@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.16.0)
 
 project(domoticz)
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-
 ## required min. libBoost version
 SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
 ##
