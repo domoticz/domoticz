@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.16.0)
 
 project(domoticz)
 
+INCLUDE(CheckIncludeFile)
+INCLUDE(CheckIncludeFiles)
+INCLUDE(InstallRequiredSystemLibraries)
+INCLUDE(TestBigEndian)
+
 ### DEPENDENCY VERSIONS
 #
 #
@@ -410,7 +415,6 @@ SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the executables for Domoticz"
   )
 
-INCLUDE(CheckIncludeFile)
 CHECK_INCLUDE_FILE (execinfo.h HAVE_EXECINFO_H)
 
 IF(HAVE_EXECINFO_H)
@@ -429,8 +433,6 @@ IF(HAVE_EXECINFO_H)
     ADD_DEFINITIONS(-DHAVE_EXECINFO_H)
   ENDIF()
 ENDIF(HAVE_EXECINFO_H)
-
-INCLUDE(CheckIncludeFiles)
 
 IF (INCLUDE_LINUX_I2C)
 	CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
@@ -477,7 +479,6 @@ set (domoticz_VERSION_PATCH ${ProjectRevision})
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
 
-INCLUDE(TestBigEndian)
 TEST_BIG_ENDIAN(BIGENDIAN)
 IF(${BIGENDIAN})
      ADD_DEFINITIONS(-DIS_BIG_ENDIAN)
@@ -747,7 +748,6 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 # build a CPack driven installer package
-INCLUDE(InstallRequiredSystemLibraries)
 
 SET(CPACK_GENERATOR "DEB")
 SET(CPACK_PACKAGE_NAME "domoticz")
