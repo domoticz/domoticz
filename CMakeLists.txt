@@ -63,6 +63,8 @@ MACRO(Gitversion_GET_REVISION dir variable)
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_REVISION)
 
+find_package(Git QUIET)
+
 Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
 IF(NOT ProjectRevision)
   MESSAGE(STATUS "Failed to get ProjectRevision from git")
@@ -71,7 +73,10 @@ ELSE(NOT ProjectRevision)
   MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 ENDIF(NOT ProjectRevision)
 
-find_package(Git QUIET)
+
+### SUBMODULE / BUNDLED SOFTWARE
+#
+#
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 # Update submodules as needed
     option(GIT_SUBMODULE "Check submodules during build" ON)
