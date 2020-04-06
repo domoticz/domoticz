@@ -860,8 +860,6 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		return;
 	}
 	
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: A-Command %d, cmd:%d", Command, cmd);
-
 	// if (iLevel < 0)  is a Normal Frame and device is standard
 	// if (iLevel >= 0) is a Meseaure Frame (percentual) and device is Advanced
 	int level = (iLevel < 0) ? 0 : iLevel;
@@ -883,7 +881,6 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		cmd = (iLevel == 0) ? gswitch_sOff : gswitch_sSetLevel;
 	}
 
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: B-Command %d, cmd:%d", Command, cmd);
 	SendGeneralSwitch(NodeID, iInterface, BatteryLevel, cmd, level, devname);
 }
 
@@ -1015,16 +1012,35 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	int iAppValue, iWhere, iLevel;
 
 	switch (atoi(who.c_str())) {
-	case WHO_LIGHTING:									// 1
+	case WHO_LIGHTING:	// 1
+
 		if (!iter->IsNormalFrame())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
-			return;
+			if (iter->IsMeasureFrame())
+			{
+				switch (atoi(value.c_str()))
+				{
+				case LIGHTING_PARAM_LUMINOUS_INTENSITY_CHANGE:	// 1
+				case LIGHTING_PARAM_LIGHT_TEMPORIZATION:		// 2
+					return;
+				default:
+					_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s measure error -> param=%u", who.c_str(), atoi(value.c_str()));
+					return;
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s error frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
+				return;
+			}
 		}
-
-		iAppValue = atoi(what.c_str());
-		if (iAppValue == 1000) // What = 1000 (Command translation)
-			iAppValue = atoi(whatParam[0].c_str());
+		else
+		{
+			// NORMALE FRAME..
+			iAppValue = atoi(what.c_str());
+			if (iAppValue == 1000) // What = 1000 (Command translation)
+				iAppValue = atoi(whatParam[0].c_str());
+		}		
 
 		iWhere = atoi(where.c_str());
 
