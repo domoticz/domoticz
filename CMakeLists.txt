@@ -21,6 +21,7 @@ SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
 
 # Bundled libraries
 option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
+option(USE_BUILTIN_MINIZIP "Use builtin Minizip" YES)
 option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
 
@@ -122,6 +123,9 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 endif()
 
 if(USE_BUILTIN_JSONCPP AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/jsoncpp/CMakeLists.txt")
+  message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+endif()
+if(USE_BUILTIN_MINIZIP AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/minizip/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
 
@@ -546,9 +550,12 @@ ELSE(USE_BUILTIN_SQLITE)
 ENDIF(USE_BUILTIN_SQLITE)
 
 # minizip
-add_subdirectory (extern/minizip)
-target_link_libraries(${PROJECT_NAME} minizip)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/minizip)
+IF(USE_BUILTIN_MINIZIP)
+  add_subdirectory (extern/minizip)
+  target_link_libraries(${PROJECT_NAME} minizip)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/minizip)
+ELSE(USE_BUILTIN_MINIZIP)
+ENDIF(USE_BUILTIN_MINIZIP)
 
 #
 # Find MD5/RMD160/SHA library
