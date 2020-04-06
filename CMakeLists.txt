@@ -10,6 +10,14 @@ project(domoticz)
 SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
 ##
 
+### USER-SETTABLE OPTIONS
+#
+#
+option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
+option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
+option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
+
+
 ### COMPILER SETTINGS
 #
 #
@@ -465,7 +473,6 @@ ENDIF(${BIGENDIAN})
 ## Link libraries
 
 # jsoncpp
-option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
 if(USE_BUILTIN_JSONCPP)
   set(JSONCPP_LIB_BUILD_SHARED OFF CACHE BOOL "Enable jsoncpp shared library" FORCE)
   set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Enable jsoncpp tests" FORCE)
@@ -488,7 +495,6 @@ ELSE(USE_BUILTIN_JSONCPP)
 ENDIF(USE_BUILTIN_JSONCPP)
 
 # mosquitto
-option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
 IF(USE_BUILTIN_MQTT)
   MESSAGE(STATUS "Using builtin Mosquitto library")
   option(WITH_STATIC_LIBRARIES "Build static versions of the libmosquitto/pp libraries?" ON)
@@ -507,7 +513,6 @@ ELSE(USE_BUILTIN_MQTT)
 ENDIF(USE_BUILTIN_MQTT)
 
 # sqlite3
-option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
 IF(USE_BUILTIN_SQLITE)
   MESSAGE(STATUS "Using builtin SQLite library")
   add_subdirectory (extern/sqlite-amalgamation)
