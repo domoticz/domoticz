@@ -1375,10 +1375,27 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 	itt->second = replaceitem;
 }
 
+void CEventSystem::UpdateBatteryLevel(const uint64_t ulDevID, const unsigned char batteryLevel)
+{
+	if (!m_bEnabled)
+		return;
+
+	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+
+	if (itt != m_devicestates.end())
+	{
+		_tDeviceStatus replaceitem = itt->second;
+		replaceitem.batteryLevel = batteryLevel;
+		itt->second = replaceitem;
+	}
+}
+
+
 std::string CEventSystem::UpdateSingleState(
 	const uint64_t ulDevID, 
 	const std::string &devname, 
-	const int nValue, const char* sValue, 
+	const int nValue, const std::string& sValue,
 	const unsigned char devType, const unsigned char subType, 
 	const _eSwitchType switchType, 
 	const std::string &lastUpdate, 
@@ -1404,10 +1421,10 @@ std::string CEventSystem::UpdateSingleState(
 		//_log.Log(LOG_STATUS,"EventSystem: update device %" PRIu64 "",ulDevID);
 		_tDeviceStatus replaceitem = itt->second;
 		replaceitem.deviceName = l_deviceName;
-		replaceitem.batteryLevel = batteryLevel;
+		//replaceitem.batteryLevel = batteryLevel;
 		if (nValue != -1)
 			replaceitem.nValue = nValue;
-		if (strlen(sValue) > 0)
+		if (!sValue.empty())
 			replaceitem.sValue = l_sValue;
 		if (!l_nValueWording.empty() || l_nValueWording != "-1")
 			replaceitem.nValueWording = l_nValueWording;
@@ -1436,7 +1453,7 @@ std::string CEventSystem::UpdateSingleState(
 		newitem.nValueWording = l_nValueWording;
 		newitem.lastUpdate = l_lastUpdate;
 		newitem.lastLevel = lastLevel;
-		newitem.batteryLevel = batteryLevel;
+		//newitem.batteryLevel = batteryLevel;
 
 		if (!m_sql.m_bDisableDzVentsSystem)
 		{
