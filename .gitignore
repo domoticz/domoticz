@@ -46,3 +46,4 @@ install_manifest.txt
 /www/images/floorplans/*.png
 /www/images/floorplans/*.jpg
 .vscode
+sqlite3_config.h
