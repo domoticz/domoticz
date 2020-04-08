@@ -8,6 +8,36 @@
 #define GAPI_POST_URL "https://fcm.googleapis.com/fcm/send"
 #define GAPI "AIzaSyBnRMroiDaXCKbwPeOmoxkNiQfjWkGMre8"
 
+const char* FCMMessage = R"FCM(
+{
+  "message": {
+    "notification": {
+      "title": "<title>",
+      "body": "<body>"
+    },
+    "data": {
+      "param1": "<extradata>"
+    },
+    "apns": {
+      "headers": {
+        "apns-priority": "5"
+      },
+      "payload": {
+        "aps": {
+          "sound": "default"
+        }
+      }
+    },
+    "android": {
+      "priority": "medium",
+      "notification": {
+        "sound": "default"
+      }
+    },
+    "token": "<token>"
+  }
+})FCM";
+
 CNotificationGCM::CNotificationGCM() : CNotificationBase(std::string("gcm"), OPTIONS_NONE)
 {
 	SetupConfig(std::string("GCMEnabled"), &m_IsEnabled);
@@ -29,6 +59,13 @@ bool CNotificationGCM::SendMessageImplementation(
 {
 	//send message to GCM
 	//ExtraData should be empty, is only filled currently when hitting the test button from the mobile devices setup page in the web gui
+
+	std::string szNewPostData(FCMMessage);
+	stdreplace(szNewPostData, "<title>", "Subject");
+	stdreplace(szNewPostData, "<body>", "Text");
+	stdreplace(szNewPostData, "<extradata>", "ExtraData");
+	stdreplace(szNewPostData, "<token>", GAPI);
+
 
 	//Get All Devices
 	std::vector<std::vector<std::string> > result;
@@ -132,7 +169,7 @@ bool CNotificationGCM::SendMessageImplementation(
 			ii++;
 		}
 
-		sstr << "], \"notification\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", ";
+		sstr << "], \"notification\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", \"sound\": \"default\", ";
 		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\", \"content_available\": true } }";
 		std::string szPostdata = sstr.str();
 
