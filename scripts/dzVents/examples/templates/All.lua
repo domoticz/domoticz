@@ -13,7 +13,7 @@ return {
 		--function(domoticz)
 			-- return true/false
 		--end
-	}
+	},
 	-- trigger
 	-- can be a combination:
 	on = {
@@ -61,6 +61,20 @@ return {
 		-- http http responses
 		httpResponses = {
 			'some callback string'
+		},
+
+		-- system events
+		system = {
+			'start',
+			'stop',
+			'manualBackupFinished',
+			'dailyBackupFinished',
+			'hourlyBackupFinished',
+			'monthlyBackupFinished'
+		},
+
+		customEvents = {
+			'myCustomEvent'
 		}
 	},
 

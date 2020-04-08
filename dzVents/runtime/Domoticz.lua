@@ -1,5 +1,5 @@
 local scriptPath = globalvariables['script_path']
-package.path = scriptPath .. '?.lua' .. ';' .. package.path 
+package.path = scriptPath .. '?.lua' .. ';' .. package.path
 
 local Camera = require('Camera')
 local Device = require('Device')
@@ -107,12 +107,17 @@ local function Domoticz(settings)
 		end
 		]] --
 
-		local data = subject
-				.. '#' .. message
-				.. '#' .. tostring(priority)
-				.. '#' .. tostring(sound)
-				.. '#' .. tostring(extra)
-				.. '#' .. tostring(_subSystem)
+		 local function strip(str)
+			local stripped = tostring(str):gsub('#','')
+			return stripped
+		end
+
+		local data = strip(subject)
+				.. '#' .. strip(message)
+				.. '#' .. strip(priority)
+				.. '#' .. strip(sound)
+				.. '#' .. strip(extra)
+				.. '#' .. strip(_subSystem)
 		self.sendCommand('SendNotification', data)
 	end
 

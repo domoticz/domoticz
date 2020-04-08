@@ -7,10 +7,11 @@ return {
 		groups = {},
 		security = {},
 		httpResponses = {},
-		system = {}
+		customEvents = {},
+		system = {},
 	},
 	data = {},
-	logger = {},
+	logging = {},
 	execute = function(domoticz, triggeredItem)
 
 	end

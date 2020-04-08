@@ -13,7 +13,7 @@ return {
 		--function(domoticz)
 			-- return true/false
 		--end
-	}
+	},
 	-- trigger
 	-- can be a combination:
 	on = {

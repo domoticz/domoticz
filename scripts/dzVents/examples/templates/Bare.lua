@@ -6,10 +6,12 @@ return {
 		scenes = {},
 		groups = {},
 		security = {},
-		httpResponses = {}
+		httpResponses = {},
+		customEvents = {},
+		system = {},
 	},
 	data = {},
-	logger = {},
+	logging = {},
 	execute = function(domoticz, triggeredItem)
 
 	end
