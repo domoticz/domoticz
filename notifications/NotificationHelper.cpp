@@ -19,7 +19,7 @@
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
-#include "NotificationGCM.h"
+#include "NotificationFCM.h"
 
 #include "NotificationBrowser.h"
 #define __STDC_FORMAT_MACROS
@@ -51,7 +51,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationHTTP());
 	AddNotifier(new CNotificationKodi());
 	AddNotifier(new CNotificationLogitechMediaServer());
-	AddNotifier(new CNotificationGCM());
+	AddNotifier(new CNotificationFCM());
 	AddNotifier(new CNotificationBrowser());
 }
 

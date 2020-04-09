@@ -31,7 +31,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 142
+#define DB_VERSION 143
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2748,6 +2748,13 @@ bool CSQLHelper::OpenDatabase()
 		{
 			//(MySensors)MQTT, prevent loop by default
 			safe_query("UPDATE Hardware SET Mode3=1 WHERE ([Type]==%d OR [Type]==%d)", HTYPE_MQTT, HTYPE_MySensorsMQTT);
+		}
+		if (dbversion < 143)
+		{
+			//Rename Google Cloud Messaging setting to Firebase Cloud Messaging
+			int iEnabled = 0;
+			if (!GetPreferencesVar("GCMEnabled", iEnabled))
+				UpdatePreferencesVar("FCMEnabled", iEnabled);
 		}
 	}
 	else if (bNewInstall)

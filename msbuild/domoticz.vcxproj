@@ -740,7 +740,7 @@
     <ClInclude Include="..\main\WebServerHelper.h" />
     <ClInclude Include="..\notifications\NotificationBase.h" />
     <ClInclude Include="..\notifications\NotificationBrowser.h" />
-    <ClInclude Include="..\notifications\NotificationGCM.h" />
+    <ClInclude Include="..\notifications\NotificationFCM.h" />
     <ClInclude Include="..\notifications\NotificationHelper.h" />
     <ClInclude Include="..\notifications\NotificationEmail.h" />
     <ClInclude Include="..\notifications\NotificationHTTP.h" />
@@ -1044,7 +1044,7 @@
     <ClCompile Include="..\main\WindCalculation.cpp" />
     <ClCompile Include="..\notifications\NotificationBase.cpp" />
     <ClCompile Include="..\notifications\NotificationBrowser.cpp" />
-    <ClCompile Include="..\notifications\NotificationGCM.cpp" />
+    <ClCompile Include="..\notifications\NotificationFCM.cpp" />
     <ClCompile Include="..\notifications\NotificationHelper.cpp" />
     <ClCompile Include="..\notifications\NotificationEmail.cpp" />
     <ClCompile Include="..\notifications\NotificationHTTP.cpp" />
