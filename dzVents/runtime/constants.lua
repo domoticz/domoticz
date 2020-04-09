@@ -47,8 +47,9 @@ return {
 	['HUM_NORMAL'] = 0,
 	['HUM_WET'] = 3,
 	['INTEGER'] = 'integer',
-	['NSS_FIREBASE'] = 'gcm', -- For the moment the change to fcm is only done in the url
-	['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',
+	['NSS_FIREBASE'] = 'fcm',
+	['NSS_FIREBASE_CLOUD_MESSAGING'] = 'fcm',
+	['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',  -- Only for backward compatibility. Will be deprecated soon
 	['NSS_HTTP'] = 'http',
 	['NSS_KODI'] = 'kodi',
 	['NSS_LOGITECH_MEDIASERVER'] = 'lms',

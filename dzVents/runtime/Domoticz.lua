@@ -101,11 +101,10 @@ local function Domoticz(settings)
 			end
 		end
 
-		--[[
 		if _subSystem:find('gcm') then
-			utils.log('Notification subsystem Google Cloud Messaging (gcm) has been deprecated by Google. Please consider switching to Firebase', utils.LOG_ERROR)
+			utils.log('Notification subsystem Google Cloud Messaging (gcm) has been deprecated by Google. Switch to Firebase now!', utils.LOG_ERROR)
+			_subSystem = _subSystem:gsub('gcm','fcm')
 		end
-		]] --
 
 		 local function strip(str)
 			local stripped = tostring(str):gsub('#','')
@@ -118,7 +117,8 @@ local function Domoticz(settings)
 				.. '#' .. strip(sound)
 				.. '#' .. strip(extra)
 				.. '#' .. strip(_subSystem)
-		self.sendCommand('SendNotification', data)
+				self.sendCommand('SendNotification', data)
+	
 	end
 
 	-- have domoticz send an email
