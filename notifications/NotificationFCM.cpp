@@ -205,6 +205,14 @@ bool CNotificationFCM::SendMessageImplementation(
 			_log.Log(LOG_ERROR, "FCM: Can not connect to FCM API URL");
 			return false;
 		}
+
+		if (!root["failure"].empty())
+		{
+			int iFailure = root["failure"].asInt();
+			return (iFailure == 0);
+		}
+
+
 	}
 	return true;
 }
