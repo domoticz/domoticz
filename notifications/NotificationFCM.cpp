@@ -47,6 +47,11 @@ CNotificationFCM::~CNotificationFCM()
 {
 }
 
+bool CNotificationFCM::IsConfigured()
+{
+	return true;
+}
+
 bool CNotificationFCM::SendMessageImplementation(
 	const uint64_t Idx,
 	const std::string &Name,
@@ -60,6 +65,11 @@ bool CNotificationFCM::SendMessageImplementation(
 	//send message to FCM
 	//ExtraData should be empty, is only filled currently when hitting the test button from the mobile devices setup page in the web gui
 
+	//std::string szPostData(FCMMessage);
+	//stdreplace(szPostData, "<to>", sTo);
+	//stdreplace(szPostData, "<title>", Subject);
+	//stdreplace(szPostData, "<body>", Text);
+	//stdreplace(szPostData, "<extradata>", ExtraData);
 
 	//Get All Devices
 	std::vector<std::vector<std::string> > result;
@@ -91,40 +101,111 @@ bool CNotificationFCM::SendMessageImplementation(
 		sTo += itt[0];
 	}
 
-	std::string szPostData(FCMMessage);
-	stdreplace(szPostData, "<to>", sTo);
-	stdreplace(szPostData, "<title>", Subject);
-	stdreplace(szPostData, "<body>", Text);
-	stdreplace(szPostData, "<extradata>", ExtraData);
+	//We need to distinguish between Android and iOS devices for the following JSon notification call
 
-	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("Content-Type: application/json");
-	ExtraHeaders.push_back("Authorization: key=" + std::string(GAPI));
+	std::vector<std::string> androidDevices;
+	std::vector<std::string> iOSDevices;
 
-	std::string sResult;
-	if (!HTTPClient::POST(GAPI_POST_URL, szPostData, ExtraHeaders, sResult))
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt = result.begin(); itt != result.end(); ++itt)
 	{
-		_log.Log(LOG_ERROR, "FCM: Could not send message, HTTP Error");
-		return false;
+		std::vector<std::string> sd = *itt;
+		std::string sSenderID = sd[0];
+		std::string sDeviceType = sd[1];
+
+		if ((sDeviceType.empty()) || (sDeviceType.find("Android") == 0))
+			androidDevices.push_back(sSenderID);
+		else
+			iOSDevices.push_back(sSenderID);
 	}
 
-	Json::Value root;
+	std::vector<std::string>::const_iterator ittDevice;
 
-	bool ret = ParseJSon(sResult, root);
-	if (!ret)
+	//Android Devices
+	if (!androidDevices.empty())
 	{
-		_log.Log(LOG_ERROR, "FCM: Can not connect to FCM API URL");
-		return false;
+		std::stringstream sstr, sstr2;
+		std::string sResult;
+		sstr << "{ \"registration_ids\": [";
+
+		int ii = 0;
+
+		for (ittDevice = androidDevices.begin(); ittDevice != androidDevices.end(); ++ittDevice)
+		{
+			if (ii != 0)
+				sstr << ", ";
+			sstr << "\"" << *ittDevice << "\"";
+			ii++;
+		}
+
+		sstr << "], \"data\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", ";
+		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\" } }";
+		std::string szPostdata = sstr.str();
+
+		std::vector<std::string> ExtraHeaders;
+		ExtraHeaders.push_back("Content-Type: application/json");
+
+		sstr2 << "Authorization: key=" << GAPI;
+		ExtraHeaders.push_back(sstr2.str());
+
+		if (!HTTPClient::POST(GAPI_POST_URL, szPostdata, ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "FCM: Could not send message, HTTP Error");
+			return false;
+		}
+
+		Json::Value root;
+
+		bool ret = ParseJSon(sResult, root);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "FCM: Can not connect to FCM API URL");
+			return false;
+		}
 	}
-	if (!root["failure"].empty())
+
+	//iOS Devices
+	if (!iOSDevices.empty())
 	{
-		int iFailure = root["failure"].asInt();
-		return (iFailure == 0);
+		std::stringstream sstr, sstr2;
+		std::string sResult;
+		sstr << "{ \"registration_ids\": [";
+
+		int ii = 0;
+
+		for (ittDevice = iOSDevices.begin(); ittDevice != iOSDevices.end(); ++ittDevice)
+		{
+			if (ii != 0)
+				sstr << ", ";
+			sstr << "\"" << *ittDevice << "\"";
+			ii++;
+		}
+
+		sstr << "], \"notification\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", \"sound\": \"default\", ";
+		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\", \"content_available\": true } }";
+		std::string szPostdata = sstr.str();
+
+		std::vector<std::string> ExtraHeaders;
+		ExtraHeaders.push_back("Content-Type: application/json");
+
+		sstr2 << "Authorization: key=" << GAPI;
+		ExtraHeaders.push_back(sstr2.str());
+
+		if (!HTTPClient::POST(GAPI_POST_URL, szPostdata, ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "FCM: Could not send message, HTTP Error");
+			return false;
+		}
+
+		Json::Value root;
+
+		bool ret = ParseJSon(sResult, root);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "FCM: Can not connect to FCM API URL");
+			return false;
+		}
 	}
 	return true;
 }
 
-bool CNotificationFCM::IsConfigured()
-{
-	return true;
-}
