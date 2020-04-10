@@ -420,7 +420,7 @@ define(['app', 'livesocket'], function (app) {
 								status = '<button class="btn btn-mini btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("Motion") + '</button>';
 							}
 							else {
-								status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("No Motion222") + '</button>';
+								status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("No Motion") + '</button>';
 							}
 						}
 						else if (item.SwitchType == "Smoke Detector") {
