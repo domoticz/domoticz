@@ -1097,17 +1097,17 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							on = true;
 						}
 						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake") || (status == "vibrate") || 
-							(name == "Xiaomi Wireless Single Wall Switch" && aqara_wireless1 == "double_click")) {
+							((model == MODEL_SELECTOR_WIRELESS_WALL_SINGLE_1 || model == MODEL_SELECTOR_WIRELESS_WALL_SINGLE_2) && aqara_wireless1 == "double_click")) {
 							level = 20;
 							on = true;
 						}
 						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") ||
-							(name == "Xiaomi Wireless Single Wall Switch" && aqara_wireless1 == "long_click")) {
+							((model == MODEL_SELECTOR_WIRELESS_WALL_SINGLE_1 || model == MODEL_SELECTOR_WIRELESS_WALL_SINGLE_2) && aqara_wireless1 == "long_click")) {
 							level = 30;
 							on = true;
 						}
 						else if ((status == "tap_twice") || (status == "long_click_release") || 
-							(name == "Xiaomi Wireless Dual Wall Switch" && aqara_wireless1 == "double_click")) {
+							((model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_1 || model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_2) && aqara_wireless1 == "double_click")) {
 							level = 40;
 							on = true;
 						}
@@ -1119,7 +1119,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 60;
 							on = true;
 						}
-						else if ((status == "alert") || (name == "Xiaomi Wireless Dual Wall Switch" && aqara_wireless1 == "long_click")) {
+						else if ((status == "alert") || ((model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_1 || model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_2) && aqara_wireless1 == "long_click")) {
 							level = 70;
 							on = true;
 						}
