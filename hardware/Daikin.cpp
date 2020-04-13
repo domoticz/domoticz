@@ -44,15 +44,13 @@
 
 #ifdef _DEBUG
 	//#define DEBUG_DaikinR
-	//#define DEBUG_DaikinR_File "C:\\TEMP\\Daikin_R_control_info.txt"
-	//#define DEBUG_DaikinW
-	//#define DEBUG_DaikinW_File "/tmp/Daikin_W_control_info.txt"
+	#define DEBUG_DaikinW
 #endif
 
 #ifdef DEBUG_DaikinW
 void SaveString2Disk(std::string str, std::string filename)
 {
-	FILE* fOut = fopen(filename.c_str(), "ab"); //"wb+");
+	FILE* fOut = fopen(filename.c_str(), "wb+");
 	if (fOut)
 	{
 		fwrite(str.c_str(), 1, str.size(), fOut);
@@ -274,19 +272,15 @@ void CDaikin::GetBasicInfo()
 	}
 
 	szURL << "/common/basic_info";
-#ifdef DEBUG_DaikinW
-	{std::stringstream sDebug; sDebug << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "http command (" << szURL.str() << ")";
-	SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
-#endif
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-#ifdef DEBUG_DaikinW
-		{std::stringstream sDebug; sDebug << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "Error connection to (" << m_szIPAddress << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
-#endif
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
+#ifdef DEBUG_DaikinW
+	SaveString2Disk(sResult, "E:\daikin_basic_info.txt");
+#endif
+
 	/*
 	ret=OK,
 	type=aircon,
@@ -302,10 +296,6 @@ void CDaikin::GetBasicInfo()
 	*/
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-#ifdef DEBUG_DaikinW
-		{std::stringstream sDebug; sDebug << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "Error getting data. http result" << sResult << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
-#endif
 		Log(LOG_ERROR, "Error getting data (check IP/Port)");
 		return;
 	}
@@ -313,17 +303,10 @@ void CDaikin::GetBasicInfo()
 	StringSplit(sResult, ",", results);
 	if (results.size() < 8)
 	{
-#ifdef DEBUG_DaikinW
-		{std::stringstream sDebug; sDebug << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "INvalid data received. http result" << sResult << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
-#endif
 		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
-#ifdef DEBUG_DaikinW
-	{std::stringstream sDebug; sDebug << "Date (" << mytime(NULL) << ") function GetBasicInfo" << "http result" << sResult << ")";
-	SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File); }
-#endif
+
 	for (const auto& itt : results)
 	{
 		std::string sVar = itt;
@@ -357,26 +340,15 @@ void CDaikin::GetControlInfo()
 	}
 
 	szURL << "/aircon/get_control_info";
-
-#ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug << "Date (" << mytime(NULL) << ") function GetControlInfo" << "http command (" << szURL.str() << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-	}
-#endif
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-#ifdef DEBUG_DaikinW
-		{
-			std::stringstream sDebug;
-			sDebug << "Date (" << mytime(NULL) << ") function GetControlInfo" << "Error connecting to (" << m_szIPAddress << ")";
-			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-		}
-#endif
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
+#ifdef DEBUG_DaikinW
+		SaveString2Disk(sResult, "E:\daikin_get_control_info.txt");
+#endif
+
 	/*	ret = OK,
 		pow = 1,
 		mode = 4, adv=,
@@ -397,23 +369,9 @@ void CDaikin::GetControlInfo()
 	*/
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-#ifdef DEBUG_DaikinW
-		{
-			std::stringstream sDebug;
-			sDebug << "Date (" << mytime(NULL) << ") function GetControlInfo" << "Error getting data (check IP/Port)) retour (" << sResult << ")";
-			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File)
-		};
-#endif
 		Log(LOG_ERROR, "Error getting data (check IP/Port)");
 		return;
 	}
-#ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug << "Date (" << mytime(NULL) << ") function GetControlInfo" << "http result (" << sResult << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-	}
-#endif
 	std::vector<std::string> results;
 	StringSplit(sResult, ",", results);
 	if (results.size() < 8)
@@ -559,49 +517,23 @@ void CDaikin::GetSensorInfo()
 
 	szURL << "/aircon/get_sensor_info";
 
-#ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "http command (" << szURL.str() << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-	}
-#endif
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-#ifdef DEBUG_DaikinW
-		{
-			std::stringstream sDebug;
-			sDebug << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "Error connecting to (" << m_szIPAddress << ")";
-			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-		}
-#endif
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 #endif
-
+#ifdef DEBUG_DaikinW
+	SaveString2Disk(sResult, "E:\daikin_get_sensor_info.txt");
+#endif
 	// ret=OK,htemp=21.0,hhum=-,otemp=9.0,err=0,cmpfreq=35
 	// grp.update('compressorfreq', tonumber(data.cmpfreq))
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-#ifdef DEBUG_DaikinW
-		{
-			std::stringstream sDebug;
-			sDebug << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "Error getting data (check IP/Port)) retour http(" << sResult << ")";
-			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-		}
-#endif
 		Log(LOG_ERROR, "Error getting data (check IP/Port)");
 		return;
 	}
-#ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug << "Date (" << mytime(NULL) << ") function GetSensorInfo" << "http result (" << sResult << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-	}
-#endif
 	std::vector<std::string> results;
 	StringSplit(sResult, ",", results);
 	if (results.size() < 6)
@@ -674,6 +606,9 @@ bool CDaikin::SetLedOnOFF(const bool OnOFF)
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return false;
 	}
+#ifdef DEBUG_DaikinW
+	SaveString2Disk(sResult, "E:\daikin_set_led.txt");
+#endif
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
@@ -952,45 +887,20 @@ void CDaikin::HTTPSetControlInfo()
 	szURL << "&f_rate=" << m_sci_FRateLevel;
 	szURL << "&f_dir=" << m_sci_FDirLevel;
 
-#ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "http command (" << szURL.str() << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-	}
-#endif
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-#ifdef DEBUG_DaikinW
-		{
-			std::stringstream sDebug;
-			sDebug << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "Error connecting to (" << m_szIPAddress << ")";
-			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-		}
-#endif
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
+#ifdef DEBUG_DaikinW
+	SaveString2Disk(sResult, "E:\daikin_get_control_info.txt");
+#endif
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-#ifdef DEBUG_DaikinW
-		{
-			std::stringstream sDebug;
-			sDebug << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "Invalid Response (" << sResult << ")";
-			SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-		}
-#endif
 		Log(LOG_ERROR, "Invalid response");
 		return;
 	}
-#ifdef DEBUG_DaikinW
-	{
-		std::stringstream sDebug;
-		sDebug << "Date (" << mytime(NULL) << ") function HTTPSetControlInfo" << "http result (" << sResult << ")";
-		SaveString2Disk(sDebug.str(), DEBUG_DaikinW_File);
-	}
-#endif
 	// once http sci request is done and OK, update internal values
 	m_pow = m_sci_OnOFF;
 	m_mode = m_sci_ModeLevel;
