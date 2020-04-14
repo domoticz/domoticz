@@ -459,7 +459,10 @@ namespace http {
 					}
 					else if (!result)
 					{
-						_log.Log(LOG_ERROR, "Error parsing http request.");
+						begin = boost::asio::buffer_cast<const char*>(_buf.data());
+						std::string sRequest(begin, begin + _buf.size());
+
+						_log.Log(LOG_ERROR, "Error parsing http request. (%s)", sRequest.c_str());
 						keepalive_ = false;
 						reply_ = reply::stock_reply(reply::bad_request);
 						MyWrite(reply_.to_string(request_.method));
