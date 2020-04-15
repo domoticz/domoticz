@@ -3557,6 +3557,10 @@ void CSQLHelper::Do_Work()
 					if (subsystem.empty() || subsystem == " ") {
 						subsystem = NOTIFYALL;
 					}
+					if (subsystem == "gcm") {
+						_log.Log(LOG_STATUS, "Deprecated Notification system specified (gcm), change this to 'fcm'!");
+						subsystem = "fcm";
+					}
 					m_notifications.SendMessageEx(0, std::string(""), subsystem, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
 				}
 			}
