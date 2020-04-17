@@ -174,7 +174,7 @@ bool CBuienRadar::WriteToHardware(const char* /*pdata*/, const unsigned char /*l
 
 std::string CBuienRadar::GetForecastURL()
 {
-	std::string szURL = "https://gpsgadget.buienradar.nl/gadget/forecastandstation/" + std::to_string(m_iNearestStationID);
+	std::string szURL = "https://gpsgadget.buienradar.nl/gadget/forecastandstation/" + std::to_string(m_iStationID);
 	return szURL;
 }
 
@@ -245,8 +245,8 @@ bool CBuienRadar::FindNearestStationID()
 	}
 
 	double shortest_distance_km = 200.0;//start with 200 km
-	std::string nearest_station_name("?");
 	std::string nearest_station_regio("?");
+	std::string nearest_station_name("?");
 
 	for (const auto itt : root["actual"]["stationmeasurements"])
 	{
@@ -263,23 +263,24 @@ bool CBuienRadar::FindNearestStationID()
 		if (distance_km < shortest_distance_km)
 		{
 			shortest_distance_km = distance_km;
-			m_iNearestStationID = itt["stationid"].asInt();
+			m_iStationID = itt["stationid"].asInt();
 			nearest_station_name = itt["stationname"].asString();
 			nearest_station_regio = itt["regio"].asString();
 		}
 	}
-	if (m_iNearestStationID == -1)
+	if (m_iStationID == 0)
 	{
 		_log.Log(LOG_ERROR, "BuienRadar: No (nearby) station found!");
 		return false;
 	}
-	_log.Log(LOG_STATUS, "BuienRadar: Nearest station: %s (%s), ID: %d", nearest_station_name.c_str(), nearest_station_regio.c_str(), m_iNearestStationID);
+	_log.Log(LOG_STATUS, "BuienRadar: Nearest station: %s (%s), ID: %d", nearest_station_name.c_str(), nearest_station_regio.c_str(), m_iStationID);
 	return true;
 }
 
 void CBuienRadar::GetMeterDetails()
 {
-	if (m_iNearestStationID == -1)
+
+	if (m_iStationID == 0) // Get nearest station id if no id = specified
 	{
 		//Because BuienRadar always sends back results for all stations it knows,
 		//we need to find our nearest station
@@ -292,7 +293,7 @@ void CBuienRadar::GetMeterDetails()
 #ifdef DEBUG_BUIENRADARR
 	sResult = ReadFile("E:\\br_actual.json");
 #else
-	std::string szUrl = BUIENRADAR_ACTUAL_URL + std::to_string(m_iNearestStationID);
+	std::string szUrl = BUIENRADAR_ACTUAL_URL + std::to_string(m_iStationID);
 	if (!HTTPClient::GET(szUrl, sResult))
 	{
 		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
@@ -304,6 +305,7 @@ void CBuienRadar::GetMeterDetails()
 #endif
 	Json::Value root;
 
+	
 	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
@@ -323,7 +325,7 @@ void CBuienRadar::GetMeterDetails()
 	}
 
 	int stationID = root["stationid"].asInt();
-	if (stationID != m_iNearestStationID)
+	if (stationID != m_iStationID)
 	{
 		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received, or no data returned!");
 		return;
