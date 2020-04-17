@@ -83,11 +83,12 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d) {
 	return 2.0 * earthRadiusKm * asin(sqrt(u * u + cos(lat1r) * cos(lat2r) * v * v));
 }
 
-CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold)
+CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold, const int iStationID)
 {
 	m_HwdID = ID;
 	m_iForecast = (iForecast >= 5) ? iForecast : 15;
 	m_iThreshold = (iThreshold > 0) ? iThreshold : 25;
+	m_iStationID = iStationID;
 	Init();
 }
 
