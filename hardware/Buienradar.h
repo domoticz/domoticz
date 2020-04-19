@@ -14,12 +14,14 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	bool FindNearestStationID();
+	bool GetStationDetails();
 	void GetMeterDetails();
 	void GetRainPrediction();
 private:
 	std::string m_szMyLatitude;
 	std::string m_szMyLongitude;
+	std::string m_sStationName;
+	std::string m_sStationRegion;
 	std::shared_ptr<std::thread> m_thread;
 	int m_iForecast = 15;
 	int m_iThreshold = 25;
