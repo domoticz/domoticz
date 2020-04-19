@@ -14,8 +14,8 @@
 #define RETRY_DELAY 30
 
 #ifdef _DEBUG
-#define DEBUG_TTN_R
-#define DEBUG_TTN_W
+//#define DEBUG_TTN_R
+//#define DEBUG_TTN_W
 #endif
 
 #ifdef DEBUG_TTN_W
