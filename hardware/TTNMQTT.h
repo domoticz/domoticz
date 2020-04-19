@@ -50,6 +50,6 @@ private:
 	bool ConnectIntEx();
 	Json::Value GetSensorWithChannel(const Json::Value &root, const int sChannel);
 	void FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const int sChannel);
-	int GetAddDeviceAndSensor(const int m_HwdId, const std::string DeviceName, const std::string MacAddress);
+	int GetAddDeviceAndSensor(const int m_HwdId, const std::string &DeviceName, const std::string &MacAddress);
 };
 
