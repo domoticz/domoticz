@@ -299,13 +299,11 @@ bool CBuienRadar::GetStationDetails()
 				// Set Latitude and longitude, using 2 digit precision
 				
 				std::stringstream Latstream;
-				double MyLatitude = std::stod(itt["lat"].asString());
-				Latstream << std::fixed << std::setprecision(2) << MyLatitude;
-				m_szMyLatitude = Latstream.str();
+				Latstream << std::fixed << std::setprecision(2) << std::stod(itt["lat"].asString());
+				m_szMyLatitude = Latstream.str(); 
 				
 				std::stringstream Longstream;
-				double MyLongitude = std::stod(itt["lon"].asString());
-				Longstream << std::fixed << std::setprecision(2) << MyLongitude;
+				Longstream << std::fixed << std::setprecision(2) << std::stod(itt["lon"].asString());
 				m_szMyLongitude = Longstream.str();
 			}
 		}
