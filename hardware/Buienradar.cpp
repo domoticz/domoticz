@@ -311,7 +311,7 @@ bool CBuienRadar::GetStationDetails()
 		}
 		if (m_sStationName.empty())
 		{
-			_log.Log(LOG_ERROR, "BuienRadar: configured StationID (%d) not found at Buienradar site, check you hardware config", m_iStationID);
+			_log.Log(LOG_ERROR, "BuienRadar: configured StationID (%d) not found at Buienradar site, check hardware config", m_iStationID);
 			return false;
 		} 
 
@@ -500,7 +500,7 @@ void CBuienRadar::GetRainPrediction()
 	while ((!bret) && (totRetry < 2))
 	{
 		std::string szUrl = BUIENRADAR_RAIN + m_szMyLatitude + "&lon=" + m_szMyLongitude;
-		_log.Log(LOG_STATUS, "BuienRadar: Debug RP URL = %s",szUrl.c_str());
+		// _log.Log(LOG_STATUS, "BuienRadar: Debug RP URL = %s",szUrl.c_str());
 		bret = HTTPClient::GET(szUrl, sResult);
 		if (!bret)
 		{
