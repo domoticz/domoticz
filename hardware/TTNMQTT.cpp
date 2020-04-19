@@ -353,7 +353,7 @@ void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string 
 	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varValue, szLastUpdate);
 }
 
-int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string DeviceName, const std::string MacAddress)
+int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &DeviceName, const std::string &MacAddress)
 {
 	int DeviceID = 0;
 	
