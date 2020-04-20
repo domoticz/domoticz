@@ -3552,9 +3552,11 @@ void CSQLHelper::Do_Work()
 			{
 				std::vector<std::string> splitresults;
 				StringSplit(itt->_command, "!#", splitresults);
-				if (splitresults.size() == 5) {
-					std::string subsystem = splitresults[4];
-					if (subsystem.empty() || subsystem == " ") {
+				if (splitresults.size() >= 4) {
+					std::string subsystem;
+					if (splitresults.size() > 4)
+						subsystem = splitresults[4];
+					if (subsystem.empty()) {
 						subsystem = NOTIFYALL;
 					}
 					if (subsystem == "gcm") {
