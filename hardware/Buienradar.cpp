@@ -85,14 +85,14 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d) {
 
 CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold, const int iStationID, const std::string &Location)
 {
-	_log.Log(LOG_STATUS, "Debug: BuienRadar: forecast (%d), Treshold (%d), StationID (%d), Location (%s)", iForecast, iThreshold, iStationID, Location.c_str());
+	// _log.Log(LOG_STATUS, "Debug: BuienRadar: forecast (%d), Treshold (%d), StationID (%d), Location (%s)", iForecast, iThreshold, iStationID, Location.c_str());
 	m_HwdID = ID;
 	m_iForecast = (iForecast >= 5) ? iForecast : 15;
 	m_iThreshold = (iThreshold > 0) ? iThreshold : 25;
 	m_iStationID = iStationID;
 
 	if (Location.empty()) {
-		_log.Log(LOG_STATUS, "Debug: BuienRadar: no location provided in settings");
+		// _log.Log(LOG_STATUS, "Debug: BuienRadar: no location provided in settings");
 	} else {
 		// Split Location Field, try 1st on semicolon
 		std::vector<std::string> strarray;
@@ -101,7 +101,7 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 		{
 			m_szMyLatitude = strarray[0];
 			m_szMyLongitude = strarray[1];
-			_log.Log(LOG_STATUS, "Debug: BuienRadar: Read Latiitude (%s) and Longitude (%s) from config", m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
+			// _log.Log(LOG_STATUS, "BuienRadar: using custom configured location  %s,%s for rain prediction" , m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
 		} else {
 			// try again on comma
 			StringSplit(Location, ",", strarray);
@@ -109,9 +109,9 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 			{
 				m_szMyLatitude = strarray[0];
 				m_szMyLongitude = strarray[1];
-				_log.Log(LOG_STATUS, "Debug: BuienRadar: Read Latiitude (%s) and Longitude (%s) from config", m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
+				// _log.Log(LOG_STATUS, "BuienRadar: using custom configured location  %s,%s for rain prediction" , m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
 			} else {
-				_log.Log(LOG_ERROR, "Debug: BuienRadar: Location setting invalid, ignoring location parameter");
+				_log.Log(LOG_ERROR, "BuienRadar: Location config invalid, ignoring location configuration parameter");
 			}
 		}
 	}
@@ -276,17 +276,19 @@ bool CBuienRadar::GetStationDetails()
 			}
 			m_szMyLatitude = Latitude;
 			m_szMyLongitude = Longitude;
+			_log.Log(LOG_STATUS, "BuienRadar: using domoticz location settings (%s,%s)",Latitude.c_str(),Longitude.c_str());
+
+
 		} else {
 
 			MyLatitude = std::stod(m_szMyLatitude);
 			MyLongitude = std::stod(m_szMyLongitude);
+			_log.Log(LOG_STATUS, "BuienRadar: using configured location settings (%s,%s)" , m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
 		}
 
 
 
 		double shortest_distance_km = 200.0;//start with 200 km
-		// std::string nearest_station_regio("?");
-		// std::string nearest_station_name("?");
 
 		for (const auto itt : root["actual"]["stationmeasurements"])
 		{
@@ -316,8 +318,6 @@ bool CBuienRadar::GetStationDetails()
 		_log.Log(LOG_STATUS, "BuienRadar: Nearest station: %s (%s), ID: %d", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID);
 		return true;
 	} else {
-		std::string Latitude;
-		std::string Longitude;
 		// StationID was provided
 		for (const auto itt : root["actual"]["stationmeasurements"])
 		{
@@ -337,17 +337,20 @@ bool CBuienRadar::GetStationDetails()
 				// Get locationdata with data with  2 digit precision
 				std::stringstream Latstream;
 				Latstream << std::fixed << std::setprecision(2) << std::stod(itt["lat"].asString());
-				Latitude = Latstream.str(); 
+				std::string Latitude = Latstream.str(); 
 
 				std::stringstream Longstream;
 				Longstream << std::fixed << std::setprecision(2) << std::stod(itt["lon"].asString());
-				Longitude = Longstream.str();
+				std::string Longitude = Longstream.str();
 
+				_log.Log(LOG_STATUS, "BuienRadar: Selected station: %s (%s), ID: %d", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID);
 				if (m_szMyLatitude.empty()) {
 					// if Latitude and longitude not provided in config, derive from Buienradar data 
 					m_szMyLatitude = Latstream.str(); 
 					m_szMyLongitude = Longstream.str();
-
+					_log.Log(LOG_STATUS, "BuienRadar: using Selected Station's location (%s,%s) for rain prediction" , m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
+				} else {
+					_log.Log(LOG_STATUS, "BuienRadar: using configured location (%s,%s) for rain prediction" , m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
 				}
 			}
 		}
@@ -357,7 +360,6 @@ bool CBuienRadar::GetStationDetails()
 			return false;
 		} 
 
-		_log.Log(LOG_STATUS, "BuienRadar: Selected station: %s (%s), ID: %d at %s,%s", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, Latitude.c_str(), Longitude.c_str());
 
 		return true;
 	}
@@ -381,7 +383,7 @@ void CBuienRadar::GetMeterDetails()
 	sResult = ReadFile("E:\\br_actual.json");
 #else
 	std::string szUrl = BUIENRADAR_ACTUAL_URL + std::to_string(m_iStationID);
-	_log.Log(LOG_ERROR, "BuienRadar: Debug: URL is %s", szUrl.c_str());
+	// _log.Log(LOG_ERROR, "BuienRadar: Debug: URL is %s", szUrl.c_str());
 
 	if (!HTTPClient::GET(szUrl, sResult))
 	{
@@ -544,7 +546,7 @@ void CBuienRadar::GetRainPrediction()
 	while ((!bret) && (totRetry < 2))
 	{
 		std::string szUrl = BUIENRADAR_RAIN + m_szMyLatitude + "&lon=" + m_szMyLongitude;
-		_log.Log(LOG_STATUS, "BuienRadar: Debug RP URL = %s",szUrl.c_str());
+		// _log.Log(LOG_STATUS, "BuienRadar: Debug RP URL = %s",szUrl.c_str());
 		bret = HTTPClient::GET(szUrl, sResult);
 		if (!bret)
 		{
