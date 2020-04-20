@@ -808,8 +808,10 @@ define(['app'], function (app) {
 					threshold = 25;
 				}
 				var stationid = $("#hardwarecontent #divbuienradar #stationid").val();
+				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&password=" + location +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
@@ -1954,11 +1956,12 @@ define(['app'], function (app) {
 					threshold = 25;
 				}
 				var stationid = $("#hardwarecontent #divbuienradar #stationid").val();
+				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) +
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
-					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + stationid,
+					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + stationid + "&Mode4=",
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3653,6 +3656,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divbuienradar #timeframe").val(timeframe);
 							$("#hardwarecontent #divbuienradar #threshold").val(threshold);
 							$("#hardwarecontent #divbuienradar #stationid").val(stationid);
+							$("#hardwarecontent #divbuienradar #location").val(data["Password"]);
 						}
 						else if ((data["Type"].indexOf("HTTP/HTTPS") >= 0)) {
 							$("#hardwarecontent #hardwareparamshttp #url").val(data["Address"]);
