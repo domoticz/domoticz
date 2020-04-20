@@ -250,12 +250,7 @@ struct _tTaskItem
 		tItem._ItemType = TITEM_SEND_NOTIFICATION;
 		tItem._DelayTime = DelayTime;
 		tItem._idx = Priority;
-		std::string tSubject((!Subject.empty()) ? Subject : " ");
-		std::string tBody((!Body.empty()) ? Body : " ");
-		std::string tExtraData((!ExtraData.empty()) ? ExtraData : " ");
-		std::string tSound((!Sound.empty()) ? Sound : " ");
-		std::string tSubSystem((!SubSystem.empty()) ? SubSystem : " ");
-		tItem._command = tSubject + "!#" + tBody + "!#" + tExtraData + "!#" + tSound + "!#" + tSubSystem ;
+		tItem._command = Subject + "!#" + Body + "!#" + ExtraData + "!#" + Sound + "!#" + SubSystem ;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
