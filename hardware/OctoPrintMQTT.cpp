@@ -459,50 +459,52 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 					return;
 				}
 
-
 				UpdateUserVariable("LastEvent", szEventName);
 				UpdateUserVariable("LastEventData", qMessage);
 
 
-				if (szEventName == "PrintStarted")
+				if (szEventName != m_szLastEventName)
 				{
-					SendSwitch(1, 1, 255, true, 0, "Printing");
-					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
-				}
-				else if (szEventName == "PrintFailed")
-				{
-					SendSwitch(1, 1, 255, false, 0, "Printing");
-					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
-				}
-				else if (szEventName == "PrintDone")
-				{
-					SendSwitch(1, 1, 255, false, 0, "Printing");
-					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
-				}
-				else if (szEventName == "PrintCancelled")
-				{
-					SendSwitch(1, 1, 255, false, 0, "Printing");
-					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
-				}
-				else if (szEventName == "PrintPaused")
-				{
-					SendSwitch(1, 1, 255, false, 0, "Printing");
-					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
-				}
-				else if (szEventName == "PrintResumed")
-				{
-					SendSwitch(1, 1, 255, true, 0, "Printing");
-					SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
-				}
-				else if (szEventName == "ZChange")
-				{
-					//Z-Position changed (new layer)
-					if (root["new"].empty())
+					m_szLastEventName = szEventName;
+
+					bool bIsPrintStatus(false);
+					bool bIsPrinting(false);
+
+					if (
+						(szEventName == "PrintStarted")
+						|| (szEventName == "PrintResumed")
+						)
 					{
-						_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid ZChange data received! (no new field in JSON payload ?)");
+						bIsPrintStatus = true;
+						bIsPrinting = true;
+					}
+					else if (
+						(szEventName == "PrintFailed")
+						|| (szEventName == "PrintDone")
+						|| (szEventName == "PrintCancelled")
+						|| (szEventName == "PrintPaused")
+						|| (szEventName == "PrintResumed")
+						)
+					{
+						bIsPrintStatus = true;
+						bIsPrinting = false;
+					}
+					else if (szEventName == "ZChange")
+					{
+						//Z-Position changed (new layer)
+						if (root["new"].empty())
+						{
+							_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid ZChange data received! (no new field in JSON payload ?)");
+							return;
+						}
+						//SendCustomSensor(1, 1, 255, std::stof(root["new"].asString()), "ZChange", "Z");
 						return;
 					}
-					//SendCustomSensor(1, 1, 255, std::stof(root["new"].asString()), "ZChange", "Z");
+					if (bIsPrintStatus)
+					{
+						SendSwitch(1, 1, 255, bIsPrinting, 0, "Printing");
+						SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
+					}
 				}
 			}
 		}
