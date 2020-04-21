@@ -650,6 +650,7 @@ bool CSQLHelper::OpenDatabase()
 	}
 
 	//create database (if not exists)
+	sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 	query(sqlCreateDeviceStatus);
 	query(sqlCreateDeviceStatusTrigger);
 	query(sqlCreateLightingLog);
@@ -745,6 +746,7 @@ bool CSQLHelper::OpenDatabase()
 	query("create index if not exists w_id_date_idx   on Wind(DeviceRowID, Date);");
 	query("create index if not exists wc_id_idx       on Wind_Calendar(DeviceRowID);");
 	query("create index if not exists wc_id_date_idx  on Wind_Calendar(DeviceRowID, Date);");
+	sqlite3_exec(m_dbase, "END TRANSACTION;", NULL, NULL, NULL);
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
 	{
