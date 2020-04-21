@@ -208,35 +208,37 @@ bool CNest::Login()
 		return false;
 	}
 
+	_log.Log(LOG_STATUS, "Nest: url=%s, postdata=%s, header=%s result=%s", sURL.c_str(), szPostdata.c_str(), NEST_USER_AGENT_STRING, sResult.c_str());
 	Json::Value root;
 	bool bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
+		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password! (check 1)");
 		return false;
 	}
 	if (root["urls"].empty())
 	{
-		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
+		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password! (check 2)");
+
 		return false;
 	}
 	if (root["urls"]["transport_url"].empty())
 	{
-		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
+		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password! (check 3)");
 		return false;
 	}
 	m_TransportURL = root["urls"]["transport_url"].asString();
 
 	if (root["access_token"].empty())
 	{
-		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
+		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password! (check 4)");
 		return false;
 	}
 	m_AccessToken = root["access_token"].asString();
 
 	if (root["userid"].empty())
 	{
-		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
+		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password! (check 5)");
 		return false;
 	}
 	m_UserID = root["userid"].asString();
