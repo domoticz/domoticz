@@ -204,11 +204,6 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'UpdateController',
                 permission: 'Admin'
             }))
-            .when('/Update2', angularAMD.route({
-                templateUrl: 'views/update2.html',
-                controller: 'UpdateController2',
-                permission: 'Admin'
-            }))
             .when('/Users', angularAMD.route({
                 templateUrl: 'views/users.html',
                 controller: 'UsersController',

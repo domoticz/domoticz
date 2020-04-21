@@ -278,7 +278,7 @@ void CDaikin::GetBasicInfo()
 		return;
 	}
 #ifdef DEBUG_DaikinW
-	SaveString2Disk(sResult, "E:\daikin_basic_info.txt");
+	SaveString2Disk(sResult, "E:\\daikin_basic_info.txt");
 #endif
 
 	/*
@@ -346,7 +346,7 @@ void CDaikin::GetControlInfo()
 		return;
 	}
 #ifdef DEBUG_DaikinW
-		SaveString2Disk(sResult, "E:\daikin_get_control_info.txt");
+		SaveString2Disk(sResult, "E:\\daikin_get_control_info.txt");
 #endif
 
 	/*	ret = OK,
@@ -524,7 +524,7 @@ void CDaikin::GetSensorInfo()
 	}
 #endif
 #ifdef DEBUG_DaikinW
-	SaveString2Disk(sResult, "E:\daikin_get_sensor_info.txt");
+	SaveString2Disk(sResult, "E:\\daikin_get_sensor_info.txt");
 #endif
 	// ret=OK,htemp=21.0,hhum=-,otemp=9.0,err=0,cmpfreq=35
 	// grp.update('compressorfreq', tonumber(data.cmpfreq))
@@ -607,7 +607,7 @@ bool CDaikin::SetLedOnOFF(const bool OnOFF)
 		return false;
 	}
 #ifdef DEBUG_DaikinW
-	SaveString2Disk(sResult, "E:\daikin_set_led.txt");
+	SaveString2Disk(sResult, "E:\\daikin_set_led.txt");
 #endif
 
 	if (sResult.find("ret=OK") == std::string::npos)
@@ -893,7 +893,7 @@ void CDaikin::HTTPSetControlInfo()
 		return;
 	}
 #ifdef DEBUG_DaikinW
-	SaveString2Disk(sResult, "E:\daikin_get_control_info.txt");
+	SaveString2Disk(sResult, "E:\\daikin_get_control_info.txt");
 #endif
 
 	if (sResult.find("ret=OK") == std::string::npos)
