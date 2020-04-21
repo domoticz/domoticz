@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('UpdateController2', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', function ($scope, $rootScope, $location, $http, $interval, $window) {
+	app.controller('UpdateController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', function ($scope, $rootScope, $location, $http, $interval, $window) {
 
 		$scope.appVersion = 0;
 		$scope.newVersion = 0;
