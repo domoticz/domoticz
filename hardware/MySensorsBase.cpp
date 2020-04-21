@@ -992,7 +992,6 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 				if (pSensorForecast && pChild->GetValue(V_FORECAST, stringValue))
 				{
 					std::string devname = (!pChild->childName.empty()) ? pChild->childName : "Forecast";
-//					SendTextSensor(pSensorBaro->nodeID, pSensorBaro->childID, pChild->batValue, stringValue, devname); // 20-4-2020 null pointer exception
 					SendTextSensor(pSensorForecast->nodeID, pSensorForecast->childID, pChild->batValue, stringValue, devname); // corrected
 				}
 			}
