@@ -22,7 +22,6 @@ public:
 	void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
 
 	void SendMessage(const std::string &Topic, const std::string &Message);
-
 public:
 	void UpdateUserVariable(const std::string &varName, const std::string &varValue);
 
@@ -36,18 +35,21 @@ protected:
 	std::string m_Password;
 	std::string m_CAFilename;
 	std::string m_TopicIn;
+	std::shared_ptr<std::thread> m_thread;
+
 	virtual bool StartHardware() override;
 	virtual bool StopHardware() override;
 	void StopMQTT();
 	void Do_Work();
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string &sendStr) override;
-	std::shared_ptr<std::thread> m_thread;
 private:
+	std::map<std::string, CBaroForecastCalculator> m_forecast_calculators;
+
 	bool ConnectInt();
 	bool ConnectIntEx();
-	Json::Value GetSensorWithChannel(const Json::Value &root, const std::string &stype, const int sChannel);
+	Json::Value GetSensorWithChannel(const Json::Value &root, const int sChannel);
 	void FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const int sChannel);
-	std::map<std::string, CBaroForecastCalculator> m_forecast_calculators;
+	int GetAddDeviceAndSensor(const int m_HwdId, const std::string &DeviceName, const std::string &MacAddress);
 };
 
