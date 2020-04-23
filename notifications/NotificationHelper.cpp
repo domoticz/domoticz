@@ -93,17 +93,19 @@ bool CNotificationHelper::SendMessage(
 
 bool CNotificationHelper::SendMessageEx(
 	const uint64_t Idx,
-	const std::string &Name,
-	const std::string &Subsystems,
-	const std::string &Subject,
-	const std::string &Text,
-	const std::string &ExtraData,
+	const std::string& Name,
+	const std::string& Subsystems,
+	const std::string& Subject,
+	const std::string& Text,
+	const std::string& ExtraData,
 	int Priority,
-	const std::string &Sound,
+	const std::string& Sound,
 	const bool bFromNotification)
 {
 	bool bRet = false;
 	bool bThread = true;
+
+	bool bIsTestMessage = (Subject == "Domoticz test") && (Text == "Domoticz test message!");
 
 	if (Priority == -100)
 	{
@@ -134,7 +136,7 @@ bool CNotificationHelper::SendMessageEx(
 		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
 		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && iter->second->IsConfigured())
 		{
-			if (iter->second->m_IsEnabled)
+			if ((iter->second->m_IsEnabled) || bIsTestMessage)
 			{
 				if (bThread)
 				{

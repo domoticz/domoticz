@@ -4383,8 +4383,12 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 	uint64_t ulID = 0;
 	bool bDeviceUsed = false;
 	bool bSameDeviceStatusValue = false;
+	int old_nValue = -1;
+	std::string old_sValue;
+	_eSwitchType stype = STYPE_OnOff;
+
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
+	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
 	if (result.empty())
 	{
 		//Insert
@@ -4412,9 +4416,9 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		auto options = BuildDeviceOptions(sOption);
 		devname = result[0][1];
 		bDeviceUsed = atoi(result[0][2].c_str()) != 0;
-		_eSwitchType stype = (_eSwitchType)atoi(result[0][3].c_str());
-		int old_nValue = atoi(result[0][4].c_str());
-		std::string old_sValue = result[0][5];
+		stype = (_eSwitchType)atoi(result[0][3].c_str());
+		old_nValue = atoi(result[0][4].c_str());
+		old_sValue = result[0][5];
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now, &ltime);
@@ -4592,17 +4596,26 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 	case pTypeHunter:
 		if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
 			break;
-		//Add Lighting log
 		m_LastSwitchID = ID;
 		m_LastSwitchRowID = ulID;
-		result = safe_query(
-			"INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) "
-			"VALUES ('%" PRIu64 "', '%d', '%q', '%q')",
-			ulID,
-			nValue, sValue,
-			m_mainworker.m_szLastSwitchUser.c_str()
-		);
 
+		//Add Lighting log (Skip duplicates)
+		if (
+			(nValue != old_nValue)
+			|| (sValue != old_sValue)
+			|| (stype == STYPE_Doorbell)
+			|| (stype == STYPE_PushOn)
+			|| (stype == STYPE_PushOff)
+			)
+		{
+			result = safe_query(
+				"INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) "
+				"VALUES ('%" PRIu64 "', '%d', '%q', '%q')",
+				ulID,
+				nValue, sValue,
+				m_mainworker.m_szLastSwitchUser.c_str()
+			);
+		}
 		if (!bDeviceUsed)
 			return ulID;	//don't process further as the device is not used
 		std::string lstatus = "";
