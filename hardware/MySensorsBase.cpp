@@ -988,11 +988,10 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			}
 			else
 			{
-				_tMySensorChild *pSensorForecast = FindChildWithValueType(pChild->nodeID, V_FORECAST, pChild->groupID);
-				if (pSensorForecast && pChild->GetValue(V_FORECAST, stringValue))
+				if (pChild->GetValue(V_FORECAST, stringValue))
 				{
 					std::string devname = (!pChild->childName.empty()) ? pChild->childName : "Forecast";
-					SendTextSensor(pSensorForecast->nodeID, pSensorForecast->childID, pChild->batValue, stringValue, devname); // corrected
+					SendTextSensor(pChild->nodeID, pChild->childID, pChild->batValue, stringValue, devname); // corrected
 				}
 			}
 		}
