@@ -5,7 +5,7 @@
 class CBuienRadar : public CDomoticzHardwareBase
 {
 public:
-	CBuienRadar(const int ID, const int iForecast, const int iThreshold, const int iStationID, const std::string &Location);
+	CBuienRadar(const int ID, const int iForecast, const int iThreshold, const std::string &Location);
 	~CBuienRadar(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	std::string GetForecastURL();

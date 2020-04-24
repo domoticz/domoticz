@@ -807,7 +807,6 @@ define(['app'], function (app) {
 				if (threshold == 0) {
 					threshold = 25;
 				}
-				var stationid = $("#hardwarecontent #divbuienradar #stationid").val();
 				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -816,7 +815,7 @@ define(['app'], function (app) {
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + stationid + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1955,13 +1954,12 @@ define(['app'], function (app) {
 				if (threshold == 0) {
 					threshold = 25;
 				}
-				var stationid = $("#hardwarecontent #divbuienradar #stationid").val();
 				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) +
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
-					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + stationid + "&Mode4=",
+					"&Mode1=" + timeframe + "&Mode2=" + threshold,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3650,12 +3648,10 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Buienradar") >= 0) {
 							var timeframe = parseInt(data["Mode1"]);
 							var threshold = parseInt(data["Mode2"]);
-							var stationid = parseInt(data["Mode3"]);
 							if (timeframe == 0) timeframe = 15;
 							if (threshold == 0) threshold = 25;
 							$("#hardwarecontent #divbuienradar #timeframe").val(timeframe);
 							$("#hardwarecontent #divbuienradar #threshold").val(threshold);
-							$("#hardwarecontent #divbuienradar #stationid").val(stationid);
 							$("#hardwarecontent #divbuienradar #location").val(data["Password"]);
 						}
 						else if ((data["Type"].indexOf("HTTP/HTTPS") >= 0)) {
