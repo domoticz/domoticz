@@ -807,13 +807,16 @@ define(['app'], function (app) {
 				if (threshold == 0) {
 					threshold = 25;
 				}
+				var stationid = $("#hardwarecontent #divbuienradar #stationid").val();
+				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&password=" + location +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + stationid + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1952,11 +1955,13 @@ define(['app'], function (app) {
 				if (threshold == 0) {
 					threshold = 25;
 				}
+				var stationid = $("#hardwarecontent #divbuienradar #stationid").val();
+				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) +
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
-					"&Mode1=" + timeframe + "&Mode2=" + threshold,
+					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + stationid + "&Mode4=",
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3645,10 +3650,13 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Buienradar") >= 0) {
 							var timeframe = parseInt(data["Mode1"]);
 							var threshold = parseInt(data["Mode2"]);
+							var stationid = parseInt(data["Mode3"]);
 							if (timeframe == 0) timeframe = 15;
 							if (threshold == 0) threshold = 25;
 							$("#hardwarecontent #divbuienradar #timeframe").val(timeframe);
 							$("#hardwarecontent #divbuienradar #threshold").val(threshold);
+							$("#hardwarecontent #divbuienradar #stationid").val(stationid);
+							$("#hardwarecontent #divbuienradar #location").val(data["Password"]);
 						}
 						else if ((data["Type"].indexOf("HTTP/HTTPS") >= 0)) {
 							$("#hardwarecontent #hardwareparamshttp #url").val(data["Address"]);
@@ -3970,9 +3978,9 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divrelaynet").hide();
 			$("#hardwarecontent #divgpio").hide();
 			$("#hardwarecontent #divsysfsgpio").hide();
-            $("#hardwarecontent #divmodeldenkovidevices").hide();
-            $("#hardwarecontent #divmodeldenkoviusbdevices").hide();
-            $("#hardwarecontent #divmodeldenkovitcpdevices").hide();
+       	     		$("#hardwarecontent #divmodeldenkovidevices").hide();
+            		$("#hardwarecontent #divmodeldenkoviusbdevices").hide();
+            		$("#hardwarecontent #divmodeldenkovitcpdevices").hide();
 			$("#hardwarecontent #divunderground").hide();
 			$("#hardwarecontent #divbuienradar").hide();
 			$("#hardwarecontent #divserial").hide();

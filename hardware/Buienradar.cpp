@@ -48,7 +48,7 @@ std::string ReadFile(std::string filename)
 	if (!file.is_open())
 		return "";
 	std::string sResult((std::istreambuf_iterator<char>(file)),
-		(std::istreambuf_iterator<char>()));
+			(std::istreambuf_iterator<char>()));
 	file.close();
 	return sResult;
 }
@@ -83,11 +83,39 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d) {
 	return 2.0 * earthRadiusKm * asin(sqrt(u * u + cos(lat1r) * cos(lat2r) * v * v));
 }
 
-CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold)
+CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold, const int iStationID, const std::string &Location)
 {
+	// _log.Log(LOG_STATUS, "Debug: BuienRadar: forecast (%d), Treshold (%d), StationID (%d), Location (%s)", iForecast, iThreshold, iStationID, Location.c_str());
 	m_HwdID = ID;
 	m_iForecast = (iForecast >= 5) ? iForecast : 15;
 	m_iThreshold = (iThreshold > 0) ? iThreshold : 25;
+	m_iStationID = iStationID;
+
+	if (Location.empty()) {
+		// _log.Log(LOG_STATUS, "Debug: BuienRadar: no location provided in settings");
+	} else {
+		// Split Location Field, try 1st on semicolon
+		std::vector<std::string> strarray;
+		StringSplit(Location, ";", strarray);
+		if (strarray.size() == 2)
+		{
+			m_szMyLatitude = strarray[0];
+			m_szMyLongitude = strarray[1];
+			// _log.Log(LOG_STATUS, "BuienRadar: using custom configured location  %s,%s for rain prediction" , m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
+		} else {
+			// try again on comma
+			StringSplit(Location, ",", strarray);
+			if (strarray.size() == 2)
+			{
+				m_szMyLatitude = strarray[0];
+				m_szMyLongitude = strarray[1];
+				// _log.Log(LOG_STATUS, "BuienRadar: using custom configured location  %s,%s for rain prediction" , m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
+			} else {
+				_log.Log(LOG_ERROR, "BuienRadar: Location config invalid, ignoring location configuration parameter");
+			}
+		}
+	}
+
 	Init();
 }
 
@@ -173,43 +201,14 @@ bool CBuienRadar::WriteToHardware(const char* /*pdata*/, const unsigned char /*l
 
 std::string CBuienRadar::GetForecastURL()
 {
-	std::string szURL = "https://gpsgadget.buienradar.nl/gadget/forecastandstation/" + std::to_string(m_iNearestStationID);
+	std::string szURL = "https://gpsgadget.buienradar.nl/gadget/forecastandstation/" + std::to_string(m_iStationID);
 	return szURL;
 }
 
-bool CBuienRadar::FindNearestStationID()
+bool CBuienRadar::GetStationDetails()
 {
-	std::string Latitude = "1";
-	std::string Longitude = "1";
-	int nValue;
-	std::string sValue;
-	if (!m_sql.GetPreferencesVar("Location", nValue, sValue))
-	{
-		_log.Log(LOG_ERROR, "BuienRadar: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
-		return false;
-	}
-	std::vector<std::string> strarray;
-	StringSplit(sValue, ";", strarray);
-
-	if (strarray.size() != 2)
-		return false;
-
-	Latitude = strarray[0];
-	Longitude = strarray[1];
-
-	if ((Latitude == "1") && (Longitude == "1"))
-	{
-		_log.Log(LOG_ERROR, "BuienRadar: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
-		return false;
-	}
-
-	m_szMyLatitude = Latitude;
-	m_szMyLongitude = Longitude;
-
-	double MyLatitude = std::stod(Latitude);
-	double MyLongitude = std::stod(Longitude);
-
 	std::string sResult;
+
 #ifdef DEBUG_BUIENRADARR
 	sResult = ReadFile("E:\\br.json");
 #else
@@ -234,67 +233,161 @@ bool CBuienRadar::FindNearestStationID()
 
 	if (root["actual"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received, or no data returned!");
+		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received (actual empty), or no data returned!");
 		return false;
 	}
 	if (root["actual"]["stationmeasurements"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received, or no data returned!");
+		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received (station measurement empty), or no data returned!");
 		return false;
 	}
 
-	double shortest_distance_km = 200.0;//start with 200 km
-	std::string nearest_station_name("?");
-	std::string nearest_station_regio("?");
+	if (m_iStationID==0) {
+		std::string Latitude = "1";
+		std::string Longitude = "1";
+		int nValue;
+		std::string sValue;
+		double MyLatitude;
+		double MyLongitude;
 
-	for (const auto itt : root["actual"]["stationmeasurements"])
-	{
-		if (itt["temperature"].empty())
-			continue;
+		if (m_szMyLatitude.empty()) {
+			// No station ID provided, so we are going to look for the closest one
+			if (!m_sql.GetPreferencesVar("Location", nValue, sValue))
+			{
+				_log.Log(LOG_ERROR, "BuienRadar: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+				return false;
+			}
+			std::vector<std::string> strarray;
+			StringSplit(sValue, ";", strarray);
 
-		double lat = itt["lat"].asDouble();
-		double lon = itt["lon"].asDouble();
+			if (strarray.size() != 2)
+				return false;
 
-		double distance_km = distanceEarth(
-			MyLatitude, MyLongitude,
-			lat, lon
-		);
-		if (distance_km < shortest_distance_km)
-		{
-			shortest_distance_km = distance_km;
-			m_iNearestStationID = itt["stationid"].asInt();
-			nearest_station_name = itt["stationname"].asString();
-			nearest_station_regio = itt["regio"].asString();
+			Latitude = strarray[0];
+			Longitude = strarray[1];
+
+			MyLatitude = std::stod(Latitude);
+			MyLongitude = std::stod(Longitude);
+
+			if ((Latitude == "1") && (Longitude == "1"))
+			{
+				_log.Log(LOG_ERROR, "BuienRadar: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+				return false;
+			}
+			m_szMyLatitude = Latitude;
+			m_szMyLongitude = Longitude;
+			_log.Log(LOG_STATUS, "BuienRadar: using domoticz location settings (%s,%s)",Latitude.c_str(),Longitude.c_str());
+
+
+		} else {
+
+			MyLatitude = std::stod(m_szMyLatitude);
+			MyLongitude = std::stod(m_szMyLongitude);
+			_log.Log(LOG_STATUS, "BuienRadar: using configured location settings (%s,%s)" , m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
 		}
+
+
+
+		double shortest_distance_km = 200.0;//start with 200 km
+
+		for (const auto itt : root["actual"]["stationmeasurements"])
+		{
+			if (itt["temperature"].empty())
+				continue;
+
+			double lat = itt["lat"].asDouble();
+			double lon = itt["lon"].asDouble();
+
+			double distance_km = distanceEarth(
+					MyLatitude, MyLongitude,
+					lat, lon
+					);
+			if (distance_km < shortest_distance_km)
+			{
+				shortest_distance_km = distance_km;
+				m_iStationID = itt["stationid"].asInt();
+				m_sStationName = itt["stationname"].asString();
+				m_sStationRegion = itt["regio"].asString();
+			}
+		}
+		if (m_iStationID == 0)
+		{
+			_log.Log(LOG_ERROR, "BuienRadar: No (nearby) station found!");
+			return false;
+		}
+		_log.Log(LOG_STATUS, "BuienRadar: Nearest station: %s (%s), ID: %d", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID);
+		return true;
+	} else {
+		// StationID was provided
+		for (const auto itt : root["actual"]["stationmeasurements"])
+		{
+			if (itt["temperature"].empty())
+				continue;
+
+			int StationID = itt["stationid"].asInt();
+
+			if (StationID == m_iStationID)
+			{
+
+
+				// Station Found, set name and region
+				m_sStationName = itt["stationname"].asString();
+				m_sStationRegion = itt["regio"].asString();
+
+				// Get locationdata with data with  2 digit precision
+				std::stringstream Latstream;
+				Latstream << std::fixed << std::setprecision(2) << std::stod(itt["lat"].asString());
+				std::string Latitude = Latstream.str(); 
+
+				std::stringstream Longstream;
+				Longstream << std::fixed << std::setprecision(2) << std::stod(itt["lon"].asString());
+				std::string Longitude = Longstream.str();
+
+				_log.Log(LOG_STATUS, "BuienRadar: Selected station: %s (%s), ID: %d", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID);
+				if (m_szMyLatitude.empty()) {
+					// if Latitude and longitude not provided in config, derive from Buienradar data 
+					m_szMyLatitude = Latstream.str(); 
+					m_szMyLongitude = Longstream.str();
+					_log.Log(LOG_STATUS, "BuienRadar: using Selected Station's location (%s,%s) for rain prediction" , m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
+				} else {
+					_log.Log(LOG_STATUS, "BuienRadar: using configured location (%s,%s) for rain prediction" , m_szMyLatitude.c_str(), m_szMyLongitude.c_str());
+				}
+			}
+		}
+		if (m_sStationName.empty())
+		{
+			_log.Log(LOG_ERROR, "BuienRadar: configured StationID (%d) not found at Buienradar site, check hardware config", m_iStationID);
+			return false;
+		} 
+
+
+		return true;
 	}
-	if (m_iNearestStationID == -1)
-	{
-		_log.Log(LOG_ERROR, "BuienRadar: No (nearby) station found!");
-		return false;
-	}
-	_log.Log(LOG_STATUS, "BuienRadar: Nearest station: %s (%s), ID: %d", nearest_station_name.c_str(), nearest_station_regio.c_str(), m_iNearestStationID);
-	return true;
 }
 
 void CBuienRadar::GetMeterDetails()
 {
-	if (m_iNearestStationID == -1)
-	{
-		//Because BuienRadar always sends back results for all stations it knows,
-		//we need to find our nearest station
-		if (!FindNearestStationID())
+
+	if  (m_sStationName.empty()) {
+		// _log.Log(LOG_STATUS, "BuienRadar: Debug: stationname station name not set, getting station details");
+		if (!GetStationDetails())
 		{
 			return;
 		}
+	} else {
+		// _log.Log(LOG_STATUS, "BuienRadar: Debug: getting meter details for %s(%s)",m_sStationName.c_str(),m_sStationRegion.c_str());
 	}
+
 	std::string sResult;
 #ifdef DEBUG_BUIENRADARR
 	sResult = ReadFile("E:\\br_actual.json");
 #else
-	std::string szUrl = BUIENRADAR_ACTUAL_URL + std::to_string(m_iNearestStationID);
+	std::string szUrl = BUIENRADAR_ACTUAL_URL + std::to_string(m_iStationID);
+	// _log.Log(LOG_ERROR, "BuienRadar: Debug: URL is %s", szUrl.c_str());
+
 	if (!HTTPClient::GET(szUrl, sResult))
 	{
-		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
+		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data getting meter details! (Check your internet connection!)");
 		return;
 	}
 #ifdef DEBUG_BUIENRADARW
@@ -303,28 +396,29 @@ void CBuienRadar::GetMeterDetails()
 #endif
 	Json::Value root;
 
+
 	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received! (Check Station ID!)");
+		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received getting meter details! (Check Station ID!)");
 		return;
 	}
 
 	if (root["timestamp"].empty() == true || root["stationid"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received, or no data returned!");
+		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received (timestamp or staionid missing) or no data returned!");
 		return;
 	}
 	if (root["temperature"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received, or no data returned!");
+		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received (temperature missing) or no data returned!");
 		return;
 	}
 
 	int stationID = root["stationid"].asInt();
-	if (stationID != m_iNearestStationID)
+	if (stationID != m_iStationID)
 	{
-		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received, or no data returned!");
+		_log.Log(LOG_ERROR, "BuienRadar: Invalid data received (invalid stationid) or no data returned!",stationID,m_iStationID);
 		return;
 	}
 
@@ -364,16 +458,16 @@ void CBuienRadar::GetMeterDetails()
 			barometric_forecast = wsbaroforecast_sunny;
 	}
 	if (
-		(temp != -999.9f)
-		&& (humidity != 0)
-		&& (barometric != 0)
-		)
+			(temp != -999.9f)
+			&& (humidity != 0)
+			&& (barometric != 0)
+	   )
 	{
 		SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forecast, "TempHumBaro");
 	}
 	else if (
-		(temp != -999.9f)
-		&& (humidity != 0)
+			(temp != -999.9f)
+			&& (humidity != 0)
 		)
 	{
 		SendTempHumSensor(1, 255, temp, humidity, "TempHum");
@@ -441,6 +535,8 @@ void CBuienRadar::GetRainPrediction()
 {
 	if (m_szMyLatitude.empty())
 		return;
+
+	// _log.Log(LOG_STATUS, "BuienRadar: Debug: getting Rain Prediction for %s,%s",m_szMyLatitude.c_str(),m_szMyLongitude.c_str());
 	std::string sResult;
 #ifdef DEBUG_BUIENRADARR
 	sResult = ReadFile("E:\\br_rain.txt");
@@ -450,6 +546,7 @@ void CBuienRadar::GetRainPrediction()
 	while ((!bret) && (totRetry < 2))
 	{
 		std::string szUrl = BUIENRADAR_RAIN + m_szMyLatitude + "&lon=" + m_szMyLongitude;
+		// _log.Log(LOG_STATUS, "BuienRadar: Debug RP URL = %s",szUrl.c_str());
 		bret = HTTPClient::GET(szUrl, sResult);
 		if (!bret)
 		{
@@ -458,7 +555,7 @@ void CBuienRadar::GetRainPrediction()
 		}
 	}
 	if (!bret) {
-		_log.Log(LOG_ERROR, "BuienRadar: Error getting http data! (Check your internet connection!)");
+		_log.Log(LOG_ERROR, "BuienRadar: Error getting http rain prediction data! (Check your internet connection!)");
 		return;
 	}
 #ifdef DEBUG_BUIENRADARW

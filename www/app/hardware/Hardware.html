@@ -969,6 +969,18 @@
 					<input type="number" min="1" id="threshold" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="25" />&nbsp;(&percnt;)
 				</td>
 			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label><span data-i18n="Location"></span>:</label></td>
+				<td>
+					<input type="text" id="location" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;Format is &quot;Latitude;Longitude&quot;, leave empty to use the Station's location or the location in domoticz settings (StationID=0)"</span>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label><span data-i18n="Station ID"></span>:</label></td>
+				<td>
+					<input type="number" min="0" id="stationid" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" />&nbsp;(<span data-i18n="0=auto select station)"></span>
+				</td>
+			</tr>
 		</table>
 	</div>
 	<div id="divsolaredgeapi">
