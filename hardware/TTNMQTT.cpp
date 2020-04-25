@@ -515,6 +515,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 							bBaro = true;
 						}
 						else if (type == "gps") {
+							std::stringstream sstr;
+							sstr << vSensor["lat"].asFloat() << "," << vSensor["lon"].asFloat() << "," << vSensor["alt"].asFloat();
+
+							SendPercentageSensor(DeviceID, channel, BatteryLevel, vSensor["alt"].asFloat(), DeviceName + " Altitude");
+							UpdateUserVariable(DeviceName, sstr.str());
 							bGps = true;
 						}
 						else if (type == "digital_input") {
