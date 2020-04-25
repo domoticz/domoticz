@@ -97,7 +97,16 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 		StringSplit(Location, ",", strarray);
 		if (strarray.size() == 1)
 		{
-			m_iStationID = std::stoi(strarray[0]);
+			if (strarray[0] != "undefined")
+			{
+				try {
+					m_iStationID = std::stoi(strarray[0]);
+				}
+				catch (const std::exception& e) {
+					Log(LOG_ERROR, "Bad Station ID provided: %s (%s), please recheck hardware setup.", strarray[0].c_str(), e.what());
+					return;
+				}
+			}
 		}
 		else if (strarray.size() == 2)
 		{
