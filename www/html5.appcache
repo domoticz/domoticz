@@ -599,7 +599,6 @@ app/TemperatureController.js
 app/TemperatureCustomLogController.js
 app/TimerplanController.js
 app/UpdateController.js
-app/UpdateController2.js
 app/UsersController.js
 app/UserVariablesController.js
 app/UtilityController.js
