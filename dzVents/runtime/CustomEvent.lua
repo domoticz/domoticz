@@ -1,4 +1,4 @@
-local _ = require('lodash')
+local utils = require('Utils')
 local evenItemIdentifier = require('eventItemIdentifier')
 
 local function CustomEvent(domoticz, eventData)
@@ -11,11 +11,28 @@ local function CustomEvent(domoticz, eventData)
 	self.status = eventData.status
 	self.message = eventData.message
 	self.trigger = eventData.data.name
-	if eventData.data.data:match('%b{}') then 
-		self.data = domoticz.utils.fromJSON((eventData.data.data):gsub("'",'"'))
+	self.customEvent = self.trigger
+
+	self.isXML = false
+	self.isJSON = false
+	self.data = eventData.data.data
+
+	if self.data:match('%b{}') then 
+		local json = utils.fromJSON(self.data:gsub("'",'"')) 
+		if json and type(json) == "table" then
+			self.isJSON = true
+			self.json = json
+		end
+	elseif self.data:match('%b<>') then
+		 local xml = utils.fromXML(self.data)
+		 if (xml) then
+			self.isXML = true
+			self.xml = xml
+		 end
 	else
 		self.data = eventData.data.data
 	end
+
 	evenItemIdentifier.setType(
 		self,
 		'isCustomEvent',

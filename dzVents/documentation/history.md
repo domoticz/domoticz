@@ -1,3 +1,6 @@
+[3.0.3]
+- add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object) 
+
 [3.0.2]
 - Add `PUT` and `DELETE` support to `openURL`
 - Ensure sending integer in nValue in update function
