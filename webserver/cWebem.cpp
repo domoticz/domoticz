@@ -1552,6 +1552,7 @@ namespace http {
 			{
 				return false;
 			}
+
 /*
 			std::string connection_header = h;
 			if (!boost::iequals(connection_header, "upgrade"))
@@ -1565,6 +1566,11 @@ namespace http {
 			{
 				return false;
 			}
+
+			if (!CheckAuthentication(session, req, rep))
+				return false;
+
+
 			std::string upgrade_header = h;
 			if (!boost::iequals(upgrade_header, "websocket"))
 			{
