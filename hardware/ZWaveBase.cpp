@@ -434,7 +434,16 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		{
 			if (pEnergyDevice->bValidValue)
 			{
-				SendKwhMeter(pEnergyDevice->nodeID, pEnergyDevice->instanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kWh Meter");
+				if	((pDevice->Manufacturer_id == 0x0159) &&
+					 (pDevice->Product_id == 0x52) && (pDevice->Product_type == 0x7))	// Qubino Smart Meter ZMNHTDx/ZMNHTD1
+				{
+					if (pEnergyDevice->indexID == 0)	// KWh meter, other meters shouldn't be fed to KWh counter
+						SendKwhMeter(pEnergyDevice->nodeID, pEnergyDevice->instanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kWh Meter");
+				}
+				else
+				{
+					SendKwhMeter(pEnergyDevice->nodeID, pEnergyDevice->instanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kWh Meter");
+				}
 			}
 		}
 		else
@@ -483,7 +492,15 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		}
 		if (bHaveValidPowerDevice)
 		{
-			SendKwhMeter(pDevice->nodeID, pDevice->instanceID, BatLevel, pPowerDevice->floatValue, pDevice->floatValue / pDevice->scaleMultiply, "kWh Meter");
+			if	((pDevice->Manufacturer_id == 0x0159) &&
+				 (pDevice->Product_id == 0x52) && (pDevice->Product_type == 0x7))	// Qubino Smart Meter ZMNHTDx/ZMNHTD1
+			{
+				/* do nothing: these counters are not KWh (but KVAh, KVArh) */
+			}
+			else
+			{
+				SendKwhMeter(pDevice->nodeID, pDevice->instanceID, BatLevel, pPowerDevice->floatValue, pDevice->floatValue / pDevice->scaleMultiply, "kWh Meter");
+			}
 		}
 		else
 		{
