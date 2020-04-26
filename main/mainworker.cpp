@@ -10072,13 +10072,8 @@ void MainWorker::decode_General(const CDomoticzHardwareBase* pHardware, const tR
 	const _tGeneralDevice* pMeter = reinterpret_cast<const _tGeneralDevice*>(pResponse);
 	uint8_t devType = pMeter->type;
 	uint8_t subType = pMeter->subtype;
-	uint8_t	SignalLevel = 12;
-	uint8_t	BatteryLevel = 255;
-
-	if (pMeter->rssi != 12)
-		SignalLevel = pMeter->rssi;
-	if (pMeter->battery_level != 255)
-		BatteryLevel = pMeter->battery_level;
+	uint8_t SignalLevel = pMeter->rssi;
+	uint8_t BatteryLevel = pMeter->battery_level;
 
 	if (
 		(subType == sTypeVoltage) ||
