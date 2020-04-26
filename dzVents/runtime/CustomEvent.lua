@@ -29,8 +29,6 @@ local function CustomEvent(domoticz, eventData)
 			self.isXML = true
 			self.xml = xml
 		 end
-	else
-		self.data = eventData.data.data
 	end
 
 	evenItemIdentifier.setType(
