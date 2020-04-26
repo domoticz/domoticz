@@ -1,3 +1,5 @@
+Version 2020.xxxx (xxxx)
+
 Version 2020.2 (April 26th 2020)
 - Implemented: GUI: New Update controller code
 - Implemented: GUI: Real-time updates of history-logs on device / scene changes
