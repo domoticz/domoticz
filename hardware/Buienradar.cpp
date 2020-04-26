@@ -395,7 +395,7 @@ void CBuienRadar::GetMeterDetails()
 	int stationID = root["stationid"].asInt();
 	if (stationID != m_iStationID)
 	{
-		Log(LOG_ERROR, "Invalid data received (invalid stationid) or no data returned!", stationID, m_iStationID);
+		Log(LOG_ERROR, "Invalid data received (invalid stationid %i / %i ) or no data returned!", stationID, m_iStationID);
 		return;
 	}
 
