@@ -180,7 +180,7 @@ void Comm5Serial::readCallBack(const char * data, size_t len)
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
-static uint16_t crc16_update(uint16_t crc, uint8_t data)
+uint16_t Comm5Serial::crc16_update(uint16_t crc, const uint8_t data)
 {
 #define POLYNOME 0x13D65
 	int i;

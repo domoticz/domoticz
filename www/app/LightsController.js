@@ -896,7 +896,7 @@ define(['app', 'livesocket'], function (app) {
 							}
 							if (permissions.hasPermission("Admin")) {
 								if (item.Type == "RFY") {
-									var rfysetup = '<img src="images/devices.png" title="' + $.t('Setup') + '" height="16" width="16" onclick="ShowRFYPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');">';
+									var rfysetup = '<img src="images/devices.png" title="' + $.t('Setup') + '" height="16" width="16" onclick="ShowRFYPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile +');">';
 									bigtext += "&nbsp;" + rfysetup;
 								}
 							}

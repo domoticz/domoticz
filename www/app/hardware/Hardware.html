@@ -969,6 +969,14 @@
 					<input type="number" min="1" id="threshold" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="25" />&nbsp;(&percnt;)
 				</td>
 			</tr>
+			<tr>
+				<td align="right" style="vertical-align:top; width:110px;"><label><span data-i18n="Location"></span>:</label></td>
+				<td>
+					<input type="text" id="location" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br />
+					<span data-i18n="StationLatLong"></span><br/>
+					<span data-i18n="(0 = Application default)"></span>
+				</td>
+			</tr>
 		</table>
 	</div>
 	<div id="divsolaredgeapi">
@@ -1197,6 +1205,19 @@
 	<div id="divmqtt">
 		<br>
 		<table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
+			<tr id="mqtt_preventloop" valign="top">
+				<td align="right" style="width:110px"><label for="combopreventloop"><span data-i18n="Prevent Loop">Prevent Loop</span>:</label></td>
+				<td>
+					<select id="combopreventloop" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">False</option>
+						<option value="1" selected>True</option>
+					</select>
+					<br />
+					<span>
+						If 'False' this will cause the MQTT message to be echoed back. <br />
+						In most cases this is a bad scenario and should be avoided.<br />
+				</td>
+			</tr>
 			<tr id="mqtt_publish" valign="top">
 				<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Publish Topic">Publish Topic</span>:</label></td>
 				<td>
@@ -1254,6 +1275,19 @@
 		<br>
 		<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
 			<tr valign="top">
+			<tr id="mqtt_preventloop" valign="top">
+				<td align="right" style="width:110px"><label for="combopreventloop"><span data-i18n="Prevent Loop">Prevent Loop</span>:</label></td>
+				<td>
+					<select id="combopreventloop" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">False</option>
+						<option value="1" selected>True</option>
+					</select>
+					<br />
+					<span>
+						If 'False' this will cause the MQTT message to be echoed back. <br />
+						In most cases this is a bad scenario and should be avoided.<br />
+				</td>
+			</tr>
 				<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix Mode"></span>:</label></td>
 				<td>
 					<select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">

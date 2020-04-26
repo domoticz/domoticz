@@ -15,7 +15,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.1',
+	DZVERSION = '3.0.2',
 }
 
 function math.pow(x, y)

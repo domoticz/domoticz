@@ -5,14 +5,15 @@
 //
 #ifdef ENABLE_PYTHON
 
-#include "../main/Logger.h"
-#include "../main/SQLHelper.h"
-#include "../hardware/hardwaretypes.h"
-#include "../main/localtime_r.h"
-#include "../main/mainstructs.h"
-#include "../main/mainworker.h"
-#include "../main/EventSystem.h"
-#include "../notifications/NotificationHelper.h"
+#include "../../main/Logger.h"
+#include "../../main/SQLHelper.h"
+#include "../../hardware/hardwaretypes.h"
+#include "../../main/localtime_r.h"
+#include "../../main/mainstructs.h"
+#include "../../main/mainworker.h"
+#include "../../main/EventSystem.h"
+#include "../../notifications/NotificationHelper.h"
+#include "Plugins.h"
 #include "PythonObjects.h"
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
@@ -23,11 +24,6 @@ namespace Plugins {
 
 	extern struct PyModuleDef DomoticzModuleDef;
 	extern void LogPythonException(CPlugin* pPlugin, const std::string &sHandler);
-
-	struct module_state {
-		CPlugin*	pPlugin;
-		PyObject*	error;
-	};
 
 	void CImage_dealloc(CImage* self)
 	{

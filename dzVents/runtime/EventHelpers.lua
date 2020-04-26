@@ -406,6 +406,8 @@ local function EventHelpers(domoticz, mainMethod)
 				moduleLabel = eventHandler.name .. ''
 			end
 
+			domoticz.moduleLabel = eventHandler.name:gsub('%.lua','') -- used in dynamic logmarker
+
 			local baseType = subject and subject.baseType or ''
 
 			if (baseType == domoticz.BASETYPE_DEVICE) then
@@ -641,7 +643,7 @@ local function EventHelpers(domoticz, mainMethod)
 			for j, event in pairs(module.on) do
 
 				if (not (type(j) == 'string' or type(event) == 'table')) then
-					utils.log(logScript .. moduleName .. '.lua has a malformed on-section. Check the documentation. Skipping', utils.LOG_DEBUG)
+					utils.log(logScript .. module.name .. '.lua has a malformed on-section. Check the documentation. Skipping', utils.LOG_DEBUG)
 				else
 					if (mode == 'timer' and j == 'timer') then
 						-- { ['timer'] = { 'every minute ', 'every hour' } }

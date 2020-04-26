@@ -2,13 +2,16 @@
 Aeotec ZW164 Indoor Siren 6
 -->
 
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:00a4:0003</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw164.png</MetaDataItem>
     <MetaDataItem id="00a4" name="Identifier" type="0003">ZW164-C</MetaDataItem>
     <MetaDataItem id="00a4" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3301/</MetaDataItem>
     <MetaDataItem id="00a4" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="00a4" name="Identifier" type="0103">ZW164-A</MetaDataItem>
+    <MetaDataItem id="00a4" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/3284/</MetaDataItem>
+    <MetaDataItem id="00a4" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem name="WakeupDescription"></MetaDataItem>
     <MetaDataItem name="InclusionDescription">This product supports Security 2 Command Class. While a Security S2 enabled Controller is needed in order to fully use the security feature. This product can be included and operated in any Z-Wave network with other Z-Wave certified devices from other manufacturers and/or other applications. All non-battery operated nodes within the network will act as repeaters regardless of vendor to increase reliability of the network. 1. Set your Z-Wave Controller into its 'Add Device' mode in order to add Chime into your Z-Wave system. Refer to the Controller's manual if you are unsure of how to perform this step. 2. Power on Chime via the provided power adapter; its LED will be breathing white light all the time. 3. Click Chime Action Button once, it will quickly flash white light for 30 seconds until Chime is added into the network. It will become constantly bright white light after being assigned a NodeID. 4. If your Z-Wave Controller supports S2 encryption, enter the first 5 digits of DSK into your Controller's interface if/when requested. The DSK is printed on Chime's housing. 5. If Adding fails, it will slowly flash white light 3 times and then become breathing white light; repeat steps 1 to 4. Contact us for further support if needed. 6. If Adding succeeds, it will quickly flash white light 3 times and then become off. Now, Chime is a part of your Z-Wave home control system. You can configure it and its automations via your Z-Wave system; please refer to your software's user guide for precise instructions. Note: If Action Button is clicked again during the Learn Mode, the Learn Mode will exit. At the same time, Indicator Light will extinguish immediately, and then become breathing white light.</MetaDataItem>
     <MetaDataItem name="Name">Indoor Siren 6</MetaDataItem>
@@ -18,6 +21,7 @@ Aeotec ZW164 Indoor Siren 6
     <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3301/Indoor%20Siren%206%20product%20manual.pdf</MetaDataItem>
     <ChangeLog>
       <Entry author="Geert van Horrik - @GeertvanHorrik" date="28 Jul 2019" revision="1">Add metadata for aeotec indoor siren 6 #1894</Entry>
+      <Entry author="Matt Belhorn - matt.belhorn@gmail.com" date="28 Feb 2020" revision="2">Add metadata for North American model - https://products.z-wavealliance.org/products/3284</Entry>
     </ChangeLog>
   </MetaData>
 

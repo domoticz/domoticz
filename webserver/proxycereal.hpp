@@ -3,11 +3,11 @@
 #include <string>
 #include <sstream>
 // type support
-#include "../cereal/types/string.hpp"
-#include "../cereal/types/memory.hpp"
+#include <cereal/types/string.hpp>
+#include <cereal/types/memory.hpp>
 // the archiver
-#include "../cereal/archives/portable_binary.hpp"
-#include "../cereal/archives/json.hpp"
+#include <cereal/archives/portable_binary.hpp>
+#include <cereal/archives/json.hpp>
 #include <string>
 
 #define SUBSYSTEM_HTTP 0x01

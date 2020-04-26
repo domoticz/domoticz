@@ -1,3 +1,22 @@
+Version 2020.2 (April 26th 2020)
+- Implemented: GUI: New Update controller code
+- Implemented: GUI: Real-time updates of history-logs on device / scene changes
+- Fixed: Battery level Real-time updates 
+- Fixed: Daikin wifi adaptor module
+- Fixed: Delete device now propagates to all relevant tables
+- Fixed: Possible security issue in the websocket layer
+- Fixed: Unwanted RFY protection popup
+- Updated: BuienRadar, Now possible to enter Station_ID or Latitude/Longitude
+- Updated: Deprecated Google Cloud Messaging system(gcm) replaced by Firebase Cloud Messaging (fcm)
+- Updated: dzVents version 3.0.2 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: OpenZWave configuration files
+- Updated: OpenZWave library for windows
+- Updated: MQTT add option to enable/disable loop prevention
+- Changed: Removed external library dependencies from repository
+- Updated: Translations
+- Updated: TTNMQTT, improved handling CayenneLPP channels
+- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
+
 Version 2020.1 (March 22th 2020)
 - Implemented: BuienRadar
 - Implemented: DarkSky CloudCover sensor
@@ -48,7 +67,6 @@ Version 2020.1 (March 22th 2020)
 - Updated: P1: Add support for Belgian and Luxembourgian meters
 - Updated: SQLite 3.31.1
 - Updated: Translations
-- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)

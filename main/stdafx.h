@@ -55,6 +55,7 @@ typedef unsigned char       BYTE;
 #include <thread>
 
 // third-party
+#include <json/json.h>
 #include "RFXtrx.h"
 
 // rarely changing project-specific

@@ -12,8 +12,8 @@
 #dim Version[4]
 #expr ParseVersion("..\Release\domoticz.exe", Version[0], Version[1], Version[2], Version[3])
 #define AppVersion Str(Version[0]) + "." + Str(Version[1]) + "." + Str(Version[2]) + "." + Str(Version[3])
-#define ShortAppVersion Str(Version[0]) + "." + Str(Version[1])
-#define ShortAppVersionUnderscore Str(Version[0]) + "_" + Str(Version[1])
+#define ShortAppVersion Str(Version[0]) + "." + Str(Version[1]) + "." + Str(Version[3])
+#define ShortAppVersionUnderscore Str(Version[0]) + "_" + Str(Version[1]) + "." + Str(Version[3])
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -32,7 +32,6 @@ AllowNoIcons=yes
 LicenseFile=..\..\License.txt
 OutputDir=.
 OutputBaseFilename={#SetupBaseName + ShortAppVersionUnderscore}
-; OutputBaseFilename={#SetupName}
 SetupIconFile=install.ico
 Compression=lzma2
 PrivilegesRequired=admin
@@ -51,15 +50,18 @@ Name: RunAsService; Description: "Run as service"; Flags: exclusive unchecked
 
 [Files]
 Source: "..\Release\domoticz.exe"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "..\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\www\*"; DestDir: "{app}\www"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\..\Config\*"; DestDir: "{app}\Config"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\..\scripts\*"; DestDir: "{app}\scripts"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\..\dzVents\*"; DestDir: "{app}\dzVents"; Flags: recursesubdirs createallsubdirs ignoreversion
-Source: "..\Debug\libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\Windows Libraries\OpenZwave\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\Windows Libraries\openzwave\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\History.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\server_cert.pem"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall
+
+Source: "..\Windows Libraries\Redist\*"; DestDir: {app}; Flags: ignoreversion
+;Needed for 64bit Source: "..\Windows Libraries\Redist\vcruntime140_1.dll"; DestDir: {app}; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "{code:GetParams}" ; Tasks: RunAsApp; 

@@ -106,7 +106,7 @@ return {
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = data.rawData
 			device['nValue'] = data.data._nValue
-			device['sValue'] = data.data._state
+			device['sValue'] = data.data._state or ( table.concat(device.rawData,';') ~= '' and  table.concat(device.rawData,';') ) or nil
 			device['cancelQueuedCommands'] = function()
 				domoticz.sendCommand('Cancel', {
 					type = 'device',

@@ -53,10 +53,10 @@ const char* RFX_Humidity_Status_Desc(const unsigned char status)
 	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ humstat_normal, "Normal" },
-	{ humstat_comfort, "Comfortable" },
-	{ humstat_dry, "Dry" },
-	{ humstat_wet, "Wet" },
-	{ 0,NULL,NULL }
+		{ humstat_comfort, "Comfortable" },
+		{ humstat_dry, "Dry" },
+		{ humstat_wet, "Wet" },
+		{ 0,NULL,NULL }
 	};
 	return findTableIDSingle1(Table, status);
 }
@@ -807,6 +807,8 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeFan, sTypeFT1211R, "FT1211R" },
 	{ pTypeFan, sTypeFalmec, "Falmec" },
 	{ pTypeFan, sTypeLucciAirDCII, "Lucci Air DC II" },
+	{ pTypeFan, sTypeIthoECO, "Itho ECO" },
+	{ pTypeFan, sTypeNovy, "Novy" },
 
 	{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
@@ -1194,6 +1196,9 @@ void GetLightStatus(
 					lstatus = szTmp;
 				else
 					lstatus = "Off";
+				break;
+			case gswitch_sStop:
+				lstatus = "Stop";
 				break;
 			}
 			break;

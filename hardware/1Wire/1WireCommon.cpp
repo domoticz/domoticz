@@ -45,7 +45,7 @@ std::string ByteArrayToDeviceId(const unsigned char* byteArray)
 	return sID.str();
 }
 
-unsigned short crc16_update(unsigned short crc, unsigned char a)
+unsigned short w1_crc16_update(unsigned short crc, unsigned char a)
 {
 	crc ^= a;
 	for (int i = 0; i < 8; ++i)
@@ -63,6 +63,6 @@ unsigned char Crc16(const unsigned char* byteArray, size_t arraySize)
 {
 	unsigned short crc16 = 0;
 	for (size_t i = 0; i < arraySize; i++)
-		crc16 = crc16_update(crc16, byteArray[i]);
+		crc16 = w1_crc16_update(crc16, byteArray[i]);
 	return (~crc16) & 0xFF;
 }

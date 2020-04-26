@@ -593,6 +593,7 @@ define(['app'], function (app) {
 					extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
 					Mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
 					Mode2 = $("#hardwarecontent #divmysensorsmqtt #combotlsversion").val();
+					Mode3 = $("#hardwarecontent #divmysensorsmqtt #combopreventloop").val();
 
 					if ($("#hardwarecontent #divmysensorsmqtt #filename").val().indexOf("#") >= 0) {
 						ShowNotify($.t('CA Filename cannot contain a "#" symbol!'), 2500, true);
@@ -628,6 +629,7 @@ define(['app'], function (app) {
 					extra = $("#hardwarecontent #divmqtt #filename").val();
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
+					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
 				}
 				if (text.indexOf("Eco Devices") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
@@ -805,8 +807,10 @@ define(['app'], function (app) {
 				if (threshold == 0) {
 					threshold = 25;
 				}
+				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&password=" + location +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
@@ -1847,11 +1851,14 @@ define(['app'], function (app) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				var extra = "";
-				var mode1 = "";
+				var Mode1 = "";
+				var Mode2 = "";
+				var Mode3 = "";
 				if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
 					extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
-					mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
+					Mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
 					Mode2 = $("#hardwarecontent #divmysensorsmqtt #combotlsversion").val();
+					Mode3 = $("#hardwarecontent #divmysensorsmqtt #combopreventloop").val();
 					if ($("#hardwarecontent #divmysensorsmqtt #filename").val().indexOf("#") >= 0) {
 						ShowNotify($.t('CA Filename cannot contain a "#" symbol!'), 2500, true);
 						return;
@@ -1864,11 +1871,11 @@ define(['app'], function (app) {
 						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
 						return;
 					}
-					if ((mode1 == 2) && (($("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val() == "") || ($("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val() == ""))) {
+					if ((Mode1 == 2) && (($("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val() == "") || ($("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val() == ""))) {
 						ShowNotify($.t('Please enter Topic Prefixes!'), 2500, true);
 						return;
 					}
-					if (mode1 == 2) {
+					if (Mode1 == 2) {
 						if (($("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val() == "") ||
 						    ($("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val() == "")
 						) {
@@ -1884,8 +1891,9 @@ define(['app'], function (app) {
 				}
 				else if (text.indexOf("MQTT") >= 0) {
 					extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
-					mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
-					mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
+					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
+					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
+					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
 				}
 				if (text.indexOf("Eco Devices") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
@@ -1896,7 +1904,14 @@ define(['app'], function (app) {
 					Mode2 = ratelimitp1;
 				}
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&extra=" + encodeURIComponent(extra) + "&mode1=" + mode1,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					 "&address=" + address + "&port=" + port +
+					 "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) +
+					 "&name=" + encodeURIComponent(name) +
+					 "&enabled=" + bEnabled +
+					 "&datatimeout=" + datatimeout +
+					 "&extra=" + encodeURIComponent(extra) +
+					 "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1939,6 +1954,7 @@ define(['app'], function (app) {
 				if (threshold == 0) {
 					threshold = 25;
 				}
+				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) +
@@ -3636,6 +3652,7 @@ define(['app'], function (app) {
 							if (threshold == 0) threshold = 25;
 							$("#hardwarecontent #divbuienradar #timeframe").val(timeframe);
 							$("#hardwarecontent #divbuienradar #threshold").val(threshold);
+							$("#hardwarecontent #divbuienradar #location").val(data["Password"]);
 						}
 						else if ((data["Type"].indexOf("HTTP/HTTPS") >= 0)) {
 							$("#hardwarecontent #hardwareparamshttp #url").val(data["Address"]);
@@ -3760,11 +3777,13 @@ define(['app'], function (app) {
 
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotopicselect").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotlsversion").val(data["Mode2"]);
+							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combopreventloop").val(data["Mode3"]);
 						}
 						else if (data["Type"].indexOf("MQTT") >= 0) {
 							$("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
 							$("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamsmqtt #combotlsversion").val(data["Mode2"]);
+							$("#hardwarecontent #hardwareparamsmqtt #combopreventloop").val(data["Mode3"]);
 						}
 						else if (data["Type"].indexOf("Rtl433") >= 0) {
 							$("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val(data["Extra"]);
@@ -3955,9 +3974,9 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divrelaynet").hide();
 			$("#hardwarecontent #divgpio").hide();
 			$("#hardwarecontent #divsysfsgpio").hide();
-            $("#hardwarecontent #divmodeldenkovidevices").hide();
-            $("#hardwarecontent #divmodeldenkoviusbdevices").hide();
-            $("#hardwarecontent #divmodeldenkovitcpdevices").hide();
+       	     		$("#hardwarecontent #divmodeldenkovidevices").hide();
+            		$("#hardwarecontent #divmodeldenkoviusbdevices").hide();
+            		$("#hardwarecontent #divmodeldenkovitcpdevices").hide();
 			$("#hardwarecontent #divunderground").hide();
 			$("#hardwarecontent #divbuienradar").hide();
 			$("#hardwarecontent #divserial").hide();

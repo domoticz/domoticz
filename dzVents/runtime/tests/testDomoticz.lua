@@ -198,7 +198,6 @@ describe('Domoticz', function()
 
 		it('should notify', function()
 			domoticz.notify('sub', 'mes', 1, 'noise', 'extra', domoticz.NSS_NMA)
-
 			assert.is_same({ { ['SendNotification'] = 'sub#mes#1#noise#extra#nma' } }, domoticz.commandArray)
 		end)
 
@@ -227,120 +226,6 @@ describe('Domoticz', function()
 			assert.is_same({ { ['SendSMS'] = 'mes' } }, domoticz.commandArray)
 		end)
 
-	it('should create a url call when triggerHTTPResponse is called', function()
-		domoticz.commandArray = {}
-		domoticz.triggerHTTPResponse('call me Back',12,'hi there')
-		assert.is_same( { OpenURL = {	URL = 'http://127.0.0.1:8080/json.htm?type=command&param=addlogmessage&message=triggerHTTPResponse%3A+hi+there' ,
-										_after = 12,
-										_trigger = 'call me Back',
-										method = 'GET' 
-									} 
-						} , domoticz.commandArray[1])
-	end)
-
-		describe('openURL', function()
-
-			it('should open a simple url', function()
-				domoticz.openURL('some url')
-				assert.is_same({
-					{
-						['OpenURL'] = { URL = 'some url', method = 'GET' }
-					}
-				}, domoticz.commandArray)
-			end)
-
-			it('should open a url with options', function()
-				local cmd = domoticz.openURL({
-					url = 'some url',
-					method = 'POST',
-					callback = 'trigger1',
-					postData = {
-						a = 1, b = 2
-					}
-				})
-				assert.is_same({
-					{
-						['OpenURL'] = {
-	 						URL = 'some url',
-	  						method = 'POST',
-							headers = { ['Content-Type'] = 'application/json' },
-							_trigger = 'trigger1',
-	  						postdata = '{"a":1,"b":2}'
-						}
-					}
-				}, domoticz.commandArray)
-
-				cmd = cmd.afterMin(1)
-
-				assert.is_same({
-					{
-						['OpenURL'] = {
-	 						URL = 'some url',
-	  						method = 'POST',
-							headers = { ['Content-Type'] = 'application/json' },
-							_trigger = 'trigger1',
-	  						postdata = '{"a":1,"b":2}',
-							_after = 60
-						}
-					}
-				}, domoticz.commandArray)
-
-				cmd.silent()
-
-				assert.is_same({
-					{
-						['OpenURL'] = {
-	 						URL = 'some url',
-	  						method = 'POST',
-							headers = { ['Content-Type'] = 'application/json' },
-	  						postdata = '{"a":1,"b":2}',
-							_after = 60
-						}
-					}
-				}, domoticz.commandArray)
-
-			end)
-
-		end)
-
-		describe('triggerIFTTT', function()
-
-			it('should trigger an IFTTT maker event without extra values', function()
-				domoticz.triggerIFTTT('some maker event')
-				assert.is_same({
-					{
-						['TriggerIFTTT'] = { sID = 'some maker event' }
-					}
-				}, domoticz.commandArray)
-			end)
-
-			it('should trigger an IFTTT maker event with some extra values', function()
-				domoticz.triggerIFTTT('some maker event', 1, 2, 3)
-				assert.is_same({
-					{
-						['TriggerIFTTT'] = { 
-							sID = 'some maker event', 
-							sValue1 = '1',
-							sValue2 = '2',
-							sValue3 = '3',
-					}}
-				}, domoticz.commandArray)
-			end)
-
-			it('should trigger an IFTTT maker event with method afterSec', function()
-				domoticz.triggerIFTTT('some maker event', 1, 'two').afterMin(2)
-				assert.is_same({
-					{
-						['TriggerIFTTT'] = { 
-							_after = 120,
-							sID = 'some maker event', 
-							sValue1 = '1',
-							sValue2 = 'two',
-					}}
-				}, domoticz.commandArray)
-			end)
-		end)
-
 		it('should set a scene', function()
 			local res = domoticz.setScene('scene1', 'on')
 			assert.is_table(res)
@@ -351,6 +236,187 @@ describe('Domoticz', function()
 			local res = domoticz.switchGroup('group1', 'on')
 			assert.is_table(res)
 			assert.is_same({ { ['Group:group1'] = 'on' } }, domoticz.commandArray)
+		end)
+
+		it('should create a url call when triggerHTTPResponse is called', function()
+			domoticz.commandArray = {}
+			domoticz.triggerHTTPResponse('call me Back',12,'hi there')
+			assert.is_same( { OpenURL = {	URL = 'http://127.0.0.1:8080/json.htm?type=command&param=addlogmessage&message=triggerHTTPResponse%3A+hi+there' ,
+											_after = 12,
+											_trigger = 'call me Back',
+											method = 'GET' 
+										} 
+							} , domoticz.commandArray[1])
+		end)
+	end)
+
+	describe('openURL', function()
+
+		it('should open a simple url', function()
+			domoticz.openURL('some url')
+			assert.is_same({
+				{
+					['OpenURL'] = { URL = 'some url', method = 'GET' }
+				}
+			}, domoticz.commandArray)
+		end)
+
+		it('should open a url with options (POST)', function()
+			local cmd = domoticz.openURL({
+				url = 'some url',
+				method = 'POST',
+				callback = 'trigger1',
+				postData = {
+					a = 1, b = 2
+				}
+			})
+			assert.is_same({
+				{
+					['OpenURL'] = {
+						URL = 'some url',
+						method = 'POST',
+						headers = { ['Content-Type'] = 'application/json' },
+						_trigger = 'trigger1',
+						postdata = '{"a":1,"b":2}'
+					}
+				}
+			}, domoticz.commandArray)
+		end)
+
+		it('should open a url with options (PUT)', function()
+			local cmd = domoticz.openURL({
+				url = 'some url',
+				method = 'PUT',
+				callback = 'trigger1',
+				postData = {
+					a = 1, b = 2
+				}
+			})
+			assert.is_same({
+				{
+					['OpenURL'] = {
+						URL = 'some url',
+						method = 'PUT',
+						headers = { ['Content-Type'] = 'application/json' },
+						_trigger = 'trigger1',
+						postdata = '{"a":1,"b":2}'
+					}
+				}
+			}, domoticz.commandArray)
+		end)
+	
+		it('should open a url with options (DEL)', function()
+			local cmd = domoticz.openURL({
+				url = 'some url',
+				method = 'DEL',
+				callback = 'trigger1',
+				postData = {
+					a = 1, b = 2
+				}
+			})
+			assert.is_same({
+				{
+					['OpenURL'] = {
+						URL = 'some url',
+						method = 'DEL',
+						headers = { ['Content-Type'] = 'application/json' },
+						_trigger = 'trigger1',
+						postdata = '{"a":1,"b":2}'
+					}
+				}
+			}, domoticz.commandArray)
+		end)
+
+	
+		it('should open a url with options', function()
+
+			local cmd = domoticz.openURL({
+				url = 'some url',
+				method = 'POST',
+				callback = 'trigger1',
+				postData = {
+					a = 1, b = 2
+				}
+			})
+			assert.is_same({
+				{
+					['OpenURL'] = {
+						URL = 'some url',
+						method = 'POST',
+						headers = { ['Content-Type'] = 'application/json' },
+						_trigger = 'trigger1',
+						postdata = '{"a":1,"b":2}'
+					}
+				}
+			}, domoticz.commandArray)
+
+			cmd = cmd.afterMin(1)
+
+			assert.is_same({
+				{
+					['OpenURL'] = {
+						URL = 'some url',
+						method = 'POST',
+						headers = { ['Content-Type'] = 'application/json' },
+						_trigger = 'trigger1',
+						postdata = '{"a":1,"b":2}',
+						_after = 60
+					}
+				}
+			}, domoticz.commandArray)
+
+			cmd.silent()
+
+			assert.is_same({
+				{
+					['OpenURL'] = {
+						URL = 'some url',
+						method = 'POST',
+						headers = { ['Content-Type'] = 'application/json' },
+						postdata = '{"a":1,"b":2}',
+						_after = 60
+					}
+				}
+			}, domoticz.commandArray)
+		end)
+	end)
+
+
+	describe('triggerIFTTT', function()
+
+		it('should trigger an IFTTT maker event without extra values', function()
+			domoticz.triggerIFTTT('some maker event')
+			assert.is_same({
+				{
+					['TriggerIFTTT'] = { sID = 'some maker event' }
+				}
+			}, domoticz.commandArray)
+		end)
+
+		it('should trigger an IFTTT maker event with some extra values', function()
+			domoticz.triggerIFTTT('some maker event', 1, 2, 3)
+			assert.is_same({
+				{
+					['TriggerIFTTT'] = { 
+						sID = 'some maker event', 
+						sValue1 = '1',
+						sValue2 = '2',
+						sValue3 = '3',
+				}}
+			}, domoticz.commandArray)
+		end)
+
+		it('should trigger an IFTTT maker event with method afterSec', function()
+			domoticz.triggerIFTTT('some maker event', 1, 'two').afterMin(2)
+			assert.is_same({
+				{
+					['TriggerIFTTT'] = { 
+						_after = 120,
+						sID = 'some maker event', 
+						sValue1 = '1',
+						sValue2 = 'two',
+				}}
+			}, domoticz.commandArray)
 		end)
 	end)
 
@@ -936,71 +1002,73 @@ describe('Domoticz', function()
 		end)
 	end)
 
-	it('should convert to Celsius', function()
-		assert.is_same(35, domoticz.utils.toCelsius(95))
-		assert.is_same(10, domoticz.utils.toCelsius(18, true))
-	end)
+	describe('functions / utilities', function()
+		it('should convert to Celsius', function()
+			assert.is_same(35, domoticz.utils.toCelsius(95))
+			assert.is_same(10, domoticz.utils.toCelsius(18, true))
+		end)
 
-	it('should url encode', function()
-		local s = 'a b c'
-		assert.is_same('a+b+c', domoticz.utils.urlEncode(s))
-	end)
+		it('should url encode', function()
+			local s = 'a b c'
+			assert.is_same('a+b+c', domoticz.utils.urlEncode(s))
+		end)
 
-	it('should round', function()
-		assert.is_same(10, domoticz.utils.round(10.4, 0))
-		assert.is_same(10.0, domoticz.utils.round(10, 1))
-		assert.is_same(10.00, domoticz.utils.round(10, 2))
-		assert.is_same(10.10, domoticz.utils.round(10.1, 2))
-		assert.is_same(10.1, domoticz.utils.round(10.05, 1))
-		assert.is_same(10.14, domoticz.utils.round(10.144, 2))
-		assert.is_same(10.144, domoticz.utils.round(10.144, 3))
-		assert.is_same(-10.144, domoticz.utils.round(-10.144, 3))
-		assert.is_same(-10.001, domoticz.utils.round(-10.0009, 3))
-	end)
+		it('should round', function()
+			assert.is_same(10, domoticz.utils.round(10.4, 0))
+			assert.is_same(10.0, domoticz.utils.round(10, 1))
+			assert.is_same(10.00, domoticz.utils.round(10, 2))
+			assert.is_same(10.10, domoticz.utils.round(10.1, 2))
+			assert.is_same(10.1, domoticz.utils.round(10.05, 1))
+			assert.is_same(10.14, domoticz.utils.round(10.144, 2))
+			assert.is_same(10.144, domoticz.utils.round(10.144, 3))
+			assert.is_same(-10.144, domoticz.utils.round(-10.144, 3))
+			assert.is_same(-10.001, domoticz.utils.round(-10.0009, 3))
+		end)
 
-	it('should log', function()
-		local utils = domoticz._getUtilsInstance()
-		local logged = false
+		it('should log', function()
+			local utils = domoticz._getUtilsInstance()
+			local logged = false
 
-		utils.log = function(msg, level)
-			logged = true
-		end
+			utils.log = function(msg, level)
+				logged = true
+			end
 
-		domoticz.log('boeh', 1)
-		assert.is_true(logged)
-	end)
+			domoticz.log('boeh', 1)
+			assert.is_true(logged)
+		end)
 
-	it('should convert to json', function()
-		local t = {
-			a = 10,
-			b = 20
-		}
-		assert.is_same('{"a":10,"b":20}', domoticz.utils.toJSON(t))
-	end)
+		it('should convert to json', function()
+			local t = {
+				a = 10,
+				b = 20
+			}
+			assert.is_same('{"a":10,"b":20}', domoticz.utils.toJSON(t))
+		end)
 
-	it('should convert from json', function()
-		local json = '{"a":10,"b":20}'
-		assert.is_same({
-			a = 10,
-			b = 20
-		}, domoticz.utils.fromJSON(json))
-	end)
+		it('should convert from json', function()
+			local json = '{"a":10,"b":20}'
+			assert.is_same({
+				a = 10,
+				b = 20
+			}, domoticz.utils.fromJSON(json))
+		end)
 
-	it('should convert a table to json', function()
-		local t = { a= 1 }
-		local res = domoticz.utils.toJSON(t)
-		assert.is_same('{"a":1}', res)
-	end)
+		it('should convert a table to json', function()
+			local t = { a= 1 }
+			local res = domoticz.utils.toJSON(t)
+			assert.is_same('{"a":1}', res)
+		end)
 
-	it('should dump a table to log', function()
-		local t = { a=1,b=2,c={d=3,e=4, "test"} }
-		local res = domoticz.utils.dumpTable(t,"> ")
-		assert.is_nil(res)
-	end)
+		it('should dump a table to log', function()
+			local t = { a=1,b=2,c={d=3,e=4, "test"} }
+			local res = domoticz.utils.dumpTable(t,"> ")
+			assert.is_nil(res)
+		end)
 
-	it('should split a string ', function()
-		assert.is_same(domoticz.utils.stringSplit("A-B-C", "-")[2],"B")
-		assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
+		it('should split a string ', function()
+			assert.is_same(domoticz.utils.stringSplit("A-B-C", "-")[2],"B")
+			assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
+		end)
 	end)
 
 end)

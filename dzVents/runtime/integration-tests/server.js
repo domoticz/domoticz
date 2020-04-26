@@ -32,6 +32,35 @@ app.post('/testpost', (request, response) => {
 	});
 });
 
+app.put('/testput', (request, response) => {
+	console.log('/testput');
+	console.log(request.body);
+	console.log(request.headers);
+
+	const p = request.body.p || '';
+
+	response.send({
+		title: 'PUT',
+		body: 'This is a PUT test',
+		p: p
+	});
+});
+
+app.delete('/testdelete', (request, response) => {
+	console.log('/testdelete');
+	console.log(request.body);
+	console.log(request.headers);
+
+	const p = request.body.p || '';
+
+	response.send({
+		title: 'DELETE',
+		body: 'This is a DELETE test',
+		p: p
+	});
+});
+
+
 app.listen(port, (err) => {
 	if (err) {
 		return console.log('something bad happened', err)

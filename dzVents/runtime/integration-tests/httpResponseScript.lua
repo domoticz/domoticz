@@ -1,87 +1,73 @@
-local log
-local dz
-
-local err = function(msg)
-	log(msg, dz.LOG_ERROR)
-end
-
-local tstMsg = function(msg, res)
-	print('HTTP trigger, ' .. msg .. ': ' .. tostring(res and 'OK' or 'FAILED'))
-end
-
-local expectEql = function(attr, test, marker)
-	if (attr ~= test) then
-		local msg = tostring(attr) .. '~=' .. tostring(test)
-		if (marker ~= nil) then
-			msg = msg .. ' (' .. tostring(marker) .. ')'
-		end
-		err(msg)
-		print(debug.traceback())
-		return false
-	end
-	return true
-end
-
-return {
-	on = {
-		devices = { 'vdHTTPSwitch' },
-		httpResponses = {'trigger1', 'trigger2','trigger3', 'vdHTTPSwitch'}
+return 
+{
+	on = 
+	{
+		devices = 
+		{
+			'vdHTTPSwitch' 
+		},
+	
+		httpResponses = 
+		{
+			'*HTTP*',
+		}
 	},
-	execute = function(domoticz, item)
 
-		dz = domoticz
-		log = dz.log
-		local res = true
+	logging = 
+	{
+		level = domoticz.LOG_DEBUG,
+		marker = 'integrationTest httpResponse',
+	},
+
+	execute = function(dz, item)
+
+		local expectEql = function(attr, test, marker)
+			if attr == test then 
+				return true
+			else
+				dz.log(tostring(attr) .. '~=' .. tostring(test), dz.LOG_ERROR)
+				return false
+			end
+		end
+
+		local function sendURL(method, url, trigger)
+			dz.openURL(
+			{
+				url = ( url or 'http://localhost:4000/test' ) .. method:lower() .. '?p=1',
+				method = method,
+				callback = 'HTTPTrigger' .. ( trigger or method ) ,
+				postData = { p = method },
+			})
+		end
 
 		if item.isHTTPResponse then
 
-			if item.callback == 'trigger1' then
-
-				res = res and expectEql(item.json.p, '1', 'p == 1')
-				res = res and expectEql(item.statusCode, 200, 'statusCode')
-
-				if (res) then
-					domoticz.globalData.httpTrigger = 'OK'
-					domoticz.openURL({
-						url = 'http://localhost:4000/testpost',
-						method = 'POST',
-						callback = 'trigger2',
-						postData = {
-							p = 2
-						}
-					})
-				end
-		
-			elseif (item.callback == 'trigger2') then
-				res = res and expectEql(item.statusCode, 200, 'statusCode')
-				res = res and expectEql(item.json.p, 2, 'p == 2')
-				if (res) then domoticz.globalData.httpTrigger = domoticz.globalData.httpTrigger .. "OK"  end
-				
-			elseif (item.callback == 'trigger3') then
-				res = res and expectEql(item.statusCode, 6, 'statusCode')
-				if (res) then domoticz.globalData.httpTrigger = domoticz.globalData.httpTrigger .. "OK"  end
-		
-            elseif (item.callback == 'vdHTTPSwitch') then
-				res = res and expectEql(item.statusCode, 200, 'statusCode')
-				if (res) then domoticz.globalData.httpTrigger = domoticz.globalData.httpTrigger .. "OK"  end
-		
+			if item.callback == 'HTTPTriggerGET' and expectEql(item.json.p, '1', 'p == 1') and expectEql(item.statusCode, 200, 'statusCode') then 
+					dz.globalData.httpTrigger[item.callback] = "OK"  
+					sendURL( 'POST')
+			elseif item.callback == 'HTTPTriggerPOST' and expectEql(item.statusCode, 200, 'statusCode') and expectEql(item.json.p, 'POST', 'p = "POST"') then
+					dz.globalData.httpTrigger[item.callback] = "OK" 
+					sendURL('PUT')
+			elseif item.callback == 'HTTPTriggerPUT' and expectEql(item.statusCode, 200, 'statusCode') and expectEql(item.json.p, 'PUT', 'p = "PUT"') then 
+					dz.globalData.httpTrigger[item.callback] = "OK"  
+					sendURL('DELETE')
+			elseif item.callback == 'HTTPTriggerDELETE' and expectEql(item.statusCode, 200, 'statusCode') and expectEql(item.json.p, 'DELETE', 'p = "DELETE"') then
+					dz.globalData.httpTrigger[item.callback] = "OK"  
+					sendURL('GET', 'http://noplaceToGo:4000/test', 'FAIL')
+			elseif item.callback == 'HTTPTriggerFAIL' and expectEql(item.statusCode, 6, 'statusCode') then 
+				dz.globalData.httpTrigger[item.callback] = "OK"  
+dz.utils.dumpTable(dz.globalData)
+			elseif item.callback == 'vdHTTPSwitch' and expectEql(item.statusCode, 200, 'statusCode') then 
+				dz.globalData.httpTrigger[item.callback] = "OK"  
 			end
-		
+	
 		elseif item.isDevice then
-            domoticz.triggerHTTPResponse(item.name, 4, item.state )
-            
-			domoticz.openURL({
-				url = 'http://localhost:4000/testget?p=1',
-				method = 'GET',
-				callback = 'trigger1',
-			})
-			domoticz.openURL({
-				url = 'http://noplaceToGo:4000/testget?p=1',
-				method = 'GET',
-				callback = 'trigger3',
-			}).afterSec(7)
-			
-			
+
+			dz.globalData.httpTrigger = {}
+			dz.triggerHTTPResponse(item.name, 4, item.state )
+			sendURL('GET')
+
 		end
+
 	end
 }

@@ -1,4 +1,4 @@
-<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/031E:0001:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/inovelli/lzw30-sn.png</MetaDataItem>
@@ -22,6 +22,7 @@ Only use either of these procedures in the event that the network primary contro
 Please Note: If this doesn't work, you can check to see if your switch is within Z-Wave Range by holding down the Configuration Button for 5-10 seconds (if it's not within range, the LED Bar will indicate Red and if it is within Range, the LED Bar will indicate Green). If your switch indicates Red, please move the switch closer to the HUB. If your switch indicates Green, please try running an Exclusion to reset your switch.</MetaDataItem>
     <ChangeLog>
       <Entry author="Eric Maycock - ericm@inovelli.com" date="10 Sep 2019" revision="6">Adding Metadata</Entry>
+      <Entry author="Justin Hammond" date="13 Mar 2020" revision="7">Remove Static Central Scene Entries - Issue #2155</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->
@@ -116,14 +117,6 @@ Please Note: If this doesn't work, you can check to see if your switch is within
       <Group index="1" label="Lifeline" max_associations="5" />
       <Group index="2" label="Basic_Set" max_associations="5" />
     </Associations>
-  </CommandClass>
-  <!-- Central Scene Reports -->
-  <CommandClass id="91">
-    <Instance index="1" />
-      <Value type="int" genre="system" instance="1" index="0" label="Scene Count" units="" read_only="true" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="2" />
-      <Value type="int" genre="user" instance="1" index="2" label="Top Button Scene" units="" read_only="false" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0" />
-      <Value type="int" genre="user" instance="1" index="1" label="Bottom Button Scene" units="" read_only="false" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0" />
-      <Value type="int" genre="user" instance="1" index="3" label="Config Button Scene" units="" read_only="false" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0" />
   </CommandClass>
 </Product>
 

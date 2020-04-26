@@ -779,7 +779,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MySensorsMQTT:
 		//LAN
-		pHardware = new MySensorsMQTT(ID, Name, Address, Port, Username, Password, Extra, Mode2, Mode1);
+		pHardware = new MySensorsMQTT(ID, Name, Address, Port, Username, Password, Extra, Mode2, Mode1, Mode3 != 0);
 		break;
 	case HTYPE_RFLINKTCP:
 		//LAN
@@ -791,7 +791,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode2, Mode1, (std::string("Domoticz") + szRandomUUID).c_str());
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode2, Mode1, (std::string("Domoticz") + szRandomUUID).c_str(), Mode3 != 0);
 		break;
 	case HTYPE_eHouseTCP:
 		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway
@@ -1091,7 +1091,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CTTNMQTT(ID, Address, Port, Username, Password, Extra);
 		break;
 	case HTYPE_BuienRadar:
-		pHardware = new CBuienRadar(ID, Mode1, Mode2);
+		pHardware = new CBuienRadar(ID, Mode1, Mode2, Password);
 		break;
 	case HTYPE_OctoPrint:
 		pHardware = new COctoPrintMQTT(ID, Address, Port, Username, Password, Extra);
@@ -2466,6 +2466,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 	if ((BatteryLevel != -1) && (procResult.bProcessBatteryValue))
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%" PRIu64 ")", BatteryLevel, DeviceRowIdx);
+		m_eventsystem.UpdateBatteryLevel(DeviceRowIdx, BatteryLevel); //GizMoCuz, temporarily... 
 	}
 
 	if ((defaultName != NULL) && ((DeviceName == "Unknown") || (DeviceName.empty())))
@@ -4954,6 +4955,9 @@ void MainWorker::decode_Lighting2(const CDomoticzHardwareBase* pHardware, const 
 			case light2_sSetGroupLevel:
 				sprintf(szTmp, "Set Group Level: %d", level);
 				WriteMessage(szTmp);
+				break;
+			case gswitch_sStop:
+				WriteMessage("Stop");
 				break;
 			default:
 				WriteMessage("UNKNOWN");

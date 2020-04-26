@@ -3,6 +3,7 @@
 #include "../DomoticzHardware.h"
 #include "../hardwaretypes.h"
 #include "../../notifications/NotificationBase.h"
+#include "PythonObjects.h"
 
 #ifndef byte
 typedef unsigned char byte;
@@ -127,6 +128,14 @@ namespace Plugins {
 			const int Priority,
 			const std::string &Sound,
 			const bool bFromNotification);
+	};
+
+	//
+//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
+//
+	struct module_state {
+		CPlugin* pPlugin;
+		PyObject* error;
 	};
 
 }

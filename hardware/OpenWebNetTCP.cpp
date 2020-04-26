@@ -185,7 +185,7 @@ bool COpenWebNetTCP::ownWrite(csocket *connectionSocket, const char* pdata, size
 	int bytesWritten = connectionSocket->write(pdata, size);
 	if (bytesWritten != size) 
 	{
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: partial write: %u/%u", bytesWritten, size);
+		_log.Log(LOG_ERROR, "COpenWebNetTCP: partial write: %u/%u", bytesWritten, (unsigned int)size);
 		return (false);
 	}
 	return (true);
@@ -794,6 +794,20 @@ void COpenWebNetTCP::UpdateAlarm(const int who, const int where, const int Comma
 	SendAlertSensor(NodeID, BatteryLevel, Command, sCommand, devname);
 }
 
+void COpenWebNetTCP::SendGeneralSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const int cmd, const int level, const std::string& defaultname, const int RssiLevel /* =12 */)
+{
+	_tGeneralSwitch gSwitch;
+	gSwitch.id = NodeID;
+	gSwitch.len = sizeof(_tGeneralSwitch) - 1;
+	gSwitch.type = pTypeGeneralSwitch;
+	gSwitch.subtype = sSwitchTypeAC;
+	gSwitch.unitcode = ChildID;
+	gSwitch.cmnd = cmd;
+	gSwitch.level = level;
+	gSwitch.rssi = (uint8_t)RssiLevel;
+	sDecodeRXMessage(this, (const unsigned char*)& gSwitch, defaultname.c_str(), BatteryLevel);
+}
+
 /**
 	Insert/Update blinds device
 **/
@@ -805,18 +819,24 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 
 	/* insert switch type */
 	char szIdx[10];
-	sprintf(szIdx, "%07X", NodeID);
+	sprintf(szIdx, "%08X", NodeID);
 
-	int switch_type;
+	int nvalue, slevel, switch_type;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
+	result = m_sql.safe_query("SELECT ID,nValue,sValue,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
 	if (result.empty())
 	{
+		nvalue = 0;
+		slevel = 0;
 		switch_type = (iLevel < 0) ? STYPE_VenetianBlindsEU : STYPE_BlindsPercentageInverted;
-		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeLighting2, sTypeAC, switch_type, 0, "", devname);
+		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, switch_type, 0, "", devname);
 	}
 	else
-		switch_type = atoi(result[0][1].c_str());
+	{
+		nvalue = atoi(result[0][1].c_str());
+		slevel = atoi(result[0][2].c_str());
+		switch_type = atoi(result[0][3].c_str());
+	}
 
 	if ((switch_type == STYPE_BlindsPercentageInverted) && (iLevel < 0)) return; // check normal frame received for BlindsPercentageInverted
 
@@ -829,25 +849,42 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		break;
 	case AUTOMATION_WHAT_UP:			// 1
 	case AUTOMATION_WHAT_DOWN_ADVANCED: // 12 INVERTED
-		cmd = light2_sOff;
+		cmd = gswitch_sOff;
 		break;
 	case AUTOMATION_WHAT_DOWN:			// 2
 	case AUTOMATION_WHAT_UP_ADVANCED:	// 11 INVERTED
-		cmd = light2_sOn;
+		cmd = gswitch_sOn;
 		break;
 	default:
 		_log.Log(LOG_ERROR, "COpenWebNetTCP: Command %d invalid!", Command);
 		return;
 	}
 	
-	_log.Log(LOG_ERROR, "COpenWebNetTCP: Command %d, cmd:%d", Command, cmd);
+	_log.Log(LOG_STATUS, "COpenWebNetTCP: A-Command %d, cmd:%d", Command, cmd);
 
 	// if (iLevel < 0)  is a Normal Frame and device is standard
 	// if (iLevel >= 0) is a Meseaure Frame (percentual) and device is Advanced
-	double level = (iLevel < 0) ? 0. : iLevel;
-	if (level == 100.) level -= 6.25;
+	int level = (iLevel < 0) ? 0 : iLevel;
+		
+	//check if we have a change, if not do not update it
+	if (cmd == nvalue)
+	{
+		if (switch_type == STYPE_VenetianBlindsEU) 
+			return; // normal blind without change
 
-	SendSwitch(NodeID, iInterface, BatteryLevel, (iLevel == 0) ? 0 : 1, level, devname);
+		// Check Level percentage blind
+		if (slevel == level)
+			return;
+	}
+
+	// verify command for advanced type
+	if (switch_type == STYPE_BlindsPercentageInverted)
+	{
+		cmd = (iLevel == 0) ? gswitch_sOff : gswitch_sSetLevel;
+	}
+
+	_log.Log(LOG_STATUS, "COpenWebNetTCP: B-Command %d, cmd:%d", Command, cmd);
+	SendGeneralSwitch(NodeID, iInterface, BatteryLevel, cmd, level, devname);
 }
 
 
@@ -860,17 +897,30 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
 	//make device ID
 	int NodeID = (int)((((int)who << 16) & 0xFFFF0000) | (((int)(where + (iAppValue * 2) + (what * 3))) & 0x0000FFFF));
 	char szIdx[10];
-	sprintf(szIdx, "%07X", NodeID);
+	sprintf(szIdx, "%08X", NodeID);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
-
+	result = m_sql.safe_query("SELECT ID,nValue,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
+	
+	int nvalue;
 	if (result.empty())
 	{
 		// First insert, set SwitchType = STYPE_Contact, so we have a correct contact device
-		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeLighting2, sTypeAC, STYPE_Contact, 0, "Unavailable", devname);
+		nvalue = 0;
+		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_Contact, 0, "Unavailable", devname);
+	}
+	else
+	{
+		nvalue = atoi(result[0][1].c_str());
 	}
 
-	SendSwitch(NodeID, iInterface, BatteryLevel, (bool)Command, 0, devname);
+	//check if we have a change, if not do not update it
+	bool bOn = (bool)Command;
+	if ((!bOn) && (nvalue == gswitch_sOff)) return;
+	if ((bOn && (nvalue == gswitch_sOn))) return;
+
+	int cmnd = (bOn) ? gswitch_sOn : gswitch_sOff;
+
+	SendGeneralSwitch(NodeID, iInterface, BatteryLevel, cmnd, 0, devname);
 }
 
 /**
@@ -884,12 +934,12 @@ void COpenWebNetTCP::UpdateSoundDiffusion(const int who, const int where, const 
 
 	/* insert switch type */
 	char szIdx[10];
-	sprintf(szIdx, "%07X", NodeID);
+	sprintf(szIdx, "%08X", NodeID);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
 	if (result.empty())
 	{
-		//m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeLighting2, sTypeAC, STYPE_Media, 0, "Unavailable", "OpenWebNet Media", 12, 255, 1);
+		//m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_Media, 0, "Unavailable", "OpenWebNet Media", 12, 255, 1);
 	}
 
 	//TODO: manage SoundDiffusion device like dimmer (on, off and set volume) or like media device (check how to do it)
@@ -906,22 +956,46 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 
 	/* insert switch type */
 	char szIdx[10];
-	sprintf(szIdx, "%07X", NodeID);
+	sprintf(szIdx, "%08X", NodeID);
+
+	int nvalue, slevel, switch_type;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
+	result = m_sql.safe_query("SELECT ID,nValue,sValue,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
 
 	if (result.empty())
 	{
+		nvalue = 0;
+		slevel = 0;
 		if ((who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION) || (who == (WHO_TEMPERATURE_CONTROL + 500)) || (who == (WHO_TEMPERATURE_CONTROL + 600)))
 		{
 			// First insert, set SwitchType = STYPE_Contact, so we have a correct contact device
-			m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeLighting2, sTypeAC, STYPE_Contact, 0, "Unavailable", devname);
+			switch_type = STYPE_Contact;
 		}
+		else
+			switch_type = STYPE_OnOff;
+		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, switch_type, 0, "Unavailable", devname);
+	}
+	else
+	{
+		nvalue = atoi(result[0][1].c_str());
+		slevel = atoi(result[0][2].c_str());
+		switch_type = atoi(result[0][3].c_str());
 	}
 
-	double level = (what > 1) ? (what * 10.) : 0;
-	if (level == 100.) level -= 6.25;
-	SendSwitch(NodeID, iInterface, BatteryLevel, (bool)what, level, devname);
+	int level = (what > 1) ? (what * 10) : 0;
+
+	//check if we have a change, if not do not update it
+	bool bOn = (bool)what;
+	if ((!bOn) && (nvalue == gswitch_sOff)) return;
+	if ((bOn && (nvalue != gswitch_sOff)))
+	{
+		if (slevel == level) return; //Check Level
+	}
+
+	int cmnd = gswitch_sOff;
+	if (bOn) cmnd = (level != 0) ? gswitch_sSetLevel : gswitch_sOn;
+
+	SendGeneralSwitch(NodeID, iInterface, BatteryLevel, cmnd, level, devname);
 }
 
 /**
@@ -1355,12 +1429,12 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 **/
 bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	//_tGeneralSwitch *pCmd = (_tGeneralSwitch*)pdata;
-	const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
+	_tGeneralSwitch *pCmd = (_tGeneralSwitch*)pdata;
+	//const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
 	
-	unsigned char packetlength = pCmd->ICMND.packetlength;
-	unsigned char packettype = pCmd->ICMND.packettype;
-	unsigned char subtype = pCmd->ICMND.subtype;;
+	unsigned char packetlength = pCmd->len;
+	unsigned char packettype = pCmd->type;
+	unsigned char subtype = pCmd->subtype;
 
 	int who = 0;
 	int what = 0;
@@ -1374,51 +1448,51 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 
 	// Test packet type
 	switch (packettype) {
-	//case pTypeGeneralSwitch:
-	case pTypeLighting2:
+	case pTypeGeneralSwitch:
 		// Test general switch subtype
-		iInterface = pCmd->LIGHTING2.unitcode;
-		who = (((int)pCmd->LIGHTING2.id1 << 8) & 0xFF00) | (((int)pCmd->LIGHTING2.id2) & 0x00FF);
-		where = (((int)pCmd->LIGHTING2.id3 << 8) & 0xFF00) | (((int)pCmd->LIGHTING2.id4) & 0x00FF);
+		iInterface = pCmd->unitcode;
+
+		who = (pCmd->id >> 16) & 0xFFFF;
+		where = pCmd->id & 0xFFFF;
 
 		switch (who) {
 		case WHO_AUTOMATION:
 			//Blinds/Window command
-			sprintf(szIdx, "%07X", ((who << 16) & 0xffff0000) | (where & 0x0000ffff));
+			sprintf(szIdx, "%08X", ((who << 16) & 0xffff0000) | (where & 0x0000ffff));
 			result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (SwitchType==%d)",  //*******is there a better method for get
 				m_HwdID, szIdx, STYPE_BlindsPercentageInverted);																		   //*******SUBtype (STYPE_BlindsPercentageInverted) ??
 
 			if (result.empty())// from a normal button
 			{
-				if (pCmd->LIGHTING2.cmnd == light2_sOff)
+				if (pCmd->cmnd == gswitch_sOff)
 				{
 					what = AUTOMATION_WHAT_UP;
 				}
-				else if (pCmd->LIGHTING2.cmnd == light2_sOn)
+				else if (pCmd->cmnd == gswitch_sOn)
 				{
 					what = AUTOMATION_WHAT_DOWN;
 				}
-				else if (pCmd->LIGHTING2.cmnd == gswitch_sStop)
+				else if (pCmd->cmnd == gswitch_sStop)
 				{
 					what = AUTOMATION_WHAT_STOP;
 				}
 			}
 			else // advanced button
 			{
-				if (pCmd->LIGHTING2.cmnd == light2_sOn)
+				if (pCmd->cmnd == gswitch_sOn)
 				{
 					what = AUTOMATION_WHAT_UP;
 				}
-				else if (pCmd->LIGHTING2.cmnd == light2_sOff)
+				else if (pCmd->cmnd == gswitch_sOff)
 				{
 					what = AUTOMATION_WHAT_DOWN;
 				}
-				else if (pCmd->LIGHTING2.cmnd == light2_sSetLevel)
+				else if (pCmd->cmnd == gswitch_sSetLevel)
 				{
 					// setting level of Blinds
-					Level = int((pCmd->LIGHTING2.level * 100 / 15));
+					Level = pCmd->level;
 				}
-				else if (pCmd->LIGHTING2.cmnd == gswitch_sStop)
+				else if (pCmd->cmnd == gswitch_sStop)
 				{
 					what = AUTOMATION_WHAT_STOP;
 				}
@@ -1427,22 +1501,22 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			break;
 		case WHO_LIGHTING:
 			//Light/Switch command
-			if (pCmd->LIGHTING2.cmnd == light2_sOff)
+			if (pCmd->cmnd == gswitch_sOff)
 			{
 				what = LIGHTING_WHAT_OFF;
 			}
-			else if (pCmd->LIGHTING2.cmnd == light2_sOn)
+			else if (pCmd->cmnd == gswitch_sOn)
 			{
 				what = LIGHTING_WHAT_ON;
 			}
-			else if (pCmd->LIGHTING2.cmnd == light2_sSetLevel)
+			else if (pCmd->cmnd == gswitch_sSetLevel)
 			{
 				// setting level of dimmer
-				if (pCmd->LIGHTING2.level != 0)
+				if (pCmd->level != 0)
 				{
-					BYTE level = pCmd->LIGHTING2.level * 100 / 15;
+					BYTE level = pCmd->level;
 					if (level < 20) level = 20; // minimum value after 0
-					what = int((level + 5) / 10);
+					what = (level + 5) / 10;
 				}
 				else
 				{
@@ -1452,18 +1526,18 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			break;
 		case WHO_AUXILIARY:
 			//Auxiliary command
-			if (pCmd->LIGHTING2.cmnd == light2_sOff)
+			if (pCmd->cmnd == gswitch_sOff)
 			{
 				what = AUXILIARY_WHAT_OFF;
 			}
-			else if (pCmd->LIGHTING2.cmnd == light2_sOn)
+			else if (pCmd->cmnd == gswitch_sOn)
 			{
 				what = AUXILIARY_WHAT_ON;
 			}
 			break;
 		
 		case 0xF00: // Custom command, fake who..
-			sprintf(szIdx, "%07X", ((who << 16) & 0xffff0000) | (where & 0x0000ffff));
+			sprintf(szIdx, "%08X", ((who << 16) & 0xffff0000) | (where & 0x0000ffff));
 			result = m_sql.safe_query("SELECT StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s')", m_HwdID, szIdx);
 			if (!result.empty())
 			{

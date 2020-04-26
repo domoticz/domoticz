@@ -4,7 +4,10 @@
 #include <string.h>
 
 time_t m_lasttime=time(NULL);
-std::mutex TimeMutex_;
+std::mutex& TimeMutex_() {
+	static std::mutex lTimeMutex_;
+	return lTimeMutex_;
+};
 
 #if defined(localtime_r) || defined(__APPLE__) || defined(__USE_POSIX)
 	#define HAVE_LOCALTIME_R
@@ -20,7 +23,7 @@ struct tm *localtime_r(const time_t *timep, struct tm *result)
 #ifdef HAVE_LOCALTIME_S
 	localtime_s(timep, result);
 #else
-	std::unique_lock<std::mutex> lock(TimeMutex_);
+	std::unique_lock<std::mutex> lock(TimeMutex_());
 	struct tm *s = localtime(timep);
 	if (s == NULL)
 		return NULL;

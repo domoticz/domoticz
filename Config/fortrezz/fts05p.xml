@@ -1,0 +1,78 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">FTS05P Flood &amp; Temperature Sensor</MetaDataItem>
+    <MetaDataItem name="Description">Water damages are caused by leaking pipes and faulty appliances. Place sensors in areas near water consuming appliances. If a leak occurs, water will puddle and wet the sensor, triggering an alarm.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0084:020a:00a3</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.fortrezz.com/shop/flood-sensor-w-probe</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://www.fortrezz.com/support</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fortrezz/fts05p.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2458/User%20Manual%20FTS05-FTS05P.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">To initiate manual wakeup, press the program button once, while in network. Device stays awake for 10 seconds or longer if communicating with the controller.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1) Set up the Add/Inclusion mode at the controller; 2) Briefly press the switch once and the controller will indicate the unit has been added into the network. Also, the LED will blink 2 quick blinks when complete.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1) Set up the Remove/Exclusion mode at the controller; 2) Press and hold the switch for approx. 2 seconds and then release. The controller will indicates the unit has been removed from the network. The LED will blink 4 quick blinks when complete.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset the device to factory Defaults - Press and hold the program button for longer than 15 seconds. When complete, the LED will flash approx. 30 times. This can be done while the device is either in or out of a network. Please use this procedure only when the network primary controller is missing or otherwise inoperable. Caution – When this is done in-network, the device will no longer be in the network and all configurations and associations will be set to default.</MetaDataItem>
+    <MetaDataItem id="020a" name="ZWProductPage" type="00a3">https://products.z-wavealliance.org/products/2458</MetaDataItem>
+    <MetaDataItem id="020a" name="FrequencyName" type="00a3">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="020a" name="Identifier" type="00a3">FTS05P</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Tommy Long - tommylong@bellsouth.net" date="20 Jan 2020" revision="1">Initial entry from Z-Wave Alliance Database and from Manufacturer's website.</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Temperature Low Threshold" max="255" min="0" type="byte" units="C" value="4">
+      <Help>
+                        Use this to change the low temperature alarm threshold. Set the range between -10 and 69 deg C.
+			Note: The user configuration value is a positive decimal integer 0 through 255, but the device
+                        interprets the value as 8-bit Two's complement.  Examples:
+                           -10 in Two's complement is 246 decimal (0xF6).
+                           -2 in Two's complement is 254 decimal (xFE)
+                           -1 in Two's complement is 255 decimal (xFF)
+                           0 in Two's complement is 0 decimal (0x00).
+                           69 in Two's complement is 69 decimal (0x45).
+                        Thus the valid range the user may enter is 0-69 and 246-255.
+			</Help>
+    </Value>
+    <Value genre="config" index="2" label="Temperature High Threshold" max="255" min="0" type="byte" units="C" value="70">
+      <Help>
+                        Use this to change the high temperature alarm threshold. Set the range between -9 and 70 deg C.
+			Note: The user configuration value is a positive decimal integer 0 through 255, but the device
+                        interprets the value as 8-bit Two's complement.  Examples:
+                           -9 in Two's complement is 247 decimal (0xF7).
+                           -2 in Two's complement is 254 decimal (xFE)
+                           -1 in Two's complement is 255 decimal (xFF)
+                           0 in Two's complement is 0 decimal (0x00).
+                           70 in Two's complement is 70 decimal (0x46).
+                        Thus the valid range the user may enter is 0-70 and 247-255.
+			</Help>
+    </Value>
+    <Value genre="config" index="3" label="Normally Wet vs Normally Dry" max="240" min="0" type="byte" units="" value="0">
+      <Help>
+                        Default is set as a Normally DRY sensor. Use this to switch to Normally WET sensor.
+			The device only accepts one of two possible values:
+                          0   (0x00) - Normally Dry (default).
+                          240 (0xF0) - Normally Wet.
+			</Help>
+    </Value>
+    <Value genre="config" index="4" label="Water Alarm Association Mode" max="240" min="0" type="byte" units="" value="240">
+      <Help>
+                        Use this to send basic set ON or Basic Set OFF when an alarm is detected. 
+			The device only accepts one of two possible values:
+                          0   (0x00) - For sending basic set OFF when alarm detected.
+                          240 (0xF0) - For sending basic Set ON (default) when alarm detected. 
+			</Help>
+    </Value>
+  </CommandClass>
+  <!-- The Association Group Information -->
+  <CommandClass id="133">
+    <Associations num_groups="8">
+      <Group index="1" label="LifeLine" max_associations="2"/>
+      <Group index="2" label="Water Alarm" max_associations="2"/>
+      <Group index="3" label="High Temperature Alarm" max_associations="2"/>
+      <Group index="4" label="Low Temperature Alarm" max_associations="2"/>
+      <Group index="5" label="Temperature Report When Changed" max_associations="2"/>
+      <Group index="6" label="Temperature Report Every 5 minutes" max_associations="2"/>
+      <Group index="7" label="Temperature Report Every 20 minutes" max_associations="2"/>
+      <Group index="8" label="Temperature Report Every 60 minutes" max_associations="2"/>
+    </Associations>
+  </CommandClass>
+</Product>

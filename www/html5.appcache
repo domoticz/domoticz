@@ -528,11 +528,13 @@ app/log/components/DeviceTextLogTable.js
 app/log/DeviceLog.html
 app/log/DeviceLog.js
 app/log/factories.js
+app/log/GraphLog.html
 app/log/GraphLog.js
 app/log/LightLog.html
 app/log/LightLog.js
 app/log/SceneLog.html
 app/log/SceneLog.js
+app/log/TemperatureLog.html
 app/log/TemperatureLog.js
 app/log/TextLog.html
 app/log/TextLog.js
@@ -597,7 +599,6 @@ app/TemperatureController.js
 app/TemperatureCustomLogController.js
 app/TimerplanController.js
 app/UpdateController.js
-app/UpdateController2.js
 app/UsersController.js
 app/UserVariablesController.js
 app/UtilityController.js
@@ -683,8 +684,6 @@ secpanel/js/ion.sound.min.js
 #SwitchIcons
 
 # HTML pages
-views/log/device_graph_log.html
-views/log/device_temperature_log.html
 views/about.html
 views/cam.html
 views/customicons.html

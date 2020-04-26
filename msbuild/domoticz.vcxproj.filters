@@ -15,9 +15,6 @@
     <Filter Include="Webserver">
       <UniqueIdentifier>{0636fc98-3ba6-4dc9-8323-48dc959944c4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="json">
-      <UniqueIdentifier>{caed8300-c22a-4d76-9380-2b55120edaaa}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices">
       <UniqueIdentifier>{f1967572-afca-4c81-a06e-1eb4d560bb60}</UniqueIdentifier>
     </Filter>
@@ -144,12 +141,6 @@
     <Filter Include="zip">
       <UniqueIdentifier>{38a9cebe-efb0-4fc7-bcc1-86fe4704ceb1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="zip\Base">
-      <UniqueIdentifier>{213a4775-a8c1-4660-bbe9-bfc83ff11a0d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="zip\Main">
-      <UniqueIdentifier>{d94c51e7-f020-47eb-b458-27268f4853eb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\MySensors">
       <UniqueIdentifier>{16e4b391-9590-41fe-b5fa-aaf91d629b2b}</UniqueIdentifier>
     </Filter>
@@ -170,9 +161,6 @@
     </Filter>
     <Filter Include="Notifications">
       <UniqueIdentifier>{9af22faa-3a82-4f76-83cf-db0aacc27e8a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SQLite">
-      <UniqueIdentifier>{63d66a0f-1455-45ce-8e5a-8678aafbe57a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\KMTronic">
       <UniqueIdentifier>{401dcf9b-b8c2-49b9-9a03-67746e942b13}</UniqueIdentifier>
@@ -521,6 +509,9 @@
     </Filter>
     <Filter Include="Devices\eVehicles">
       <UniqueIdentifier>{3404548b-df3a-4958-b308-34c7e7c15e59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JSON">
+      <UniqueIdentifier>{6f228d26-d99a-4e01-a8fc-03d7cd28642e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1457,6 +1448,7 @@
     <None Include="..\www\app\devices\Devices.js">
       <Filter>www\app\devices</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1729,21 +1721,6 @@
     <ClInclude Include="..\hardware\EvohomeWeb.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
-    <ClInclude Include="..\zip\ioapi.h">
-      <Filter>zip\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zip\unzip.h">
-      <Filter>zip\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zip\zip.h">
-      <Filter>zip\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\unzip_iterator.h">
-      <Filter>zip\Main</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\unzip_stream.h">
-      <Filter>zip\Main</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\MySensorsBase.h">
       <Filter>Devices\MySensors</Filter>
     </ClInclude>
@@ -1792,9 +1769,6 @@
     <ClInclude Include="..\notifications\NotificationHTTP.h">
       <Filter>Notifications</Filter>
     </ClInclude>
-    <ClInclude Include="..\sqlite\sqlite3.h">
-      <Filter>SQLite</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\KMTronicBase.h">
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
@@ -1824,54 +1798,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Thermosmart.h">
       <Filter>Devices\Thermosmart</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\config.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\dummypthread.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\logging_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\memory_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\messages_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto_internal.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\net_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\read_handle.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\send_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\socks_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\time_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\tls_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\uthash.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\util_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\will_mosq.h">
-      <Filter>MQTT</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\RFXComSerial.h">
       <Filter>Devices\RFXCom</Filter>
@@ -1962,9 +1888,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\PanasonicTV.h">
       <Filter>Devices\Panasonic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\notifications\NotificationGCM.h">
-      <Filter>Notifications</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
       <Filter>Devices\OpenWebNet</Filter>
@@ -2146,12 +2069,6 @@
     <ClInclude Include="..\tinyxpath\xpath_processor.h">
       <Filter>XML</Filter>
     </ClInclude>
-    <ClInclude Include="..\zip\iowin32.h">
-      <Filter>zip\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zip\minizip_crypt.h">
-      <Filter>zip\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\TTNMQTT.h">
       <Filter>Devices\The Things Network</Filter>
     </ClInclude>
@@ -2254,27 +2171,6 @@
     <ClInclude Include="..\hardware\Buienradar.h">
       <Filter>Devices\Buienradar</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\alias_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mqtt_protocol.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\packet_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\property_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto_broker.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto_plugin.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\json_helper.h">
-      <Filter>json</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\mosquitto_helper.h">
       <Filter>MQTT</Filter>
     </ClInclude>
@@ -2298,6 +2194,18 @@
     </ClInclude>
     <ClInclude Include="..\hardware\eVehicles\eVehicle.h">
       <Filter>Devices\eVehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\unzip_iterator.h">
+      <Filter>zip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\unzip_stream.h">
+      <Filter>zip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\json_helper.h">
+      <Filter>JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationFCM.h">
+      <Filter>Notifications</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2327,15 +2235,6 @@
     </ClCompile>
     <ClCompile Include="..\webserver\server.cpp">
       <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\json\json_value.cpp">
-      <Filter>json</Filter>
-    </ClCompile>
-    <ClCompile Include="..\json\json_writer.cpp">
-      <Filter>json</Filter>
-    </ClCompile>
-    <ClCompile Include="..\json\json_reader.cpp">
-      <Filter>json</Filter>
     </ClCompile>
     <ClCompile Include="..\tcpserver\TCPClient.cpp">
       <Filter>TCPServer</Filter>
@@ -2592,9 +2491,6 @@
     <ClCompile Include="..\notifications\NotificationHTTP.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
-    <ClCompile Include="..\sqlite\sqlite3.c">
-      <Filter>SQLite</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\KMTronicBase.cpp">
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
@@ -2624,48 +2520,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Thermosmart.cpp">
       <Filter>Devices\Thermosmart</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\logging_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\memory_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\messages_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\mosquitto.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\net_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\read_handle.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\socks_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\srv_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\thread_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\time_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\tls_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\util_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\will_mosq.c">
-      <Filter>MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\RFXComSerial.cpp">
       <Filter>Devices\RFXCom</Filter>
@@ -2804,9 +2658,6 @@
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tokenlist.cpp">
       <Filter>XML</Filter>
-    </ClCompile>
-    <ClCompile Include="..\notifications\NotificationGCM.cpp">
-      <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
       <Filter>Devices\OpenWebNet</Filter>
@@ -2979,15 +2830,6 @@
     <ClCompile Include="..\webserver\WebsocketHandler.cpp">
       <Filter>Webserver</Filter>
     </ClCompile>
-    <ClCompile Include="..\zip\ioapi.c">
-      <Filter>zip\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zip\iowin32.c">
-      <Filter>zip\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zip\unzip.c">
-      <Filter>zip\Base</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\TTNMQTT.cpp">
       <Filter>Devices\The Things Network</Filter>
     </ClCompile>
@@ -3072,93 +2914,6 @@
     <ClCompile Include="..\hardware\Buienradar.cpp">
       <Filter>Devices\Buienradar</Filter>
     </ClCompile>
-    <ClCompile Include="..\MQTT\actions.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\alias_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\callbacks.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\connect.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_auth.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_connack.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_disconnect.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_ping.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_pubackcomp.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_publish.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_pubrec.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_pubrel.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_suback.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_unsuback.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\helpers.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\loop.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\net_mosq_ocsp.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\options.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\packet_datatypes.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\packet_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\property_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_connect.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_disconnect.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_publish.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_subscribe.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_unsubscribe.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\utf8_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\util_topic.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\json_helper.cpp">
-      <Filter>json</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\mosquitto_helper.cpp">
       <Filter>MQTT</Filter>
     </ClCompile>
@@ -3179,6 +2934,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\eVehicles\eVehicle.cpp">
       <Filter>Devices\eVehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\json_helper.cpp">
+      <Filter>JSON</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationFCM.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
