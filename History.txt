@@ -4,6 +4,7 @@ Version 2020.x ( 202x)
 - Fixed: Battery level Real-time updates 
 - Fixed: Daikin wifi adaptor module
 - Fixed: Delete device now propagates to all relevant tables
+- Fixed: Possible security issue in the websocket layer
 - Fixed: Unwanted RFY protection popup
 - Updated: BuienRadar, Now possible to enter Station_ID or Latitude/Longitude
 - Updated: Deprecated Google Cloud Messaging system(gcm) replaced by Firebase Cloud Messaging (fcm)
