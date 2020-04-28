@@ -1566,8 +1566,6 @@ void CEventSystem::ProcessDevice(
 		}
 	}
 
-	std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, lastUpdate, lastLevel, batterylevel, options);
-
 	if (g_bUseEventTrigger && GetEventTrigger(ulDevID, REASON_DEVICE, true))
 	{
 		_tEventQueue item;
@@ -1576,7 +1574,7 @@ void CEventSystem::ProcessDevice(
 		item.devname = devname;
 		item.nValue = nValue;
 		item.sValue = osValue;
-		item.nValueWording = nValueWording;
+		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, "", 255, batterylevel, options);
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
@@ -1597,6 +1595,8 @@ void CEventSystem::ProcessDevice(
 		}
 		m_eventqueue.push(item);
 	}
+	else
+		UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, lastUpdate, lastLevel, batterylevel, options);
 }
 
 void CEventSystem::ProcessMinute()
