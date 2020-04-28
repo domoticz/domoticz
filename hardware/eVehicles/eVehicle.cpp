@@ -14,11 +14,14 @@
 #define VEHICLE_SWITCH_CHARGE 1
 #define VEHICLE_SWITCH_CLIMATE 2
 #define VEHICLE_SWITCH_DEFROST 3
+#define VEHICLE_SWITCH_MAX_CHARGE 4
 
 #define VEHICLE_TEMP_INSIDE 1
 #define VEHICLE_TEMP_OUTSIDE 2
 #define VEHICLE_ALERT_STATUS 1
+#define VEHICLE_ALERT_LOCK 2
 #define VEHICLE_LEVEL_BATTERY 1
+#define VEHICLE_COUNTER_ODO 1
 
 #define VEHICLE_MAXTRIES 5
 
@@ -44,11 +47,11 @@ CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& 
 	if (defaultinterval > 0)
 	{
 		m_defaultinterval = defaultinterval;
-		if(m_defaultinterval < m_api->GetSleepInterval())
+		if(m_defaultinterval < m_api->m_capabilities.sleep_interval)
 			Log(LOG_ERROR, "Warning: default interval of %d minutes will prevent the car to sleep.", m_defaultinterval);
 	}
 	else
-		m_defaultinterval = m_api->GetSleepInterval();
+		m_defaultinterval = m_api->m_capabilities.sleep_interval;
 
 	if (activeinterval > 0)
 		m_activeinterval = activeinterval;
@@ -71,7 +74,7 @@ void CeVehicle::Init()
 	m_car.is_home = false;
 	m_car.climate_on = false;
 	m_car.defrost = false;
-	m_car.wake_state = Asleep;
+	m_car.wake_state = Unknown;
 	m_car.charge_state = "";
 	m_command_nr_tries = 0;
 	m_setcommand_scheduled = false;
@@ -126,12 +129,57 @@ void CeVehicle::SendAlert()
 
 	if((alert != m_currentalert) || (title != m_currentalerttext))
 	{
-		SendAlertSensor(VEHICLE_ALERT_STATUS, 255, alert, title, m_Name + " State");
+		SendAlert(VEHICLE_ALERT_STATUS, alert, title);
 		m_currentalert = alert;
 		m_currentalerttext = title;
 	}
 }
 
+void CeVehicle::SendAlert(int alertType, int value, std::string title)
+{
+	if (alertType == VEHICLE_ALERT_STATUS)
+		SendAlertSensor(VEHICLE_ALERT_STATUS, 255, value, title, m_Name + " State");
+	if ((alertType == VEHICLE_ALERT_LOCK) && m_api->m_capabilities.has_lock_status)
+		SendAlertSensor(VEHICLE_ALERT_LOCK, 255, value, title, m_Name + " Open Alert");
+}
+
+void CeVehicle::SendSwitch(int switchType, bool value)
+{
+	if ((switchType == VEHICLE_SWITCH_CHARGE) && m_api->m_capabilities.has_charge_command)
+		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_CHARGE, 1, 255, value, 0, m_Name + " Charge switch");
+	if ((switchType == VEHICLE_SWITCH_CLIMATE) && m_api->m_capabilities.has_charge_command)
+		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_CLIMATE, 1, 255, value, 0, m_Name + " Climate switch");
+	if ((switchType == VEHICLE_SWITCH_DEFROST) && m_api->m_capabilities.has_charge_command)
+		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_DEFROST, 1, 255, value, 0, m_Name + " Defrost switch");
+}
+
+void CeVehicle::SendValueSwitch(int switchType, int value)
+{
+	if ((switchType == VEHICLE_SWITCH_MAX_CHARGE) && m_api->m_capabilities.has_charge_limit)
+		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_MAX_CHARGE, 1, 255, (value == 100), 0, m_Name + " Max charge limit switch");
+}
+
+
+void CeVehicle::SendTemperature(int tempType, float value)
+{
+	if ((tempType == VEHICLE_TEMP_INSIDE) && m_api->m_capabilities.has_inside_temp)
+		SendTempSensor(VEHICLE_TEMP_INSIDE, 255, value, m_Name + " Temperature");
+	if ((tempType == VEHICLE_TEMP_INSIDE) && m_api->m_capabilities.has_outside_temp)
+		SendTempSensor(VEHICLE_TEMP_OUTSIDE, 255, value, m_Name + " Outside Temperature");
+	;
+}
+
+void CeVehicle::SendPercentage(int percType, float value)
+{
+	if ((percType == VEHICLE_LEVEL_BATTERY) && m_api->m_capabilities.has_battery_level)
+		SendPercentageSensor(VEHICLE_LEVEL_BATTERY, 1, static_cast<int>(value), value, m_Name + " Battery Level");
+}
+
+void CeVehicle::SendCounter(int countType, float value)
+{
+	if ((countType == VEHICLE_COUNTER_ODO) && m_api->m_capabilities.has_odo)
+		SendCustomSensor(VEHICLE_COUNTER_ODO, 1, 255, value, m_Name + " Odometer", m_api->m_config.distance_unit);
+}
 
 bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 {
@@ -144,9 +192,10 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 	else if(m_command_nr_tries > VEHICLE_MAXTRIES)
 	{
 		Init();
-		SendSwitch(VEHICLE_SWITCH_CHARGE, 1, 255, m_car.charging, 0, m_Name + " Charge switch");
-		SendSwitch(VEHICLE_SWITCH_CLIMATE, 1, 255, m_car.climate_on, 0, m_Name + " Climate switch");
-		SendSwitch(VEHICLE_SWITCH_DEFROST, 1, 255, m_car.defrost, 0, m_Name + " Defrost switch");
+		SendSwitch(VEHICLE_SWITCH_CHARGE, m_car.charging);
+		SendSwitch(VEHICLE_SWITCH_CLIMATE, m_car.climate_on);
+		SendSwitch(VEHICLE_SWITCH_DEFROST, m_car.defrost);
+		SendValueSwitch(VEHICLE_SWITCH_MAX_CHARGE, m_car.charge_limit);
 		m_commands.clear();
 		Log(LOG_ERROR, "Multiple tries requesting %s. Assuming car offline.", GetCommandString(command).c_str());
 		SendAlert();
@@ -222,6 +271,8 @@ std::string CeVehicle::GetCommandString(const eApiCommandType command)
 		return("Wake Up");
 	case Get_Awake_State:
 		return("Get Awake state");
+	case Send_Charge_Limit:
+		return("Set Charge limit");
 	default:
 		return "";
 	}
@@ -277,9 +328,9 @@ void CeVehicle::Do_Work()
 				}
 				else
 				{
-					eApiCommandType item;
+					tApiCommand item;
 					m_commands.try_pop(item);
-					Log(LOG_STATUS, "Car asleep, not allowed to wake up, command %s ignored.", GetCommandString(item).c_str());
+					Log(LOG_STATUS, "Car asleep, not allowed to wake up, command %s ignored.", GetCommandString(item.command_type).c_str());
 				}
 			}
 		}
@@ -292,7 +343,7 @@ void CeVehicle::Do_Work()
 		if (initial_check)
 		{
 			if(IsAwake() || m_allowwakeup)
-				m_commands.push(Get_All_States);
+				AddCommand(Get_All_States);
 			initial_check = false;
 		}
 		else if ((sec_counter % 60) == 0)
@@ -302,8 +353,7 @@ void CeVehicle::Do_Work()
 			{
 				if (!m_allowwakeup && m_car.wake_state == SelfAwake)
 				{
-					Log(LOG_STATUS, "Spontaneous wake up detected.");
-					m_commands.push(Get_All_States);
+					AddCommand(Get_All_States);
 				}
 			}
 		}
@@ -312,7 +362,7 @@ void CeVehicle::Do_Work()
 		if ((sec_counter % (60*m_defaultinterval) == 0))
 		{
 			// check all states every default interval
-			m_commands.push(Get_All_States);
+			AddCommand(Get_All_States);
 		}
 		else if (sec_counter % (60*m_activeinterval) == 0)
 		{
@@ -320,9 +370,9 @@ void CeVehicle::Do_Work()
 			{
 				// check relevant states every active interval
 				if (m_car.charging)
-					m_commands.push(Get_Charge_State);
+					AddCommand(Get_Charge_State);
 				if (m_car.climate_on || m_car.defrost)
-					m_commands.push(Get_Climate_State);
+					AddCommand(Get_Climate_State);
 			}
 		}
 		else
@@ -339,37 +389,57 @@ bool CeVehicle::WriteToHardware(const char* pdata, const unsigned char length)
 	if (!m_loggedin)
 		return false;
 
+	bool bIsOn = false;
+	int iID = 0;
+	int level = 0;
+	int cmd = 0;
+
 	const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
-	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
+
+	switch (pCmd->ICMND.packettype)
+	{
+	case pTypeLighting2:
+		bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
+		cmd = pCmd->LIGHTING2.cmnd;
+		iID = pCmd->LIGHTING2.id4;
+		level = pCmd->LIGHTING2.level;
+		break;
+	default:
 		return false;
+	}
 
-	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
-
-	m_commands.push(Get_Location_State);
+	AddCommand(Get_Location_State);
 	m_setcommand_scheduled = true;
-	switch (pCmd->LIGHTING2.id4)
+
+	switch (iID)
 	{
 	case VEHICLE_SWITCH_CHARGE:
-		m_commands.push(Get_Charge_State);
+		AddCommand(Get_Charge_State);
 		if (bIsOn)
-			m_commands.push(Send_Charge_Start);
+			AddCommand(Send_Charge_Start);
 		else
-			m_commands.push(Send_Charge_Stop);
+			AddCommand(Send_Charge_Stop);
 		break;
 	case VEHICLE_SWITCH_CLIMATE:
 		if (bIsOn)
-			m_commands.push(Send_Climate_On);
+			AddCommand(Send_Climate_On);
 		else
-			m_commands.push(Send_Climate_Off);
+			AddCommand(Send_Climate_Off);
 		break;
 	case VEHICLE_SWITCH_DEFROST:
 		if (bIsOn)
-			m_commands.push(Send_Climate_Defrost);
+			AddCommand(Send_Climate_Defrost);
 		else
-			m_commands.push(Send_Climate_Defrost_Off);
+			AddCommand(Send_Climate_Defrost_Off);
+		break;
+	case VEHICLE_SWITCH_MAX_CHARGE:
+		if (bIsOn)
+			AddCommand(Send_Charge_Limit, "100");
+		else
+			AddCommand(Send_Charge_Limit, "0");
 		break;
 	default:
-		Log(LOG_ERROR, "Unknown switch %d", pCmd->LIGHTING2.id4);
+		Log(LOG_ERROR, "Unknown switch %d", iID);
 		return false;
 	}
 
@@ -391,29 +461,39 @@ void CeVehicle::Login()
 
 bool CeVehicle::IsAwake()
 {
-	Log(LOG_STATUS, "Executing command: %s", GetCommandString(Get_Awake_State).c_str());
+	bool status_changed = false;
 
+	Debug(DEBUG_NORM, "Executing command: %s", GetCommandString(Get_Awake_State).c_str());
 	if (m_api->IsAwake())
 	{
-		if (m_car.wake_state == Asleep)
+		if ((m_car.wake_state == Asleep) || (m_car.wake_state == Unknown))
+		{
 			m_car.wake_state = SelfAwake;
-		else if (m_car.wake_state == WakingUp)
+			status_changed = true;
+		}
+		else
 			m_car.wake_state = Awake;
-		else if (m_car.wake_state == SelfAwake)
-			m_car.wake_state = Awake;
-		Log(LOG_NORM, "Car is awake");
-		return true;
 	}
 	else
 	{
-		if (m_car.wake_state == Awake)
+		if (m_car.wake_state != WakingUp)
+		{
+			if (m_car.wake_state != Asleep)
+				status_changed = true;
 			m_car.wake_state = Asleep;
-		else if (m_car.wake_state == SelfAwake)
-			m_car.wake_state = Asleep;
-		Log(LOG_NORM, "Car is asleep");
+		}
 		SendAlert();
 	}
-	return false;
+
+	if(status_changed)
+	{
+		if(m_car.wake_state == Asleep)
+			Log(LOG_STATUS, "Car awake detection: Car fell asleep");
+		else
+			Log(LOG_STATUS, "Car awake detection: Car woke up");
+	}
+
+	return (m_car.wake_state != Asleep);
 }
 
 bool CeVehicle::WakeUp()
@@ -432,15 +512,25 @@ bool CeVehicle::WakeUp()
 	return ConditionalReturn(m_car.wake_state == Awake, Wake_Up);
 }
 
+void CeVehicle::AddCommand(eApiCommandType command_type, std::string command_parameter)
+{
+	tApiCommand command;
+
+	command.command_type = command_type;
+	command.command_parameter = command_parameter;
+
+	m_commands.push(command);
+}
+
 bool CeVehicle::DoNextCommand()
 {
-	eApiCommandType command;
+	tApiCommand command;
 	m_commands.try_pop(command);
 	bool commandOK = false;
 
-	Log(LOG_STATUS, "Executing command: %s", GetCommandString(command).c_str());
+	Log(LOG_STATUS, "Executing command: %s", GetCommandString(command.command_type).c_str());
 
-	switch (command)
+	switch (command.command_type)
 	{
 	case Send_Climate_Off:
 	case Send_Climate_On:
@@ -448,6 +538,7 @@ bool CeVehicle::DoNextCommand()
 	case Send_Climate_Defrost_Off:
 	case Send_Charge_Start:
 	case Send_Charge_Stop:
+	case Send_Charge_Limit:
 		commandOK = DoSetCommand(command);
 		break;
 	case Get_All_States:
@@ -475,26 +566,27 @@ bool CeVehicle::DoNextCommand()
 	return commandOK;
 }
 
-bool CeVehicle::DoSetCommand(eApiCommandType command)
+bool CeVehicle::DoSetCommand(tApiCommand command)
 {
 	CVehicleApi::eCommandType api_command;
 
 	if (!m_car.is_home)
 	{
 		Log(LOG_ERROR, "Car not home. No commands allowed.");
-		SendSwitch(VEHICLE_SWITCH_CHARGE, 1, 255, m_car.charging, 0, m_Name + " Charge switch");
-		SendSwitch(VEHICLE_SWITCH_CLIMATE, 1, 255, m_car.climate_on, 0, m_Name + " Climate switch");
-		SendSwitch(VEHICLE_SWITCH_DEFROST, 1, 255, m_car.defrost, 0, m_Name + " Defrost switch");
+		SendSwitch(VEHICLE_SWITCH_CHARGE, m_car.charging);
+		SendSwitch(VEHICLE_SWITCH_CLIMATE, m_car.climate_on);
+		SendSwitch(VEHICLE_SWITCH_DEFROST, m_car.defrost);
+		SendValueSwitch(VEHICLE_SWITCH_MAX_CHARGE, m_car.charge_limit);
 		return true;
 	}
 
-	switch (command)
+	switch (command.command_type)
 	{
 	case Send_Charge_Start:
 		if (!m_car.connected)
 		{
 			Log(LOG_ERROR, "Charge cable not connected. No charge commands possible.");
-			SendSwitch(VEHICLE_SWITCH_CHARGE, 1, 255, m_car.charging, 0, m_Name + " Charge switch");
+			SendSwitch(VEHICLE_SWITCH_CHARGE, m_car.charging);
 			return false;
 		}
 		api_command = CVehicleApi::Charge_Start;
@@ -503,10 +595,13 @@ bool CeVehicle::DoSetCommand(eApiCommandType command)
 		if (!m_car.connected)
 		{
 			Log(LOG_ERROR, "Charge cable not connected. No charge commands possible.");
-			SendSwitch(VEHICLE_SWITCH_CHARGE, 1, 255, m_car.charging, 0, m_Name + " Charge switch");
+			SendSwitch(VEHICLE_SWITCH_CHARGE, m_car.charging);
 			return false;
 		}
 		api_command = CVehicleApi::Charge_Stop;
+		break;
+	case Send_Charge_Limit:
+		api_command = CVehicleApi::Set_Charge_Limit;
 		break;
 	case Send_Climate_Off:
 		api_command = CVehicleApi::Climate_Off;
@@ -522,26 +617,27 @@ bool CeVehicle::DoSetCommand(eApiCommandType command)
 		break;
 	}
 
-	if (m_api->SendCommand(api_command))
+	if (m_api->SendCommand(api_command, command.command_parameter))
 	{
-		switch (command)
+		switch (command.command_type)
 		{
 		case Send_Charge_Start:
 		case Send_Charge_Stop:
-			m_commands.push(Get_Charge_State);
+		case Send_Charge_Limit:
+			AddCommand(Get_Charge_State);
 			return true;
 		case Send_Climate_Off:
 		case Send_Climate_On:
-			m_commands.push(Get_Climate_State);
+			AddCommand(Get_Climate_State);
 			return true;
 		case Send_Climate_Defrost:
 		case Send_Climate_Defrost_Off:
-			m_commands.push(Get_Climate_State);
-			return ConditionalReturn(true, command);
+			AddCommand(Get_Climate_State);
+			return ConditionalReturn(true, command.command_type);
 		}
 	}
 
-	return ConditionalReturn(false, command);
+	return ConditionalReturn(false, command.command_type);
 }
 
 bool CeVehicle::GetAllStates()
@@ -553,6 +649,7 @@ bool CeVehicle::GetAllStates()
 		UpdateLocationData(reply.location);
 		UpdateChargeData(reply.charge);
 		UpdateClimateData(reply.climate);
+		UpdateVehicleData(reply.vehicle);
 		return ConditionalReturn(true, Get_All_States);
 	}
 
@@ -594,10 +691,11 @@ void CeVehicle::UpdateLocationData(CVehicleApi::tLocationData& data)
 		double LoDz = std::stod(Longitude);
 
 		m_car.is_home = ((std::fabs(LaDz - data.latitude) < 2E-4) && (std::fabs(LoDz - data.longitude) < 2E-3) && !data.is_driving);
-
-		Log(LOG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, m_car.is_home ? "true" : "false");
-
 	}
+
+	Log(LOG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, m_car.is_home ? "true" : "false");
+
+	m_car.is_driving = data.is_driving;
 }
 
 bool CeVehicle::GetClimateState()
@@ -617,10 +715,10 @@ void CeVehicle::UpdateClimateData(CVehicleApi::tClimateData& data)
 {
 	m_car.climate_on = data.is_climate_on;
 	m_car.defrost = data.is_defrost_on;
-	SendTempSensor(VEHICLE_TEMP_INSIDE, 255, data.inside_temp, m_Name + " Temperature");
-	SendTempSensor(VEHICLE_TEMP_OUTSIDE, 255, data.outside_temp, m_Name + " Outside Temperature");
-	SendSwitch(VEHICLE_SWITCH_CLIMATE, 1, 255, m_car.climate_on, 0, m_Name + " Climate switch");
-	SendSwitch(VEHICLE_SWITCH_DEFROST, 1, 255, m_car.defrost, 0, m_Name + " Defrost switch");
+	SendTemperature(VEHICLE_TEMP_INSIDE, data.inside_temp);
+	SendTemperature(VEHICLE_TEMP_OUTSIDE, data.outside_temp);
+	SendSwitch(VEHICLE_SWITCH_CLIMATE, m_car.climate_on);
+	SendSwitch(VEHICLE_SWITCH_DEFROST, m_car.defrost);
 }
 
 bool CeVehicle::GetChargeState()
@@ -638,9 +736,20 @@ bool CeVehicle::GetChargeState()
 
 void CeVehicle::UpdateChargeData(CVehicleApi::tChargeData& data)
 {
-	SendPercentageSensor(VEHICLE_LEVEL_BATTERY, 1, static_cast<int>(data.battery_level), data.battery_level, m_Name + " Battery Level");
+	SendPercentage(VEHICLE_LEVEL_BATTERY, data.battery_level);
 	m_car.connected = data.is_connected;
 	m_car.charging = data.is_charging;
 	m_car.charge_state = data.status_string;
-	SendSwitch(VEHICLE_SWITCH_CHARGE, 1, 255, m_car.charging, 0, m_Name + " Charge switch");
+	m_car.charge_limit = data.charge_limit;
+	SendSwitch(VEHICLE_SWITCH_CHARGE, m_car.charging);
+	SendValueSwitch(VEHICLE_SWITCH_MAX_CHARGE, m_car.charge_limit);
+}
+
+void CeVehicle::UpdateVehicleData(CVehicleApi::tVehicleData& data)
+{
+	SendCounter(VEHICLE_COUNTER_ODO, data.odo);
+	if (data.car_open && !m_car.is_driving)
+		SendAlert(VEHICLE_ALERT_LOCK, 4, data.car_open_message);
+	else
+		SendAlert(VEHICLE_ALERT_LOCK, 1, data.car_open_message);
 }
