@@ -44,6 +44,10 @@
 #define bmpbaroforecast_unknown			0x05
 #define bmpbaroforecast_rain			0x06 //when forecast was cloudy and pressure is below 1010 we have 50%+ change of rain
 
+#define pTypeLocation				0xF0
+#define sTypeGPS				0x01
+#define sTypeGateway				0x02
+
 #define pTypeThermostat			0xF2
 #define sTypeThermSetpoint		0x01
 #define sTypeThermTemperature	0x02
@@ -485,6 +489,66 @@ typedef struct _tLightMeter {
 		fLux = 0;
 	}
 } LightMeter;
+
+typedef struct _tDeviceLocation {
+	uint8_t len;
+	uint8_t type;
+	uint8_t subtype;
+	uint8_t rssi;
+	uint8_t battery_level;
+	uint8_t id;
+	uint8_t childid;
+	double latitude;
+	double longitude;
+	float altitude_m;
+	uint16_t bearing_deg;
+	uint16_t speed_msec;
+	uint16_t hacc_m;
+	uint16_t vacc_m;
+	time_t timestamp;
+	char text[64];
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar & cereal::make_nvp("len", len);
+		ar & cereal::make_nvp("type", type);
+		ar & cereal::make_nvp("subtype", subtype);
+		ar & cereal::make_nvp("rssi", rssi);
+		ar & cereal::make_nvp("battery_level", battery_level);
+		ar & cereal::make_nvp("id", id);
+		ar & cereal::make_nvp("childid", childid);
+		ar & cereal::make_nvp("latitude", latitude);
+		ar & cereal::make_nvp("longitude", longitude);
+		ar & cereal::make_nvp("altitude_m", altitude_m);
+		ar & cereal::make_nvp("bearing_deg", bearing_deg);
+		ar & cereal::make_nvp("speed_msec", speed_msec);
+		ar & cereal::make_nvp("hacc_m", hacc_m);
+		ar & cereal::make_nvp("vacc_m", vacc_m);
+		ar & cereal::make_nvp("timestamp", timestamp);
+		ar & cereal::make_nvp("text", text);
+	}
+
+	_tDeviceLocation()
+	{
+		len = sizeof(_tDeviceLocation) - 1;
+		type = pTypeLocation;
+		subtype = sTypeGPS;
+		rssi = 12;
+		battery_level = 255;
+		id = 1;
+		childid = 1;
+		latitude = 0;
+		longitude = 0;
+		altitude_m = 0;
+		bearing_deg = 0;
+		speed_msec = 0;
+		hacc_m = 0;
+		vacc_m = 0;
+		timestamp = 0;
+		text[0] = 0;
+	}
+} DeviceLocation;
 
 typedef struct _tGeneralDevice {
 	uint8_t len;
