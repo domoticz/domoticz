@@ -1059,14 +1059,14 @@ namespace http {
 						{
 							ipnetwork.bIsIPv6 = false;
 							iASize = 4;
-							pAddress = (uint8_t*)&saddr->sin_addr.S_un.S_un_b;
+							pAddress = (uint8_t*)&saddr->sin_addr;
 						}
 						else if (saddr->sin_family == AF_INET6)
 						{
 							ipnetwork.bIsIPv6 = true;
 							iASize = 16;
 							struct sockaddr_in6* saddr6 = (((struct sockaddr_in6*)addr->ai_addr));
-							pAddress = (uint8_t*)&saddr6->sin6_addr.u.Byte;
+							pAddress = (uint8_t*)&saddr6->sin6_addr;
 						}
 						else
 							return;
