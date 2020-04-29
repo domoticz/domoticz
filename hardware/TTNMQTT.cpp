@@ -561,7 +561,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 							std::stringstream sstr;
 							sstr << vSensor["lat"].asFloat() << "," << vSensor["lon"].asFloat() << "," << vSensor["alt"].asFloat();
 
-							SendPercentageSensor(DeviceID, channel, BatteryLevel, vSensor["alt"].asFloat(), DeviceName + " Altitude");
+							SendGpsLocation(DeviceID, channel, BatteryLevel, rssi, DeviceName, vSensor["lat"].asDouble(), vSensor["lon"].asDouble(), vSensor["alt"].asFloat());
 							UpdateUserVariable(DeviceName, sstr.str());
 							bGps = true;
 						}
