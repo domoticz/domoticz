@@ -8993,6 +8993,8 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeKwh))) &&
+								(!((dType == pTypeLocation) && (dSubType == sTypeGPS))) &&
+								(!((dType == pTypeLocation) && (dSubType == sTypeGateway))) &&
 								(dType != pTypeCURRENT) &&
 								(dType != pTypeCURRENTENERGY) &&
 								(dType != pTypeENERGY) &&
@@ -11125,6 +11127,24 @@ namespace http {
 						}
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					}
+					else if (dType == pTypeLocation)
+					{
+						std::vector<std::string> tstrarray;
+						StringSplit(sValue, ";", tstrarray);
+						float lat = 0;
+						float lon = 0;
+						float alt = 0;
+						if (tstrarray.size() == 3)
+						{
+							lat = atof(tstrarray[0].c_str());
+							lon = atof(tstrarray[1].c_str());
+							alt = atof(tstrarray[2].c_str());
+						}
+						sprintf(szData, "Lat:%.4f Lon:%.4f", lat, lon);
+						root["result"][ii]["Data"] = szData;
+						sprintf(szData, "Alt:%.2f meter", alt);
+						root["result"][ii]["Data_Altitude"] = szData;
 					}
 					else if (dType == pTypeRego6XXValue)
 					{

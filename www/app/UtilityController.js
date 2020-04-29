@@ -347,6 +347,9 @@ define(['app', 'livesocket'], function (app) {
 				else if (item.SubType == "Waterflow") {
 					status = "";
 					bigtext = item.Data;
+				} else if (item.SubType == "Device Geo Location" || item.SubType == "Gateway Geo Location") {
+					status = "";
+					bigtext = item.Data;
 				}
 
 				if (typeof item.Usage != 'undefined') {
@@ -559,6 +562,9 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SubType == "Waterflow") {
 								xhtm += item.Data;
 							}
+							else if (item.SubType == "Device Geo Location" || item.SubType == "Gateway Geo Location") {
+								xhtm += item.Data;
+							}
 							xhtm += '</td>\n';
 							xhtm += '\t      <td id="img">';
 							var status = "";
@@ -694,6 +700,11 @@ define(['app', 'livesocket'], function (app) {
 								xhtm += '<img src="images/moisture48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
+							else if (item.SubType == "Device Geo Location" || item.SubType == "Gateway Geo Location") {
+								xhtm += '<img src="images/Location.png" height="48" width="48"></td>\n';
+								item.Favorite = 255; // To-do: Fix later. Now skip this SubType from being marked as Favorite (and therefor unable to show on the main dashboard)
+								status = "";
+							}
 							if (typeof item.CounterDeliv != 'undefined') {
 								if (item.CounterDeliv != 0) {
 									status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
@@ -708,9 +719,12 @@ define(['app', 'livesocket'], function (app) {
 								xhtm +=
 									'<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 							}
-							else {
+							else if (item.Favorite == 1) {
 								xhtm +=
 									'<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+							} else {
+								xhtm +=
+									'<img src="images/nofavorite.png" title="' + $.t('Not implemented for this devicetype') + '" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 							}
 
 							if (typeof item.Counter != 'undefined') {
