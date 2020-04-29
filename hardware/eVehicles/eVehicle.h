@@ -22,6 +22,7 @@ private:
 		Send_Climate_Defrost_Off,
 		Send_Charge_Start,
 		Send_Charge_Stop,
+		Send_Charge_Limit,
 		Get_All_States,
 		Get_Location_State,
 		Get_Charge_State,
@@ -42,7 +43,8 @@ private:
 		Asleep,
 		WakingUp,
 		Awake,
-		SelfAwake
+		SelfAwake,
+		Unknown
 	};
 
 	struct tVehicle {
@@ -51,8 +53,15 @@ private:
 		bool climate_on;
 		bool defrost;
 		bool is_home;
+		bool is_driving;
+		int charge_limit;
 		eWakeState wake_state;
 		std::string charge_state;
+	};
+
+	struct tApiCommand {
+		eApiCommandType command_type;
+		std::string command_parameter;
 	};
 
 	void Init();
@@ -68,10 +77,20 @@ private:
 	void UpdateChargeData(CVehicleApi::tChargeData& data);
 	bool GetClimateState();
 	void UpdateClimateData(CVehicleApi::tClimateData& data);
+	void UpdateVehicleData(CVehicleApi::tVehicleData& data);
+	bool DoSetCommand(tApiCommand command);
+
+	void AddCommand(eApiCommandType command_type, std::string command_parameter = "");
 	bool DoNextCommand();
-	bool DoSetCommand(eApiCommandType command);
 	std::string GetCommandString(const eApiCommandType command);
+	
 	void SendAlert();
+	void SendAlert(int alertType, int value, std::string title);
+	void SendSwitch(int switchType, bool value);
+	void SendValueSwitch(int switchType, int value);
+	void SendTemperature(int tempType, float value);
+	void SendPercentage(int percType, float value);
+	void SendCounter(int countType, float value);
 
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -86,7 +105,7 @@ private:
 
 	tVehicle m_car;
 	CVehicleApi *m_api;
-	concurrent_queue<eApiCommandType> m_commands;
+	concurrent_queue<tApiCommand> m_commands;
 	bool m_setcommand_scheduled;
 	int m_command_nr_tries;
 
