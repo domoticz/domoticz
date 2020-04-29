@@ -215,6 +215,7 @@ enum _eHardwareTypes {
 	HTYPE_DenkoviTCPDevices,	//118
 	HTYPE_OctoPrint,			//119
 	HTYPE_Tesla,                //120
+	HTYPE_Location,				//121
 	HTYPE_END
 };
 
@@ -248,6 +249,7 @@ enum _eNotificationTypes
 	NTYPE_STOPPED,
 	NTYPE_PLAYING,
 	NTYPE_VALUE,
+	NTYPE_LOCATION,
 	NTYPE_LASTUPDATE,
 	NTYPE_SLEEPING
 };

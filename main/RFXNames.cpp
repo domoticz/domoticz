@@ -369,6 +369,7 @@ const char* Notification_Type_Desc(const int nType, const unsigned char snum)
 	{ NTYPE_STOPPED, "Stop Stream", "Q" },
 	{ NTYPE_PLAYING, "Play Stream", "a" },
 	{ NTYPE_VALUE, "Value", "F" },
+	{ NTYPE_LOCATION, "Location", "L" },
 	{ NTYPE_LASTUPDATE, "Last Update", "J" },
 	{ 0,NULL,NULL }
 	};
@@ -409,6 +410,7 @@ const char* Notification_Type_Label(const int nType)
 	{ NTYPE_STOPPED, "" },
 	{ NTYPE_PLAYING, "" },
 	{ NTYPE_VALUE, "" },
+	{ NTYPE_LOCATION, "meters" },
 	{ NTYPE_LASTUPDATE, "minutes" },
 	{ 0,NULL,NULL }
 	};
@@ -534,6 +536,7 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 	{ pTypeWEATHER, "Weather" , "weather" },
 	{ pTypeSOLAR, "Solar" , "solar" },
 	{ pTypeHunter, "Hunter" , "Hunter" },
+	{ pTypeLocation, "Location" , "Location" },
 	{ 0, NULL, NULL }
 	};
 	if (snum == 1)
@@ -612,6 +615,9 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeWEATHER, sTypeWEATHER2, "Alecto WS5500" },
 
 	{ pTypeSOLAR, sTypeSOLAR1, "Davis" },
+
+	{ pTypeLocation, sTypeGPS, "Device Geo Location" },
+	{ pTypeLocation, sTypeGateway, "Gateway Geo Location" },
 
 	{ pTypeHunter, sTypeHunterfan, "Hunter Fan" },
 
