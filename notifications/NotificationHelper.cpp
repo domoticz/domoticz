@@ -447,6 +447,14 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					return false;
 			}
 			break;
+		case pTypeLocation:
+			nexpected = 3;
+			if (nsize >= nexpected) {
+				// Here we should do something to calculate something around the Location like distance
+				float fDistance = 1000;	// Just for testing, set the distance at 1000 meters
+				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_LOCATION, fDistance);
+			}
+			break;
 		case pTypeEvohome:
 		case pTypeEvohomeRelay:
 		case pTypeEvohomeWater:

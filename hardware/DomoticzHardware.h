@@ -122,6 +122,7 @@ protected:
 	void SendCustomSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float CustomValue, const std::string &defaultname, const std::string &defaultLabel, const int RssiLevel = 12);
 	void SendZWaveAlarmSensor(const int NodeID, const uint8_t InstanceID, const int BatteryLevel, const uint8_t aType, const int aValue, const std::string& alarmLabel, const std::string &defaultname);
 	void SendFanSensor(const int Idx, const int BatteryLevel, const int FanSpeed, const std::string &defaultname);
+	void SendGpsLocation(const int NodeID, const uint8_t ChildID, const uint8_t BatteryLevel, const uint8_t RssiLevel, const std::string& defaultname, const double Lat, const double Lon, const double Alt);
 
 	int m_iHBCounter = { 0 };
 	bool m_bIsStarted = { false };

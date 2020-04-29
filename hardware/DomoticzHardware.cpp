@@ -1026,3 +1026,17 @@ void CDomoticzHardwareBase::SendFanSensor(const int Idx, const int BatteryLevel,
 	gDevice.intval2 = FanSpeed;
 	sDecodeRXMessage(this, (const unsigned char*)& gDevice, defaultname.c_str(), BatteryLevel);
 }
+
+void CDomoticzHardwareBase::SendGpsLocation(const int NodeID, const uint8_t ChildID, const uint8_t BatteryLevel, const uint8_t RssiLevel, const std::string& defaultname, const double Lat, const double Lon, const double Alt)
+{
+	_tDeviceLocation gDevLoc;
+	gDevLoc.subtype = sTypeGPS;
+	gDevLoc.id = NodeID;
+	gDevLoc.childid = ChildID;
+	gDevLoc.rssi = RssiLevel;
+	gDevLoc.battery_level = BatteryLevel;
+	gDevLoc.latitude = Lat;
+	gDevLoc.longitude = Lon;
+	gDevLoc.altitude_m = Alt;
+	sDecodeRXMessage(this, (const unsigned char*)& gDevLoc, defaultname.c_str(), BatteryLevel);
+}

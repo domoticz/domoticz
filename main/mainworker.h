@@ -295,6 +295,7 @@ private:
 	void decode_Weather(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Solar(const CDomoticzHardwareBase *pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
 	void decode_Hunter(const CDomoticzHardwareBase *pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
+	void decode_Location(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
 };
 
 extern MainWorker m_mainworker;

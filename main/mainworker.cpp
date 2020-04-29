@@ -2056,7 +2056,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase* pHardware, c
 		rxMessage.rxMessageIdx,
 		pHardware->m_HwdID,
 		pHardware->HwdType,
-		pHardware->Name.c_str(),
+		pHardware->m_Name.c_str(),
 		pRXCommand[1],
 		pRXCommand[2]);
 #endif
@@ -2078,9 +2078,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase* pHardware, c
 			}
 		}
 #ifdef DEBUG_RXQUEUE
-		if (moreThanTimeout) {
-			_log.Log(LOG_STATUS, "RxQueue: rxMessage(%lu) processed", rxMessage.rxMessageIdx);
-		}
+		_log.Log(LOG_STATUS, "RxQueue: rxMessage(%lu) processed", rxMessage.rxMessageIdx);
 #endif
 		delete rxMessage.trigger;
 	}
@@ -2153,6 +2151,7 @@ void MainWorker::Do_Work_On_Rx_Messages()
 		boost::uint16_t crc = rxQItem.crc;
 		boost::crc_optimal<16, 0x1021, 0xFFFF, 0, false, false> crc_ccitt2;
 		crc_ccitt2 = std::for_each(pRXCommand, pRXCommand + rxQItem.vrxCommand.size(), crc_ccitt2);
+		/*
 		if (crc != crc_ccitt2()) {
 			_log.Log(LOG_ERROR, "RxQueue: cannot process invalid rxMessage(%lu) from hardware with id=%d (type %d)",
 				rxQItem.rxMessageIdx,
@@ -2161,12 +2160,13 @@ void MainWorker::Do_Work_On_Rx_Messages()
 			if (rxQItem.trigger != NULL) rxQItem.trigger->popped();
 			continue;
 		}
+		*/
 
 		_log.Log(LOG_STATUS, "RxQueue: process a rxMessage(%lu) (hrdwId=%d, hrdwType=%d, hrdwName=%s, type=%02X, subtype=%02X)",
 			rxQItem.rxMessageIdx,
 			pHardware->m_HwdID,
 			pHardware->HwdType,
-			pHardware->Name.c_str(),
+			pHardware->m_Name.c_str(),
 			pRXCommand[1],
 			pRXCommand[2]);
 #endif
@@ -2451,6 +2451,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 			break;
 		case pTypeHunter:
 			decode_Hunter(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
+			break;
+		case pTypeLocation:
+			decode_Location(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
@@ -11158,6 +11161,32 @@ void MainWorker::decode_Hunter(const CDomoticzHardwareBase* pHardware, const tRB
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
+	procResult.DeviceRowIdx = DevRowIdx;
+}
+
+void MainWorker::decode_Location(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
+{
+	char sValue[50];
+	uint8_t Unit = 1;
+	uint8_t nValue = 0;
+	uint64_t DevRowIdx = 0;
+	std::string ID;
+
+	const _tDeviceLocation* pDevLoc = reinterpret_cast<const _tDeviceLocation*>(pResponse);
+	uint8_t devType = pDevLoc->type;
+	uint8_t subType = pDevLoc->subtype;
+	uint8_t SignalLevel = pDevLoc->rssi;
+	uint8_t BatteryLevel = pDevLoc->battery_level;
+
+	sprintf(sValue, "%04d%02d%02d", pDevLoc->id, pDevLoc->childid, subType);
+	ID = sValue;
+	sprintf(sValue, "%f;%f;%f", pDevLoc->latitude, pDevLoc->longitude, pDevLoc->altitude_m);
+
+	DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, nValue, sValue, procResult.DeviceName);
+	if (DevRowIdx == (uint64_t)-1)
+		return;
+	m_notifications.CheckAndHandleNotification(DevRowIdx, pHardware->m_HwdID, ID.c_str(), procResult.DeviceName, Unit, devType, subType, nValue, sValue);
+
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
