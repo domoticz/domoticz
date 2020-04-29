@@ -2005,17 +2005,17 @@ For every script file that defines persisted variables (using the `data={ … }`
 
 	domoticz/
 		scripts/
- 		dzVents/
-			data/
-				__data_yourscript1.lua
-				__data_yourscript2.lua
-				__data_global_data.lua
-			examples/
-			generated_scripts/
-			scripts/
-				yourscript1.lua
-				yourscript2.lua
-				global_data.lua
+ 			dzVents/
+				data/
+					__data_yourscript1.lua
+					__data_yourscript2.lua
+					__data_global_data.lua
+				examples/
+				generated_scripts/
+				scripts/
+					yourscript1.lua
+					yourscript2.lua
+					global_data.lua
 
 If you dare to, you can watch inside these files. Every time some data are changed, dzVents will stream the changes back into the data files.
 **Again, make sure you don't put too much stuff in your persisted data as it may slow things down too much.**
