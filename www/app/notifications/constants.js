@@ -24,6 +24,7 @@ define(function () {
             'Y': $.t('Pause Stream'),
             'Q': $.t('Stop Stream'),
             'a': $.t('Play Stream'),
+            'L': $.t('Location'),
             'J': $.t('Last Update')
         },
         unitByTypeMap: {
@@ -41,6 +42,7 @@ define(function () {
             '2': 'A',
             '3': 'A',
             'P': '%',
+            'L': 'meters',
             'J': 'min'
         },
         whenByTypeMap: {

@@ -5986,6 +5986,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VALUE, 1);
 					ii++;
 				}
+				if (dType == pTypeLocation)
+				{
+					root["result"][ii]["val"] = NTYPE_LOCATION;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_LOCATION, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_LOCATION, 1);
+					ii++;
+				}
 				if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
 				{
 					root["result"][ii]["val"] = NTYPE_SWITCH_ON;
