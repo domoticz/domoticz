@@ -451,7 +451,46 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 			nexpected = 3;
 			if (nsize >= nexpected) {
 				// Here we should do something to calculate something around the Location like distance
-				float fDistance = 1000;	// Just for testing, set the distance at 1000 meters
+				double fDomLat;
+				double fDomLon;
+				int nValue;
+				std::string sValue;
+				std::string Latitude;
+				std::string Longitude;
+
+				double fDistance = 0;	// Just for testing, set the distance at 1000 meters
+				double fLat = atof(strarray[0].c_str());
+				double fLon = atof(strarray[1].c_str());
+				double fAlt = atof(strarray[2].c_str());
+
+				// Let's get the 'home' Location of this Domoticz instance from the Preferences
+				if (!m_sql.GetPreferencesVar("Location", nValue, sValue))
+				{
+					_log.Log(LOG_ERROR, "LOC Notify: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+					return false;
+				}
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+
+				if (strarray.size() != 2)
+					return false;
+
+				Latitude = strarray[0];
+				Longitude = strarray[1];
+
+				if ((Latitude == "1") && (Longitude == "1"))
+				{
+					_log.Log(LOG_ERROR, "LOC Notify: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+					return false;
+				}
+
+				fDomLat = std::stod(Latitude);
+				fDomLon = std::stod(Longitude);
+
+				fDistance = 1000 * distanceEarth(fDomLat, fDomLon, fLat, fLon);
+
+				_log.Log(LOG_STATUS, "LOC Notify: Calculating distance (%f) between Sensor (%f, %f) and Domoticz location settings (%s,%s)", fDistance, fLat, fLon, Latitude.c_str(), Longitude.c_str());
+
 				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_LOCATION, fDistance);
 			}
 			break;
