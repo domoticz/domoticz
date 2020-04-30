@@ -40,6 +40,9 @@ double CalculateAltitudeFromPressure(double pressure);
 float pressureSeaLevelFromAltitude(float altitude, float atmospheric, float temp);
 float pressureToAltitude(float seaLevel, float atmospheric, float temp);
 
+double deg2rad(double deg);
+double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d);
+
 std::string &stdstring_ltrim(std::string &s);
 std::string &stdstring_rtrim(std::string &s);
 std::string &stdstring_trim(std::string &s);
