@@ -698,6 +698,9 @@ end</source></li>
 <li>'''fromXML(xml, fallback )''': ''Function'': <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: <code>local t = domoticz.utils.fromXML('&lt;testtag&gt;What a nice feature!&lt;/testtag&gt;') Followed by:</code>print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.</li>
 <li>'''groupExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with valid groupID or ID when entered with valid groupName or false when not a groupID or groupName of an existing group</li>
 <li>'''inTable(table, searchString)''': ''Function'': <sup>2.4.21</sup> Returns <code>&quot;key&quot;</code> if table has searchString as a key, <code>&quot;value&quot;</code> if table has searchString as value and <code>false</code> otherwise.</li>
+<li>'''isJSON(string[, content])''': ''Function'': <sup>3.0.4</sup> Returns <code>true</code> if content is ‘application/json’ or string is enclosed in {} and <code>false</code> otherwise.</li>
+<li>'''isXML(string[, content])''': ''Function'': <sup>3.0.4</sup> Returns <code>true</code> if content is ‘text/xml’ or ‘application/xml’ or string is enclosed in &lt;&gt; and <code>false</code> otherwise.</li>
+<li>'''inTable(table, searchString)''': ''Function'': <sup>2.4.21</sup> Returns <code>&quot;key&quot;</code> if table has searchString as a key, <code>&quot;value&quot;</code> if table has searchString as value and <code>false</code> otherwise.</li>
 <li>'''leftPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.</li>
 <li>'''centerPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.</li>
 <li>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation Examples:</li></ul>
@@ -2383,6 +2386,11 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you’re good to go.
 
 = History =
+
+== [3.0.4] ==
+
+* Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC
+* add isJSON, isXML functions to Utils
 
 == [3.0.3] ==
 

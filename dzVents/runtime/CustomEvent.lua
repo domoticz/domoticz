@@ -17,15 +17,15 @@ local function CustomEvent(domoticz, eventData)
 	self.isJSON = false
 	self.data = eventData.data.data
 
-	if self.data:match('%b{}') then 
+	if self.data and utils.isJSON(self.data) then 
 		local json = utils.fromJSON(self.data:gsub("'",'"')) 
-		if json and type(json) == "table" then
+		if json and type(json) == 'table' then
 			self.isJSON = true
 			self.json = json
 		end
-	elseif self.data:match('%b<>') then
+	elseif self.data and utils.isXML(self.data) then
 		 local xml = utils.fromXML(self.data)
-		 if (xml) then
+		 if (xml) and type(xml) == 'table' then
 			self.isXML = true
 			self.xml = xml
 		 end

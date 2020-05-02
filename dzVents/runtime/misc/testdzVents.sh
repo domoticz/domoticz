@@ -143,7 +143,7 @@ function fillNumberOfTests
 		ScriptdzVentsDispatching_ExpectedTests=2
 		TimedCommand_ExpectedTests=46
 		Time_ExpectedTests=340
-		Utils_ExpectedTests=25
+		Utils_ExpectedTests=27
 		Variable_ExpectedTests=15
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
 		DelayedVariableScene_ExpectedTests=2
