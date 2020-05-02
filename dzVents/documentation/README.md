@@ -741,7 +741,6 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
 	- **isJSON(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'application/json' or string is enclosed in {} and `false` otherwise.
 	- **isXML(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'text/xml' or 'application/xml' or string is enclosed in <> and `false` otherwise.
-	- **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
 	- **leftPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.
 	- **centerPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.
 	- **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation

@@ -700,7 +700,6 @@ end</source></li>
 <li>'''inTable(table, searchString)''': ''Function'': <sup>2.4.21</sup> Returns <code>&quot;key&quot;</code> if table has searchString as a key, <code>&quot;value&quot;</code> if table has searchString as value and <code>false</code> otherwise.</li>
 <li>'''isJSON(string[, content])''': ''Function'': <sup>3.0.4</sup> Returns <code>true</code> if content is ‘application/json’ or string is enclosed in {} and <code>false</code> otherwise.</li>
 <li>'''isXML(string[, content])''': ''Function'': <sup>3.0.4</sup> Returns <code>true</code> if content is ‘text/xml’ or ‘application/xml’ or string is enclosed in &lt;&gt; and <code>false</code> otherwise.</li>
-<li>'''inTable(table, searchString)''': ''Function'': <sup>2.4.21</sup> Returns <code>&quot;key&quot;</code> if table has searchString as a key, <code>&quot;value&quot;</code> if table has searchString as value and <code>false</code> otherwise.</li>
 <li>'''leftPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.</li>
 <li>'''centerPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.</li>
 <li>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation Examples:</li></ul>
