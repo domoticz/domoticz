@@ -1,3 +1,15 @@
+/************************************************************************
+
+VehicleApi baseclass
+Author: MrHobbes74 (github.com/MrHobbes74)
+
+21/02/2020 1.0 Creation
+13/03/2020 1.1 Added keep asleep support
+28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+
+License: Public domain
+
+************************************************************************/
 #pragma once
 #include <string>
 

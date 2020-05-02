@@ -1,3 +1,15 @@
+/************************************************************************
+
+eVehicles framework
+Author: MrHobbes74 (github.com/MrHobbes74)
+
+21/02/2020 1.0 Creation
+13/03/2020 1.1 Added keep asleep support
+28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+
+License: Public domain
+
+************************************************************************/
 #pragma once
 
 #include "../DomoticzHardware.h"
@@ -47,12 +59,18 @@ private:
 		Unknown
 	};
 
+	enum eHomeState {
+		AtHome,
+		NotAtHome,
+		AtUnknown
+	};
+
 	struct tVehicle {
 		bool connected;
 		bool charging;
 		bool climate_on;
 		bool defrost;
-		bool is_home;
+		eHomeState home_state;
 		bool is_driving;
 		int charge_limit;
 		eWakeState wake_state;
