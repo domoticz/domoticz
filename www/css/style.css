@@ -550,7 +550,7 @@ ul.style4 {
 /** LIST STYLE 5 */
 
 ul.style5 {
-	overflow: hidden;
+	overflow: scroll;
 	margin: 0em 0em 1em 0em;
 	padding: 0em;
 	list-style: none;
@@ -880,7 +880,7 @@ table.mobileitem {
 	height: 1px;
 	margin: 4px 1px;
 	*margin: -5px 0 5px;
-	overflow: hidden;
+	overflow: scroll;
 	background-color: #353535;
 	border-bottom: 1px solid #666666;
 }
@@ -1002,7 +1002,7 @@ table.mobileitem {
 div.log {
 	background-color: #FAFAFA;
 	height: 300px;
-	overflow: auto;
+	overflow: scroll;
 	border: 1px dotted #AAAAAA;
 	padding: 4px;
 	font-family: "Courier New", monospace;
@@ -1378,7 +1378,7 @@ table.table-details.table-details-lg > tbody > tr > td:first-child {
 .ui-listview > li {
 	display: block;
 	position: relative;
-	overflow: visible;
+	overflow: scroll;
 }
 
 .ui-listview, .ui-listview > li {
@@ -1432,7 +1432,7 @@ table.table-details.table-details-lg > tbody > tr > td:first-child {
 	position: relative;
 	text-align: left;
 	text-overflow: ellipsis;
-	overflow: hidden;
+	overflow: scroll;
 	white-space: nowrap;
 }
 
@@ -1474,7 +1474,7 @@ table.table-details.table-details-lg > tbody > tr > td:first-child {
 	position: relative;
 	text-align: left;
 	text-overflow: ellipsis;
-	overflow: hidden;
+	overflow: scroll;
 	white-space: nowrap;
 }
 
@@ -1495,7 +1495,7 @@ table.table-details.table-details-lg > tbody > tr > td:first-child {
 	position: relative;
 	text-align: left;
 	text-overflow: ellipsis;
-	overflow: hidden;
+	overflow: scroll;
 	white-space: nowrap;
 	padding-left: 2.5em;
 	font-weight: 700;
