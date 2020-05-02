@@ -210,6 +210,8 @@ function self.fromJSON(json, fallback)
 			return results
 		end
 		self.log('Error parsing json to LUA table: ' .. ( results or '' ) , self.LOG_ERROR)
+	else
+		self.log('Error parsing json to LUA table: (invalid json string) ' .. _.str(json) , self.LOG_ERROR)
 	end
 
 	return fallback
@@ -293,7 +295,9 @@ function self.fromXML(xml, fallback)
 		if (ok) then
 			return results
 		end
-		self.log('Error parsing XML to LUA table: ' .. results, self.LOG_ERROR)
+		self.log('Error parsing xml to Lua table: ' .. results, self.LOG_ERROR)
+	else
+		self.log('Error parsing xml to LUA table: (invalid xml string) ' .. _.str(xml) , self.LOG_ERROR)
 	end
 
 	return fallback

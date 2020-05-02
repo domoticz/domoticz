@@ -147,6 +147,9 @@ describe('event helpers', function()
 		local xml = nil
 		assert.is_false(utils.isXML(xml))
 
+		local xml = '<testXML>What a bad XML!</testXML> xml'
+		assert.is_false(utils.isXML(xml))
+
 		local xml = '{ wrong XML }'
         local content = 'application/xml'
 		fallback = nil
