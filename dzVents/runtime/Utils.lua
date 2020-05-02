@@ -209,7 +209,7 @@ function self.fromJSON(json, fallback)
 		if (ok) then
 			return results
 		end
-		self.log('Error parsing json to LUA table: ' .. ( results or '' ) , self.LOG_ERROR)
+		self.log('Error parsing json to LUA table: ' .. _.str(results) , self.LOG_ERROR)
 	else
 		self.log('Error parsing json to LUA table: (invalid json string) ' .. _.str(json) , self.LOG_ERROR)
 	end
@@ -295,7 +295,7 @@ function self.fromXML(xml, fallback)
 		if (ok) then
 			return results
 		end
-		self.log('Error parsing xml to Lua table: ' .. results, self.LOG_ERROR)
+		self.log('Error parsing xml to Lua table: ' .. _.str(results), self.LOG_ERROR)
 	else
 		self.log('Error parsing xml to LUA table: (invalid xml string) ' .. _.str(xml) , self.LOG_ERROR)
 	end
@@ -321,7 +321,7 @@ function self.toXML(luaTable, header)
 		return results
 	end
 
-	self.log('Error converting LUA table to XML: ' .. results, self.LOG_ERROR)
+	self.log('Error converting LUA table to XML: ' .. _.str(results), self.LOG_ERROR)
 	return nil
 
 end
@@ -332,17 +332,13 @@ function self.toJSON(luaTable)
 		return jsonParser:encode(j)
 	end
 
-	--if (jsonParser == nil) then
-	--	jsonParser = require('JSON')
-	--end
-
 	ok, results = pcall(toJSON, luaTable)
 
 	if (ok) then
 		return results
 	end
 
-	self.log('Error converting LUA table to json: ' .. results, self.LOG_ERROR)
+	self.log('Error converting LUA table to json: ' .. _.str(results), self.LOG_ERROR)
 	return nil
 
 end
