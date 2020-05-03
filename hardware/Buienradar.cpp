@@ -105,7 +105,6 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 		Log(LOG_STATUS, "Temperature not included in Temperature Device");
 	}
 
-
 	if (!Location.empty())
 	{
 		std::vector<std::string> strarray;
@@ -449,6 +448,7 @@ void CBuienRadar::GetMeterDetails()
 		else
 			barometric_forecast = wsbaroforecast_sunny;
 	}
+	if (m_bIncludeHumidityInTemperatureDevice) {
 	if (
 		(temp != -999.9f)
 		&& (humidity != 0)
@@ -467,6 +467,21 @@ void CBuienRadar::GetMeterDetails()
 	else if (temp != -999.9f)
 	{
 		SendTempSensor(1, 255, temp, "Temp");
+	}
+	} else {
+		// seperate sensors
+		if (temp != -999.9f)
+		{
+			SendTempSensor(1, 255, temp, "Temp");
+		}
+		if (humidity!=0)
+		{
+			SendHumiditySensor(1, 255, humidity, "Humidity");
+		}
+		if (barometric != 0)
+		{
+			SendBaroSensor(1, 1, 255, barometric, barometric_forecast, "Barometric");
+		}
 	}
 
 	if (!root["groundtemperature"].empty())
