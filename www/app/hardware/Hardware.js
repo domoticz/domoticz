@@ -808,6 +808,8 @@ define(['app'], function (app) {
 					threshold = 25;
 				}
 				var location = $("#hardwarecontent #divbuienradar #location").val();
+				var includewindchill = $("#hardwarecontent #divbuienradar #IncludeWindChill").val();
+				var includehumidity = $("#hardwarecontent #divbuienradar #IncludeHumidity").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&password=" + location +
@@ -815,7 +817,7 @@ define(['app'], function (app) {
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + includewindchill + "&Mode4=" + includehumidity + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1955,11 +1957,13 @@ define(['app'], function (app) {
 					threshold = 25;
 				}
 				var location = $("#hardwarecontent #divbuienradar #location").val();
+				var includewindchill = $("#hardwarecontent #divbuienradar #IncludeWindChill").val();
+				var includehumidity = $("#hardwarecontent #divbuienradar #IncludeHumidity").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) +
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
-					"&Mode1=" + timeframe + "&Mode2=" + threshold,
+					"&Mode1=" + timeframe + "&Mode2=" + threshold + "&Mode3=" + includewindchill + "&Mode4=" + includehumidity,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3653,6 +3657,8 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divbuienradar #timeframe").val(timeframe);
 							$("#hardwarecontent #divbuienradar #threshold").val(threshold);
 							$("#hardwarecontent #divbuienradar #location").val(data["Password"]);
+							$("#hardwarecontent #divbuienradar #IncludeWindChill").val(data["Mode3"]);
+							$("#hardwarecontent #divbuienradar #IncludeHumodity").val(data["Mode4"]);
 						}
 						else if ((data["Type"].indexOf("HTTP/HTTPS") >= 0)) {
 							$("#hardwarecontent #hardwareparamshttp #url").val(data["Address"]);
