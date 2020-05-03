@@ -85,25 +85,12 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d)
 	return 2.0 * earthRadiusKm * asin(sqrt(u * u + cos(lat1r) * cos(lat2r) * v * v));
 }
 
-CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold, const std::string& Location, const int IncludeWindChill, const int IncludeHumidity)
+CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold, const std::string& Location, const int IncludeHumidity)
 {
 	m_HwdID = ID;
 	m_iForecast = (iForecast >= 5) ? iForecast : 15;
 	m_iThreshold = (iThreshold > 0) ? iThreshold : 25;
-	m_bIncludeWindChillInWindDevice=IncludeWindChill>0;
 	m_bIncludeHumidityInTemperatureDevice=IncludeHumidity>0;
-
-	//DEBUG
-	if (m_bIncludeWindChillInWindDevice) {
-		Log(LOG_STATUS, "Windchill included in the WindDevice");
-	} else {
-		Log(LOG_STATUS, "Winchill not included in winddevice");
-	}
-	if (m_bIncludeHumidityInTemperatureDevice) {
-		Log(LOG_STATUS, "Temperature included in Temperature Device");
-	} else {
-		Log(LOG_STATUS, "Temperature not included in Temperature Device");
-	}
 
 	if (!Location.empty())
 	{
