@@ -1,4 +1,5 @@
-<!-- Philio: PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement --><Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Philio: PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement -->
+<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:0003:0001</MetaDataItem>
     <MetaDataItem name="ProductPic">images/philio/pan04.png</MetaDataItem>
@@ -16,6 +17,7 @@ This in-wall switch module is able to detect Instant power wattage and overload 
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/820/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/851/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1148/xml</Entry>
+      <Entry author="wacki4" date="30 April 2020" revision="8">Updated Config Params </Entry>
     </ChangeLog>
     <MetaDataItem id="0012" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1148/</MetaDataItem>
     <MetaDataItem name="InclusionDescription">1.    Put your Z-Wave controller into inclusion mode by following the instructions provided by the controller manufacturer. 
@@ -55,6 +57,29 @@ This in-wall switch module is able to detect Instant power wattage and overload 
     <Value genre="config" index="6" instance="1" label="Threshold of kWh for Load Caution" max="10000" min="0" type="short" value="10000">
       <Help>Threshold of kWh for Load Caution</Help>
     </Value>
+    <Value genre="config" index="7" instance="1" label="Restore switch state mode" max="2" min="0" type="byte" value="1">
+      <Item label="Switch off" value="0"/>
+      <Item label="Last switch state" value="1"/>
+      <Item label="Switch on" value="2"/>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Auto off timer" max="10000" min="0" type="short" value="32767">
+      <Help>0: Disable auto off function. 1-32767: 1s ~32767s</Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="RF offcommand mode" max="3" min="0" type="byte" value="0">
+      <Item label="Switch off" value="0"/>
+      <Item label="Ignore" value="1"/>
+      <Item label="Switch toggle" value="2"/>
+      <Item label="Switch on" value="3"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Existence of Endpoint3" max="2" min="1" type="byte" value="1">
+      <Item label="Endpoint3 exist" value="1"/>
+      <Item label="No Endpoint3" value="2"/>
+    </Value>
+    <Value genre="config" index="31" instance="1" label="Primitive frame" max="2" min="1" type="byte" value="1">
+      <Help>Can repair problems with bad switch selected</Help>
+      <Item label="Multiframe active" value="1"/>
+      <Item label="No multiframe" value="2"/>
+    </Value>    
   </CommandClass>
   <CommandClass id="96">
     <Compatibility>

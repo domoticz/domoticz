@@ -1,3 +1,7 @@
+[3.0.4]
+- Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC 
+- add isJSON, isXML functions to Utils 
+
 [3.0.3]
 - add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object) 
 
