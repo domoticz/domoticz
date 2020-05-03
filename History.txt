@@ -3,6 +3,7 @@ Version 2020.xxxx (xxxx)
 - Updated: dzVents version 3.0.4 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 - Updated: TTNMQTT, improved Improved calculation and storage of signal-levels
 - Updated: eVehicles, add ODO meter, unlock/open alert, max charge level to Tesla module
+- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.2 (April 26th 2020)
 - Implemented: GUI: New Update controller code
