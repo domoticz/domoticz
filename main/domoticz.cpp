@@ -63,7 +63,7 @@ const char *szHelp =
 "\t-wwwroot file_path (for example D:\\www)\n"
 "\t-dbase file_path (for example D:\\domoticz.db)\n"
 "\t-userdata file_path (for example D:\\domoticzdata)\n"
-"\t-approot file_path (for example D:\\domoticzdata)\n"
+"\t-approot file_path (for example D:\\domoticz)\n"
 #else
 "\t-wwwroot file_path (for example /opt/domoticz/www)\n"
 "\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
