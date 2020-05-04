@@ -646,7 +646,6 @@ js/colpick.js
 js/date.format.js
 js/domoticz.js
 js/domoticzdevices.js
-js/export-csv.js
 js/FileSaver.js
 js/highcharts-ng.min.js
 js/html5shiv.js
