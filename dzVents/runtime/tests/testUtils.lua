@@ -140,10 +140,48 @@ describe('event helpers', function()
 		assert.is_same(1, t['a'])
 	end)
 
-	it('should convert a json to a table or fallback to fallback', function()
+	it('should recognize an xml string', function()
+		local xml = '<testXML>What a nice feature!</testXML>'
+		assert.is_true(utils.isXML(xml))
+
+		local xml = nil
+		assert.is_false(utils.isXML(xml))
+
+		local xml = '<testXML>What a bad XML!</testXML> xml'
+		assert.is_false(utils.isXML(xml))
+
+		local xml = '{ wrong XML }'
+		local content = 'application/xml'
+		fallback = nil
+		assert.is_true(utils.isXML(xml, content))
+
+	end)
+
+	it('should recognize a json string', function()
+		local json = '[{ "test": 12 }]'
+		assert.is_true(utils.isJSON(json))
+
+		local json = '{ "test": 12 }'
+		assert.is_true(utils.isJSON(json))
+
+		local json = nil
+		assert.is_false(utils.isJSON(json))
+
+		local json = '< wrong XML >'
+		local content = 'application/json'
+		fallback = nil
+		assert.is_true(utils.isJSON(json, content))
+
+	end)
+
+	it('should convert a json string to a table or fallback to fallback', function()
 		local json = '{ "a": 1 }'
 		local t = utils.fromJSON(json, fallback)
 		assert.is_same(1, t['a'])
+
+		local json = '[{"obj":"Switch","act":"On" }]'
+		local t = utils.fromJSON(json, fallback)
+		assert.is_same('Switch', t[1].obj)
 
 		json = nil
 		local fallback = { a=1 }
@@ -157,7 +195,7 @@ describe('event helpers', function()
 
 	end)
 
-	it('should convert a xml to a table or fallback to fallback', function()
+	it('should convert an xml string to a table or fallback to fallback', function()
 		local xml = '<testXML>What a nice feature!</testXML>'
 		local t = utils.fromXML(xml, fallback)
 		assert.is_same('What a nice feature!', t.testXML)
@@ -184,7 +222,7 @@ describe('event helpers', function()
 		local res = utils.toJSON(t)
 		assert.is_same('{"a":1,"b":"Function"}', res)
 	end)
-    
+
 	it('should convert a table to xml', function()
 		local t = { a= 1 }
 		local res = utils.toXML(t, 'busted')

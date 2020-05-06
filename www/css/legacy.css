@@ -1024,3 +1024,10 @@ div.item.statusEvoSetPointMin td#name{
 	font-size: smaller;
 	color: #e0c0ff;
 }
+
+#highcharts-menu #hr {
+	margin: 120px 0;
+}
+#highcharts-menu-item {
+	padding: 100px 100px;
+}

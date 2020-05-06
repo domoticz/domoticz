@@ -15,7 +15,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.2',
+	DZVERSION = '3.0.4',
 }
 
 function math.pow(x, y)
@@ -184,27 +184,36 @@ function self.urlDecode(str, strSub)
 	return str:gsub("%%(%x%x)", hex2Char)
 end
 
+function self.isJSON(str, content)
+	local str = str or ''
+	local content = content or ''
+	local jsonPattern = '^%s*%[*{.+}%]*%s*$'
+	local ret = str:match(jsonPattern) == str  or content:find('application/json')
+	return ret ~= nil
+
+end
+
 function self.fromJSON(json, fallback)
 
-	local parse = function(j)
-		return jsonParser:decode(j)
+	if json and self.isJSON(json) then
+		local parse = function(j)
+			return jsonParser:decode(j)
+		end
+
+		if json == nil then
+			return fallback
+		end
+
+		ok, results = pcall(parse, json)
+
+		if (ok) then
+			return results
+		end
+		self.log('Error parsing json to LUA table: ' .. _.str(results) , self.LOG_ERROR)
+	else
+		self.log('Error parsing json to LUA table: (invalid json string) ' .. _.str(json) , self.LOG_ERROR)
 	end
 
-	if json == nil then
-		return fallback
-	end
-
-	--if (jsonParser == nil) then
-	--	jsonParser = require('JSON')
-	--end
-
-	ok, results = pcall(parse, json)
-
-	if (ok) then
-		return results
-	end
-
-	self.log('Error parsing json to LUA table: ' .. results, self.LOG_ERROR)
 	return fallback
 
 end
@@ -251,33 +260,46 @@ function self.toBase64(s) -- from http://lua-users.org/wiki/BaseSixtyFour
 	return s:sub(1, #s-pad) .. rep('=', pad)
 end
 
+function self.isXML(str, content)
+	local str = str or ''
+	local content = content or ''
+	local xmlPattern = '^%s*%<.+%>%s*$'
+	local ret = str:match(xmlPattern) == str  or content:find('application/xml') or content:find('text/xml')
+	return ret ~= nil
+
+end
+
 function self.fromXML(xml, fallback)
 
-	local parseXML = function(x)
-		local xmlParser = xml2Lua.parser(xmlHandler)
-		xmlParser:parse(x)
-		return xmlHandler.root
+	if xml and self.isXML(xml) then
+		local parseXML = function(x)
+			local xmlParser = xml2Lua.parser(xmlHandler)
+			xmlParser:parse(x)
+			return xmlHandler.root
+		end
+
+		if xml == nil then
+			return fallback
+		end
+
+		if xml2Lua == nil then
+			xml2Lua = require('xml2lua')
+		end
+
+		if xmlHandler == nil then
+			xmlHandler = require("xmlhandler.tree")
+		end
+
+		ok, results = pcall(parseXML, xml)
+
+		if (ok) then
+			return results
+		end
+		self.log('Error parsing xml to Lua table: ' .. _.str(results), self.LOG_ERROR)
+	else
+		self.log('Error parsing xml to LUA table: (invalid xml string) ' .. _.str(xml) , self.LOG_ERROR)
 	end
 
-	if xml == nil then
-		return fallback
-	end
-
-	if xml2Lua == nil then
-		xml2Lua = require('xml2lua')
-	end
-
-	if xmlHandler == nil then
-		xmlHandler = require("xmlhandler.tree")
-	end
-
-	ok, results = pcall(parseXML, xml)
-
-	if (ok) then
-		return results
-	end
-
-	self.log('Error parsing XML to LUA table: ' .. results, self.LOG_ERROR)
 	return fallback
 
 end
@@ -299,7 +321,7 @@ function self.toXML(luaTable, header)
 		return results
 	end
 
-	self.log('Error converting LUA table to XML: ' .. results, self.LOG_ERROR)
+	self.log('Error converting LUA table to XML: ' .. _.str(results), self.LOG_ERROR)
 	return nil
 
 end
@@ -310,17 +332,13 @@ function self.toJSON(luaTable)
 		return jsonParser:encode(j)
 	end
 
-	--if (jsonParser == nil) then
-	--	jsonParser = require('JSON')
-	--end
-
 	ok, results = pcall(toJSON, luaTable)
 
 	if (ok) then
 		return results
 	end
 
-	self.log('Error converting LUA table to json: ' .. results, self.LOG_ERROR)
+	self.log('Error converting LUA table to json: ' .. _.str(results), self.LOG_ERROR)
 	return nil
 
 end
