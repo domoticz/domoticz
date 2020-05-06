@@ -25,7 +25,13 @@ const char* szTLSVersions[3] =
 	"tlsv1.2"
 };
 
-MQTT::MQTT(const int ID, const std::string& IPAddress, const unsigned short usIPPort, const std::string& Username, const std::string& Password, const std::string& CAfilename, const int TLS_Version, const int Topics, const std::string& MQTTClientID) :
+MQTT::MQTT(
+	const int ID,
+	const std::string& IPAddress, const unsigned short usIPPort,
+	const std::string& Username, const std::string& Password,
+	const std::string& CAfilename, const int TLS_Version,
+	const int Topics, const std::string& MQTTClientID,
+	const bool PreventLoop) :
 	m_szIPAddress(IPAddress),
 	m_UserName(Username),
 	m_Password(Password),
@@ -43,6 +49,8 @@ MQTT::MQTT(const int ID, const std::string& IPAddress, const unsigned short usIP
 	m_TopicOut = TOPIC_OUT;
 
 	m_TLS_Version = (TLS_Version < 3) ? TLS_Version : 0; //see szTLSVersions
+
+	m_bPreventLoop = PreventLoop;
 
 	threaded_set(true);
 }
@@ -681,7 +689,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 	if (!m_IsConnected)
 		return;
 
-	if (DeviceRowIdx == m_LastUpdatedDeviceRowIdx)
+	if (m_bPreventLoop && (DeviceRowIdx == m_LastUpdatedDeviceRowIdx))
 	{
 		//we should ignore this now
 		m_LastUpdatedDeviceRowIdx = 0;
@@ -785,7 +793,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 
 void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string&/*SceneName*/)
 {
-	if (SceneIdx == m_LastUpdatedSceneRowIdx)
+	if (m_bPreventLoop && (SceneIdx == m_LastUpdatedSceneRowIdx))
 	{
 		//we should ignore this now
 		m_LastUpdatedSceneRowIdx = 0;

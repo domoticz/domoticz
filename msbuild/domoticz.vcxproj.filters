@@ -1889,9 +1889,6 @@
     <ClInclude Include="..\hardware\PanasonicTV.h">
       <Filter>Devices\Panasonic</Filter>
     </ClInclude>
-    <ClInclude Include="..\notifications\NotificationGCM.h">
-      <Filter>Notifications</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
       <Filter>Devices\OpenWebNet</Filter>
     </ClInclude>
@@ -2206,6 +2203,9 @@
     </ClInclude>
     <ClInclude Include="..\main\json_helper.h">
       <Filter>JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationFCM.h">
+      <Filter>Notifications</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2659,9 +2659,6 @@
     <ClCompile Include="..\tinyxpath\tokenlist.cpp">
       <Filter>XML</Filter>
     </ClCompile>
-    <ClCompile Include="..\notifications\NotificationGCM.cpp">
-      <Filter>Notifications</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
       <Filter>Devices\OpenWebNet</Filter>
     </ClCompile>
@@ -2940,6 +2937,9 @@
     </ClCompile>
     <ClCompile Include="..\main\json_helper.cpp">
       <Filter>JSON</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationFCM.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

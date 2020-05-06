@@ -2,12 +2,9 @@
 
 #include <string>
 
-#define sTypeTH_LC_TC 0xA0   //La Cross Temp_Hum combined
-#define sTypeTEMP_SYSTEM 0xA0  //Internal sensor
-
 enum _eSwitchType
 {
-	STYPE_OnOff = 0,					//0
+	STYPE_OnOff = 0,				//0
 	STYPE_Doorbell,					//1
 	STYPE_Contact,					//2
 	STYPE_Blinds,					//3
@@ -27,13 +24,13 @@ enum _eSwitchType
 	STYPE_Media,					//17
 	STYPE_Selector,					//18
 	STYPE_DoorLock,					//19
-	STYPE_DoorLockInverted,					//20
+	STYPE_DoorLockInverted,			//20
 	STYPE_END
 };
 
 enum _eMeterType
 {
-	MTYPE_ENERGY = 0,			//0
+	MTYPE_ENERGY = 0,		//0
 	MTYPE_GAS,				//1
 	MTYPE_WATER,			//2
 	MTYPE_COUNTER,			//3

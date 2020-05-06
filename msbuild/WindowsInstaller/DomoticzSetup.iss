@@ -50,18 +50,17 @@ Name: RunAsService; Description: "Run as service"; Flags: exclusive unchecked
 
 [Files]
 Source: "..\Release\domoticz.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "..\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\www\*"; DestDir: "{app}\www"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\..\Config\*"; DestDir: "{app}\Config"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\..\scripts\*"; DestDir: "{app}\scripts"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\..\dzVents\*"; DestDir: "{app}\dzVents"; Flags: recursesubdirs createallsubdirs ignoreversion
-Source: "..\Windows Libraries\OpenZWave\bin\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\Windows Libraries\openzwave\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\History.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\server_cert.pem"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall
 
-Source: "..\Windows Libraries\Redist\msvcp140.dll"; DestDir: {app}; Flags: ignoreversion
-Source: "..\Windows Libraries\Redist\vcruntime140.dll"; DestDir: {app}; Flags: ignoreversion
+Source: "..\Windows Libraries\Redist\*"; DestDir: {app}; Flags: ignoreversion
 ;Needed for 64bit Source: "..\Windows Libraries\Redist\vcruntime140_1.dll"; DestDir: {app}; Flags: ignoreversion
 
 [Icons]

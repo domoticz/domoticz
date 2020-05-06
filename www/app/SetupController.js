@@ -161,7 +161,7 @@ define(['app'], function (app) {
 					}
 					extraparams = 'LmsPlayerMac=' + $("#lmstable #LmsPlayerMac").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
 					break;
-				case "gcm":
+				case "fcm":
 					break;
 				default:
 					return;
@@ -173,7 +173,7 @@ define(['app'], function (app) {
 				success: function (data) {
 					if (data.status != "OK") {
 						HideNotify();
-						if ((subsystem == "http") || (subsystem == "kodi") || (subsystem == "lms") || (subsystem == "gcm")) {
+						if ((subsystem == "http") || (subsystem == "kodi") || (subsystem == "lms") || (subsystem == "fcm")) {
 							ShowNotify($.t('Problem Sending Notification'), 3000, true);
 						}
 						else if (subsystem == "email") {
@@ -379,8 +379,8 @@ define(['app'], function (app) {
 					if (typeof data.LmsDuration != 'undefined') {
 						$("#lmstable #LmsDuration").val(data.LmsDuration);
 					}
-					if (typeof data.GCMEnabled != 'undefined') {
-						$("#gcmtable #GCMEnabled").prop('checked', data.GCMEnabled == 1);
+					if (typeof data.FCMEnabled != 'undefined') {
+						$("#gcmtable #FCMEnabled").prop('checked', data.FCMEnabled == 1);
 					}
 					if (typeof data.LightHistoryDays != 'undefined') {
 						$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);

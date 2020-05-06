@@ -18,5 +18,6 @@ private:
 	std::string m_SID;
 	std::string m_KEY;
 	std::shared_ptr<std::thread> m_thread;
+	bool m_bHadConsumption = false;
 };
 

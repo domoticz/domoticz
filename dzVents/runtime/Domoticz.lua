@@ -1,5 +1,5 @@
 local scriptPath = globalvariables['script_path']
-package.path = scriptPath .. '?.lua' .. ';' .. package.path 
+package.path = scriptPath .. '?.lua' .. ';' .. package.path
 
 local Camera = require('Camera')
 local Device = require('Device')
@@ -101,19 +101,24 @@ local function Domoticz(settings)
 			end
 		end
 
-		--[[
 		if _subSystem:find('gcm') then
-			utils.log('Notification subsystem Google Cloud Messaging (gcm) has been deprecated by Google. Please consider switching to Firebase', utils.LOG_ERROR)
+			utils.log('Notification subsystem Google Cloud Messaging (gcm) has been deprecated by Google. Switch to Firebase now!', utils.LOG_ERROR)
+			_subSystem = _subSystem:gsub('gcm','fcm')
 		end
-		]] --
 
-		local data = subject
-				.. '#' .. message
-				.. '#' .. tostring(priority)
-				.. '#' .. tostring(sound)
-				.. '#' .. tostring(extra)
-				.. '#' .. tostring(_subSystem)
-		self.sendCommand('SendNotification', data)
+		 local function strip(str)
+			local stripped = tostring(str):gsub('#','')
+			return stripped
+		end
+
+		local data = strip(subject)
+				.. '#' .. strip(message)
+				.. '#' .. strip(priority)
+				.. '#' .. strip(sound)
+				.. '#' .. strip(extra)
+				.. '#' .. strip(_subSystem)
+				self.sendCommand('SendNotification', data)
+	
 	end
 
 	-- have domoticz send an email

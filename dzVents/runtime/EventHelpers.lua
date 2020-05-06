@@ -643,7 +643,7 @@ local function EventHelpers(domoticz, mainMethod)
 			for j, event in pairs(module.on) do
 
 				if (not (type(j) == 'string' or type(event) == 'table')) then
-					utils.log(logScript .. moduleName .. '.lua has a malformed on-section. Check the documentation. Skipping', utils.LOG_DEBUG)
+					utils.log(logScript .. module.name .. '.lua has a malformed on-section. Check the documentation. Skipping', utils.LOG_DEBUG)
 				else
 					if (mode == 'timer' and j == 'timer') then
 						-- { ['timer'] = { 'every minute ', 'every hour' } }

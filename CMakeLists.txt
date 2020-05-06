@@ -3,11 +3,74 @@ cmake_minimum_required(VERSION 3.16.0)
 
 project(domoticz)
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+INCLUDE(CheckIncludeFile)
+INCLUDE(CheckIncludeFiles)
+INCLUDE(InstallRequiredSystemLibraries)
+INCLUDE(TestBigEndian)
 
+### DEPENDENCY VERSIONS
+#
+#
 ## required min. libBoost version
 SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
 ##
+
+### USER-SETTABLE OPTIONS
+#
+#
+
+# Bundled libraries
+option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
+option(USE_BUILTIN_MINIZIP "Use builtin Minizip" YES)
+option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
+option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
+
+# Optional dependencies
+option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
+option(INCLUDE_LINUX_I2C "Include I2C support" YES)
+option(INCLUDE_SPI "Include SPI support" YES)
+option(WITH_LIBUSB "Enable libusb support" YES)
+
+# Link static or shared, external dependencies
+option(USE_LUA_STATIC "Link LUA static" YES)
+option(USE_OPENSSL_STATIC "Link OpenSSL static" NO)
+option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
+option(USE_STATIC_OPENZWAVE "Build with static OpenZwave libraries" YES)
+
+# Developer-oriented options
+option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
+option(GIT_SUBMODULE "Check submodules during build" ON)
+
+
+### COMPILER SETTINGS
+#
+#
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CXX_EXTENSIONS NO)
+endif()
+
+IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
+ENDIF()
+IF(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+ENDIF()
+IF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+ENDIF()
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-psabi -rdynamic")
+  #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
+  #ADD_DEFINITIONS( -Wall -O0 -ggdb )
+  #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
+ENDIF()
+
+
+### VERSIONING SUPPORT
+#
+#
 
 MACRO(History_GET_REVISION variable)
   IF(EXISTS ${CMAKE_SOURCE_DIR}/History.txt)
@@ -32,6 +95,8 @@ MACRO(Gitversion_GET_REVISION dir variable)
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_REVISION)
 
+find_package(Git QUIET)
+
 Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
 IF(NOT ProjectRevision)
   MESSAGE(STATUS "Failed to get ProjectRevision from git")
@@ -40,35 +105,15 @@ ELSE(NOT ProjectRevision)
   MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 ENDIF(NOT ProjectRevision)
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_STANDARD 11)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CXX_EXTENSIONS NO)
-endif()
 
-IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
-ENDIF()
-IF(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-ENDIF()
-IF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-ENDIF()
-IF(CMAKE_COMPILER_IS_GNUCXX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-psabi -rdynamic")
-  #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
-  #ADD_DEFINITIONS( -Wall -O0 -ggdb )
-  #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
-ENDIF()
-
-find_package(Git QUIET)
+### SUBMODULE / BUNDLED SOFTWARE
+#
+#
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 # Update submodules as needed
-    option(GIT_SUBMODULE "Check submodules during build" ON)
     if(GIT_SUBMODULE)
         message(STATUS "Submodule update")
-	execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
                         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                         RESULT_VARIABLE GIT_SUBMOD_RESULT)
         if(NOT GIT_SUBMOD_RESULT EQUAL "0")
@@ -77,7 +122,16 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     endif()
 endif()
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/jsoncpp/CMakeLists.txt")
+if(USE_BUILTIN_JSONCPP AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/jsoncpp/CMakeLists.txt")
+  message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+endif()
+if(USE_BUILTIN_MINIZIP AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/minizip/CMakeLists.txt")
+  message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+endif()
+if(USE_BUILTIN_MQTT AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/mosquitto/CMakeLists.txt")
+  message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+endif()
+if(USE_BUILTIN_SQLITE AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/sqlite-amalgamation/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
 
@@ -282,7 +336,7 @@ hardware/plugins/PythonObjects.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationBrowser.cpp
 notifications/NotificationEmail.cpp
-notifications/NotificationGCM.cpp
+notifications/NotificationFCM.cpp
 notifications/NotificationHelper.cpp
 notifications/NotificationHTTP.cpp
 notifications/NotificationKodi.cpp
@@ -334,7 +388,6 @@ add_executable(domoticz ${domoticz_SRCS})
 #
 # LUA
 #
-option(USE_LUA_STATIC "Link LUA static" YES)
 if(USE_LUA_STATIC)
   find_library(LUA_LIBRARIES NAMES liblua5.3.a)
 ELSE(USE_LUA_STATIC)
@@ -345,10 +398,17 @@ IF(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
   MESSAGE(STATUS "LUA library found at: ${LUA_LIBRARIES}")
   INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIRS}/lua5.3)
 ELSE(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
-  MESSAGE(FATAL_ERROR "LUA 5.3 not found! use sudo apt-get install liblua5.3-dev")
+  # try using find_package()
+  find_package(Lua "5.3" REQUIRED)
+  IF(LUA_FOUND)
+    MESSAGE(STATUS "LUA library found at  : ${LUA_LIBRARIES}")
+    MESSAGE(STATUS "LUA includes found at : ${LUA_INCLUDE_DIR}")
+    INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR}) 
+  ELSE(LUA_FOUND)
+    MESSAGE(FATAL_ERROR "LUA 5.3 not found! use sudo apt-get install liblua5.3-dev")
+  ENDIF(LUA_FOUND)
 ENDIF(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
 
-option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
 IF(USE_PYTHON)
   find_package(PythonInterp 3.4)
   find_package(PythonLibs 3.4)
@@ -365,7 +425,6 @@ SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the executables for Domoticz"
   )
 
-INCLUDE(CheckIncludeFile)
 CHECK_INCLUDE_FILE (execinfo.h HAVE_EXECINFO_H)
 
 IF(HAVE_EXECINFO_H)
@@ -385,28 +444,24 @@ IF(HAVE_EXECINFO_H)
   ENDIF()
 ENDIF(HAVE_EXECINFO_H)
 
-INCLUDE(CheckIncludeFiles)
-
-option(INCLUDE_LINUX_I2C "Include I2C support" YES)
 IF (INCLUDE_LINUX_I2C)
-	CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
-	IF (HAVE_LINUX_I2C_H)
-		message(STATUS "Building with I2C support")
-		add_definitions(-DHAVE_LINUX_I2C)
-	ELSE()
-		message(WARNING "I2C support disabled: headers not found!")
-	ENDIF (HAVE_LINUX_I2C_H)
+  CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
+  IF (HAVE_LINUX_I2C_H)
+    message(STATUS "Building with I2C support")
+    add_definitions(-DHAVE_LINUX_I2C)
+  ELSE()
+    message(WARNING "I2C support disabled: headers not found!")
+  ENDIF (HAVE_LINUX_I2C_H)
 ENDIF (INCLUDE_LINUX_I2C)
 
-option(INCLUDE_SPI "Include SPI support" YES)
 IF (INCLUDE_SPI)
-	CHECK_INCLUDE_FILES ("sys/types.h;linux/spi/spidev.h" HAVE_LINUX_SPI_H)
-	IF (HAVE_LINUX_SPI_H)
-		message(STATUS "Building with SPI support")
-		add_definitions(-DHAVE_LINUX_SPI)
-	ELSE()
-		message(WARNING "SPI support disabled: headers not found!")
-	ENDIF (HAVE_LINUX_SPI_H)
+  CHECK_INCLUDE_FILES ("sys/types.h;linux/spi/spidev.h" HAVE_LINUX_SPI_H)
+  IF (HAVE_LINUX_SPI_H)
+    message(STATUS "Building with SPI support")
+    add_definitions(-DHAVE_LINUX_SPI)
+  ELSE()
+    message(WARNING "SPI support disabled: headers not found!")
+  ENDIF (HAVE_LINUX_SPI_H)
 ENDIF (INCLUDE_SPI)
 
 FIND_PROGRAM(GIT_EXECUTABLE git
@@ -434,7 +489,6 @@ set (domoticz_VERSION_PATCH ${ProjectRevision})
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
 
-INCLUDE(TestBigEndian)
 TEST_BIG_ENDIAN(BIGENDIAN)
 IF(${BIGENDIAN})
      ADD_DEFINITIONS(-DIS_BIG_ENDIAN)
@@ -443,7 +497,6 @@ ENDIF(${BIGENDIAN})
 ## Link libraries
 
 # jsoncpp
-option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
 if(USE_BUILTIN_JSONCPP)
   set(JSONCPP_LIB_BUILD_SHARED OFF CACHE BOOL "Enable jsoncpp shared library" FORCE)
   set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Enable jsoncpp tests" FORCE)
@@ -454,19 +507,18 @@ if(USE_BUILTIN_JSONCPP)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/jsoncpp/include)
 ELSE(USE_BUILTIN_JSONCPP)
   find_package(PkgConfig)
-  pkg_check_modules(JSONCPP jsoncpp)
+  pkg_check_modules(JSONCPP REQUIRED jsoncpp)
   if(JSONCPP_FOUND)
     MESSAGE(STATUS "JSONCPP includes found at: ${JSONCPP_INCLUDE_DIRS}")
-    include_directories(${JSONCPP_INCLUDE_DIRS})
-    link_directories(${JSONCPP_LIBRARY_DIRS})
-    target_link_libraries(domoticz {JSONCPP_LIBRARIES})
+    target_include_directories(domoticz PRIVATE ${JSONCPP_INCLUDE_DIRS})
+    target_link_directories(domoticz PRIVATE ${JSONCPP_LIBRARY_DIRS})
+    target_link_libraries(domoticz ${JSONCPP_LIBRARIES})
   else(JSONCPP_FOUND)
     MESSAGE(FATAL_ERROR "JSONCPP not found on your system! try 'sudo apt-get install jsoncpp-dev'")
   endif(JSONCPP_FOUND)
 ENDIF(USE_BUILTIN_JSONCPP)
 
 # mosquitto
-option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
 IF(USE_BUILTIN_MQTT)
   MESSAGE(STATUS "Using builtin Mosquitto library")
   option(WITH_STATIC_LIBRARIES "Build static versions of the libmosquitto/pp libraries?" ON)
@@ -485,41 +537,51 @@ ELSE(USE_BUILTIN_MQTT)
 ENDIF(USE_BUILTIN_MQTT)
 
 # sqlite3
-option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
 IF(USE_BUILTIN_SQLITE)
   MESSAGE(STATUS "Using builtin SQLite library")
   add_subdirectory (extern/sqlite-amalgamation)
-  target_link_libraries(${PROJECT_NAME} SQLite3)
+  target_link_libraries(domoticz SQLite3)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/sqlite-amalgamation)
 ELSE(USE_BUILTIN_SQLITE)
-  find_package(PkgConfig)
-  pkg_check_modules(SQLITE3 REQUIRED sqlite3)
-  IF(SQLITE3_FOUND)
-    MESSAGE(STATUS "SQLite library found at: ${SQLITE3_LIBRARIES}")
-    MESSAGE(STATUS "SQLite includes found at: ${SQLITE3_INCLUDE_DIRS}")
-    INCLUDE_DIRECTORIES(${SQLITE3_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} ${SQLITE3_LIBRARIES})
-  ELSE(SQLITE3_FOUND)
+  find_package(SQLite3)
+  IF(SQLite3_FOUND)
+    MESSAGE(STATUS "SQLite library found at: ${SQLite3_LIBRARIES}")
+    MESSAGE(STATUS "SQLite includes found at: ${SQLite3_INCLUDE_DIRS}")
+    INCLUDE_DIRECTORIES(${SQLite3_INCLUDE_DIRS})
+    target_link_libraries(domoticz ${SQLite3_LIBRARIES})
+  ELSE(SQLite3_FOUND)
     MESSAGE(FATAL_ERROR "SQLite3 not found on your system! try 'sudo apt-get install libsqlite3-dev'")
-  ENDIF(SQLITE3_FOUND)
+  ENDIF(SQLite3_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
 
 # minizip
-add_subdirectory (extern/minizip)
-target_link_libraries(${PROJECT_NAME} minizip)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/minizip)
+IF(USE_BUILTIN_MINIZIP)
+  add_subdirectory (extern/minizip)
+  target_link_libraries(domoticz minizip)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/minizip)
+ELSE(USE_BUILTIN_MINIZIP)
+  find_package(PkgConfig)
+  pkg_check_modules(MINIZIP REQUIRED minizip)
+  if(MINIZIP_FOUND)
+    MESSAGE(STATUS "MINIZIP includes found at: ${MINIZIP_INCLUDE_DIRS}")
+    target_include_directories(domoticz PRIVATE ${MINIZIP_INCLUDE_DIRS})
+    target_link_directories(domoticz PRIVATE ${MINIZIP_LIBRARY_DIRS})
+    target_link_libraries(domoticz ${MINIZIP_LIBRARIES})
+  else(MINIZIP_FOUND)
+    MESSAGE(FATAL_ERROR "MINIZIP not found on your system! try 'sudo apt-get install minizip-dev'")
+  endif(MINIZIP_FOUND)
+ENDIF(USE_BUILTIN_MINIZIP)
 
 #
 # Find MD5/RMD160/SHA library
 #
-option(USE_OPENSSL_STATIC "Link OpenSSL static" NO)
 IF(USE_OPENSSL_STATIC)
   set(OPENSSL_USE_STATIC_LIBS TRUE)
 ENDIF(USE_OPENSSL_STATIC)
 
 find_package(OpenSSL REQUIRED)
 if(NOT OPENSSL_INCLUDE_DIR)
-	message(SEND_ERROR "Failed to find OpenSSL include files (ssl.h), no HTTPS support")
+  message(SEND_ERROR "Failed to find OpenSSL include files (ssl.h), no HTTPS support")
 endif()
 if(NOT OPENSSL_FOUND)
   message(SEND_ERROR "Failed to find the OpenSSL library, no HTTPS support")
@@ -538,7 +600,6 @@ endif()
 #
 # Boost
 #
-option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
@@ -604,7 +665,6 @@ endif(CEREAL_INCLUDE_DIRS)
 #
 # USB
 #
-option(WITH_LIBUSB "Enable libusb support" YES)
 if(WITH_LIBUSB)
   find_path(LIBUSB_INCLUDE_DIR usb.h
      HINTS ${PC_LIBUSB_INCLUDEDIR} ${PC_LIBUSB_INCLUDE_DIRS})
@@ -632,7 +692,6 @@ endif(WITH_LIBUSB)
 # OpenZWave
 # try to find open-zwave, if found, include support
 #
-option(USE_STATIC_OPENZWAVE "Build with static OpenZwave libraries" YES)
 if(USE_STATIC_OPENZWAVE)
   find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../open-zwave-read-only/cpp/build")
   set(OPENZWAVE_LIB ${OpenZWave})
@@ -650,8 +709,12 @@ IF(OpenZWave)
 
   find_path(OPENZWAVE_INCLUDE_DIRS NAMES openzwave/Manager.h)
   if (OPENZWAVE_INCLUDE_DIRS)
-    message(STATUS "OpenZWave includes found at: ${OPENZWAVE_INCLUDE_DIRS}/openzwave")
-    include_directories(${OPENZWAVE_INCLUDE_DIRS}/openzwave)
+    IF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+      include_directories(${OPENZWAVE_INCLUDE_DIRS})
+    ELSE()
+      include_directories(${OPENZWAVE_INCLUDE_DIRS}/openzwave)
+    ENDIF()
+    message(STATUS "OpenZWave includes found at: ${OPENZWAVE_INCLUDE_DIRS}")
   else()
     message(FATAL_ERROR "OpenZWave includes not found. Did you not issue 'sudo make install' after building OpenZWave?")
   endif (OPENZWAVE_INCLUDE_DIRS)
@@ -693,7 +756,6 @@ else()
   target_link_libraries(domoticz -lrt -lresolv ${EXECINFO_LIBRARIES})
 ENDIF()
 
-option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
 if(USE_PRECOMPILED_HEADER)
   message(STATUS "Using precompiled headers")
   target_precompile_headers(domoticz PRIVATE "main/stdafx.h")
@@ -712,7 +774,6 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 # build a CPack driven installer package
-INCLUDE(InstallRequiredSystemLibraries)
 
 SET(CPACK_GENERATOR "DEB")
 SET(CPACK_PACKAGE_NAME "domoticz")

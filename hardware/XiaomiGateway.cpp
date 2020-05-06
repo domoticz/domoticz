@@ -1096,15 +1096,18 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 10;
 							on = true;
 						}
-						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake") || (status == "vibrate") || (aqara_wireless1 == "double_click")) {
+						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake") || (status == "vibrate") || 
+							(name == "Xiaomi Wireless Single Wall Switch" && aqara_wireless1 == "double_click")) {
 							level = 20;
 							on = true;
 						}
-						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") || (aqara_wireless1 == "long_click")) {
+						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") ||
+							(name == "Xiaomi Wireless Single Wall Switch" && aqara_wireless1 == "long_click")) {
 							level = 30;
 							on = true;
 						}
-						else if ((status == "tap_twice") || (status == "long_click_release")) {
+						else if ((status == "tap_twice") || (status == "long_click_release") || 
+							(name == "Xiaomi Wireless Dual Wall Switch" && aqara_wireless1 == "double_click")) {
 							level = 40;
 							on = true;
 						}
@@ -1116,7 +1119,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 60;
 							on = true;
 						}
-						else if ((status == "alert")) {
+						else if ((status == "alert") || (name == "Xiaomi Wireless Dual Wall Switch" && aqara_wireless1 == "long_click")) {
 							level = 70;
 							on = true;
 						}
@@ -1202,25 +1205,25 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if ((!temperature.empty()) && (!humidity.empty()) && (pressure != 0))
 						{
 							// Temp+Hum+Baro
-							float temp = (float)atof(temperature.c_str()) / 100.0f;
-							int hum = atoi(humidity.c_str()) / 100;
+							float temp = std::stof(temperature) / 100.0f;
+							int hum = static_cast<int>((std::stof(humidity) / 100));
 							TrueGateway->InsertUpdateTempHumPressure(sid.c_str(), "Xiaomi TempHumBaro", temp, hum, pressure, battery);
 						}
 						else if ((!temperature.empty()) && (!humidity.empty()))
 						{
 							// Temp+Hum
-							float temp = (float)atof(temperature.c_str()) / 100.0f;
-							int hum = atoi(humidity.c_str()) / 100;
+							float temp = std::stof(temperature) / 100.0f;
+							int hum = static_cast<int>((std::stof(humidity) / 100));
 							TrueGateway->InsertUpdateTempHum(sid.c_str(), "Xiaomi TempHum", temp, hum, battery);
 						}
 						else if (temperature != "") {
-							float temp = (float)atof(temperature.c_str()) / 100.0f;
+							float temp = std::stof(temperature) / 100.0f;
 							if (temp < 99) {
 								TrueGateway->InsertUpdateTemperature(sid.c_str(), "Xiaomi Temperature", temp, battery);
 							}
 						}
 						else if (humidity != "") {
-							int hum = atoi(humidity.c_str()) / 100;
+							int hum = static_cast<int>((std::stof(humidity) / 100));
 							if (hum > 1) {
 								TrueGateway->InsertUpdateHumidity(sid.c_str(), "Xiaomi Humidity", hum, battery);
 							}

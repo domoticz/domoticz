@@ -46,6 +46,7 @@ protected:
 private:
 	bool ConnectInt();
 	bool ConnectIntEx();
+	std::string m_szLastEventName;
 	std::map<std::string, time_t> m_LastSendTemp;
 };
 

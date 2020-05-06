@@ -216,7 +216,7 @@ void CWunderground::GetMeterDetails()
 #else
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL << "https://api.weather.com/v2/pws/observations/current?stationId=" << szLoc << "&format=json&units=m&numericPrecision=decimal&apiKey=" << m_APIKey;
+	sURL << "https://api.weather.com/v2/pws/observations/current?stationId=" << szLoc << "&format=json&units=s&numericPrecision=decimal&apiKey=" << m_APIKey;
 	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR,"Wunderground: Error getting http data! (Check API key!)");
@@ -275,15 +275,15 @@ void CWunderground::GetMeterDetails()
 	int barometric=0;
 	int barometric_forcast=baroForecastNoInfo;
 
-	temp=root["metric"]["temp"].asFloat();
+	temp=root["metric_si"]["temp"].asFloat();
 
 	if (root["humidity"].empty()==false)
 	{
 		humidity = root["humidity"].asInt();
 	}
-	if (root["metric"]["pressure"].empty()==false)
+	if (root["metric_si"]["pressure"].empty()==false)
 	{
-		barometric=atoi(root["metric"]["pressure"].asString().c_str());
+		barometric=atoi(root["metric_si"]["pressure"].asString().c_str());
 		if (barometric<1000)
 			barometric_forcast=baroForecastRain;
 		else if (barometric<1020)
@@ -323,25 +323,25 @@ void CWunderground::GetMeterDetails()
 	{
 		wind_degrees=atoi(root["winddir"].asString().c_str());
 	}
-	if (root["metric"]["windSpeed"].empty()==false)
+	if (root["metric_si"]["windSpeed"].empty()==false)
 	{
-		if ((root["metric"]["windSpeed"] != "N/A") && (root["metric"]["windSpeed"] != "--"))
+		if ((root["metric_si"]["windSpeed"] != "N/A") && (root["metric_si"]["windSpeed"] != "--"))
 		{
-			windspeed_ms = static_cast<float>(atof(root["metric"]["windSpeed"].asString().c_str()));
+			windspeed_ms = static_cast<float>(atof(root["metric_si"]["windSpeed"].asString().c_str()));
 		}
 	}
-	if (root["metric"]["windGust"].empty()==false)
+	if (root["metric_si"]["windGust"].empty()==false)
 	{
-		if ((root["metric"]["windGust"] != "N/A") && (root["metric"]["windGust"] != "--"))
+		if ((root["metric_si"]["windGust"] != "N/A") && (root["metric_si"]["windGust"] != "--"))
 		{
-			windgust_ms = static_cast<float>(atof(root["metric"]["windGust"].asString().c_str()));
+			windgust_ms = static_cast<float>(atof(root["metric_si"]["windGust"].asString().c_str()));
 		}
 	}
-	if (root["metric"]["windChill"].empty()==false)
+	if (root["metric_si"]["windChill"].empty()==false)
 	{
-		if ((root["metric"]["windChill"] != "N/A") && (root["metric"]["windChill"] != "--"))
+		if ((root["metric_si"]["windChill"] != "N/A") && (root["metric_si"]["windChill"] != "--"))
 		{
-			wind_chill = static_cast<float>(atof(root["metric"]["windChill"].asString().c_str()));
+			wind_chill = static_cast<float>(atof(root["metric_si"]["windChill"].asString().c_str()));
 		}
 	}
 	if (wind_degrees!=-1)
@@ -411,11 +411,11 @@ void CWunderground::GetMeterDetails()
 	}
 
 	//Rain
-	if (root["metric"]["precipTotal"].empty() == false)
+	if (root["metric_si"]["precipTotal"].empty() == false)
 	{
-		if ((root["metric"]["precipTotal"] != "N/A") && (root["metric"]["precipTotal"] != "--"))
+		if ((root["metric_si"]["precipTotal"] != "N/A") && (root["metric_si"]["precipTotal"] != "--"))
 		{
-			float RainCount = static_cast<float>(atof(root["metric"]["precipTotal"].asString().c_str()));
+			float RainCount = static_cast<float>(atof(root["metric_si"]["precipTotal"].asString().c_str()));
 			if ((RainCount != -9999.00f) && (RainCount >= 0.00f))
 			{
 				RBUF tsen;
@@ -431,11 +431,11 @@ void CWunderground::GetMeterDetails()
 				tsen.RAIN.rainrateh = 0;
 				tsen.RAIN.rainratel = 0;
 
-				if (root["metric"]["precipRate"].empty() == false)
+				if (root["metric_si"]["precipRate"].empty() == false)
 				{
-					if ((root["metric"]["precipRate"] != "N/A") && (root["metric"]["precipRate"] != "--"))
+					if ((root["metric_si"]["precipRate"] != "N/A") && (root["metric_si"]["precipRate"] != "--"))
 					{
-						float rainrateph = static_cast<float>(atof(root["metric"]["precipRate"].asString().c_str()));
+						float rainrateph = static_cast<float>(atof(root["metric_si"]["precipRate"].asString().c_str()));
 						if (rainrateph != -9999.00f)
 						{
 							int at10 = round(std::abs(rainrateph*100.0f));

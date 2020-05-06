@@ -1284,7 +1284,6 @@ void CEventSystem::TriggerURL(const std::string &result, const std::vector<std::
 	item.sValue = result;
 	item.nValueWording = callback;
 	item.vData = headerData;
-	item.trigger = NULL;
 	m_eventqueue.push(item);
 }
 
@@ -1340,7 +1339,6 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 			item.devname = replaceitem.scenesgroupName;
 			item.sValue = replaceitem.scenesgroupValue;
 			item.lastUpdate = itt->second.lastUpdate;
-			item.trigger = NULL;
 			m_eventqueue.push(item);
 		}
 		replaceitem.lastUpdate = lastUpdate;
@@ -1377,7 +1375,34 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 	itt->second = replaceitem;
 }
 
-std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options)
+void CEventSystem::UpdateBatteryLevel(const uint64_t ulDevID, const unsigned char batteryLevel)
+{
+	if (!m_bEnabled)
+		return;
+
+	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+
+	if (itt != m_devicestates.end())
+	{
+		_tDeviceStatus replaceitem = itt->second;
+		replaceitem.batteryLevel = batteryLevel;
+		itt->second = replaceitem;
+	}
+}
+
+
+std::string CEventSystem::UpdateSingleState(
+	const uint64_t ulDevID, 
+	const std::string &devname, 
+	const int nValue, const std::string& sValue,
+	const unsigned char devType, const unsigned char subType, 
+	const _eSwitchType switchType, 
+	const std::string &lastUpdate, 
+	const unsigned char lastLevel, 
+	const unsigned char batteryLevel,
+	const std::map<std::string, std::string> & options
+)
 {
 	std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue, options);
 
@@ -1396,9 +1421,10 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 		//_log.Log(LOG_STATUS,"EventSystem: update device %" PRIu64 "",ulDevID);
 		_tDeviceStatus replaceitem = itt->second;
 		replaceitem.deviceName = l_deviceName;
+		//replaceitem.batteryLevel = batteryLevel;
 		if (nValue != -1)
 			replaceitem.nValue = nValue;
-		if (strlen(sValue) > 0)
+		if (!sValue.empty())
 			replaceitem.sValue = l_sValue;
 		if (!l_nValueWording.empty() || l_nValueWording != "-1")
 			replaceitem.nValueWording = l_nValueWording;
@@ -1427,6 +1453,7 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 		newitem.nValueWording = l_nValueWording;
 		newitem.lastUpdate = l_lastUpdate;
 		newitem.lastLevel = lastLevel;
+		//newitem.batteryLevel = batteryLevel;
 
 		if (!m_sql.m_bDisableDzVentsSystem)
 		{
@@ -1442,7 +1469,6 @@ void CEventSystem::UnlockEventQueueThread()
 	// Push dummy message to unlock queue
 	_tEventQueue item;
 	item.id = -1;
-	item.trigger = NULL;
 	m_eventqueue.push(item);
 }
 
@@ -1540,6 +1566,8 @@ void CEventSystem::ProcessDevice(
 		}
 	}
 
+	std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, lastUpdate, lastLevel, batterylevel, options);
+
 	if (g_bUseEventTrigger && GetEventTrigger(ulDevID, REASON_DEVICE, true))
 	{
 		_tEventQueue item;
@@ -1548,8 +1576,7 @@ void CEventSystem::ProcessDevice(
 		item.devname = devname;
 		item.nValue = nValue;
 		item.sValue = osValue;
-		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, "", 255, options);
-		item.trigger = nullptr;
+		item.nValueWording = nValueWording;
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
@@ -1570,8 +1597,6 @@ void CEventSystem::ProcessDevice(
 		}
 		m_eventqueue.push(item);
 	}
-	else
-		UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, lastUpdate, lastLevel, options);
 }
 
 void CEventSystem::ProcessMinute()
@@ -3319,13 +3344,14 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
 	if (lCommand == "SendNotification") {
 		std::string luaString = lua_tostring(lua_state, -1);
-		std::string subject(" "), body(" "), priority("0"), sound, subsystem;
+		std::string subject, body, priority("0"), sound, subsystem;
 		std::string extraData;
 		std::vector<std::string> aParam;
 		StringSplit(luaString, "#", aParam);
 		subject = body = aParam[0];
 		if (aParam.size() > 1) {
-			body = aParam[1];
+			if (!aParam[1].empty())
+				body = aParam[1];
 		}
 		if (aParam.size() > 2) {
 			priority = aParam[2];

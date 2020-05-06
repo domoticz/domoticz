@@ -3,14 +3,15 @@ image: Visual Studio 2019
 configuration: Release
 platform: x86
 
-environment:
-  APPVEYOR_SAVE_CACHE_ON_ERROR: true
-  VCPKG_INSTALL_PATH: 'C:\tools\vcpkg\installed'
-  VCPKG_COMMIT_ID: '7aebb481085de7387f8a9975652c26f9053f66df'
-
-cache:
-- C:\tools\vcpkg\installed -> msbuild\vcpkg-packages.txt
-- C:\Users\appveyor\clcache -> .appveyor.yml, msbuild\**
+# below is to build/use packaged with VCPKG, as this is currently taking to long it is disabled
+#environment:
+#  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+#  VCPKG_INSTALL_PATH: 'C:\tools\vcpkg\installed'
+#  VCPKG_COMMIT_ID: '7aebb481085de7387f8a9975652c26f9053f66df'
+#
+#cache:
+#- C:\tools\vcpkg\installed -> msbuild\vcpkg-packages.txt
+#- C:\Users\appveyor\clcache -> .appveyor.yml, msbuild\**
 
 #init:
 #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
@@ -18,19 +19,29 @@ cache:
 #on_finish:
 #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
-install:
-- cd "C:\Tools\vcpkg"
-- git pull
-- .\bootstrap-vcpkg.bat
-- .\vcpkg update
-- .\vcpkg upgrade --no-dry-run
-- .\vcpkg install --triplet %PLATFORM%-windows boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
-- .\vcpkg integrate install
-- cd %APPVEYOR_BUILD_FOLDER%
+# below is to build/use packaged with VCPKG, as this is currently taking to long it is disabled
+#install:
+#- cd "C:\Tools\vcpkg"
+#- git pull
+#- .\bootstrap-vcpkg.bat
+#- .\vcpkg update
+#- .\vcpkg upgrade --no-dry-run
+#- .\vcpkg install --triplet %PLATFORM%-windows boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
+#- .\vcpkg integrate install
+#- cd %APPVEYOR_BUILD_FOLDER%
 
 before_build:
 - ps: >-
     nuget install Tools.InnoSetup
+
+- cmd: >-    
+    cd msbuild
+    
+    appveyor DownloadFile https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z
+    
+    7z x WindowsLibraries.7z > NUL:
+    
+    cd ..
 
 build:
   parallel: true                  # enable MSBuild parallel builds
