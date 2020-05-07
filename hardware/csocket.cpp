@@ -13,7 +13,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
-#include <sys/errno.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
