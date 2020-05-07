@@ -1,11 +1,12 @@
-#include "stdafx.h"
 #include "Meteostick.h"
-#include "../main/Logger.h"
 #include "../main/Helper.h"
+#include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
+#include "stdafx.h"
+
 #include <string>
 #include <algorithm>
 #include <iostream>
@@ -13,11 +14,10 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
+#include <cmath>
 #include <ctime>
 
 #define RETRY_DELAY 30
-
-#define round(a) ( int ) ( a + .5 )
 
 #define USE_868_Mhz
 #define RAIN_IN_MM
@@ -200,7 +200,7 @@ void Meteostick::SendTempBaroSensorInt(const unsigned char Idx, const float Temp
 	float dTempAtSea = (Temp - (-273.15f)) + dTempGradient * altitude;
 	float dBasis = 1 - dTempGradient * altitude / dTempAtSea;
 	float dExponent = 0.03416f / dTempGradient;
-	float dPressure = Baro / pow(dBasis,dExponent);
+	float dPressure = Baro / std::pow(dBasis,dExponent);
 
 	SendTempBaroSensor(Idx, 255, Temp, dPressure, defaultname);
 }
@@ -218,14 +218,14 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	tsen.WIND.id1 = 0;
 	tsen.WIND.id2 = Idx;
 
-	int aw = round(Direction);
+	int aw = std::lrint(Direction);
 	tsen.WIND.directionh = (BYTE)(aw / 256);
 	aw -= (tsen.WIND.directionh * 256);
 	tsen.WIND.directionl = (BYTE)(aw);
 
 	tsen.WIND.av_speedh = 0;
 	tsen.WIND.av_speedl = 0;
-	int sw = round(Speed*10.0f);
+	int sw = std::lrint(Speed*10.0f);
 	tsen.WIND.av_speedh = (BYTE)(sw / 256);
 	sw -= (tsen.WIND.av_speedh * 256);
 	tsen.WIND.av_speedl = (BYTE)(sw);
@@ -242,7 +242,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	{
 		float dBasis = dWindSpeed;
 		float dExponent = 0.16f;
-		float dWind = pow(dBasis,dExponent);
+		float dWind = std::pow(dBasis,dExponent);
 		dWindChill = (13.12f + 0.6215f * Temp - 11.37f * dWind + 0.3965f * Temp * dWind);
 	}
 	dWindChill*=10.0f;

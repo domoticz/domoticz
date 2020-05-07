@@ -1,7 +1,9 @@
-#include "stdafx.h"
 #include "TTNMQTT.h"
-#include "../main/Logger.h"
 #include "../main/Helper.h"
+#include "../main/Logger.h"
+#include "stdafx.h"
+#include <cmath>
+
 #include <iostream>
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
@@ -394,7 +396,7 @@ int CTTNMQTT::CalcDomoticsRssiFromLora(const int gwrssi, const float gwsnr)
 	else
 	{
 		// Below noisefloor, little more difficult
-		iCalc = gwrssi + rint(gwsnr);
+		iCalc = gwrssi + std::rint(gwsnr);
 	}
 
 	// Range somewhere between -150 and +20
@@ -628,11 +630,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				// Now store the sensor values if not stored already
 				if (bTemp && bHumidity && bBaro)
 				{
-					SendTempHumBaroSensorFloat(DeviceID, BatteryLevel, temp, (int)rint(hum), baro, (uint8_t)nforecast, DeviceName, rssi);
+					SendTempHumBaroSensorFloat(DeviceID, BatteryLevel, temp, (int)std::rint(hum), baro, (uint8_t)nforecast, DeviceName, rssi);
 				}
 				else if(bTemp && bHumidity)
 				{
-					SendTempHumSensor(DeviceID, BatteryLevel, temp, (int)rint(hum), DeviceName, rssi);
+					SendTempHumSensor(DeviceID, BatteryLevel, temp, (int)std::rint(hum), DeviceName, rssi);
 				}
 				else if(bTemp && bBaro)
 				{
@@ -646,7 +648,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 					}
 					if (bHumidity)
 					{
-						SendHumiditySensor(DeviceID, BatteryLevel, (int)rint(hum), DeviceName, rssi);
+						SendHumiditySensor(DeviceID, BatteryLevel, (int)std::rint(hum), DeviceName, rssi);
 					}
 					if (bBaro)
 					{

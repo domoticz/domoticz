@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Winddelen.h"
+
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../httpclient/HTTPClient.h"
@@ -8,6 +9,8 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
+
+#include <cmath>
 
 #define WINDDELEN_POLL_INTERVAL 30
 
@@ -211,37 +214,37 @@ void CWinddelen::GetMeterDetails()
 			int windDir = 0;
 			std::string szWD = root["windDirection"].asString();
 			if (szWD == "N")
-				windDir = static_cast<int>(rint(0 * 22.5f));
+				windDir = static_cast<int>(std::lrint(0 * 22.5f));
 			else if ((szWD == "NNE") || (szWD == "NNO"))
-				windDir = static_cast<int>(rint(1 * 22.5f));
+				windDir = static_cast<int>(std::lrint(1 * 22.5f));
 			else if ((szWD == "NE") || (szWD == "NO"))
-				windDir = static_cast<int>(rint(2 * 22.5f));
+				windDir = static_cast<int>(std::lrint(2 * 22.5f));
 			else if ((szWD == "ENE") || (szWD == "ONO"))
-				windDir = static_cast<int>(rint(3 * 22.5f));
+				windDir = static_cast<int>(std::lrint(3 * 22.5f));
 			else if ((szWD == "E") || (szWD == "O"))
-				windDir = static_cast<int>(rint(4 * 22.5f));
+				windDir = static_cast<int>(std::lrint(4 * 22.5f));
 			else if ((szWD == "ESE") || (szWD == "OZO"))
-				windDir = static_cast<int>(rint(5 * 22.5f));
+				windDir = static_cast<int>(std::lrint(5 * 22.5f));
 			else if ((szWD == "SE") || (szWD == "ZO"))
-				windDir = static_cast<int>(rint(6 * 22.5f));
+				windDir = static_cast<int>(std::lrint(6 * 22.5f));
 			else if ((szWD == "SSE") || (szWD == "ZZO"))
-				windDir = static_cast<int>(rint(7 * 22.5f));
+				windDir = static_cast<int>(std::lrint(7 * 22.5f));
 			else if ((szWD == "S") || (szWD == "Z"))
-				windDir = static_cast<int>(rint(8 * 22.5f));
+				windDir = static_cast<int>(std::lrint(8 * 22.5f));
 			else if ((szWD == "SSW") || (szWD == "ZZW"))
-				windDir = static_cast<int>(rint(9 * 22.5f));
+				windDir = static_cast<int>(std::lrint(9 * 22.5f));
 			else if ((szWD == "SW") || (szWD == "ZW"))
-				windDir = static_cast<int>(rint(10 * 22.5f));
+				windDir = static_cast<int>(std::lrint(10 * 22.5f));
 			else if ((szWD == "WSW") || (szWD == "WZW"))
-				windDir = static_cast<int>(rint(11 * 22.5f));
+				windDir = static_cast<int>(std::lrint(11 * 22.5f));
 			else if ((szWD == "SSW") || (szWD == "ZZW"))
-				windDir = static_cast<int>(rint(12 * 22.5f));
+				windDir = static_cast<int>(std::lrint(12 * 22.5f));
 			else if (szWD == "WNW")
-				windDir = static_cast<int>(rint(13 * 22.5f));
+				windDir = static_cast<int>(std::lrint(13 * 22.5f));
 			else if (szWD == "NW")
-				windDir = static_cast<int>(rint(14 * 22.5f));
+				windDir = static_cast<int>(std::lrint(14 * 22.5f));
 			else if (szWD == "NNW")
-				windDir = static_cast<int>(rint(15 * 22.5f));
+				windDir = static_cast<int>(std::lrint(15 * 22.5f));
 
 			SendWind(m_usMillID, 255, windDir, windSpeed, windSpeed, 0, 0, false, false, "Wind");
 		}
