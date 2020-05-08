@@ -1820,7 +1820,7 @@ namespace http {
 					if (myWebem->m_authmethod != AUTH_BASIC)
 					{
 						//Check if we need to bypass authentication (not when using basic-auth)
-						for (auto itt : myWebem->myWhitelistURLs)
+						for (const auto& itt : myWebem->myWhitelistURLs)
 						{
 							if (req.uri.find(itt) == 0)
 							{
@@ -1831,7 +1831,7 @@ namespace http {
 						std::string cmdparam;
 						if (GetURICommandParameter(req.uri, cmdparam))
 						{
-							for (auto itt : myWebem->myWhitelistCommands)
+							for (const auto& itt : myWebem->myWhitelistCommands)
 							{
 								if (cmdparam.find(itt) == 0)
 									return true;
@@ -1881,7 +1881,7 @@ namespace http {
 			}
 
 			//Check if we need to bypass authentication (not when using basic-auth)
-			for (auto itt : myWebem->myWhitelistURLs)
+			for (const auto& itt : myWebem->myWhitelistURLs)
 			{
 				if (req.uri.find(itt) == 0)
 				{
@@ -1891,7 +1891,7 @@ namespace http {
 			std::string cmdparam;
 			if (GetURICommandParameter(req.uri, cmdparam))
 			{
-				for (auto itt : myWebem->myWhitelistCommands)
+				for (const auto& itt : myWebem->myWhitelistCommands)
 				{
 					if (cmdparam.find(itt) == 0)
 					{

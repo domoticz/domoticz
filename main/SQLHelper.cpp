@@ -2572,7 +2572,7 @@ bool CSQLHelper::OpenDatabase()
 			//OpenZWave COMMAND_CLASS_METER new index, need to delete the cache!
 			std::vector<std::string> root_files_;
 			DirectoryListing(root_files_, szUserDataFolder + "Config", false, true);
-			for (auto itt : root_files_)
+			for (const auto& itt : root_files_)
 			{
 				if (itt.find("ozwcache_0x") != std::string::npos)
 				{
@@ -2710,7 +2710,7 @@ bool CSQLHelper::OpenDatabase()
 			dbToMigrate.push_back(_tPushHelper("GooglePubSubLink", CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB));
 			dbToMigrate.push_back(_tPushHelper("FibaroLink", CBasePush::PushType::PUSHTYPE_FIBARO));
 
-			for (auto itt : dbToMigrate)
+			for (const auto& itt : dbToMigrate)
 			{
 				safe_query(
 					"INSERT INTO PushLink (PushType, DeviceID, DelimitedValue, TargetType, TargetVariable, TargetDeviceID, TargetProperty, Enabled, IncludeUnit) "

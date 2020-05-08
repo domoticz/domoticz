@@ -294,7 +294,7 @@ bool CBuienRadar::GetStationDetails()
 		double shortest_station_lat = 0;
 		double shortest_station_lon = 0;
 
-		for (const auto itt : root["actual"]["stationmeasurements"])
+		for (const auto& itt : root["actual"]["stationmeasurements"])
 		{
 			if (itt["temperature"].empty())
 				continue;
@@ -326,7 +326,7 @@ bool CBuienRadar::GetStationDetails()
 	}
 
 	// StationID was provided, find it in the list
-	for (const auto itt : root["actual"]["stationmeasurements"])
+	for (const auto& itt : root["actual"]["stationmeasurements"])
 	{
 		if (itt["temperature"].empty())
 			continue;
