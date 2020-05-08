@@ -21,6 +21,10 @@ local function Variable(domoticz, data)
 		self['nValue'] = data.data.value
 	end
 
+	function self.dumpSelection( selection )
+		domoticz.utils.dumpSelection(self, ( selection or 'attributes' ))
+	end
+
 	if (data.variableType == 'date') then
 		local d, mon, y = string.match(data.data.value, "(%d+)[%p](%d+)[%p](%d+)")
 		local date = y .. '-' .. mon .. '-' .. d .. ' 00:00:00'
