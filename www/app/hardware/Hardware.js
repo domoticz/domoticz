@@ -807,8 +807,10 @@ define(['app'], function (app) {
 				if (threshold == 0) {
 					threshold = 25;
 				}
+				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&password=" + location +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
@@ -1952,6 +1954,7 @@ define(['app'], function (app) {
 				if (threshold == 0) {
 					threshold = 25;
 				}
+				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) +
@@ -3649,6 +3652,7 @@ define(['app'], function (app) {
 							if (threshold == 0) threshold = 25;
 							$("#hardwarecontent #divbuienradar #timeframe").val(timeframe);
 							$("#hardwarecontent #divbuienradar #threshold").val(threshold);
+							$("#hardwarecontent #divbuienradar #location").val(data["Password"]);
 						}
 						else if ((data["Type"].indexOf("HTTP/HTTPS") >= 0)) {
 							$("#hardwarecontent #hardwareparamshttp #url").val(data["Address"]);
@@ -3970,9 +3974,9 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divrelaynet").hide();
 			$("#hardwarecontent #divgpio").hide();
 			$("#hardwarecontent #divsysfsgpio").hide();
-            $("#hardwarecontent #divmodeldenkovidevices").hide();
-            $("#hardwarecontent #divmodeldenkoviusbdevices").hide();
-            $("#hardwarecontent #divmodeldenkovitcpdevices").hide();
+       	     		$("#hardwarecontent #divmodeldenkovidevices").hide();
+            		$("#hardwarecontent #divmodeldenkoviusbdevices").hide();
+            		$("#hardwarecontent #divmodeldenkovitcpdevices").hide();
 			$("#hardwarecontent #divunderground").hide();
 			$("#hardwarecontent #divbuienradar").hide();
 			$("#hardwarecontent #divserial").hide();

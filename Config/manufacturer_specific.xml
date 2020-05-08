@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ManufacturerSpecificData Revision="84" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="88" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -403,6 +403,7 @@
     <Product config="dlink/dch-z110.xml" id="000e" name="DCH-Z110 Door/Window 3 in 1 sensor" type="0002"/>
     <Product config="dlink/dch-z120.xml" id="000d" name="DCH-Z120 PIR/Motion 3 in 1 sensor" type="0002"/>
     <Product config="dlink/dch-z510.xml" id="000a" name="DCH-Z510 Siren" type="0004"/>
+    <Product config="dlink/dch-z210.xml" id="0011" name="DCH-Z210 Gen5 Plug" type="0001"/>
   </Manufacturer>
   <Manufacturer id="0002" name="Danfoss">
     <Product config="danfoss/rsroom.xml" id="8010" name="RS Room Sensor" type="0003"/>
@@ -606,6 +607,8 @@
     <Product config="oomi/ft111.xml" id="006F" name="FT111 In Wall Dimmer" type="0103"/>
     <Product config="oomi/ft111.xml" id="006F" name="FT111 In Wall Dimmer" type="0203"/>
     <Product config="oomi/ft111.xml" id="006F" name="FT111 In Wall Dimmer" type="1D03"/>
+    <Product config="oomi/ft112.xml" id="0070" name="FT112 Door-window sensor" type="0002"/>
+    <Product config="oomi/ft118.xml" id="0076" name="FT118 Range extender 6" type="0004"/>  
   </Manufacturer>
   <Manufacturer id="010f" name="FIBARO System">
     <Product config="fibaro/fgbs001.xml" id="0101" name="FGBS001 Universal Binary Sensor" type="0501"/>
@@ -712,6 +715,7 @@
     <Product config="fibaro/fgcd001.xml" id="1000" name="FGSD001 CO Sensor" type="1201"/>
     <Product config="fibaro/fgcd001.xml" id="1001" name="FGSD001 CO Sensor" type="1201"/>
     <Product config="fibaro/fgt001.xml" id="1000" name="FGT001 Heat Controller" type="1301"/>
+    <Product config="fibaro/fgt001.xml" id="1001" name="FGT001 Heat Controller" type="1301"/>
     <Product config="fibaro/fgwpg111.xml" id="2000" name="FGWPG111 US Wall Plug" type="1701"/>
     <Product config="fibaro/fgwpg111.xml" id="1000" name="FGWPG111 UK Wall Plug" type="1801"/>
     <Product config="fibaro/fgwds221.xml" id="1000" name="FGWDS221 Walli Double Switch" type="1B01"/>
@@ -1653,6 +1657,7 @@
     <Product config="wenzhou/tz57.xml" id="0203" name="TZ57 Two channel switch" type="0311"/>
     <Product config="wenzhou/tz79.xml" id="0305" name="TZ79 Power meter Relay Switch" type="0311"/>
     <Product config="wenzhou/tz74.xml" id="0304" name="TZ74 Dual Switch" type="0311"/>
+	  <Product config="wenzhou/tz78.xml" id="0005" name="TZ78 In-Wall Single Relay Switch" type="0003"/>
   </Manufacturer>
   <Manufacturer id="011C" name="TKH Group / Eminent"></Manufacturer>
   <Manufacturer id="0327" name="TMC Technology"></Manufacturer>
@@ -1819,6 +1824,7 @@
   <Manufacturer id="037D" name="Xiamen AcTEC Electronics"></Manufacturer>
   <Manufacturer id="0000" name="Z-Wave (Sigma Designs)">
     <Product id="0001" name="UZB Z-Wave USB Adapter" type="0001"/>
+    <Product id="0008" name="UZB3 Z-Wave USB Adapter" type="0003"/>
   </Manufacturer>
   <Manufacturer id="031D" name="Z-Wave Alliance"></Manufacturer>
   <Manufacturer id="004F" name="Z-Wave Technologia"></Manufacturer>

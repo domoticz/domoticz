@@ -127,7 +127,7 @@ function fillTimes
 		ContactDoorLockInvertedSwitch_ExpectedSeconds=30
 		DelayedVariableScene_ExpectedSeconds=80
 		EventState_ExpectedSeconds=190
-		Integration_ExpectedSeconds=330
+		Integration_ExpectedSeconds=340
 		SelectorSwitch_ExpectedSeconds=100
 		SystemAndCustomEvents_ExpectedSeconds=10
 	}
@@ -143,12 +143,12 @@ function fillNumberOfTests
 		ScriptdzVentsDispatching_ExpectedTests=2
 		TimedCommand_ExpectedTests=46
 		Time_ExpectedTests=340
-		Utils_ExpectedTests=25
+		Utils_ExpectedTests=27
 		Variable_ExpectedTests=15
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
 		DelayedVariableScene_ExpectedTests=2
 		EventState_ExpectedTests=2
-		Integration_ExpectedTests=217
+		Integration_ExpectedTests=220
 		SelectorSwitch_ExpectedTests=2
 		SystemAndCustomEvents_ExpectedTests=7
 	}

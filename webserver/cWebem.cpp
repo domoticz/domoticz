@@ -948,9 +948,8 @@ namespace http {
 			_tIPNetwork ipnetwork;
 			ipnetwork.network = 0;
 			ipnetwork.mask = 0;
-			ipnetwork.hostname = "";
 
-			if (network == "")
+			if (network.empty())
 			{
 				//add local host
 				char ac[256];
@@ -962,14 +961,13 @@ namespace http {
 				}
 				return;
 			}
-			std::string inetwork = network;
-			std::string inetworkmask = network;
-			std::string mask = network;
-
 
 			size_t pos = network.find_first_of("*");
-			if (pos > 0)
+			if (pos != std::string::npos)
 			{
+				std::string inetwork = network;
+				std::string inetworkmask = network;
+				std::string mask = network;
 				stdreplace(inetwork, "*", "0");
 				int a, b, c, d;
 				if (sscanf(inetwork.c_str(), "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
@@ -999,8 +997,10 @@ namespace http {
 			else
 			{
 				pos = network.find_first_of("/");
-				if (pos > 0)
+				if (pos != std::string::npos)
 				{
+					std::string inetwork = network;
+					std::string mask = network;
 					unsigned char keepbits = (unsigned char)atoi(network.substr(pos + 1).c_str());
 					uint32_t imask = keepbits > 0 ? 0x00 - (1 << (32 - keepbits)) : 0xFFFFFFFF;
 					inetwork = network.substr(0, pos);
@@ -1011,18 +1011,22 @@ namespace http {
 				{
 					//Is it an IP address of hostname?
 					boost::system::error_code ec;
-					boost::asio::ip::address::from_string(network, ec);
+					boost::asio::ip::address _address = boost::asio::ip::address::from_string(network, ec);
 					if (ec)
 					{
 						//only allow ip's, localhost is covered above
 						return;
 						//ipnetwork.hostname=network;
 					}
+					//single IP
+					if (_address.is_v4())
+					{
+						ipnetwork.network = IPToUInt(network);
+						ipnetwork.mask = IPToUInt("255.255.255.255");
+					}
 					else
 					{
-						//single IP?
-						ipnetwork.network = IPToUInt(inetwork);
-						ipnetwork.mask = IPToUInt("255.255.255.255");
+						ipnetwork.hostname = network;
 					}
 				}
 			}
@@ -1329,20 +1333,34 @@ namespace http {
 
 		bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork)
 		{
-			if (ipnetwork.hostname.size() != 0)
+			if (!ipnetwork.hostname.empty())
 			{
 				return (ip == ipnetwork.hostname);
 			}
-			uint32_t ip_addr = IPToUInt(ip);
-			if (ip_addr == 0)
-				return false;
 
-			uint32_t net_lower = (ipnetwork.network & ipnetwork.mask);
-			uint32_t net_upper = (net_lower | (~ipnetwork.mask));
+			boost::system::error_code ec;
+			boost::asio::ip::address _address = boost::asio::ip::address::from_string(ip, ec);
+			if (ec)
+			{
+				return false; //not a correct ip address
+			}
+			if (_address.is_v4())
+			{
+				uint32_t ip_addr = IPToUInt(ip);
+				if (ip_addr == 0)
+					return false;
 
-			if (ip_addr >= net_lower &&
-				ip_addr <= net_upper)
-				return true;
+				uint32_t net_lower = (ipnetwork.network & ipnetwork.mask);
+				uint32_t net_upper = (net_lower | (~ipnetwork.mask));
+
+				if (ip_addr >= net_lower &&
+					ip_addr <= net_upper)
+					return true;
+			}
+			else
+			{
+				//Wildcard not supported right now, only complete addresses
+			}
 			return false;
 		}
 
@@ -1552,6 +1570,7 @@ namespace http {
 			{
 				return false;
 			}
+
 /*
 			std::string connection_header = h;
 			if (!boost::iequals(connection_header, "upgrade"))
@@ -1565,6 +1584,11 @@ namespace http {
 			{
 				return false;
 			}
+
+			if (!CheckAuthentication(session, req, rep))
+				return false;
+
+
 			std::string upgrade_header = h;
 			if (!boost::iequals(upgrade_header, "websocket"))
 			{

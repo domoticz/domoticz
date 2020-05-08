@@ -34,13 +34,13 @@ local function HTTPResponce(domoticz, responseData, testResponse)
 
 	evenItemIdentifier.setType(self, 'isHTTPResponse', domoticz.BASETYPE_HTTP_RESPONSE, responseData.callback)
 
-	if (self._contentType):match('application/json') and self.data then
+	if self.data and utils.isJSON(self.data, self._contentType) then
 		local json = utils.fromJSON(self.data)
 		if (json) then
 			self.isJSON = true
 			self.json = json
 		end
-	elseif ((self._contentType):match('application/xml') or (self._contentType):find('text/xml')) and self.data then
+	elseif self.data and utils.isXML(self.data, self._contentType) then
 		 local xml = utils.fromXML(self.data)
 		 if (xml) then
 			self.isXML = true

@@ -197,6 +197,7 @@ A list of one or more custom event triggers. This eventTrigger can be activate b
  - The name of the custom-event followed by a time constraint, such as: 
 	`['start']  = { 'at 15:*', 'at 22:* on sat, sun' }` The script will be executed if domoticz is started, **and** it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [See time trigger rules](#timer_trigger_rules).
 
+##### API
 	- JSON: **< domoticzIP : domoticz port >**/json.htm?type=command&param=customevent&event=MyEvent&data=myData
 	- MQTT simple:  {"command":"customevent", "event":"MyEvent","data":"myData"}  
 	- MQTT complex: {"command":"customevent","event":"MyEvent","data":"{\"idx\":29,\"test\":\"ok\"}" }
@@ -204,6 +205,17 @@ A list of one or more custom event triggers. This eventTrigger can be activate b
 		`domoticz.emitEvent('myEvent') -- no data`
 		`domoticz.emitEvent('another event', 'some data')`
 		`domoticz.emitEvent('hugeEvent', { a = 10, b = 20, some = 'text', sub = { x = 10, y = 20 } })`
+
+The customEvent object
+The customeEvent object (second parameter in your execute function) has these attributes:
+
+ - **data**: Raw customEevent data.
+ - **isJSON**: *Boolean*.<sup>3.0.3</sup> true when the customEvent data is a valid json string. The data is then automatically converted to a Lua table.
+ - **isXML**: *Boolean*. <sup>3.0.3</sup> true when the customEvent data is a valid xml string. When true, the data is automatically converted to a Lua table.
+ - **json**. *Table*. <sup>3.0.3</sup> When the customEvent data is a valid json string, the response data is automatically converted to a Lua table for quick and easy access.
+ - **trigger**, **customEvent**: *String*.<sup>3.0.3</sup> The string that triggered this customEvent instance. This is useful if you have a script that is triggered by multiple different customEvent strings.
+ - **xml**. *Table*. <sup>3.0.3</sup> When the response data is a valid xml string, the customeEvent data is automatically converted to a Lua table for quick and easy access.
+ 
 
 #### devices = { ... }
 A list of device-names or indexes. If a device in your system was updated (e.g. switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. **Note**: update does not necessarily means the device state or value has changed. Each device can be:
@@ -573,10 +585,10 @@ There are several options for time triggers. It is important to know that Domoti
 			'at civiltwilightstart',	-- uses civil twilight start/end info from Domoticz
 			'at civiltwilightend',
 			'at sunset on sat,sun',
-			'xx minutes before civiltwilightstart',
-			'xx minutes after civiltwilightstart',
-			'xx minutes before civiltwilightend',
-			'xx minutes after civiltwilightend',
+			'xx minutes before civiltwilightstart',		--
+			'xx minutes after civiltwilightstart',		-- Please note that these relative times
+			'xx minutes before civiltwilightend',		-- cannot cross dates
+			'xx minutes after civiltwilightend',		--
 			'xx minutes before sunset',
 			'xx minutes after sunset',
 			'xx minutes before sunrise',
@@ -727,6 +739,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **fromXML(xml, fallback )**: *Function*: <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: `local t = domoticz.utils.fromXML('<testtag>What a nice feature!</testtag>') Followed by: `print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.
 	 - **groupExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid groupID or ID when entered with valid groupName or false when not a groupID or groupName of an existing group
 	- **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
+	- **isJSON(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'application/json' or string is enclosed in {} and `false` otherwise.
+	- **isXML(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'text/xml' or 'application/xml' or string is enclosed in <> and `false` otherwise.
 	- **leftPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.
 	- **centerPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.
 	- **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation
@@ -861,6 +875,7 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **deviceSubType**: *String*. See Domoticz devices table in Domoticz GUI.
  - **deviceType**: *String*. See Domoticz devices table in Domoticz GUI.
  - **dump()**: *Function*. Dump all attributes to the Domoticz log. This ignores the log level setting.
+ - **dumpSelection([{'attributes'} 'functions' 'tables'])**: *Function*. <sup>3.0.5</sup>  Dump attributes, function-names or table-names to the Domoticz log. This ignores the log level setting.
  - **hardwareName**: *String*. See Domoticz devices table in Domoticz GUI.
  - **hardwareId**: *Number*. See Domoticz devices table in Domoticz GUI.
  - **hardwareType**: *String*. See Domoticz devices table in Domoticz GUI.
@@ -1993,17 +2008,17 @@ For every script file that defines persisted variables (using the `data={ … }`
 
 	domoticz/
 		scripts/
- 		dzVents/
-			data/
-				__data_yourscript1.lua
-				__data_yourscript2.lua
-				__data_global_data.lua
-			examples/
-			generated_scripts/
-			scripts/
-				yourscript1.lua
-				yourscript2.lua
-				global_data.lua
+ 			dzVents/
+				data/
+					__data_yourscript1.lua
+					__data_yourscript2.lua
+					__data_global_data.lua
+				examples/
+				generated_scripts/
+				scripts/
+					yourscript1.lua
+					yourscript2.lua
+					global_data.lua
 
 If you dare to, you can watch inside these files. Every time some data are changed, dzVents will stream the changes back into the data files.
 **Again, make sure you don't put too much stuff in your persisted data as it may slow things down too much.**
@@ -2283,7 +2298,7 @@ Also, make sure that your device names are unique! dzVents will throw a warning 
 If your script is still not triggered, you can try to create a classic Lua event script and see if that does work.
 
 ### Debugging your script
-A simple way to inspect a device in your script is to dump it to the log: `myDevice.dump()`. This will dump all the attributes (and more) of the device so you can inspect what its state is.
+A simple way to inspect a device in your script is to dump it to the log: `myDevice.dump()`. This will dump everything known to dzVents of the device so you can inspect what its state is. If you only need to see a subset you can use dumpSelection('attributes'), dumpSelection('functions') or dumpSelection('tables')
 Use print statements or domoticz.log() statements in your script at cricital locations to see if the Lua interpreter reaches that line.
 Don't try to print a device object though; use the `myDevice.dump()` method for that. It wil log all attributes of the device in the Domoticz log.
 
@@ -2427,6 +2442,17 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+## [3.0.5]
+- Add dumpSelection() method 
+- Fixed settings.url
+
+## [3.0.4]
+- Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC 
+- add isJSON, isXML functions to Utils 
+
+## [3.0.3]
+- add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object) 
 
 ## [3.0.2]
 - Add `PUT` and `DELETE` support to `openURL`

@@ -1,16 +1,28 @@
-Version 202x.x ( 202x)
-- Fixed: Battery level realtime updates 
+Version 2020.xxxx (xxxx)
+- Implemented: Allow complete IPv6 address in local network setting
+- Updated: dzVents version 3.0.5 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: TTNMQTT, improved Improved calculation and storage of signal-levels
+- Updated: eVehicles, add ODO meter, unlock/open alert, max charge level to Tesla module
+- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
+
+Version 2020.2 (April 26th 2020)
+- Implemented: GUI: New Update controller code
+- Implemented: GUI: Real-time updates of history-logs on device / scene changes
+- Fixed: Battery level Real-time updates 
 - Fixed: Daikin wifi adaptor module
 - Fixed: Delete device now propagates to all relevant tables
-- Implemented: GUI: real-time updates of history-logs on device / scene changes
+- Fixed: Possible security issue in the websocket layer
+- Fixed: Unwanted RFY protection popup
+- Updated: BuienRadar, Now possible to enter Station_ID or Latitude/Longitude
 - Updated: Deprecated Google Cloud Messaging system(gcm) replaced by Firebase Cloud Messaging (fcm)
 - Updated: dzVents version 3.0.2 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 - Updated: OpenZWave configuration files
 - Updated: OpenZWave library for windows
 - Updated: MQTT add option to enable/disable loop prevention
 - Changed: Removed external library dependencies from repository
+- Updated: Translations
+- Updated: TTNMQTT, improved handling CayenneLPP channels
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
-
 
 Version 2020.1 (March 22th 2020)
 - Implemented: BuienRadar

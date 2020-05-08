@@ -1,3 +1,14 @@
+[3.0.5]
+- add dumpSelection()
+- fixed settings.url
+
+[3.0.4]
+- Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC 
+- add isJSON, isXML functions to Utils 
+
+[3.0.3]
+- add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object) 
+
 [3.0.2]
 - Add `PUT` and `DELETE` support to `openURL`
 - Ensure sending integer in nValue in update function
