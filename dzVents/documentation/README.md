@@ -2445,6 +2445,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 ## [3.0.5]
 - Add dumpSelection() method 
+- Fixed settings.url
 
 ## [3.0.4]
 - Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC 
