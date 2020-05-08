@@ -1,3 +1,6 @@
+[3.0.5]
+- add dumpSeletion()
+
 [3.0.4]
 - Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC 
 - add isJSON, isXML functions to Utils 

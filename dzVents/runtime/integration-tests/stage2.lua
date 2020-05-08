@@ -733,12 +733,54 @@ local testSetIconSwitch = function(name)
 	return res
 end
 
-local testDeviceDump = function(name)
+local testDeviceDumps = function(name)
 	local utils = require('Utils')
-	local dev = dz.devices(name)
+	local dv = dz.devices(name)
 	local res = true
-	res = res and ( utils.dumpTable(dev, '> ') == nil)
-	handleResult('Test device dump', res)
+	res = res and ( dv.dump() == nil )
+	res = res and ( dv.dumpSelection() == nil ) 
+	res = res and ( dv.dumpSelection('attributes') == nil ) 
+	res = res and ( dv.dumpSelection('functions') == nil ) 
+	res = res and ( dv.dumpSelection('tables') == nil ) 
+	handleResult('Test device dumps', res)
+	return res
+end
+
+local testGroupDumps = function(name)
+	local utils = require('Utils')
+	local gp = dz.groups(name )
+	local res = true
+	res = res and ( gp.dump() == nil )
+	res = res and ( gp.dumpSelection() == nil ) 
+	res = res and ( gp.dumpSelection('attributes') == nil ) 
+	res = res and ( gp.dumpSelection('functions') == nil ) 
+	res = res and ( gp.dumpSelection('tables') == nil ) 
+	handleResult('Test group dumps', res)
+	return res
+end
+
+local testSceneDumps = function(name)
+	local utils = require('Utils')
+	local sc = dz.scenes(name)
+	local res = true
+	res = res and ( sc.dump() == nil )
+	res = res and ( sc.dumpSelection() == nil ) 
+	res = res and ( sc.dumpSelection('attributes') == nil ) 
+	res = res and ( sc.dumpSelection('functions') == nil ) 
+	res = res and ( sc.dumpSelection('tables') == nil ) 
+	handleResult('Test scene dumps', res)
+	return res
+end
+
+local testVariableDumps = function(name)
+	local utils = require('Utils')
+	local var = dz.variables(name)
+	local res = true
+	res = res and ( var.dumpSelection() == nil ) 
+	res = res and ( var.dumpSelection('attributes') == nil ) 
+	res = res and ( var.dumpSelection('functions') == nil ) 
+	res = res and ( var.dumpSelection('tables') == nil ) 
+	handleResult('Test Variable dumps', res)
 	return res
 end
 
@@ -959,7 +1001,10 @@ return {
 		res = res and testDescription('vdDescriptionSwitch', descriptionString, "device")
 		res = res and testDescription('sceneDescriptionSwitch1', descriptionString, "scene")
 		res = res and testDescription('groupDescriptionSwitch1', descriptionString, "group")
-		res = res and testDeviceDump(vdSwitchDimmer)
+		res = res and testDeviceDumps('vdSwitchDimmer')
+		res = res and testGroupDumps('gpGroup')
+		res = res and testSceneDumps('scScene')
+		res = res and testVariableDumps('varString' )
 		res = res and testCameraDump()
 		res = res and testSettingsDump()
 		res = res and testIFTTT('myEvent')

@@ -25,6 +25,10 @@ local function Device(domoticz, data, dummyLogger)
 		domoticz.logDevice(self, filename)
 	end
 
+	function self.dumpSelection( selection )
+		utils.dumpSelection(self, ( selection or 'attributes' ))
+	end
+
 	self['name'] = data.name
 	self['id'] = data.id -- actually, this is the idx
 	self['idx'] = self.id -- for completeness

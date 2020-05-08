@@ -2386,6 +2386,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 = History =
 
+== [3.0.5] ==
+
+* Add dumpSelection()
+
 == [3.0.4] ==
 
 * Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC

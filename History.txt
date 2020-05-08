@@ -1,6 +1,6 @@
 Version 2020.xxxx (xxxx)
 - Implemented: Allow complete IPv6 address in local network setting
-- Updated: dzVents version 3.0.4 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: dzVents version 3.0.5 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 - Updated: TTNMQTT, improved Improved calculation and storage of signal-levels
 - Updated: eVehicles, add ODO meter, unlock/open alert, max charge level to Tesla module
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
