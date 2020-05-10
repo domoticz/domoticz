@@ -556,7 +556,7 @@ ENDIF(USE_BUILTIN_SQLITE)
 
 # minizip
 IF(USE_BUILTIN_MINIZIP)
-  add_subdirectory (extern/minizip)
+  add_subdirectory (extern/minizip EXCLUDE_FROM_ALL)
   target_link_libraries(domoticz minizip)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/minizip)
 ELSE(USE_BUILTIN_MINIZIP)
