@@ -1536,7 +1536,6 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 					ltime.tm_mon -= 1;		// months since January - [0, 11]
 					ltime.tm_year -= 1900;  // years since 1900	
 					ltime.tm_isdst = lnowtime.tm_isdst;
-					ltime.tm_gmtoff = lnowtime.tm_gmtoff;
 					rcv_tm = mktime(&ltime);
 
 					delta = now - rcv_tm;			
