@@ -6,6 +6,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
+#include "../main/json_helper.h"
 
 #include <cmath>
 #include <fcntl.h>
@@ -30,16 +31,8 @@ CRtl433::CRtl433(const int ID, const std::string &cmdline) :
 	m_time_last_received = 0;
 /*
 	#ifdef _DEBUG
-	Registered 135 out of 141 device decoding protocols [ 1-4 6-8 10-17 19-26 29-64 67-141 ]
-	std::string headerline = "time,msg,codes,model,button,id,channel,battery_ok,temperature_C,mic,subtype,rid,humidity,state,status,brand,rain_rate,rain_rate_mm_h,rain_total,rain_mm,gust,average,direction,wind_max_m_s,wind_avg_m_s,wind_dir_deg,pressure_hPa,uv,power_W,energy_kWh,radio_clock,sequence,unit,group_call,command,dim,dim_value,wind_speed,wind_gust,wind_direction,wind_avg_km_h,wind_max_km_h,dipswitch,rbutton,device,setpoint_C,switch,cmd,cmd_id,tristate,direction_deg,speed,rain,msg_type,signal,sensor_code,uv_status,uv_index,lux,wm,seq,rainfall_mm,wind_speed_ms,gust_speed_ms,current,interval,learn,message_type,sensor_id,sequence_num,battery_low,wind_speed_mph,wind_speed_kph,rain_inch,rc,gust_speed_mph,wind_approach,flags,maybetemp,binding_countdown,depth,depth_cm,dev_id,sensor_type,power0,power1,power2,node,ct1,ct2,ct3,ct4,Vrms/batt,batt_Vrms,temp1_C,temp2_C,temp3_C,temp4_C,temp5_C,temp6_C,pulse,address,button1,button2,button3,button4,data,sid,group,transmit,moisture,type,pressure_kPa,battery_mV,pulses,pulsecount,energy,len,to,from,payload,event,alarm,tamper,heartbeat,temperature1_C,temperature2_C,temperature_1_C,temperature_2_C,test,probe,water,humidity_1,ptemperature_C,phumidity,newbattery,heating,heating_temp,uvi,light_lux,pm2_5_ug_m3,pm10_0_ug_m3,counter,code,repeat,maybe_battery,device_type,raw_message,switch1,switch2,switch3,switch4,switch5,extradata,house_id,module_id,sensor_count,alarms,sensor_value,battery_voltage,mode,version,type_string,failed,class,alert,secret_knock,relay,wind_dev_deg,exposure_mins,transmit_s,button_id,button_name,encrypted,misc,current_A,voltage_V,pairing,connected,gap,impulses,triggered,storage";
-	std::vector<std::string> headers = ParseCSVLine(headerline.c_str());
-	std::string line = "2020-02-10 17:15:14,,,Oregon-THN132N,,183,1,1,20.800,,,,,,,OS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
-	std::string line = "2020-02-10 17:15:14,,,Oregon-THN132N,,183,1,1,20.800,,,,,,,OS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
-	std::string line = "2020-02-10 17:15:15,,,Oregon-CM180,,47856,,1,,,,,,,,OS,,,,,,,,,,,,,982,,,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
-	std::string line = "2020-02-10 17:15:21,,,Oregon-RTGR328N,,241,3,0,17.500,,,,33,,,OS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
-	std::string line = "2020-02-10 17:15:27,,,Oregon-CM180,,47856,,1,,,,,,,,OS,,,,,,,,,,,,,1062,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
-	std::string line = "2020-02-10 17:15:32,,,Nexus-TH,,3,3,1,14.600,,,,54,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
-	ParseLine(headers, line.c_str());
+	std::string line = "";
+	ParseJSonLine(line);
 	#endif
 */
 }
@@ -74,32 +67,25 @@ bool CRtl433::StopHardware()
 	return true;
 }
 
-std::vector<std::string> CRtl433::ParseCSVLine(const char *input)
+bool CRtl433::ParseJsonLine(const std::string &sLine)
 {
-	std::vector<std::string> line;
-	std::string field;
-	const char *s = input;
-	while (*s)
+	std::map<std::string, std::string> _Field;
+	Json::Value root;
+
+	std::string errstr;
+	if (ParseJSon(sLine, root, &errstr))
 	{
-		if (*s == '\\')
+		size_t totFields = root.size();
+		for (size_t ii = 0; ii < totFields; ii++)
 		{
-			s++;
-			if (*s) {
-				field += *s;
-			}
+			std::string vname = root.getMemberNames()[ii];
+			std::string vvalue = root[root.getMemberNames()[ii]].asString();
+			_Field[vname] = vvalue;
 		}
-		else if (*s == ',')
-		{
-			line.push_back(field);
-			field.clear();
-		}
-		else
-		{
-			field += *s;
-		}
-		s++;
+		while (1 == 0);
 	}
-	return line;
+
+	return ParseData(_Field);
 }
 
 bool CRtl433::FindField(const std::map<std::string, std::string> &data, const std::string &field)
@@ -107,35 +93,8 @@ bool CRtl433::FindField(const std::map<std::string, std::string> &data, const st
 	return (data.find(field) != data.end());
 }
 
-bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *line)
+bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 {
-	time_t atime = time(NULL);
-	std::string slineRaw(line);
-	if (slineRaw.find(',') != std::string::npos)
-	{
-		slineRaw = slineRaw.substr(slineRaw.find(',') + 1);
-		if (slineRaw == m_sLastLine)
-		{
-			if (atime - m_time_last_received < 2)
-				return true; //skip duplicate RF frames
-		}
-		m_sLastLine = slineRaw;
-	}
-	m_time_last_received = atime;
-	std::vector<std::string> values = ParseCSVLine(line);
-
-	if (values.size() != headers.size())
-		return false; //should be equal
-
-	// load values into a map
-	std::map<std::string, std::string> data;
-	std::vector<std::string>::const_iterator h = headers.begin();
-	for (std::vector<std::string>::iterator vi = values.begin(); vi != values.end(); ++vi)
-	{
-		if (!(*vi).empty())
-			data[*(h)] = *vi;
-		h++;
-	}
 	int id = 0;
 
 	bool haveUnit = false;
@@ -183,11 +142,10 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	bool haveSequence = false;
 	int sequence = 0;
 
-	if (!data["id"].empty())
+	if (FindField(data, "id"))
 	{
 		id = atoi(data["id"].c_str());
 	}
-
 	if (FindField(data, "unit"))
 	{
 		unit = atoi(data["unit"].c_str());
@@ -403,14 +361,12 @@ void CRtl433::Do_Work()
 		_log.Log(LOG_STATUS, "Rtl433: Worker started...");
 
 	bool bHaveReceivedData = false;
+	std::string szLastLine;
 	while (!IsStopRequested(0))
 	{
 		char line[3072];
-		std::vector<std::string> headers;
-		std::string headerLine = "";
-		m_sLastLine = "";
 
-		std::string szFlags = "-F csv -M newmodel -C si " + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
+		std::string szFlags = "-F json -M newmodel -C si " + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
 		m_hPipe = _popen(szCommand.c_str(), "r");
@@ -455,18 +411,16 @@ void CRtl433::Do_Work()
 			if (fgets(line, sizeof(line) - 1, m_hPipe) != NULL)
 			{
 				bHaveReceivedData = true;
-
-				if (bFirstTime)
+				std::string sLine(line);
+				stdreplace(sLine, "\n", "");
+				if (sLine != szLastLine)
 				{
-					bFirstTime = false;
-					headerLine = line;
-					headers = ParseCSVLine(line);
-					continue;
-				}
-				if (!ParseLine(headers, line))
-				{
-					// this is also logged when parsed data is invalid
-					_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s|%s)", headerLine.c_str(), line);
+					szLastLine = sLine;
+					if (!ParseJsonLine(sLine))
+					{
+						// this is also logged when parsed data is invalid
+						_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", sLine.c_str());
+					}
 				}
 			}
 			else { //fgets
