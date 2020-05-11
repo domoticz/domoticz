@@ -711,33 +711,49 @@ void bt_openwebnet::CreateStateMsgOpen(const std::string& who, const std::string
   IsCorrect();
 }
 
-//creates the OPEN message *#who*where#level#interface##
-void bt_openwebnet::CreateTimeReqMsgOpen()
+//creates the OPEN message *#who**what##
+void bt_openwebnet::CreateGatewayReqMsgOpen(const std::string& dimension)
 {
 	//call CreateNullMsgOpen function
-  CreateNullMsgOpen();
+	CreateNullMsgOpen();
 
-  std::stringstream frame;
+	std::stringstream frame;
 
-  frame << "*#13**0##";
-  m_frameOpen = DeleteControlCharacters(frame.str());
-  m_lengthFrameOpen = m_frameOpen.length();
+	frame << "*#13**";
+	frame << dimension;
+	frame << "##";
+	m_frameOpen = DeleteControlCharacters(frame.str());
+	m_lengthFrameOpen = m_frameOpen.length();
 
-  // checks for correct syntax ...
-  IsCorrect();
+	// checks for correct syntax ...
+	IsCorrect();
 }
 
-void bt_openwebnet::CreateSetTimeMsgOpen()
+//creates the OPEN message *#who*where#level#interface##
+void bt_openwebnet::CreateDateTimeReqMsgOpen()
+{
+	std::stringstream dimensionStr;
+	dimensionStr << GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE_AND_TIME;
+	CreateGatewayReqMsgOpen(dimensionStr.str());
+}
+
+void bt_openwebnet::CreateSetDateTimeMsgOpen(const std::string& tzString)
 {
 	//call CreateNullMsgOpen function
-  CreateNullMsgOpen();
+	CreateNullMsgOpen();
   	
 	char frame_dt[50];
 	time_t now = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
-	strftime(frame_dt, sizeof(frame_dt)-1, "*#13**#22*%H*%M*%S*001*%u*%d*%m*%Y##", &ltime); //set date time 
+	//strftime(frame_dt, sizeof(frame_dt)-1, "*#13**#22*%H*%M*%S*001*%u*%d*%m*%Y##", &ltime); //set date time 
+	
 	std::stringstream frame;
+	frame << "*#13**#22*";
+	strftime(frame_dt, sizeof(frame_dt) - 1, "%H*%M*%S*", &ltime); //set date time 
+	frame << frame_dt;
+	frame << tzString;
+	strftime(frame_dt, sizeof(frame_dt) - 1, "*%u*%d*%m*%Y##", &ltime); //set date time 
 	frame << frame_dt;
 	m_frameOpen = DeleteControlCharacters(frame.str());
 	m_lengthFrameOpen = m_frameOpen.length();
