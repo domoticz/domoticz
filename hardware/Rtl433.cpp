@@ -113,6 +113,9 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	bool havePressure = false;
 	float pressure = 0;
 
+	bool havePressure_PSI = false;
+	float pressure_PSI = 0;
+
 	bool haveRain = false;
 	float rain = 0;
 
@@ -196,6 +199,13 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		pressure = (float)atof(data["pressure_hPa"].c_str());
 		havePressure = true;
 	}
+
+	if (FindField(data, "pressure_PSI"))
+	{
+		pressure_PSI = (float)atof(data["pressure_PSI"].c_str());
+		havePressure_PSI = true;
+	}
+
 	if (FindField(data, "pressure_kPa"))
 	{
 		pressure = 10.0f*(float)atof(data["pressure_kPa"].c_str()); // convert to hPA
@@ -337,6 +347,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		SendWattMeter((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model);
 		bHandled = true;
 	}
+	if (havePressure_PSI)
+	{
+		SendCustomSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, pressure_PSI, model, "PSI");
+		bHandled = true;
+	}
 	if (haveEnergy && havePower)
 	{
 		//can remove this comment : _log.Log(LOG_STATUS, "Rtl433: : CM180 haveSequence(%d) sensoridx(%d) havePower(%d) haveEnergy(%d))", haveSequence, sensoridx, havePower, haveEnergy);
@@ -450,27 +465,7 @@ void CRtl433::Do_Work()
 			pclose(_hPipe);
 #endif
 		}
-		if (!IsStopRequested(0)) {
-			// sleep 30 seconds before retrying
-			if (!bHaveReceivedData)
-			{
-#ifdef WIN32
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)", szCommand.c_str());
-#else
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
-#endif
-			}
-			else
-			{
-				_log.Log(LOG_STATUS, "Rtl433: Failure! Retrying in 30 seconds...");
-			}
-			for (int i = 0; i < 30; i++)
-			{
-				if (IsStopRequested(1000))
-					break;
-		}
-	}
-} // while !IsStopRequested()
+	} // while !IsStopRequested()
 	_log.Log(LOG_STATUS, "Rtl433: Worker stopped...");
 }
 
