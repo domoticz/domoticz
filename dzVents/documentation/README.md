@@ -1056,8 +1056,8 @@ See switch below.
 
 #### Rain meter
  - **rain**: *Number*
- - **rainRate**: *Number*
- - **updateRain(rate, counter)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **rainRate**: *Number* 
+ - **updateRain(rate, counter)**: *Function*. (rate in mm * 100 per hour, counter is total in mm) Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### RGBW(W) / Lighting Limitless/Applamp
  - **decreaseBrightness()**: deprecated because only very limited supported and will be removed from API
@@ -1386,7 +1386,8 @@ See table below
  - **Note 1**: AAA is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
  - **Note 2**: for `domoticz.openURL()` only `at()`, `afterAAA()` and `withinAAA()` is available.
  - **Note 3**: Note 2 also applies for all commands depending on openURL (like rgbwwDevice.setAaa() commands).
-
+ - **Note 4**: Including dimTo, switchSelector, setLevel and similar methods.
+ 
 #### Follow-up event triggers
 Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add `.silent()` to your commands (exception is updateSetPoint).
 
