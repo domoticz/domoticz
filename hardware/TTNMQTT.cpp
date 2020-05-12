@@ -394,7 +394,7 @@ int CTTNMQTT::CalcDomoticsRssiFromLora(const int gwrssi, const float gwsnr)
 	else
 	{
 		// Below noisefloor, little more difficult
-		iCalc = gwrssi + rint(gwsnr);
+		iCalc = gwrssi + (int)std::rint(gwsnr);
 	}
 
 	// Range somewhere between -150 and +20
