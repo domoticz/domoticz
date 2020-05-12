@@ -1,3 +1,15 @@
+/************************************************************************
+
+eVehicles framework
+Author: MrHobbes74 (github.com/MrHobbes74)
+
+21/02/2020 1.0 Creation
+13/03/2020 1.1 Added keep asleep support
+28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+
+License: Public domain
+
+************************************************************************/
 #include "stdafx.h"
 #include "eVehicle.h"
 #include "TeslaApi.h"
@@ -71,7 +83,7 @@ void CeVehicle::Init()
 {
 	m_car.charging = false;
 	m_car.connected = false;
-	m_car.is_home = false;
+	m_car.home_state = AtUnknown;
 	m_car.climate_on = false;
 	m_car.defrost = false;
 	m_car.wake_state = Unknown;
@@ -85,7 +97,7 @@ void CeVehicle::SendAlert()
 	eAlertType alert;
 	std::string title;
 
-	if (m_car.is_home && (m_car.wake_state != Asleep))
+	if ((m_car.home_state == AtHome) && (m_car.wake_state != Asleep))
 	{
 		if (m_car.charging)
 		{
@@ -111,18 +123,16 @@ void CeVehicle::SendAlert()
 	else if (m_car.wake_state == Asleep)
 	{
 		alert = Sleeping;
-		if (m_command_nr_tries > VEHICLE_MAXTRIES)
-			title = "Offline";
-		else
-			title = "Asleep";
+		title = "Asleep";
 	}
 	else
 	{
 		alert = NotHome;
-		if (m_car.wake_state == WakingUp)
+		if ((m_car.wake_state == WakingUp) || (m_car.home_state == AtUnknown))
 			title = "Waking Up";
 		else
 			title = "Not Home";
+
 		if (m_car.charging && !m_car.charge_state.empty())
 			title = title + ", " + m_car.charge_state;
 	}
@@ -197,7 +207,8 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 		SendSwitch(VEHICLE_SWITCH_DEFROST, m_car.defrost);
 		SendValueSwitch(VEHICLE_SWITCH_MAX_CHARGE, m_car.charge_limit);
 		m_commands.clear();
-		Log(LOG_ERROR, "Multiple tries requesting %s. Assuming car offline.", GetCommandString(command).c_str());
+		Log(LOG_ERROR, "Multiple tries requesting %s. Assuming car asleep.", GetCommandString(command).c_str());
+		m_car.wake_state = Asleep;
 		SendAlert();
 		return(false);
 	}
@@ -324,7 +335,10 @@ void CeVehicle::Do_Work()
 				{
 					if (WakeUp())
 						if(m_car.wake_state == Awake)
+						{
+							AddCommand(Get_All_States);
 							interval = 5000;
+						}
 				}
 				else
 				{
@@ -366,7 +380,7 @@ void CeVehicle::Do_Work()
 		}
 		else if (sec_counter % (60*m_activeinterval) == 0)
 		{
-			if (m_car.is_home && (m_car.charging || m_car.climate_on || m_car.defrost))
+			if ((m_car.home_state == AtHome) && (m_car.charging || m_car.climate_on || m_car.defrost))
 			{
 				// check relevant states every active interval
 				if (m_car.charging)
@@ -488,12 +502,12 @@ bool CeVehicle::IsAwake()
 	if(status_changed)
 	{
 		if(m_car.wake_state == Asleep)
-			Log(LOG_STATUS, "Car awake detection: Car fell asleep");
+			Log(LOG_STATUS, "Car awake detection: Car asleep");
 		else
-			Log(LOG_STATUS, "Car awake detection: Car woke up");
+			Log(LOG_STATUS, "Car awake detection: Car awake");
 	}
 
-	return (m_car.wake_state != Asleep);
+	return ((m_car.wake_state != Asleep) && (m_car.wake_state != WakingUp));
 }
 
 bool CeVehicle::WakeUp()
@@ -570,7 +584,7 @@ bool CeVehicle::DoSetCommand(tApiCommand command)
 {
 	CVehicleApi::eCommandType api_command;
 
-	if (!m_car.is_home)
+	if (m_car.home_state != AtHome)
 	{
 		Log(LOG_ERROR, "Car not home. No commands allowed.");
 		SendSwitch(VEHICLE_SWITCH_CHARGE, m_car.charging);
@@ -625,16 +639,15 @@ bool CeVehicle::DoSetCommand(tApiCommand command)
 		case Send_Charge_Stop:
 		case Send_Charge_Limit:
 			AddCommand(Get_Charge_State);
-			return true;
+			break;
 		case Send_Climate_Off:
 		case Send_Climate_On:
-			AddCommand(Get_Climate_State);
-			return true;
 		case Send_Climate_Defrost:
 		case Send_Climate_Defrost_Off:
 			AddCommand(Get_Climate_State);
-			return ConditionalReturn(true, command.command_type);
+			break;
 		}
+		return ConditionalReturn(true, command.command_type);
 	}
 
 	return ConditionalReturn(false, command.command_type);
@@ -671,7 +684,6 @@ bool CeVehicle::GetLocationState()
 
 void CeVehicle::UpdateLocationData(CVehicleApi::tLocationData& data)
 {
-	bool car_old_state = m_car.is_home;
 	int nValue;
 	std::string sValue;
 	std::vector<std::string> strarray;
@@ -681,7 +693,7 @@ void CeVehicle::UpdateLocationData(CVehicleApi::tLocationData& data)
 	if (strarray.size() != 2)
 	{
 		Log(LOG_ERROR, "No location set in Domoticz. Assuming car is not home.");
-		m_car.is_home = false;
+		m_car.home_state = NotAtHome;
 	}
 	else
 	{
@@ -690,10 +702,13 @@ void CeVehicle::UpdateLocationData(CVehicleApi::tLocationData& data)
 		double LaDz = std::stod(Latitude);
 		double LoDz = std::stod(Longitude);
 
-		m_car.is_home = ((std::fabs(LaDz - data.latitude) < 2E-4) && (std::fabs(LoDz - data.longitude) < 2E-3) && !data.is_driving);
+		if ((std::fabs(LaDz - data.latitude) < 2E-4) && (std::fabs(LoDz - data.longitude) < 2E-3) && !data.is_driving)
+			m_car.home_state = AtHome;
+		else
+			m_car.home_state = NotAtHome;
 	}
 
-	Log(LOG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, m_car.is_home ? "true" : "false");
+	Log(LOG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, (m_car.home_state == AtHome) ? "true" : "false");
 
 	m_car.is_driving = data.is_driving;
 }

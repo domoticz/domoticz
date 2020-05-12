@@ -1032,7 +1032,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new DomoticzInternal(ID);
 		break;
 	case HTYPE_OpenWebNetTCP:
-		pHardware = new COpenWebNetTCP(ID, Address, Port, Password, Mode1);
+		pHardware = new COpenWebNetTCP(ID, Address, Port, Password, Mode1, Mode2);
 		break;
 	case HTYPE_BleBox:
 		pHardware = new BleBox(ID, Mode1);

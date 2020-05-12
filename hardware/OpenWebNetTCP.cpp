@@ -29,6 +29,8 @@ License: Public domain
 
 #include <openssl/sha.h>
 
+#include "../notifications/NotificationHelper.h"
+
 #define OPENWEBNET_HEARTBEAT_DELAY      1
 #define OPENWEBNET_STATUS_NB_HEARTBEAT  600
 #define OPENWEBNET_RETRY_DELAY          30
@@ -67,18 +69,22 @@ enum
  /**
 	 Create new hardware OpenWebNet instance
  **/
-COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime) : m_szIPAddress(IPAddress)
+COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime, const int ownSynch) : m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
 	m_ownPassword = ownPassword;
 
-	if (!ownScanTime)
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: scan devices DISABLED!");
+	_log.Log(LOG_STATUS, "COpenWebNetTCP: scan devices %s(%d)!", ownScanTime ? "ENABLED" : "DISABLED", ownScanTime);
+	_log.Log(LOG_STATUS, "COpenWebNetTCP: sync time %s(%d)!", ownSynch ? "ENABLED" : "DISABLED", ownSynch);
 
 	m_ownScanTime = ownScanTime;
+	m_ownSynch = ownSynch * 60;	// minutes to seconds..
+	
 	m_heartbeatcntr = OPENWEBNET_HEARTBEAT_DELAY;
 	m_pStatusSocket = NULL;
+
+	
 }
 
 /**
@@ -97,7 +103,7 @@ bool COpenWebNetTCP::StartHardware()
 
 	m_bIsStarted = true;
 	mask_request_status = 0x1; // Set scan all devices
-	LastScanTimeEnergy = LastScanTimeEnergyTot = 0;	// Force first request command
+	LastScanTimeEnergy = LastScanTimeEnergyTot = LastScanTime = LastScanSync = 0;	// Force first request command
 
 	//Start monitor thread
 	m_monitorThread = std::make_shared<std::thread>(&COpenWebNetTCP::MonitorFrames, this);
@@ -860,8 +866,6 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		return;
 	}
 	
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: A-Command %d, cmd:%d", Command, cmd);
-
 	// if (iLevel < 0)  is a Normal Frame and device is standard
 	// if (iLevel >= 0) is a Meseaure Frame (percentual) and device is Advanced
 	int level = (iLevel < 0) ? 0 : iLevel;
@@ -883,7 +887,6 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		cmd = (iLevel == 0) ? gswitch_sOff : gswitch_sSetLevel;
 	}
 
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: B-Command %d, cmd:%d", Command, cmd);
 	SendGeneralSwitch(NodeID, iInterface, BatteryLevel, cmd, level, devname);
 }
 
@@ -1010,21 +1013,46 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	std::vector<std::string> whatParam = iter->Extract_whatParameters();
 	std::string dimension = iter->Extract_dimension();
 	std::string value = iter->Extract_value(0);
+	std::vector<std::string> valueParam = iter->Extract_values();
 	std::string sInterface = iter->Extract_interface();
 	std::string devname, sCommand;
 	int iAppValue, iWhere, iLevel;
 
 	switch (atoi(who.c_str())) {
-	case WHO_LIGHTING:									// 1
+	case WHO_LIGHTING:	// 1
+
 		if (!iter->IsNormalFrame())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
-			return;
+			if (iter->IsMeasureFrame())
+			{
+				switch (atoi(value.c_str()))
+				{
+				case LIGHTING_DIMENSION_SET_UP_LEVEL_WITH_GIVEN_SPEED:				// 1
+				case LIGHTING_DIMENSION_TEMPORISATION:								// 2
+				case LIGHTING_DIMENSION_REQUIRED_ONLY_ON_LIGHT:						// 3
+				case LIGHTING_DIMENSION_STATUS_DIMMER_100_LEVELS_WITH_GIVEN_SPEED:	// 4
+				case LIGHTING_DIMENSION_WORKING_TIME_LAMP:							// 8
+				case LIGHTING_DIMENSION_MAX_WORKING_TIME_LAMP:						// 9
+					// TODO: manage lighting parameter..
+					return;
+				default:
+					_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s measure error -> param=%u", who.c_str(), atoi(value.c_str()));
+					return;
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s error frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
+				return;
+			}
 		}
-
-		iAppValue = atoi(what.c_str());
-		if (iAppValue == 1000) // What = 1000 (Command translation)
-			iAppValue = atoi(whatParam[0].c_str());
+		else
+		{
+			// NORMALE FRAME..
+			iAppValue = atoi(what.c_str());
+			if (iAppValue == 1000) // What = 1000 (Command translation)
+				iAppValue = atoi(whatParam[0].c_str());
+		}		
 
 		iWhere = atoi(where.c_str());
 
@@ -1392,6 +1420,168 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		}
 		break;
 
+	case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
+		int timezone, model;
+		switch (atoi(dimension.c_str()))
+		{
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_TIME:					// 0,		/* Read/Write */
+			if (valueParam.size() >= 4)
+			{
+				timezone = atoi(valueParam[3].c_str());
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Gateway Time %s:%s:%s GMT%c%u", valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str(), 
+																					  (timezone > 99) ? '-' : '+', (timezone % 100));
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE:					// 1,		/* Read/Write */
+			if (valueParam.size() >= 4)
+			{
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Gateway Date %s %s/%s/%s", valueParam[0].c_str(), valueParam[1].c_str(), 
+																				 valueParam[2].c_str(), valueParam[3].c_str());
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_IP_ADDRESS:			// 10,		/* Read		  */
+			if (valueParam.size() >= 4)
+			{
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Gateway IP Address %u.%u.%u.%u", atoi(valueParam[0].c_str()), atoi(valueParam[1].c_str()),
+																					   atoi(valueParam[2].c_str()), atoi(valueParam[3].c_str()));
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_NET_MASK:				// 11,		/* Read		  */
+			if (valueParam.size() >= 4)
+			{
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Gateway Net Mask %u.%u.%u.%u", atoi(valueParam[0].c_str()), atoi(valueParam[1].c_str()),
+																					 atoi(valueParam[2].c_str()), atoi(valueParam[3].c_str()));
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_MAC_ADDRESS:			// 12,		/* Read		  */
+			if (valueParam.size() >= 6)
+			{
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Gateway MAC Address %02X:%02X:%02X:%02X:%02X:%02X",
+														atoi(valueParam[0].c_str()), atoi(valueParam[1].c_str()), atoi(valueParam[2].c_str()),
+														atoi(valueParam[3].c_str()), atoi(valueParam[4].c_str()), atoi(valueParam[5].c_str()));
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DEVICE_TYPE:			// 15,		/* Read		  */
+			if (valueParam.size() >= 1)
+			{
+				model = atoi(valueParam[0].c_str());
+				switch (model)
+				{
+				case GATEWAY_MODEL_MHSERVER:	// 2
+					_log.Log(LOG_STATUS, "COpenWebNetTCP:Model #%u MHServer", model);
+					break;
+				case GATEWAY_MODEL_MH200:		// 4
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: Model #%u MH200", model);
+					break;
+				case GATEWAY_MODEL_F452:		// 6
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: Model #%u F452", model);
+					break;
+				case GATEWAY_MODEL_F452V:		// 7
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: Model #%u F452V", model);
+					break;
+				case GATEWAY_MODEL_MHSERVER2:	// 11
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: Model #%u MHServer2", model);
+					break;
+				case GATEWAY_MODEL_H4684:		// 13
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: Model #%u H4684", model);
+					break;
+				default:
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: Model #%u", model);
+					break;
+				}
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_FIRMWARE_VERSION:		// 16,		/* Read		  */
+			if (valueParam.size() >= 3)
+			{
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Gateway Firmware Version %s.%s.%s",
+														valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str());
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_UPTIME:				// 19,		/* Read		  */
+			if (valueParam.size() >= 4)
+			{
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Gateway UpTime %sdays %sh %sm %ss",
+														valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str(), valueParam[3].c_str());
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE_AND_TIME:			// 22,		/* Read/Write */
+			if (valueParam.size() >= 8)
+			{
+				time_t now, rcv_tm;
+				int delta;
+				struct tm ltime, lnowtime;
+
+				timezone = atoi(valueParam[3].c_str());
+				timezone = ((timezone > 99) ? -(timezone % 100) : (timezone % 100)); // 
+
+				memset(&ltime, 0, sizeof(ltime));
+				ltime.tm_hour = atoi(valueParam[0].c_str());  // hours since midnight - [0, 23]
+				ltime.tm_min = atoi(valueParam[1].c_str());   // minutes after the hour - [0, 59]
+				ltime.tm_sec = atoi(valueParam[2].c_str());   // seconds after the minute - [0, 60] including leap second
+				ltime.tm_wday = atoi(valueParam[4].c_str());  // days since Sunday - [0, 6]
+				ltime.tm_mday = atoi(valueParam[5].c_str());  // day of the month - [1, 31]
+				ltime.tm_mon = atoi(valueParam[6].c_str());   // months since January - [0, 11]
+				ltime.tm_year = atoi(valueParam[7].c_str());  // years since 1900	
+
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Gateway DateTime %02u/%02u/%04u - %02u:%02u:%02u GMT%c%u",
+														ltime.tm_mday, ltime.tm_mon, ltime.tm_year,
+														ltime.tm_hour, ltime.tm_min, ltime.tm_sec, (timezone > 0) ? '+' : ' ', timezone);
+
+				if (m_ownSynch)
+				{
+					now = mytime(NULL);
+					localtime_r(&now, &lnowtime);
+
+					ltime.tm_mon -= 1;		// months since January - [0, 11]
+					ltime.tm_year -= 1900;  // years since 1900	
+					ltime.tm_isdst = lnowtime.tm_isdst;
+					rcv_tm = mktime(&ltime);
+
+					delta = static_cast<int>(now - rcv_tm);
+
+					if ((delta < -60) || (delta > 60))	// delta +-1min
+					{
+						setDateTime(valueParam[3]);	// SET DATE TIME						
+						_log.Log(LOG_STATUS, "COpenWebNetTCP: Date/Time Change - now:%ld, rcv:%ld, delta: %d", now, rcv_tm, delta);
+
+						/************* notification ************/
+						std::stringstream body;
+						char frame_dt[50];
+						strftime(frame_dt, sizeof(frame_dt) - 1, "%d/%m/%Y %H:%M:%S", &ltime); //set date time 
+						body << frame_dt;
+						body << " - Delta:";
+						body << delta;
+						m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, std::string("OWN Date/Time Change"), body.str(), std::string(""), 0, std::string(""), true);
+						/************* notification ************/						
+					}
+					else
+					{
+						_log.Log(LOG_STATUS, "COpenWebNetTCP: Date/Time is OK - now:%ld, rcv:%ld, delta: %d", now, rcv_tm, delta);
+					}
+				}
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_KERNEL_VERSION:		// 23,		/* Read		  */
+			if (valueParam.size() >= 3)
+			{
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Gateway Kernel Version %s.%s.%s",
+											valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str());
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DISTRIBUTION_VERSION:	// 24		/* Read		  */
+			if (valueParam.size() >= 3)
+			{
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: Gateway Distribution Version %s.%s.%s",
+											valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str());
+			}
+			break;
+		default:
+			_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, dimension=%s", who.c_str(), dimension.c_str());
+			break;
+		}
+		break;
+
 	case WHO_SOUND_DIFFUSION:						// 22
 		//iAppValue = atoi(what.c_str());
 		//iWhere = atoi(where.c_str());
@@ -1404,7 +1594,6 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	case WHO_LOAD_CONTROL:                          // 3
 	case WHO_DOOR_ENTRY_SYSTEM:                     // 6
 	case WHO_MULTIMEDIA:                            // 7
-	case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
 	case WHO_LIGHT_SHUTTER_ACTUATOR_LOCK:           // 14
 	case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
 	case WHO_AUDIO:                                 // 16
@@ -1719,7 +1908,9 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 	//_log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	// Command session correctly open -> write command
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: Command %s", command.m_frameOpen.c_str());
+	if (!silent) {
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: Command %s", command.m_frameOpen.c_str());
+	}
 	ownWrite(commandSocket, command.m_frameOpen.c_str(), command.m_frameOpen.length());
 
 	if (waitForResponse > 0) {
@@ -1873,24 +2064,61 @@ void COpenWebNetTCP::requestAutomaticUpdatePower(int time)
 }
 
 /**
-	Request time to gateway
+	Request dimensions to gateway
 **/
-void COpenWebNetTCP::requestTime()
+void COpenWebNetTCP::requestGatewayInfo()
 {
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: request time...");
+	_log.Log(LOG_STATUS, "COpenWebNetTCP: request gateway information...");
 	bt_openwebnet request;
 	std::vector<bt_openwebnet> responses;
-	request.CreateTimeReqMsgOpen();
+
+	for (int idim = GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_TIME; idim <= GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DISTRIBUTION_VERSION; idim++)
+	{
+		std::stringstream dimensionStr;
+
+		switch (idim)
+		{
+		//case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_TIME:					// 0,			/* Read/Write */
+		//case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE:					// 1,			/* Read/Write */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_IP_ADDRESS:				// 10,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_NET_MASK:				// 11,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_MAC_ADDRESS:			// 12,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DEVICE_TYPE:			// 15,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_FIRMWARE_VERSION:		// 16,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_UPTIME:					// 19,			/* Read		  */
+		//case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE_AND_TIME:			// 22,			/* Read/Write */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_KERNEL_VERSION:			// 23,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DISTRIBUTION_VERSION:	// 24			/* Read		  */
+			dimensionStr << idim;
+			request.CreateGatewayReqMsgOpen(dimensionStr.str());
+			sendCommand(request, responses, 0, true);
+			sleep_milliseconds(200);
+			break;
+		default:
+			break; // skip
+		}
+	}
+}
+
+/**
+	Request time to gateway
+**/
+void COpenWebNetTCP::requestDateTime()
+{
+	_log.Log(LOG_STATUS, "COpenWebNetTCP: request DateTime...");
+	bt_openwebnet request;
+	std::vector<bt_openwebnet> responses;
+	request.CreateDateTimeReqMsgOpen();
 	sendCommand(request, responses, 0, true);
 }
 
-void COpenWebNetTCP::setTime()
+void COpenWebNetTCP::setDateTime(const std::string &tzString)
 {
 	_log.Log(LOG_STATUS, "COpenWebNetTCP: set DateTime...");
 	bt_openwebnet request;
 	std::vector<bt_openwebnet> responses;
-	request.CreateSetTimeMsgOpen();
-	sendCommand(request, responses, 0, true);
+	request.CreateSetDateTimeMsgOpen(tzString);
+	sendCommand(request, responses, 0, false);
 }
 
 /**
@@ -1900,15 +2128,12 @@ void COpenWebNetTCP::scan_device()
 {
 	int iWhere;
 
-	/* uncomment the line below to enable the time request to the gateway.
-	Note that this is only for debugging, the answer to who = 13 is not yet supported */
-	//requestTime();
-
-	/* uncomment the line below to enable the set time commenad to the gateway.*/
-	//setTime();
-
 	if (mask_request_status & 0x1)
 	{
+		
+		requestGatewayInfo();
+		sleep_seconds(5L);
+
 		_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning automation/lighting...");
 		// Scan of all devices
 		scan_automation_lighting(WHERE_CEN_0);
@@ -1967,22 +2192,30 @@ void COpenWebNetTCP::Do_Work()
 	{
 		if (isStatusSocketConnected())
 		{
-			if ((mytime(NULL) - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
+			time_t tnow = mytime(NULL);
+			if ((tnow - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
 			{
 				requestAutomaticUpdatePower(255); // automatic update for 255 minutes
-				LastScanTimeEnergy = mytime(NULL);
+				LastScanTimeEnergy = tnow;
 			}
 
-			if ((mytime(NULL) - LastScanTimeEnergyTot) > SCAN_TIME_REQ_ENERGY_TOTALIZER)
+			if ((tnow - LastScanTimeEnergyTot) > SCAN_TIME_REQ_ENERGY_TOTALIZER)
 			{
 				requestEnergyTotalizer();
-				LastScanTimeEnergyTot = mytime(NULL);
+				LastScanTimeEnergyTot = tnow;
 			}
 
 			if (mask_request_status)
 			{
 				scan_device();
 				mask_request_status = 0x0; // scan devices complete
+			}
+
+			if (m_ownSynch && ((tnow - LastScanSync) >= m_ownSynch))
+			{
+				/* request date/time to check synchronization */
+				requestDateTime();				
+				LastScanSync = tnow;
 			}
 		}
 

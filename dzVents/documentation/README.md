@@ -585,10 +585,10 @@ There are several options for time triggers. It is important to know that Domoti
 			'at civiltwilightstart',	-- uses civil twilight start/end info from Domoticz
 			'at civiltwilightend',
 			'at sunset on sat,sun',
-			'xx minutes before civiltwilightstart',
-			'xx minutes after civiltwilightstart',
-			'xx minutes before civiltwilightend',
-			'xx minutes after civiltwilightend',
+			'xx minutes before civiltwilightstart',		--
+			'xx minutes after civiltwilightstart',		-- Please note that these relative times
+			'xx minutes before civiltwilightend',		-- cannot cross dates
+			'xx minutes after civiltwilightend',		--
 			'xx minutes before sunset',
 			'xx minutes after sunset',
 			'xx minutes before sunrise',
@@ -875,6 +875,7 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **deviceSubType**: *String*. See Domoticz devices table in Domoticz GUI.
  - **deviceType**: *String*. See Domoticz devices table in Domoticz GUI.
  - **dump()**: *Function*. Dump all attributes to the Domoticz log. This ignores the log level setting.
+ - **dumpSelection([{'attributes'} 'functions' 'tables'])**: *Function*. <sup>3.0.5</sup>  Dump attributes, function-names or table-names to the Domoticz log. This ignores the log level setting.
  - **hardwareName**: *String*. See Domoticz devices table in Domoticz GUI.
  - **hardwareId**: *Number*. See Domoticz devices table in Domoticz GUI.
  - **hardwareType**: *String*. See Domoticz devices table in Domoticz GUI.
@@ -2297,7 +2298,7 @@ Also, make sure that your device names are unique! dzVents will throw a warning 
 If your script is still not triggered, you can try to create a classic Lua event script and see if that does work.
 
 ### Debugging your script
-A simple way to inspect a device in your script is to dump it to the log: `myDevice.dump()`. This will dump all the attributes (and more) of the device so you can inspect what its state is.
+A simple way to inspect a device in your script is to dump it to the log: `myDevice.dump()`. This will dump everything known to dzVents of the device so you can inspect what its state is. If you only need to see a subset you can use dumpSelection('attributes'), dumpSelection('functions') or dumpSelection('tables')
 Use print statements or domoticz.log() statements in your script at cricital locations to see if the Lua interpreter reaches that line.
 Don't try to print a device object though; use the `myDevice.dump()` method for that. It wil log all attributes of the device in the Domoticz log.
 
@@ -2441,6 +2442,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+## [3.0.5]
+- Add dumpSelection() method 
+- Fixed settings.url
 
 ## [3.0.4]
 - Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC 
