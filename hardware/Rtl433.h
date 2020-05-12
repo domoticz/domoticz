@@ -18,8 +18,6 @@ private:
 private:
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_pipe_mutex;
-	FILE *m_hPipe;
 	std::string m_cmdline;
 	std::string m_sLastLine;
-	time_t m_time_last_received;
 };

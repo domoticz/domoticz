@@ -27,11 +27,9 @@ CRtl433::CRtl433(const int ID, const std::string &cmdline) :
 	// Basic protection from malicious command line
 	removeCharsFromString(m_cmdline, ":;/$()`<>|&");
 	m_HwdID = ID;
-	m_hPipe = NULL;
-	m_time_last_received = 0;
 /*
 	#ifdef _DEBUG
-	std::string line = "";
+	std::string line = "{"time" : "2020-05-11 16:07:37", "model" : "Hideki-TS04", "id" : 10, "channel" : 1, "battery_ok" : 1, "temperature_C" : 19.600, "humidity" : 39, "mic" : "CRC"}";
 	ParseJSonLine(line);
 	#endif
 */
@@ -352,6 +350,29 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	return bHandled; //not handled (Yet!)
 }
 
+char* fgetline(FILE* stream, char *line, size_t bufsize)
+{
+	size_t idx = 0;
+	int c;
+	while ((c = fgetc(stream)) != EOF && c != '\n')
+	{
+		if (idx + 2 > bufsize)
+		{
+			// no more room
+			line[0] = 0;
+			return nullptr;
+		}
+		line[idx++] = c;
+	}
+	if (c == EOF && idx == 0)
+	{
+		// EOF with no data on last line
+		return nullptr;
+	}
+	line[idx] = '\0';
+	return line;
+}
+
 void CRtl433::Do_Work()
 {
 	sleep_milliseconds(1000);
@@ -362,19 +383,19 @@ void CRtl433::Do_Work()
 
 	bool bHaveReceivedData = false;
 	std::string szLastLine;
+	FILE* _hPipe = nullptr;
+
 	while (!IsStopRequested(0))
 	{
-		char line[3072];
-
 		std::string szFlags = "-F json -M newmodel -C si " + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
-		m_hPipe = _popen(szCommand.c_str(), "r");
+		_hPipe = _popen(szCommand.c_str(), "r");
 #else
 		std::string szCommand = "rtl_433 " + szFlags + " 2>/dev/null";
-		m_hPipe = popen(szCommand.c_str(), "r");
+		_hPipe = popen(szCommand.c_str(), "r");
 #endif
-		if (m_hPipe == NULL)
+		if (_hPipe == nullptr)
 		{
 			if (!IsStopRequested(0))
 			{
@@ -392,23 +413,20 @@ void CRtl433::Do_Work()
 			}
 			continue;
 		}
+		if (_hPipe == nullptr)
+			return;
 #ifndef WIN32
 		//Set to non-blocking mode
-		int fd = fileno(m_hPipe);
+		int fd = fileno(nullptr);
 		int flags;
 		flags = fcntl(fd, F_GETFL, 0);
 		flags |= O_NONBLOCK;
 		fcntl(fd, F_SETFL, flags);
 #endif
-		bool bFirstTime = true;
-		m_time_last_received = time(NULL);
+		char line[1024];
 		while (!IsStopRequested(100))
 		{
-			if (m_hPipe == NULL)
-				break;
-			//size_t bread = read(fd, (char*)&line, sizeof(line));
-			line[0] = 0;
-			if (fgets(line, sizeof(line) - 1, m_hPipe) != NULL)
+			if (fgetline(_hPipe, (char*)&line, sizeof(line)) != nullptr)
 			{
 				bHaveReceivedData = true;
 				std::string sLine(line);
@@ -423,21 +441,14 @@ void CRtl433::Do_Work()
 					}
 				}
 			}
-			else { //fgets
-				if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-					continue;
-				}
-				break; // bail out, subprocess has failed
-			}
 		} // while !IsStopRequested()
-		if (m_hPipe)
+		if (_hPipe)
 		{
 #ifdef WIN32
-			_pclose(m_hPipe);
+			_pclose(_hPipe);
 #else
-			pclose(m_hPipe);
+			pclose(_hPipe);
 #endif
-			m_hPipe = NULL;
 		}
 		if (!IsStopRequested(0)) {
 			// sleep 30 seconds before retrying
