@@ -1538,7 +1538,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 					ltime.tm_isdst = lnowtime.tm_isdst;
 					rcv_tm = mktime(&ltime);
 
-					delta = now - rcv_tm;			
+					delta = static_cast<int>(now - rcv_tm);
 
 					if ((delta < -60) || (delta > 60))	// delta +-1min
 					{
