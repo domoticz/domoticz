@@ -365,29 +365,6 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	return bHandled; //not handled (Yet!)
 }
 
-char* fgetline(FILE* stream, char *line, size_t bufsize)
-{
-	size_t idx = 0;
-	int c;
-	while ((c = fgetc(stream)) != EOF && c != '\n')
-	{
-		if (idx + 2 > bufsize)
-		{
-			// no more room
-			line[0] = 0;
-			return nullptr;
-		}
-		line[idx++] = c;
-	}
-	if (c == EOF && idx == 0)
-	{
-		// EOF with no data on last line
-		return nullptr;
-	}
-	line[idx] = '\0';
-	return line;
-}
-
 void CRtl433::Do_Work()
 {
 	sleep_milliseconds(1000);
@@ -438,11 +415,22 @@ void CRtl433::Do_Work()
 		flags |= O_NONBLOCK;
 		fcntl(fd, F_SETFL, flags);
 #endif
-		char line[1024];
+		char line[2048];
+		size_t line_offset = 0;
 		while (!IsStopRequested(100))
 		{
-			if (fgetline(_hPipe, (char*)&line, sizeof(line)) != nullptr)
+			line[line_offset] = 0;
+			if (fgets(line + line_offset, sizeof(line) - 1 - line_offset, _hPipe) != nullptr)
 			{
+				if ((line[strlen(line - 1)] != '\n') && (line[strlen(line - 1)] != '\r'))
+				{
+					line_offset += (strlen(line) - 1);
+					if (line_offset >= sizeof(line) - 3)
+					{
+						//buffer out of sync, restart
+						line_offset = 0;
+					}
+				}
 				bHaveReceivedData = true;
 				std::string sLine(line);
 				stdreplace(sLine, "\n", "");
@@ -456,6 +444,12 @@ void CRtl433::Do_Work()
 					}
 				}
 			}
+			else { //fgets
+				if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+					continue;
+				}
+				break; // bail out, subprocess has failed
+			}
 		} // while !IsStopRequested()
 		if (_hPipe)
 		{
@@ -464,6 +458,11 @@ void CRtl433::Do_Work()
 #else
 			pclose(_hPipe);
 #endif
+		}
+		for (int ii = 0; ii < 10; ii++)
+		{
+			if (IsStopRequested(1000))
+				break;
 		}
 	} // while !IsStopRequested()
 	_log.Log(LOG_STATUS, "Rtl433: Worker stopped...");
