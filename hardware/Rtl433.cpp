@@ -15,24 +15,24 @@
 #include <stdio.h>
 #include "Rtl433.h"
 
-void removeCharsFromString(std::string &str, const char* charsToRemove) {
+void removeCharsFromString(std::string& str, const char* charsToRemove) {
 	for (unsigned int i = 0; i < strlen(charsToRemove); ++i) {
 		str.erase(remove(str.begin(), str.end(), charsToRemove[i]), str.end());
 	}
 }
 
-CRtl433::CRtl433(const int ID, const std::string &cmdline) :
+CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	m_cmdline(cmdline)
 {
 	// Basic protection from malicious command line
 	removeCharsFromString(m_cmdline, ":;/$()`<>|&");
 	m_HwdID = ID;
-/*
-	#ifdef _DEBUG
-	std::string line = "{"time" : "2020-05-11 16:07:37", "model" : "Hideki-TS04", "id" : 10, "channel" : 1, "battery_ok" : 1, "temperature_C" : 19.600, "humidity" : 39, "mic" : "CRC"}";
-	ParseJSonLine(line);
-	#endif
-*/
+	/*
+		#ifdef _DEBUG
+		std::string line = "{"time" : "2020-05-11 16:07:37", "model" : "Hideki-TS04", "id" : 10, "channel" : 1, "battery_ok" : 1, "temperature_C" : 19.600, "humidity" : 39, "mic" : "CRC"}";
+		ParseJSonLine(line);
+		#endif
+	*/
 }
 
 CRtl433::~CRtl433()
@@ -65,7 +65,7 @@ bool CRtl433::StopHardware()
 	return true;
 }
 
-bool CRtl433::ParseJsonLine(const std::string &sLine)
+bool CRtl433::ParseJsonLine(const std::string& sLine)
 {
 	std::map<std::string, std::string> _Field;
 	Json::Value root;
@@ -86,7 +86,7 @@ bool CRtl433::ParseJsonLine(const std::string &sLine)
 	return ParseData(_Field);
 }
 
-bool CRtl433::FindField(const std::map<std::string, std::string> &data, const std::string &field)
+bool CRtl433::FindField(const std::map<std::string, std::string>& data, const std::string& field)
 {
 	return (data.find(field) != data.end());
 }
@@ -208,7 +208,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 	if (FindField(data, "pressure_kPa"))
 	{
-		pressure = 10.0f*(float)atof(data["pressure_kPa"].c_str()); // convert to hPA
+		pressure = 10.0f * (float)atof(data["pressure_kPa"].c_str()); // convert to hPA
 		havePressure = true;
 	}
 
@@ -226,7 +226,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s) 
 	{
-		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str()))/3.6f;
+		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6f;
 		haveWind_Speed = true;
 	}
 
@@ -239,10 +239,10 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 	if (FindField(data, "wind_max_km_h")) // idem, converting to m/s
 	{
-		wind_gust = ((float)atof(data["wind_max_km_h"].c_str()))/3.6f;
+		wind_gust = ((float)atof(data["wind_max_km_h"].c_str())) / 3.6f;
 		haveWind_Gust = true;
 	}
-        else if (FindField(data, "moisture"))
+	else if (FindField(data, "moisture"))
 	{
 		moisture = atoi(data["moisture"].c_str());
 		haveMoisture = true;
@@ -308,7 +308,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		SendTempHumSensor(sensoridx, batterylevel, tempC, humidity, model);
 		bHandled = true;
 	}
-	else 
+	else
 	{
 		if (haveTemp)
 		{
@@ -463,7 +463,7 @@ void CRtl433::Do_Work()
 			line[line_offset] = 0;
 			if (fgets(line + line_offset, sizeof(line) - 1 - line_offset, _hPipe) != nullptr)
 			{
-				if ((line[strlen(line - 1)] != '\n') && (line[strlen(line - 1)] != '\r'))
+				if ((line[strlen(line) - 1] != '\n') && (line[strlen(line) - 1] != '\r'))
 				{
 					if (line[0] != '{')
 					{
@@ -517,7 +517,7 @@ void CRtl433::Do_Work()
 	_log.Log(LOG_STATUS, "Rtl433: Worker stopped...");
 }
 
-bool CRtl433::WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/)
+bool CRtl433::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	//const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 	return false;
