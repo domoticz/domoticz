@@ -662,7 +662,7 @@ define(['app'], function (app) {
 						}
 						var statusImg = '<img src="images/' + status + '.png" />';
 						var healButton = '<img src="images/heal.png" onclick="ZWaveHealNode(' + item.NodeID + ')" class="lcursor" title="' + $.t("Heal node") + '" />';
-						var Description = item.product_name;
+						var Description = item.Product_name;
 						if (Description.length < 2) {
 							Description = '<span class="zwave_no_info">' + item.Generic_type + '</span>';
 						}
