@@ -266,8 +266,8 @@ function self.isXML(str, content)
 	local str = str or ''
 	local content = content or ''
 	local xmlPattern = '^%s*%<.+%>%s*$'
-	local ret = str:match(xmlPattern) == str  or content:find('application/xml') or content:find('text/xml')
-	return ret ~= nil
+	local ret = ( str:match(xmlPattern) == str  or content:find('application/xml') or content:find('text/xml')) and not(str:sub(1,30):find('DOCTYPE html') )
+	return ret
 
 end
 
@@ -297,11 +297,10 @@ function self.fromXML(xml, fallback)
 		if (ok) then
 			return results
 		end
-		self.log('Error parsing xml to Lua table: ' .. _.str(results), self.LOG_ERROR)
+		-- self.log('Error parsing xml to Lua table: ' .. _.str(results), self.LOG_ERROR)
 	else
 		self.log('Error parsing xml to LUA table: (invalid xml string) ' .. _.str(xml) , self.LOG_ERROR)
 	end
-
 	return fallback
 
 end
