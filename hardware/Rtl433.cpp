@@ -439,9 +439,13 @@ void CRtl433::Do_Work()
 		fcntl(fd, F_SETFL, flags);
 #endif
 		char line[2048];
-		//size_t line_offset = 0;
+#define RTL433_USE_fgets
+#ifdef RTL433_USE_fgets
+		size_t line_offset = 0;
+#endif
 		while (!IsStopRequested(100))
 		{
+#ifndef RTL433_USE_fgets
 			if (fgetline(_hPipe, (char*)&line, sizeof(line)) != nullptr)
 			{
 				bHaveReceivedData = true;
@@ -457,8 +461,7 @@ void CRtl433::Do_Work()
 					}
 				}
 			}
-/*
-			//Another way
+#else
 			line[line_offset] = 0;
 			if (fgets(line + line_offset, sizeof(line) - 1 - line_offset, _hPipe) != nullptr)
 			{
@@ -490,7 +493,7 @@ void CRtl433::Do_Work()
 				}
 				break; // bail out, subprocess has failed
 			}
-*/
+#endif
 		} // while !IsStopRequested()
 		if (_hPipe)
 		{
