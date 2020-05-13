@@ -1033,7 +1033,7 @@ See switch below.
 
 * '''rain''': ''Number''
 * '''rainRate''': ''Number''
-* '''updateRain(rate, counter)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''updateRain(rate, counter)''': ''Function''. (rate in mm * 100 per hour, counter is total in mm) Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 ==== RGBW(W) / Lighting Limitless/Applamp ====
 
@@ -1381,6 +1381,7 @@ See table below
 * '''Note 1''': AAA is a placeholder for <code>Min/Sec/Hour</code> affix e.g. <code>afterMin()</code>.
 * '''Note 2''': for <code>domoticz.openURL()</code> only <code>at()</code>, <code>afterAAA()</code> and <code>withinAAA()</code> is available.
 * '''Note 3''': Note 2 also applies for all commands depending on openURL (like rgbwwDevice.setAaa() commands).
+* '''Note 4''': Including dimTo, switchSelector, setLevel and similar methods.
 
 ==== Follow-up event triggers ====
 

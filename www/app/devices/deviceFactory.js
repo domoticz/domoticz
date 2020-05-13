@@ -158,7 +158,7 @@ define(function () {
                 } else if (this.SubType === 'Percentage') {
                     return '%';
                 } else if (this.Type === 'Weight') {
-					return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
+                    return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
                 } else {
                     return '?';
                 }
@@ -173,7 +173,7 @@ define(function () {
                     'Voltage', 'Current', 'Pressure', 'Custom Sensor', 'kWh',
                     'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                     'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage',
-                    'Text', 'Alert'
+                    'Text', 'Alert', 'Temperature'
                 ];
 
                 if (deviceTypes.some(function(item) {
@@ -212,7 +212,6 @@ define(function () {
                     ShowBaroLog(container, 'GlobalBackFn', this.idx, this.Name);
                 }
             };
-
 
         }
     };
