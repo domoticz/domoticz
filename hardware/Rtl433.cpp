@@ -396,7 +396,6 @@ void CRtl433::Do_Work()
 	else
 		_log.Log(LOG_STATUS, "Rtl433: Worker started...");
 
-	bool bHaveReceivedData = false;
 	std::string szLastLine;
 	FILE* _hPipe = nullptr;
 
@@ -448,7 +447,6 @@ void CRtl433::Do_Work()
 #ifndef RTL433_USE_fgets
 			if (fgetline(_hPipe, (char*)&line, sizeof(line)) != nullptr)
 			{
-				bHaveReceivedData = true;
 				std::string sLine(line);
 				stdreplace(sLine, "\n", "");
 				if (sLine != szLastLine)
@@ -467,14 +465,20 @@ void CRtl433::Do_Work()
 			{
 				if ((line[strlen(line - 1)] != '\n') && (line[strlen(line - 1)] != '\r'))
 				{
+					if (line[0] != '{')
+					{
+						//we do not have a valid line at all
+						line_offset = 0;
+						continue;
+					}
 					line_offset += (strlen(line) - 1);
 					if (line_offset >= sizeof(line) - 3)
 					{
 						//buffer out of sync, restart
 						line_offset = 0;
 					}
+					continue;
 				}
-				bHaveReceivedData = true;
 				std::string sLine(line);
 				stdreplace(sLine, "\n", "");
 				if (sLine != szLastLine)
@@ -486,6 +490,7 @@ void CRtl433::Do_Work()
 						_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", sLine.c_str());
 					}
 				}
+				line_offset = 0;
 			}
 			else { //fgets
 				if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
