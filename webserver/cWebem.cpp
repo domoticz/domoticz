@@ -943,91 +943,142 @@ namespace http {
 			m_sessions.clear(); //TODO : check if it is really necessary
 		}
 
+	uint8_t ip_bit_8_array[8] = {
+		0b00000000,
+		0b10000000,
+		0b11000000,
+		0b11100000,
+		0b11110000,
+		0b11111000,
+		0b11111100,
+		0b11111110,
+	};
+
 		void cWebem::AddLocalNetworks(std::string network)
 		{
 			_tIPNetwork ipnetwork;
-			ipnetwork.network = 0;
-			ipnetwork.mask = 0;
+			ipnetwork.bIsIPv6 = (network.find(':') != std::string::npos);
+
+			uint8_t iASize = (!ipnetwork.bIsIPv6) ? 4 : 16;
+			int ii;
 
 			if (network.empty())
 			{
 				//add local host
-				char ac[256];
-				if (gethostname(ac, sizeof(ac)) != SOCKET_ERROR)
-				{
-					ipnetwork.hostname = ac;
-					stdlower(ipnetwork.hostname);
-					m_localnetworks.push_back(ipnetwork);
-				}
-				return;
+				char szLocalHostname[256];
+				if (gethostname(szLocalHostname, sizeof(szLocalHostname)) == SOCKET_ERROR)
+					return; //Could not retreive hostname
+				network = szLocalHostname;
 			}
 
-			size_t pos = network.find_first_of("*");
-			if (pos != std::string::npos)
+			if (network.find('*') != std::string::npos)
 			{
-				std::string inetwork = network;
-				std::string inetworkmask = network;
-				std::string mask = network;
-				stdreplace(inetwork, "*", "0");
-				int a, b, c, d;
-				if (sscanf(inetwork.c_str(), "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
-					return;
-				std::stringstream newnetwork;
-				newnetwork << std::dec << a << "." << std::dec << b << "." << std::dec << c << "." << std::dec << d;
-				inetwork = newnetwork.str();
-
-				stdreplace(inetworkmask, "*", "999");
-				int e, f, g, h;
-				if (sscanf(inetworkmask.c_str(), "%d.%d.%d.%d", &e, &f, &g, &h) != 4)
+				std::vector<std::string> results;
+				StringSplit(network, (!ipnetwork.bIsIPv6) ? "." : ":" , results);
+				if (results.size() < 2)
 					return;
 
-				std::stringstream newmask;
-				if (e != 999) newmask << "255"; else newmask << "0";
-				newmask << ".";
-				if (f != 999) newmask << "255"; else newmask << "0";
-				newmask << ".";
-				if (g != 999) newmask << "255"; else newmask << "0";
-				newmask << ".";
-				if (h != 999) newmask << "255"; else newmask << "0";
-				mask = newmask.str();
+				uint8_t wPos = 0;
+				int wptr = 0;
+				std::string szNetwork;
+				while (wPos < (uint8_t)results.size())
+				{
+					bool bIsMask = (results[wPos] == "*");
+					ipnetwork.Mask[wptr++] = (!bIsMask) ? 255 : 0;
+					if (ipnetwork.bIsIPv6)
+					{
+						ipnetwork.Mask[wptr++] = (!bIsMask) ? 255 : 0;
+					}
+					if (!szNetwork.empty())
+						szNetwork += (!ipnetwork.bIsIPv6) ? "." : ":";
+					szNetwork += (!bIsMask) ? results[wPos] : "0";
+					wPos++;
+				}
+				int totOctets = (!ipnetwork.bIsIPv6) ? 4 : 8;
+				while (wPos < totOctets)
+				{
+					ipnetwork.Mask[wptr++] = 0;
+					if (ipnetwork.bIsIPv6)
+						ipnetwork.Mask[wptr++] = 0;
+					if (!szNetwork.empty())
+						szNetwork += (!ipnetwork.bIsIPv6) ? "." : ":";
+					szNetwork += "0";
+					wPos++;
+				}
+				
+				if (inet_pton((!ipnetwork.bIsIPv6) ? AF_INET : AF_INET6, szNetwork.c_str(), &ipnetwork.Network) != 1)
+					return; //invalid address
 
-				ipnetwork.network = IPToUInt(inetwork);
-				ipnetwork.mask = IPToUInt(mask);
+				//Apply mask to network address
+				for (ii = 0; ii < iASize; ii++)
+					ipnetwork.Network[ii] = ipnetwork.Network[ii] & ipnetwork.Mask[ii];
 			}
 			else
 			{
-				pos = network.find_first_of("/");
+				size_t pos = network.find_first_of("/");
 				if (pos != std::string::npos)
 				{
-					std::string inetwork = network;
-					std::string mask = network;
-					unsigned char keepbits = (unsigned char)atoi(network.substr(pos + 1).c_str());
-					uint32_t imask = keepbits > 0 ? 0x00 - (1 << (32 - keepbits)) : 0xFFFFFFFF;
-					inetwork = network.substr(0, pos);
-					ipnetwork.network = IPToUInt(inetwork);
-					ipnetwork.mask = imask;
+					std::string szNetwork = network.substr(0, pos);
+					std::string szMask = network.substr(pos + 1);
+					if (szNetwork.empty() || szMask.empty())
+						return;
+
+					if (inet_pton((!ipnetwork.bIsIPv6) ? AF_INET : AF_INET6, szNetwork.c_str(), &ipnetwork.Network) != 1)
+						return; //invalid address
+
+					uint8_t iBitcount = std::stoi(szMask);
+
+					if (!ipnetwork.bIsIPv6)
+					{
+						if (iBitcount > 32)
+							return;
+					}
+					else if (iBitcount > 128)
+						return;
+
+					uint8_t tot_c_bytes = iBitcount / 8;
+					uint8_t tot_r_bits = iBitcount % 8;
+
+					memset((void*)&ipnetwork.Mask, 0xFF, tot_c_bytes);
+					if (tot_r_bits)
+						ipnetwork.Mask[tot_c_bytes % 16] = ip_bit_8_array[tot_r_bits];
+
+					//Apply mask to network address
+					for (ii = 0; ii < iASize; ii++)
+						ipnetwork.Network[ii] = ipnetwork.Network[ii] & ipnetwork.Mask[ii];
 				}
 				else
 				{
-					//Is it an IP address of hostname?
-					boost::system::error_code ec;
-					boost::asio::ip::address _address = boost::asio::ip::address::from_string(network, ec);
-					if (ec)
+					//Single IP or Hostname
+					struct addrinfo* addr = nullptr;
+					if (getaddrinfo(network.c_str(), "0", 0, &addr) == 0)
 					{
-						//only allow ip's, localhost is covered above
-						return;
-						//ipnetwork.hostname=network;
+						struct sockaddr_in* saddr = (((struct sockaddr_in*)addr->ai_addr));
+						uint8_t* pAddress = nullptr;
+						if (saddr->sin_family == AF_INET)
+						{
+							ipnetwork.bIsIPv6 = false;
+							iASize = 4;
+							pAddress = (uint8_t*)&saddr->sin_addr;
+						}
+						else if (saddr->sin_family == AF_INET6)
+						{
+							ipnetwork.bIsIPv6 = true;
+							iASize = 16;
+							struct sockaddr_in6* saddr6 = (((struct sockaddr_in6*)addr->ai_addr));
+							pAddress = (uint8_t*)&saddr6->sin6_addr;
+						}
+						else
+							return;
+						memcpy(&ipnetwork.Network, pAddress, iASize);
 					}
-					//single IP
-					if (_address.is_v4())
-					{
-						ipnetwork.network = IPToUInt(network);
-						ipnetwork.mask = IPToUInt("255.255.255.255");
-					}
-					else
-					{
-						ipnetwork.hostname = network;
-					}
+					else if (inet_pton((!ipnetwork.bIsIPv6) ? AF_INET : AF_INET6, network.c_str(), &ipnetwork.Network) != 1)
+						return; //invalid address
+					memset((void*)&ipnetwork.Mask, 0xFF, iASize);
+
+					//Apply mask to network address
+					for (ii = 0; ii < iASize; ii++)
+						ipnetwork.Network[ii] = ipnetwork.Network[ii] & ipnetwork.Mask[ii];
 				}
 			}
 
@@ -1333,57 +1384,38 @@ namespace http {
 
 		bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork)
 		{
-			if (!ipnetwork.hostname.empty())
-			{
-				return (ip == ipnetwork.hostname);
-			}
+			bool bIsIPv6 = (ip.find(':') != std::string::npos);
+			if (ipnetwork.bIsIPv6 != bIsIPv6)
+				return false;
 
-			boost::system::error_code ec;
-			boost::asio::ip::address _address = boost::asio::ip::address::from_string(ip, ec);
-			if (ec)
+			uint8_t IP[16] = { 0 };
+			if (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, ip.c_str(), &IP) != 1)
+				return 1;
+
+			int iASize = (!bIsIPv6) ? 4 : 16;
+			for (int ii = 0; ii < iASize; ii++)
 			{
-				return false; //not a correct ip address
-			}
-			if (_address.is_v4())
-			{
-				uint32_t ip_addr = IPToUInt(ip);
-				if (ip_addr == 0)
+				if (ipnetwork.Network[ii] != (IP[ii] & ipnetwork.Mask[ii]))
+				{
 					return false;
-
-				uint32_t net_lower = (ipnetwork.network & ipnetwork.mask);
-				uint32_t net_upper = (net_lower | (~ipnetwork.mask));
-
-				if (ip_addr >= net_lower &&
-					ip_addr <= net_upper)
-					return true;
+				}
 			}
-			else
-			{
-				//Wildcard not supported right now, only complete addresses
-			}
-			return false;
+
+			return true;
 		}
 
 		//Returns true is the connected host is in the local network
 		bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const request& req)
 		{
 			//check if in local network(s)
-			if (myWebem->m_localnetworks.size() == 0)
+			if (myWebem->m_localnetworks.empty())
 				return false;
 			if (sHost.size() < 3)
 				return false;
 
-			std::vector<_tIPNetwork>::const_iterator itt;
-
-			/* RK, this doesn't work with IPv6 addresses.
-			pos=host.find_first_of(":");
-			if (pos!=std::string::npos)
-				host=host.substr(0,pos);
-			*/
-
-			for (itt = myWebem->m_localnetworks.begin(); itt != myWebem->m_localnetworks.end(); ++itt)
+			for (auto itt : myWebem->m_localnetworks)
 			{
-				if (IsIPInRange(sHost, *itt))
+				if (IsIPInRange(sHost, itt))
 				{
 					return true;
 				}
