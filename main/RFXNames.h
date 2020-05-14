@@ -215,6 +215,7 @@ enum _eHardwareTypes {
 	HTYPE_DenkoviTCPDevices,	//118
 	HTYPE_OctoPrint,			//119
 	HTYPE_Tesla,                //120
+    HTYPE_Meteorologisk,        //121
 	HTYPE_END
 };
 

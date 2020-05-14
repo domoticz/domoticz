@@ -24,6 +24,7 @@
 #include "../hardware/AccuWeather.h"
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/Buienradar.h"
+#include "../hardware/Meteorologisk.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/LogitechMediaServer.h"
@@ -1250,7 +1251,8 @@ namespace http {
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
 				(htype == HTYPE_Tesla) ||
-				(htype == HTYPE_Netatmo)
+                (htype == HTYPE_Netatmo) ||
+                (htype == HTYPE_Meteostick)
 				)
 			{
 				if (
@@ -1338,7 +1340,9 @@ namespace http {
 			}
 			else if (htype == HTYPE_EcoCompteur) {
 				//all fine here!
-			}
+            } else if (htype == HTYPE_Meteorologisk) {
+                //all fine here!
+            }
 			else
 				return;
 
@@ -1644,8 +1648,8 @@ namespace http {
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
-				(htype == HTYPE_Tesla) ||
-				(htype == HTYPE_Netatmo)
+                (htype == HTYPE_Tesla) ||
+                (htype == HTYPE_Netatmo)
 				)
 			{
 				if (
@@ -1733,6 +1737,9 @@ namespace http {
 			else if (htype == HTYPE_EnphaseAPI) {
 				//all fine here!
 			}
+            else if(htype == HTYPE_Meteorologisk) {
+                //all fine here!
+            }
 			else
 				return;
 
@@ -9128,7 +9135,16 @@ namespace http {
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
-						}
+                        }
+                        else if (pHardware->HwdType == HTYPE_Meteorologisk)
+                        {
+                            CMeteorologisk* pWHardware = reinterpret_cast<CMeteorologisk*>(pHardware);
+                            std::string forecast_url = pWHardware->GetForecastURL();
+                            if (forecast_url != "")
+                            {
+                                root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+                            }
+                        }
 					}
 
 					if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_PythonPlugin))
