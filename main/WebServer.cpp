@@ -12410,10 +12410,34 @@ namespace http {
 			std::string smessage = request::findValue(&req, "message");
 			if (smessage.empty())
 				return;
+
+			std::string slevel = request::findValue(&req, "level");
+			if (!std::isdigit(slevel[0])) 
+			{
+				stdlower(slevel);
+				if (slevel == "status")
+					slevel = "2";
+				else if (slevel == "default")
+					slevel = "1";
+				else if (slevel == "error")
+					slevel = "4";
+			}
+
+			if ( slevel.empty() || slevel == "2"  ) 
+				_log.Log(LOG_STATUS, "%s", smessage.c_str());
+			else if ( slevel == "1"  )
+				_log.Log(LOG_NORM, "%s", smessage.c_str());
+			else if ( slevel == "4" )
+				_log.Log(LOG_ERROR, "%s", smessage.c_str());
+			else
+			{
+				root["title"] = "AddLogMessage";
+				root["status"] = "ERR";
+				return;
+			}
+
 			root["status"] = "OK";
 			root["title"] = "AddLogMessage";
-
-			_log.Log(LOG_STATUS, "%s", smessage.c_str());
 		}
 
 		void CWebServer::Cmd_ClearShortLog(WebEmSession & session, const request& req, Json::Value &root)
