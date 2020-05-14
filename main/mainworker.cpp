@@ -142,6 +142,7 @@
 #include "../hardware/TTNMQTT.h"
 #include "../hardware/Buienradar.h"
 #include "../hardware/OctoPrintMQTT.h"
+#include "../hardware/Meteorologisk.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -934,7 +935,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CHttpPoller(ID, Username, Password, Address, Extra, Port);
 		break;
 	case HTYPE_DarkSky:
-		pHardware = new CDarkSky(ID, Username, Password);
+        pHardware = new CDarkSky(ID, Username, Password);
 		break;
 	case HTYPE_AccuWeather:
 		pHardware = new CAccuWeather(ID, Username, Password);
@@ -1096,7 +1097,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OctoPrint:
 		pHardware = new COctoPrintMQTT(ID, Address, Port, Username, Password, Extra);
 		break;
-	}
+    case HTYPE_Meteorologisk:
+        pHardware = new CMeteorologisk(ID, Username, Password);
+        break;
+    }
 
 	if (pHardware)
 	{
