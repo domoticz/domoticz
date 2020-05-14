@@ -27,12 +27,10 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	// Basic protection from malicious command line
 	removeCharsFromString(m_cmdline, ":;/$()`<>|&");
 	m_HwdID = ID;
-	/*
-		#ifdef _DEBUG
-		std::string line = "{"time" : "2020-05-11 16:07:37", "model" : "Hideki-TS04", "id" : 10, "channel" : 1, "battery_ok" : 1, "temperature_C" : 19.600, "humidity" : 39, "mic" : "CRC"}";
-		ParseJSonLine(line);
-		#endif
-	*/
+	#ifdef _DEBUG
+//		std::string line = "{\"time\" : \"2020-05-14 10:03:31\", \"model\" : \"Interlogix-Security\", \"subtype\" : \"contact\", \"id\" : \"a9da7d\", \"battery_ok\" : 1, \"switch1\" : \"CLOSED\", \"switch2\" : \"OPEN\", \"switch3\" : \"CLOSED\", \"switch4\" : \"OPEN\", \"switch5\" : \"OPEN\", \"raw_message\" : \"8114a4\"}";
+//		ParseJsonLine(line);
+	#endif
 }
 
 CRtl433::~CRtl433()
@@ -267,24 +265,52 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 	std::string model = data["model"]; // new model format normalized from the 201 different devices presently supported by rtl_433
 
-	bool hasstate = FindField(data, "state") || FindField(data, "command");
+	bool bDone = false;
 
-	if (hasstate)
+	if (FindField(data, "state") || FindField(data, "command"))
 	{
-		bool state = false;
+		bool bOn = false;
 		if (FindField(data, "state"))
-			state = data["state"] == "ON";
+			bOn = data["state"] == "ON";
 		else if (FindField(data, "command"))
-			state = data["command"] == "On";
+			bOn = data["command"] == "On";
 		unsigned int switchidx = (id & 0xfffffff) | ((channel & 0xf) << 28);
 		SendSwitch(switchidx,
 			(const uint8_t)unit,
 			batterylevel,
-			state,
+			bOn,
 			0,
 			model);
-		return true;
+		bDone = true;
 	}
+	if (FindField(data, "switch1") && FindField(data, "id"))
+	{
+		std::stringstream sstr;
+		sstr << std::hex << data["id"];
+		uint32_t idx;
+		sstr >> idx;
+		for (int iSwitch = 0; iSwitch < 5; iSwitch++)
+		{
+			char szSwitch[20];
+			sprintf(szSwitch, "switch%d", iSwitch + 1);
+			if (FindField(data, szSwitch))
+			{
+				bool bOn = (data[szSwitch] == "CLOSED");
+				unsigned int switchidx = ((idx & 0xffffff) << 8) | (iSwitch+1);
+				SendSwitch(switchidx,
+					(const uint8_t)unit,
+					batterylevel,
+					bOn,
+					0,
+					model);
+			}
+			bDone = true;
+		}
+	}
+
+	if (bDone)
+		return true;
+
 
 	unsigned int sensoridx = (id & 0xff) | ((channel & 0xff) << 8);
 
