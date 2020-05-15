@@ -1251,8 +1251,7 @@ namespace http {
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
 				(htype == HTYPE_Tesla) ||
-                (htype == HTYPE_Netatmo) ||
-                (htype == HTYPE_Meteostick)
+                (htype == HTYPE_Netatmo)
 				)
 			{
 				if (

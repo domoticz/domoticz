@@ -50,8 +50,7 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CMeteorologisk::CMeteorologisk(const int ID, const std::string &APIKey, const std::string &Location) :
-m_APIKey(APIKey),
+CMeteorologisk::CMeteorologisk(const int ID, const std::string &Location) :
 m_Location(Location)
 {
 	m_HwdID=ID;
@@ -134,7 +133,9 @@ void CMeteorologisk::GetMeterDetails()
     std::string Latitude = "1";
     std::string Longitude = "1";
 
-    if(!szLoc.empty()){
+    // Try the hardware location first, then fallback on the global settings.s
+    if(!szLoc.empty())
+    {
         std::vector<std::string> strarray;
         StringSplit(szLoc, ";", strarray);
 
@@ -142,7 +143,8 @@ void CMeteorologisk::GetMeterDetails()
         Longitude = strarray[1];
     }
 
-    if(Latitude == "1" || Longitude == "1"){
+    if(Latitude == "1" || Longitude == "1")
+    {
         if(szLoc.empty()){
             Log(LOG_ERROR, "No location fount for this hardware. Falling back to global domoticz location settings.");
         } else {
@@ -173,7 +175,8 @@ void CMeteorologisk::GetMeterDetails()
         }
 
         Log(LOG_STATUS, "using Domoticz location settings (%s,%s)", Latitude.c_str(), Longitude.c_str());
-    } else {
+    } else
+    {
         Log(LOG_STATUS, "using hardware location settings (%s,%s)", Latitude.c_str(), Longitude.c_str());
     }
 
@@ -224,14 +227,14 @@ void CMeteorologisk::GetMeterDetails()
 
     Json::Value timeseries = root["properties"]["timeseries"];
 
-    Json::Value selectedTimeserie = NULL;
+    Json::Value selectedTimeserie = 0;
     time_t now = time(NULL);
 
     for(uint i=0; i<timeseries.size(); i++)
     {
-        struct tm tm = {0};
         Json::Value timeserie = timeseries[i];
         const char* stime = timeserie["time"].asCString();
+        struct tm tm;
         char* s = strptime(stime, DATE_TIME_ISO, &tm);
 
         if(s!=NULL)
@@ -245,8 +248,9 @@ void CMeteorologisk::GetMeterDetails()
         }
     }
 
-    if(selectedTimeserie == NULL){
-        //TODO: error message
+    if(selectedTimeserie == 0){
+        Log(LOG_ERROR,"Invalid data received, or unknown location!");
+        return;
     }
 
     Json::Value instantData = selectedTimeserie["data"]["instant"]["details"];

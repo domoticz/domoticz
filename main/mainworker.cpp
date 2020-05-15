@@ -1098,7 +1098,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new COctoPrintMQTT(ID, Address, Port, Username, Password, Extra);
 		break;
     case HTYPE_Meteorologisk:
-        pHardware = new CMeteorologisk(ID, Username, Password);
+        pHardware = new CMeteorologisk(ID, Password); //Password is location here.
         break;
     }
 
