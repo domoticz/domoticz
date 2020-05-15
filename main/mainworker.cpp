@@ -935,7 +935,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CHttpPoller(ID, Username, Password, Address, Extra, Port);
 		break;
 	case HTYPE_DarkSky:
-        pHardware = new CDarkSky(ID, Username, Password);
+		pHardware = new CDarkSky(ID, Username, Password);
 		break;
 	case HTYPE_AccuWeather:
 		pHardware = new CAccuWeather(ID, Username, Password);
@@ -1097,10 +1097,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OctoPrint:
 		pHardware = new COctoPrintMQTT(ID, Address, Port, Username, Password, Extra);
 		break;
-    case HTYPE_Meteorologisk:
-        pHardware = new CMeteorologisk(ID, Password); //Password is location here.
-        break;
-    }
+	case HTYPE_Meteorologisk:
+		pHardware = new CMeteorologisk(ID, Password); //Password is location here.
+		break;
+	}
 
 	if (pHardware)
 	{
