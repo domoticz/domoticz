@@ -51,7 +51,7 @@ std::string ReadFile(std::string filename)
 #endif
 
 CMeteorologisk::CMeteorologisk(const int ID, const std::string &Location) :
-m_Location(Location)
+	m_Location(Location)
 {
 	m_HwdID=ID;
 	Init();
@@ -86,8 +86,8 @@ bool CMeteorologisk::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-    m_bIsStarted=false;
-    return true;
+	m_bIsStarted=false;
+	return true;
 }
 
 void CMeteorologisk::Do_Work()
@@ -126,61 +126,61 @@ void CMeteorologisk::GetMeterDetails()
 {
 	std::string sResult;
 #ifdef DEBUG_MeteorologiskR
-    sResult=ReadFile("/tmp/Meteorologisk.json");
+	sResult=ReadFile("/tmp/Meteorologisk.json");
 #else
 	std::stringstream sURL;
 	std::string szLoc = m_Location;
-    std::string Latitude = "1";
-    std::string Longitude = "1";
+	std::string Latitude = "1";
+	std::string Longitude = "1";
 
-    // Try the hardware location first, then fallback on the global settings.s
-    if(!szLoc.empty())
-    {
-        std::vector<std::string> strarray;
-        StringSplit(szLoc, ";", strarray);
+	// Try the hardware location first, then fallback on the global settings.s
+	if(!szLoc.empty())
+	{
+		std::vector<std::string> strarray;
+		StringSplit(szLoc, ";", strarray);
 
-        Latitude = strarray[0];
-        Longitude = strarray[1];
-    }
+		Latitude = strarray[0];
+		Longitude = strarray[1];
+	}
 
-    if(Latitude == "1" || Longitude == "1")
-    {
-        if(szLoc.empty()){
-            Log(LOG_ERROR, "No location fount for this hardware. Falling back to global domoticz location settings.");
-        } else {
-            Log(LOG_ERROR, "Hardware location not correct. Should be of the form 'Latitude;Longitude'. Falling back to global domoticz location settings.");
-        }
+	if(Latitude == "1" || Longitude == "1")
+	{
+		if(szLoc.empty()){
+			Log(LOG_ERROR, "No location fount for this hardware. Falling back to global domoticz location settings.");
+		} else {
+			Log(LOG_ERROR, "Hardware location not correct. Should be of the form 'Latitude;Longitude'. Falling back to global domoticz location settings.");
+		}
 
-        int nValue;
-        std::string sValue;
-        if (!m_sql.GetPreferencesVar("Location", nValue, sValue))
-        {
-            Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
-            return;
-        }
+		int nValue;
+		std::string sValue;
+		if (!m_sql.GetPreferencesVar("Location", nValue, sValue))
+		{
+			Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+			return;
+		}
 
-        std::vector<std::string> strarray;
-        StringSplit(sValue, ";", strarray);
+		std::vector<std::string> strarray;
+		StringSplit(sValue, ";", strarray);
 
-        if (strarray.size() != 2)
-            return;
+		if (strarray.size() != 2)
+			return;
 
-        Latitude = strarray[0];
-        Longitude = strarray[1];
+		Latitude = strarray[0];
+		Longitude = strarray[1];
 
-        if ((Latitude == "1") && (Longitude == "1"))
-        {
-            Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
-            return;
-        }
+		if ((Latitude == "1") && (Longitude == "1"))
+		{
+			Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+			return;
+		}
 
-        Log(LOG_STATUS, "using Domoticz location settings (%s,%s)", Latitude.c_str(), Longitude.c_str());
-    } else
-    {
-        Log(LOG_STATUS, "using hardware location settings (%s,%s)", Latitude.c_str(), Longitude.c_str());
-    }
+		Log(LOG_STATUS, "using Domoticz location settings (%s,%s)", Latitude.c_str(), Longitude.c_str());
+	} else
+	{
+		Log(LOG_STATUS, "using hardware location settings (%s,%s)", Latitude.c_str(), Longitude.c_str());
+	}
 
-    sURL << "https://api.met.no/weatherapi/locationforecast/2.0/.json?lat=" << Latitude << "&lon=" << Longitude;
+	sURL << "https://api.met.no/weatherapi/locationforecast/2.0/.json?lat=" << Latitude << "&lon=" << Longitude;
 
 	try
 	{
@@ -196,7 +196,7 @@ void CMeteorologisk::GetMeterDetails()
 		return;
 	}
 #ifdef DEBUG_MeteorologiskW
-    SaveString2Disk(sResult, "/tmp/Meteorologisk.json");
+	SaveString2Disk(sResult, "/tmp/Meteorologisk.json");
 #endif
 
 #endif
@@ -208,68 +208,68 @@ void CMeteorologisk::GetMeterDetails()
 		Log(LOG_ERROR,"Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
 		return;
 	}
-    if (root["properties"].empty()==true || root["properties"]["timeseries"].empty()==true)
+	if (root["properties"].empty()==true || root["properties"]["timeseries"].empty()==true)
 	{
 		Log(LOG_ERROR,"Invalid data received, or unknown location!");
 		return;
 	}
 	/*
 	std::string tmpstr2 = root.toStyledString();
-    FILE *fOut = fopen("/tmp/Meteorologisk.json", "wb+");
+	FILE *fOut = fopen("/tmp/Meteorologisk.json", "wb+");
 	fwrite(tmpstr2.c_str(), 1, tmpstr2.size(), fOut);
 	fclose(fOut);
 	*/
 
-    float temperature;
+	float temperature;
 	int humidity=0;
-    float barometric=0;
+	float barometric=0;
 	int barometric_forcast=baroForecastNoInfo;
 
-    Json::Value timeseries = root["properties"]["timeseries"];
+	Json::Value timeseries = root["properties"]["timeseries"];
 
-    Json::Value selectedTimeserie = 0;
-    time_t now = time(NULL);
+	Json::Value selectedTimeserie = 0;
+	time_t now = time(NULL);
 
-    for(uint i=0; i<timeseries.size(); i++)
-    {
-        Json::Value timeserie = timeseries[i];
-        const char* stime = timeserie["time"].asCString();
-        struct tm tm;
-        char* s = strptime(stime, DATE_TIME_ISO, &tm);
-
-        if(s!=NULL)
-        {
-            double diff = difftime(mktime(&tm), now);
-            if(diff > 0)
-            {
-                selectedTimeserie = timeserie;
-                i = timeseries.size();
-            }
-        }
-    }
-
-    if(selectedTimeserie == 0){
-        Log(LOG_ERROR,"Invalid data received, or unknown location!");
-        return;
-    }
-
-    Json::Value instantData = selectedTimeserie["data"]["instant"]["details"];
-
-    //The api already provides the temperature in celcius.
-    temperature=instantData["air_temperature"].asFloat();
-
-    if (instantData["relative_humidity"].empty()==false)
+	for(uint i=0; i<timeseries.size(); i++)
 	{
-        humidity=round(instantData["relative_humidity"].asFloat());
+		Json::Value timeserie = timeseries[i];
+		const char* stime = timeserie["time"].asCString();
+		struct tm tm;
+		char* s = strptime(stime, DATE_TIME_ISO, &tm);
+
+		if(s!=NULL)
+		{
+			double diff = difftime(mktime(&tm), now);
+			if(diff > 0)
+			{
+				selectedTimeserie = timeserie;
+				i = timeseries.size();
+			}
+		}
 	}
-    if (instantData["air_pressure_at_sea_level"].empty()==false)
+
+	if(selectedTimeserie == 0){
+		Log(LOG_ERROR,"Invalid data received, or unknown location!");
+		return;
+	}
+
+	Json::Value instantData = selectedTimeserie["data"]["instant"]["details"];
+
+	//The api already provides the temperature in celcius.
+	temperature=instantData["air_temperature"].asFloat();
+
+	if (instantData["relative_humidity"].empty()==false)
 	{
-        barometric=atof(instantData["air_pressure_at_sea_level"].asString().c_str());
-        if (barometric<1000)
+		humidity=round(instantData["relative_humidity"].asFloat());
+	}
+	if (instantData["air_pressure_at_sea_level"].empty()==false)
+	{
+		barometric=atof(instantData["air_pressure_at_sea_level"].asString().c_str());
+		if (barometric<1000)
 			barometric_forcast=baroForecastRain;
-        else if (barometric<1020)
+		else if (barometric<1020)
 			barometric_forcast=baroForecastCloudy;
-        else if (barometric<1030)
+		else if (barometric<1030)
 			barometric_forcast=baroForecastPartlyCloudy;
 		else
 			barometric_forcast=baroForecastSunny;
@@ -299,40 +299,40 @@ void CMeteorologisk::GetMeterDetails()
 	if (barometric!=0)
 	{
 		//Add temp+hum+baro device
-        SendTempHumBaroSensor(1, 255, temperature, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
+		SendTempHumBaroSensor(1, 255, temperature, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
 	}
 	else if (humidity!=0)
 	{
 		//add temp+hum device
-        SendTempHumSensor(1, 255, temperature, humidity, "TempHum");
+		SendTempHumSensor(1, 255, temperature, humidity, "TempHum");
 	}
 	else
 	{
 		//add temp device
-        SendTempSensor(1, 255, temperature, "Temperature");
+		SendTempSensor(1, 255, temperature, "Temperature");
 	}
 
 	//Wind
-    float wind_degrees=-1;
+	float wind_degrees=-1;
 	float windspeed_ms=0;
 	float windgust_ms=0;
-    float wind_temp=temperature;
-    float wind_chill=temperature;
+	float wind_temp=temperature;
+	float wind_chill=temperature;
 	//int windgust=1;
 	//float windchill=-1;
 
-    if (instantData["wind_from_direction"].empty()==false)
+	if (instantData["wind_from_direction"].empty()==false)
 	{
-        wind_degrees=atof(instantData["wind_from_direction"].asString().c_str());
+		wind_degrees=atof(instantData["wind_from_direction"].asString().c_str());
 	}
-    if (instantData["wind_speed"].empty()==false)
+	if (instantData["wind_speed"].empty()==false)
 	{
-        windspeed_ms = atof(instantData["wind_speed"].asString().c_str());
+		windspeed_ms = atof(instantData["wind_speed"].asString().c_str());
 	}
-    if (instantData["wind_speed_of_gust"].empty()==false)
-    {
-        windgust_ms=atof(instantData["wind_speed_of_gust"].asString().c_str());
-    }
+	if (instantData["wind_speed_of_gust"].empty()==false)
+	{
+		windgust_ms=atof(instantData["wind_speed_of_gust"].asString().c_str());
+	}
 	if (wind_degrees!=-1)
 	{
 		RBUF tsen;
@@ -387,13 +387,13 @@ void CMeteorologisk::GetMeterDetails()
 	}
 
 	//UV
-    if (instantData["ultraviolet_index_clear_sky"].empty() == false)
-    {
-        float UV = instantData["ultraviolet_index_clear_sky"].asFloat();
-        if ((UV < 16) && (UV >= 0))
-        {
-            SendUVSensor(0, 1, 255, UV, "UV Index");
-        }
+	if (instantData["ultraviolet_index_clear_sky"].empty() == false)
+	{
+		float UV = instantData["ultraviolet_index_clear_sky"].asFloat();
+		if ((UV < 16) && (UV >= 0))
+		{
+			SendUVSensor(0, 1, 255, UV, "UV Index");
+		}
 	}
 
 	//Rain
