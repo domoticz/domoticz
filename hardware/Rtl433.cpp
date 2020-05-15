@@ -27,10 +27,16 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	// Basic protection from malicious command line
 	removeCharsFromString(m_cmdline, ":;/$()`<>|&");
 	m_HwdID = ID;
+/*
 	#ifdef _DEBUG
-//		std::string line = "{\"time\" : \"2020-05-14 10:03:31\", \"model\" : \"Interlogix-Security\", \"subtype\" : \"contact\", \"id\" : \"a9da7d\", \"battery_ok\" : 1, \"switch1\" : \"CLOSED\", \"switch2\" : \"OPEN\", \"switch3\" : \"CLOSED\", \"switch4\" : \"OPEN\", \"switch5\" : \"OPEN\", \"raw_message\" : \"8114a4\"}";
-//		ParseJsonLine(line);
+		std::string line = "{\"time\" : \"2020-05-15 07:22:22\", \"brand\" : \"OS\", \"model\" : \"Oregon-v1\", \"id\" : 3, \"channel\" : 1, \"battery_ok\" : 0, \"temperature_C\" : 6.400, \"mic\" : \"CHECKSUM\"}";
+		if (!ParseJsonLine(line))
+		{
+			// this is also logged when parsed data is invalid
+			_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", line.c_str());
+		}
 	#endif
+*/
 }
 
 CRtl433::~CRtl433()
@@ -78,10 +84,9 @@ bool CRtl433::ParseJsonLine(const std::string& sLine)
 			std::string vvalue = root[root.getMemberNames()[ii]].asString();
 			_Field[vname] = vvalue;
 		}
-		while (1 == 0);
+		return ParseData(_Field);
 	}
-
-	return ParseData(_Field);
+	return false;
 }
 
 bool CRtl433::FindField(const std::map<std::string, std::string>& data, const std::string& field)
