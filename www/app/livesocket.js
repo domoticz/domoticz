@@ -67,18 +67,20 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 				var data = msg.data ? JSON.parse(msg.data) : msg;
 
 				if (msg.request === 'device_request' && data.status === 'OK') {
-					data.result.forEach(function(device) {
-						$rootScope.$broadcast('device_update', device);
-					});
-
+					if (typeof data.result !== 'undefined') {
+						data.result.forEach(function(device) {
+							$rootScope.$broadcast('device_update', device);
+						});
+					}
 					handleTimeUpdate(data);
 				}
 
 				if (msg.request === 'scene_request' && data.status === 'OK') {
-					data.result.forEach(function(item) {
-						$rootScope.$broadcast('scene_update', item);
-					});
-
+					if (typeof data.result !== 'undefined') {
+						data.result.forEach(function(item) {
+							$rootScope.$broadcast('scene_update', item);
+						});
+					}
 					handleTimeUpdate(data);
 				}
 			}
@@ -104,11 +106,13 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 		}
 
 		function handleTimeUpdate(msg) {
-			$rootScope.$broadcast('time_update', {
-				serverTime: msg.ServerTime,
-				sunrise: msg.Sunrise,
-				sunset: msg.Sunset
-			});
+			if (typeof msg.ServerTime !== 'undefined') {
+				$rootScope.$broadcast('time_update', {
+					serverTime: msg.ServerTime,
+					sunrise: msg.Sunrise,
+					sunset: msg.Sunset
+				});
+			}
 		}
 
 		function getJson(url, callback_fn) {
