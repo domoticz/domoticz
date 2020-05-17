@@ -1,4 +1,5 @@
 Version 2020.xxxx (xxxx)
+- Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: Allow complete IPv6 address in local network setting
 - Implemented: RTL433, added Pressure (PSI) type
 - Implemented: RTL433, switched to Json input
