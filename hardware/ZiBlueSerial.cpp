@@ -6,6 +6,8 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 
+using namespace boost::placeholders;
+
 #define ZiBlue_RETRY_DELAY 30
 
 CZiBlueSerial::CZiBlueSerial(const int ID, const std::string& devname) :

@@ -14,6 +14,8 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+using namespace boost::placeholders;
+
 CFibaroPush::CFibaroPush()
 {
 	m_PushType = PushType::PUSHTYPE_FIBARO;

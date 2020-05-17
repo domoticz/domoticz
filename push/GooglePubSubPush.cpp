@@ -21,6 +21,8 @@ extern "C" {
 #include <boost/python.hpp>
 #endif
 
+using namespace boost::placeholders;
+
 extern std::string szUserDataFolder;
 
 // this should be filled in by the preprocessor

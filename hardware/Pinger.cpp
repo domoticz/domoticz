@@ -19,6 +19,8 @@
 
 #include <iostream>
 
+using namespace boost::placeholders;
+
 #if BOOST_VERSION >= 107000
 #define GET_IO_SERVICE(s) ((boost::asio::io_context&)(s).get_executor().context())
 #else

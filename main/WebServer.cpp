@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "WebServer.h"
 #include "WebServerHelper.h"
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <iostream>
 #include <fstream>
 #include "mainworker.h"
@@ -64,6 +64,8 @@
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+
+using namespace boost::placeholders;
 
 #define round(a) ( int ) ( a + .5 )
 

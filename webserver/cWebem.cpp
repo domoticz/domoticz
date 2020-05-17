@@ -5,7 +5,7 @@
 //Modified, extended etc by Robbert E. Peters/RTSS B.V.
 #include "stdafx.h"
 #include "cWebem.h"
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "reply.hpp"
 #include "request.hpp"
 #include "mime_types.hpp"

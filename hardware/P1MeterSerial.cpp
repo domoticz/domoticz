@@ -14,9 +14,11 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #ifdef _DEBUG
 //#define DEBUG_P1_R

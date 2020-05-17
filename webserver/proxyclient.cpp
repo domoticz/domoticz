@@ -8,6 +8,8 @@
 #include "../tcpserver/TCPServer.h"
 #include "sha1.hpp"
 
+using namespace boost::placeholders;
+
 // RK: some defines to make mydomoticz also work when openssl not compiled in
 #ifdef WWW_ENABLE_SSL
 #define PROXY_PORT 443

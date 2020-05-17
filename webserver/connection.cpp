@@ -9,13 +9,15 @@
 //
 #include "stdafx.h"
 #include "connection.hpp"
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
 #include "mime_types.hpp"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
+
+using namespace boost::placeholders;
 
 namespace http {
 	namespace server {

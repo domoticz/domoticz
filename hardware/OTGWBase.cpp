@@ -12,7 +12,7 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <json/json.h>
 
 #include <ctime>

@@ -12,7 +12,7 @@
 #include "XiaomiHardware.h"
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #ifndef WIN32
 #include <ifaddrs.h>

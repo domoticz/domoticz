@@ -174,6 +174,8 @@
 #include <fstream>
 #endif
 
+using namespace boost::placeholders;
+
 #define round(a) ( int ) ( a + .5 )
 
 extern std::string szStartupFolder;

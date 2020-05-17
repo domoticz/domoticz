@@ -13,7 +13,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "../webserver/cWebem.h"
 #include <json/json.h>
 
