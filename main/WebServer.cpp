@@ -12429,6 +12429,7 @@ namespace http {
 					return;
 				}
 			}
+			root["status"] = "OK";
 
 			_log.Log(logLevel, "%s", smessage.c_str());
 		}
