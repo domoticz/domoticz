@@ -148,7 +148,7 @@ function fillNumberOfTests
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
 		DelayedVariableScene_ExpectedTests=2
 		EventState_ExpectedTests=2
-		Integration_ExpectedTests=220
+		Integration_ExpectedTests=222
 		SelectorSwitch_ExpectedTests=2
 		SystemAndCustomEvents_ExpectedTests=7
 	}

@@ -118,7 +118,7 @@ local function Domoticz(settings)
 				.. '#' .. strip(extra)
 				.. '#' .. strip(_subSystem)
 				self.sendCommand('SendNotification', data)
-	
+
 	end
 
 	-- have domoticz send an email
@@ -246,6 +246,40 @@ local function Domoticz(settings)
 		else
 			utils.log('No maker event sID is provided', utils.LOG_ERROR)
 		end
+	end
+
+	-- get information from hardware
+	function self.hardwareInfo( parm )
+		local hardwareID
+		if tonumber(parm) ~= nil then -- id = number
+			hardwareID = parm
+		end
+
+		local hardware = {}
+
+		for index, record in pairs(_G.domoticzData) do
+			if record.data and record.data.hardwareID then
+				local id = tostring(record.data.hardwareID)
+				if hardware[id] == nil then
+					hardwareItem = {}
+					hardwareItem.name = record.data.hardwareName
+
+					if tonumber(parm) == nil and  parm == record.data.hardwareName then
+						hardwareID = record.data.hardwareID
+					end
+
+					hardwareItem.type = record.data.hardwareType
+					hardwareItem.typeValue = record.data.hardwareTypeValue
+					hardwareItem.deviceNames = { record.name }
+					hardwareItem.deviceIds = { record.id }
+					hardware[id] = hardwareItem
+				else
+					table.insert(hardware[id].deviceNames, record.name)
+					table.insert(hardware[id].deviceIds, record.id)
+				end
+			end
+		end
+		return hardware[tostring(hardwareID)]
 	end
 
 	-- send a scene switch command
