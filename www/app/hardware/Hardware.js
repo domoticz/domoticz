@@ -799,7 +799,7 @@ define(['app'], function (app) {
 				});
 			}
 			else if(text.indexOf("Meteorologisk") >= 0){
-				var location = $("#hardwarecontent #divmeteorologisk #location").val();
+				var location = $("#hardwarecontent #divlocation #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&password=" + encodeURIComponent(location) +
@@ -1965,7 +1965,7 @@ define(['app'], function (app) {
 					}
 				});
 			}else if(text.indexOf("Meteorologisk") >= 0){
-				var location = $("#hardwarecontent #divmeteorologisk #location").val();
+				var location = $("#hardwarecontent #divlocation #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&password=" + encodeURIComponent(location) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					async: false,
@@ -3675,7 +3675,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
 						}
 						else if ((data["Type"].indexOf("Meteorologisk") >= 0)) {
-							$("#hardwarecontent #hardwareparamsmeteorologisk #location").val(data["Password"]);
+							$("#hardwarecontent #hardwareparamslocation #location").val(data["Password"]);
 						}
 						else if (data["Type"].indexOf("Buienradar") >= 0) {
 							var timeframe = parseInt(data["Mode1"]);
@@ -4010,7 +4010,6 @@ define(['app'], function (app) {
             		$("#hardwarecontent #divmodeldenkoviusbdevices").hide();
             		$("#hardwarecontent #divmodeldenkovitcpdevices").hide();
 			$("#hardwarecontent #divunderground").hide();
-			$("#hardwarecontent #divmeteorologisk").hide();
 			$("#hardwarecontent #divbuienradar").hide();
 			$("#hardwarecontent #divserial").hide();
 			$("#hardwarecontent #divremote").hide();
@@ -4206,7 +4205,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divunderground").show();
 			}
 			else if(text.indexOf("Meteorologisk") >= 0){
-				$("#hardwarecontent #divmeteorologisk").show();
+				$("#hardwarecontent #divlocation").show();
 			}
 			else if (text.indexOf("Buienradar") >= 0) {
 				$("#hardwarecontent #divbuienradar").show();
