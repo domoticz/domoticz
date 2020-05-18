@@ -1,3 +1,6 @@
+[3.0.6]
+- Add hardwareInfo() function
+
 [3.0.5]
 - add dumpSelection()
 - fixed settings.url

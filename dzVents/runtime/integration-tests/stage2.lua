@@ -738,10 +738,10 @@ local testDeviceDumps = function(name)
 	local dv = dz.devices(name)
 	local res = true
 	res = res and ( dv.dump() == nil )
-	res = res and ( dv.dumpSelection() == nil ) 
-	res = res and ( dv.dumpSelection('attributes') == nil ) 
-	res = res and ( dv.dumpSelection('functions') == nil ) 
-	res = res and ( dv.dumpSelection('tables') == nil ) 
+	res = res and ( dv.dumpSelection() == nil )
+	res = res and ( dv.dumpSelection('attributes') == nil )
+	res = res and ( dv.dumpSelection('functions') == nil )
+	res = res and ( dv.dumpSelection('tables') == nil )
 	handleResult('Test device dumps', res)
 	return res
 end
@@ -751,10 +751,10 @@ local testGroupDumps = function(name)
 	local gp = dz.groups(name )
 	local res = true
 	res = res and ( gp.dump() == nil )
-	res = res and ( gp.dumpSelection() == nil ) 
-	res = res and ( gp.dumpSelection('attributes') == nil ) 
-	res = res and ( gp.dumpSelection('functions') == nil ) 
-	res = res and ( gp.dumpSelection('tables') == nil ) 
+	res = res and ( gp.dumpSelection() == nil )
+	res = res and ( gp.dumpSelection('attributes') == nil )
+	res = res and ( gp.dumpSelection('functions') == nil )
+	res = res and ( gp.dumpSelection('tables') == nil )
 	handleResult('Test group dumps', res)
 	return res
 end
@@ -764,10 +764,10 @@ local testSceneDumps = function(name)
 	local sc = dz.scenes(name)
 	local res = true
 	res = res and ( sc.dump() == nil )
-	res = res and ( sc.dumpSelection() == nil ) 
-	res = res and ( sc.dumpSelection('attributes') == nil ) 
-	res = res and ( sc.dumpSelection('functions') == nil ) 
-	res = res and ( sc.dumpSelection('tables') == nil ) 
+	res = res and ( sc.dumpSelection() == nil )
+	res = res and ( sc.dumpSelection('attributes') == nil )
+	res = res and ( sc.dumpSelection('functions') == nil )
+	res = res and ( sc.dumpSelection('tables') == nil )
 	handleResult('Test scene dumps', res)
 	return res
 end
@@ -776,10 +776,10 @@ local testVariableDumps = function(name)
 	local utils = require('Utils')
 	local var = dz.variables(name)
 	local res = true
-	res = res and ( var.dumpSelection() == nil ) 
-	res = res and ( var.dumpSelection('attributes') == nil ) 
-	res = res and ( var.dumpSelection('functions') == nil ) 
-	res = res and ( var.dumpSelection('tables') == nil ) 
+	res = res and ( var.dumpSelection() == nil )
+	res = res and ( var.dumpSelection('attributes') == nil )
+	res = res and ( var.dumpSelection('functions') == nil )
+	res = res and ( var.dumpSelection('tables') == nil )
 	handleResult('Test Variable dumps', res)
 	return res
 end
@@ -863,6 +863,15 @@ local testVersion = function(name)
 	local utils = require('Utils')
 	res = res and expectEql(utils.DZVERSION , dz.settings.dzVentsVersion)
 	handleResult('Test version strings to equal (' .. utils.DZVERSION .. ') and (' .. dz.settings.dzVentsVersion .. ')',res)
+	return res
+end
+
+local testHardwareInfo = function(name , id)
+	local res = true
+	res = res and expectEql(_.str(dz.hardwareInfo(name).deviceNames):match('vdHumidity'), 'vdHumidity')
+	handleResult('Test hardware (name) info name (devices) ', res )
+	res = res and expectEql(_.str(dz.hardwareInfo(id).deviceNames):match('vdSilentSwitch'), 'vdSilentSwitch')
+	handleResult('Test hardware (id) info name (devices) ', res )
 	return res
 end
 
@@ -1009,6 +1018,7 @@ return {
 		res = res and testSettingsDump()
 		res = res and testIFTTT('myEvent')
 		res = res and testVersion('version')
+		res = res and testHardwareInfo('dummy', 2)
 		res = res and testExistUtils()
 
 		-- test a require

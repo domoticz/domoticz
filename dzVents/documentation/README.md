@@ -297,7 +297,7 @@ Since you can define multiple on-triggers in your script, it is not always clear
  - **isHTTPResponse**: .  returns `true` if the item is an HTTPResponse object.
  - **isScene**: . returns `true` if the item is a Scene object.
  - **isSecurity**: .  returns `true` if the item is a Security object.
- - **isSystem**: <sup>3.0.0</sup>.  returns `true` if the item is a system object.
+ - **isSystemEvent**: <sup>3.0.0</sup>.  returns `true` if the item is a system object.
  - **isTimer**: .  returns `true` if the item is a Timer object.
 -  **isVariable**: .  returns `true` if the item is a Variable object.
 
@@ -659,6 +659,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **email(subject, message, mailTo)**: *Function*. Send email.
  - **emitEvent(name,[extra data ])**:*Function*. <sup>3.0.0</sup> Have Domoticz 'call' a customEvent. If you just pass a name then Domoticz will execute the script(s) that subscribed to the named customEvent after your script has finished. You can optionally pass extra information as a string or table. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **groups(idx/name)**: *Function*: A function returning a group by name or idx. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.groups()) do .. end`. Read more about [Groups](#Group).
+ - **hardwareInfo(idx/name)**: <sup>3.0.6</sup> *Function*: A function returning hardwareInfo of a hardware module by name or idx. The return of the function is a table with atributes name, type, typeValue, deviceNames (table with names of all active devices defined on this hardware) and deviceIds (table with idx of all active devices defined on this hardware)
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Shared helper functions](#Shared_helper_functions).
  - **log(message, [level])**: *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
 - **moduleLabel**: <sup>3.0.3</sup> Module (script) name without extension.
@@ -2443,6 +2444,9 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+## [3.0.6]
+- Add hardwareInfo() function
 
 ## [3.0.5]
 - Add dumpSelection() method 
