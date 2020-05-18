@@ -174,7 +174,7 @@ void CeVehicle::SendTemperature(int tempType, float value)
 {
 	if ((tempType == VEHICLE_TEMP_INSIDE) && m_api->m_capabilities.has_inside_temp)
 		SendTempSensor(VEHICLE_TEMP_INSIDE, 255, value, m_Name + " Temperature");
-	if ((tempType == VEHICLE_TEMP_INSIDE) && m_api->m_capabilities.has_outside_temp)
+	if ((tempType == VEHICLE_TEMP_OUTSIDE) && m_api->m_capabilities.has_outside_temp)
 		SendTempSensor(VEHICLE_TEMP_OUTSIDE, 255, value, m_Name + " Outside Temperature");
 	;
 }
