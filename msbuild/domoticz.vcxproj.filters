@@ -513,6 +513,9 @@
     <Filter Include="JSON">
       <UniqueIdentifier>{6f228d26-d99a-4e01-a8fc-03d7cd28642e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Meteorologisk">
+      <UniqueIdentifier>{54d3120a-1deb-4a3c-959d-7f89f33a1fd3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2207,6 +2210,9 @@
     <ClInclude Include="..\notifications\NotificationFCM.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Meteorologisk.h">
+      <Filter>Devices\Meteorologisk</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2940,6 +2946,9 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationFCM.cpp">
       <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Meteorologisk.cpp">
+      <Filter>Devices\Meteorologisk</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
