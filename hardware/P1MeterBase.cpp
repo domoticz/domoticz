@@ -5,16 +5,20 @@
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+/*
 #include <cryptopp/aes.h>
 #include <cryptopp/gcm.h>
 #include <cryptopp/modes.h>
 #include <cryptopp/filters.h>
-
+*/
 
 #define CRC16_ARC	0x8005
 #define CRC16_ARC_REFL	0xA001
 
 #define GCMTagLength 12
+const std::string _szDecodeAdd = "3000112233445566778899AABBCCDDEEFF";
 
 enum class _eP1MatchType {
 	ID = 0,
@@ -812,10 +816,6 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					cipherText.append(m_dataPayload.begin(), m_dataPayload.end());
 					cipherText.append(m_gcmTag.begin(), m_gcmTag.end());
 
-					CryptoPP::GCM< CryptoPP::AES >::Decryption decryptor;
-
-					decryptor.SetKeyWithIV((uint8_t*)m_szHexKey.data(), 16, (uint8_t*)iv.c_str(), 12);
-
 					size_t neededDecryptBufferSize = std::min(1000, static_cast<int>(cipherText.size() + 16));
 					if (neededDecryptBufferSize > m_DecryptBufferSize)
 					{
@@ -828,8 +828,27 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 							return;
 					}
 					memset(m_pDecryptBuffer, 0, m_DecryptBufferSize);
-					decryptor.ProcessData(m_pDecryptBuffer, (uint8_t*)cipherText.c_str(), cipherText.size());
 
+					EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+					if (ctx == nullptr)
+						return;
+					EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), NULL, NULL, NULL);
+					EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, iv.size(), NULL);
+
+					EVP_DecryptInit_ex(ctx, NULL, NULL, (const unsigned char*)m_szHexKey.data(), (const unsigned char*)iv.c_str());
+
+					int outlen = 0;
+					//std::vector<char> m_szDecodeAdd = HexToBytes(_szDecodeAdd);
+					//EVP_DecryptUpdate(ctx, NULL, &outlen, (const uint8_t*)m_szDecodeAdd.data(), m_szDecodeAdd.size());
+					EVP_DecryptUpdate(ctx, (uint8_t*)m_pDecryptBuffer, &outlen, (uint8_t*)cipherText.c_str(), cipherText.size());
+					EVP_CIPHER_CTX_free(ctx);
+					if (outlen <= 0)
+						return;
+/*
+					CryptoPP::GCM< CryptoPP::AES >::Decryption decryptor;
+					decryptor.SetKeyWithIV((uint8_t*)m_szHexKey.data(), 16, (uint8_t*)iv.c_str(), 12);
+					decryptor.ProcessData(m_pDecryptBuffer, (uint8_t*)cipherText.c_str(), cipherText.size());
+*/
 					pData = m_pDecryptBuffer;
 					Len = static_cast<int>(strlen((const char*)m_pDecryptBuffer));
 				}
