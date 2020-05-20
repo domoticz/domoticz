@@ -8,7 +8,7 @@
 class P1MeterSerial: public AsyncSerial, public P1MeterBase
 {
 public:
-	P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const bool disable_crc, const int ratelimit);
+	P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const bool disable_crc, const int ratelimit, const std::string& DecryptionKey);
     P1MeterSerial(const std::string& devname, unsigned int baud_rate,
         boost::asio::serial_port_base::parity opt_parity=
             boost::asio::serial_port_base::parity(
