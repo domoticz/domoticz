@@ -4,9 +4,12 @@ Version 2020.xxxx (xxxx)
 - Implemented: RTL433, added Pressure (PSI) type
 - Implemented: RTL433, switched to Json input
 - Implemented: ZWave, Legend and tooltips in Neighbours overview
-- Updated: dzVents version 3.0.6 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: dzVents version 3.0.7 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: eVehicles, added ODO meter, unlock/open alert, max charge level to Tesla module
+- Updated: OpenZwave, added legend and tooltips in neighbours overview
+- Updated: P1 Meter,  added support for Encryption
 - Updated: TTNMQTT, improved Improved calculation and storage of signal-levels
-- Updated: eVehicles, add ODO meter, unlock/open alert, max charge level to Tesla module
+- Updated: Webserver,  optional parameter level to addlogmessage
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.2 (April 26th 2020)
