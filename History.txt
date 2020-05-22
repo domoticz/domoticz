@@ -3,6 +3,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: Allow complete IPv6 address in local network setting
 - Implemented: P1 Meter, added support for Encryption
 - Implemented: RTL433, added Pressure (PSI) type
+- Implemented: RTL433, added UV type
 - Implemented: RTL433, switched to Json input
 - Implemented: ZWave, Legend and tooltips in Neighbours overview
 - Updated: dzVents version 3.0.7 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
