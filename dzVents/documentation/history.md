@@ -1,3 +1,6 @@
+[3.0.7]
+- Add domoticz.hardwares() as separate object class
+
 [3.0.6]
 - Add hardwareInfo() function
 

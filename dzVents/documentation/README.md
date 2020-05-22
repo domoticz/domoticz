@@ -2,6 +2,7 @@
 
 
 
+
 **Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
@@ -74,13 +75,13 @@ return
 	},
 	execute = function(domoticz)
 		local bathroomSensor = domoticz.devices('BathroomSensor')
-		if (bathroomSensor.humidity - domoticz.data.previousHumidity) >= 5) then
+		if (bathroomSensor.humidity - domoticz.data.previousHumidity) >= 5 then
 			-- there was a significant rise
 			domoticz.devices('Ventilator').switchOn()
 		end
 		-- store current value for next cycle
 		domoticz.data.previousHumidity = bathroomSensor.humidity
-	nd
+	end
 }
 ```
 
@@ -344,7 +345,7 @@ The optional data section allows you to define local variables that will hold th
 The optional logging section allows you to override the global logging setting of dzVents as set in *Setup > Settings > Other > EventSystem > dzVents Log Level*. This can be handy when you only want this script to have extensive debug logging while the rest of your script executes silently. You have these options:
 
  - **level**: This is the log level you want for this script. Can be domoticz.LOG_INFO, domoticz.LOG_MODULE_EXEC_INFO, domoticz.LOG_DEBUG or domoticz.LOG_ERROR
- - **marker**: A string that is prefixed before each log message. That way you can easily create a filter in the Domoticz log to see just these messages.
+ - **marker**: A string that is prefixed before each log message. That way you can easily create a filter in the Domoticz log to see just these messages. **marker** defaults to scriptname 
 
 Example:
 ```Lua
@@ -637,7 +638,7 @@ Be mindful of the logic if using multiple types of timer triggers. It may not ma
 Another important issue: the way it is implemented right now, the `every xx minutes` and `every xx hours` is a bit limited. The interval resets at every \*:00  (for minutes) or 00:* for hours. You need an interval that is an integer divider of 60 (or 24 for the hours). So you can do every 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30 minutes only.
 
 # The domoticz object
-The domoticz object passed as the first parameter to the `execute` function contains everything you need to interact with your domotica system. It provides all the information about your devices, scenes, groups, variables and has all the methods needed to inspect and manipulate them. Getting this information is easy:
+The domoticz object passed as the first parameter to the `execute` function contains everything you need to interact with your domotica system. It provides all information made available by the domoticz event system about your custom- and system events, devices, scenes, groups, hardware modules and variables and has methods needed to inspect and manipulate them. Getting this information is easy:
 
 `domoticz.time.isDayTime` or `domoticz.devices('My sensor').temperature` or `domoticz.devices('My sensor').lastUpdate.minutesAgo`.
 
@@ -651,7 +652,7 @@ One tip before you get started:
 **Make sure that all your devices have unique names. dzVents will give you warnings in the logs if device names are not unique.**
 
 ##  Domoticz object API (Application Programming Interface)
-The domoticz object holds all information about your Domoticz system. It has global attributes and methods to query and manipulate your system. It also has a collection of **devices**, **variables** (user variables in Domoticz), **scenes**, **groups**. Each of these collections has three iterator functions: `forEach()`, `filter()` and `reduce()` to make searching for devices easier. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators).
+The domoticz object holds all information about your Domoticz system. It has global attributes and methods to query and manipulate your system. It also has a collection of **devices**, **variables** (user variables in Domoticz), **scenes**, **groups**, **hardwares**. Each of these collections has four iterator functions: `find(), forEach()`, `filter()` and `reduce()` to make searching for devices easier. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators).
 
 ### Domoticz attributes and methods
  - **devices(idx/name)**: *Function*. A function returning a device by idx or name: `domoticz.devices(123)` or `domoticz.devices('My switch')`. For the device API see [Device object API](#Device_object_API). To iterate over all devices do: `domoticz.devices().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.devices()) do .. end`.
@@ -659,7 +660,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **email(subject, message, mailTo)**: *Function*. Send email.
  - **emitEvent(name,[extra data ])**:*Function*. <sup>3.0.0</sup> Have Domoticz 'call' a customEvent. If you just pass a name then Domoticz will execute the script(s) that subscribed to the named customEvent after your script has finished. You can optionally pass extra information as a string or table. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **groups(idx/name)**: *Function*: A function returning a group by name or idx. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.groups()) do .. end`. Read more about [Groups](#Group).
- - **hardwareInfo(idx/name)**: <sup>3.0.6</sup> *Function*: A function returning hardwareInfo of a hardware module by name or idx. The return of the function is a table with atributes name, type, typeValue, deviceNames (table with names of all active devices defined on this hardware) and deviceIds (table with idx of all active devices defined on this hardware)
+ - **hardwareInfo(idx/name)**: <sup>3.0.6</sup> *Function*: A function returning hardwareInfo of a hardware module by name or idx. The return of the function is a table with attributes name, type, typeValue, deviceNames (table with names of all active devices defined on this hardware) and deviceIds (table with idx of all active devices defined on this hardware)
+ - **hardwares(idx/name)**:  <sup>3.0.7</sup> *Function*: A function returning a hardware module by name or idx. Each hardware has an interface comparable to group. To iterate over all hardware do: `domoticz.hardwares().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.hardwares()) do .. end`. Read more about [Hardwares](#Hardware).
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Shared helper functions](#Shared_helper_functions).
  - **log(message, [level])**: *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
 - **moduleLabel**: <sup>3.0.3</sup> Module (script) name without extension.
@@ -713,7 +715,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **deviceExists(parm)**: *Function*: ^2.4.28^ returns name when
 		entered with valid deviceID or ID when entered with valid
 		deviceName or false when not a deviceID or deviceName of an
-		existing device.
+		existing (and active)   device.
 		example:
 
 		``` {.lua}
@@ -739,6 +741,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **fromJSON(json, fallback <sup>2.4.16</sup>)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
 	- **fromXML(xml, fallback )**: *Function*: <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: `local t = domoticz.utils.fromXML('<testtag>What a nice feature!</testtag>') Followed by: `print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.
 	 - **groupExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid groupID or ID when entered with valid groupName or false when not a groupID or groupName of an existing group
+	 - **hardwareExists(parm)**: *Function*: <sup>3.0.7</sup> returns name when entered with valid hardwareID or ID when entered with valid hardwareName or false when not a hardwareID or hardwareName of an existing (and active  )hardware module
 	- **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
 	- **isJSON(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'application/json' or string is enclosed in {} and `false` otherwise.
 	- **isXML(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'text/xml' or 'application/xml' or string is enclosed in <> and `false` otherwise.
@@ -770,7 +773,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 (#Variable_object_API_.28user_variables.29) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). **Note that you cannot do `for i, j in pairs(domoticz.variables()) do .. end`**.
 
 ### Looping through the collections: iterators
-The domoticz object has these collections (tables): devices, scenes, groups, variables, changedDevices and changedVariables. You cannot use the `pairs()` or `ipairs()` functions. Therefore dzVents has three iterator methods:
+The domoticz object has these collections (tables): devices, scenes, groups, variables, changedDevices and changedVariables. You cannot use the `pairs()` or `ipairs()` functions. Therefore dzVents has four iterator methods:
 
  1. **find(function)**: Returns the item in the collection for which `function` returns true. When no item is found `find` returns nil.
  2. **forEach(function)**: Executes function once per array element. The function receives the item in the collection (device or variable). If the function returns *false*, the loop is aborted.
@@ -841,7 +844,7 @@ The domoticz object has these constants available for use in your code e.g. `dom
 **IMPORTANT:  you have to prefix these constants with the name of your domoticz object. Example: `domoticz.ALERTLEVEL_RED`**:
 
  - **ALERTLEVEL_GREY**, **ALERTLEVEL_GREEN**, **ALERTLEVEL_ORANGE**, **ALERTLEVEL_RED**, **ALERTLEVEL_YELLOW**: for updating text sensors.
- - **BASETYPE_CUSTOM_EVENT** <sup>3.0.0</sup>,**BASETYPE_DEVICE**, **BASETYPE_SCENE**, **BASETYPE_GROUP**, **BASETYPE_VARIABLE**, **BASETYPE_SECURITY**, **BASETYPE_TIMER**, **BASETYPE_HTTP_RESPONSE**, **BASETYPE_SYSTEM**<sup>3.0.0</sup>: indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object:
+ - **BASETYPE_CUSTOM_EVENT** <sup>3.0.0</sup>,**BASETYPE_DEVICE**, **BASETYPE_SCENE**, **BASETYPE_GROUP**, **BASETYPE_HARDWARE** <sup>3.0.7</sup>, **BASETYPE_VARIABLE**, **BASETYPE_SECURITY**, **BASETYPE_TIMER**, **BASETYPE_HTTP_RESPONSE**, **BASETYPE_SYSTEM**<sup>3.0.0</sup>: indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object:
 	```Lua
 	if (item.baseType == domoticz.BASETYPE_DEVICE) then ... end
 	```
@@ -984,6 +987,13 @@ Note that if you do not find your specific device type here you can always inspe
  - **switchOn()**: Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **toggleGroup()**: Toggles the state of a group. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
+#### Hardware <sup>3.0.7</sup>
+ - **devices()**: *Function*. Returns the collection of associated devices. Supports the same iterators as for `domoticz.devices()`: `forEach()`, `filter()`, `find()`, `reduce()`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that the function doesn't allow you to get a device by its name or id. Use `domoticz.devices()` for that.
+ - **isHardware**:  *Boolean*
+ - **isPythonPlugin**: *Boolean*
+ - **type**: : *String*
+ - **typeValue**: : *Number*
+  
 #### Humidity sensor
  - **humidity**: *Number*
  - **humidityStatus**: *String*
@@ -2281,14 +2291,14 @@ Make sure the active section in your script is set to `true`:  `active = true`. 
 ### Turn on debug logging
 Activate debug logging in the settings (see above). This will produce a lot of extra messages in the Domoticz log (don't forget to turn it off when you are done troubleshooting!). It is best to monitor the log through the command line, as the log in the browser sometimes tends to not always show all log messages. See the Domoticz manual for how to do that.
 
-When debug logging is enabled, every time dzVents kicks into action (Domoticz throws an event) it will log it, and it will create a file `/path/to/domoticz/scripts/dzVents/domoticzData.lua` with a dump of the data sent to dzVents. These data lie at the core of the dzVents object model. You can open this file in an editor to see if your device/variable/scene/group is in there. Note that the data in the file are not exactly the same as what you will get when you interact with dzVents, but it is a good start. If your device is not in the data file, then you will not have access to it in dzVents and dzVents will not be able to match triggers with that device. Something's wrong if you expect your device to be in there but it is not (is the device active/used?).
+When debug logging is enabled, every time dzVents kicks into action (Domoticz throws an event) it will log it, and it will create a file `/path/to/domoticz/scripts/dzVents/domoticzData.lua` with a dump of the data sent to dzVents. These data lie at the core of the dzVents object model. You can open this file in an editor to see if your device/variable/scene/group/hardware is in there. Note that the data in the file are not exactly the same as what you will get when you interact with dzVents, but it is a good start. If your object is not in the data file, then you will not have access to it in dzVents and dzVents will not be able to match triggers with that object. Something's wrong if you expect your object to be in there but it is not (is the object active/used?).
 
 Every time Domoticz starts dzVents and debug logging is enabled you should see these lines:
 ```
 dzVents version: x.y.z
 Event trigger type: aaaa
 ```
-Where aaaa can be time, device, uservariable, security or scenegroup. That should give you a clue what kind of event is active. If you don't see this information then dzVents is not active (or debug logging is not active).
+Where aaaa can be time, custom event, system event, device, uservariable, security or scenegroup. That should give you a clue what kind of event is active. If you don't see this information then dzVents is not active (or debug logging is not active).
 
 ### Script is still not executed
 If for some reason your script is not executed while all of the above is done, it is possible that your triggers are not correct. Either the time rule is not matching with the current time (try to set the rule to `every minute` or something simple), or the device name is not correct (check casing), or you use an id that doesn't exist. Note that in the `on` section, you cannot use the dzVents domoticz object!
@@ -2444,6 +2454,9 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
+## [3.0.7]
+- Add domoticz.hardwares() as separate object class
 
 ## [3.0.6]
 - Add hardwareInfo() function
