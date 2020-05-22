@@ -365,8 +365,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (haveWind_Speed || haveWind_Gust || haveWind_Dir)
 	{
-		//SendWind(sensoridx, batterylevel, wind_dir, wind_speed, wind_gust, tempC, 0, haveTemp, false, model);
-		SendWind(sensoridx, batterylevel, wind_dir, wind_speed, wind_gust, model);
+		SendWind(sensoridx, batterylevel, wind_dir, wind_speed, wind_gust, tempC, 0, haveTemp, false, model);
 		bHandled = true;
 	}
 	if (haveRain)
