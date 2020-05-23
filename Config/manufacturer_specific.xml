@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ManufacturerSpecificData Revision="88" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="93" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -422,7 +422,7 @@
   <Manufacturer id="032E" name="DEFARO"></Manufacturer>
   <Manufacturer id="040D" name="Delaney Hardware"></Manufacturer>
   <Manufacturer id="0031" name="Destiny Networks"></Manufacturer>
-  <Manufacturer id="0175" name="Devolo home Control">
+  <Manufacturer id="0175" name="devolo Home Control">
     <Product config="devolo/mt2646.xml" id="0011" name="Metering Plug MT02646" type="0001"/>
     <Product config="devolo/mt02792.xml" id="0012" name="Smart Metering Plug MT02792" type="0001"/>
     <Product config="devolo/mt02648.xml" id="000e" name="Door/Window Contact MT02648" type="0002"/>
@@ -436,6 +436,8 @@
     <Product config="devolo/mt2653.xml" id="0102" name="Key MT2653" type="0100"/>
     <Product config="devolo/mt2651.xml" id="04a4" name="Smoke Detector MT2651" type="2004"/>
     <Product config="devolo/mt2651.xml" id="2004" name="Smoke Detector MT2651" type="2004"/>
+    <Product config="devolo/mt2761.xml" id="0052" name="Home Control Shutter FM MT2761" type="0003"/>
+    <Product config="devolo/mt2759.xml" id="0052" name="Home Control Switch FM MT2759" type="0002"/>
   </Manufacturer>
   <Manufacturer id="0103" name="Diehl AKO">
     <Product config="diehlcontrols/766366.xml" id="0002" name="Dimmer Actuator" type="0002"/>
@@ -643,6 +645,7 @@
     <Product config="fibaro/fgr221.xml" id="0109" name="FGR221 Roller Shutter Controller" type="0300"/>
     <Product config="fibaro/fgrm222.xml" id="1001" name="FGRM222 Roller Shutter Controller 2" type="0301"/>
     <Product config="fibaro/fgrm222.xml" id="1000" name="FGRM222 Roller Shutter Controller 2" type="0302"/>
+    <Product config="fibaro/fgrm222.xml" id="3000" name="FGRM222 Roller Shutter Controller 2" type="0302"/>
     <Product config="fibaro/fgrm222.xml" id="4000" name="FGRM222 Roller Shutter Controller 2" type="0302"/>
     <Product config="fibaro/fgr223.xml" id="1000" name="FGRM223 Roller Shutter Controller 3" type="0303"/>
     <Product config="fibaro/fgs211.xml" id="0104" name="FGS211 Switch 3kW" type="0400"/>
@@ -658,6 +661,7 @@
     <Product config="fibaro/fgs212.xml" id="4002" name="FGS212 Switch 3kW" type="0402"/>
     <Product config="fibaro/fgs213.xml" id="1000" name="FGS213 Switch" type="0403"/>
     <Product config="fibaro/fgs213.xml" id="2000" name="FGS213 Switch" type="0403"/>
+    <Product config="fibaro/fgs213.xml" id="3000" name="FGS213 Switch" type="0403"/>
     <Product config="fibaro/fgs213.xml" id="4000" name="FGS213 Switch" type="0403"/>
     <Product config="fibaro/fgs221.xml" id="0104" name="FGS221 Double Relay Switch 2x1.5kW" type="0200"/>
     <Product config="fibaro/fgs221.xml" id="0105" name="FGS221 Double Relay Switch 2x1.5kW" type="0200"/>
@@ -928,6 +932,7 @@
     <Product config="honeywell/39348-zw4008.xml" id="3135" name="39348 / ZW4008 In-Wall Smart Switch" type="4952"/>
     <Product config="honeywell/39357-ZW3004.xml" id="3130" name="39357 / ZW3004 In-Wall Smart Toggle Dimmer" type="4944"/>
     <Product config="honeywell/39351-ZW3010.xml" id="3235" name="39351 / ZW3010 In-Wall Smart Dimmer" type="4944"/>
+    <Product config="honeywell/39358-ZW4002.xml" id="3131" name="39358 / ZW4002 In-Wall Fan Control" type="4944"/>	  
   </Manufacturer>
   <Manufacturer id="0313" name="Hoppe"></Manufacturer>
   <Manufacturer id="0377" name="HORNBACH Baumarkt AG"></Manufacturer>
@@ -1174,6 +1179,7 @@
     <Product config="mcohome/mh8fceu.xml" id="3102" name="MH8-FC4-EU Thermostat" type="0802"/>
     <Product config="mcohome/mh9co2.xml" id="0201" name="MH9-CO2-WD CO2 Monitor" type="0905"/>
     <Product config="mcohome/mh9co2.xml" id="3102" name="MH9-CO2-WD CO2 Monitor" type="0901"/>
+    <Product config="mcohome/mh9co2.xml" id="5102" name="MH9-CO2-WD CO2 Monitor" type="0902"/>
     <Product config="mcohome/a8-9.xml" id="1352" name="A8-9 Multi-sensor" type="a800"/>
     <Product config="mcohome/a8-9.xml" id="1352" name="A8-9 Multi-sensor" type="a803"/>
     <Product config="mcohome/mh7h.xml" id="5102" name="MH7H Water/Electrical Heating Thermostat" type="0701"/>
@@ -1218,6 +1224,9 @@
   </Manufacturer>
   <Manufacturer id="0083" name="MTC Maintronic"></Manufacturer>
   <Manufacturer id="0143" name="myStrom"></Manufacturer>
+  <Manufacturer id="0438" name="Namron">
+    <Product config="namron/1402756.xml" id="0202" type="0002" name="LED Dimmer Z-Wave 200W"/>
+  </Manufacturer>
   <Manufacturer id="016E" name="Nanjing Easthouse Electrical Co"></Manufacturer>
   <Manufacturer id="0121" name="Napco Security Technologies, Inc.">
     <Product id="0001" name="I-Bridge Z-Wave Controller" type="0001"/>

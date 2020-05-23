@@ -4,6 +4,7 @@
 #include "localtime_r.h"
 #include "../hardware/hardwaretypes.h"
 #include "../main/Logger.h"
+#include "../main/RFXNames.h"
 #include "../main/WebServerHelper.h"
 #include "../main/LuaTable.h"
 #include "../main/json_helper.h"
@@ -24,7 +25,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-        m_version("3.0.6")
+        m_version("3.0.7")
 {
 	m_bdzVentsExist = false;
 }
@@ -287,7 +288,7 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 				}
 			}
 			luaTable.CloseSubTableEntry(); // headers, why rawset was done here???
-		
+
 			luaTable.AddString("protocol", protocol);
 			luaTable.AddString("statusText", statusText);
 			luaTable.AddInteger("statusCode", statusCode);
@@ -834,13 +835,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			}
 		}
 
-		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
-
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
 		bool timed_out = (now - checktime >= SensorTimeOut * 60);
 
 		luaTable.OpenSubTableEntry(index, 1, 12);
-	
+
 		luaTable.AddString("name", sitem.deviceName);
 		luaTable.AddBool("protected", (sitem.protection == 1) );
 		luaTable.AddInteger("id", sitem.ID);
@@ -863,8 +862,8 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		{
 			luaTable.AddString(i + 1, strarray[i]);
 		}
-		luaTable.CloseSubTableEntry(); // rawData table
-	
+		luaTable.CloseSubTableEntry();
+
 		luaTable.AddString("deviceID", sitem.deviceID);
 		luaTable.AddString("description", sitem.description);
 		luaTable.AddInteger("batteryLevel", sitem.batteryLevel);
@@ -940,9 +939,9 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 				luaTable.AddBool(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
 			}
 		}
-	
-		luaTable.CloseSubTableEntry(); // data table
-		luaTable.CloseSubTableEntry(); // device entry
+
+		luaTable.CloseSubTableEntry();
+		luaTable.CloseSubTableEntry();
 		index++;
 	}
 	devicestatesMutexLock.unlock();
@@ -952,6 +951,8 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
 
 	std::map<uint64_t, CEventSystem::_tScenesGroups>::const_iterator ittScenes;
+	std::vector<std::vector<std::string> > result;
+
 	for (ittScenes = m_mainworker.m_eventsystem.m_scenesgroups.begin(); ittScenes != m_mainworker.m_eventsystem.m_scenesgroups.end(); ++ittScenes)
 	{
 		CEventSystem::_tScenesGroups sgitem = ittScenes->second;
@@ -967,7 +968,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			}
 		}
 
-		std::vector<std::vector<std::string> > result;
+
 		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
 		if (result.empty())
 			description = "";
@@ -975,7 +976,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			description = result[0][0].c_str();
 
 		luaTable.OpenSubTableEntry(index, 1, 7);
-	
+
 		luaTable.AddString("name", sgitem.scenesgroupName);
 		luaTable.AddInteger("id", sgitem.ID);
 		luaTable.AddString("description", description);
@@ -985,10 +986,10 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		luaTable.AddBool("changed", triggerScene);
 
 		luaTable.OpenSubTableEntry("data", 0, 0);
-	
+
 		luaTable.AddString("_state", sgitem.scenesgroupValue);
 
-		luaTable.CloseSubTableEntry(); // data, why rawset was done here???
+		luaTable.CloseSubTableEntry();
 
 		luaTable.OpenSubTableEntry("deviceIDs", 0, 0);
 		std::vector<uint64_t>::const_iterator itt2;
@@ -1029,7 +1030,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		}
 
 		luaTable.OpenSubTableEntry(index, 1, 5);
-	
+
 		luaTable.AddString("name", uvitem.variableName);
 		luaTable.AddInteger("id", uvitem.ID);
 		luaTable.AddString("baseType", "uservariable");
@@ -1073,14 +1074,13 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	}
 
 	// Now do the cameras.
-	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, Name FROM Cameras where enabled = '1' ORDER BY ID ASC");
 	if (!result.empty())
 	{
 		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
-		
+
 			luaTable.OpenSubTableEntry(index, 1, 3);
 			luaTable.AddString("name", sd[1]);
 			luaTable.AddInteger("id", atoi(sd[0].c_str()));
@@ -1090,6 +1090,40 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			index++;
 		}
 	}
+
+	// Now do the Hardware.
+	result = m_sql.safe_query("SELECT ID, Name, type FROM Hardware where enabled = '1' ORDER BY ID ASC");
+	int HardwareTypeVal;
+
+	if (!result.empty())
+	{
+		for (const auto & itt : result)
+		{
+			std::vector<std::string> sd = itt;
+
+			HardwareTypeVal = atoi(sd[2].c_str());
+
+			luaTable.OpenSubTableEntry(index, 1, 6);
+			luaTable.AddString("name", sd[1]);
+			luaTable.AddInteger("id", atoi(sd[0].c_str()));
+			luaTable.AddInteger("typeValue", HardwareTypeVal);
+			luaTable.AddString("baseType", "hardware");
+			if (HardwareTypeVal != HTYPE_PythonPlugin)
+			{
+				luaTable.AddString("typeName",Hardware_Type_Desc(HardwareTypeVal));
+				luaTable.AddBool("isPythonPlugin", false);
+			}
+			else
+			{
+				luaTable.AddString("typeName", "Python plugin");
+				luaTable.AddBool("isPythonPlugin", true);
+			}
+			luaTable.CloseSubTableEntry(); // end entry
+
+			index++;
+		}
+	}
+
 	ExportHardwareData(luaTable, index, items);
 
 	luaTable.Publish();
