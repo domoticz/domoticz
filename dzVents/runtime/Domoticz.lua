@@ -49,7 +49,7 @@ local function Domoticz(settings)
 		['devices'] = {},
 		['scenes'] = {},
 		['groups'] = {},
-		['hardwares'] = {},
+		['hardware'] = {},
 		['changedDevices'] = {},
 		['changedVariables'] = {},
 		['security'] = globalvariables['Security'],
@@ -330,7 +330,7 @@ local function Domoticz(settings)
 	self.__devices = {}
 	self.__scenes = {}
 	self.__groups = {}
-	self.__hardwares = {}
+	self.__hardware = {}
 	self.__variables = {}
 
 	function self._getItemFromData(baseType, id)
@@ -372,7 +372,7 @@ local function Domoticz(settings)
 			cache = self.__cameras
 			constructor = Camera
 		elseif (baseType == 'hardware') then
-			cache = self.__hardwares
+			cache = self.__hardware
 			constructor = Device
 		else
 			-- ehhhh
@@ -568,7 +568,7 @@ local function Domoticz(settings)
 		end
 	end
 
-	function self.hardwares(id)
+	function self.hardware(id)
 		if (id ~= nil) then
 			return self._getObject('hardware', id)
 		else
