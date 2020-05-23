@@ -1529,7 +1529,7 @@ describe('device', function()
 			end)
 		end)
 
-		describe('hardwares', function()
+		describe('hardware', function()
 
 			it('should detect hardware', function()
 				local hardware = getDevice(domoticz, {
