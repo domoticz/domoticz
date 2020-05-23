@@ -227,9 +227,9 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6f;
 		haveWind_Speed = true;
 	}
-	if (FindField(data, "wind_avg_ms_s")) // wind speed average
+	if (FindField(data, "wind_avg_m_s")) // wind speed average
 	{
-		wind_speed = (float)atof(data["wind_avg_ms_s"].c_str());
+		wind_speed = (float)atof(data["wind_avg_m_s"].c_str());
 		haveWind_Speed = true;
 	}
 	if (FindField(data, "wind_dir_deg"))
@@ -242,14 +242,8 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		wind_gust = ((float)atof(data["wind_max_km_h"].c_str())) / 3.6f;
 		haveWind_Gust = true;
 	}
-	if (FindField(data, "wind_max_ms_s"))
+	if (FindField(data, "wind_max_m_s"))
 	{
-		wind_gust = (float)atof(data["wind_max_ms_s"].c_str());
-		haveWind_Gust = true;
-	}
-	if (FindField(data, "moisture"))
-	{
-		moisture = atoi(data["moisture"].c_str());
 		haveMoisture = true;
 	}
 	if (FindField(data, "power_W")) // -- power_W,energy_kWh,radio_clock,sequence,
