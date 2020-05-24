@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.6',
+	DZVERSION = '3.0.7',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -432,6 +432,10 @@ function self.groupExists(parm)
 	return loopGlobal(parm, 'group')
 end
 
+function self.hardwareExists(parm)
+	return loopGlobal(parm, 'hardware')
+end
+
 function self.variableExists(parm)
 	return loopGlobal(parm, 'uservariable')
 end
@@ -464,9 +468,11 @@ function self.dumpSelection(object, selection)
 				self.print('> ' .. attr .. ': ' .. tostring(value))
 			end
 		end
-		self.print('')
-		self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
-		if object.baseType ~= 'variable' then
+        if object.baseType ~= 'hardware' then 
+            self.print('')
+            self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
+		end
+        if object.baseType ~= 'variable'  and object.baseType ~= 'hardware' then
 			self.print('> adapters: ' .. table.concat(object._adapters or {},', ') )
 		end
 		if object.baseType == 'device' then

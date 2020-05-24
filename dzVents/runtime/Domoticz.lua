@@ -49,6 +49,7 @@ local function Domoticz(settings)
 		['devices'] = {},
 		['scenes'] = {},
 		['groups'] = {},
+		['hardware'] = {},
 		['changedDevices'] = {},
 		['changedVariables'] = {},
 		['security'] = globalvariables['Security'],
@@ -284,7 +285,6 @@ local function Domoticz(settings)
 		utils.log('switchGroup is deprecated. Please use the group object directly.', utils.LOG_INFO)
 		return TimedCommand(self, 'Group:' .. group, value, 'device', group.state)
 	end
-
 	if (_G.TESTMODE) then
 		function self._getUtilsInstance()
 			return utils
@@ -322,10 +322,15 @@ local function Domoticz(settings)
 		self.utils.dumpTable(camera, '> ', file)
 	end
 
+	function self.logHardware(hardware, file)
+		self.utils.dumpTable(hardware, '> ', file)
+	end
+
 	self.__cameras = {}
 	self.__devices = {}
 	self.__scenes = {}
 	self.__groups = {}
+	self.__hardware = {}
 	self.__variables = {}
 
 	function self._getItemFromData(baseType, id)
@@ -366,6 +371,9 @@ local function Domoticz(settings)
 		elseif (baseType == 'camera') then
 			cache = self.__cameras
 			constructor = Camera
+		elseif (baseType == 'hardware') then
+			cache = self.__hardware
+			constructor = Device
 		else
 			-- ehhhh
 		end
@@ -390,10 +398,10 @@ local function Domoticz(settings)
 
 		local noObjectMessage = 'There is no ' .. baseType .. ' with that name or id: ' .. tostring(id)
 
-		if (baseType == 'scene' or baseType == 'group') then
-			-- special case for scenes and groups
-			-- as they may not be in the collection if Domoticz wasn't restarted after creating the scene or group.
-				noObjectMessage = noObjectMessage .. '. If you just created the '.. baseType .. ' you may have to restart Domoticz to make it become visible to dzVents.'
+		if (baseType == 'scene' or baseType == 'group' or baseType == 'hardware') then
+			-- special case for hardware, scenes and groups
+			-- as they may not be in the collection if Domoticz wasn't restarted after creating the hardware, scene or group.
+			noObjectMessage = noObjectMessage .. '. If you just created the '.. baseType .. ' you may have to restart Domoticz to make it become visible to dzVents.'
 		end
 		utils.log(noObjectMessage, utils.LOG_ERROR)
 	end
@@ -557,6 +565,14 @@ local function Domoticz(settings)
 			return self._getObject('camera', id)
 		else
 			return self._setIterators({}, true, 'camera', false)
+		end
+	end
+
+	function self.hardware(id)
+		if (id ~= nil) then
+			return self._getObject('hardware', id)
+		else
+			return self._setIterators({}, true, 'hardware', false)
 		end
 	end
 

@@ -145,10 +145,10 @@ describe('event helpers', function()
 		assert.is_true(utils.isXML(xml))
 
 		local xml = nil
-		assert.is_false(utils.isXML(xml))
+		assert.is_nil(utils.isXML(xml))
 
 		local xml = '<testXML>What a bad XML!</testXML> xml'
-		assert.is_false(utils.isXML(xml))
+		assert.is_nil(utils.isXML(xml))
 
 		local xml = '{ wrong XML }'
 		local content = 'application/xml'

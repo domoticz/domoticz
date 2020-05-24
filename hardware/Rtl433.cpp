@@ -29,7 +29,7 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	m_HwdID = ID;
 /*
 	#ifdef _DEBUG
-		std::string line = "{\"time\" : \"2020-05-15 07:22:22\", \"brand\" : \"OS\", \"model\" : \"Oregon-v1\", \"id\" : 3, \"channel\" : 1, \"battery_ok\" : 0, \"temperature_C\" : 6.400, \"mic\" : \"CHECKSUM\"}";
+		std::string line = "{\"time\" : \"2020-05-21 12:24:06.740469\", \"protocol\" : 12, \"model\" : \"Oregon-UVR128\", \"id\" : 155, \"uv\" : 5, \"battery_ok\" : 1, \"mod\" : \"ASK\", \"freq\" : 433.864, \"rssi\" : -0.100, \"snr\" : 15.669, \"noise\" : -15.769}";
 		if (!ParseJsonLine(line))
 		{
 			// this is also logged when parsed data is invalid
@@ -146,6 +146,9 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	bool haveSequence = false;
 	int sequence = 0;
 
+	bool haveUV = false;
+	float uvi = 0;
+
 	if (FindField(data, "id"))
 	{
 		id = atoi(data["id"].c_str());
@@ -171,13 +174,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			haveBattery = true;
 		}
 	}
-
 	if (FindField(data, "temperature_C"))
 	{
 		tempC = (float)atof(data["temperature_C"].c_str());
 		haveTemp = true;
 	}
-
 	if (FindField(data, "humidity"))
 	{
 		if (data["humidity"] == "HH") // "HH" and "LL" are specific to WT_GT-02 and WT-GT-03 see issue 1996
@@ -196,76 +197,70 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			haveHumidity = true;
 		}
 	}
-
 	if (FindField(data, "pressure_hPa"))
 	{
 		pressure = (float)atof(data["pressure_hPa"].c_str());
 		havePressure = true;
 	}
-
 	if (FindField(data, "pressure_PSI"))
 	{
 		pressure_PSI = (float)atof(data["pressure_PSI"].c_str());
 		havePressure_PSI = true;
 	}
-
 	if (FindField(data, "pressure_kPa"))
 	{
 		pressure = 10.0f * (float)atof(data["pressure_kPa"].c_str()); // convert to hPA
 		havePressure = true;
 	}
-
 	if (FindField(data, "rain_mm"))
 	{
 		rain = (float)atof(data["rain_mm"].c_str());
 		haveRain = true;
 	}
-
 	if (FindField(data, "depth_cm"))
 	{
 		depth = (float)atof(data["depth_cm"].c_str());
 		haveDepth = true;
 	}
-
 	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s) 
 	{
 		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6f;
 		haveWind_Speed = true;
 	}
-
-
 	if (FindField(data, "wind_dir_deg"))
 	{
 		wind_dir = atoi(data["wind_dir_deg"].c_str()); // does domoticz assume it is degree ? (and not rad or something else)
 		haveWind_Dir = true;
 	}
-
 	if (FindField(data, "wind_max_km_h")) // idem, converting to m/s
 	{
 		wind_gust = ((float)atof(data["wind_max_km_h"].c_str())) / 3.6f;
 		haveWind_Gust = true;
 	}
-	else if (FindField(data, "moisture"))
+	if (FindField(data, "moisture"))
 	{
 		moisture = atoi(data["moisture"].c_str());
 		haveMoisture = true;
 	}
-	else {
-		if (FindField(data, "power_W")) // -- power_W,energy_kWh,radio_clock,sequence,
-		{
-			power = (float)atof(data["power_W"].c_str());
-			havePower = true;
-		}
-		if (FindField(data, "energy_kWh")) // sensor type general subtype electric counter
-		{
-			energy = (float)atof(data["energy_kWh"].c_str());
-			haveEnergy = true;
-		}
-		if (FindField(data, "sequence")) // please do not remove : to be added in future PR for data in sensor (for fiability reporting)
-		{
-			sequence = atoi(data["sequence"].c_str());
-			haveSequence = true;
-		}
+	if (FindField(data, "power_W")) // -- power_W,energy_kWh,radio_clock,sequence,
+	{
+		power = (float)atof(data["power_W"].c_str());
+		havePower = true;
+	}
+	if (FindField(data, "energy_kWh")) // sensor type general subtype electric counter
+	{
+		energy = (float)atof(data["energy_kWh"].c_str());
+		haveEnergy = true;
+	}
+	if (FindField(data, "sequence")) // please do not remove : to be added in future PR for data in sensor (for fiability reporting)
+	{
+		sequence = atoi(data["sequence"].c_str());
+		haveSequence = true;
+	}
+	if (FindField(data, "uv"))
+	{
+		uvi = (float)atof(data["uv"].c_str());
+		haveUV = true;
 	}
 
 	std::string model = data["model"]; // new model format normalized from the 201 different devices presently supported by rtl_433
@@ -372,7 +367,6 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		SendMoistureSensor(sensoridx, batterylevel, moisture, model);
 		bHandled = true;
 	}
-
 	if (havePower)
 	{
 		SendWattMeter((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model);
@@ -389,6 +383,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		sensoridx = sensoridx + 1;
 		//can rmeove this comment : _log.Log(LOG_STATUS, "Rtl433: : CM180 sensoridx(%d) unit(%d) batterylevel(%d) power(%f) energy(%f) model(%s)", sensoridx, unit, batterylevel, power, energy, model.c_str());
 		SendKwhMeter(sensoridx, unit, batterylevel, power, energy, model);
+		bHandled = true;
+	}
+	if (haveUV)
+	{
+		SendUVSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, uvi, model);
 		bHandled = true;
 	}
 
