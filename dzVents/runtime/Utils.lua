@@ -115,16 +115,12 @@ function self.inTable(searchTable, element)
 	return false
 end
 
-function self.round(x, n)
-	-- n = math.pow(10, n or 0)
-	n = 10^(n or 0)
-	x = x * n
-	if x >= 0 then
-		x = math.floor(x + 0.5)
+function round(value, decimals)
+	if (decimals and decimals > 0) then
+		return math.floor( (value * 10 ^ decimals) + 0.5) / (10 ^ decimals)
 	else
-		x = math.ceil(x - 0.5)
+		return math.floor(value + 0.5)
 	end
-	return x / n
 end
 
 function string.sMatch(text, match) -- add sanitized match function to string "library"
