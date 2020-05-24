@@ -125,7 +125,9 @@
 #include "../hardware/ZiBlueTCP.h"
 #include "../hardware/Yeelight.h"
 #include "../hardware/XiaomiGateway.h"
+#ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
+#endif
 #include "../hardware/Arilux.h"
 #include "../hardware/OpenWebNetUSB.h"
 #include "../hardware/InComfort.h"
