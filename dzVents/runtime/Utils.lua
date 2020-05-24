@@ -115,11 +115,15 @@ function self.inTable(searchTable, element)
 	return false
 end
 
-function round(value, decimals)
-	if (decimals and decimals > 0) then
+function self.round(value, decimals)
+	if value >= 0 and decimals and decimals > 0 then
 		return math.floor( (value * 10 ^ decimals) + 0.5) / (10 ^ decimals)
-	else
+	elseif value >=0 then
 		return math.floor(value + 0.5)
+	elseif decimals and decimals > 0 then
+		return math.ceil ( (value * 10 ^ decimals) - 0.5) / (10 ^ decimals)
+	else
+		return math.ceil(value - 0.5)
 	end
 end
 
@@ -464,11 +468,11 @@ function self.dumpSelection(object, selection)
 				self.print('> ' .. attr .. ': ' .. tostring(value))
 			end
 		end
-        if object.baseType ~= 'hardware' then 
-            self.print('')
-            self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
+		if object.baseType ~= 'hardware' then 
+			self.print('')
+			self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
 		end
-        if object.baseType ~= 'variable'  and object.baseType ~= 'hardware' then
+		if object.baseType ~= 'variable'  and object.baseType ~= 'hardware' then
 			self.print('> adapters: ' .. table.concat(object._adapters or {},', ') )
 		end
 		if object.baseType == 'device' then
