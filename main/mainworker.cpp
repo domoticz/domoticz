@@ -12994,7 +12994,7 @@ bool MainWorker::SwitchScene(const std::string& idx, const std::string& switchcm
 bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const std::string& User)
 {
 	std::vector<std::vector<std::string> > result;
-	int nValue = (switchcmd == "On") ? 1 : 0;
+	int nValue = (switchcmd == "On" || switchcmd == "on" ) ? 1 : 0;
 
 	std::string Name = "Unknown?";
 	_eSceneGroupType scenetype = SGTYPE_SCENE;
@@ -13016,7 +13016,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 		if (scenetype == SGTYPE_GROUP)
 		{
 			//when asking for Toggle, just switch to the opposite value
-			if (switchcmd == "Toggle") {
+			if (switchcmd == "Toggle" || switchcmd == "toggle") {
 				nValue = (atoi(status.c_str()) == 0 ? 1 : 0);
 				switchcmd = (nValue == 1 ? "On" : "Off");
 			}
@@ -13118,7 +13118,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 
 			if (scenetype == SGTYPE_GROUP)
 			{
-				lstatus = ((switchcmd == "On") || (switchcmd == "Group On") || (switchcmd == "Chime") || (switchcmd == "All On")) ? "On" : "Off";
+				lstatus = ((switchcmd == "On") || (switchcmd == "on") || (switchcmd == "Group On") || (switchcmd == "Chime") || (switchcmd == "All On")) ? "On" : "Off";
 			}
 			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), lstatus.c_str());
 
