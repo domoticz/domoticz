@@ -244,6 +244,12 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "wind_max_m_s"))
 	{
+		wind_gust = (float)atof(data["wind_max_m_s"].c_str());
+		haveWind_Gust = true;
+	}
+	if (FindField(data, "moisture"))
+	{
+		moisture = atoi(data["moisture"].c_str());
 		haveMoisture = true;
 	}
 	if (FindField(data, "power_W")) // -- power_W,energy_kWh,radio_clock,sequence,
