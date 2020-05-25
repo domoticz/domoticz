@@ -204,7 +204,24 @@ bool CPinger::StopHardware()
 
 bool CPinger::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_log.Log(LOG_ERROR, "Pinger: This is a read-only sensor!");
+	const tRBUF* pSen = reinterpret_cast<const tRBUF*>(pdata);
+
+	unsigned char packettype = pSen->ICMND.packettype;
+	//unsigned char subtype=pSen->ICMND.subtype;
+
+	if (packettype != pTypeLighting2)
+		return false;
+
+	uint16_t nodeID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
+
+	//Find our Node
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name, MacAddress FROM WOLNodes WHERE (ID==%d)", nodeID);
+	if (result.empty())
+		_log.Log(LOG_ERROR, "Pinger: Unknown ID (%08X)", nodeID);
+	else
+		_log.Log(LOG_ERROR, "Pinger: This is a read-only sensor! (Name: %s, IP: %s)", result[0][0].c_str(), result[0][1].c_str());
+
 	return false;
 }
 
