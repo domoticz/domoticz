@@ -382,6 +382,48 @@ int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &Device
 	return DeviceID;
 }
 
+int CTTNMQTT::CalcDomoticsRssiFromLora(const int gwrssi, const float gwsnr)
+{
+	int iCalc = 12;
+
+	if (gwsnr > 0)
+	{
+		// Above noise floor, so that fine
+		iCalc = gwrssi;
+	}
+	else
+	{
+		// Below noisefloor, little more difficult
+		iCalc = gwrssi + rint(gwsnr);
+	}
+
+	// Range somewhere between -150 and +20
+	// rssi between -150 and 0 dBm
+	// snr between -20 and +10 dB
+	// Domoticz expects something between 0 and 11 of what?
+	// But 0 feels weird as how could we measure 'no signal' 
+	if (iCalc >= 0)
+		iCalc = 9;
+	else if (iCalc > -30)
+		iCalc = 8;
+	else if (iCalc > -65)
+		iCalc = 7;
+	else if (iCalc > -70)
+		iCalc = 6;
+	else if (iCalc > -80)
+		iCalc = 5;
+	else if (iCalc > -90)
+		iCalc = 4;
+	else if (iCalc > -100)
+		iCalc = 3;
+	else if (iCalc > -110)
+		iCalc = 2;
+	else
+		iCalc = 1;
+
+	return iCalc;
+}
+
 void CTTNMQTT::on_message(const struct mosquitto_message *message)
 {
 	std::string topic = message->topic;
@@ -459,8 +501,9 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				if (!Gateways[0].empty())
 				{
 					Json::Value Gateway = Gateways[0];
-					int rssi = Gateway["rssi"].asInt();
-					//_log.Log(LOG_NORM, "TTN_MQTT: Found Gateway 0! RSSI %i", rssi);
+					int gwrssi = Gateway["rssi"].asInt();
+					float gwsnr = Gateway["snr"].asFloat();
+					rssi = CalcDomoticsRssiFromLora(gwrssi, gwsnr);
 				}
 			}
 		}
@@ -531,15 +574,15 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 							bDout = true;
 						}
 						else if (type == "analog_input") {
-							SendCustomSensor(DeviceID, channel, BatteryLevel, vSensor["value"].asFloat(), DeviceName, type);
+							SendCustomSensor(DeviceID, channel, BatteryLevel, vSensor["value"].asFloat(), DeviceName, type, rssi);
 							bAin = true;
 						}
 						else if (type == "analog_output") {
-							SendCustomSensor(DeviceID, channel, BatteryLevel, vSensor["value"].asFloat(), DeviceName, type);
+							SendCustomSensor(DeviceID, channel, BatteryLevel, vSensor["value"].asFloat(), DeviceName, type, rssi);
 							bAout = true;
 						}
 						else if (type == "presense") {
-							SendCustomSensor(DeviceID, channel, BatteryLevel, vSensor["value"].asFloat(), DeviceName, type);
+							SendCustomSensor(DeviceID, channel, BatteryLevel, vSensor["value"].asFloat(), DeviceName, type, rssi);
 							bPresense = true;
 						}
 						else if (type == "luminosity") {

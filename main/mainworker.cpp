@@ -8958,6 +8958,8 @@ void MainWorker::decode_Energy(const CDomoticzHardwareBase* pHardware, const tRB
 	gdevice.subtype = sTypeKwh;
 	gdevice.floatval1 = (float)instant;
 	gdevice.floatval2 = (float)total;
+	gdevice.rssi = SignalLevel;
+	gdevice.battery_level = BatteryLevel;
 
 	int voltage = 230;
 	m_sql.GetPreferencesVar("ElectricVoltage", voltage);
@@ -8968,7 +8970,7 @@ void MainWorker::decode_Energy(const CDomoticzHardwareBase* pHardware, const tRB
 		gdevice.floatval2 *= mval;
 	}
 
-	decode_General(pHardware, (const tRBUF*)&gdevice, procResult, SignalLevel, BatteryLevel);
+	decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
 	procResult.bProcessBatteryValue = false;
 }
 
@@ -10068,12 +10070,14 @@ void MainWorker::decode_Thermostat(const CDomoticzHardwareBase* pHardware, const
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
-void MainWorker::decode_General(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult, const uint8_t SignalLevel, const uint8_t BatteryLevel)
+void MainWorker::decode_General(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[200];
 	const _tGeneralDevice* pMeter = reinterpret_cast<const _tGeneralDevice*>(pResponse);
 	uint8_t devType = pMeter->type;
 	uint8_t subType = pMeter->subtype;
+	uint8_t SignalLevel = pMeter->rssi;
+	uint8_t BatteryLevel = pMeter->battery_level;
 
 	if (
 		(subType == sTypeVoltage) ||
@@ -10101,8 +10105,8 @@ void MainWorker::decode_General(const CDomoticzHardwareBase* pHardware, const tR
 	else
 	{
 		sprintf(szTmp, "%d", pMeter->id);
-
 	}
+
 	std::string ID = szTmp;
 	uint8_t Unit = 1;
 	uint8_t cmnd = 0;
@@ -11084,7 +11088,9 @@ void MainWorker::decode_Solar(const CDomoticzHardwareBase* pHardware, const tRBU
 	gdevice.intval1 = (pResponse->SOLAR.id1 * 256) + pResponse->SOLAR.id2;
 	gdevice.id = (uint8_t)gdevice.intval1;
 	gdevice.floatval1 = float((pResponse->SOLAR.solarhigh * 256) + float(pResponse->SOLAR.solarlow)) / 100.f;
-	decode_General(pHardware, pResponse, procResult, SignalLevel, BatteryLevel);
+	gdevice.rssi = SignalLevel;
+	gdevice.battery_level = BatteryLevel;
+	decode_General(pHardware, pResponse, procResult);
 	procResult.bProcessBatteryValue = false;
 }
 

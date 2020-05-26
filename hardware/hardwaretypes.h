@@ -490,6 +490,8 @@ typedef struct _tGeneralDevice {
 	uint8_t len;
 	uint8_t type;
 	uint8_t subtype;
+	uint8_t rssi;
+	uint8_t battery_level;
 	uint8_t id;
 	float floatval1;
 	float floatval2;
@@ -503,6 +505,8 @@ typedef struct _tGeneralDevice {
 		ar & cereal::make_nvp("len", len);
 		ar & cereal::make_nvp("type", type);
 		ar & cereal::make_nvp("subtype", subtype);
+		ar & cereal::make_nvp("rssi", rssi);
+		ar & cereal::make_nvp("battery_level", battery_level);
 		ar & cereal::make_nvp("id", id);
 		ar & cereal::make_nvp("floatval1", floatval1);
 		ar & cereal::make_nvp("floatval2", floatval2);
@@ -517,6 +521,8 @@ typedef struct _tGeneralDevice {
 		type = pTypeGeneral;
 		subtype = sTypeVisibility;
 		id = 0;
+		battery_level = 255;
+		rssi = 12;
 		floatval1 = 0;
 		floatval2 = 0;
 		intval1 = 0;

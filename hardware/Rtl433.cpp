@@ -405,7 +405,7 @@ void CRtl433::Do_Work()
 	bool bHaveReceivedData = false;
 	while (!IsStopRequested(0))
 	{
-		char line[2048];
+		char line[3072];
 		std::vector<std::string> headers;
 		std::string headerLine = "";
 		m_sLastLine = "";

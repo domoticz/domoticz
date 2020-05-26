@@ -646,7 +646,6 @@ js/colpick.js
 js/date.format.js
 js/domoticz.js
 js/domoticzdevices.js
-js/export-csv.js
 js/FileSaver.js
 js/highcharts-ng.min.js
 js/html5shiv.js
@@ -711,7 +710,6 @@ views/temperature_custom_temp_log.html
 views/timerplan.html
 views/timers.html
 views/update.html
-views/update2.html
 views/users.html
 views/utility.html
 views/weather.html
