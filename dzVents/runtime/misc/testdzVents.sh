@@ -267,6 +267,6 @@ else
 fi
 
 echo Total tests: $totalTest
-echo $(date)';' dzVents version $dzVersion tested without erors after $(showTime)
+echo $(date)';' dzVents version $dzVersion tested without errors after $(showTime)
 stopBackgroundProcesses 0
 cleanup

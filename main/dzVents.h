@@ -23,14 +23,15 @@ private:
 		TYPE_UNKNOWN,	// 0
 		TYPE_STRING,	// 1
 		TYPE_INTEGER,	// 2
-		TYPE_BOOLEAN    // 3
+		TYPE_FLOAT,     // 3
+		TYPE_BOOLEAN    // 4
 	};
 	struct _tLuaTableValues
 	{
 		_eType type;
 		bool isTable;
 		int tIndex;
-		int iValue;
+		int fValue;
 		std::string name;
 		std::string sValue;
 	};

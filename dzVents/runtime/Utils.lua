@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.7',
+	DZVERSION = '3.0.8',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -116,14 +116,16 @@ function self.inTable(searchTable, element)
 end
 
 function self.round(value, decimals)
-	if value >= 0 and decimals and decimals > 0 then
-		return math.floor( (value * 10 ^ decimals) + 0.5) / (10 ^ decimals)
-	elseif value >=0 then
-		return math.floor(value + 0.5)
-	elseif decimals and decimals > 0 then
-		return math.ceil ( (value * 10 ^ decimals) - 0.5) / (10 ^ decimals)
+	local nVal = tonumber(value)
+	local nDec = ( decimals == nil and 0 ) or tonumber(decimals)
+	if nVal >= 0 and nDec > 0 then
+		return math.floor( (nVal * 10 ^ nDec) + 0.5) / (10 ^ nDec)
+	elseif nVal >=0 then
+		return math.floor(nVal + 0.5)
+	elseif nDec and nDec > 0 then
+		return math.ceil ( (nVal * 10 ^ nDec) - 0.5) / (10 ^ nDec)
 	else
-		return math.ceil(value - 0.5)
+		return math.ceil(nVal - 0.5)
 	end
 end
 
