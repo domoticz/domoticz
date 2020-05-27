@@ -338,9 +338,9 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 		else if (itt->type == TYPE_FLOAT)
 		{
 			if (itt->name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(itt->fValue));
+				delayTime = GenerateRandomNumber(itt->fValue);
 			else if (itt->name == "_after")
-				delayTime = static_cast<float>(itt->fValue);
+				delayTime = itt->fValue;
 		}
 	}
 
@@ -412,11 +412,10 @@ bool CdzVents::TriggerCustomEvent(lua_State* lua_state, const std::vector<_tLuaT
 		else if (itt->type == TYPE_FLOAT)
 		{
 			if (itt->name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(itt->fValue));
+				delayTime = GenerateRandomNumber(itt->fValue);
 			else if (itt->name == "_after")
 			{
-				delayTime = static_cast<float>(itt->fValue);
-				// _log.Log(LOG_STATUS, "dzVents: delayed custom event for %d seconds", itt->fValue);
+				delayTime = itt->fValue;
 			}
 		}
 	}
@@ -447,9 +446,9 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 			else if (itt->name == "protected")
 				Protected = itt->fValue;
 			else if (itt->name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(itt->fValue));
+				delayTime =GenerateRandomNumber(itt->fValue);
 			else if (itt->name == "_after")
-				delayTime = static_cast<float>(itt->fValue);
+				delayTime = itt->fValue;
 		}
 		else if (itt->type == TYPE_STRING && itt->name == "sValue")
 			sValue = itt->sValue;
@@ -482,10 +481,10 @@ bool CdzVents::TriggerIFTTT(lua_State *lua_state, const std::vector<_tLuaTableVa
 		if (itt->type == TYPE_FLOAT )
 		{
 			if (itt->name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(itt->fValue));
+				delayTime = GenerateRandomNumber(itt->fValue);
 
 			else if (itt->name == "_after")
-				delayTime = static_cast<float>(itt->fValue);
+				delayTime = itt->fValue;
 
 			else if (itt->name == "sID")
 				 sID = std::to_string(itt->fValue);
@@ -534,9 +533,9 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 			if (itt->name == "idx")
 				idx = itt->fValue;
 			else if (itt->name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(itt->fValue));
+				delayTime = GenerateRandomNumber(itt->fValue);
 			else if (itt->name == "_after")
-				delayTime = static_cast<float>(itt->fValue);
+				delayTime = itt->fValue;
 		}
 		else if (itt->type == TYPE_STRING && itt->name == "value")
 			variableValue = itt->sValue;
@@ -640,9 +639,7 @@ void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<
 			else if (std::string(luaL_typename(lua_state, -2)) == "number")
 			{
 				item.type = TYPE_FLOAT;
-				// item.fValue = (float)lua_tonumber(lua_state, -1);
-				// item.fValue = static_cast<int>(lua_tonumber(lua_state, -2));
-				item.fValue = (float)lua_tonumber(lua_state, -2);
+				item.fValue = lua_tonumber(lua_state, -2);
 			}
 			else
 			{
@@ -669,7 +666,7 @@ void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<
 		else if (std::string(luaL_typename(lua_state, -1)) == "boolean")
 		{
 			item.type = TYPE_BOOLEAN;
-			item.iValue = lua_toboolean(lua_state, -1);
+			item.fValue = lua_toboolean(lua_state, -1);
 			item.name = std::string(lua_tostring(lua_state, -2));
 		}
 		if (!item.isTable && item.type != TYPE_UNKNOWN)
