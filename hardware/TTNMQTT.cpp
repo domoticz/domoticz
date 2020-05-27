@@ -528,13 +528,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 				UTCttntime = MetaData["time"].asString().c_str();
 				sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
-				t.tm_year = y - 1900; // Year since 1900
-				t.tm_mon = M - 1;     // 0-11
-				t.tm_mday = d;        // 1-31
-				t.tm_hour = h;        // 0-23
-				t.tm_min = m;         // 0-59
-				t.tm_sec = (int)s;    // 0-61 (0-60 in C++11)
-				msgtime = timegm(&t);
+				constructTime(msgtime, t, y, M, d, h, m, s);
 			}
 			if (!(MetaData["latitude"].empty() || MetaData["longitude"].empty()))
 			{
@@ -624,7 +618,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 								gwlon = Gateway["longitude"].asDouble();
 								if (!Gateway["altitude"].empty())
 								{
-									gwalt = Gateway["altitude"].asDouble();
+									gwalt = Gateway["altitude"].asFloat();
 								}
 							}
 							else if (bPrevGwGeo)
@@ -766,13 +760,15 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				}
 
 				// Now store the sensor values if not stored already
+				// Create a 'better' DeviceID for some sensors
+				int iAltDevId = (DeviceID << 8) | channel;
 				if (bTemp && bHumidity && bBaro)
 				{
-					SendTempHumBaroSensorFloat(DeviceID, BatteryLevel, temp, (int)rint(hum), baro, (uint8_t)nforecast, DeviceName, rssi);
+					SendTempHumBaroSensorFloat(iAltDevId, BatteryLevel, temp, (int)rint(hum), baro, (uint8_t)nforecast, DeviceName, rssi);
 				}
 				else if(bTemp && bHumidity)
 				{
-					SendTempHumSensor(DeviceID, BatteryLevel, temp, (int)rint(hum), DeviceName, rssi);
+					SendTempHumSensor(iAltDevId, BatteryLevel, temp, (int)rint(hum), DeviceName, rssi);
 				}
 				else if(bTemp && bBaro)
 				{
@@ -782,11 +778,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				{
 					if (bTemp)
 					{
-						SendTempSensor(DeviceID, BatteryLevel, temp, DeviceName, rssi);
+						SendTempSensor(iAltDevId, BatteryLevel, temp, DeviceName, rssi);
 					}
 					if (bHumidity)
 					{
-						SendHumiditySensor(DeviceID, BatteryLevel, (int)rint(hum), DeviceName, rssi);
+						SendHumiditySensor(iAltDevId, BatteryLevel, (int)rint(hum), DeviceName, rssi);
 					}
 					if (bBaro)
 					{
@@ -843,8 +839,8 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 						fDomLat = std::stod(Latitude);
 						fDomLon = std::stod(Longitude);
 
-						uint64_t nSsrDistance = (rint(1000 * distanceEarth(fDomLat, fDomLon, ssrlat, ssrlon)));
-						SendCustomSensor(DeviceID, (iGpsChannel + 64), BatteryLevel, nSsrDistance, DeviceName + " Home Distance", "meters", rssi);
+						uint64_t nSsrDistance = static_cast<int>(rint(1000 * distanceEarth(fDomLat, fDomLon, ssrlat, ssrlon)));
+						SendCustomSensor(DeviceID, (iGpsChannel + 64), BatteryLevel, (float)nSsrDistance, DeviceName + " Home Distance", "meters", rssi);
 						//_log.Log(LOG_STATUS, "TTN_MQTT: Distance between Sensordevice and Domoticz Home is %i meters!", nSsrDistance);
 					}
 					else
@@ -874,8 +870,8 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			}
 			else if (!(ssrlat == 0 && ssrlon == 0))
 			{
-				uint64_t nGwDistance = (rint(1000 * distanceEarth(gwlat, gwlon, ssrlat, ssrlon)));
-				SendCustomSensor(DeviceID, (channel + 128), BatteryLevel, nGwDistance, DeviceName + " Gateway Distance", "meters", rssi);
+				uint64_t nGwDistance = static_cast<int>(rint(1000 * distanceEarth(gwlat, gwlon, ssrlat, ssrlon)));
+				SendCustomSensor(DeviceID, (channel + 128), BatteryLevel, (float)nGwDistance, DeviceName + " Gateway Distance", "meters", rssi);
 			//	_log.Log(LOG_STATUS, "TTN_MQTT: Distance between Sensordevice and gateway is %i meters!", nGwDistance);
 			}
 		}
