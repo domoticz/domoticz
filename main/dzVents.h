@@ -31,7 +31,8 @@ private:
 		_eType type;
 		bool isTable;
 		int tIndex;
-		int fValue;
+		int iValue;
+		float fValue;
 		std::string name;
 		std::string sValue;
 	};

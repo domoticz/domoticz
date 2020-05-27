@@ -669,7 +669,7 @@ void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<
 		else if (std::string(luaL_typename(lua_state, -1)) == "boolean")
 		{
 			item.type = TYPE_BOOLEAN;
-			item.fValue = lua_toboolean(lua_state, -1);
+			item.iValue = lua_toboolean(lua_state, -1);
 			item.name = std::string(lua_tostring(lua_state, -2));
 		}
 		if (!item.isTable && item.type != TYPE_UNKNOWN)
