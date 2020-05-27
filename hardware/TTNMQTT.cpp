@@ -528,7 +528,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 				UTCttntime = MetaData["time"].asString().c_str();
 				sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
-				constructTime(msgtime, t, y, M, d, h, m, s);
+				constructTime(msgtime, t, y, M, d, h, m, (int)floor(s));
 			}
 			if (!(MetaData["latitude"].empty() || MetaData["longitude"].empty()))
 			{
