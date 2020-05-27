@@ -1,3 +1,9 @@
+[3.0.8]
+- Allow IPv6 ::1 as localhost in domoticz settings 
+- Fixed bug that occurred when using a decimal number in afterSec (openURL and emitEvent)
+- Implement optional use of parsetrigger parm in setValues to trigger any subsequent eventscripts
+- Updated round.utils to correctly handle negative numbers and round to zero decimals
+
 [3.0.7]
 - Add domoticz.hardware() as separate object class
 

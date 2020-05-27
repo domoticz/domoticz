@@ -25,7 +25,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-        m_version("3.0.7")
+		m_version("3.0.8")
 {
 	m_bdzVentsExist = false;
 }
@@ -64,7 +64,6 @@ void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSys
 
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_NOTIFICATION)
 		{
-			// _log.Log(LOG_STATUS, "Notification raised: %d(%s)", itt->nValue, m_mainworker.m_notificationsystem.GetTypeString(itt->nValue).c_str());
 			reasonNotification = true;
 		}
 	}
@@ -131,7 +130,6 @@ void CdzVents::ProcessNotificationItem(CLuaTable &luaTable, int &index, const CE
 	luaTable.AddString("status", status);
 	luaTable.CloseSubTableEntry();
 	index++;
-	//_log.Log(LOG_STATUS, "dzVents notification: type: %s, status: %s, message: %s", type.c_str(), status.c_str(), item.sValue.c_str());
 }
 
 void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEventSystem::_tEventQueue>& items)
@@ -287,7 +285,7 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 					}
 				}
 			}
-			luaTable.CloseSubTableEntry(); // headers, why rawset was done here???
+			luaTable.CloseSubTableEntry();
 
 			luaTable.AddString("protocol", protocol);
 			luaTable.AddString("statusText", statusText);
@@ -337,12 +335,12 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 			else if (itt->name == "_trigger")
 				trigger = itt->sValue;
 		}
-		else if (itt->type == TYPE_INTEGER)
+		else if (itt->type == TYPE_FLOAT)
 		{
 			if (itt->name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
+				delayTime = GenerateRandomNumber(itt->fValue);
 			else if (itt->name == "_after")
-				delayTime = static_cast<float>(itt->iValue);
+				delayTime = itt->fValue;
 		}
 	}
 
@@ -353,12 +351,12 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 	}
 
 	// Handle situation where WebLocalNetworks is not open without password for dzVents
-	if (URL.find("127.0.0.1") != std::string::npos)
+	if ( URL.find("127.0.0") != std::string::npos || URL.find("::") != std::string::npos || URL.find("localhost") != std::string::npos )
 	{
 		std::string allowedNetworks;
 		int rnvalue = 0;
 		m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
-		if (allowedNetworks.find("127.0.0.") == std::string::npos)
+		if ( ( allowedNetworks.find("127.0.0.") == std::string::npos ) && ( allowedNetworks.find("::") == std::string::npos ) )
 		{
 			_log.Log(LOG_ERROR, "dzVents: local netWork not open for dzVents openURL call !");
 			_log.Log(LOG_ERROR, "dzVents: check dzVents wiki (look for 'Using dzVents with Domoticz')");
@@ -411,14 +409,13 @@ bool CdzVents::TriggerCustomEvent(lua_State* lua_state, const std::vector<_tLuaT
 		{
 			sValue = itt->sValue;
 		}
-		else if (itt->type == TYPE_INTEGER)
+		else if (itt->type == TYPE_FLOAT)
 		{
 			if (itt->name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
+				delayTime = GenerateRandomNumber(itt->fValue);
 			else if (itt->name == "_after")
 			{
-				delayTime = static_cast<float>(itt->iValue);
-				// _log.Log(LOG_STATUS, "dzVents: delayed custom event for %d seconds", itt->iValue);
+				delayTime = itt->fValue;
 			}
 		}
 	}
@@ -440,18 +437,18 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
 	{
-		if (itt->type == TYPE_INTEGER)
+		if (itt->type == TYPE_FLOAT)
 		{
 			if (itt->name == "idx")
-				idx = itt->iValue;
+				idx = itt->fValue;
 			else if (itt->name == "nValue")
-				nValue = itt->iValue;
+				nValue = itt->fValue;
 			else if (itt->name == "protected")
-				Protected = itt->iValue;
+				Protected = itt->fValue;
 			else if (itt->name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
+				delayTime =GenerateRandomNumber(itt->fValue);
 			else if (itt->name == "_after")
-				delayTime = static_cast<float>(itt->iValue);
+				delayTime = itt->fValue;
 		}
 		else if (itt->type == TYPE_STRING && itt->name == "sValue")
 			sValue = itt->sValue;
@@ -481,25 +478,25 @@ bool CdzVents::TriggerIFTTT(lua_State *lua_state, const std::vector<_tLuaTableVa
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
 	{
-		if (itt->type == TYPE_INTEGER )
+		if (itt->type == TYPE_FLOAT )
 		{
 			if (itt->name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
+				delayTime = GenerateRandomNumber(itt->fValue);
 
 			else if (itt->name == "_after")
-				delayTime = static_cast<float>(itt->iValue);
+				delayTime = itt->fValue;
 
 			else if (itt->name == "sID")
-				 sID = std::to_string(itt->iValue);
+				 sID = std::to_string(itt->fValue);
 
 			else if (itt->name == "sValue1")
-				sValue1 = std::to_string(itt->iValue);
+				sValue1 = std::to_string(itt->fValue);
 
 			else if (itt->name == "sValue2")
-				sValue2 = std::to_string(itt->iValue);
+				sValue2 = std::to_string(itt->fValue);
 
 			else if (itt->name == "sValue3")
-				sValue2 = std::to_string(itt->iValue);
+				sValue2 = std::to_string(itt->fValue);
 		}
 		else if (itt->type == TYPE_STRING)
 		{
@@ -531,14 +528,14 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
 	{
-		if (itt->type == TYPE_INTEGER)
+		if (itt->type == TYPE_FLOAT)
 		{
 			if (itt->name == "idx")
-				idx = itt->iValue;
+				idx = itt->fValue;
 			else if (itt->name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
+				delayTime = GenerateRandomNumber(itt->fValue);
 			else if (itt->name == "_after")
-				delayTime = static_cast<float>(itt->iValue);
+				delayTime = itt->fValue;
 		}
 		else if (itt->type == TYPE_STRING && itt->name == "value")
 			variableValue = itt->sValue;
@@ -564,8 +561,8 @@ bool CdzVents::CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValu
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
 	{
-		if (itt->type == TYPE_INTEGER && itt->name == "idx")
-			idx = itt->iValue;
+		if (itt->type == TYPE_FLOAT && itt->name == "idx")
+			idx = itt->fValue;
 
 		else if (itt->type == TYPE_STRING && itt->name == "type")
 			type = itt->sValue;
@@ -641,8 +638,8 @@ void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<
 			}
 			else if (std::string(luaL_typename(lua_state, -2)) == "number")
 			{
-				item.type = TYPE_INTEGER;
-				item.iValue = static_cast<int>(lua_tonumber(lua_state, -2));
+				item.type = TYPE_FLOAT;
+				item.fValue = lua_tonumber(lua_state, -2);
 			}
 			else
 			{
@@ -662,14 +659,14 @@ void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<
 		}
 		else if (std::string(luaL_typename(lua_state, -1)) == "number")
 		{
-			item.type = TYPE_INTEGER;
-			item.iValue = (int)lua_tointeger(lua_state, -1);
+			item.type = TYPE_FLOAT;
+			item.fValue = (float)lua_tonumber(lua_state, -1);
 			item.name = std::string(lua_tostring(lua_state, -2));
 		}
 		else if (std::string(luaL_typename(lua_state, -1)) == "boolean")
 		{
 			item.type = TYPE_BOOLEAN;
-			item.iValue = lua_toboolean(lua_state, -1);
+			item.fValue = lua_toboolean(lua_state, -1);
 			item.name = std::string(lua_tostring(lua_state, -2));
 		}
 		if (!item.isTable && item.type != TYPE_UNKNOWN)
@@ -967,7 +964,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 				sgitem.scenesgroupValue = itt->sValue;
 			}
 		}
-
 
 		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
 		if (result.empty())
