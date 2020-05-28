@@ -333,6 +333,12 @@ void MainWorker::StopDomoticzHardware()
 	}
 }
 
+bool MainWorker::Inarray(const std::string &value, const std::vector<std::string> strarray)
+{
+	return std::find(strarray.begin(), strarray.end(), value) != strarray.end();
+}
+
+
 void MainWorker::GetAvailableWebThemes()
 {
 	std::string ThemeFolder = szWWWFolder + "/styles/";
@@ -2470,7 +2476,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 	if ((BatteryLevel != -1) && (procResult.bProcessBatteryValue))
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%" PRIu64 ")", BatteryLevel, DeviceRowIdx);
-		m_eventsystem.UpdateBatteryLevel(DeviceRowIdx, BatteryLevel); //GizMoCuz, temporarily... 
+		m_eventsystem.UpdateBatteryLevel(DeviceRowIdx, BatteryLevel); //GizMoCuz, temporarily...
 	}
 
 	if ((defaultName != NULL) && ((DeviceName == "Unknown") || (DeviceName.empty())))
@@ -13017,11 +13023,20 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 
 		if (scenetype == SGTYPE_GROUP)
 		{
+			std::vector<std::string> validGroupSwitchcmd {"On", "Off", "Toggle", "Group On" , "Chime", "All On"};
+			if (!MainWorker::Inarray(switchcmd, validGroupSwitchcmd))
+				return false;
 			//when asking for Toggle, just switch to the opposite value
 			if (switchcmd == "Toggle") {
 				nValue = (atoi(status.c_str()) == 0 ? 1 : 0);
 				switchcmd = (nValue == 1 ? "On" : "Off");
 			}
+		}
+		else
+		{
+			std::vector<std::string> validSceneSwitchcmd {"On"};
+			if (!MainWorker::Inarray(switchcmd, validSceneSwitchcmd))
+				return false;
 		}
 		m_sql.HandleOnOffAction((nValue == 1), onaction, offaction);
 	}
