@@ -13,8 +13,6 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-#define DATE_TIME_ISO  "%FT%TZ"     // 2020-05-11T16:00:00Z
-
 #ifdef _DEBUG
 #define DEBUG_MeteorologiskR
 #define DEBUG_MeteorologiskW
@@ -213,12 +211,6 @@ void CMeteorologisk::GetMeterDetails()
 		Log(LOG_ERROR,"Invalid data received, or unknown location!");
 		return;
 	}
-	/*
-	std::string tmpstr2 = root.toStyledString();
-	FILE *fOut = fopen("/tmp/Meteorologisk.json", "wb+");
-	fwrite(tmpstr2.c_str(), 1, tmpstr2.size(), fOut);
-	fclose(fOut);
-	*/
 
 	float temperature;
 	int humidity=0;
@@ -230,16 +222,17 @@ void CMeteorologisk::GetMeterDetails()
 	Json::Value selectedTimeserie = 0;
 	time_t now = time(NULL);
 
-	for(uint i=0; i<timeseries.size(); i++)
+	for(int i = 0; i < (int)timeseries.size(); i++)
 	{
 		Json::Value timeserie = timeseries[i];
-		const char* stime = timeserie["time"].asCString();
-		struct tm tm;
-		char* s = strptime(stime, DATE_TIME_ISO, &tm);
+		std::string stime = timeserie["time"].asString();
 
-		if(s!=NULL)
+		time_t parsedDate;
+		struct tm parsedDateTm;
+
+		if(ParseISOdatetime(parsedDate, parsedDateTm, stime))
 		{
-			double diff = difftime(mktime(&tm), now);
+			double diff = difftime(mktime(&parsedDateTm), now);
 			if(diff > 0)
 			{
 				selectedTimeserie = timeserie;
