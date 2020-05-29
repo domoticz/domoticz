@@ -13017,11 +13017,19 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 
 		if (scenetype == SGTYPE_GROUP)
 		{
+			std::vector<std::string> validCmdArray {"On", "Off", "Toggle", "Group On" , "Chime", "All On"};
+			if (std::find(validCmdArray.begin(), validCmdArray.end(), switchcmd) == validCmdArray.end())
+				return false;
 			//when asking for Toggle, just switch to the opposite value
 			if (switchcmd == "Toggle") {
 				nValue = (atoi(status.c_str()) == 0 ? 1 : 0);
 				switchcmd = (nValue == 1 ? "On" : "Off");
 			}
+		}
+		else
+		{
+			if (switchcmd != "On")
+				return false; //A Scene can only be turned On
 		}
 		m_sql.HandleOnOffAction((nValue == 1), onaction, offaction);
 	}
