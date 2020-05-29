@@ -333,12 +333,6 @@ void MainWorker::StopDomoticzHardware()
 	}
 }
 
-bool MainWorker::Inarray(const std::string &value, const std::vector<std::string> strarray)
-{
-	return std::find(strarray.begin(), strarray.end(), value) != strarray.end();
-}
-
-
 void MainWorker::GetAvailableWebThemes()
 {
 	std::string ThemeFolder = szWWWFolder + "/styles/";
@@ -13023,8 +13017,8 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 
 		if (scenetype == SGTYPE_GROUP)
 		{
-			std::vector<std::string> validGroupSwitchcmd {"On", "Off", "Toggle", "Group On" , "Chime", "All On"};
-			if (!MainWorker::Inarray(switchcmd, validGroupSwitchcmd))
+			std::vector<std::string> validCmdArray {"On", "Off", "Toggle", "Group On" , "Chime", "All On"};
+			if (std::find(validCmdArray.begin(), validCmdArray.end(), switchcmd) == validCmdArray.end())
 				return false;
 			//when asking for Toggle, just switch to the opposite value
 			if (switchcmd == "Toggle") {
@@ -13034,9 +13028,8 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 		}
 		else
 		{
-			std::vector<std::string> validSceneSwitchcmd {"On"};
-			if (!MainWorker::Inarray(switchcmd, validSceneSwitchcmd))
-				return false;
+			if (switchcmd != "On")
+				return false; //A Scene can only be turned On
 		}
 		m_sql.HandleOnOffAction((nValue == 1), onaction, offaction);
 	}
