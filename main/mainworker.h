@@ -129,8 +129,7 @@ public:
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
 	std::string m_UpdateStatusMessage;
 
-		bool Inarray(const std::string &value, const std::vector<std::string> strarray);
-		void GetAvailableWebThemes();
+	void GetAvailableWebThemes();
 
 	tcp::server::CTCPServer m_sharedserver;
 	std::string m_LastSunriseSet;
