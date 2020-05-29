@@ -257,7 +257,7 @@ void CMeteorologisk::GetMeterDetails()
 	}
 	if (instantData["air_pressure_at_sea_level"].empty()==false)
 	{
-		barometric=atof(instantData["air_pressure_at_sea_level"].asString().c_str());
+		barometric = static_cast<float>(atof(instantData["air_pressure_at_sea_level"].asString().c_str()));
 		if (barometric<1000)
 			barometric_forcast=baroForecastRain;
 		else if (barometric<1020)
@@ -316,15 +316,15 @@ void CMeteorologisk::GetMeterDetails()
 
 	if (instantData["wind_from_direction"].empty()==false)
 	{
-		wind_degrees=atof(instantData["wind_from_direction"].asString().c_str());
+		wind_degrees = static_cast<float>(atof(instantData["wind_from_direction"].asString().c_str()));
 	}
 	if (instantData["wind_speed"].empty()==false)
 	{
-		windspeed_ms = atof(instantData["wind_speed"].asString().c_str());
+		windspeed_ms = static_cast<float>(atof(instantData["wind_speed"].asString().c_str()));
 	}
 	if (instantData["wind_speed_of_gust"].empty()==false)
 	{
-		windgust_ms=atof(instantData["wind_speed_of_gust"].asString().c_str());
+		windgust_ms = static_cast<float>(atof(instantData["wind_speed_of_gust"].asString().c_str()));
 	}
 	if (wind_degrees!=-1)
 	{
