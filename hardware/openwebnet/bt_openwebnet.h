@@ -113,6 +113,7 @@ enum  {
 	LIGHTING_WHAT_COMMAND_TRANSLATION = 1000
 };
 
+
 // Auxiliary what
 enum {
 	AUXILIARY_WHAT_OFF = 0,
@@ -303,6 +304,30 @@ enum {
 	SOUND_DIFFUSION_DIMENSION_LOUDNESS = 20
 };
 
+
+enum {
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_TIME = 0,					/* Read/Write */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE = 1,					/* Read/Write */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_IP_ADDRESS = 10,			/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_NET_MASK = 11,				/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_MAC_ADDRESS = 12,			/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DEVICE_TYPE = 15,			/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_FIRMWARE_VERSION = 16,		/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_UPTIME = 19,				/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE_AND_TIME = 22,			/* Read/Write */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_KERNEL_VERSION = 23,		/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DISTRIBUTION_VERSION = 24	/* Read		  */
+};
+
+enum {
+	GATEWAY_MODEL_MHSERVER = 2,
+	GATEWAY_MODEL_MH200 = 4,
+	GATEWAY_MODEL_F452 = 6,
+	GATEWAY_MODEL_F452V = 7,
+	GATEWAY_MODEL_MHSERVER2 = 11,
+	GATEWAY_MODEL_H4684 = 13
+};
+
 class bt_openwebnet {
 
 private:
@@ -402,8 +427,10 @@ public:
   void CreateWrDimensionMsgOpen2(const std::string& who, const std::string& where, const std::string& dimension, const std::vector<std::string>& value);
   void CreateWrDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& lev, const std::string& strInterface, const std::string& dimension, const std::vector<std::string>& value);
   
-  void CreateTimeReqMsgOpen();
-  void CreateSetTimeMsgOpen();
+  void CreateGatewayReqMsgOpen(const std::string& dimension);
+
+  void CreateDateTimeReqMsgOpen();
+  void CreateSetDateTimeMsgOpen(const std::string& tzString);
 
   //general message
   void CreateMsgOpen(const std::string& message);

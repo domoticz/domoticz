@@ -5,6 +5,8 @@
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 
+using namespace boost::placeholders;
+
 /*
 	This driver allows Domoticz to control any I/O module from the MA-4xxx Family
 

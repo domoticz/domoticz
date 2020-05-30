@@ -23,6 +23,9 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include <json/json.h>
+#include <boost/bind/bind.hpp>
+
+using namespace boost::placeholders;
 
 extern std::string szUserDataFolder;
 

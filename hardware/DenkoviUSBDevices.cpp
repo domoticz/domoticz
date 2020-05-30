@@ -5,6 +5,8 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
+using namespace boost::placeholders;
+
 #define MAX_POLL_INTERVAL 3600*1000
 
 #define DAE_IO_TYPE_RELAY		2

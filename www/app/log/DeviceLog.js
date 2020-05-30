@@ -46,7 +46,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             }
 
             var isLightType = [
-				'Lighting 1', 'Lighting 2', 'Lighting 3', 'Lighting 4', 'Lighting 5',
+                'Lighting 1', 'Lighting 2', 'Lighting 3', 'Lighting 4', 'Lighting 5',
                 'Light', 'Light/Switch', 'Color Switch', 'Chime',
                 'Security', 'RFY', 'ASA', 'Blinds'
             ].includes(vm.device.Type);
@@ -71,7 +71,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             //This goes wrong (when we also use this log call from the weather tab), for wind sensors
             //as this is placed in weather and temperature, we might have to set a parameter in the url
             //for now, we assume it is a temperature
-            return (/Temp|Thermostat|Humidity|Radiator|Wind/i).test(vm.device.Type)
+            return (/Temp|Thermostat|Humidity|RFXSensor|Radiator|Wind/i).test(vm.device.Type)
         }
 
         function isGraphLog() {

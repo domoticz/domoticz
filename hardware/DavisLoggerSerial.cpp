@@ -8,12 +8,14 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #ifdef _DEBUG
 //#define DEBUG_DAVIS

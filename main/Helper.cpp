@@ -147,6 +147,21 @@ std::string ToHexString(const uint8_t* pSource, const size_t length)
 	return ret;
 }
 
+std::vector<char> HexToBytes(const std::string& hex) {
+	std::vector<char> bytes;
+
+	if (hex.size() % 2 != 0)
+		return bytes; //invalid length
+
+	for (unsigned int i = 0; i < hex.length(); i += 2) {
+		std::string byteString = hex.substr(i, 2);
+		char byte = (char)strtol(byteString.c_str(), NULL, 16);
+		bytes.push_back(byte);
+	}
+
+	return bytes;
+}
+
 void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,

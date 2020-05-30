@@ -15,6 +15,8 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+using namespace boost::placeholders;
+
 CHttpPush::CHttpPush()
 {
 	m_PushType = PushType::PUSHTYPE_HTTP;

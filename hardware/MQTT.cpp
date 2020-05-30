@@ -11,6 +11,8 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+using namespace boost::placeholders;
+
 #define RETRY_DELAY 30
 
 #define CLIENTID	"Domoticz"

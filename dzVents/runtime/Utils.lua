@@ -1,6 +1,15 @@
 local jsonParser = require('JSON')
 local _ = require('lodash')
 
+local self = {
+	LOG_ERROR = 1,
+	LOG_FORCE = 0.5,
+	LOG_MODULE_EXEC_INFO = 2,
+	LOG_INFO = 3,
+	LOG_DEBUG = 4,
+	DZVERSION = '3.0.8',
+}
+
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
 	if type(value_of_unsupported_type) == 'function' then
 		return '"Function"'
@@ -8,15 +17,6 @@ function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
 		return nil
 	end
 end
-
-local self = {
-	LOG_ERROR = 1,
-	LOG_FORCE = 0.5,
-	LOG_MODULE_EXEC_INFO = 2,
-	LOG_INFO = 3,
-	LOG_DEBUG = 4,
-	DZVERSION = '3.0.4',
-}
 
 function math.pow(x, y)
 	self.log('Function math.pow(x, y) has been deprecated in Lua 5.3. Please consider changing code to x^y', self.LOG_FORCE)
@@ -115,16 +115,18 @@ function self.inTable(searchTable, element)
 	return false
 end
 
-function self.round(x, n)
-	-- n = math.pow(10, n or 0)
-	n = 10^(n or 0)
-	x = x * n
-	if x >= 0 then
-		x = math.floor(x + 0.5)
+function self.round(value, decimals)
+	local nVal = tonumber(value)
+	local nDec = ( decimals == nil and 0 ) or tonumber(decimals)
+	if nVal >= 0 and nDec > 0 then
+		return math.floor( (nVal * 10 ^ nDec) + 0.5) / (10 ^ nDec)
+	elseif nVal >=0 then
+		return math.floor(nVal + 0.5)
+	elseif nDec and nDec > 0 then
+		return math.ceil ( (nVal * 10 ^ nDec) - 0.5) / (10 ^ nDec)
 	else
-		x = math.ceil(x - 0.5)
+		return math.ceil(nVal - 0.5)
 	end
-	return x / n
 end
 
 function string.sMatch(text, match) -- add sanitized match function to string "library"
@@ -185,9 +187,10 @@ function self.urlDecode(str, strSub)
 end
 
 function self.isJSON(str, content)
+
 	local str = str or ''
 	local content = content or ''
-	local jsonPattern = '^%s*%[*{.+}%]*%s*$'
+	local jsonPattern = '^%s*%[*%s*{.+}%s*%]*%s*$'
 	local ret = str:match(jsonPattern) == str  or content:find('application/json')
 	return ret ~= nil
 
@@ -261,11 +264,12 @@ function self.toBase64(s) -- from http://lua-users.org/wiki/BaseSixtyFour
 end
 
 function self.isXML(str, content)
+
 	local str = str or ''
 	local content = content or ''
 	local xmlPattern = '^%s*%<.+%>%s*$'
-	local ret = str:match(xmlPattern) == str  or content:find('application/xml') or content:find('text/xml')
-	return ret ~= nil
+	local ret = ( str:match(xmlPattern) == str  or content:find('application/xml') or content:find('text/xml')) and not(str:sub(1,30):find('DOCTYPE html') )
+	return ret
 
 end
 
@@ -295,16 +299,16 @@ function self.fromXML(xml, fallback)
 		if (ok) then
 			return results
 		end
-		self.log('Error parsing xml to Lua table: ' .. _.str(results), self.LOG_ERROR)
+		-- self.log('Error parsing xml to Lua table: ' .. _.str(results), self.LOG_ERROR)
 	else
 		self.log('Error parsing xml to LUA table: (invalid xml string) ' .. _.str(xml) , self.LOG_ERROR)
 	end
-
 	return fallback
 
 end
 
 function self.toXML(luaTable, header)
+
 	if header == nil then header = 'LuaTable' end
 
 	local toXML = function(luaTable, header)
@@ -389,7 +393,7 @@ function self.rgbToHSB(r, g, b)
 		if (r == max) then
 			hsb.h = (g - b) / delta
 		elseif (g == max) then
-			 hsb.h = 2 + (b - r) / delta
+			hsb.h = 2 + (b - r) / delta
 		else
 			hsb.h = 4 + (r - g) / delta
 		end
@@ -430,6 +434,10 @@ function self.groupExists(parm)
 	return loopGlobal(parm, 'group')
 end
 
+function self.hardwareExists(parm)
+	return loopGlobal(parm, 'hardware')
+end
+
 function self.variableExists(parm)
 	return loopGlobal(parm, 'uservariable')
 end
@@ -450,6 +458,40 @@ function self.dumpTable(t, level, filename)
 			end
 		else
 			self.print(level .. attr .. '()', filename)
+		end
+	end
+end
+
+function self.dumpSelection(object, selection)
+	self.print ('dump ' .. selection .. ' of ' .. object.baseType .. ' ' .. object.name)
+	if selection == 'attributes' then
+		for attr, value in pairs(object) do
+			if type(value) ~= 'function' and type(value) ~= 'table' then
+				self.print('> ' .. attr .. ': ' .. tostring(value))
+			end
+		end
+		if object.baseType ~= 'hardware' then 
+			self.print('')
+			self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
+		end
+		if object.baseType ~= 'variable'  and object.baseType ~= 'hardware' then
+			self.print('> adapters: ' .. table.concat(object._adapters or {},', ') )
+		end
+		if object.baseType == 'device' then
+			self.print('> levelNames: ' .. table.concat(object.levelNames or {},', ') )
+			self.print('> rawData: ' .. table.concat(object.rawData or {},', ') )
+		end
+	elseif selection == 'tables' then
+		for attr, value in pairs(object) do
+			if type(value) == 'table' then
+				self.print('> ' .. attr .. ': ' )
+			end
+		end
+	elseif selection == 'functions' then
+		for attr, value in pairs(object) do
+			if type(value) == 'function' then
+				self.print('> ' .. attr .. '()')
+			end
 		end
 	end
 end

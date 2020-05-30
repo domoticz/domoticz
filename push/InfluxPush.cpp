@@ -15,6 +15,8 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+using namespace boost::placeholders;
+
 CInfluxPush::CInfluxPush() :
 	m_InfluxPort(8086),
 	m_bInfluxDebugActive(false)

@@ -13,6 +13,8 @@
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
 
+using namespace boost::placeholders;
+
 namespace Plugins {
 
 	void CPluginTransport::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)

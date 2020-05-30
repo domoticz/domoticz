@@ -34,7 +34,7 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
 #include <boost/smart_ptr/shared_array.hpp>  // for shared_array

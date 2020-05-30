@@ -52,9 +52,9 @@ namespace http {
 
 		typedef struct _tIPNetwork
 		{
-			uint32_t network;
-			uint32_t mask;
-			std::string hostname;
+			bool bIsIPv6 = false;
+			uint8_t Network[16] = { 0 };
+			uint8_t Mask[16] = { 0 };
 		} IPNetwork;
 
 		// Parsed Authorization header

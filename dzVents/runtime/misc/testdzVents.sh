@@ -127,14 +127,14 @@ function fillTimes
 		ContactDoorLockInvertedSwitch_ExpectedSeconds=30
 		DelayedVariableScene_ExpectedSeconds=80
 		EventState_ExpectedSeconds=190
-		Integration_ExpectedSeconds=330
+		Integration_ExpectedSeconds=340
 		SelectorSwitch_ExpectedSeconds=100
 		SystemAndCustomEvents_ExpectedSeconds=10
 	}
 
 function fillNumberOfTests
 	{
-		Device_ExpectedTests=113
+		Device_ExpectedTests=115
 		Domoticz_ExpectedTests=74
 		EventHelpers_ExpectedTests=32
 		EventHelpersStorage_ExpectedTests=50
@@ -148,7 +148,7 @@ function fillNumberOfTests
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
 		DelayedVariableScene_ExpectedTests=2
 		EventState_ExpectedTests=2
-		Integration_ExpectedTests=217
+		Integration_ExpectedTests=222
 		SelectorSwitch_ExpectedTests=2
 		SystemAndCustomEvents_ExpectedTests=7
 	}
