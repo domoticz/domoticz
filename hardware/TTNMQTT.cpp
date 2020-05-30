@@ -385,13 +385,13 @@ bool CTTNMQTT::ConvertField2Payload(const std::string sType, const std::string s
 {
 	bool ret = false;
 
-	if (sType == "temp") {
+	if (sType == "temp" || sType == "temperature") {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "temp";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "humidity") {
+	else if (sType == "hum" || sType == "humidity") {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "humidity";
 		payload[index]["value"] = std::stof(sValue);
@@ -404,16 +404,18 @@ bool CTTNMQTT::ConvertField2Payload(const std::string sType, const std::string s
 		ret = true;
 	}
 	else if (sType == "gps") {
-		payload[index]["channel"] = channel;
-		payload[index]["type"] = "baro";
-		// To-Do; split the sValue to needed values
-		double lat = 0;
-		double lon = 0;
-		float alt = 0;
-		payload[index]["lat"] = lat;
-		payload[index]["lon"] = lon;
-		payload[index]["alt"] = alt;
-		ret = true;
+		std::vector<std::string> strarray;
+		StringSplit(sValue, ";", strarray);
+
+		if (strarray.size() == 3)
+		{
+			payload[index]["channel"] = channel;
+			payload[index]["type"] = "gps";
+			payload[index]["lat"] = std::stod(strarray[0]);
+			payload[index]["lon"] = std::stod(strarray[1]);
+			payload[index]["alt"] = std::stof(strarray[2]);
+			ret = true;
+		}
 	}
 	else if (sType == "digital_input") {
 		payload[index]["channel"] = channel;
@@ -452,6 +454,16 @@ bool CTTNMQTT::ConvertField2Payload(const std::string sType, const std::string s
 		ret = true;
 	}
 
+	// The following IS NOT conforming to the CayenneLPP specification
+	// but a 'hack'; When using the TTN External Custom Decoder a payload_fields array is added
+	// and within these fields a 'batterylevel' can be created (integer range between 0 and 100)
+	if (sType == "batterylevel") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "batterylevel";
+		payload[index]["value"] = std::stoi(sValue);
+		ret = true;
+	}
+
 	return ret;
 }
 
@@ -460,15 +472,12 @@ bool CTTNMQTT::ConvertFields2Payload(const Json::Value &fields, Json::Value &pay
 	bool ret = false;
 	uint8_t index = 0;
 
-	//_log.Log(LOG_NORM, "TTN_MQTT: Processing fields payload!");
-	//if (!payload.empty()) { return false; }
-
     if( fields.size() > 0 )
 	{
 		//_log.Log(LOG_NORM, "TTN_MQTT: Processing fields payload for %i fields!", fields.size());
 		for (auto const& id : fields.getMemberNames())
 		{
-			if(ConvertField2Payload(id.c_str(), fields[id].asString().c_str(), index + 1, index, payload))
+			if(!(fields[id].isNull()) && ConvertField2Payload(id.c_str(), fields[id].asString().c_str(), index + 1, index, payload))
 			{
 				//_log.Log(LOG_NORM, "TTN_MQTT: Converted field %s !", id.c_str());
 				index++;
@@ -779,10 +788,23 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		uint8_t chanSensors [65] = {};	// CayenneLPP Data Channel ranges from 0 to 64
 		for (auto itt = payload.begin(); itt != payload.end(); ++itt)
 		{
-			uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
 			std::string type = (*itt)["type"].asString();
+			uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
 
-			chanSensors[channel]++;
+			// The following IS NOT part of the CayenneLPP specification
+			// But a 'hack'; when using the payload_fields (using the TTN external payload decoder)
+			// a 'batterylevel' field can be created (integer range between 0 and 100)
+			// Also, we do skip this reading for further processing
+			if (type == "batterylevel") {
+				if ((*itt)["value"].isNumeric()) {
+					BatteryLevel = (int)(*itt)["value"].asInt();
+				}
+			}
+			else
+			{
+				// Add 1 reading to this channel
+				chanSensors[channel]++;
+			}
 			//_log.Log(LOG_STATUS, "TTN_MQTT: Increased count for channel %i (%s)!", channel, type.c_str());
 		}
 
@@ -929,6 +951,8 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			channel++;
 		}
 		while (channel < 65);
+
+		//_log.Log(LOG_STATUS, "TTN_MQTT: Completed processing of readings!");
 
 		// Now we have processed all readings for all channels
 		// If we have not seen any GPS data on any channel in this payload
