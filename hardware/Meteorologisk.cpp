@@ -310,7 +310,7 @@ void CMeteorologisk::GetMeterDetails()
 	//Wind
 	if(!instantData["wind_from_direction"].empty() && !instantData["wind_speed"].empty() && !instantData["wind_speed_of_gust"].empty())
 	{
-		float wind_direction = instantData["wind_from_direction"].asFloat();
+		int wind_direction = instantData["wind_from_direction"].asInt();
 		float wind_gusts = instantData["wind_speed_of_gust"].asFloat();
 		float wind_speed = instantData["wind_speed"].asFloat();
 
