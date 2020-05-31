@@ -14,8 +14,8 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-#define DEBUG_MeteorologiskR
-#define DEBUG_MeteorologiskW
+//#define DEBUG_MeteorologiskR
+//#define DEBUG_MeteorologiskW
 #endif
 
 #ifdef DEBUG_MeteorologiskW
@@ -247,6 +247,7 @@ void CMeteorologisk::GetMeterDetails()
 	}
 
 	Json::Value instantData = selectedTimeserie["data"]["instant"]["details"];
+	Json::Value nextOneHour = selectedTimeserie["data"]["next_1_hours"];
 
 	//The api already provides the temperature in celcius.
 	temperature=instantData["air_temperature"].asFloat();
@@ -257,7 +258,7 @@ void CMeteorologisk::GetMeterDetails()
 	}
 	if (instantData["air_pressure_at_sea_level"].empty()==false)
 	{
-		barometric = static_cast<float>(atof(instantData["air_pressure_at_sea_level"].asString().c_str()));
+		barometric = instantData["air_pressure_at_sea_level"].asFloat();
 		if (barometric<1000)
 			barometric_forcast=baroForecastRain;
 		else if (barometric<1020)
@@ -267,10 +268,11 @@ void CMeteorologisk::GetMeterDetails()
 		else
 			barometric_forcast=baroForecastSunny;
 
-		if (root["currently"]["icon"].empty()==false)
+		if (!nextOneHour["summary"]["symbol_code"].empty())
 		{
-			std::string forcasticon=root["currently"]["icon"].asString();
-			if ((forcasticon=="partly-cloudy-day")||(forcasticon=="partly-cloudy-night"))
+			//https://api.met.no/weatherapi/weathericon/2.0/documentation
+			std::string forcasticon=nextOneHour["summary"]["symbol_code"].asString();
+			if ((forcasticon=="partlycloudy_day")||(forcasticon=="partlycloudy_night"))
 			{
 				barometric_forcast=baroForecastPartlyCloudy;
 			}
@@ -278,7 +280,7 @@ void CMeteorologisk::GetMeterDetails()
 			{
 				barometric_forcast=baroForecastCloudy;
 			}
-			else if ((forcasticon=="clear-day")||(forcasticon=="clear-night"))
+			else if ((forcasticon=="clearsky_day")||(forcasticon=="clearsky_night"))
 			{
 				barometric_forcast=baroForecastSunny;
 			}
@@ -292,7 +294,7 @@ void CMeteorologisk::GetMeterDetails()
 	if (barometric!=0)
 	{
 		//Add temp+hum+baro device
-		SendTempHumBaroSensor(1, 255, temperature, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
+		SendTempHumBaroSensor(1, 255, temperature, humidity, barometric, barometric_forcast, "THB");
 	}
 	else if (humidity!=0)
 	{
@@ -306,77 +308,19 @@ void CMeteorologisk::GetMeterDetails()
 	}
 
 	//Wind
-	float wind_degrees=-1;
-	float windspeed_ms=0;
-	float windgust_ms=0;
-	float wind_temp=temperature;
-	float wind_chill=temperature;
-	//int windgust=1;
-	//float windchill=-1;
-
-	if (instantData["wind_from_direction"].empty()==false)
+	if(!instantData["wind_from_direction"].empty() && !instantData["wind_speed"].empty() && !instantData["wind_speed_of_gust"].empty())
 	{
-		wind_degrees = static_cast<float>(atof(instantData["wind_from_direction"].asString().c_str()));
-	}
-	if (instantData["wind_speed"].empty()==false)
-	{
-		windspeed_ms = static_cast<float>(atof(instantData["wind_speed"].asString().c_str()));
-	}
-	if (instantData["wind_speed_of_gust"].empty()==false)
-	{
-		windgust_ms = static_cast<float>(atof(instantData["wind_speed_of_gust"].asString().c_str()));
-	}
-	if (wind_degrees!=-1)
-	{
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.WIND.packetlength=sizeof(tsen.WIND)-1;
-		tsen.WIND.packettype=pTypeWIND;
-		tsen.WIND.subtype=sTypeWIND4;
-		tsen.WIND.battery_level=9;
-		tsen.WIND.rssi=12;
-		tsen.WIND.id1=0;
-		tsen.WIND.id2=1;
+		float wind_direction = instantData["wind_from_direction"].asFloat();
+		float wind_gusts = instantData["wind_speed_of_gust"].asFloat();
+		float wind_speed = instantData["wind_speed"].asFloat();
 
-		float winddir=float(wind_degrees);
-		int aw=round(winddir);
-		tsen.WIND.directionh=(BYTE)(aw/256);
-		aw-=(tsen.WIND.directionh*256);
-		tsen.WIND.directionl=(BYTE)(aw);
+		float wind_chill;
+		if ((temperature < 10.0) && (wind_speed >= 1.4))
+			wind_chill = 0; //if we send 0 as chill, it will be calculated
+		else
+			wind_chill = temperature;
 
-		tsen.WIND.av_speedh=0;
-		tsen.WIND.av_speedl=0;
-		int sw=round(windspeed_ms*10.0f);
-		tsen.WIND.av_speedh=(BYTE)(sw/256);
-		sw-=(tsen.WIND.av_speedh*256);
-		tsen.WIND.av_speedl=(BYTE)(sw);
-
-		tsen.WIND.gusth=0;
-		tsen.WIND.gustl=0;
-		int gw=round(windgust_ms*10.0f);
-		tsen.WIND.gusth=(BYTE)(gw/256);
-		gw-=(tsen.WIND.gusth*256);
-		tsen.WIND.gustl=(BYTE)(gw);
-
-		//this is not correct, why no wind temperature? and only chill?
-		tsen.WIND.chillh=0;
-		tsen.WIND.chilll=0;
-		tsen.WIND.temperatureh=0;
-		tsen.WIND.temperaturel=0;
-
-		tsen.WIND.tempsign=(wind_temp>=0)?0:1;
-		int at10=round(std::abs(wind_temp*10.0f));
-		tsen.WIND.temperatureh=(BYTE)(at10/256);
-		at10-=(tsen.WIND.temperatureh*256);
-		tsen.WIND.temperaturel=(BYTE)(at10);
-
-		tsen.WIND.chillsign=(wind_chill>=0)?0:1;
-		at10=round(std::abs(wind_chill*10.0f));
-		tsen.WIND.chillh=(BYTE)(at10/256);
-		at10-=(tsen.WIND.chillh*256);
-		tsen.WIND.chilll=(BYTE)(at10);
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, NULL, 255);
+		SendWind(1, 255, wind_direction, wind_speed, wind_gusts, temperature, wind_chill, temperature != -999.9f, true, "Wind");
 	}
 
 	//UV
@@ -389,58 +333,24 @@ void CMeteorologisk::GetMeterDetails()
 		}
 	}
 
-	//Rain
-	if (root["currently"]["precipIntensity"].empty()==false)
-	{
-		if ((root["currently"]["precipIntensity"] != "N/A") && (root["currently"]["precipIntensity"] != "--"))
-		{
-			float rainrateph = static_cast<float>(atof(root["currently"]["precipIntensity"].asString().c_str()))*25.4f; //inches to mm
-			if ((rainrateph !=-9999.00f)&&(rainrateph >=0.00f))
-			{
-				SendRainRateSensor(1, 255, rainrateph, "Rain");
-			}
-		}
-	}
-
-	//Visibility
-	if (root["currently"]["visibility"].empty()==false)
-	{
-		if ((root["currently"]["visibility"] != "N/A") && (root["currently"]["visibility"] != "--"))
-		{
-			float visibility = static_cast<float>(atof(root["currently"]["visibility"].asString().c_str()))*1.60934f; //miles to km
-			if (visibility>=0)
-			{
-				_tGeneralDevice gdevice;
-				gdevice.subtype=sTypeVisibility;
-				gdevice.floatval1=visibility;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
-			}
-		}
-	}
-	//Solar Radiation
-	if (root["currently"]["ozone"].empty()==false)
-	{
-		if ((root["currently"]["ozone"] != "N/A") && (root["currently"]["ozone"] != "--"))
-		{
-			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));
-			if (radiation>=0.0f)
-			{
-				SendCustomSensor(1, 0, 255, radiation, "Ozone Sensor", "DU"); //(dobson units)
-			}
-		}
-	}
 	//Cloud Cover
-	if (root["currently"]["cloudCover"].empty() == false)
+	if (instantData["cloud_area_fraction"].empty() == false)
 	{
-		if ((root["currently"]["cloudCover"] != "N/A") && (root["currently"]["cloudCover"] != "--"))
+		float cloudcover = instantData["cloud_area_fraction"].asFloat();
+		if (cloudcover >= 0.0f)
 		{
-			float cloudcover = static_cast<float>(atof(root["currently"]["cloudCover"].asString().c_str()));
-			if (cloudcover >= 0.0f)
-			{
-				SendPercentageSensor(1, 0, 255, cloudcover * 100.0f, "Cloud Cover");
-			}
+			SendPercentageSensor(1, 0, 255, cloudcover, "Cloud Cover");
 		}
 	}
 
+	//Rain
+	if (!nextOneHour["details"]["precipitation_amount"].empty())
+	{
+		float rainrateph = nextOneHour["details"]["precipitation_amount"].asFloat();
+		if ((rainrateph !=-9999.00f)&&(rainrateph >=0.00f))
+		{
+			   SendRainRateSensor(1, 255, rainrateph, "Rain");
+		}
+	}
 }
 

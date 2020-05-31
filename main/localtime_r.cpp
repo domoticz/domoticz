@@ -2,7 +2,7 @@
 #include "localtime_r.h"
 
 #include <string.h>
-#include <boost/algorithm/string.hpp>
+#include "../main/Helper.h"
 
 time_t m_lasttime=time(NULL);
 std::mutex& TimeMutex_() {
@@ -76,7 +76,7 @@ bool ParseISOdatetime(time_t &time, struct tm &result, const std::string &sISOda
 
 	std::string sDateWithoutZ = sISOdate.substr(0, 19);
 	std::vector<std::string> splittedDate;
-	boost::split(splittedDate, sDateWithoutZ, boost::is_any_of("T"));
+	StringSplit(sDateWithoutZ, "T", splittedDate);
 
 	if(splittedDate.size() <2)
 	{
