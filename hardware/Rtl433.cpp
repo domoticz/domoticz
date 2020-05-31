@@ -149,6 +149,9 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	bool haveUV = false;
 	float uvi = 0;
 
+        bool haveSnr = false;  // rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
+        int snr = 0;
+
 	if (FindField(data, "id"))
 	{
 		id = atoi(data["id"].c_str());
@@ -272,6 +275,18 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		uvi = (float)atof(data["uv"].c_str());
 		haveUV = true;
 	}
+        if (FindField(data, "snr"))
+        {
+		/* Map the received Signal to Noise Ratio to the domoticz RSSI field that is 4 bit only.
+		   rtl_433 will not be able to decode a signal with less snr than 4dB or so, why we map snr<4 to rssi=0 .
+		   We use better resolution at low snr. snr=4-11 map to rssi=1-8, snr=12-25 map to rssi=8-15, snr>25 map to rssi=15
+		*/
+                snr = (atoi(data["snr"].c_str()))-3;
+		if (snr > 7) snr -= (int)(snr-7)/2;
+		if (snr > 15) snr = 15; // Domoticz RSSI field can only be 0-15
+		if (snr < 1) snr = 0; // In case snr actually was below 3 dB
+                haveSnr = true;
+        }
 
 	std::string model = data["model"]; // new model format normalized from the 201 different devices presently supported by rtl_433
 
@@ -336,35 +351,35 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	if (haveTemp && haveHumidity && havePressure)
 	{
 		int iForecast = 0;
-		SendTempHumBaroSensor(sensoridx, batterylevel, tempC, humidity, pressure, iForecast, model);
+		SendTempHumBaroSensor(sensoridx, batterylevel, tempC, humidity, pressure, iForecast, model, snr);
 		bHandled = true;
 	}
 	else if (haveTemp && haveHumidity)
 	{
-		SendTempHumSensor(sensoridx, batterylevel, tempC, humidity, model);
+		SendTempHumSensor(sensoridx, batterylevel, tempC, humidity, model, snr);
 		bHandled = true;
 	}
 	else
 	{
 		if (haveTemp)
 		{
-			SendTempSensor(sensoridx, batterylevel, tempC, model);
+			SendTempSensor(sensoridx, batterylevel, tempC, model, snr);
 			bHandled = true;
 		}
 		if (haveHumidity)
 		{
-			SendHumiditySensor(sensoridx, batterylevel, humidity, model);
+			SendHumiditySensor(sensoridx, batterylevel, humidity, model, snr);
 			bHandled = true;
 		}
 	}
 	if (haveWind_Speed || haveWind_Gust || haveWind_Dir)
 	{
-		SendWind(sensoridx, batterylevel, wind_dir, wind_speed, wind_gust, tempC, 0, haveTemp, false, model);
+		SendWind(sensoridx, batterylevel, wind_dir, wind_speed, wind_gust, tempC, 0, haveTemp, false, model, snr);
 		bHandled = true;
 	}
 	if (haveRain)
 	{
-		SendRainSensor(sensoridx, batterylevel, rain, model);
+		SendRainSensor(sensoridx, batterylevel, rain, model, snr);
 		bHandled = true;
 	}
 	if (haveDepth)
@@ -384,7 +399,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (havePressure_PSI)
 	{
-		SendCustomSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, pressure_PSI, model, "PSI");
+		SendCustomSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, pressure_PSI, model, "PSI", snr);
 		bHandled = true;
 	}
 	if (haveEnergy && havePower)
@@ -397,7 +412,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (haveUV)
 	{
-		SendUVSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, uvi, model);
+		SendUVSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, uvi, model, snr);
 		bHandled = true;
 	}
 
@@ -441,7 +456,7 @@ void CRtl433::Do_Work()
 
 	while (!IsStopRequested(0))
 	{
-		std::string szFlags = "-F json -M newmodel -C si " + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
+		std::string szFlags = "-F json -M newmodel -C si -M level" + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
 		_hPipe = _popen(szCommand.c_str(), "r");
