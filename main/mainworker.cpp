@@ -144,6 +144,7 @@
 #include "../hardware/TTNMQTT.h"
 #include "../hardware/Buienradar.h"
 #include "../hardware/OctoPrintMQTT.h"
+#include "../hardware/Meteorologisk.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -1099,6 +1100,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_OctoPrint:
 		pHardware = new COctoPrintMQTT(ID, Address, Port, Username, Password, Extra);
+		break;
+	case HTYPE_Meteorologisk:
+		pHardware = new CMeteorologisk(ID, Password); //Password is location here.
 		break;
 	}
 
