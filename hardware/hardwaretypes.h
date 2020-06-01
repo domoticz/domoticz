@@ -409,6 +409,7 @@ typedef struct _tUsageMeter {
 	uint8_t len;
 	uint8_t type;
 	uint8_t subtype;
+	uint8_t rssi;
 	uint8_t	id1;
 	uint8_t	id2;
 	uint8_t	id3;
@@ -422,6 +423,7 @@ typedef struct _tUsageMeter {
 		ar & cereal::make_nvp("len", len);
 		ar & cereal::make_nvp("type", type);
 		ar & cereal::make_nvp("subtype", subtype);
+		ar & cereal::make_nvp("rssi", rssi);
 		ar & cereal::make_nvp("id1", id1);
 		ar & cereal::make_nvp("id2", id2);
 		ar & cereal::make_nvp("id3", id3);

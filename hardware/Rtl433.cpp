@@ -384,17 +384,17 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (haveDepth)
 	{
-		SendDistanceSensor(sensoridx, unit, batterylevel, depth, model);
+		SendDistanceSensor(sensoridx, unit, batterylevel, depth, model, snr);
 		bHandled = true;
 	}
 	if (haveMoisture)
 	{
-		SendMoistureSensor(sensoridx, batterylevel, moisture, model);
+		SendMoistureSensor(sensoridx, batterylevel, moisture, model, snr);
 		bHandled = true;
 	}
 	if (havePower)
 	{
-		SendWattMeter((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model);
+		SendWattMeter((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model, snr);
 		bHandled = true;
 	}
 	if (havePressure_PSI)
@@ -407,7 +407,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		//can remove this comment : _log.Log(LOG_STATUS, "Rtl433: : CM180 haveSequence(%d) sensoridx(%d) havePower(%d) haveEnergy(%d))", haveSequence, sensoridx, havePower, haveEnergy);
 		sensoridx = sensoridx + 1;
 		//can rmeove this comment : _log.Log(LOG_STATUS, "Rtl433: : CM180 sensoridx(%d) unit(%d) batterylevel(%d) power(%f) energy(%f) model(%s)", sensoridx, unit, batterylevel, power, energy, model.c_str());
-		SendKwhMeter(sensoridx, unit, batterylevel, power, energy, model);
+		SendKwhMeter(sensoridx, unit, batterylevel, power, energy, model, snr);
 		bHandled = true;
 	}
 	if (haveUV)

@@ -9945,7 +9945,7 @@ void MainWorker::decode_Usage(const CDomoticzHardwareBase* pHardware, const tRBU
 	std::string ID = szTmp;
 	uint8_t Unit = pMeter->dunit;
 	uint8_t cmnd = 0;
-	uint8_t SignalLevel = 12;
+	uint8_t SignalLevel = pMeter->rssi;
 	uint8_t BatteryLevel = 255;
 
 	sprintf(szTmp, "%.1f", pMeter->fusage);
