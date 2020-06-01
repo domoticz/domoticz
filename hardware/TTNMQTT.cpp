@@ -402,9 +402,9 @@ int CTTNMQTT::CalcDomoticsRssiFromLora(const int gwrssi, const float gwsnr)
 	// snr between -20 and +10 dB
 	// Domoticz expects something between 0 and 11 of what?
 	// But 0 feels weird as how could we measure 'no signal' 
-	if (iCalc >= 0)
+	if (iCalc >= -30 || rint(gwsnr) > 7)
 		iCalc = 9;
-	else if (iCalc > -30)
+	else if (iCalc > -40)
 		iCalc = 8;
 	else if (iCalc > -65)
 		iCalc = 7;
@@ -490,32 +490,157 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			return;
 		}
 
-		//See if we can find the rssi
-		if (!root["metadata"].empty())
-		{
-			Json::Value MetaData = root["metadata"];
-			if (!MetaData["gateways"].empty())
-			{
-				Json::Value Gateways = MetaData["gateways"];
-				// TO_DO: there could be multiple gateways and we should loop them to find the lowest rssi
-				if (!Gateways[0].empty())
-				{
-					Json::Value Gateway = Gateways[0];
-					int gwrssi = Gateway["rssi"].asInt();
-					float gwsnr = Gateway["snr"].asFloat();
-					rssi = CalcDomoticsRssiFromLora(gwrssi, gwsnr);
-				}
-			}
-		}
-
 		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName.c_str(), DeviceSerial.c_str());
 		if (DeviceID == 0) // Unable to find the Device and/or Add the new Device
 		{
 			return;
 		}
 
+		//See what info we can use from the provided metadata and gateway(s) data
+		const std::string format = "%Y-%m-%dT%H:%M:%S";
+		time_t msgtime = 0;
+		double ssrlat = 0;
+		double ssrlon = 0;
+		float ssralt = 0;
+		double devlat = 0;
+		double devlon = 0;
+		float devalt = 0;
+		double gwlat = 0;
+		double gwlon = 0;
+		float gwalt = 0;
+		int gwrssi = -999;
+		float gwsnr = -999;
+
+		// Let's look at the metadata that TTN also sends when receiving a LoRa message
+		if (!root["metadata"].empty())
+		{
+			Json::Value MetaData = root["metadata"];
+			if (!MetaData["time"].empty())
+			{
+				// Retrieve the moment the TTN backend receives the (first part of) this packet
+				// So we have a more accurate time when the measurement happened, compared to
+				// the moment we see the message here in Domoticz
+				// TTN time is in ISO8601 format and UTC
+				std::tm t = {};
+				int y,M,d,h,m;
+				float s;
+				const char* UTCttntime;
+
+				UTCttntime = MetaData["time"].asString().c_str();
+				sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
+				constructTime(msgtime, t, y, M, d, h, m, s);
+			}
+			if (!(MetaData["latitude"].empty() || MetaData["longitude"].empty()))
+			{
+				// For this device, Location coordinates are set in the metadata.
+				// Makes sense for non moving sensors without own GPS
+				devlat = MetaData["latitude"].asDouble();
+				devlon = MetaData["longitude"].asDouble();
+				if (!MetaData["altitude"].empty())
+				{
+					devalt = MetaData["altitude"].asFloat();
+				}
+			}
+			// Let's see if there is metadata from 1 or more gateways that have received this message
+			if (!MetaData["gateways"].empty())
+			{
+				Json::Value Gateways = MetaData["gateways"];
+				// Loop over all gateways and try to find the one with the best signal
+				// and see if the GW has a Geo Location that we could use
+				uint8_t iGW = 0;
+				do
+				{
+					if (!Gateways[iGW].empty())
+					{
+						Json::Value Gateway = Gateways[iGW];
+
+						int lrssi = Gateway["rssi"].asInt();
+						float lsnr = Gateway["snr"].asFloat();
+						bool bBetter = false;
+						bool bGwGeo = (!(Gateway["latitude"].empty() || Gateway["longitude"].empty()));
+						bool bPrevGwGeo = (!(gwlat == 0 || gwlon == 0));
+
+						// Is this gateway closer to the sensor than the previous one (or is this the first/only one)
+						if (lsnr > 0 && floor(lsnr) >= floor(gwsnr))
+						{
+							if (floor(lsnr) == floor(gwsnr))
+							{
+								if(!bGwGeo && bPrevGwGeo)
+								{
+									if (floor((lrssi/10)) > floor((gwrssi/10)))
+									{
+										bBetter = true;
+									}
+								}
+								else if (bGwGeo && !bPrevGwGeo)
+								{
+									bBetter = true;
+								}
+								else
+								{
+									// Current and previous both either do or do not have Geo data
+									if (lrssi > gwrssi)
+									{
+										bBetter = true;
+									}
+								}
+							}
+							else
+							{
+								// Postitive SNR is better by a full point at least
+								bBetter = true;
+							}
+						}
+						else if (lsnr <= 0 && lrssi > gwrssi)
+						{
+							if(!bGwGeo && bPrevGwGeo)
+							{
+								// The previous found closest GW has Geo info and this one doesn't
+								// If the signals are very simular, we prefer the one with Geo
+								if (floor((lrssi/10)) > floor((gwrssi/10)))
+								{
+									bBetter = true;
+								}
+							}
+							else
+							{
+								bBetter = true;
+							}
+						}
+
+						if (bBetter)
+						{
+							// Ok, this gateway seems to be closer
+							// Let's see if it has Geo Location data
+							if (bGwGeo)
+							{
+								gwlat = Gateway["latitude"].asDouble();
+								gwlon = Gateway["longitude"].asDouble();
+								if (!Gateway["altitude"].empty())
+								{
+									gwalt = Gateway["altitude"].asFloat();
+								}
+							}
+							else if (bPrevGwGeo)
+							{
+ 								// No Geo data for this gateway, but we have a previous gateway further away. See clear the gwloc data
+								gwlat = 0;
+								gwlon = 0;
+								gwalt = 0;
+							}
+							gwsnr = lsnr;
+							gwrssi = lrssi;
+						}
+					}
+					iGW++;
+				}
+				while (!Gateways[iGW].empty());
+				rssi = CalcDomoticsRssiFromLora(gwrssi, gwsnr);
+			}
+		}
+
 		// Walk over the payload to find all used channels. Each channel represents a single sensor.
-		int chanSensors [65] = {};	// CayenneLPP Data Channel ranges from 0 to 64
+		uint8_t chanSensors [65] = {};	// CayenneLPP Data Channel ranges from 0 to 64
 		for (auto itt = payload.begin(); itt != payload.end(); ++itt)
 		{
 			uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
@@ -526,12 +651,14 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		}
 
 		// Now walk over each channel/sensor to find the different measurement types and values
-		int channel = 0;
+		uint8_t channel = 0;
+		uint8_t iGps = 0;
+		uint8_t iGpsChannel = 0;
 		do {
 			if(chanSensors[channel] > 0)
 			{
 				//_log.Log(LOG_STATUS, "TTN_MQTT: Processing %i Sensorvalues for channel %i!", chanSensors[channel],channel);
-				bool bTemp = false, bHumidity = false, bBaro = false, bGps = false, bDin = false, bDout = false, bAin = false, bAout = false, bPresense = false, bLuminosity = false;
+				bool bTemp = false, bHumidity = false, bBaro = false, bDin = false, bDout = false, bAin = false, bAout = false, bPresense = false, bLuminosity = false;
 				float temp = 0, hum = 0, baro = 0, lat = 0, lon = 0, alt = 0, ain = 0, aout = 0, presence = 0, luminocity = 0;
 				int din = 0, dout = 0;
 				uint8_t nforecast = wsbaroforecast_some_clouds;
@@ -558,12 +685,19 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 							bBaro = true;
 						}
 						else if (type == "gps") {
-							std::stringstream sstr;
-							sstr << vSensor["lat"].asFloat() << "," << vSensor["lon"].asFloat() << "," << vSensor["alt"].asFloat();
+							ssrlat = vSensor["lat"].asDouble();
+							ssrlon = vSensor["lon"].asDouble();
+							ssralt = vSensor["alt"].asFloat();
+							//SendGpsLocation(DeviceID, channel, BatteryLevel, rssi, DeviceName, ssrlat, ssrlon, ssralt);
 
-							SendPercentageSensor(DeviceID, channel, BatteryLevel, vSensor["alt"].asFloat(), DeviceName + " Altitude");
-							UpdateUserVariable(DeviceName, sstr.str());
-							bGps = true;
+							std::stringstream sstr;
+							sstr << ssrlat << ";" << ssrlon << ";" << ssralt;
+							SendCustomSensor(DeviceID, channel, BatteryLevel, ssralt, DeviceName + " Geo", "meters", rssi);
+							UpdateUserVariable(DeviceName + " Geo", sstr.str());
+
+							iGps++;
+							iGpsChannel = channel;
+
 						}
 						else if (type == "digital_input") {
 							SendGeneralSwitch(DeviceID, channel, BatteryLevel, vSensor["value"].asInt(), 0, DeviceName, rssi);
@@ -626,13 +760,15 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				}
 
 				// Now store the sensor values if not stored already
+				// Create a 'better' DeviceID for some sensors
+				int iAltDevId = (DeviceID << 8) | channel;
 				if (bTemp && bHumidity && bBaro)
 				{
-					SendTempHumBaroSensorFloat(DeviceID, BatteryLevel, temp, (int)rint(hum), baro, (uint8_t)nforecast, DeviceName, rssi);
+					SendTempHumBaroSensorFloat(iAltDevId, BatteryLevel, temp, (int)rint(hum), baro, (uint8_t)nforecast, DeviceName, rssi);
 				}
 				else if(bTemp && bHumidity)
 				{
-					SendTempHumSensor(DeviceID, BatteryLevel, temp, (int)rint(hum), DeviceName, rssi);
+					SendTempHumSensor(iAltDevId, BatteryLevel, temp, (int)rint(hum), DeviceName, rssi);
 				}
 				else if(bTemp && bBaro)
 				{
@@ -642,11 +778,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				{
 					if (bTemp)
 					{
-						SendTempSensor(DeviceID, BatteryLevel, temp, DeviceName, rssi);
+						SendTempSensor(iAltDevId, BatteryLevel, temp, DeviceName, rssi);
 					}
 					if (bHumidity)
 					{
-						SendHumiditySensor(DeviceID, BatteryLevel, (int)rint(hum), DeviceName, rssi);
+						SendHumiditySensor(iAltDevId, BatteryLevel, (int)rint(hum), DeviceName, rssi);
 					}
 					if (bBaro)
 					{
@@ -657,6 +793,88 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			channel++;
 		}
 		while (channel < 65);
+
+		// Now we have processed all readings for all channels
+		// If we have not seen any GPS data on any channel in this payload
+		// and the metadata contains Location coordinates, let's process these 
+		if(iGps == 0 && !(devlat == 0 || devlon == 0))
+		{
+			std::stringstream sstr;
+			sstr << devlat << ";" << devlon << ";" << devalt;
+
+			SendCustomSensor(DeviceID, channel, BatteryLevel, devalt, DeviceName + " Geo", "meters", rssi);
+			UpdateUserVariable(DeviceName + " Geo", sstr.str());
+
+			// Set the Meta location as sensor location for further processing
+			ssrlat = devlat;
+			ssrlon = devlon;
+			ssralt = devalt;
+
+			iGpsChannel = channel;
+		}
+
+		// If we have a Geo Location of the sensor (either own or meta), calculate distance from 'home'
+		if(iGps == 1 || !(devlat == 0 || devlon == 0))
+		{
+			double fDomLat;
+			double fDomLon;
+			int nValue;
+			std::string sValue;
+			std::string Latitude;
+			std::string Longitude;
+
+			// Let's get the 'home' Location of this Domoticz instance from the Preferences
+			if (m_sql.GetPreferencesVar("Location", nValue, sValue))
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+
+				if (strarray.size() == 2)
+				{
+					Latitude = strarray[0];
+					Longitude = strarray[1];
+
+					if (!((Latitude == "1") && (Longitude == "1")))
+					{
+						fDomLat = std::stod(Latitude);
+						fDomLon = std::stod(Longitude);
+
+						uint64_t nSsrDistance = static_cast<int>(rint(1000 * distanceEarth(fDomLat, fDomLon, ssrlat, ssrlon)));
+						SendCustomSensor(DeviceID, (iGpsChannel + 64), BatteryLevel, (float)nSsrDistance, DeviceName + " Home Distance", "meters", rssi);
+						//_log.Log(LOG_STATUS, "TTN_MQTT: Distance between Sensordevice and Domoticz Home is %i meters!", nSsrDistance);
+					}
+					else
+					{
+						_log.Log(LOG_ERROR, "TTN_MQTT: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+					}
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "TTN_MQTT: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "TTN_MQTT: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+			}
+		}
+
+		// Did we find any Geo Location data from the Gateway with the best reception
+		if (!(gwlat == 0 && gwlon == 0))
+		{
+			//_log.Log(LOG_STATUS, "TTN_MQTT: Found Geo Location data for the Gateway with the best reception at lat: %f, lon: %f, alt: %f", gwlat, gwlon, gwalt);
+			// We have Geo Location data of the sensor AND of the gateway, so we can calculate the distance
+			if (iGps > 1)
+			{
+				_log.Log(LOG_STATUS, "TTN_MQTT: More than 1 GPS measurements found! Unable to determine which one to pick for distance calculations!"); 
+			}
+			else if (!(ssrlat == 0 && ssrlon == 0))
+			{
+				uint64_t nGwDistance = static_cast<int>(rint(1000 * distanceEarth(gwlat, gwlon, ssrlat, ssrlon)));
+				SendCustomSensor(DeviceID, (channel + 128), BatteryLevel, (float)nGwDistance, DeviceName + " Gateway Distance", "meters", rssi);
+			//	_log.Log(LOG_STATUS, "TTN_MQTT: Distance between Sensordevice and gateway is %i meters!", nGwDistance);
+			}
+		}
 	}
 	catch (...)
 	{
