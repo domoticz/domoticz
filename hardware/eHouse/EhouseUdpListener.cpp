@@ -33,6 +33,7 @@
 #include "../../main/Logger.h"
 #include "../../main/mainworker.h"
 #include "../../main/SQLHelper.h"
+#include <cmath>
 unsigned char TESTTEST = 0;
 /*unsigned char eHEnableAutoDiscovery = 1;
 unsigned char eHEnableProDiscovery = 1;
@@ -300,7 +301,7 @@ void eHouseTCP::UpdateAuraToSQL(unsigned char AddrH, unsigned char AddrL, unsign
 			sprintf(sval, "%.1f", ((float)acurr));
 			AddrH = 0x81;
 			AddrL = m_AuraDev[index]->Addr;
-			UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_IN, 1, m_AuraDev[index]->RSSI, (int)round(acurr * 10), sval, (int)round(m_AuraDev[index]->volt));
+			UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_IN, 1, m_AuraDev[index]->RSSI, (int)std::round(acurr * 10), sval, (int)round(m_AuraDev[index]->volt));
 			if (m_CHANGED_DEBUG) _log.Log(LOG_STATUS, "Temp #%d changed to: %f", (int)index, acurr);
 		}
 	}

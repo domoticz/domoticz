@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "PhilipsHue.h"
+#include <cmath>
 #include "PhilipsHueSensors.h"
 #include "../../main/Helper.h"
 #include "../../main/Logger.h"
@@ -795,7 +796,7 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value &lightstate, _tHueLightSt
 			// Clamp to conform to HUE API
 			tbri = std::max(1, tbri);
 			tbri = std::min(254, tbri);
-			tlight.level = int(ceil((100.0f / 254.0f)*float(tbri)));
+			tlight.level = int(std::ceil((100.0f / 254.0f)*float(tbri)));
 		}
 		if (!lightstate["sat"].empty())
 		{
