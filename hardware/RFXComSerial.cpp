@@ -312,7 +312,7 @@ bool RFXComSerial::UpgradeFirmware()
 
 	m_szUploadMessage = "Bootloader, Start programming...";
 	Log(LOG_STATUS, m_szUploadMessage);
-	for (auto itt : firmwareBuffer)
+	for (const auto& itt : firmwareBuffer)
 	{
 		icntr++;
 		if (icntr % 5 == 0)
