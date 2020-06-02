@@ -1,7 +1,7 @@
+#include "stdafx.h"
 #include "TTNMQTT.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "stdafx.h"
 #include <cmath>
 #include <iostream>
 #include "../main/localtime_r.h"

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "MySensorsBase.h"
 #include "../main/HTMLSanitizer.h"
 #include "../main/Helper.h"
@@ -8,7 +9,6 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "hardwaretypes.h"
-#include "stdafx.h"
 #include <cmath>
 
 #include <string>
