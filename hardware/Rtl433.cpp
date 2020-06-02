@@ -277,14 +277,14 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
         if (FindField(data, "snr"))
         {
-		/* Map the received Signal to Noise Ratio to the domoticz RSSI field that is 4 bit only.
-		   rtl_433 will not be able to decode a signal with less snr than 4dB or so, why we map snr<4 to rssi=0 .
-		   We use better resolution at low snr. snr=4-11 map to rssi=1-8, snr=12-25 map to rssi=8-15, snr>25 map to rssi=15
+		/* Map the received Signal to Noise Ratio to the domoticz RSSI 4-bit field that has range of 0-11 (12-15 display '-' in device tab).
+		   rtl_433 will not be able to decode a signal with less snr than 4dB or so, why we map snr<5dB to rssi=0 .
+		   We use better resolution at low snr. snr=5-10dB map to rssi=1-6, snr=11-20dB map to rssi=6-11, snr>20dB map to rssi=11
 		*/
-                snr = (atoi(data["snr"].c_str()))-3;
-		if (snr > 7) snr -= (int)(snr-7)/2;
-		if (snr > 15) snr = 15; // Domoticz RSSI field can only be 0-15
-		if (snr < 1) snr = 0; // In case snr actually was below 3 dB
+                snr = (atoi(data["snr"].c_str()))-4;
+		if (snr > 5) snr -= (int)(snr-5)/2;
+		if (snr > 11) snr = 11; // Domoticz RSSI field can only be 0-11
+		if (snr < 0) snr = 0; // In case snr actually was below 4 dB
                 haveSnr = true;
         }
 
