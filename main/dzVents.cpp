@@ -25,7 +25,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-		m_version("3.0.8")
+		m_version("3.0.9")
 {
 	m_bdzVentsExist = false;
 }
@@ -660,7 +660,7 @@ void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<
 		else if (std::string(luaL_typename(lua_state, -1)) == "number")
 		{
 			item.type = TYPE_FLOAT;
-			item.fValue = (float)lua_tonumber(lua_state, -1);
+			item.fValue = lua_tonumber(lua_state, -1);
 			item.name = std::string(lua_tostring(lua_state, -2));
 		}
 		else if (std::string(luaL_typename(lua_state, -1)) == "boolean")

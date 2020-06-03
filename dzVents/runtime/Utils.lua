@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.8',
+	DZVERSION = '3.0.9',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -470,7 +470,7 @@ function self.dumpSelection(object, selection)
 				self.print('> ' .. attr .. ': ' .. tostring(value))
 			end
 		end
-		if object.baseType ~= 'hardware' then 
+		if object.baseType ~= 'hardware' then
 			self.print('')
 			self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
 		end

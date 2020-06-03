@@ -27,6 +27,10 @@ local function HTTPResponce(domoticz, responseData, testResponse)
 		end
 	end
 
+	function self.dump( filename )
+		domoticz.logObject(self, filename, 'HTTPResponse')
+	end
+
 	self.isXML = false
 	self.isJSON = false
 

@@ -40,9 +40,9 @@ if [[ $? -ne 0 ]];then
 else
 	echo dzVents will be tested against domoticz version $NewVersion.
 fi
- 
+
 currenttime=$(date +%H:%M)
-if [[ "$currenttime" > "00:00" ]] && [[ "$currenttime" < "00:31" ]]; then 
+if [[ "$currenttime" > "00:00" ]] && [[ "$currenttime" < "00:31" ]]; then
 	echo Script cannot be execute dbetween 00:00 and 00:30. Time checks will fail
 	exit 1
 fi
@@ -142,7 +142,7 @@ function fillNumberOfTests
 		Lodash_ExpectedTests=100
 		ScriptdzVentsDispatching_ExpectedTests=2
 		TimedCommand_ExpectedTests=46
-		Time_ExpectedTests=340
+		Time_ExpectedTests=342
 		Utils_ExpectedTests=27
 		Variable_ExpectedTests=15
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
@@ -167,16 +167,16 @@ function testDir
 			Tests=$(( $(($testFile$underScoreTests)) / 1 ))
 			if test $i == 'testSystemAndCustomEvents.lua' ; then
 				tput sc # save cursor
-				stopBackgroundProcesses 
+				stopBackgroundProcesses
 				sleep 6
 				tput rc;tput el # rc
 			fi
 			echo -n $(showTime) " "
-			printf "%-42s %4d "  $testFile $Expected 
+			printf "%-42s %4d "  $testFile $Expected
 			printf "%10d" $Tests
 			# busted $i  2>&1 >/dev/null
 			busted $i  > $outfile
-			
+
 			if [[ $? -ne 0 ]];then
 				printf "%-10s" "===>> NOT OK"
 				echo
@@ -250,7 +250,7 @@ if [[ $? -eq 0 ]];then
 			#echo Errors are to be expected
 			echo -n
 		else
-			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken
+			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken | grep -v LOG_ERROR
 			stopBackgroundProcesses 1
 		fi
 	else

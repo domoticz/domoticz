@@ -17,8 +17,12 @@ local function CustomEvent(domoticz, eventData)
 	self.isJSON = false
 	self.data = eventData.data.data
 
-	if self.data and utils.isJSON(self.data) then 
-		local json = utils.fromJSON(self.data:gsub("'",'"')) 
+	function self.dump( filename )
+		domoticz.logObject(self, filename, 'customEvent')
+	end
+
+	if self.data and utils.isJSON(self.data) then
+		local json = utils.fromJSON(self.data:gsub("'",'"'))
 		if json and type(json) == 'table' then
 			self.isJSON = true
 			self.json = json

@@ -103,7 +103,6 @@ return {
 			device['batteryLevel'] = bat
 			device['signalLevel'] = sig
 			device['deviceSubType'] = data.subType
-
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = data.rawData
 			device['nValue'] = data.data._nValue
@@ -122,6 +121,8 @@ return {
 			device['description'] = data.description
 			device['protected'] = data.protected
 			device['lastUpdate'] = Time(data.lastUpdate)
+			device['thisUpdate'] = Time(data.thisUpdate)
+			device.thisUpdate.raw = device.thisUpdate.rawDateTime
 			device['rawData'] = { [1] = data.data._state }
 			device['changed'] = data.changed
 			device['cancelQueuedCommands'] = function()
@@ -134,7 +135,6 @@ return {
 		end
 
 		setStateAttribute(data.data._state, device, _states)
-
 
 		function device.setDescription(description)
 			local url = domoticz.settings['Domoticz url'] ..

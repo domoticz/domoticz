@@ -206,16 +206,16 @@ A list of one or more custom event triggers. This eventTrigger can be activate b
 		`domoticz.emitEvent('another event', 'some data')`
 		`domoticz.emitEvent('hugeEvent', { a = 10, b = 20, some = 'text', sub = { x = 10, y = 20 } })`
 
-The customEvent object
-The customeEvent object (second parameter in your execute function) has these attributes:
+##### Attributes
+The customEvent object (second parameter in your execute function) has these attributes:
 
  - **data**: Raw customEevent data.
  - **isJSON**: *Boolean*.<sup>3.0.3</sup> true when the customEvent data is a valid json string. The data is then automatically converted to a Lua table.
  - **isXML**: *Boolean*. <sup>3.0.3</sup> true when the customEvent data is a valid xml string. When true, the data is automatically converted to a Lua table.
- - **json**. *Table*. <sup>3.0.3</sup> When the customEvent data is a valid json string, the response data is automatically converted to a Lua table for quick and easy access.
- - **trigger**, **customEvent**: *String*.<sup>3.0.3</sup> The string that triggered this customEvent instance. This is useful if you have a script that is triggered by multiple different customEvent strings.
- - **xml**. *Table*. <sup>3.0.3</sup> When the response data is a valid xml string, the customeEvent data is automatically converted to a Lua table for quick and easy access.
- 
+ - **json**. *Table*. <sup>3.0.3</sup> When the customEvent data is a valid json string, the response data is automatically converted to a Lua table for quick and easy access. nil otherwise
+ - **trigger**, **customEvent**: *String*.<sup>3.0.3</sup> The string that triggered this customEvent instance. This is useful if you have a script that can be triggered by multiple different customEvent strings.
+ - **xml**. *Table*. <sup>3.0.3</sup> When the response data is a valid xml string, the customEvent data is automatically converted to a Lua table for quick and easy access. nil otherwise
+
 
 #### devices = { ... }
 A list of device-names or indexes. If a device in your system was updated (e.g. switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. **Note**: update does not necessarily means the device state or value has changed. Each device can be:
@@ -291,7 +291,7 @@ When all the above conditions are met (active == true and the on section has at 
 
 Since you can define multiple on-triggers in your script, it is not always clear what the type is of this second parameter. In your code you need to know this in order to properly respond to the different events. To help you inspect the object you can use these attributes like `if (item.isDevice) then ... end`:
 
- - **isCustomEvent**: <sup>3.0.0</sup>. returns `true` if the item is a customEvent.
+ - **isCustomEvent**: <sup>3.0.0</sup>. returns `true` if the item is a customEvent object.
  - **isDevice**: . returns `true` if the item is a Device object.
  - **isGroup**: . returns `true` if the item is a Group object.
  - **isHTTPResponse**: .  returns `true` if the item is an HTTPResponse object.
@@ -657,8 +657,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **devices(idx/name)**: *Function*. A function returning a device by idx or name: `domoticz.devices(123)` or `domoticz.devices('My switch')`. For the device API see [Device object API](#Device_object_API). To iterate over all devices do: `domoticz.devices().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.devices()) do .. end`.
  - **dump([osfile]<sup>3.0.0</sup>)**: *Function*. <sup>2.4.16</sup> Dump all domoticz.settings attributes to the Domoticz log. This ignores the log level setting.
  - **email(subject, message, mailTo)**: *Function*. Send email.
- - **emitEvent(name,[extra data ])**:*Function*. <sup>3.0.0</sup> Have Domoticz 'call' a customEvent. If you just pass a name then Domoticz will execute the script(s) that subscribed to the named customEvent after your script has finished. You can optionally pass extra information as a string or table. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **groups(idx/name)**: *Function*: A function returning a group by name or idx. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.groups()) do .. end`. Read more about [Groups](#Group).
+ - **emitEvent(name,[extra data ])**:*Function*. <sup>3.0.0</sup> Have Domoticz 'call' a customEvent. If you just pass a name then Domoticz will execute the script(s) that subscribed to the named customEvent after your script has finished. You can optionally pass extra information as a string or table. A table will be automatically converted into a json string and converted back to a table in the subscribed script(s). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+  - **groups(idx/name)**: *Function*: A function returning a group by name or idx. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.groups()) do .. end`. Read more about [Groups](#Group).
  - **hardwareInfo(idx/name)**: <sup>3.0.6</sup> *Function*: A function returning hardwareInfo of a hardware module by name or idx. The return of the function is a table with attributes name, type, typeValue, deviceNames (table with names of all active devices defined on this hardware) and deviceIds (table with idx of all active devices defined on this hardware)
  - **hardware(idx/name)**:  <sup>3.0.7</sup> *Function*: A function returning a hardware module by name or idx. Each hardware has an interface comparable to group. To iterate over all hardware do: `domoticz.hardware().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.hardware()) do .. end`. Read more about [Hardware](#Hardware).
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Shared helper functions](#Shared_helper_functions).
@@ -1144,7 +1144,6 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **stop()**: *Function*. Set device to Stop if it supports it (e.g. blinds). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Switch device off it is supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: *Function*. Switch device on if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- * '''switchSelector(&lt;[level]|[levelname] &gt;) '''  : 
  - **switchSelector(<[level]|[levelname] >)** <sup>levelname >= 2.4.22</sup> : *Function*. Switches a selector switch to a specific level ( levelname or level(numeric) required ) levelname must be exact, for level the closest fit will be picked. See the edit page in Domoticz for such a switch to get a list of the values). Levelname is only supported when level 0 ("Off") is not removed Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **toggleSwitch()**: *Function*. Toggles the state of the switch (if it is togglable) like On/Off, Open/Close etc.
 
@@ -1504,7 +1503,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **hoursAgo**: *Number*. Number of hours since the last update.
  - **isToday**: *Boolean*. Indicates if the device was updated today
  - **isUTC**: *Boolean*.
- - **makeTime(timeString,[isUTC])**: *time object*. <sup>2.5.4</sup> time object based on parameter format must 'yyyy-mm-dd hh:mm:ss'. isUTC defaults to false
+ - **makeTime(string | table,[isUTC])**: *domoticz time object*. <sup>2.5.4</sup> returns domoticz time object based on first parameter (time as table or string) string format must be 'yyyy-mm-dd hh:mm:ss'. isUTC defaults to false.
  - **matchesRule(rule) **: *Function*. Returns true if the rule matches with the time. See [time trigger rules](#timer_trigger_rules) for rule examples.
  - **millisecondsAgo**: *Number*. Number of milliseconds since the last update.
  - **minutes**: *Number*
@@ -1524,6 +1523,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **sunsetInMinutes**: *Number*. Minutes from midnight until sunset.
  - **sunriseInMinutes**: *Number*. Minutes from midnight until sunrise.
  - **time**: *String*. <sup>2.5.6</sup> Returns the time part of the raw data as HH:MM
+ - **toUTC(string | table,[offset])**: *domoticz time object*. <sup>3.0.9</sup> returns domoticz time object based on first parameter (time as table or string) string format must be 'yyyy-mm-dd hh:mm:ss'. offset defaults to 0.
  - **utcSystemTime**: *Table*. UTC system time (only when in UTC mode):
 	- **day**: *Number*
 	- **hour**: *Number*
@@ -1542,7 +1542,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **wday**: *Number* day of the week. Sunday = 1, Saturday = 7
  - **week**: *Number* week of the year
 
-**Note: it is currently not possible to change the domoticz.time object instance.** ( but you can create a new one )
+**Note: it is currently not possible to change the domoticz.time object instance.** ( but you can create a new one with- or without an offset)
 
 ## Shared helper functions
 It is not unlikely that at some point you want to share Lua code among your scripts. Normally in Lua you would have to create a module and require that module in all you scripts. But dzVents makes that easier for you:
@@ -2453,6 +2453,11 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and/or `::1` and you're good to go.
 
 # History
+
+## [3.0.9]
+- Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time. 
+- Add function toUTC to time object.
+- Allow table as parm to function makeTime
 
 ## [3.0.8]
 - Allow IPv6 ::1 as localhost in domoticz settings 
