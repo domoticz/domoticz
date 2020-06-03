@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "BleBox.h"
-
 #include "hardwaretypes.h"
 #include "../main/json_helper.h"
 #include "../main/Helper.h"
@@ -11,8 +10,6 @@
 #include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../httpclient/HTTPClient.h"
-
-#include <cmath>
 
 struct STR_DEVICE {
 	int			unit;

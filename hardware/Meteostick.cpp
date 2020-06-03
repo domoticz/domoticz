@@ -1,12 +1,11 @@
 #include "stdafx.h"
 #include "Meteostick.h"
-#include "../main/Helper.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
-
 #include <string>
 #include <algorithm>
 #include <iostream>
@@ -14,7 +13,6 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
-#include <cmath>
 #include <ctime>
 
 using namespace boost::placeholders;
@@ -227,7 +225,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 
 	tsen.WIND.av_speedh = 0;
 	tsen.WIND.av_speedl = 0;
-	int sw = round(Speed*10.0f);
+	int sw = std::lrint(Speed*10.0f);
 	tsen.WIND.av_speedh = (BYTE)(sw / 256);
 	sw -= (tsen.WIND.av_speedh * 256);
 	tsen.WIND.av_speedl = (BYTE)(sw);
