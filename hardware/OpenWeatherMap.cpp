@@ -46,9 +46,6 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-
-#define round(a) ( int ) ( a + .5 )
-
 COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location) :
 	m_APIKey(APIKey),
 	m_Location(Location),

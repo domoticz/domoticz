@@ -10,8 +10,6 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 //#define DEBUG_PVOutputInput
 
 CPVOutputInput::CPVOutputInput(const int ID, const std::string& SID, const std::string& Key) :

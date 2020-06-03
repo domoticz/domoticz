@@ -69,8 +69,6 @@ extern std::string szInternalVoltageCommand;
 extern bool bHasInternalCurrent;
 extern std::string szInternalCurrentCommand;
 
-#define round(a) ( int ) ( a + .5 )
-
 CHardwareMonitor::CHardwareMonitor(const int ID)
 {
 	m_HwdID = ID;

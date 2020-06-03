@@ -10,8 +10,6 @@
 #include "hardwaretypes.h"
 #include "HardwareCereal.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 CDomoticzHardwareBase::CDomoticzHardwareBase()
 {
 	mytime(&m_LastHeartbeat);
@@ -172,7 +170,7 @@ void CDomoticzHardwareBase::SendTempSensor(const int NodeID, const int BatteryLe
 	tsen.TEMP.id1 = (NodeID & 0xFF00) >> 8;
 	tsen.TEMP.id2 = NodeID & 0xFF;
 	tsen.TEMP.tempsign = (temperature >= 0) ? 0 : 1;
-	int at10 = round(std::abs(temperature * 10.0f));
+	int at10 = std::lrint(std::abs(temperature * 10.0f));
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
@@ -218,7 +216,7 @@ void CDomoticzHardwareBase::SendTempHumSensor(const int NodeID, const int Batter
 	tsen.TEMP_HUM.id2 = NodeID & 0xFF;
 
 	tsen.TEMP_HUM.tempsign = (temperature >= 0) ? 0 : 1;
-	int at10 = round(std::abs(temperature * 10.0f));
+	int at10 = std::lrint(std::abs(temperature * 10.0f));
 	tsen.TEMP_HUM.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP_HUM.temperatureh * 256);
 	tsen.TEMP_HUM.temperaturel = (BYTE)(at10);
@@ -241,14 +239,14 @@ void CDomoticzHardwareBase::SendTempHumBaroSensor(const int NodeID, const int Ba
 	tsen.TEMP_HUM_BARO.id2 = NodeID & 0xFF;
 
 	tsen.TEMP_HUM_BARO.tempsign = (temperature >= 0) ? 0 : 1;
-	int at10 = round(std::abs(temperature * 10.0f));
+	int at10 = std::lrint(std::abs(temperature * 10.0f));
 	tsen.TEMP_HUM_BARO.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP_HUM_BARO.temperatureh * 256);
 	tsen.TEMP_HUM_BARO.temperaturel = (BYTE)(at10);
 	tsen.TEMP_HUM_BARO.humidity = (BYTE)humidity;
 	tsen.TEMP_HUM_BARO.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
-	int ab10 = round(pressure);
+	int ab10 = std::lrint(pressure);
 	tsen.TEMP_HUM_BARO.baroh = (BYTE)(ab10 / 256);
 	ab10 -= (tsen.TEMP_HUM_BARO.baroh * 256);
 	tsen.TEMP_HUM_BARO.barol = (BYTE)(ab10);
@@ -271,14 +269,14 @@ void CDomoticzHardwareBase::SendTempHumBaroSensorFloat(const int NodeID, const i
 	tsen.TEMP_HUM_BARO.id2 = NodeID & 0xFF;
 
 	tsen.TEMP_HUM_BARO.tempsign = (temperature >= 0) ? 0 : 1;
-	int at10 = round(std::abs(temperature * 10.0f));
+	int at10 = std::lrint(std::abs(temperature * 10.0f));
 	tsen.TEMP_HUM_BARO.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP_HUM_BARO.temperatureh * 256);
 	tsen.TEMP_HUM_BARO.temperaturel = (BYTE)(at10);
 	tsen.TEMP_HUM_BARO.humidity = (BYTE)humidity;
 	tsen.TEMP_HUM_BARO.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
-	int ab10 = round(pressure * 10.0f);
+	int ab10 = std::lrint(pressure * 10.0f);
 	tsen.TEMP_HUM_BARO.baroh = (BYTE)(ab10 / 256);
 	ab10 -= (tsen.TEMP_HUM_BARO.baroh * 256);
 	tsen.TEMP_HUM_BARO.barol = (BYTE)(ab10);
@@ -437,7 +435,7 @@ void CDomoticzHardwareBase::SendRainRateSensor(const int NodeID, const int Batte
 	tsen.RAIN.id1 = (NodeID & 0xFF00) >> 8;
 	tsen.RAIN.id2 = NodeID & 0xFF;
 
-	int at10 = round(std::abs(RainRate * 10000.0f));
+	int at10 = std::lrint(std::abs(RainRate * 10000.0f));
 	tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 	at10 -= (tsen.RAIN.rainrateh * 256);
 	tsen.RAIN.rainratel = (BYTE)(at10);
@@ -769,17 +767,17 @@ void CDomoticzHardwareBase::SendCurrentSensor(const int NodeID, const int Batter
 	tsen.CURRENT.id2 = NodeID & 0xFF;
 	tsen.CURRENT.battery_level = BatteryLevel;
 
-	int at10 = round(std::abs(Current1 * 10.0f));
+	int at10 = std::lrint(std::abs(Current1 * 10.0f));
 	tsen.CURRENT.ch1h = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.CURRENT.ch1l = (BYTE)(at10);
 
-	at10 = round(std::abs(Current2 * 10.0f));
+	at10 = std::lrint(std::abs(Current2 * 10.0f));
 	tsen.CURRENT.ch2h = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.CURRENT.ch2l = (BYTE)(at10);
 
-	at10 = round(std::abs(Current3 * 10.0f));
+	at10 = std::lrint(std::abs(Current3 * 10.0f));
 	tsen.CURRENT.ch3h = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.CURRENT.ch3l = (BYTE)(at10);
@@ -882,12 +880,12 @@ void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, c
 	aw -= (tsen.WIND.directionh * 256);
 	tsen.WIND.directionl = (BYTE)(aw);
 
-	int sw = round(WindSpeed * 10.0f);
+	int sw = std::lrint(WindSpeed * 10.0f);
 	tsen.WIND.av_speedh = (BYTE)(sw / 256);
 	sw -= (tsen.WIND.av_speedh * 256);
 	tsen.WIND.av_speedl = (BYTE)(sw);
 
-	int gw = round(WindGust * 10.0f);
+	int gw = std::lrint(WindGust * 10.0f);
 	tsen.WIND.gusth = (BYTE)(gw / 256);
 	gw -= (tsen.WIND.gusth * 256);
 	tsen.WIND.gustl = (BYTE)(gw);
@@ -897,7 +895,7 @@ void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, c
 		//No temp, only chill
 		tsen.WIND.tempsign = (WindChill >= 0) ? 0 : 1;
 		tsen.WIND.chillsign = (WindChill >= 0) ? 0 : 1;
-		int at10 = round(std::abs(WindChill * 10.0f));
+		int at10 = std::lrint(std::abs(WindChill * 10.0f));
 		tsen.WIND.temperatureh = (BYTE)(at10 / 256);
 		tsen.WIND.chillh = (BYTE)(at10 / 256);
 		at10 -= (tsen.WIND.chillh * 256);
@@ -908,13 +906,13 @@ void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, c
 	{
 		//temp+chill
 		tsen.WIND.tempsign = (WindTemp >= 0) ? 0 : 1;
-		int at10 = round(std::abs(WindTemp * 10.0f));
+		int at10 = std::lrint(std::abs(WindTemp * 10.0f));
 		tsen.WIND.temperatureh = (BYTE)(at10 / 256);
 		at10 -= (tsen.WIND.temperatureh * 256);
 		tsen.WIND.temperaturel = (BYTE)(at10);
 
 		tsen.WIND.chillsign = (WindChill >= 0) ? 0 : 1;
-		at10 = round(std::abs(WindChill * 10.0f));
+		at10 = std::lrint(std::abs(WindChill * 10.0f));
 		tsen.WIND.chillh = (BYTE)(at10 / 256);
 		at10 -= (tsen.WIND.chillh * 256);
 		tsen.WIND.chilll = (BYTE)(at10);
@@ -995,7 +993,7 @@ void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, co
 	tsen.UV.id1 = (unsigned char)NodeID;
 	tsen.UV.id2 = (unsigned char)ChildID;
 
-	tsen.UV.uv = (BYTE)round(UVI * 10);
+	tsen.UV.uv = (BYTE)std::lrint(UVI * 10);
 	sDecodeRXMessage(this, (const unsigned char*)& tsen.UV, defaultname.c_str(), BatteryLevel);
 }
 

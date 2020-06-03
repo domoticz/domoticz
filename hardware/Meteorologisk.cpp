@@ -11,8 +11,6 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 #ifdef _DEBUG
 //#define DEBUG_MeteorologiskR
 //#define DEBUG_MeteorologiskW
@@ -254,7 +252,7 @@ void CMeteorologisk::GetMeterDetails()
 
 	if (instantData["relative_humidity"].empty()==false)
 	{
-		humidity=round(instantData["relative_humidity"].asFloat());
+		humidity=std::lrint(instantData["relative_humidity"].asFloat());
 	}
 	if (instantData["air_pressure_at_sea_level"].empty()==false)
 	{

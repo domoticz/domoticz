@@ -13,8 +13,6 @@
 
 #define TE923_POLL_INTERVAL 30
 
-#define round(a) ( int ) ( a + .5 )
-
 //at this moment it does not work under windows... no idea why... help appriciated!
 //for this we fake the data previously read by a station on unix (weatherdata.bin)
 
@@ -198,7 +196,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.id2=1;
 
 		float winddir=float(data.wDir)*22.5f;
-		int aw=round(winddir);
+		int aw=std::lrint(winddir);
 		tsen.WIND.directionh=(BYTE)(aw/256);
 		aw-=(tsen.WIND.directionh*256);
 		tsen.WIND.directionl=(BYTE)(aw);
@@ -207,7 +205,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.av_speedl=0;
 		if (data._wSpeed==0)
 		{
-			int sw=round(data.wSpeed*10.0f);
+			int sw=std::lrint(data.wSpeed*10.0f);
 			tsen.WIND.av_speedh=(BYTE)(sw/256);
 			sw-=(tsen.WIND.av_speedh*256);
 			tsen.WIND.av_speedl=(BYTE)(sw);
@@ -216,7 +214,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.gustl=0;
 		if (data._wGust==0)
 		{
-			int gw=round(data.wGust*10.0f);
+			int gw=std::lrint(data.wGust*10.0f);
 			tsen.WIND.gusth=(BYTE)(gw/256);
 			gw-=(tsen.WIND.gusth*256);
 			tsen.WIND.gustl=(BYTE)(gw);
@@ -231,7 +229,7 @@ void CTE923::GetSensorDetails()
 		{
 			tsen.WIND.tempsign=(data.wChill>=0)?0:1;
 			tsen.WIND.chillsign=(data.wChill>=0)?0:1;
-			int at10=round(std::abs(data.wChill*10.0f));
+			int at10=std::lrint(std::abs(data.wChill*10.0f));
 			tsen.WIND.temperatureh=(BYTE)(at10/256);
 			tsen.WIND.chillh=(BYTE)(at10/256);
 			at10-=(tsen.WIND.chillh*256);

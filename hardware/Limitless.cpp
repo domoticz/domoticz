@@ -9,8 +9,6 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 //This hardware goes under a few different names, i was told the original name was AppLamp
 
 // Commands
@@ -1054,7 +1052,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 			//Send brightness, sleep 100ms
 			//convert brightness (0-100) to (0-50) to 0-59
 			double dval = (59.0 / 100.0) * float(pLed->value / 2);
-			int ival = round(dval);
+			int ival = std::lrint(dval);
 			if (ival < 2)
 				ival = 2;
 			if (ival > 27)
@@ -1236,7 +1234,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 			Send_V4V5_RGBW_On(pLed->dunit, 100);
 			//convert brightness (0-100) to (0-50) to 0-59
 			double dval = (59.0 / 100.0) * float(pLed->value / 2);
-			int ival = round(dval);
+			int ival = std::lrint(dval);
 			if (ival < 2)
 				ival = 2;
 			if (ival > 27)

@@ -17,8 +17,6 @@
 
 #include <ctime>
 
-#define round(a) ( int ) ( a + .5 )
-
 extern http::server::CWebServerHelper m_webservers;
 
 OTGWBase::OTGWBase(void) :

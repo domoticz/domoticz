@@ -67,7 +67,6 @@ h l O nr
 #define EHOUSE_TEMP_POLL_INTERVAL_MS 120*1000 	// 120 sec
 #define HEARTBEAT_INTERVAL_MS 12*1000 			// 12 sec
 
-#define round(a) ( int ) ( a + .5 )
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Init Structures on start
 void eHouseTCP::InitStructs(void)
@@ -993,7 +992,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 
 		if ((m_Dtype == EH_AURA))
 		{
-			unsigned int adcvalue = (int)round(temp);
+			unsigned int adcvalue = std::lrint(temp);
 			ev[3] = 0;	//nr ==0
 			ev[4] = 3;	//set value
 			ev[5] = (uint8_t)(adcvalue / 10);

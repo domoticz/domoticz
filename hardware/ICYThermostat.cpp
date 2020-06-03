@@ -10,8 +10,6 @@
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 //#define DEBUG_ICYThermostat
 
 #define ICY_LOGIN_URL "https://portal.icy.nl/login"

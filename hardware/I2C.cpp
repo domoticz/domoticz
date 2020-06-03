@@ -42,8 +42,6 @@ Authors:
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 //#define INVERT_PCF8574_MCP23017
 
 #define I2C_READ_INTERVAL 30
@@ -859,7 +857,7 @@ void I2C::HTU21D_ReadSensorDetails()
 		humidity = humidity + (25 - temperature) * HTU21D_TEMP_COEFFICIENT;
 #endif
 
-	SendTempHumSensor(1, 255, temperature, round(humidity), "TempHum");
+	SendTempHumSensor(1, 255, temperature, std::lrint(humidity), "TempHum");
 }
 
 // TSL2561 functions
@@ -1436,7 +1434,7 @@ bool I2C::readBME280All(const int fd, float &temp, float &pressure, int &humidit
 		dhumidity = 100;
 	else if (dhumidity < 0)
 		dhumidity = 0;
-	humidity = round(dhumidity);
+	humidity = std::lrint(dhumidity);
 	return true;
 }
 
