@@ -8,7 +8,6 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
-#include <cmath>
 
 #define WINDDELEN_POLL_INTERVAL 30
 

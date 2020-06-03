@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "PhilipsHue.h"
-#include <cmath>
 #include "PhilipsHueSensors.h"
 #include "../../main/Helper.h"
 #include "../../main/Logger.h"

@@ -33,7 +33,6 @@
 #include "../../main/Logger.h"
 #include "../../main/mainworker.h"
 #include "../../main/SQLHelper.h"
-#include <cmath>
 unsigned char TESTTEST = 0;
 /*unsigned char eHEnableAutoDiscovery = 1;
 unsigned char eHEnableProDiscovery = 1;

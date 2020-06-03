@@ -1,16 +1,14 @@
 #include "stdafx.h"
 #include "MySensorsBase.h"
-#include "../main/HTMLSanitizer.h"
-#include "../main/Helper.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../main/WebServer.h"
 #include "../main/localtime_r.h"
+#include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "hardwaretypes.h"
-#include <cmath>
-
 #include <string>
 #include <sstream>
 #include <algorithm>
@@ -21,6 +19,7 @@
 
 #include <ctime>
 
+// TODO: use std::lrint() instead
 #define round(a) ( int ) ( a + .5 )
 #define MAX_PAYLOAD_LENGTH 25 //https://www.mysensors.org/download/serial_api_20
 

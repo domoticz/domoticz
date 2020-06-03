@@ -13,7 +13,6 @@
 // And the TaloLogger:
 // http://zil.olammi.iki.fi/sw/taloLogger/howto.php
 
-#include <cmath>
 #include <string>
 #include <algorithm>
 #include <iostream>
