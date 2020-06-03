@@ -121,8 +121,6 @@ return {
 			device['description'] = data.description
 			device['protected'] = data.protected
 			device['lastUpdate'] = Time(data.lastUpdate)
-			device['thisUpdate'] = Time(data.thisUpdate)
-			device.thisUpdate.raw = device.thisUpdate.rawDateTime
 			device['rawData'] = { [1] = data.data._state }
 			device['changed'] = data.changed
 			device['cancelQueuedCommands'] = function()
