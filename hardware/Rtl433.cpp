@@ -149,8 +149,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	bool haveUV = false;
 	float uvi = 0;
 
-	bool haveSnr = false;  // rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
-	int snr = 0;
+	int snr = 12;  // Set to show "-" if no snr is received. rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
 
 	if (FindField(data, "id"))
 	{
@@ -282,7 +281,6 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		   We use better resolution at low snr. snr=5-10dB map to rssi=1-6, snr=11-20dB map to rssi=6-11, snr>20dB map to rssi=11
 		*/
 		snr = std::stoi(data["snr"]) - 4;
-		haveSnr = true;
 
 		if (snr > 5) snr -= (int)(snr - 5) / 2;
 		if (snr > 11) snr = 11; // Domoticz RSSI field can only be 0-11, 12 is used for non-RF received devices
@@ -306,7 +304,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			batterylevel,
 			bOn,
 			0,
-			model);
+			model, snr);
 		bDone = true;
 	}
 	if (FindField(data, "switch1") && FindField(data, "id"))
@@ -328,7 +326,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 					batterylevel,
 					bOn,
 					0,
-					model);
+					model, snr);
 			}
 			bDone = true;
 		}
@@ -457,7 +455,7 @@ void CRtl433::Do_Work()
 
 	while (!IsStopRequested(0))
 	{
-		std::string szFlags = "-F json -M newmodel -C si -M level" + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
+		std::string szFlags = "-F json -M newmodel -C si -M level " + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
 		_hPipe = _popen(szCommand.c_str(), "r");
