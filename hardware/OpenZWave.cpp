@@ -22,10 +22,10 @@
 #include "../main/localtime_r.h"
 
 //OpenZWave includes
-#include <openzwave/Options.h>
-#include <openzwave/Manager.h>
-#include <openzwave/platform/Log.h>
-#include <openzwave/ValueIDIndexesDefines.h>
+#include <Options.h>
+#include <Manager.h>
+#include <platform/Log.h>
+#include <ValueIDIndexesDefines.h>
 
 #include "ZWaveCommands.h"
 
