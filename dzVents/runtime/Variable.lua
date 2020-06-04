@@ -21,6 +21,10 @@ local function Variable(domoticz, data)
 		self['nValue'] = data.data.value
 	end
 
+	function self.dump( filename )
+		domoticz.logObject(self, filename, 'variable')
+	end
+
 	function self.dumpSelection( selection )
 		domoticz.utils.dumpSelection(self, ( selection or 'attributes' ))
 	end

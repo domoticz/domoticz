@@ -136,8 +136,7 @@ local function DomoticzTestTools(port, debug, webroot)
 		local url = "type=addscene&name=" .. name .. "&scenetype=0"
 
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
-		local idx = json.idx
-		return ok, idx, json, result, respcode, respheaders, respstatus
+		return ok, json, result, respcode, respheaders, respstatus
 	end
 
 	function self.createGroup(name)
@@ -378,9 +377,10 @@ local function DomoticzTestTools(port, debug, webroot)
 	end
 
 	function self.addSceneDevice(sceneIdx, devIdx)
-		-- http://localhost:8080/json.htm?type=command&param=addscenedevice&idx=2&isscene=false&devidx=1&command=On&level=100&hue=0&ondelay=&offdelay=
-		local url = "param=addscenedevice&type=command&idx=" .. tostring(sceneIdx) .. "&isscene=false&devidx=" .. tostring(devIdx) .. "&command=On&level=100&hue=0&ondelay=&offdelay="
-		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
+		-- http://nuc:8080/json.htm?type=command&param=addscenedevice&idx=1&isscene=false&devidx=6&command=On&level=100&color=&ondelay=0&offdelay=0
+		local url = "param=addscenedevice&type=command&idx=" .. tostring(sceneIdx) .. "&isscene=false&devidx=" .. tostring(devIdx) .. "&command=On&level=100&color=&ondelay=0&offdelay=0"
+		print (url)
+        local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		return ok
 	end
 
