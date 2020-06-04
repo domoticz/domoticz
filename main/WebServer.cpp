@@ -3055,7 +3055,10 @@ namespace http {
 			}
 			Json::Value eventInfo;
 			eventInfo["name"] = request::findValue(&req, "event");
-			eventInfo["data"] = request::findValue(&req, "data");
+			if (!req.content.empty())
+				eventInfo["data"] = req.content.c_str(); // data from POST
+			else
+				eventInfo["data"] = request::findValue(&req, "data"); // data in URL
 
 			if (eventInfo["name"].empty())
 			{
