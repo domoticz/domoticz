@@ -38,8 +38,8 @@
 
 #include <list>
 #include <algorithm>
-#include <openzwave/Driver.h>
-#include <openzwave/Notification.h>
+#include <Driver.h>
+#include <Notification.h>
 
 #define MAX_NODES 255
 
