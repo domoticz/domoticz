@@ -14,7 +14,7 @@
 #include <string>
 #include "../main/Noncopyable.h"
 #ifndef WEBSERVER_DONT_USE_ZIP
-	#include <minizip/unzip.h>
+	#include <unzip.h>
 	#define USEWIN32IOAPI
 	#include <iowin32.h>
 #endif
