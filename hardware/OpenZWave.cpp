@@ -211,6 +211,8 @@ const char* cclassStr(uint8 cc)
 		return "LOCK";
 	case 0x77:
 		return "NODE NAMING";
+	case 0x79:
+		return "SOUND SWITCH";
 	case 0x7A:
 		return "FIRMWARE UPDATE MD";
 	case 0x7B:
