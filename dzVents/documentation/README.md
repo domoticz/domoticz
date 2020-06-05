@@ -198,7 +198,8 @@ A list of one or more custom event triggers. This eventTrigger can be activate b
 	`['start']  = { 'at 15:*', 'at 22:* on sat, sun' }` The script will be executed if domoticz is started, **and** it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [See time trigger rules](#timer_trigger_rules).
 
 ##### API
-	- JSON: **< domoticzIP : domoticz port >**/json.htm?type=command&param=customevent&event=MyEvent&data=myData
+	- curl: curl -d "{ 'a':10, 'b':20, 'some':'text', 'sub' : { 'x':10, 'y':20 } }" "http://<domoticzIP:domoticz port>/json.htm?type=command&param=customevent&event=<myCustomEvent>"
+	- JSON: **< domoticzIP : domoticz port >**/json.htm?type=command&param=customevent&event=<MyEvent>&data=myData
 	- MQTT simple:  {"command":"customevent", "event":"MyEvent","data":"myData"}  
 	- MQTT complex: {"command":"customevent","event":"MyEvent","data":"{\"idx\":29,\"test\":\"ok\"}" }
 	- emitEvent: domoticz.emitEvent('myCustomEvent' [,])

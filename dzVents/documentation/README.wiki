@@ -182,7 +182,8 @@ A list of one or more custom event triggers. This eventTrigger can be activate b
 
 ===== API =====
 
-<pre>- JSON: **&lt; domoticzIP : domoticz port &gt;**/json.htm?type=command&amp;param=customevent&amp;event=MyEvent&amp;data=myData
+<pre>- curl: curl -d &quot;{ 'a':10, 'b':20, 'some':'text', 'sub' : { 'x':10, 'y':20 } }&quot; &quot;http://&lt;domoticzIP:domoticz port&gt;/json.htm?type=command&amp;param=customevent&amp;event=&lt;myCustomEvent&gt;&quot;
+- JSON: **&lt; domoticzIP : domoticz port &gt;**/json.htm?type=command&amp;param=customevent&amp;event=&lt;MyEvent&gt;&amp;data=myData
 - MQTT simple:  {&quot;command&quot;:&quot;customevent&quot;, &quot;event&quot;:&quot;MyEvent&quot;,&quot;data&quot;:&quot;myData&quot;}  
 - MQTT complex: {&quot;command&quot;:&quot;customevent&quot;,&quot;event&quot;:&quot;MyEvent&quot;,&quot;data&quot;:&quot;{\&quot;idx\&quot;:29,\&quot;test\&quot;:\&quot;ok\&quot;}&quot; }
 - emitEvent: domoticz.emitEvent('myCustomEvent' [,])
