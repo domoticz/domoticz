@@ -441,7 +441,8 @@ void CEventSystem::GetCurrentStates()
 	_log.Log(LOG_STATUS, "EventSystem: reset all device statuses...");
 	m_devicestates.clear();
 
-	result = m_sql.safe_query("SELECT A.HardwareID, A.ID, A.Name, A.nValue, A.sValue, A.Type, A.SubType, A.SwitchType, A.LastUpdate, A.LastLevel, A.Options, A.Description, A.BatteryLevel, A.SignalLevel, A.Unit, A.DeviceID, A.Protected "
+	result = m_sql.safe_query(
+		"SELECT A.HardwareID, A.ID, A.Name, A.nValue, A.sValue, A.Type, A.SubType, A.SwitchType, A.LastUpdate, A.LastLevel, A.Options, A.Description, A.BatteryLevel, A.SignalLevel, A.Unit, A.DeviceID, A.Protected, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2 "
 		"FROM DeviceStatus AS A, Hardware AS B "
 		"WHERE (A.Used = '1') AND (B.ID == A.HardwareID) AND (B.Enabled == 1)");
 	if (!result.empty())
@@ -462,6 +463,7 @@ void CEventSystem::GetCurrentStates()
 			std::string l_description;		l_description.reserve(200);
 			std::string l_deviceID;			l_deviceID.reserve(25);
 
+			sitem.hardwareID = atoi(sd[0].c_str());
 			sitem.ID = std::stoull(sd[1]);
 			sitem.deviceName = l_deviceName.assign(sd[2]);
 
@@ -505,7 +507,10 @@ void CEventSystem::GetCurrentStates()
 			sitem.unit = atoi(sd[14].c_str());
 			sitem.deviceID = l_deviceID.assign(sd[15]);
 			sitem.protection = atoi(sd[16].c_str());
-			sitem.hardwareID = atoi(sd[0].c_str());
+			sitem.AddjValue = std::stof(sd[17]);
+			sitem.AddjMulti = std::stof(sd[18]);
+			sitem.AddjValue2 = std::stof(sd[19]);
+			sitem.AddjMulti2 = std::stof(sd[20]);
 
 			if (!m_sql.m_bDisableDzVentsSystem)
 			{
@@ -617,23 +622,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_windspeedValuesByID.clear();
 	m_windgustValuesByID.clear();
 	m_zwaveAlarmValuesByID.clear();
-
-	float EnergyDivider = 1000.0f;
-	float GasDivider = 100.0f;
-	float WaterDivider = 100.0f;
-	int tValue;
-	if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-	{
-		EnergyDivider = float(tValue);
-	}
-	if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-	{
-		GasDivider = float(tValue);
-	}
-	if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-	{
-		WaterDivider = float(tValue);
-	}
 
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
@@ -907,6 +895,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 				else if (sitem.subType == sTypeCounterIncremental)
 				{
+					const _eMeterType metertype = (const _eMeterType)sitem.switchtype;
+
+					float divider = m_sql.GetCounterDivider(int(metertype), int(sitem.devType), float(sitem.AddjValue2));
+
 					uint64_t total_min, total_max, total_real;
 					std::vector<std::vector<std::string> > result2;
 
@@ -922,71 +914,23 @@ void CEventSystem::GetCurrentMeasurementStates()
 						total_min = std::stoull(result2[0][0]);
 						total_real = total_max - total_min;
 
-						char szTmp[100];
-						sprintf(szTmp, "%" PRIu64, total_real);
-
-						float musage = 0;
-						_eMeterType metertype = (_eMeterType)sitem.switchtype;
-						switch (metertype)
-						{
-						case MTYPE_ENERGY:
-						case MTYPE_ENERGY_GENERATED:
-							musage = float(total_real) / EnergyDivider;
-							sprintf(szTmp, "%.03f kWh", musage);
-							break;
-						case MTYPE_GAS:
-							musage = float(total_real) / GasDivider;
-							sprintf(szTmp, "%.02f m3", musage);
-							break;
-						case MTYPE_WATER:
-							musage = float(total_real) / WaterDivider;
-							sprintf(szTmp, "%.02f m3", musage);
-							break;
-						case MTYPE_COUNTER:
-							sprintf(szTmp, "%" PRIu64, total_real);
-							break;
-						default:
-							continue; //not handled
-						}
-						utilityval = static_cast<float>(atof(szTmp));
+						utilityval = float(total_real) / divider;
 						isUtility = true;
 					}
 				}
 				else if (sitem.subType == sTypeManagedCounter)
 				{
-					if (splitresults.size() > 1) {
-						float usage = static_cast<float>(atof(splitresults[1].c_str()));
+					const _eMeterType metertype = (const _eMeterType)sitem.switchtype;
 
+					float divider = m_sql.GetCounterDivider(int(metertype), int(sitem.devType), float(sitem.AddjValue2));
+
+					if (splitresults.size() > 1) {
+						float usage = std::stof(splitresults[1]);
 						if (usage < 0.0) {
 							usage = 0.0;
 						}
 
-						char szTmp[100];
-						sprintf(szTmp, "%.02f", usage);
-
-						float musage = 0;
-						_eMeterType metertype = (_eMeterType)sitem.switchtype;
-						switch (metertype)
-						{
-						case MTYPE_ENERGY:
-						case MTYPE_ENERGY_GENERATED:
-							musage = usage / EnergyDivider;
-							sprintf(szTmp, "%.03f kWh", musage);
-							break;
-						case MTYPE_GAS:
-							musage = usage / GasDivider;
-							sprintf(szTmp, "%.02f m3", musage);
-							break;
-						case MTYPE_WATER:
-							musage = usage / WaterDivider;
-							sprintf(szTmp, "%.02f m3", musage);
-							break;
-						case MTYPE_COUNTER:
-							break;
-						default:
-							continue; //not handled
-						}
-						utilityval = static_cast<float>(atof(szTmp));
+						utilityval = usage / divider;
 						isUtility = true;
 					}
 				}
@@ -1063,6 +1007,9 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeRFXMeter:
 			if (sitem.subType == sTypeRFXMeterCount)
 			{
+				const _eMeterType metertype = (const _eMeterType)sitem.switchtype;
+				float divider = m_sql.GetCounterDivider(int(metertype), int(sitem.devType), float(sitem.AddjValue2));
+
 				//get value of today
 				std::string szDate = TimeToString(NULL, TF_Date);
 				std::vector<std::vector<std::string> > result2;
@@ -1078,33 +1025,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					total_max = std::stoull(sd2[1]);
 					total_real = total_max - total_min;
 
-					char szTmp[100];
-					sprintf(szTmp, "%" PRIu64, total_real);
-
-					float musage = 0;
-					_eMeterType metertype = (_eMeterType)sitem.switchtype;
-					switch (metertype)
-					{
-					case MTYPE_ENERGY:
-					case MTYPE_ENERGY_GENERATED:
-						musage = float(total_real) / EnergyDivider;
-						sprintf(szTmp, "%.03f kWh", musage);
-						break;
-					case MTYPE_GAS:
-						musage = float(total_real) / GasDivider;
-						sprintf(szTmp, "%.02f m3", musage);
-						break;
-					case MTYPE_WATER:
-						musage = float(total_real) / WaterDivider;
-						sprintf(szTmp, "%.02f m3", musage);
-						break;
-					case MTYPE_COUNTER:
-						sprintf(szTmp, "%" PRIu64, total_real);
-						break;
-					default:
-						continue; //not handled
-					}
-					utilityval = static_cast<float>(atof(szTmp));
+					utilityval = float(total_real) / divider;
 					isUtility = true;
 				}
 			}
