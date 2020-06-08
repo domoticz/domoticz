@@ -64,9 +64,9 @@ CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned sh
 	m_TopicIn = Username + "/devices/+/up";
 
 #ifdef DEBUG_TTN_R
-	std::string sResult = ReadFile("ttn_mqtt.json");
+	std::string sResult = ReadFile("ttn_mqtt_stringfields.json");
 	mosquitto_message mqtt_msg;
-	mqtt_msg.topic = "domo_rob/devices/lopy4/up";
+	mqtt_msg.topic = "ttnmqtt/devices/tektelic_khs/up";
 	mqtt_msg.payload = (void*)sResult.c_str();
 	mqtt_msg.payloadlen = sResult.size();
 	on_message(&mqtt_msg);
@@ -166,7 +166,6 @@ void CTTNMQTT::on_disconnect(int rc)
 		}
 	}
 }
-
 
 bool CTTNMQTT::ConnectInt()
 {
@@ -299,7 +298,7 @@ void CTTNMQTT::WriteInt(const std::string &sendStr)
 	//SendMessage(m_TopicOut, sMessage);
 }
 
-Json::Value CTTNMQTT::GetSensorWithChannel(const Json::Value &root, const int sChannel)
+Json::Value CTTNMQTT::GetSensorWithChannel(const Json::Value &root, const uint8_t sChannel)
 {
 	Json::Value ret;
 	for (auto itt = root.begin(); itt != root.end(); ++itt)
@@ -312,7 +311,7 @@ Json::Value CTTNMQTT::GetSensorWithChannel(const Json::Value &root, const int sC
 	return ret;
 }
 
-void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const int sChannel)
+void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const uint8_t sChannel)
 {
 	for (auto itt = root.begin(); itt != root.end(); ++itt)
 	{
@@ -382,6 +381,114 @@ int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &Device
 	return DeviceID;
 }
 
+bool CTTNMQTT::ConvertField2Payload(const std::string sType, const std::string sValue, const uint8_t channel, const uint8_t index, Json::Value &payload)
+{
+	bool ret = false;
+
+	if (sType == "temp" || sType == "temperature") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "temp";
+		payload[index]["value"] = std::stof(sValue);
+		ret = true;
+	}
+	else if (sType == "hum" || sType == "humidity") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "humidity";
+		payload[index]["value"] = std::stof(sValue);
+		ret = true;
+	}
+	else if (sType == "baro") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "baro";
+		payload[index]["value"] = std::stof(sValue);
+		ret = true;
+	}
+	else if (sType == "gps") {
+		std::vector<std::string> strarray;
+		StringSplit(sValue, ";", strarray);
+
+		if (strarray.size() == 3)
+		{
+			payload[index]["channel"] = channel;
+			payload[index]["type"] = "gps";
+			payload[index]["lat"] = std::stod(strarray[0]);
+			payload[index]["lon"] = std::stod(strarray[1]);
+			payload[index]["alt"] = std::stof(strarray[2]);
+			ret = true;
+		}
+	}
+	else if (sType == "digital_input") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "digital_input";
+		payload[index]["value"] = std::stoi(sValue);
+		ret = true;
+	}
+	else if (sType == "digital_output") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "digital_output";
+		payload[index]["value"] = std::stoi(sValue);
+		ret = true;
+	}
+	else if (sType == "analog_input") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "analog_input";
+		payload[index]["value"] = std::stof(sValue);
+		ret = true;
+	}
+	else if (sType == "analog_output") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "analog_output";
+		payload[index]["value"] = std::stof(sValue);
+		ret = true;
+	}
+	else if (sType == "presense") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "presence";
+		payload[index]["value"] = std::stof(sValue);
+		ret = true;
+	}
+	else if (sType == "luminosity") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "luminosity";
+		payload[index]["value"] = std::stof(sValue);
+		ret = true;
+	}
+
+	// The following IS NOT conforming to the CayenneLPP specification
+	// but a 'hack'; When using the TTN External Custom Decoder a payload_fields array is added
+	// and within these fields a 'batterylevel' can be created (integer range between 0 and 100)
+	if (sType == "batterylevel") {
+		payload[index]["channel"] = channel;
+		payload[index]["type"] = "batterylevel";
+		payload[index]["value"] = std::stoi(sValue);
+		ret = true;
+	}
+
+	return ret;
+}
+
+bool CTTNMQTT::ConvertFields2Payload(const Json::Value &fields, Json::Value &payload)
+{
+	bool ret = false;
+	uint8_t index = 0;
+
+    if( fields.size() > 0 )
+	{
+		//_log.Log(LOG_NORM, "TTN_MQTT: Processing fields payload for %i fields!", fields.size());
+		for (auto const& id : fields.getMemberNames())
+		{
+			if(!(fields[id].isNull()) && ConvertField2Payload(id.c_str(), fields[id].asString().c_str(), index + 1, index, payload))
+			{
+				//_log.Log(LOG_NORM, "TTN_MQTT: Converted field %s !", id.c_str());
+				index++;
+				ret = true;
+			}
+		}
+	}
+
+	return ret;
+}
+
 int CTTNMQTT::CalcDomoticsRssiFromLora(const int gwrssi, const float gwsnr)
 {
 	int iCalc = 12;
@@ -437,7 +544,10 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 	SaveString2Disk(qMessage, "ttn_mqtt.json");
 #endif
 
-	//_log.Log(LOG_NORM, "TTN_MQTT: Topic: %s", topic.c_str());
+#ifdef DEBUG_TTN_R
+	_log.Log(LOG_NORM, "TTN_MQTT: Topic: %s", topic.c_str());
+	_log.Log(LOG_NORM, "TTN_MQTT: qmsg: %s", qMessage.c_str());
+#endif
 
 	if (qMessage.empty())
 		return;
@@ -469,7 +579,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		std::string DeviceName = root["dev_id"].asString();
 		std::string AppId = root["app_id"].asString();
 		std::string DeviceSerial = root["hardware_serial"].asString();
-		int MessagePort = root["port"].asInt();
+		uint8_t MessagePort = root["port"].asInt();
 		std::string lpp = base64_decode(root["payload_raw"].asString());
 
 		//Check if the payload_raw contains valid CayenneLPP structured data
@@ -477,16 +587,51 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		//       The LoRa FramePort should be checked to find out which type of patload structure is used. Port 1 is Dynamic, Port 2 is Packed, etc.
 		//       But as for LoRa mostly port 2 is used as the default and Dynamic the most implemented CatenneLPP payload structure, we stick with these assumptions
 		Json::Value payload;
+		bool Decoded = false;
 
-		if (!CayenneLPPDec::ParseLPP((const uint8_t*)lpp.c_str(), lpp.size(), payload))
+		switch (MessagePort) {
+			case 2:
+				if (false) //if (CayenneLPPDec::ParseLPP_Packed((const uint8_t*)lpp.c_str(), lpp.size(), payload))
+				{
+					Decoded = true;
+				}
+				break;
+			case 10:
+				if (false) //if (Tektelic::ParseKHS((const uint8_t*)lpp.c_str(), lpp.size(), payload))
+				{
+					Decoded = true;
+				}
+				break;
+			case 1:
+			default:
+				if(CayenneLPPDec::ParseLPP((const uint8_t*)lpp.c_str(), lpp.size(), payload))
+				{
+					Decoded = true;
+				}
+		}
+
+		if (!Decoded)
 		{
-			_log.Log(LOG_ERROR, "TTN_MQTT: Invalid data received! The payload_raw does not contain a valid CayenneLPP payload!");
-			return;
+			if (!root["payload_fields"].empty())
+			{
+				// Maybe we received a pre-decoded message? TTN has the option for custom decoders where the decoding is done by TTN already
+				if (!ConvertFields2Payload(root["payload_fields"], payload))
+				{
+					_log.Log(LOG_ERROR, "TTN_MQTT: Invalid data received! Unable to decode the raw payload and the fields payload does not contain any (valid) data!");
+					return;
+				}
+				_log.Log(LOG_STATUS, "TTN_MQTT: Converted payload_fields to regular payload for processing!");
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "TTN_MQTT: Invalid data received! The payload_raw does not contain a payload that could be decoded (Port %i)!", MessagePort);
+				return;
+			}
 		}
 
 		if ((payload.empty()) || (!payload.isArray()))
 		{
-			_log.Log(LOG_ERROR, "TTN_MQTT: Invalid data received! The CayenneLPP payload doesn't contain (valid) data!");
+			_log.Log(LOG_ERROR, "TTN_MQTT: Invalid data received! The payload doesn't contain (valid) data!");
 			return;
 		}
 
@@ -528,7 +673,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 				UTCttntime = MetaData["time"].asString().c_str();
 				sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
-				constructTime(msgtime, t, y, M, d, h, m, s);
+				constructTime(msgtime, t, y, M, d, h, m, (int)floor(s));
 			}
 			if (!(MetaData["latitude"].empty() || MetaData["longitude"].empty()))
 			{
@@ -643,10 +788,23 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		uint8_t chanSensors [65] = {};	// CayenneLPP Data Channel ranges from 0 to 64
 		for (auto itt = payload.begin(); itt != payload.end(); ++itt)
 		{
-			uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
 			std::string type = (*itt)["type"].asString();
+			uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
 
-			chanSensors[channel]++;
+			// The following IS NOT part of the CayenneLPP specification
+			// But a 'hack'; when using the payload_fields (using the TTN external payload decoder)
+			// a 'batterylevel' field can be created (integer range between 0 and 100)
+			// Also, we do skip this reading for further processing
+			if (type == "batterylevel") {
+				if ((*itt)["value"].isNumeric()) {
+					BatteryLevel = (int)(*itt)["value"].asInt();
+				}
+			}
+			else
+			{
+				// Add 1 reading to this channel
+				chanSensors[channel]++;
+			}
 			//_log.Log(LOG_STATUS, "TTN_MQTT: Increased count for channel %i (%s)!", channel, type.c_str());
 		}
 
@@ -793,6 +951,8 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			channel++;
 		}
 		while (channel < 65);
+
+		//_log.Log(LOG_STATUS, "TTN_MQTT: Completed processing of readings!");
 
 		// Now we have processed all readings for all channels
 		// If we have not seen any GPS data on any channel in this payload
