@@ -211,6 +211,8 @@ const char* cclassStr(uint8 cc)
 		return "LOCK";
 	case 0x77:
 		return "NODE NAMING";
+	case 0x79:
+		return "SOUND SWITCH";
 	case 0x7A:
 		return "FIRMWARE UPDATE MD";
 	case 0x7B:
@@ -2362,6 +2364,23 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			return;
 		}
 	}
+/*
+	else if (commandclass == COMMAND_CLASS_SOUND_SWITCH)
+	{
+		if (vOrgIndex != ValueID_Index_SoundSwitch::Tones)
+			return;
+		if (vType != OpenZWave::ValueID::ValueType_List)
+			return; //not interested in you
+
+		std::vector<std::string > vStringList;
+		if (m_pManager->GetValueListItems(vID, &vStringList) == false)
+			return;
+		_device.instanceID = instance;
+		_device.devType = ZDTYPE_SWITCH_NORMAL;
+		_device.intvalue = intValue;
+		InsertDevice(_device);
+	}
+*/
 	else if (commandclass == COMMAND_CLASS_MANUFACTURER_PROPRIETARY)
 	{
 		//Could be anything
