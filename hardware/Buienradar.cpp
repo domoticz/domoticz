@@ -524,6 +524,13 @@ void CBuienRadar::GetRainPrediction()
 		Log(LOG_ERROR, "Problem Connecting to Buienradar! (Check your Internet Connection!)");
 		return;
 	}
+	if (sResult.size()==0)
+	{
+		// Log(LOG_ERROR, "Problem getting Rainprediction: no prediction available at Buienradar");
+		// no data to process, so don't update the sensros
+		return;
+	}
+
 #ifdef DEBUG_BUIENRADARW
 	SaveString2Disk(sResult, "E:\\br_rain.txt");
 #endif
