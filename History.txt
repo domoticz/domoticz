@@ -1,6 +1,7 @@
 Version 2020.xxxx (xxxx)
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: Allow complete IPv6 address in local network setting
+- Implemented: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
 - Implemented: P1 Meter, added support for Encryption
 - Implemented: RTL433, added RF Signal Strength in device tab based on reported SNR
 - Implemented: RTL433, added Pressure (PSI) type
