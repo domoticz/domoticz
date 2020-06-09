@@ -26,6 +26,7 @@ private:
 	int m_iForecast = 15;
 	int m_iThreshold = 25;
 	int m_iStationID = 0;
+	bool m_stationidprovided = false;
 	bool m_itIsRaining = false;
 	int m_rainShowerLeadTime = 0;
 };
