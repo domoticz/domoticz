@@ -128,7 +128,7 @@ bool CHoneywell::WriteToHardware(const char *pdata, const unsigned char /*length
 	{
 		//Light command
 
-		int nodeID = pCmd->LIGHTING2.id4;
+		int nodeID = pCmd->LIGHTING2.id3;
 		int devID = nodeID / 10;
 		std::string deviceName = mDeviceList[devID]["name"].asString();
 
@@ -143,7 +143,7 @@ bool CHoneywell::WriteToHardware(const char *pdata, const unsigned char /*length
 	}
 	else if (pCmd->ICMND.packettype == pTypeThermostat && pCmd->LIGHTING2.subtype == sTypeThermSetpoint)
 	{
-		int nodeID = pCmd->LIGHTING2.id4;
+		int nodeID = pCmd->LIGHTING2.id3;
 		int devID = nodeID / 10;
 		const _tThermostat *therm = reinterpret_cast<const _tThermostat*>(pdata);
 		SetSetpoint(devID, therm->temp, nodeID);
