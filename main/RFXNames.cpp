@@ -3616,6 +3616,7 @@ bool GetLightCommand(
 	}
 	case pTypeFan:
 	{
+		cmd = 1;
 		switch (dSubType)
 		{
 		case sTypeSiemensSF01:
@@ -3640,7 +3641,7 @@ bool GetLightCommand(
 			{
 				cmd = fan_sConfirm;
 			}
-			else if (switchcmd == "light")
+			else if ((switchcmd == "light") || (switchcmd == "On"))
 			{
 				cmd = fan_sLight;
 			}
@@ -3685,7 +3686,7 @@ bool GetLightCommand(
 			{
 				cmd = fan_LucciHi;
 			}
-			else if (switchcmd == "med")
+			else if ((switchcmd == "med") || (switchcmd == "On"))
 			{
 				cmd = fan_LucciMed;
 			}
@@ -3693,7 +3694,7 @@ bool GetLightCommand(
 			{
 				cmd = fan_LucciLow;
 			}
-			else if (switchcmd == "off")
+			else if ((switchcmd == "off") || (switchcmd == "Off"))
 			{
 				cmd = fan_LucciOff;
 			}
@@ -3705,7 +3706,7 @@ bool GetLightCommand(
 		break;
 		case sTypeLucciAirDC:
 		{
-			if (switchcmd == "pow")
+			if ((switchcmd == "pow") || (switchcmd == "On") || (switchcmd == "Off"))
 				cmd = fan_LucciDCPower;
 			else if (switchcmd == "plus")
 				cmd = fan_LucciDCPlus;
@@ -3723,11 +3724,11 @@ bool GetLightCommand(
 		{
 			if (switchcmd == "hi")
 				cmd = fan_CasafanHi;
-			if (switchcmd == "med")
+			if ((switchcmd == "med") || (switchcmd == "On"))
 				cmd = fan_CasafanMed;
 			if (switchcmd == "low")
 				cmd = fan_CasafanLow;
-			if (switchcmd == "off")
+			if ((switchcmd == "off") || (switchcmd == "Off"))
 				cmd = fan_CasafanOff;
 			if (switchcmd == "light")
 				cmd = fan_CasafanLight;
@@ -3735,7 +3736,7 @@ bool GetLightCommand(
 		break;
 		case sTypeFT1211R:
 		{
-			if (switchcmd == "power")
+			if ((switchcmd == "power") || (switchcmd == "On") || (switchcmd == "Off"))
 				cmd = fan_FT1211Rpower;
 			if (switchcmd == "light")
 				cmd = fan_FT1211Rlight;
@@ -3761,7 +3762,7 @@ bool GetLightCommand(
 		break;
 		case sTypeFalmec:
 		{
-			if (switchcmd == "power")
+			if ((switchcmd == "power") || (switchcmd == "On") || (switchcmd == "Off"))
 				cmd = fan_FalmecPower;
 			if (switchcmd == "speed 1")
 				cmd = fan_FalmecSpeed1;
@@ -3787,9 +3788,9 @@ bool GetLightCommand(
 		break;
 		case sTypeLucciAirDCII:
 		{
-			if (switchcmd == "off")
+			if ((switchcmd == "off") || (switchcmd == "Off"))
 				cmd = fan_LucciDCIIOff;
-			if (switchcmd == "1")
+			if ((switchcmd == "1") || (switchcmd == "On"))
 				cmd = fan_LucciDCII1;
 			if (switchcmd == "2")
 				cmd = fan_LucciDCII2;
@@ -3809,7 +3810,7 @@ bool GetLightCommand(
 		break;
 		case sTypeNovy:
 		{
-			if (switchcmd == "power")
+			if ((switchcmd == "power") || (switchcmd == "On") || (switchcmd == "Off"))
 				cmd = fan_NovyPower;
 			if (switchcmd == "plus")
 				cmd = fan_NovyPlus;
