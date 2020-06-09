@@ -577,7 +577,7 @@ There are several options for time triggers. It is important to know that Domoti
 			'at *:45',					-- every 45th minute in the hour
 			'at 15:*',					-- every minute between 15:00 and 16:00
 			'at 12:45-21:15',			-- between 12:45 and 21:15. You cannot use '*'!
-			'at 19:30-08:20',			-- between 19:30 and 8:20 then next day
+			'at 19:30-08:20',			-- between 19:30 and 8:20 (next day)
 			'at 13:45 on mon,tue',		-- at 13:45 only on Mondays and Tuesdays (english)
 			'on mon,tue',				-- on Mondays and Tuesdays
 			'every hour on sat',		-- you guessed it correctly
@@ -594,8 +594,8 @@ There are several options for time triggers. It is important to know that Domoti
 			'xx minutes after sunset',
 			'xx minutes before sunrise',
 			'xx minutes after sunrise'	-- guess ;-)
-			'between aa and bb'			-- aa/bb can be a time stamp like 15:44
-										-- aa/bb can be sunrise/sunset
+			 'between aa and bb'		-- aa/bb can be a time stamp like 15:44 (if aa > bb will cross dates)
+										-- aa/bb can be sunrise/sunset ('between sunset and sunrise' will cross dates)
 										-- aa/bb can be 'xx minutes before/after sunrise/sunset'
 			'at civildaytime',			-- between civil twilight start and civil twilight end
 			'at civilnighttime',		-- between civil twilight end and civil twilight start

@@ -198,6 +198,16 @@ end
 
 function self.fromJSON(json, fallback)
 
+	local json = json or ''
+
+	if json:find("'") then
+		local _, singleQuotes = json:gsub("'","'")
+		local _, doubleQuotes = json:gsub('"','"')
+		if singleQuotes > doubleQuotes then
+			json = json:gsub("'",'"')
+		end
+	end
+
 	if json and self.isJSON(json) then
 		local parse = function(j)
 			return jsonParser:decode(j)
