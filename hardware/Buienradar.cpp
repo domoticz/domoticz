@@ -70,6 +70,7 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 			{
 				try {
 					m_iStationID = std::stoi(strarray[0]);
+					m_stationidprovided=true;
 				}
 				catch (const std::exception& e) {
 					Log(LOG_ERROR, "Bad Station ID provided: %s (%s), please recheck hardware setup.", strarray[0].c_str(), e.what());
@@ -370,6 +371,26 @@ void CBuienRadar::GetMeterDetails()
 
 	//iconurl : "https://www.buienradar.nl/resources/images/icons/weather/30x30/a.png"
 	//graphUrl : "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/a"
+
+	// Update Location details if a configured station is used
+	if (m_stationidprovided)
+	{
+		if (!root["lon"].empty())
+		{
+			if (root["lon"].asFloat()>0)
+			{
+				m_szMyLongitude = std::to_string(root["lon"].asDouble());
+			}
+		}
+
+		if (!root["lat"].empty())
+		{
+			if (root["lat"].asFloat()>0)
+			{
+				m_szMyLatitude = std::to_string(root["lat"].asDouble());
+			}
+		}
+	}
 
 	float temp = -999.9f;
 	int humidity = 0;
