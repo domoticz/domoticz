@@ -198,7 +198,9 @@ end
 
 function self.fromJSON(json, fallback)
 
-	local json = json or ''
+	if not(json) then
+		return fallback
+	end
 
 	if json:find("'") then
 		local _, singleQuotes = json:gsub("'","'")
@@ -208,13 +210,10 @@ function self.fromJSON(json, fallback)
 		end
 	end
 
-	if json and self.isJSON(json) then
+	if self.isJSON(json) then
+
 		local parse = function(j)
 			return jsonParser:decode(j)
-		end
-
-		if json == nil then
-			return fallback
 		end
 
 		ok, results = pcall(parse, json)
