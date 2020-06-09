@@ -350,7 +350,7 @@ void CBuienRadar::GetMeterDetails()
 		return;
 	}
 
-	if (root["timestamp"].empty() == true || root["stationid"].empty() == true)
+	if (root["timestamp"].empty() == true || (root["stationid"].empty() == true && root["stationId"].empty() == true))
 	{
 		Log(LOG_ERROR, "Invalid data received (timestamp or staionid missing) or no data returned!");
 		return;
