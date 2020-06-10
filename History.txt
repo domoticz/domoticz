@@ -69,6 +69,7 @@ Version 2020.1 (March 22th 2020)
 - Fixed: GUI, Weight Log now displays correct Unit (#3211)
 - Fixed: GUI, OpenZWave Abort Include/Exclude button
 - Fixed: Blockly, handling incorrect time field
+- Fixed: Enery Generated report icon colors
 - Fixed: Evohome Web for updated library
 - Fixed: Google Notification System
   Fixed: PhilipsHue
