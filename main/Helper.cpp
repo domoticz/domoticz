@@ -1478,7 +1478,7 @@ double round_digits(double dIn, const int totDigits)
 	return std::stod(sstr.str());
 }
 
-uint8_t dzround(double dIn)
+uint8_d dzround(double dIn)
 {
 	return static_cast(std::lrint(dIn);
 }
