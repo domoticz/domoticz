@@ -500,7 +500,7 @@ void CBuienRadar::GetMeterDetails()
 
 void CBuienRadar::GetRainPrediction()
 {
-	if (m_szMyLatitude.empty() or m_szMyLongitude.empty() or std::stoi(m_szMyLatitude)<1 or std::stoi(m_szMyLongitude)<1)
+	if (m_szMyLatitude.empty() || m_szMyLongitude.empty() ||  std::stoi(m_szMyLatitude)<1 || std::stoi(m_szMyLongitude)<1)
 		return;
 
 	std::string sResult;
