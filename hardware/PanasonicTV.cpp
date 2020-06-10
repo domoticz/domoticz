@@ -12,6 +12,8 @@
 #include "../hardware/hardwaretypes.h"
 #include <iostream>
 
+#define round(a) ( int ) ( a + .5 )
+
 /*
 
 Possible Commands:

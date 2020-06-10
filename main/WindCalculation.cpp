@@ -9,6 +9,8 @@
 #define WIND_DEGREE_RESOLUTION 5
 #define WIND_DEGREE_TABLE_COUNT 360/WIND_DEGREE_RESOLUTION
 
+#define myround(a) ( int ) ( a + .5 )
+
 #define RAD 57.2957795
 
 _tWindCalculator::_tWindCalculator()
@@ -71,7 +73,7 @@ double _tWindCalculator::AddValueAndReturnAvarage(const double degree)
 				m_minute_counter[degree_pos]--;
 		}
 	}
-	int iDegree=std::lrint(degree);
+	int iDegree=myround(degree);
 	if (iDegree==360)
 		iDegree=0;
 	int degree_pos = iDegree/WIND_DEGREE_RESOLUTION;

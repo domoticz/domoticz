@@ -19,6 +19,8 @@
 
 #include <ctime>
 
+// TODO: use std::lrint() instead
+#define round(a) ( int ) ( a + .5 )
 #define MAX_PAYLOAD_LENGTH 25 //https://www.mysensors.org/download/serial_api_20
 
 std::string MySensorsBase::GetMySensorsValueTypeStr(const enum _eSetType vType)
@@ -1375,7 +1377,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 				float fvalue = (100.0f / 15.0f)*float(pCmd->LIGHTING2.level);
 				if (fvalue > 100.0f)
 					fvalue = 100.0f; //99 is fully on
-				int svalue = std::lrint(fvalue);
+				int svalue = round(fvalue);
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(svalue), pChild->useAck, pChild->ackTimeout);
 			}
 		}
@@ -1527,7 +1529,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			{
 				std::stringstream sstr;
 				int Brightness = 100;
-				int wWhite = std::lrint((255.0f / 100.0f)*float(Brightness));
+				int wWhite = round((255.0f / 100.0f)*float(Brightness));
 				if (!bIsRGBW)
 				{
 					sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
@@ -2022,7 +2024,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			bHaveValue = true;
 			break;
 		case V_DIRECTION:
-			pChild->SetValue(vType, std::lrint(atof(payload.c_str())));
+			pChild->SetValue(vType, round(atof(payload.c_str())));
 			bHaveValue = true;
 			break;
 		case V_LIGHT_LEVEL:

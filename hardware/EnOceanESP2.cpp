@@ -20,6 +20,8 @@ using namespace boost::placeholders;
 
 #define ENOCEAN_RETRY_DELAY 30
 
+#define round(a) ( int ) ( a + .5 )
+
 //Acknowledgments:
 //Part of this code it based on the work of Daniel Lechner, Andreas Dielacher
 //Note: This is for the ESP 2.0 protocol !!!
@@ -1529,7 +1531,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 
 					tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-					int at10 = std::lrint(std::abs(temp*10.0f));
+					int at10 = round(std::abs(temp*10.0f));
 					tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 					at10 -= (tsen.TEMP.temperatureh * 256);
 					tsen.TEMP.temperaturel = (BYTE)(at10);
@@ -1632,7 +1634,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 
 				tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-				int at10 = std::lrint(std::abs(temp*10.0f));
+				int at10 = round(std::abs(temp*10.0f));
 				tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 				at10 -= (tsen.TEMP.temperatureh * 256);
 				tsen.TEMP.temperaturel = (BYTE)(at10);
@@ -1659,7 +1661,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP_HUM.id2 = pFrame->ID_BYTE1;
 				tsen.TEMP_HUM.battery_level = 9;
 				tsen.TEMP_HUM.tempsign = (temp >= 0) ? 0 : 1;
-				int at10 = std::lrint(std::abs(temp*10.0f));
+				int at10 = round(std::abs(temp*10.0f));
 				tsen.TEMP_HUM.temperatureh = (BYTE)(at10 / 256);
 				at10 -= (tsen.TEMP_HUM.temperatureh * 256);
 				tsen.TEMP_HUM.temperaturel = (BYTE)(at10);

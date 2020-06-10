@@ -31,6 +31,8 @@ using namespace boost::placeholders;
 #define ESP3_SYNC 0x55
 #define ESP3_HEADER_LENGTH 0x4
 
+#define round(a) ( int ) ( a + .5 )
+
 extern const char* Get_EnoceanManufacturer(unsigned long ID);
 extern const char* Get_Enocean4BSType(const int Org, const int Func, const int Type);
 
@@ -1389,7 +1391,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.TEMP.rssi=(ID_BYTE0&0xF0)>>4;
 
 							tsen.TEMP.tempsign=(temp>=0)?0:1;
-							int at10=std::lrint(std::abs(temp*10.0f));
+							int at10=round(std::abs(temp*10.0f));
 							tsen.TEMP.temperatureh=(BYTE)(at10/256);
 							at10-=(tsen.TEMP.temperatureh*256);
 							tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -1489,7 +1491,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP.rssi=(ID_BYTE0&0xF0)>>4;
 
 						tsen.TEMP.tempsign=(temp>=0)?0:1;
-						int at10=std::lrint(std::abs(temp*10.0f));
+						int at10=round(std::abs(temp*10.0f));
 						tsen.TEMP.temperatureh=(BYTE)(at10/256);
 						at10-=(tsen.TEMP.temperatureh*256);
 						tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -1516,7 +1518,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP_HUM.id2=ID_BYTE1;
 						tsen.TEMP_HUM.battery_level=9;
 						tsen.TEMP_HUM.tempsign=(temp>=0)?0:1;
-						int at10=std::lrint(std::abs(temp*10.0f));
+						int at10=round(std::abs(temp*10.0f));
 						tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
 						at10-=(tsen.TEMP_HUM.temperatureh*256);
 						tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
@@ -1679,7 +1681,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						int NodeID = (ID_BYTE2 << 8) + ID_BYTE1;
 
 						// Report battery level as 9 and RSSI as 12
-						SendTempHumSensor(NodeID, 9, temp, std::lrint(hum), "GasSensor.04", 12);
+						SendTempHumSensor(NodeID, 9, temp, round(hum), "GasSensor.04", 12);
 						SendAirQualitySensor((NodeID & 0xFF00) >> 8, NodeID & 0xFF, 9, co2, "GasSensor.04");
 					}
 				}

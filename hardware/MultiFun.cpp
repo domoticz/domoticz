@@ -19,6 +19,8 @@
 #define BUFFER_LENGHT 100
 #define MULTIFUN_POLL_INTERVAL 10 //TODO - to settings on www
 
+#define round(a) ( int ) ( a + .5 )
+
 typedef struct sensorType {
 	std::string name;
 	float div;

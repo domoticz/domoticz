@@ -11,6 +11,8 @@
 #include "../main/mainworker.h"
 #include <iostream>
 
+#define round(a) ( int ) ( a + .5 )
+
 //#define DEBUG_SolarEdgeAPI
 
 #define SE_VOLT_AC 1

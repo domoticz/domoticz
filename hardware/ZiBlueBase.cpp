@@ -157,6 +157,8 @@ void CZiBlueBase::OnDisconnected()
 }
 
 
+#define round(a) ( int ) ( a + .5 )
+
 bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
@@ -180,7 +182,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 			float fvalue = (15.0f / 100.0f)*float(pSwitch->level);
 			if (fvalue > 15.0f)
 				fvalue = 15.0f; //99 is fully on
-			int svalue = std::lrint(fvalue);
+			int svalue = round(fvalue);
 			//_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
 			char buffer[50] = { 0 };
 			sprintf(buffer, "%d", svalue);
@@ -666,8 +668,8 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				{
 					power1 = (total1 - m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 1]) / ((m_LastReceivedTime - m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 1]) / 3600.0);
 					power2 = (total2 - m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 2]) / ((m_LastReceivedTime - m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 2]) / 3600.0);
-					power1 = std::lrint(power1);
-					power2 = std::lrint(power2);
+					power1 = round(power1);
+					power2 = round(power2);
 				}
 				SendKwhMeter(pSen->idLsb^pSen->idMsb, 1, (pSen->qualifier & 0x01) ? 0 : 100, power1, total1 / 1000.0, "HC");
 				SendKwhMeter(pSen->idLsb^pSen->idMsb, 2, (pSen->qualifier & 0x01) ? 0 : 100, power2, total2 / 1000.0, "HP");

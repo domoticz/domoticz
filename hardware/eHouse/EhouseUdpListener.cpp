@@ -287,7 +287,7 @@ void eHouseTCP::UpdateAuraToSQL(unsigned char AddrH, unsigned char AddrL, unsign
 		AddrH = 0x81;
 		AddrL = m_AuraDev[index]->Addr;
 		//printf("[AURA] %x,%x\r\n", AddrH, AddrL);
-		UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_PRESET, 1, m_AuraDev[index]->RSSI, std::lrint(m_AuraDev[index]->TempSet * 10), sval, std::lrint(m_AuraDev[index]->volt));
+		UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_PRESET, 1, m_AuraDev[index]->RSSI, (int)round(m_AuraDev[index]->TempSet * 10), sval, (int)round(m_AuraDev[index]->volt));
 	}
 
 	//ADCs
@@ -300,7 +300,7 @@ void eHouseTCP::UpdateAuraToSQL(unsigned char AddrH, unsigned char AddrL, unsign
 			sprintf(sval, "%.1f", ((float)acurr));
 			AddrH = 0x81;
 			AddrL = m_AuraDev[index]->Addr;
-			UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_IN, 1, m_AuraDev[index]->RSSI, std::lrint(acurr * 10), sval, std::lrint(m_AuraDev[index]->volt));
+			UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_IN, 1, m_AuraDev[index]->RSSI, (int)std::round(acurr * 10), sval, (int)round(m_AuraDev[index]->volt));
 			if (m_CHANGED_DEBUG) _log.Log(LOG_STATUS, "Temp #%d changed to: %f", (int)index, acurr);
 		}
 	}
@@ -1235,67 +1235,67 @@ void eHouseTCP::CalculateAdc2(char index)
 			//temp=-273.16+(temp*5000)/(1023*10);
 		adcvalue *= CalibrationV;
 		adcvalue += OffsetV;
-		temmp = std::lrint(adcvalue);
+		temmp = (int)round(adcvalue);
 		m_eHEn[index]->AdcValue[field] = temmp;
 
 		temp = -273.16 + Offset + ((adcvalue * Vcc) / (10 * 1023)) * Calibration;  //LM335 10mv/1c offset -273.16
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHEn[index]->SensorTempsLM335[field] = temp / 10;
 
 		temp = Offset + ((adcvalue * Vcc) / (10 * 1023)) * Calibration;          //LM35 10mv/1c offset 0
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHEn[index]->SensorTempsLM35[field] = temp / 10;
 
 		temp = -50.0 + Offset + ((adcvalue * Vcc) / (10.0 * 1023.0)) * Calibration;  //mcp9700 10mv/c offset -50
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHEn[index]->SensorTempsMCP9700[field] = temp / 10;
 		temp = (adcvalue * 100) / 1023;
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHEn[index]->SensorPercents[field] = temp / 10;
 		m_eHEn[index]->SensorInvPercents[field] = 100 - (temp / 10);
 		if (field != 9)
 		{
 			temp = -50.0 + Offset + ((adch * Vcc) / (10.0 * 1023.0)) * 1;//Calibration;  //mcp9700 10mv/c offset -50
-			temmp = std::lrint(temp * 10);
+			temmp = (int)round(temp * 10);
 			temp = temmp;
-			m_eHERMs[index]->eHERM.TempH[field] = std::lrint(temp);
+			m_eHERMs[index]->eHERM.TempH[field] = (int)round(temp);
 
 			temp = -50.0 + Offset + ((adcl*Vcc) / (10.0*1023.0)) * 1;//Calibration;  //mcp9700 10mv/c offset -50
-			temmp = std::lrint(temp * 10);
+			temmp = (int)round(temp * 10);
 			temp = temmp;
-			m_eHERMs[index]->eHERM.TempL[field] = std::lrint(temp);
-			m_eHERMs[index]->eHERM.Temp[field] = std::lrint(m_eHEn[index]->SensorTempsMCP9700[field] * 10);
+			m_eHERMs[index]->eHERM.TempL[field] = (int)round(temp);
+			m_eHERMs[index]->eHERM.Temp[field] = (int)round(m_eHEn[index]->SensorTempsMCP9700[field] * 10);
 			m_eHERMs[index]->eHERM.Unit[field] = 'C';
 		}
 		else {
 			temp = (adch * 100) / 1023;
-			temmp = std::lrint(temp * 10);
+			temmp = (int)round(temp * 10);
 			temp = temmp;
-			m_eHERMs[index]->eHERM.TempH[field] = std::lrint((1000 - (temp)));
+			m_eHERMs[index]->eHERM.TempH[field] = (int)round((1000 - (temp)));
 
 			temp = (adcl * 100) / 1023;
-			temmp = std::lrint(temp * 10);
+			temmp = (int)round(temp * 10);
 			temp = temmp;
-			m_eHERMs[index]->eHERM.TempL[field] = std::lrint((1000 - (temp)));
+			m_eHERMs[index]->eHERM.TempL[field] = (int)round((1000 - (temp)));
 
-			m_eHERMs[index]->eHERM.Temp[field] = std::lrint(m_eHEn[index]->SensorInvPercents[field] * 10);
+			m_eHERMs[index]->eHERM.Temp[field] = (int)round(m_eHEn[index]->SensorInvPercents[field] * 10);
 			m_eHERMs[index]->eHERM.Unit[field] = '%';
 		}
 
 
 
 		temp = -20.513 + Offset + ((adcvalue * Vcc) / (19.5 * 1023)) * Calibration;  //mcp9701 19.5mv/c offset -20.513
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHEn[index]->SensorTempsMCP9701[field] = temp / 10;
 
 
 		temp = Calibration * (adcvalue * Vcc) / 1023;
-		temmp = std::lrint(temp / 10);
+		temmp = (int)round(temp / 10);
 		temp = temmp;
 		m_eHEn[index]->SensorVolts[field] = temp / 100;
 	}
@@ -1344,65 +1344,65 @@ void eHouseTCP::CalculateAdcWiFi(char index)
 			//temp=-273.16+(temp*5000)/(1023*10);
 		adcvalue *= CalibrationV;
 		adcvalue += OffsetV;
-		temmp = std::lrint(adcvalue);
+		temmp = (int)round(adcvalue);
 		m_eHWIFIn[index]->AdcValue[field] = temmp;
 
 		temp = -273.16 + Offset + ((adcvalue * Vcc) / (10 * 1023)) * Calibration;  //LM335 10mv/1c offset -273.16
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHWIFIn[index]->SensorTempsLM335[field] = temp / 10;
 
 		temp = Offset + ((adcvalue * Vcc) / (10 * 1023)) * Calibration;          //LM35 10mv/1c offset 0
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHWIFIn[index]->SensorTempsLM35[field] = temp / 10;
 
 		temp = -50.0 + Offset + ((adcvalue * Vcc) / (10.0 * 1023.0)) * Calibration;  //mcp9700 10mv/c offset -50
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHWIFIn[index]->SensorTempsMCP9700[field] = temp / 10;
 		temp = (adcvalue * 100) / 1023;
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHWIFIn[index]->SensorPercents[field] = temp / 10;
 		m_eHWIFIn[index]->SensorInvPercents[field] = 100 - (temp / 10);
 		if (field == 0)
 		{
 			temp = -50.0 + Offset + ((adch * Vcc) / (10.0 * 1023.0)) * 1;//Calibration;  //mcp9700 10mv/c offset -50
-			temmp = std::lrint(temp * 10);
+			temmp = (int)round(temp * 10);
 			temp = temmp;
-			m_eHWIFIs[index]->eHWIFI.TempH[field] = std::lrint(temp);
+			m_eHWIFIs[index]->eHWIFI.TempH[field] = (int)round(temp);
 
 			temp = -50.0 + Offset + ((adcl * Vcc) / (10.0 * 1023.0)) * 1;//Calibration;  //mcp9700 10mv/c offset -50
-			temmp = std::lrint(temp * 10);
+			temmp = (int)round(temp * 10);
 			temp = temmp;
-			m_eHWIFIs[index]->eHWIFI.TempL[field] = std::lrint(temp);
-			m_eHWIFIs[index]->eHWIFI.Temp[field] = std::lrint(m_eHWIFIn[index]->SensorTempsMCP9700[field] * 10);
+			m_eHWIFIs[index]->eHWIFI.TempL[field] = (int)round(temp);
+			m_eHWIFIs[index]->eHWIFI.Temp[field] = (int)round(m_eHWIFIn[index]->SensorTempsMCP9700[field] * 10);
 			m_eHWIFIs[index]->eHWIFI.Unit[field] = 'C';
 		}
 		else {
 			temp = (adch * 100) / 1023;
-			temmp = std::lrint(temp * 10);
+			temmp = (int)round(temp * 10);
 			temp = temmp;
-			m_eHWIFIs[index]->eHWIFI.TempH[field] = std::lrint((1000 - (temp)));
+			m_eHWIFIs[index]->eHWIFI.TempH[field] = (int)round((1000 - (temp)));
 
 			temp = (adcl * 100) / 1023;
-			temmp = std::lrint(temp * 10);
+			temmp = (int)round(temp * 10);
 			temp = temmp;
-			m_eHWIFIs[index]->eHWIFI.TempL[field] = std::lrint((1000 - (temp)));
+			m_eHWIFIs[index]->eHWIFI.TempL[field] = (int)round((1000 - (temp)));
 
-			m_eHWIFIs[index]->eHWIFI.Temp[field] = std::lrint(m_eHWIFIn[index]->SensorInvPercents[field] * 10);
+			m_eHWIFIs[index]->eHWIFI.Temp[field] = (int)round(m_eHWIFIn[index]->SensorInvPercents[field] * 10);
 			m_eHWIFIs[index]->eHWIFI.Unit[field] = '%';
 		}
 
 
 
 		temp = -20.513 + Offset + ((adcvalue * Vcc) / (19.5 * 1023)) * Calibration;  //mcp9701 19.5mv/c offset -20.513
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHWIFIn[index]->SensorTempsMCP9701[field] = temp / 10;
 		temp = Calibration * (adcvalue * Vcc) / 1023;
-		temmp = std::lrint(temp / 10);
+		temmp = (int)round(temp / 10);
 		temp = temmp;
 		m_eHWIFIn[index]->SensorVolts[field] = temp / 100;
 	}
@@ -1444,26 +1444,26 @@ void eHouseTCP::CalculateAdcEH1(char index)
 
 		adcvalue *= CalibrationV;
 		adcvalue += OffsetV;
-		temmp = std::lrint(adcvalue);
+		temmp = (int)round(adcvalue);
 		m_eHn[index]->AdcValue[field] = temmp;
 
 		temp = Offset + ((adcvalue * Vcc) / (10 * 1023)) - 273.16;  //LM335 10mv/1c offset -273.16
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHn[index]->SensorTempsLM335[field] = temp / 10;
 
 		temp = Offset + ((adcvalue * Vcc) / (10 * 1023)) * Calibration;          //LM35 10mv/1c offset 0
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHn[index]->SensorTempsLM35[field] = temp / 10;
 
 		temp = -50.0 + Offset + ((adcvalue * Vcc) / (10.0 * 1023.0)) * Calibration;  //mcp9700 10mv/c offset -50
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHn[index]->SensorTempsMCP9700[field] = temp / 10;
 
 		temp = (adcvalue * 100) / 1023;
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHn[index]->SensorPercents[field] = temp / 10;
 		m_eHn[index]->SensorInvPercents[field] = 100 - (temp / 10);
@@ -1472,7 +1472,7 @@ void eHouseTCP::CalculateAdcEH1(char index)
 		{
 			m_eHRMs[index]->eHERM.TempH[field] = 1500;
 			m_eHRMs[index]->eHERM.TempL[field] = 0;
-			m_eHRMs[index]->eHERM.Temp[field] = std::lrint(m_eHn[index]->SensorTempsLM335[field] * 10);
+			m_eHRMs[index]->eHERM.Temp[field] = (int)round(m_eHn[index]->SensorTempsLM335[field] * 10);
 			m_eHRMs[index]->eHERM.Unit[field] = 'C';
 		}
 		else
@@ -1480,18 +1480,18 @@ void eHouseTCP::CalculateAdcEH1(char index)
 			m_eHRMs[index]->eHERM.TempH[field] = 1000;//(1000 - (temp));
 			m_eHRMs[index]->eHERM.TempL[field] = 0;//(1000 - (temp));
 
-			m_eHRMs[index]->eHERM.Temp[field] = std::lrint(m_eHn[index]->SensorInvPercents[field] * 10);
+			m_eHRMs[index]->eHERM.Temp[field] = (int)round(m_eHn[index]->SensorInvPercents[field] * 10);
 			m_eHRMs[index]->eHERM.Unit[field] = '%';
 		}
 
 
 
 		temp = -20.513 + Offset + ((adcvalue * Vcc) / (19.5 * 1023)) * Calibration;  //mcp9701 19.5mv/c offset -20.513
-		temmp = std::lrint(temp * 10);
+		temmp = (int)round(temp * 10);
 		temp = temmp;
 		m_eHn[index]->SensorTempsMCP9701[field] = temp / 10;
 		temp = Calibration * (adcvalue * Vcc) / 1023;
-		temmp = std::lrint(temp / 10);
+		temmp = (int)round(temp / 10);
 		temp = temmp;
 		m_eHn[index]->SensorVolts[field] = temp / 100;
 	}

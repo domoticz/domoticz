@@ -68,6 +68,8 @@
 
 using namespace boost::placeholders;
 
+#define round(a) ( int ) ( a + .5 )
+
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
@@ -7237,7 +7239,7 @@ namespace http {
 				double ival = atof(kelvin.c_str());
 				ival = std::max(ival, 0.0);
 				ival = std::min(ival, 100.0);
-				_tColor color = _tColor(std::lrint(ival*255.0f/100.0f), ColorModeTemp);
+				_tColor color = _tColor(round(ival*255.0f/100.0f), ColorModeTemp);
 				_log.Log(LOG_STATUS, "setkelvinlevel: t: %f, color: '%s'", ival, color.toString().c_str());
 
 				m_mainworker.SwitchLight(ID, "Set Color", -1, color, false, 0, Username);
@@ -9422,7 +9424,7 @@ namespace http {
 						if (switchtype == STYPE_Dimmer)
 						{
 							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = std::lrint((float(maxDimLevel) / 100.0f)*LastLevel);
+							int iLevel = round((float(maxDimLevel) / 100.0f)*LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
 							if ((dType == pTypeColorSwitch) ||
 							    (dType == pTypeLighting5 && dSubType == sTypeTRC02) ||
@@ -9627,7 +9629,7 @@ namespace http {
 						{
 							root["result"][ii]["TypeImg"] = "blinds";
 							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = std::lrint((float(maxDimLevel) / 100.0f)*LastLevel);
+							int iLevel = round((float(maxDimLevel) / 100.0f)*LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
 							if (lstatus == "On") {
 								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Closed" : "Open";
@@ -10195,7 +10197,7 @@ namespace http {
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / (divider / 1000.0f);
-								sprintf(szTmp, "%d Liter", std::lrint(musage));
+								sprintf(szTmp, "%d Liter", round(musage));
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%" PRIu64, total_real);

@@ -157,7 +157,7 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 
 
 	double _tmpH;
-	result.DaylengthMins = static_cast<int>(std::lrint(modf(daylen, &_tmpH) * 60));
+	result.DaylengthMins = static_cast<int>(round(modf(daylen, &_tmpH) * 60));
 	result.DaylengthHours = static_cast<int>(_tmpH);
 	//fix a possible rounding issue above
 	SunRiseSet::fixRoundIssue(&result.DaylengthHours, &result.DaylengthMins);
@@ -169,14 +169,14 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 
 	rise = UtcToLocal(rise, timezone);
 	set = UtcToLocal(set, timezone);
-	result.SunAtSouthMin = static_cast<int>(std::lrint(modf((rise + set) / 2.0, &_tmpH) * 60));
+	result.SunAtSouthMin = static_cast<int>(round(modf((rise + set) / 2.0, &_tmpH) * 60));
 	result.SunAtSouthHour = static_cast<int>(_tmpH);
 
 	switch (rs) {
 	case 0:
-		result.SunRiseMin = static_cast<int>(std::lrint(modf(rise, &_tmpH) * 60));
+		result.SunRiseMin = static_cast<int>(round(modf(rise, &_tmpH) * 60));
 		result.SunRiseHour = static_cast<int>(_tmpH);
-		result.SunSetMin = static_cast<int>(std::lrint(modf(set, &_tmpH) * 60));
+		result.SunSetMin = static_cast<int>(round(modf(set, &_tmpH) * 60));
 		result.SunSetHour = static_cast<int>(_tmpH);
 		//fix a possible rounding issue above
 		SunRiseSet::fixRoundIssue(&result.SunRiseHour, &result.SunRiseMin);
@@ -196,9 +196,9 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	case 0:
 		civ_start = UtcToLocal(civ_start, timezone);
 		civ_end = UtcToLocal(civ_end, timezone);
-		result.CivilTwilightStartMin = static_cast<int>(std::lrint(modf(civ_start, &_tmpH) * 60));
+		result.CivilTwilightStartMin = static_cast<int>(round(modf(civ_start, &_tmpH) * 60));
 		result.CivilTwilightStartHour = static_cast<int>(_tmpH);
-		result.CivilTwilightEndMin = static_cast<int>(std::lrint(modf(civ_end, &_tmpH) * 60));
+		result.CivilTwilightEndMin = static_cast<int>(round(modf(civ_end, &_tmpH) * 60));
 		result.CivilTwilightEndHour = static_cast<int>(_tmpH);
 		//fix a possible rounding issue above
 		SunRiseSet::fixRoundIssue(&result.CivilTwilightStartHour, &result.CivilTwilightStartMin);
@@ -218,9 +218,9 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	case 0:
 		naut_start = UtcToLocal(naut_start, timezone);
 		naut_end = UtcToLocal(naut_end, timezone);
-		result.NauticalTwilightStartMin = static_cast<int>(std::lrint(modf(naut_start, &_tmpH) * 60));
+		result.NauticalTwilightStartMin = static_cast<int>(round(modf(naut_start, &_tmpH) * 60));
 		result.NauticalTwilightStartHour = static_cast<int>(_tmpH);
-		result.NauticalTwilightEndMin = static_cast<int>(std::lrint(modf(naut_end, &_tmpH) * 60));
+		result.NauticalTwilightEndMin = static_cast<int>(round(modf(naut_end, &_tmpH) * 60));
 		result.NauticalTwilightEndHour = static_cast<int>(_tmpH);
 		//fix a possible rounding issue above
 		SunRiseSet::fixRoundIssue(&result.NauticalTwilightStartHour, &result.NauticalTwilightStartMin);
@@ -240,9 +240,9 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	case 0:
 		astr_start = UtcToLocal(astr_start, timezone);
 		astr_end = UtcToLocal(astr_end, timezone);
-		result.AstronomicalTwilightStartMin = static_cast<int>(std::lrint(modf(astr_start, &_tmpH) * 60));
+		result.AstronomicalTwilightStartMin = static_cast<int>(round(modf(astr_start, &_tmpH) * 60));
 		result.AstronomicalTwilightStartHour = static_cast<int>(_tmpH);
-		result.AstronomicalTwilightEndMin = static_cast<int>(std::lrint(modf(astr_end, &_tmpH) * 60));
+		result.AstronomicalTwilightEndMin = static_cast<int>(round(modf(astr_end, &_tmpH) * 60));
 		result.AstronomicalTwilightEndHour = static_cast<int>(_tmpH);
 		//fix a possible rounding issue above
 		SunRiseSet::fixRoundIssue(&result.AstronomicalTwilightStartHour, &result.AstronomicalTwilightStartMin);

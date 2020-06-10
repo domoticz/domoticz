@@ -17,6 +17,8 @@
 #define SATEL_TEMP_POLL_INTERVAL_MS 120*1000 // 120 sec
 #define HEARTBEAT_INTERVAL_MS 12*1000 // 12 sec
 
+#define round(a) ( int ) ( a + .5 )
+
 typedef struct tSatelModel {
 	unsigned int id;
 	const char* name;

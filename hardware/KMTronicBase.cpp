@@ -14,6 +14,9 @@
 
 #include <ctime>
 
+#define round(a) ( int ) ( a + .5 )
+
+
 KMTronicBase::KMTronicBase(void)
 {
 	m_bufferpos = 0;

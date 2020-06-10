@@ -12,6 +12,8 @@
 #include "../main/json_helper.h"
 #include "../webserver/Base64.h"
 
+#define round(a) ( int ) ( a + .5 )
+
 const std::string HONEYWELL_DEFAULT_APIKEY = "atD3jtzXC5z4X8WPbzvo0CBqWi7S81Nh";
 const std::string HONEYWELL_DEFAULT_APISECRET = "TXDzy2aHpAJw6YiO";
 const std::string HONEYWELL_LOCATIONS_PATH = "https://api.honeywell.com/v2/locations?apikey=[apikey]";

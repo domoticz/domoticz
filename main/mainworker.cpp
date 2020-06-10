@@ -179,6 +179,8 @@
 
 using namespace boost::placeholders;
 
+#define round(a) ( int ) ( a + .5 )
+
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
@@ -3145,7 +3147,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 			if (result.size() == 1)
 			{
 				float totalRainFallLastHour = TotalRain - static_cast<float>(atof(result[0][0].c_str()));
-				Rainrate = std::lrint(totalRainFallLastHour * 100.0f);
+				Rainrate = round(totalRainFallLastHour * 100.0f);
 			}
 		}
 	}
@@ -3280,7 +3282,7 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 	else
 		strDirection = "---";
 
-	dDirection = std::round(dDirection);
+	dDirection = round(dDirection);
 
 	int intSpeed = (pResponse->WIND.av_speedh * 256) + pResponse->WIND.av_speedl;
 	int intGust = (pResponse->WIND.gusth * 256) + pResponse->WIND.gustl;
@@ -9002,7 +9004,7 @@ void MainWorker::decode_Power(const CDomoticzHardwareBase* pHardware, const tRBU
 	double powerfactor = pResponse->POWER.pf / 100.0;
 	float frequency = (float)pResponse->POWER.freq; //Hz
 
-	sprintf(szTmp, "%ld;%.2f", long(std::lrint(instant)), usage * 1000.0);
+	sprintf(szTmp, "%ld;%.2f", long(round(instant)), usage * 1000.0);
 	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == (uint64_t)-1)
 		return;
@@ -9136,7 +9138,7 @@ void MainWorker::decode_Current_Energy(const CDomoticzHardwareBase* pHardware, c
 		int voltage = 230;
 		m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
-		sprintf(szTmp, "%ld;%.2f", (long)std::lrint((CurrentChannel1 + CurrentChannel2 + CurrentChannel3) * voltage), usage);
+		sprintf(szTmp, "%ld;%.2f", (long)round((CurrentChannel1 + CurrentChannel2 + CurrentChannel3) * voltage), usage);
 		m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, pTypeENERGY, sTypeELEC3, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	}
 	sprintf(szTmp, "%.1f;%.1f;%.1f;%.3f", CurrentChannel1, CurrentChannel2, CurrentChannel3, usage);
@@ -10512,7 +10514,7 @@ void MainWorker::decode_BBQ(const CDomoticzHardwareBase* pHardware, const tRBUF*
 	tsen.TEMP.id2 = 1;
 
 	tsen.TEMP.tempsign = (temp1 >= 0) ? 0 : 1;
-	int at10 = std::lrint(std::abs(temp1 * 10.0f));
+	int at10 = round(std::abs(temp1 * 10.0f));
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
@@ -10525,7 +10527,7 @@ void MainWorker::decode_BBQ(const CDomoticzHardwareBase* pHardware, const tRBUF*
 	tsen.TEMP.id2 = 2;
 
 	tsen.TEMP.tempsign = (temp2 >= 0) ? 0 : 1;
-	at10 = std::lrint(std::abs(temp2 * 10.0f));
+	at10 = round(std::abs(temp2 * 10.0f));
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
@@ -11691,7 +11693,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 						switchcmd = "Set Color";
 
 						float dval = 126.0f * hsb[0]; // Color Range is 0x06..0x84
-						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + std::lrint(dval);
+						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + round(dval);
 						if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
 							return false;
 					}
@@ -13156,13 +13158,13 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 					float fLevel = (maxDimLevel / 100.0f) * level;
 					if (fLevel > 100)
 						fLevel = 100;
-					ilevel = std::lrint(fLevel);
+					ilevel = round(fLevel);
 				}
 				if (switchtype == STYPE_Selector) {
 					if (lstatus != "Set Level") {
 						ilevel = 0;
 					}
-					ilevel = std::lrint(ilevel / 10.0f) * 10; // select only multiples of 10
+					ilevel = round(ilevel / 10.0f) * 10; // select only multiples of 10
 					if (ilevel == 0) {
 						lstatus = "Off";
 					}

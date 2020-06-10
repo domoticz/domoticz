@@ -11,6 +11,8 @@
 
 #include "../tinyxpath/tinyxml.h"
 
+#define round(a) ( int ) ( a + .5 )
+
 // Plugwise Anna Thermostat
 // Anna Sensors
 

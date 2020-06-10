@@ -256,6 +256,8 @@ void CRFLinkBase::ParseData(const char *data, size_t len)
 
 }
 
+#define round(a) ( int ) ( a + .5 )
+
 void GetSwitchType(const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &switchType)
 {
 	switchType = 0;
@@ -316,7 +318,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			float fvalue = (15.0f / 100.0f)*float(pSwitch->level);
 			if (fvalue > 15.0f)
 				fvalue = 15.0f; //99 is fully on
-			int svalue = std::lrint(fvalue);
+			int svalue = round(fvalue);
 			//_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
 	        char buffer[50] = {0};
 			sprintf(buffer, "%d", svalue);
@@ -1045,7 +1047,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			_log.Log(LOG_STATUS, "RFLink: id:%d wd %d ws %f wg: %f wt: %f wc: %f status:%d", ID, twindir, twindspeed, twindgust, twindtemp, twindchill, bExists);
 		}
 #endif
-		if (bHaveWindDir) twindir = std::lrint(float(windir)*22.5f);
+		if (bHaveWindDir) twindir = round(float(windir)*22.5f);
 		if (!bHaveWindSpeed) windspeed = twindspeed;
 		if (!bHaveWindGust) windgust = twindgust;
 		if (!bHaveWindTemp) windtemp = twindtemp;
