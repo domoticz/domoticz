@@ -3163,6 +3163,24 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 				}
 			}
 		}
+		else if (commandclass == COMMAND_CLASS_SOUND_SWITCH)
+		{
+			if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				int32 listValue = 0;
+				if (m_pManager->GetValueListSelection(vID, &listValue))
+				{
+					if (pDevice->intvalue == listValue)
+					{
+						return; //dont send same value
+					}
+					if (listValue == 0)
+						pDevice->intvalue = 0;
+					else
+						pDevice->intvalue = 255;
+				}
+			}
+		}
 		else if (vLabel.find("Open") != std::string::npos)
 		{
 			pDevice->intvalue = 255;
