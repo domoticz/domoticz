@@ -561,7 +561,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 			if (tstate.mode == HLMODE_CT)
 			{
 				float iCt = (float(tstate.ct)-153.0f)/(500.0f-153.0f)*255.0f;
-				color = _tColor((uint8_t)std::lrint(iCt), ColorModeTemp);
+				color = _tColor(std::lrint(iCt), ColorModeTemp);
 			}
 			cmd = Color_SetColor;
 		}

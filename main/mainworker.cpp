@@ -11691,7 +11691,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 						switchcmd = "Set Color";
 
 						float dval = 126.0f * hsb[0]; // Color Range is 0x06..0x84
-						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + (BYTE)std::lrint(dval);
+						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + std::lrint(dval);
 						if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
 							return false;
 					}

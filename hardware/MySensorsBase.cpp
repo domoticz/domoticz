@@ -2022,7 +2022,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			bHaveValue = true;
 			break;
 		case V_DIRECTION:
-			pChild->SetValue(vType, (int)std::lrint(atof(payload.c_str())));
+			pChild->SetValue(vType, std::lrint(atof(payload.c_str())));
 			bHaveValue = true;
 			break;
 		case V_LIGHT_LEVEL:

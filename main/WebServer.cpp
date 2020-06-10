@@ -7237,7 +7237,7 @@ namespace http {
 				double ival = atof(kelvin.c_str());
 				ival = std::max(ival, 0.0);
 				ival = std::min(ival, 100.0);
-				_tColor color = _tColor((uint8_t)std::lrint(ival*255.0f/100.0f), ColorModeTemp);
+				_tColor color = _tColor(std::lrint(ival*255.0f/100.0f), ColorModeTemp);
 				_log.Log(LOG_STATUS, "setkelvinlevel: t: %f, color: '%s'", ival, color.toString().c_str());
 
 				m_mainworker.SwitchLight(ID, "Set Color", -1, color, false, 0, Username);
@@ -10195,7 +10195,7 @@ namespace http {
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / (divider / 1000.0f);
-								sprintf(szTmp, "%d Liter", (int)std::lrint(musage));
+								sprintf(szTmp, "%d Liter", std::lrint(musage));
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%" PRIu64, total_real);
