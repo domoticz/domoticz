@@ -2364,7 +2364,6 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			return;
 		}
 	}
-/*
 	else if (commandclass == COMMAND_CLASS_SOUND_SWITCH)
 	{
 		if (vOrgIndex != ValueID_Index_SoundSwitch::Tones)
@@ -2380,7 +2379,6 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		_device.intvalue = intValue;
 		InsertDevice(_device);
 	}
-*/
 	else if (commandclass == COMMAND_CLASS_MANUFACTURER_PROPRIETARY)
 	{
 		//Could be anything
