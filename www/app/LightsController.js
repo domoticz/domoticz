@@ -1799,15 +1799,8 @@ define(['app', 'livesocket'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #homeconfortparams").show();
 			}
-			else if (lighttype == 304) {
+			else if ((lighttype >= 304) && (lighttype <= 313)) {
 				//Fan (Itho)
-				$("#dialog-addmanuallightdevice #lighting1params").hide();
-				$("#dialog-addmanuallightdevice #lighting2params").hide();
-				$("#dialog-addmanuallightdevice #lighting3params").hide();
-				$("#dialog-addmanuallightdevice #fanparams").show();
-			}
-			else if ((lighttype == 305)||(lighttype == 306)||(lighttype == 307)) {
-				//Fan (Lucci Air/Westinghouse)
 				$("#dialog-addmanuallightdevice #lighting1params").hide();
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
@@ -2030,16 +2023,8 @@ define(['app', 'livesocket'], function (app) {
 				mParams += "&housecode=" + $("#dialog-addmanuallightdevice #homeconfortparams #combohousecode option:selected").val();
 				mParams += "&unitcode=" + $("#dialog-addmanuallightdevice #homeconfortparams #combounitcode option:selected").val();
 			}
-			else if (lighttype == 304) {
-				//Fan (Itho)
-				ID =
-					$("#dialog-addmanuallightdevice #fanparams #combocmd1 option:selected").text() +
-					$("#dialog-addmanuallightdevice #fanparams #combocmd2 option:selected").text() +
-					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
-				mParams += "&id=" + ID;
-			}
-			else if ((lighttype == 305)||(lighttype == 306)||(lighttype == 307)) {
-				//Fan (Lucci Air/Westinghouse)
+			else if ((lighttype >= 304)&&(lighttype <= 313)) {
+				//Fan
 				ID =
 					$("#dialog-addmanuallightdevice #fanparams #combocmd1 option:selected").text() +
 					$("#dialog-addmanuallightdevice #fanparams #combocmd2 option:selected").text() +

@@ -1,3 +1,8 @@
+[3.0.9]
+- Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time. 
+- Add function toUTC to time object.
+- Allow table as parm to function makeTime
+
 [3.0.8]
 - Allow IPv6 ::1 as localhost in domoticz settings 
 - Fixed bug that occurred when using a decimal number in afterSec (openURL and emitEvent)

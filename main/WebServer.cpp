@@ -3053,7 +3053,10 @@ namespace http {
 			}
 			Json::Value eventInfo;
 			eventInfo["name"] = request::findValue(&req, "event");
-			eventInfo["data"] = request::findValue(&req, "data");
+			if (!req.content.empty())
+				eventInfo["data"] = req.content.c_str(); // data from POST
+			else
+				eventInfo["data"] = request::findValue(&req, "data"); // data in URL
 
 			if (eventInfo["name"].empty())
 			{
@@ -4730,6 +4733,72 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
+					else if (lighttype == 308)
+					{
+						//Casafan
+						dtype = pTypeFan;
+						subtype = sTypeCasafan;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 309)
+					{
+						//FT1211R
+						dtype = pTypeFan;
+						subtype = sTypeFT1211R;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 310)
+					{
+						//Falmec
+						dtype = pTypeFan;
+						subtype = sTypeFalmec;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 311)
+					{
+						//Lucci Air DC II
+						dtype = pTypeFan;
+						subtype = sTypeLucciAirDCII;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 312)
+					{
+						//Itho ECO
+						dtype = pTypeFan;
+						subtype = sTypeIthoECO;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 313)
+					{
+						//Novy
+						dtype = pTypeFan;
+						subtype = sTypeNovy;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
 					else if (lighttype == 400) {
 						//Openwebnet Bus Blinds
 						dtype = pTypeGeneralSwitch;
@@ -5358,6 +5427,72 @@ namespace http {
 						//Westinghouse
 						dtype = pTypeFan;
 						subtype = sTypeWestinghouse;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 308)
+					{
+						//Casafan
+						dtype = pTypeFan;
+						subtype = sTypeCasafan;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 309)
+					{
+						//FT1211R
+						dtype = pTypeFan;
+						subtype = sTypeFT1211R;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 310)
+					{
+						//Falmec
+						dtype = pTypeFan;
+						subtype = sTypeFalmec;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 311)
+					{
+						//Lucci Air DC II
+						dtype = pTypeFan;
+						subtype = sTypeLucciAirDCII;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 312)
+					{
+						//Itho ECO
+						dtype = pTypeFan;
+						subtype = sTypeIthoECO;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 313)
+					{
+						//Novy
+						dtype = pTypeFan;
+						subtype = sTypeNovy;
 						std::string id = request::findValue(&req, "id");
 						if (id.empty())
 							return;

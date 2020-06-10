@@ -48,8 +48,10 @@ private:
 
 	bool ConnectInt();
 	bool ConnectIntEx();
-	Json::Value GetSensorWithChannel(const Json::Value &root, const int sChannel);
-	void FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const int sChannel);
+	Json::Value GetSensorWithChannel(const Json::Value &root, const uint8_t sChannel);
+	void FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const uint8_t sChannel);
+	bool ConvertField2Payload(const std::string sType, const std::string sValue, const uint8_t channel, const uint8_t index, Json::Value &payload);
+	bool ConvertFields2Payload(const Json::Value &fields, Json::Value &payload);
 	int CalcDomoticsRssiFromLora(const int gwrssi, const float gwsnr);
 	int GetAddDeviceAndSensor(const int m_HwdId, const std::string &DeviceName, const std::string &MacAddress);
 };

@@ -22,7 +22,7 @@ local function Device(domoticz, data, dummyLogger)
 	end
 
 	function self.dump( filename )
-		domoticz.logDevice(self, filename)
+		domoticz.logObject(self, filename, 'device')
 	end
 
 	function self.dumpSelection( selection )

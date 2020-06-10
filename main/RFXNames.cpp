@@ -2131,6 +2131,164 @@ void GetLightStatus(
 			}
 		}
 		break;
+		case sTypeCasafan:
+		{
+			switch (nValue)
+			{
+			case fan_CasafanHi:
+				lstatus = "hi";
+				break;
+			case fan_CasafanMed:
+				lstatus = "med";
+				break;
+			case fan_CasafanLow:
+				lstatus = "low";
+				break;
+			case fan_CasafanOff:
+				lstatus = "off";
+				break;
+			case fan_CasafanLight:
+				lstatus = "light";
+				break;
+			}
+		}
+		break;
+		case sTypeFT1211R:
+		{
+			switch (nValue)
+			{
+			case fan_FT1211Rpower:
+				lstatus = "power";
+				break;
+			case fan_FT1211Rlight:
+				lstatus = "light";
+				break;
+			case fan_FT1211R1:
+				lstatus = "1";
+				break;
+			case fan_FT1211R2:
+				lstatus = "2";
+				break;
+			case fan_FT1211R3:
+				lstatus = "3";
+				break;
+			case fan_FT1211R4:
+				lstatus = "4";
+				break;
+			case fan_FT1211R5:
+				lstatus = "5";
+				break;
+			case fan_FT1211Rfr:
+				lstatus = "f/r";
+				break;
+			case fan_FT1211R1H:
+				lstatus = "1h";
+				break;
+			case fan_FT1211R4H:
+				lstatus = "4h";
+				break;
+			case fan_FT1211R8H:
+				lstatus = "8h";
+				break;
+			}
+		}
+		break;
+		case sTypeFalmec:
+		{
+			switch (nValue)
+			{
+			case fan_FalmecPower:
+				lstatus = "power";
+				break;
+			case fan_FalmecSpeed1:
+				lstatus = "speed 1";
+				break;
+			case fan_FalmecSpeed2:
+				lstatus = "speed 2";
+				break;
+			case fan_FalmecSpeed3:
+				lstatus = "speed 3";
+				break;
+			case fan_FalmecSpeed4:
+				lstatus = "speed 4";
+				break;
+			case fan_FalmecTimer1:
+				lstatus = "timer 1";
+				break;
+			case fan_FalmecTimer2:
+				lstatus = "timer 2";
+				break;
+			case fan_FalmecTimer3:
+				lstatus = "timer 3";
+				break;
+			case fan_FalmecTimer4:
+				lstatus = "timer 4";
+				break;
+			case fan_FalmecLightOn:
+				lstatus = "light on";
+				break;
+			case fan_FalmecLightOff:
+				lstatus = "light off";
+				break;
+			}
+		}
+		break;
+		case sTypeLucciAirDCII:
+		{
+			switch (nValue)
+			{
+			case fan_LucciDCIIOff:
+				lstatus = "off";
+				break;
+			case fan_LucciDCII1:
+				lstatus = "1";
+				break;
+			case fan_LucciDCII2:
+				lstatus = "2";
+				break;
+			case fan_LucciDCII3:
+				lstatus = "3";
+				break;
+			case fan_LucciDCII4:
+				lstatus = "4";
+				break;
+			case fan_LucciDCII5:
+				lstatus = "5";
+				break;
+			case fan_LucciDCII6:
+				lstatus = "6";
+				break;
+			case fan_LucciDCIILight:
+				lstatus = "light";
+				break;
+			case fan_LucciDCIIReverse:
+				lstatus = "reverse";
+				break;
+			}
+		}
+		break;
+		case sTypeNovy:
+		{
+			switch (nValue)
+			{
+			case fan_NovyPower:
+				lstatus = "power";
+				break;
+			case fan_NovyPlus:
+				lstatus = "plus";
+				break;
+			case fan_NovyMin:
+				lstatus = "min";
+				break;
+			case fan_NovyLight:
+				lstatus = "light";
+				break;
+			case fan_NovyLearn:
+				lstatus = "learn";
+				break;
+			}
+		}
+		break;
 		}
 		break;
 	case pTypeHunter:
@@ -3458,6 +3616,7 @@ bool GetLightCommand(
 	}
 	case pTypeFan:
 	{
+		cmd = 1;
 		switch (dSubType)
 		{
 		case sTypeSiemensSF01:
@@ -3482,7 +3641,7 @@ bool GetLightCommand(
 			{
 				cmd = fan_sConfirm;
 			}
-			else if (switchcmd == "light")
+			else if ((switchcmd == "light") || (switchcmd == "On"))
 			{
 				cmd = fan_sLight;
 			}
@@ -3527,7 +3686,7 @@ bool GetLightCommand(
 			{
 				cmd = fan_LucciHi;
 			}
-			else if (switchcmd == "med")
+			else if ((switchcmd == "med") || (switchcmd == "On"))
 			{
 				cmd = fan_LucciMed;
 			}
@@ -3535,7 +3694,7 @@ bool GetLightCommand(
 			{
 				cmd = fan_LucciLow;
 			}
-			else if (switchcmd == "off")
+			else if ((switchcmd == "off") || (switchcmd == "Off"))
 			{
 				cmd = fan_LucciOff;
 			}
@@ -3547,7 +3706,7 @@ bool GetLightCommand(
 		break;
 		case sTypeLucciAirDC:
 		{
-			if (switchcmd == "pow")
+			if ((switchcmd == "pow") || (switchcmd == "On") || (switchcmd == "Off"))
 				cmd = fan_LucciDCPower;
 			else if (switchcmd == "plus")
 				cmd = fan_LucciDCPlus;
@@ -3559,6 +3718,108 @@ bool GetLightCommand(
 				cmd = fan_LucciDCReverse;
 			else if (switchcmd == "nat")
 				cmd = fan_LucciDCNaturalflow;
+		}
+		break;
+		case sTypeCasafan:
+		{
+			if (switchcmd == "hi")
+				cmd = fan_CasafanHi;
+			if ((switchcmd == "med") || (switchcmd == "On"))
+				cmd = fan_CasafanMed;
+			if (switchcmd == "low")
+				cmd = fan_CasafanLow;
+			if ((switchcmd == "off") || (switchcmd == "Off"))
+				cmd = fan_CasafanOff;
+			if (switchcmd == "light")
+				cmd = fan_CasafanLight;
+		}
+		break;
+		case sTypeFT1211R:
+		{
+			if ((switchcmd == "power") || (switchcmd == "On") || (switchcmd == "Off"))
+				cmd = fan_FT1211Rpower;
+			if (switchcmd == "light")
+				cmd = fan_FT1211Rlight;
+			if (switchcmd == "1")
+				cmd = fan_FT1211R1;
+			if (switchcmd == "2")
+				cmd = fan_FT1211R2;
+			if (switchcmd == "3")
+				cmd = fan_FT1211R3;
+			if (switchcmd == "4")
+				cmd = fan_FT1211R4;
+			if (switchcmd == "5")
+				cmd = fan_FT1211R5;
+			if (switchcmd == "f/r")
+				cmd = fan_FT1211Rfr;
+			if (switchcmd == "1h")
+				cmd = fan_FT1211R1H;
+			if (switchcmd == "4h")
+				cmd = fan_FT1211R4H;
+			if (switchcmd == "8h")
+				cmd = fan_FT1211R8H;
+		}
+		break;
+		case sTypeFalmec:
+		{
+			if ((switchcmd == "power") || (switchcmd == "On") || (switchcmd == "Off"))
+				cmd = fan_FalmecPower;
+			if (switchcmd == "speed 1")
+				cmd = fan_FalmecSpeed1;
+			if (switchcmd == "speed 2")
+				cmd = fan_FalmecSpeed2;
+			if (switchcmd == "speed 3")
+				cmd = fan_FalmecSpeed3;
+			if (switchcmd == "speed 4")
+				cmd = fan_FalmecSpeed4;
+			if (switchcmd == "timer 1")
+				cmd = fan_FalmecTimer1;
+			if (switchcmd == "timer 2")
+				cmd = fan_FalmecTimer2;
+			if (switchcmd == "timer 3")
+				cmd = fan_FalmecTimer3;
+			if (switchcmd == "timer 4")
+				cmd = fan_FalmecTimer4;
+			if (switchcmd == "light on")
+				cmd = fan_FalmecLightOn;
+			if (switchcmd == "light off")
+				cmd = fan_FalmecLightOff;
+		}
+		break;
+		case sTypeLucciAirDCII:
+		{
+			if ((switchcmd == "off") || (switchcmd == "Off"))
+				cmd = fan_LucciDCIIOff;
+			if ((switchcmd == "1") || (switchcmd == "On"))
+				cmd = fan_LucciDCII1;
+			if (switchcmd == "2")
+				cmd = fan_LucciDCII2;
+			if (switchcmd == "3")
+				cmd = fan_LucciDCII3;
+			if (switchcmd == "4")
+				cmd = fan_LucciDCII4;
+			if (switchcmd == "5")
+				cmd = fan_LucciDCII5;
+			if (switchcmd == "6")
+				cmd = fan_LucciDCII6;
+			if (switchcmd == "light")
+				cmd = fan_LucciDCIILight;
+			if (switchcmd == "reverse")
+				cmd = fan_LucciDCIIReverse;
+		}
+		break;
+		case sTypeNovy:
+		{
+			if ((switchcmd == "power") || (switchcmd == "On") || (switchcmd == "Off"))
+				cmd = fan_NovyPower;
+			if (switchcmd == "plus")
+				cmd = fan_NovyPlus;
+			if (switchcmd == "min")
+				cmd = fan_NovyMin;
+			if (switchcmd == "light")
+				cmd = fan_NovyLight;
+			if (switchcmd == "learn")
+				cmd = fan_NovyLearn;
 		}
 		break;
 		}

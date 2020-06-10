@@ -27,16 +27,16 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	// Basic protection from malicious command line
 	removeCharsFromString(m_cmdline, ":;/$()`<>|&");
 	m_HwdID = ID;
-/*
-	#ifdef _DEBUG
-		std::string line = "{\"time\" : \"2020-05-21 12:24:06.740469\", \"protocol\" : 12, \"model\" : \"Oregon-UVR128\", \"id\" : 155, \"uv\" : 5, \"battery_ok\" : 1, \"mod\" : \"ASK\", \"freq\" : 433.864, \"rssi\" : -0.100, \"snr\" : 15.669, \"noise\" : -15.769}";
-		if (!ParseJsonLine(line))
-		{
-			// this is also logged when parsed data is invalid
-			_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", line.c_str());
-		}
-	#endif
-*/
+	/*
+		#ifdef _DEBUG
+			std::string line = "{\"time\" : \"2020-05-21 12:24:06.740469\", \"protocol\" : 12, \"model\" : \"Oregon-UVR128\", \"id\" : 155, \"uv\" : 5, \"battery_ok\" : 1, \"mod\" : \"ASK\", \"freq\" : 433.864, \"rssi\" : -0.100, \"snr\" : 15.669, \"noise\" : -15.769}";
+			if (!ParseJsonLine(line))
+			{
+				// this is also logged when parsed data is invalid
+				_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", line.c_str());
+			}
+		#endif
+	*/
 }
 
 CRtl433::~CRtl433()
@@ -149,8 +149,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	bool haveUV = false;
 	float uvi = 0;
 
-        bool haveSnr = false;  // rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
-        int snr = 0;
+	int snr = 12;  // Set to show "-" if no snr is received. rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
 
 	if (FindField(data, "id"))
 	{
@@ -275,18 +274,18 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		uvi = (float)atof(data["uv"].c_str());
 		haveUV = true;
 	}
-        if (FindField(data, "snr"))
-        {
-		/* Map the received Signal to Noise Ratio to the domoticz RSSI field that is 4 bit only.
-		   rtl_433 will not be able to decode a signal with less snr than 4dB or so, why we map snr<4 to rssi=0 .
-		   We use better resolution at low snr. snr=4-11 map to rssi=1-8, snr=12-25 map to rssi=8-15, snr>25 map to rssi=15
+	if (FindField(data, "snr"))
+	{
+		/* Map the received Signal to Noise Ratio to the domoticz RSSI 4-bit field that has range of 0-11 (12-15 display '-' in device tab).
+		   rtl_433 will not be able to decode a signal with less snr than 4dB or so, why we map snr<5dB to rssi=0 .
+		   We use better resolution at low snr. snr=5-10dB map to rssi=1-6, snr=11-20dB map to rssi=6-11, snr>20dB map to rssi=11
 		*/
-                snr = (atoi(data["snr"].c_str()))-3;
-		if (snr > 7) snr -= (int)(snr-7)/2;
-		if (snr > 15) snr = 15; // Domoticz RSSI field can only be 0-15
-		if (snr < 1) snr = 0; // In case snr actually was below 3 dB
-                haveSnr = true;
-        }
+		snr = std::stoi(data["snr"]) - 4;
+
+		if (snr > 5) snr -= (int)(snr - 5) / 2;
+		if (snr > 11) snr = 11; // Domoticz RSSI field can only be 0-11, 12 is used for non-RF received devices
+		if (snr < 0) snr = 0; // In case snr actually was below 4 dB
+	}
 
 	std::string model = data["model"]; // new model format normalized from the 201 different devices presently supported by rtl_433
 
@@ -305,7 +304,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			batterylevel,
 			bOn,
 			0,
-			model);
+			model, snr);
 		bDone = true;
 	}
 	if (FindField(data, "switch1") && FindField(data, "id"))
@@ -321,13 +320,13 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			if (FindField(data, szSwitch))
 			{
 				bool bOn = (data[szSwitch] == "CLOSED");
-				unsigned int switchidx = ((idx & 0xffffff) << 8) | (iSwitch+1);
+				unsigned int switchidx = ((idx & 0xffffff) << 8) | (iSwitch + 1);
 				SendSwitch(switchidx,
 					(const uint8_t)unit,
 					batterylevel,
 					bOn,
 					0,
-					model);
+					model, snr);
 			}
 			bDone = true;
 		}
@@ -456,7 +455,7 @@ void CRtl433::Do_Work()
 
 	while (!IsStopRequested(0))
 	{
-		std::string szFlags = "-F json -M newmodel -C si -M level" + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
+		std::string szFlags = "-F json -M newmodel -C si -M level " + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
 		_hPipe = _popen(szCommand.c_str(), "r");

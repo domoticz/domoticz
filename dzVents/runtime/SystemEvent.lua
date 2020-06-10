@@ -23,6 +23,10 @@ local function SystemEvent(domoticz, eventData)
 	self.duration = eventData.data and eventData.data.duration or nil
 	self.location = eventData.data and eventData.data.location or nil
 
+	function self.dump( filename )
+		domoticz.logObject(self, filename, 'systemEvent')
+	end
+
 	evenItemIdentifier.setType(
 		self,
 		'isSystemEvent',

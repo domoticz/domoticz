@@ -103,7 +103,6 @@ return {
 			device['batteryLevel'] = bat
 			device['signalLevel'] = sig
 			device['deviceSubType'] = data.subType
-
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = data.rawData
 			device['nValue'] = data.data._nValue
@@ -134,7 +133,6 @@ return {
 		end
 
 		setStateAttribute(data.data._state, device, _states)
-
 
 		function device.setDescription(description)
 			local url = domoticz.settings['Domoticz url'] ..
