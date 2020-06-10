@@ -1247,6 +1247,20 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 						pDevice->intvalue = 255;
 					}
 				}
+				else if (vType == OpenZWave::ValueID::ValueType_List)
+				{
+					std::vector<std::string > vStringList;
+					m_pManager->GetValueListItems(vID, &vStringList);
+					if (svalue == 255)
+					{
+						// Aeotec DoorBell 6 only
+						if ((pDevice->Manufacturer_id == 0x0371) && (pDevice->Product_id == 0x00a2) && (pDevice->Product_type == 0x0003))
+						{
+							m_pManager->SetValueListSelection(vID, vStringList[31]); //default tone
+							pDevice->intvalue = 255;
+						}
+					}
+				}
 				else
 				{
 					_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d, NodeID: %d (0x%02x)", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, pDevice->nodeID, pDevice->nodeID);
