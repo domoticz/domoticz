@@ -23,7 +23,6 @@
 #include <chrono>
 #include <limits.h>
 #include <cstring>
-#include <cmath>
 
 #if defined WIN32
 #include "../msbuild/WindowsHelper.h"
@@ -1476,9 +1475,4 @@ double round_digits(double dIn, const int totDigits)
 	std::stringstream sstr;
 	sstr << std::setprecision(totDigits) << std::fixed << dIn;
 	return std::stod(sstr.str());
-}
-
-uint8_d dzround(double dIn)
-{
-	return static_cast(std::lrint(dIn);
 }
