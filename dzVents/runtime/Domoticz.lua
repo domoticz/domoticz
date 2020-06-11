@@ -314,16 +314,8 @@ local function Domoticz(settings)
 		self.utils.dumpTable(settings, '> ', file)
 	end
 
-	function self.logDevice(device, file)
-		self.utils.dumpTable(device, '> ', file)
-	end
-
-	function self.logCamera(camera, file)
-		self.utils.dumpTable(camera, '> ', file)
-	end
-
-	function self.logHardware(hardware, file)
-		self.utils.dumpTable(hardware, '> ', file)
+	function self.logObject(object, file, objectType )
+		self.utils.dumpTable(object, objectType .. '> ', file)
 	end
 
 	self.__cameras = {}

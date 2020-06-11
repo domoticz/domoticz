@@ -22,10 +22,10 @@
 #include "../main/localtime_r.h"
 
 //OpenZWave includes
-#include <openzwave/Options.h>
-#include <openzwave/Manager.h>
-#include <openzwave/platform/Log.h>
-#include <openzwave/ValueIDIndexesDefines.h>
+#include <Options.h>
+#include <Manager.h>
+#include <platform/Log.h>
+#include <ValueIDIndexesDefines.h>
 
 #include "ZWaveCommands.h"
 
@@ -211,6 +211,8 @@ const char* cclassStr(uint8 cc)
 		return "LOCK";
 	case 0x77:
 		return "NODE NAMING";
+	case 0x79:
+		return "SOUND SWITCH";
 	case 0x7A:
 		return "FIRMWARE UPDATE MD";
 	case 0x7B:
@@ -1215,6 +1217,8 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 				bFound = (GetValueByCommandClass(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_DOOR_LOCK, vID) == true);
 			if (!bFound)
 				bFound = (GetValueByCommandClassIndex(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, ValueID_Index_SwitchMultiLevel::Level, vID) == true);
+			if (!bFound)
+				bFound = (GetValueByCommandClass(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SOUND_SWITCH, vID) == true);
 			if (bFound)
 			{
 				OpenZWave::ValueID::ValueType vType = vID.GetType();
@@ -1243,6 +1247,20 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 						//On
 						m_pManager->SetValue(vID, (uint8_t)255);
 						pDevice->intvalue = 255;
+					}
+				}
+				else if (vType == OpenZWave::ValueID::ValueType_List)
+				{
+					std::vector<std::string > vStringList;
+					m_pManager->GetValueListItems(vID, &vStringList);
+					if (svalue == 255)
+					{
+						// Aeotec DoorBell 6 only
+						if ((pDevice->Manufacturer_id == 0x0371) && (pDevice->Product_id == 0x00a2) && (pDevice->Product_type == 0x0003))
+						{
+							m_pManager->SetValueListSelection(vID, vStringList[31]); //default tone
+							pDevice->intvalue = 255;
+						}
 					}
 				}
 				else
@@ -2362,6 +2380,21 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			return;
 		}
 	}
+	else if (commandclass == COMMAND_CLASS_SOUND_SWITCH)
+	{
+		if (vOrgIndex != ValueID_Index_SoundSwitch::Tones)
+			return;
+		if (vType != OpenZWave::ValueID::ValueType_List)
+			return; //not interested in you
+
+		std::vector<std::string > vStringList;
+		if (m_pManager->GetValueListItems(vID, &vStringList) == false)
+			return;
+		_device.instanceID = instance;
+		_device.devType = ZDTYPE_SWITCH_NORMAL;
+		_device.intvalue = intValue;
+		InsertDevice(_device);
+	}
 	else if (commandclass == COMMAND_CLASS_MANUFACTURER_PROPRIETARY)
 	{
 		//Could be anything
@@ -3141,6 +3174,24 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 					{   // default to Idle
 						pDevice->intvalue = 0;
 					}
+				}
+			}
+		}
+		else if (commandclass == COMMAND_CLASS_SOUND_SWITCH)
+		{
+			if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				int32 listValue = 0;
+				if (m_pManager->GetValueListSelection(vID, &listValue))
+				{
+					if (pDevice->intvalue == listValue)
+					{
+						return; //dont send same value
+					}
+					if (listValue == 0)
+						pDevice->intvalue = 0;
+					else
+						pDevice->intvalue = 255;
 				}
 			}
 		}

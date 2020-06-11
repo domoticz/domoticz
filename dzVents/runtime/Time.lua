@@ -307,11 +307,11 @@ local function Time(sDate, isUTC, _testMS)
 	end
 
 	function self.addSeconds(seconds, factor)
-		if type(seconds) ~= 'number' then 
+		if type(seconds) ~= 'number' then
 			self.utils.log(tostring(seconds) .. ' is not a valid parameter to this function. Please change to use a number value!', utils.LOG_ERROR)
 		else
 			factor = factor or 1
-			return Time( os.date("%Y-%m-%d %X", self.dDate +  factor * math.floor(seconds) )) 
+			return Time( os.date("%Y-%m-%d %X", self.dDate +  factor * math.floor(seconds) ))
 		end
 	end
 
@@ -327,8 +327,15 @@ local function Time(sDate, isUTC, _testMS)
 		return self.addSeconds(minutes, 60)
 	end
 
-	function self.makeTime(sDate, isUTC)
+	function self.makeTime(oDate, isUTC)
+		local sDate = ( type(oDate) == 'table' and os.date("%Y-%m-%d %H:%M:%S", os.time(oDate)) ) or oDate
 		return Time(sDate, isUTC)
+	end
+
+	function self.toUTC(oDate, offset)
+		local sDate = ( type(oDate) == 'table' and os.date("%Y-%m-%d %H:%M:%S", os.time(oDate)) ) or oDate
+		local offset = offset or 0
+		return Time(sDate).addSeconds(-1 * getTimezone() + offset).raw
 	end
 
 	-- return ISO format
@@ -403,7 +410,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	-- returns true if the current time is within a time range: startH:startM and stopH:stopM
 	local function timeIsInRange(startH, startM, stopH, stopM)
-	
+
 		local function getMinutes(hours, minutes)
 			return (hours * 60) + minutes
 		end
@@ -411,10 +418,10 @@ local function Time(sDate, isUTC, _testMS)
 		local currentMinutes = getMinutes(self.hour, self.min)
 		local startMinutes = getMinutes(startH, startM)
 		local stopMinutes = getMinutes(stopH, stopM)
-	
+
 		if stopMinutes < startMinutes then -- add 24 hours (1440 minutes ) if endTime < startTime
 			if currentMinutes < stopMinutes then currentMinutes = currentMinutes + 1440 end
-			stopMinutes = stopMinutes + 1440 
+			stopMinutes = stopMinutes + 1440
 		end
 
 		return ( currentMinutes >= startMinutes and currentMinutes <= stopMinutes )
@@ -863,7 +870,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	-- returns true if self.time is in time range: at hh:mm-hh:mm
 	function self.ruleMatchesTimeRange(rule)
-		local fromH, fromM, toH, toM =  string.match(rule, 'at% ([0-9%*]+):([0-9%*]+)-([0-9%*]+):([0-9%*]+)') 
+		local fromH, fromM, toH, toM =  string.match(rule, 'at% ([0-9%*]+):([0-9%*]+)-([0-9%*]+):([0-9%*]+)')
 
 		if (fromH ~= nil) then
 			-- all will be nil if fromH is nil

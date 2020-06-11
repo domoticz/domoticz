@@ -85,7 +85,7 @@ local function EventHelpers(domoticz, mainMethod)
 		if (storageDef ~= nil) then
 			-- load the datafile for this module
 			ok, fileStorage = pcall(require, module)
-			if type(fileStorage) == boolean then
+			if type(fileStorage) == 'boolean' then
 				utils.log('Problem with module: ' .. module, utils.LOG_ERROR)
 			end
 			package.loaded[module] = nil -- no caching

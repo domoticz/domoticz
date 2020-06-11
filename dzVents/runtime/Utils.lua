@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.8',
+	DZVERSION = '3.0.9',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -198,13 +198,22 @@ end
 
 function self.fromJSON(json, fallback)
 
-	if json and self.isJSON(json) then
+	if not(json) then
+		return fallback
+	end
+
+	if json:find("'") then
+		local _, singleQuotes = json:gsub("'","'")
+		local _, doubleQuotes = json:gsub('"','"')
+		if singleQuotes > doubleQuotes then
+			json = json:gsub("'",'"')
+		end
+	end
+
+	if self.isJSON(json) then
+
 		local parse = function(j)
 			return jsonParser:decode(j)
-		end
-
-		if json == nil then
-			return fallback
 		end
 
 		ok, results = pcall(parse, json)
@@ -470,7 +479,7 @@ function self.dumpSelection(object, selection)
 				self.print('> ' .. attr .. ': ' .. tostring(value))
 			end
 		end
-		if object.baseType ~= 'hardware' then 
+		if object.baseType ~= 'hardware' then
 			self.print('')
 			self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
 		end
