@@ -6491,12 +6491,12 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			metertype = MTYPE_COUNTER;
 		}
 
-
 		result = safe_query("SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
 			szDateStart,
 			szDateEnd
 		);
+
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
@@ -8934,7 +8934,8 @@ float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const 
 		else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 			divider *= 100.0f;
 
-		if (divider == 0) divider = 1.0f;
+		if (divider == 0)
+			divider = 1.0f;
 	}
 	return divider;
 }
