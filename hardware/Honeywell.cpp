@@ -280,7 +280,7 @@ void CHoneywell::GetThermostatData()
 			}
 
 			std::string mode = device["changeableValues"]["mode"].asString();
-			bool bHeating = (mode == "Heat"); // ** Ilker
+			bool bHeating = (mode == "Heat");
 			desc = kHeatingDesc;
 			stdreplace(desc, "[devicename]", deviceName);
 			SendSwitch(10 * devNr + 3, 1, 255, bHeating, 0, desc);
@@ -288,7 +288,7 @@ void CHoneywell::GetThermostatData()
 			if(bHeating){
 				temperature = (float)device["changeableValues"]["heatSetpoint"].asFloat();
 			}else{
-				temperature = (float)device["changeableValues"]["coolSetpoint"].asFloat(); // *********** Ilker
+				temperature = (float)device["changeableValues"]["coolSetpoint"].asFloat();
 			}
 			desc = kSetPointDesc;
 			stdreplace(desc, "[devicename]", deviceName);
@@ -311,7 +311,7 @@ void CHoneywell::GetThermostatData()
 			SendSwitch(10 * devNr + 6, 1, 255, bCStatus, 0, desc);
 
 			//std::string mode = device["changeableValues"]["mode"].asString();
-			bool bCooling = (mode == "Cool"); // ** Ilker
+			bool bCooling = (mode == "Cool");
 			desc = kCoolingDesc;
 			stdreplace(desc, "[devicename]", deviceName);
 			SendSwitch(10 * devNr + 7, 1, 255, bCooling, 0, desc);
