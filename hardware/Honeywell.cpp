@@ -244,7 +244,7 @@ void CHoneywell::GetThermostatData()
 	}
 
 	int devNr = 0;
-	mDeviceList.clear(); 
+	mDeviceList.clear();
 	mLocationList.clear();
 	for (int locCnt = 0; locCnt < (int)root.size(); locCnt++)
 	{
@@ -265,7 +265,7 @@ void CHoneywell::GetThermostatData()
 			std::string desc = kRoomTempDesc;
 			stdreplace(desc, "[devicename]", deviceName);
 			if(units == "Fahrenheit") {
-				SendTempSensor(10 * devNr + 1, 255, (temperature - 32) * 5/9, desc);
+				SendTempSensor(10 * devNr + 1, 255, (float)ConvertToCelsius(temperature), desc);
 			}else{
 				SendTempSensor(10 * devNr + 1, 255, temperature, desc);
 			}
@@ -274,7 +274,7 @@ void CHoneywell::GetThermostatData()
 			desc = kOutdoorTempDesc;
 			stdreplace(desc, "[devicename]", deviceName);
 			if(units == "Fahrenheit") {
-				SendTempSensor(10 * devNr + 2, 255, (temperature - 32) * 5/9, desc);
+				SendTempSensor(10 * devNr + 2, 255, (float)ConvertToCelsius(temperature), desc);
 			}else{
 				SendTempSensor(10 * devNr + 2, 255, temperature, desc);
 			}
@@ -293,7 +293,7 @@ void CHoneywell::GetThermostatData()
 			desc = kSetPointDesc;
 			stdreplace(desc, "[devicename]", deviceName);
 			if(units == "Fahrenheit") {
-				SendSetPointSensor((uint8_t)(10 * devNr + 4), (temperature - 32) * 5/9, desc);
+				SendSetPointSensor((uint8_t)(10 * devNr + 4), (float)ConvertToCelsius(temperature), desc);
 			}else{
 				SendSetPointSensor((uint8_t)(10 * devNr + 4), temperature, desc);
 			}
@@ -361,7 +361,7 @@ void CHoneywell::SendSetPointSensor(const unsigned char Idx, const float Temp, c
 	thermos.id2 = 0;
 	thermos.id3 = 0;
 	thermos.id4 = Idx;
-	thermos.dunit = 0; 
+	thermos.dunit = 0;
 
 	thermos.temp = Temp;
 
@@ -402,7 +402,7 @@ void CHoneywell::SetPauseStatus(const int idx, bool bCommand, const int nodeID)
 	
 	std::string url = HONEYWELL_UPDATE_THERMOSTAT;
 	std::string deviceID = mDeviceList[idx]["deviceID"].asString();
-	
+
 	stdreplace(url, "[deviceid]", deviceID);
 	stdreplace(url, "[apikey]", mApiKey);
 	stdreplace(url, "[locationid]", mLocationList[idx]);
@@ -440,7 +440,7 @@ void CHoneywell::SetPauseStatus(const int idx, bool bCommand, const int nodeID)
 		desc = kSetPointDesc;
 		stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
 		if(units == "Fahrenheit") {
-			SendSetPointSensor((uint8_t)(10 * idx + 4), (temperature - 32) * 5/9, desc);
+			SendSetPointSensor((uint8_t)(10 * idx + 4), (float)ConvertToCelsius(temperature), desc);
 		}else{
 			SendSetPointSensor((uint8_t)(10 * idx + 4), temperature, desc);
 		}
@@ -475,7 +475,7 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 		reqRoot["heatSetpoint"] = mDeviceList[idx]["changeableValues"]["heatSetpoint"].asInt();
 	
 		if(units == "Fahrenheit") {
-			reqRoot["coolSetpoint"] = (temp * 9/5) + 32;
+			reqRoot["coolSetpoint"] = (float)ConvertToFahrenheit(temp);
 		}else{
 			reqRoot["coolSetpoint"] = temp;
 		}
@@ -483,7 +483,7 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 		reqRoot["mode"] = "Heat";
 		reqRoot["autoChangeoverActive"] = "true";
 		if(units == "Fahrenheit") {
-			reqRoot["heatSetpoint"] = (temp * 9/5) + 32;
+			reqRoot["heatSetpoint"] = (float)ConvertToFahrenheit(temp);
 		}else{
 			reqRoot["heatSetpoint"] = temp;
 		}
