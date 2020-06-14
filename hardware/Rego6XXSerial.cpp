@@ -16,10 +16,12 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #define Rego6XX_RETRY_DELAY 30
 #define Rego6XX_COMMAND_DELAY 5

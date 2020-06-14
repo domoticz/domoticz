@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "WOL.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/Helper.h"
 #include "../main/HTMLSanitizer.h"
 #include "../main/Logger.h"
@@ -169,6 +169,8 @@ bool CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CWOL::AddNode(const std::string &Name, const std::string &MACAddress)
 {
+	m_sql.AllowNewHardwareTimer(5);
+
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists

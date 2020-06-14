@@ -45,6 +45,7 @@ describe('timed commands', function()
 		end)
 
 		it('should return proper functions when nothing is set', function()
+			assert.is_function(cmd.at)
 			assert.is_function(cmd.afterSec)
 			assert.is_function(cmd.afterMin)
 			assert.is_function(cmd.afterHour)
@@ -62,6 +63,25 @@ describe('timed commands', function()
 
 		end)
 
+		it('should return proper function when called at', function()
+			local res = cmd.at('23:35 on fri, sun')
+			assert.is_function(res.forSec)
+			assert.is_function(res.forMin)
+			assert.is_function(res.forHour)
+			assert.is_function(res.silent)
+			assert.is_function(res.repeatAfterSec)
+			assert.is_function(res.repeatAfterMin)
+			assert.is_function(res.repeatAfterHour)
+
+			assert.is_nil(res.at)
+			assert.is_nil(res.afterSec)
+			assert.is_nil(res.afterMin)
+			assert.is_nil(res.afterHour)
+			assert.is_nil(res.withinSec)
+			assert.is_nil(res.withinMin)
+			assert.is_nil(res.withinHour)
+		end)
+	
 		it('should return proper function when called after', function()
 			local res = cmd.afterSec(1)
 			assert.is_function(res.forSec)
@@ -72,6 +92,7 @@ describe('timed commands', function()
 			assert.is_function(res.repeatAfterMin)
 			assert.is_function(res.repeatAfterHour)
 
+			assert.is_nil(res.at)
 			assert.is_nil(res.afterSec)
 			assert.is_nil(res.afterMin)
 			assert.is_nil(res.afterHour)
@@ -172,8 +193,8 @@ describe('timed commands', function()
 			cmd = nil
 		end)
 
-
 		it('should return proper functions when nothing is set', function()
+			assert.is_function(cmd.at)
 			assert.is_function(cmd.afterSec)
 			assert.is_function(cmd.afterMin)
 			assert.is_function(cmd.afterHour)
@@ -197,6 +218,7 @@ describe('timed commands', function()
 
 			assert.is_function(res.silent)
 
+			assert.is_nil(res.at)
 			assert.is_nil(res.afterSec)
 			assert.is_nil(res.afterMin)
 			assert.is_nil(res.afterHour)
@@ -216,6 +238,7 @@ describe('timed commands', function()
 
 			local res = cmd.silent()
 
+			assert.is_function(res.at)
 			assert.is_function(res.afterSec)
 			assert.is_function(res.afterMin)
 			assert.is_function(res.afterHour)
@@ -246,10 +269,10 @@ describe('timed commands', function()
 			cmd = nil
 		end)
 
-
 		it('should return proper functions when nothing is set', function()
 			assert.is_function(cmd.silent)
 
+			assert.is_function(cmd.at)
 			assert.is_function(cmd.afterSec)
 			assert.is_function(cmd.afterMin)
 			assert.is_function(cmd.afterHour)
@@ -266,27 +289,29 @@ describe('timed commands', function()
 
 		it('should return proper function when called after', function()
 			local res = cmd.afterSec(1)
-			assert.is_nil(res.forSec)
-			assert.is_nil(res.forMin)
-			assert.is_nil(res.forHour)
+		
 			assert.is_function(res.silent)
-			assert.is_nil(res.repeatAfterSec)
-			assert.is_nil(res.repeatAfterMin)
-			assert.is_nil(res.repeatAfterHour)
-
+		
+			assert.is_nil(res.at)
 			assert.is_nil(res.afterSec)
 			assert.is_nil(res.afterMin)
 			assert.is_nil(res.afterHour)
+			assert.is_nil(res.forSec)
+			assert.is_nil(res.forMin)
+			assert.is_nil(res.forHour)
+			assert.is_nil(res.repeatAfterSec)
+			assert.is_nil(res.repeatAfterMin)
+			assert.is_nil(res.repeatAfterHour)
 			assert.is_nil(res.withinSec)
 			assert.is_nil(res.withinMin)
 			assert.is_nil(res.withinHour)
 		end)
 
-
 		it('should return proper functions called silent', function()
 
 			local res = cmd.silent()
 
+			assert.is_function(res.at)
 			assert.is_function(res.afterSec)
 			assert.is_function(res.afterMin)
 			assert.is_function(res.afterHour)
@@ -304,7 +329,6 @@ describe('timed commands', function()
 		end)
 	end)
 
-
 	describe('updatedevice with table', function()
 
 		before_each(function()
@@ -319,10 +343,10 @@ describe('timed commands', function()
 			cmd = nil
 		end)
 
-
 		it('should return proper functions when nothing is set', function()
 			assert.is_function(cmd.silent)
 
+			assert.is_function(cmd.at)
 			assert.is_function(cmd.afterSec)
 			assert.is_function(cmd.afterMin)
 			assert.is_function(cmd.afterHour)
@@ -349,6 +373,7 @@ describe('timed commands', function()
 			assert.is_nil(res.repeatAfterSec)
 			assert.is_nil(res.repeatAfterMin)
 			assert.is_nil(res.repeatAfterHour)
+			assert.is_nil(res.at)
 			assert.is_nil(res.afterSec)
 			assert.is_nil(res.afterMin)
 			assert.is_nil(res.afterHour)
@@ -371,6 +396,7 @@ describe('timed commands', function()
 			assert.is_nil(res.repeatAfterSec)
 			assert.is_nil(res.repeatAfterMin)
 			assert.is_nil(res.repeatAfterHour)
+			assert.is_nil(res.at)
 			assert.is_nil(res.afterSec)
 			assert.is_nil(res.afterMin)
 			assert.is_nil(res.afterHour)
@@ -386,6 +412,7 @@ describe('timed commands', function()
 		it('should return proper functions called silent', function()
 			local res = cmd.silent()
 
+			assert.is_function(res.at)
 			assert.is_function(res.afterSec)
 			assert.is_function(res.afterMin)
 			assert.is_function(res.afterHour)
@@ -404,7 +431,6 @@ describe('timed commands', function()
 			assert.is_nil(commandArray[1]['OpenURL']['_trigger'])
 		end)
 
-
 	end)
 
 	describe('commands', function()
@@ -416,6 +442,35 @@ describe('timed commands', function()
 		after_each(function()
 			commandArray = {}
 			cmd = nil
+		end)
+
+		describe('at ', function()
+			it('should create a proper afterSec command when using at', function()
+				cmd.at('22:35')
+
+				assert.is_true (_.str(commandArray):gmatch('%.*On AFTER %d+ SECONDS%.*') ~= nil )
+				assert.is_true (_.str(commandArray):gmatch('%.*mySwitch%.*') ~= nil )
+			end)
+
+			it('should create a proper afterSec command when using at', function()
+				cmd.at('22:35:05')
+
+				assert.is_true (_.str(commandArray):gmatch('%.*On AFTER %d+ SECONDS%.*') ~= nil )
+				assert.is_true (_.str(commandArray):gmatch('%.*mySwitch%.*') ~= nil )
+			end)
+
+			it('should create a proper afterSec command when using at', function()
+				cmd.at('22:35:46 on Friday')
+
+				assert.is_true (_.str(commandArray):gmatch('%.*On AFTER %d+ SECONDS%.*') ~= nil )
+				assert.is_true (_.str(commandArray):gmatch('%.*mySwitch%.*') ~= nil )
+				cmd.at('22:35:46 on fri, sat, sun')
+
+				assert.is_true (_.str(commandArray):gmatch('%.*On AFTER %d+ SECONDS%.*') ~= nil )
+				assert.is_true (_.str(commandArray):gmatch('%.*mySwitch%.*') ~= nil )
+
+			end)
+
 		end)
 
 		describe('after', function()

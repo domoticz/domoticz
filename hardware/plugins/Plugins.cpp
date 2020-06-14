@@ -5,19 +5,18 @@
 //
 #ifdef ENABLE_PYTHON
 
-#include <tinyxml.h>
-
 #include "Plugins.h"
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
 #include "PythonObjects.h"
 
-#include "../main/Helper.h"
-#include "../main/Logger.h"
-#include "../main/SQLHelper.h"
-#include "../main/mainworker.h"
-#include "../main/localtime_r.h"
+#include "../../main/Helper.h"
+#include "../../main/Logger.h"
+#include "../../main/SQLHelper.h"
+#include "../../main/mainworker.h"
+#include "../../main/localtime_r.h"
+#include "../../tinyxpath/tinyxml.h"
 
 #include "../../notifications/NotificationHelper.h"
 
@@ -47,14 +46,6 @@ namespace Plugins {
 	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
 
 	std::mutex PythonMutex;			// controls access to Python
-
-	//
-	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
-	//
-	struct module_state {
-		CPlugin*	pPlugin;
-		PyObject*	error;
-	};
 
 	void LogPythonException(CPlugin* pPlugin, const std::string &sHandler)
 	{
@@ -1804,11 +1795,11 @@ Error:
 			PyErr_Clear();
 
 			// Stop Python
+			Py_XDECREF(m_PyModule);
 			if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
 			if (m_ImageDict) Py_XDECREF(m_ImageDict);
 			if (m_SettingsDict) Py_XDECREF(m_SettingsDict);
 			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
-			Py_XDECREF(m_PyModule);
 			PyEval_ReleaseLock();
 		}
 		catch (std::exception *e)

@@ -183,12 +183,14 @@ images/forward_enabled_hover.png
 images/Gas48.png
 images/gauge.png
 images/gauge48.png
+images/gdown.png
 images/general.png
 images/Generic.png
 images/Generic48_Off.png
 images/Generic48_On.png
 images/glyphicons-halflings.png
 images/glyphicons-halflings-white.png
+images/gup.png
 images/handle.png
 images/Harddisk.png
 images/Harddisk48_Off.png
@@ -528,11 +530,13 @@ app/log/components/DeviceTextLogTable.js
 app/log/DeviceLog.html
 app/log/DeviceLog.js
 app/log/factories.js
+app/log/GraphLog.html
 app/log/GraphLog.js
 app/log/LightLog.html
 app/log/LightLog.js
 app/log/SceneLog.html
 app/log/SceneLog.js
+app/log/TemperatureLog.html
 app/log/TemperatureLog.js
 app/log/TextLog.html
 app/log/TextLog.js
@@ -563,6 +567,7 @@ app/timers/SceneTimersController.js
 
 app/AboutController.js
 app/app.js
+app/app.notifications.js
 app/app.constants.js
 app/app.permissions.js
 app/app.routes.js
@@ -596,7 +601,6 @@ app/TemperatureController.js
 app/TemperatureCustomLogController.js
 app/TimerplanController.js
 app/UpdateController.js
-app/UpdateController2.js
 app/UsersController.js
 app/UserVariablesController.js
 app/UtilityController.js
@@ -644,7 +648,6 @@ js/colpick.js
 js/date.format.js
 js/domoticz.js
 js/domoticzdevices.js
-js/export-csv.js
 js/FileSaver.js
 js/highcharts-ng.min.js
 js/html5shiv.js
@@ -682,8 +685,6 @@ secpanel/js/ion.sound.min.js
 #SwitchIcons
 
 # HTML pages
-views/log/device_graph_log.html
-views/log/device_temperature_log.html
 views/about.html
 views/cam.html
 views/customicons.html
@@ -711,7 +712,6 @@ views/temperature_custom_temp_log.html
 views/timerplan.html
 views/timers.html
 views/update.html
-views/update2.html
 views/users.html
 views/utility.html
 views/weather.html

@@ -40,11 +40,11 @@ local checkAttributes = function(item, attributes)
 	for attr, value in pairs(attributes) do
 		res = res and expectEql(item[attr], value, attr)
 	end
-    if res then return res
-    else 
-        print(item[attr], value, attr)
-        return res
-    end
+	if res then return res
+	else
+		print(item[attr], value, attr)
+		return res
+	end
 end
 
 local testAirQuality = function(name)
@@ -733,12 +733,54 @@ local testSetIconSwitch = function(name)
 	return res
 end
 
-local testDeviceDump = function(name)
+local testDeviceDumps = function(name)
 	local utils = require('Utils')
-	local dev = dz.devices(name)
+	local dv = dz.devices(name)
 	local res = true
-	res = res and ( utils.dumpTable(dev, '> ') == nil) 
-	handleResult('Test device dump', res)
+	res = res and ( dv.dump() == nil )
+	res = res and ( dv.dumpSelection() == nil )
+	res = res and ( dv.dumpSelection('attributes') == nil )
+	res = res and ( dv.dumpSelection('functions') == nil )
+	res = res and ( dv.dumpSelection('tables') == nil )
+	handleResult('Test device dumps', res)
+	return res
+end
+
+local testGroupDumps = function(name)
+	local utils = require('Utils')
+	local gp = dz.groups(name )
+	local res = true
+	res = res and ( gp.dump() == nil )
+	res = res and ( gp.dumpSelection() == nil )
+	res = res and ( gp.dumpSelection('attributes') == nil )
+	res = res and ( gp.dumpSelection('functions') == nil )
+	res = res and ( gp.dumpSelection('tables') == nil )
+	handleResult('Test group dumps', res)
+	return res
+end
+
+local testSceneDumps = function(name)
+	local utils = require('Utils')
+	local sc = dz.scenes(name)
+	local res = true
+	res = res and ( sc.dump() == nil )
+	res = res and ( sc.dumpSelection() == nil )
+	res = res and ( sc.dumpSelection('attributes') == nil )
+	res = res and ( sc.dumpSelection('functions') == nil )
+	res = res and ( sc.dumpSelection('tables') == nil )
+	handleResult('Test scene dumps', res)
+	return res
+end
+
+local testVariableDumps = function(name)
+	local utils = require('Utils')
+	local var = dz.variables(name)
+	local res = true
+	res = res and ( var.dumpSelection() == nil )
+	res = res and ( var.dumpSelection('attributes') == nil )
+	res = res and ( var.dumpSelection('functions') == nil )
+	res = res and ( var.dumpSelection('tables') == nil )
+	handleResult('Test Variable dumps', res)
 	return res
 end
 
@@ -763,8 +805,8 @@ end
 local testIFTTT = function(event)
 	res = true
 	print('triggerIFTTT should fail now because IFTTT is disabled before stage 2')
-	dz.triggerIFTTT(event) 
-	dz.triggerIFTTT(event).afterSec(3) 
+	dz.triggerIFTTT(event)
+	dz.triggerIFTTT(event).afterSec(3)
 	handleResult('Test IFTTT call', res)
 	return res
 end
@@ -773,14 +815,15 @@ local testCancelledScene = function(name)
 	local res = true
 	local count = dz.globalData.cancelledScene
 	res = res and expectEql(2, count)
-	handleResult('Test cancelled repeat scene', res)
+	handleResult('Test cancelled repeat scene' .. dz.globalData.cancelledScene, res)
 	return res
 end
 
 local testHTTPSwitch = function(name)
 	local res = true
-	local trigger = dz.globalData.httpTrigger
-	res = res and expectEql('OKOKOKOK', trigger)
+	for check, result in pairs(dz.globalData.httpTrigger) do
+		res = res and expectEql(result, "OK")
+	end
 	handleResult('Test http trigger switch device', res)
 	return res
 end
@@ -823,13 +866,22 @@ local testVersion = function(name)
 	return res
 end
 
+local testHardwareInfo = function(name , id)
+	local res = true
+	res = res and expectEql(_.str(dz.hardwareInfo(name).deviceNames):match('vdHumidity'), 'vdHumidity')
+	handleResult('Test hardware (name) info name (devices) ', res )
+	res = res and expectEql(_.str(dz.hardwareInfo(id).deviceNames):match('vdSilentSwitch'), 'vdSilentSwitch')
+	handleResult('Test hardware (id) info name (devices) ', res )
+	return res
+end
+
 local testExistUtils = function()
-	local interimResult 
+	local interimResult
 	local res = {}
 	local utils = require('Utils')
 
 	interimResult = utils.deviceExists(1)
-	res[#res + 1] = interimResult 
+	res[#res + 1] = interimResult
 	handleResult('Test Device exists',interimResult ~= false)
 
 	interimResult = not(utils.deviceExists('none existing'))
@@ -868,7 +920,7 @@ local testExistUtils = function()
 	res[#res + 1] = interimResult
 	handleResult('Test Camera not exists',interimResult)
 
-	for _, bool in ipairs(res) do 
+	for _, bool in ipairs(res) do
 		if not(bool) then return false end
 	end
 	return true
@@ -958,11 +1010,15 @@ return {
 		res = res and testDescription('vdDescriptionSwitch', descriptionString, "device")
 		res = res and testDescription('sceneDescriptionSwitch1', descriptionString, "scene")
 		res = res and testDescription('groupDescriptionSwitch1', descriptionString, "group")
-		res = res and testDeviceDump(vdSwitchDimmer)
+		res = res and testDeviceDumps('vdSwitchDimmer')
+		res = res and testGroupDumps('gpGroup')
+		res = res and testSceneDumps('scScene')
+		res = res and testVariableDumps('varString' )
 		res = res and testCameraDump()
 		res = res and testSettingsDump()
 		res = res and testIFTTT('myEvent')
 		res = res and testVersion('version')
+		res = res and testHardwareInfo('dummy', 2)
 		res = res and testExistUtils()
 
 		-- test a require

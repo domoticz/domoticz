@@ -106,13 +106,18 @@ bool CEvohomeWeb::StartSession()
 	{
 		if (!renew_login())
 		{
+			m_logonfailures++;
+			if (m_logonfailures == LOGONFAILTRESHOLD)
+				_log.Log(LOG_STATUS, "(%s) logon fail treshold reached - trottling", m_Name.c_str());
+			if ((m_logonfailures * m_refreshrate) > MAXPOLINTERVAL)
+				m_logonfailures--;
 			return false;
 		}
 	}
 	else if (!login(m_username, m_password))
 	{
 		m_logonfailures++;
-		if (m_logonfailures > LOGONFAILTRESHOLD)
+		if (m_logonfailures == LOGONFAILTRESHOLD)
 			_log.Log(LOG_STATUS, "(%s) logon fail treshold reached - trottling", m_Name.c_str());
 		if ((m_logonfailures * m_refreshrate) > MAXPOLINTERVAL)
 			m_logonfailures--;
@@ -2095,11 +2100,12 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 		else
 			ss_error << "-1";
 		ss_error << "\",\"message\":\"";
-		int i = 0;
+		size_t i = 0;
 		char* html = &sz_response[0];
-		char c = html[i];
+		char c;
 		while (i < sz_response.size())
 		{
+			c = html[i];
 			if (c == '<')
 			{
 				while (c != '>')
@@ -2111,7 +2117,6 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 			}
 			else if (c != '<')
 			{
-				c = html[i];
 				ss_error << c;
 				i++;
 			}

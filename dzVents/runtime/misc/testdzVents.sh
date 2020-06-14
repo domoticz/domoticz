@@ -32,7 +32,7 @@ if [ ! -f "$basedir/dzVents/runtime/integration-tests/testIntegration.lua" ]; th
 	exit 1
 fi
 
-NewVersion=$($basedir/domoticz --help | grep Giz | awk '{print $5}') 2>&1 >/dev/null
+NewVersion=$($basedir/domoticz --help | grep Giz | awk '{print $5 " (" $7}') 2>&1 >/dev/null
 export NewVersion
 if [[ $? -ne 0 ]];then
 	echo "This script requires an domoticz"
@@ -40,9 +40,9 @@ if [[ $? -ne 0 ]];then
 else
 	echo dzVents will be tested against domoticz version $NewVersion.
 fi
- 
+
 currenttime=$(date +%H:%M)
-if [[ "$currenttime" > "00:00" ]] && [[ "$currenttime" < "00:31" ]]; then 
+if [[ "$currenttime" > "00:00" ]] && [[ "$currenttime" < "00:31" ]]; then
 	echo Script cannot be execute dbetween 00:00 and 00:30. Time checks will fail
 	exit 1
 fi
@@ -104,8 +104,8 @@ function cleanup
 
 function stopBackgroundProcesses
 	{
-		pkill node 2>&1 >/dev/null
-		pkill domoticz 2>&1 >/dev/null
+		pkill node  2>&1 >/dev/null
+		pkill domoticz  2>&1 >/dev/null
 		if [[ $1 -eq 1 ]] ;then
 			exit $1 2>&1 >/dev/null
 		fi
@@ -127,28 +127,30 @@ function fillTimes
 		ContactDoorLockInvertedSwitch_ExpectedSeconds=30
 		DelayedVariableScene_ExpectedSeconds=80
 		EventState_ExpectedSeconds=190
-		Integration_ExpectedSeconds=330
+		Integration_ExpectedSeconds=340
 		SelectorSwitch_ExpectedSeconds=100
+		SystemAndCustomEvents_ExpectedSeconds=10
 	}
 
 function fillNumberOfTests
 	{
-		Device_ExpectedTests=113
-		Domoticz_ExpectedTests=71
+		Device_ExpectedTests=115
+		Domoticz_ExpectedTests=74
 		EventHelpers_ExpectedTests=32
 		EventHelpersStorage_ExpectedTests=50
 		HTTPResponse_ExpectedTests=6
 		Lodash_ExpectedTests=100
 		ScriptdzVentsDispatching_ExpectedTests=2
-		TimedCommand_ExpectedTests=42
-		Time_ExpectedTests=340
-		Utils_ExpectedTests=25
+		TimedCommand_ExpectedTests=46
+		Time_ExpectedTests=342
+		Utils_ExpectedTests=27
 		Variable_ExpectedTests=15
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
 		DelayedVariableScene_ExpectedTests=2
 		EventState_ExpectedTests=2
-		Integration_ExpectedTests=217
+		Integration_ExpectedTests=222
 		SelectorSwitch_ExpectedTests=2
+		SystemAndCustomEvents_ExpectedTests=7
 	}
 
 function testDir
@@ -163,11 +165,18 @@ function testDir
 			testFile=${testFile#"$prefix"}
 			Expected=$(( $(($testFile$underScoreSeconds)) / factor ))
 			Tests=$(( $(($testFile$underScoreTests)) / 1 ))
+			if test $i == 'testSystemAndCustomEvents.lua' ; then
+				tput sc # save cursor
+				stopBackgroundProcesses
+				sleep 6
+				tput rc;tput el # rc
+			fi
 			echo -n $(showTime) " "
-			printf "%-42s %4d "  $testFile $Expected 
+			printf "%-42s %4d "  $testFile $Expected
 			printf "%10d" $Tests
 			# busted $i  2>&1 >/dev/null
 			busted $i  > $outfile
+
 			if [[ $? -ne 0 ]];then
 				printf "%-10s" "===>> NOT OK"
 				echo
@@ -207,11 +216,14 @@ cp $basedir/domoticz.db $basedir/domoticz.db_$$
 rm -f $basedir/domoticz.db
 
 cd $basedir
+cp dzVents/runtime/integration-tests/scriptTestCustomAndSystemEventsScript.lua scripts/dzVents/scripts/scriptTestCustomAndSystemEventsScript.lua
+
+cd $basedir
 ./domoticz  -www 8080 -sslwww 444 > domoticz.log$$ &
 checkStarted "domoticz" 20
 
 clear
-echo "========= domoticz $NewVersion, dzVents V$dzVersion =======+========================== Tests ==============================+"
+echo "========= domoticz $NewVersion, dzVents V$dzVersion +========================== Tests ==============================+"
 echo "  time  | test-script	                           | expected | tests | result  | successful |  failed  | seconds  |"
 echo "===================================================+===============================================================+"
 
@@ -222,22 +234,23 @@ cd $basedir/dzVents/runtime/tests
 testDir
 cd $basedir/dzVents/runtime/integration-tests
 testDir
+
 echo
 echo
 
 cd $basedir
-expectedErrorCount=5
+expectedErrorCount=6
 grep "Results stage 2: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 	if [[ $? -eq 0 ]];then
 		#echo Stage 1 and stage 2 of integration test Succeeded
 		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | wc -l)
-		if [[ $errorCount -eq $expectedErrorCount ]];then
+		if [[ $errorCount -le $expectedErrorCount ]];then
 			#echo Errors are to be expected
 			echo -n
 		else
-			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken
+			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken | grep -v LOG_ERROR
 			stopBackgroundProcesses 1
 		fi
 	else

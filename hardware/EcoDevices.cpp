@@ -33,7 +33,8 @@ Version history
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include <../tinyxpath/xpath_static.h>
+#include "../tinyxpath/tinyxml.h"
+#include "../tinyxpath/xpath_static.h"
 #include "../webserver/Base64.h"
 #include "../main/json_helper.h"
 #include <sstream>
@@ -164,6 +165,9 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	teleinfo.DEMAIN = S_xpath_string(XMLdoc.RootElement(), "/response/DEMAIN/text()").c_str();
 	teleinfo.ISOUSC = i_xpath_int(XMLdoc.RootElement(), "/response/ISOUSC/text()");
 	teleinfo.PAPP = i_xpath_int(XMLdoc.RootElement(), "/response/PAPP/text()");
+	if ( teleinfo.PAPP > 0 ) {
+		teleinfo.withPAPP = true;
+	}
 	teleinfo.BASE = i_xpath_int(XMLdoc.RootElement(), "/response/BASE/text()");
 	teleinfo.HCHC = i_xpath_int(XMLdoc.RootElement(), "/response/HCHC/text()");
 	teleinfo.HCHP = i_xpath_int(XMLdoc.RootElement(), "/response/HCHP/text()");
@@ -470,6 +474,9 @@ void CEcoDevices::GetMeterRT2Details()
 	m_teleinfo1.DEMAIN = XMLmap["DEMAIN"];
 	m_teleinfo1.ISOUSC = atoi(XMLmap["ISOUSC"].c_str());
 	m_teleinfo1.PAPP = atoi(XMLmap["PAPP"].c_str());
+	if ( m_teleinfo1.PAPP > 0 ) {
+		m_teleinfo1.withPAPP = true;
+	}
 	m_teleinfo1.BASE = atoi(XMLmap["BASE"].c_str());
 	m_teleinfo1.HCHC = atoi(XMLmap["HCHC"].c_str());
 	m_teleinfo1.HCHP = atoi(XMLmap["HCHP"].c_str());

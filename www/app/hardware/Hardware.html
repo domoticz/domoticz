@@ -826,7 +826,6 @@
 		</table>
 	</div>
 	<div id="divratelimitp1">
-		<br>
 		<table class="display" id="hardwareparamsratelimitp1" border="0" cellpadding="0" cellspacing="20">
 			<tr valign="top">
 				<td align="right" style="width:110px"><label for="ratelimitp1"><span data-i18n="Rate Limit">Rate Limit</span>: </label></td>
@@ -834,6 +833,32 @@
 					<input type="text" id="ratelimitp1" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;<span data-i18n="(Seconds) 0 = Disabled">Seconds</span>
 					<br />
 					<span data-i18n="This limits the amount of meter updates.">This limits the amount of meter updates.</span>
+					<br />
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div id="divkeyp1p1">
+		<table class="display" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:110px"><label for="decryptionkey"><span data-i18n="Decryption Key">Decryption Key</span>:</label></td>
+				<td>
+					<input type="text" id="decryptionkey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+					<br />
+					(<span data-i18n="Use only when your provider encrypts the payload">Use only when your provider encrypts the payload</span>)
+					</td>
+			</tr>
+		</table>
+	</div>
+	<div id="divensynchro">
+		<br>
+		<table class="display" id="hardwareparamsensynchro" border="0" cellpadding="0" cellspacing="20">
+			<tr valign="top">
+				<td align="right" style="width:110px"><span data-i18n="Date/time synchronization">Date/time synchronization</span>:</td>
+				<td>
+					<input type="text" id="ensynchro" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;<span data-i18n="(Minutes) 0 = Disabled">Minutes</span>
+					<br />
+					<span data-i18n="Minutes between date/time synchronization checks.">Minutes between date / time synchronization checks.</span>
 					<br />
 				</td>
 			</tr>
@@ -969,6 +994,14 @@
 					<input type="number" min="1" id="threshold" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="25" />&nbsp;(&percnt;)
 				</td>
 			</tr>
+			<tr>
+				<td align="right" style="vertical-align:top; width:110px;"><label><span data-i18n="Location"></span>:</label></td>
+				<td>
+					<input type="text" id="location" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br />
+					<span data-i18n="StationLatLong"></span><br/>
+					<span data-i18n="(0 = Application default)"></span>
+				</td>
+			</tr>
 		</table>
 	</div>
 	<div id="divsolaredgeapi">
@@ -1021,6 +1054,51 @@
 			<tr>
 				<td></td>
 				<td><span data-i18n="Toon Agreement">Change only to select another Toon when having multiple agreements</span></td>
+			</tr>
+		</table>
+	</div>
+	<div id="divtesla">
+		<br>
+		<table class="display" id="hardwareparamstesla" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:110px"><label><span data-i18n="VIN"></span>:</label></td>
+				<td><input type="text" id="vinnr" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label><span data-i18n="Default interval"></span>:</label></td>
+				<td><input type="text" id="defaultinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="10" />&nbsp;(<span data-i18n="Minutes"></span>)</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="awayinterval"><span data-i18n="Active interval"></span>:</label></td>
+				<td><input type="text" id="activeinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="1" />&nbsp;(<span data-i18n="Minutes"></span>).</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					Two interval types need to be specified:<ul>
+						<li>Default interval is used when the car is not at home, or home but not charging or using climate controls<br />
+							Note that a too low interval (less than 20 minutes) will prevent the car to sleep.</li>
+						<li>Active interval is used when the car is home, and charging or using climate controls</li>
+					</ul>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label id="lblallowwakeup" for="name"><span data-i18n="Allow wake up"></span>:</label></td>
+				<td>
+					<select id="comboallowwakeup" style="width:60px" class="combobox ui-corner-all">
+						<option value="0">False</option>
+						<option value="1">True</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					If not allowed, the car will not be woken up when polled for status information to avoid battery drain. Exceptions:<ul>
+						<li>Commands sent to the car will always wake up the car</li>
+						<li>While the car is connected to a charger (home or not home), the car will always be woken up</li>
+					</ul>
+				</td>
 			</tr>
 		</table>
 	</div>
@@ -1152,6 +1230,19 @@
 	<div id="divmqtt">
 		<br>
 		<table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
+			<tr id="mqtt_preventloop" valign="top">
+				<td align="right" style="width:110px"><label for="combopreventloop"><span data-i18n="Prevent Loop">Prevent Loop</span>:</label></td>
+				<td>
+					<select id="combopreventloop" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">False</option>
+						<option value="1" selected>True</option>
+					</select>
+					<br />
+					<span>
+						If 'False' this will cause the MQTT message to be echoed back. <br />
+						In most cases this is a bad scenario and should be avoided.<br />
+				</td>
+			</tr>
 			<tr id="mqtt_publish" valign="top">
 				<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Publish Topic">Publish Topic</span>:</label></td>
 				<td>
@@ -1209,6 +1300,19 @@
 		<br>
 		<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
 			<tr valign="top">
+			<tr id="mqtt_preventloop" valign="top">
+				<td align="right" style="width:110px"><label for="combopreventloop"><span data-i18n="Prevent Loop">Prevent Loop</span>:</label></td>
+				<td>
+					<select id="combopreventloop" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">False</option>
+						<option value="1" selected>True</option>
+					</select>
+					<br />
+					<span>
+						If 'False' this will cause the MQTT message to be echoed back. <br />
+						In most cases this is a bad scenario and should be avoided.<br />
+				</td>
+			</tr>
 				<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix Mode"></span>:</label></td>
 				<td>
 					<select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">

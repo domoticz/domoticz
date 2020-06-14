@@ -13,9 +13,9 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
 
 #include <ctime>
 
@@ -991,7 +991,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 				if (pChild->GetValue(V_FORECAST, stringValue))
 				{
 					std::string devname = (!pChild->childName.empty()) ? pChild->childName : "Forecast";
-					SendTextSensor(pSensorBaro->nodeID, pSensorBaro->childID, pChild->batValue, stringValue, devname);
+					SendTextSensor(pChild->nodeID, pChild->childID, pChild->batValue, stringValue, devname);
 				}
 			}
 		}

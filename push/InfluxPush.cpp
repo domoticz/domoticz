@@ -2,7 +2,7 @@
 #include "InfluxPush.h"
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
@@ -15,10 +15,13 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+using namespace boost::placeholders;
+
 CInfluxPush::CInfluxPush() :
 	m_InfluxPort(8086),
 	m_bInfluxDebugActive(false)
 {
+	m_PushType = PushType::PUSHTYPE_INFLUXDB;
 	m_bLinkActive = false;
 }
 
@@ -103,8 +106,9 @@ void CInfluxPush::DoInfluxPush()
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.Name, B.SwitchType FROM PushLink as A, DeviceStatus as B "
-		"WHERE (A.PushType==1 AND A.DeviceID == '%" PRIu64 "' AND A.Enabled==1 AND A.DeviceID==B.ID)",
+		"SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.Name, B.SwitchType FROM PushLink as A, DeviceStatus as B "
+		"WHERE (A.PushType==%d AND A.DeviceRowID == '%" PRIu64 "' AND A.Enabled==1 AND A.DeviceRowID==B.ID)",
+		PushType::PUSHTYPE_INFLUXDB,
 		m_DeviceRowIdx);
 	if (!result.empty())
 	{
@@ -141,7 +145,7 @@ void CInfluxPush::DoInfluxPush()
 
 			if (sendValue != "") {
 				std::string szKey;
-				std::string vType = CBasePush::DropdownOptionsValue(m_DeviceRowIdx, delpos);
+				std::string vType = CBasePush::DropdownOptionsValue(std::stoi(sd[0]), delpos);
 				stdreplace(vType, " ", "-");
 				stdreplace(name, " ", "-");
 				szKey = vType + ",idx=" + sd[0] + ",name=" + name;
@@ -314,7 +318,8 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==1 AND A.DeviceID==B.ID)");
+			result = m_sql.safe_query(
+				"SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_INFLUXDB);
 			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -355,8 +360,8 @@ namespace http {
 			std::string linkactive = request::findValue(&req, "linkactive");
 			if (idx == "0") {
 				m_sql.safe_query(
-					"INSERT INTO PushLink (PushType,DeviceID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES (%d,'%d',%d,%d,'%q',%d,'%q',%d,%d)",
-					1,
+					"INSERT INTO PushLink (PushType,DeviceRowID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES (%d,'%d',%d,%d,'%q',%d,'%q',%d,%d)",
+					CBasePush::PushType::PUSHTYPE_INFLUXDB,
 					deviceidi,
 					atoi(valuetosend.c_str()),
 					targettypei,
@@ -369,7 +374,7 @@ namespace http {
 			}
 			else {
 				m_sql.safe_query(
-					"UPDATE PushLink SET DeviceID=%d, DelimitedValue=%d, TargetType=%d, Enabled=%d WHERE (ID == '%q')",
+					"UPDATE PushLink SET DeviceRowID=%d, DelimitedValue=%d, TargetType=%d, Enabled=%d WHERE (ID == '%q')",
 					deviceidi,
 					atoi(valuetosend.c_str()),
 					targettypei,

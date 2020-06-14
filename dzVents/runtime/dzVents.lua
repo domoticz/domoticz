@@ -14,26 +14,31 @@ _G.scriptsFolderPath = scriptPath .. 'scripts' -- global
 _G.generatedScriptsFolderPath = scriptPath .. 'generated_scripts' -- global
 _G.dataFolderPath = scriptPath .. 'data' -- global
 
-package.path = package.path .. ';' .. scriptPath .. '?.lua'
-package.path = package.path .. ';' .. runtimePath .. '?.lua'
-package.path = package.path .. ';' .. runtimePath .. 'device-adapters/?.lua'
-package.path = package.path .. ';' .. scriptPath .. 'dzVents/?.lua'
-package.path = package.path .. ';' .. scriptPath .. 'scripts/?.lua'
-package.path = package.path .. ';' .. scriptPath .. '../lua/?.lua'
-package.path = package.path .. ';' .. scriptPath .. 'scripts/modules/?.lua'
-package.path = package.path .. ';' .. scriptPath .. '?.lua'
-package.path = package.path .. ';' .. scriptPath .. 'generated_scripts/?.lua'
-package.path = package.path .. ';' .. scriptPath .. 'data/?.lua'
-package.path = package.path .. ';' .. scriptPath .. 'modules/?.lua'
+package.path =
+	scriptPath .. '?.lua;' ..
+	runtimePath .. '?.lua;' ..
+	runtimePath .. 'device-adapters/?.lua;' ..
+	scriptPath .. 'dzVents/?.lua;' ..
+	scriptPath .. 'scripts/?.lua;' ..
+	scriptPath .. '../lua/?.lua;' ..
+	scriptPath .. 'scripts/modules/?.lua;' ..
+	scriptPath .. '?.lua;' ..
+	scriptPath .. 'generated_scripts/?.lua;' ..
+	scriptPath .. 'data/?.lua;' ..
+	scriptPath .. 'modules/?.lua;' ..
+	package.path
 
 local EventHelpers = require('EventHelpers')
 local helpers = EventHelpers()
 local utils = require('Utils')
 
+
 if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMODE) then
 	print('Debug: Dumping domoticz data to ' .. scriptPath .. 'domoticzData.lua')
 	local persistence = require('persistence')
 	persistence.store(scriptPath .. 'domoticzData.lua', domoticzData)
+	--persistence.store(scriptPath .. 'globalvariables.lua', globalvariables)
+	--persistence.store(scriptPath .. 'timeofday.lua', timeofday)
 
 	local events, length = helpers.getEventSummary()
 	if (length > 0) then
@@ -64,6 +69,9 @@ helpers.dispatchVariableEventsToScripts()
 helpers.dispatchSecurityEventsToScripts()
 helpers.dispatchSceneGroupEventsToScripts()
 helpers.dispatchHTTPResponseEventsToScripts()
+helpers.dispatchSystemEventsToScripts()
+helpers.dispatchCustomEventsToScripts()
+
 commandArray = helpers.domoticz.commandArray
 
 return commandArray

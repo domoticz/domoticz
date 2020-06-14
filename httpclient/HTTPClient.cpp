@@ -386,6 +386,8 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
+		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
+		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &vHeaderData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		//curl_easy_setopt(curl, CURLOPT_PUT, 1);
@@ -454,6 +456,8 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
+		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
+		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &vHeaderData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		//curl_easy_setopt(curl, CURLOPT_PUT, 1);

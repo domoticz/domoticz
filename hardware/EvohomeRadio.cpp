@@ -22,7 +22,10 @@
 #include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
+#include <boost/bind/bind.hpp>
+
+using namespace boost::placeholders;
 
 extern std::string szUserDataFolder;
 
@@ -1552,6 +1555,16 @@ bool CEvohomeRadio::DecodeActuatorState(CEvohomeMsg& msg)
 
 	Log(true, LOG_STATUS, "evohome: %s: ID:0x%06x (%s) DevNo 0x%02x: %d", tag, msg.GetID(0), msg.GetStrID(0).c_str(), nDevNo, nDemand);
 	RXRelay(static_cast<uint8_t>(0xFF), static_cast<uint8_t>(nDemand));//devno is always 0 and therefore not valid
+	
+	//Log all received relay activity (green led) to a device, note this is different from Heat Demand
+        bool bRelayOn( false );
+        if (nDemand == 0xc8) {
+                bRelayOn = true;
+        }
+        char zstrname[40];
+        sprintf(zstrname, "Zone Relay %06x", msg.GetID(0));
+        UpdateSwitch(msg.GetID(0), bRelayOn, zstrname);
+
 	return true;
 }
 
@@ -1710,14 +1723,14 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
 	char sFaultType[15], sFaultCode[20], sDevType[15], sFaultDateTime[21];
 
 	msg.Get(nFaultType, 1).Get(nFaultCode, 4);
-	nFaultDateTime = static_cast<long>(msg.payload[10]) << 32 | static_cast<long>(msg.payload[11]) << 24 | msg.payload[12] << 16 | msg.payload[13] << 8 | msg.payload[14];
+	nFaultDateTime = static_cast<long long>(msg.payload[10]) << 32 | static_cast<long long>(msg.payload[11]) << 24 | msg.payload[12] << 16 | msg.payload[13] << 8 | msg.payload[14];
 
-	nFaultYear = (nFaultDateTime & 0b1111111UL << 24) >> 24;
-	nFaultMonth = (nFaultDateTime & 0b1111UL << 36) >> 36;
-	nFaultDay = (nFaultDateTime & 0b11111UL << 31) >> 31;
-	nFaultHour = static_cast<uint8_t>((nFaultDateTime & 0b11111UL << 19) >> 19);
-	nFaultMinute = static_cast<uint8_t>((nFaultDateTime & 0b111111UL << 13) >> 13);
-	nFaultSecond = static_cast<uint8_t>((nFaultDateTime & 0b111111UL << 7) >> 7);
+	nFaultYear = static_cast<uint8_t>((nFaultDateTime >> 24) & 127);
+	nFaultMonth = static_cast<uint8_t>((nFaultDateTime >> 36) & 15);
+	nFaultDay = static_cast<uint8_t>((nFaultDateTime >> 31) & 31);
+	nFaultHour = static_cast<uint8_t>((nFaultDateTime >> 19) & 31);
+	nFaultMinute = static_cast<uint8_t>((nFaultDateTime >> 13) & 63);
+	nFaultSecond = static_cast<uint8_t>((nFaultDateTime >> 7) & 63);
 	sprintf(sFaultDateTime, "20%02d-%02d-%02d %02d:%02d:%02d", nFaultYear, nFaultMonth, nFaultDay, nFaultHour, nFaultMinute, nFaultSecond);
 
 	// Code to plain speak as used on the Controller Fault Logbook
@@ -1750,7 +1763,7 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
 
 	// Log current error condition to an Alert device
         if (nAddr == 0x00) {
-		char szAlertMsg[70];
+		char szAlertMsg[200];
 		sprintf(szAlertMsg, "%s: %s on %s(%06x) at %s", sFaultType, sFaultCode, sDevType, idDev.GetID(), sFaultDateTime);
 		SendAlertSensor(418, 255, nAlertType, szAlertMsg, "Fault Logbook");
         }

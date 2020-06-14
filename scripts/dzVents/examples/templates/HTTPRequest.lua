@@ -19,7 +19,7 @@ return {
 
 		if (item.isHTTPResponse) then
 
-			if (item.statusCode == 200) then
+			if (item.ok) then
 				if (item.isJSON) then
 
 					local someValue = item.json.someValue  -- just an example

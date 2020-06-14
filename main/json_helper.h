@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../json/json.h"
+#include <json/json.h>
 
 bool ParseJSon(const std::string& inStr, Json::Value& json_output, std::string* errstr = nullptr);
 bool ParseJSonStrict(const std::string& inStr, Json::Value& json_output, std::string* errstr = nullptr);

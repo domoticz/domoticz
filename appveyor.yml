@@ -1,17 +1,39 @@
 version: 1.0.{build}
 image: Visual Studio 2019
 configuration: Release
+platform: x86
+
+# below is to build/use packaged with VCPKG, as this is currently taking to long it is disabled
+#environment:
+#  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+#  VCPKG_INSTALL_PATH: 'C:\tools\vcpkg\installed'
+#  VCPKG_COMMIT_ID: '7aebb481085de7387f8a9975652c26f9053f66df'
+#
+#cache:
+#- C:\tools\vcpkg\installed -> msbuild\vcpkg-packages.txt
+#- C:\Users\appveyor\clcache -> .appveyor.yml, msbuild\**
 
 #init:
 #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #
 #on_finish:
 #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  
+
+# below is to build/use packaged with VCPKG, as this is currently taking to long it is disabled
+#install:
+#- cd "C:\Tools\vcpkg"
+#- git pull
+#- .\bootstrap-vcpkg.bat
+#- .\vcpkg update
+#- .\vcpkg upgrade --no-dry-run
+#- .\vcpkg install --triplet %PLATFORM%-windows boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
+#- .\vcpkg integrate install
+#- cd %APPVEYOR_BUILD_FOLDER%
+
 before_build:
 - ps: >-
     nuget install Tools.InnoSetup
-    
+
 - cmd: >-    
     cd msbuild
     
@@ -27,14 +49,12 @@ build:
   verbosity: minimal
 
 after_build:
-- cmd: >-
-    cp appversion.h version_windows_x86.h
-    
-    cp History.txt history_windows_x86.txt
-    
-    Tools.InnoSetup.6.0.3\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
-    
-    msbuild msbuild\package.proj
+- cd %APPVEYOR_BUILD_FOLDER%
+- cp appversion.h version_windows_x86.h
+- cp History.txt history_windows_x86.txt
+- move Tools.InnoSetup.* Tools.InnoSetup
+- Tools.InnoSetup\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
+- msbuild msbuild\package.proj
 
 artifacts:
 - path: domoticz_windows_x86.zip

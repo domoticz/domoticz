@@ -8,13 +8,15 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <cmath>
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #if _DEBUG
 	#define ENOCEAN_BUTTON_DEBUG

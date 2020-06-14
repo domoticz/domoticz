@@ -1,5 +1,4 @@
-
-local jsonParser
+local jsonParser = require('JSON')
 local _ = require('lodash')
 
 local self = {
@@ -8,8 +7,16 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.5.7',
+	DZVERSION = '3.0.9',
 }
+
+function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
+	if type(value_of_unsupported_type) == 'function' then
+		return '"Function"'
+	else
+		return nil
+	end
+end
 
 function math.pow(x, y)
 	self.log('Function math.pow(x, y) has been deprecated in Lua 5.3. Please consider changing code to x^y', self.LOG_FORCE)
@@ -47,13 +54,8 @@ function self.numDecimals(num, int, dec)
 end
 
 function self.fileExists(name)
-	local f = io.open(name, "r")
-	if f ~= nil then
-		io.close(f)
-		return true
-	else
-		return false
-	end
+	local ok, err, code = os.rename(name, name)
+	return code ~= 2
 end
 
 function self.stringSplit(text, sep)
@@ -64,6 +66,42 @@ function self.stringSplit(text, sep)
 		table.insert(t, str)
 	end
 	return t
+end
+
+function self.stringToSeconds(str)
+
+	local now = os.date('*t')
+	local daySeconds = 24 * 3600
+	local weekSeconds = 7 * daySeconds
+	local num2Days = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
+	local days2Num = { sun = 1, mon = 2, tue = 3, wed = 4, thu = 5, fri = 6, sat = 7 }
+
+	local function calcDelta(str)
+		local function timeDelta(str)
+			local hours, minutes, seconds = 0, 0, 0
+			if str:match('%d+:%d%d:%d%d') then
+				hours, minutes, seconds = str:match("(%d+):(%d%d):(%d%d)")
+			else
+				hours, minutes = str:match("(%d+):(%d%d)")
+			end
+			return ( hours * 3600 + minutes * 60 + seconds - ( now.hour * 3600 + now.min * 60 + now.sec ))
+		end
+
+		local delta
+		local deltaT = timeDelta(str)
+		for _, day in ipairs(num2Days) do
+			if str:lower():find(day) then
+				local newDelta = ( days2Num[day] - now.wday + 7 ) % 7 * daySeconds + deltaT
+				if newDelta < 0 then newDelta = newDelta + weekSeconds end
+				if delta == nil or newDelta < delta then delta = newDelta end
+			end
+		end
+
+		if delta == nil and deltaT < 0 then deltaT = deltaT + weekSeconds end
+		return delta or deltaT
+	end
+
+	return math.tointeger(calcDelta(str))
 end
 
 function self.inTable(searchTable, element)
@@ -77,16 +115,18 @@ function self.inTable(searchTable, element)
 	return false
 end
 
-function self.round(x, n)
-	-- n = math.pow(10, n or 0)
-	n = 10^(n or 0)
-	x = x * n
-	if x >= 0 then
-		x = math.floor(x + 0.5)
+function self.round(value, decimals)
+	local nVal = tonumber(value)
+	local nDec = ( decimals == nil and 0 ) or tonumber(decimals)
+	if nVal >= 0 and nDec > 0 then
+		return math.floor( (nVal * 10 ^ nDec) + 0.5) / (10 ^ nDec)
+	elseif nVal >=0 then
+		return math.floor(nVal + 0.5)
+	elseif nDec and nDec > 0 then
+		return math.ceil ( (nVal * 10 ^ nDec) - 0.5) / (10 ^ nDec)
 	else
-		x = math.ceil(x - 0.5)
+		return math.ceil(nVal - 0.5)
 	end
-	return x / n
 end
 
 function string.sMatch(text, match) -- add sanitized match function to string "library"
@@ -106,9 +146,18 @@ function self.osExecute(cmd)
 	os.execute(cmd)
 end
 
-function self.print(msg)
+function self.print(msg, filename)
 	if (_G.TESTMODE) then return end
-	print(msg)
+	if filename == nil then print(msg) return end
+
+	local targetDirectory = _G.dataFolderPath .. '/../dumps/'
+	if not( self.fileExists(targetDirectory)) then
+		os.execute( 'mkdir ' .. targetDirectory )
+	end
+
+	local f = io.open(_G.dataFolderPath .. '/../dumps/' .. filename, 'a' )
+	f:write(msg,'\n')
+	f:close()
 end
 
 function self.urlEncode(str, strSub)
@@ -137,27 +186,46 @@ function self.urlDecode(str, strSub)
 	return str:gsub("%%(%x%x)", hex2Char)
 end
 
+function self.isJSON(str, content)
+
+	local str = str or ''
+	local content = content or ''
+	local jsonPattern = '^%s*%[*%s*{.+}%s*%]*%s*$'
+	local ret = str:match(jsonPattern) == str  or content:find('application/json')
+	return ret ~= nil
+
+end
+
 function self.fromJSON(json, fallback)
 
-	local parse = function(j)
-		return jsonParser:decode(j)
-	end
-
-	if json == nil then
+	if not(json) then
 		return fallback
 	end
 
-	if (jsonParser == nil) then
-		jsonParser = require('JSON')
+	if json:find("'") then
+		local _, singleQuotes = json:gsub("'","'")
+		local _, doubleQuotes = json:gsub('"','"')
+		if singleQuotes > doubleQuotes then
+			json = json:gsub("'",'"')
+		end
 	end
 
-	ok, results = pcall(parse, json)
+	if self.isJSON(json) then
 
-	if (ok) then
-		return results
+		local parse = function(j)
+			return jsonParser:decode(j)
+		end
+
+		ok, results = pcall(parse, json)
+
+		if (ok) then
+			return results
+		end
+		self.log('Error parsing json to LUA table: ' .. _.str(results) , self.LOG_ERROR)
+	else
+		self.log('Error parsing json to LUA table: (invalid json string) ' .. _.str(json) , self.LOG_ERROR)
 	end
 
-	self.log('Error parsing json to LUA table: ' .. results, self.LOG_ERROR)
 	return fallback
 
 end
@@ -204,38 +272,52 @@ function self.toBase64(s) -- from http://lua-users.org/wiki/BaseSixtyFour
 	return s:sub(1, #s-pad) .. rep('=', pad)
 end
 
+function self.isXML(str, content)
+
+	local str = str or ''
+	local content = content or ''
+	local xmlPattern = '^%s*%<.+%>%s*$'
+	local ret = ( str:match(xmlPattern) == str  or content:find('application/xml') or content:find('text/xml')) and not(str:sub(1,30):find('DOCTYPE html') )
+	return ret
+
+end
+
 function self.fromXML(xml, fallback)
 
-	local parseXML = function(x)
-		local xmlParser = xml2Lua.parser(xmlHandler)
-		xmlParser:parse(x)
-		return xmlHandler.root
+	if xml and self.isXML(xml) then
+		local parseXML = function(x)
+			local xmlParser = xml2Lua.parser(xmlHandler)
+			xmlParser:parse(x)
+			return xmlHandler.root
+		end
+
+		if xml == nil then
+			return fallback
+		end
+
+		if xml2Lua == nil then
+			xml2Lua = require('xml2lua')
+		end
+
+		if xmlHandler == nil then
+			xmlHandler = require("xmlhandler.tree")
+		end
+
+		ok, results = pcall(parseXML, xml)
+
+		if (ok) then
+			return results
+		end
+		-- self.log('Error parsing xml to Lua table: ' .. _.str(results), self.LOG_ERROR)
+	else
+		self.log('Error parsing xml to LUA table: (invalid xml string) ' .. _.str(xml) , self.LOG_ERROR)
 	end
-
-	if xml == nil then
-		return fallback
-	end
-
-	if xml2Lua == nil then
-		xml2Lua = require('xml2lua')
-	end
-
-	if xmlHandler == nil then
-		xmlHandler = require("xmlhandler.tree")
-	end
-
-	ok, results = pcall(parseXML, xml)
-
-	if (ok) then
-		return results
-	end
-
-	self.log('Error parsing XML to LUA table: ' .. results, self.LOG_ERROR)
 	return fallback
 
 end
 
 function self.toXML(luaTable, header)
+
 	if header == nil then header = 'LuaTable' end
 
 	local toXML = function(luaTable, header)
@@ -252,7 +334,7 @@ function self.toXML(luaTable, header)
 		return results
 	end
 
-	self.log('Error converting LUA table to XML: ' .. results, self.LOG_ERROR)
+	self.log('Error converting LUA table to XML: ' .. _.str(results), self.LOG_ERROR)
 	return nil
 
 end
@@ -263,17 +345,13 @@ function self.toJSON(luaTable)
 		return jsonParser:encode(j)
 	end
 
-	if (jsonParser == nil) then
-		jsonParser = require('JSON')
-	end
-
 	ok, results = pcall(toJSON, luaTable)
 
 	if (ok) then
 		return results
 	end
 
-	self.log('Error converting LUA table to json: ' .. results, self.LOG_ERROR)
+	self.log('Error converting LUA table to json: ' .. _.str(results), self.LOG_ERROR)
 	return nil
 
 end
@@ -324,7 +402,7 @@ function self.rgbToHSB(r, g, b)
 		if (r == max) then
 			hsb.h = (g - b) / delta
 		elseif (g == max) then
-			 hsb.h = 2 + (b - r) / delta
+			hsb.h = 2 + (b - r) / delta
 		else
 			hsb.h = 4 + (r - g) / delta
 		end
@@ -365,6 +443,10 @@ function self.groupExists(parm)
 	return loopGlobal(parm, 'group')
 end
 
+function self.hardwareExists(parm)
+	return loopGlobal(parm, 'hardware')
+end
+
 function self.variableExists(parm)
 	return loopGlobal(parm, 'uservariable')
 end
@@ -373,18 +455,52 @@ function self.cameraExists(parm)
 	return loopGlobal(parm, 'camera')
 end
 
-function self.dumpTable(t, level)
+function self.dumpTable(t, level, filename)
 	local level = level or "> "
 	for attr, value in pairs(t or {}) do
 		if (type(value) ~= 'function') then
 			if (type(value) == 'table') then
-				self.print(level .. attr .. ':')
-				self.dumpTable(value, level .. '	')
+				self.print(level .. attr .. ':', filename)
+				self.dumpTable(value, level .. '	', filename)
 			else
-				self.print(level .. attr .. ': ' .. tostring(value))
+				self.print(level .. attr .. ': ' .. tostring(value), filename)
 			end
 		else
-			self.print(level .. attr .. '()')
+			self.print(level .. attr .. '()', filename)
+		end
+	end
+end
+
+function self.dumpSelection(object, selection)
+	self.print ('dump ' .. selection .. ' of ' .. object.baseType .. ' ' .. object.name)
+	if selection == 'attributes' then
+		for attr, value in pairs(object) do
+			if type(value) ~= 'function' and type(value) ~= 'table' then
+				self.print('> ' .. attr .. ': ' .. tostring(value))
+			end
+		end
+		if object.baseType ~= 'hardware' then
+			self.print('')
+			self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
+		end
+		if object.baseType ~= 'variable'  and object.baseType ~= 'hardware' then
+			self.print('> adapters: ' .. table.concat(object._adapters or {},', ') )
+		end
+		if object.baseType == 'device' then
+			self.print('> levelNames: ' .. table.concat(object.levelNames or {},', ') )
+			self.print('> rawData: ' .. table.concat(object.rawData or {},', ') )
+		end
+	elseif selection == 'tables' then
+		for attr, value in pairs(object) do
+			if type(value) == 'table' then
+				self.print('> ' .. attr .. ': ' )
+			end
+		end
+	elseif selection == 'functions' then
+		for attr, value in pairs(object) do
+			if type(value) == 'function' then
+				self.print('> ' .. attr .. '()')
+			end
 		end
 	end
 end

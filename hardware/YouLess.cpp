@@ -46,7 +46,7 @@ void CYouLess::Init()
 	m_p1gas.subtype = sTypeP1Gas;
 	m_p1gas.ID = 1;
 
-	m_bHaveP1 = false;
+	m_bHaveP1OrS0 = false;
 	m_bCheckP1 = true;
 	m_lastgasusage = 0;
 	m_lastSharedSendGas = mytime(NULL);
@@ -162,25 +162,28 @@ bool CYouLess::GetP1Details()
 			m_lastSharedSendGas = atime;
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 		}
-		m_bHaveP1 = true;
+		m_bHaveP1OrS0 = true;
 	}
 
 	if (!root["cs0"].empty())
 	{
 		//S0 Meter
+		double mcntr = root["cs0"].asDouble();
 		double musage = root["ps0"].asDouble();
-		SendKwhMeter(m_HwdID, 1, 255, musage, root["cs0"].asDouble(), "S0");
+		if (mcntr != 0)
+		{
+			SendKwhMeter(m_HwdID, 1, 255, musage, mcntr, "S0");
+			m_bHaveP1OrS0 = true;
+		}
 	}
-	return true;
+	return m_bHaveP1OrS0;
 }
 
 void CYouLess::GetMeterDetails()
 {
-	if (m_bCheckP1 || m_bHaveP1)
+	if (m_bCheckP1 || m_bHaveP1OrS0)
 	{
 		if (GetP1Details())
-			return;
-		if (m_bHaveP1)
 			return;
 	}
 
@@ -217,7 +220,12 @@ void CYouLess::GetMeterDetails()
 		pcurrent=pcurrent.substr(0,fpos);
 	stdreplace(pcurrent,",","");
 
-	m_meter.powerusage=atol(pusage.c_str());
-	m_meter.usagecurrent=atol(pcurrent.c_str());
-	sDecodeRXMessage(this, (const unsigned char *)&m_meter, NULL, 255);
+	unsigned long lpusage = atol(pusage.c_str());
+	unsigned long lpcurrent = atol(pcurrent.c_str());
+	if (lpusage)
+	{
+		m_meter.powerusage = lpusage;
+		m_meter.usagecurrent = lpcurrent;
+		sDecodeRXMessage(this, (const unsigned char*)&m_meter, NULL, 255);
+	}
 }

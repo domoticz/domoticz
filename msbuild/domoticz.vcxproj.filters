@@ -15,9 +15,6 @@
     <Filter Include="Webserver">
       <UniqueIdentifier>{0636fc98-3ba6-4dc9-8323-48dc959944c4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="json">
-      <UniqueIdentifier>{caed8300-c22a-4d76-9380-2b55120edaaa}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices">
       <UniqueIdentifier>{f1967572-afca-4c81-a06e-1eb4d560bb60}</UniqueIdentifier>
     </Filter>
@@ -144,12 +141,6 @@
     <Filter Include="zip">
       <UniqueIdentifier>{38a9cebe-efb0-4fc7-bcc1-86fe4704ceb1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="zip\Base">
-      <UniqueIdentifier>{213a4775-a8c1-4660-bbe9-bfc83ff11a0d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="zip\Main">
-      <UniqueIdentifier>{d94c51e7-f020-47eb-b458-27268f4853eb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\MySensors">
       <UniqueIdentifier>{16e4b391-9590-41fe-b5fa-aaf91d629b2b}</UniqueIdentifier>
     </Filter>
@@ -170,9 +161,6 @@
     </Filter>
     <Filter Include="Notifications">
       <UniqueIdentifier>{9af22faa-3a82-4f76-83cf-db0aacc27e8a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SQLite">
-      <UniqueIdentifier>{63d66a0f-1455-45ce-8e5a-8678aafbe57a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\KMTronic">
       <UniqueIdentifier>{401dcf9b-b8c2-49b9-9a03-67746e942b13}</UniqueIdentifier>
@@ -254,21 +242,6 @@
     </Filter>
     <Filter Include="www\i18n">
       <UniqueIdentifier>{35585537-8eaf-49fb-ba77-53a12fdc0772}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\images">
-      <UniqueIdentifier>{b0cd330c-5946-4add-aeb7-5a3630a90506}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\images\evehome">
-      <UniqueIdentifier>{ace1d929-4a27-4189-a5da-dc9f55126118}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\images\logo">
-      <UniqueIdentifier>{b1eb8ff3-d062-42d4-b1f5-c8e83b38bbf8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\images\startup">
-      <UniqueIdentifier>{af164a42-2b56-4492-9d15-18c847597889}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\images\floorplans">
-      <UniqueIdentifier>{8ca49e6b-e8c1-4ced-9a15-7e910e113529}</UniqueIdentifier>
     </Filter>
     <Filter Include="www\js">
       <UniqueIdentifier>{24acfe60-f00f-4ffb-99f0-e6773760fca8}</UniqueIdentifier>
@@ -515,6 +488,18 @@
     </Filter>
     <Filter Include="www\app\devices">
       <UniqueIdentifier>{ae84d173-7ab3-47ac-bafd-145b034278f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\OctoPrint">
+      <UniqueIdentifier>{bafd6feb-6df6-4592-aded-780e24eeea7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\eVehicles">
+      <UniqueIdentifier>{3404548b-df3a-4958-b308-34c7e7c15e59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JSON">
+      <UniqueIdentifier>{6f228d26-d99a-4e01-a8fc-03d7cd28642e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Meteorologisk">
+      <UniqueIdentifier>{54d3120a-1deb-4a3c-959d-7f89f33a1fd3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1451,6 +1436,7 @@
     <None Include="..\www\app\devices\Devices.js">
       <Filter>www\app\devices</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1723,21 +1709,6 @@
     <ClInclude Include="..\hardware\EvohomeWeb.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
-    <ClInclude Include="..\zip\ioapi.h">
-      <Filter>zip\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zip\unzip.h">
-      <Filter>zip\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zip\zip.h">
-      <Filter>zip\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\unzip_iterator.h">
-      <Filter>zip\Main</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\unzip_stream.h">
-      <Filter>zip\Main</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\MySensorsBase.h">
       <Filter>Devices\MySensors</Filter>
     </ClInclude>
@@ -1786,9 +1757,6 @@
     <ClInclude Include="..\notifications\NotificationHTTP.h">
       <Filter>Notifications</Filter>
     </ClInclude>
-    <ClInclude Include="..\sqlite\sqlite3.h">
-      <Filter>SQLite</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\KMTronicBase.h">
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
@@ -1818,54 +1786,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Thermosmart.h">
       <Filter>Devices\Thermosmart</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\config.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\dummypthread.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\logging_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\memory_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\messages_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto_internal.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\net_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\read_handle.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\send_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\socks_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\time_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\tls_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\uthash.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\util_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\will_mosq.h">
-      <Filter>MQTT</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\RFXComSerial.h">
       <Filter>Devices\RFXCom</Filter>
@@ -1956,9 +1876,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\PanasonicTV.h">
       <Filter>Devices\Panasonic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\notifications\NotificationGCM.h">
-      <Filter>Notifications</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
       <Filter>Devices\OpenWebNet</Filter>
@@ -2140,12 +2057,6 @@
     <ClInclude Include="..\tinyxpath\xpath_processor.h">
       <Filter>XML</Filter>
     </ClInclude>
-    <ClInclude Include="..\zip\iowin32.h">
-      <Filter>zip\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zip\minizip_crypt.h">
-      <Filter>zip\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\TTNMQTT.h">
       <Filter>Devices\The Things Network</Filter>
     </ClInclude>
@@ -2248,29 +2159,44 @@
     <ClInclude Include="..\hardware\Buienradar.h">
       <Filter>Devices\Buienradar</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\alias_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mqtt_protocol.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\packet_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\property_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto_broker.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\mosquitto_plugin.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\json_helper.h">
-      <Filter>json</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\mosquitto_helper.h">
       <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\NotificationObserver.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\NotificationSystem.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaTable.h">
+      <Filter>EventSystem\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OctoPrintMQTT.h">
+      <Filter>Devices\OctoPrint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\TeslaApi.h">
+      <Filter>Devices\eVehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\VehicleApi.h">
+      <Filter>Devices\eVehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\eVehicle.h">
+      <Filter>Devices\eVehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\unzip_iterator.h">
+      <Filter>zip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\unzip_stream.h">
+      <Filter>zip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\json_helper.h">
+      <Filter>JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationFCM.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Meteorologisk.h">
+      <Filter>Devices\Meteorologisk</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2300,15 +2226,6 @@
     </ClCompile>
     <ClCompile Include="..\webserver\server.cpp">
       <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\json\json_value.cpp">
-      <Filter>json</Filter>
-    </ClCompile>
-    <ClCompile Include="..\json\json_writer.cpp">
-      <Filter>json</Filter>
-    </ClCompile>
-    <ClCompile Include="..\json\json_reader.cpp">
-      <Filter>json</Filter>
     </ClCompile>
     <ClCompile Include="..\tcpserver\TCPClient.cpp">
       <Filter>TCPServer</Filter>
@@ -2565,9 +2482,6 @@
     <ClCompile Include="..\notifications\NotificationHTTP.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
-    <ClCompile Include="..\sqlite\sqlite3.c">
-      <Filter>SQLite</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\KMTronicBase.cpp">
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
@@ -2597,48 +2511,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Thermosmart.cpp">
       <Filter>Devices\Thermosmart</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\logging_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\memory_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\messages_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\mosquitto.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\net_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\read_handle.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\socks_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\srv_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\thread_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\time_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\tls_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\util_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\will_mosq.c">
-      <Filter>MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\RFXComSerial.cpp">
       <Filter>Devices\RFXCom</Filter>
@@ -2777,9 +2649,6 @@
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tokenlist.cpp">
       <Filter>XML</Filter>
-    </ClCompile>
-    <ClCompile Include="..\notifications\NotificationGCM.cpp">
-      <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
       <Filter>Devices\OpenWebNet</Filter>
@@ -2952,15 +2821,6 @@
     <ClCompile Include="..\webserver\WebsocketHandler.cpp">
       <Filter>Webserver</Filter>
     </ClCompile>
-    <ClCompile Include="..\zip\ioapi.c">
-      <Filter>zip\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zip\iowin32.c">
-      <Filter>zip\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zip\unzip.c">
-      <Filter>zip\Base</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\TTNMQTT.cpp">
       <Filter>Devices\The Things Network</Filter>
     </ClCompile>
@@ -3045,95 +2905,35 @@
     <ClCompile Include="..\hardware\Buienradar.cpp">
       <Filter>Devices\Buienradar</Filter>
     </ClCompile>
-    <ClCompile Include="..\MQTT\actions.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\alias_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\callbacks.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\connect.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_auth.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_connack.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_disconnect.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_ping.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_pubackcomp.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_publish.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_pubrec.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_pubrel.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_suback.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\handle_unsuback.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\helpers.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\loop.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\net_mosq_ocsp.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\options.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\packet_datatypes.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\packet_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\property_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_connect.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_disconnect.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_publish.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_subscribe.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_unsubscribe.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\utf8_mosq.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\util_topic.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\json_helper.cpp">
-      <Filter>json</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\mosquitto_helper.cpp">
       <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaTable.cpp">
+      <Filter>EventSystem\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\NotificationObserver.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\NotificationSystem.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OctoPrintMQTT.cpp">
+      <Filter>Devices\OctoPrint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eVehicles\TeslaApi.cpp">
+      <Filter>Devices\eVehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eVehicles\eVehicle.cpp">
+      <Filter>Devices\eVehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\json_helper.cpp">
+      <Filter>JSON</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationFCM.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Meteorologisk.cpp">
+      <Filter>Devices\Meteorologisk</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3261,954 +3061,6 @@
     </Image>
     <Image Include="..\www\css\ui-darkness\images\ui-icons_ffffff_256x240.png">
       <Filter>www\css\ui-darkness\images</Filter>
-    </Image>
-    <Image Include="..\www\images\about.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\add.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\adjust48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\air.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\air_signal.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\air48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Alarm.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Alarm48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Alarm48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Alert.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Alert48_0.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Alert48_1.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Alert48_2.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Alert48_3.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Alert48_4.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Amplifier.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Amplifier48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Amplifier48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\back_disabled.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\back_enabled.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\back_enabled_hover.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\background.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\baro48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\battery.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\battery-low.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\battery-ok.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\bbq.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\blinds.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\blinds48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\blinds48sel.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\blindsopen48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\blindsopen48sel.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\blindsstop.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\button.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\camera_default.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\camera-web.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\capture.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\ChristmasTree.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\ChristmasTree48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\ChristmasTree48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\clock.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\clock48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\collection.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\collection_hover.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Computer.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Computer48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Computer48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\ComputerPC.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\ComputerPC48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\ComputerPC48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\contact.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\contact_open.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\contact48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\contact48_open.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Cooling.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Cooling48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Cooling48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\copy.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\copy_hover.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\counter.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Counter48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\csv.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\csv_hover.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\current.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\current48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\customicons.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\delete.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\demand.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\demand_mini.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\desktop.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\details.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\devices.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Dimmer48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Dimmer48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\door.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\door48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\door48open.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\doorbell.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\doorbell48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\down.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Down48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Down48_2.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\edit.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\empty16.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\equal.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\events.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\expand16.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\failed.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Fan.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Fan48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Fan48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\favorite.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Fireplace.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Fireplace48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Fireplace48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\forward_disabled.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\forward_enabled.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\forward_enabled_hover.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Gas48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\gauge.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\gauge48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Generic.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Generic48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Generic48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\glyphicons-halflings.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\glyphicons-halflings-white.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\handle.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Harddisk.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Harddisk48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Harddisk48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\hardware.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\heal.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Heating.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Heating48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Heating48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\hold.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\hold_mini.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\house.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\ice.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\insert.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\iphone-icon.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\leaf.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\leaf48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Light48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Light48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\lightbulb.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\lightbulboff.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\lock_closed.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\lock_open.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\log.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\login-sprite.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\LogitechMediaServer.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\LogitechMediaServer48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\LogitechMediaServer48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\logo.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\logo192.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\logout.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\lux.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\lux48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Media.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Media48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Media48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\mode.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\mode48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\moisture.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\moisture48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\motion.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\motion48-off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\motion48-on.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\motionoff.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\nebula.jpg">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\next.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\nodemand.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\nodemand_mini.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\nofavorite.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\notification.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\ok.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\on.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\onoff48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\override.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\override_mini.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\overrule.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\overrule_mini.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\pdf.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\pdf_hover.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Percentage48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Phone.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Phone48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Phone48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\print.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\print_hover.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Printer.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Printer48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Printer48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\program.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\program_mini.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\proxy.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\push.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\push48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\pushoff.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\pushoff48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\pushon.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\pushon48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\PV48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\radiation.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\radiation48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\rain.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\rain48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\rainraining.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\remote.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\remote48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\remove.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\rename.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\restart.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\RGB.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\RGB48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\RGB48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\scale.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\scale48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\scenes.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\security.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\security48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\setup.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\shutdown.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\siren.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\siren-off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\siren-on.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\sleep.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\smoke.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\smoke48off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\smoke48on.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\smokeoff.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\sort_asc.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\sort_asc_disabled.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\sort_both.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\sort_desc.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\sort_desc_disabled.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Speaker.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Speaker48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Speaker48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Stop48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\switch.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\temp-0-5.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\temp-5-10.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\temp-10-15.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\temp-15-20.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\temp-20-25.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\temp-25-30.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\temp48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\temperature.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\temp-gt-30.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\text.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\text48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\TV.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\TV48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\TV48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\unknown.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\up.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Up48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Up48_2.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\users.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\utility.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\uv.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\uv48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\uvdark.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\uvsunny.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\variables.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\visibility.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\visibility48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WallSocket.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WallSocket48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WallSocket48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Water.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Water48_Off.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Water48_On.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\webcam.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\wind.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\Wind0.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\wind48.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindE.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindENE.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindESE.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindN.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindNE.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindNNE.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindNNW.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindNW.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindS.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindSE.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindSSE.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindSSW.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindSW.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindW.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindWNW.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\WindWSW.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\xls.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\xls_hover.png">
-      <Filter>www\images</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\Auto.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\AutoWithEco.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\AutoWithEcoInv.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\Away.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\AwayInv.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\Custom.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\CustomInv.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\DayOff.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\DayOffInv.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\HeatingOff.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\HeatingOffInv.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\Off.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\On.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\OpenWindow.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\PermanentOverride.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\PermanentOverrideInv.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\RemoteOverride.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\RemoteOverrideInv.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\TemporaryOverride.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\evohome\TemporaryOverrideInv.png">
-      <Filter>www\images\evehome</Filter>
-    </Image>
-    <Image Include="..\www\images\floorplans\example.jpg">
-      <Filter>www\images\floorplans</Filter>
-    </Image>
-    <Image Include="..\www\images\logo\57.png">
-      <Filter>www\images\logo</Filter>
-    </Image>
-    <Image Include="..\www\images\logo\72.png">
-      <Filter>www\images\logo</Filter>
-    </Image>
-    <Image Include="..\www\images\logo\76.png">
-      <Filter>www\images\logo</Filter>
-    </Image>
-    <Image Include="..\www\images\logo\114.png">
-      <Filter>www\images\logo</Filter>
-    </Image>
-    <Image Include="..\www\images\logo\144.png">
-      <Filter>www\images\logo</Filter>
-    </Image>
-    <Image Include="..\www\images\logo\152.png">
-      <Filter>www\images\logo</Filter>
-    </Image>
-    <Image Include="..\www\images\logo\180.png">
-      <Filter>www\images\logo</Filter>
-    </Image>
-    <Image Include="..\www\images\startup\apple-touch-startup-image-320x460.png">
-      <Filter>www\images\startup</Filter>
-    </Image>
-    <Image Include="..\www\images\startup\apple-touch-startup-image-640x920.png">
-      <Filter>www\images\startup</Filter>
-    </Image>
-    <Image Include="..\www\images\startup\apple-touch-startup-image-640x1096.png">
-      <Filter>www\images\startup</Filter>
-    </Image>
-    <Image Include="..\www\images\startup\apple-touch-startup-image-750x1294.png">
-      <Filter>www\images\startup</Filter>
-    </Image>
-    <Image Include="..\www\images\startup\apple-touch-startup-image-768x1004.png">
-      <Filter>www\images\startup</Filter>
-    </Image>
-    <Image Include="..\www\images\startup\apple-touch-startup-image-1024x748.png">
-      <Filter>www\images\startup</Filter>
-    </Image>
-    <Image Include="..\www\images\startup\apple-touch-startup-image-1242x2148.png">
-      <Filter>www\images\startup</Filter>
-    </Image>
-    <Image Include="..\www\images\startup\apple-touch-startup-image-1536x2008.png">
-      <Filter>www\images\startup</Filter>
-    </Image>
-    <Image Include="..\www\images\startup\apple-touch-startup-image-2048x1496.png">
-      <Filter>www\images\startup</Filter>
-    </Image>
-    <Image Include="..\www\images\startup\apple-touch-startup-image-2208x1182.png">
-      <Filter>www\images\startup</Filter>
     </Image>
     <Image Include="..\www\media\tree.png">
       <Filter>www\media</Filter>

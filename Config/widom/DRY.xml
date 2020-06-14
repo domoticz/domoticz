@@ -1,6 +1,7 @@
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem id="0900" name="ZWProductPage" type="1214">https://www.widom.it/it/smart-dry-contact-switch/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/widom/DRY.png</MetaDataItem>
     <MetaDataItem name="ProductManual">https://www.widom.it/wp-content/uploads/2019/03/Widom_Dry_Contact_EN.pdf</MetaDataItem>
     <MetaDataItem id="0900" name="Identifier" type="1214">DRY</MetaDataItem>
     <MetaDataItem name="Name">WiDOM Smart Dry Contact</MetaDataItem>
@@ -8,6 +9,7 @@
     <MetaDataItem id="0900" name="FrequencyName" type="1214">CEPT (Europe)</MetaDataItem>
     <ChangeLog>
       <Entry author="Giuseppe Tiddia - giuseppe.tiddia@widom.it" date="12 Oct 2019" revision="1">Initial Metadata</Entry>
+      <Entry author="Giuseppe Tiddia - giuseppe.tiddia@widom.it" date="17 Feb 2020" revision="2">Added product image</Entry>
     </ChangeLog>
   </MetaData>
   <!-- wiDom: DRY WiDom Smart Dry Contact -->

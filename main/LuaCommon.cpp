@@ -5,18 +5,12 @@
 #include "../main/LuaCommon.h"
 
 extern "C" {
-#ifdef WITH_EXTERNAL_LUA
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
-#else
-#include "../lua/src/lua.h"
-#include "../lua/src/lualib.h"
-#include "../lua/src/lauxlib.h"
-#endif
 }
 
-#include <xpath_processor.h>
+#include "../tinyxpath/xpath_processor.h"
 
 #include "json_helper.h"
 #include "SQLHelper.h"

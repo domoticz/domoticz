@@ -1,15 +1,13 @@
+local _ = require('lodash')
 local GLOBAL_DATA_MODULE = 'global_data'
-local GLOBAL = false
-local LOCAL = true
-
 local utils = require('Utils')
 local persistence = require('persistence')
 local HTTPResponse = require('HTTPResponse')
 local Timer = require('Timer')
 local Security = require('Security')
-
+local SystemEvent = require('SystemEvent')
+local CustomEvent = require('CustomEvent')
 local HistoricalStorage = require('HistoricalStorage')
-local _ = require('lodash')
 
 local function EventHelpers(domoticz, mainMethod)
 
@@ -20,10 +18,21 @@ local function EventHelpers(domoticz, mainMethod)
 	if (_G.TESTMODE) then
 		-- make sure you run the tests from the tests folder !!!!
 		_G.scriptsFolderPath = currentPath .. 'scripts'
-		package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
-		package.path = package.path .. ';' .. currentPath .. 'data/?.lua'
-		package.path = package.path .. ';' .. currentPath .. '/../?.lua'
+
+		package.path =
+			currentPath .. 'scripts/?.lua;' ..
+			currentPath .. 'data/?.lua;' ..
+			currentPath .. '/../?.lua;' ..
+			package.path
 	end
+
+	--if (_G.TESTMODE) then
+	--	-- make sure you run the tests from the tests folder !!!!
+	--	_G.scriptsFolderPath = currentPath .. 'scripts'
+	--	package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
+	--	package.path = package.path .. ';' .. currentPath .. 'data/?.lua'
+	--	package.path = package.path .. ';' .. currentPath .. '/../?.lua'
+	--end
 
 	local webRoot = globalvariables['domoticz_webroot']
 	local _url = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
@@ -31,7 +40,7 @@ local function EventHelpers(domoticz, mainMethod)
 	local settings = {
 		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or 1,
 		['Domoticz url'] = _url,
-		url = url,
+		url = _url,
 		webRoot = tostring(webRoot),
 		serverPort = globalvariables['domoticz_listening_port'] or '8080',
 		dzVentsVersion = globalvariables.dzVents_version,
@@ -76,7 +85,7 @@ local function EventHelpers(domoticz, mainMethod)
 		if (storageDef ~= nil) then
 			-- load the datafile for this module
 			ok, fileStorage = pcall(require, module)
-			if type(fileStorage) == boolean then
+			if type(fileStorage) == 'boolean' then
 				utils.log('Problem with module: ' .. module, utils.LOG_ERROR)
 			end
 			package.loaded[module] = nil -- no caching
@@ -193,7 +202,7 @@ local function EventHelpers(domoticz, mainMethod)
 		utils.log(msg, utils.LOG_ERROR)
 	end
 
-	function self.callEventHandler(eventHandler, device, variable, security, scenegroup, httpResponse)
+	function self.callEventHandler(eventHandler, subject)
 
 		local useStorage = false
 
@@ -225,28 +234,45 @@ local function EventHelpers(domoticz, mainMethod)
 			-- ==================
 			local ok, res, info
 
-			if (device ~= nil) then
+			local baseType = subject and subject.baseType or ''
+
+			if (baseType == domoticz.BASETYPE_DEVICE) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_DEVICE)
-				ok, res = pcall(eventHandler['execute'], self.domoticz, device, info)
-			elseif (variable ~= nil) then
+				ok, res = pcall(eventHandler['execute'], self.domoticz, subject, info)
+
+			elseif (baseType == domoticz.BASETYPE_VARIABLE) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_VARIABLE)
-				ok, res = pcall(eventHandler['execute'], self.domoticz, variable, info)
-			elseif (security ~= nil) then
+				ok, res = pcall(eventHandler['execute'], self.domoticz, subject, info)
+
+			elseif (baseType == domoticz.BASETYPE_SECURITY) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_SECURITY)
 				local security = Security(self.domoticz, info.trigger)
 				ok, res = pcall(eventHandler['execute'], self.domoticz, security, info)
-			elseif (scenegroup ~= nil) then
-				if (scenegroup.baseType == 'scene') then
+
+			elseif (baseType == domoticz.BASETYPE_SCENE or baseType == domoticz.BASETYPE_GROUP) then
+				if (baseType == domoticz.BASETYPE_SCENE) then
 					info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_SCENE)
 				else
 					info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_GROUP)
 				end
-				ok, res = pcall(eventHandler['execute'], self.domoticz, scenegroup, info)
-			elseif (httpResponse ~= nil) then
+				ok, res = pcall(eventHandler['execute'], self.domoticz, subject, info)
+
+			elseif (baseType == domoticz.BASETYPE_HTTP_RESPONSE) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_HTTPRESPONSE)
-				info.trigger = httpResponse.callback
-				local response = HTTPResponse(self.domoticz, httpResponse)
+				info.trigger = subject.callback
+				local response = HTTPResponse(self.domoticz, subject)
 				ok, res = pcall(eventHandler['execute'], self.domoticz, response, info)
+
+			elseif (baseType == domoticz.BASETYPE_SYSTEM_EVENT) then
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_DOMOTICZ)
+				info.trigger = subject.type
+				local dze = SystemEvent(self.domoticz, subject)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, dze, info)
+			elseif (baseType == domoticz.BASETYPE_CUSTOM_EVENT) then
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_CUSTOM)
+				info.trigger = subject.type
+				local custom = CustomEvent(self.domoticz, subject)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, custom, info)
 			else
 				-- timer
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_TIMER)
@@ -344,7 +370,7 @@ local function EventHelpers(domoticz, mainMethod)
 		return res
 	end
 
-	function self.handleEvents(events, device, variable, security, scenegroup, httpResponse)
+	function self.handleEvents(events, subject)
 
 		local originalLogLevel = _G.logLevel -- a script can override the level
 
@@ -354,6 +380,7 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 
 		if (type(events) ~= 'table') then
+			restoreLogging()
 			return
 		end
 
@@ -372,32 +399,44 @@ local function EventHelpers(domoticz, mainMethod)
 			local moduleLabelInfo = ''
 			local triggerInfo
 			local scriptType = eventHandler.type == 'external' and 'external script: ' or 'internal script: '
+
 			if (eventHandler.type == 'external') then
 				moduleLabel = eventHandler.name .. '.lua'
 			else
 				moduleLabel = eventHandler.name .. ''
 			end
 
-			_G.moduleLabel = eventHandler.name
-			if (device) then
-				moduleLabelInfo = ' Device: "' .. device.name .. ' (' .. device.hardwareName .. ')", Index: ' .. tostring(device.id)
-			elseif (variable) then
-				moduleLabelInfo = ' Variable: "' .. variable.name .. '" Index: ' .. tostring(variable.id)
-			elseif (security) then
-				moduleLabelInfo = ' Security: "' .. security .. '"'
-			elseif (scenegroup) then
-				moduleLabelInfo = (scenegroup.baseType == 'scene' and ' Scene' or ' Group') .. ': "' .. scenegroup.name .. '", Index: ' .. tostring(scenegroup.id)
-			elseif (httpResponse) then
-				moduleLabelInfo = ' HTTPResponse: "' .. httpResponse.callback ..'"'
+			domoticz.moduleLabel = eventHandler.name:gsub('%.lua','') -- used in dynamic logmarker
+
+			local baseType = subject and subject.baseType or ''
+
+			if (baseType == domoticz.BASETYPE_DEVICE) then
+				moduleLabelInfo = ' Device: "' .. subject.name .. ' (' .. subject.hardwareName .. ')", Index: ' .. tostring(subject.id)
+			elseif (baseType == domoticz.BASETYPE_VARIABLE) then
+				moduleLabelInfo = ' Variable: "' .. subject.name .. '" Index: ' .. tostring(subject.id)
+			elseif (baseType == domoticz.BASETYPE_SECURITY) then
+				moduleLabelInfo = ' Security: "' .. subject.name .. '"'
+			elseif (baseType == domoticz.BASETYPE_SCENE or baseType == domoticz.BASETYPE_GROUP) then
+				moduleLabelInfo = (subject.baseType == 'scene' and ' Scene' or ' Group') .. ': "' .. subject.name .. '", Index: ' .. tostring(subject.id)
+			elseif (baseType == domoticz.BASETYPE_HTTP_RESPONSE) then
+				moduleLabelInfo = ' HTTPResponse: "' .. subject.callback .. '"'
+			elseif (baseType == domoticz.BASETYPE_SYSTEM_EVENT) then
+				moduleLabelInfo = ' Domoticz event: "' .. subject.name .. '"'
+			elseif (baseType == domoticz.BASETYPE_CUSTOM_EVENT) then
+				moduleLabelInfo = ' Custom event: "' .. subject.name .. '"'
 			end
 
-			triggerInfo = eventHandler.trigger and ', trigger: ' .. eventHandler.trigger or ''
+			triggerInfo = eventHandler.trigger and ( ', trigger: "' .. eventHandler.trigger .. '"' ) or ''
+
 			local clockTimeStampAtStart = os.clock()
 			local timeStampAtStart = os.time()
+
 			utils.log('------ Start ' .. scriptType .. moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
-			self.callEventHandler(eventHandler, device, variable, security, scenegroup, httpResponse)
+			self.callEventHandler(eventHandler, subject)
+
 			local clockTimeSpend = os.clock() - clockTimeStampAtStart
 			local realTimeSpend = os.time() - timeStampAtStart
+
 			if realTimeSpend > 9 or clockTimeSpend > 7 then
 				utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_ERROR)
 			elseif realTimeSpend > 6 or clockTimeSpend > 5 then
@@ -602,97 +641,97 @@ local function EventHelpers(domoticz, mainMethod)
 			local logScript = (module.type == 'external' and 'Script ' or 'Internal script ')
 
 			for j, event in pairs(module.on) do
-				if (mode == 'timer') then
-					if (type(j) == 'string' and j == 'timer' and type(event) == 'table') then
 
+				if (not (type(j) == 'string' or type(event) == 'table')) then
+					utils.log(logScript .. module.name .. '.lua has a malformed on-section. Check the documentation. Skipping', utils.LOG_DEBUG)
+				else
+					if (mode == 'timer' and j == 'timer') then
 						-- { ['timer'] = { 'every minute ', 'every hour' } }
-
 						local triggered, def = self.processTimeRules(event)
 						if (triggered) then
 							-- this one can be executed
 							module.trigger = def
-						table.insert(bindings, module)
+							event.type = 'timer'
+							table.insert(bindings, module)
 						end
-					end
-				elseif (mode == 'device') then
-					if (event ~= 'timer'
-						and j ~= 'timer'
-						and j ~= 'variable'
-						and j ~= 'variables'
-						and j ~= 'security'
-						and j ~= 'scenes'
-						and j ~= 'groups'
-					) then
+					elseif (mode == 'device' and j == 'devices') then
 
-					if (type(j) == 'string' and j == 'devices' and type(event) == 'table') then
+						-- { ['devices'] = { 'devA', ['devB'] = { ..timedefs }, .. }
 
-							-- { ['devices'] = { 'devA', ['devB'] = { ..timedefs }, .. }
+						for devIdx, devName in pairs(event) do
 
-							for devIdx, devName in pairs(event) do
-
-								-- detect if devName is of the form ['devB'] = { 'every hour' }
-									if (type(devName) == 'table') then
-									local triggered, def = self.processTimeRules(devName, testTime)
-									if (triggered) then
-										addBindingEvent(bindings, devIdx, module)
-									end
-								else
-									-- a single device name (or id)
-									addBindingEvent(bindings, devName, module)
+							-- detect if devName is of the form ['devB'] = { 'every hour' }
+							if (type(devName) == 'table') then
+								local triggered, def = self.processTimeRules(devName, testTime)
+								if (triggered) then
+									addBindingEvent(bindings, devIdx, module)
 								end
+							else
+								-- a single device name (or id)
+								addBindingEvent(bindings, devName, module)
 							end
 						end
-					end
-				elseif (mode == 'scenegroups') then
-					if (event ~= 'timer'
-						and j ~= 'timer'
-						and j ~= 'variable'
-						and j ~= 'variables'
-						and j ~= 'security'
-						and j ~= 'devices'
-					) then
+					elseif (mode == 'scenegroups' and (j == 'scenes' or j == 'groups')) then
 
-						if (type(j) == 'string' and (j == 'scenes' or j == 'groups') and type(event) == 'table') then
+						-- { ['scenes'] = { 'scA', ['scB'] = { ..timedefs }, .. }
 
-							-- { ['scenes'] = { 'scA', ['scB'] = { ..timedefs }, .. }
+						for devIdx, scgrpName in pairs(event) do
 
-							for devIdx, scgrpName in pairs(event) do
-
-								-- detect if scgrpName is of the form ['devB'] = { 'every hour' }
-								if (type(scgrpName) == 'table') then
-									local triggered, def = self.processTimeRules(scgrpName, testTime)
-									if (triggered) then
-										addBindingEvent(bindings, devIdx, module)
-									end
-								else
-									-- a single scene or group name (or id)
-									addBindingEvent(bindings, scgrpName, module)
+							-- detect if scgrpName is of the form ['devB'] = { 'every hour' }
+							if (type(scgrpName) == 'table') then
+								local triggered, def = self.processTimeRules(scgrpName, testTime)
+								if (triggered) then
+									addBindingEvent(bindings, devIdx, module)
 								end
+							else
+								-- a single scene or group name (or id)
+								addBindingEvent(bindings, scgrpName, module)
 							end
 						end
-					end
-				elseif (mode == 'variable') then
-					if (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
+					elseif (mode == 'variable' and j == 'variables') then
 						-- { ['variables'] = { 'varA', 'varB' }
 						for varIdx, varName in pairs(event) do
 							addBindingEvent(bindings, varName, module)
 						end
-					end
-				elseif (mode == 'security') then
-					if (type(j) == 'string' and j == 'security' and type(event) == 'table') then
-
+					elseif (mode == 'security' and j == 'security') then
 						local triggered, def = self.checkSecurity(event, self.domoticz.security)
 						if (triggered) then
 							table.insert(bindings, module)
 							module.trigger = def
 						end
-
-					end
-				elseif (mode == 'httpResponse') then
-					if (type(j) == 'string' and j == 'httpResponses' and type(event) == 'table') then
+					elseif (mode == 'httpResponse' and j == 'httpResponses') then
 						-- { ['httpResponses'] = { 'callbackA', 'callbackB' }
 						for i, callbackName in pairs(event) do
 							addBindingEvent(bindings, callbackName, module)
+						end
+					elseif (mode == 'system' and j == 'system') then
+						-- { ['system'] = { 'start', 'end' }
+						for evtIdx, systemEvent in pairs(event) do
+							-- detect if system is of the form ['start'] = { 'every hour' }
+							if (type(systemEvent) == 'table') then
+								local triggered, def = self.processTimeRules(systemEvent, testTime)
+								if (triggered) then
+									addBindingEvent(bindings, evtIdx, module)
+								end
+							else
+								-- a single system event
+								addBindingEvent(bindings, systemEvent, module)
+							end
+						end
+					elseif (mode == 'customEvents' and j == 'customEvents') then
+						-- { customEvents = { 'myEvent', ['anotherEvent'] = { ... timeDefs ... } }
+
+						for evtIdx, customEventName in pairs(event) do
+							-- detect if customEvent is of the form ['myEvent'] = { 'every hour' }
+							if (type(customEventName) == 'table') then
+								local triggered, def = self.processTimeRules(customEventName, testTime)
+								if (triggered) then
+									addBindingEvent(bindings, evtIdx, module)
+								end
+							else
+								-- a single custom event
+								addBindingEvent(bindings, customEventName, module)
+							end
 						end
 					end
 				end
@@ -700,22 +739,6 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 
 		return bindings, self.errModules
-	end
-
-	function self.getTimerHandlers()
-		return self.getEventBindings('timer')
-	end
-
-	function self.getVariableHandlers()
-		return self.getEventBindings('variable')
-	end
-
-	function self.getHTTPResponseHandlers()
-		return self.getEventBindings('httpResponse')
-	end
-
-	function self.getSecurityHandlers()
-		return self.getEventBindings('security', nil)
 	end
 
 	function self.dumpCommandArray(commandArray, fromIndex, force)
@@ -842,8 +865,8 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling events for: "' .. device.name .. '", value: "' .. tostring(device.state) .. '"', utils.LOG_INFO)
-				self.handleEvents(scriptsToExecute, device, nil, nil)
+				utils.log('Handling events for: "' .. device.name .. '", value: "' .. tostring(device.state) .. '"', utils.LOG_MODULE_EXEC_INFO)
+				self.handleEvents(scriptsToExecute, device)
 				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
 
@@ -878,8 +901,8 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling events for: "' .. item.name .. '", value: "' .. tostring(item.state) .. '"', utils.LOG_INFO)
-				self.handleEvents(scriptsToExecute, nil, nil, nil, item)
+				utils.log('Handling events for: "' .. item.name .. '", value: "' .. tostring(item.state) .. '"', utils.LOG_MODULE_EXEC_INFO)
+				self.handleEvents(scriptsToExecute, item)
 				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
 
@@ -897,7 +920,7 @@ local function EventHelpers(domoticz, mainMethod)
 	end
 
 	function self.dispatchTimerEventsToScripts()
-		local scriptsToExecute = self.getTimerHandlers()
+		local scriptsToExecute = self.getEventBindings('timer')
 
 		self.handleEvents(scriptsToExecute)
 		self.dumpCommandArray(self.domoticz.commandArray)
@@ -913,13 +936,18 @@ local function EventHelpers(domoticz, mainMethod)
 
 			for i, securityState in pairs(updates) do
 
+				local security = {
+					baseType = domoticz.BASETYPE_SECURITY,
+					name = securityState
+				}
+
 				local caSize = _.size(self.domoticz.commandArray)
 
 				self.domoticz.security = securityState
 
-				local scriptsToExecute = self.getSecurityHandlers()
+				local scriptsToExecute = self.getEventBindings('security', nil)
 
-				self.handleEvents(scriptsToExecute, nil, nil, securityState)
+				self.handleEvents(scriptsToExecute, security)
 
 				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
@@ -933,24 +961,23 @@ local function EventHelpers(domoticz, mainMethod)
 			domoticz = self.domoticz
 		end
 
-		local allEventScripts = self.getVariableHandlers()
+		local allEventScripts = self.getEventBindings('variable')
 
 		domoticz.changedVariables().forEach(function(variable)
 
-			local scriptsToExecute
 			local caSize = _.size(self.domoticz.commandArray)
 
 			-- first search by name
 
-			scriptsToExecute = self.findScriptForTarget(variable.name, allEventScripts)
+			local scriptsToExecute = self.findScriptForTarget(variable.name, allEventScripts)
 			if (scriptsToExecute == nil) then
 				-- search by id
 				scriptsToExecute = allEventScripts[variable.id]
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. tostring(variable.value) .. '"', utils.LOG_INFO)
-				self.handleEvents(scriptsToExecute, nil, variable, nil)
+				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. tostring(variable.value) .. '"', utils.LOG_MODULE_EXEC_INFO)
+				self.handleEvents(scriptsToExecute, variable)
 				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
 		end)
@@ -963,21 +990,22 @@ local function EventHelpers(domoticz, mainMethod)
 			domoticz = self.domoticz
 		end
 
-		local httpResponseScripts = self.getHTTPResponseHandlers()
+		local httpResponseScripts = self.getEventBindings('httpResponse')
 
 		local responses =_G.httpresponse
 
 		if (responses ~= nil) then
 			for i, response in pairs(responses) do
 
+				response.baseType = domoticz.BASETYPE_HTTP_RESPONSE
 				local callback = response.callback
 				local caSize = _.size(self.domoticz.commandArray)
 
 				local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling httpResponse-events for: "' .. callback .. '"', utils.LOG_INFO)
-					self.handleEvents(scriptsToExecute, nil, nil, nil, nil, response)
+					utils.log('Handling httpResponse-events for: "' .. callback .. '"', utils.LOG_MODULE_EXEC_INFO)
+					self.handleEvents(scriptsToExecute, response)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end
 
@@ -987,6 +1015,77 @@ local function EventHelpers(domoticz, mainMethod)
 
 		return self.domoticz.commandArray
 
+	end
+
+	function self.dispatchSystemEventsToScripts(domoticz)
+		if (domoticz == nil) then
+			-- you can pass a domoticz object for testing purposes
+			domoticz = self.domoticz
+		end
+
+		if (_G.notification == nil) then
+			return
+		end
+
+		local systemEventScripts = self.getEventBindings('system', nil)
+		local systemEvents =_G.notification.domoticz
+
+		if (systemEvents ~= nil) then
+			for i, event in pairs(systemEvents) do
+
+				event.name = SystemEvent(self.domoticz, event)["type"]
+				if event.name == nil then
+					utils.log('System event "' .. event.type .. '" is not supported yet.', utils.LOG_ERROR)
+				else
+					event.baseType = domoticz.BASETYPE_SYSTEM_EVENT
+
+					local caSize = _.size(self.domoticz.commandArray)
+					local scriptsToExecute = self.findScriptForTarget(event.name, systemEventScripts)
+
+					if (scriptsToExecute ~= nil) then
+						utils.log('Handling system event for: "' .. event.name .. '"', utils.LOG_MODULE_EXEC_INFO)
+						self.handleEvents(scriptsToExecute, event)
+						self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
+					end
+				end
+			end
+		end
+
+		return self.domoticz.commandArray
+	end
+
+	function self.dispatchCustomEventsToScripts(domoticz)
+		if (domoticz == nil) then
+			-- you can pass a domoticz object for testing purposes
+			domoticz = self.domoticz
+		end
+
+		if (_G.notification == nil) then
+			return
+		end
+
+		local customEventScripts = self.getEventBindings('customEvents', nil)
+		local customEvents = _G.notification.customevent
+
+		if (customEvents ~= nil) then
+			for i, customEvent in pairs(customEvents) do
+
+				customEvent.name = customEvent.data.name
+				customEvent.baseType = domoticz.BASETYPE_CUSTOM_EVENT
+
+				local caSize = _.size(self.domoticz.commandArray)
+
+				local scriptsToExecute = self.findScriptForTarget(customEvent.name, customEventScripts)
+
+				if (scriptsToExecute ~= nil) then
+					utils.log('Handling Domoticz custom event for: "' .. customEvent.name .. '"', utils.LOG_MODULE_EXEC_INFO)
+					self.handleEvents(scriptsToExecute, customEvent)
+					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
+				end
+			end
+		end
+
+		return self.domoticz.commandArray
 	end
 
 	function self.getEventSummary(domoticz)
@@ -1030,6 +1129,24 @@ local function EventHelpers(domoticz, mainMethod)
 		if (responses ~= nil) then
 			for i, response in pairs(responses) do
 				table.insert(items, '- HTTPResponse: ' .. response.callback)
+				length = length + 1
+			end
+		end
+
+		local domoticzEvents = _G.notification and _G.notification.domoticz or nil
+
+		if (domoticzEvents ~= nil) then
+			for i, domoticzEvent in pairs(domoticzEvents) do
+				table.insert(items, '- Domoticz: ' .. domoticzEvent.type) -- .. ' - ' .. domoticzEvent.status)
+				length = length + 1
+			end
+		end
+
+		local customEvents = _G.notification and _G.notification.customEvents or nil
+
+		if (dcustomEvents ~= nil) then
+			for i, customEvent in pairs(customEvents) do
+				table.insert(items, '- Custom: ' .. customEvent.type) -- .. ' - ' .. customEvent.status)
 				length = length + 1
 			end
 		end

@@ -1,3 +1,4 @@
+#pragma once
 #ifdef WITH_OPENZWAVE
 //-----------------------------------------------------------------------------
 //
@@ -37,8 +38,8 @@
 
 #include <list>
 #include <algorithm>
-#include "Driver.h"
-#include "Notification.h"
+#include <Driver.h>
+#include <Notification.h>
 
 #define MAX_NODES 255
 
@@ -88,7 +89,7 @@ public:
   bool getChanged() { return changed; }
   void setChanged(bool ch) { changed = ch; nodechanged = ch; }
   static void addRemoved(uint8 node) { removed.push_back(node); }
-  static uint32 getRemovedCount() { return removed.size(); }
+  static uint32 getRemovedCount() { return (uint32)removed.size(); }
   static uint8 getRemoved();
   void addGroup(uint8 node, uint8 g, uint8 n, uint8 *v);
   MyGroup *getGroup(uint8 i);
@@ -121,9 +122,7 @@ public:
 	std::string SetNodeButton(const std::string &arg1, const std::string &arg2);
 	std::string DoAdminCommand(const std::string &fun, const int node_id, const int button_id);
 	std::string DoNodeChange(const std::string &fun, const int node_id, const std::string &svalue);
-	std::string DoSceneCommand(const std::string &fun, const std::string &arg1, const std::string &arg2, const std::string &arg3);
 	std::string UpdateGroup(const std::string &fun, const int node_id, const int group_id, const std::string &gList);
-	std::string SaveConfig();
 	std::string GetCPTopo();
 	std::string GetCPStats();
 	std::string DoTestNetwork(const int node_id, const int cnt);

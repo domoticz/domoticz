@@ -4,6 +4,7 @@
 #include "../hardware/DomoticzHardware.h"
 #include "Scheduler.h"
 #include "EventSystem.h"
+#include "NotificationSystem.h"
 #include "Camera.h"
 #include <deque>
 #include "WindCalculation.h"
@@ -110,6 +111,7 @@ public:
 
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
+	CNotificationSystem m_notificationsystem;
 #ifdef ENABLE_PYTHON
 	Plugins::CPluginSystem m_pluginsystem;
 #endif
@@ -274,7 +276,7 @@ private:
 	void decode_Rego6XXValue(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Usage(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Lux(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
-	void decode_General(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult, const uint8_t SignalLevel = 12, const uint8_t BatteryLevel = 255);
+	void decode_General(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_GeneralSwitch(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_HomeConfort(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Thermostat(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);

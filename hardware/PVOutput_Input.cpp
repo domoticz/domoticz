@@ -4,7 +4,7 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
@@ -14,11 +14,11 @@
 
 //#define DEBUG_PVOutputInput
 
-CPVOutputInput::CPVOutputInput(const int ID, const std::string &SID, const std::string &Key) :
-m_SID(SID),
-m_KEY(Key)
+CPVOutputInput::CPVOutputInput(const int ID, const std::string& SID, const std::string& Key) :
+	m_SID(SID),
+	m_KEY(Key)
 {
-	m_HwdID=ID;
+	m_HwdID = ID;
 	Init();
 }
 
@@ -28,6 +28,7 @@ CPVOutputInput::~CPVOutputInput(void)
 
 void CPVOutputInput::Init()
 {
+	m_bHadConsumption = false;
 }
 
 bool CPVOutputInput::StartHardware()
@@ -38,7 +39,7 @@ bool CPVOutputInput::StartHardware()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CPVOutputInput::Do_Work, this);
 	SetThreadNameInt(m_thread->native_handle());
-	m_bIsStarted=true;
+	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
 }
@@ -51,89 +52,103 @@ bool CPVOutputInput::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-    m_bIsStarted=false;
-    return true;
+	m_bIsStarted = false;
+	return true;
 }
 
 #define PVOUTPUT_POLL_INTERVAL 5
 
 void CPVOutputInput::Do_Work()
 {
-	int LastMinute=-1;
-	_log.Log(LOG_STATUS,"PVOutput (Input): Worker started...");
+	int LastMinute = -1;
+	_log.Log(LOG_STATUS, "PVOutput (Input): Worker started...");
 	while (!IsStopRequested(1000))
 	{
-		time_t atime=mytime(NULL);
+		time_t atime = mytime(NULL);
 		m_LastHeartbeat = atime;
 		struct tm ltime;
-		localtime_r(&atime,&ltime);
-		if (((ltime.tm_min/PVOUTPUT_POLL_INTERVAL!=LastMinute))&&(ltime.tm_sec>20))
+		localtime_r(&atime, &ltime);
+		if (((ltime.tm_min / PVOUTPUT_POLL_INTERVAL != LastMinute)) && (ltime.tm_sec > 20))
 		{
-			LastMinute=ltime.tm_min/PVOUTPUT_POLL_INTERVAL;
+			LastMinute = ltime.tm_min / PVOUTPUT_POLL_INTERVAL;
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"PVOutput (Input): Worker stopped...");
+	_log.Log(LOG_STATUS, "PVOutput (Input): Worker stopped...");
 }
 
-bool CPVOutputInput::WriteToHardware(const char *pdata, const unsigned char length)
+bool CPVOutputInput::WriteToHardware(const char* pdata, const unsigned char length)
 {
 	return false;
 }
 
 void CPVOutputInput::GetMeterDetails()
 {
-	if (m_SID.size()==0)
+	if (m_SID.size() == 0)
 		return;
-	if (m_KEY.size()==0)
+	if (m_KEY.size() == 0)
 		return;
 
 	std::string sResult;
 
 	std::stringstream sstr;
-	sstr << "http://pvoutput.org/service/r2/getstatus.jsp?sid=" << m_SID << "&key=" << m_KEY;
-	if (!HTTPClient::GET(sstr.str(),sResult))
+	sstr << "https://pvoutput.org/service/r2/getstatus.jsp?sid=" << m_SID << "&key=" << m_KEY;
+	if (!HTTPClient::GET(sstr.str(), sResult))
 	{
-		_log.Log(LOG_ERROR,"PVOutput (Input): Error login!");
+		_log.Log(LOG_ERROR, "PVOutput (Input): Error login!");
 		return;
 	}
 	std::vector<std::string> splitresult;
-	StringSplit(sResult,",",splitresult);
-	if (splitresult.size()<9)
+	StringSplit(sResult, ",", splitresult);
+	if (splitresult.size() < 9)
 	{
-		_log.Log(LOG_ERROR,"PVOutput (Input): Invalid Data received!");
+		_log.Log(LOG_ERROR, "PVOutput (Input): Invalid Data received!");
 		return;
 	}
+	/*
+		0-Date	yyyymmdd	date	20100830	r1
+		1-Time	hh : mm	time	14 : 10	r1
+		2-Energy Generation	number	watt hours	12936	r1
+		3-Power Generation	number	watt	202	r1
+		4-Energy Consumption	number	watt hours	19832	r1
+		5-Power Consumption	number	watt	459	r1
+		6-Normalised Output	number	kW / kW	0.083	r1
+		7-Temperature	decimal	celsius	15.3	r2
+		8-Voltage
+	*/
 
-	double Usage=atof(splitresult[3].c_str());
+	double Usage = 0;
+	if (splitresult[3] != "NaN")
+	{
+		Usage = atof(splitresult[3].c_str());
+	}
 	if (Usage < 0)
 		Usage = 0;
 
-	bool bHaveConsumption=false;
-	double Consumption=0;
-	if (splitresult[5]!="NaN")
+	double Consumption = 0;
+	if (splitresult[5] != "NaN")
 	{
-		Consumption=atof(splitresult[5].c_str());
+		Consumption = atof(splitresult[5].c_str());
 		if (Consumption < 0)
 			Consumption = 0;
-		bHaveConsumption=true;
+		m_bHadConsumption = true;
 	}
 
-	if (splitresult[6]!="NaN")
+	if (splitresult[6] != "NaN")
 	{
-		double Efficiency=atof(splitresult[6].c_str())*100.0;
-		if (Efficiency>100.0)
-			Efficiency=100.0;
+		double Efficiency = atof(splitresult[6].c_str()) * 100.0;
+		if (Efficiency > 100.0)
+			Efficiency = 100.0;
 		SendPercentageSensor(1, 0, 255, float(Efficiency), "Efficiency");
 	}
-	if (splitresult[7]!="NaN")
+	if (splitresult[7] != "NaN")
 	{
-		double Temperature=atof(splitresult[7].c_str());
+		double Temperature = atof(splitresult[7].c_str());
 		SendTempSensor(1, 255, float(Temperature), "Temperature");
 	}
-	if (splitresult[8]!="NaN")
+	if (splitresult[8] != "NaN")
 	{
-		double Voltage=atof(splitresult[8].c_str());
+		double Voltage = atof(splitresult[8].c_str());
 		if (Voltage >= 0)
 			SendVoltageSensor(0, 1, 255, float(Voltage), "Voltage");
 	}
@@ -141,27 +156,58 @@ void CPVOutputInput::GetMeterDetails()
 	sstr.clear();
 	sstr.str("");
 
-	sstr << "http://pvoutput.org/service/r2/getstatistic.jsp?sid=" << m_SID << "&key=" << m_KEY << "&c=1";
-	if (!HTTPClient::GET(sstr.str(),sResult))
+	sstr << "https://pvoutput.org/service/r2/getstatistic.jsp?sid=" << m_SID << "&key=" << m_KEY << "&c=1&df=19700101&dt=26000101";
+	if (!HTTPClient::GET(sstr.str(), sResult))
 	{
-		_log.Log(LOG_ERROR,"PVOutput (Input): Error login!");
+		_log.Log(LOG_ERROR, "PVOutput (Input): Error login!");
 		return;
 	}
-	StringSplit(sResult,",",splitresult);
-	if (splitresult.size()<11)
+	StringSplit(sResult, ",", splitresult);
+	if (splitresult.size() < 11)
 	{
-		_log.Log(LOG_ERROR,"PVOutput (Input): Invalid Data received!");
+		_log.Log(LOG_ERROR, "PVOutput (Input): Invalid Data received!");
 		return;
 	}
-
-	double kWhCounterUsage=atof(splitresult[0].c_str());
+/*
+	0-Energy Generated	number	watt hours	246800
+	1-Energy Exported	number	watt hours	246800
+	2-Average Generation	number	watt hours	8226
+	3-Minimum Generation	number	watt hours	2000
+	4-Maximum Generation	number	watt hours	11400
+	5-Average Efficiency	number	kWh/kW	3.358
+	6-Outputs	number	-	27
+	7-Actual Date From	yyyymmdd	date	20100901
+	8-Actual Date To	yyyymmdd	date	20100927
+	9-Record Efficiency	number	kWh/kW	4.653
+	10-Record Date	yyyymmdd	date	20100916
+	11-Energy Consumed	number	watt hours	10800
+	12-Peak Energy Import	number	watt hours	5000
+	13-Off Peak Energy Import	number	watt hours	1000
+	14-Shoulder Energy Import	number	watt hours	4000
+	15-High Shoulder Energy Import	number	watt hours	800
+	16-Average Consumption	number	watt hours	1392
+	17-Minimum Consumption	number	watt hours	10
+	18-Maximum Consumption	number	watt hours	2890
+	19-Credit Amount	decimal	currency	37.29
+	20-Debit Amount	decimal	currency	40.81
+*/
+	double kWhCounterUsage = 0;
+	if (splitresult[0] != "NaN")
+	{
+		kWhCounterUsage = atof(splitresult[0].c_str());
+	}
 	SendKwhMeter(0, 1, 255, Usage, kWhCounterUsage / 1000.0, "SolarMain");
 
-	if (bHaveConsumption)
+	if (m_bHadConsumption)
 	{
 		if (splitresult.size() > 11)
 		{
-			double kWhCounterConsumed = atof(splitresult[11].c_str());
+			double kWhCounterConsumed = 0;
+			if (splitresult[11] != "NaN")
+			{
+				kWhCounterConsumed = atof(splitresult[11].c_str());
+			}
+			
 			if (kWhCounterConsumed != 0)
 			{
 				SendKwhMeter(0, 2, 255, Consumption, kWhCounterConsumed / 1000.0, "SolarConsumed");

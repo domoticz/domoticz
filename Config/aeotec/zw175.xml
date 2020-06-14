@@ -1,4 +1,4 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
     <MetaData>
         <MetaDataItem name="Name">ZW175 Smart Switch 7</MetaDataItem>
         <MetaDataItem name="Description">
@@ -36,6 +36,7 @@
         <ChangeLog>
             <Entry author="Jean-Francois Auger - nechry@gmail.com" date="01 July 2019" revision="1">Add ZW175 Smart Switch 7</Entry>
             <Entry author="Jean-Francois Auger - nechry@gmail.com" date="03 July 2019" revision="2">Change refresh on node info frame</Entry>
+            <Entry author="Gert van Dijk - gertvdijk@gmail.com" date="09 January 2020" revision="3">Fix description on configuration parameters 101 and 111 (power reporting)</Entry>
         </ChangeLog>
     </MetaData>
     <!-- ZW175 Smart Switch 7 -->
@@ -146,10 +147,10 @@
         <Value genre="config" index="101" label="Configure which meter reading will be periodically report via Lifeline" type="int" units="" value="15">
             <Help>
                 Defines the type of report sent for reporting group 1.
-                1 is meter report for voltage.
-                2 is meter report for current.
-                4 is meter report for watts.
-                8 is meter report for kilowatts.
+                1 is meter report for kilowatts.
+                2 is meter report for watts.
+                4 is meter report for voltage.
+                8 is meter report for current.
                 Value 1 (msb) Reserved
                 Value 2 Reserved
                 Value 3 Reserved
@@ -163,7 +164,7 @@
         <Value genre="config" index="111" label="Configure the sending frequency of Meter Report" max="2592000" min="0" type="int" units="seconds" value="600">
             <Help>
                 0 => Disable.
-                600..2592000 => 600-2592000s. (10minute-30day)
+                30..2592000 => 30-2592000s. (30seconds-30day)
             </Help>
         </Value>
         <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">

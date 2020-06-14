@@ -15,6 +15,7 @@ local deviceAdapters = {
 	'gas_device',
 	'generic_device',
 	'group_device',
+	'hardware_device',
 	'humidity_device',
 	'kwh_device',
 	'leafwetness_device',

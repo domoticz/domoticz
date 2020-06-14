@@ -8,7 +8,7 @@
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "hardwaretypes.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>

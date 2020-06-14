@@ -5,7 +5,7 @@ define(function () {
 
         function DeviceIcon(device) {
             this.isConfigurable = function() {
-                return ['Light/Switch', 'Lighting 1', 'Lighting 2', 'Lighting 5','Color Switch'].includes(device.Type) &&
+                return ['Light/Switch', 'Lighting 1', 'Lighting 2', 'Lighting 5','Lighting 6','Color Switch','Home Confort'].includes(device.Type) &&
                     [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(device.SwitchTypeVal);
             };
 
@@ -50,8 +50,12 @@ define(function () {
                 return (this.SubType.indexOf('RGB') >= 0 || this.SubType.indexOf('WW') >= 0);
             };
 
+            this.isScene = function() {
+                return ['Group', 'Scene'].includes(this.Type)
+            };
+
             this.toggle = function () {
-                if (['Group', 'Scene'].includes(this.Type)) {
+                if (this.isScene()) {
                     return this.isActive()
                         ? sceneApi.switchOff(this.idx)
                         : sceneApi.switchOn(this.idx)
@@ -154,7 +158,7 @@ define(function () {
                 } else if (this.SubType === 'Percentage') {
                     return '%';
                 } else if (this.Type === 'Weight') {
-					return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
+                    return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
                 } else {
                     return '?';
                 }
@@ -169,7 +173,7 @@ define(function () {
                     'Voltage', 'Current', 'Pressure', 'Custom Sensor', 'kWh',
                     'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                     'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage',
-                    'Text', 'Alert'
+                    'Text', 'Alert', 'Temperature'
                 ];
 
                 if (deviceTypes.some(function(item) {
@@ -208,7 +212,6 @@ define(function () {
                     ShowBaroLog(container, 'GlobalBackFn', this.idx, this.Name);
                 }
             };
-
 
         }
     };

@@ -2,9 +2,13 @@
 #include "localtime_r.h"
 
 #include <string.h>
+#include "../main/Helper.h"
 
 time_t m_lasttime=time(NULL);
-std::mutex TimeMutex_;
+std::mutex& TimeMutex_() {
+	static std::mutex lTimeMutex_;
+	return lTimeMutex_;
+};
 
 #if defined(localtime_r) || defined(__APPLE__) || defined(__USE_POSIX)
 	#define HAVE_LOCALTIME_R
@@ -20,7 +24,7 @@ struct tm *localtime_r(const time_t *timep, struct tm *result)
 #ifdef HAVE_LOCALTIME_S
 	localtime_s(timep, result);
 #else
-	std::unique_lock<std::mutex> lock(TimeMutex_);
+	std::unique_lock<std::mutex> lock(TimeMutex_());
 	struct tm *s = localtime(timep);
 	if (s == NULL)
 		return NULL;
@@ -59,6 +63,27 @@ bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLd
 	if (localtime_r(&now, &ltime) == NULL)
 		return false;
 	return ParseSQLdatetime(time, result, szSQLdate, ltime.tm_isdst);
+}
+
+/*
+ * Same as ParseSQLdatetime but takes an ISO format (YYYY-MM-DDTHH:mm:ddZ) instead.
+ */
+bool ParseISOdatetime(time_t &time, struct tm &result, const std::string &sISOdate) {
+	if (sISOdate.length() < 20)
+	{
+		return false;
+	}
+
+	std::string sDateWithoutZ = sISOdate.substr(0, 19);
+	std::vector<std::string> splittedDate;
+	StringSplit(sDateWithoutZ, "T", splittedDate);
+
+	if(splittedDate.size() <2)
+	{
+		return false;
+	}
+
+	return ParseSQLdatetime(time, result, splittedDate[0] + " " + splittedDate[1]);
 }
 
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLdate, int isdst) {

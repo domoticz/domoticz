@@ -63,10 +63,12 @@ const char *szHelp =
 "\t-wwwroot file_path (for example D:\\www)\n"
 "\t-dbase file_path (for example D:\\domoticz.db)\n"
 "\t-userdata file_path (for example D:\\domoticzdata)\n"
+"\t-approot file_path (for example D:\\domoticz)\n"
 #else
 "\t-wwwroot file_path (for example /opt/domoticz/www)\n"
 "\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
 "\t-userdata file_path (for example /opt/domoticz)\n"
+"\t-approot file_path (for example /opt/domoticz)\n"
 #endif
 "\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 "\t-startupdelay seconds (default=0)\n"
@@ -132,6 +134,7 @@ std::string szInternalCurrentCommand = "";
 
 
 std::string szAppVersion="???";
+int iAppRevision=0;
 std::string szAppHash="???";
 std::string szAppDate="???";
 std::string szPyVersion="None";
@@ -445,9 +448,8 @@ static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
 
 void GetAppVersion()
 {
-	std::stringstream sstr;
-	sstr << VERSION_STRING << APPVERSION;
-	szAppVersion = sstr.str();
+	szAppVersion = VERSION_STRING;
+	iAppRevision = APPVERSION;
 	szAppHash = APPHASH;
 	char szTmp[200];
 	struct tm ltime;

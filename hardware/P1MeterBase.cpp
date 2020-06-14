@@ -5,10 +5,22 @@
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+/*
+#include <cryptopp/aes.h>
+#include <cryptopp/gcm.h>
+#include <cryptopp/modes.h>
+#include <cryptopp/filters.h>
+*/
+
 #define CRC16_ARC	0x8005
 #define CRC16_ARC_REFL	0xA001
 
-enum _eP1MatchType {
+#define GCMTagLength 12
+const std::string _szDecodeAdd = "3000112233445566778899AABBCCDDEEFF";
+
+enum class _eP1MatchType {
 	ID = 0,
 	EXCLMARK,
 	STD,
@@ -80,32 +92,32 @@ typedef struct {
 	int width;
 } P1Match;
 
-P1Match matchlist[] = {
-	{ID,		P1TYPE_SMID,			P1SMID,		"",			 0,  0},
-	{EXCLMARK,	P1TYPE_END,			P1EOT,		"",			 0,  0},
-	{STD,		P1TYPE_VERSION,			P1VER,		"version",		10,  2},
-	{STD,		P1TYPE_VERSION,			P1VERBE,	"versionBE",		11,  5},
-	{STD,		P1TYPE_POWERUSAGE,		P1PUSG,		"powerusage",		10,  9},
-	{STD,		P1TYPE_POWERDELIV,		P1PDLV,		"powerdeliv",		10,  9},
-	{STD,		P1TYPE_USAGECURRENT,		P1PUC,		"powerusagec",		10,  7},
-	{STD,		P1TYPE_DELIVCURRENT,		P1PDC,		"powerdelivc",		10,  7},
-	{STD,		P1TYPE_VOLTAGEL1,		P1VOLTL1,	"voltagel1",		11,  5},
-	{STD,		P1TYPE_VOLTAGEL2,		P1VOLTL2,	"voltagel2",		11,  5},
-	{STD,		P1TYPE_VOLTAGEL3,		P1VOLTL3,	"voltagel3",		11,  5},
-	{STD,		P1TYPE_AMPERAGEL1,		P1AMPEREL1,	"amperagel1",		11,  3},
-	{STD,		P1TYPE_AMPERAGEL2,		P1AMPEREL2,	"amperagel2",		11,  3},
-	{STD,		P1TYPE_AMPERAGEL3,		P1AMPEREL3,	"amperagel3",		11,  3},
-	{STD,		P1TYPE_POWERUSEL1,		P1POWUSL1,	"powerusel1",		11,  6},
-	{STD,		P1TYPE_POWERUSEL2,		P1POWUSL2,	"powerusel2",		11,  6},
-	{STD,		P1TYPE_POWERUSEL3,		P1POWUSL3,	"powerusel3",		11,  6},
-	{STD,		P1TYPE_POWERDELL1,		P1POWDLL1,	"powerdell1",		11,  6},
-	{STD,		P1TYPE_POWERDELL2,		P1POWDLL2,	"powerdell2",		11,  6},
-	{STD,		P1TYPE_POWERDELL3,		P1POWDLL3,	"powerdell3",		11,  6},
-	{DEVTYPE,	P1TYPE_MBUSDEVICETYPE,		P1MBTYPE,	"mbusdevicetype",	11,  3},
-	{GAS,		P1TYPE_GASUSAGEDSMR4,		P1GUDSMR4,	"gasusage",	 	26,  8},
-	{LINE17,	P1TYPE_GASTIMESTAMP,		P1GTS,		"gastimestamp",		11, 12},
-	{LINE18,	P1TYPE_GASUSAGE,		P1GUDSMR2,	"gasusage",		 1,  9}
-}; // must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of matchlist
+P1Match p1_matchlist[] = {
+	{_eP1MatchType::ID,			P1TYPE_SMID,			P1SMID,		"",					0,  0},
+	{_eP1MatchType::EXCLMARK,	P1TYPE_END,				P1EOT,		"",					0,  0},
+	{_eP1MatchType::STD,		P1TYPE_VERSION,			P1VER,		"version",			10,  2},
+	{_eP1MatchType::STD,		P1TYPE_VERSION,			P1VERBE,	"versionBE",		11,  5},
+	{_eP1MatchType::STD,		P1TYPE_POWERUSAGE,		P1PUSG,		"powerusage",		10,  9},
+	{_eP1MatchType::STD,		P1TYPE_POWERDELIV,		P1PDLV,		"powerdeliv",		10,  9},
+	{_eP1MatchType::STD,		P1TYPE_USAGECURRENT,	P1PUC,		"powerusagec",		10,  7},
+	{_eP1MatchType::STD,		P1TYPE_DELIVCURRENT,	P1PDC,		"powerdelivc",		10,  7},
+	{_eP1MatchType::STD,		P1TYPE_VOLTAGEL1,		P1VOLTL1,	"voltagel1",		11,  5},
+	{_eP1MatchType::STD,		P1TYPE_VOLTAGEL2,		P1VOLTL2,	"voltagel2",		11,  5},
+	{_eP1MatchType::STD,		P1TYPE_VOLTAGEL3,		P1VOLTL3,	"voltagel3",		11,  5},
+	{_eP1MatchType::STD,		P1TYPE_AMPERAGEL1,		P1AMPEREL1,	"amperagel1",		11,  3},
+	{_eP1MatchType::STD,		P1TYPE_AMPERAGEL2,		P1AMPEREL2,	"amperagel2",		11,  3},
+	{_eP1MatchType::STD,		P1TYPE_AMPERAGEL3,		P1AMPEREL3,	"amperagel3",		11,  3},
+	{_eP1MatchType::STD,		P1TYPE_POWERUSEL1,		P1POWUSL1,	"powerusel1",		11,  6},
+	{_eP1MatchType::STD,		P1TYPE_POWERUSEL2,		P1POWUSL2,	"powerusel2",		11,  6},
+	{_eP1MatchType::STD,		P1TYPE_POWERUSEL3,		P1POWUSL3,	"powerusel3",		11,  6},
+	{_eP1MatchType::STD,		P1TYPE_POWERDELL1,		P1POWDLL1,	"powerdell1",		11,  6},
+	{_eP1MatchType::STD,		P1TYPE_POWERDELL2,		P1POWDLL2,	"powerdell2",		11,  6},
+	{_eP1MatchType::STD,		P1TYPE_POWERDELL3,		P1POWDLL3,	"powerdell3",		11,  6},
+	{_eP1MatchType::DEVTYPE,	P1TYPE_MBUSDEVICETYPE,	P1MBTYPE,	"mbusdevicetype",	11,  3},
+	{_eP1MatchType::GAS,		P1TYPE_GASUSAGEDSMR4,	P1GUDSMR4,	"gasusage",	 		26,  8},
+	{_eP1MatchType::LINE17,		P1TYPE_GASTIMESTAMP,	P1GTS,		"gastimestamp",		11, 12},
+	{_eP1MatchType::LINE18,		P1TYPE_GASUSAGE,		P1GUDSMR2,	"gasusage",			1,  9}
+}; // must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of p1_matchlist
 
 P1MeterBase::P1MeterBase(void)
 {
@@ -117,6 +129,8 @@ P1MeterBase::P1MeterBase(void)
 
 P1MeterBase::~P1MeterBase(void)
 {
+	if (m_pDecryptBuffer)
+		delete[] m_pDecryptBuffer;
 }
 
 void P1MeterBase::Init()
@@ -185,11 +199,26 @@ void P1MeterBase::Init()
 			_log.Log(LOG_STATUS, "P1 Smart Meter: Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
 		}
 	}
+	InitP1EncryptionState();
 }
+
+void P1MeterBase::InitP1EncryptionState()
+{
+	m_p1_encryption_state = P1EcryptionState::waitingForStartByte;
+	m_currentBytePosition = 0;
+	m_changeToNextStateAt = 0;
+	m_dataLength = 0;
+	m_systemTitle.clear();
+	m_frameCounter = 0;
+	m_dataPayload.clear();
+	m_gcmTag.clear();
+	m_gcmTag.reserve(GCMTagLength);
+}
+
 
 bool P1MeterBase::MatchLine()
 {
-	if ((strlen((const char*)& l_buffer) < 1) || (l_buffer[0] == 0x0a))
+	if ((strlen((const char*)&l_buffer) < 1) || (l_buffer[0] == 0x0a))
 		return true; //null value (startup)
 	uint8_t i;
 	uint8_t found = 0;
@@ -197,44 +226,44 @@ bool P1MeterBase::MatchLine()
 	char value[20] = "";
 	std::string vString;
 
-	for (i = 0; (i < sizeof(matchlist) / sizeof(P1Match)) & (!found); i++)
+	for (i = 0; (i < sizeof(p1_matchlist) / sizeof(P1Match)) & (!found); i++)
 	{
-		t = &matchlist[i];
+		t = &p1_matchlist[i];
 		switch (t->matchtype)
 		{
-		case ID:
+		case _eP1MatchType::ID:
 			// start of data
-			if (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0)
+			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
 			{
 				m_linecount = 1;
 				found = 1;
 			}
 			continue; // we do not process anything else on this line
 			break;
-		case EXCLMARK:
+		case _eP1MatchType::EXCLMARK:
 			// end of data
-			if (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0)
+			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
 			{
 				l_exclmarkfound = 1;
 				found = 1;
 			}
 			break;
-		case STD:
-			if (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0)
+		case _eP1MatchType::STD:
+			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
 				found = 1;
 			break;
-		case DEVTYPE:
+		case _eP1MatchType::DEVTYPE:
 			if (m_gasmbuschannel == 0)
 			{
 				vString = (const char*)t->key + 3;
-				if (strncmp(vString.c_str(), (const char*)& l_buffer + 3, strlen(t->key) - 3) == 0)
+				if (strncmp(vString.c_str(), (const char*)&l_buffer + 3, strlen(t->key) - 3) == 0)
 					found = 1;
 				else
 					i += 100; // skip matches with any other gas lines - we need to find the M0-Bus channel first
 			}
 			break;
-		case GAS:
-			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)& l_buffer, strlen(t->key)) == 0)
+		case _eP1MatchType::GAS:
+			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
 			{
 				// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
 				if ((l_buffer[9] & 0xFD) == 0x31)
@@ -243,15 +272,15 @@ bool P1MeterBase::MatchLine()
 			if (m_p1version >= 4)
 				i += 100; // skip matches with any DSMR v2 gas lines
 			break;
-		case LINE17:
-			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)& l_buffer, strlen(t->key)) == 0)
+		case _eP1MatchType::LINE17:
+			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
 			{
 				m_linecount = 17;
 				found = 1;
 			}
 			break;
-		case LINE18:
-			if ((m_linecount == 18) && (strncmp(t->key, (const char*)& l_buffer, strlen(t->key)) == 0))
+		case _eP1MatchType::LINE18:
+			if ((m_linecount == 18) && (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0))
 				found = 1;
 			break;
 		} //switch
@@ -270,7 +299,7 @@ bool P1MeterBase::MatchLine()
 			if (difftime(atime, m_lastUpdateTime) >= m_ratelimit)
 			{
 				m_lastUpdateTime = atime;
-				sDecodeRXMessage(this, (const unsigned char*)& m_power, "Power", 255);
+				sDecodeRXMessage(this, (const unsigned char*)&m_power, "Power", 255);
 				if (m_voltagel1 != -1) {
 					SendVoltageSensor(0, 1, 255, m_voltagel1, "Voltage L1");
 				}
@@ -314,7 +343,7 @@ bool P1MeterBase::MatchLine()
 						// just accept it - we cannot sync to our clock
 						m_lastSharedSendGas = atime;
 						m_lastgasusage = m_gas.gasusage;
-						sDecodeRXMessage(this, (const unsigned char*)& m_gas, "Gas", 255);
+						sDecodeRXMessage(this, (const unsigned char*)&m_gas, "Gas", 255);
 					}
 					else if (atime >= m_gasoktime)
 					{
@@ -324,12 +353,12 @@ bool P1MeterBase::MatchLine()
 						sprintf(myts, "%02d%02d%02d%02d%02d%02dW", ltime.tm_year % 100, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 						if (ltime.tm_isdst)
 							myts[12] = 'S';
-						if ((m_gastimestamp.length() > 13) || (strncmp((const char*)& myts, m_gastimestamp.c_str(), m_gastimestamp.length()) >= 0))
+						if ((m_gastimestamp.length() > 13) || (strncmp((const char*)&myts, m_gastimestamp.c_str(), m_gastimestamp.length()) >= 0))
 						{
 							m_lastSharedSendGas = atime;
 							m_lastgasusage = m_gas.gasusage;
 							m_gasoktime += 300;
-							sDecodeRXMessage(this, (const unsigned char*)& m_gas, "Gas", 255);
+							sDecodeRXMessage(this, (const unsigned char*)&m_gas, "Gas", 255);
 						}
 						else // gas clock is ahead
 						{
@@ -366,8 +395,8 @@ bool P1MeterBase::MatchLine()
 		}
 		else
 		{
-			vString = (const char*)& l_buffer + t->start;
-			int ePos = t->width;
+			vString = (const char*)&l_buffer + t->start;
+			size_t ePos = t->width;
 			ePos = vString.find_first_of("*)");
 
 			if (ePos == std::string::npos)
@@ -567,7 +596,7 @@ bool P1MeterBase::MatchLine()
 			if (t->type == P1TYPE_GASUSAGEDSMR4)
 			{
 				// need to get timestamp from this line as well
-				vString = (const char*)& l_buffer + 11;
+				vString = (const char*)&l_buffer + 11;
 				m_gastimestamp = vString.substr(0, 13);
 #ifdef _DEBUG
 				_log.Log(LOG_NORM, "P1 Smart Meter: Key: gastimestamp, Value: %s", m_gastimestamp.c_str());
@@ -580,7 +609,7 @@ bool P1MeterBase::MatchLine()
 
 
 /*
-/ GB3:	DSMR 4.0 defines a CRC checksum at the end of the message, calculated from
+/ 	DSMR 4.0 defines a CRC checksum at the end of the message, calculated from
 /	and including the message starting character '/' upto and including the message
 /	end character '!'. According to the specs the CRC is a 16bit checksum using the
 /	polynomial x^16 + x^15 + x^2 + 1, however input/output are reflected.
@@ -615,7 +644,7 @@ bool P1MeterBase::CheckCRC()
 
 	// retrieve CRC from the current line
 	char crc_str[5];
-	strncpy(crc_str, (const char*)& l_buffer + 1, 4);
+	strncpy(crc_str, (const char*)&l_buffer + 1, 4);
 	crc_str[4] = 0;
 	uint16_t m_crc16 = (uint16_t)strtoul(crc_str, NULL, 16);
 
@@ -646,8 +675,107 @@ bool P1MeterBase::CheckCRC()
 }
 
 
+bool P1MeterBase::ParseP1EncryptedData(const uint8_t p1_byte)
+{
+	switch (m_p1_encryption_state)
+	{
+	case P1EcryptionState::waitingForStartByte:
+		if (p1_byte == 0xDB)
+		{
+			InitP1EncryptionState();
+			m_p1_encryption_state = P1EcryptionState::readSystemTitleLength;
+		}
+		break;
+	case P1EcryptionState::readSystemTitleLength:
+		m_p1_encryption_state = P1EcryptionState::readSystemTitle;
+		// 2 start bytes (position 0 and 1) + system title length
+		m_changeToNextStateAt = 1 + int(p1_byte);
+		m_systemTitle.clear();
+		break;
+	case P1EcryptionState::readSystemTitle:
+		m_systemTitle.insert(m_systemTitle.end(), 1, p1_byte);
+		if (m_currentBytePosition >= m_changeToNextStateAt)
+		{
+			m_p1_encryption_state = P1EcryptionState::readSeparator82;
+			m_changeToNextStateAt++;
+		}
+		break;
+	case P1EcryptionState::readSeparator82:
+		if (p1_byte == 0x82)
+		{
+			m_p1_encryption_state = P1EcryptionState::readPayloadLength; // Ignore separator byte
+			m_changeToNextStateAt += 2;
+		}
+		else {
+			//Missing separator (0x82). Dropping telegram
+			m_p1_encryption_state = P1EcryptionState::waitingForStartByte;
+		}
+		break;
+	case P1EcryptionState::readPayloadLength:
+		m_dataLength <<= 8;
+		m_dataLength |= int(p1_byte);
+		if (m_dataLength > 2000)
+		{
+			//something is not right here
+			m_p1_encryption_state = P1EcryptionState::readSystemTitleLength;
+		}
+		else if (m_currentBytePosition >= m_changeToNextStateAt)
+		{
+			m_p1_encryption_state = P1EcryptionState::readSeparator30;
+			m_changeToNextStateAt++;
+		}
+		break;
+	case P1EcryptionState::readSeparator30:
+		if (p1_byte == 0x30)
+		{
+			m_p1_encryption_state = P1EcryptionState::readFrameCounter;
+			// 4 bytes for frame counter
+			m_changeToNextStateAt += 4;
+		}
+		else {
+			//Missing separator (0x30). Dropping telegram
+			m_p1_encryption_state = P1EcryptionState::waitingForStartByte;
+		}
+		break;
+	case P1EcryptionState::readFrameCounter:
+		m_frameCounter <<= 8;
+		m_frameCounter |= p1_byte;
+		if (m_currentBytePosition >= m_changeToNextStateAt)
+		{
+			m_p1_encryption_state = P1EcryptionState::readPayload;
+			m_changeToNextStateAt += m_dataLength - 17;
+			m_dataPayload.reserve(m_dataLength - 17);
+		}
+		break;
+	case P1EcryptionState::readPayload:
+		m_dataPayload.insert(m_dataPayload.end(), 1, p1_byte);
+		if (m_currentBytePosition >= m_changeToNextStateAt)
+		{
+			m_p1_encryption_state = P1EcryptionState::readGcmTag;
+			m_changeToNextStateAt += GCMTagLength;
+		}
+		break;
+	case P1EcryptionState::readGcmTag:
+		// All input has been read.
+		m_gcmTag.insert(m_gcmTag.end(), 1, p1_byte);
+		if (m_currentBytePosition >= m_changeToNextStateAt)
+		{
+			m_p1_encryption_state = P1EcryptionState::doneReadingTelegram;
+		}
+		break;
+	}
+	m_currentBytePosition++;
+	if (m_p1_encryption_state == P1EcryptionState::doneReadingTelegram)
+	{
+		m_p1_encryption_state = P1EcryptionState::waitingForStartByte;
+		return true;
+	}
+	return false;
+}
+
+
 /*
-/ GB3:	ParseP1Data() can be called with either a complete message (P1MeterTCP) or individual
+/ 	ParseP1Data() can be called with either a complete message (P1MeterTCP) or individual
 /	lines (P1MeterSerial).
 /
 /	While it is technically possible to do a CRC check line by line, we like to keep
@@ -660,8 +788,82 @@ bool P1MeterBase::CheckCRC()
 /	done if the message passes all other validation rules
 */
 
-void P1MeterBase::ParseP1Data(const unsigned char* pData, const int Len, const bool disable_crc, int ratelimit)
+void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const bool disable_crc, int ratelimit)
 {
+	const uint8_t* pData = pDataIn;
+	int Len = LenIn;
+
+	if (m_bIsEncrypted)
+	{
+		int tLen = 0;
+		while (tLen < LenIn)
+		{
+			if (ParseP1EncryptedData(pDataIn[tLen]))
+			{
+				try
+				{
+					//We have a complete Telegram
+					std::string iv, cipherText;
+					iv.reserve(m_systemTitle.size() + 4);
+					cipherText.reserve(m_dataPayload.size() + GCMTagLength);
+
+					iv.append(m_systemTitle.begin(), m_systemTitle.end());
+					iv.append(1, (m_frameCounter & 0xFF000000) >> 24);
+					iv.append(1, (m_frameCounter & 0x00FF0000) >> 16);
+					iv.append(1, (m_frameCounter & 0x0000FF00) >> 8);
+					iv.append(1, m_frameCounter & 0x000000FF);
+
+					cipherText.append(m_dataPayload.begin(), m_dataPayload.end());
+					cipherText.append(m_gcmTag.begin(), m_gcmTag.end());
+
+					size_t neededDecryptBufferSize = std::min(1000, static_cast<int>(cipherText.size() + 16));
+					if (neededDecryptBufferSize > m_DecryptBufferSize)
+					{
+						if (m_pDecryptBuffer)
+							delete[] m_pDecryptBuffer;
+
+						m_DecryptBufferSize = neededDecryptBufferSize;
+						m_pDecryptBuffer = new uint8_t[m_DecryptBufferSize];
+						if (m_pDecryptBuffer == nullptr)
+							return;
+					}
+					memset(m_pDecryptBuffer, 0, m_DecryptBufferSize);
+
+					EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+					if (ctx == nullptr)
+						return;
+					EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), NULL, NULL, NULL);
+					EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, iv.size(), NULL);
+
+					EVP_DecryptInit_ex(ctx, NULL, NULL, (const unsigned char*)m_szHexKey.data(), (const unsigned char*)iv.c_str());
+
+					int outlen = 0;
+					//std::vector<char> m_szDecodeAdd = HexToBytes(_szDecodeAdd);
+					//EVP_DecryptUpdate(ctx, NULL, &outlen, (const uint8_t*)m_szDecodeAdd.data(), m_szDecodeAdd.size());
+					EVP_DecryptUpdate(ctx, (uint8_t*)m_pDecryptBuffer, &outlen, (uint8_t*)cipherText.c_str(), cipherText.size());
+					EVP_CIPHER_CTX_free(ctx);
+					if (outlen <= 0)
+						return;
+/*
+					CryptoPP::GCM< CryptoPP::AES >::Decryption decryptor;
+					decryptor.SetKeyWithIV((uint8_t*)m_szHexKey.data(), 16, (uint8_t*)iv.c_str(), 12);
+					decryptor.ProcessData(m_pDecryptBuffer, (uint8_t*)cipherText.c_str(), cipherText.size());
+*/
+					pData = m_pDecryptBuffer;
+					Len = static_cast<int>(strlen((const char*)m_pDecryptBuffer));
+				}
+				catch (const std::exception& e)
+				{
+					_log.Log(LOG_ERROR, "P1Meter: Error decrypting payload (%s)", e.what());
+				}
+				break;
+			}
+			tLen++;
+		}
+		if (tLen >= LenIn)
+			return; //not ready with payload
+	}
+
 	int ii = 0;
 	m_ratelimit = ratelimit;
 	// a new message should not start with an empty line, but just in case it does (crude check is sufficient here)

@@ -28,7 +28,7 @@
  */
 
 #include "stdafx.h"
-#include "../main/Logger.h"
+#include "../../main/Logger.h"
 #include "../eHouseTCP.h"
 #ifndef WIN32
 #else

@@ -211,8 +211,18 @@
 						<h1 data-i18n="Neighbours">Neighbours</h1>
 					</div>
 					<div class="row-fluid">
-						<div class="span12">
-							<div align="center" id="networkchart"></div>
+						<div class="span5">
+							<table class="display" id="legendtable" />
+							<table id="updelclrgroup" border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td align="right">
+										<a class="btnstyle3" id="grouprefresh" data-i18n="Refresh" onclick="RefreshGroupTable();">Refresh</a>
+									</td>
+								</tr>
+							</table>
+						</div>
+						<div class="span7">
+							<div style="height: 590px" align="center" id="networkchart"></div>
 						</div>
 					</div>
 				</section>
