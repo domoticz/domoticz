@@ -15,6 +15,12 @@ public:
 	P1Power	m_power;
 	P1Gas	m_gas;
 private:
+	void Init();
+	bool MatchLine();
+	void ParseP1Data(const uint8_t* pDataIn, const int LenIn, const bool disable_crc, int ratelimit);
+
+	bool CheckCRC();
+
 	bool m_bDisableCRC;
 	int m_ratelimit;
 
@@ -57,9 +63,33 @@ private:
 	double m_gasclockskew;
 	time_t m_gasoktime;
 
-	void Init();
-	bool MatchLine();
-	void ParseP1Data(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit);
+	//Encryption
+	bool m_bIsEncrypted = false;
+	std::vector<char> m_szHexKey;
+	enum class P1EcryptionState
+	{
+		waitingForStartByte = 0,
+		readSystemTitleLength,
+		readSystemTitle,
+		readSeparator82,
+		readPayloadLength,
+		readSeparator30,
+		readFrameCounter,
+		readPayload,
+		readGcmTag,
+		doneReadingTelegram
+	};
 
-	bool CheckCRC();
+	P1EcryptionState m_p1_encryption_state = P1EcryptionState::waitingForStartByte;
+	int m_currentBytePosition = 0;
+	int m_changeToNextStateAt = 0;
+	int m_dataLength = 0;
+	std::string m_systemTitle;
+	uint32_t m_frameCounter = 0;
+	std::string m_dataPayload;
+	std::string m_gcmTag;
+	uint8_t* m_pDecryptBuffer = nullptr;
+	size_t m_DecryptBufferSize = 0;
+	void InitP1EncryptionState();
+	bool ParseP1EncryptedData(const uint8_t p1_byte);
 };

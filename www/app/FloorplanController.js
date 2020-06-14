@@ -313,21 +313,7 @@ define(['app', 'livesocket'], function (app) {
 					});
 				}
 			});
-
-			$scope.$on('jsonupdate', function (event, data) {
-				/*
-					When this event is caught, a widget status update is received.
-					We call RefreshItem to update the widget.
-				*/
-				if (typeof data.ServerTime != 'undefined') {
-					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
-				}
-				if (typeof data.ActTime != 'undefined') {
-					$.LastUpdateTime = parseInt(data.ActTime);
-				}
-				RefreshItem(data.item);
-			});
-		}
+		};
 
 		$scope.ShowFPDevices = function (floorIdx) {
 
@@ -574,6 +560,11 @@ define(['app', 'livesocket'], function (app) {
 			try {
 				$scope.MakeGlobalConfig();
 				ShowFloorplans();
+
+				$scope.$on('device_update', function (event, deviceData) {
+					RefreshItem(deviceData);
+				});
+
 				document.getElementById("cFloorplans").addEventListener("mouseover", $scope.debugOn);
 				document.getElementById("cFloorplans").addEventListener("mouseout", $scope.debugOff);
 			}

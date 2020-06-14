@@ -112,6 +112,7 @@ bool SMTPClient::SendEmail()
 	const std::string rmessage = MakeMessage();
 
 	CURLcode ret;
+	char errbuf[CURL_ERROR_SIZE];
 	struct curl_slist* slist1;
 
 	smtp_upload_status smtp_ctx;
@@ -179,6 +180,12 @@ bool SMTPClient::SendEmail()
 		curl_easy_setopt(curl, CURLOPT_READFUNCTION, smtp_payload_reader);
 		curl_easy_setopt(curl, CURLOPT_READDATA, &smtp_ctx);
 
+		/* provide a buffer to store errors in */
+		curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
+
+		/* set the error buffer as empty before performing a request */
+		errbuf[0] = 0;
+
 		ret = curl_easy_perform(curl);
 
 		curl_easy_cleanup(curl);
@@ -188,6 +195,12 @@ bool SMTPClient::SendEmail()
 		if (ret != CURLE_OK)
 		{
 			_log.Log(LOG_ERROR, "SMTP Mailer: Error sending Email to: %s !", m_Recipients[0].c_str());
+			size_t len = strlen(errbuf);
+			_log.Log(LOG_ERROR, "libcurl: (%d) ", ret);
+			if(len)
+				_log.Log(LOG_ERROR, "%s%s", errbuf, ((errbuf[len - 1] != '\n') ? "\n" : ""));
+			else
+				_log.Log(LOG_ERROR, "%s\n", curl_easy_strerror(ret));
 			return false;
 		}
 	}

@@ -8,13 +8,15 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <cmath>
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #define ENOCEAN_RETRY_DELAY 30
 

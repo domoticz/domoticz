@@ -1,25 +1,13 @@
 define(['app', 'livesocket'], function (app) {
-	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
+	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, deviceApi, permissions, livesocket) {
 
 		var ctrl = this;
-		$scope.broadcast_unsubscribe = undefined;
 
 		MakeFavorite = function (id, isfavorite) {
-			if (!permissions.hasPermission("Admin")) {
-				HideNotify();
-				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
-				return;
-			}
-
-			$.ajax({
-				url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					ShowWeathers();
-				}
+			deviceApi.makeFavorite(id, isfavorite).then(function() {
+				ShowWeathers();
 			});
-		}
+		};
 
 		EditRainDevice = function (idx, name, description, addjmulti) {
 			$.devIdx = idx;
@@ -98,20 +86,6 @@ define(['app', 'livesocket'], function (app) {
 
 				}
 			});
-
-			$scope.broadcast_unsubscribe = $scope.$on('jsonupdate', function (event, data) {
-				/*
-					When this event is caught, a widget status update is received.
-					We call RefreshItem to update the widget.
-				*/
-				if (typeof data.ServerTime != 'undefined') {
-					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
-				}
-				if (typeof data.ActTime != 'undefined') {
-					$.LastUpdateTime = parseInt(data.ActTime);
-				}
-				RefreshItem(data.item);
-			});
 		}
 
 		ShowForecast = function () {
@@ -120,11 +94,6 @@ define(['app', 'livesocket'], function (app) {
 
 		ShowWeathers = function () {
 			$('#modal').show();
-
-			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
-				$scope.broadcast_unsubscribe();
-				$scope.broadcast_unsubscribe = undefined;
-			}
 
 			$.ajax({
 				url: "json.htm?type=devices&filter=weather&used=true&order=[Order]",
@@ -176,6 +145,10 @@ define(['app', 'livesocket'], function (app) {
 			$.devIdx = 0;
 			$.LastUpdateTime = parseInt(0);
 			$scope.MakeGlobalConfig();
+
+			$scope.$on('device_update', function (event, deviceData) {
+				RefreshItem(deviceData);
+			});
 
 			var dialog_editweatherdevice_buttons = {};
 			dialog_editweatherdevice_buttons[$.t("Update")] = function () {
@@ -423,13 +396,6 @@ define(['app', 'livesocket'], function (app) {
 			});
 
 		};
-		$scope.$on('$destroy', function () {
-			//cleanup
-			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
-				$scope.broadcast_unsubscribe();
-				$scope.broadcast_unsubscribe = undefined;
-			}
-		});
 	}).directive('dzweatherwidget', ['$rootScope', '$location', function ($rootScope,$location) {
 		return {
 			priority: 0,

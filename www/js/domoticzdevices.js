@@ -803,20 +803,19 @@ Device.initialise = function () {
 
         var cont = getSVGnode();
         if (cont != undefined) {
-            var devCont;
             if ($("#DeviceContainer")[0] == undefined) {
-                devCont = makeSVGnode('g', { id: 'DeviceContainer' }, '');
+                var devCont = makeSVGnode('g', { id: 'DeviceContainer' }, '');
                 cont.appendChild(devCont);
                 Device.checkDefs();
-            }
-            if ($("#DeviceIcons")[0] == undefined) {
-                devCont.appendChild(makeSVGnode('g', { id: 'DeviceIcons' }, ''));
-            }
-            if ($("#DeviceDetails")[0] == undefined) {
-                devCont.appendChild(makeSVGnode('g', { id: 'DeviceDetails' }, ''));
-            }
-            if ($("#DeviceData")[0] == undefined) {
-                devCont.appendChild(makeSVGnode('g', { id: 'DeviceData' }, ''));
+                if ($("#DeviceIcons")[0] == undefined) {
+                        devCont.appendChild(makeSVGnode('g', { id: 'DeviceIcons' }, ''));
+                }
+                if ($("#DeviceDetails")[0] == undefined) {
+                        devCont.appendChild(makeSVGnode('g', { id: 'DeviceDetails' }, ''));
+                }
+                if ($("#DeviceData")[0] == undefined) {
+                        devCont.appendChild(makeSVGnode('g', { id: 'DeviceData' }, ''));
+                }
             }
         }
     }
@@ -1210,10 +1209,17 @@ WeatherSensor.inheritsFrom(VariableSensor);
 function Switch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
+
+        var bIsOff = (
+			(this.status == "Off")
+			|| (item.Status == 'Closed')
+			|| (item.Status == 'Locked')
+        );
+        
         if (item.CustomImage != 0) {
-            this.image = (this.status == "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
+            this.image = (bIsOff) ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
         } else {
-            this.image = (this.status == "Off") ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
+            this.image = (bIsOff) ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
         }
         this.data = '';
         this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";

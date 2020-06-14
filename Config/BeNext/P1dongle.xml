@@ -1,5 +1,31 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
-  <!-- Configuration -->
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+  <MetaData>
+    <MetaDataItem name="Name">P1 Dongle</MetaDataItem>
+    <MetaDataItem name="Description">
+
+If your Internet Gateway is not in the vicinity of the smart meter, you can use a P1-dongle. The P1-dongle sends data wirelessly to the Internet Gateway. This data is shown in your BeNext application and online environment. Here you can get insight of your consumption and things like the overall yield of your solar panels.
+
+Support:
+The P1-dongle can connect to smart meters that support DSMR (Dutch Smart Meter Reader Protocol). We support all smart meters* with a P1-connector.
+The following smart meter brands have this connection: Kaifa, Kamstrup, Landis &amp; Gyr, Elster and Iskra.
+* DSMR2, 4 and 5
+
+For more information about smart meters: https://www.benext.eu/producten/slimme-meter/.
+Order a special adapter for DSMR2.x meters.
+</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/008A:0100:002F</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.benext.eu/en/products/p1-dongle/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://support.benext.eu/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/BeNext/P1dongle.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://www.benext.eu/static/manual/P1_dongle-nl.pdf</MetaDataItem>
+    <MetaDataItem id="0100" name="FrequencyName" type="002F">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0100" name="Identifier" type="002F">P1 Dongle</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Olifant1990 - olifant1990@jo-ro.nl" date="20 September 2019" revision="4">Added Metadata as of template, removed commandclass ID 50, should be interviewed, changed max_associations of lifeline group as of manual</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
   <CommandClass id="112">
     <Value genre="config" index="1" instance="1" label="Set to Default" size="1" type="byte">
       <Help>Set all configuration values to default values (factory settings).</Help>
@@ -46,25 +72,10 @@
       <Help>Conditions total used will be automatically reported. Param 1-3: Difference in absolute value. Param 4: Difference in percentage between previous and current value. (default 0x00006400 (0.1m3 and 0%))</Help>
     </Value>
   </CommandClass>
-  <!-- Meter v4 as report -->
-  <CommandClass id="50">
-    <Instance index="1"/>
-    <Instance index="2"/>
-    <Instance index="3"/>
-    <Instance index="4"/>
-    <Value genre="user" index="0" instance="1" label="Energy" read_only="true" type="decimal" units="kWh" write_only="false"/>
-    <Value genre="user" index="8" instance="1" label="Power" read_only="true" type="decimal" units="W" write_only="false"/>
-    <Value genre="user" index="0" instance="2" label="Energy" read_only="true" type="decimal" units="kWh" write_only="false"/>
-    <Value genre="user" index="8" instance="2" label="Power" read_only="true" type="decimal" units="W" verify_changes="false" write_only="false"/>
-    <Value genre="user" index="0" instance="3" label="Energy" read_only="true" type="decimal" units="kWh" verify_changes="false" write_only="false"/>
-    <Value genre="user" index="8" instance="3" label="Power" read_only="true" type="decimal" units="W" verify_changes="false" write_only="false"/>
-    <Value genre="user" index="0" instance="4" label="Gas" read_only="true" type="decimal" units="cubic meters" verify_changes="false" write_only="false"/>
-    <Compatibility/>
-  </CommandClass>
-  <!-- Association Groups -->
+  <!-- The Association Group Information -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" label="LifeLine" max_associations="8"/>
+      <Group index="1" label="LifeLine" max_associations="1"/>
     </Associations>
   </CommandClass>
 </Product>

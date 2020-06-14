@@ -7,7 +7,7 @@ define(['app', 'events/factories'], function (app) {
             onDelete: '&'
         },
         templateUrl: 'app/events/EventViewer.html',
-        controller: function ($scope, $element, $q, $timeout, $modal, bootbox, domoticzEventsApi, blocklyToolbox) {
+        controller: function ($scope, $element, $q, $timeout, $uibModal, bootbox, domoticzEventsApi, blocklyToolbox) {
             var vm = this;
             var aceEditor;
             var blocklyWorkspace;
@@ -142,7 +142,7 @@ define(['app', 'events/factories'], function (app) {
             }
 
             function importEvent() {
-                $modal.open({
+                $uibModal.open({
                     templateUrl: 'app/events/importEventModal.html'
                 }).result.then(function (scriptData) {
                     try {
@@ -162,7 +162,7 @@ define(['app', 'events/factories'], function (app) {
 
                 scope.scriptData = Blockly.Xml.domToText(xml);
 
-                $modal.open({
+                $uibModal.open({
                     scope: scope,
                     templateUrl: 'app/events/exportEventModal.html'
                 });

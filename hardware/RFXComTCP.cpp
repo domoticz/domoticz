@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "RFXComTCP.h"
 #include "../main/Logger.h"
-//#include <boost/bind.hpp>
-//#include <boost/asio.hpp>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"

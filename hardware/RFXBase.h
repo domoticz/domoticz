@@ -39,6 +39,8 @@ protected:
 	virtual bool StartHardware() = 0;
 	virtual bool StopHardware() = 0;
 
+	time_t m_LastP1Received = 0;
+
 	std::mutex readQueueMutex;
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE] = { 0 };
 	unsigned char m_rxbufferpos = { 0 };

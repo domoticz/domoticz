@@ -8,6 +8,8 @@
 #include "../tcpserver/TCPServer.h"
 #include "sha1.hpp"
 
+using namespace boost::placeholders;
+
 // RK: some defines to make mydomoticz also work when openssl not compiled in
 #ifdef WWW_ENABLE_SSL
 #define PROXY_PORT 443
@@ -19,7 +21,7 @@
 
 extern std::string szAppVersion;
 
-#define TIMEOUT 60
+#define PROXY_TIMEOUT 60
 #define PONG "PONG"
 
 namespace http {
@@ -30,6 +32,8 @@ namespace http {
 		CProxyClient::CProxyClient() : ASyncTCP(PROXY_SECURE)
 		{
 			m_pDomServ = NULL;
+			/* use default value for tcp timeouts */
+			SetTimeout(PROXY_TIMEOUT);
 		}
 
 		void CProxyClient::Reset()

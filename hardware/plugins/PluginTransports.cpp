@@ -9,9 +9,11 @@
 #include "PluginTransports.h"
 #include "PythonObjects.h"
 
-#include "../main/Logger.h"
+#include "../../main/Logger.h"
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
+
+using namespace boost::placeholders;
 
 namespace Plugins {
 
@@ -481,6 +483,7 @@ namespace Plugins {
 			else
 			{
 				if ((e.value() != boost::asio::error::eof) &&
+					(e.value() != 1) &&	// Stream truncated, this exception occurs when third party closes the connection
 					(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
 					(e.value() != 125) &&	// Operation canceled
 					(e != boost::asio::error::operation_aborted) &&

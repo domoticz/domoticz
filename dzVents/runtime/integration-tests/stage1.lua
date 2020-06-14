@@ -740,13 +740,16 @@ local testSelectorSwitch = function(name)
 		["timedOut"] = false;
 	})
 
-	res = res and ( dz.logDevice(dev) == nil )
-	res = res and expectEql('Off',  dev.levelNames[1])
+	res = res and ( dz.logObject(dev, nil, 'device' ) == nil )
+	res = res and expectEql('Off', dev.levelNames[1])
 	res = res and expectEql('Level1', dev.levelNames[2])
 	res = res and expectEql('Level2', dev.levelNames[3])
 	res = res and expectEql('Level3', dev.levelNames[4])
 
 	dev.switchSelector(30) -- level3
+	dev.switchSelector('Level3').checkFirst().afterSec(2) -- Will be checked in stage 2 with a script
+	dev.switchSelector('Level3').checkFirst().afterSec(4)
+	dev.switchSelector('Level3').checkFirst().afterSec(6)
 	tstMsg('Test selector switch device', res)
 	return res
 end
@@ -844,6 +847,29 @@ local testTemperature = function(name)
 
 	dev.updateTemperature(120)
 	tstMsg('Test temperature device', res)
+	return res
+end
+
+local testBackup = function()
+	local res = true
+
+	dz.openURL(dz.settings['Domoticz url'] .. '/backupdatabase.php')
+
+	tstMsg('Test Backup', res)
+	return res
+end
+
+local testEmit = function()
+	local res = true
+
+	dz.openURL(dz.settings['Domoticz url'] .."/json.htm?type=command%26param=customevent%26event=myEvents2%26data=someencodedstring" )
+
+	local myEventTable = { a ='a', b = '2'}
+	dz.emitEvent('myEvents3').afterSec(2)
+	dz.emitEvent('myEvents4','myEventString').afterSec(4)
+	dz.emitEvent('myEvents5',myEventTable).afterSec(6)
+
+	tstMsg('Test Emits', res)
 	return res
 end
 
@@ -980,8 +1006,8 @@ local testThermostatSetpoint = function(name)
 	})
 
 	dev.updateSetPoint(11)
-	dev.updateSetPoint(22).afterSec(2)  --  20190112 Add afterSec
-	dev.updateSetPoint(33).afterSec(200)  --  20190112 Add afterSec
+	dev.updateSetPoint(22).afterSec(2)
+	dev.updateSetPoint(33).afterSec(200)
 	tstMsg('Test thermostat device', res)
 	return res
 end
@@ -1493,6 +1519,8 @@ return {
 		res = res and testAlert('vdAlert')
 		res = res and testAmpere3('vdAmpere3')
 		res = res and testAmpere1('vdAmpere1')
+		res = res and testBackup()
+		res = res and testEmit()
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testBarometer('vdBarometer')
 		res = res and testCounter('vdCounter')

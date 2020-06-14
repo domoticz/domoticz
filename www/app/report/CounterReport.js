@@ -211,17 +211,20 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 columns.push({ title: $.t('Counter'), data: 'counter', render: counterRenderer });
             }
 
-            columns.push({ title: $.t('Usage'), data: 'usage', render: counterRenderer });
+            columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Generated') : $.t('Usage'), data: 'usage', render: counterRenderer });
 
-			if (!['Counter Incremental'].includes(vm.device.SubType) && (vm.device.SwitchTypeVal != 3))
-				columns.push({ title: $.t('Costs'), data: 'cost', render: costRenderer });
+            if (!['Counter Incremental'].includes(vm.device.SubType) && (vm.device.SwitchTypeVal != 3))
+                columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Earnings') : $.t('Costs'), data: 'cost', render: costRenderer });
 
             columns.push({
                 title: '<>',
                 orderable: false,
                 data: 'trend',
                 render: function (data) {
-                    return '<img src="images/' + data + '.png">'
+					var ret='<img src="images/';
+					if (vm.device.SwitchTypeVal === 4) ret+="g";
+					ret+=data + '.png">';
+                    return ret;
                 }
             });
 

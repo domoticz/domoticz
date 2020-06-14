@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Kodi.h"
 #include "../hardware/hardwaretypes.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/EventSystem.h"
 #include "../main/Helper.h"
 #include "../main/HTMLSanitizer.h"
@@ -186,13 +186,12 @@ void CKodiNode::handleMessage(std::string& pMessage)
 {
 	try
 	{
-		Json::Reader jReader;
 		Json::Value root;
 		std::string	sMessage;
 		std::stringstream ssMessage;
 
 		_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
-		bool bRet = jReader.parse(pMessage, root);
+		bool bRet = ParseJSon(pMessage, root);
 		if ((!bRet) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "Kodi: (%s) PARSE ERROR: '%s'", m_Name.c_str(), pMessage.c_str());
@@ -541,7 +540,7 @@ void CKodiNode::UpdateStatus()
 	if (m_CurrentStatus.LogRequired(m_PreviousStatus))
 	{
 		if (m_CurrentStatus.IsStreaming()) sLogText += " - " + m_CurrentStatus.LogMessage();
-		result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", m_ID, int(m_CurrentStatus.Status()), sLogText.c_str());
+		result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) VALUES (%d, %d, '%q','%q')", m_ID, int(m_CurrentStatus.Status()), sLogText.c_str(), "Kodi");
 		_log.Log(LOG_NORM, "Kodi: (%s) Event: '%s'.", m_Name.c_str(), sLogText.c_str());
 	}
 

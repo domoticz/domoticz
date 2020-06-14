@@ -15,6 +15,7 @@ local deviceAdapters = {
 	'gas_device',
 	'generic_device',
 	'group_device',
+	'hardware_device',
 	'humidity_device',
 	'kwh_device',
 	'leafwetness_device',
@@ -48,7 +49,7 @@ local deviceAdapters = {
 	'waterflow_device',
 	'wind_device',
 	'zone_heating_device',
-	'zwave_thermostat_mode_device',
+	'zwave_mode_type_device',
 	'kodi_device'
 }
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "BleBox.h"
 #include "hardwaretypes.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/Helper.h"
 #include "../main/HTMLSanitizer.h"
 #include "../main/localtime_r.h"
@@ -1028,8 +1028,7 @@ Json::Value BleBox::SendCommand(const std::string & IPAddress, const std::string
 		return root;
 	}
 
-	Json::Reader jReader;
-	if (!jReader.parse(result, root))
+	if (!ParseJSon(result, root))
 	{
 		Log(LOG_ERROR, "Invalid json received!");
 		return root;
@@ -1252,32 +1251,19 @@ void BleBox::UpdateFirmware()
 	}
 }
 
-void BleBox::SearchNodes(const std::string & ipmask)
+void BleBox::SearchNodes(const std::string & pattern)
 {
-	std::vector<std::string> strarray;
-	StringSplit(ipmask, ".", strarray); // ipmask - expected "x.y.z.*"
-	if (strarray.size() != 4)
+	std::vector<std::string> hosts;
+	if(!PrepareHostList(pattern, hosts))
+	{
+		Log(LOG_ERROR, "Invalid or unsupported IP pattern : %s (expected e.g. 192.168.1.*)", pattern.c_str());
 		return;
-	if (strarray[3] != "*")
-		return;
-	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
-		return;
+	}
 
 	std::vector<std::thread> searchingThreads;
-
-	std::stringstream sstr;
-	sstr << strarray[0] << "." << strarray[1] << "." << strarray[2] << ".";
-	const std::string ipStart = sstr.str();
-
-	for (unsigned int i = 1; i < 255; ++i)
-	{
-		std::string IPAddress = ipStart + std::to_string(i);
-
-		if (m_devices.find(IPAddress) == m_devices.end())
-		{
-			searchingThreads.emplace_back(&BleBox::AddNode, this, "unknown", std::ref(IPAddress), false);
-		}
-	}
+	for(auto&& host : hosts)
+		if (m_devices.find(host) == m_devices.end())
+			searchingThreads.emplace_back(&BleBox::AddNode, this, "unknown", std::ref(host), false);
 
 	for (auto&& thread : searchingThreads)
 	{
@@ -1285,4 +1271,31 @@ void BleBox::SearchNodes(const std::string & ipmask)
 	}
 
 	ReloadNodes();
+}
+
+bool BleBox::PrepareHostList(const std::string& pattern, std::vector<std::string>& hosts)
+{
+	std::vector<std::string> strarray;
+	StringSplit(pattern, ".", strarray);
+
+	if (strarray.size() != 4)
+		return false;
+
+	if (strarray[3] != "*")
+		return false;
+
+	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
+		return false;
+
+	std::stringstream sstr;
+	sstr << strarray[0] << "." << strarray[1] << "." << strarray[2] << ".";
+	const std::string ipStart = sstr.str();
+
+	for (unsigned int i = 1; i < 255; ++i)
+	{
+		std::string host = ipStart + std::to_string(i);
+		hosts.push_back(host);
+	}
+
+	return !hosts.empty();
 }

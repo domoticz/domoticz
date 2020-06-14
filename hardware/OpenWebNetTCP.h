@@ -41,7 +41,7 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 		MAX_WHERE_ENERGY = 57
 	};
 public:
-	COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime);
+	COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime, const int ownEnSync);
 	~COpenWebNetTCP(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	bool SetSetpoint(const int idx, const float temp);
@@ -66,6 +66,7 @@ private:
 	int ownRead(csocket* connectionSocket, char* pdata, size_t size);
 	bool sendCommand(bt_openwebnet& command, std::vector<bt_openwebnet>& response, int waitForResponse = 0, bool silent = false);
 	bool ParseData(char* data, int length, std::vector<bt_openwebnet>& messages);
+	void SendGeneralSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const int cmd, const int level, const std::string& defaultname, const int RssiLevel = 12);
 	void UpdateSwitch(const int who, const int where, const int Level, const int iInterface, const int BatteryLevel, const char *devname);
 	void UpdateBlinds(const int who, const int where, const int Command, const int iInterface, const int iLevel, const int BatteryLevel, const char *devname);
 	void UpdateAlarm(const int who, const int where, const int Command, const char *sCommand, const int iInterface, const int BatteryLevel, const char *devname);
@@ -81,8 +82,9 @@ private:
 	void scan_sound_diffusion();
 	void scan_temperature_control();
 	void scan_device();
-	void requestTime();
-	void setTime();
+	void requestGatewayInfo();
+	void requestDateTime();
+	void setDateTime(const std::string &tzString);
 	void requestBurglarAlarmStatus();
 	void requestDryContactIRDetectionStatus();
 	void requestEnergyTotalizer();
@@ -92,8 +94,9 @@ private:
 	unsigned short m_usIPPort;
 	std::string m_ownPassword;
 	unsigned short m_ownScanTime;
+	unsigned short m_ownSynch;
 
-	time_t LastScanTime, LastScanTimeEnergy, LastScanTimeEnergyTot;
+	time_t LastScanTime, LastScanTimeEnergy, LastScanTimeEnergyTot, LastScanSync;
 
 	std::shared_ptr<std::thread> m_monitorThread;
 	std::shared_ptr<std::thread> m_heartbeatThread;

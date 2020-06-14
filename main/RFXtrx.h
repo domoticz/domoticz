@@ -9,7 +9,7 @@
 
 /*
                                                                    
-Copyright 2011-2019, RFXCOM
+Copyright 2011-2020, RFXCOM
 
 ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
 Netherlands Copyright Laws and Treaties and shall be subject to the 
@@ -27,6 +27,14 @@ portions of this file.
 */
 
 /*
+SDK version 9.29	February 27, 2020
+	LucciAirDC Speed 1 to 6 added
+	Cherubini blinds added
+
+SDK version 9.28	January 11, 2020
+	Rain9 TFA 30.3233.01 added
+	Gaposa blinds added
+
 SDK version 9.27	August 12, 2019
 	Hunter fan added
 	Novy fan added
@@ -408,6 +416,7 @@ SDK version 4.9
 #define sTypeExtError 0x02
 #define sTypeRFYremoteList 0x03
 #define sTypeASAremoteList 0x04
+#define sTypeCherubiniRemoteList 0x05
 #define sTypeRecStarted 0x07
 #define sTypeInterfaceWrongCommand 0xFF
 #define trxType310 0x50
@@ -764,6 +773,13 @@ SDK version 4.9
 #define fan_LucciDCReverse 0x5
 #define fan_LucciDCNaturalflow 0x6
 #define fan_LucciDCPair 0x7
+#define LucciDCSpeed1 0x8
+#define LucciDCSpeed2 0x9
+#define LucciDCSpeed3 0xA
+#define LucciDCSpeed4 0xB
+#define LucciDCSpeed5 0xC
+#define LucciDCSpeed6 0xD
+
 #define fan_CasafanHi 0x1
 #define fan_CasafanMed 0x2
 #define fan_CasafanLow 0x3
@@ -833,6 +849,8 @@ SDK version 4.9
 #define sTypeBlindsT14 0xE	//Hualite
 #define sTypeBlindsT15 0xF	//Motostar
 #define sTypeBlindsT16 0x10	//Zemismart
+#define sTypeBlindsT17 0x11	//Gaposa
+#define sTypeBlindsT18 0x12	//Cherubini
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
@@ -859,6 +877,12 @@ SDK version 4.9
 #define blinds_s13angleMinus 0x5
 #define blinds_s16EraseCurrentCh 0x4
 #define blinds_s16ChangeDirection 0x5
+#define blinds_s17Intermediate 0x5
+#define blinds_s17EraseAllCh 0x6
+#define blinds_s18Intermediate 0x4
+#define blinds_s18ListRemotes 0x5
+#define blinds_s18EraseThis 0x6
+#define blinds_s18EraseAll 0x7
 
 //types for RFY
 #define pTypeRFY 0x1A
@@ -1115,6 +1139,7 @@ SDK version 4.9
 #define sTypeRAIN6 0x6   //TX5
 #define sTypeRAIN7 0x7   //Alecto
 #define sTypeRAIN8 0x8   //Davis
+#define sTypeRAIN9 0x9   //TFA 30.3233.01 
 
 //types for wind
 #define pTypeWIND 0x56

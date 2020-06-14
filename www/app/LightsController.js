@@ -1,29 +1,18 @@
 define(['app', 'livesocket'], function (app) {
-	app.controller('LightsController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, permissions, livesocket) {
+	app.controller('LightsController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
 		var $element = $('#main-view #lightcontent').last();
 
 		$scope.HasInitializedAddManualDialog = false;
-		$scope.broadcast_unsubscribe = undefined;
 
 		MakeFavorite = function (id, isfavorite) {
-			if (!permissions.hasPermission("Admin")) {
-				HideNotify();
-				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
-				return;
-			}
-			$.ajax({
-				url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					ShowLights();
-				}
+			deviceApi.makeFavorite(id, isfavorite).then(function() {
+				ShowLights();
 			});
-		}
+		};
 
 		SetColValue = function (idx, color, brightness) {
 			clearInterval($.setColValue);
-			if (permissions.hasPermission("Viewer")) {
+			if (!permissions.hasPermission("User")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
@@ -34,7 +23,7 @@ define(['app', 'livesocket'], function (app) {
 				async: false,
 				dataType: 'json'
 			});
-		}
+		};
 
 		AddManualLightDevice = function () {
 			$("#dialog-addmanuallightdevice #combosubdevice").html("");
@@ -584,7 +573,7 @@ define(['app', 'livesocket'], function (app) {
 				var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 				isdimmer = true;
 				if (
-					(item.Status == 'On')
+					(item.Status != 'Off')
 				) {
 					img = '<img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor"') + ' height="48" width="48">';
 				}
@@ -596,10 +585,10 @@ define(['app', 'livesocket'], function (app) {
 				if (
 					(item.Status == 'On')
 				) {
-					img = '<img src="images/uvsunny.png" title="' + $.t("Daytime") + '" height="48" width="48">';
+					img = '<img src="images/uvdark.png" title="' + $.t("Nighttime") + '" height="48" width="48">';
 				}
 				else {
-					img = '<img src="images/uvdark.png" title="' + $.t("Nighttime") + '" height="48" width="48">';
+					img = '<img src="images/uvsunny.png" title="' + $.t("Daytime") + '" height="48" width="48">';
 				}
 			}
 			else if (item.SwitchType == "Media Player") {
@@ -760,29 +749,10 @@ define(['app', 'livesocket'], function (app) {
 					});
 				}
 			});
-
-			$scope.broadcast_unsubscribe = $scope.$on('jsonupdate', function (event, data) {
-				/*
-					When this event is caught, a widget status update is received.
-					We call RefreshItem to update the widget.
-				*/
-				if (typeof data.ServerTime != 'undefined') {
-					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
-				}
-				if (typeof data.ActTime != 'undefined') {
-					$.LastUpdateTime = parseInt(data.ActTime);
-				}
-				RefreshItem(data.item);
-			});
 		}
 
 		ShowLights = function () {
 			$('#modal').show();
-
-			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
-				$scope.broadcast_unsubscribe();
-				$scope.broadcast_unsubscribe = undefined;
-			}
 
 			var htmlcontent = '';
 			var bShowRoomplan = false;
@@ -926,7 +896,7 @@ define(['app', 'livesocket'], function (app) {
 							}
 							if (permissions.hasPermission("Admin")) {
 								if (item.Type == "RFY") {
-									var rfysetup = '<img src="images/devices.png" title="' + $.t('Setup') + '" height="16" width="16" onclick="ShowRFYPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');">';
+									var rfysetup = '<img src="images/devices.png" title="' + $.t('Setup') + '" height="16" width="16" onclick="ShowRFYPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile +');">';
 									bigtext += "&nbsp;" + rfysetup;
 								}
 							}
@@ -1205,7 +1175,7 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SwitchType == "TPI") {
 								var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 								bIsDimmer = true;
-								if (item.Status == 'On') {
+								if (item.Status != 'Off') {
 									xhtm += '\t      <td id="img"><img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor"') + ' height="48" width="48"></td>\n';
 								}
 								else {
@@ -1215,10 +1185,10 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SwitchType == "Dusk Sensor") {
 								bAddTimer = false;
 								if (item.Status == 'On') {
-									xhtm += '\t      <td id="img"><img src="images/uvsunny.png" title="' + $.t("Daytime") + '" height="48" width="48"></td>\n';
+									xhtm += '\t      <td id="img"><img src="images/uvdark.png" title="' + $.t("Nighttime") + '" height="48" width="48"></td>\n';
 								}
 								else {
-									xhtm += '\t      <td id="img"><img src="images/uvdark.png" title="' + $.t("Nighttime") + '" height="48" width="48"></td>\n';
+									xhtm += '\t      <td id="img"><img src="images/uvsunny.png" title="' + $.t("Daytime") + '" height="48" width="48"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Motion Sensor") {
@@ -1829,15 +1799,8 @@ define(['app', 'livesocket'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #homeconfortparams").show();
 			}
-			else if (lighttype == 304) {
+			else if ((lighttype >= 304) && (lighttype <= 313)) {
 				//Fan (Itho)
-				$("#dialog-addmanuallightdevice #lighting1params").hide();
-				$("#dialog-addmanuallightdevice #lighting2params").hide();
-				$("#dialog-addmanuallightdevice #lighting3params").hide();
-				$("#dialog-addmanuallightdevice #fanparams").show();
-			}
-			else if ((lighttype == 305)||(lighttype == 306)||(lighttype == 307)) {
-				//Fan (Lucci Air/Westinghouse)
 				$("#dialog-addmanuallightdevice #lighting1params").hide();
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
@@ -2060,16 +2023,8 @@ define(['app', 'livesocket'], function (app) {
 				mParams += "&housecode=" + $("#dialog-addmanuallightdevice #homeconfortparams #combohousecode option:selected").val();
 				mParams += "&unitcode=" + $("#dialog-addmanuallightdevice #homeconfortparams #combounitcode option:selected").val();
 			}
-			else if (lighttype == 304) {
-				//Fan (Itho)
-				ID =
-					$("#dialog-addmanuallightdevice #fanparams #combocmd1 option:selected").text() +
-					$("#dialog-addmanuallightdevice #fanparams #combocmd2 option:selected").text() +
-					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
-				mParams += "&id=" + ID;
-			}
-			else if ((lighttype == 305)||(lighttype == 306)||(lighttype == 307)) {
-				//Fan (Lucci Air/Westinghouse)
+			else if ((lighttype >= 304)&&(lighttype <= 313)) {
+				//Fan
 				ID =
 					$("#dialog-addmanuallightdevice #fanparams #combocmd1 option:selected").text() +
 					$("#dialog-addmanuallightdevice #fanparams #combocmd2 option:selected").text() +
@@ -2274,6 +2229,10 @@ define(['app', 'livesocket'], function (app) {
 				$.myglobals.WeekdayStr.push($(this).text());
 			});
 
+			$scope.$on('device_update', function (event, deviceData) {
+				RefreshItem(deviceData);
+			});
+
 			$(window).resize(function () { $scope.ResizeDimSliders(); });
 
 			$("#dialog-addlightdevice").dialog({
@@ -2405,10 +2364,6 @@ define(['app', 'livesocket'], function (app) {
 		};
 
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
-				$scope.broadcast_unsubscribe();
-				$scope.broadcast_unsubscribe = undefined;
-			}
 			$(window).off("resize");
 			var popup = $("#rgbw_popup");
 			if (typeof popup != 'undefined') {

@@ -3,24 +3,14 @@
 #include <string>
 #include <boost/thread/shared_mutex.hpp>
 
-extern "C" {
-#ifdef WITH_EXTERNAL_LUA
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
-#else
-#include "../lua/src/lua.h"
-#include "../lua/src/lualib.h"
-#include "../lua/src/lauxlib.h"
-#endif
-}
 #include "../httpclient/HTTPClient.h"
 
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
 #include "StoppableTask.h"
+#include "NotificationObserver.h"
 
-class CEventSystem : public CLuaCommon, StoppableTask
+class CEventSystem : public CLuaCommon, StoppableTask, CNotificationObserver
 {
 	friend class CdzVents;
 	friend class CLuaHandler;
@@ -54,10 +44,11 @@ public:
 	{
 		REASON_DEVICE,			// 0
 		REASON_SCENEGROUP,		// 1
-		REASON_USERVARIABLE,	// 2
+		REASON_USERVARIABLE,		// 2
 		REASON_TIME,			// 3
 		REASON_SECURITY,		// 4
-		REASON_URL				// 5
+		REASON_URL,			// 5
+		REASON_NOTIFICATION		// 6
 	};
 
 	struct _tDeviceStatus
@@ -79,6 +70,10 @@ public:
 		int signalLevel;
 		int unit;
 		int hardwareID;
+		float AddjValue;
+		float AddjMulti;
+		float AddjValue2;
+		float AddjMulti2;
 		std::map<uint8_t, int> JsonMapInt;
 		std::map<uint8_t, float> JsonMapFloat;
 		std::map<uint8_t, bool> JsonMapBool;
@@ -120,6 +115,8 @@ public:
 
 	void LoadEvents();
 	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname);
+	void UpdateBatteryLevel(const uint64_t ulDevID, const unsigned char batteryLevel);
+
 	void RemoveSingleState(const uint64_t ulDevID, const _eReason reason);
 	void WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname, const _eReason reason);
 	void WWWUpdateSecurityState(int securityStatus);
@@ -175,7 +172,7 @@ private:
 		std::map<uint8_t, float> JsonMapFloat;
 		std::map<uint8_t, bool> JsonMapBool;
 		std::map<uint8_t, std::string> JsonMapString;
-		queue_element_trigger* trigger;
+		queue_element_trigger* trigger = nullptr;
 	};
 	concurrent_queue<_tEventQueue> m_eventqueue;
 
@@ -202,7 +199,17 @@ private:
 	void Do_Work();
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
-	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
+	std::string UpdateSingleState(
+		const uint64_t ulDevID, 
+		const std::string &devname, 
+		const int nValue, const std::string &sValue, 
+		const unsigned char devType, const unsigned char subType, 
+		const _eSwitchType switchType, 
+		const std::string &lastUpdate, 
+		const unsigned char lastLevel, 
+		const unsigned char batteryLevel,
+		const std::map<std::string, std::string> & options
+	);
 	void EvaluateEvent(const std::vector<_tEventQueue> &items);
 	void EvaluateDatabaseEvents(const _tEventQueue &item);
 	lua_State *ParseBlocklyLua(lua_State *lua_state, const _tEventItem &item);
@@ -277,4 +284,6 @@ private:
 	void StripQuotes(std::string &sString);
 	std::string SpaceToUnderscore(std::string sResult);
 	std::string LowerCase(std::string sResult);
+
+	bool Update(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata) override;
 };

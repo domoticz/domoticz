@@ -10,7 +10,7 @@
 #include "../../main/WebServer.h"
 #include "../../webserver/cWebem.h"
 #include "../../httpclient/HTTPClient.h"
-#include "../../json/json.h"
+#include "../../main/json_helper.h"
 #include "../hardwaretypes.h"
 
 #define round(a) ( int ) ( a + .5 )
@@ -413,8 +413,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received (Switch Light/Scene), or invalid IPAddress/Username!");
@@ -455,8 +454,7 @@ std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsign
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if (!ret)
 	{
 		retStr = "Error;Registration failed (Wrong IPAddress?)";
@@ -506,7 +504,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 
 		//Get current nValue if exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT nValue, LastLevel, Color, SubType, ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (DeviceID=='%q')",
+		result = m_sql.safe_query("SELECT nValue, LastLevel, Color, SubType, ID, Used, Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeColorSwitch, szID);
 
 		if (result.empty() && !AddMissingDevice)
@@ -519,6 +517,17 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 			int nvalue = atoi(result[0][0].c_str());
 			unsigned sTypeOld = atoi(result[0][3].c_str());
 			std::string sID = result[0][4];
+			bool bUsed = std::stoi(result[0][5]) != 0;
+			std::string curName = result[0][6];
+			if (!bUsed)
+			{
+				if (curName != Name)
+				{
+					//Update device name
+					_log.Log(LOG_STATUS, "Philips Hue: Updating Name of light '%s' from %s to %s", szID, curName.c_str(), Name.c_str());
+					m_sql.UpdateDeviceName(sID, Name);
+				}
+			}
 			if (sTypeOld != sType)
 			{
 				_log.Log(LOG_STATUS, "Philips Hue: Updating SubType of light '%s' from %u to %u", szID, sTypeOld, sType);
@@ -584,7 +593,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 
 		//Get current nValue if exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+		result = m_sql.safe_query("SELECT nValue, ID, Used, Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeColorSwitch, sTypeColor_RGB_W, szID);
 
 		if (result.empty() && !AddMissingDevice)
@@ -594,6 +603,19 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		{
 			//Already in the system
 			int nvalue = atoi(result[0][0].c_str());
+			std::string sID = result[0][1];
+			bool bUsed = std::stoi(result[0][2]) != 0;
+			std::string curName = result[0][3];
+			if (!bUsed)
+			{
+				if (curName != Name)
+				{
+					//Update device name
+					_log.Log(LOG_STATUS, "Philips Hue: Updating Name of scene '%s' from %s to %s", szID, curName.c_str(), Name.c_str());
+					m_sql.UpdateDeviceName(sID, Name);
+				}
+			}
+
 			bool tIsOn = (nvalue != 0);
 			if (tstate.on == tIsOn) //Check if the scene was switched
 				return;
@@ -623,7 +645,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 
 		//Check if we already exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+		result = m_sql.safe_query("SELECT nValue, LastLevel, ID, Used, Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeGeneralSwitch, sSwitchGeneralSwitch, szID);
 		//_log.Log(LOG_STATUS, "HueBridge state change for DeviceID '%s': Level = %d", szID, tstate.level);
 
@@ -633,6 +655,21 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		if (!result.empty())
 		{
 			//Already in the system
+
+			std::string sID = result[0][2];
+			bool bUsed = std::stoi(result[0][3]) != 0;
+			std::string curName = result[0][4];
+
+			if (!bUsed)
+			{
+				if (curName != Name)
+				{
+					//Update device name
+					_log.Log(LOG_STATUS, "Philips Hue: Updating Name of light/switch '%s' from %s to %s", szID, curName.c_str(), Name.c_str());
+					m_sql.UpdateDeviceName(sID, Name);
+				}
+			}
+
 			//Update state
 			int nvalue = atoi(result[0][0].c_str());
 		}
@@ -689,8 +726,7 @@ bool CPhilipsHue::GetStates()
 
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
@@ -884,9 +920,8 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		//No group all(0)
 		return true;
 	}
-	Json::Reader jReader;
 	Json::Value root2;
-	bool ret = jReader.parse(sResult, root2);
+	bool ret = ParseJSon(sResult, root2);
 	if ((!ret) || (!root2.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");

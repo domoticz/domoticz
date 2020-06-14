@@ -8,7 +8,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -17,6 +17,8 @@ const std::string NEST_GET_STATUS = "/v2/mobile/user.";
 const std::string NEST_SET_SHARED = "/v2/put/shared.";
 const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
 const std::string NEST_SET_DEVICE = "/v2/put/device.";
+
+#define NEST_USER_AGENT_STRING "User-Agent: Nest/3.0.1.15"
 
 #ifdef _DEBUG
 	//#define DEBUG_NextThermostatR
@@ -196,7 +198,7 @@ bool CNest::Login()
 	sstr << "username=" << m_UserName << "&password=" << m_Password;
 	std::string szPostdata=sstr.str();
 	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("user-agent:Nest/1.1.0.10 CFNetwork/548.0.4");
+	ExtraHeaders.push_back(NEST_USER_AGENT_STRING);
 	std::string sResult;
 
 	std::string sURL = NEST_LOGIN_PATH;
@@ -207,8 +209,7 @@ bool CNest::Login()
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
@@ -378,7 +379,7 @@ void CNest::GetMeterDetails()
 	}
 	std::vector<std::string> ExtraHeaders;
 
-	ExtraHeaders.push_back("user-agent:Nest/1.1.0.10 CFNetwork/548.0.4");
+	ExtraHeaders.push_back(NEST_USER_AGENT_STRING);
 	ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
 	ExtraHeaders.push_back("X-nl-user-id:" + m_UserID);
 	ExtraHeaders.push_back("X-nl-protocol-version:1");
@@ -398,8 +399,7 @@ void CNest::GetMeterDetails()
 #endif
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received!");
@@ -673,7 +673,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 
 	std::vector<std::string> ExtraHeaders;
 
-	ExtraHeaders.push_back("user-agent:Nest/1.1.0.10 CFNetwork/548.0.4");
+	ExtraHeaders.push_back(NEST_USER_AGENT_STRING);
 	ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
 	ExtraHeaders.push_back("X-nl-protocol-version:1");
 
@@ -719,7 +719,7 @@ bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 
 	std::vector<std::string> ExtraHeaders;
 
-	ExtraHeaders.push_back("user-agent:Nest/1.1.0.10 CFNetwork/548.0.4");
+	ExtraHeaders.push_back(NEST_USER_AGENT_STRING);
 	ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
 	ExtraHeaders.push_back("X-nl-protocol-version:1");
 
@@ -759,7 +759,7 @@ bool CNest::SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMod
 
 	std::vector<std::string> ExtraHeaders;
 
-	ExtraHeaders.push_back("user-agent:Nest/1.1.0.10 CFNetwork/548.0.4");
+	ExtraHeaders.push_back(NEST_USER_AGENT_STRING);
 	ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
 	ExtraHeaders.push_back("X-nl-protocol-version:1");
 

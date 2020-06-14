@@ -38,7 +38,7 @@ public:
 		NSTATE_DEAD
 	} eNodeState;
 
-	typedef struct
+	struct NodeInfo
 	{
 		unsigned int					homeId;
 		uint8_t							nodeId;
@@ -72,7 +72,7 @@ public:
 		int								tFanMode;
 		std::vector<std::string>				tModes;
 		std::vector<std::string>				tFanModes;
-	}NodeInfo;
+	};
 
 	COpenZWave(const int ID, const std::string& devname);
 	~COpenZWave(void);

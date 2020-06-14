@@ -10,9 +10,11 @@
 #include "stdafx.h"
 #include "connection_manager.hpp"
 #include <algorithm>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <iostream>
 #include "../main/Logger.h"
+
+using namespace boost::placeholders;
 
 namespace http {
 namespace server {

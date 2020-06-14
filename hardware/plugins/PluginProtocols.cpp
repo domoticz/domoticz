@@ -8,11 +8,11 @@
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
 #include "../../main/Helper.h"
+#include "../../main/json_helper.h"
 #include "../../main/Logger.h"
 #include "../../webserver/Base64.h"
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
-#include "../../json/json.h"
 
 namespace Plugins {
 
@@ -231,11 +231,10 @@ namespace Plugins {
 
 	PyObject* CPluginProtocolJSON::JSONtoPython(std::string	sData)
 	{
-		Json::Reader	jReader;
 		Json::Value		root;
 		PyObject* pRetVal = Py_None;
 
-		bool bRet = jReader.parse(sData, root);
+		bool bRet = ParseJSon(sData, root);
 		if ((!bRet) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
@@ -321,7 +320,6 @@ namespace Plugins {
 		std::string		sData(vData.begin(), vData.end());
 		int iPos = 1;
 		while (iPos) {
-			Json::Reader	jReader;
 			Json::Value		root;
 			iPos = sData.find("}{", 0) + 1;		//  Look for message separater in case there is more than one
 			if (!iPos) // no, just one or part of one
@@ -329,7 +327,7 @@ namespace Plugins {
 				if ((sData.substr(sData.length() - 1, 1) == "}") &&
 					(std::count(sData.begin(), sData.end(), '{') == std::count(sData.begin(), sData.end(), '}'))) // whole message so queue the whole buffer
 				{
-					bool bRet = jReader.parse(sData, root);
+					bool bRet = ParseJSon(sData, root);
 					if ((!bRet) || (!root.isObject()))
 					{
 						_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
@@ -347,7 +345,7 @@ namespace Plugins {
 			{
 				std::string sMessage = sData.substr(0, iPos);
 				sData = sData.substr(iPos);
-				bool bRet = jReader.parse(sMessage, root);
+				bool bRet = ParseJSon(sMessage, root);
 				if ((!bRet) || (!root.isObject()))
 				{
 					_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
@@ -517,6 +515,13 @@ namespace Plugins {
 		m_Chunked = false;
 		m_RemainingChunk = 0;
 
+		// Need at least the whole of the first line before going any further; otherwise attempting to parse it
+		// will end badly.
+		if (sData.find("\r\n") == std::string::npos)
+		{
+		        return;
+		}
+
 		//
 		//	Process server responses
 		//
@@ -598,18 +603,27 @@ namespace Plugins {
 				{
 					// Process available chunks
 					std::string		sPayload;
-					while (sData.length() && (sData != "\r\n"))
+					while (sData.length() >= 2 && (sData != "\r\n"))
 					{
 						if (!m_RemainingChunk)	// Not processing a chunk so we should be at the start of one
 						{
+						        // Skip terminating \r\n from previous chunk
 							if (sData[0] == '\r')
 							{
 								sData = sData.substr(sData.find_first_of('\n') + 1);
 							}
-							std::string		sChunkLine = sData.substr(0, sData.find_first_of('\r'));
+							// Stop if we have not received the complete chunk size terminator yet
+							size_t uSizeEnd = sData.find_first_of('\r');
+							if (uSizeEnd == std::string::npos || sData.find_first_of('\n', uSizeEnd + 1) == std::string::npos)
+							{
+							        break;
+							}
+							std::string		sChunkLine = sData.substr(0, uSizeEnd);
 							m_RemainingChunk = strtol(sChunkLine.c_str(), NULL, 16);
 							sData = sData.substr(sData.find_first_of('\n') + 1);
-							if (!m_RemainingChunk)	// last chunk is zero length
+
+							// last chunk is zero length, but still has a terminator.  We aren't done until we have received the terminator as well
+							if (m_RemainingChunk == 0 && (sData.find_first_of('\n') != std::string::npos))
 							{
 								PyObject* pDataDict = PyDict_New();
 								PyObject* pObj = Py_BuildValue("s", m_Status.c_str());
@@ -764,7 +778,7 @@ namespace Plugins {
 
 			// If username &/or password specified then add a basic auth header (if one was not supplied)
 			PyObject* pHead = NULL;
-			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Authorization:Basic");
+			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Authorization");
 			if (!pHead)
 			{
 				std::string		User;
@@ -792,7 +806,7 @@ namespace Plugins {
 						auth += Pass;
 					}
 					std::string encodedAuth = base64_encode(auth);
-					sHttp += "Authorization:Basic " + encodedAuth + "\r\n";
+					sHttp += "Authorization: Basic " + encodedAuth + "\r\n";
 				}
 			}
 

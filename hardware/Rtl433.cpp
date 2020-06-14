@@ -6,6 +6,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
+#include "../main/json_helper.h"
 
 #include <cmath>
 #include <fcntl.h>
@@ -14,28 +15,28 @@
 #include <stdio.h>
 #include "Rtl433.h"
 
-void removeCharsFromString(std::string &str, const char* charsToRemove) {
+void removeCharsFromString(std::string& str, const char* charsToRemove) {
 	for (unsigned int i = 0; i < strlen(charsToRemove); ++i) {
 		str.erase(remove(str.begin(), str.end(), charsToRemove[i]), str.end());
 	}
 }
 
-CRtl433::CRtl433(const int ID, const std::string &cmdline) :
+CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	m_cmdline(cmdline)
 {
 	// Basic protection from malicious command line
 	removeCharsFromString(m_cmdline, ":;/$()`<>|&");
 	m_HwdID = ID;
-	m_hPipe = NULL;
-	m_time_last_received = 0;
-/*
-	#ifdef _DEBUG
-		std::string headerline = "time,msg,codes,model,button,id,channel,battery,temperature_C,mic,subtype,rid,humidity,state,status,brand,rain_rate,rain_rate_mm_h,rain_rate_in_h,rain_total,rain_mm,rain_in,gust,average,direction,wind_max_m_s,wind_avg_m_s,wind_dir_deg,pressure_hPa,uv,power_W,energy_kWh,unit,group_call,command,dim,dim_value,wind_speed,wind_gust,wind_direction,wind_avg_km_h,wind_max_km_h,dipswitch,rbutton,device,temperature_F,battery_ok,setpoint_C,switch,cmd,cmd_id,tristate,direction_deg,speed,rain,msg_type,signal,radio_clock,sensor_code,uv_status,uv_index,lux,wm,seq,rainfall_mm,wind_speed_ms,gust_speed_ms,current,interval,learn,sensor_id,battery_low,sequence_num,message_type,wind_speed_mph,wind_speed_kph,wind_avg_mi_h,rain_inch,rc,gust_speed_mph,wind_max_mi_h,wind_approach,flags,maybetemp,binding_countdown,depth,depth_cm,dev_id,power0,power1,power2,node,ct1,ct2,ct3,ct4,Vrms/batt,batt_Vrms,temp1_C,temp2_C,temp3_C,temp4_C,temp5_C,temp6_C,pulse,address,button1,button2,button3,button4,data,sid,group,transmit,moisture,type,pressure_PSI,battery_mV,pressure_kPa,pulses,energy,len,to,from,payload,event,heartbeat,temperature1_C,temperature2_C,temperature_1_C,temperature_2_C,test,probe,water,humidity_1,ptemperature_C,phumidity,newbattery,heating,heating_temp,uvi,light_lux,pm2_5_ug_m3,pm10_ug_m3,counter,code,alarm,repeat,maybe_battery,device_type,raw_message,switch1,switch2,switch3,switch4,switch5,extradata,house_id,module_id,sensor_type,sensor_count,alarms,sensor_value,battery_voltage,failed,class,alert,secret_knock,relay,wind_dev_deg,exposure_mins,transmit_s,device_id,button_id,button_name";
-		std::vector<std::string> headers = ParseCSVLine(headerline.c_str());
-		std::string line = "2019-07-03 16:22:59,,,LaCrosse WS,,32,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,909.090,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
-		ParseLine(headers, line.c_str());
-	#endif
-*/
+	/*
+		#ifdef _DEBUG
+			std::string line = "{\"time\" : \"2020-05-21 12:24:06.740469\", \"protocol\" : 12, \"model\" : \"Oregon-UVR128\", \"id\" : 155, \"uv\" : 5, \"battery_ok\" : 1, \"mod\" : \"ASK\", \"freq\" : 433.864, \"rssi\" : -0.100, \"snr\" : 15.669, \"noise\" : -15.769}";
+			if (!ParseJsonLine(line))
+			{
+				// this is also logged when parsed data is invalid
+				_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", line.c_str());
+			}
+		#endif
+	*/
 }
 
 CRtl433::~CRtl433()
@@ -68,68 +69,33 @@ bool CRtl433::StopHardware()
 	return true;
 }
 
-std::vector<std::string> CRtl433::ParseCSVLine(const char *input)
+bool CRtl433::ParseJsonLine(const std::string& sLine)
 {
-	std::vector<std::string> line;
-	std::string field;
-	const char *s = input;
-	while (*s)
+	std::map<std::string, std::string> _Field;
+	Json::Value root;
+
+	std::string errstr;
+	if (ParseJSon(sLine, root, &errstr))
 	{
-		if (*s == '\\')
+		size_t totFields = root.size();
+		for (size_t ii = 0; ii < totFields; ii++)
 		{
-			s++;
-			if (*s) {
-				field += *s;
-			}
+			std::string vname = root.getMemberNames()[ii];
+			std::string vvalue = root[root.getMemberNames()[ii]].asString();
+			_Field[vname] = vvalue;
 		}
-		else if (*s == ',')
-		{
-			line.push_back(field);
-			field.clear();
-		}
-		else
-		{
-			field += *s;
-		}
-		s++;
+		return ParseData(_Field);
 	}
-	return line;
+	return false;
 }
 
-bool CRtl433::FindField(const std::map<std::string, std::string> &data, const std::string &field)
+bool CRtl433::FindField(const std::map<std::string, std::string>& data, const std::string& field)
 {
 	return (data.find(field) != data.end());
 }
 
-bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *line)
+bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 {
-	time_t atime = time(NULL);
-	std::string slineRaw(line);
-	if (slineRaw.find(',') != std::string::npos)
-	{
-		slineRaw = slineRaw.substr(slineRaw.find(',') + 1);
-		if (slineRaw == m_sLastLine)
-		{
-			if (atime - m_time_last_received < 2)
-				return true; //skip duplicate RF frames
-		}
-		m_sLastLine = slineRaw;
-	}
-	m_time_last_received = atime;
-	std::vector<std::string> values = ParseCSVLine(line);
-
-	if (values.size() != headers.size())
-		return false; //should be equal
-
-	// load values into a map
-	std::map<std::string, std::string> data;
-	std::vector<std::string>::const_iterator h = headers.begin();
-	for (std::vector<std::string>::iterator vi = values.begin(); vi != values.end(); ++vi)
-	{
-		if (!(*vi).empty())
-			data[*(h)] = *vi;
-		h++;
-	}
 	int id = 0;
 
 	bool haveUnit = false;
@@ -150,17 +116,17 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	bool havePressure = false;
 	float pressure = 0;
 
+	bool havePressure_PSI = false;
+	float pressure_PSI = 0;
+
 	bool haveRain = false;
 	float rain = 0;
-
-	bool haveDepth_CM = false;
-	float depth_cm = 0;
 
 	bool haveDepth = false;
 	float depth = 0;
 
-	bool haveWind_Strength = false;
-	float wind_strength = 0;
+	bool haveWind_Speed = false;
+	float wind_speed = 0;
 
 	bool haveWind_Gust = false;
 	float wind_gust = 0;
@@ -174,16 +140,21 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	bool havePower = false;
 	float power = 0;
 
-	if (!data["id"].empty())
+	bool haveEnergy = false;
+	float energy = 0;
+
+	bool haveSequence = false;
+	int sequence = 0;
+
+	bool haveUV = false;
+	float uvi = 0;
+
+	int snr = 12;  // Set to show "-" if no snr is received. rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
+
+	if (FindField(data, "id"))
 	{
 		id = atoi(data["id"].c_str());
 	}
-	else if (!data["rc"].empty())
-	{
-		id = atoi(data["rc"].c_str());
-	}
-
-
 	if (FindField(data, "unit"))
 	{
 		unit = atoi(data["unit"].c_str());
@@ -194,32 +165,25 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		channel = atoi(data["channel"].c_str());
 		haveChannel = true;
 	}
-	if (FindField(data, "battery"))
+	if (FindField(data, "battery_ok"))
 	{
-		if (data["battery"] == "LOW") {
+		if (data["battery_ok"] == "0") {
 			batterylevel = 10;
 			haveBattery = true;
 		}
-		else if (data["battery"] == "OK") {
+		else if (data["battery_ok"] == "1") {
 			batterylevel = 100;
 			haveBattery = true;
 		}
 	}
-
 	if (FindField(data, "temperature_C"))
 	{
 		tempC = (float)atof(data["temperature_C"].c_str());
 		haveTemp = true;
 	}
-	else if (FindField(data, "temperature_F"))
-	{
-		tempC = (float)ConvertToCelsius(atof(data["temperature_F"].c_str()));
-		haveTemp = true;
-	}
-
 	if (FindField(data, "humidity"))
 	{
-		if (data["humidity"] == "HH")
+		if (data["humidity"] == "HH") // "HH" and "LL" are specific to WT_GT-02 and WT-GT-03 see issue 1996
 		{
 			humidity = 90;
 			haveHumidity = true;
@@ -235,122 +199,142 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 			haveHumidity = true;
 		}
 	}
-
 	if (FindField(data, "pressure_hPa"))
 	{
 		pressure = (float)atof(data["pressure_hPa"].c_str());
 		havePressure = true;
 	}
-
-	if (FindField(data, "rain"))
+	if (FindField(data, "pressure_PSI"))
 	{
-		rain = (float)atof(data["rain"].c_str());
+		pressure_PSI = (float)atof(data["pressure_PSI"].c_str());
+		havePressure_PSI = true;
+	}
+	if (FindField(data, "pressure_kPa"))
+	{
+		pressure = 10.0f * (float)atof(data["pressure_kPa"].c_str()); // convert to hPA
+		havePressure = true;
+	}
+	if (FindField(data, "rain_mm"))
+	{
+		rain = (float)atof(data["rain_mm"].c_str());
 		haveRain = true;
 	}
-
-	if (FindField(data, "rainfall_mm"))
-	{
-		rain = (float)atof(data["rainfall_mm"].c_str());
-		haveRain = true;
-	}
-
-	if (FindField(data, "rain_total"))
-	{
-		rain = (float)atof(data["rain_total"].c_str());
-		haveRain = true;
-	}
-
 	if (FindField(data, "depth_cm"))
 	{
-		depth_cm = (float)atof(data["depth_cm"].c_str());
-		haveDepth_CM = true;
-	}
-
-	if (FindField(data, "depth"))
-	{
-		depth = (float)atof(data["depth"].c_str());
+		depth = (float)atof(data["depth_cm"].c_str());
 		haveDepth = true;
 	}
-
-	if (FindField(data, "windstrength") || FindField(data, "wind_speed"))
+	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s) 
 	{
-		//Based on current knowledge it's not possible to have both wind strength and wind_speed at the same time.
-		if (FindField(data, "windstrength"))
-		{
-			wind_strength = (float)atof(data["windstrength"].c_str());
-		}
-		else if (FindField(data, "wind_speed"))
-		{
-			wind_strength = (float)atof(data["wind_speed"].c_str());
-		}
-		haveWind_Strength = true;
+		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6f;
+		haveWind_Speed = true;
 	}
-	else if (FindField(data, "average"))
+	if (FindField(data, "wind_avg_m_s")) // wind speed average
 	{
-		wind_strength = (float)atof(data["average"].c_str());
-		haveWind_Strength = true;
+		wind_speed = (float)atof(data["wind_avg_m_s"].c_str());
+		haveWind_Speed = true;
 	}
-
-	if (FindField(data, "winddirection") || FindField(data, "wind_direction"))
+	if (FindField(data, "wind_dir_deg"))
 	{
-		//Based on current knowledge it's not possible to have both wind direction and wind_direction at the same time.
-		if (FindField(data, "winddirection"))
-		{
-			wind_dir = atoi(data["winddirection"].c_str());
-		}
-		else if (FindField(data, "wind_direction"))
-		{
-			wind_dir = atoi(data["wind_direction"].c_str());
-		}
+		wind_dir = atoi(data["wind_dir_deg"].c_str()); // does domoticz assume it is degree ? (and not rad or something else)
 		haveWind_Dir = true;
 	}
-	else if (FindField(data, "direction"))
+	if (FindField(data, "wind_max_km_h")) // idem, converting to m/s
 	{
-		wind_dir = atoi(data["direction"].c_str());
-		haveWind_Dir = true;
-	}
-
-	if (FindField(data, "wind_gust"))
-	{
-		wind_gust = (float)atof(data["wind_gust"].c_str());
+		wind_gust = ((float)atof(data["wind_max_km_h"].c_str())) / 3.6f;
 		haveWind_Gust = true;
 	}
-	else if (FindField(data, "gust"))
+	if (FindField(data, "wind_max_m_s"))
 	{
-		wind_gust = (float)atof(data["gust"].c_str());
+		wind_gust = (float)atof(data["wind_max_m_s"].c_str());
 		haveWind_Gust = true;
 	}
-	else if (FindField(data, "moisture"))
+	if (FindField(data, "moisture"))
 	{
 		moisture = atoi(data["moisture"].c_str());
 		haveMoisture = true;
 	}
-	else if (FindField(data, "power_W"))
+	if (FindField(data, "power_W")) // -- power_W,energy_kWh,radio_clock,sequence,
 	{
 		power = (float)atof(data["power_W"].c_str());
 		havePower = true;
 	}
-
-	std::string model = data["model"];
-
-	bool hasstate = FindField(data, "state") || FindField(data, "command");
-
-	if (hasstate)
+	if (FindField(data, "energy_kWh")) // sensor type general subtype electric counter
 	{
-		bool state = false;
+		energy = (float)atof(data["energy_kWh"].c_str());
+		haveEnergy = true;
+	}
+	if (FindField(data, "sequence")) // please do not remove : to be added in future PR for data in sensor (for fiability reporting)
+	{
+		sequence = atoi(data["sequence"].c_str());
+		haveSequence = true;
+	}
+	if (FindField(data, "uv"))
+	{
+		uvi = (float)atof(data["uv"].c_str());
+		haveUV = true;
+	}
+	if (FindField(data, "snr"))
+	{
+		/* Map the received Signal to Noise Ratio to the domoticz RSSI 4-bit field that has range of 0-11 (12-15 display '-' in device tab).
+		   rtl_433 will not be able to decode a signal with less snr than 4dB or so, why we map snr<5dB to rssi=0 .
+		   We use better resolution at low snr. snr=5-10dB map to rssi=1-6, snr=11-20dB map to rssi=6-11, snr>20dB map to rssi=11
+		*/
+		snr = std::stoi(data["snr"]) - 4;
+
+		if (snr > 5) snr -= (int)(snr - 5) / 2;
+		if (snr > 11) snr = 11; // Domoticz RSSI field can only be 0-11, 12 is used for non-RF received devices
+		if (snr < 0) snr = 0; // In case snr actually was below 4 dB
+	}
+
+	std::string model = data["model"]; // new model format normalized from the 201 different devices presently supported by rtl_433
+
+	bool bDone = false;
+
+	if (FindField(data, "state") || FindField(data, "command"))
+	{
+		bool bOn = false;
 		if (FindField(data, "state"))
-			state = data["state"] == "ON";
+			bOn = data["state"] == "ON";
 		else if (FindField(data, "command"))
-			state = data["command"] == "On";
+			bOn = data["command"] == "On";
 		unsigned int switchidx = (id & 0xfffffff) | ((channel & 0xf) << 28);
 		SendSwitch(switchidx,
 			(const uint8_t)unit,
 			batterylevel,
-			state,
+			bOn,
 			0,
-			model);
-		return true;
+			model, snr);
+		bDone = true;
 	}
+	if (FindField(data, "switch1") && FindField(data, "id"))
+	{
+		std::stringstream sstr;
+		sstr << std::hex << data["id"];
+		uint32_t idx;
+		sstr >> idx;
+		for (int iSwitch = 0; iSwitch < 5; iSwitch++)
+		{
+			char szSwitch[20];
+			sprintf(szSwitch, "switch%d", iSwitch + 1);
+			if (FindField(data, szSwitch))
+			{
+				bool bOn = (data[szSwitch] == "CLOSED");
+				unsigned int switchidx = ((idx & 0xffffff) << 8) | (iSwitch + 1);
+				SendSwitch(switchidx,
+					(const uint8_t)unit,
+					batterylevel,
+					bOn,
+					0,
+					model, snr);
+			}
+			bDone = true;
+		}
+	}
+
+	if (bDone)
+		return true;
+
 
 	unsigned int sensoridx = (id & 0xff) | ((channel & 0xff) << 8);
 
@@ -366,59 +350,96 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	if (haveTemp && haveHumidity && havePressure)
 	{
 		int iForecast = 0;
-		SendTempHumBaroSensor(sensoridx, batterylevel, tempC, humidity, pressure, iForecast, model);
+		SendTempHumBaroSensor(sensoridx, batterylevel, tempC, humidity, pressure, iForecast, model, snr);
 		bHandled = true;
 	}
 	else if (haveTemp && haveHumidity)
 	{
-		SendTempHumSensor(sensoridx, batterylevel, tempC, humidity, model);
+		SendTempHumSensor(sensoridx, batterylevel, tempC, humidity, model, snr);
 		bHandled = true;
 	}
-	else 
+	else
 	{
 		if (haveTemp)
 		{
-			SendTempSensor(sensoridx, batterylevel, tempC, model);
+			SendTempSensor(sensoridx, batterylevel, tempC, model, snr);
 			bHandled = true;
 		}
 		if (haveHumidity)
 		{
-			SendHumiditySensor(sensoridx, batterylevel, humidity, model);
+			SendHumiditySensor(sensoridx, batterylevel, humidity, model, snr);
 			bHandled = true;
 		}
 	}
-	if (haveWind_Strength || haveWind_Gust || haveWind_Dir)
+	if (haveWind_Speed || haveWind_Gust || haveWind_Dir)
 	{
-		SendWind(sensoridx, batterylevel, wind_dir, wind_strength, wind_gust, tempC, 0, haveTemp, false, model);
+		SendWind(sensoridx, batterylevel, wind_dir, wind_speed, wind_gust, tempC, 0, haveTemp, false, model, snr);
 		bHandled = true;
 	}
 	if (haveRain)
 	{
-		SendRainSensor(sensoridx, batterylevel, rain, model);
-		bHandled = true;
-	}
-	if (haveDepth_CM)
-	{
-		SendDistanceSensor(sensoridx, unit, batterylevel, depth_cm, model);
+		SendRainSensor(sensoridx, batterylevel, rain, model, snr);
 		bHandled = true;
 	}
 	if (haveDepth)
 	{
-		SendDistanceSensor(sensoridx, unit, batterylevel, depth, model);
+		SendDistanceSensor(sensoridx, unit, batterylevel, depth, model, snr);
 		bHandled = true;
 	}
 	if (haveMoisture)
 	{
-		SendMoistureSensor(sensoridx, batterylevel, moisture, model);
+		SendMoistureSensor(sensoridx, batterylevel, moisture, model, snr);
 		bHandled = true;
 	}
 	if (havePower)
 	{
-		SendWattMeter((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model);
+		SendWattMeter((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model, snr);
+		bHandled = true;
+	}
+	if (havePressure_PSI)
+	{
+		SendCustomSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, pressure_PSI, model, "PSI", snr);
+		bHandled = true;
+	}
+	if (haveEnergy && havePower)
+	{
+		//can remove this comment : _log.Log(LOG_STATUS, "Rtl433: : CM180 haveSequence(%d) sensoridx(%d) havePower(%d) haveEnergy(%d))", haveSequence, sensoridx, havePower, haveEnergy);
+		sensoridx = sensoridx + 1;
+		//can rmeove this comment : _log.Log(LOG_STATUS, "Rtl433: : CM180 sensoridx(%d) unit(%d) batterylevel(%d) power(%f) energy(%f) model(%s)", sensoridx, unit, batterylevel, power, energy, model.c_str());
+		SendKwhMeter(sensoridx, unit, batterylevel, power, energy, model, snr);
+		bHandled = true;
+	}
+	if (haveUV)
+	{
+		SendUVSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, uvi, model, snr);
 		bHandled = true;
 	}
 
+
 	return bHandled; //not handled (Yet!)
+}
+
+char* fgetline(FILE* stream, char* line, size_t bufsize)
+{
+	size_t idx = 0;
+	int c;
+	while ((c = fgetc(stream)) != EOF && c != '\n')
+	{
+		if (idx + 2 > bufsize)
+		{
+			// no more room
+			line[0] = 0;
+			return nullptr;
+		}
+		line[idx++] = c;
+	}
+	if (c == EOF && idx == 0)
+	{
+		// EOF with no data on last line
+		return nullptr;
+	}
+	line[idx] = '\0';
+	return line;
 }
 
 void CRtl433::Do_Work()
@@ -429,23 +450,20 @@ void CRtl433::Do_Work()
 	else
 		_log.Log(LOG_STATUS, "Rtl433: Worker started...");
 
-	bool bHaveReceivedData = false;
+	std::string szLastLine;
+	FILE* _hPipe = nullptr;
+
 	while (!IsStopRequested(0))
 	{
-		char line[2048];
-		std::vector<std::string> headers;
-		std::string headerLine = "";
-		m_sLastLine = "";
-
-		std::string szFlags = "-F csv " + m_cmdline; // -f 433.92e6 -f 868.24e6 -H 60 -d 0
+		std::string szFlags = "-F json -M newmodel -C si -M level " + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
-		m_hPipe = _popen(szCommand.c_str(), "r");
+		_hPipe = _popen(szCommand.c_str(), "r");
 #else
 		std::string szCommand = "rtl_433 " + szFlags + " 2>/dev/null";
-		m_hPipe = popen(szCommand.c_str(), "r");
+		_hPipe = popen(szCommand.c_str(), "r");
 #endif
-		if (m_hPipe == NULL)
+		if (_hPipe == nullptr)
 		{
 			if (!IsStopRequested(0))
 			{
@@ -463,38 +481,70 @@ void CRtl433::Do_Work()
 			}
 			continue;
 		}
+		if (_hPipe == nullptr)
+			return;
 #ifndef WIN32
 		//Set to non-blocking mode
-		int fd = fileno(m_hPipe);
+		int fd = fileno(_hPipe);
 		int flags;
 		flags = fcntl(fd, F_GETFL, 0);
 		flags |= O_NONBLOCK;
 		fcntl(fd, F_SETFL, flags);
 #endif
-		bool bFirstTime = true;
-		m_time_last_received = time(NULL);
+		char line[2048];
+#define RTL433_USE_fgets
+#ifdef RTL433_USE_fgets
+		size_t line_offset = 0;
+#endif
 		while (!IsStopRequested(100))
 		{
-			if (m_hPipe == NULL)
-				break;
-			//size_t bread = read(fd, (char*)&line, sizeof(line));
-			line[0] = 0;
-			if (fgets(line, sizeof(line) - 1, m_hPipe) != NULL)
+#ifndef RTL433_USE_fgets
+			if (fgetline(_hPipe, (char*)&line, sizeof(line)) != nullptr)
 			{
-				bHaveReceivedData = true;
-
-				if (bFirstTime)
+				std::string sLine(line);
+				stdreplace(sLine, "\n", "");
+				if (sLine != szLastLine)
 				{
-					bFirstTime = false;
-					headerLine = line;
-					headers = ParseCSVLine(line);
+					szLastLine = sLine;
+					if (!ParseJsonLine(sLine))
+					{
+						// this is also logged when parsed data is invalid
+						_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", sLine.c_str());
+					}
+				}
+			}
+#else
+			line[line_offset] = 0;
+			if (fgets(line + line_offset, sizeof(line) - 1 - line_offset, _hPipe) != nullptr)
+			{
+				if ((line[strlen(line) - 1] != '\n') && (line[strlen(line) - 1] != '\r'))
+				{
+					if (line[0] != '{')
+					{
+						//we do not have a valid line at all
+						line_offset = 0;
+						continue;
+					}
+					line_offset += (strlen(line) - 1);
+					if (line_offset >= sizeof(line) - 3)
+					{
+						//buffer out of sync, restart
+						line_offset = 0;
+					}
 					continue;
 				}
-				if (!ParseLine(headers, line))
+				std::string sLine(line);
+				stdreplace(sLine, "\n", "");
+				if (sLine != szLastLine)
 				{
-					// this is also logged when parsed data is invalid
-					_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s|%s)", headerLine.c_str(), line);
+					szLastLine = sLine;
+					if (!ParseJsonLine(sLine))
+					{
+						// this is also logged when parsed data is invalid
+						_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", sLine.c_str());
+					}
 				}
+				line_offset = 0;
 			}
 			else { //fgets
 				if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
@@ -502,41 +552,26 @@ void CRtl433::Do_Work()
 				}
 				break; // bail out, subprocess has failed
 			}
+#endif
 		} // while !IsStopRequested()
-		if (m_hPipe)
+		if (_hPipe)
 		{
 #ifdef WIN32
-			_pclose(m_hPipe);
+			_pclose(_hPipe);
 #else
-			pclose(m_hPipe);
+			pclose(_hPipe);
 #endif
-			m_hPipe = NULL;
 		}
-		if (!IsStopRequested(0)) {
-			// sleep 30 seconds before retrying
-			if (!bHaveReceivedData)
-			{
-#ifdef WIN32
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)", szCommand.c_str());
-#else
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
-#endif
-			}
-			else
-			{
-				_log.Log(LOG_STATUS, "Rtl433: Failure! Retrying in 30 seconds...");
-			}
-			for (int i = 0; i < 30; i++)
-			{
-				if (IsStopRequested(1000))
-					break;
+		for (int ii = 0; ii < 10; ii++)
+		{
+			if (IsStopRequested(1000))
+				break;
 		}
-	}
-} // while !IsStopRequested()
+	} // while !IsStopRequested()
 	_log.Log(LOG_STATUS, "Rtl433: Worker stopped...");
 }
 
-bool CRtl433::WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/)
+bool CRtl433::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	//const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 	return false;

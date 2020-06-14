@@ -1,5 +1,7 @@
 define(['app'], function (app) {
 
+	var zwave_nodes = {};
+
 	app.component('zWaveHardware', {
 		bindings: {
 			hardware: '<'
@@ -74,6 +76,61 @@ define(['app'], function (app) {
 				}
 			});
 		};
+		
+		MakeLegendTable = function(data) {
+			if ($.fn.dataTable.isDataTable('#legendtable')) {
+				oTable = $('#legendtable').DataTable();
+				oTable.destroy();
+			}
+			$("#legendtable").empty();
+			var i;
+			var maxgroups = data.result.MaxNoOfGroups;
+			var thead = $('<thead></thead>');
+			var trow = $('<tr style="height: 35px;"></tr>');
+
+			$('<th style="width: 80px"></th>').text($.t("NodeID")).appendTo(trow);
+			$('<th></th>').text($.t("Name")).appendTo(trow);
+			trow.appendTo(thead);
+			thead.appendTo($('#legendtable'));
+			
+			tbody = $('<tbody></tbody>');
+			var jsonnodes = data.result.nodes;
+			zwave_nodes = {};
+			i = jsonnodes.length;
+			while (i--) {
+				var node = jsonnodes[i];
+				zwave_nodes[node.nodeID] = node;
+			}
+			$.each(jsonnodes, function (i, node) {
+				var groupsDone = 0;
+				noderow = $('<tr>');
+				var nodeStr = addLeadingZeros(node.nodeID, 3) + " (0x" + addLeadingZeros(node.nodeID.toString(16), 2) + ")";
+				$('<td>').text(nodeStr).appendTo(noderow);
+				$('<td>').text(node.nodeName).appendTo(noderow);
+				noderow.appendTo(tbody);
+			});
+			tbody.appendTo($('#legendtable'));
+			
+			tfoot = $('<tfoot></tfoot>');
+			tfoot.appendTo($('#legendtable'));
+
+			$('#legendtable').DataTable(Object.assign({}, dataTableDefaultSettings, {
+				"sDom": '<"H"lfrC>t<"F"ip>',
+				"oTableTools": {
+					"sRowSelect": "single"
+				},
+				"aaSorting": [[0, "desc"]],
+				"bSortClasses": false,
+				"bProcessing": true,
+				"bStateSave": true,
+				"bJQueryUI": true,
+				"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+				"iDisplayLength": 25,
+				"sPaginationType": "full_numbers",
+				language: $.DataTableLanguage
+			}));
+			
+		}
 
 		RefreshGroupTable = function () {
 			$http({
@@ -85,26 +142,26 @@ define(['app'], function (app) {
 				if (typeof data !== 'undefined') {
 					if (data.status === "OK") {
 						if (typeof data.result !== 'undefined') {
+							MakeLegendTable(data);
 
 							if ($.fn.dataTable.isDataTable('#grouptable')) {
 								oTable = $('#grouptable').DataTable();
 								oTable.destroy();
 							}
+							$("#grouptable").empty();
 
 							var i;
-							$("#grouptable").empty();
-							grouptable = $('#grouptable');
 							var maxgroups = data.result.MaxNoOfGroups;
 							var thead = $('<thead></thead>');
 							var trow = $('<tr style="height: 35px;"></tr>');
 
-							$('<th></th>').text($.t("Node")).appendTo(trow);
+							$('<th style="width: 80px"></th>').text($.t("NodeID")).appendTo(trow);
 							$('<th></th>').text($.t("Name")).appendTo(trow);
 							for (i = 0; i < maxgroups; i++) {
 								$('<th></th>').text($.t("Group") + " " + (i + 1)).appendTo(trow);
 							}
 							trow.appendTo(thead);
-							thead.appendTo(grouptable);
+							thead.appendTo($('#grouptable'));
 							tbody = $('<tbody></tbody>');
 
 							var jsonnodes = data.result.nodes;
@@ -159,9 +216,9 @@ define(['app'], function (app) {
 								}
 								noderow.appendTo(tbody);
 							});
-							tbody.appendTo(grouptable);
+							tbody.appendTo($('#grouptable'));
 							tfoot = $('<tfoot></tfoot>');
-							tfoot.appendTo(grouptable);
+							tfoot.appendTo($('#grouptable'));
 
 							$('#grouptable').DataTable(Object.assign({}, dataTableDefaultSettings, {
 								"sDom": '<"H"lfrC>t<"F"ip>',
@@ -189,14 +246,6 @@ define(['app'], function (app) {
 			$.depChart = $('#networkchart');
 			$.depChart.highcharts({
 				chart: {
-					type: 'spline',
-					zoomType: 'x',
-					resetZoomButton: {
-						position: {
-							x: -30,
-							y: -36
-						}
-					},
 					events: {
 						load: function () {
 							$http({
@@ -235,12 +284,28 @@ define(['app'], function (app) {
 					text: null
 				},
 				tooltip: {
-					enabled: false
+					enabled: true,
+					nodeFormatter: function() {
+						return '<span style="font-weight:bold">' + zwave_nodes[this.id].nodeName + '</span>'
+					},
+					pointFormatter: function() {
+						return 'from: ' + this.from + '-' + zwave_nodes[this.from].nodeName + ' to: ' + this.to + '-' + zwave_nodes[this.to].nodeName;
+					}
+				},
+				accessibility: {
+					point: {
+						valueDescriptionFormat: '{index}. From {point.from} to {point.to}: {point.weight}.'
+					}
+				},
+				plotOptions: {
+					series: {
+						turboThreshold: 0
+					}
 				},
 				series: [{
 					keys: ['from', 'to', 'weight'],
 					type: 'dependencywheel',
-					name: 'Node Neighbors',
+					name: '',
 					dataLabels: {
 						color: '#fff',
 						textPath: {
@@ -662,8 +727,8 @@ define(['app'], function (app) {
 						}
 						var statusImg = '<img src="images/' + status + '.png" />';
 						var healButton = '<img src="images/heal.png" onclick="ZWaveHealNode(' + item.NodeID + ')" class="lcursor" title="' + $.t("Heal node") + '" />';
-						var Description = item.Description;
-						if (Description.length < 2) {
+						var Description = item.Product_name;
+						if (item.Product_id == "0x0000") {
 							Description = '<span class="zwave_no_info">' + item.Generic_type + '</span>';
 						}
 						if (item.IsPlus === true) {

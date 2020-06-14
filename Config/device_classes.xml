@@ -290,7 +290,7 @@
   <DeviceType key="0x0c12" label="Sensor Notification Gas Alarm"/>
   <DeviceType key="0x0c13" label="Sensor Notification Pest Control"/>
   <DeviceType key="0x0c14" label="Sensor Notification Light Sensor"/>
-  <DeviceType key="0x0cff" label="Sensor Notification Multidevice"/>
+  <!-- Already Present above - <DeviceType key="0x0cff" label="Sensor Notification Multidevice"/> -->
   <DeviceType key="0x0d23" label="Multilevel Sensor: Particulate Matter 2.5"/>
   <DeviceType key="0x0d24" label="Multilevel Sensor: Formaldehyde CH2O-level"/>
   <DeviceType key="0x0d25" label="Multilevel Sensor: Radon Concentration"/>
@@ -325,7 +325,7 @@
   <DeviceType key="0x0d42" label="Multilevel Sensor: Water Chlorine level"/>
   <DeviceType key="0x0d43" label="Multilevel Sensor: Water Acidity"/>
   <DeviceType key="0x0d44" label="Multilevel Sensor: Water Oxidation reduction potential"/>
-  <DeviceType key="0x0dff" label="Multilevel Sensor: Multidevice"/>
+  <!-- Already Present Above - <DeviceType key="0x0dff" label="Multilevel Sensor: Multidevice"/> -->
   <DeviceType key="0x1201" label="Thermostat, Line Voltage Switching"/>
   <DeviceType key="0x1202" label="Thermostat, Setback Type"/>
   <DeviceType key="0x1b00" label="Generic Repeater"/>

@@ -1,0 +1,39 @@
+<!--
+Aeotec ZW189 Range Extender 7
+-->
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:00bd:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw189.png</MetaDataItem>
+    <MetaDataItem id="0371" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/3616</MetaDataItem>
+    <MetaDataItem id="0371" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0371" name="Identifier" type="0004">ZW189-C</MetaDataItem>
+    <MetaDataItem id="0371" name="ZWProductPage" type="0104">https://products.z-wavealliance.org/products/3616</MetaDataItem>
+    <MetaDataItem id="0371" name="FrequencyName" type="0104">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0371" name="Identifier" type="0104">ZW189-A</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, press  the Z-Wave Button on Range Extender 7.</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec Range Extender 7 is a Z-Wave mesh network repeater which can extend the range of communication between Z-Wave products and assist other devices to reach each other in your Z-Wave network.
+        The Range Extender can also communicate securely via AES 128 wireless Z-Wave commands and supports Over-The-Air (OTA) firmware upgrades.
+    </MetaDataItem>
+    <MetaDataItem name="Name">Range Extender 7</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Z-Wave Button for 20 seconds and then release it.
+        Use this procedure only in the event that your primary network controller is missing or inoperable.</MetaDataItem>
+    <MetaDataItem name="ProductManual"></MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, press the Z-Wave Button on Range Extender 7.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jean-Francois Auger - nechry@gmail.com" date="05 nov 2019" revision="1">Initial version</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -3,7 +3,6 @@ define(['app', 'livesocket'], function (app) {
 		var $element = $('#main-view #scenecontent').last();
 
 		var SceneIdx = 0;
-		$scope.broadcast_unsubscribe = undefined;
 
 		RemoveCode = function (idx, code) {
 			if ($element.find("#removecode").hasClass('disabled')) {
@@ -260,7 +259,7 @@ define(['app', 'livesocket'], function (app) {
 
 		SetColValue = function (idx, color, brightness) {
 			clearInterval($.setColValue);
-			if (permissions.hasPermission("Viewer")) {
+			if (!permissions.hasPermission("User")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
@@ -838,24 +837,9 @@ define(['app', 'livesocket'], function (app) {
 					});
 				}
 			});
-
-			$scope.broadcast_unsubscribe = $scope.$on('scene_update', function (event, data) {
-				if (typeof data.ServerTime != 'undefined') {
-					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
-				}
-				if (typeof data.ActTime != 'undefined') {
-					$.LastUpdateTime = parseInt(data.ActTime);
-				}
-				RefreshItem(data.item);
-			});
 		}
 
 		ShowScenes = function () {
-			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
-				$scope.broadcast_unsubscribe();
-				$scope.broadcast_unsubscribe = undefined;
-			}
-
 			RefreshLightSwitchesComboArray();
 
 			var htmlcontent = '';
@@ -1035,6 +1019,10 @@ define(['app', 'livesocket'], function (app) {
 			SceneIdx = 0;
 			$scope.MakeGlobalConfig();
 
+			$scope.$on('scene_update', function (event, sceneData) {
+				RefreshItem(sceneData);
+			});
+
 			$("#dialog-addscene").dialog({
 				autoOpen: false,
 				width: 380,
@@ -1082,11 +1070,6 @@ define(['app', 'livesocket'], function (app) {
 			}).i18n();
 			ShowScenes();
 		};
-		$scope.$on('$destroy', function () {
-			if (typeof $scope.broadcast_unsubscribe != 'undefined') {
-				$scope.broadcast_unsubscribe();
-				$scope.broadcast_unsubscribe = undefined;
-			}
-		});
+
 	});
 });

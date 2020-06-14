@@ -170,6 +170,7 @@ void CRFXBase::SetAsyncType(_eRFXAsyncType const AsyncType)
 {
 	m_AsyncType = AsyncType;
 	Set_Async_Parameters(m_AsyncType);
+	m_LastP1Received = 0;
 }
 
 void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
@@ -253,6 +254,7 @@ void CRFXBase::Parse_Async_Data(const uint8_t *pData, const int Len)
 	case ATYPE_P1_DSMR_4:
 	case ATYPE_P1_DSMR_5:
 	default:
+		m_LastP1Received = time(NULL);
 		ParseP1Data(pData, Len, false, 0);
 		break;
 	}

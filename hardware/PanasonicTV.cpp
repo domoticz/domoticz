@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "PanasonicTV.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/Helper.h"
 #include "../main/HTMLSanitizer.h"
 #include "../main/Logger.h"
@@ -292,7 +292,7 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	if (m_CurrentStatus.LogRequired(m_PreviousStatus) || forceupdate)
 	{
 		if (m_CurrentStatus.IsOn()) sLogText += " - " + m_CurrentStatus.LogMessage();
-		result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", m_ID, int(m_CurrentStatus.Status()), sLogText.c_str());
+		result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) VALUES (%d, %d, '%q','%q')", m_ID, int(m_CurrentStatus.Status()), sLogText.c_str(), "Panasonic");
 		_log.Log(LOG_NORM, "Panasonic: (%s) Event: '%s'.", m_Name.c_str(), sLogText.c_str());
 	}
 
@@ -539,10 +539,10 @@ void CPanasonicNode::Do_Work()
 	_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) started.", m_Name.c_str());
 	int	iPollCount = 9;
 
-	while (!IsStopRequested(500))
+	while (!IsStopRequested(1000))
 	{
 		iPollCount++;
-		if (iPollCount >= 10)
+		if (iPollCount >= m_iPollIntSec)
 		{
 			iPollCount = 0;
 			try
@@ -801,9 +801,9 @@ void CPanasonic::Do_Work()
 
 	ReloadNodes();
 
-	while (!IsStopRequested(500))
+	while (!IsStopRequested(1000))
 	{
-		if (scounter++ >= (m_iPollInterval * 2))
+		if (scounter++ >= m_iPollInterval)
 		{
 			std::lock_guard<std::mutex> l(m_mutex);
 

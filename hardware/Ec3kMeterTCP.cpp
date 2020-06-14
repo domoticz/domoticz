@@ -6,7 +6,7 @@
 #include "../main/localtime_r.h"
 //#include "../main/mainworker.h"
 #include "../hardware/hardwaretypes.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 #include <sstream>
 
@@ -164,9 +164,8 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 	// Validty check on the received json
 
 	Json::Value root;
-	Json::Reader jReader;
 
-	bool ret = jReader.parse(buffer, root);
+	bool ret = ParseJSon(buffer, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Ec3kMeter: invalid data received!");

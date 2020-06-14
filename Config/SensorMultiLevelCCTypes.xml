@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SensorTypes xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
+<SensorTypes xmlns='https://github.com/OpenZWave/open-zwave' Revision="4">
 	<SensorType id="1" name="Air Temperature">
 		<SensorScale id="0" name="Celsius">C</SensorScale>
 		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
@@ -14,7 +14,7 @@
 		<SensorScale id="1" name="Lux">Lux</SensorScale>
 	</SensorType>
 	<SensorType id="4" name="Power">
-		<SensorScale id="0" name="Watt">Watt</SensorScale>
+		<SensorScale id="0" name="Watt">W</SensorScale>
 		<SensorScale id="1" name="Btu/h">Btu/h</SensorScale>
 	</SensorType>
 	<SensorType id="5" name="Humidity">
@@ -139,7 +139,7 @@
 		<SensorScale id="0" name="Celsius">C</SensorScale>
 		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
 	</SensorType>
-	<SensorType id="35" name="Particulate Mater 2.5">
+	<SensorType id="35" name="Particulate Matter 2.5">
 		<SensorScale id="0" name="Mole Per Cubic Meter">mol/m3</SensorScale>
 		<SensorScale id="1" name="Microgram Per Cubic Meter">μg/m3</SensorScale>
 	</SensorType>

@@ -340,7 +340,6 @@ textarea:focus {
 #hardwarecontent #ipnodeparamstable,
 #nodeparamstable,
 #utilitycontent #notificationparamstable,
-#plancontent #activeparamstable,
 #usercontent #userparamstable, #cameracontent #activeparamstable, #hardwarecontent #hardwareparamstable,
 #lightcontent #paramstable:not(:nth-of-type(1)):not(:nth-of-type(2)),
 #scenecontent #paramstable:not(:nth-of-type(1)):not(:nth-of-type(2)),
@@ -368,6 +367,25 @@ textarea:focus {
 	.row-fluid {
 		display: flex;
 	}
+}
+
+.modal, .modal-footer {
+	background-color: #013;
+	background-image: linear-gradient(to bottom, #001c38 0%,#0f0c2b 100%);
+	color: #ddd;
+}
+
+.modal-title {
+	color: white;
+}
+
+.modal-header, .modal-footer {
+	border-color: #666;
+	box-shadow: none;
+}
+
+.bootbox-body {
+	color: #ddd;
 }
 
 .events-editor__tree {

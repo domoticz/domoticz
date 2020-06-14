@@ -54,6 +54,7 @@ void CRFLinkTCP::OnConnect()
 	m_LastReceivedTime = mytime(NULL);
 	sOnConnected(this);
 	write("10;PING;\n");
+	write("10;VERSION;\n");
 }
 
 void CRFLinkTCP::OnDisconnect()

@@ -22,14 +22,16 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
             vm.dzVentsTemplates = [
                 { id: 'All', name: 'All (commented)' },
                 { id: 'Bare', name: 'Minimal' },
+                { id: 'CustomEvents', name: 'Custom events' },
                 { id: 'Device', name: 'Device' },
                 { id: 'Group', name: 'Group' },
-                { id: 'Security', name: 'Security' },
+                { id: 'HTTPRequest', name: 'HTTP request' },
                 { id: 'Scene', name: 'Scene' },
+                { id: 'Security', name: 'Security' },
+                { id: 'System', name: 'System events' },
                 { id: 'Timer', name: 'Timer' },
                 { id: 'UserVariable', name: 'User variable' },
-                { id: 'HTTPRequest', name: 'HTTP request' },
-                { id: 'global_data', name: 'Global Data' },
+                { id: 'global_data', name: 'Global Data' }
             ];
 
             vm.luaTemplates = [
@@ -37,7 +39,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 { id: 'Device', name: 'Device' },
                 { id: 'Security', name: 'Security' },
                 { id: 'Time', name: 'Time' },
-                { id: 'UserVariable', name: 'User variable' },
+                { id: 'UserVariable', name: 'User variable' }
             ];
 
             fetchEvents();

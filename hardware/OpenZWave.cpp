@@ -18,14 +18,14 @@
 #include "../webserver/cWebem.h"
 #include "../main/mainworker.h"
 
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/localtime_r.h"
 
 //OpenZWave includes
-#include "openzwave/Options.h"
-#include "openzwave/Manager.h"
-#include "openzwave/platform/Log.h"
-#include "openzwave/ValueIDIndexesDefines.h"
+#include <Options.h>
+#include <Manager.h>
+#include <platform/Log.h>
+#include <ValueIDIndexesDefines.h>
 
 #include "ZWaveCommands.h"
 
@@ -211,6 +211,8 @@ const char* cclassStr(uint8 cc)
 		return "LOCK";
 	case 0x77:
 		return "NODE NAMING";
+	case 0x79:
+		return "SOUND SWITCH";
 	case 0x7A:
 		return "FIRMWARE UPDATE MD";
 	case 0x7B:
@@ -828,6 +830,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_UserAlerts:
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
+		break;
 	default:
 		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", nType, _homeID, _nodeID, _nodeID);
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
@@ -1164,9 +1167,10 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 		}
 
 		if (
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0003)) ||
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0103)) ||
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0203))
+			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0003))
+			|| ((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0103))
+			|| ((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0203))
+			|| ((pDevice->Product_id == 0x00af) && (pDevice->Product_type == 0x0003))
 			)
 		{
 			//Special case for the Aeotec Smart Switch
@@ -1213,6 +1217,8 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 				bFound = (GetValueByCommandClass(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_DOOR_LOCK, vID) == true);
 			if (!bFound)
 				bFound = (GetValueByCommandClassIndex(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, ValueID_Index_SwitchMultiLevel::Level, vID) == true);
+			if (!bFound)
+				bFound = (GetValueByCommandClass(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SOUND_SWITCH, vID) == true);
 			if (bFound)
 			{
 				OpenZWave::ValueID::ValueType vType = vID.GetType();
@@ -1241,6 +1247,20 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 						//On
 						m_pManager->SetValue(vID, (uint8_t)255);
 						pDevice->intvalue = 255;
+					}
+				}
+				else if (vType == OpenZWave::ValueID::ValueType_List)
+				{
+					std::vector<std::string > vStringList;
+					m_pManager->GetValueListItems(vID, &vStringList);
+					if (svalue == 255)
+					{
+						// Aeotec DoorBell 6 only
+						if ((pDevice->Manufacturer_id == 0x0371) && (pDevice->Product_id == 0x00a2) && (pDevice->Product_type == 0x0003))
+						{
+							m_pManager->SetValueListSelection(vID, vStringList[31]); //default tone
+							pDevice->intvalue = 255;
+						}
 					}
 				}
 				else
@@ -1974,6 +1994,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		}
 		else if (
 			(vOrgIndex == ValueID_Index_SensorMultiLevel::Carbon_Dioxide)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Volatile_Organic_Compound)
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Carbon_Monoxide)
 			)
 		{
@@ -1987,6 +2008,10 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		{
 			_device.devType = ZDTYPE_SENSOR_TANK_CAPACITY;
 		}
+		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Loudness)
+		{
+			_device.devType = ZDTYPE_SENSOR_LOUDNESS;
+		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::General_Purpose)
 		{
 			_device.devType = ZDTYPE_SWITCH_NORMAL;
@@ -1996,7 +2021,17 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			_device.custom_label = "mm/h";
 			_device.devType = ZDTYPE_SENSOR_CUSTOM;
 		}
+		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Particulate_Mater_2_5)
+		{
+			//dust
+			_device.custom_label = "ug/m3";
+			_device.devType = ZDTYPE_SENSOR_CUSTOM;
+		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Seismic_Intensity)
+		{
+			_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
+		}
+		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Smoke_Density)
 		{
 			_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 		}
@@ -2010,9 +2045,15 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			_device.custom_label = "m/s2";
 			_device.devType = ZDTYPE_SENSOR_CUSTOM;
 		}
+		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Frequency)
+		{
+			_device.custom_label = "Hz";
+			_device.devType = ZDTYPE_SENSOR_CUSTOM;
+		}
 		else
 		{
 			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s, Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", vLabel.c_str(), vUnits.c_str(), static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vOrgInstance, vOrgIndex);
+			return;
 		}
 		_device.floatValue = fValue * _device.scaleMultiply;
 		InsertDevice(_device);
@@ -2338,6 +2379,21 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d, NodeID: %d (0x%02x)", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, NodeID, NodeID);
 			return;
 		}
+	}
+	else if (commandclass == COMMAND_CLASS_SOUND_SWITCH)
+	{
+		if (vOrgIndex != ValueID_Index_SoundSwitch::Tones)
+			return;
+		if (vType != OpenZWave::ValueID::ValueType_List)
+			return; //not interested in you
+
+		std::vector<std::string > vStringList;
+		if (m_pManager->GetValueListItems(vID, &vStringList) == false)
+			return;
+		_device.instanceID = instance;
+		_device.devType = ZDTYPE_SWITCH_NORMAL;
+		_device.intvalue = intValue;
+		InsertDevice(_device);
 	}
 	else if (commandclass == COMMAND_CLASS_MANUFACTURER_PROPRIETARY)
 	{
@@ -3121,6 +3177,24 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 				}
 			}
 		}
+		else if (commandclass == COMMAND_CLASS_SOUND_SWITCH)
+		{
+			if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				int32 listValue = 0;
+				if (m_pManager->GetValueListSelection(vID, &listValue))
+				{
+					if (pDevice->intvalue == listValue)
+					{
+						return; //dont send same value
+					}
+					if (listValue == 0)
+						pDevice->intvalue = 0;
+					else
+						pDevice->intvalue = 255;
+				}
+			}
+		}
 		else if (vLabel.find("Open") != std::string::npos)
 		{
 			pDevice->intvalue = 255;
@@ -3310,6 +3384,13 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	}
 	break;
 	case ZDTYPE_SENSOR_TANK_CAPACITY:
+	{
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		pDevice->floatValue = fValue;
+	}
+	break;
+	case ZDTYPE_SENSOR_LOUDNESS:
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
@@ -3596,10 +3677,9 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > >& 
 			std::vector<int> row;
 			NodeArray.push_back(row);
 			NodeArray[rowCnt].push_back(_nodeID);
-			uint8* arr;
-
 			try
 			{
+				uint8* arr;
 				int retval = m_pManager->GetNodeNeighbors(_homeID, _nodeID, &arr);
 				if (retval > 0) {
 
@@ -5740,6 +5820,7 @@ namespace http {
 					int MaxNoOfGroups = 0;
 					std::vector<std::vector<std::string> >::const_iterator itt;
 					int ii = 0;
+
 					for (itt = result.begin(); itt != result.end(); ++itt)
 					{
 						std::vector<std::string> sd = *itt;
@@ -5753,36 +5834,31 @@ namespace http {
 						root["result"]["nodes"][ii]["nodeID"] = nodeID;
 						root["result"]["nodes"][ii]["nodeName"] = (nodeName != "Unknown") ? nodeName : (pNode->Manufacturer_name + std::string(" ") + pNode->Product_name);
 						root["result"]["nodes"][ii]["groupCount"] = numGroups;
-						if (numGroups > 0) {
+						if (numGroups > 0)
+						{
 							if (numGroups > MaxNoOfGroups)
 								MaxNoOfGroups = numGroups;
 
-							std::vector< std::string > nodesingroup;
-							int gi = 0;
-							for (int x = 1; x <= numGroups; x++)
+							for (int iGroup = 0; iGroup < numGroups; iGroup++)
 							{
-								int numNodesInGroup = pOZWHardware->ListAssociatedNodesinGroup(nodeID, (uint8_t)x, nodesingroup);
+								root["result"]["nodes"][ii]["groups"][iGroup]["id"] = iGroup + 1;
+								root["result"]["nodes"][ii]["groups"][iGroup]["groupName"] = pOZWHardware->GetGroupName(nodeID, (uint8_t)iGroup + 1);
+
+								std::vector< std::string > nodesingroup;
+								int numNodesInGroup = pOZWHardware->ListAssociatedNodesinGroup(nodeID, (uint8_t)iGroup + 1, nodesingroup);
 								if (numNodesInGroup > 0) {
 									std::stringstream list;
 									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<std::string>(list, ","));
-									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
-									root["result"]["nodes"][ii]["groups"][gi]["groupName"] = pOZWHardware->GetGroupName(nodeID, (uint8_t)x);
-									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = list.str();
+									root["result"]["nodes"][ii]["groups"][iGroup]["nodes"] = list.str();
 								}
 								else {
-									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
-									root["result"]["nodes"][ii]["groups"][gi]["groupName"] = pOZWHardware->GetGroupName(nodeID, (uint8_t)x);
-									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = "";
+									root["result"]["nodes"][ii]["groups"][iGroup]["nodes"] = "";
 								}
-								gi++;
-								nodesingroup.clear();
 							}
-
 						}
 						ii++;
 					}
 					root["result"]["MaxNoOfGroups"] = MaxNoOfGroups;
-
 				}
 			}
 			root["status"] = "OK";
@@ -6160,19 +6236,6 @@ namespace http {
 				}
 			}
 		}
-
-		void CWebServer::ZWaveCPSaveConfig(WebEmSession& /*session*/, const request& /*req*/, reply& rep)
-		{
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
-			if (pHardware != NULL)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-				reply::set_content(&rep, pOZWHardware->m_ozwcp.SaveConfig());
-			}
-		}
 		void CWebServer::ZWaveCPGetTopo(WebEmSession& /*session*/, const request& /*req*/, reply& rep)
 		{
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -6197,28 +6260,6 @@ namespace http {
 				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 				reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
 				reply::add_header_attachment(&rep, "stats.xml");
-			}
-		}
-		void CWebServer::ZWaveCPSceneCommand(WebEmSession& /*session*/, const request& req, reply& rep)
-		{
-			if (req.content.find("fun") == std::string::npos)
-				return;
-			std::multimap<std::string, std::string> values;
-			request::makeValuesFromPostContent(&req, values);
-			std::string sArg1 = request::findValue(&values, "fun");
-			std::string sArg2 = request::findValue(&values, "id");
-			std::string sVid = request::findValue(&values, "vid");
-			std::string sLabel = request::findValue(&values, "label");
-			std::string sArg3 = (!sVid.empty()) ? sVid : sLabel;
-			std::string sArg4 = request::findValue(&values, "value");
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
-			if (pHardware != NULL)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
-				reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
 			}
 		}
 

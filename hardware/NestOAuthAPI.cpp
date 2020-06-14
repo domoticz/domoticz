@@ -13,7 +13,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../webserver/Base64.h"
 
 
@@ -162,31 +162,23 @@ bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string & /*accesstoken
 	std::string sResult;
 
 	// Let's get a list of structures to see if the supplied Access Token works
-	try {
-		std::string sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_OAuthApiAccessToken;
-		_log.Log(LOG_NORM, "NestOAuthAPI: Trying to access API on " + sURL);
-		std::vector<std::string> ExtraHeaders;
-		std::vector<std::string> vHeaderData;
+	std::string sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_OAuthApiAccessToken;
+	_log.Log(LOG_NORM, "NestOAuthAPI: Trying to access API on " + sURL);
+	std::vector<std::string> ExtraHeaders;
+	std::vector<std::string> vHeaderData;
 
-		HTTPClient::GET(sURL, ExtraHeaders, sResult, vHeaderData, false);
-		if (sResult.empty()) {
-			std::string sErrorMsg = "Got empty response body while getting structures. ";
-			if (!vHeaderData.empty()) {
-				sErrorMsg += "Response code: " + vHeaderData[0];
-			}
-			throw std::runtime_error(sErrorMsg.c_str());
-		}
-	}
-	catch (std::exception& e)
+	if ((!HTTPClient::GET(sURL, ExtraHeaders, sResult, vHeaderData, false))||(sResult.empty()))
 	{
-		std::string what = e.what();
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Error while performing login: " + what);
+		std::string sErrorMsg = "Got empty response body while getting structures.";
+		if (!vHeaderData.empty()) {
+			sErrorMsg += " Response code: " + vHeaderData[0];
+		}
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error while performing login: %s", sErrorMsg.c_str());
 		return false;
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to parse received JSON data.");
@@ -398,7 +390,6 @@ void CNestOAuthAPI::GetMeterDetails()
 
 	Json::Value deviceRoot;
 	Json::Value structureRoot;
-	Json::Reader jReader;
 
 	std::vector<std::string> ExtraHeaders;
 	std::string sURL;
@@ -414,7 +405,7 @@ void CNestOAuthAPI::GetMeterDetails()
 		return;
 	}
 
-	bRet = jReader.parse(sResult, structureRoot);
+	bRet = ParseJSon(sResult, structureRoot);
 	if ((!bRet) || (!structureRoot.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid structures data received!");
@@ -432,7 +423,7 @@ void CNestOAuthAPI::GetMeterDetails()
 		return;
 	}
 
-	bRet = jReader.parse(sResult, deviceRoot);
+	bRet = ParseJSon(sResult, deviceRoot);
 	if ((!bRet) || (!deviceRoot.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid devices data received!");
@@ -848,8 +839,7 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 		{
 			_log.Log(LOG_NORM, "NestOAuthAPI: Will now parse result to JSON");
 			Json::Value root;
-			Json::Reader jReader;
-			bool bRet = jReader.parse(sResult, root);
+			bool bRet = ParseJSon(sResult, root);
 			_log.Log(LOG_NORM, "NestOAuthAPI: JSON data parse call returned.");
 
 			if ((!bRet) || (!root.isObject())) throw std::runtime_error("Failed to parse JSON data.");

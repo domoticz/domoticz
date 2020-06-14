@@ -6,7 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #include <iostream>
@@ -157,10 +157,7 @@ bool SolarEdgeAPI::GetSite()
 #else
 	std::stringstream sURL;
 	sURL << "https://monitoringapi.solaredge.com/sites/list?size=1&api_key=" << m_APIKey << "&format=application/json";
-	bool bret;
-	std::string szURL = sURL.str();
-	bret = HTTPClient::GET(szURL, sResult);
-	if (!bret)
+	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data!");
 		return false;
@@ -171,8 +168,7 @@ bool SolarEdgeAPI::GetSite()
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");
@@ -211,10 +207,7 @@ void SolarEdgeAPI::GetInverters()
 #else
 	std::stringstream sURL;
 	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/list?api_key=" << m_APIKey << "&format=application/json";
-	bool bret;
-	std::string szURL = sURL.str();
-	bret = HTTPClient::GET(szURL, sResult);
-	if (!bret)
+	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data!");
 		return;
@@ -225,8 +218,7 @@ void SolarEdgeAPI::GetInverters()
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");
@@ -312,10 +304,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings *pInverterSetting
 	std::string endDate = CURLEncode::URLEncode(szTmp);
 	std::stringstream sURL;
 	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/" << pInverterSettings->SN << "/data.json?startTime=" << startDate << "&endTime=" << endDate << "&api_key=" << m_APIKey << "&format=application/json";
-	bool bret;
-	std::string szURL = sURL.str();
-	bret = HTTPClient::GET(szURL, sResult);
-	if (!bret)
+	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data!");
 		return;
@@ -326,8 +315,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings *pInverterSetting
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");

@@ -1,4 +1,4 @@
-//#pragma once
+#pragma once
 #include <stdint.h>
 #include "globals.h"
 /*#ifdef	__cplusplus
@@ -34,21 +34,21 @@ extern "C" {
 
  //#define	EHSTATUS_H
  //adc results stored in separate bytes
-typedef struct
+struct ADCs
 {
 	//    zamieniona struktura bo chrzani adc
 
 	unsigned char MSB;
 	unsigned char LSB;
 	//test inverted	unsigned char LSB;
-} ADCs;
+};
 //////////////////////////////////////////////////////////        
-typedef struct //passing arguments to threads
+struct thdata//passing arguments to threads
 {
 	int No;
 	unsigned char StrParam[255];
 	int IntParam;
-} thdata;
+};
 
 //////////////////////////////////////////////////////////////////////
 /*ehouse 1 system controllers - RM status
@@ -68,7 +68,7 @@ for normal address via rs232 offset is 1
 
 
 /////////////////////////////////////////////////////////
-typedef struct RMeHouse1StatusT //struct offset =0;
+struct RMStatus //struct offset =0;
 {
 	unsigned char AddrH;		//address high byte of current controller
 	unsigned char AddrL;		//address low  byte 
@@ -173,7 +173,7 @@ typedef struct RMeHouse1StatusT //struct offset =0;
 	char not_usedjg;
 	unsigned char iface;
 	//char ADC_PROGRAM;
-} RMStatus;
+};
 /////////////////////////////////////////////////////////////////////////////
 typedef struct  	//status hm status[0]='s'			//struct offset =0;
 {       //ofset +1 comparing to controller status

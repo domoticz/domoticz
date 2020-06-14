@@ -183,12 +183,14 @@ images/forward_enabled_hover.png
 images/Gas48.png
 images/gauge.png
 images/gauge48.png
+images/gdown.png
 images/general.png
 images/Generic.png
 images/Generic48_Off.png
 images/Generic48_On.png
 images/glyphicons-halflings.png
 images/glyphicons-halflings-white.png
+images/gup.png
 images/handle.png
 images/Harddisk.png
 images/Harddisk48_Off.png
@@ -210,6 +212,7 @@ images/Light48_Off.png
 images/Light48_On.png
 images/lightbulb.png
 images/lightbulboff.png
+images/location.png
 images/lock_closed.png
 images/lock_open.png
 images/log.png
@@ -380,6 +383,7 @@ images/evohome/DayOffInv.png
 images/evohome/HeatingOff.png
 images/evohome/HeatingOffInv.png
 images/evohome/Off.png
+images/evohome/Offline.png
 images/evohome/On.png
 images/evohome/OpenWindow.png
 images/evohome/PermanentOverride.png
@@ -526,11 +530,13 @@ app/log/components/DeviceTextLogTable.js
 app/log/DeviceLog.html
 app/log/DeviceLog.js
 app/log/factories.js
+app/log/GraphLog.html
 app/log/GraphLog.js
 app/log/LightLog.html
 app/log/LightLog.js
 app/log/SceneLog.html
 app/log/SceneLog.js
+app/log/TemperatureLog.html
 app/log/TemperatureLog.js
 app/log/TextLog.html
 app/log/TextLog.js
@@ -538,6 +544,9 @@ app/log/TextLog.js
 app/notifications/constants.js
 app/notifications/DeviceNotifications.js
 app/notifications/factories.js
+
+app/plans/RoomPlans.html
+app/plans/RoomPlans.js
 
 app/report/CounterReport.html
 app/report/CounterReport.js
@@ -558,6 +567,7 @@ app/timers/SceneTimersController.js
 
 app/AboutController.js
 app/app.js
+app/app.notifications.js
 app/app.constants.js
 app/app.permissions.js
 app/app.routes.js
@@ -585,7 +595,6 @@ app/main.js
 app/NotificationController.js
 app/OfflineController.js
 app/RestoreDatabaseController.js
-app/RoomplanController.js
 app/ScenesController.js
 app/SetupController.js
 app/TemperatureController.js
@@ -639,7 +648,6 @@ js/colpick.js
 js/date.format.js
 js/domoticz.js
 js/domoticzdevices.js
-js/export-csv.js
 js/FileSaver.js
 js/highcharts-ng.min.js
 js/html5shiv.js
@@ -677,8 +685,6 @@ secpanel/js/ion.sound.min.js
 #SwitchIcons
 
 # HTML pages
-views/log/device_graph_log.html
-views/log/device_temperature_log.html
 views/about.html
 views/cam.html
 views/customicons.html
@@ -698,7 +704,6 @@ views/notification.html
 views/notifications.html
 views/offline.html
 views/restoredatabase.html
-views/roomplan.html
 views/scenes.html
 views/setup.html
 views/temperature.html

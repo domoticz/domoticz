@@ -39,17 +39,17 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include "../Options.h"
-#include "../Manager.h"
-#include "../Node.h"
-#include "../Group.h"
-#include "../Notification.h"
-#include "..//main/Logger.h"
+#include <Options.h>
+#include <Manager.h>
+#include <Node.h>
+#include <Group.h>
+#include <Notification.h>
+#include "../../../main/Logger.h"
 
 #include <sys/stat.h>
 #include <fstream>
 #include <iostream>
-#include <tinyxml.h>
+#include "../../../tinyxpath/tinyxml.h"
 
 //#include "microhttpd.h"
 #include "ozwcp.h"
@@ -681,14 +681,6 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 				id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
 			//nodes[_notification->GetNodeId()]->setPolled(true);
-			break;
-		case OpenZWave::Notification::Type_SceneEvent:
-#ifdef OZW_WRITE_LOG
-			Log::Write(LogLevel_Info, "Notification: Scene Event Home %08x Node %d Genre %s Class %s Instance %d Index %d Type %s Scene Id %d",
-				_notification->GetHomeId(), _notification->GetNodeId(),
-				valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
-				id.GetIndex(), valueTypeStr(id.GetType()), _notification->GetSceneId());
-#endif
 			break;
 		case OpenZWave::Notification::Type_CreateButton:
 #ifdef OZW_WRITE_LOG
@@ -1424,126 +1416,6 @@ std::string COpenZWaveControlPanel::DoAdminCommand(const std::string& fun, const
 	return "";
 }
 
-std::string COpenZWaveControlPanel::DoSceneCommand(const std::string& fun, const std::string& arg1, const std::string& arg2, const std::string& arg3)
-{
-	try
-	{
-		TiXmlDocument doc;
-		char str[16];
-		std::string s;
-		int cnt;
-		int i;
-		uint8 sid = 0;
-		TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "utf-8", "");
-		doc.LinkEndChild(decl);
-		TiXmlElement* scenesElement = new TiXmlElement("scenes");
-		doc.LinkEndChild(scenesElement);
-
-		if (fun == "create") {
-			sid = OpenZWave::Manager::Get()->CreateScene();
-			if (sid == 0) {
-				fprintf(stderr, "sid = 0, out of scene ids\n");
-				return "";
-			}
-		}
-		if ((fun == "values") ||
-			(fun == "label") ||
-			(fun == "delete") ||
-			(fun == "execute") ||
-			(fun == "addvalue") ||
-			(fun == "update") ||
-			(fun == "remove")) {
-			sid = (uint8)atoi(arg1.c_str());
-			if (fun == "delete")
-				OpenZWave::Manager::Get()->RemoveScene(sid);
-			else if (fun == "execute")
-				OpenZWave::Manager::Get()->ActivateScene(sid);
-			else if (fun == "label")
-				OpenZWave::Manager::Get()->SetSceneLabel(sid, std::string(arg2));
-			if ((fun == "addvalue") ||
-				(fun == "update") ||
-				(fun == "remove")) {
-				MyValue* val = MyNode::lookup(std::string(arg2));
-				if (val != NULL) {
-					if (fun == "addvalue") {
-						if (!OpenZWave::Manager::Get()->AddSceneValue(sid, val->getId(), std::string(arg3)))
-							fprintf(stderr, "AddSceneValue failure\n");
-					}
-					else if (fun == "update") {
-						if (!OpenZWave::Manager::Get()->SetSceneValue(sid, val->getId(), std::string(arg3)))
-							fprintf(stderr, "SetSceneValue failure\n");
-					}
-					else if (fun == "remove") {
-						if (!OpenZWave::Manager::Get()->RemoveSceneValue(sid, val->getId()))
-							fprintf(stderr, "RemoveSceneValue failure\n");
-					}
-				}
-			}
-		}
-		if ((fun == "load") ||
-			(fun == "create") ||
-			(fun == "label") ||
-			(fun == "delete")) { // send all sceneids
-			uint8* sptr;
-			cnt = OpenZWave::Manager::Get()->GetAllScenes(&sptr);
-			scenesElement->SetAttribute("sceneid", cnt);
-			for (i = 0; i < cnt; i++) {
-				TiXmlElement* sceneElement = new TiXmlElement("sceneid");
-				snprintf(str, sizeof(str), "%d", sptr[i]);
-				sceneElement->SetAttribute("id", str);
-				s = OpenZWave::Manager::Get()->GetSceneLabel(sptr[i]);
-				sceneElement->SetAttribute("label", s.c_str());
-				scenesElement->LinkEndChild(sceneElement);
-			}
-			delete[] sptr;
-		}
-		if ((fun == "values") ||
-			(fun == "addvalue") ||
-			(fun == "remove") ||
-			(fun == "update")) {
-			std::vector<OpenZWave::ValueID> vids;
-			cnt = OpenZWave::Manager::Get()->SceneGetValues(sid, &vids);
-			scenesElement->SetAttribute("scenevalue", cnt);
-			for (std::vector<OpenZWave::ValueID>::iterator it = vids.begin(); it != vids.end(); it++) {
-				TiXmlElement* valueElement = new TiXmlElement("scenevalue");
-				valueElement->SetAttribute("id", sid);
-				snprintf(str, sizeof(str), "0x%x", (*it).GetHomeId());
-				valueElement->SetAttribute("home", str);
-				valueElement->SetAttribute("node", (*it).GetNodeId());
-				valueElement->SetAttribute("class", cclassStr((*it).GetCommandClassId()));
-				valueElement->SetAttribute("instance", (*it).GetInstance());
-				valueElement->SetAttribute("index", (*it).GetIndex());
-				valueElement->SetAttribute("type", valueTypeStr((*it).GetType()));
-				valueElement->SetAttribute("genre", valueGenreStr((*it).GetGenre()));
-				valueElement->SetAttribute("label", OpenZWave::Manager::Get()->GetValueLabel(*it).c_str());
-				valueElement->SetAttribute("units", OpenZWave::Manager::Get()->GetValueUnits(*it).c_str());
-				OpenZWave::Manager::Get()->SceneGetValueAsString(sid, *it, &s);
-				TiXmlText* textElement = new TiXmlText(s.c_str());
-				valueElement->LinkEndChild(textElement);
-				scenesElement->LinkEndChild(valueElement);
-			}
-		}
-		char fntemp[200];
-		sprintf(fntemp, "%sozwcp.scenes.XXXXXX", szUserDataFolder.c_str());
-		doc.SaveFile(fntemp);
-
-		std::string retstring = "";
-		std::ifstream testFile(fntemp, std::ios::binary);
-		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
-			std::istreambuf_iterator<char>());
-		if (fileContents.size() > 0)
-		{
-			retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
-		}
-
-		return retstring;
-	}
-	catch (OpenZWave::OZWException& ex)
-	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
-	}
-	return "";
-}
 
 std::string COpenZWaveControlPanel::DoNodeChange(const std::string& fun, const int node_id, const std::string& svalue)
 {
@@ -1578,20 +1450,6 @@ std::string COpenZWaveControlPanel::UpdateGroup(const std::string& fun, const in
 	return "OK";
 }
 
-
-std::string COpenZWaveControlPanel::SaveConfig()
-{
-	try
-	{
-		OpenZWave::Manager::Get()->WriteConfig(homeId);
-		return "OK";
-	}
-	catch (OpenZWave::OZWException& ex)
-	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
-	}
-	return "";
-}
 
 std::string COpenZWaveControlPanel::DoTestNetwork(const int node_id, const int cnt)
 {

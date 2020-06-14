@@ -3,8 +3,6 @@ define(['app', 'livesocket'], function (app) {
 		var $element = $('#main-view #dashcontent').last();
 
 		$scope.LastUpdateTime = parseInt(0);
-		$scope.broadcast_unsubscribe_devices = undefined;
-		$scope.broadcast_unsubscribe_scenes = undefined;
 
 		//Evohome...
 		//FIXME move evohome functions to a shared js ...see temperaturecontroller.js and lightscontroller.js
@@ -88,7 +86,7 @@ define(['app', 'livesocket'], function (app) {
 		}
 		SetColValue = function (idx, color, brightness) {
 			clearInterval($.setColValue);
-			if (permissions.hasPermission("Viewer")) {
+			if (!permissions.hasPermission("User")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
@@ -179,7 +177,6 @@ define(['app', 'livesocket'], function (app) {
 			//Lights
 			var isdimmer = false;
 			if (
-				(
 					(item.Type.indexOf('Light') == 0) ||
 					(item.Type.indexOf('Blind') == 0) ||
 					(item.Type.indexOf('Curtain') == 0) ||
@@ -194,8 +191,7 @@ define(['app', 'livesocket'], function (app) {
 					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Itho') == 0)) ||
 					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Lucci') == 0)) ||
 					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Westinghouse') == 0))
-				)
-				&& (item.Favorite != 0)) {
+				) {
 				id = "#light_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
@@ -253,10 +249,10 @@ define(['app', 'livesocket'], function (app) {
 						}
 						else if (item.SwitchType == "Contact") {
 							if (item.Status == 'Closed') {
-								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Closed") + '</a>';
+								status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Closed") + '</button>';
 							}
 							else {
-								status = '<a class="btn btn-mini btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("Open") + '</a>';
+								status = '<button class="btn btn-mini btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("Open") + '</button>';
 							}
 						}
 						else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
@@ -408,10 +404,10 @@ define(['app', 'livesocket'], function (app) {
 						}
 						else if (item.SwitchType == "Dusk Sensor") {
 							if (item.Status == 'On') {
-								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Dark") + '</a>';
+								status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Dark") + '</button>';
 							}
 							else {
-								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Sunny") + '</a>';
+								status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Sunny") + '</button>';
 							}
 						}
 						else if (item.SwitchType == "Motion Sensor") {
@@ -421,26 +417,18 @@ define(['app', 'livesocket'], function (app) {
 								(item.Status == 'Group On') ||
 								(item.Status.indexOf('Set ') == 0)
 							) {
-								status = '<a class="btn btn-mini btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("Motion") + '</a>';
+								status = '<button class="btn btn-mini btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("Motion") + '</button>';
 							}
 							else {
-								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("No Motion") + '</a>';
-							}
-						}
-						else if (item.SwitchType == "Dusk Sensor") {
-							if (item.Status == 'On') {
-								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Sunny") + '</a>';
-							}
-							else {
-								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Dark") + '</a>';
+								status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("No Motion") + '</button>';
 							}
 						}
 						else if (item.SwitchType == "Smoke Detector") {
 							if ((item.Status == "Panic") || (item.Status == "On")) {
-								status = '<a class="btn btn-mini btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("SMOKE") + '</a>';
+								status = '<button class="btn btn-mini btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("SMOKE") + '</button>';
 							}
 							else {
-								status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("No Smoke") + '</a>';
+								status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("No Smoke") + '</button>';
 							}
 						}
 						else if (item.SwitchType == "Selector") {
@@ -772,7 +760,7 @@ define(['app', 'livesocket'], function (app) {
 							var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 							isdimmer = true;
 							if (
-								(item.Status == 'On')
+								(item.Status != 'Off')
 							) {
 								img = '<img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor"') + ' height="40" width="40">';
 								$(id + " #div.item").removeClass('Off-fireplace').addClass('on-fireplace');
@@ -786,11 +774,11 @@ define(['app', 'livesocket'], function (app) {
 							if (
 								(item.Status == 'On')
 							) {
-								img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/uvsunny.png" class="lcursor" height="40" width="40"></a>';
-								$(id + " #div.item").removeClass('uvDark').addClass('fireplaceOn');
+								img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/uvdark.png" class="lcursor" title="' + $.t("Nighttime") + '" height="40" width="40"></a>';
 							}
 							else {
-								img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/uvdark.png" class="lcursor" height="40" width="40"></a>';
+								img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/uvsunny.png" class="lcursor" title="' + $.t("Daytime") + '" height="40" width="40"></a>';
+								$(id + " #div.item").removeClass('uvDark').addClass('fireplaceOn');
 							}
 						}
 						else if (item.SwitchType == "Media Player") {
@@ -947,7 +935,7 @@ define(['app', 'livesocket'], function (app) {
 			} //light devices
 
 			//security devices
-			if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
+			if (item.Type.indexOf('Security') == 0) {
 				id = "#security_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
@@ -1055,9 +1043,10 @@ define(['app', 'livesocket'], function (app) {
 
 			//Temperature Sensors
 			if (
-				((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined')) &&
-				(item.Favorite != 0)
-			) {
+				 (typeof item.Temp != 'undefined') ||
+				 (typeof item.Humidity != 'undefined') ||
+				  (typeof item.Chill != 'undefined')
+				) {
 				id = "#temp_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
@@ -1180,9 +1169,13 @@ define(['app', 'livesocket'], function (app) {
 
 			//Weather Sensors
 			if (
-				((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined')) &&
-				(item.Favorite != 0)
-			) {
+				 (typeof item.Rain != 'undefined') ||
+				 (typeof item.Visibility != 'undefined') ||
+				 (typeof item.UVI != 'undefined') ||
+				 (typeof item.Radiation != 'undefined') ||
+				 (typeof item.Direction != 'undefined') ||
+				 (typeof item.Barometer != 'undefined')
+				) {
 				id = "#weather_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
@@ -1342,38 +1335,35 @@ define(['app', 'livesocket'], function (app) {
 	
 			//Utility Sensors
 			if (
-				(
-					(typeof item.Counter != 'undefined') ||
-					(item.Type == "Current") ||
-					(item.Type == "Energy") ||
-					(item.Type == "Current/Energy") ||
-					(item.Type == "Power") ||
-					(item.Type == "Air Quality") ||
-					(item.Type == "Lux") ||
-					(item.Type == "Weight") ||
-					(item.Type == "Usage") ||
-					(item.SubType == "Percentage") ||
-					((item.Type == "Thermostat") && (item.SubType == "SetPoint")) ||
-					(item.SubType == "kWh") ||
-					(item.SubType == "Soil Moisture") ||
-					(item.SubType == "Leaf Wetness") ||
-					(item.SubType == "Voltage") ||
-					(item.SubType == "Distance") ||
-					(item.SubType == "Current") ||
-					(item.SubType == "Text") ||
-					(item.SubType == "Alert") ||
-					(item.SubType == "Pressure") ||
-					(item.SubType == "A/D") ||
-					(item.SubType == "Thermostat Mode") ||
-					(item.SubType == "Thermostat Fan Mode") ||
-					(item.SubType == "Fan") ||
-					(item.SubType == "Smartwares") ||
-					(item.SubType == "Waterflow") ||
-					(item.SubType == "Sound Level") ||
-					(item.SubType == "Custom Sensor")
-				) &&
-				(item.Favorite != 0)
-			) {
+				(typeof item.Counter != 'undefined') ||
+				(item.Type == "Current") ||
+				(item.Type == "Energy") ||
+				(item.Type == "Current/Energy") ||
+				(item.Type == "Power") ||
+				(item.Type == "Air Quality") ||
+				(item.Type == "Lux") ||
+				(item.Type == "Weight") ||
+				(item.Type == "Usage") ||
+				(item.SubType == "Percentage") ||
+				((item.Type == "Thermostat") && (item.SubType == "SetPoint")) ||
+				(item.SubType == "kWh") ||
+				(item.SubType == "Soil Moisture") ||
+				(item.SubType == "Leaf Wetness") ||
+				(item.SubType == "Voltage") ||
+				(item.SubType == "Distance") ||
+				(item.SubType == "Current") ||
+				(item.SubType == "Text") ||
+				(item.SubType == "Alert") ||
+				(item.SubType == "Pressure") ||
+				(item.SubType == "A/D") ||
+				(item.SubType == "Thermostat Mode") ||
+				(item.SubType == "Thermostat Fan Mode") ||
+				(item.SubType == "Fan") ||
+				(item.SubType == "Smartwares") ||
+				(item.SubType == "Waterflow") ||
+				(item.SubType == "Sound Level") ||
+				(item.SubType == "Custom Sensor")
+			   ) {
 				id = "#utility_" + item.idx;
 				var obj = $(id);
 				if (typeof obj != 'undefined') {
@@ -1667,37 +1657,9 @@ define(['app', 'livesocket'], function (app) {
 					});
 				}
 			});
-
-			$scope.broadcast_unsubscribe_devices = $scope.$on('jsonupdate', function (event, data) {
-				if (typeof data.ServerTime != 'undefined') {
-					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
-				}
-				if (typeof data.ActTime != 'undefined') {
-					$.LastUpdateTime = parseInt(data.ActTime);
-				}
-				RefreshItem(data.item);
-			});
-			$scope.broadcast_unsubscribe_scenes = $scope.$on('scene_update', function (event, data) {
-				if (typeof data.ServerTime != 'undefined') {
-					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
-				}
-				if (typeof data.ActTime != 'undefined') {
-					$.LastUpdateTime = parseInt(data.ActTime);
-				}
-				RefreshItem(data.item);
-			});
 		}
 
 		ShowFavorites = function () {
-			if (typeof $scope.broadcast_unsubscribe_devices != 'undefined') {
-				$scope.broadcast_unsubscribe_devices();
-				$scope.broadcast_unsubscribe_devices = undefined;
-			}
-			if (typeof $scope.broadcast_unsubscribe_scenes != 'undefined') {
-				$scope.broadcast_unsubscribe_scenes();
-				$scope.broadcast_unsubscribe_scenes = undefined;
-			}
-
 			var totdevices = 0;
 			var jj = 0;
 			var bHaveAddedDivider = false;
@@ -2012,7 +1974,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 									else if (item.SwitchType == "Contact") {
 										if (item.Status == 'Closed') {
-											status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Closed") + '</a>';
+											status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("Closed") + '</button>';
 										}
 										else {
 											status = '<a class="btn btn-mini btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("Open") + '</button>';
@@ -2162,7 +2124,7 @@ define(['app', 'livesocket'], function (app) {
 										}
 									}
 									else if (item.SwitchType == "Dusk Sensor") {
-										status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t(item.Status == 'On' ? "Sunny": "Dark") + '</a>';
+										status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t(item.Status == 'On' ? "Dark": "Sunny") + '</button>';
 									}
 									else if (item.SwitchType == "Motion Sensor") {
 										if (
@@ -2171,10 +2133,10 @@ define(['app', 'livesocket'], function (app) {
 											(item.Status == 'Group On') ||
 											(item.Status.indexOf('Set ') == 0)
 										) {
-											status = '<a class="btn btn-mini btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("Motion") + '</a>';
+											status = '<button class="btn btn-mini btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("Motion") + '</button>';
 										}
 										else {
-											status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("No Motion") + '</a>';
+											status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("No Motion") + '</button>';
 										}
 									}
 									else if (item.SwitchType == "Smoke Detector") {
@@ -2182,10 +2144,10 @@ define(['app', 'livesocket'], function (app) {
 											(item.Status == "Panic") ||
 											(item.Status == "On")
 										) {
-											status = '<a class="btn btn-mini  btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("SMOKE") + '</a>';
+											status = '<button class="btn btn-mini  btn-info" href="#/Devices/' + item.idx + '/Log">' + $.t("SMOKE") + '</button>';
 										}
 										else {
-											status = '<a class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("No Smoke") + '</a>';
+											status = '<button class="btn btn-mini" href="#/Devices/' + item.idx + '/Log">' + $.t("No Smoke") + '</button>';
 										}
 									}
 									else if (item.SwitchType == "Selector") {
@@ -2601,7 +2563,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 									else if (item.SwitchType == "TPI") {
 										var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
-										if (item.Status == 'On') {
+										if (item.Status != 'Off') {
 											xhtm += '\t      <td id="img" class="img img1"><img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor"') + ' height="40" width="40"></td>\n';
 										}
 										else {
@@ -2610,10 +2572,10 @@ define(['app', 'livesocket'], function (app) {
 									}
 									else if (item.SwitchType == "Dusk Sensor") {
 										if (item.Status == 'On') {
-											xhtm += '\t      <td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/uvsunny.png" class="lcursor" height="40" width="40"></td>\n';
+											xhtm += '\t      <td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/uvdark.png" class="lcursor" title="' + $.t("Nighttime") + '" height="40" width="40"></a></td>\n';
 										}
 										else {
-											xhtm += '\t      <td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/uvdark.png" class="lcursor" height="40" width="40"></a></td>\n';
+											xhtm += '\t      <td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/uvsunny.png" class="lcursor" title="' + $.t("Daytime") + '" height="40" width="40"></td>\n';
 										}
 									}
 									else if (item.SwitchType == "Motion Sensor") {
@@ -4228,17 +4190,17 @@ define(['app', 'livesocket'], function (app) {
 			$scope.MakeGlobalConfig();
 			MobilePhoneDetection();
 			ShowFavorites();
+
+			$scope.$on('device_update', function (event, deviceData) {
+				RefreshItem(deviceData);
+			});
+
+			$scope.$on('scene_update', function (event, sceneData) {
+				RefreshItem(sceneData);
+			});
 		};
 
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.broadcast_unsubscribe_devices != 'undefined') {
-				$scope.broadcast_unsubscribe_devices();
-				$scope.broadcast_unsubscribe_devices = undefined;
-			}
-			if (typeof $scope.broadcast_unsubscribe_scenes != 'undefined') {
-				$scope.broadcast_unsubscribe_scenes();
-				$scope.broadcast_unsubscribe_scenes = undefined;
-			}
 			$(window).off("resize");
 			var popup = $("#rgbw_popup");
 			if (typeof popup != 'undefined') {

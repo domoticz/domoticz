@@ -1170,7 +1170,7 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
     Blockly.Blocks['logic_notification_priority'].SUBSYSTEM =
         [
             ["all (default)", ''],
-            ["gcm", 'gcm'],
+            ["fcm", 'fcm'],
             ["http", 'http'],
             ["kodi", 'kodi'],
             ["lms", 'lms'],

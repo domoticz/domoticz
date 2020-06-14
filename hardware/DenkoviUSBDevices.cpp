@@ -5,14 +5,9 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
-#define MAX_POLL_INTERVAL 3600*1000
+using namespace boost::placeholders;
 
-enum _edaeUsbState
-{
-	RESPOND_RECEIVED = 0,		//0
-	DAE_USB16_UPDATE_IO,					//1
-	DAE_USB16_ASK_CMD				//2
-};
+#define MAX_POLL_INTERVAL 3600*1000
 
 #define DAE_IO_TYPE_RELAY		2
 
@@ -92,7 +87,7 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 	}
 	switch (m_iModel) {
 	case DDEV_USB_16R:
-		if (m_Cmd == DAE_USB16_ASK_CMD) {
+		if (m_Cmd == _edaeUsbState::DAE_USB16_ASK_CMD) {
 			uint8_t firstEight, secondEight;
 			if (len == 2) {
 				firstEight = (unsigned char)data[0];
@@ -187,7 +182,7 @@ bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char 
 			szCmd << "-//";
 		else if (command == light2_sOn)
 			szCmd << "+//";
-		m_Cmd = DAE_USB16_UPDATE_IO;
+		m_Cmd = _edaeUsbState::DAE_USB16_UPDATE_IO;
 		write(szCmd.str());
 		return true;
 	}
@@ -204,7 +199,7 @@ void CDenkoviUSBDevices::GetMeterDetails()
 
 	switch (m_iModel) {
 	case DDEV_USB_16R:
-		m_Cmd = DAE_USB16_ASK_CMD;
+		m_Cmd = _edaeUsbState::DAE_USB16_ASK_CMD;
 		write("ask//");
 		break;
 	}
