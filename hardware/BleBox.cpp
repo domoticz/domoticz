@@ -114,16 +114,6 @@ void BleBox::GetDevicesState()
 		{
 			switch (itt.second)
 			{
-			case 0:
-			{
-				if (DoesNodeExists(root, "state") == false)
-					break;
-
-				const bool state = root["state"].asBool();
-
-				SendSwitch(IP, 0, 255, state, 0, DevicesType[itt.second].name);
-				break;
-			}
 			case 1:
 			{
 				if (DoesNodeExists(root, "shutter") == false)
@@ -195,6 +185,7 @@ void BleBox::GetDevicesState()
 				SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt.second].name);
 				break;
 			}
+			case 0:
 			case 6:
 			{
 				if ((DoesNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
