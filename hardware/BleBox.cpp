@@ -347,33 +347,6 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 		{
 			switch (type)
 			{
-			case 0:
-			{
-				std::string state;
-				if (output->LIGHTING2.cmnd == light2_sOn)
-				{
-					state = "1";
-				}
-				else
-				{
-					state = "0";
-				}
-
-				Json::Value root = SendCommand(IPAddress, "/s/" + state);
-				if (root.empty())
-					return false;
-
-				if (DoesNodeExists(root, "state") == false)
-					return false;
-
-				if (root["state"].asString() != state)
-				{
-					Log(LOG_ERROR, "state not changed!");
-					return false;
-				}
-				break;
-			}
-
 			case 1: // shutterbox
 			{
 				int percentage = 0;
@@ -486,7 +459,8 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 				break;
 			}
 
-			case 6: //switchboxd
+			case 0: // switchbox
+			case 6: // switchboxd
 			{
 				std::string state;
 				std::string relayNumber;
