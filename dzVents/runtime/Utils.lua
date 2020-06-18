@@ -190,10 +190,10 @@ function self.isJSON(str, content)
 
 	local str = str or ''
 	local content = content or ''
-	local jsonPattern = '^%s*%[*%s*{.+}%s*%]*%s*$'
-	local ret = str:match(jsonPattern) == str  or content:find('application/json')
+	local jsonPatternOK = '^%s*%[*%s*{.+}%s*%]*%s*$'
+	local jsonPatternOK2 = '^%s*%[.+%]*%s*$'
+	local ret = ( str:match(jsonPatternOK) == str ) or ( str:match(jsonPatternOK2) == str ) or content:find('application/json')
 	return ret ~= nil
-
 end
 
 function self.fromJSON(json, fallback)
