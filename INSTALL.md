@@ -53,7 +53,7 @@ https://www.domoticz.com/wiki/Installing_and_running_Domoticz_on_a_Raspberry_PI
 ```
   set VCPKG_DEFAULT_TRIPLET=x86-windows
 ```  
-  Copy/past the content of msbuild/packages.txt after the command below
+  Copy/past the content of msbuild/vcpkg-packages.txt after the command below
 ```  
   vcpkg install <PASTE CONTENT HERE>
 ```  

@@ -24,6 +24,7 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	void GetThermostatData();
+	bool GetSwitchValue(const int NodeID);
 private:
 	std::string mApiKey;
 	std::string mApiSecret;
