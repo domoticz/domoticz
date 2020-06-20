@@ -29,8 +29,8 @@ local function Domoticz(settings)
 
 	-- check if the user set a lat/lng
 	-- if not, then daytime, nighttime is incorrect
-	if (_G.timeofday['SunriseInMinutes'] == 0 and _G.timeofday['SunsetInMinutes'] == 0) then
-		utils.log('No information about sunrise and sunset available. Please set lat/lng information in settings.', utils.LOG_ERROR)
+	if not(globalvariables.longitude and globalvariables.latitude) then
+		utils.log('No information about longitude / latitude available. Please set lat/lng information in settings.', utils.LOG_ERROR)
 	end
 
 	nowTime['isDayTime'] = timeofday['Daytime']
