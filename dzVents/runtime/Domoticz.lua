@@ -29,7 +29,7 @@ local function Domoticz(settings)
 
 	-- check if the user set a lat/lng
 	-- if not, then daytime, nighttime is incorrect
-	if not(globalvariables.longitude and globalvariables.latitude) then
+	if not(globalvariables.locationSet) then
 		utils.log('No information about longitude / latitude available. Please set lat/lng information in settings.', utils.LOG_ERROR)
 	end
 
