@@ -3,7 +3,7 @@
   <MetaData>
     <MetaDataItem name="Name"><!-- Name of the Device --></MetaDataItem>
     <MetaDataItem name="Description"><!-- Short Description of the Product --></MetaDataItem>
-    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/XXXX:XXXX:XXXX</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/XXXX:YYYY:ZZZZ</MetaDataItem>
     <MetaDataItem name="ProductPage"><!-- URL to the Product Page on the Vendors Website --></MetaDataItem>
     <MetaDataItem name="ProductSupport"><!-- URL to the Product Support Page on the Vendors Website --></MetaDataItem>
     <MetaDataItem name="ProductPic"><!-- path to images/vendor/product.png --></MetaDataItem>

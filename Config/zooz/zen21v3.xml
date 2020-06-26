@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="4">
 	<MetaData>
 		<MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027a:1e1c:b111</MetaDataItem>
-		<MetaDataItem name="ProductPic">images/zooz/zen21.png</MetaDataItem>
+		<MetaDataItem name="ProductPic">images/zooz/zen21v3.png</MetaDataItem>
 		<MetaDataItem id="1e1c" name="ZWProductPage" type="b111">https://products.z-wavealliance.org/products/3667?selectedFrequencyId=2</MetaDataItem>
 		<MetaDataItem name="ResetDescription">If your primary controller is missing or inoperable, you may need to reset the device to factory settings. To complete the reset process manually, tap-tap-tap’n’hold the upper paddle for at least 10 seconds. The LED indicator will flash to confirm successful reset.
 NOTE: All previously recorded activity and custom settings will be erased from the device’s memory.</MetaDataItem>
@@ -63,6 +63,8 @@ tap-tap-tap-and-hold: factory reset
 	</MetaDataItem>
 		<ChangeLog>
 			<Entry author="Brad Parker - https://github.com/bepsoccer" date="13 April 2020" revision="2">Updated for firmware version 3.04</Entry>
+			<Entry author="Matthew Grimes" date="12 June 2020" revision="3">Rename XML for correct hardware version</Entry>
+			<Entry author="Matthew Grimes" date="18 June 2020" revision="4">Update parameter 12 description</Entry>
 		</ChangeLog>
 	</MetaData>
 	<!-- Configuration Parameters -->
@@ -133,7 +135,7 @@ tap-tap-tap-and-hold: factory reset
 			<Item label="physical paddle and Z-Wave control disabled" value="2" />
 		</Value>
 		<Value type="list" genre="config" instance="1" index="12" label="3-Way Switch Type" units="" min="0" max="1" value="0" size="1">
-			<Help>Choose the type of 3-way switch you want to use with this dimmer in a 3-way set-up. Changing this setting can allow you to control brightness and dim the light from both 3-way locations. Use a regular momentary switch (like the Zooz ZAC99 accessory switch) if value is set to 2.</Help>
+			<Help>Choose the type of 3-way switch you want to use with this switch in a 3-way set-up.</Help>
 			<Item label="regular mechanical 3-way on/off switch(default)" value="0" />
 			<Item label="momentary switch, click once to change status (light on or off)" value="1" />
 		</Value>

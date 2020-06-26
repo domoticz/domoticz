@@ -1,4 +1,4 @@
-<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/000C:3034:4447</MetaDataItem>
     <MetaDataItem name="ProductPic">images/homeseer/hs-wd100plus.png</MetaDataItem>
@@ -35,8 +35,15 @@ To manually reset, tap the ON button twice quickly and then tap the OFF button t
       <Entry author="Jean-Francois Auger- Nechry@gmail.com" date="25 May 2019" revision="5">Apply PR #1546 from kaburke</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2563/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2874/xml</Entry>
+      <Entry author="Jeremy M. Johnson" date="23 June 2020" revision="8">Added compatibility parameters to ensure correct dimming level is reported</Entry>
     </ChangeLog>
   </MetaData>
+  <!-- Compatibility Parameters -->
+  <CommandClass id="38">
+    <Compatibility>
+      <VerifyChanged index="0">true</VerifyChanged>
+    </Compatibility>
+  </CommandClass>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value genre="config" index="4" label="Invert switch" max="1" min="0" size="1" type="list" value="0">

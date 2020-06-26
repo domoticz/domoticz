@@ -1,5 +1,6 @@
-<!-- Oomi Door/Window Sensor 6 --><Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Oomi Door/Window Sensor 6 --><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
+    <MetaDataItem name="ProductPic">images/oomi/ft112.png</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Turn the primary controller into exclusion mode, short press the product’s Action Button that you can find in back of the product.</MetaDataItem>
     <MetaDataItem name="WakeupDescription">Press the Action Button once, which will trigger sending out the Wake up notification command, press and hold the Action Button for 3 seconds, which will toggle on/off the Sensor be waked up for 10 minutes.</MetaDataItem>
     <MetaDataItem name="InclusionDescription">Turn the primary controller into inclusion mode, short press the product’s Action Button that you can find in the back of the product.</MetaDataItem>
@@ -10,6 +11,7 @@ It can be included and operated in any Z-Wave network with other Z-Wave certifie
     <MetaDataItem name="ResetDescription">Press the Action Button once that you can find in the back of the product for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
     <ChangeLog>
       <Entry author="Jeff Thompson" date="27 April 2020" revision="1">Initial version - clone of aeotec/zw112</Entry>
+      <Entry author="Justin Hammond" date="24 June 2020" revision="2">Add Product Pic</Entry>
     </ChangeLog>
     <MetaDataItem id="0070" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
     <MetaDataItem id="0070" name="Identifier" type="0002">FT112-C</MetaDataItem>

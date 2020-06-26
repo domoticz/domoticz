@@ -1,7 +1,8 @@
 <!--
 Oomi FT118-C15 Range Extender 6, based on Aeotec ZW117, of which it's a clone
---><Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
+    <MetaDataItem name="ProductPic">images/oomi/ft118.png</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, press  the Z-Wave Button on Range Extender 6.</MetaDataItem>
     <MetaDataItem name="Description">Oomi Range Extender is a Z-Wave mesh network repeater which can extend the range of communication between Z-Wave products and assist other devices to reach each other in your Z-Wave network. Clone of Aeotec ZW117 extender 6.
 The Range Extender can also communicate securely via AES 128 wireless Z-Wave commands and supports Over-The-Air (OTA) firmware upgrades.
@@ -13,6 +14,7 @@ Use this procedure only in the event that your primary network controller is mis
     <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, press the Z-Wave Button on Range Extender 6.</MetaDataItem>
     <ChangeLog>
       <Entry author="Jeff Thompson" date="27 April 2020" revision="1">Initial version, cloned from Aeotec ZW117 xml</Entry>
+      <Entry author="Justin Hammond" date="24 June 2020" revision="2">Add Product Pic</Entry>
     </ChangeLog>
     <MetaDataItem id="0076" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
     <MetaDataItem id="0076" name="Identifier" type="0004">FT118-C15</MetaDataItem>
