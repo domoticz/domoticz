@@ -941,9 +941,11 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
   text-transform: uppercase;
   color: yellow !important;
 }
+
 .ace_editor * {
-  font-family: monospace !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace !important;
 }
+
 /* buttons for selector switch */
 .btn-small {
   height: 23px;
