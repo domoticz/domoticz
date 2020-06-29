@@ -107,6 +107,7 @@ public:
 	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, int nValue, std::string &sValue, const int signallevel = 12, const int batterylevel = 255, const bool parseTrigger = true);
 
 	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const uint8_t *pRXCommand)> sOnDeviceReceived;
+	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx)> sOnDeviceUpdate;
 	boost::signals2::signal<void(const uint64_t SceneIdx, const std::string &SceneName)> sOnSwitchScene;
 
 	CScheduler m_scheduler;

@@ -23,6 +23,7 @@ void CWebSocketPush::Start()
 		return;
 	}
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CWebSocketPush::OnDeviceReceived, this, _1, _2, _3, _4));
+	m_sDeviceUpdate = m_mainworker.sOnDeviceUpdate.connect(boost::bind(&CWebSocketPush::OnDeviceUpdate, this, _1, _2));
 	m_sNotification = sOnNotificationReceived.connect(boost::bind(&CWebSocketPush::OnNotificationReceived, this, _1, _2, _3, _4, _5, _6));
 	m_sSceneChanged = m_mainworker.sOnSwitchScene.connect(boost::bind(&CWebSocketPush::OnSceneChange, this, _1, _2));
 	isStarted = true;
@@ -37,6 +38,9 @@ void CWebSocketPush::Stop()
 
 	if (m_sConnection.connected())
 		m_sConnection.disconnect();
+
+	if (m_sDeviceUpdate.connected())
+		m_sDeviceUpdate.disconnect();
 
 	if (m_sNotification.connected())
 		m_sNotification.disconnect();
@@ -110,6 +114,19 @@ bool CWebSocketPush::WeListenTo(const unsigned long long DeviceRowIdx)
 }
 
 void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+{
+	std::unique_lock<std::mutex> lock(handlerMutex);
+	if (!isStarted) {
+		return;
+	}
+
+	m_sock->OnDeviceChanged(DeviceRowIdx);
+	if (WeListenTo(DeviceRowIdx)) {
+		// push notification to web socket
+	}
+}
+
+void CWebSocketPush::OnDeviceUpdate(const int m_HwdID, const unsigned long long DeviceRowIdx)
 {
 	std::unique_lock<std::mutex> lock(handlerMutex);
 	if (!isStarted) {

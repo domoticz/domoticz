@@ -24,6 +24,7 @@ protected:
 	bool m_bLinkActive;
 	uint64_t m_DeviceRowIdx;
 	boost::signals2::connection m_sConnection;
+	boost::signals2::connection m_sDeviceUpdate;
 	boost::signals2::connection m_sNotification;
 	boost::signals2::connection m_sSceneChanged;
 

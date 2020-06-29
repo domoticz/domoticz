@@ -26,6 +26,7 @@ public:
 	bool WeListenTo(const unsigned long long DeviceRowIdx);
 private:
 	void OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
+	void OnDeviceUpdate(const int m_HwdID, const unsigned long long DeviceRowIdx);
 	void OnNotificationReceived(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification);
 	void OnSceneChange(const unsigned long long SceneRowIdx, const std::string& SceneName);
 	bool listenRoomplan;
