@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="8">
+<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="10">
 	<CommandClass id="113">
 		<!-- Please keep Localization.xml in sync with NotificationCCTypes.xml -->
 		<!-- If you are adding new Types or Params, Please also consider updating ValueIDIndexesDefines.def -->
@@ -60,6 +60,8 @@
 			<ItemLabel itemIndex="9">Silenced</ItemLabel>
 			<ItemLabel itemIndex="10">Maintenance Required: Dust In Device</ItemLabel>
 			<ItemLabel itemIndex="11">Maintenance_Required: Periodic Inspection</ItemLabel>
+			<ItemLabel itemIndex="12">Rapid temperature fall at Location</ItemLabel>
+			<ItemLabel itemIndex="13">Rapid temperature fall at Unknown Location</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="5">
@@ -73,6 +75,10 @@
 			<ItemLabel itemIndex="5">Replace Filter</ItemLabel>
 			<ItemLabel itemIndex="6">Water Flow</ItemLabel>
 			<ItemLabel itemIndex="7">Water Pressure</ItemLabel>
+			<ItemLabel itemIndex="8">Water Temperature</ItemLabel>
+			<ItemLabel itemIndex="9">Water Level</ItemLabel>
+			<ItemLabel itemIndex="10">Sump Pump Active</ItemLabel>
+			<ItemLabel itemIndex="11">Sump Pump Failure</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="6">
@@ -102,6 +108,9 @@
 			<ItemLabel itemIndex="21">Wireless Lock Invalid UserCode Entered</ItemLabel>
 			<ItemLabel itemIndex="22">Door/Window Open</ItemLabel>
 			<ItemLabel itemIndex="23">Door/Window Closed</ItemLabel>
+			<ItemLabel itemIndex="24">Window/door handle is open</ItemLabel>
+			<ItemLabel itemIndex="25">Window/door handle is closed</ItemLabel>
+			<ItemLabel itemIndex="26">Messaging User Code entered via keypa</ItemLabel>
 			<ItemLabel itemIndex="64">Barrier Initializing</ItemLabel>
 			<ItemLabel itemIndex="65">Barrier Force Exceeded</ItemLabel>
 			<ItemLabel itemIndex="66">Barrier Motor Time Exceeded</ItemLabel>
@@ -130,6 +139,8 @@
 			<ItemLabel itemIndex="7">Motion Detected at Location</ItemLabel>
 			<ItemLabel itemIndex="8">Motion Detected at Unknown Location</ItemLabel>
 			<ItemLabel itemIndex="9">Tampering - Product Moved</ItemLabel>
+			<ItemLabel itemIndex="10">Impact detected</ItemLabel>
+			<ItemLabel itemIndex="11">Magnetic field interference detected</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="8">
@@ -151,6 +162,8 @@
 			<ItemLabel itemIndex="13">Battery Charged</ItemLabel>
 			<ItemLabel itemIndex="14">Battery Low</ItemLabel>
 			<ItemLabel itemIndex="15">Battery Critical</ItemLabel>
+			<ItemLabel itemIndex="16">Back-up battery is low</ItemLabel>
+			<ItemLabel itemIndex="18">Back-up battery disconnected</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="9">
@@ -164,6 +177,9 @@
 			<ItemLabel itemIndex="5">Heartbeat</ItemLabel>
 			<ItemLabel itemIndex="6">Tampering Detected</ItemLabel>
 			<ItemLabel itemIndex="7">Emergency Shutoff</ItemLabel>
+			<ItemLabel itemIndex="8">Digital input high state</ItemLabel>
+			<ItemLabel itemIndex="9">Digital input low state</ItemLabel>
+			<ItemLabel itemIndex="10">Digital input open</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="10">
@@ -173,6 +189,7 @@
 			<ItemLabel itemIndex="1">Contact Police Department</ItemLabel>
 			<ItemLabel itemIndex="2">Contact Fire Department</ItemLabel>
 			<ItemLabel itemIndex="3">Contact Medical Service</ItemLabel>
+			<ItemLabel itemIndex="4">Panic alert</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="11">
@@ -221,6 +238,11 @@
 			<ItemLabel itemIndex="4">Posture Changed</ItemLabel>
 			<ItemLabel itemIndex="5">Sitting On Edge Of Bed</ItemLabel>
 			<ItemLabel itemIndex="6">Volatile Organic Compound Level</ItemLabel>
+			<ItemLabel itemIndex="7">Sleep apnea detected</ItemLabel>
+			<ItemLabel itemIndex="8">Sleep stage 0 detected (Dreaming/REM)</ItemLabel>
+			<ItemLabel itemIndex="9">Sleep stage 1 detected (Light sleep, non-REM 1)</ItemLabel>
+			<ItemLabel itemIndex="10">Sleep stage 2 detected (Medium sleep, non-REM 2)</ItemLabel>
+			<ItemLabel itemIndex="11">Sleep stage 3 detected (Deep sleep, non-REM 3)</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="14">
@@ -248,6 +270,7 @@
 			<ItemLabel itemIndex="0">Clear</ItemLabel>
 			<ItemLabel itemIndex="1">Rain Detected</ItemLabel>
 			<ItemLabel itemIndex="2">Moisture Detected</ItemLabel>
+			<ItemLabel itemIndex="3">Freeze</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="17">
@@ -273,6 +296,60 @@
 			<ItemLabel itemIndex="6">Replacement Required</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
+		<Value index="19">
+			<Help>Pest Control Alerts</Help>
+			<Label>Pest Control</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Trap armed at Location</ItemLabel>
+			<ItemLabel itemIndex="2">Trap armed</ItemLabel>
+			<ItemLabel itemIndex="3">Trap re-arm required at Location</ItemLabel>
+			<ItemLabel itemIndex="4">Trap re-arm required</ItemLabel>
+			<ItemLabel itemIndex="5">Pest detected at Location</ItemLabel>
+			<ItemLabel itemIndex="6">Pest detected</ItemLabel>
+			<ItemLabel itemIndex="7">Pest exterminated at Location</ItemLabel>
+			<ItemLabel itemIndex="8">Pest exterminated</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="20">
+			<Help>Light Alerts</Help>
+			<Label>Light</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Light detected</ItemLabel>
+			<ItemLabel itemIndex="2">Light color transition detected</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="21">
+			<Help>Water Quality Monitoring Alerts</Help>
+			<Label>Water Quality Monitoring</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Chlorine</ItemLabel>
+			<ItemLabel itemIndex="2">Acidity (pH)</ItemLabel>
+			<ItemLabel itemIndex="3">Water Oxidation</ItemLabel>
+			<ItemLabel itemIndex="4">Chlorine empty</ItemLabel>
+			<ItemLabel itemIndex="5">Acidity (pH) empty</ItemLabel>
+			<ItemLabel itemIndex="6">Waterflow measuring station shortage detected</ItemLabel>
+			<ItemLabel itemIndex="7">Waterflow clear water shortage detected</ItemLabel>
+			<ItemLabel itemIndex="8">Disinfection system error detected</ItemLabel>
+			<ItemLabel itemIndex="9">Filter cleaning ongoing</ItemLabel>
+			<ItemLabel itemIndex="10">Heating operation ongoing</ItemLabel>
+			<ItemLabel itemIndex="11">Filter pump operation ongoing</ItemLabel>
+			<ItemLabel itemIndex="12">Freshwater operation ongoing</ItemLabel>
+			<ItemLabel itemIndex="13">Dry protection operation active</ItemLabel>
+			<ItemLabel itemIndex="14">Water tank is empty</ItemLabel>
+			<ItemLabel itemIndex="15">Water tank level is unknow</ItemLabel>
+			<ItemLabel itemIndex="16">Water tank is full</ItemLabel>
+			<ItemLabel itemIndex="17">Collective disorder</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="22">
+			<Help>Home Monitoring Alerts</Help>
+			<Label>Home Monitoring</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Home occupied at Location</ItemLabel>
+			<ItemLabel itemIndex="2">Home occupied</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+
 		<!--  Index from 256 are Params -->
 		<Value index="256">
 			<Help>Previous Event that was sent</Help>
@@ -358,6 +435,10 @@
 		<Value index="271">
 			<Help>The ID of the Valve Table that triggered this alert</Help>
 			<Label>Valve Table ID</Label>
+		</Value>
+		<Value index="272">
+			<Help>Detected Power of interference</Help>
+			<Label>RSSI Level</Label>
 		</Value>
 		<Value index="512">
 			<Help>Alarm Type Received</Help>
@@ -631,6 +712,455 @@
 			<Help>Current Indicator State</Help>
 			<Label>Indicator</Label>
 		</Value>
+		<Value index="1">
+			<Help>Use to indicate that alarm is armed</Help>
+			<Label>Indicator: Armed</Label>
+		</Value>
+		<Value index="2">
+			<Help>Use to indicate that alarm is disarmed</Help>
+			<Label>Indicator: Not Armed</Label>
+		</Value>
+		<Value index="3">
+			<Help>Use to indicate that device is ready</Help>
+			<Label>Indicator: Ready</Label>
+		</Value>
+		<Value index="4">
+			<Help>Use to indicate a general error</Help>
+			<Label>Indicator: Fault</Label>
+		</Value>
+		<Value index="5">
+			<Help>Use to indicate that device is temporarily busy</Help>
+			<Label>Indicator: Busy</Label>
+		</Value>
+		<Value index="6">
+			<Help>Use to signal that device is waiting for ID</Help>
+			<Label>Indicator: Enter ID</Label>
+		</Value>
+		<Value index="7">
+			<Help>Use to signal that device is waiting for PIN code</Help>
+			<Label>Indicator: Enter PIN</Label>
+		</Value>
+		<Value index="8">
+			<Help>Use to indicate OK e.g. the entered code is accepted</Help>
+			<Label>Indicator: Code Accepted</Label>
+		</Value>
+		<Value index="9">
+			<Help>Use to indicate NOT OK e.g. the entered code is NOT accepted</Help>
+			<Label>Indicator: Code Not Accepted</Label>
+		</Value>
+		<Value index="10">
+			<Help>Use to indicate that the alarm is armed and users are staying in the home</Help>
+			<Label>Indicator: Armed Stay</Label>
+		</Value>
+		<Value index="11">
+			<Help>Use to indicate that the alarm is armed and users are away from the home</Help>
+			<Label>Indicator: Armed Away</Label>
+		</Value>
+		<Value index="12">
+			<Help>Use to indicate that the alarm is triggered and active with no reason specified</Help>
+			<Label>Indicator: Alarming</Label>
+		</Value>
+		<Value index="13">
+			<Help>Use to indicate that the alarm is triggered and active due to a Burglar event</Help>
+			<Label>Indicator: Alarming: Burglar</Label>
+		</Value>
+		<Value index="14">
+			<Help>Use to indicate that the alarm is triggered and active due to a Fire Alarm event</Help>
+			<Label>Indicator: Alarming: Smoke/Fire</Label>
+		</Value>
+		<Value index="15">
+			<Help>Use to indicate that the alarm is triggered and active due to a CO event</Help>
+			<Label>Indicator: Alarming: Carbon Monoxide</Label>
+		</Value>
+		<Value index="16">
+			<Help>Use to indicate that the device expects a bypass challenge code</Help>
+			<Label>Indicator: Bypass Challenge</Label>
+		</Value>
+		<Value index="17">
+			<Help>Use to indicate that the alarm is about to be activated unless disarmed by a code</Help>
+			<Label>Indicator: Entry Delay</Label>
+		</Value>
+		<Value index="18">
+			<Help>Use to indicate that the alarm will be active after the exit delay</Help>
+			<Label>Indicator: Exit Delay</Label>
+		</Value>
+		<Value index="19">
+			<Help>Use to indicate that the alarm is triggered and active due to a medical emergency</Help>
+			<Label>Indicator: Alarming: Medical</Label>
+		</Value>
+		<Value index="20">
+			<Help>Use to indicate that the alarm is triggered and active due to a freeze warning</Help>
+			<Label>Indicator: Alarming: Freeze Warning</Label>
+		</Value>
+		<Value index="21">
+			<Help>Use to indicate that the alarm is triggered and active due to a water leak</Help>
+			<Label>Indicator: Alarming: Water Leak</Label>
+		</Value>
+		<Value index="22">
+			<Help>Use to indicate that the alarm is triggered and active due to a panic alarm trigger</Help>
+			<Label>Indicator: Alarming: Panic</Label>
+		</Value>
+		<Value index="32">
+			<Help>Use to indicate that alarm zone 1 is armed</Help>
+			<Label>Indicator: Zone 1 Armed</Label>
+		</Value>
+		<Value index="33">
+			<Help>Use to indicate that alarm zone 2 is armed</Help>
+			<Label>Indicator: Zone 2 Armed</Label>
+		</Value>
+		<Value index="34">
+			<Help>Use to indicate that alarm zone 3 is armed</Help>
+			<Label>Indicator: Zone 3 Armed</Label>
+		</Value>
+		<Value index="35">
+			<Help>Use to indicate that alarm zone 4 is armed</Help>
+			<Label>Indicator: Zone 4 Armed</Label>
+		</Value>
+		<Value index="36">
+			<Help>Use to indicate that alarm zone 5 is armed</Help>
+			<Label>Indicator: Zone 5 Armed</Label>
+		</Value>
+		<Value index="37">
+			<Help>Use to indicate that alarm zone 6 is armed</Help>
+			<Label>Indicator: Zone 6 Armed</Label>
+		</Value>
+		<Value index="38">
+			<Help>Use to indicate that alarm zone 7 is armed</Help>
+			<Label>Indicator: Zone 7 Armed</Label>
+		</Value>
+		<Value index="39">
+			<Help>Use to indicate that alarm zone 8 is armed</Help>
+			<Label>Indicator: Zone 8 Armed</Label>
+		</Value>
+		<Value index="48">
+			<Help>Use to turn on LCD backlight, e.g. to shortly draw attention when alarm is activated from another entry control keypad.</Help>
+			<Label>Indicator: LCD Backlight</Label>
+		</Value>
+		<Value index="64">
+			<Help>Use to indicate that buttons are ready for user input</Help>
+			<Label>Indicator: Button: Backlight Letters</Label>
+		</Value>
+		<Value index="65">
+			<Help>Use to indicate that buttons are ready for user input</Help>
+			<Label>Indicator: Button: Backlight Digits</Label>
+		</Value>
+		<Value index="66">
+			<Help>Use to indicate that buttons are ready for user input</Help>
+			<Label>Indicator: Button: Backlight Command</Label>
+		</Value>
+		<Value index="67">
+			<Help>Use to draw attention to button 1</Help>
+			<Label>Indicator: Button 1</Label>
+		</Value>
+		<Value index="68">
+			<Help>Use to draw attention to button 2</Help>
+			<Label>Indicator: Button 2</Label>
+		</Value>
+		<Value index="69">
+			<Help>Use to draw attention to button 3</Help>
+			<Label>Indicator: Button 3</Label>
+		</Value>
+		<Value index="70">
+			<Help>Use to draw attention to button 4</Help>
+			<Label>Indicator: Button 4</Label>
+		</Value>
+		<Value index="71">
+			<Help>Use to draw attention to button 5</Help>
+			<Label>Indicator: Button 5</Label>
+		</Value>
+		<Value index="72">
+			<Help>Use to draw attention to button 6</Help>
+			<Label>Indicator: Button 6</Label>
+		</Value>
+		<Value index="73">
+			<Help>Use to draw attention to button 7</Help>
+			<Label>Indicator: Button 7</Label>
+		</Value>
+		<Value index="74">
+			<Help>Use to draw attention to button 8</Help>
+			<Label>Indicator: Button 8</Label>
+		</Value>
+		<Value index="75">
+			<Help>Use to draw attention to button 9</Help>
+			<Label>Indicator: Button 9</Label>
+		</Value>
+		<Value index="76">
+			<Help>Use to draw attention to button 10</Help>
+			<Label>Indicator: Button 10</Label>
+		</Value>
+		<Value index="77">
+			<Help>Use to draw attention to button 11</Help>
+			<Label>Indicator: Button 11</Label>
+		</Value>
+		<Value index="78">
+			<Help>Use to draw attention to button 12</Help>
+			<Label>Indicator: Button 12</Label>
+		</Value>
+		<Value index="80">
+			<Help>This indicator is used to identify the node.</Help>
+			<Label>Indicator: Node Identify</Label>
+		</Value>
+		<Value index="96">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 1</Label>
+		</Value>
+		<Value index="97">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 2</Label>
+		</Value>
+		<Value index="98">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 3</Label>
+		</Value>
+		<Value index="99">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 4</Label>
+		</Value>
+		<Value index="100">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 5</Label>
+		</Value>
+		<Value index="101">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 6</Label>
+		</Value>
+		<Value index="102">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 7</Label>
+		</Value>
+		<Value index="103">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 8</Label>
+		</Value>
+		<Value index="104">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 9</Label>
+		</Value>
+		<Value index="105">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 10</Label>
+		</Value>
+		<Value index="106">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 11</Label>
+		</Value>
+		<Value index="107">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 12</Label>
+		</Value>
+		<Value index="108">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 13</Label>
+		</Value>
+		<Value index="109">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 14</Label>
+		</Value>
+		<Value index="110">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 15</Label>
+		</Value>
+		<Value index="111">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 16</Label>
+		</Value>
+		<Value index="112">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 17</Label>
+		</Value>
+		<Value index="113">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 18</Label>
+		</Value>
+		<Value index="114">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 19</Label>
+		</Value>
+		<Value index="115">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 20</Label>
+		</Value>
+		<Value index="116">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 21</Label>
+		</Value>
+		<Value index="117">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 22</Label>
+		</Value>
+		<Value index="118">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 23</Label>
+		</Value>
+		<Value index="119">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 24</Label>
+		</Value>
+		<Value index="120">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 25</Label>
+		</Value>
+		<Value index="121">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 26</Label>
+		</Value>
+		<Value index="122">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 27</Label>
+		</Value>
+		<Value index="123">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 28</Label>
+		</Value>
+		<Value index="124">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 29</Label>
+		</Value>
+		<Value index="125">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 30</Label>
+		</Value>
+		<Value index="126">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 31</Label>
+		</Value>
+		<Value index="127">
+			<Help>Sound indication, use to indicate that a generic event happened.</Help>
+			<Label>Indicator: Generic Event Sound Notification 32</Label>
+		</Value>
+		<Value index="128">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 1</Label>
+		</Value>
+		<Value index="129">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 2</Label>
+		</Value>
+		<Value index="130">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 3</Label>
+		</Value>
+		<Value index="131">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 4</Label>
+		</Value>
+		<Value index="132">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 5</Label>
+		</Value>
+		<Value index="133">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 6</Label>
+		</Value>
+		<Value index="134">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 7</Label>
+		</Value>
+		<Value index="135">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 8</Label>
+		</Value>
+		<Value index="136">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 9</Label>
+		</Value>
+		<Value index="137">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 10</Label>
+		</Value>
+		<Value index="138">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 11</Label>
+		</Value>
+		<Value index="139">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 12</Label>
+		</Value>
+		<Value index="140">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 13</Label>
+		</Value>
+		<Value index="141">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 14</Label>
+		</Value>
+		<Value index="142">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 15</Label>
+		</Value>
+		<Value index="143">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 16</Label>
+		</Value>
+		<Value index="144">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 17</Label>
+		</Value>
+		<Value index="145">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 18</Label>
+		</Value>
+		<Value index="146">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 19</Label>
+		</Value>
+		<Value index="147">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 20</Label>
+		</Value>
+		<Value index="148">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 21</Label>
+		</Value>
+		<Value index="149">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 22</Label>
+		</Value>
+		<Value index="150">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 23</Label>
+		</Value>
+		<Value index="151">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 24</Label>
+		</Value>
+		<Value index="152">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 25</Label>
+		</Value>
+		<Value index="153">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 26</Label>
+		</Value>
+		<Value index="154">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 27</Label>
+		</Value>
+		<Value index="155">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 28</Label>
+		</Value>
+		<Value index="156">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 29</Label>
+		</Value>
+		<Value index="157">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 30</Label>
+		</Value>
+		<Value index="158">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 31</Label>
+		</Value>
+		<Value index="159">
+			<Help>Manufacturer Defined.</Help>
+			<Label>Indicator: Manufacturer Defined Indicator 32</Label>
+		</Value>
+		<Value index="240">
+			<Help>Use to draw attention or provide user feedback</Help>
+			<Label>Indicator: Buzzer</Label>
+		</Value>
+		<!-- We need to come back one day and do the Property Entries -->
 	</CommandClass>
 	<CommandClass id="137">
 		<Label>COMMAND_CLASS_LANGUAGE</Label>

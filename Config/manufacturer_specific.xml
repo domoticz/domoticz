@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ManufacturerSpecificData Revision="100" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="101" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -1063,6 +1063,7 @@
     <Product config="kwikset/smartcode.xml" id="0440" name="SmartCode 10" type="0006"/>
     <Product config="kwikset/smartcode.xml" id="0742" name="Obsidian" type="0003"/>
     <Product config="kwikset/914c.xml" id="0446" name="Convert 914" type="0003"/>
+    <Product config="kwikset/888.xml" id="0541" name="Smartcode 888" type="0003"/>
   </Manufacturer>
   <Manufacturer id="0051" name="Lagotek Corp"></Manufacturer>
   <Manufacturer id="0173" name="Leak Intelligence LLC"></Manufacturer>
@@ -1819,7 +1820,9 @@
     <Product config="widom/UMS2.xml" id="0800" name="UMS2 Smart Roller Shutter" type="1214"/>
   </Manufacturer>
   <Manufacturer id="012D" name="Wilshine Holding"></Manufacturer>
-  <Manufacturer id="017F" name="Wink"></Manufacturer>
+  <Manufacturer id="017F" name="Wink">
+    <Product config="wink/wnk-mot1.xml"  id="0001" name="WNK-MOT1 Motion Sensor" type="0101" />
+  </Manufacturer>
   <Manufacturer id="004c" name="Woodward Labs"></Manufacturer>
   <Manufacturer id="0242" name="Winytechnology"></Manufacturer>
   <Manufacturer id="0199" name="Wireless Maingate AB"></Manufacturer>
@@ -1906,7 +1909,7 @@
     <Product config="zooz/zen20v2.xml" id="a004" name="ZEN20 V2.0 Power Strip" type="a000"/>
     <Product config="zooz/zen21v3.xml" id="1e1c" name="ZEN21 Switch V3" type="b111"/>
     <Product config="zooz/zen22v2.xml" id="1f1c" name="ZEN22 Dimmer V2" type="b112"/>
-    <Product config="zooz/zen23.xml" id="251c" name="ZEN23 Toggle Switch V2" type="b111"/>
+    <Product config="zooz/zen23v3.xml" id="251c" name="ZEN23 Toggle Switch" type="b111"/>
     <Product config="zooz/zen24v2.xml" id="261c" name="ZEN24 Dimmer Switch V2" type="b112"/>
     <Product config="zooz/zen25.xml" id="a003" name="ZEN25 S2 Double Plug with USB Port" type="a000"/>
     <Product config="zooz/zen26.xml" id="a001" name="ZEN26 S2 On Off Wall Switch" type="a000"/>
