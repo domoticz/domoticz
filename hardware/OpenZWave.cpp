@@ -930,6 +930,11 @@ bool COpenZWave::OpenSerialConnector()
 	m_sql.GetPreferencesVar("ZWavePerformReturnRoutes", nValue);
 	OpenZWave::Options::Get()->AddOptionBool("PerformReturnRoutes", (nValue == 1) ? true : false);
 
+	nValue = 1; //default true
+	m_sql.GetPreferencesVar("ZWaveAutoUpdateConfigFile", nValue);
+	OpenZWave::Options::Get()->AddOptionBool("AutoUpdateConfigFile", (nValue == 1) ? true : false);
+	
+
 	try
 	{
 		OpenZWave::Options::Get()->Lock();
@@ -2374,6 +2379,14 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
 				return;
 		}
+		else if (vType == OpenZWave::ValueID::ValueType_List)
+		{
+			std::vector<std::string > vStringList;
+			if (m_pManager->GetValueListItems(vID, &vStringList) == false)
+				return;
+			if (m_pManager->GetValueListSelection(vID, &intValue) == false)
+				return;
+		}
 		else
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d, NodeID: %d (0x%02x)", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, NodeID, NodeID);
@@ -2643,10 +2656,23 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		|| (commandclass == COMMAND_CLASS_COLOR_CONTROL && vOrgIndex == ValueID_Index_Color::Index)
 		|| (commandclass == COMMAND_CLASS_COLOR_CONTROL && vOrgIndex == ValueID_Index_Color::Channels_Capabilities)
 		|| (commandclass == COMMAND_CLASS_COLOR_CONTROL && vOrgIndex == ValueID_Index_Color::Duration)
-		|| (commandclass == COMMAND_CLASS_INDICATOR)
+		
 		)
 	{
 		return;
+	}
+
+	if (commandclass == COMMAND_CLASS_INDICATOR)
+	{
+		if (vType == OpenZWave::ValueID::ValueType_List)
+		{
+			std::vector<std::string > vStringList;
+			if (m_pManager->GetValueListItems(vID, &vStringList) == false)
+				return;
+			if (m_pManager->GetValueListSelection(vID, &intValue) == false)
+				return;
+		}
+		return; //not used right now
 	}
 
 	if (commandclass == COMMAND_CLASS_USER_CODE)

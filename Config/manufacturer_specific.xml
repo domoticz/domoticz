@@ -207,6 +207,9 @@
     <Product config="aeotec/zwa005.xml" id="0005" name="ZWA005 TriSensor" type="0002"/>
     <Product config="aeotec/zwa005.xml" id="0005" name="ZWA005 TriSensor" type="0102"/>
     <Product config="aeotec/zwa005.xml" id="0005" name="ZWA005 TriSensor" type="0202"/>
+    <Product id="0009" name="ZWA009 Temperature Humidity Sensor" type="0002"/>
+    <Product id="000c" name="ZWA012 Door Window Sensor 7 Pro" type="0002"/>
+    <Product id="0013" name="ZWA019 Water Sensor 7 Pro" type="0002"/>
     <Product config="aeotec/zwa021.xml" id="0015" name="ZWA021 Thermostatic Valve" type="0002"/>      
     <Product config="aeotec/zw162.xml" id="00a2" name="ZW162 Doorbell 6" type="0003"/>
     <Product config="aeotec/zw162.xml" id="00a2" name="ZW162 Doorbell 6" type="0103"/>
