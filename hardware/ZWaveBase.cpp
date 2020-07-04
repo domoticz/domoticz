@@ -27,6 +27,7 @@ ZWaveBase::ZWaveBase() :
 	m_updateTime(0),
 	m_ControllerCommandStartTime(0)
 {
+	m_bNodeReplaced=false;
 	m_LastIncludedNode = 0;
 	m_bControllerCommandInProgress = false;
 	m_bControllerCommandCanceled = false;

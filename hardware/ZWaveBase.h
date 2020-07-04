@@ -124,6 +124,7 @@ public:
 	bool StopHardware() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 public:
+	bool m_bNodeReplaced;
 	int m_LastIncludedNode;
 	std::string m_LastIncludedNodeType;
 	bool m_bHaveLastIncludedNodeInfo;

@@ -339,6 +339,7 @@ private:
 	void Cmd_ZWaveDeleteNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveInclude(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveExclude(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ZWaveIsNodeReplaced(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveIsNodeIncluded(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveIsNodeExcluded(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveSoftReset(WebEmSession & session, const request& req, Json::Value &root);

@@ -328,6 +328,92 @@ define(['app'], function (app) {
 			EditOpenZWave($ctrl.hardware.idx, $ctrl.hardware.Name)
 		};
 
+		$scope.ZWaveCheckReplaceReady = function () {
+			if (typeof $scope.mytimer !== 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$http({
+				url: "json.htm?type=command&param=zwaveisnodereplaced&idx=" + $.devIdx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				var data = response.data;
+				if (data.status === "OK") {
+					if (data.result === true) {
+						//Node replaced 
+						$scope.ozw_node_id = data.node_id;
+						$scope.ozw_node_desc = data.node_product_name;
+						$("#ReplaceZWaveDialog #rzwd_waiting").hide();
+						$("#ReplaceZWaveDialog #rzwd_result").show();
+					}
+					else {
+						//Not ready yet
+						$scope.mytimer = $interval(function () {
+							$scope.ZWaveCheckReplaceReady();
+						}, 1000);
+					}
+				}
+				else {
+					$scope.mytimer = $interval(function () {
+						$scope.ZWaveCheckReplaceReady();
+					}, 1000);
+				}
+			}, function errorCallback(response) {
+					$scope.mytimer = $interval(function () {
+						$scope.ZWaveCheckReplaceReady();
+					}, 1000);
+			});
+		};
+
+		OnZWaveAbortReplace = function () {
+			$http({
+				url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				$('#ReplaceZWaveDialog').modal('hide');
+			}, function errorCallback(response) {
+					$('#ReplaceZWaveDialog').modal('hide');
+			});
+		};
+
+		OnZWaveCloseReplace = function () {
+			$('#ReplaceZWaveDialog').modal('hide');
+			RefreshOpenZWaveNodeTable();
+		};
+
+		//Request Node Information Frame
+		ReplaceFailedNode = function (idx) {
+			if ($('#updelclr #replacefailednode').attr("class") === "btnstyle3-dis") {
+				return;
+			}
+
+			if (typeof $scope.mytimer !== 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+
+			$("#ReplaceZWaveDialog #rzwd_waiting").show();
+			$("#ReplaceZWaveDialog #rzwd_result").hide();
+
+			$http({
+				url: "json.htm?type=command&param=zwavereplacefailednode&idx=" + idx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				var data = response.data;
+				$scope.ozw_node_id = "-";
+				$scope.ozw_node_desc = "-";
+				$('#ReplaceZWaveDialog').modal('show');
+				$scope.mytimer = $interval(function () {
+					$scope.ZWaveCheckReplaceReady();
+				}, 1000);
+			}, function errorCallback(response) {
+			});
+		};
+
+
 		$scope.ZWaveCheckIncludeReady = function () {
 			if (typeof $scope.mytimer !== 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -553,22 +639,7 @@ define(['app'], function (app) {
 				async: true,
 				dataType: 'json'
 			}).then(function successCallback(response) {
-				bootbox.alert($.t('Has Node Failed Command executed. This could take some time! (Refresh screen after a few minutes)'));
-			}, function errorCallback(response) {
-			});
-		};
-
-		//Request Node Information Frame
-		ReplaceFailedNode = function (idx) {
-			if ($('#updelclr #replacefailednode').attr("class") === "btnstyle3-dis") {
-				return;
-			}
-			$http({
-				url: "json.htm?type=command&param=zwavereplacefailednode&idx=" + idx,
-				async: true,
-				dataType: 'json'
-			}).then(function successCallback(response) {
-				bootbox.alert($.t('Replace Failed Node command executed. This could take some time! (this CJ needs to be changed to be alike inclusion!)'));
+				bootbox.alert($.t('Node Failed Command executed. This could take some time!'));
 			}, function errorCallback(response) {
 			});
 		};

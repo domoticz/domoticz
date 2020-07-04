@@ -804,7 +804,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		if (!m_bControllerCommandInProgress)
 			return;
 #endif
-		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
+		_log.Log(LOG_STATUS, "OpenZWave: Type_ControllerCommand %s", _notification->GetAsString().c_str());
 
 		uint8_t controller_command = _notification->GetCommand();
 		if (controller_command == OpenZWave::Driver::ControllerCommand_RemoveDevice)
@@ -815,6 +815,11 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				m_LastRemovedNode = -1;
 			}
 		}
+		if (controller_command == OpenZWave::Driver::ControllerCommand_ReplaceFailedNode){
+			_log.Log(LOG_STATUS, "OpenZWave: Node succesfully replaced");
+			m_bNodeReplaced=true;
+		}
+
 	}
 	break;
 	/*
@@ -3586,6 +3591,11 @@ bool COpenZWave::ExcludeDevice(const uint8_t /*nodeID*/)
 	return false;
 }
 
+bool COpenZWave::IsNodeReplaced()
+{
+	return (m_bNodeReplaced);
+}
+
 bool COpenZWave::IsNodeIncluded()
 {
 	return ((m_LastIncludedNode != 0) && (m_bHaveLastIncludedNodeInfo == true));
@@ -4530,6 +4540,7 @@ bool COpenZWave::RequestNodeInfo(const unsigned int homeID, const uint8_t nodeID
 
 bool COpenZWave::HasNodeFailed(const unsigned int homeID, const uint8_t nodeID)
 {
+	_log.Log(LOG_STATUS, "OpenZWave: Has node failed called for %u, %d",homeID, nodeID);
 	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
 		return false;
@@ -4551,21 +4562,25 @@ bool COpenZWave::HasNodeFailed(const unsigned int homeID, const uint8_t nodeID)
 
 bool COpenZWave::ReplaceFailedNode(const unsigned int homeID, const uint8_t nodeID)
 {
-	_log.Log(LOG_ERROR, "replace failed node called with home id (%d) and node id (%d)",homeID,nodeID);
-	return false;
-
-	// TODO: Finish function
-	//
-	
-	/*
+	// homeID=m_controllerID;
+	_log.Log(LOG_STATUS, "OpenZWave: replace failed node called with home id (%u) and node id (%d)",homeID,nodeID);
 
 	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
+		_log.Log(LOG_ERROR, "OpenZWave: Node not foud");
 		return false;
 
 	try
 	{
-		m_pManager->RefreshNodeInfo(homeID, nodeID);
+		CancelControllerCommand();
+		m_bNodeReplaced=false;
+		m_LastIncludedNode = 0;
+		m_LastIncludedNodeType = "";
+		m_bHaveLastIncludedNodeInfo = false;
+		m_ControllerCommandStartTime = mytime(NULL);
+		m_bControllerCommandCanceled = false;
+		m_bControllerCommandInProgress = false; //unlimited time
+		m_pManager->ReplaceFailedNode(homeID, nodeID);
 		return true;
 	}
 	catch (OpenZWave::OZWException& ex)
@@ -4574,7 +4589,7 @@ bool COpenZWave::ReplaceFailedNode(const unsigned int homeID, const uint8_t node
 			ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine(),
 			std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 	}
-	return false; */
+	return false; 
 }
 
 void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const uint8_t nodeID, Json::Value& root, const int index)
@@ -5576,6 +5591,36 @@ namespace http {
 				pOZWHardware->ExcludeDevice(1);
 				root["status"] = "OK";
 				root["title"] = "ZWaveExclude";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveIsNodeReplaced(WebEmSession& /*session*/, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				root["status"] = "OK";
+				root["title"] = "ZWaveIsNodeReplaced";
+				bool bIsReplaced = pOZWHardware->IsNodeReplaced();
+				root["result"] = bIsReplaced;
+				if (bIsReplaced)
+				{
+					root["node_id"] = pOZWHardware->m_LastIncludedNode;
+					root["node_type"] = pOZWHardware->m_LastIncludedNodeType;
+					std::string productName("Unknown");
+					COpenZWave::NodeInfo* pNode = pOZWHardware->GetNodeInfo(pOZWHardware->GetControllerID(), (uint8_t)pOZWHardware->m_LastIncludedNode);
+					if (pNode)
+					{
+						productName = pNode->Product_name;
+					}
+					root["node_product_name"] = productName;
+				}
 			}
 		}
 

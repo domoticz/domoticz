@@ -114,6 +114,7 @@ public:
 	bool CancelControllerCommand(const bool bForce = false);
 	bool IncludeDevice(const bool bSecure);
 	bool ExcludeDevice(const uint8_t nodeID);
+	bool IsNodeReplaced();
 	bool IsNodeIncluded();
 	bool IsNodeExcluded();
 	bool SoftResetDevice();
