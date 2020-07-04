@@ -50,6 +50,7 @@ return {
 	['NSS_FIREBASE'] = 'fcm',
 	['NSS_FIREBASE_CLOUD_MESSAGING'] = 'fcm',
 	['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',  -- Only for backward compatibility. Will be deprecated soon
+	['NSS_GOOGLE_DEVICES'] = 'Google_Devices',
 	['NSS_HTTP'] = 'http',
 	['NSS_KODI'] = 'kodi',
 	['NSS_LOGITECH_MEDIASERVER'] = 'lms',

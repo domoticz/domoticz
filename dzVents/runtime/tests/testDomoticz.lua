@@ -175,6 +175,7 @@ describe('Domoticz', function()
 	end)
 
 	describe('commands', function()
+
 		it('should send commands', function()
 			local res, command, value = domoticz.sendCommand('do', 'it')
 			assert.is_same('do', command)
@@ -182,10 +183,29 @@ describe('Domoticz', function()
 			assert.is_same({ ['do'] = 'it' }, res)
 		end)
 
+		it('should handle delayed commands', function()
+			local res, command, value = domoticz.sendCommand('do', 'it', 5)
+			assert.is_same('do', command)
+			assert.is_same('it', value)
+			assert.is_same({ ['CustomEvent'] = { ['_after'] = 5, ['data'] ='it', ['name'] = '___do__'} }, res)
+		end)
+
 		it('should send multiple commands', function()
 			domoticz.sendCommand('do', 'it')
 			domoticz.sendCommand('and', 'some more')
 			assert.is_same({ { ["do"] = "it" }, { ["and"] = "some more" } }, domoticz.commandArray)
+		end)
+
+		it('should handle mix of delayed and normal commands', function()
+			domoticz.sendCommand('do', 'it', 5)
+			domoticz.sendCommand('and', 'some more')
+			assert.is_same({ { ['CustomEvent'] = { ['_after'] = 5, ['data'] ='it', ['name'] = '___do__'}}, { ["and"] = "some more" } }, domoticz.commandArray)
+		end)
+
+		it('should handle multiple delayed commands', function()
+			domoticz.sendCommand('do', 'it', 5)
+			domoticz.sendCommand('and', 'some more', 7)
+			assert.is_same({ { ['CustomEvent'] = { ['_after'] = 5, ['data'] ='it', ['name'] = '___do__'}}, { ['CustomEvent'] = { ['_after'] = 7, ['data'] ='some more', ['name'] = '___and__'}}}, domoticz.commandArray)
 		end)
 
 		it('should return a reference to a commandArray item', function()
@@ -216,14 +236,29 @@ describe('Domoticz', function()
 			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##http;prowl' } }, domoticz.commandArray)
 		end)
 
+		it('should notify with multiple subsystems as table and delay', function()
+			domoticz.notify('sub', nil, nil, nil, nil, { domoticz.NSS_HTTP, domoticz.NSS_PROWL }, 9)
+			assert.is_same({ { ['CustomEvent'] = { ['_after'] = 9, ['data'] ='sub##0#pushover##http;prowl', ['name'] = '___SendNotification__'} } }, domoticz.commandArray)
+		end)
+
 		it('should send email', function()
 			domoticz.email('sub', 'mes', 'to@someone')
 			assert.is_same({ { ['SendEmail'] = 'sub#mes#to@someone' } }, domoticz.commandArray)
 		end)
 
+		it('should send delayed email', function()
+			domoticz.email('sub', 'mes', 'to@someone', 8)
+			assert.is_same({ { ['CustomEvent'] = { ['_after'] = 8, ['data'] ='sub#mes#to@someone', ['name'] = '___SendEmail__'} } }, domoticz.commandArray)
+		end)
+
 		it('should send sms', function()
 			domoticz.sms('mes')
 			assert.is_same({ { ['SendSMS'] = 'mes' } }, domoticz.commandArray)
+		end)
+
+		it('should send delayed sms', function()
+			domoticz.sms('mes', 13 )
+			assert.is_same({ { ['CustomEvent'] = { ['_after'] = 13, ['data'] ='mes', ['name'] = '___SendSMS__'} } }, domoticz.commandArray)
 		end)
 
 		it('should set a scene', function()
@@ -244,8 +279,8 @@ describe('Domoticz', function()
 			assert.is_same( { OpenURL = {	URL = 'http://127.0.0.1:8080/json.htm?type=command&param=addlogmessage&message=triggerHTTPResponse%3A+hi+there' ,
 											_after = 12,
 											_trigger = 'call me Back',
-											method = 'GET' 
-										} 
+											method = 'GET'
+										}
 							} , domoticz.commandArray[1])
 		end)
 	end)
@@ -304,7 +339,7 @@ describe('Domoticz', function()
 				}
 			}, domoticz.commandArray)
 		end)
-	
+
 		it('should open a url with options (DEL)', function()
 			local cmd = domoticz.openURL({
 				url = 'some url',
@@ -327,7 +362,6 @@ describe('Domoticz', function()
 			}, domoticz.commandArray)
 		end)
 
-	
 		it('should open a url with options', function()
 
 			local cmd = domoticz.openURL({
@@ -381,7 +415,6 @@ describe('Domoticz', function()
 		end)
 	end)
 
-
 	describe('triggerIFTTT', function()
 
 		it('should trigger an IFTTT maker event without extra values', function()
@@ -397,8 +430,8 @@ describe('Domoticz', function()
 			domoticz.triggerIFTTT('some maker event', 1, 2, 3)
 			assert.is_same({
 				{
-					['TriggerIFTTT'] = { 
-						sID = 'some maker event', 
+					['TriggerIFTTT'] = {
+						sID = 'some maker event',
 						sValue1 = '1',
 						sValue2 = '2',
 						sValue3 = '3',
@@ -410,9 +443,9 @@ describe('Domoticz', function()
 			domoticz.triggerIFTTT('some maker event', 1, 'two').afterMin(2)
 			assert.is_same({
 				{
-					['TriggerIFTTT'] = { 
+					['TriggerIFTTT'] = {
 						_after = 120,
-						sID = 'some maker event', 
+						sID = 'some maker event',
 						sValue1 = '1',
 						sValue2 = 'two',
 				}}

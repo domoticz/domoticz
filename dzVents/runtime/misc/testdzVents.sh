@@ -135,7 +135,7 @@ function fillTimes
 function fillNumberOfTests
 	{
 		Device_ExpectedTests=115
-		Domoticz_ExpectedTests=74
+		Domoticz_ExpectedTests=80
 		EventHelpers_ExpectedTests=32
 		EventHelpersStorage_ExpectedTests=50
 		HTTPResponse_ExpectedTests=6
@@ -223,7 +223,7 @@ cd $basedir
 checkStarted "domoticz" 20
 
 clear
-echo "========= domoticz $NewVersion, dzVents V$dzVersion +========================== Tests ==============================+"
+echo "======== domoticz $NewVersion, dzVents V$dzVersion +========================== Tests ==============================+"
 echo "  time  | test-script	                           | expected | tests | result  | successful |  failed  | seconds  |"
 echo "===================================================+===============================================================+"
 
