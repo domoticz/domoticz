@@ -543,6 +543,36 @@ define(['app'], function (app) {
 			});
 		};
 
+		// Has Node Failed Commmand
+		HasNodeFailed = function (idx) {
+			if ($('#updelclr #hasnodefailed').attr("class") === "btnstyle3-dis") {
+				return;
+			}
+			$http({
+				url: "json.htm?type=command&param=zwavehasnodefailed&idx=" + idx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				bootbox.alert($.t('Has Node Failed Command executed. This could take some time! (Refresh screen after a few minutes)'));
+			}, function errorCallback(response) {
+			});
+		};
+
+		//Request Node Information Frame
+		ReplaceFailedNode = function (idx) {
+			if ($('#updelclr #replacefailednode').attr("class") === "btnstyle3-dis") {
+				return;
+			}
+			$http({
+				url: "json.htm?type=command&param=zwavereplacefailednode&idx=" + idx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				bootbox.alert($.t('Replace Failed Node command executed. This could take some time! (this CJ needs to be changed to be alike inclusion!)'));
+			}, function errorCallback(response) {
+			});
+		};
+
 		RequestZWaveConfiguration = function (idx) {
 			$http({
 				url: "json.htm?type=command&param=requestzwavenodeconfig&idx=" + idx,
@@ -690,6 +720,8 @@ define(['app'], function (app) {
 			$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
 			$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
 			$('#updelclr #noderefresh').attr("class", "btnstyle3-dis");
+			$('#updelclr #hasnodefailed').attr("class", "btnstyle3-dis");
+			$('#updelclr #replacefailednode').attr("class", "btnstyle3-dis");
 
 			$("#hardwarecontent #configuration").html("");
 			$("#hardwarecontent #nodeparamstable #nodename").val("");
@@ -767,6 +799,8 @@ define(['app'], function (app) {
 					$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
 					$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
 					$('#updelclr #noderefresh').attr("class", "btnstyle3-dis");
+					$('#updelclr #hasnodefailed').attr("class", "btnstyle3-dis");
+					$('#updelclr #replacefailednode').attr("class", "btnstyle3-dis");
 					$("#hardwarecontent #configuration").html("");
 					$("#hardwarecontent #nodeparamstable #nodename").val("");
 					$('#hardwarecontent #usercodegrp').hide();
@@ -778,6 +812,8 @@ define(['app'], function (app) {
 					$(this).addClass('row_selected');
 					$('#updelclr #nodeupdate').attr("class", "btnstyle3");
 					$('#updelclr #noderefresh').attr("class", "btnstyle3");
+					$('#updelclr #hasnodefailed').attr("class", "btnstyle3");
+					$('#updelclr #replacefailednode').attr("class", "btnstyle3");
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
@@ -785,6 +821,8 @@ define(['app'], function (app) {
 						var iNode = parseInt(data["NodeID"]);
 						$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
 						$('#updelclr #noderefresh').attr("href", "javascript:RefreshNode(" + idx + ")");
+						$('#updelclr #hasnodefailed').attr("href", "javascript:HasNodeFailed(" + idx + ")");
+						$('#updelclr #replacefailednode').attr("href", "javascript:ReplaceFailedNode(" + idx + ")");
 
 						$("#hardwarecontent #zwavecodemanagement").attr("href", "javascript:ZWaveUserCodeManagement(" + idx + ")");
 						if (iNode !== iOwnNodeId) {

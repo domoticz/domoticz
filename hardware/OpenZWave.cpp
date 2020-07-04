@@ -4527,6 +4527,56 @@ bool COpenZWave::RequestNodeInfo(const unsigned int homeID, const uint8_t nodeID
 	return false;
 }
 
+
+bool COpenZWave::HasNodeFailed(const unsigned int homeID, const uint8_t nodeID)
+{
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
+	if (pNode == NULL)
+		return false;
+
+	try
+	{
+		m_pManager->HasNodeFailed(homeID, nodeID);
+		return true;
+	}
+	catch (OpenZWave::OZWException& ex)
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d) %s:%d",
+			ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine(),
+			std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+	}
+	return false; 
+}
+
+
+bool COpenZWave::ReplaceFailedNode(const unsigned int homeID, const uint8_t nodeID)
+{
+	_log.Log(LOG_ERROR, "replace failed node called with home id (%d) and node id (%d)",homeID,nodeID);
+	return false;
+
+	// TODO: Finish function
+	//
+	
+	/*
+
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
+	if (pNode == NULL)
+		return false;
+
+	try
+	{
+		m_pManager->RefreshNodeInfo(homeID, nodeID);
+		return true;
+	}
+	catch (OpenZWave::OZWException& ex)
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d) %s:%d",
+			ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine(),
+			std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+	}
+	return false; */
+}
+
 void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const uint8_t nodeID, Json::Value& root, const int index)
 {
 	if (!m_pManager)
@@ -5968,6 +6018,7 @@ namespace http {
 				}
 			}
 		}
+
 		void CWebServer::Cmd_ZWaveRequestNodeInfo(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
@@ -5989,6 +6040,56 @@ namespace http {
 					pOZWHardware->RequestNodeInfo(homeID, nodeID);
 					root["status"] = "OK";
 					root["title"] = "RequestZWaveNodeInfo";
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveHasNodeFailed(WebEmSession& /*session*/, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%q)", idx.c_str());
+			if (!result.empty())
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
+				uint8_t nodeID = (uint8_t)atoi(result[0][2].c_str());
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->HasNodeFailed(homeID, nodeID);
+					root["status"] = "OK";
+					root["title"] = "ZWaveHasNodeFailed";
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveReplaceFailedNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%q)", idx.c_str());
+			if (!result.empty())
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
+				uint8_t nodeID = (uint8_t)atoi(result[0][2].c_str());
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->ReplaceFailedNode(homeID, nodeID);
+					root["status"] = "OK";
+					root["title"] = "ZWaveReplaceFailedNode";
 				}
 			}
 		}
