@@ -343,7 +343,6 @@ define(['app'], function (app) {
 					if (data.result === true) {
 						//Node replaced 
 						$scope.ozw_node_id = data.node_id;
-						$scope.ozw_node_desc = data.node_product_name;
 						$("#ReplaceZWaveDialog #rzwd_waiting").hide();
 						$("#ReplaceZWaveDialog #rzwd_result").show();
 					}
@@ -639,7 +638,8 @@ define(['app'], function (app) {
 				async: true,
 				dataType: 'json'
 			}).then(function successCallback(response) {
-				bootbox.alert($.t('Node Failed Command executed. This could take some time!'));
+				bootbox.alert($.t('Has Node Failed Command succesfully sent to controller, this could take a while!'));
+				RefreshOpenZWaveNodeTable();
 			}, function errorCallback(response) {
 			});
 		};

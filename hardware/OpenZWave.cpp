@@ -445,6 +445,8 @@ void OnNotification(OpenZWave::Notification const* _notification, void* _context
 
 void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notification)
 {
+	// _log.Log(LOG_STATUS, "OpenZWave: Notification: %s (%d))",_notification->GetAsString().c_str(),_notification->GetNodeId());
+
 	// Must do this inside a critical section to avoid conflicts with the main thread
 	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
@@ -682,6 +684,17 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 		case OpenZWave::Notification::Code_Alive:
 		{
+			// Check if node was replaced
+			if (!m_bNodeReplaced) {
+				// _log.Log(LOG_STATUS, "OpenZWave: Comparing node id (%d) with node te be replaced (%d)", _nodeID, m_NodeToBeReplaced);
+				if (_nodeID==m_NodeToBeReplaced) {
+					_log.Log(LOG_STATUS,"OpenZWave: Node replaced");
+					m_bNodeReplaced=true;
+				} 
+			} else {
+				_log.Log(LOG_STATUS,"OpenZWave: Node Alive");
+			}
+
 			bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 			nodeInfo->eState = NSTATE_AWAKE;
 			if (bWasDead)
@@ -815,11 +828,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				m_LastRemovedNode = -1;
 			}
 		}
-		if (controller_command == OpenZWave::Driver::ControllerCommand_ReplaceFailedNode){
-			_log.Log(LOG_STATUS, "OpenZWave: Node succesfully replaced");
-			m_bNodeReplaced=true;
-		}
-
 	}
 	break;
 	/*
@@ -3593,7 +3601,7 @@ bool COpenZWave::ExcludeDevice(const uint8_t /*nodeID*/)
 
 bool COpenZWave::IsNodeReplaced()
 {
-	return (m_bNodeReplaced);
+	return (m_bNodeReplaced || (m_LastIncludedNode!=0 && m_bHaveLastIncludedNodeInfo));   // Succesful Node replace ends in Node_Added notification or Node_Alive notification
 }
 
 bool COpenZWave::IsNodeIncluded()
@@ -4540,7 +4548,7 @@ bool COpenZWave::RequestNodeInfo(const unsigned int homeID, const uint8_t nodeID
 
 bool COpenZWave::HasNodeFailed(const unsigned int homeID, const uint8_t nodeID)
 {
-	_log.Log(LOG_STATUS, "OpenZWave: Has node failed called for %u, %d",homeID, nodeID);
+	// _log.Log(LOG_STATUS, "OpenZWave: Has node failed called for %u, %d",homeID, nodeID);
 	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
 		return false;
@@ -4563,17 +4571,20 @@ bool COpenZWave::HasNodeFailed(const unsigned int homeID, const uint8_t nodeID)
 bool COpenZWave::ReplaceFailedNode(const unsigned int homeID, const uint8_t nodeID)
 {
 	// homeID=m_controllerID;
-	_log.Log(LOG_STATUS, "OpenZWave: replace failed node called with home id (%u) and node id (%d)",homeID,nodeID);
+	// _log.Log(LOG_STATUS, "OpenZWave: Replace failed node called with home id (%u) and node id (%d)",homeID,nodeID);
 
 	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
-		_log.Log(LOG_ERROR, "OpenZWave: Node not foud");
+	{
+		// _log.Log(LOG_ERROR, "OpenZWave: Node not foud");
 		return false;
-
+	}
 	try
 	{
 		CancelControllerCommand();
+
 		m_bNodeReplaced=false;
+		m_NodeToBeReplaced=nodeID;
 		m_LastIncludedNode = 0;
 		m_LastIncludedNodeType = "";
 		m_bHaveLastIncludedNodeInfo = false;
@@ -5611,15 +5622,7 @@ namespace http {
 				root["result"] = bIsReplaced;
 				if (bIsReplaced)
 				{
-					root["node_id"] = pOZWHardware->m_LastIncludedNode;
-					root["node_type"] = pOZWHardware->m_LastIncludedNodeType;
-					std::string productName("Unknown");
-					COpenZWave::NodeInfo* pNode = pOZWHardware->GetNodeInfo(pOZWHardware->GetControllerID(), (uint8_t)pOZWHardware->m_LastIncludedNode);
-					if (pNode)
-					{
-						productName = pNode->Product_name;
-					}
-					root["node_product_name"] = productName;
+					root["node_id"] = pOZWHardware->m_NodeToBeReplaced;
 				}
 			}
 		}

@@ -125,6 +125,7 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 public:
 	bool m_bNodeReplaced;
+	uint8_t m_NodeToBeReplaced;
 	int m_LastIncludedNode;
 	std::string m_LastIncludedNodeType;
 	bool m_bHaveLastIncludedNodeInfo;
