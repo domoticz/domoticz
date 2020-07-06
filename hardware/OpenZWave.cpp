@@ -814,10 +814,10 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	case OpenZWave::Notification::Type_ControllerCommand:
 	{
 #ifndef _DEBUG
-		if (!m_bControllerCommandInProgress)
+		 if (!m_bControllerCommandInProgress)
 			return;
 #endif
-		_log.Log(LOG_STATUS, "OpenZWave: Type_ControllerCommand %s", _notification->GetAsString().c_str());
+		// _log.Log(LOG_STATUS, "OpenZWave: Type_ControllerCommand %s", _notification->GetAsString().c_str());
 
 		uint8_t controller_command = _notification->GetCommand();
 		if (controller_command == OpenZWave::Driver::ControllerCommand_RemoveDevice)
@@ -826,6 +826,34 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			if (controler_state == OpenZWave::Driver::ControllerState::ControllerState_Failed)
 			{
 				m_LastRemovedNode = -1;
+			}
+		}
+		if (controller_command == OpenZWave::Driver::ControllerCommand_HasNodeFailed)
+		{
+			uint8_t controler_state = _notification->GetEvent();
+			if (_nodeID==m_HasNodeFailedIdx) {
+				if (controler_state == OpenZWave::Driver::ControllerState::ControllerState_NodeOK)
+				{
+					// _log.Log(LOG_STATUS, "OpenZWave: Event Node OK (%s)", _notification->GetAsString().c_str());
+					m_bHasNodeFailedDone=true;
+					m_sHasNodeFailedResult="Node OK";
+				} 
+				else if (controler_state == OpenZWave::Driver::ControllerState::ControllerState_NodeFailed)
+				{
+					// _log.Log(LOG_STATUS, "OpenZWave: Event Node failed (%s)", _notification->GetAsString().c_str());
+					m_bHasNodeFailedDone=true;
+					m_sHasNodeFailedResult="Node Failed";
+				}
+				else if (controler_state == OpenZWave::Driver::ControllerState::ControllerState_Failed)
+				{
+					// If this happens, some weird error, which should never happen.
+					_log.Log(LOG_ERROR, "OpenZWave: Has Node Failed Command on Node %d failed (%s)", m_HasNodeFailedIdx, _notification->GetAsString().c_str());
+					m_bHasNodeFailedDone=true;
+					m_sHasNodeFailedResult=_notification->GetAsString().c_str();
+				} else {
+					// All other notifications from Has Node Failed Node Command
+					// _log.Log(LOG_STATUS, "OpenZWave: Has Node Failed command Controller Comand (%s)", _notification->GetAsString().c_str());
+				}
 			}
 		}
 	}
@@ -3605,6 +3633,11 @@ bool COpenZWave::ExcludeDevice(const uint8_t /*nodeID*/)
 	return false;
 }
 
+bool COpenZWave::IsHasNodeFailedDone()
+{
+	return (m_bHasNodeFailedDone);
+}
+
 bool COpenZWave::IsNodeReplaced()
 {
 	return (m_bNodeReplaced || (m_LastIncludedNode!=0 && m_bHaveLastIncludedNodeInfo));   // Succesful Node replace ends in Node_Added notification or Node_Alive notification
@@ -4561,6 +4594,14 @@ bool COpenZWave::HasNodeFailed(const unsigned int homeID, const uint8_t nodeID)
 
 	try
 	{
+		m_bHasNodeFailedDone=false;
+		m_sHasNodeFailedResult="";
+		m_HasNodeFailedIdx=nodeID;
+
+		m_ControllerCommandStartTime = mytime(NULL);
+		m_bControllerCommandCanceled = false;
+		m_bControllerCommandInProgress = true; 
+
 		m_pManager->HasNodeFailed(homeID, nodeID);
 		return true;
 	}
@@ -5608,6 +5649,29 @@ namespace http {
 				pOZWHardware->ExcludeDevice(1);
 				root["status"] = "OK";
 				root["title"] = "ZWaveExclude";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveIsHasNodeFailedDone(WebEmSession& /*session*/, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				root["status"] = "OK";
+				root["title"] = "ZWaveIsHasNodeFailedDone";
+				bool bIsHasNodeFailedDone = pOZWHardware->IsHasNodeFailedDone();
+				root["result"] = bIsHasNodeFailedDone;
+				if (bIsHasNodeFailedDone)
+				{
+					root["node_id"] = pOZWHardware->m_HasNodeFailedIdx;
+					root["status_text"] = pOZWHardware->m_sHasNodeFailedResult;
+				}
 			}
 		}
 

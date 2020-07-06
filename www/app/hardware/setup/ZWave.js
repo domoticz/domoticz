@@ -569,6 +569,82 @@ define(['app'], function (app) {
 			});
 		};
 
+		$scope.HasNodeFailedReady = function () {
+			if (typeof $scope.mytimer !== 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$http({
+				url: "json.htm?type=command&param=zwaveishasnodefaileddone&idx=" + $.devIdx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				var data = response.data;
+				if (data.status === "OK") {
+					if (data.result === true) {
+						//has node failed is done
+						$scope.hnf_result_text = data.status_text;
+						$("#ZWaveHasNodeFailedDialog #hzwd_waiting").hide();
+						$("#ZWaveHasNodeFailedDialog #hzwd_result").show();
+					}
+					else {
+						//Not ready yet
+						$scope.mytimer = $interval(function () {
+							$scope.HasNodeFailedReady();
+						}, 1000);
+					}
+				}
+				else {
+					$scope.mytimer = $interval(function () {
+						$scope.HasNodeFailedReady();
+					}, 1000);
+				}
+			}, function errorCallback(response) {
+					$scope.mytimer = $interval(function () {
+						$scope.HasNodeFailedReady();
+					}, 1000);
+			});
+		};
+
+		OnZWaveAbortHasNodeFailed = function () {
+			$http({
+				url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				$('#ZWaveHasNodeFailedDialog').modal('hide');
+			}, function errorCallback(response) {
+					$('#ZWaveHasNodeFailedDialog').modal('hide');
+			});
+		};
+
+		OnZWaveCloseHasNodeFailed = function () {
+			$('#ZWaveHasNodeFailedDialog').modal('hide');
+			RefreshOpenZWaveNodeTable();
+		};
+
+		HasNodeFailed = function (idx) {
+			if (typeof $scope.mytimer !== 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$("#ZWaveHasNodeFailedDialog #hzwd_waiting").show();
+			$("#ZWaveHasNodeFailedDialog #hzwd_result").hide();
+			$http({
+				url: "json.htm?type=command&param=zwavehasnodefailed&idx=" + idx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				var data = response.data;
+				$scope.hnf_result_text = "-";
+				$('#ZWaveHasNodeFailedDialog').modal('show');
+				$scope.mytimer = $interval(function () {
+					$scope.HasNodeFailedReady();
+				}, 1000);
+			}, function errorCallback(response) {
+			});
+		};
+
 		DeleteNode = function (idx) {
 			if ($('#updelclr #nodedelete').attr("class") === "btnstyle3-dis") {
 				return;
@@ -624,22 +700,6 @@ define(['app'], function (app) {
 				dataType: 'json'
 			}).then(function successCallback(response) {
 				bootbox.alert($.t('Node Information Frame requested. This could take some time! (You might need to wake-up the node!)'));
-			}, function errorCallback(response) {
-			});
-		};
-
-		// Has Node Failed Commmand
-		HasNodeFailed = function (idx) {
-			if ($('#updelclr #hasnodefailed').attr("class") === "btnstyle3-dis") {
-				return;
-			}
-			$http({
-				url: "json.htm?type=command&param=zwavehasnodefailed&idx=" + idx,
-				async: true,
-				dataType: 'json'
-			}).then(function successCallback(response) {
-				bootbox.alert($.t('Has Node Failed Command succesfully sent to controller!'));
-				RefreshOpenZWaveNodeTable();
 			}, function errorCallback(response) {
 			});
 		};

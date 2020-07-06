@@ -634,6 +634,7 @@ namespace http {
 			RegisterCommandCode("zwaveisnodeincluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeIncluded, this, _1, _2, _3));
 			RegisterCommandCode("zwaveisnodeexcluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeExcluded, this, _1, _2, _3));
 			RegisterCommandCode("zwaveisnodereplaced", boost::bind(&CWebServer::Cmd_ZWaveIsNodeReplaced, this, _1, _2, _3));
+			RegisterCommandCode("zwaveishasnodefaileddone", boost::bind(&CWebServer::Cmd_ZWaveIsHasNodeFailedDone, this, _1, _2, _3));
 
 			RegisterCommandCode("zwavesoftreset", boost::bind(&CWebServer::Cmd_ZWaveSoftReset, this, _1, _2, _3));
 			RegisterCommandCode("zwavehardreset", boost::bind(&CWebServer::Cmd_ZWaveHardReset, this, _1, _2, _3));
