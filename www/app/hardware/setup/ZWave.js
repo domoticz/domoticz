@@ -638,7 +638,7 @@ define(['app'], function (app) {
 				async: true,
 				dataType: 'json'
 			}).then(function successCallback(response) {
-				bootbox.alert($.t('Has Node Failed Command succesfully sent to controller, this could take a while!'));
+				bootbox.alert($.t('Has Node Failed Command succesfully sent to controller!'));
 				RefreshOpenZWaveNodeTable();
 			}, function errorCallback(response) {
 			});
