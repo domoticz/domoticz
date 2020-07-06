@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.9',
+	DZVERSION = '3.0.10',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -89,12 +89,16 @@ function self.stringToSeconds(str)
 
 		local delta
 		local deltaT = timeDelta(str)
-		for _, day in ipairs(num2Days) do
-			if str:lower():find(day) then
-				local newDelta = ( days2Num[day] - now.wday + 7 ) % 7 * daySeconds + deltaT
-				if newDelta < 0 then newDelta = newDelta + weekSeconds end
-				if delta == nil or newDelta < delta then delta = newDelta end
+		if str:match(' on ') then
+			for _, day in ipairs(num2Days) do
+				if str:lower():find(day) then
+					local newDelta = ( days2Num[day] - now.wday + 7 ) % 7 * daySeconds + deltaT
+					if newDelta < 0 then newDelta = newDelta + weekSeconds end
+					if delta == nil or newDelta < delta then delta = newDelta end
+				end
 			end
+		else
+			if deltaT < 0 then deltaT = deltaT + daySeconds end
 		end
 
 		if delta == nil and deltaT < 0 then deltaT = deltaT + weekSeconds end

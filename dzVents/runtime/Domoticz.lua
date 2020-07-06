@@ -71,16 +71,19 @@ local function Domoticz(settings)
 	merge(self, constants)
 	merge(self.utils, utils)
 
-	-- add domoticz commands to the commandArray
-	function self.sendCommand(command, value)
-		table.insert(self.commandArray, { [command] = value })
-
+	-- add domoticz commands to the commandArray or delay
+	function self.sendCommand(command, value, delay)
+		if delay and tonumber(delay) then
+			self.emitEvent('___' .. command .. '__' , value ).afterSec(delay)
+		else
+			table.insert(self.commandArray, { [command] = value })
+		end
 		-- return a reference to the newly added item
-		return self.commandArray[#self.commandArray], command, value
+		return self.commandArray[#self.commandArray], command, value, delay
 	end
 
 	-- have domoticz send a push notification
-	function self.notify(subject, message, priority, sound, extra, subSystems)
+	function self.notify(subject, message, priority, sound, extra, subSystems, delay)
 		-- set defaults
 		if (priority == nil) then priority = self.PRIORITY_NORMAL end
 		if (message == nil) then message = '' end
@@ -118,18 +121,18 @@ local function Domoticz(settings)
 				.. '#' .. strip(sound)
 				.. '#' .. strip(extra)
 				.. '#' .. strip(_subSystem)
-				self.sendCommand('SendNotification', data)
+				self.sendCommand('SendNotification', data, delay)
 
 	end
 
 	-- have domoticz send an email
-	function self.email(subject, message, mailTo)
+	function self.email(subject, message, mailTo, delay)
 		if (mailTo == nil) then
 			utils.log('No mail-to is provided', utils.LOG_ERROR)
 		else
 			if (subject == nil) then subject = '' end
 			if (message == nil) then message = '' end
-			self.sendCommand('SendEmail', subject .. '#' .. message .. '#' .. mailTo)
+			self.sendCommand('SendEmail', subject .. '#' .. message .. '#' .. mailTo, delay)
 		end
 	end
 
@@ -157,8 +160,8 @@ local function Domoticz(settings)
 	end
 
 	-- have domoticz send an sms
-	function self.sms(message)
-		self.sendCommand('SendSMS', message)
+	function self.sms(message, delay)
+		self.sendCommand('SendSMS', message, delay)
 	end
 
 	function self.emitEvent(eventname, data)

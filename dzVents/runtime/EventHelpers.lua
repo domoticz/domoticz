@@ -1060,8 +1060,14 @@ local function EventHelpers(domoticz, mainMethod)
 			domoticz = self.domoticz
 		end
 
-		if (_G.notification == nil) then
+		if (_G.notification == nil or _G.notification.customevent == nil ) then
 			return
+		end
+
+		for _, row in ipairs(_G.notification.customevent) do
+			 if row.data.name:match('^___%a*__$') then
+				table.insert(self.domoticz.commandArray, { [ row.data.name:sub(4,-3) ] = row.data.data })
+			 end
 		end
 
 		local customEventScripts = self.getEventBindings('customEvents', nil)
