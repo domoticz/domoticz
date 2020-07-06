@@ -2019,7 +2019,13 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::General_Purpose)
 		{
-			_device.devType = ZDTYPE_SWITCH_NORMAL;
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				_device.custom_label = "?";
+				_device.devType = ZDTYPE_SENSOR_CUSTOM;
+			}
+			else
+				_device.devType = ZDTYPE_SWITCH_NORMAL;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Rain_Rate)
 		{
