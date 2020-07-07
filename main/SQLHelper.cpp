@@ -31,7 +31,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 143
+#define DB_VERSION 144
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -90,7 +90,7 @@ const char* sqlCreateSceneLog =
 
 const char* sqlCreatePreferences =
 "CREATE TABLE IF NOT EXISTS [Preferences] ("
-"[Key] VARCHAR(50) NOT NULL, "
+"[Key] VARCHAR(50) PRIMARY KEY, "
 "[nValue] INTEGER DEFAULT 0, "
 "[sValue] VARCHAR(200));";
 
@@ -2757,6 +2757,15 @@ bool CSQLHelper::OpenDatabase()
 			int iEnabled = 0;
 			if (!GetPreferencesVar("GCMEnabled", iEnabled))
 				UpdatePreferencesVar("FCMEnabled", iEnabled);
+		}
+		if (dbversion < 144)
+		{
+			//Make key in preferences primary key
+			safe_query("ALTER TABLE Preferences RENAME to Preferences_without_primary_key");
+			safe_query("DELETE from Preferences_without_primary_key WHERE Rowid NOT IN (SELECT MIN(rowid) FROM Preferences_without_primary_key GROUP BY Key)");
+			safe_query("CREATE TABLE [Preferences] ([Key] VARCHAR(50) PRIMARY KEY, [nValue] INTEGER DEFAULT 0, [sValue] VARCHAR(200))");
+			safe_query("INSERT INTO Preferences SELECT * from Preferences_without_primary_key");
+			safe_query("DROP TABLE Preferences_without_primary_key;");
 		}
 	}
 	else if (bNewInstall)
