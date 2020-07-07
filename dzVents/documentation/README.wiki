@@ -555,8 +555,9 @@ There are several options for time triggers. It is important to know that Domoti
             'at 13:45 on mon,tue',      -- at 13:45 only on Mondays and Tuesdays (english)
             'on mon,tue',               -- on Mondays and Tuesdays
             'every hour on sat',        -- you guessed it correctly
-            'at sunset',                -- uses sunset/sunrise info from Domoticz
+            'at sunset',                -- uses sunset/sunrise/sunatsouth info from Domoticz
             'at sunrise',
+            'at sunatsouth',            -- <sup>3.0.11</sup> 
             'at civiltwilightstart',    -- uses civil twilight start/end info from Domoticz
             'at civiltwilightend',
             'at sunset on sat,sun',
@@ -567,10 +568,12 @@ There are several options for time triggers. It is important to know that Domoti
             'xx minutes before sunset',
             'xx minutes after sunset',
             'xx minutes before sunrise',
-            'xx minutes after sunrise'  -- guess ;-)
+            'xx minutes after sunrise'  
+            'xx minutes before sunatsouth', -- <sup>3.0.11</sup>
+            'xx minutes after sunatsouth',  --<sup>3.0.11</sup>
              'between aa and bb'        -- aa/bb can be a time stamp like 15:44 (if aa > bb will cross dates)
-                                        -- aa/bb can be sunrise/sunset ('between sunset and sunrise' will cross dates)
-                                        -- aa/bb can be 'xx minutes before/after sunrise/sunset'
+                                        -- aa/bb can be sunrise/sunset/sunatsouth ('between sunset and sunrise' will cross dates)
+                                        -- aa/bb can be 'xx minutes before/after sunrise/sunset/sunatsouth'
             'at civildaytime',          -- between civil twilight start and civil twilight end
             'at civilnighttime',        -- between civil twilight end and civil twilight start
             'at nighttime',             -- between sunset and sunrise
@@ -638,7 +641,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 <li><p>'''helpers''': ''Table''. Collection of shared helper functions available to all your dzVents scripts. See [[#Shared_helper_functions|Shared helper functions]].</p></li>
 <li><p>'''log(message, [level])''': ''Function''. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: <code>domoticz.LOG_INFO</code>, <code>domoticz.LOG_DEBUG</code>, <code>domoticz.LOG_ERROR</code> or <code>domoticz.LOG_FORCE</code>. In Domoticz settings you can set the log level for dzVents.</p></li>
 <li><p>'''moduleLabel''': <sup>3.0.3</sup> Module (script) name without extension.</p></li>
-<li><p>'''notify(subject, message [,priority][,sound][,extra][,subsystem][,delay]<sup>3.0.10</sup> )''': ''Function''. Send a notification (like Prowl). Priority can be like <code>domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY</code>. For sound see the SOUND constants below. <code>subsystem</code> can be a table containing one or more notification subsystems. See <code>domoticz.NSS_subsystem</code> types. Delay is delay in seconds</p></li>
+<li><p>'''notify(subject, message [,priority][,sound][,extra][,subsystem][,delay]<sup>3.0.10</sup> )''': ''Function''. Send a notification (like Prowl). Priority can be like <code>domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY</code>. <code>extra</code> is notification subsystem specific. For NSS_FIREBASEyou can specify the target mobile (‘midx_1’, midx_2, etc..). For sound see the SOUND constants below. <code>subsystem</code> can be a table containing one or more notification subsystems. See <code>domoticz.NSS_subsystem</code> types. Delay is delay in seconds</p></li>
 <li><p>'''openURL(url/options)''': ''Function''. Have Domoticz ‘call’ a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified. If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about [[#Asynchronous_HTTP_requests|asynchronous http requests]] with dzVents. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].</p></li>
 <li><p>'''scenes(idx/name)''': ''Function'': A function returning a scene by name or id. Each scene has the same interface as a device. See [[#Device_object_API|Device object API]]. To iterate over all scenes do: <code>domoticz.scenes().forEach(..)</code>. See [[#looping-through-the-collections-iterators|Looping through the collections: iterators]]. (#Looping_through_the_collections:_iterators). Note that you cannot do <code>for i, j in pairs(domoticz.scenes()) do .. end</code>. Read more about [[#Scene|Scenes]].</p></li>
 <li><p>'''security''': Holds the state of the security system e.g. <code>Armed Home</code> or <code>Armed Away</code>.</p></li>
@@ -909,6 +912,7 @@ Note that if you do not find your specific device type here you can always inspe
 
 * '''sensorType''': ''Number''.
 * '''sensorUnit''': ''String'':
+* '''sensorValue''': <sup>3.0.11</sup> ''Number'' where applicable; else ''String'':
 * '''updateCustomSensor(value)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 ==== Distance sensor ====
@@ -1517,6 +1521,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 * '''secondsAgo''': ''Number''. Number of seconds since the last update.
 * '''sunsetInMinutes''': ''Number''. Minutes from midnight until sunset.
 * '''sunriseInMinutes''': ''Number''. Minutes from midnight until sunrise.
+* '''sunAtSouthInMinutes''': ''Number''. <sup>3.0.11</sup> Minutes from midnight until sunatsouth.
 * '''time''': ''String''. <sup>2.5.6</sup> Returns the time part of the raw data as HH:MM
 * '''toUTC(string | table,[offset])''': ''domoticz time object''. <sup>3.0.9</sup> returns domoticz time object based on first parameter (time as table or string) string format must be ‘yyyy-mm-dd hh:mm:ss’. offset defaults to 0.
 * '''utcSystemTime''': ''Table''. UTC system time (only when in UTC mode):
@@ -2406,6 +2411,11 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and/or <code>::1</code> and you’re good to go.
 
 = History =
+
+== [3.0.11] ==
+
+* Add sensorValue attribute to custom sensor
+* Add sunatsouth as moment in time (like sunrise / sunset )
 
 == [3.0.10] ==
 

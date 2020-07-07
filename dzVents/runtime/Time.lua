@@ -359,6 +359,10 @@ local function Time(sDate, isUTC, _testMS)
 		return _G.timeofday['SunriseInMinutes']
 	end
 
+	function getSunAtSouth()
+		return _G.timeofday['SunAtSouthInMinutes']
+	end
+
 	-- return minutes before civil twilight start
 	function getMinutesBeforeCivilTwilightStart(minutes)
 		return getCivilTwilightStart() - minutes
@@ -397,6 +401,16 @@ local function Time(sDate, isUTC, _testMS)
 	-- return minutes after sunset
 	function getMinutesAfterSunset(minutes)
 		return getSunset() + minutes
+	end
+
+	-- return minutes before sunAtSouth
+	function getMinutesBeforeSunAtSouth(minutes)
+		return getSunAtSouth() - minutes
+	end
+
+	-- return minutes after sunAtSouth
+	function getMinutesAfterSunAtSouth(minutes)
+		return getSunAtSouth() + minutes
 	end
 
 	-- returns hours part and minutes part of the passed-in minutes amount
@@ -715,6 +729,16 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no 'at sunset' was specified in the rule
 	end
 
+	-- returns true if self.time is at sunAtSouth
+	function self.ruleIsAtSunAtSouth(rule)
+		if (string.find(rule, 'at sunatsouth')) then
+			local minutesnow = self.min + self.hour * 60
+			return (minutesnow == getSunAtSouth())
+		end
+
+		return nil -- no 'at sunset' was specified in the rule
+	end
+
 	-- returns true if self.time is before sunset
 	function self.ruleIsBeforeSunset(rule)
 		-- xx minutes before sunset
@@ -745,6 +769,38 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		return nil -- no xx minutes before sunset found
+	end
+
+	-- returns true if self.time is before sunAtSouth
+	function self.ruleIsBeforeSunAtSouth(rule)
+		-- xx minutes before sunAtSouth
+
+		local minutes = tonumber(string.match(rule, '(%d+) minutes before sunatsouth'))
+
+		if (minutes ~= nil) then
+
+			local minutesnow = self.min + self.hour * 60
+
+			return (minutesnow == getMinutesBeforeSunAtSouth(minutes))
+		end
+
+		return nil -- no xx minutes before sunAtSouth found
+	end
+
+	--returns true if self.time is after sunAtSouth
+	function self.ruleIsAfterSunAtSouth(rule)
+		-- xx minutes after sunAtSouth
+
+		local minutes = tonumber(string.match(rule, '(%d+) minutes after sunatsouth'))
+
+		if (minutes ~= nil) then
+
+			local minutesnow = self.min + self.hour * 60
+
+			return (minutesnow == getMinutesAfterSunAtSouth(minutes))
+		end
+
+		return nil -- no xx minutes before sunAtSouth found
 	end
 
 	-- returns true if self.time is after civil twilight start and before civil twilight end
@@ -936,6 +992,18 @@ local function Time(sDate, isUTC, _testMS)
 			return minutesToTime(getMinutesAfterSunrise(minutes))
 		end
 
+		-- check if it is before sunAtSouth
+		minutes = tonumber(string.match(moment, '(%d+) minutes before sunatsouth'))
+		if (minutes) then
+			return minutesToTime(getMinutesBeforeSunAtSouth(minutes))
+		end
+
+		-- check if it is after sunAtSouth
+		minutes = tonumber(string.match(moment, '(%d+) minutes after sunatsouth'))
+		if (minutes) then
+			return minutesToTime(getMinutesAfterSunAtSouth(minutes))
+		end
+
 		-- check if it is before sunset
 		minutes = tonumber(string.match(moment, '(%d+) minutes before sunset'))
 		if (minutes) then
@@ -972,6 +1040,12 @@ local function Time(sDate, isUTC, _testMS)
 			return minutesToTime(getSunset())
 		end
 
+		-- check at sunAtSouth
+		local sunAtSouth = string.match(moment, 'sunatsouth')
+		if (sunAtSouth) then
+			return minutesToTime(getSunAtSouth())
+		end
+
 		return nil
 	end
 
@@ -991,6 +1065,7 @@ local function Time(sDate, isUTC, _testMS)
 
 		fromHH, fromMM = getMoment(from)
 		toHH, toMM = getMoment(to)
+
 		if (fromHH == nil or fromMM == nil or toHH == nil or toMM == nil) then
 			return nil
 		end
@@ -1069,6 +1144,7 @@ local function Time(sDate, isUTC, _testMS)
 				return false
 			end
 			updateTotal(res)
+
 			res = self.ruleIsAfterSunset(rule) -- moment
 			if (res == false) then
 				return false
@@ -1110,6 +1186,19 @@ local function Time(sDate, isUTC, _testMS)
 				return false
 			end
 			updateTotal(res)
+
+			res = self.ruleIsBeforeSunAtSouth(rule) -- moment
+			if (res == false) then
+				return false
+			end
+			updateTotal(res)
+
+			res = self.ruleIsAfterSunAtSouth(rule) -- moment
+			if (res == false) then
+				return false
+			end
+			updateTotal(res)
+
 		end
 
 		res = self.ruleIsAtCivilTwilightStart(rule) -- moment
@@ -1131,6 +1220,12 @@ local function Time(sDate, isUTC, _testMS)
 		updateTotal(res)
 
 		res = self.ruleIsAtSunrise(rule) -- moment
+		if (res == false) then
+			return false
+		end
+		updateTotal(res)
+
+		res = self.ruleIsAtSunAtSouth(rule) -- moment
 		if (res == false) then
 			return false
 		end

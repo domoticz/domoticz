@@ -1097,11 +1097,25 @@ describe('device', function()
 		it('should detect a custom sensor device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
-				['subType'] = 'Custom Sensor'
+				['subType'] = 'Custom Sensor',
+				['rawData'] = { [1]="12" }
 			})
 
 			device.updateCustomSensor(12)
 			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="12", _trigger=true} } }, commandArray)
+
+			assert.is_same(12, device.sensorValue)
+			assert.is_same('number' , type(device.sensorValue) )
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Custom Sensor',
+				['rawData'] = { [1]="12a" }
+			})
+
+			assert.is_same('12a', device.sensorValue)
+			assert.is_same('string', type(device.sensorValue))
+
 		end)
 
 		it('should detect a solar radiation device', function()

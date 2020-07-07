@@ -1,9 +1,4 @@
-﻿
-
-
-
-
-**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
+﻿**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
 **Breaking change warning!!**: For people using with dzVents prior to version 2.4: Please read the [change log](#Change_log) below as there is an easy-to-fix breaking change regarding the second parameter passed to the execute function (it is no longer `nil` for timer/security triggers).
@@ -582,8 +577,9 @@ There are several options for time triggers. It is important to know that Domoti
 			'at 13:45 on mon,tue',		-- at 13:45 only on Mondays and Tuesdays (english)
 			'on mon,tue',				-- on Mondays and Tuesdays
 			'every hour on sat',		-- you guessed it correctly
-			'at sunset',				-- uses sunset/sunrise info from Domoticz
+			'at sunset',				-- uses sunset/sunrise/sunatsouth info from Domoticz
 			'at sunrise',
+			'at sunatsouth',			-- <sup>3.0.11</sup> 
 			'at civiltwilightstart',	-- uses civil twilight start/end info from Domoticz
 			'at civiltwilightend',
 			'at sunset on sat,sun',
@@ -594,10 +590,12 @@ There are several options for time triggers. It is important to know that Domoti
 			'xx minutes before sunset',
 			'xx minutes after sunset',
 			'xx minutes before sunrise',
-			'xx minutes after sunrise'	-- guess ;-)
+			'xx minutes after sunrise'	
+			'xx minutes before sunatsouth',	-- <sup>3.0.11</sup>
+			'xx minutes after sunatsouth',	--<sup>3.0.11</sup>
 			 'between aa and bb'		-- aa/bb can be a time stamp like 15:44 (if aa > bb will cross dates)
-										-- aa/bb can be sunrise/sunset ('between sunset and sunrise' will cross dates)
-										-- aa/bb can be 'xx minutes before/after sunrise/sunset'
+										-- aa/bb can be sunrise/sunset/sunatsouth ('between sunset and sunrise' will cross dates)
+										-- aa/bb can be 'xx minutes before/after sunrise/sunset/sunatsouth'
 			'at civildaytime',			-- between civil twilight start and civil twilight end
 			'at civilnighttime',		-- between civil twilight end and civil twilight start
 			'at nighttime',				-- between sunset and sunrise
@@ -666,7 +664,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Shared helper functions](#Shared_helper_functions).
  - **log(message, [level])**: *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
 - **moduleLabel**: <sup>3.0.3</sup> Module (script) name without extension.
- - **notify(subject, message [,priority][,sound][,extra][,subsystem][,delay]<sup>3.0.10</sup> )**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_subsystem` types. Delay is delay in seconds
+ - **notify(subject, message [,priority][,sound][,extra][,subsystem][,delay]<sup>3.0.10</sup> )**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. `extra` is notification subsystem specific. For NSS_FIREBASEyou can specify the target mobile ('midx_1', midx_2, etc..). For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_subsystem` types. Delay is delay in seconds
  - **openURL(url/options)**: *Function*. Have Domoticz 'call' a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified.  If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about [asynchronous http requests](#Asynchronous_HTTP_requests) with dzVents. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **scenes(idx/name)**: *Function*: A function returning a scene by name or id. Each scene has the same interface as a device. See [Device object API](#Device_object_API). To iterate over all scenes do: `domoticz.scenes().forEach(..)`. See [Looping through the collections: iterators]. (#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.scenes()) do .. end`. Read more about [Scenes](#Scene).
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
@@ -954,6 +952,7 @@ Note that if you do not find your specific device type here you can always inspe
 #### Custom sensor
  - **sensorType**: *Number*.
  - **sensorUnit**: *String*:
+ - **sensorValue**: <sup>3.0.11</sup> *Number* where applicable; else *String*:
  - **updateCustomSensor(value)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Distance sensor
@@ -1531,6 +1530,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **secondsAgo**: *Number*. Number of seconds since the last update.
  - **sunsetInMinutes**: *Number*. Minutes from midnight until sunset.
  - **sunriseInMinutes**: *Number*. Minutes from midnight until sunrise.
+ - **sunAtSouthInMinutes**: *Number*. <sup>3.0.11</sup> Minutes from midnight until sunatsouth.
  - **time**: *String*. <sup>2.5.6</sup> Returns the time part of the raw data as HH:MM
  - **toUTC(string | table,[offset])**: *domoticz time object*. <sup>3.0.9</sup> returns domoticz time object based on first parameter (time as table or string) string format must be 'yyyy-mm-dd hh:mm:ss'. offset defaults to 0.
  - **utcSystemTime**: *Table*. UTC system time (only when in UTC mode):
@@ -2462,6 +2462,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and/or `::1` and you're good to go.
 
 # History
+
+## [3.0.11]
+- Add sensorValue attribute to custom sensor
+- Add sunatsouth as moment in time (like sunrise / sunset ) 
 
 ## [3.0.10]
 - Add NSS_GOOGLE_DEVICES for notification casting to Google home / Google chromecast

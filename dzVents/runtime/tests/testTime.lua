@@ -222,7 +222,6 @@ describe('Time', function()
 		end)
 	end)
 
-
 	describe('toUTC functions', function()
 
 		it('should have toUTC ' , function()
@@ -1244,6 +1243,99 @@ describe('Time', function()
 				end)
 			end)
 
+			describe('at sunAtSouth', function()
+
+				it('should return true if it is at sunAtSsouth', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 664 }
+					local t = Time('2017-01-01 11:04:00')
+					assert.is_true(t.ruleIsAtSunAtSouth('at sunatsouth'))
+				end)
+
+				it('should return if it is not at sunAtSouth', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 63 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_false(t.ruleIsAtSunAtSouth('at sunatsouth'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_nil(t.ruleIsAtSunAtSouth('at blabalbba'))
+				end)
+
+				it('should detect the rule within a random string', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_true(t.ruleIsAtSunAtSouth('some random at sunatsouth text'))
+				end)
+			end)
+
+			describe('xx minutes before sunAtSouth', function()
+
+				it('should return true if it is xx minutes before sunAtSouth', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:02:00')
+					assert.is_true(t.ruleIsBeforeSunAtSouth('2 minutes before sunatsouth'))
+				end)
+
+				it('should return if it is more than 2 minutes before sunAtSouth', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:01:00')
+					assert.is_false(t.ruleIsBeforeSunAtSouth('2 minutes before sunatsouth'))
+				end)
+
+				it('should return if it is less than 2 minutes before sunAtSouth', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:03:00')
+					assert.is_false(t.ruleIsBeforeSunAtSouth('2 minutes before sunatsouth'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_nil(t.ruleIsBeforeSunAtSouth('minutes before sunatsouth'))
+				end)
+
+				it('should detect the rule within a random string', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:02:00')
+					assert.is_true(t.ruleIsBeforeSunAtSouth('some random 2 minutes before sunatsouth text'))
+				end)
+			end)
+
+			describe('xx minutes after sunAtSouth', function()
+
+				it('should return true if it is xx minutes after sunAtSouth', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:06:00')
+					assert.is_true(t.ruleIsAfterSunAtSouth('2 minutes after sunatsouth'))
+				end)
+
+				it('should return if it is more less 2 minutes after sunAtSouth', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:05:00')
+					assert.is_false(t.ruleIsAfterSunAtSouth('2 minutes after sunatsouth'))
+				end)
+
+				it('should return if it is more than 2 minutes after sunAtSouth', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:07:00')
+					assert.is_false(t.ruleIsAfterSunAtSouth('2 minutes after sunatsouth'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_nil(t.ruleIsAfterSunAtSouth('minutes after sunatsouth'))
+				end)
+
+				it('should detect the rule within a random string', function()
+					_G.timeofday = { ['SunAtSouthInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:06:00')
+					assert.is_true(t.ruleIsAfterSunAtSouth('some random 2 minutes after sunatsouth text'))
+				end)
+			end)
+
 			describe('between', function()
 
 				it('should return nil if there is no range set', function()
@@ -1363,6 +1455,21 @@ describe('Time', function()
 
 						t = Time('2017-01-01 17:00:00')
 						assert.is_false(t.ruleMatchesBetweenRange('between sunset and sunrise'))
+					end)
+
+					it('between sunAtSouth and sunrise', function()
+						_G.timeofday = {
+							['SunriseInMinutes'] = 360 , -- 06:00
+							['SunsetInMinutes'] = 1080 ,
+							['SunAtSouthInMinutes'] = 720
+						}
+
+						-- time between 07:00 and 12:00
+						local t = Time('2017-01-01 07:04:00')
+						assert.is_true(t.ruleMatchesBetweenRange('between sunrise and sunatsouth'))
+
+						t = Time('2017-01-01 17:00:00')
+						assert.is_false(t.ruleMatchesBetweenRange('between sunrise and sunatsouth'))
 					end)
 
 					it('every x minute between sunset and sunrise', function()
