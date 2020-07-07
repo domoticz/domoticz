@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ManufacturerSpecificData Revision="100" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="107" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -207,9 +207,6 @@
     <Product config="aeotec/zwa005.xml" id="0005" name="ZWA005 TriSensor" type="0002"/>
     <Product config="aeotec/zwa005.xml" id="0005" name="ZWA005 TriSensor" type="0102"/>
     <Product config="aeotec/zwa005.xml" id="0005" name="ZWA005 TriSensor" type="0202"/>
-    <Product id="0009" name="ZWA009 Temperature Humidity Sensor" type="0002"/>
-    <Product id="000c" name="ZWA012 Door Window Sensor 7 Pro" type="0002"/>
-    <Product id="0013" name="ZWA019 Water Sensor 7 Pro" type="0002"/>
     <Product config="aeotec/zwa021.xml" id="0015" name="ZWA021 Thermostatic Valve" type="0002"/>      
     <Product config="aeotec/zw162.xml" id="00a2" name="ZW162 Doorbell 6" type="0003"/>
     <Product config="aeotec/zw162.xml" id="00a2" name="ZW162 Doorbell 6" type="0103"/>
@@ -220,6 +217,9 @@
     <Product config="aeotec/zwa008.xml" id="0007" name="ZWA008 Door Window Sensor 7" type="0002"/>
     <Product config="aeotec/zwa008.xml" id="0007" name="ZWA008 Door Window Sensor 7" type="0102"/>
     <Product config="aeotec/zwa008.xml" id="0007" name="ZWA008 Door Window Sensor 7" type="0202"/>
+    <Product config="aeotec/zwa009.xml" id="0002" name="ZWA009 AërQ Temperature &amp; Humidity Sensor" type="0009"/>
+    <Product config="aeotec/zwa012.xml" id="0002" name="ZWA012 Door Window Sensor 7 Pro" type="000C"/>
+    <Product config="aeotec/zwa019.xml" id="0002" name="ZWA019 Water Sensor 7 Pro" type="0013"/>
     <Product config="aeotec/zw141.xml" id="008d" name="ZW141 Nano Shutter" type="0003"/>
     <Product config="aeotec/zw141.xml" id="008d" name="ZW141 Nano Shutter" type="0103"/>  
     <Product config="aeotec/zw141.xml" id="008d" name="ZW141 Nano Shutter" type="0203"/>      
@@ -372,7 +372,7 @@
   <Manufacturer id="0140" name="Computime"></Manufacturer>
   <Manufacturer id="011B" name="Connected Object"></Manufacturer>
   <Manufacturer id="0179" name="ConnectHome">
-    <Product id="0001" name="CH-201 Thermostat" type="0001"/>
+    <Product config="connecthome/ch-201.xml" id="0021" name="CH-201 Thermostat" type="0013"/>
   </Manufacturer>
   <Manufacturer id="0285" name="CONNECTION TECHNOLOGY SYSTEMS"></Manufacturer>
   <Manufacturer id="025D" name="Contec intelligent housing"></Manufacturer>
@@ -545,7 +545,7 @@
     <Product config="enerwave/zw15s.xml" id="0102" name="ZW15S 15A On/Off Switch" type="0101"/>
     <Product config="enerwave/zw20r.xml" id="0603" name="ZW20R 20A TR Duplex Receptacle" type="0101"/>
     <Product config="enerwave/zwnrsm1plus.xml" id="0605" name="ZWN-RSM1 PLUS—Smart Single Relay Switch Module" type="0111"/>
-    <!--<Product type="0111" id="0605" name="ZWN-RSM2-PLUS Smart Single Relay Switch Module" config="enerwave/zwnrsm2plus.xml"/>-->
+    <Product config="enerwave/zwnrsm2plus.xml" id="0606" name="ZWN-RSM2-PLUS Smart Single Relay Switch Module" type="0111"/>
     <Product config="enerwave/zw20rm.xml" id="0101" name="ZW20RM 20A TR Smart Meter Duplex Receptacle" type="0111"/>
     <Product config="enerwave/zw500d.xml" id="0201" name="ZW500D 500W In-Wall Preset Dimmer Switch" type="0102"/>
     <Product config="enerwave/zw15rmplus.xml" id="0105" name="ZW15RM Plus 15A TR Smart Meter Duplex Receptacle" type="0111"/>
@@ -797,6 +797,7 @@
     <Product config="ge/45604.xml" id="3030" name="45603 Plugin Appliance Module" type="5250"/>
     <Product id="3130" name="45604 Outdoor Module" type="5250"/>
     <Product id="3031" name="12720 Outdoor Smart Switch" type="4f50"/>
+    <Product config="ge/12720.xml" id="3130" name="12720 Outdoor Smart Switch" type="6363"/>
     <Product config="ge/14284.xml" id="3032" name="14284 Outdoor Smart Switch" type="4f50"/>
     <Product config="ge/14285.xml" id="3032" name="14285 Outdoor Smart Switch" type="4f44"/>
     <Product config="ge/receptacle.xml" id="3530" name="45605 Duplex Receptacle" type="5252"/>
@@ -1066,6 +1067,7 @@
     <Product config="kwikset/smartcode.xml" id="0440" name="SmartCode 10" type="0006"/>
     <Product config="kwikset/smartcode.xml" id="0742" name="Obsidian" type="0003"/>
     <Product config="kwikset/914c.xml" id="0446" name="Convert 914" type="0003"/>
+    <Product config="kwikset/888.xml" id="0541" name="Smartcode 888" type="0003"/>
   </Manufacturer>
   <Manufacturer id="0051" name="Lagotek Corp"></Manufacturer>
   <Manufacturer id="0173" name="Leak Intelligence LLC"></Manufacturer>
@@ -1133,6 +1135,7 @@
     <Product config="linear/GC-TBZ48.xml" id="5436" name="GC-TBZ48 Battery Powered Z-Wave Thermostat" type="5442"/>
     <Product config="linear/GC-TBZ48.xml" id="5437" name="GC-TBZ48 Battery Powered Z-Wave Thermostat" type="5442"/>
     <Product config="linear/WD500Z5-1.xml" id="3530" name="WD500Z5-1 Wall Mounted Dimmer" type="5744"/>
+    <Product config="linear/WT00Z5-1.xml" id="3530" name="WT00Z5-1 Smart 3-Way Switch/Dimmer" type="5754"/>
   </Manufacturer>
   <Manufacturer id="035C" name="LINK ELECTRONICS Co. Ltd"></Manufacturer>
   <Manufacturer id="0316" name="Lite Automation"></Manufacturer>
@@ -1181,6 +1184,7 @@
     <Product config="mcohome/mhs412.xml" id="5102" name="MH-S412 Two-load" type="4121"/>
     <Product config="mcohome/mh8fceu.xml" id="3102" name="MH8-FC-EU Thermostat" type="0801"/>
     <Product config="mcohome/mh8fceu.xml" id="3102" name="MH8-FC4-EU Thermostat" type="0802"/>
+    <Product config="mcohome/mh8fceu0803.xml" id="3102" name="MH8-FC-EU Thermostat" type="0803"/>
     <Product config="mcohome/mh9co2.xml" id="0201" name="MH9-CO2-WD CO2 Monitor" type="0905"/>
     <Product config="mcohome/mh9co2.xml" id="3102" name="MH9-CO2-WD CO2 Monitor" type="0901"/>
     <Product config="mcohome/mh9co2.xml" id="5102" name="MH9-CO2-WD CO2 Monitor" type="0902"/>
@@ -1229,7 +1233,7 @@
   <Manufacturer id="0083" name="MTC Maintronic"></Manufacturer>
   <Manufacturer id="0143" name="myStrom"></Manufacturer>
   <Manufacturer id="0438" name="Namron">
-    <Product config="namron/1402756.xml" id="0202" type="0002" name="LED Dimmer Z-Wave 200W"/>
+    <Product config="namron/1402756.xml" id="0002" type="0202" name="LED Dimmer Z-Wave 200W"/>
   </Manufacturer>
   <Manufacturer id="016E" name="Nanjing Easthouse Electrical Co"></Manufacturer>
   <Manufacturer id="0121" name="Napco Security Technologies, Inc.">
@@ -1375,6 +1379,11 @@
     <Product config="qees/reto-plugin-switch.xml" id="0001" name="RETO Plug-in Switch Plus" type="3103"/>
   </Manufacturer>
   <Manufacturer id="0355" name="Qingdao hongyu cles air conditioning co.ltd"></Manufacturer>
+  <Manufacturer id="0433" name="Q-light">
+    <Product config="q-light/q-light_zerodim.xml" id="000d" name="Q-Light Zerodim" type="0003"/>
+    <Product config="q-light/q-light_zerodim_2pol.xml" id="000E" name="Q-Light Zerodim 2pol" type="0003"/>
+    <Product config="q-light/q-light_puck.xml" id="0005" name="Q-Light puck" type="0003"/>
+  </Manufacturer>
   <Manufacturer id="012A" name="Qolsys"></Manufacturer>
   <Manufacturer id="0159" name="Qubino (Goap)">
     <Product config="qubino/ZMNHDA2.xml" id="0001" name="ZMNHDA2 Flush Dimmer" type="0001"/>
@@ -1822,7 +1831,9 @@
     <Product config="widom/UMS2.xml" id="0800" name="UMS2 Smart Roller Shutter" type="1214"/>
   </Manufacturer>
   <Manufacturer id="012D" name="Wilshine Holding"></Manufacturer>
-  <Manufacturer id="017F" name="Wink"></Manufacturer>
+  <Manufacturer id="017F" name="Wink">
+    <Product config="wink/wnk-mot1.xml"  id="0001" name="WNK-MOT1 Motion Sensor" type="0101" />
+  </Manufacturer>
   <Manufacturer id="004c" name="Woodward Labs"></Manufacturer>
   <Manufacturer id="0242" name="Winytechnology"></Manufacturer>
   <Manufacturer id="0199" name="Wireless Maingate AB"></Manufacturer>
@@ -1909,7 +1920,7 @@
     <Product config="zooz/zen20v2.xml" id="a004" name="ZEN20 V2.0 Power Strip" type="a000"/>
     <Product config="zooz/zen21v3.xml" id="1e1c" name="ZEN21 Switch V3" type="b111"/>
     <Product config="zooz/zen22v2.xml" id="1f1c" name="ZEN22 Dimmer V2" type="b112"/>
-    <Product config="zooz/zen23.xml" id="251c" name="ZEN23 Toggle Switch V2" type="b111"/>
+    <Product config="zooz/zen23v3.xml" id="251c" name="ZEN23 Toggle Switch" type="b111"/>
     <Product config="zooz/zen24v2.xml" id="261c" name="ZEN24 Dimmer Switch V2" type="b112"/>
     <Product config="zooz/zen25.xml" id="a003" name="ZEN25 S2 Double Plug with USB Port" type="a000"/>
     <Product config="zooz/zen26.xml" id="a001" name="ZEN26 S2 On Off Wall Switch" type="a000"/>

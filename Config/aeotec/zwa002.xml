@@ -1,7 +1,7 @@
 <!-- 
 ZWA002 LED Bulb 6 Multi-Color
 https://products.z-wavealliance.org/products/2881
---><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:0002:0103</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zwa002.png</MetaDataItem>
@@ -44,6 +44,7 @@ Blinks between 100% White and Blue 0x0000FF color for 3 seconds (at a rate of 20
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2880/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2881/xml</Entry>
+      <Entry author="Justin Hammond" date="02 July 2020" revision="4">Add Verified Change Flag to Color CC</Entry>
     </ChangeLog>
     <MetaDataItem id="0002" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2881/</MetaDataItem>
     <MetaDataItem id="0002" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
@@ -93,6 +94,11 @@ Blinks between 100% White and Blue 0x0000FF color for 3 seconds (at a rate of 20
 				available value:5000k to 6500k
 			</Help>
     </Value>
+  </CommandClass>
+  <CommandClass id="51">
+    <Compatibility>
+      <VerifyChanged index="0">true</VerifyChanged>
+    </Compatibility>
   </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">

@@ -1,0 +1,44 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0090:0541:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/kwikset/888.png</MetaDataItem>
+    <MetaDataItem id="0446" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2176</MetaDataItem>
+    <MetaDataItem id="0446" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0446" name="Identifier" type="0003">888</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.kwikset.com/products/detail/888-smartcode-electronic-deadbolt-with-z-wave-technology</MetaDataItem>
+    <MetaDataItem name="Description">Extend your smart home system to your current deadbolt, enabling your existing deadbolt to wirelessly communicate with your smart home or security system
+Dramatically reduced, all-metal interior
+Works with existing select single cylinder deadbolts</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.kwikset.com/Customer-Support/Overview.aspx</MetaDataItem>
+    <MetaDataItem name="Name">SmartCode 888</MetaDataItem>
+    <ChangeLog>
+      <Entry author="mike240se" date="20 Jun 2020" revision="1">Initial Version</Entry>
+    </ChangeLog>
+    <MetaDataItem name="WakeupDescription">The electronic conversion kit remains asleep until an action occurs on the latch or a request is received from the RF side.
+For the RF side, it will wake up every 1 second to check if there are any requests from your smart home controller.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2268/Install_Guide_914C_03_09_2017.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Initiate the process to add the lock to your system at your smart home controller.
+When prompted by your smart home system to add the lock, press button “A” on the lock interior one time. The red LED will illuminate when the lock enters Add Mode.
+Please allow time for the controller to add the lock to your system.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Follow your smart home system’s instructions to remove the lock from the network. When prompted by the system, press button A” on the lock interior once.  The red LED will illuminate when the lock enters Remove mode. </MetaDataItem>
+    <MetaDataItem name="ResetDescription">A factory reset will delete all user codes associated with the lock and will remove itself from your smart home system.
+Please only perform a factory reset when the primary controller is missing or inoperable.
+
+To perform a factory reset, please perform the following:
+1. Remove the battery pack
+2. Press and HOLD the Program button while reinserting the battery pack.
+3. Keep holding the button for 30 seconds until the lock beeps and the status LED flashes red.
+4. Press the Program button once more.  The status LED will flash green and red several times.
+5. After a few seconds, the lock will initiate the door handing process.</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="113">
+    <!-- These Door Locks don't send a DoorLockReport when the
+                Lock Status is Changed, but instead send a Alarm Message -
+                So we trigger a Refresh of the DoorLock Command Class when
+                we recieve a Alarm Message Instead -->
+    <TriggerRefreshValue Genre="user" Index="6" Instance="1">
+      <RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
+    </TriggerRefreshValue>
+  </CommandClass>
+</Product>
