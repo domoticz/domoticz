@@ -39,6 +39,7 @@ local function Domoticz(settings)
 	nowTime['isNightTime'] = timeofday['Nighttime']
 	nowTime['sunriseInMinutes'] = timeofday['SunriseInMinutes']
 	nowTime['sunsetInMinutes'] = timeofday['SunsetInMinutes']
+	nowTime['solarnoonInMinutes'] = timeofday['SunAtSouthInMinutes']
 	nowTime['civTwilightStartInMinutes'] = timeofday['CivTwilightStartInMinutes']
 	nowTime['civTwilightEndInMinutes'] = timeofday['CivTwilightEndInMinutes']
 

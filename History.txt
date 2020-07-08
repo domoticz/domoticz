@@ -10,7 +10,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: RTL433, switched to Json input
 - Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
 - Implemented: ZWave, Legend and tooltips in Neighbours overview
-- Updated: dzVents version 3.0.10 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: dzVents version 3.0.11 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 - Updated: eVehicles, added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: OpenZWave configuration files
 - Updated: TTNMQTT, improved Improved calculation and storage of signal-levels
