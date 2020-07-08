@@ -577,9 +577,9 @@ There are several options for time triggers. It is important to know that Domoti
 			'at 13:45 on mon,tue',		-- at 13:45 only on Mondays and Tuesdays (english)
 			'on mon,tue',				-- on Mondays and Tuesdays
 			'every hour on sat',		-- you guessed it correctly
-			'at sunset',				-- uses sunset/sunrise/sunatsouth info from Domoticz
+			'at sunset',				-- uses sunset/sunrise/solarnoon info from Domoticz
 			'at sunrise',
-			'at sunatsouth',			-- <sup>3.0.11</sup> 
+			'at solarnoon',				-- <sup>3.0.11</sup> 
 			'at civiltwilightstart',	-- uses civil twilight start/end info from Domoticz
 			'at civiltwilightend',
 			'at sunset on sat,sun',
@@ -591,11 +591,11 @@ There are several options for time triggers. It is important to know that Domoti
 			'xx minutes after sunset',
 			'xx minutes before sunrise',
 			'xx minutes after sunrise'	
-			'xx minutes before sunatsouth',	-- <sup>3.0.11</sup>
-			'xx minutes after sunatsouth',	--<sup>3.0.11</sup>
+			'xx minutes before solarnoon',	-- <sup>3.0.11</sup>
+			'xx minutes after solarnoon',	--<sup>3.0.11</sup>
 			 'between aa and bb'		-- aa/bb can be a time stamp like 15:44 (if aa > bb will cross dates)
-										-- aa/bb can be sunrise/sunset/sunatsouth ('between sunset and sunrise' will cross dates)
-										-- aa/bb can be 'xx minutes before/after sunrise/sunset/sunatsouth'
+										-- aa/bb can be sunrise/sunset/solarnoon ('between sunset and sunrise' and 'between solarnoon and sunrise' will cross dates)
+										-- aa/bb can be 'xx minutes before/after sunrise/sunset/solarnoon'
 			'at civildaytime',			-- between civil twilight start and civil twilight end
 			'at civilnighttime',		-- between civil twilight end and civil twilight start
 			'at nighttime',				-- between sunset and sunrise
@@ -1530,7 +1530,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **secondsAgo**: *Number*. Number of seconds since the last update.
  - **sunsetInMinutes**: *Number*. Minutes from midnight until sunset.
  - **sunriseInMinutes**: *Number*. Minutes from midnight until sunrise.
- - **sunAtSouthInMinutes**: *Number*. <sup>3.0.11</sup> Minutes from midnight until sunatsouth.
+ - **solarnoonInMinutes**: *Number*. <sup>3.0.11</sup> Minutes from midnight until solarnoon.
  - **time**: *String*. <sup>2.5.6</sup> Returns the time part of the raw data as HH:MM
  - **toUTC(string | table,[offset])**: *domoticz time object*. <sup>3.0.9</sup> returns domoticz time object based on first parameter (time as table or string) string format must be 'yyyy-mm-dd hh:mm:ss'. offset defaults to 0.
  - **utcSystemTime**: *Table*. UTC system time (only when in UTC mode):
@@ -2465,7 +2465,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 ## [3.0.11]
 - Add sensorValue attribute to custom sensor
-- Add sunatsouth as moment in time (like sunrise / sunset ) 
+- Add solarnoon as moment in time (like sunrise / sunset ) 
 
 ## [3.0.10]
 - Add NSS_GOOGLE_DEVICES for notification casting to Google home / Google chromecast

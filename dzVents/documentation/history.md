@@ -1,6 +1,6 @@
 [3.0.11]
 - Add sensorValue attribute to custom sensor
-- Add sunatsouth as moment in time (like sunrise / sunset ) 
+- Add solarnoon as moment in time (like sunrise / sunset ) 
 
 [3.0.10]
 - Add NSS_GOOGLE_DEVICES for notification casting to Google home / Google chromecast

@@ -359,7 +359,7 @@ local function Time(sDate, isUTC, _testMS)
 		return _G.timeofday['SunriseInMinutes']
 	end
 
-	function getSunAtSouth()
+	function getSolarnoon()
 		return _G.timeofday['SunAtSouthInMinutes']
 	end
 
@@ -403,14 +403,14 @@ local function Time(sDate, isUTC, _testMS)
 		return getSunset() + minutes
 	end
 
-	-- return minutes before sunAtSouth
-	function getMinutesBeforeSunAtSouth(minutes)
-		return getSunAtSouth() - minutes
+	-- return minutes before solarnoon
+	function getMinutesBeforeSolarnoon(minutes)
+		return getSolarnoon() - minutes
 	end
 
-	-- return minutes after sunAtSouth
-	function getMinutesAfterSunAtSouth(minutes)
-		return getSunAtSouth() + minutes
+	-- return minutes after solarnoon
+	function getMinutesAfterSolarnoon(minutes)
+		return getSolarnoon() + minutes
 	end
 
 	-- returns hours part and minutes part of the passed-in minutes amount
@@ -443,7 +443,8 @@ local function Time(sDate, isUTC, _testMS)
 
 	-- returns true if self.day is on the rule: on day1,day2...
 	function self.ruleIsOnDay(rule)
-		local days = string.match(rule, 'on% (.+)$')
+		
+        local days = string.match(rule, '%s+on%s+(.+)$') or string.match(rule, '^%s*on%s+(.+)$')
 		if (isEmpty(days)) then
 			return nil
 		end
@@ -460,7 +461,7 @@ local function Time(sDate, isUTC, _testMS)
 			return nil
 		end
 
-		local days = string.match(rule, 'on% (.+)$')
+		local days = string.match(rule, '%s+on%s+(.+)$') or string.match(rule, '^%s*on%s+(.+)$')
 		if (days ~= nil) then
 			-- 'on <day>' was specified
 			local hasDayMatch = string.find(days, self.dayAbbrOfWeek)
@@ -472,6 +473,7 @@ local function Time(sDate, isUTC, _testMS)
 		end
 		return nil -- no 'on <days>' was specified in the rule
 	end
+
 
 	-- returns true if self.week matches rule in week 1,3,4 / every odd-week, every even-week, in week 5-12,23,44
 	function self.ruleIsInWeek(rule)
@@ -729,11 +731,11 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no 'at sunset' was specified in the rule
 	end
 
-	-- returns true if self.time is at sunAtSouth
-	function self.ruleIsAtSunAtSouth(rule)
-		if (string.find(rule, 'at sunatsouth')) then
+	-- returns true if self.time is at solarnoon
+	function self.ruleIsAtSolarnoon(rule)
+		if (string.find(rule, 'at solarnoon')) then
 			local minutesnow = self.min + self.hour * 60
-			return (minutesnow == getSunAtSouth())
+			return (minutesnow == getSolarnoon())
 		end
 
 		return nil -- no 'at sunset' was specified in the rule
@@ -771,36 +773,36 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no xx minutes before sunset found
 	end
 
-	-- returns true if self.time is before sunAtSouth
-	function self.ruleIsBeforeSunAtSouth(rule)
-		-- xx minutes before sunAtSouth
+	-- returns true if self.time is before solarnoon
+	function self.ruleIsBeforeSolarnoon(rule)
+		-- xx minutes before solarnoon
 
-		local minutes = tonumber(string.match(rule, '(%d+) minutes before sunatsouth'))
+		local minutes = tonumber(string.match(rule, '(%d+) minutes before solarnoon'))
 
 		if (minutes ~= nil) then
 
 			local minutesnow = self.min + self.hour * 60
 
-			return (minutesnow == getMinutesBeforeSunAtSouth(minutes))
+			return (minutesnow == getMinutesBeforeSolarnoon(minutes))
 		end
 
-		return nil -- no xx minutes before sunAtSouth found
+		return nil -- no xx minutes before solarnoon found
 	end
 
-	--returns true if self.time is after sunAtSouth
-	function self.ruleIsAfterSunAtSouth(rule)
-		-- xx minutes after sunAtSouth
+	--returns true if self.time is after solarnoon
+	function self.ruleIsAfterSolarnoon(rule)
+		-- xx minutes after solarnoon
 
-		local minutes = tonumber(string.match(rule, '(%d+) minutes after sunatsouth'))
+		local minutes = tonumber(string.match(rule, '(%d+) minutes after solarnoon'))
 
 		if (minutes ~= nil) then
 
 			local minutesnow = self.min + self.hour * 60
 
-			return (minutesnow == getMinutesAfterSunAtSouth(minutes))
+			return (minutesnow == getMinutesAfterSolarnoon(minutes))
 		end
 
-		return nil -- no xx minutes before sunAtSouth found
+		return nil -- no xx minutes before solarnoon found
 	end
 
 	-- returns true if self.time is after civil twilight start and before civil twilight end
@@ -992,16 +994,16 @@ local function Time(sDate, isUTC, _testMS)
 			return minutesToTime(getMinutesAfterSunrise(minutes))
 		end
 
-		-- check if it is before sunAtSouth
-		minutes = tonumber(string.match(moment, '(%d+) minutes before sunatsouth'))
+		-- check if it is before solarnoon
+		minutes = tonumber(string.match(moment, '(%d+) minutes before solarnoon'))
 		if (minutes) then
-			return minutesToTime(getMinutesBeforeSunAtSouth(minutes))
+			return minutesToTime(getMinutesBeforeSolarnoon(minutes))
 		end
 
-		-- check if it is after sunAtSouth
-		minutes = tonumber(string.match(moment, '(%d+) minutes after sunatsouth'))
+		-- check if it is after solarnoon
+		minutes = tonumber(string.match(moment, '(%d+) minutes after solarnoon'))
 		if (minutes) then
-			return minutesToTime(getMinutesAfterSunAtSouth(minutes))
+			return minutesToTime(getMinutesAfterSolarnoon(minutes))
 		end
 
 		-- check if it is before sunset
@@ -1040,10 +1042,10 @@ local function Time(sDate, isUTC, _testMS)
 			return minutesToTime(getSunset())
 		end
 
-		-- check at sunAtSouth
-		local sunAtSouth = string.match(moment, 'sunatsouth')
-		if (sunAtSouth) then
-			return minutesToTime(getSunAtSouth())
+		-- check at solarnoon
+		local solarnoon = string.match(moment, 'solarnoon')
+		if (solarnoon) then
+			return minutesToTime(getSolarnoon())
 		end
 
 		return nil
@@ -1105,7 +1107,6 @@ local function Time(sDate, isUTC, _testMS)
 			-- on any of the specified weeks
 			return false
 		end
-
 		updateTotal(res)
 
 		res = self.ruleIsOnDate(rule)
@@ -1128,7 +1129,6 @@ local function Time(sDate, isUTC, _testMS)
 
 		if (_between == false) then
 			-- rule had between xxx and yyy is not in that range now
-
 			return false
 		end
 		res = _between
@@ -1187,13 +1187,13 @@ local function Time(sDate, isUTC, _testMS)
 			end
 			updateTotal(res)
 
-			res = self.ruleIsBeforeSunAtSouth(rule) -- moment
+			res = self.ruleIsBeforeSolarnoon(rule) -- moment
 			if (res == false) then
 				return false
 			end
 			updateTotal(res)
 
-			res = self.ruleIsAfterSunAtSouth(rule) -- moment
+			res = self.ruleIsAfterSolarnoon(rule) -- moment
 			if (res == false) then
 				return false
 			end
@@ -1225,7 +1225,7 @@ local function Time(sDate, isUTC, _testMS)
 		end
 		updateTotal(res)
 
-		res = self.ruleIsAtSunAtSouth(rule) -- moment
+		res = self.ruleIsAtSolarnoon(rule) -- moment
 		if (res == false) then
 			return false
 		end
