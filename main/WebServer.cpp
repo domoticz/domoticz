@@ -633,6 +633,8 @@ namespace http {
 
 			RegisterCommandCode("zwaveisnodeincluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeIncluded, this, _1, _2, _3));
 			RegisterCommandCode("zwaveisnodeexcluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeExcluded, this, _1, _2, _3));
+			RegisterCommandCode("zwaveisnodereplaced", boost::bind(&CWebServer::Cmd_ZWaveIsNodeReplaced, this, _1, _2, _3));
+			RegisterCommandCode("zwaveishasnodefaileddone", boost::bind(&CWebServer::Cmd_ZWaveIsHasNodeFailedDone, this, _1, _2, _3));
 
 			RegisterCommandCode("zwavesoftreset", boost::bind(&CWebServer::Cmd_ZWaveSoftReset, this, _1, _2, _3));
 			RegisterCommandCode("zwavehardreset", boost::bind(&CWebServer::Cmd_ZWaveHardReset, this, _1, _2, _3));
@@ -644,6 +646,8 @@ namespace http {
 			RegisterCommandCode("zwavegroupinfo", boost::bind(&CWebServer::Cmd_ZWaveGroupInfo, this, _1, _2, _3));
 			RegisterCommandCode("zwavecancel", boost::bind(&CWebServer::Cmd_ZWaveCancel, this, _1, _2, _3));
 			RegisterCommandCode("applyzwavenodeconfig", boost::bind(&CWebServer::Cmd_ApplyZWaveNodeConfig, this, _1, _2, _3));
+			RegisterCommandCode("zwavehasnodefailed", boost::bind(&CWebServer::Cmd_ZWaveHasNodeFailed, this, _1, _2, _3));
+			RegisterCommandCode("zwavereplacefailednode", boost::bind(&CWebServer::Cmd_ZWaveReplaceFailedNode, this, _1, _2, _3));
 			RegisterCommandCode("requestzwavenodeconfig", boost::bind(&CWebServer::Cmd_ZWaveRequestNodeConfig, this, _1, _2, _3));
 			RegisterCommandCode("requestzwavenodeinfo", boost::bind(&CWebServer::Cmd_ZWaveRequestNodeInfo, this, _1, _2, _3));
 			RegisterCommandCode("zwavestatecheck", boost::bind(&CWebServer::Cmd_ZWaveStateCheck, this, _1, _2, _3));

@@ -445,6 +445,8 @@ void OnNotification(OpenZWave::Notification const* _notification, void* _context
 
 void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notification)
 {
+	// _log.Log(LOG_STATUS, "OpenZWave: Notification: %s (%d))",_notification->GetAsString().c_str(),_notification->GetNodeId());
+
 	// Must do this inside a critical section to avoid conflicts with the main thread
 	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
@@ -682,6 +684,17 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 		case OpenZWave::Notification::Code_Alive:
 		{
+			// Check if node was replaced
+			if (!m_bNodeReplaced) {
+				// _log.Log(LOG_STATUS, "OpenZWave: Comparing node id (%d) with node te be replaced (%d)", _nodeID, m_NodeToBeReplaced);
+				if (_nodeID==m_NodeToBeReplaced) {
+					_log.Log(LOG_STATUS,"OpenZWave: Node replaced");
+					m_bNodeReplaced=true;
+				} 
+			} else {
+				_log.Log(LOG_STATUS,"OpenZWave: Node Alive");
+			}
+
 			bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 			nodeInfo->eState = NSTATE_AWAKE;
 			if (bWasDead)
@@ -801,10 +814,10 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	case OpenZWave::Notification::Type_ControllerCommand:
 	{
 #ifndef _DEBUG
-		if (!m_bControllerCommandInProgress)
+		 if (!m_bControllerCommandInProgress)
 			return;
 #endif
-		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
+		// _log.Log(LOG_STATUS, "OpenZWave: Type_ControllerCommand %s", _notification->GetAsString().c_str());
 
 		uint8_t controller_command = _notification->GetCommand();
 		if (controller_command == OpenZWave::Driver::ControllerCommand_RemoveDevice)
@@ -813,6 +826,34 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			if (controler_state == OpenZWave::Driver::ControllerState::ControllerState_Failed)
 			{
 				m_LastRemovedNode = -1;
+			}
+		}
+		if (controller_command == OpenZWave::Driver::ControllerCommand_HasNodeFailed)
+		{
+			uint8_t controler_state = _notification->GetEvent();
+			if (_nodeID==m_HasNodeFailedIdx) {
+				if (controler_state == OpenZWave::Driver::ControllerState::ControllerState_NodeOK)
+				{
+					// _log.Log(LOG_STATUS, "OpenZWave: Event Node OK (%s)", _notification->GetAsString().c_str());
+					m_bHasNodeFailedDone=true;
+					m_sHasNodeFailedResult="Node OK";
+				} 
+				else if (controler_state == OpenZWave::Driver::ControllerState::ControllerState_NodeFailed)
+				{
+					// _log.Log(LOG_STATUS, "OpenZWave: Event Node failed (%s)", _notification->GetAsString().c_str());
+					m_bHasNodeFailedDone=true;
+					m_sHasNodeFailedResult="Node Failed";
+				}
+				else if (controler_state == OpenZWave::Driver::ControllerState::ControllerState_Failed)
+				{
+					// If this happens, some weird error, which should never happen.
+					_log.Log(LOG_ERROR, "OpenZWave: Has Node Failed Command on Node %d failed (%s)", m_HasNodeFailedIdx, _notification->GetAsString().c_str());
+					m_bHasNodeFailedDone=true;
+					m_sHasNodeFailedResult=_notification->GetAsString().c_str();
+				} else {
+					// All other notifications from Has Node Failed Node Command
+					// _log.Log(LOG_STATUS, "OpenZWave: Has Node Failed command Controller Comand (%s)", _notification->GetAsString().c_str());
+				}
 			}
 		}
 	}
@@ -3592,6 +3633,16 @@ bool COpenZWave::ExcludeDevice(const uint8_t /*nodeID*/)
 	return false;
 }
 
+bool COpenZWave::IsHasNodeFailedDone()
+{
+	return (m_bHasNodeFailedDone);
+}
+
+bool COpenZWave::IsNodeReplaced()
+{
+	return (m_bNodeReplaced || (m_LastIncludedNode!=0 && m_bHaveLastIncludedNodeInfo));   // Succesful Node replace ends in Node_Added notification or Node_Alive notification
+}
+
 bool COpenZWave::IsNodeIncluded()
 {
 	return ((m_LastIncludedNode != 0) && (m_bHaveLastIncludedNodeInfo == true));
@@ -4531,6 +4582,72 @@ bool COpenZWave::RequestNodeInfo(const unsigned int homeID, const uint8_t nodeID
 			std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 	}
 	return false;
+}
+
+
+bool COpenZWave::HasNodeFailed(const unsigned int homeID, const uint8_t nodeID)
+{
+	// _log.Log(LOG_STATUS, "OpenZWave: Has node failed called for %u, %d",homeID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
+	if (pNode == NULL)
+		return false;
+
+	try
+	{
+		m_bHasNodeFailedDone=false;
+		m_sHasNodeFailedResult="";
+		m_HasNodeFailedIdx=nodeID;
+
+		m_ControllerCommandStartTime = mytime(NULL);
+		m_bControllerCommandCanceled = false;
+		m_bControllerCommandInProgress = true; 
+
+		m_pManager->HasNodeFailed(homeID, nodeID);
+		return true;
+	}
+	catch (OpenZWave::OZWException& ex)
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d) %s:%d",
+			ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine(),
+			std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+	}
+	return false; 
+}
+
+
+bool COpenZWave::ReplaceFailedNode(const unsigned int homeID, const uint8_t nodeID)
+{
+	// homeID=m_controllerID;
+	// _log.Log(LOG_STATUS, "OpenZWave: Replace failed node called with home id (%u) and node id (%d)",homeID,nodeID);
+
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
+	if (pNode == NULL)
+	{
+		// _log.Log(LOG_ERROR, "OpenZWave: Node not foud");
+		return false;
+	}
+	try
+	{
+		CancelControllerCommand();
+
+		m_bNodeReplaced=false;
+		m_NodeToBeReplaced=nodeID;
+		m_LastIncludedNode = 0;
+		m_LastIncludedNodeType = "";
+		m_bHaveLastIncludedNodeInfo = false;
+		m_ControllerCommandStartTime = mytime(NULL);
+		m_bControllerCommandCanceled = false;
+		m_bControllerCommandInProgress = false; //unlimited time
+		m_pManager->ReplaceFailedNode(homeID, nodeID);
+		return true;
+	}
+	catch (OpenZWave::OZWException& ex)
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d) %s:%d",
+			ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine(),
+			std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+	}
+	return false; 
 }
 
 void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const uint8_t nodeID, Json::Value& root, const int index)
@@ -5535,6 +5652,51 @@ namespace http {
 			}
 		}
 
+		void CWebServer::Cmd_ZWaveIsHasNodeFailedDone(WebEmSession& /*session*/, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				root["status"] = "OK";
+				root["title"] = "ZWaveIsHasNodeFailedDone";
+				bool bIsHasNodeFailedDone = pOZWHardware->IsHasNodeFailedDone();
+				root["result"] = bIsHasNodeFailedDone;
+				if (bIsHasNodeFailedDone)
+				{
+					root["node_id"] = pOZWHardware->m_HasNodeFailedIdx;
+					root["status_text"] = pOZWHardware->m_sHasNodeFailedResult;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveIsNodeReplaced(WebEmSession& /*session*/, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				root["status"] = "OK";
+				root["title"] = "ZWaveIsNodeReplaced";
+				bool bIsReplaced = pOZWHardware->IsNodeReplaced();
+				root["result"] = bIsReplaced;
+				if (bIsReplaced)
+				{
+					root["node_id"] = pOZWHardware->m_NodeToBeReplaced;
+				}
+			}
+		}
+
 		void CWebServer::Cmd_ZWaveIsNodeIncluded(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
@@ -5974,6 +6136,7 @@ namespace http {
 				}
 			}
 		}
+
 		void CWebServer::Cmd_ZWaveRequestNodeInfo(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
@@ -5995,6 +6158,56 @@ namespace http {
 					pOZWHardware->RequestNodeInfo(homeID, nodeID);
 					root["status"] = "OK";
 					root["title"] = "RequestZWaveNodeInfo";
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveHasNodeFailed(WebEmSession& /*session*/, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%q)", idx.c_str());
+			if (!result.empty())
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
+				uint8_t nodeID = (uint8_t)atoi(result[0][2].c_str());
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->HasNodeFailed(homeID, nodeID);
+					root["status"] = "OK";
+					root["title"] = "ZWaveHasNodeFailed";
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveReplaceFailedNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%q)", idx.c_str());
+			if (!result.empty())
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
+				uint8_t nodeID = (uint8_t)atoi(result[0][2].c_str());
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					if (pHardware->HwdType != HTYPE_OpenZWave)
+						return;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->ReplaceFailedNode(homeID, nodeID);
+					root["status"] = "OK";
+					root["title"] = "ZWaveReplaceFailedNode";
 				}
 			}
 		}

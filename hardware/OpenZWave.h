@@ -104,6 +104,8 @@ public:
 	//Controller Commands
 	bool RequestNodeConfig(const unsigned int homeID, const uint8_t nodeID);
 	bool RequestNodeInfo(const unsigned int homeID, const uint8_t nodeID);
+	bool ReplaceFailedNode(const unsigned int homeID, const uint8_t nodeID);
+	bool HasNodeFailed(const unsigned int homeID, const uint8_t nodeID);
 	bool RemoveFailedDevice(const uint8_t nodeID);
 	bool HasNodeFailed(const uint8_t nodeID);
 	bool ReceiveConfigurationFromOtherController();
@@ -112,6 +114,8 @@ public:
 	bool CancelControllerCommand(const bool bForce = false);
 	bool IncludeDevice(const bool bSecure);
 	bool ExcludeDevice(const uint8_t nodeID);
+	bool IsHasNodeFailedDone();
+	bool IsNodeReplaced();
 	bool IsNodeIncluded();
 	bool IsNodeExcluded();
 	bool SoftResetDevice();
