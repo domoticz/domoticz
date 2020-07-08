@@ -434,7 +434,7 @@ namespace http {
 			}
 			else {
 				m_sql.safe_query(
-					"UPDATE PushType SET DeviceRowID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%q', TargetDeviceID=%d, TargetProperty='%q', IncludeUnit='%d', Enabled='%d' WHERE (ID == '%q')",
+					"UPDATE PushLink SET DeviceRowID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%q', TargetDeviceID=%d, TargetProperty='%q', IncludeUnit='%d', Enabled='%d' WHERE (ID == '%q')",
 					deviceidi,
 					atoi(valuetosend.c_str()),
 					targettypei,
@@ -461,7 +461,7 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			m_sql.safe_query("DELETE FROM PushType WHERE (ID=='%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
 			root["status"] = "OK";
 			root["title"] = "DeleteGooglePubSubLink";
 		}
