@@ -159,7 +159,7 @@ bool SolarEdgeAPI::GetSite()
 	sURL << "https://monitoringapi.solaredge.com/sites/list?size=1&api_key=" << m_APIKey << "&format=application/json";
 	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data!");
+		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data (Sites)!");
 		return false;
 	}
 #ifdef DEBUG_SolarEdgeAPIW
@@ -209,7 +209,7 @@ void SolarEdgeAPI::GetInverters()
 	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/list?api_key=" << m_APIKey << "&format=application/json";
 	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data!");
+		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data (Equipment)!");
 		return;
 	}
 #ifdef DEBUG_SolarEdgeAPIW
@@ -306,7 +306,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings *pInverterSetting
 	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/" << pInverterSettings->SN << "/data.json?startTime=" << startDate << "&endTime=" << endDate << "&api_key=" << m_APIKey << "&format=application/json";
 	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data!");
+		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data (Equipment details)!");
 		return;
 	}
 #ifdef DEBUG_SolarEdgeAPIW
