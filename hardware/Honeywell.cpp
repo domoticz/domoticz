@@ -138,7 +138,7 @@ bool CHoneywell::WriteToHardware(const char *pdata, const unsigned char /*length
 		int devID = nodeID / 10;
 		std::string deviceName = mDeviceList[devID]["name"].asString();
 		bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
-		if ((nodeID % 10) == 3 | (nodeID % 10) == 7) {
+		if ((nodeID % 10) == 3 || (nodeID % 10) == 7) {
 			// heating cooling on or off
 			SetPauseStatus(devID, bIsOn, nodeID);
 			return true;
