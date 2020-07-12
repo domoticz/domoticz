@@ -151,6 +151,8 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 	int snr = 12;  // Set to show "-" if no snr is received. rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
 
+	int code = 0;
+
 	if (FindField(data, "id"))
 	{
 		id = atoi(data["id"].c_str());
@@ -286,6 +288,10 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		if (snr > 11) snr = 11; // Domoticz RSSI field can only be 0-11, 12 is used for non-RF received devices
 		if (snr < 0) snr = 0; // In case snr actually was below 4 dB
 	}
+	if (FindField(data, "code"))
+	{
+		code = strtoul(data["code"].c_str(), NULL, 16);
+	}
 
 	std::string model = data["model"]; // new model format normalized from the 201 different devices presently supported by rtl_433
 
@@ -415,6 +421,101 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		bHandled = true;
 	}
 
+	if (!strcmp(model.c_str(), "X10-Security"))
+	{
+		// More X10 sensors can be added if their codes are known
+		uint8_t x10_device = 0;
+		uint8_t x10_status = 0;
+
+		bHandled = true;
+
+		switch (code & 0xfe) // The last bit is indicating low battery and is already handled
+		{
+		case 0x00:
+			x10_status = sStatusAlarmDelayed; // Door open, Delay switch set to MAX on DS18
+			x10_device = sTypeSecX10;
+			break;
+		case 0x04:
+			x10_status = sStatusAlarm;  // Door open, Delay switch set to MIN on DS18
+			x10_device = sTypeSecX10;
+			break;
+		case 0x40:
+			x10_status = sStatusAlarmDelayedTamper;
+			x10_device = sTypeSecX10;
+			break;
+		case 0x44:
+			x10_status = sStatusAlarmTamper;
+			x10_device = sTypeSecX10;
+			break;
+		case 0x80:
+			x10_status = sStatusNormalDelayed;
+			x10_device = sTypeSecX10;
+			break;
+		case 0x84:
+			x10_status = sStatusNormal;
+			x10_device = sTypeSecX10;
+			break;
+		case 0xc0:
+			x10_status = sStatusNormalDelayedTamper;
+			x10_device = sTypeSecX10;
+			break;
+		case 0xc4:
+			x10_status = sStatusNormalTamper;
+			x10_device = sTypeSecX10;
+			break;
+		case 0x8c:
+			x10_status = sStatusNoMotion;
+			x10_device = sTypeSecX10M;
+			break;
+		case 0xcc:
+			x10_status = sStatusNoMotionTamper;
+			x10_device = sTypeSecX10M;
+			break;
+		case 0x0c:
+			x10_status = sStatusMotion;
+			x10_device = sTypeSecX10M;
+			break;
+		case 0x4c:
+			x10_status = sStatusMotionTamper;
+			x10_device = sTypeSecX10M;
+			break;
+		case 0x26:
+		case 0x88:
+		case 0x98:
+			x10_status = sStatusPanic;
+			x10_device = sTypeSecX10R;
+			break;
+		case 0x42:
+			x10_status = sStatusLightOn;
+			x10_device = sTypeSecX10R;
+			break;
+		case 0x46:
+			x10_status = sStatusLight2On;
+			x10_device = sTypeSecX10R;
+			break;
+		case 0xc2:
+			x10_status = sStatusLightOff;
+			x10_device = sTypeSecX10R;
+			break;
+		case 0xc6:
+			x10_status = sStatusLight2Off;
+			x10_device = sTypeSecX10R;
+			break;
+		case 0x06:
+			x10_status = sStatusArmAway;
+			x10_device = sTypeSecX10R;
+			break;
+		case 0x82:
+		case 0x86:
+			x10_status = sStatusDisarm;
+			x10_device = sTypeSecX10R;
+			break;
+		default:
+			bHandled = false;
+			break;
+		}
+		if (bHandled) SendSecurity1Sensor(strtoul(data["id"].c_str(), NULL, 16), x10_device, batterylevel, x10_status, model, snr);
+	} // End of X10-Security section
 
 	return bHandled; //not handled (Yet!)
 }
