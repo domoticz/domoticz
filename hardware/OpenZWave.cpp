@@ -944,8 +944,7 @@ bool COpenZWave::OpenSerialConnector()
 	OpenZWave::Options::Get()->AddOptionBool("ValidateValueChanges", true);
 	OpenZWave::Options::Get()->AddOptionBool("Associate", true);
 
-	//Disable automatic config update for now! (Dev branch is behind master with configuration files)
-	OpenZWave::Options::Get()->AddOptionBool("AutoUpdateConfigFile", false);
+	OpenZWave::Options::Get()->AddOptionBool("AutoUpdateConfigFile", true);
 
 	//Set network key for security devices
 	std::string sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
@@ -1880,14 +1879,26 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		//Meter device
 		if (
 			(vOrgIndex == ValueID_Index_Meter::Electric_kWh)
-			|| (vOrgIndex == ValueID_Index_Meter::Electric_kVah)
-			|| (vOrgIndex == ValueID_Index_Meter::Electric_kVar)
-			|| (vOrgIndex == ValueID_Index_Meter::Electric_kVarh)
 			|| (vOrgIndex == ValueID_Index_Meter::Heating_kWh)
 			|| (vOrgIndex == ValueID_Index_Meter::Cooling_kWh)
 			)
 		{
 			_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
+			_device.scaleMultiply = 1000.0f;
+		}
+		else if (vOrgIndex == ValueID_Index_Meter::Electric_kVah)
+		{
+			_device.devType = ZDTYPE_SENSOR_KVAH;
+			_device.scaleMultiply = 1000.0f;
+		}
+		else if (vOrgIndex == ValueID_Index_Meter::Electric_kVar)
+		{
+			_device.devType = ZDTYPE_SENSOR_KVAR;
+			_device.scaleMultiply = 1000.0f;
+		}
+		else if (vOrgIndex == ValueID_Index_Meter::Electric_kVarh)
+		{
+			_device.devType = ZDTYPE_SENSOR_KVARH;
 			_device.scaleMultiply = 1000.0f;
 		}
 		else if (vOrgIndex == ValueID_Index_Meter::Electric_W)
@@ -2016,15 +2027,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Power)
 		{
-			if ((vUnits == "kWh") || (vUnits == "kVAh"))
-			{
-				_device.scaleMultiply = 1000;
-				_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
-			}
-			else
-			{
-				_device.devType = ZDTYPE_SENSOR_POWER;
-			}
+			_device.devType = ZDTYPE_SENSOR_POWER;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Voltage)
 		{
@@ -2034,7 +2037,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		{
 			_device.devType = ZDTYPE_SENSOR_AMPERE;
 		}
-		else if (vLabel.find("Water") != std::string::npos) //water flow ?
+		else if (vLabel.find("Water") != std::string::npos) //water flow ? (ValueID_Index_SensorMultiLevel::Water_Cubic_Meters)
 		{
 			_device.devType = ZDTYPE_SENSOR_WATER;
 		}
@@ -3340,6 +3343,9 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		pDevice->floatValue = fValue * pDevice->scaleMultiply;
 		break;
 	case ZDTYPE_SENSOR_POWERENERGYMETER:
+	case ZDTYPE_SENSOR_KVAH:
+	case ZDTYPE_SENSOR_KVAR:
+	case ZDTYPE_SENSOR_KVARH:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
 		pDevice->floatValue = fValue * pDevice->scaleMultiply;
