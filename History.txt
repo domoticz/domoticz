@@ -7,6 +7,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: RTL433, added RF Signal Strength in device tab based on reported SNR
 - Implemented: RTL433, added Pressure (PSI) type
 - Implemented: RTL433, added UV type
+- Implemented: RTL433, added X-10 Security support
 - Implemented: RTL433, switched to Json input
 - Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
 - Implemented: ZWave, Legend and tooltips in Neighbours overview

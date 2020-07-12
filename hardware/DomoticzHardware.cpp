@@ -1030,3 +1030,21 @@ void CDomoticzHardwareBase::SendFanSensor(const int Idx, const int BatteryLevel,
 	gDevice.intval2 = FanSpeed;
 	sDecodeRXMessage(this, (const unsigned char*)& gDevice, defaultname.c_str(), BatteryLevel);
 }
+
+void CDomoticzHardwareBase::SendSecurity1Sensor(const int NodeID, const int DeviceSubType, const int BatteryLevel, const int Status, const std::string &defaultname, const int RssiLevel /* = 12 */)
+{
+	RBUF m_sec1;
+	memset(&m_sec1, 0, sizeof(RBUF));
+	
+	m_sec1.SECURITY1.packetlength = sizeof(m_sec1) -1;
+	m_sec1.SECURITY1.packettype = pTypeSecurity1;
+	m_sec1.SECURITY1.subtype = DeviceSubType;
+	m_sec1.SECURITY1.id1 = (NodeID & 0xFF0000) >> 16;
+	m_sec1.SECURITY1.id2 = (NodeID & 0xFF00) >> 8;
+	m_sec1.SECURITY1.id3 = (NodeID & 0xFF);
+	m_sec1.SECURITY1.status = Status;
+	m_sec1.SECURITY1.rssi = RssiLevel;
+	m_sec1.SECURITY1.battery_level = BatteryLevel;
+	
+	sDecodeRXMessage(this, (const unsigned char*)& m_sec1.SECURITY1, defaultname.c_str(), BatteryLevel);
+}
