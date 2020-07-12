@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="10">
+<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="11">
 	<CommandClass id="113">
 		<!-- Please keep Localization.xml in sync with NotificationCCTypes.xml -->
 		<!-- If you are adding new Types or Params, Please also consider updating ValueIDIndexesDefines.def -->
@@ -609,7 +609,7 @@
 			<Label>Color Channels</Label>
 		</Value>
 		<Value index="3">
-			<Help>Duration to change colors</Help>
+			<Help>Duration to change colors (Values above 15240 use the devices default duration)</Help>
 			<Label>Duration</Label>
 		</Value>
 	</CommandClass>
@@ -2139,7 +2139,7 @@
 			<Label>Target State</Label>
 		</Value>
 		<Value index="2">
-			<Help>How Long to Transition to new State</Help>
+			<Help>How Long to Transition to new State (Values above 15240 use the devices default duration)</Help>
 			<Label>Transition Duration</Label>
 		</Value>
 	</CommandClass>
@@ -2166,7 +2166,7 @@
 			<Label>Start Level</Label>
 		</Value>
 		<Value index="5">
-			<Help>Duration taken when changing the Level of a Device</Help>
+			<Help>Duration taken when changing the Level of a Device (Values above 15240 use the devices default duration)</Help>
 			<Label>Dimming Duration</Label>
 		</Value>
 		<Value index="6">
