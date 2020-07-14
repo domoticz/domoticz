@@ -21,6 +21,8 @@ SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
 
 # Bundled libraries
 option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
+option(BUILD_SHARED_LIBS "Build jsoncpp_lib as a shared library." OFF)
+option(BUILD_STATIC_LIBS "Build jsoncpp_lib as a static library." ON)
 option(USE_BUILTIN_MINIZIP "Use builtin Minizip" YES)
 option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
