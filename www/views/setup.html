@@ -26,6 +26,13 @@
 		    </table>
     </form>
 </div>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
+<script>
+    $('.span6').click(function() {
+        $("i", this).toggleClass("fas fa-angle-down fas fa-angle-up");
+    });
+</script>
+
 <div id="maindiv" class="container">
 	<div id="settingscontent">
 		<form id="settings">
@@ -362,164 +369,452 @@
 							</div>
 						</section>
 					</div>
-					<div class="tab-pane" id="tabnotifications">
+                    <div class="tab-pane" id="tabnotifications">
 						<!-- Notification system
 						================================================== -->
 						<section id="notifications">
 							<div class="page-header-small">
 								<h1 data-i18n="Notifications">Notifications</h1>
 							</div>
+                            <!--Accordion wrapper -->
+                            <div class="accordion md-accordion" id="accordionEx" role="tablist" aria-multiselectable="true">
 							<div class="row-fluid">
-								<div class="span6">
-									<h2><span data-i18n="Prowl (iPhone/iPad)"></span>:</h2>
-									<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>: </td>
-										<td><input type="checkbox" id="ProwlEnabled" name="ProwlEnabled"/><label for="ProwlEnabled"/></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="ProwlAPI"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="ProwlAPI" name="ProwlAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('prowl')">Test</button></td>
-									</tr>
-									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.prowlapp.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
-									<br>
-								</div>
-								<div class="span6">
-									<h2><span data-i18n="IFTTT">IFTTT</span>:</h2>
-									<table class="display" id="ifttttable" border="0" cellpadding="0" cellspacing="0">
-										<tr>
-											<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-											<td><input type="checkbox" id="IFTTTEnabled" name="IFTTTEnabled" /><label for="IFTTTEnabled"/></td>
-										</tr>
-										<tr>
-											<td align="right"><label><span data-i18n="API Key">API Key</span>: </label></td>
-											<td><input type="input" id="IFTTTAPI" name="IFTTTAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-										</tr>
-									</table>
-									<span data-i18n="Create a Maker/Webhook">Create a Maker/Webhook</span> <a class="norm-link" href="https://ifttt.com/maker_webhooks" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
-									<br>
-								</div>
-							</div>
-							<div class="row-fluid">
-								<div class="span6">
-									<h2><span data-i18n="Pushbullet (iOS/Android/Windows)"></span>:</h2>
-									<table class="display" id="pushbullettable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-										<td><input type="checkbox" id="PushbulletEnabled" name="PushbulletEnabled"/><label for="PushbulletEnabled"/></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="PushbulletAPI"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="PushbulletAPI" name="PushbulletAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushbullet')">Test</button></td>
-									</tr>
-									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.pushbullet.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
-									<br>
-								</div>
-								<div class="span6">
-									<h2><span data-i18n="Pushsafer (iOS/Android/Windows)"></span>:</h2>
-									<table class="display" id="pushsafertable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-										<td><input type="checkbox" id="PushsaferEnabled" name="PushsaferEnabled"/><label for="PushsaferEnabled"/></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="PushsaferAPI"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="PushsaferAPI" name="PushsaferAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushsafer')">Test</button></td>
-									</tr>
-                                    <tr>
-                                        <td align="right"><label for="PushsaferImage"><span data-i18n="ImageURL"></span>: </label></td>
-                                        <td><input type="input" id="PushsaferImage" name="PushsaferImage" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-                                    </tr>
-									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.pushsafer.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
-									<br>
-								</div>
-							</div>
-							<div class="row-fluid">
-								<div class="span6">
-									<h2><span data-i18n="Pushover (Android/iOs)"></span>:</h2>
-									<table class="display" id="pushovertable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-										<td><input type="checkbox" id="PushoverEnabled" name="PushoverEnabled"/><label for="PushoverEnabled"/></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="PushoverUser"><span data-i18n="USER KEY"></span>: </label></td>
-										<td><input type="input" id="PushoverUser" name="PushoverUser" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  </td>
-									</tr>
-									<tr>
-										<td align="right"><label for="PushoverAPI"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="PushoverAPI" name="PushoverAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushover')">Test</button></td>
-									</tr>
-									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushover.net" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
-									<br>
-								</div>
-								<div class="span6">
-									<h2><span data-i18n="Pushalot (Windows/Windows Phone)"></span>:</h2>
-									<table class="display" id="pushalottable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-										<td><input type="checkbox" id="PushALotEnabled" name="PushALotEnabled"/><label for="PushALotEnabled"/></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="PushALotAPI"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="PushALotAPI" name="PushALotAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushalot')">Test</button></td>
-									</tr>
-									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushalot.com/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
-									<br>
-								</div>
-                                </div>
-                                <div class="row-fluid">
-								<div class="span6">
-									<h2><span data-i18n="Clickatell SMS">Clickatell SMS</span>:</h2>
-									<table class="display" id="smstable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-										<td><input type="checkbox" id="ClickatellEnabled" name="ClickatellEnabled"/><label for="ClickatellEnabled"/></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="ClickatellAPI"><span data-i18n="API Key">API Key</span>: </label></td>
-										<td><input type="input" id="ClickatellAPI" name="ClickatellAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="ClickatellTo"><span data-i18n="To"></span>: </label></td>
-										<td><input type="input" id="ClickatellTo" name="ClickatellTo" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('clickatell')">Test</button></td>
-									</tr>
-									<tr>
-										<td></td>
-										<td><span data-i18n="(Separate by a semicolon, For Example"></span>: +3123456789;+44567890)</td>
-									</tr>
-									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="http://www.clickatell.com/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
-									<br />
-								</div>
+                                <!-- Accordion card Prowl -->
                                 <div class="span6">
-                                    <h2><span data-i18n="Telegram">Telegram</span>:</h2>
-                                    <table class="display" id="telegramtable" border="0" cellpadding="0" cellspacing="0">
-                                    <tr>
-                                        <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-                                        <td><input type="checkbox" id="TelegramEnabled" name="TelegramEnabled"/><label for="TelegramEnabled"/></td>
-                                    </tr>
-                                    <tr>
-                                        <td align="right"><label for="TelegramAPI"><span data-i18n="API Key"></span>: </label></td>
-                                        <td><input type="input" id="TelegramAPI" name="TelegramAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('telegram')">Test</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td align="right"><label for="TelegramChat"><span data-i18n="Chat ID">Chat ID</span>: </label></td>
-                                        <td><input type="input" id="TelegramChat" name="TelegramChat" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
-                                    </tr>
-                                    </table>
-                                    <span data-i18n="To get a free account/API key click"></span> <a href="https://telegram.org/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
-                                    <br>
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingProwl">                               
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne1" aria-expanded="true"
+                                        aria-controls="collapseOne1">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="Prowl (iPhone/iPad)"></span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne1" class="collapse show" role="tabpanel" aria-labelledby="headingProwl"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                            <table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td align="right" style="width:80px"><span data-i18n="Enabled"></span>: </td>
+                                                <td><input type="checkbox" id="ProwlEnabled" name="ProwlEnabled"/><label for="ProwlEnabled"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td align="right"><label for="ProwlAPI"><span data-i18n="API Key"></span>: </label></td>
+                                                <td><input type="input" id="ProwlAPI" name="ProwlAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('prowl')">Test</button></td>
+                                            </tr>
+                                            </table>
+                                        <span data-i18n="To get a free account/API key click"></span> <a href="https://www.prowlapp.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+                                        </div>
+                                    </div>
                                 </div>
-                                </div>
-                                <div class="row-fluid">
+                                <!-- Accordion card IFTTT -->
 								<div class="span6">
-									<h2><span data-i18n="Google Cloud Messaging"></span>:</h2>
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingIFTTT">
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne2" aria-expanded="true"
+                                        aria-controls="collapseOne2">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="IFTTT">IFTTT</span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne2" class="collapse show" role="tabpanel" aria-labelledby="headingIFTTT"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                        <table class="display" id="ifttttable" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                                <td><input type="checkbox" id="IFTTTEnabled" name="IFTTTEnabled" /><label for="IFTTTEnabled"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td align="right"><label><span data-i18n="API Key">API Key</span>: </label></td>
+                                                <td><input type="input" id="IFTTTAPI" name="IFTTTAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                            </tr>
+                                        </table>
+                                        <span data-i18n="Create a Maker/Webhook">Create a Maker/Webhook</span> <a class="norm-link" href="https://ifttt.com/maker_webhooks" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+                                        </div>
+                                    </div>
+								</div>
+                            </div>
+							<div class="row-fluid">
+                                <!-- Accordion card Pushbullet -->
+								<div class="span6">
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingPushbullet">
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne3" aria-expanded="true"
+                                        aria-controls="collapseOne3">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="Pushbullet (iOS/Android/Windows)"></span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne3" class="collapse show" role="tabpanel" aria-labelledby="headingPushbullet"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                        <table class="display" id="pushbullettable" border="0" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                            <td><input type="checkbox" id="PushbulletEnabled" name="PushbulletEnabled"/><label for="PushbulletEnabled"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="PushbulletAPI"><span data-i18n="API Key"></span>: </label></td>
+                                            <td><input type="input" id="PushbulletAPI" name="PushbulletAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushbullet')">Test</button></td>
+                                        </tr>
+                                        </table>
+                                        <span data-i18n="To get a free account/API key click"></span> <a href="https://www.pushbullet.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+                                        <br>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Accordion card Pushsafer -->
+								<div class="span6">
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingPushsafer">
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne4" aria-expanded="true"
+                                        aria-controls="collapseOne4">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="Pushsafer (iOS/Android/Windows)"></span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne4" class="collapse show" role="tabpanel" aria-labelledby="headingPushsafer"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                        <table class="display" id="pushsafertable" border="0" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                            <td><input type="checkbox" id="PushsaferEnabled" name="PushsaferEnabled"/><label for="PushsaferEnabled"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="PushsaferAPI"><span data-i18n="API Key"></span>: </label></td>
+                                            <td><input type="input" id="PushsaferAPI" name="PushsaferAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushsafer')">Test</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="PushsaferImage"><span data-i18n="ImageURL"></span>: </label></td>
+                                            <td><input type="input" id="PushsaferImage" name="PushsaferImage" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                        </tr>
+                                        </table>
+                                        <span data-i18n="To get a free account/API key click"></span> <a href="https://www.pushsafer.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+									<br>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+							<div class="row-fluid">
+								<!-- Accordion card Pushover -->
+								<div class="span6">
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingPushover">
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne5" aria-expanded="true"
+                                        aria-controls="collapseOne5">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="Pushover (Android/iOs)"></span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne5" class="collapse show" role="tabpanel" aria-labelledby="headingPushover"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                        <table class="display" id="pushovertable" border="0" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                            <td><input type="checkbox" id="PushoverEnabled" name="PushoverEnabled"/><label for="PushoverEnabled"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="PushoverUser"><span data-i18n="USER KEY"></span>: </label></td>
+                                            <td><input type="input" id="PushoverUser" name="PushoverUser" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="PushoverAPI"><span data-i18n="API Key"></span>: </label></td>
+                                            <td><input type="input" id="PushoverAPI" name="PushoverAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushover')">Test</button></td>
+                                        </tr>
+                                        </table>
+                                        <span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushover.net" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+                                        <br>
+                                        </div>
+                                    </div>
+                                </div>
+								<!-- Accordion card Pushalot -->
+								<div class="span6">
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingPushalot">
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne6" aria-expanded="true"
+                                        aria-controls="collapseOne6">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="Pushalot (Windows/Windows Phone)"></span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne6" class="collapse show" role="tabpanel" aria-labelledby="headingPushalot"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                        <table class="display" id="pushalottable" border="0" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                            <td><input type="checkbox" id="PushALotEnabled" name="PushALotEnabled"/><label for="PushALotEnabled"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="PushALotAPI"><span data-i18n="API Key"></span>: </label></td>
+                                            <td><input type="input" id="PushALotAPI" name="PushALotAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushalot')">Test</button></td>
+                                        </tr>
+                                        </table>
+                                        <span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushalot.com/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row-fluid">
+								<!-- Accordion card Clickatell -->
+								<div class="span6">
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingClickatell">
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne7" aria-expanded="true"
+                                        aria-controls="collapseOne7">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="Clickatell SMS">Clickatell SMS</span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne7" class="collapse show" role="tabpanel" aria-labelledby="headingClickatell"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                        <table class="display" id="smstable" border="0" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                            <td><input type="checkbox" id="ClickatellEnabled" name="ClickatellEnabled"/><label for="ClickatellEnabled"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="ClickatellAPI"><span data-i18n="API Key">API Key</span>: </label></td>
+                                            <td><input type="input" id="ClickatellAPI" name="ClickatellAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="ClickatellTo"><span data-i18n="To"></span>: </label></td>
+                                            <td><input type="input" id="ClickatellTo" name="ClickatellTo" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('clickatell')">Test</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td><span data-i18n="(Separate by a semicolon, For Example"></span>: +3123456789;+44567890)</td>
+                                        </tr>
+                                        </table>
+                                        <span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="http://www.clickatell.com/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+                                        <br />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Accordion card Telegram -->
+								<div class="span6">
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingTelegram">
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne8" aria-expanded="true"
+                                        aria-controls="collapseOne8">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="Telegram">Telegram</span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne8" class="collapse show" role="tabpanel" aria-labelledby="headingTelegram"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                        <table class="display" id="telegramtable" border="0" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                            <td><input type="checkbox" id="TelegramEnabled" name="TelegramEnabled"/><label for="TelegramEnabled"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="TelegramAPI"><span data-i18n="API Key"></span>: </label></td>
+                                            <td><input type="input" id="TelegramAPI" name="TelegramAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('telegram')">Test</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="TelegramChat"><span data-i18n="Chat ID">Chat ID</span>: </label></td>
+                                            <td><input type="input" id="TelegramChat" name="TelegramChat" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
+                                        </tr>
+                                        </table>
+                                        <span data-i18n="To get a free account/API key click"></span> <a href="https://telegram.org/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+                                        <br>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row-fluid">
+								<!-- Accordion card Custom HTTP -->
+								<div class="span12">
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingCustomhttp">
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne9" aria-expanded="true"
+                                        aria-controls="collapseOne9">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="Custom HTTP">Custom HTTP</span>/<span data-i18n="Action">Action</span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne9" class="collapse show" role="tabpanel" aria-labelledby="headingCustomhttp"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                        <table class="display" id="httptable" border="0" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                            <td><input type="checkbox" id="HTTPEnabled" name="HTTPEnabled"/><label for="HTTPEnabled"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="HTTPField1">#FIELD1: </label></td>
+                                            <td><input type="input" id="HTTPField1" name="HTTPField1" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="HTTPField2">#FIELD2: </label></td>
+                                            <td><input type="input" id="HTTPField2" name="HTTPField2" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="HTTPField3">#FIELD3: </label></td>
+                                            <td><input type="input" id="HTTPField3" name="HTTPField3" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="HTTPField4">#FIELD4: </label></td>
+                                            <td><input type="input" id="HTTPField4" name="HTTPField4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="HTTPTo">#TO: </label></td>
+                                            <td><input type="input" id="HTTPTo" name="HTTPTo" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="HTTPURL"><span data-i18n="URL"></span>/<span data-i18n="Action"></span>: </label></td>
+                                            <td>
+                                                <textarea id="HTTPURL" name="HTTPURL" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
+                                                <span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span><br>
+                                                <span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE, #PRIORITY
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="HTTPPostData">POST Data: </label></td>
+                                            <td>
+                                                <textarea id="HTTPPostData" name="HTTPPostData" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
+                                                <span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE, #PRIORITY
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="HTTPPostContentType">POST Content-Type: </label></td>
+                                            <td>
+                                                <input type="input" id="HTTPPostContentType" name="HTTPPostContentType" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('http')">Test</button><br>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right"><label for="HTTPPostHeaders">POST Headers: </label></td>
+                                            <td>
+                                                <textarea id="HTTPPostHeaders" name="HTTPPostHeaders" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
+                                            </td>
+                                        </tr>
+                                        </table>
+                                        <br>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+							<div class="row-fluid">
+								<!-- Accordion card Kodi -->
+								<div class="span6">
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingKodi">
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne10" aria-expanded="true"
+                                        aria-controls="collapseOne10">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="Kodi Media Player"></span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne10" class="collapse show" role="tabpanel" aria-labelledby="headingKodi"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                        <table class="display" id="koditable" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                                <td><input type="checkbox" id="KodiEnabled" name="KodiEnabled"/><label for="KodiEnabled"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td align="right"><label for="KodiIPAddress"><span data-i18n="IP Address"></span>: </label></td>
+                                                <td>
+                                                    <input type="input" id="KodiIPAddress" name="KodiIPAddress" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+                                                    <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('kodi')">Test</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="right" style="width:80px">
+                                                    <label for="KodiPort"><span data-i18n="Port"></span>: </label>
+                                                </td>
+                                                <td>
+                                                    <input type="input" id="KodiPort" name="KodiPort" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="right" style="width:80px">
+                                                    <label for="KodiTimeToLive"><span data-i18n="Hops"></span>: </label>
+                                                </td>
+                                                <td>
+                                                    <input type="input" id="KodiTimeToLive" name="KodiTimeToLive" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <span data-i18n="Test with default settings before changing. Learn about Kodi"></span> <a class="norm-link" href="http://kodi.tv/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+                                        <span>(e.g 224.0.0.1, 192.168.1.100;192.168.1.101;...)</span><br>
+                                        <br>
+                                        </div>
+                                    </div>
+                                </div>
+								<!-- Accordion card Logitech -->
+								<div class="span6">
+                                    <!-- Card header -->
+                                    <div class="card-header" role="tab" id="headingLogitech">
+                                      <a data-toggle="collapse" data-parent="#accordionEx" data-target="#collapseOne11" aria-expanded="true"
+                                        aria-controls="collapseOne11">
+                                        <h2 class="mb-0"><i class="fas fa-angle-down" style="float:right"></i>
+                                          <span data-i18n="Logitech Media Server"></span>
+                                        </h2>
+                                      </a>
+                                    </div>
+                                    <!-- Card body -->
+                                    <div id="collapseOne11" class="collapse show" role="tabpanel" aria-labelledby="headingLogitech"
+                                      data-parent="#accordionEx">
+                                        <div class="card-body">
+                                        <table class="display" id="lmstable" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                                <td><input type="checkbox" id="LmsEnabled" name="LmsEnabled"/><label for="LmsEnabled"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td align="right">
+                                                    <label for="LmsPlayerMac"><span data-i18n="Player"></span> <span data-i18n="Mac Address"></span>: </label>
+                                                </td>
+                                                <td>
+                                                    <input type="input" id="LmsPlayerMac" name="LmsPlayerMac" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+                                                    <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('lms')">Test</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="right" style="width:80px">
+                                                    <label for="LmsDuration"><span data-i18n="Duration"></span>: </label>
+                                                </td>
+                                                <td>
+                                                    <input type="input" id="LmsDuration" name="LmsDuration" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <span style="color:red" data-i18n="This notifier only works when the Logitech Media Server hardware has been added/enabled"></span><br>
+                                        <br>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Google Cloud Messaging"></span></h2>
 									<table class="display" id="gcmtable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
 										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
@@ -529,135 +824,10 @@
 									</table>
 									<br>
 								</div>
-							</div>
-                                <div class="row-fluid">
-								<div class="span12">
-									<h2><span data-i18n="Custom HTTP">Custom HTTP</span>/<span data-i18n="Action">Action</span>:</h2>
-									<table class="display" id="httptable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-										<td><input type="checkbox" id="HTTPEnabled" name="HTTPEnabled"/><label for="HTTPEnabled"/></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="HTTPField1">#FIELD1: </label></td>
-										<td><input type="input" id="HTTPField1" name="HTTPField1" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="HTTPField2">#FIELD2: </label></td>
-										<td><input type="input" id="HTTPField2" name="HTTPField2" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="HTTPField3">#FIELD3: </label></td>
-										<td><input type="input" id="HTTPField3" name="HTTPField3" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="HTTPField4">#FIELD4: </label></td>
-										<td><input type="input" id="HTTPField4" name="HTTPField4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="HTTPTo">#TO: </label></td>
-										<td><input type="input" id="HTTPTo" name="HTTPTo" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="HTTPURL"><span data-i18n="URL"></span>/<span data-i18n="Action"></span>: </label></td>
-										<td>
-											<textarea id="HTTPURL" name="HTTPURL" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
-											<span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span><br>
-											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE, #PRIORITY
-										</td>
-									</tr>
-                                    <tr>
-										<td align="right"><label for="HTTPPostData">POST Data: </label></td>
-										<td>
-											<textarea id="HTTPPostData" name="HTTPPostData" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
-											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE, #PRIORITY
-										</td>
-									</tr>
-                                    <tr>
-										<td align="right"><label for="HTTPPostContentType">POST Content-Type: </label></td>
-										<td>
-                                            <input type="input" id="HTTPPostContentType" name="HTTPPostContentType" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('http')">Test</button><br>
-										</td>
-									</tr>
-                                    <tr>
-										<td align="right"><label for="HTTPPostHeaders">POST Headers: </label></td>
-										<td>
-											<textarea id="HTTPPostHeaders" name="HTTPPostHeaders" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
-										</td>
-									</tr>
-									</table>
-									<br>
-								</div>
-							</div>
-							<div class="row-fluid">
-								<div class="span6">
-									<h2><span data-i18n="Kodi Media Player"></span>:</h2>
-									<table class="display" id="koditable" border="0" cellpadding="0" cellspacing="0">
-										<tr>
-											<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-											<td><input type="checkbox" id="KodiEnabled" name="KodiEnabled"/><label for="KodiEnabled"/></td>
-										</tr>
-										<tr>
-											<td align="right"><label for="KodiIPAddress"><span data-i18n="IP Address"></span>: </label></td>
-											<td>
-												<input type="input" id="KodiIPAddress" name="KodiIPAddress" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-												<button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('kodi')">Test</button>
-											</td>
-										</tr>
-										<tr>
-											<td align="right" style="width:80px">
-												<label for="KodiPort"><span data-i18n="Port"></span>: </label>
-											</td>
-											<td>
-												<input type="input" id="KodiPort" name="KodiPort" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-											</td>
-										</tr>
-										<tr>
-											<td align="right" style="width:80px">
-												<label for="KodiTimeToLive"><span data-i18n="Hops"></span>: </label>
-											</td>
-											<td>
-												<input type="input" id="KodiTimeToLive" name="KodiTimeToLive" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-											</td>
-										</tr>
-									</table>
-									<span data-i18n="Test with default settings before changing. Learn about Kodi"></span> <a class="norm-link" href="http://kodi.tv/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
-									<span>(e.g 224.0.0.1, 192.168.1.100;192.168.1.101;...)</span><br>
-									<br>
-								</div>
-								<div class="span6">
-									<h2><span data-i18n="Logitech Media Server"></span>:</h2>
-									<table class="display" id="lmstable" border="0" cellpadding="0" cellspacing="0">
-										<tr>
-											<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-											<td><input type="checkbox" id="LmsEnabled" name="LmsEnabled"/><label for="LmsEnabled"/></td>
-										</tr>
-										<tr>
-											<td align="right">
-												<label for="LmsPlayerMac"><span data-i18n="Player"></span> <span data-i18n="Mac Address"></span>: </label>
-											</td>
-											<td>
-												<input type="input" id="LmsPlayerMac" name="LmsPlayerMac" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-												<button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('lms')">Test</button>
-											</td>
-										</tr>
-										<tr>
-											<td align="right" style="width:80px">
-												<label for="LmsDuration"><span data-i18n="Duration"></span>: </label>
-											</td>
-											<td>
-												<input type="input" id="LmsDuration" name="LmsDuration" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-											</td>
-										</tr>
-									</table>
-									<span style="color:red" data-i18n="This notifier only works when the Logitech Media Server hardware has been added/enabled"></span><br>
-									<br>
-								</div>
-							</div>
-							<br>
+                            </div>
 							<div class="row-fluid">
 								<div class="span12">
-									<h2><span data-i18n="Notification Intervals"></span>:</h2>
+									<h2><span data-i18n="Notification Intervals"></span></h2>
 									<table class="display" id="nitable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
 										<td align="right" style="width:60px"><label><span data-i18n="Sensors"></span>: </label></td>
@@ -731,6 +901,7 @@
 									</table>
 								</div>
 							</div>
+                          </div>
 						</section>
 					</div>
 					<div class="tab-pane" id="tabemail">
@@ -1184,7 +1355,9 @@
 						</div>
 							<div class="row-fluid">
 								<div class="span12">
+                                    <br>
 									<center><a data-i18n="Backup Database" class="btn btn-primary" href="backupdatabase.php" download>Backup Database</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a data-i18n="Restore Database" class="btn btn-warning" href="javascript:SwitchLayout('RestoreDatabase')">Restore Database</a></center>
+                                    <br>
 								</div>
 							</div>
 						</section>
