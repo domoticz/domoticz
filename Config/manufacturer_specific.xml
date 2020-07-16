@@ -602,6 +602,8 @@
     <Product config="fakro/zws12.xml" id="0001" name="ZWS12 Chain actuator 12VDC" type="0003"/>
     <Product config="fakro/zws230.xml" id="0002" name="ZWS230 Chain actuator 230VAC" type="0003"/>
     <Product config="fakro/zwrs.xml" id="0001" name="ZWRS Roller Shutter FLiRS module" type="0016"/>
+    <Product config="fakro/arzsolar.xml" id="0012" name="ARZ SOLAR Roof Window Roller Shutter" type="0003"/>
+    <Product config="fakro/zrh12.xml" id="0004" name="ZRH12 Portable Remote Controller" type="0001"/>
   </Manufacturer>
   <Manufacturer id="016a" name="Fantem (Oomi)">
     <!-- EU-market products seems to start with type prefix "00" -->
