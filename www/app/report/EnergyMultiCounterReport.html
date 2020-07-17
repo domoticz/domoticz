@@ -17,7 +17,8 @@
         {{:: 'R1' | translate }}: {{:: $ctrl.data.return1.counter.toFixed(3) }} {{:: $ctrl.unit}},
         {{:: 'R2' | translate }}: {{:: $ctrl.data.return2.counter.toFixed(3) }} {{:: $ctrl.unit}}
     </div>
-    <div>{{:: 'Year Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
+	<div>{{:: 'Total nett usage' | translate }}: {{$ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}</div>
+    	<div>{{:: 'Year Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
 </div>
 
 <div ng-if="::$ctrl.isMonthView" style="margin-bottom: 12px">
