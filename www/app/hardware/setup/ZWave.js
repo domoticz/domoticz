@@ -1044,9 +1044,11 @@ define(['app'], function (app) {
 								if (item.help !== "") {
 									szConfig += '<span class="zwave_help">' + item.help + '</span><br>';
 								}
+/*								
 								if (item.LastUpdate.length > 1) {
 									szConfig += '<span class="zwave_last_update">Last Update: ' + item.LastUpdate + '</span><br />';
 								}
+*/								
 								szConfig += "<br />";
 							});
 							if (bHaveConfiguration === true) {
