@@ -219,6 +219,7 @@ hardware/EnOceanESP3.cpp
 hardware/EnphaseAPI.cpp
 hardware/Ec3kMeterTCP.cpp
 hardware/eVehicles/TeslaApi.cpp
+hardware/eVehicles/MercApi.cpp
 hardware/eVehicles/eVehicle.cpp
 hardware/EvohomeBase.cpp
 hardware/EvohomeRadio.cpp

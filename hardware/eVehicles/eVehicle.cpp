@@ -6,6 +6,7 @@ Author: MrHobbes74 (github.com/MrHobbes74)
 21/02/2020 1.0 Creation
 13/03/2020 1.1 Added keep asleep support
 28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+24/07/2020 1.3 Added new Mercedes Class (KidDigital)
 
 License: Public domain
 
@@ -13,6 +14,7 @@ License: Public domain
 #include "stdafx.h"
 #include "eVehicle.h"
 #include "TeslaApi.h"
+#include "MercApi.h"
 #include "../../main/Helper.h"
 #include "../../main/Logger.h"
 #include "../hardwaretypes.h"
@@ -50,6 +52,9 @@ CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& 
 	{
 	case Tesla:
 		m_api = new CTeslaApi(username, password, carid);
+		break;
+	case Mercedes:
+		m_api = new CMercApi(username, password, carid);
 		break;
 	default:
 		Log(LOG_ERROR, "Unsupported vehicle type.");

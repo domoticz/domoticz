@@ -6,6 +6,7 @@ Author: MrHobbes74 (github.com/MrHobbes74)
 21/02/2020 1.0 Creation
 13/03/2020 1.1 Added keep asleep support
 28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+24/07/2020 1.3 Added new Mercedes Class (KidDigital)
 
 License: Public domain
 
@@ -20,7 +21,8 @@ class CeVehicle : public CDomoticzHardwareBase
 {
 public:
 	enum eVehicleType {
-		Tesla
+		Tesla,
+		Mercedes
 	};
 
 	CeVehicle(const int ID, const eVehicleType vehicletype, const std::string& username, const std::string& password, int defaultinterval, int activeinterval, bool allowwakeup, const std::string& carid);
@@ -130,4 +132,3 @@ private:
 	eAlertType m_currentalert;
 	std::string m_currentalerttext;
 };
-

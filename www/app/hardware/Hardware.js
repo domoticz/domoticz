@@ -1038,6 +1038,41 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Mercedes") >= 0) {
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var vinnr = $("#hardwarecontent #divmercedes #vinnr").val();
+				var activeinterval = parseInt($("#hardwarecontent #divmercedes #activeinterval").val());
+				if (activeinterval < 1) {
+					activeinterval = 1;
+				}
+				var defaultinterval = parseInt($("#hardwarecontent #divmercedes #defaultinterval").val());
+				if (defaultinterval < 1) {
+					defaultinterval = 20;
+				}
+				var allowwakeup = $("#hardwarecontent #divmercedes #comboallowwakeup").val();
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&extra=" + vinnr +
+					"&Mode1=" + defaultinterval +
+					"&Mode2=" + activeinterval + 
+					"&Mode3=" + allowwakeup,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (
 				(text.indexOf("ICY") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
@@ -2346,6 +2381,40 @@ define(['app'], function (app) {
 					defaultinterval = 20;
 				}
 				var allowwakeup = $("#hardwarecontent #divtesla #comboallowwakeup").val();
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout +
+					"&extra=" + vinnr +
+					"&Mode1=" + defaultinterval +
+					"&Mode2=" + activeinterval +
+					"&Mode3=" + allowwakeup,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Mercedes") >= 0) {
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var vinnr = encodeURIComponent($("#hardwarecontent #divmercedes #vinnr").val());
+				var activeinterval = parseInt($("#hardwarecontent #divmercedes #activeinterval").val());
+				if (activeinterval < 1) {
+					activeinterval = 1;
+				}
+				var defaultinterval = parseInt($("#hardwarecontent #divmercedes #defaultinterval").val());
+				if (defaultinterval < 1) {
+					defaultinterval = 20;
+				}
+				var allowwakeup = $("#hardwarecontent #divmercedes #comboallowwakeup").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(username) +
@@ -3886,6 +3955,12 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamstesla #activeinterval").val(data["Mode2"]);
 							$("#hardwarecontent #hardwareparamstesla #comboallowwakeup").val(data["Mode3"]);
 						}
+						else if (data["Type"].indexOf("Mercedes") >= 0) {
+							$("#hardwarecontent #hardwareparamsmercedes #vinnr").val(data["Extra"]);
+							$("#hardwarecontent #hardwareparamsmercedes #defaultinterval").val(data["Mode1"]);
+							$("#hardwarecontent #hardwareparamsmercedes #activeinterval").val(data["Mode2"]);
+							$("#hardwarecontent #hardwareparamsmercedes #comboallowwakeup").val(data["Mode3"]);
+						}
 						else if (data["Type"].indexOf("Satel Integra") >= 0) {
 							$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
 						}
@@ -3990,6 +4065,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("Thermosmart") >= 0) ||
                             (data["Type"].indexOf("Tado") >= 0) ||
                             (data["Type"].indexOf("Tesla") >= 0) ||
+                            (data["Type"].indexOf("Mercedes") >= 0) ||
 							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
 							(data["Type"].indexOf("HEOS by DENON") >= 0) ||
 							(data["Type"].indexOf("Razberry") >= 0) ||
@@ -4149,6 +4225,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divnestoauthapi").hide();
 			$("#hardwarecontent #divenecotoon").hide();
 			$("#hardwarecontent #divtesla").hide();
+			$("#hardwarecontent #divmercedes").hide();
 			$("#hardwarecontent #div1wire").hide();
 			$("#hardwarecontent #divgoodweweb").hide();
 			$("#hardwarecontent #divi2clocal").hide();
@@ -4330,6 +4407,10 @@ define(['app'], function (app) {
 			else if (text.indexOf("Tesla") >= 0) {
 				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #divtesla").show();
+			}
+			else if (text.indexOf("Mercedes") >= 0) {
+				$("#hardwarecontent #divlogin").show();
+				$("#hardwarecontent #divmercedes").show();
 			}
 			else if (text.indexOf("SBFSpot") >= 0) {
 				$("#hardwarecontent #divlocation").show();
