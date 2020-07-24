@@ -297,6 +297,7 @@ std::string CeVehicle::GetCommandString(const eApiCommandType command)
 void CeVehicle::Do_Work()
 {
 	int sec_counter = 0;
+	int fail_counter = 0;
 	int interval = 1000;
 	bool initial_check = true;
 	Log(LOG_STATUS, "Worker started...");
@@ -315,6 +316,17 @@ void CeVehicle::Do_Work()
 		if (!m_loggedin || (sec_counter % 68400 == 0))
 		{
 			Login();
+			if(!m_loggedin)
+			{
+				fail_counter++;
+
+				if(fail_counter > 3)
+				{
+					Log(LOG_STATUS, "Aborting due to too many failed authentication attempts (and prevent getting blocked)!");
+					break;
+				}
+			}
+
 			sec_counter = 1;
 			continue;
 		}

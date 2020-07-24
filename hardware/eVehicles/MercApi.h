@@ -35,7 +35,6 @@ private:
 	};
 	bool GetData(std::string datatype, Json::Value& reply);
 	bool SendCommand(std::string command, Json::Value& reply, std::string parameters = "");
-	bool FindCarInAccount();
 	void GetLocationData(Json::Value& jsondata, tLocationData& data);
 	void GetChargeData(Json::Value& jsondata, tChargeData& data);
 	void GetClimateData(Json::Value& jsondata, tClimateData& data);

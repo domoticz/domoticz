@@ -15,42 +15,47 @@ License: Public domain
 #include "../../httpclient/UrlEncode.h"
 #include "../../httpclient/HTTPClient.h"
 #include "../../main/json_helper.h"
+#include "../../webserver/Base64.h"
 #include <sstream>
 #include <iomanip>
 
-// based on TESLA API as described on https://tesla-api.timdorr.com/
-#define TESLA_URL "https://owner-api.teslamotors.com"
-#define TESLA_API "/api/1/vehicles"
-#define TESLA_API_COMMAND "/command/"
-#define TESLA_API_REQUEST "/data_request/"
-#define TESLA_API_AUTH "/oauth/token"
-
-#define TESLA_CLIENT_ID "81527cff06843c8634fdc09e8ac0abefb46ac849f38fe1e431c2ef2106796384"
-#define TESLA_CLIENT_SECRET "c7257eb71a564034f9419ee651c7d0e5f7aa6bfbd18bafb5c5c033b093bb2fa3"
+// based on API's as described on https://developer.mercedes-benz.com/products
+// Assumes that one has a registered Mercedes ME account and using the MB developer portal
+// registers for the following BYOCAR (Bring Your Own CAR) API's:
+// - Fuel Status
+// - Pay as you drive
+// - Vehicle Lock status
+// - Vehicle status
+// so use the following 4 scope's: mb:vehicle:mbdata:vehiclestatus mb:vehicle:mbdata:fuelstatus mb:vehicle:mbdata:payasyoudrive mb:vehicle:mbdata:vehiclelock
+#define MERC_URL "https://api.secure.mercedes-benz.com"
+#define MERC_API_AUTH "/oidc10/auth/oauth/v2/authorize"
+#define MERC_API_TOKEN "/oidc10/auth/oauth/v2/token"
+#define MERC_API "/vehicledata/v1/vehicles/{{VIN}}"
+#define MERC_API_RESOURCES "/resources"
 
 #define TLAPITIMEOUT (25)
 
 CMercApi::CMercApi(const std::string username, const std::string password, const std::string vinnr)
 {
 	m_username = username;
-	m_password = password;
+	m_password = base64_encode(username);
 	m_VIN = vinnr;
 	m_authtoken = "";
-	m_refreshtoken = "";
+	m_refreshtoken = password;
 	m_carid = 0;
 	m_config.car_name = "";
 	m_config.unit_miles = false;
 	m_config.distance_unit = "km";
 
-	m_capabilities.has_battery_level = true;
-	m_capabilities.has_charge_command = true;
-	m_capabilities.has_climate_command = true;
-	m_capabilities.has_defrost_command = true;
-	m_capabilities.has_inside_temp = true;
-	m_capabilities.has_outside_temp = true;
+	m_capabilities.has_battery_level = false;
+	m_capabilities.has_charge_command = false;
+	m_capabilities.has_climate_command = false;
+	m_capabilities.has_defrost_command = false;
+	m_capabilities.has_inside_temp = false;
+	m_capabilities.has_outside_temp = false;
 	m_capabilities.has_odo = true;
 	m_capabilities.has_lock_status = true;
-	m_capabilities.has_charge_limit = true;
+	m_capabilities.has_charge_limit = false;
 	m_capabilities.sleep_interval = 20;
 }
 
@@ -60,14 +65,11 @@ CMercApi::~CMercApi()
 
 bool CMercApi::Login()
 {
-	_log.Log(LOG_NORM, "MercApi: Attempting login.");
-	if (GetAuthToken(m_username, m_password, false))
+	_log.Log(LOG_NORM, "MercApi: Attempting login (using Refresh token for now!).");
+	if (GetAuthToken("", "", true))
 	{
-		if(FindCarInAccount())
-		{
-			_log.Log(LOG_NORM, "MercApi: Login successful.");
-			return true;
-		}
+		_log.Log(LOG_NORM, "MercApi: Login successful.");
+		return true;
 	}
 
 	_log.Log(LOG_NORM, "MercApi: Failed to login.");
@@ -251,9 +253,9 @@ bool CMercApi::GetData(std::string datatype, Json::Value& reply)
 {
 	std::stringstream ss;
 	if(datatype == "vehicle_data")
-		ss << TESLA_URL << TESLA_API << "/" << m_carid << "/" << datatype;
+		ss << MERC_URL << MERC_API << "/" << m_carid << "/" << datatype;
 	else
-		ss << TESLA_URL << TESLA_API << "/" << m_carid << TESLA_API_REQUEST << datatype;
+		ss << MERC_URL << MERC_API << "/" << m_carid << MERC_API_RESOURCES << datatype;
 	std::string _sUrl = ss.str();
 	std::string _sResponse;
 
@@ -269,42 +271,10 @@ bool CMercApi::GetData(std::string datatype, Json::Value& reply)
 	return true;
 }
 
-bool CMercApi::FindCarInAccount()
-{
-	std::stringstream ss;
-	ss << TESLA_URL << TESLA_API;
-	std::string _sUrl = ss.str();
-	std::string _sResponse;
-	Json::Value _jsRoot;
-	bool car_found = false;
-
-	if (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot, true))
-	{
-		_log.Log(LOG_ERROR, "MercApi: Failed to get car from account.");
-		return false;
-	}
-
-	_log.Debug(DEBUG_NORM, "MercApi: Received %d vehicles from API: %s", _jsRoot["count"].asInt(), _sResponse.c_str());
-	for (int i = 0; i < _jsRoot["count"].asInt(); i++)
-	{
-		if (_jsRoot["response"][i]["vin"].asString() == m_VIN)
-		{
-			m_carid = _jsRoot["response"][i]["id"].asInt64();
-			m_config.car_name = _jsRoot["response"][i]["display_name"].asString();
-			car_found = true;
-			_log.Log(LOG_NORM, "MercApi: Car found in account: VIN %s NAME %s", m_VIN.c_str(), m_config.car_name.c_str());
-			return true;
-		}
-	}
-
-	_log.Log(LOG_ERROR, "MercApi: Car with VIN number %s NOT found in account.", m_VIN.c_str());
-	return car_found;
-}
-
 bool CMercApi::IsAwake()
 {
 	std::stringstream ss;
-	ss << TESLA_URL << TESLA_API << "/" << m_carid;
+	ss << MERC_URL << MERC_API << "/" << m_carid;
 	std::string _sUrl = ss.str();
 	std::string _sResponse;
 	Json::Value _jsRoot;
@@ -389,6 +359,7 @@ bool CMercApi::SendCommand(eCommandType command, std::string parameter)
 
 bool CMercApi::SendCommand(std::string command, Json::Value& reply, std::string parameters)
 {
+	/*
 	std::stringstream ss;
 	if (command == "wake_up")
 		ss << TESLA_URL << TESLA_API << "/" << m_carid << "/" << command;
@@ -410,13 +381,14 @@ bool CMercApi::SendCommand(std::string command, Json::Value& reply, std::string 
 
 	//_log.Log(LOG_NORM, "MercApi: Command %s received reply: %s", command.c_str(), _sResponse.c_str());
 	_log.Debug(DEBUG_NORM, "MercApi: Command %s received reply: %s", command.c_str(), _sResponse.c_str());
-
+	*/
 	return true;
 }
 
-// Requests an authentication token from the Tesla OAuth Api.
+// Requests an access token from the MB OAuth Api.
 bool CMercApi::GetAuthToken(const std::string username, const std::string password, const bool refreshUsingToken)
 {
+	/*
 	if (username.size() == 0 && !refreshUsingToken)
 	{
 		_log.Log(LOG_ERROR, "MercApi: No username specified.");
@@ -427,16 +399,20 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 		_log.Log(LOG_ERROR, "MercApi: No password specified.");
 		return false;
 	}
+	*/
+	if (refreshUsingToken && m_refreshtoken.size() == 0)
+	{
+		_log.Log(LOG_ERROR, "MercApi: No refresh token to perform refresh!");
+		return false;
+	}
 
 	std::stringstream ss;
-	ss << TESLA_URL << TESLA_API_AUTH;
+	ss << MERC_URL << MERC_API_TOKEN;
 	std::string _sUrl = ss.str();
 	std::ostringstream s;
-	std::string _sGrantType = (refreshUsingToken ? "refresh_token" : "password");
+	std::string _sGrantType = (refreshUsingToken ? "refresh_token" : "code");
 
-	s << "client_id=" << TESLA_CLIENT_ID << "&grant_type=";
-	s << _sGrantType << "&client_secret=";
-	s << TESLA_CLIENT_SECRET;
+	s << "grant_type=" << _sGrantType;
 
 	if (refreshUsingToken)
 	{
@@ -444,21 +420,28 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 	}
 	else
 	{
-		s << "&password=" << CURLEncode::URLEncode(password);
-		s << "&email=" << CURLEncode::URLEncode(username);
+		_log.Log(LOG_ERROR, "MercApi: Failed to get token. Only Refresh supported for now!");
+		return false;
 	}
 
 	std::string sPostData = s.str();
 
-	std::string _sResponse;
 	std::vector<std::string> _vExtraHeaders;
 	_vExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
+	_vExtraHeaders.push_back("Authorization: Basic " + m_password);
 
+	std::string _sResponse;
 	Json::Value _jsRoot;
 
 	if (!SendToApi(Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, false))
 	{
 		_log.Log(LOG_ERROR, "MercApi: Failed to get token.");
+		return false;
+	}
+
+	if(!_jsRoot["error"].empty()) 
+	{
+		_log.Log(LOG_ERROR, "MercApi: Received error response (%s).", _jsRoot["error"].asString().c_str());
 		return false;
 	}
 
@@ -481,7 +464,7 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 	return true;
 }
 
-// Sends a request to the Tesla API.
+// Sends a request to the MB API.
 bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, const std::string& sPostData,
 	std::string& sResponse, const std::vector<std::string>& vExtraHeaders, Json::Value& jsDecodedResponse, const bool bSendAuthHeaders, const int timeout)
 {
@@ -507,7 +490,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		if (bSendAuthHeaders) 
 			_vExtraHeaders.push_back("Authorization: Bearer " + m_authtoken);
 
-		// Increase default timeout, tesla is slow
+		// Increase default timeout
 		if(timeout == 0)
 		{
 			HTTPClient::SetConnectionTimeout(TLAPITIMEOUT);
@@ -525,6 +508,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		switch (eMethod)
 		{
 		case Post:
+			_log.Debug(DEBUG_NORM, "MercApi: Performing POST request to Api: %s with Data: %s", sUrl.c_str(), sPostData.c_str());
 			if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
 				for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
@@ -535,6 +519,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			break;
 
 		case Get:
+			_log.Debug(DEBUG_NORM, "MercApi: Performing GET request to Api: %s ", sUrl.c_str());
 			if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
 				for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
@@ -545,11 +530,16 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			break;
 
 		default:
-		{
-			_log.Log(LOG_ERROR, "MercApi: Unknown method specified.");
-			return false;
+			{
+				_log.Log(LOG_ERROR, "MercApi: Unknown method specified.");
+				return false;
+			}
 		}
-		}
+
+		// Debug response
+		for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
+			_ssResponseHeaderString << _vResponseHeaders[i];
+		_log.Debug(DEBUG_NORM, "MercApi: Performed request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 
 		if (sResponse.size() == 0)
 		{
