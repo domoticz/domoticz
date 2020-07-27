@@ -236,6 +236,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		wind_speed = (float)atof(data["wind_avg_m_s"].c_str());
 		haveWind_Speed = true;
 	}
+	if (FindField(data, "wind_avg_mi_h")) // wind speed average (converting mph to m/s)
+	{
+		wind_speed = ((float)atof(data["wind_avg_mi_h"].c_str())) * 0.44704f;
+		haveWind_Speed = true;
+	}
 	if (FindField(data, "wind_dir_deg"))
 	{
 		wind_dir = atoi(data["wind_dir_deg"].c_str()); // does domoticz assume it is degree ? (and not rad or something else)
@@ -249,6 +254,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	if (FindField(data, "wind_max_m_s"))
 	{
 		wind_gust = (float)atof(data["wind_max_m_s"].c_str());
+		haveWind_Gust = true;
+	}
+	if (FindField(data, "wind_max_mi_h")) // wind gusts (converting mph to m/s)
+	{
+		wind_gust = ((float)atof(data["wind_max_mi_h"].c_str())) * 0.44704f;
 		haveWind_Gust = true;
 	}
 	if (FindField(data, "moisture"))
