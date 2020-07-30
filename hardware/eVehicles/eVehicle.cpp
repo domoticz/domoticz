@@ -725,7 +725,7 @@ void CeVehicle::UpdateLocationData(CVehicleApi::tLocationData& data)
 			m_car.home_state = NotAtHome;
 	}
 
-	Log(LOG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, (m_car.home_state == AtHome) ? "true" : "false");
+	Debug(DEBUG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, (m_car.home_state == AtHome) ? "true" : "false");
 
 	m_car.is_driving = data.is_driving;
 }

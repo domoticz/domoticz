@@ -1147,8 +1147,8 @@
 				<td>
 					Two interval types need to be specified:<ul>
 						<li>Default interval is used when the car is not at home, or home but not charging or using climate controls<br />
-							Note that a too low interval (less than 20 minutes) will prevent the car to sleep.</li>
-						<li>Active interval is used when the car is home, and charging or using climate controls</li>
+							Note: Mercedes Me does not support a 'sleep' state, so the default interval can be anything (> 2 minutes to prevent hitting limits).</li>
+						<li>Active interval is used when the car is home, and charging or using climate controls (not implemented at the moment)</li>
 					</ul>
 				</td>
 			</tr>
@@ -1164,10 +1164,14 @@
 			<tr>
 				<td></td>
 				<td>
-					If not allowed, the Mercedes will not be woken up when polled for status information to avoid battery drain. Exceptions:<ul>
-						<li>Commands sent to the car will always wake up the car</li>
-						<li>While the car is connected to a charger (home or not home), the car will always be woken up</li>
+					<span>
+					Not used, here for compatibility reasons. <br />
+					<br />
+					For entering the Username/Password below:<ul>
+						<li>Username : This should be <i>[client_id]:[client_secret]</i> as provided via the Developers Console from Mercedes.</li>
+						<li>Password: This should be a valid <i>Oauth2 Refreshtoken</i> after executing a Authorisation Code grant (using Postman for example)</li>
 					</ul>
+					</span>
 				</td>
 			</tr>
 		</table>

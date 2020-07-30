@@ -39,7 +39,6 @@ private:
 	void GetChargeData(Json::Value& jsondata, tChargeData& data);
 	void GetClimateData(Json::Value& jsondata, tClimateData& data);
 	void GetVehicleData(Json::Value& jsondata, tVehicleData& data);
-	void GetUnitData(Json::Value& jsondata, tConfigData& data);
 	bool GetAuthToken(const std::string username, const std::string password, const bool refreshUsingToken = false);
 	bool SendToApi(const eApiMethod eMethod, const std::string& sUrl, const std::string& sPostData, std::string& sResponse, const std::vector<std::string>& vExtraHeaders, Json::Value& jsDecodedResponse, const bool bSendAuthHeaders = true, const int timeout = 0);
 
@@ -50,4 +49,5 @@ private:
 	std::string m_authtoken;
 	std::string m_refreshtoken;
 	int64_t m_carid;
+	bool m_authenticating;
 };
