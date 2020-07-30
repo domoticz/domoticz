@@ -2,6 +2,7 @@
 
 // implememtation for weather with free api key : http://openweathermap.org/
 // by Fantom (szczukot@poczta.onet.pl)
+// Update Juli 2020 by KidDigital to support new One Call API
 
 #include "DomoticzHardware.h"
 
@@ -23,6 +24,9 @@ private:
 	std::string m_ForecastURL;
 	std::string m_Language;
 	bool m_bHaveGPSCoordinated;
+	double m_Lat;
+	double m_Lon;
+	uint16_t m_Interval;
 	std::shared_ptr<std::thread> m_thread;
 };
 
