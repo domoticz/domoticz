@@ -500,7 +500,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 		std::string vType = DropdownOptionsValue(m_DeviceRowIdx, delpos);
 		unsigned char tempsign = m_sql.m_tempsign[0];
 		_eMeterType metertype = (_eMeterType)metertypein;
-
+		
 		if ((vType == "Temperature") || (vType == "Temperature 1") || (vType == "Temperature 2") || (vType == "Set point"))
 		{
 			sprintf(szData, "%g", ConvertTemperature(std::stod(rawsendValue), tempsign));
@@ -589,7 +589,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 		{
 			sprintf(szData, "%g", std::stof(rawsendValue));
 		}
-		else if (vType == "Counter")
+		else if (vType == "Counter" || vType == "Counter Incremental" )
 		{
 			strcpy(szData, rawsendValue.c_str());
 		}
