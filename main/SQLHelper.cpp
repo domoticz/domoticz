@@ -2792,24 +2792,29 @@ bool CSQLHelper::OpenDatabase()
 						{
 							sd = itt2;
 
-							uint32_t NodeID;
+							uint32_t NodeID = 0UL;
 							std::stringstream s_strid;
 							s_strid << std::hex << sd[1];
 							s_strid >> NodeID;
 							int who = (NodeID >> 16) & 0xffff;
 							int where = NodeID & 0xffff;
-							if (((who == 1) || (who == 2)) &&	// light or automation
-								((where > 0) && (where < 10)))	// < 10 mean area devices
+							if (((who == 1) || (who == 2)) && (where < 1000))	// light or automation								
 							{
-								NodeID |= 0x4000; // Srea devices flag!
-								char ndeviceid[10];
-								sprintf(ndeviceid, "%08X", NodeID);
+								if ((where > 0) && (where < 10))			// < 10 mean area device
+									NodeID += 0x4000; // Area devices flag!
+								else if ((where > 99) && (where < 1000))	// need 4 chars
+									NodeID += 0xC000; // 4 chars devices flag!
+								if (NodeID & 0xC000)
+								{
+									char ndeviceid[10];
+									sprintf(ndeviceid, "%08X", NodeID);
 
-								_log.Log(LOG_STATUS, "COpenWebNetTCP: ID:%s, DeviceID change from %s to %s!", sd[0].c_str(), sd[1].c_str(), ndeviceid);
-								szQuery.clear();
-								szQuery.str("");
-								szQuery << "UPDATE DeviceStatus SET DeviceID='" << ndeviceid << "' WHERE (ID=" << sd[0] << ")";
-								query(szQuery.str());
+									_log.Log(LOG_STATUS, "COpenWebNetTCP: ID:%s, DeviceID change from %s to %s!", sd[0].c_str(), sd[1].c_str(), ndeviceid);
+									szQuery.clear();
+									szQuery.str("");
+									szQuery << "UPDATE DeviceStatus SET DeviceID='" << ndeviceid << "' WHERE (ID=" << sd[0] << ")";
+									query(szQuery.str());
+								}
 							}
 						}
 					}

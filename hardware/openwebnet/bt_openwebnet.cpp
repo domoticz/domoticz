@@ -512,48 +512,6 @@ bt_openwebnet::bt_openwebnet(const std::string& message)
   CreateMsgOpen(message);
 }
 
-bt_openwebnet::bt_openwebnet(const int who, const int what, const int where, const int group)
-{
-	std::stringstream whoStr;
-	std::stringstream whatStr;
-	std::stringstream whereStr;	
-
-	whoStr << who;
-	whatStr << what;
-	if (group) {
-		/*
-			Group Command: GRP [1 - 255]
-			we need to add a '#'
-		*/
-		whereStr << "#";
-	} else if ((where > 99) && (where < 1000)) {
-
-		/* 
-			APL Command: A [01 - 09]; PL [10 - 15]
-			In this case, 'where' is > 99, but < 1000 (area 10)
-
-			int value is for example 110 (A=1, PL=10).
-			The correct string is '0110', so we need to add a '0'
-		*/
-		whereStr << "0";
-	}
-
-	/*
-		In other cases just take 'where' as is
-		Area Command: A [1 - 9] 
-		APL Command: A[1 - 9]; PL[1 - 9]
-		APL Command: A = 10; PL[01 - 15]
-	*/
-
-	whereStr << where;
-
-	std::string sWho = whoStr.str();
-	std::string sWhere = whereStr.str();
-	std::string sWhat = whatStr.str();
-	std::string sWhen = "";
-
-	CreateMsgOpen(sWho, sWhat, sWhere, sWhen);
-}
 
 // creates the open message *who*what*where*when##
 bt_openwebnet::bt_openwebnet(const std::string& who, const std::string& what, const std::string& where, const std::string& when)

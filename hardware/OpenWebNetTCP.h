@@ -69,7 +69,7 @@ private:
 	void UpdateEnergy(const int who, const int where, double fval, const int iInterface, const int BatteryLevel, const char *devname);
 	void UpdateSoundDiffusion(const int who, const int where, const int what, const int iInterface, const int BatteryLevel, const char* devname);
 	bool GetValueMeter(const int NodeID, const int ChildID, double *usage, double *energy);
-	void decodeWhereAndFill(std::string where, std::vector<std::string> whereParam, std::string* devname, int* iWhere);
+	void decodeWhereAndFill(const int who, std::string where, std::vector<std::string> whereParam, std::string* devname, int* iWhere);
 	void UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter);
 	void scan_automation_lighting(const int cen_area);
 	void scan_sound_diffusion();
