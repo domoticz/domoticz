@@ -2803,8 +2803,8 @@ bool CSQLHelper::OpenDatabase()
 								if ((where > 0) && (where < 10))			// < 10 mean area device
 									NodeID += 0x4000; // Area devices flag!
 								else if ((where > 99) && (where < 1000))	// need 4 chars
-									NodeID += 0xC000; // 4 chars devices flag!
-								if (NodeID & 0xC000)
+									NodeID += 0x2000; // 4 chars devices flag!
+								if (NodeID & 0xF000)
 								{
 									char ndeviceid[10];
 									sprintf(ndeviceid, "%08X", NodeID);

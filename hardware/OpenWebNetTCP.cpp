@@ -43,10 +43,11 @@ License: Public domain
 
 /* 2 bits function.. */
 #define OPENWEBNET_DEFAULT				0x00000000	// 0
-#define OPENWEBNET_AREA_ID				0x00004000	// 1
-#define OPENWEBNET_GROUP_ID				0x00008000	// 2
-#define OPENWEBNET_4CHARS				0x0000C000	// 3
-#define OPENWEBNET_MASK_WHERE_FUNCT		0x0000C000
+#define OPENWEBNET_2CHARS				0x00001000	// 1
+#define OPENWEBNET_4CHARS				0x00002000	// 2
+#define OPENWEBNET_AREA_ID				0x00004000	// 4
+#define OPENWEBNET_GROUP_ID				0x00008000	// 8
+#define OPENWEBNET_MASK_WHERE_FUNCT		0x0000f000
 
 #define OPENWEBNET_AUTOMATION					"AUTOMATION"
 #define OPENWEBNET_LIGHT						"LIGHT"
@@ -1053,6 +1054,8 @@ void COpenWebNetTCP::decodeWhereAndFill(const int who, std::string where, std::v
 			*devname += " " + where;
 			if (wlen == 4)	// device with 4 chars command
 				*iWhere += OPENWEBNET_4CHARS;
+			else if ((wlen == 2) && (*iWhere < 10))
+				*iWhere += OPENWEBNET_2CHARS;
 		}
 
 		/*
@@ -1653,11 +1656,17 @@ std::string COpenWebNetTCP::getWhereForWrite(int where)
 		else
 			whereStr << iArea;	// Area 1-9
 		break;
+	case OPENWEBNET_2CHARS:
+		where -= OPENWEBNET_2CHARS;
+		if (where < 10)  whereStr << "0";
+		whereStr << where;
+		break;
 	case OPENWEBNET_4CHARS:
 		where -= OPENWEBNET_4CHARS;
 		if (where < 100) whereStr << "00";						// APL Command : A[00]; PL[01 - 15]
 		if ((where > 99) && (where < 1000)) whereStr << "0";	// APL Command : A[01 - 09]; PL[10 - 15]
-		// follow..
+		whereStr << where;
+		break;
 	default:
 		whereStr << where;
 		break;
