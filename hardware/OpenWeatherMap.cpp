@@ -61,6 +61,8 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 	m_HwdID=ID;
 
 	std::string sValue, sLatitude, sLongitude;
+	std::vector<std::string> strarray;
+
 	if (m_sql.GetPreferencesVar("Language", sValue))
 	{
 		m_Language = sValue;
@@ -68,33 +70,54 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 
 	_log.Debug(DEBUG_NORM, "OpenWeatherMap: Got location parameter %s", Location.c_str());
 
-	// Let's get the 'home' Location of this Domoticz instance from the Preferences
-	if (m_sql.GetPreferencesVar("Location", sValue))
+	if (Location == "0")
 	{
-		std::vector<std::string> strarray;
-		StringSplit(sValue, ";", strarray);
-
-		if (strarray.size() == 2)
+		// Let's get the 'home' Location of this Domoticz instance from the Preferences
+		if (m_sql.GetPreferencesVar("Location", sValue))
 		{
-			sLatitude = strarray[0];
-			sLongitude = strarray[1];
+			StringSplit(sValue, ";", strarray);
 
-			if (!((sLatitude == "1") && (sLongitude == "1")))
+			if (strarray.size() == 2)
 			{
-				m_Lat = std::stod(sLatitude);
-				m_Lon = std::stod(sLongitude);
+				sLatitude = strarray[0];
+				sLongitude = strarray[1];
 
-				_log.Log(LOG_STATUS, "OpenWeatherMap: Using Domoticz home location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
+				if (!((sLatitude == "1") && (sLongitude == "1")))
+				{
+					m_Lat = std::stod(sLatitude);
+					m_Lon = std::stod(sLongitude);
+
+					_log.Log(LOG_STATUS, "OpenWeatherMap: Using Domoticz home location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+				}
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
 			}
 		}
-		else
-		{
-			_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
-		}
+	}
+	else
+	{
+			StringSplit(Location, ",", strarray);
+
+			if (strarray.size() == 2)
+			{
+				sLatitude = strarray[0];
+				sLongitude = strarray[1];
+
+				m_Lat = std::stod(sLatitude);
+				m_Lon = std::stod(sLongitude);
+
+				_log.Log(LOG_STATUS, "OpenWeatherMap: Using specified location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location specified! (Check your Latitude , Longitude!)");
+			}
 	}
 }
 
