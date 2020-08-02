@@ -692,11 +692,8 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		return;
 
 	if (m_bPreventLoop && (DeviceRowIdx == m_LastUpdatedDeviceRowIdx))
-	{
-		//we should ignore this now
-		m_LastUpdatedDeviceRowIdx = 0;
 		return;
-	}
+	m_LastUpdatedDeviceRowIdx = DeviceRowIdx;
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", HwdID, DeviceRowIdx);
