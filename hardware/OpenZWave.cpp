@@ -1344,8 +1344,18 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 			if (GetValueByCommandClassIndex(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, ValueID_Index_SwitchMultiLevel::Level, vID) == true)
 			{
 				std::string vLabel = m_pManager->GetValueLabel(vID);
+                
+                // Correct "open" value for Fibaro FGR-223 (Roller Shutter 3)
+                if ( (pDevice->Manufacturer_id == 0x010F) && (pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0303) ) {
+                    if ( svalue == 255 ) {
+                        pDevice->intvalue = 255;
+                        svalue = 99;
+                    }
+                }
+                 else {
+                    pDevice->intvalue = svalue;
+                 }
 
-				pDevice->intvalue = svalue;
 				_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command!, Level: %d, NodeID: %d (0x%02x)", svalue, pDevice->nodeID, pDevice->nodeID);
 
 				if (vID.GetType() == OpenZWave::ValueID::ValueType_Byte)
