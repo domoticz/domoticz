@@ -56,7 +56,8 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 	m_Language("en"),
 	m_Lat(1),
 	m_Lon(1),
-	m_Interval(600)
+	m_Interval(600),
+	m_itIsRaining(false)
 {
 	m_HwdID=ID;
 
@@ -215,7 +216,7 @@ void COpenWeatherMap::GetMeterDetails()
 
 	Json::Value root;
 
-	bool ret= ParseJSon(sResult,root);
+	bool ret=ParseJSon(sResult,root);
 	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR,"OpenWeatherMap: Invalid data received (not JSON)!");
@@ -226,34 +227,38 @@ void COpenWeatherMap::GetMeterDetails()
 		_log.Log(LOG_ERROR, "OpenWeatherMap: No data, empty response received!");
 		return;
 	}
+
+	// Process current
 	if (root["current"].empty())
 	{
 		_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid data received, could not find current weather data!");
 		return;
 	}
-
-	float temp = -999.9f;
-	float fltemp = -999.9f;
-	if (!root["current"].empty())
+	else
 	{
+		Json::Value current;
+		float temp = -999.9f;
+		float fltemp = -999.9f;
+
+		current = root["current"];
 		int humidity = 0;
 		int barometric = 0;
 		int barometric_forecast = baroForecastNoInfo;
-		if (!root["current"]["temp"].empty())
+		if (!current["temp"].empty())
 		{
-			temp = root["current"]["temp"].asFloat();
+			temp = current["temp"].asFloat();
 		}
-		if (!root["current"]["feels_like"].empty())
+		if (!current["feels_like"].empty())
 		{
-			fltemp = root["current"]["feels_like"].asFloat();
+			fltemp = current["feels_like"].asFloat();
 		}
-		if (!root["current"]["humidity"].empty())
+		if (!current["humidity"].empty())
 		{
-			humidity = root["current"]["humidity"].asInt();
+			humidity = current["humidity"].asInt();
 		}
-		if (!root["current"]["pressure"].empty())
+		if (!current["pressure"].empty())
 		{
-			barometric = atoi(root["current"]["pressure"].asString().c_str());
+			barometric = atoi(current["pressure"].asString().c_str());
 			if (barometric < 1000)
 				barometric_forecast = baroForecastRain;
 			else if (barometric < 1020)
@@ -263,13 +268,13 @@ void COpenWeatherMap::GetMeterDetails()
 			else
 				barometric_forecast = baroForecastSunny;
 
-			if (!root["current"]["weather"].empty())
+			if (!current["weather"].empty())
 			{
-				if (!root["current"]["weather"][0].empty())
+				if (!current["weather"][0].empty())
 				{
-					if (!root["current"]["weather"][0]["id"].empty())
+					if (!current["weather"][0]["id"].empty())
 					{
-						int condition = root["current"]["weather"][0]["id"].asInt();
+						int condition = current["weather"][0]["id"].asInt();
 						if ((condition == 801) || (condition == 802))
 							barometric_forecast = baroForecastPartlyCloudy;
 						else if (condition == 803)
@@ -279,9 +284,9 @@ void COpenWeatherMap::GetMeterDetails()
 						else if ((condition >= 300) && (condition < 700))
 							barometric_forecast = baroForecastRain;
 					}
-					if (!root["current"]["weather"][0]["description"].empty())
+					if (!current["weather"][0]["description"].empty())
 					{
-						std::string weatherdescription = root["current"]["weather"][0]["description"].asString();
+						std::string weatherdescription = current["weather"][0]["description"].asString();
 						SendTextSensor(1, 1, 255, weatherdescription, "Weather Description");
 					}
 				}
@@ -302,105 +307,83 @@ void COpenWeatherMap::GetMeterDetails()
 			if (humidity != 0)
 				SendHumiditySensor(1, 255, humidity, "Humidity");
 		}
-	}
 
-	// Feel temperature
-	if (fltemp != -999.9f)
-	{
-		SendTempSensor(3, 255, fltemp, "Feel Temperature");
-	}
-
-	//Wind
-	if (!root["current"]["wind_speed"].empty())
-	{
-		int16_t wind_degrees = -1;
-		float windspeed_ms = -1;
-		float windgust_ms = 0;
-
-		if (!root["current"]["wind_deg"].empty())
+		// Feel temperature
+		if (fltemp != -999.9f)
 		{
-			wind_degrees = root["current"]["wind_deg"].asInt();
+			SendTempSensor(3, 255, fltemp, "Feel Temperature");
 		}
-		if (!root["current"]["wind_speed"].empty())
-		{
-			windspeed_ms = root["current"]["wind_speed"].asFloat();
-		}
-		if (!root["current"]["wind_gust"].empty())
-		{
-			windgust_ms = root["current"]["wind_gust"].asFloat();
-		}
-		if ((wind_degrees != -1) && (windspeed_ms != -1))
-		{
-			bool bHaveTemp = (temp != -999.9f);
-			float rTemp = (bHaveTemp ? temp : 0);
-			float rFlTemp = rTemp;
 
-			if ((rTemp < 10.0) && (windspeed_ms >= 1.4))
-				rFlTemp = 0; //if we send 0 as chill, it will be calculated
-			SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, rTemp, rFlTemp, bHaveTemp, true, "Wind");
-		}
-	}
-
-	//UV
-	if (!root["current"]["uvi"].empty())
-	{
-		float uvi = root["current"]["uvi"].asFloat();
-		if ((uvi < 16) && (uvi >= 0))
+		//Wind
+		if (!current["wind_speed"].empty())
 		{
-			SendUVSensor(0, 1, 255, uvi, "UV Index");
-		}
-	}
+			int16_t wind_degrees = -1;
+			float windgust_ms = 0;
 
-	//Rain
-	if (!root["current"]["rain"].empty())
-	{
-		if (!root["current"]["rain"]["1h"].empty())
-		{
-			float RainCount = static_cast<float>(atof(root["current"]["rain"]["1h"].asString().c_str()));
-			if (RainCount >= 0.00f)
+			float windspeed_ms = current["wind_speed"].asFloat();
+
+			if (!current["wind_gust"].empty())
 			{
-				RBUF tsen;
-				memset(&tsen, 0, sizeof(RBUF));
-				tsen.RAIN.packetlength = sizeof(tsen.RAIN) - 1;
-				tsen.RAIN.packettype = pTypeRAIN;
-				tsen.RAIN.subtype = sTypeRAINWU;
-				tsen.RAIN.battery_level = 9;
-				tsen.RAIN.rssi = 12;
-				tsen.RAIN.id1 = 0;
-				tsen.RAIN.id2 = 1;
+				windgust_ms = current["wind_gust"].asFloat();
+			}
 
-				tsen.RAIN.rainrateh = 0;
-				tsen.RAIN.rainratel = 0;
+			if (!current["wind_deg"].empty())
+			{
+				wind_degrees = current["wind_deg"].asInt();
 
-				int tr10 = int((float(RainCount)*10.0f));
-				tsen.RAIN.raintotal1 = 0;
-				tsen.RAIN.raintotal2 = (BYTE)(tr10 / 256);
-				tr10 -= (tsen.RAIN.raintotal2 * 256);
-				tsen.RAIN.raintotal3 = (BYTE)(tr10);
+				bool bHaveTemp = (temp != -999.9f);
+				float rTemp = (bHaveTemp ? temp : 0);
+				float rFlTemp = rTemp;
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, "Rain", 255);
+				if ((rTemp < 10.0) && (windspeed_ms >= 1.4))
+					rFlTemp = 0; //if we send 0 as chill, it will be calculated
+				SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, rTemp, rFlTemp, bHaveTemp, true, "Wind");
 			}
 		}
-	}
 
-	//Visibility
-	if (!root["current"]["visibility"].empty())
-	{
-		if (root["current"]["visibility"].isInt())
+		//UV
+		if (!current["uvi"].empty())
 		{
-			float visibility = ((float)root["current"]["visibility"].asInt())/1000.0f;
+			float uvi = current["uvi"].asFloat();
+			if ((uvi < 16) && (uvi >= 0))
+			{
+				SendUVSensor(0, 1, 255, uvi, "UV Index");
+			}
+		}
+
+		//Rain (only present if their is rain (or snow))
+		float rainmm = 0;
+		if (!current["rain"].empty() && !current["rain"]["1h"].empty())
+		{
+			float rainmm = static_cast<float>(atof(current["rain"]["1h"].asString().c_str()));
+		}
+		else
+		{	// Maybe it is not raining but snowing... we show this as 'rain' as well (for now at least)
+			if (!current["snow"].empty() && !current["snow"]["1h"].empty())
+			{
+				float rainmm = static_cast<float>(atof(current["snow"]["1h"].asString().c_str()));
+			}
+		}
+		SendRainRateSensor(1, 255, rainmm, "Rain");
+		m_itIsRaining = rainmm > 0;
+		SendSwitch(1, 1, 255, m_itIsRaining, 0, "Is it Raining");
+
+		//Visibility
+		if (!current["visibility"].empty() && current["visibility"].isInt())
+		{
+			float visibility = ((float)current["visibility"].asInt())/1000.0f;
 			if (visibility >= 0)
 			{
 				SendVisibilitySensor(1, 1, 255, visibility, "Visibility");
 			}
 		}
-	}
 
-	//clouds
-	if (!root["current"]["clouds"].empty())
-	{
-		float clouds = root["current"]["clouds"].asFloat();
-		SendPercentageSensor(1, 0, 255, clouds, "Clouds %");
+		//clouds
+		if (!current["clouds"].empty())
+		{
+			float clouds = current["clouds"].asFloat();
+			SendPercentageSensor(1, 0, 255, clouds, "Clouds %");
+		}
 	}
 
 	//Forecast URL

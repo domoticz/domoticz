@@ -23,7 +23,7 @@ private:
 	std::string m_Location;
 	std::string m_ForecastURL;
 	std::string m_Language;
-	bool m_bHaveGPSCoordinated;
+	bool m_itIsRaining;
 	double m_Lat;
 	double m_Lon;
 	uint16_t m_Interval;
