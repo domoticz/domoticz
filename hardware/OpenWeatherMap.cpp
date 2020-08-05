@@ -123,7 +123,7 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location specified! (Check your StationId/CityId or Latitude , Longitude!)");
+					_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location specified! (Check your StationId/CityId or Latitude, Longitude!)");
 				}
 			}
 	}
@@ -249,8 +249,8 @@ void COpenWeatherMap::GetMeterDetails()
 
 		current = root["current"];
 		int humidity = 0;
-		int barometric = 0;
-		int barometric_forecast = baroForecastNoInfo;
+		float barometric = 0;
+		int barometric_forecast = wsbaroforecast_unknown;
 		if (!current["temp"].empty())
 		{
 			temp = current["temp"].asFloat();
@@ -265,15 +265,22 @@ void COpenWeatherMap::GetMeterDetails()
 		}
 		if (!current["pressure"].empty())
 		{
-			barometric = atoi(current["pressure"].asString().c_str());
+			barometric = current["pressure"].asFloat();
 			if (barometric < 1000)
-				barometric_forecast = baroForecastRain;
+			{
+				barometric_forecast = wsbaroforecast_rain;
+				if (temp != -999.9f)
+				{
+					if (temp <= 0)
+						barometric_forecast = wsbaroforecast_snow;
+				}
+			}
 			else if (barometric < 1020)
-				barometric_forecast = baroForecastCloudy;
+				barometric_forecast = wsbaroforecast_cloudy;
 			else if (barometric < 1030)
-				barometric_forecast = baroForecastPartlyCloudy;
+				barometric_forecast = wsbaroforecast_some_clouds;
 			else
-				barometric_forecast = baroForecastSunny;
+				barometric_forecast = wsbaroforecast_sunny;
 
 			if (!current["weather"].empty())
 			{
@@ -282,6 +289,7 @@ void COpenWeatherMap::GetMeterDetails()
 					if (!current["weather"][0]["id"].empty())
 					{
 						int condition = current["weather"][0]["id"].asInt();
+						/* We do not use it at the moment, does not feel ok
 						if ((condition == 801) || (condition == 802))
 							barometric_forecast = baroForecastPartlyCloudy;
 						else if (condition == 803)
@@ -290,11 +298,12 @@ void COpenWeatherMap::GetMeterDetails()
 							barometric_forecast = baroForecastSunny;
 						else if ((condition >= 300) && (condition < 700))
 							barometric_forecast = baroForecastRain;
+						*/
 					}
 					if (!current["weather"][0]["description"].empty())
 					{
 						std::string weatherdescription = current["weather"][0]["description"].asString();
-						SendTextSensor(1, 1, 255, weatherdescription, "Weather Description");
+						SendTextSensor(2, 1, 255, weatherdescription, "Weather Description");
 					}
 				}
 			}
@@ -344,7 +353,7 @@ void COpenWeatherMap::GetMeterDetails()
 
 				if ((rTemp < 10.0) && (windspeed_ms >= 1.4))
 					rFlTemp = 0; //if we send 0 as chill, it will be calculated
-				SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, rTemp, rFlTemp, bHaveTemp, true, "Wind");
+				SendWind(4, 255, wind_degrees, windspeed_ms, windgust_ms, rTemp, rFlTemp, bHaveTemp, true, "Wind");
 			}
 		}
 
@@ -354,8 +363,25 @@ void COpenWeatherMap::GetMeterDetails()
 			float uvi = current["uvi"].asFloat();
 			if ((uvi < 16) && (uvi >= 0))
 			{
-				SendUVSensor(0, 1, 255, uvi, "UV Index");
+				SendUVSensor(5, 1, 255, uvi, "UV Index");
 			}
+		}
+
+		//Visibility
+		if (!current["visibility"].empty() && current["visibility"].isInt())
+		{
+			float visibility = ((float)current["visibility"].asInt())/1000.0f;
+			if (visibility >= 0)
+			{
+				SendVisibilitySensor(6, 1, 255, visibility, "Visibility");
+			}
+		}
+
+		//clouds
+		if (!current["clouds"].empty())
+		{
+			float clouds = current["clouds"].asFloat();
+			SendPercentageSensor(7, 1, 255, clouds, "Clouds %");
 		}
 
 		//Rain (only present if their is rain (or snow))
@@ -371,26 +397,98 @@ void COpenWeatherMap::GetMeterDetails()
 				float rainmm = static_cast<float>(atof(current["snow"]["1h"].asString().c_str()));
 			}
 		}
-		SendRainRateSensor(1, 255, rainmm, "Rain");
+		SendRainRateSensor(8, 255, rainmm, "Rain");
 		m_itIsRaining = rainmm > 0;
-		SendSwitch(1, 1, 255, m_itIsRaining, 0, "Is it Raining");
+		SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it Raining");
+	}
 
-		//Visibility
-		if (!current["visibility"].empty() && current["visibility"].isInt())
+	// Process daily forecast data if available
+	if (root["daily"].empty())
+	{
+		_log.Log(LOG_STATUS, "OpenWeatherMap: Could not find daily weather forecast data!");
+	}
+	else
+	{
+		Json::Value dailyfc;
+		uint8_t iDay = 0;
+		uint64_t UTCfctime;
+
+		dailyfc = root["daily"];
+		do
 		{
-			float visibility = ((float)current["visibility"].asInt())/1000.0f;
-			if (visibility >= 0)
+			if (dailyfc[iDay]["dt"].empty())
 			{
-				SendVisibilitySensor(1, 1, 255, visibility, "Visibility");
+				_log.Log(LOG_STATUS, "OpenWeatherMap: Processing daily forecast failed (unexpected structure)!");
+				break;
 			}
-		}
+			else
+			{
+				UTCfctime = dailyfc[iDay]["dt"].asUInt64();
 
-		//clouds
-		if (!current["clouds"].empty())
-		{
-			float clouds = current["clouds"].asFloat();
-			SendPercentageSensor(1, 0, 255, clouds, "Clouds %");
+				_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processing daily forecast for %lu",UTCfctime);
+
+				try
+				{
+					float pop = dailyfc[iDay]["pop"].asFloat();
+					float uvi = dailyfc[iDay]["uvi"].asFloat();
+					float clouds = dailyfc[iDay]["clouds"].asFloat();
+					float windspeed_ms = dailyfc[iDay]["wind_speed"].asFloat();
+					float barometric = dailyfc[iDay]["pressure"].asFloat();
+					uint8_t humidity = (uint8_t) dailyfc[iDay]["humidity"].asUInt();
+					float mintemp = dailyfc[iDay]["temp"]["min"].asFloat();
+					float maxtemp = dailyfc[iDay]["temp"]["max"].asFloat();
+					std::string wdesc = dailyfc[iDay]["weather"][0]["description"].asString();
+					std::string wicon = dailyfc[iDay]["weather"][0]["icon"].asString();
+					int barometric_forecast = wsbaroforecast_unknown;
+					if (barometric < 1000)
+					{
+						barometric_forecast = wsbaroforecast_rain;
+						if (maxtemp != -999.9f)
+						{
+							if (maxtemp <= 0)
+								barometric_forecast = wsbaroforecast_snow;
+						}
+					}
+					else if (barometric < 1020)
+						barometric_forecast = wsbaroforecast_cloudy;
+					else if (barometric < 1030)
+						barometric_forecast = wsbaroforecast_some_clouds;
+					else
+						barometric_forecast = wsbaroforecast_sunny;
+
+					int NodeID = 17 + iDay * 16;
+					std::stringstream sName;
+
+					sName << "TempHumBaro Day " << (iDay + 1);
+					SendTempHumBaroSensorFloat(NodeID, 255, maxtemp, humidity, static_cast<float>(barometric), barometric_forecast, sName.str().c_str());
+
+					NodeID++;;
+					sName.str("");
+					sName.clear();
+					sName << "Weather Description Day " << (iDay + 1);
+					SendTextSensor(NodeID, 1, 255, wdesc, sName.str().c_str());
+					sName.str("");
+					sName.clear();
+					sName << "Weather Description  Day " << (iDay + 1) << " Icon";
+					SendTextSensor(NodeID, 2, 255, wicon, sName.str().c_str());
+
+					NodeID++;;
+					sName.str("");
+					sName.clear();
+					sName << "Minumum Temperature Day " << (iDay + 1);
+					SendTempSensor(NodeID, 255, mintemp, sName.str().c_str());
+
+					_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processed forecast for day %i: %s - %f - %f - %f",iDay, wdesc.c_str(), maxtemp,mintemp, pop);
+				}
+				catch(const std::exception& e)
+				{
+					_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processing daily forecast crashed for day %i on %s",iDay, e.what());
+				}
+			}
+			iDay++;
 		}
+		while (!dailyfc[iDay].empty());
+		_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processed %i daily forecasts",iDay);
 	}
 
 	//Forecast URL
