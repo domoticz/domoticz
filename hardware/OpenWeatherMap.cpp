@@ -117,7 +117,14 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location specified! (Check your Latitude , Longitude!)");
+				if (strarray.size() == 1 && std::stoi(Location) > 0)
+				{
+					_log.Log(LOG_ERROR, "OpenWeatherMap: StationID/CityID usage not (yet) implemented. Please specify Latitude, Longitude!");
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location specified! (Check your StationId/CityId or Latitude , Longitude!)");
+				}
 			}
 	}
 }
