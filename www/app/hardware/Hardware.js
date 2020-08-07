@@ -852,6 +852,10 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an Location (or 0 to use Domoticz home location)!'), 2500, true);
 					return;
 				}
+				var addcurrent = $("#hardwarecontent #divopenweathermap #addcurrent").prop("checked") ? 1 : 0;
+				var adddayforecast = $("#hardwarecontent #divopenweathermap #adddayforecast").prop("checked") ? 1 : 0;
+				var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
+				var intervalseconds = $("#hardwarecontent #divopenweathermap #intervalseconds").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(apikey) +
@@ -860,7 +864,7 @@ define(['app'], function (app) {
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					"&Mode1=" + addcurrent + "&Mode2=" + adddayforecast + "&Mode3=" + addhourforecast + "&Mode4=" + intervalseconds + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2096,8 +2100,15 @@ define(['app'], function (app) {
 				ShowNotify($.t('Please enter an Location (or 0 to use Domoticz own location)!'), 2500, true);
 				return;
 			}
-			$.ajax({
-				url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+			var addcurrent = $("#hardwarecontent #divopenweathermap #addcurrent").prop("checked") ? 1 : 0;
+			var adddayforecast = $("#hardwarecontent #divopenweathermap #adddayforecast").prop("checked") ? 1 : 0;
+			var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
+			var intervalseconds = $("#hardwarecontent #divopenweathermap #intervalseconds").val();
+		$.ajax({
+				url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + 
+				"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + 
+				"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
+				"&Mode1=" + addcurrent + "&Mode2=" + adddayforecast + "&Mode3=" + addhourforecast + "&Mode4=" + intervalseconds,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -3818,6 +3829,10 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Open Weather Map") >= 0) {
 							$("#hardwarecontent #hardwareparamsopenweathermap #apikey").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamsopenweathermap #location").val(data["Password"]);
+							$("#hardwarecontent #hardwareparamsopenweathermap #addcurrent").prop("checked", data["Mode1"] == 1);
+							$("#hardwarecontent #hardwareparamsopenweathermap #adddayforecast").prop("checked", data["Mode2"] == 1);
+							$("#hardwarecontent #hardwareparamsopenweathermap #addhourforecast").prop("checked", data["Mode3"] == 1);
+							$("#hardwarecontent #hardwareparamsopenweathermap #intervalseconds").val(data["Mode4"]);
 						}
 						else if (data["Type"].indexOf("Buienradar") >= 0) {
 							var timeframe = parseInt(data["Mode1"]);
