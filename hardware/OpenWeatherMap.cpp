@@ -456,7 +456,7 @@ void COpenWeatherMap::GetMeterDetails()
 				float rainmm = static_cast<float>(atof(current["snow"]["1h"].asString().c_str()));
 			}
 		}
-		SendRainRateSensor(8, 255, rainmm, "Rain");
+		SendRainRateSensor(8, 255, rainmm, "Rain (Snow)");
 		m_itIsRaining = rainmm > 0;
 		SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it Raining");
 	}
@@ -491,6 +491,7 @@ void COpenWeatherMap::GetMeterDetails()
 					float uvi = dailyfc[iDay]["uvi"].asFloat();
 					float clouds = dailyfc[iDay]["clouds"].asFloat();
 					float windspeed_ms = dailyfc[iDay]["wind_speed"].asFloat();
+					int wind_degrees = dailyfc[iDay]["wind_deg"].asInt();
 					float barometric = dailyfc[iDay]["pressure"].asFloat();
 					uint8_t humidity = (uint8_t) dailyfc[iDay]["humidity"].asUInt();
 					float mintemp = dailyfc[iDay]["temp"]["min"].asFloat();
@@ -498,6 +499,12 @@ void COpenWeatherMap::GetMeterDetails()
 					std::string wdesc = dailyfc[iDay]["weather"][0]["description"].asString();
 					std::string wicon = dailyfc[iDay]["weather"][0]["icon"].asString();
 					int barometric_forecast = GetForecastFromBarometricPressure(barometric, maxtemp);
+					//Rain (only present if their is rain (or snow))
+					float rainmm = 0;
+					if (!dailyfc[iDay]["rain"].empty())
+						rainmm = dailyfc[iDay]["rain"].asFloat();
+					if (!dailyfc[iDay]["snow"].empty())
+						rainmm = rainmm + dailyfc[iDay]["snow"].asFloat();
 
 					int NodeID = 17 + iDay * 16;
 					std::stringstream sName;
@@ -528,8 +535,35 @@ void COpenWeatherMap::GetMeterDetails()
 					NodeID++;;
 					sName.str("");
 					sName.clear();
+					sName << "Wind Day " << (iDay + 0);
+					SendWind(NodeID, 255, wind_degrees, windspeed_ms, 0, 0, 0, false, false, sName.str().c_str());
+
+					NodeID++;;
+					sName.str("");
+					sName.clear();
+					sName << "UV Index Day " << (iDay + 0);
+					SendUVSensor(NodeID, 1, 255, uvi, sName.str().c_str());
+
+					NodeID++;
+					// We do not have visibility forecasts
+
+					NodeID++;;
+					sName.str("");
+					sName.clear();
+					sName << "Clouds % Day " << (iDay + 0);
+					SendPercentageSensor(NodeID, 1, 255, clouds, sName.str().c_str());
+
+					NodeID++;;
+					sName.str("");
+					sName.clear();
+					sName << "Rain(Snow) Day " << (iDay + 0);
+					SendRainRateSensor(NodeID, 255, static_cast<float>(rainmm), sName.str().c_str());
+
+					NodeID++;;
+					sName.str("");
+					sName.clear();
 					sName << "Precipitation Day " << (iDay + 0);
-					SendPercentageSensor(NodeID, 1, 255, pop, sName.str().c_str());
+					SendPercentageSensor(NodeID, 1, 255, (pop * 100), sName.str().c_str());
 
 					_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processed forecast for day %i: %s - %f - %f - %f",iDay, wdesc.c_str(), maxtemp,mintemp, pop);
 				}
