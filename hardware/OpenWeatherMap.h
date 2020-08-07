@@ -18,7 +18,9 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-private:
+	int GetForecastFromBarometricPressure(const float pressure, const float temp = -999.9f);
+	std::string GetDayFromUTCtimestamp(const uint8_t daynr, std::string UTCtimestamp);
+
 	std::string m_APIKey;
 	std::string m_Location;
 	std::string m_ForecastURL;
@@ -29,4 +31,3 @@ private:
 	uint16_t m_Interval;
 	std::shared_ptr<std::thread> m_thread;
 };
-

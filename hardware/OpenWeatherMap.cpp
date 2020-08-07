@@ -191,6 +191,66 @@ std::string COpenWeatherMap::GetForecastURL()
 	return m_ForecastURL;
 }
 
+std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, std::string UTCtimestamp)
+{
+	std::string sDay = "Unknown";
+
+	time_t t = (time_t) strtol(UTCtimestamp.c_str(),NULL,10);
+	std::string sDate = ctime(&t);
+
+	std::vector<std::string> strarray;
+
+	StringSplit(sDate," ", strarray);
+	if (!(strarray.size() >= 5 && strarray.size() <= 6))
+	{
+		_log.Debug(DEBUG_NORM, "OpenWeatherMap: Unable to determine day for day %i from timestamp %s (got string %s)", daynr, UTCtimestamp.c_str(), sDate.c_str());
+		return sDay;
+	}
+	
+	switch (daynr) {
+		case 0:
+			sDay = "Today";
+			break;
+		case 1:
+			sDay = "Tomorrow";
+			break;
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+			sDay = strarray[0];
+			break;
+		default:
+			sDay = "Day " + std::to_string(daynr);
+	}
+
+	return sDay;
+}
+
+int COpenWeatherMap::GetForecastFromBarometricPressure(const float pressure, const float temp)
+{
+	int barometric_forecast = wsbaroforecast_unknown;
+	if (pressure < 1000)
+	{
+		barometric_forecast = wsbaroforecast_rain;
+		if (temp != -999.9f)
+		{
+			if (temp <= 0)
+				barometric_forecast = wsbaroforecast_snow;
+		}
+	}
+	else if (pressure < 1020)
+		barometric_forecast = wsbaroforecast_cloudy;
+	else if (pressure < 1030)
+		barometric_forecast = wsbaroforecast_some_clouds;
+	else
+		barometric_forecast = wsbaroforecast_sunny;
+
+	return barometric_forecast;
+}
+
 void COpenWeatherMap::GetMeterDetails()
 {
 	std::string sResult;
@@ -250,7 +310,7 @@ void COpenWeatherMap::GetMeterDetails()
 		current = root["current"];
 		int humidity = 0;
 		float barometric = 0;
-		int barometric_forecast = wsbaroforecast_unknown;
+		int barometric_forecast = 0;
 		if (!current["temp"].empty())
 		{
 			temp = current["temp"].asFloat();
@@ -266,22 +326,7 @@ void COpenWeatherMap::GetMeterDetails()
 		if (!current["pressure"].empty())
 		{
 			barometric = current["pressure"].asFloat();
-			if (barometric < 1000)
-			{
-				barometric_forecast = wsbaroforecast_rain;
-				if (temp != -999.9f)
-				{
-					if (temp <= 0)
-						barometric_forecast = wsbaroforecast_snow;
-				}
-			}
-			else if (barometric < 1020)
-				barometric_forecast = wsbaroforecast_cloudy;
-			else if (barometric < 1030)
-				barometric_forecast = wsbaroforecast_some_clouds;
-			else
-				barometric_forecast = wsbaroforecast_sunny;
-
+			barometric_forecast = GetForecastFromBarometricPressure(barometric, temp);
 			if (!current["weather"].empty())
 			{
 				if (!current["weather"][0].empty())
@@ -411,7 +456,6 @@ void COpenWeatherMap::GetMeterDetails()
 	{
 		Json::Value dailyfc;
 		uint8_t iDay = 0;
-		uint64_t UTCfctime;
 
 		dailyfc = root["daily"];
 		do
@@ -423,9 +467,8 @@ void COpenWeatherMap::GetMeterDetails()
 			}
 			else
 			{
-				UTCfctime = dailyfc[iDay]["dt"].asUInt64();
-
-				_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processing daily forecast for %lu",UTCfctime);
+				std::string sDay = GetDayFromUTCtimestamp(iDay, dailyfc[iDay]["dt"].asString());
+				_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processing daily forecast for %s (%s)",dailyfc[iDay]["dt"].asString().c_str() ,sDay.c_str());
 
 				try
 				{
@@ -439,44 +482,39 @@ void COpenWeatherMap::GetMeterDetails()
 					float maxtemp = dailyfc[iDay]["temp"]["max"].asFloat();
 					std::string wdesc = dailyfc[iDay]["weather"][0]["description"].asString();
 					std::string wicon = dailyfc[iDay]["weather"][0]["icon"].asString();
-					int barometric_forecast = wsbaroforecast_unknown;
-					if (barometric < 1000)
-					{
-						barometric_forecast = wsbaroforecast_rain;
-						if (maxtemp != -999.9f)
-						{
-							if (maxtemp <= 0)
-								barometric_forecast = wsbaroforecast_snow;
-						}
-					}
-					else if (barometric < 1020)
-						barometric_forecast = wsbaroforecast_cloudy;
-					else if (barometric < 1030)
-						barometric_forecast = wsbaroforecast_some_clouds;
-					else
-						barometric_forecast = wsbaroforecast_sunny;
+					int barometric_forecast = GetForecastFromBarometricPressure(barometric, maxtemp);
 
 					int NodeID = 17 + iDay * 16;
 					std::stringstream sName;
 
-					sName << "TempHumBaro Day " << (iDay + 1);
+					sName << "TempHumBaro Day " << (iDay + 0);
 					SendTempHumBaroSensorFloat(NodeID, 255, maxtemp, humidity, static_cast<float>(barometric), barometric_forecast, sName.str().c_str());
 
 					NodeID++;;
 					sName.str("");
 					sName.clear();
-					sName << "Weather Description Day " << (iDay + 1);
+					sName << "Weather Description Day " << (iDay + 0);
 					SendTextSensor(NodeID, 1, 255, wdesc, sName.str().c_str());
 					sName.str("");
 					sName.clear();
-					sName << "Weather Description  Day " << (iDay + 1) << " Icon";
+					sName << "Weather Description Day " << (iDay + 0) << " Icon";
 					SendTextSensor(NodeID, 2, 255, wicon, sName.str().c_str());
+					sName.str("");
+					sName.clear();
+					sName << "Weather Description Day " << (iDay + 0) << " Name";
+					SendTextSensor(NodeID, 3, 255, sDay, sName.str().c_str());
 
 					NodeID++;;
 					sName.str("");
 					sName.clear();
-					sName << "Minumum Temperature Day " << (iDay + 1);
+					sName << "Minumum Temperature Day " << (iDay + 0);
 					SendTempSensor(NodeID, 255, mintemp, sName.str().c_str());
+
+					NodeID++;;
+					sName.str("");
+					sName.clear();
+					sName << "Precipitation Day " << (iDay + 0);
+					SendPercentageSensor(NodeID, 1, 255, pop, sName.str().c_str());
 
 					_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processed forecast for day %i: %s - %f - %f - %f",iDay, wdesc.c_str(), maxtemp,mintemp, pop);
 				}
