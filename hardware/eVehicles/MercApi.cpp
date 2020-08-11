@@ -548,11 +548,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
 				_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 9999);
-				for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
-					_ssResponseHeaderString << _vResponseHeaders[i];
-				_log.Debug(DEBUG_NORM, "MercApi: Failed to perform POST request to Api: (%i) %s; Response headers: %s", _iHttpCode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
-				_log.Log(LOG_STATUS, "Failed to perform POST request (%i)!", _iHttpCode);
-				return false;
+				_log.Log(LOG_ERROR, "Failed to perform POST request (%i)!", _iHttpCode);
 			}
 			break;
 
@@ -560,11 +556,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, true))
 			{
 				_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 9999);
-				for (unsigned int i = 0; i < _vResponseHeaders.size(); i++)
-					_ssResponseHeaderString << _vResponseHeaders[i];
-				_log.Debug(DEBUG_NORM, "MercApi: Failed to perform GET request to Api: (%i) %s; Response headers: %s", _iHttpCode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
-				_log.Log(LOG_STATUS, "Failed to perform GET request (%i)!", _iHttpCode);
-				return false;
+				_log.Log(LOG_ERROR, "Failed to perform GET request (%i)!", _iHttpCode);
 			}
 			break;
 
