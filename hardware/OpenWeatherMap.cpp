@@ -46,23 +46,100 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
+#define OWM_onecall_URL "https://api.openweathermap.org/data/2.5/onecall?"
+#define OWM_icon_URL "https://openweathermap.org/img/wn/"	// for example 10d@4x.png
+#define OWM_forecast_URL "https://openweathermap.org/city/"
 
-#define round(a) ( int ) ( a + .5 )
-
-COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location) :
+COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location, const int addcurrent, const int adddayforecast, const int addhourforecast, const int intervalseconds) :
 	m_APIKey(APIKey),
 	m_Location(Location),
-	m_Language("en")
+	m_Language("en"),
+	m_current(addcurrent),
+	m_dayforecast(adddayforecast),
+	m_hourforecast(addhourforecast),
+	m_seconds(intervalseconds),		
+	m_Lat(1),
+	m_Lon(1),
+	m_Interval(600),
+	m_itIsRaining(false)
 {
 	m_HwdID=ID;
 
-	m_bHaveGPSCoordinated = (Location.find("lat=") != std::string::npos);
+	std::string sValue, sLatitude, sLongitude;
+	std::vector<std::string> strarray;
 
-
-	std::string sValue;
 	if (m_sql.GetPreferencesVar("Language", sValue))
 	{
 		m_Language = sValue;
+	}
+
+	_log.Debug(DEBUG_NORM, "OpenWeatherMap: Got location parameter %s", Location.c_str());
+	_log.Debug(DEBUG_NORM, "OpenWeatherMap: Starting with setting %i, %i, %i, %i", m_current, m_dayforecast, m_hourforecast, m_seconds);
+
+	if (m_seconds >= 60 && m_seconds <= 86400)
+	{
+		m_Interval=(uint32_t) m_seconds;
+	}
+	else
+	{
+		_log.Log(LOG_STATUS, "OpenWeatherMap: Got invalid poll interval (%i). Using default %i.", m_seconds, m_Interval);
+	}
+
+	if (Location == "0")
+	{
+		// Let's get the 'home' Location of this Domoticz instance from the Preferences
+		if (m_sql.GetPreferencesVar("Location", sValue))
+		{
+			StringSplit(sValue, ";", strarray);
+
+			if (strarray.size() == 2)
+			{
+				sLatitude = strarray[0];
+				sLongitude = strarray[1];
+
+				if (!((sLatitude == "1") && (sLongitude == "1")))
+				{
+					m_Lat = std::stod(sLatitude);
+					m_Lon = std::stod(sLongitude);
+
+					_log.Log(LOG_STATUS, "OpenWeatherMap: Using Domoticz home location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+			}
+		}
+	}
+	else
+	{
+			StringSplit(Location, ",", strarray);
+
+			if (strarray.size() == 2)
+			{
+				sLatitude = strarray[0];
+				sLongitude = strarray[1];
+
+				m_Lat = std::stod(sLatitude);
+				m_Lon = std::stod(sLongitude);
+
+				_log.Log(LOG_STATUS, "OpenWeatherMap: Using specified location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
+			}
+			else
+			{
+				if (strarray.size() == 1 && std::stoi(Location) > 0)
+				{
+					_log.Log(LOG_ERROR, "OpenWeatherMap: StationID/CityID usage not (yet) implemented. Please specify Latitude, Longitude!");
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid Location specified! (Check your StationId/CityId or Latitude, Longitude!)");
+				}
+			}
 	}
 }
 
@@ -96,14 +173,14 @@ bool COpenWeatherMap::StopHardware()
 
 void COpenWeatherMap::Do_Work()
 {
-	int sec_counter = 595;
+	int sec_counter = m_Interval - 5;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 600 == 0)
+		if (sec_counter % m_Interval == 0)
 		{
 			try
 			{
@@ -111,7 +188,7 @@ void COpenWeatherMap::Do_Work()
 			}
 			catch (...)
 			{
-				_log.Log(LOG_ERROR, "OpenWeatherMap: Error getting/parsing http data!");
+				_log.Log(LOG_ERROR, "OpenWeatherMap: Unhandled failure getting/parsing http data!");
 			}
 		}
 	}
@@ -128,19 +205,212 @@ std::string COpenWeatherMap::GetForecastURL()
 	return m_ForecastURL;
 }
 
+std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, std::string UTCtimestamp)
+{
+	std::string sDay = "Unknown";
+
+	time_t t = (time_t) strtol(UTCtimestamp.c_str(),NULL,10);
+	std::string sDate = ctime(&t);
+
+	std::vector<std::string> strarray;
+
+	StringSplit(sDate," ", strarray);
+	if (!(strarray.size() >= 5 && strarray.size() <= 6))
+	{
+		_log.Debug(DEBUG_NORM, "OpenWeatherMap: Unable to determine day for day %i from timestamp %s (got string %s)", daynr, UTCtimestamp.c_str(), sDate.c_str());
+		return sDay;
+	}
+	
+	switch (daynr) {
+		case 0:
+			sDay = "Today";
+			break;
+		case 1:
+			sDay = "Tomorrow";
+			break;
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+			sDay = strarray[0];
+			break;
+		default:
+			sDay = "Day " + std::to_string(daynr);
+	}
+
+	return sDay;
+}
+
+bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string period, const std::string periodname, const uint8_t count, const int startNodeID)
+{
+	bool bResult = false;
+
+	if (!forecast.empty())
+	{
+		try
+		{
+			float rainmm = 0;
+			float uvi = -999.9f;
+			float mintemp = -999.9f;
+			float maxtemp = -999.9f;
+
+			float pop = forecast["pop"].asFloat();
+			float clouds = forecast["clouds"].asFloat();
+			float windspeed_ms = forecast["wind_speed"].asFloat();
+			int wind_degrees = forecast["wind_deg"].asInt();
+			float barometric = forecast["pressure"].asFloat();
+			uint8_t humidity = (uint8_t) forecast["humidity"].asUInt();
+			std::string wdesc = forecast["weather"][0]["description"].asString();
+			std::string wicon = forecast["weather"][0]["icon"].asString();
+
+			// Min and max or just max temp?
+			if (forecast["temp"].isObject())
+			{
+				mintemp = forecast["temp"]["min"].asFloat();
+				maxtemp = forecast["temp"]["max"].asFloat();
+			}
+			else
+			{
+				maxtemp = forecast["temp"].asFloat();
+			}
+			int barometric_forecast = GetForecastFromBarometricPressure(barometric, maxtemp);
+
+			//UV Index (only if present)
+			if (!forecast["uvi"].empty())
+				uvi = forecast["uvi"].asFloat();
+
+			//Rain (only present if their is rain (or snow))
+			if (!forecast["rain"].empty())
+			{
+				if (!forecast["rain"].isObject())
+				{
+					rainmm = forecast["rain"].asFloat();
+				}
+				else if (!forecast["rain"]["1h"].empty())
+				{
+					rainmm = forecast["rain"]["1h"].asFloat();
+				}
+			}
+			if (!forecast["snow"].empty())
+			{
+				if (!forecast["snow"].isArray())
+				{
+					rainmm = rainmm + forecast["snow"].asFloat();
+				}
+				else if (!forecast["snow"]["1h"].empty())
+				{
+					rainmm = rainmm + forecast["snow"]["1h"].asFloat();
+				}
+			}
+
+			int NodeID = startNodeID + count * 16;
+			std::stringstream sName;
+
+			sName << "TempHumBaro " << period << " " << (count + 0);
+			SendTempHumBaroSensorFloat(NodeID, 255, maxtemp, humidity, static_cast<float>(barometric), barometric_forecast, sName.str().c_str());
+
+			NodeID++;;
+			sName.str("");
+			sName.clear();
+			sName << "Weather Description " << period << " " << (count + 0);
+			SendTextSensor(NodeID, 1, 255, wdesc, sName.str().c_str());
+			sName.str("");
+			sName.clear();
+			sName << "Weather Description " << period << " " << (count + 0) << " Icon";
+			SendTextSensor(NodeID, 2, 255, wicon, sName.str().c_str());
+			sName.str("");
+			sName.clear();
+			sName << "Weather Description " << period << " " << (count + 0) << " Name";
+			SendTextSensor(NodeID, 3, 255, periodname.c_str(), sName.str().c_str());
+
+			NodeID++;;
+			sName.str("");
+			sName.clear();
+			sName << "Minumum Temperature " << period << " " << (count + 0);
+			if (mintemp != -999.9f)
+				SendTempSensor(NodeID, 255, mintemp, sName.str().c_str());
+
+			NodeID++;;
+			sName.str("");
+			sName.clear();
+			sName << "Wind " << period << " " << (count + 0);
+			SendWind(NodeID, 255, wind_degrees, windspeed_ms, 0, 0, 0, false, false, sName.str().c_str());
+
+			NodeID++;;
+			sName.str("");
+			sName.clear();
+			sName << "UV Index " << period << " " << (count + 0);
+			if (uvi != -999.9f)
+				SendUVSensor(NodeID, 1, 255, uvi, sName.str().c_str());
+
+			NodeID++;
+			// We do not have visibility forecasts
+
+			NodeID++;;
+			sName.str("");
+			sName.clear();
+			sName << "Clouds % " << period << " " << (count + 0);
+			SendPercentageSensor(NodeID, 1, 255, clouds, sName.str().c_str());
+
+			NodeID++;;
+			sName.str("");
+			sName.clear();
+			sName << "Rain(Snow) " << period << " " << (count + 0);
+			SendRainRateSensor(NodeID, 255, static_cast<float>(rainmm), sName.str().c_str());
+
+			NodeID++;;
+			sName.str("");
+			sName.clear();
+			sName << "Precipitation " << period << " " << (count + 0);
+			SendPercentageSensor(NodeID, 1, 255, (pop * 100), sName.str().c_str());
+
+			bResult = true;
+			_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processed forecast for period %i: %s - %f - %f - %f",count, wdesc.c_str(), maxtemp, mintemp, pop);
+		}
+		catch(const std::exception& e)
+		{
+			_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processing forecast crashed for period %i on %s",count, e.what());
+		}
+	}
+
+	return bResult;
+}
+
+int COpenWeatherMap::GetForecastFromBarometricPressure(const float pressure, const float temp)
+{
+	int barometric_forecast = wsbaroforecast_unknown;
+	if (pressure < 1000)
+	{
+		barometric_forecast = wsbaroforecast_rain;
+		if (temp != -999.9f)
+		{
+			if (temp <= 0)
+				barometric_forecast = wsbaroforecast_snow;
+		}
+	}
+	else if (pressure < 1020)
+		barometric_forecast = wsbaroforecast_cloudy;
+	else if (pressure < 1030)
+		barometric_forecast = wsbaroforecast_some_clouds;
+	else
+		barometric_forecast = wsbaroforecast_sunny;
+
+	return barometric_forecast;
+}
+
 void COpenWeatherMap::GetMeterDetails()
 {
 	std::string sResult;
 	std::stringstream sURL;
 
-	sURL << "http://api.openweathermap.org/data/2.5/weather?";
-	if (!m_bHaveGPSCoordinated)
-		sURL << "q=";
-	sURL << m_Location << "&APPID=" << m_APIKey << "&units=metric" << "&lang=" << m_Language;
+	sURL << OWM_onecall_URL;
+	sURL << "lat=" << m_Lat << "&lon=" << m_Lon;
+	sURL << "&appid=" << m_APIKey;
+	sURL << "&units=metric" << "&lang=" << m_Language;
 
-#ifdef DEBUG_OPENWEATHERMAP
-	_log.Log(LOG_STATUS, "OpenWeatherMap: Get data from %s", sURL);
-#endif
+	_log.Debug(DEBUG_NORM, "OpenWeatherMap: Get data from %s", sURL.str().c_str());
 
 	try
 	{
@@ -157,69 +427,63 @@ void COpenWeatherMap::GetMeterDetails()
 	}
 
 #ifdef DEBUG_OPENWEATHERMAP_WRITE
-	SaveString2Disk(sResult, "E:\\OpenWeatherMap.json");
+	SaveString2Disk(sResult, "OpenWeatherMap.json");
 #endif
 
 	Json::Value root;
 
-	bool ret= ParseJSon(sResult,root);
+	bool ret=ParseJSon(sResult,root);
 	if ((!ret) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR,"OpenWeatherMap: Invalid data received!");
+		_log.Log(LOG_ERROR,"OpenWeatherMap: Invalid data received (not JSON)!");
 		return;
 	}
-
 	if (root.size() < 1)
 	{
-		_log.Log(LOG_ERROR, "OpenWeatherMap: Empty data received!");
-		return;
-	}
-	if (root["cod"].empty())
-	{
-		_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid data received!");
-		return;
-	}
-	std::string rcod = root["cod"].asString();
-	if (atoi(rcod.c_str()) != 200)
-	{
-		_log.Log(LOG_ERROR, "OpenWeatherMap: Error received: %s (%s)",rcod.c_str(), root["message"].asString().c_str());
+		_log.Log(LOG_ERROR, "OpenWeatherMap: No data, empty response received!");
 		return;
 	}
 
-	float temp = -999.9f;
-	if (!root["main"].empty())
+	// Process current
+	if (root["current"].empty())
 	{
+		_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid data received, could not find current weather data!");
+		return;
+	}
+	else if (m_current)
+	{
+		Json::Value current;
+		float temp = -999.9f;
+		float fltemp = -999.9f;
+
+		current = root["current"];
 		int humidity = 0;
-		int barometric = 0;
-		int barometric_forecast = baroForecastNoInfo;
-		if (!root["main"]["temp"].empty())
+		float barometric = 0;
+		int barometric_forecast = 0;
+		if (!current["temp"].empty())
 		{
-			temp = root["main"]["temp"].asFloat();
+			temp = current["temp"].asFloat();
 		}
-
-		if (!root["main"]["humidity"].empty())
+		if (!current["feels_like"].empty())
 		{
-			humidity = root["main"]["humidity"].asInt();
+			fltemp = current["feels_like"].asFloat();
 		}
-		if (!root["main"]["pressure"].empty())
+		if (!current["humidity"].empty())
 		{
-			barometric = atoi(root["main"]["pressure"].asString().c_str());
-			if (barometric < 1000)
-				barometric_forecast = baroForecastRain;
-			else if (barometric < 1020)
-				barometric_forecast = baroForecastCloudy;
-			else if (barometric < 1030)
-				barometric_forecast = baroForecastPartlyCloudy;
-			else
-				barometric_forecast = baroForecastSunny;
-
-			if (!root["weather"].empty())
+			humidity = current["humidity"].asInt();
+		}
+		if (!current["pressure"].empty())
+		{
+			barometric = current["pressure"].asFloat();
+			barometric_forecast = GetForecastFromBarometricPressure(barometric, temp);
+			if (!current["weather"].empty())
 			{
-				if (!root["weather"][0].empty())
+				if (!current["weather"][0].empty())
 				{
-					if (!root["weather"][0]["id"].empty())
+					if (!current["weather"][0]["id"].empty())
 					{
-						int condition = root["weather"][0]["id"].asInt();
+						int condition = current["weather"][0]["id"].asInt();
+						/* We do not use it at the moment, does not feel ok
 						if ((condition == 801) || (condition == 802))
 							barometric_forecast = baroForecastPartlyCloudy;
 						else if (condition == 803)
@@ -228,13 +492,19 @@ void COpenWeatherMap::GetMeterDetails()
 							barometric_forecast = baroForecastSunny;
 						else if ((condition >= 300) && (condition < 700))
 							barometric_forecast = baroForecastRain;
+						*/
+					}
+					if (!current["weather"][0]["description"].empty())
+					{
+						std::string weatherdescription = current["weather"][0]["description"].asString();
+						SendTextSensor(2, 1, 255, weatherdescription, "Weather Description");
 					}
 				}
 			}
 		}
 		if ((temp != -999.9f) && (humidity != 0) && (barometric != 0))
 		{
-			SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forecast, "THB");
+			SendTempHumBaroSensorFloat(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forecast, "TempHumBaro");
 		}
 		else if ((temp != -999.9f) && (humidity != 0))
 		{
@@ -247,92 +517,165 @@ void COpenWeatherMap::GetMeterDetails()
 			if (humidity != 0)
 				SendHumiditySensor(1, 255, humidity, "Humidity");
 		}
-	}
 
-	//Wind
-	if (!root["wind"].empty())
-	{
-		int wind_degrees = -1;
-		float windspeed_ms = -1;
+		// Feel temperature
+		if (fltemp != -999.9f)
+		{
+			SendTempSensor(3, 255, fltemp, "Feel Temperature");
+		}
 
-		if (!root["wind"]["deg"].empty())
+		//Wind
+		if (!current["wind_speed"].empty())
 		{
-			wind_degrees = root["wind"]["deg"].asInt();
-		}
-		if (!root["wind"]["speed"].empty())
-		{
-			windspeed_ms = root["wind"]["speed"].asFloat();
-		}
-		if ((wind_degrees != -1) && (windspeed_ms != -1))
-		{
-			bool bHaveTemp = (temp != -999.9f);
-			float rTemp = (temp != -999.9f) ? temp : 0;
-			SendWind(1, 255, wind_degrees, windspeed_ms, 0, rTemp, 0, bHaveTemp, false, "Wind");
-		}
-	}
+			int16_t wind_degrees = -1;
+			float windgust_ms = 0;
 
-	//Rain
-	if (!root["rain"].empty())
-	{
-		if (!root["rain"]["3h"].empty())
-		{
-			float RainCount = static_cast<float>(atof(root["rain"]["3h"].asString().c_str()));
-			if (RainCount >= 0.00f)
+			float windspeed_ms = current["wind_speed"].asFloat();
+
+			if (!current["wind_gust"].empty())
 			{
-				RBUF tsen;
-				memset(&tsen, 0, sizeof(RBUF));
-				tsen.RAIN.packetlength = sizeof(tsen.RAIN) - 1;
-				tsen.RAIN.packettype = pTypeRAIN;
-				tsen.RAIN.subtype = sTypeRAINWU;
-				tsen.RAIN.battery_level = 9;
-				tsen.RAIN.rssi = 12;
-				tsen.RAIN.id1 = 0;
-				tsen.RAIN.id2 = 1;
+				windgust_ms = current["wind_gust"].asFloat();
+			}
 
-				tsen.RAIN.rainrateh = 0;
-				tsen.RAIN.rainratel = 0;
+			if (!current["wind_deg"].empty())
+			{
+				wind_degrees = current["wind_deg"].asInt();
 
-				int tr10 = int((float(RainCount)*10.0f));
-				tsen.RAIN.raintotal1 = 0;
-				tsen.RAIN.raintotal2 = (BYTE)(tr10 / 256);
-				tr10 -= (tsen.RAIN.raintotal2 * 256);
-				tsen.RAIN.raintotal3 = (BYTE)(tr10);
+				bool bHaveTemp = (temp != -999.9f);
+				float rTemp = (bHaveTemp ? temp : 0);
+				float rFlTemp = rTemp;
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, "Rain", 255);
+				if ((rTemp < 10.0) && (windspeed_ms >= 1.4))
+					rFlTemp = 0; //if we send 0 as chill, it will be calculated
+				SendWind(4, 255, wind_degrees, windspeed_ms, windgust_ms, rTemp, rFlTemp, bHaveTemp, true, "Wind");
 			}
 		}
-	}
 
-	//Visibility
-	if (!root["visibility"].empty())
-	{
-		if (root["visibility"].isInt())
+		//UV
+		if (!current["uvi"].empty())
 		{
-			float visibility = ((float)root["visibility"].asInt())/1000.0f;
+			float uvi = current["uvi"].asFloat();
+			if ((uvi < 16) && (uvi >= 0))
+			{
+				SendUVSensor(5, 1, 255, uvi, "UV Index");
+			}
+		}
+
+		//Visibility
+		if (!current["visibility"].empty() && current["visibility"].isInt())
+		{
+			float visibility = ((float)current["visibility"].asInt())/1000.0f;
 			if (visibility >= 0)
 			{
-				_tGeneralDevice gdevice;
-				gdevice.subtype = sTypeVisibility;
-				gdevice.floatval1 = visibility;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, "Visibility", 255);
+				SendVisibilitySensor(6, 1, 255, visibility, "Visibility");
 			}
 		}
+
+		//clouds
+		if (!current["clouds"].empty())
+		{
+			float clouds = current["clouds"].asFloat();
+			SendPercentageSensor(7, 1, 255, clouds, "Clouds %");
+		}
+
+		//Rain (only present if their is rain (or snow))
+		float rainmm = 0;
+		if (!current["rain"].empty() && !current["rain"]["1h"].empty())
+		{
+			float rainmm = static_cast<float>(atof(current["rain"]["1h"].asString().c_str()));
+		}
+		else
+		{	// Maybe it is not raining but snowing... we show this as 'rain' as well (for now at least)
+			if (!current["snow"].empty() && !current["snow"]["1h"].empty())
+			{
+				float rainmm = static_cast<float>(atof(current["snow"]["1h"].asString().c_str()));
+			}
+		}
+		SendRainRateSensor(8, 255, rainmm, "Rain (Snow)");
+		m_itIsRaining = rainmm > 0;
+		SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it Raining");
 	}
 
-	//clouds
-	if (!root["clouds"].empty())
+	// Process daily forecast data if available
+	if (root["daily"].empty())
 	{
-		if (!root["clouds"]["all"].empty())
+		if (m_dayforecast)
+			_log.Log(LOG_STATUS, "OpenWeatherMap: Could not find daily weather forecast data!");
+	}
+	else if (m_dayforecast)
+	{
+		Json::Value dailyfc;
+		uint8_t iDay = 0;
+
+		dailyfc = root["daily"];
+		do
 		{
-			float clouds = root["clouds"]["all"].asFloat();
-			SendPercentageSensor(1, 0, 255, clouds, "Clouds %");
+			if (dailyfc[iDay]["dt"].empty())
+			{
+				_log.Log(LOG_STATUS, "OpenWeatherMap: Processing daily forecast failed (unexpected structure)!");
+				break;
+			}
+			else
+			{
+				std::string sDay = GetDayFromUTCtimestamp(iDay, dailyfc[iDay]["dt"].asString());
+				_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processing daily forecast for %s (%s)",dailyfc[iDay]["dt"].asString().c_str() ,sDay.c_str());
+
+				Json::Value curday = dailyfc[iDay];
+
+				if (!ProcessForecast(curday, "Day", sDay, iDay, 17))
+				{
+					_log.Log(LOG_STATUS, "OpenWeatherMap: Processing daily forecast for day %i failed!",iDay);
+				}
+			}
+			iDay++;
 		}
+		while (!dailyfc[iDay].empty());
+		_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processed %i daily forecasts",iDay);
+	}
+
+	// Process hourly forecast data if available
+	if (root["hourly"].empty())
+	{
+		if (m_hourforecast)
+			_log.Log(LOG_STATUS, "OpenWeatherMap: Could not find hourly weather forecast data!");
+	}
+	else if (m_hourforecast)
+	{
+		_log.Log(LOG_STATUS, "OpenWeatherMap: Processing of hourly weather forecast data not implemented (yet)!");
+		
+		Json::Value hourlyfc;
+		uint8_t iHour = 0;
+
+		hourlyfc = root["hourly"];
+		do
+		{
+			if (hourlyfc[iHour]["dt"].empty())
+			{
+				_log.Log(LOG_STATUS, "OpenWeatherMap: Processing hourly forecast failed (unexpected structure)!");
+				break;
+			}
+			else
+			{
+				std::string sHour = GetDayFromUTCtimestamp(iHour, hourlyfc[iHour]["dt"].asString());
+				_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processing hourly forecast for %s (%s)",hourlyfc[iHour]["dt"].asString().c_str() ,sHour.c_str());
+
+				Json::Value curhour = hourlyfc[iHour];
+
+				if (!ProcessForecast(curhour, "Hour", sHour, iHour, 257))
+				{
+					_log.Log(LOG_STATUS, "OpenWeatherMap: Processing hourly forecast for hour %i failed!",iHour);
+				}
+			}
+			iHour++;
+		}
+		while (!hourlyfc[iHour].empty());
+		_log.Debug(DEBUG_NORM, "OpenWeatherMap: Processed %i hourly forecasts",iHour);
 	}
 
 	//Forecast URL
-	if (!root["id"].empty())
+	if (!root["lat"].empty())
 	{
-		m_ForecastURL = "http://openweathermap.org/city/" + root["id"].asString();
+		m_ForecastURL = OWM_forecast_URL + root["lat"].asString();
 	}
-}
 
+}

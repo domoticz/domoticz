@@ -25,7 +25,7 @@
 #define sTypeTH_LC_TC 0xA0			//La Cross Temp_Hum combined
 #define sTypeTEMP_SYSTEM 0xA0		//Internal sensor
 
-#define wsbaroforecast_heavy_snow 0x01
+#define wsbaroforecast_heavy_snow 0x00
 #define wsbaroforecast_snow 0x01
 #define wsbaroforecast_heavy_rain 0x02
 #define wsbaroforecast_rain 0x03
