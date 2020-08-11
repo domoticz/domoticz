@@ -31,7 +31,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 144
+#define DB_VERSION 145
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2766,6 +2766,60 @@ bool CSQLHelper::OpenDatabase()
 			safe_query("CREATE TABLE [Preferences] ([Key] VARCHAR(50) PRIMARY KEY, [nValue] INTEGER DEFAULT 0, [sValue] VARCHAR(200))");
 			safe_query("INSERT INTO Preferences SELECT * from Preferences_without_primary_key");
 			safe_query("DROP TABLE Preferences_without_primary_key;");
+		}
+		if (dbversion < 145)
+		{
+			// Patch for OpenWebNetTCP: update deviceID for Area devices
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::string> sd;
+			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_OpenWebNetTCP << ")";
+			result = query(szQuery.str());
+			if (!result.empty())
+			{
+				for (const auto& itt : result)
+				{
+					sd = itt;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID, DeviceID FROM DeviceStatus WHERE (HardwareID=" << sd[0] << ")";
+					result2 = query(szQuery.str());
+
+					if (!result2.empty())
+					{
+						for (const auto& itt2 : result2)
+						{
+							sd = itt2;
+
+							uint32_t NodeID = 0UL;
+							std::stringstream s_strid;
+							s_strid << std::hex << sd[1];
+							s_strid >> NodeID;
+							int who = (NodeID >> 16) & 0xffff;
+							int where = NodeID & 0xffff;
+							if (((who == 1) || (who == 2)) && (where < 1000))	// light or automation								
+							{
+								if ((where > 0) && (where < 10))			// < 10 mean area device
+									NodeID += 0x4000; // Area devices flag!
+								else if ((where > 99) && (where < 1000))	// need 4 chars
+									NodeID += 0x2000; // 4 chars devices flag!
+								if (NodeID & 0xF000)
+								{
+									char ndeviceid[10];
+									sprintf(ndeviceid, "%08X", NodeID);
+
+									_log.Log(LOG_STATUS, "COpenWebNetTCP: ID:%s, DeviceID change from %s to %s!", sd[0].c_str(), sd[1].c_str(), ndeviceid);
+									szQuery.clear();
+									szQuery.str("");
+									szQuery << "UPDATE DeviceStatus SET DeviceID='" << ndeviceid << "' WHERE (ID=" << sd[0] << ")";
+									query(szQuery.str());
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	else if (bNewInstall)

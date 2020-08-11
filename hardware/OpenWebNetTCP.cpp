@@ -41,7 +41,13 @@ License: Public domain
 #define	SCAN_TIME_REQ_AUTO_UPDATE_POWER	(14400) // 4hour = 240min = 14400sec
 #define SCAN_TIME_REQ_ENERGY_TOTALIZER	(900)	// 15min = 900sec
 
-#define OPENWEBNET_GROUP_ID				0x00008000
+/* 2 bits function.. */
+#define OPENWEBNET_DEFAULT				0x00000000	// 0
+#define OPENWEBNET_2CHARS				0x00001000	// 1
+#define OPENWEBNET_4CHARS				0x00002000	// 2
+#define OPENWEBNET_AREA_ID				0x00004000	// 4
+#define OPENWEBNET_GROUP_ID				0x00008000	// 8
+#define OPENWEBNET_MASK_WHERE_FUNCT		0x0000f000
 
 #define OPENWEBNET_AUTOMATION					"AUTOMATION"
 #define OPENWEBNET_LIGHT						"LIGHT"
@@ -1002,6 +1008,87 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 }
 
 /**
+	Decode where and get tipe of command with details..
+**/
+void COpenWebNetTCP::decodeWhereAndFill(const int who, std::string where, std::vector<std::string> whereParam, std::string *devname, int *iWhere)
+{
+	int wlen = where.length();	
+	int iArea = -1;
+	*iWhere = -1;
+
+	if (wlen == 0)
+	{
+		/* GROUP light device */
+		if (!whereParam.empty())
+		{
+			*iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
+			*devname += " GROUP " + whereParam[0];
+		}
+	}
+	else if ((who == WHO_LIGHTING) || (who == WHO_AUTOMATION))
+	{
+		/*
+			Decode where...
+				A = 00;			PL [01 - 15];
+				A [1 -9];		PL [1 - 9];
+				A = 10;			PL [01 - 15];
+				A [01 - 09];	PL [10 - 15];
+		*/
+		if (wlen == 1)
+		{
+			// General o Area 1-9 command
+			int tmp = atoi(where.c_str());
+			if (tmp > 0) iArea = tmp;
+		}
+		else if ((wlen == 2) && (where == "00"))	// Area 0 (00) command
+		{
+			iArea = 0;
+		}
+		else if ((wlen == 3) && (where == "100"))	// area 10 (100) command
+		{
+			iArea = 10;
+		}
+		else									// generic Area+PL command
+		{
+			*iWhere = atoi(where.c_str());
+			*devname += " " + where;
+			if (wlen == 4)	// device with 4 chars command
+				*iWhere += OPENWEBNET_4CHARS;
+			else if ((wlen == 2) && (*iWhere < 10))
+				*iWhere += OPENWEBNET_2CHARS;
+		}
+
+		/*
+			General o area command:
+
+			iWhere = -1, iArea = -1		-> General command
+			iWhere = -1, iArea = 0-10	-> Area command
+			iWhere = xxxx iArea = -1	-> A-PL command
+		*/
+		if (*iWhere < 0)
+		{
+			if (iArea < 0)	// General command
+			{
+				*devname += " GEN " + where;
+				*iWhere = 0;
+			}
+			else			// Area command
+			{
+				mask_request_status |= (0x1 << (iArea + 1)); // Gen or area, need a refresh devices status
+				*devname += " AREA " + where;
+				*iWhere = OPENWEBNET_AREA_ID + iArea;
+			}
+		}
+	}
+	else
+	{
+		// others who..
+		*iWhere = atoi(where.c_str());
+		*devname += " " + where;
+	}
+}
+
+/**
 	Insert/Update device
 **/
 void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter)
@@ -1054,30 +1141,8 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 				iAppValue = atoi(whatParam[0].c_str());
 		}		
 
-		iWhere = atoi(where.c_str());
-
 		devname = OPENWEBNET_LIGHT;
-		if ((!whereParam.empty()) && (iWhere == 0))
-		{
-			/* GROUP light device */
-			iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
-			devname += " GROUP " + whereParam[0];
-		}
-		else if (iWhere < MAX_WHERE_AREA)
-		{
-			/* AREA light device */
-			mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
-			if (iWhere == 0)
-				devname += " GEN " + where;
-			else
-				devname += " AREA " + where;
-		}
-		else
-		{
-			/* Normal light device */
-			devname += " " + where;
-		}
-
+		decodeWhereAndFill(WHO_LIGHTING, where, whereParam, &devname, &iWhere);
 		UpdateSwitch(WHO_LIGHTING, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
 		break;
 	case WHO_AUTOMATION:								// 2
@@ -1095,29 +1160,8 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			if (iAppValue == 1000) // What = 1000 (Command translation)
 				iAppValue = atoi(whatParam[0].c_str());
 
-			iWhere = atoi(where.c_str());
-
 			devname = OPENWEBNET_AUTOMATION;
-			if ((!whereParam.empty()) && (iWhere == 0))
-			{
-				/* GROUP automation device */
-				iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
-				devname += " GROUP " + whereParam[0];
-			}
-			else if (iWhere < MAX_WHERE_AREA)
-			{
-				/* AREA automation device */
-				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
-				if (iWhere == 0)
-					devname += " GEN " + where;
-				else
-					devname += " AREA " + where;
-			}
-			else
-			{
-				/* Normal automation device */
-				devname += " " + where;
-			}
+			decodeWhereAndFill(WHO_AUTOMATION, where, whereParam, &devname, &iWhere);
 			UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, atoi(sInterface.c_str()), iLevel, 255, devname.c_str());
 		}
 		if (iter->IsNormalFrame())
@@ -1126,30 +1170,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			if (iAppValue == 1000) // What = 1000 (Command translation)
 				iAppValue = atoi(whatParam[0].c_str());
 
-			iWhere = atoi(where.c_str());
-
-			devname = OPENWEBNET_AUTOMATION;
-			if ((!whereParam.empty()) && (iWhere == 0))
-			{
-				/* GROUP automation device */
-				iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
-				devname += " GROUP " + whereParam[0];
-			}
-			else if (iWhere < MAX_WHERE_AREA)
-			{
-				/* AREA automation device */
-				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
-				if (iWhere == 0)
-					devname += " GEN " + where;
-				else
-					devname += " AREA " + where;
-			}
-			else
-			{
-				/* Normal automation device */
-				devname += " " + where;
-			}
-
+			decodeWhereAndFill(WHO_AUTOMATION, where, whereParam, &devname, &iWhere);
 			UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, atoi(sInterface.c_str()), -1, 255, devname.c_str());
 		}
 		break;
@@ -1612,6 +1633,47 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	}
 }
 
+/**
+   Convert device id into correct where
+**/
+std::string COpenWebNetTCP::getWhereForWrite(int where)
+{
+	std::stringstream whereStr;
+	uint32_t iArea;
+
+	switch (where & OPENWEBNET_MASK_WHERE_FUNCT)
+	{
+	case OPENWEBNET_GROUP_ID:
+		whereStr << "#";
+		whereStr << (where - OPENWEBNET_GROUP_ID);
+		break;
+	case OPENWEBNET_AREA_ID:
+		iArea = where - OPENWEBNET_AREA_ID;
+		if (iArea == 0)
+			whereStr << "00";	// Area 0
+		else if (iArea == 10)
+			whereStr << "100";	// Area 10
+		else
+			whereStr << iArea;	// Area 1-9
+		break;
+	case OPENWEBNET_2CHARS:
+		where -= OPENWEBNET_2CHARS;
+		if (where < 10)  whereStr << "0";
+		whereStr << where;
+		break;
+	case OPENWEBNET_4CHARS:
+		where -= OPENWEBNET_4CHARS;
+		if (where < 100) whereStr << "00";						// APL Command : A[00]; PL[01 - 15]
+		if ((where > 99) && (where < 1000)) whereStr << "0";	// APL Command : A[01 - 09]; PL[10 - 15]
+		whereStr << where;
+		break;
+	default:
+		whereStr << where;
+		break;
+	}
+			
+	return whereStr.str();
+}
 
 /**
    Convert domoticz command in a OpenWebNet command, then send it to device
@@ -1765,9 +1827,7 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			whoStr << who;
 			std::string sWho = whoStr.str();
 
-			std::stringstream whereStr;
-			whereStr << where;
-			std::string sWhere = whereStr.str();
+			std::string sWhere = getWhereForWrite(where);
 
 			std::stringstream levelStr;
 			levelStr << Level;
@@ -1776,7 +1836,7 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			value.clear();
 			value.push_back("001");
 			value.push_back(levelStr.str());
-			request.CreateWrDimensionMsgOpen2(whoStr.str(), whereStr.str(), dimensionStr.str(), value);
+			request.CreateWrDimensionMsgOpen2(sWho, sWhere, sDimension, value);
 			if (sendCommand(request, responses))
 			{
 				if (responses.size() > 0) return responses.at(0).IsOKFrame();
@@ -1784,7 +1844,19 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 		}
 		else {
 			std::vector<bt_openwebnet> responses;
-			bt_openwebnet request(who, what, (where & ~OPENWEBNET_GROUP_ID), (where & OPENWEBNET_GROUP_ID));
+			
+			std::stringstream whoStr;
+			whoStr << who;
+			std::string sWho = whoStr.str();
+
+			std::stringstream whatStr;
+			whatStr << what;
+			std::string sWhat = whatStr.str();
+			
+			std::string sWhere = getWhereForWrite(where);
+
+			std::string when = "";
+			bt_openwebnet request(sWho, sWhat, sWhere, when);
 			if (sendCommand(request, responses))
 			{
 				if (responses.size() > 0) return responses.at(0).IsOKFrame();
@@ -1804,12 +1876,7 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 		whatStr << what;
 		std::string sWhat = whatStr.str();
 
-		std::stringstream whereStr;
-		whereStr << (where & ~OPENWEBNET_GROUP_ID);
-		std::string sWhere = "";
-		if ((where & OPENWEBNET_GROUP_ID))
-			sWhere += "#";
-		sWhere += whereStr.str();
+		std::string sWhere = getWhereForWrite(where);
 
 		std::stringstream interfaceStr;
 		interfaceStr << iInterface;
@@ -1843,7 +1910,7 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 	std::string sWho = whoStr.str();
 
 	std::stringstream whereStr;
-	whereStr << (where & ~OPENWEBNET_GROUP_ID);
+	whereStr << (where - OPENWEBNET_GROUP_ID);
 	std::string sWhere = "";
 	// add # to set value permanent
 	sWhere += "#" + whereStr.str();
@@ -1943,7 +2010,12 @@ void COpenWebNetTCP::scan_automation_lighting(const int cen_area)
 	std::stringstream whoStr;
 	std::stringstream whereStr;
 	whoStr << WHO_LIGHTING;
-	whereStr << cen_area;
+	if (cen_area < 0)
+		whereStr << "0";		// general scan
+	else if (cen_area == 0)
+		whereStr << "00";		// area 0 scan
+	else
+		whereStr << cen_area;	// area 1-9 scan
 	request.CreateStateMsgOpen(whoStr.str(), whereStr.str());
 	sendCommand(request, responses, 0, false);
 }
@@ -2158,9 +2230,9 @@ void COpenWebNetTCP::scan_device()
 	else
 	{
 		// Scan only the set areas
-		for (iWhere = WHERE_AREA_1; iWhere < MAX_WHERE_AREA; iWhere++)
+		for (iWhere = WHERE_AREA_0; iWhere < MAX_WHERE_AREA; iWhere++)
 		{
-			if (mask_request_status & (0x1 << iWhere))
+			if (mask_request_status & ((0x1 << (iWhere + 1))))
 			{
 				_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning AREA %u...", iWhere);
 				scan_automation_lighting(iWhere);

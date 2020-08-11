@@ -512,48 +512,6 @@ bt_openwebnet::bt_openwebnet(const std::string& message)
   CreateMsgOpen(message);
 }
 
-bt_openwebnet::bt_openwebnet(const int who, const int what, const int where, const int group)
-{
-	std::stringstream whoStr;
-	std::stringstream whatStr;
-	std::stringstream whereStr;	
-
-	whoStr << who;
-	whatStr << what;
-	if (group) {
-		/*
-			Group Command: GRP [1 - 255]
-			we need to add a '#'
-		*/
-		whereStr << "#";
-	} else if ((where > 99) && (where < 1000)) {
-
-		/* 
-			APL Command: A [01 - 09]; PL [10 - 15]
-			In this case, 'where' is > 99, but < 1000 (area 10)
-
-			int value is for example 110 (A=1, PL=10).
-			The correct string is '0110', so we need to add a '0'
-		*/
-		whereStr << "0";
-	}
-
-	/*
-		In other cases just take 'where' as is
-		Area Command: A [1 - 9] 
-		APL Command: A[1 - 9]; PL[1 - 9]
-		APL Command: A = 10; PL[01 - 15]
-	*/
-
-	whereStr << where;
-
-	std::string sWho = whoStr.str();
-	std::string sWhere = whereStr.str();
-	std::string sWhat = whatStr.str();
-	std::string sWhen = "";
-
-	CreateMsgOpen(sWho, sWhat, sWhere, sWhen);
-}
 
 // creates the open message *who*what*where*when##
 bt_openwebnet::bt_openwebnet(const std::string& who, const std::string& what, const std::string& where, const std::string& when)
@@ -2243,30 +2201,53 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 
 		std::string room;
 		std::string pointOfLight;
-
-		if (where.length() == 2) {
-			//A = [1 - 9] , PL = [1 - 9]
-			room = "room " + where.substr(0, 1);
-			pointOfLight = where.substr(1, 1);
+		int wlen = where.length();
+		if (wlen == 1)
+		{
+			if (where == "0")
+				room = "general";
+			else
+				room = "area " + where;
+			pointOfLight = "-";
 		}
-		else if (where.length() == 4) {
+		else if (wlen == 2) 
+		{
+			if (where == "00")
+			{
+				//A=00 ,  PL=[01-15]
+				room = "area 0";
+				pointOfLight = "-";
+			}
+			else
+			{
+				//A = [1 - 9] , PL = [1 - 9]
+				room = "room " + where.substr(0, 1);
+				pointOfLight = where.substr(1, 1);
+			}
+		}
+		else if (wlen == 3)
+		{
+			if (where == "100")
+			{
+				//A=10 
+				room = "area 10";
+				pointOfLight = "-";
+			}
+		}
+		else if (wlen == 4) {
 			std::string begin = where.substr(0, 2);
 			std::string end = where.substr(2, 2);
 
 			if (begin == "00") {
 				//A=00 ,  PL=[01-15]
-				room = "all rooms";
-				pointOfLight = end;
-			}
-			else if (begin == "10") {
-				//A = 10 , PL = [01 - 15];
-				room = "room " + begin;
+				room = "room 0";
 				pointOfLight = end;
 			}
 			else {
 				int amb = atoi(begin.c_str());
-				if (amb >= 1 && amb <= 9) {
+				if (amb >= 1 && amb <= 10) {
 					//A = [01 - 09], PL = [10 - 15]
+					//A = 10 , PL = [01 - 15];
 					room = "room " + begin;
 					pointOfLight = end;
 				}
@@ -2277,16 +2258,6 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 			return room + ", point of light " + pointOfLight;
 		}
 	}
-
-	if (where.length() == 1) {
-		//A = [1 - 9] 
-		return "area " + where.substr(0, 1);
-	}
-	else if (where.length() == 2) {
-		//A = [01 - 09] 
-		return "area " + where.substr(0, 2);
-	}
-
 
 	return "Unknown where : " + where + vectorToString(whereParameters);
 }

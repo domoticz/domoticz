@@ -409,7 +409,6 @@ public:
   // constructors
   bt_openwebnet();
   explicit bt_openwebnet(const std::string& message);
-  bt_openwebnet(int who, int what, int where, int group);
   bt_openwebnet(const std::string& who, const std::string& what, const std::string& where, const std::string& when);
 
   void CreateNullMsgOpen();

@@ -8,7 +8,8 @@ class bt_openwebnet;
 class COpenWebNetTCP : public CDomoticzHardwareBase
 {
 	enum _eArea {
-		WHERE_CEN_0 = 0,
+		WHERE_CEN_0 = -1,
+		WHERE_AREA_0 = 0,
 		WHERE_AREA_1 = 1,
 		WHERE_AREA_2 = 2,
 		WHERE_AREA_3 = 3,
@@ -18,17 +19,8 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 		WHERE_AREA_7 = 7,
 		WHERE_AREA_8 = 8,
 		WHERE_AREA_9 = 9,
-		MAX_WHERE_AREA = 10
-		/*
-		TODO: with virtual configuration are present PL [10 - 15]
-		but in this case need to develop all this sending rules:
-
-		- A = 00;			PL [01 - 15];
-		- A [1 -9];		PL [1 - 9];
-		- A = 10;			PL [01 - 15];
-		- A [01 - 09];	PL [10 - 15];
-
-		*/
+		WHERE_AREA_10 = 10,
+		MAX_WHERE_AREA = 11
 	};
 
 	enum _eWhereEnergy {
@@ -77,6 +69,7 @@ private:
 	void UpdateEnergy(const int who, const int where, double fval, const int iInterface, const int BatteryLevel, const char *devname);
 	void UpdateSoundDiffusion(const int who, const int where, const int what, const int iInterface, const int BatteryLevel, const char* devname);
 	bool GetValueMeter(const int NodeID, const int ChildID, double *usage, double *energy);
+	void decodeWhereAndFill(const int who, std::string where, std::vector<std::string> whereParam, std::string* devname, int* iWhere);
 	void UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter);
 	void scan_automation_lighting(const int cen_area);
 	void scan_sound_diffusion();
@@ -89,6 +82,7 @@ private:
 	void requestDryContactIRDetectionStatus();
 	void requestEnergyTotalizer();
 	void requestAutomaticUpdatePower(int time);
+	std::string getWhereForWrite(int where);
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
