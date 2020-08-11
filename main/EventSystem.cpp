@@ -1217,12 +1217,12 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	if (m_eventtrigger.size() > 0)
 	{
 		time_t atime = mytime(NULL) + static_cast<int>(fDelayTime);
-		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
+		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end();)
 		{
 			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later or equal queued items
-			{
-				m_eventtrigger.erase(itt--);
-			}
+			itt = m_eventtrigger.erase(itt);
+		else
+			itt++;
 		}
 	}
 	_tEventTrigger item;
