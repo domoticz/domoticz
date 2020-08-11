@@ -76,7 +76,7 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 	_log.Debug(DEBUG_NORM, "OpenWeatherMap: Got location parameter %s", Location.c_str());
 	_log.Debug(DEBUG_NORM, "OpenWeatherMap: Starting with setting %i, %i, %i, %i", m_current, m_dayforecast, m_hourforecast, m_seconds);
 
-	if (m_seconds >= 10 && m_seconds <= 86400)
+	if (m_seconds >= 60 && m_seconds <= 86400)
 	{
 		m_Interval=(uint32_t) m_seconds;
 	}
