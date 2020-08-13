@@ -176,13 +176,31 @@ bool COpenWeatherMap::StartHardware()
 			StringSplit(m_Location, ",", strarray);
 			if (strarray.size() == 2)
 			{
+				//It could be a City/Country or a Lat/Long (Londen,UK)
 				sLatitude = strarray[0];
 				sLongitude = strarray[1];
 
-				m_Lat = std::stod(sLatitude);
-				m_Lon = std::stod(sLongitude);
+				char* p;
+				double converted = strtod(sLatitude.c_str(), &p);
+				if (*p) {
+					// conversion failed because the input wasn't a number
+					// assume it is a city/country combination
+					Log(LOG_STATUS, "Using specified location (City %s)!", m_Location.c_str());
+					double lat, lon;
+					if (!ResolveLocation(m_Location, lat, lon))
+					{
+						Log(LOG_ERROR, "Unable to resolve City to Latitude/Longitude, please use Latitude,Longitude directly in hardware setup!)");
+					}
+					Log(LOG_STATUS, "City -> Lat/Long = %g,%g", lat, lon);
+					m_Lat = lat;
+					m_Lon = lon;
+				}
+				else {
+					m_Lat = std::stod(sLatitude);
+					m_Lon = std::stod(sLongitude);
 
-				Log(LOG_STATUS, "Using specified location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
+					Log(LOG_STATUS, "Using specified location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
+				}
 			}
 			else if (m_Location.find("lat=") == 0)
 			{
