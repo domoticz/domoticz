@@ -357,7 +357,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 	if (!reading["temperature"].empty())
 	{
 		float temp = reading["temperature"].asFloat();
-		sprintf(szTmp, "SolarMain %s", pInverterSettings->name.c_str());
+		sprintf(szTmp, "Temp %s", pInverterSettings->name.c_str());
 		SendTempSensor(1 + iInverterNumber, 255, temp, szTmp);
 	}
 
