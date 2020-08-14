@@ -186,21 +186,49 @@ void CMercApi::GetClimateData(Json::Value& jsondata, tClimateData& data)
 bool CMercApi::GetVehicleData(tVehicleData& data)
 {
 	Json::Value reply;
+	bool bData = false;
 
 	if (GetData("vehiclelockstatus", reply))
 	{
 		if (reply.size() == 0)
-			return true;	// This occurs when the API call return a 204 (No Content). So everything is valid/ok, just no data
-
-		if (!reply.isArray())
 		{
-			_log.Log(LOG_ERROR, "MercApi: Unexpected reply from VehicleLockStatus.");
-			return false;
+			bData = true;	// This occurs when the API call return a 204 (No Content). So everything is valid/ok, just no data
 		}
-		GetVehicleData(reply, data);
-		return true;
+		else
+		{
+			if (!reply.isArray())
+			{
+				_log.Log(LOG_ERROR, "MercApi: Unexpected reply from VehicleLockStatus.");
+			}
+			else
+			{
+				GetVehicleData(reply, data);
+				bData = true;
+			}
+		}
 	}
-	return false;
+
+	if (GetData("payasyoudrive", reply))
+	{
+		if (reply.size() == 0)
+		{
+			bData = true;	// This occurs when the API call return a 204 (No Content). So everything is valid/ok, just no data
+		}
+		else
+		{
+			if (!reply.isArray())
+			{
+				_log.Log(LOG_ERROR, "MercApi: Unexpected reply from PayasyouDrive.");
+			}
+			else
+			{
+				GetVehicleData(reply, data);
+				bData = true;
+			}
+		}
+	}
+
+	return bData;
 }
 
 void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
@@ -226,6 +254,16 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 						_log.Debug(DEBUG_NORM, "MercApi: DoorLockStatusVehicle has value %s", iter2["value"].asString().c_str());
 						data.car_open = (iter2["value"].asString() == "1" || iter2["value"].asString() == "2" ? false : true);
 						data.car_open_message = (data.car_open ? "Your Mercedes is open" : "Your Mercedes is locked");
+					}
+				}
+				if (id == "odo")
+				{
+					Json::Value iter2;
+					iter2 = iter[id];
+					if(!iter2["value"].empty())
+					{
+						_log.Debug(DEBUG_NORM, "MercApi: Odo has value %s", iter2["value"].asString().c_str());
+						data.odo = atof(iter2["value"].asString().c_str());
 					}
 				}
 			}
