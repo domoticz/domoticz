@@ -71,13 +71,16 @@ COpenWeatherMap::~COpenWeatherMap(void)
 {
 }
 
-bool COpenWeatherMap::ResolveLocation(const std::string& Location, double& latitude, double& longitude)
+bool COpenWeatherMap::ResolveLocation(const std::string& Location, double& latitude, double& longitude, const bool IsCityName)
 {
 	std::string sResult;
 	std::stringstream sURL;
 
 	sURL << OWM_Get_City_Details;
-	sURL << "q=" << Location;
+	if (IsCityName)
+		sURL << "q=" << Location;
+	else
+		sURL << "id=" << Location;
 	sURL << "&appid=" << m_APIKey;
 	sURL << "&units=metric" << "&lang=" << m_Language;
 
@@ -223,13 +226,27 @@ bool COpenWeatherMap::StartHardware()
 			}
 			else
 			{
-				Log(LOG_STATUS, "Using specified location (City %s)!", m_Location.c_str());
+				//Could be a Station ID (Number) or a City
+				char* p;
+				long converted = strtol(m_Location.c_str(), &p, 10);
 				double lat, lon;
-				if (!ResolveLocation(m_Location, lat, lon))
-				{
-					Log(LOG_ERROR, "Unable to resolve City to Latitude/Longitude, please use Latitude,Longitude directly in hardware setup!)");
+				if (*p) {
+					//City
+					Log(LOG_STATUS, "Using specified location (City %s)!", m_Location.c_str());
+					if (!ResolveLocation(m_Location, lat, lon))
+					{
+						Log(LOG_ERROR, "Unable to resolve City to Latitude/Longitude, please use Latitude,Longitude directly in hardware setup!)");
+					}
 				}
-				Log(LOG_STATUS, "City -> Lat/Long = %g,%g", lat,lon);
+				else {
+					//Station ID
+					Log(LOG_STATUS, "Using specified location (Station ID %s)!", m_Location.c_str());
+					if (!ResolveLocation(m_Location, lat, lon, false))
+					{
+						Log(LOG_ERROR, "Unable to resolve City to Latitude/Longitude, please use Latitude,Longitude directly in hardware setup!)");
+					}
+				}
+				Log(LOG_STATUS, "City -> Lat/Long = %g,%g", lat, lon);
 				m_Lat = lat;
 				m_Lon = lon;
 			}
