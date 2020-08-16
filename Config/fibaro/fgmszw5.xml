@@ -1,4 +1,4 @@
-<Product Revision="10" 
+<Product Revision="11" 
   xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1001:0801</MetaDataItem>
@@ -37,6 +37,7 @@ Use reset procedure only if the primary controller is missing or inoperable.</Me
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3336/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3379/xml</Entry>
       <Entry author="Peter Gebruers - peter.gebruers@gmail.com" date="11 Jun 2019" revision="10">Force Association Single Channel on Lifeline - https://github.com/OpenZWave/open-zwave/issues/1830</Entry>
+      <Entry author="Glenn Gillen - me@glenngillen.com" date="22 Jun 2020" revision="11">Updated Metadata Import from Z-Wave Allian Database - https://products.z-wavealliance.org/products/3513/xml</Entry>	 
     </ChangeLog>
     <MetaDataItem id="2001" name="ZWProductPage" type="0801">https://products.z-wavealliance.org/products/2763/</MetaDataItem>
     <MetaDataItem id="2001" name="FrequencyName" type="0801">U.S. / Canada / Mexico</MetaDataItem>
@@ -47,6 +48,10 @@ Use reset procedure only if the primary controller is missing or inoperable.</Me
     <MetaDataItem id="2002" name="ZWProductPage" type="0801">https://products.z-wavealliance.org/products/3379/</MetaDataItem>
     <MetaDataItem id="2002" name="FrequencyName" type="0801">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem id="2002" name="Identifier" type="0801">FGMS-001</MetaDataItem>
+    <MetaDataItem id="3002" name="ZWProductPage" type="0801">https://products.z-wavealliance.org/products/3513/</MetaDataItem>
+    <MetaDataItem id="3002" name="FrequencyName" type="0801">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="3002" name="Identifier" type="0801">FGMS-001</MetaDataItem>
+
   </MetaData>
   <!--
 	Fibaro Motion Sensor FGMS-001-ZW5

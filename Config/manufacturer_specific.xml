@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<ManufacturerSpecificData Revision="109" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="111" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -85,11 +84,11 @@
     <Product config="aeotec/dsc35103.xml" id="0011" name="DSC35103 Micro Double Switch" type="0003"/>
     <Product config="aeotec/dsd37.xml" id="0025" name="DSD37 Range Extender" type="0004"/>
     <!-- EU-market products start with type prefix "00" -->
-        <!-- US-market products start with type prefix "01" -->
-        <!-- AU-market products start with type prefix "02" -->
-        <!-- JP-market products start with type prefix "0A" -->
-        <!-- CN-market products start with type prefix "1D" -->
-        <!-- RU-market products start with type prefix "1A" -->
+    <!-- US-market products start with type prefix "01" -->
+    <!-- AU-market products start with type prefix "02" -->
+    <!-- JP-market products start with type prefix "0A" -->
+    <!-- CN-market products start with type prefix "1D" -->
+    <!-- RU-market products start with type prefix "1A" -->
     <Product config="aeotec/zw056.xml" id="0038" name="ZW056 Doorbell Gen5" type="0004"/>
     <Product config="aeotec/zw056.xml" id="0038" name="ZW056 Doorbell Gen5" type="0104"/>
     <Product config="aeotec/zw056.xml" id="0038" name="ZW056 Doorbell Gen5" type="0204"/>
@@ -207,7 +206,7 @@
     <Product config="aeotec/zwa005.xml" id="0005" name="ZWA005 TriSensor" type="0002"/>
     <Product config="aeotec/zwa005.xml" id="0005" name="ZWA005 TriSensor" type="0102"/>
     <Product config="aeotec/zwa005.xml" id="0005" name="ZWA005 TriSensor" type="0202"/>
-    <Product config="aeotec/zwa021.xml" id="0015" name="ZWA021 Thermostatic Valve" type="0002"/>      
+    <Product config="aeotec/zwa021.xml" id="0015" name="ZWA021 Thermostatic Valve" type="0002"/>
     <Product config="aeotec/zw162.xml" id="00a2" name="ZW162 Doorbell 6" type="0003"/>
     <Product config="aeotec/zw162.xml" id="00a2" name="ZW162 Doorbell 6" type="0103"/>
     <Product config="aeotec/zw162.xml" id="00a2" name="ZW162 Doorbell 6" type="0203"/>
@@ -227,8 +226,8 @@
     <Product config="aeotec/zwa019.xml" id="0013" name="ZWA019 Water Sensor 7 Pro" type="0102"/>
     <Product config="aeotec/zwa019.xml" id="0013" name="ZWA019 Water Sensor 7 Pro" type="0202"/>
     <Product config="aeotec/zw141.xml" id="008d" name="ZW141 Nano Shutter" type="0003"/>
-    <Product config="aeotec/zw141.xml" id="008d" name="ZW141 Nano Shutter" type="0103"/>  
-    <Product config="aeotec/zw141.xml" id="008d" name="ZW141 Nano Shutter" type="0203"/>      
+    <Product config="aeotec/zw141.xml" id="008d" name="ZW141 Nano Shutter" type="0103"/>
+    <Product config="aeotec/zw141.xml" id="008d" name="ZW141 Nano Shutter" type="0203"/>
     <Product config="aeotec/zw164.xml" id="00a4" name="ZW164 Indoor Siren 6" type="0003"/>
     <Product config="aeotec/zw164.xml" id="00a4" name="ZW164 Indoor Siren 6" type="0103"/>
     <Product config="aeotec/zw175.xml" id="00af" name="ZW175 Smart Switch 7" type="0003"/>
@@ -518,6 +517,7 @@
     <Product config="dome/0087.xml" id="0087" name="On/Off Plug-In Switch" type="0003"/>
     <Product config="dome/0088.xml" id="0088" name="Siren" type="0003"/>
     <Product config="dome/0101.xml" id="0101" name="Door/Window Sensor" type="0003"/>
+    <Product config="dome/dmex1.xml" id="0108" name="DMEX1 Range Extender" type="0003"/>
     <Product config="dome/0201.xml" id="0201" name="Door/Window Sensor Pro" type="0003"/>
   </Manufacturer>
   <Manufacturer id="001b" name="ELK Products"></Manufacturer>
@@ -605,9 +605,9 @@
   </Manufacturer>
   <Manufacturer id="016a" name="Fantem (Oomi)">
     <!-- EU-market products seems to start with type prefix "00" -->
-        <!-- US-market products start with type prefix "01" -->
-        <!-- AU-market products start with type prefix "02" -->
-        <!-- CN-market products start with type prefix "1D" -->
+    <!-- US-market products start with type prefix "01" -->
+    <!-- AU-market products start with type prefix "02" -->
+    <!-- CN-market products start with type prefix "1D" -->
     <Product config="oomi/ft100.xml" id="0064" name="FT100 MultiSensor 6" type="0002"/>
     <Product config="oomi/ft100.xml" id="0064" name="FT100 MultiSensor 6" type="0102"/>
     <Product config="oomi/ft100.xml" id="0064" name="FT100 MultiSensor 6" type="0202"/>
@@ -616,7 +616,7 @@
     <Product config="oomi/ft111.xml" id="006F" name="FT111 In Wall Dimmer" type="0203"/>
     <Product config="oomi/ft111.xml" id="006F" name="FT111 In Wall Dimmer" type="1D03"/>
     <Product config="oomi/ft112.xml" id="0070" name="FT112 Door-window sensor" type="0002"/>
-    <Product config="oomi/ft118.xml" id="0076" name="FT118 Range extender 6" type="0004"/>  
+    <Product config="oomi/ft118.xml" id="0076" name="FT118 Range extender 6" type="0004"/>
   </Manufacturer>
   <Manufacturer id="010f" name="FIBARO System">
     <Product config="fibaro/fgbs001.xml" id="0101" name="FGBS001 Universal Binary Sensor" type="0501"/>
@@ -646,6 +646,7 @@
     <Product config="fibaro/fgk10x.xml" id="2001" name="FGK10x Door Opening Sensor" type="0701"/>
     <Product config="fibaro/fgk10x.xml" id="3001" name="FGK10x Door Opening Sensor" type="0701"/>
     <Product config="fibaro/fgdw2.xml" id="1000" name="FGDW002 Door Opening Sensor 2" type="0702"/>
+	<Product config="fibaro/fgdw2.xml" id="2000" name="FGDW002 Door Opening Sensor 2" type="0702"/>
     <Product config="fibaro/fgr221.xml" id="0104" name="FGR221 Roller Shutter Controller" type="0300"/>
     <Product config="fibaro/fgr221.xml" id="100a" name="FGR221 Roller Shutter Controller" type="0300"/>
     <Product config="fibaro/fgr221.xml" id="0106" name="FGR221 Roller Shutter Controller" type="0300"/>
@@ -700,6 +701,7 @@
     <Product config="fibaro/fgmszw5.xml" id="2001" name="FGMS001-ZW5 Motion Sensor" type="0801"/>
     <Product config="fibaro/fgmszw5.xml" id="2002" name="FGMS001-ZW5 Motion Sensor" type="0801"/>
     <Product config="fibaro/fgmszw5.xml" id="3001" name="FGMS001-ZW5 Motion Sensor" type="0801"/>
+    <Product config="fibaro/fgmszw5.xml" id="3002" name="FGMS001-ZW5 Motion Sensor" type="0801"/>
     <Product config="fibaro/fgfs101.xml" id="3001" name="FGFS101 Flood Sensor" type="0b00"/>
     <Product config="fibaro/fgfs101.xml" id="4001" name="FGFS101 Flood Sensor" type="0b00"/>
     <Product config="fibaro/fgfs101.xml" id="1001" name="FGFS101 Flood Sensor" type="0b00"/>
@@ -795,11 +797,13 @@
     <Product config="ge/14294-dimmer.xml" id="3038" name="14294 In-Wall Smart Dimmer" type="4944"/>
     <Product config="ge/14294-dimmer.xml" id="3039" name="14299 In-Wall 1000W Smart Dimmer" type="4944"/>
     <Product config="ge/14295-dimmer-toggle.xml" id="3130" name="14295 In-Wall Smart Toggle Dimmer" type="4944"/>
+    <Product config="ge/14298.xml" id="3034" name="14298 Plug-in Outdoor Smart Switch" type="4F50"/>
     <Product config="ge/26931-motion-switch.xml" id="3032" name="26931 Smart Motion Switch" type="494d"/>
     <Product config="ge/26933-motion-dimmer.xml" id="3034" name="26933 Smart Motion Dimmer" type="494d"/>
     <Product config="ge/14291-switch.xml" id="3036" name="14291 In-Wall Smart Switch" type="4952"/>
     <Product config="ge/46201-switch.xml" id="3135" name="46201 In-Wall Smart Switch" type="4952"/>
     <Product config="ge/46203-dimmer.xml" id="3235" name="46203 In-Wall Smart Dimmer" type="4944"/>
+    <Product config="ge/46204-dimmer-toggle.xml" id="3237" name="In-Wall Smart Toggle Dimmer" type="4944"/>
     <Product config="ge/14292-toggle-switch.xml" id="3037" name="14292 In-Wall Smart Toggle Switch" type="4952"/>
     <Product config="ge/14292-toggle-switch.xml" id="3038" name="14293 In-Wall Smart Toggle Switch" type="4952"/>
     <Product config="ge/45604.xml" id="3030" name="45603 Plugin Appliance Module" type="5250"/>
@@ -1015,6 +1019,7 @@
     <Product type="0006" id="0001" name="LZW41 Multi-White Bulb" config="inovelli/lzw41.xml"/>
     <Product type="0007" id="0001" name="LZW40 Dimmable  Bulb" config="inovelli/lzw40.xml"/>
     <Product type="000d" id="0001" name="LZW60 4-in-1 Sensor" config="inovelli/lzw60.xml"/>
+    <Product type="000e" id="0001" name="LZW36 Fan/Light Dimmer" config="inovelli/lzw36.xml"/>
   </Manufacturer>
   <Manufacturer id="0100" name="Insignia"></Manufacturer>
   <Manufacturer id="0006" name="Intel"></Manufacturer>
@@ -1062,16 +1067,16 @@
   <Manufacturer id="0174" name="Kopera Development Inc"></Manufacturer>
   <Manufacturer id="023A" name="KUMHO ELECTRIC INC"></Manufacturer>
   <Manufacturer id="0090" name="Kwikset (Spectrum Brands)">
-    <Product config="kwikset/smartcode.xml" id="0001" name="Touchpad Electronic Deadbolt" type="0001"/>
-    <Product config="kwikset/smartcode.xml" id="0642" name="SmartCode 916" type="0001"/>
-    <Product config="kwikset/smartcode.xml" id="0642" name="SmartCode 916" type="0003"/>
+    <Product config="kwikset/910.xml" id="0001" name="Touchpad Electronic Deadbolt" type="0001"/>
+    <Product config="kwikset/916.xml" id="0642" name="SmartCode 916" type="0001"/>
+    <Product config="kwikset/916.xml" id="0642" name="SmartCode 916" type="0003"/>
     <Product config="kwikset/smartcode.xml" id="4006" name="SmartCode 914" type="0003"/>
     <Product config="kwikset/smartcode.xml" id="0440" name="SmartCode 914" type="0003"/>
     <Product config="kwikset/smartcode.xml" id="0236" name="SmartCode 912" type="0003"/>
     <Product config="kwikset/smartcode.xml" id="0339" name="SmartCode 912" type="0003"/>
     <Product config="kwikset/smartcode.xml" id="0236" name="SmartCode 910" type="0001"/>
     <Product config="kwikset/smartcode.xml" id="0238" name="SmartCode 910" type="0003"/>
-    <Product config="kwikset/smartcode.xml" id="0001" name="SmartCode 910" type="0001"/>    
+    <Product config="kwikset/910.xml" id="0001" name="SmartCode 910" type="0001"/>
     <Product config="kwikset/smartcode.xml" id="0440" name="SmartCode 10" type="0006"/>
     <Product config="kwikset/smartcode.xml" id="0742" name="Obsidian" type="0003"/>
     <Product config="kwikset/914c.xml" id="0446" name="Convert 914" type="0003"/>
@@ -1112,7 +1117,8 @@
     <Product config="leviton/dz6hd.xml" id="0001" name="DZ1KD-1BZ Decora 1000W Smart Dimmer" type="3301"/>
     <Product config="leviton/dz15s.xml" id="0001" name="DZ15S-1BZ Decora Smart Switch" type="3401"/>
     <Product config="leviton/dzpd3.xml" id="0001" name="DZPD3-2BW Decora 300W Plug-In Smart Dimmer" type="3501"/>
-    <Product config="leviton/dz15s.xml" id="0001" name="Leviton DZPA1 Plug-In Outlet" type="3601"/>
+    <Product config="leviton/vrpa1.xml" id="0334" name="Leviton VRPA1 Plug-In Outlet" type="1805" />
+    <Product config="leviton/dzpa1.xml" id="0001" name="Leviton DZPA1 Plug-In Outlet" type="3601"/>
   </Manufacturer>
   <Manufacturer id="0015" name="Lexel"></Manufacturer>
   <Manufacturer id="015B" name="LG Electronics"></Manufacturer>
@@ -1260,6 +1266,7 @@
   <Manufacturer id="0178" name="Nexia">
     <!-- full name in Z-wave database: Ingersoll Rand - Nexia Home Intelligence -->
     <Product config="nexia/db100z.xml" id="3130" name="DB100Z Doorbell Sensor" type="4442"/>
+    <Product config="nexia/th100nx.xml" id="3130" name="TH100NX Temperature &amp; Humidity Sensor" type="5448"/>
   </Manufacturer>
   <Manufacturer id="0075" name="NextEnergy"></Manufacturer>
   <Manufacturer id="0361" name="NHN Entertainment"></Manufacturer>
@@ -1341,7 +1348,7 @@
     <Product config="popp/004407.xml" id="0003" name="004407 CO Detector" type="0004"/>
     <Product config="popp/009402.xml" id="0004" name="009402 10-Year Smoke Detector with Siren" type="0004"/>
     <Product config="popp/700342.xml" id="000d" name="700342 10-Year Smoke Detector" type="0004"/>
-    <Product config="popp/700342.xml" id="0010" name="700342 10-Year Smoke Detector" type="0004"/>    
+    <Product config="popp/700342.xml" id="0010" name="700342 10-Year Smoke Detector" type="0004"/>
     <Product config="popp/009501.xml" id="0003" name="009501 Flow Stop" type="0005"/>
     <Product config="popp/700168.xml" id="0011" name="Popp Z-Rain Rain Sensor" type="0004"/>
     <Product config="popp/012501.xml" id="0001" name="012501 Strike Lock Control" type="0005"/>
@@ -1607,6 +1614,7 @@
     <Product config="graber/rsz1.xml" id="5a31" name="RSZ1 Roller Shade" type="5253"/>
     <Product config="graber/vcz1.xml" id="5a31" name="VCZ1 Virtual Cord Remote Control" type="5643"/>
     <Product config="graber/csz1.xml" id="5a31" name="CSZ1 Cellular Shade" type="4353"/>
+    <Product config="graber/mcz1.xml" id="5a31" name="MCZ1 Multi-Channel Remote" type="4d43"/>
   </Manufacturer>
   <Manufacturer id="026F" name="Sprue Safety Products"></Manufacturer>
   <Manufacturer id="0124" name="Square Connect"></Manufacturer>
@@ -1670,6 +1678,7 @@
     <Product config="thermofloor/heatit056.xml" id="0202" name="Heatit Thermostat TF 056" type="0003"/>
     <Product config="thermofloor/heatit-zdim.xml" id="2200" name="Heatit ZDim" type="0003"/>
     <Product config="thermofloor/heatitz8.xml" id="0xa305" name="Heatit Z-Push Button 8" type="0x0300"/>
+    <Product config="thermofloor/heatit20a.xml" id="020a" name="Heatit Z-Water TF 20a" type="0003"/>
   </Manufacturer>
   <Manufacturer id="0317" name="Think Simple srl"></Manufacturer>
   <Manufacturer id="022A" name="TIMEVALVE"></Manufacturer>
@@ -1694,7 +1703,7 @@
     <Product config="wenzhou/tz57.xml" id="0203" name="TZ57 Two channel switch" type="0311"/>
     <Product config="wenzhou/tz79.xml" id="0305" name="TZ79 Power meter Relay Switch" type="0311"/>
     <Product config="wenzhou/tz74.xml" id="0304" name="TZ74 Dual Switch" type="0311"/>
-      <Product config="wenzhou/tz78.xml" id="0005" name="TZ78 In-Wall Single Relay Switch" type="0003"/>
+    <Product config="wenzhou/tz78.xml" id="0005" name="TZ78 In-Wall Single Relay Switch" type="0003"/>
   </Manufacturer>
   <Manufacturer id="011C" name="TKH Group / Eminent"></Manufacturer>
   <Manufacturer id="0327" name="TMC Technology"></Manufacturer>
@@ -1841,6 +1850,7 @@
   <Manufacturer id="012D" name="Wilshine Holding"></Manufacturer>
   <Manufacturer id="017F" name="Wink">
     <Product config="wink/wnk-mot1.xml"  id="0001" name="WNK-MOT1 Motion Sensor" type="0101" />
+    <Product config="wink/wnk-sir1p.xml"  id="0001" name="WNK-SIR1P Siren" type="0200" />
   </Manufacturer>
   <Manufacturer id="004c" name="Woodward Labs"></Manufacturer>
   <Manufacturer id="0242" name="Winytechnology"></Manufacturer>
@@ -1938,7 +1948,7 @@
     <Product config="zooz/zse30.xml" id="0085" name="ZSE30 Water Sensor" type="0003"/>
     <Product config="zooz/zen31.xml" id="2000" name="ZEN31 RGBW Dimmer" type="0902"/>
     <Product config="zooz/zse33.xml" id="0088" name="ZSE33 Smart Chime" type="0003"/>
-    <Product config="zooz/zse40.xml" id="2101" name="ZSE40 4-in-1 sensor" type="2021"/>    
+    <Product config="zooz/zse40.xml" id="2101" name="ZSE40 4-in-1 sensor" type="2021"/>
   </Manufacturer>
   <Manufacturer id="015d" name="Zooz (Willis Electric)">
     <Product config="zooz/zen20.xml" id="f51c" name="ZEN20 Power Strip" type="0651"/>

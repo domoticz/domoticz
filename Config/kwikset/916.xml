@@ -1,17 +1,16 @@
-<!-- 
-Kwikset smartcode 
-http://s7d5.scene7.com/is/content/BDHHI/z-wave-configuration
---><Product Revision="15" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0090:0001:0001</MetaDataItem>
-    <MetaDataItem name="ProductPic">images/kwikset/smartcode.png</MetaDataItem>
-    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/945/</MetaDataItem>
-    <MetaDataItem id="0001" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem id="0001" name="Identifier" type="0001">910</MetaDataItem>
-    <MetaDataItem name="ProductPage">http://www.kwikset.com/Products/Details/Electronic-Locks/910TRL-ZW-15-SMT.aspx</MetaDataItem>
-    <MetaDataItem name="Description">Weiser introduces the SmartCode™ 10 Touchpad Electronic Deadbolt with Z-Wave.
+    <MetaDataItem name="ProductPic">images/kwikset/916.jpg</MetaDataItem>
+    <MetaDataItem id="0642" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2188/</MetaDataItem>
+    <MetaDataItem id="0642" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0642" name="Identifier" type="0003">916</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.kwikset.com/support/productdetail/916-smartcode-traditional-electronic-deadbolt-with-z-wave-technology</MetaDataItem>
+    <MetaDataItem name="Description">Kwikset®, the leader in residential security, introduces the SmartCode™ 916 Touchscreen Electronic Deadbolt with Z-Wave.
 
-10 digit backlit keypad with one touch locking
+Capacitive touchscreen
+SecureScreen: Additional security by preventing fingerprint code detection
+One touch locking
 Dramatically reduced, all-metal interior
 30 user codes plus master code
 BHMA grade 2 certified
@@ -19,32 +18,18 @@ BHMA grade 2 certified
 Full 128-bit encryption security
 SmartKey: Re-key the lock in seconds</MetaDataItem>
     <MetaDataItem name="ProductSupport">http://www.kwikset.com/Customer-Support/Overview.aspx</MetaDataItem>
-    <MetaDataItem name="Name">SmartCode 10 Touchpad Electronic Deadbolt</MetaDataItem>
+    <MetaDataItem name="Name">SmartCode 916 Touchscreen Electronic Deadbolt</MetaDataItem>
     <ChangeLog>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/157/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/172/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/196/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/605/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/749/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/781/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/945/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1981/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="11">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2109/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="12">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2188/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="13">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2237/xml</Entry>
-      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="14">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2369/xml</Entry>
-      <Entry author="Russell Troxel - russelltroxel@gmail.com" date="08 Jun 2020" revision="15">Fixed TriggerRefresh Index to properly update lock status via Access Control.</Entry>
+        <Entry author="firstof9" date="20 Jul 2020" revision="1">Initial Version</Entry>
     </ChangeLog>
-    <MetaDataItem id="0642" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2188/</MetaDataItem>
+
     <MetaDataItem name="WakeupDescription">Even though the lock is sleeping, all buttons are active and can be used to initiate any lock activity.
 For the RF side, it will wake up every 1 second to check if there are any requests from your smart home controller.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2369/Install Guide GED1800 04112017.pdf</MetaDataItem>
-    <MetaDataItem id="0642" name="Identifier" type="0003">916</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2188/Install_Guide_916_01_23_2017.pdf</MetaDataItem>
     <MetaDataItem name="InclusionDescription">Initiate the process to add the lock to your system at your smart home controller.
 When prompted by your smart home system to add the lock, press button “A” on the lock interior one time. The red LED will illuminate when the lock enters Add Mode.
 Please allow time for the controller to add the lock to your system.</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Follow your smart home system’s instructions to remove the lock from the network. When prompted by the system, press button A” on the lock interior once.  The red LED will illuminate when the lock enters Remove mode. </MetaDataItem>
-    <MetaDataItem id="0642" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem name="ResetDescription">A factory reset will delete all user codes associated with the lock and will remove itself from your smart home system.
 Please only perform a factory reset when the primary controller is missing or inoperable.
 
@@ -54,12 +39,9 @@ To perform a factory reset, please perform the following:
 3. Keep holding the button for 30 seconds until the lock beeps and the status LED flashes red.
 4. Press the Program button once more.  The status LED will flash green and red several times.
 5. After a few seconds, the lock will initiate the door handing process.</MetaDataItem>
-    <MetaDataItem id="0440" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2237/</MetaDataItem>
-    <MetaDataItem id="0440" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem id="0440" name="Identifier" type="0003">914</MetaDataItem>
-    <MetaDataItem id="0440" name="ZWProductPage" type="0006">https://products.z-wavealliance.org/products/2369/</MetaDataItem>
-    <MetaDataItem id="0440" name="Identifier" type="0006">GED1800</MetaDataItem>
-    <MetaDataItem id="0440" name="FrequencyName" type="0006">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0642" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/2188/</MetaDataItem>
+    <MetaDataItem id="0642" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0642" name="Identifier" type="0001">916</MetaDataItem>
   </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
