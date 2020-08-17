@@ -603,7 +603,17 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 		}
 		else if (vType == "Distance")
 		{
-			strcpy(szData, rawsendValue.c_str());
+			float vis = std::stof(rawsendValue);
+			if (metertype == 0)
+			{
+				//cm
+				sprintf(szData, "%g", vis);
+			}
+			else
+			{
+				//inches
+				sprintf(szData, "%g", vis * 0.3937007874015748f);
+			}
 		}
 		else if (vType == "Status")
 		{
