@@ -98,6 +98,7 @@ private:
 	bool GetClimateState();
 	void UpdateClimateData(CVehicleApi::tClimateData& data);
 	void UpdateVehicleData(CVehicleApi::tVehicleData& data);
+	void UpdateCustomVehicleData(CVehicleApi::tCustomData& data);
 	bool DoSetCommand(tApiCommand command);
 
 	void AddCommand(eApiCommandType command_type, std::string command_parameter = "");
@@ -111,6 +112,8 @@ private:
 	void SendTemperature(int tempType, float value);
 	void SendPercentage(int percType, float value);
 	void SendCounter(int countType, float value);
+	void SendCustom(int countType, int ChildId, float value, std::string label);
+	void SendText(int countType, int ChildId, std::string value, std::string label);
 
 	bool StartHardware() override;
 	bool StopHardware() override;

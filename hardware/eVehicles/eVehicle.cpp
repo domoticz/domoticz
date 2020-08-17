@@ -36,6 +36,7 @@ License: Public domain
 #define VEHICLE_ALERT_LOCK 2
 #define VEHICLE_LEVEL_BATTERY 1
 #define VEHICLE_COUNTER_ODO 1
+#define VEHICLE_CUSTOM 9
 
 #define VEHICLE_MAXTRIES 5
 
@@ -174,14 +175,12 @@ void CeVehicle::SendValueSwitch(int switchType, int value)
 		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_MAX_CHARGE, 1, 255, (value == 100), 0, m_Name + " Max charge limit switch");
 }
 
-
 void CeVehicle::SendTemperature(int tempType, float value)
 {
 	if ((tempType == VEHICLE_TEMP_INSIDE) && m_api->m_capabilities.has_inside_temp)
 		SendTempSensor(VEHICLE_TEMP_INSIDE, 255, value, m_Name + " Temperature");
 	if ((tempType == VEHICLE_TEMP_OUTSIDE) && m_api->m_capabilities.has_outside_temp)
 		SendTempSensor(VEHICLE_TEMP_OUTSIDE, 255, value, m_Name + " Outside Temperature");
-	;
 }
 
 void CeVehicle::SendPercentage(int percType, float value)
@@ -196,13 +195,25 @@ void CeVehicle::SendCounter(int countType, float value)
 		SendCustomSensor(VEHICLE_COUNTER_ODO, 1, 255, value, m_Name + " Odometer", m_api->m_config.distance_unit);
 }
 
+void CeVehicle::SendCustom(int countType, int ChildId, float value, std::string label)
+{
+	if ((countType == VEHICLE_CUSTOM) && m_api->m_capabilities.has_custom_data)
+		SendCustomSensor(VEHICLE_CUSTOM, ChildId, 255, value, m_Name + " Custom", label.c_str());
+}
+
+void CeVehicle::SendText(int countType, int ChildId, std::string value, std::string label)
+{
+	if ((countType == VEHICLE_CUSTOM) && m_api->m_capabilities.has_custom_data)
+		SendTextSensor(VEHICLE_CUSTOM, ChildId, 255, value.c_str(), m_Name + " " + label.c_str());
+}
+
 bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 {
 	if(commandOK)
 	{
 		m_command_nr_tries = 0;
 		SendAlert();
-		return true;
+		return(true);
 	}
 	else if(m_command_nr_tries > VEHICLE_MAXTRIES)
 	{
@@ -680,6 +691,7 @@ bool CeVehicle::GetAllStates()
 		UpdateChargeData(reply.charge);
 		UpdateClimateData(reply.climate);
 		UpdateVehicleData(reply.vehicle);
+		UpdateCustomVehicleData(reply.custom);
 		return ConditionalReturn(true, Get_All_States);
 	}
 
@@ -784,4 +796,49 @@ void CeVehicle::UpdateVehicleData(CVehicleApi::tVehicleData& data)
 		SendAlert(VEHICLE_ALERT_LOCK, 4, data.car_open_message);
 	else
 		SendAlert(VEHICLE_ALERT_LOCK, 1, data.car_open_message);
+}
+
+void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
+{
+	if (!data.customdata.empty())
+	{
+		try
+		{
+			uint8_t cnt = 0;
+			do
+			{
+				Json::Value iter;
+
+				iter = data.customdata[cnt];
+
+				//_log.Debug(DEBUG_NORM, "Starting to process custom data %i - %s", cnt, iter.asString().c_str());
+
+				if (!(iter["id"].empty() || iter["value"].empty() || iter["label"].empty()))
+				{
+						int iChildID = iter["id"].asInt();
+						Json::Value jValue = iter["value"];
+						std::string sLabel = iter["label"].asString();
+						std::string sValue = jValue.asString();
+
+						_log.Debug(DEBUG_NORM, "Processing custom data %i - %s - %s", iChildID, sValue.c_str(), sLabel.c_str());
+
+						if (jValue.asFloat() != 0.0f)
+						{
+							SendCustom(VEHICLE_CUSTOM, iChildID, jValue.asFloat(), sLabel);
+						}
+						else
+						{
+							SendText(VEHICLE_CUSTOM, iChildID, sValue, sLabel);
+						}
+				}
+				cnt++;
+			} while (!data.customdata[cnt].empty());
+			data.customdata.clear();
+		}
+		catch(const std::exception& e)
+		{
+			_log.Debug(DEBUG_NORM, "Crashed processing custom data %s!", e.what());
+			data.customdata.clear();
+		}
+	}
 }

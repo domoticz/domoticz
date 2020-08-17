@@ -37,6 +37,7 @@ public:
 		bool has_lock_status;
 		bool has_battery_level;
 		bool has_charge_limit;
+		bool has_custom_data;
 		int  sleep_interval;
 	};
 
@@ -68,6 +69,10 @@ public:
 		std::string car_open_message;
 	};
 
+	struct tCustomData {
+		Json::Value customdata;	
+	};
+
 	struct tConfigData {
 		std::string distance_unit;
 		bool unit_miles;
@@ -79,6 +84,7 @@ public:
 		tChargeData charge;
 		tClimateData climate;
 		tVehicleData vehicle;
+		tCustomData custom;
 	};
 
 	virtual bool Login() = 0;
@@ -90,6 +96,7 @@ public:
 	virtual bool GetChargeData(tChargeData& data) = 0;
 	virtual bool GetClimateData(tClimateData& data) = 0;
 	virtual bool GetVehicleData(tVehicleData& data) = 0;
+	virtual bool GetCustomData(tCustomData& data) = 0;
 	
 	tCapabilities m_capabilities;
 	tConfigData m_config;
