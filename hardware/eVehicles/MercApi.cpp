@@ -15,6 +15,7 @@ License: Public domain
 #include "../../httpclient/UrlEncode.h"
 #include "../../httpclient/HTTPClient.h"
 #include "../../main/json_helper.h"
+#include "../../main/Helper.h"
 #include "../../webserver/Base64.h"
 #include <sstream>
 #include <iomanip>
@@ -26,14 +27,15 @@ License: Public domain
 // - Pay as you drive
 // - Vehicle Lock status
 // - Vehicle status
-// so use the following 4 scope's: mb:vehicle:mbdata:vehiclestatus mb:vehicle:mbdata:fuelstatus mb:vehicle:mbdata:payasyoudrive mb:vehicle:mbdata:vehiclelock
+// - Electric Vehicle status (even possible for non-electric/hybrid vehicles)
+// so use the following 5 scope's: mb:vehicle:mbdata:vehiclestatus mb:vehicle:mbdata:fuelstatus mb:vehicle:mbdata:payasyoudrive mb:vehicle:mbdata:vehiclelock mb:vehicle:mbdata:evstatus
 #define MERC_URL_AUTH "https://api.secure.mercedes-benz.com"
 #define MERC_API_AUTH "/oidc10/auth/oauth/v2/authorize"
 #define MERC_API_TOKEN "/oidc10/auth/oauth/v2/token"
 #define MERC_URL "https://api.mercedes-benz.com"
 #define MERC_API "/vehicledata/v1/vehicles"
 
-#define TLAPITIMEOUT (25)
+#define MBAPITIMEOUT (15)
 
 CMercApi::CMercApi(const std::string username, const std::string password, const std::string vinnr)
 {
@@ -48,6 +50,8 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	m_config.distance_unit = "km";
 
 	m_authenticating = false;
+	m_crc = 0;
+	m_fields = "";
 
 	m_capabilities.has_battery_level = false;
 	m_capabilities.has_charge_command = false;
@@ -58,7 +62,8 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	m_capabilities.has_odo = true;
 	m_capabilities.has_lock_status = true;
 	m_capabilities.has_charge_limit = false;
-	m_capabilities.sleep_interval = 20;
+	m_capabilities.has_custom_data = true;
+	m_capabilities.sleep_interval = 0;
 }
 
 CMercApi::~CMercApi()
@@ -97,6 +102,7 @@ bool CMercApi::GetAllData(tAllCarData& data)
 	bSucces = bSucces && GetLocationData(data.location);
 	bSucces = bSucces && GetChargeData(data.charge);
 	bSucces = bSucces && GetClimateData(data.climate);
+	bSucces = bSucces && GetCustomData(data.custom);
 
 	return bSucces;
 }
@@ -208,6 +214,8 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 		}
 	}
 
+	reply.clear();
+
 	if (GetData("payasyoudrive", reply))
 	{
 		if (reply.size() == 0)
@@ -229,6 +237,57 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 	}
 
 	return bData;
+}
+
+bool CMercApi::GetCustomData(tCustomData& data)
+{
+	Json::Value reply;
+	bool bCustom = true;
+
+	if (m_capabilities.has_custom_data)
+	{
+		std::vector<std::string> strarray;
+
+		StringSplit(m_fields, ",", strarray);
+		for(uint8_t i=0; i<strarray.size(); i++)
+		{
+			reply.clear();
+			if (GetResourceData(strarray[i], reply))
+			{
+				if(reply.size() == 0)
+				{
+					_log.Debug(DEBUG_NORM, "MercApi: Got empty data for resource %s", strarray[i].c_str());
+				}
+				else
+				{
+					//_log.Debug(DEBUG_NORM, "MercApi: Got data for resource %s :\n%s", strarray[i].c_str(),reply.toStyledString().c_str());
+
+					if (!reply[strarray[i]].empty())
+					{
+						if (reply[strarray[i]].isMember("value"))
+						{
+							std::string resourceValue = reply[strarray[i]]["value"].asString();
+
+							Json::Value customItem;
+							customItem["id"] = i;
+							customItem["value"] = resourceValue;
+							customItem["label"] = strarray[i];
+
+							data.customdata.append(customItem);
+
+							_log.Debug(DEBUG_NORM, "MercApi: Got data for resource (%i) %s : %s", i, strarray[i].c_str(), resourceValue.c_str());
+						}
+					}
+				}
+			}
+			else
+			{
+				_log.Debug(DEBUG_NORM,"MercApi: Failed to retrieve data for resource %s!", strarray[i].c_str());
+			}
+		}
+	}
+
+	return bCustom;
 }
 
 void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
@@ -332,6 +391,24 @@ bool CMercApi::GetData(std::string datatype, Json::Value& reply)
 	return true;
 }
 
+bool CMercApi::GetResourceData(std::string datatype, Json::Value& reply)
+{
+	std::stringstream ss;
+	ss << MERC_URL << MERC_API << "/" << m_VIN << "/resources/" << datatype;
+	std::string _sUrl = ss.str();
+	std::string _sResponse;
+
+	if (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), reply, true, 10))
+	{
+		_log.Log(LOG_ERROR, "MercApi: Failed to get resource data %s.", datatype.c_str());
+		return false;
+	}
+
+	_log.Debug(DEBUG_NORM, "MercApi: Get resource data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
+
+	return true;
+}
+
 bool CMercApi::IsAwake()
 {
 	// Current Mercedes Me (API) does not have an 'Awake' state
@@ -355,12 +432,89 @@ bool CMercApi::IsAwake()
 		}
 	}
 
-	is_awake = true;
-
-	//_log.Debug(DEBUG_NORM, "MercApi: Awake state: %s", _jsRoot.asString().c_str());
-	_log.Debug(DEBUG_NORM, "MercApi: Awake state checked. We are awake.");
+	if (!ProcessAvailableResources(_jsRoot))
+	{
+		_log.Log(LOG_ERROR, "Unable to process list of available resources!");
+	}
+	else
+	{
+		is_awake = true;
+		_log.Debug(DEBUG_NORM, "MercApi: Awake state checked. We are awake.");
+	}
 
 	return(is_awake);
+}
+
+bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
+{
+	bool bProcessed = false;
+	uint8_t cnt = 0;
+	uint32_t crc = 0;
+	std::stringstream ss;
+
+	crc = jsondata.size();	// hm.. not easy to create something of a real crc32 of JSON content.. so for now we just compare the amount of 'keys'
+	if (crc == m_crc)
+	{
+		_log.Debug(DEBUG_NORM, "CRC32 of content is the same.. skipping processing");
+		return true;
+	}
+	else
+	{
+		_log.Debug(DEBUG_NORM, "CRC32 of content is the not the same (%i).. start processing", crc);
+	}
+
+	m_crc = crc;
+
+	try
+	{
+		do
+		{
+			Json::Value iter;
+
+			iter = jsondata[cnt];
+			for (auto const& id : iter.getMemberNames())
+			{
+				if(!(iter[id].isNull()))
+				{
+					Json::Value iter2;
+					iter2 = iter[id];
+					//_log.Debug(DEBUG_NORM, "MercApi: Field (%i) %s has value %s",cnt, id.c_str(), iter2.asString().c_str());
+					if (id == "name")
+					{
+						if (cnt > 0)
+						{
+							ss << ",";
+						}
+						ss << iter2.asString();
+					}
+					if (id == "version" && iter2.asString() != "1.0")
+					{
+						_log.Log(LOG_STATUS, "Found resources with another version (%s) than expected 1.0! Continueing but results may be wrong!", iter2.asString().c_str());
+					}
+				}
+			}
+			cnt++;
+		} while (!jsondata[cnt].empty());
+
+		if (ss.str().length() > 0)
+		{
+			m_fields = ss.str();
+			_log.Log(LOG_STATUS, "Found resource fields: %s", m_fields.c_str());
+
+			bProcessed = true;
+		}
+		else
+		{
+			_log.Debug(DEBUG_NORM, "MercApi: Found %i resource fields but none called name!",cnt);
+		}
+	}
+	catch(const std::exception& e)
+	{
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "MercApi: Crashed during processing of resources: %s", what.c_str());
+	}
+
+	return bProcessed;
 }
 
 bool CMercApi::SendCommand(eCommandType command, std::string parameter)
@@ -565,8 +719,8 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		// Increase default timeout
 		if(timeout == 0)
 		{
-			HTTPClient::SetConnectionTimeout(TLAPITIMEOUT);
-			HTTPClient::SetTimeout(TLAPITIMEOUT);
+			HTTPClient::SetConnectionTimeout(MBAPITIMEOUT);
+			HTTPClient::SetTimeout(MBAPITIMEOUT);
 		}
 		else
 		{
@@ -578,7 +732,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		std::stringstream _ssResponseHeaderString;
 		uint16_t _iHttpCode;
 
-		_log.Debug(DEBUG_NORM, "MercApi: Performing request to Api: %s", sUrl.c_str());
+		_log.Debug(DEBUG_RECEIVED, "MercApi: Performing request to Api: %s", sUrl.c_str());
 
 		switch (eMethod)
 		{
@@ -610,7 +764,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		// Debug response
 		for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
 			_ssResponseHeaderString << _vResponseHeaders[i];
-		_log.Debug(DEBUG_NORM, "MercApi: Performed request to Api: (%i) %s; Response headers: %s", _iHttpCode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
+		_log.Debug(DEBUG_RECEIVED, "MercApi: Performed request to Api: (%i)\n%s\nResponse headers: %s", _iHttpCode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 
 		switch(_iHttpCode)
 		{

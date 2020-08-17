@@ -27,6 +27,7 @@ public:
 	bool GetChargeData(tChargeData& data) override;
 	bool GetClimateData(tClimateData& data) override;
 	bool GetVehicleData(tVehicleData& data) override;
+	bool GetCustomData(tCustomData& data) override;
 	bool IsAwake() override;
 private:
 	enum eApiMethod {
@@ -34,6 +35,7 @@ private:
 		Get
 	};
 	bool GetData(std::string datatype, Json::Value& reply);
+	bool GetResourceData(std::string datatype, Json::Value& reply);
 	bool SendCommand(std::string command, Json::Value& reply, std::string parameters = "");
 	void GetLocationData(Json::Value& jsondata, tLocationData& data);
 	void GetChargeData(Json::Value& jsondata, tChargeData& data);
@@ -41,6 +43,7 @@ private:
 	void GetVehicleData(Json::Value& jsondata, tVehicleData& data);
 	bool GetAuthToken(const std::string username, const std::string password, const bool refreshUsingToken = false);
 	bool SendToApi(const eApiMethod eMethod, const std::string& sUrl, const std::string& sPostData, std::string& sResponse, const std::vector<std::string>& vExtraHeaders, Json::Value& jsDecodedResponse, const bool bSendAuthHeaders = true, const int timeout = 0);
+	bool ProcessAvailableResources(Json::Value& jsondata);
 
 	std::string m_username;
 	std::string m_password;
@@ -50,4 +53,6 @@ private:
 	std::string m_refreshtoken;
 	int64_t m_carid;
 	bool m_authenticating;
+	uint32_t m_crc;
+	std::string m_fields;
 };
