@@ -7776,7 +7776,7 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 		// Each iteration of this loop copies 5 database pages from database
 		// pDb to the backup database.
 		do {
-			rc = sqlite3_backup_step(pBackup, 5);
+			rc = sqlite3_backup_step(pBackup, 256);
 			//xProgress(  sqlite3_backup_remaining(pBackup), sqlite3_backup_pagecount(pBackup) );
 			if( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED ){
 			  sqlite3_sleep(250);
