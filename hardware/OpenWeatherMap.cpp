@@ -311,6 +311,38 @@ std::string COpenWeatherMap::GetForecastURL()
 	return m_ForecastURL;
 }
 
+std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, std::string UTCtimestamp)
+{
+	std::string sHour = "Unknown";
+
+	time_t t = (time_t) strtol(UTCtimestamp.c_str(),NULL,10);
+	std::string sDate = ctime(&t);
+
+	std::vector<std::string> strarray;
+
+	StringSplit(sDate," ", strarray);
+	if (!(strarray.size() >= 5 && strarray.size() <= 6))
+	{
+		Debug(DEBUG_NORM, "Unable to determine hour for hour %d from timestamp %s (got string %s)", hournr, UTCtimestamp.c_str(), sDate.c_str());
+		return sHour;
+	}
+
+	uint8_t iHourPos = strarray.size() - 2;
+	sHour = strarray[iHourPos];
+	strarray.clear();
+	StringSplit(sHour,":", strarray);
+	if (strarray.size() != 3)
+	{
+		Debug(DEBUG_NORM, "Unable to determine hour for hour %d from timestamp %s (found hour %s)", hournr, UTCtimestamp.c_str(), sHour.c_str());
+		return "Unknown";
+	}
+
+	sHour = strarray[0];
+	Debug(DEBUG_NORM, "Determining hour for hour %d from timestamp %s (string %s)", hournr, UTCtimestamp.c_str(), sHour.c_str());
+
+	return sHour;
+}
+
 std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, std::string UTCtimestamp)
 {
 	std::string sDay = "Unknown";
@@ -750,8 +782,6 @@ void COpenWeatherMap::GetMeterDetails()
 	}
 	else if (m_add_hourforecast)
 	{
-		Log(LOG_STATUS, "Processing of hourly weather forecast data not implemented (yet)!");
-		
 		Json::Value hourlyfc;
 		uint8_t iHour = 0;
 
@@ -765,7 +795,7 @@ void COpenWeatherMap::GetMeterDetails()
 			}
 			else
 			{
-				std::string sHour = GetDayFromUTCtimestamp(iHour, hourlyfc[iHour]["dt"].asString());
+				std::string sHour = GetHourFromUTCtimestamp(iHour, hourlyfc[iHour]["dt"].asString());
 				Debug(DEBUG_NORM, "Processing hourly forecast for %s (%s)",hourlyfc[iHour]["dt"].asString().c_str() ,sHour.c_str());
 
 				Json::Value curhour = hourlyfc[iHour];
