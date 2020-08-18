@@ -782,8 +782,6 @@ void COpenWeatherMap::GetMeterDetails()
 	}
 	else if (m_add_hourforecast)
 	{
-		Log(LOG_STATUS, "Processing of hourly weather forecast data not implemented (yet)!");
-		
 		Json::Value hourlyfc;
 		uint8_t iHour = 0;
 
