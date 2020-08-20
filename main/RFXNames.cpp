@@ -791,10 +791,10 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 	{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
 
-	{ pTypeChime, sTypeByronSX, "ByronSX" },
+	{ pTypeChime, sTypeByronSX, "Byron SX" },
 	{ pTypeChime, sTypeByronMP001, "Byron MP001" },
 	{ pTypeChime, sTypeSelectPlus, "SelectPlus" },
-	{ pTypeChime, sTypeByronBY, "SelectPlus3" },
+	{ pTypeChime, sTypeByronBY, "Byron BY" },
 	{ pTypeChime, sTypeEnvivo, "Envivo" },
 	{ pTypeChime, sTypeAlfawise, "Alfawise" },
 
