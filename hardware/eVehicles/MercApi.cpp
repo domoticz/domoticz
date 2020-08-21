@@ -35,7 +35,7 @@ License: Public domain
 #define MERC_URL "https://api.mercedes-benz.com"
 #define MERC_API "/vehicledata/v1/vehicles"
 
-#define MBAPITIMEOUT (15)
+#define MBAPITIMEOUT (30)
 
 CMercApi::CMercApi(const std::string username, const std::string password, const std::string vinnr)
 {
@@ -275,7 +275,7 @@ bool CMercApi::GetCustomData(tCustomData& data)
 
 							data.customdata.append(customItem);
 
-							_log.Debug(DEBUG_NORM, "MercApi: Got data for resource (%i) %s : %s", i, strarray[i].c_str(), resourceValue.c_str());
+							_log.Debug(DEBUG_NORM, "MercApi: Got data for resource (%d) %s : %s", i, strarray[i].c_str(), resourceValue.c_str());
 						}
 					}
 				}
@@ -302,7 +302,7 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 		{
 			if(!(iter[id].isNull()))
 			{
-				_log.Debug(DEBUG_NORM, "MercApi: Found field %s with values!", id.c_str());
+				_log.Debug(DEBUG_NORM, "MercApi: Found non empty field %s", id.c_str());
 
 				if (id == "doorlockstatusvehicle")
 				{
@@ -398,7 +398,7 @@ bool CMercApi::GetResourceData(std::string datatype, Json::Value& reply)
 	std::string _sUrl = ss.str();
 	std::string _sResponse;
 
-	if (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), reply, true, 10))
+	if (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), reply, true, (MBAPITIMEOUT / 2)))
 	{
 		_log.Log(LOG_ERROR, "MercApi: Failed to get resource data %s.", datatype.c_str());
 		return false;
@@ -460,7 +460,7 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 	}
 	else
 	{
-		_log.Debug(DEBUG_NORM, "CRC32 of content is the not the same (%i).. start processing", crc);
+		_log.Debug(DEBUG_NORM, "CRC32 of content is the not the same (%d).. start processing", crc);
 	}
 
 	m_crc = crc;
@@ -478,7 +478,7 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 				{
 					Json::Value iter2;
 					iter2 = iter[id];
-					//_log.Debug(DEBUG_NORM, "MercApi: Field (%i) %s has value %s",cnt, id.c_str(), iter2.asString().c_str());
+					//_log.Debug(DEBUG_NORM, "MercApi: Field (%d) %s has value %s",cnt, id.c_str(), iter2.asString().c_str());
 					if (id == "name")
 					{
 						if (cnt > 0)
@@ -505,7 +505,7 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 		}
 		else
 		{
-			_log.Debug(DEBUG_NORM, "MercApi: Found %i resource fields but none called name!",cnt);
+			_log.Debug(DEBUG_NORM, "MercApi: Found %d resource fields but none called name!",cnt);
 		}
 	}
 	catch(const std::exception& e)
@@ -740,7 +740,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
 				_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 9999);
-				_log.Log(LOG_ERROR, "Failed to perform POST request (%i)!", _iHttpCode);
+				_log.Log(LOG_ERROR, "Failed to perform POST request (%d)!", _iHttpCode);
 			}
 			break;
 
@@ -748,7 +748,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, true))
 			{
 				_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 9999);
-				_log.Log(LOG_ERROR, "Failed to perform GET request (%i)!", _iHttpCode);
+				_log.Log(LOG_ERROR, "Failed to perform GET request (%d)!", _iHttpCode);
 			}
 			break;
 
@@ -764,7 +764,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		// Debug response
 		for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
 			_ssResponseHeaderString << _vResponseHeaders[i];
-		_log.Debug(DEBUG_RECEIVED, "MercApi: Performed request to Api: (%i)\n%s\nResponse headers: %s", _iHttpCode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
+		_log.Debug(DEBUG_RECEIVED, "MercApi: Performed request to Api: (%d)\n%s\nResponse headers: %s", _iHttpCode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 
 		switch(_iHttpCode)
 		{
@@ -797,19 +797,19 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			return false;
 			break;
 		default:
-			_log.Log(LOG_STATUS, "Received unhandled HTTP returncode %i !", _iHttpCode);
+			_log.Log(LOG_STATUS, "Received unhandled HTTP returncode %d !", _iHttpCode);
 			return false;
 		}
 
 		if (sResponse.size() == 0)
 		{
-			_log.Log(LOG_ERROR, "MercApi: Received an empty response from Api (HTTP %i).", _iHttpCode);
+			_log.Log(LOG_ERROR, "MercApi: Received an empty response from Api (HTTP %d).", _iHttpCode);
 			return false;
 		}
 
 		if (!ParseJSon(sResponse, jsDecodedResponse))
 		{
-			_log.Log(LOG_ERROR, "MercApi: Failed to decode Json response from Api (HTTP %i).", _iHttpCode);
+			_log.Log(LOG_ERROR, "MercApi: Failed to decode Json response from Api (HTTP %d).", _iHttpCode);
 			return false;
 		}
 	}

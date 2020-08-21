@@ -198,7 +198,7 @@ void CeVehicle::SendCounter(int countType, float value)
 void CeVehicle::SendCustom(int countType, int ChildId, float value, std::string label)
 {
 	if ((countType == VEHICLE_CUSTOM) && m_api->m_capabilities.has_custom_data)
-		SendCustomSensor(VEHICLE_CUSTOM, ChildId, 255, value, m_Name + " Custom", label.c_str());
+		SendCustomSensor(VEHICLE_CUSTOM, ChildId, 255, value, m_Name + " " + label.c_str(), "");
 }
 
 void CeVehicle::SendText(int countType, int ChildId, std::string value, std::string label)
@@ -213,7 +213,7 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 	{
 		m_command_nr_tries = 0;
 		SendAlert();
-		return(true);
+		return true;
 	}
 	else if(m_command_nr_tries > VEHICLE_MAXTRIES)
 	{
@@ -226,7 +226,7 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 		Log(LOG_ERROR, "Multiple tries requesting %s. Assuming car asleep.", GetCommandString(command).c_str());
 		m_car.wake_state = Asleep;
 		SendAlert();
-		return(false);
+		return false;
 	}
 	else
 	{
@@ -240,7 +240,7 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 		m_command_nr_tries++;
 	}
 
-	return(true);
+	return true;
 }
 
 bool CeVehicle::StartHardware()
@@ -811,7 +811,7 @@ void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
 
 				iter = data.customdata[cnt];
 
-				//_log.Debug(DEBUG_NORM, "Starting to process custom data %i - %s", cnt, iter.asString().c_str());
+				//_log.Debug(DEBUG_NORM, "Starting to process custom data %d - %s", cnt, iter.asString().c_str());
 
 				if (!(iter["id"].empty() || iter["value"].empty() || iter["label"].empty()))
 				{
@@ -820,11 +820,12 @@ void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
 						std::string sLabel = iter["label"].asString();
 						std::string sValue = jValue.asString();
 
-						_log.Debug(DEBUG_NORM, "Processing custom data %i - %s - %s", iChildID, sValue.c_str(), sLabel.c_str());
+						_log.Debug(DEBUG_NORM, "Processing custom data %d - %s - %s", iChildID, sValue.c_str(), sLabel.c_str());
 
-						if (jValue.asFloat() != 0.0f)
+						if (is_number(sValue))
 						{
-							SendCustom(VEHICLE_CUSTOM, iChildID, jValue.asFloat(), sLabel);
+							float fValue = std::atof(sValue.c_str());
+							SendCustom(VEHICLE_CUSTOM, iChildID, fValue, sLabel);
 						}
 						else
 						{
