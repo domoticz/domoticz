@@ -327,7 +327,7 @@ std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, std::
 		return sHour;
 	}
 
-	uint8_t iHourPos = strarray.size() - 2;
+	size_t iHourPos = strarray.size() - 2;
 	sHour = strarray[iHourPos];
 	strarray.clear();
 	StringSplit(sHour,":", strarray);
