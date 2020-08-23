@@ -12558,6 +12558,20 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue, cons
 	return true;
 }
 
+bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
+{
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
+	if (result.empty())
+		return false;
+
+	std::vector<std::string> sd = result[0];
+	return SetSetPointInt(sd, TempValue);
+}
+
 bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float TempValue)
 {
 	int HardwareID = atoi(sd[0].c_str());
@@ -12744,20 +12758,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		}
 	}
 	return true;
-}
-
-bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
-{
-	//Get Device details
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
-		idx.c_str());
-	if (result.empty())
-		return false;
-
-	std::vector<std::string> sd = result[0];
-	return SetSetPointInt(sd, TempValue);
 }
 
 bool MainWorker::SetClockInt(const std::vector<std::string>& sd, const std::string& clockstr)
@@ -13564,13 +13564,35 @@ bool MainWorker::UpdateDevice(const int DevIdx, int nValue, std::string& sValue,
 
 bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID, const int unit, const int devType, const int subType, int nValue, std::string& sValue, const int signallevel, const int batterylevel, const bool parseTrigger)
 {
-	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
-
 	// Prevent hazardous modification of DB from JSON calls
-	if (!m_sql.DoesDeviceExist(HardwareID, DeviceID.c_str(), unit, devType, subType))
+	std::string devname = "Unknown";
+	uint64_t devidx = m_sql.GetDeviceIndex(HardwareID, DeviceID.c_str(), unit, devType, subType, devname);
+	if (devidx == (uint64_t)-1)
 		return false;
+	std::stringstream sidx;
+	sidx << devidx;
 
 	g_bUseEventTrigger = parseTrigger;
+
+	if (
+		((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
+		((devType == pTypeRadiator1) && (subType == sTypeSmartwares))
+		)
+	{
+		_log.Log(LOG_NORM, "Sending SetPoint to device....");
+		SetSetPoint(sidx.str(), static_cast<float>(atof(sValue.c_str())));
+#ifdef ENABLE_PYTHON
+		// notify plugin
+		m_pluginsystem.DeviceModified(devidx);
+#endif
+
+		// signal connected devices (MQTT, fibaro, http push ... ) about the update
+		//sOnDeviceReceived(HardwareID, devidx, devname, nullptr);
+		g_bUseEventTrigger = true;
+		return true;
+	}
+
+
 
 	unsigned long ID = 0;
 	std::stringstream s_strid;
@@ -13579,6 +13601,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID,
 
 	float temp = 12345.0f;
 
+	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
 	if (pHardware)
 	{
 		if (devType == pTypeLighting2)
@@ -13673,8 +13696,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID,
 		}
 	}
 
-	std::string devname = "Unknown";
-	const uint64_t devidx = m_sql.UpdateValue(
+	devidx = m_sql.UpdateValue(
 		HardwareID,
 		DeviceID.c_str(),
 		(const uint8_t)unit,
@@ -13728,18 +13750,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID,
 	// signal connected devices (MQTT, fibaro, http push ... ) about the update
 	sOnDeviceReceived(HardwareID, devidx, devname, nullptr);
 
-	std::stringstream sidx;
-	sidx << devidx;
-
-	if (
-		((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
-		((devType == pTypeRadiator1) && (subType == sTypeSmartwares))
-		)
-	{
-		_log.Log(LOG_NORM, "Sending SetPoint to device....");
-		SetSetPoint(sidx.str(), static_cast<float>(atof(sValue.c_str())));
-	}
-	else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode))
+	if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode))
 	{
 		_log.Log(LOG_NORM, "Sending Thermostat Mode to device....");
 		SetZWaveThermostatMode(sidx.str(), nValue);
