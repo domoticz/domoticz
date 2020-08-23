@@ -1334,7 +1334,45 @@ define(['app'], function (app) {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					}
 				});
-		        }
+		    }
+			else if (text.indexOf("AirconWithMe") >= 0) 
+			{
+				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (address == "") {
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
+					return;
+				}
+
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+
+				var Pollseconds = parseInt($("#hardwarecontent #divpollintervalseconds #pollinterval").val());
+				if ( Pollseconds < 5 ) 
+				{
+					ShowNotify($.t('Please enter interval with minimal 5 seconds!'), 2500, true);
+					return;
+				}
+
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&address=" + address +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + Pollseconds,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+		    }
 		}
 
 		AddHardware = function () {
@@ -2539,6 +2577,44 @@ define(['app'], function (app) {
 					},
 					error: function () {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("AirconWithMe") >= 0) {
+				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (address == "") 
+				{
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
+					return;
+				}
+
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+
+				var Pollseconds = parseInt($("#hardwarecontent #divpollintervalseconds #pollinterval").val());
+				if ( Pollseconds < 5 ) 
+				{
+					ShowNotify($.t('Please enter interval with minimal 5 seconds!'), 2500, true);
+					return;
+				}
+
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&address=" + address +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + Pollseconds,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					}
 				});
 			}
@@ -4046,6 +4122,13 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Rtl433") >= 0) {
 							$("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val(data["Extra"]);
 						}
+						else if (data["Type"].indexOf("AirconWithMe") >= 0) {
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+							$("#hardwarecontent #hardwareparamspollintervalseconds #pollinterval").val(data["Mode1"]);
+							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+							
+						}
 						if (
 							(data["Type"].indexOf("Domoticz") >= 0) ||
 							(data["Type"].indexOf("ICY") >= 0) ||
@@ -4246,6 +4329,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
 			$("#hardwarecontent #divhttppoller").hide();
+			$("#hardwarecontent #divpollintervalseconds").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
@@ -4493,6 +4577,16 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Evohome via Web") >= 0) {
 				$("#hardwarecontent #divevohomeweb").show();
+				$("#hardwarecontent #divlogin").show();
+			}
+			else if (text.indexOf("AirconWithMe") >= 0) {
+				$("#hardwarecontent #divremote").show();
+				$("#hardwarecontent #divremote #lblremoteport").hide();
+				$("#hardwarecontent #divremote #tcpport").hide();
+				$("#hardwarecontent #divpollintervalseconds #pollinterval").val(150);
+				$("#hardwarecontent #divpollintervalseconds").show();
+				$("#hardwarecontent #divlogin #username").val("operator")
+				$("#hardwarecontent #divlogin #password").val("operator")
 				$("#hardwarecontent #divlogin").show();
 			}
 			if (

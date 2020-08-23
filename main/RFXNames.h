@@ -217,6 +217,7 @@ enum _eHardwareTypes {
 	HTYPE_Tesla,                //120
 	HTYPE_Meteorologisk,        //121
 	HTYPE_Mercedes,				//122
+	HTYPE_AirconWithMe,         //123
 	HTYPE_END
 };
 

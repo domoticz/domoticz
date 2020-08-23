@@ -19,6 +19,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
 - Implemented: Websocket notification for secondary/sub devices
 - Implemented: ZWave, Legend and tooltips in Neighbor�s overview
+- Implemented: AirconWithMe wifi module
 - Updated: dzVents version 3.0.12 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 - Updated: eVehicles, added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: OpenZWave configuration files
