@@ -3290,8 +3290,8 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 	float AddjValue = 0.0f;
 	float AddjMulti = 1.0f;
 	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
-	intSpeed *= AddjMulti;
-	intGust *= AddjMulti;
+	intSpeed = int(float(intSpeed) * AddjMulti);
+	intGust = int(float(intGust) * AddjMulti);
 
 	if (pResponse->WIND.subtype == sTypeWIND6)
 	{
