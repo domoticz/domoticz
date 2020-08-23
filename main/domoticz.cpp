@@ -485,7 +485,9 @@ void CheckForOnboardSensors()
 			if (
 				(sLine.find("BCM2708") != std::string::npos) ||
 				(sLine.find("BCM2709") != std::string::npos) ||
-				(sLine.find("BCM2711") != std::string::npos)
+				(sLine.find("BCM2711") != std::string::npos) ||
+				(sLine.find("BCM2835") != std::string::npos) 
+
 				)
 			{
 				_log.Log(LOG_STATUS, "System: Raspberry Pi");
