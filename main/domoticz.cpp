@@ -126,6 +126,11 @@ std::string dbasefile;
 bool bHasInternalTemperature=false;
 std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
 
+bool bHasInternalClockSpeeds=false;
+std::string szInternalARMSpeedCommand = "";
+std::string szInternalV3DSpeedCommand = "";
+std::string szInternalCoreSpeedCommand = "";
+
 bool bHasInternalVoltage=false;
 std::string szInternalVoltageCommand = "";
 
@@ -479,15 +484,27 @@ void CheckForOnboardSensors()
 			getline(infile, sLine);
 			if (
 				(sLine.find("BCM2708") != std::string::npos) ||
-				(sLine.find("BCM2709") != std::string::npos)
+				(sLine.find("BCM2709") != std::string::npos) ||
+				(sLine.find("BCM2711") != std::string::npos) ||
+				(sLine.find("BCM2835") != std::string::npos) 
+
 				)
 			{
-				//Core temperature of BCM2835 SoC
 				_log.Log(LOG_STATUS, "System: Raspberry Pi");
+				
+				//Core temperature of BCM2835 SoC
 				szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
 				bHasInternalTemperature = true;
+
+				//PI Clock speeds	
+				szInternalARMSpeedCommand = "/opt/vc/bin/vcgencmd measure_clock arm";
+				szInternalV3DSpeedCommand = "/opt/vc/bin/vcgencmd measure_clock v3d";
+				szInternalCoreSpeedCommand = "/opt/vc/bin/vcgencmd measure_clock core";
+				bHasInternalClockSpeeds=true;
+
 				break;
 			}
+
 		}
 		infile.close();
 	}
