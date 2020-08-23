@@ -397,21 +397,20 @@ namespace Plugins {
 	void CPluginSystem::DeviceModified(uint64_t ID)
 	{
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT HardwareID,Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", ID);
-		if (!result.empty())
-		{
-			std::vector<std::string> sd = result[0];
-			std::string sHwdID = sd[0];
-			std::string Unit = sd[1];
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
-			if (pHardware != NULL)
-			{
-				//std::vector<std::string> sd = result[0];
-				_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
-				Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
-				pPlugin->DeviceModified(atoi(Unit.c_str()));
-			}
-		}
+		result = m_sql.safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", ID);
+		if (result.empty())
+			return;
+		std::vector<std::string> sd = result[0];
+		std::string sHwdID = sd[0];
+		std::string Unit = sd[1];
+		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
+		if (pHardware == nullptr)
+			return;
+		//std::vector<std::string> sd = result[0];
+		//GizMoCuz: Why does this work with UNIT ? Why not use the device idx which is always unique ?
+		_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
+		Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
+		pPlugin->DeviceModified(atoi(Unit.c_str()));
 	}
 }
 

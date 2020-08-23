@@ -459,14 +459,14 @@ CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 
 CDomoticzHardwareBase* MainWorker::GetHardwareByIDType(const std::string& HwdId, const _eHardwareTypes HWType)
 {
-	if (HwdId == "")
-		return NULL;
+	if (HwdId.empty())
+		return nullptr;
 	int iHardwareID = atoi(HwdId.c_str());
 	CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
-	if (pHardware == NULL)
-		return NULL;
+	if (pHardware == nullptr)
+		return nullptr;
 	if (pHardware->HwdType != HWType)
-		return NULL;
+		return nullptr;
 	return pHardware;
 }
 
