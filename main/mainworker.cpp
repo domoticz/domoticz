@@ -3283,9 +3283,15 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 		strDirection = "---";
 
 	dDirection = round(dDirection);
-
+	
 	int intSpeed = (pResponse->WIND.av_speedh * 256) + pResponse->WIND.av_speedl;
 	int intGust = (pResponse->WIND.gusth * 256) + pResponse->WIND.gustl;
+
+	float AddjValue = 0.0f;
+	float AddjMulti = 1.0f;
+	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	intSpeed *= AddjMulti;
+	intGust *= AddjMulti;
 
 	if (pResponse->WIND.subtype == sTypeWIND6)
 	{
@@ -3315,9 +3321,6 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 				return;
 			}
 
-			float AddjValue = 0.0f;
-			float AddjMulti = 1.0f;
-			m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
 			temp += AddjValue;
 
 			if (!pResponse->WIND.chillsign)
@@ -3332,9 +3335,6 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 		}
 		else if (pResponse->WIND.subtype == sTypeWINDNoTemp)
 		{
-			float AddjValue = 0.0f;
-			float AddjMulti = 1.0f;
-			m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
 			temp += AddjValue;
 
 			if (!pResponse->WIND.chillsign)
