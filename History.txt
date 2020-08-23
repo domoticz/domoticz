@@ -2,19 +2,34 @@ Version 2020.xxxx (xxxx)
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: Allow complete IPv6 address in local network setting
 - Implemented: Counter meter type now supports a divider
+- Implemented: Custom icons for RGB/W
+- Implemented: Honeywell, Add cooling control and Fahrenheit support
 - Implemented: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
+- Implemented: Inverted energy icon colors in report
+- Implemented: Meteorologisk (Meteorologisk institutt Norway) hardware support
 - Implemented: P1 Meter, added support for Encryption
-- Implemented: RTL433, added RF Signal Strength in device tab based on reported SNR
-- Implemented: RTL433, added Pressure (PSI) type
-- Implemented: RTL433, added UV type
-- Implemented: RTL433, added X-10 Security support
-- Implemented: RTL433, switched to Json input
+- Implemented: RFXCom Byron BY doorbell
+- Implemented: RTL433, Added RF Signal Strength in device tab based on reported SNR
+- Implemented: RTL433, Added Pressure (PSI) type
+- Implemented: RTL433, Added UV type
+- Implemented: RTL433, Added X-10 Security support
+- Implemented: RTL433, Switched to Json input
 - Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
-- Implemented: ZWave, Legend and tooltips in Neighbours overview
+- Implemented: Websocket notification for secondary/sub devices
+- Implemented: ZWave, Legend and tooltips in Neighbor’s overview
 - Updated: dzVents version 3.0.11 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 - Updated: eVehicles, added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: OpenZWave configuration files
-- Updated: TTNMQTT, improved Improved calculation and storage of signal-levels
+- Updated: Openweathermap has been improved
+- Updated: TTNMQTT, Better GPS/Locations handling, distance calculation (Geofencing)
+- Updated: TTNMQTT, Improved calculation and storage of signal-levels
+- Changed: During a database backup we now 'sleep' when the status != OK
+- Changed: Differentiate kWh, kVah, kVar and kVarh
+- Fixed: Changing a value from a Thermostat Setpoint via the JSON API/MQTT resulted in a double event trigger
+- Fixed: Distance sensor was converting to miles instead of inches
+- Fixed: Font in events editor on MacOS
+- Fixed: Possible crash in CEventSystem::SetEventTrigger
+- Fixed: Sound device was incorrectly displayed on the Floorplan
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.2 (April 26th 2020)
