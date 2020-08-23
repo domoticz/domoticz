@@ -53,6 +53,6 @@ private:
 
 	std::string m_authtoken;
 	std::string m_refreshtoken;
-	int64_t m_carid;
+	uint64_t m_carid;
 };
 

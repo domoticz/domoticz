@@ -16,6 +16,7 @@ License: Public domain
 #include "../../httpclient/HTTPClient.h"
 #include "../../main/json_helper.h"
 #include "../../main/Helper.h"
+#include "../../main/SQLHelper.h"
 #include "../../webserver/Base64.h"
 #include <sstream>
 #include <iomanip>
@@ -42,14 +43,19 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	m_username = username;
 	m_password = base64_encode(username);
 	m_VIN = vinnr;
-	m_authtoken = "";
-	m_refreshtoken = password;
+
+	m_authtoken = password;
+	m_accesstoken = "";
+	m_refreshtoken = "";
+	m_uservar_refreshtoken = "mercedesme_refreshtoken";
+	m_uservar_refreshtoken_idx = 0;
+	m_authenticating = false;
+
 	m_carid = 0;
 	m_config.car_name = "";
 	m_config.unit_miles = false;
 	m_config.distance_unit = "km";
 
-	m_authenticating = false;
 	m_crc = 0;
 	m_fields = "";
 
@@ -64,6 +70,19 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	m_capabilities.has_charge_limit = false;
 	m_capabilities.has_custom_data = true;
 	m_capabilities.sleep_interval = 0;
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", m_uservar_refreshtoken.c_str());
+	if (result.empty())
+	{
+		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", m_uservar_refreshtoken.c_str(), USERVARTYPE_STRING, m_refreshtoken.c_str());
+		result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", m_uservar_refreshtoken.c_str());
+		if (result.empty())
+			return;
+	}
+
+	m_uservar_refreshtoken_idx = atoi(result[0][0].c_str());
+	m_refreshtoken = result[0][1].c_str();
 }
 
 CMercApi::~CMercApi()
@@ -82,13 +101,16 @@ bool CMercApi::RefreshLogin()
 	m_authenticating = true;
 	if (GetAuthToken("", "", true))
 	{	
+		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), szLastUpdate.c_str(), m_uservar_refreshtoken_idx);
+
 		_log.Log(LOG_NORM, "MercApi: Refresh successful.");
 		m_authenticating = false;
 		return true;
 	}
 
 	_log.Log(LOG_ERROR, "MercApi: Failed to refresh login credentials.");
-	m_authtoken = "";
+	m_accesstoken = "";
 	m_refreshtoken = "";
 	m_authenticating = false;
 	return false;
@@ -666,8 +688,8 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 		return false;
 	}
 
-	m_authtoken = _jsRoot["access_token"].asString();
-	if (m_authtoken.size() == 0)
+	m_accesstoken = _jsRoot["access_token"].asString();
+	if (m_accesstoken.size() == 0)
 	{
 		_log.Log(LOG_ERROR, "MercApi: Received token is zero length.");
 		return false;
@@ -698,7 +720,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 	{
 		// If there is no token stored then there is no point in doing a request. Unless we specifically
 		// decide not to do authentication.
-		if (m_authtoken.size() == 0 && bSendAuthHeaders) 
+		if (m_accesstoken.size() == 0 && bSendAuthHeaders) 
 		{
 			_log.Log(LOG_ERROR, "MercApi: No access token available.");
 			return false;
@@ -714,7 +736,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 
 		// Prepare the authentication headers if requested.
 		if (bSendAuthHeaders) 
-			_vExtraHeaders.push_back("Authorization: Bearer " + m_authtoken);
+			_vExtraHeaders.push_back("Authorization: Bearer " + m_accesstoken);
 
 		// Increase default timeout
 		if(timeout == 0)
