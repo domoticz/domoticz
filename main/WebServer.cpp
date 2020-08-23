@@ -10038,7 +10038,6 @@ namespace http {
 							if (dSubType != sTypeWIND5)
 							{
 								int intSpeed = atoi(strarray[2].c_str());
-								intSpeed *= AddjMulti;
 								if (m_sql.m_windunit != WINDUNIT_Beaufort)
 								{
 									sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
@@ -10054,7 +10053,6 @@ namespace http {
 							//if (dSubType!=sTypeWIND6) //problem in RFXCOM firmware? gust=speed?
 							{
 								int intGust = atoi(strarray[3].c_str());
-								intGust *= AddjMulti;
 								if (m_sql.m_windunit != WINDUNIT_Beaufort)
 								{
 									sprintf(szTmp, "%.1f", float(intGust) *m_sql.m_windscale);
@@ -14996,8 +14994,6 @@ namespace http {
 
 							int intSpeed = atoi(sd[1].c_str());
 							int intGust = atoi(sd[2].c_str());
-							intSpeed *= AddjMulti;
-							intGust *= AddjMulti;
 
 							if (m_sql.m_windunit != WINDUNIT_Beaufort)
 							{
