@@ -39,11 +39,12 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editvisibilitydevice").dialog("open");
 		}
 
-		EditWeatherDevice = function (idx, name, description) {
+		EditWeatherDevice = function (idx, name, description, addjmulti) {
 			$.devIdx = idx;
 			$("#dialog-editweatherdevice #deviceidx").text(idx);
 			$("#dialog-editweatherdevice #devicename").val(unescape(name));
 			$("#dialog-editweatherdevice #devicedescription").val(unescape(description));
+			$("#dialog-editweatherdevice #multiply").val(addjmulti);
 			$("#dialog-editweatherdevice").i18n();
 			$("#dialog-editweatherdevice").dialog("open");
 		}
@@ -160,6 +161,7 @@ define(['app', 'livesocket'], function (app) {
 						url: "json.htm?type=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editweatherdevice #devicedescription").val()) +
+						'&addjmulti=' + $("#dialog-editweatherdevice #edittable #multiply").val() +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -526,7 +528,7 @@ define(['app', 'livesocket'], function (app) {
 					} else if (typeof item.Barometer != 'undefined') {
 						return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2);
 					} else {
-						return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description));
+						return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti);
 					}
 				};
 
