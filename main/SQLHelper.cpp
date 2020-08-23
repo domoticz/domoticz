@@ -4431,15 +4431,13 @@ uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const un
 	return ulID;
 }
 
-bool CSQLHelper::DoesDeviceExist(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType) {
+uint64_t CSQLHelper::GetDeviceIndex(const int HardwareID, const std::string& ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, std::string& devname) {
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
-	if (result.empty()) {
-		return false;
-	}
-	else {
-		return true;
-	}
+	result = safe_query("SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID.c_str(), unit, devType, subType);
+	if (result.empty())
+		return -1;
+	devname = result[0].at(1);
+	return std::stoull(result[0].at(0));
 }
 
 uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string& devname, const bool bUseOnOffAction)
