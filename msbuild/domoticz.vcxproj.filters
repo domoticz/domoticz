@@ -1574,6 +1574,9 @@
     <ClInclude Include="..\main\EventSystem.h">
       <Filter>EventSystem</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\DeviceValueChecker.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\Wunderground.h">
       <Filter>Devices\wunderground.com</Filter>
     </ClInclude>
@@ -2313,6 +2316,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Wunderground.cpp">
       <Filter>Devices\wunderground.com</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DeviceValueChecker.cpp">
+      <Filter>Devices</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Dummy.cpp">
       <Filter>Devices\Dummy</Filter>

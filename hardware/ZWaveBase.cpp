@@ -18,6 +18,9 @@
 #include "OpenZWave.h"
 
 #define CONTROLLER_COMMAND_TIMEOUT 30
+#define MAX_ALLOWED_VALUE_FOR_WATT 4000
+#define MAX_ALLOWED_RATE_FOR_KWH	 10.00
+#define MIN_ALLOWED_VALUE_FOR_KWH  -10000000
 
 #pragma warning(disable: 4996)
 
@@ -441,20 +444,20 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		{
 			if (pEnergyDevice->bValidValue)
 			{
-				SendKwhMeter(pEnergyDevice->nodeID, pEnergyDevice->instanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kWh Meter");
+				ValidateBeforeSendKwhMeter(pEnergyDevice, pEnergyDevice->instanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / 1000, "kWh Meter");
 			}
 		}
 		else
 		{
 			//No kWh meter, send as normal Power device
-			SendWattMeter(pDevice->nodeID, pDevice->instanceID, BatLevel, pDevice->floatValue, "Power Meter");
+			ValidateBeforeSendWattMeter(pDevice->nodeID, pDevice->instanceID, BatLevel, pDevice->floatValue, "Power Meter");
 		}
 		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_KVAH);
 		if (pEnergyDevice)
 		{
 			if (pEnergyDevice->bValidValue)
 			{
-				SendKwhMeter(pEnergyDevice->nodeID, 0x40 + pEnergyDevice->orgInstanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kVah Meter");
+				ValidateBeforeSendKwhMeter(pEnergyDevice, 0x40 + pEnergyDevice->orgInstanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / 1000, "kVah Meter");
 			}
 		}
 		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_KVAR);
@@ -462,7 +465,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		{
 			if (pEnergyDevice->bValidValue)
 			{
-				SendKwhMeter(pEnergyDevice->nodeID, 0x60 + pEnergyDevice->orgInstanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kVar Meter");
+				ValidateBeforeSendKwhMeter(pEnergyDevice, 0x60 + pEnergyDevice->orgInstanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / 1000, "kVar Meter");
 			}
 		}
 		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_KVARH);
@@ -470,7 +473,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		{
 			if (pEnergyDevice->bValidValue)
 			{
-				SendKwhMeter(pEnergyDevice->nodeID, 0x80 + pEnergyDevice->orgInstanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kVarh Meter");
+				ValidateBeforeSendKwhMeter(pEnergyDevice, 0x80 + pEnergyDevice->orgInstanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / 1000, "kVarh Meter");
 			}
 		}
 	}
@@ -518,13 +521,13 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 			bHaveValidPowerDevice = pPowerDevice->bValidValue;
 		}
 		if (pDevice->devType == ZDTYPE_SENSOR_POWERENERGYMETER)
-			SendKwhMeter(pDevice->nodeID, pDevice->instanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kWh Meter");
+			ValidateBeforeSendKwhMeter(pDevice, pDevice->instanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kWh Meter");
 		else if (pDevice->devType == ZDTYPE_SENSOR_KVAH)
-			SendKwhMeter(pDevice->nodeID, 0x40 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kVah Meter");
+			ValidateBeforeSendKwhMeter(pDevice, 0x40 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kVah Meter");
 		else if (pDevice->devType == ZDTYPE_SENSOR_KVAR)
-			SendKwhMeter(pDevice->nodeID, 0x60 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kVar Meter");
+			ValidateBeforeSendKwhMeter(pDevice, 0x60 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kVar Meter");
 		else if (pDevice->devType == ZDTYPE_SENSOR_KVARH)
-			SendKwhMeter(pDevice->nodeID, 0x80 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kVarh Meter");
+			ValidateBeforeSendKwhMeter(pDevice, 0x80 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kVarh Meter");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VOLTAGE)
 	{
@@ -795,6 +798,85 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 	{
 		SendCustomSensor(pDevice->nodeID, pDevice->instanceID, BatLevel, pDevice->floatValue, pDevice->label, pDevice->custom_label);
 	}
+}
+
+
+void ZWaveBase::InitKWHCheckerForNode(const int nodeID, const int childID)
+{
+	int32_t id = (nodeID << 8) | childID;
+	char szTmp[30];
+	sprintf(szTmp, "%08X", id);
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT LastUpdate, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypeKwh));
+	if (result.size() == 1 && result[0].size() == 2)
+	{
+		time_t now = mytime(NULL);
+		struct tm ltime;
+		if (localtime_r(&now, &ltime) == NULL)
+			return;
+
+		time_t timestamp;
+		tm dummy;
+		ParseSQLdatetime(timestamp, dummy, result[0][0], ltime.tm_isdst);
+
+		std::string kwh = result[0][1];
+		kwh = kwh.substr(kwh.find(";") + 1);
+		double value = atof(kwh.c_str());
+		value /= 1000;
+
+		mKWHChecker[id].ResetToThisValue(value, timestamp);
+	}
+}
+
+
+void ZWaveBase::ValidateBeforeSendKwhMeter(const _tZWaveDevice* pEnergyDevice, const int ChildID, const int BatteryLevel, const double musage, double mtotal, const std::string& defaultname)
+{
+	const int nodeID = pEnergyDevice->nodeID;
+	int32_t id = (nodeID << 8) | ChildID;
+
+	if (pEnergyDevice->Manufacturer_id == 0x0258 && pEnergyDevice->Product_id == 0x1027 && pEnergyDevice->Product_type == 0x0200)
+	{
+
+		mtotal = mtotal / 3;
+	}
+
+	if (musage > MAX_ALLOWED_VALUE_FOR_WATT)
+	{
+		_log.Log(LOG_ERROR, "ZWave: Rejected value. Watt Value above limit. value:%f (NodeID: %d, 0x%02x)", musage, nodeID, nodeID);
+		return;
+	}
+
+	if (mtotal < MIN_ALLOWED_VALUE_FOR_KWH)
+	{
+		_log.Log(LOG_ERROR, "ZWave: Rejected value. Value is extreme negative. Typically a transmission error. value:%f (NodeID: %d, 0x%02x)", mtotal, nodeID, nodeID);
+		return;
+	}
+
+	if (mKWHChecker.find(id) == mKWHChecker.end())
+	{
+		InitKWHCheckerForNode(nodeID, ChildID);
+	}
+
+	if (false == mKWHChecker[id].ValidateValue(mtotal, MAX_ALLOWED_RATE_FOR_KWH, "ZWave node " + std::to_string(nodeID)))
+	{
+		//_log.Log(LOG_ERROR, "ZWave: Rejected value. See previous message. (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return;
+	}
+
+	SendKwhMeter(nodeID, ChildID, BatteryLevel, musage, mtotal, defaultname);
+}
+
+
+void ZWaveBase::ValidateBeforeSendWattMeter(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float musage, const std::string& defaultname)
+{
+	if (musage > MAX_ALLOWED_VALUE_FOR_WATT)
+	{
+		_log.Log(LOG_ERROR, "ZWave: Watt very high...  Usage: %f (NodeID: %d, 0x%02x)", musage, NodeID, NodeID);
+		return;
+	}
+
+	SendWattMeter(NodeID, ChildID, BatteryLevel, musage, defaultname);
 }
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID)

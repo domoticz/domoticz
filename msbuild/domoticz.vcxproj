@@ -567,6 +567,7 @@
     <ClInclude Include="..\hardware\DenkoviDevices.h" />
     <ClInclude Include="..\hardware\DenkoviTCPDevices.h" />
     <ClInclude Include="..\hardware\DenkoviUSBDevices.h" />
+    <ClInclude Include="..\hardware\DeviceValueChecker.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
     <ClInclude Include="..\hardware\Ec3kMeterTCP.h" />
     <ClInclude Include="..\hardware\EcoCompteur.h" />
@@ -853,6 +854,7 @@
     <ClCompile Include="..\hardware\DenkoviDevices.cpp" />
     <ClCompile Include="..\hardware\DenkoviTCPDevices.cpp" />
     <ClCompile Include="..\hardware\DenkoviUSBDevices.cpp" />
+    <ClCompile Include="..\hardware\DeviceValueChecker.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
     <ClCompile Include="..\hardware\Ec3kMeterTCP.cpp" />
     <ClCompile Include="..\hardware\EcoCompteur.cpp" />

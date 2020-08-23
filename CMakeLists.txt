@@ -204,6 +204,7 @@ hardware/DavisLoggerSerial.cpp
 hardware/DenkoviDevices.cpp
 hardware/DenkoviUSBDevices.cpp
 hardware/DenkoviTCPDevices.cpp
+hardware/DeviceValueChecker.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp

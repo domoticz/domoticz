@@ -2,6 +2,7 @@
 
 #include <time.h>
 #include "DomoticzHardware.h"
+#include "DeviceValueChecker.h"
 
 class ZWaveBase : public CDomoticzHardwareBase
 {
@@ -143,6 +144,9 @@ private:
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
+	void InitKWHCheckerForNode(const int nodeID, const int childID);
+	void ValidateBeforeSendKwhMeter(const _tZWaveDevice* pEnergyDevice, const int ChildID, const int BatteryLevel, const double musage, double mtotal, const std::string& defaultname);
+	void ValidateBeforeSendWattMeter(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float musage, const std::string& defaultname);
 
 	_tZWaveDevice* FindDevice(const uint8_t nodeID, const int instanceID, const int indexID);
 	_tZWaveDevice* FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType);
@@ -175,6 +179,8 @@ private:
 	bool m_bInitState;
 	std::map<std::string,_tZWaveDevice> m_devices;
 	std::shared_ptr<std::thread> m_thread;
+
+	std::map<int32_t, CValueChecker> mKWHChecker;
 };
 
 
