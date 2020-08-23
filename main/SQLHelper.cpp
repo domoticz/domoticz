@@ -7778,7 +7778,7 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 		do {
 			rc = sqlite3_backup_step(pBackup, 256);
 			//xProgress(  sqlite3_backup_remaining(pBackup), sqlite3_backup_pagecount(pBackup) );
-			if( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED ){
+			if( rc==SQLITE_BUSY || rc==SQLITE_LOCKED ){
 			  sqlite3_sleep(250);
 			}
 			if (rc == SQLITE_BUSY || rc == SQLITE_LOCKED) {

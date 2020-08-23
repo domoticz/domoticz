@@ -459,14 +459,14 @@ CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 
 CDomoticzHardwareBase* MainWorker::GetHardwareByIDType(const std::string& HwdId, const _eHardwareTypes HWType)
 {
-	if (HwdId == "")
-		return NULL;
+	if (HwdId.empty())
+		return nullptr;
 	int iHardwareID = atoi(HwdId.c_str());
 	CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
-	if (pHardware == NULL)
-		return NULL;
+	if (pHardware == nullptr)
+		return nullptr;
 	if (pHardware->HwdType != HWType)
-		return NULL;
+		return nullptr;
 	return pHardware;
 }
 
@@ -6042,7 +6042,12 @@ void MainWorker::decode_Chime(const CDomoticzHardwareBase* pHardware, const tRBU
 	char szTmp[100];
 	uint8_t devType = pTypeChime;
 	uint8_t subType = pResponse->CHIME.subtype;
-	sprintf(szTmp, "%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+
+	if (pResponse->CHIME.subtype == sTypeByronBY)
+		sprintf(szTmp, "%02X%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2, pResponse->CHIME.sound);
+	else
+		sprintf(szTmp, "%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+
 	std::string ID = szTmp;
 	uint8_t Unit = pResponse->CHIME.sound;
 	uint8_t cmnd = pResponse->CHIME.sound;
@@ -6138,7 +6143,7 @@ void MainWorker::decode_Chime(const CDomoticzHardwareBase* pHardware, const tRBU
 			WriteMessage("subtype       = SelectPlus200689103");
 			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2, pResponse->CHIME.sound);
 			WriteMessage(szTmp);
 			break;
 		case sTypeEnvivo:
@@ -12106,15 +12111,24 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	break;
 	case pTypeChime:
 	{
+		level = 15;
 		tRBUF lcmd;
 		lcmd.CHIME.packetlength = sizeof(lcmd.CHIME) - 1;
 		lcmd.CHIME.packettype = dType;
 		lcmd.CHIME.subtype = dSubType;
 		lcmd.CHIME.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-		lcmd.CHIME.id1 = ID3;
-		lcmd.CHIME.id2 = ID4;
-		level = 15;
-		lcmd.CHIME.sound = Unit;
+		if (dSubType == sTypeByronBY)
+		{
+			lcmd.CHIME.id1 = ID2;
+			lcmd.CHIME.id2 = ID3;
+			lcmd.CHIME.sound = ID4;
+		}
+		else
+		{
+			lcmd.CHIME.id1 = ID3;
+			lcmd.CHIME.id2 = ID4;
+			lcmd.CHIME.sound = Unit;
+		}
 		lcmd.CHIME.filler = 0;
 		lcmd.CHIME.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CHIME)))

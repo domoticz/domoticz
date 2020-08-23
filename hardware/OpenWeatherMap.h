@@ -20,6 +20,7 @@ private:
 	void GetMeterDetails();
 	int GetForecastFromBarometricPressure(const float pressure, const float temp = -999.9f);
 	std::string GetDayFromUTCtimestamp(const uint8_t daynr, std::string UTCtimestamp);
+	std::string GetHourFromUTCtimestamp(const uint8_t hournr, std::string UTCtimestamp);
 	bool ProcessForecast(Json::Value &forecast, const std::string period, const std::string periodname, const uint8_t count, const int startNodeID);
 
 	bool ResolveLocation(const std::string& Location, double& latitude, double& longitude, const bool IsCityName = true);
