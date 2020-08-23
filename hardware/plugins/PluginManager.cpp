@@ -394,10 +394,10 @@ namespace Plugins {
 		_log.Log(LOG_STATUS, "PluginSystem: Exiting work loop.");
 	}
 
-	void CPluginSystem::DeviceModified(uint64_t ID)
+	void CPluginSystem::DeviceModified(uint64_t DevIdx)
 	{
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", ID);
+		result = m_sql.safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", DevIdx);
 		if (result.empty())
 			return;
 		std::vector<std::string> sd = result[0];
