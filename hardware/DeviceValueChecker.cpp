@@ -1,6 +1,7 @@
 //
 #include "stdafx.h"
 #include "DeviceValueChecker.h"
+#include "../main/Logger.h"
 
 #include <algorithm>
 #include <string>
@@ -66,7 +67,7 @@ bool CValueChecker::AddValue(const double& value, const std::string& LogName)
 
 	if (currentTimestamp < mLastEntry.mTimestamp + 5)
 	{
-		//_log.Log(LOG_ERROR, "Rejected value. Received a value withing 5 seconds of previous.");
+		_log.Debug(DEBUG_HARDWARE, "Rejected value. Received a value withing 5 seconds of previous.");
 		return false;
 	}
 

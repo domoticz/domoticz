@@ -830,14 +830,15 @@ void ZWaveBase::InitKWHCheckerForNode(const int nodeID, const int childID)
 }
 
 
+
 void ZWaveBase::ValidateBeforeSendKwhMeter(const _tZWaveDevice* pEnergyDevice, const int ChildID, const int BatteryLevel, const double musage, double mtotal, const std::string& defaultname)
 {
 	const int nodeID = pEnergyDevice->nodeID;
 	int32_t id = (nodeID << 8) | ChildID;
 
+	//This is the "newer" neo coolcam nas-wr01ze plug. It has a lot of problems. One of them is the reported KWh values are too high by a factor 3.
 	if (pEnergyDevice->Manufacturer_id == 0x0258 && pEnergyDevice->Product_id == 0x1027 && pEnergyDevice->Product_type == 0x0200)
 	{
-
 		mtotal = mtotal / 3;
 	}
 
@@ -847,6 +848,8 @@ void ZWaveBase::ValidateBeforeSendKwhMeter(const _tZWaveDevice* pEnergyDevice, c
 		return;
 	}
 
+	//These are the notorious negative values of some plugs. It's known these are bugs in firmware or transmissions errors.
+	//Keep them out of the filter at all as these can exceed of 50% of the received value's.
 	if (mtotal < MIN_ALLOWED_VALUE_FOR_KWH)
 	{
 		_log.Log(LOG_ERROR, "ZWave: Rejected value. Value is extreme negative. Typically a transmission error. value:%f (NodeID: %d, 0x%02x)", mtotal, nodeID, nodeID);
@@ -860,7 +863,7 @@ void ZWaveBase::ValidateBeforeSendKwhMeter(const _tZWaveDevice* pEnergyDevice, c
 
 	if (false == mKWHChecker[id].ValidateValue(mtotal, MAX_ALLOWED_RATE_FOR_KWH, "ZWave node " + std::to_string(nodeID)))
 	{
-		//_log.Log(LOG_ERROR, "ZWave: Rejected value. See previous message. (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		_log.Debug(DEBUG_HARDWARE, "ZWave: Rejected value. See previous message. (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return;
 	}
 
