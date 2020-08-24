@@ -521,13 +521,13 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 			bHaveValidPowerDevice = pPowerDevice->bValidValue;
 		}
 		if (pDevice->devType == ZDTYPE_SENSOR_POWERENERGYMETER)
-			ValidateBeforeSendKwhMeter(pDevice, pDevice->instanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kWh Meter");
+			ValidateBeforeSendKwhMeter(pDevice, pDevice->instanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / 1000, "kWh Meter");
 		else if (pDevice->devType == ZDTYPE_SENSOR_KVAH)
-			ValidateBeforeSendKwhMeter(pDevice, 0x40 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kVah Meter");
+			ValidateBeforeSendKwhMeter(pDevice, 0x40 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / 1000, "kVah Meter");
 		else if (pDevice->devType == ZDTYPE_SENSOR_KVAR)
-			ValidateBeforeSendKwhMeter(pDevice, 0x60 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kVar Meter");
+			ValidateBeforeSendKwhMeter(pDevice, 0x60 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / 1000, "kVar Meter");
 		else if (pDevice->devType == ZDTYPE_SENSOR_KVARH)
-			ValidateBeforeSendKwhMeter(pDevice, 0x80 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / pDevice->scaleMultiply, "kVarh Meter");
+			ValidateBeforeSendKwhMeter(pDevice, 0x80 + pDevice->orgInstanceID, BatLevel, (bHaveValidPowerDevice) ? pPowerDevice->floatValue : 0, pDevice->floatValue / 1000, "kVarh Meter");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VOLTAGE)
 	{
