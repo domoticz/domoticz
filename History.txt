@@ -33,6 +33,8 @@ Version 2020.xxxx (xxxx)
 - Fixed: Possible crash in CEventSystem::SetEventTrigger
 - Fixed: Sound device was incorrectly displayed on the Floorplan
 - Fixed Annatherm Presets usage in Events, Please use the following percentages: 10% for Home, 20% for Away, 30% Night 40% for Vacation
+- Fixed: ZWave, Handling of erroneous energy reports
+- Fixed: ZWave, device becomes offline when same value is received for long time
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.2 (April 26th 2020)
