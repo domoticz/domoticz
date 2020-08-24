@@ -279,12 +279,7 @@ void CHardwareMonitor::GetInternalARMClockSpeed()
 
 	if (strarray.size()==2)
 	{
-		try {
-			ArmClockSpeed=(std::stof(strarray[1])/(1000000));
-		} catch (const std::exception& e) {
-		       // Log(LOG_ERROR,"Bad Frequency reported by vcgencmd: %s (%s)",strarray[1],e.what());
-		       return;
-		}
+		ArmClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
 	}
 	
 	// _log.Log(LOG_STATUS,"Updating sensor with value %.2f",ArmClockSpeed);
@@ -316,12 +311,7 @@ void CHardwareMonitor::GetInternalV3DClockSpeed()
 
 	if (strarray.size()==2)
 	{
-		try {
-			V3DClockSpeed=(std::stof(strarray[1])/(1000000));
-		} catch (const std::exception& e) {
-		       // Log(LOG_ERROR,"Bad Frequency reported by vcgencmd: %s (%s)",strarray[1],e.what());
-		       return;
-		}
+		V3DClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
 	}
 	
 	// _log.Log(LOG_STATUS,"Updating sensor with value %.2f",V3DClockSpeed);
@@ -353,12 +343,7 @@ void CHardwareMonitor::GetInternalCoreClockSpeed()
 
 	if (strarray.size()==2)
 	{
-		try {
-			CoreClockSpeed=(std::stof(strarray[1])/(1000000));
-		} catch (const std::exception& e) {
-		       // Log(LOG_ERROR,"Bad Frequency reported by vcgencmd: %s (%s)",strarray[1],e.what());
-		       return;
-		}
+		CoreClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
 	}
 	
 	// _log.Log(LOG_STATUS,"Updating sensor with value %.2f",CoreClockSpeed);
