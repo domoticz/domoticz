@@ -124,12 +124,12 @@ std::string szWebRoot;
 std::string dbasefile;
 
 bool bHasInternalTemperature=false;
-std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
+std::string szInternalTemperatureCommand = "vcgencmd measure_temp";
 
 bool bHasInternalClockSpeeds=false;
-std::string szInternalARMSpeedCommand = "/opt/vc/bin/vcgencmd measure_clock arm";
-std::string szInternalV3DSpeedCommand = "/opt/vc/bin/vcgencmd measure_clock v3d";
-std::string szInternalCoreSpeedCommand = "/opt/vc/bin/vcgencmd measure_clock core";
+std::string szInternalARMSpeedCommand = "vcgencmd measure_clock arm";
+std::string szInternalV3DSpeedCommand = "vcgencmd measure_clock v3d";
+std::string szInternalCoreSpeedCommand = "vcgencmd measure_clock core";
 
 bool bHasInternalVoltage=false;
 std::string szInternalVoltageCommand = "";
@@ -471,7 +471,7 @@ void CheckForOnboardSensors()
 	//Check if we have vcgencmd (are running on a RaspberryPi)
 	//
 	int returncode=0;
-	std::vector<std::string> ret = ExecuteCommandAndReturn ("/opt/vc/bin/vcgencmd measure_temp",returncode);
+	std::vector<std::string> ret = ExecuteCommandAndReturn ("vcgencmd measure_temp",returncode);
 
 	if (ret.empty()) {
 		// _log.Log(LOG_STATUS,"No vcgencmd detected (empty string)");
@@ -482,13 +482,13 @@ void CheckForOnboardSensors()
 		} else {
 			_log.Log(LOG_STATUS,"Hardware Monitor: Raspberry Pi detected");
 			//Core temperature of BCM2835 SoC
-			szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
+			szInternalTemperatureCommand = "vcgencmd measure_temp";
 			bHasInternalTemperature = true;
 
 			//PI Clock speeds	
-			szInternalARMSpeedCommand = "/opt/vc/bin/vcgencmd measure_clock arm";
-			szInternalV3DSpeedCommand = "/opt/vc/bin/vcgencmd measure_clock v3d";
-			szInternalCoreSpeedCommand = "/opt/vc/bin/vcgencmd measure_clock core";
+			szInternalARMSpeedCommand = "vcgencmd measure_clock arm";
+			szInternalV3DSpeedCommand = "vcgencmd measure_clock v3d";
+			szInternalCoreSpeedCommand = "vcgencmd measure_clock core";
 			bHasInternalClockSpeeds=true;
 		}
 	}
