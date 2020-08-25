@@ -29,8 +29,10 @@ const std::string ANNA_LOCATION = "/cache/domain_objects;class=Location";
 const std::string ANNA_SET_LOCATION = "/core/locations";
 
 
+//#define _DEBUG // toggle for reading and writing local files
+
 #ifdef _DEBUG
-//#define DEBUG_AnnaThermostat
+#define DEBUG_AnnaThermostat
 #define DEBUG_ANNA_APPLIANCE_READ  "/tmp/anna/appliances.xml"
 #define DEBUG_ANNA_WRITE           "/tmp/anna/output.txt"
 #define DEBUG_ANNA_LOCATION_READ   "/tmp/anna/location.xml"
@@ -98,6 +100,12 @@ bool CAnnaThermostat::StartHardware()
 	RequestStart();
 
 	Init();
+    // notify users in the log how to use the event system once per startup
+	Log(LOG_NORM, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	Log(LOG_NORM, "AnnaTherm: Notice: To change presets in events, please use the following percentages levels:");
+	Log(LOG_NORM, "10%% for Home, 20%% for Away, 30%% for Night & 40%% for Vacation (for Lua use 'Set Level: 20')");
+	Log(LOG_NORM, "Any other value will set Annatherm for safety to frost protection! ");
+    Log(LOG_NORM, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CAnnaThermostat::Do_Work, this);
@@ -221,6 +229,7 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 		return;
 	}
 }
+
 bool CAnnaThermostat::AnnaSetPreset(uint8_t level)
 {
 	std::stringstream szURL;
@@ -249,7 +258,7 @@ bool CAnnaThermostat::AnnaSetPreset(uint8_t level)
 
 	char szTemp[10];
 	switch (level) {
-	case  0:
+	case 0:
 		strcpy(szTemp, "none");
 		break;
 	case 10:
@@ -264,10 +273,14 @@ bool CAnnaThermostat::AnnaSetPreset(uint8_t level)
 	case 40:
 		strcpy(szTemp, "vacation");
 		break;
-	default:
-		strcpy(szTemp, "none");
+	case 50:
+		strcpy(szTemp, "no_frost");
 		break;
+	default:
+		Log(LOG_STATUS, "AnnaTherm: Invalid value for Preset %i .. Aborting Switch", level);
+		return false;
 	}
+	Log(LOG_STATUS, "AnnaTherm: Setting Preset to: %s", szTemp);
 	sPostData << "<locations>";
 	sPostData << "<location id=\"";
 	sPostData << m_AnnaLocation.m_ALocationID;
@@ -343,9 +356,9 @@ bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
 
 #ifdef DEBUG_AnnaThermostat
 	SaveString2Disk("<-- ANNA - TogglePRoximitySensor-->", DEBUG_ANNA_WRITE);
-	SaveString2Disk(DEBUG_ANNN_CRLF, DEBUG_ANNA_WRITE);
+	SaveString2Disk(DEBUG_ANNA_CRLF, DEBUG_ANNA_WRITE);
 	SaveString2Disk(szURL.str(), DEBUG_ANNA_WRITE);
-	SaveString2Disk(DEBUG_ANNN_CRLF, DEBUG_ANNA_WRITE);
+	SaveString2Disk(DEBUG_ANNA_CRLF, DEBUG_ANNA_WRITE);
 	SaveString2Disk(sPostData.str(), DEBUG_ANNA_WRITE);
 #else 
 	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
@@ -664,14 +677,16 @@ void CAnnaThermostat::GetMeterDetails()
 				}
 				else if (strcmp(tmpstr.c_str(), "no_frost") == 0)
 				{
-					strncpy(sPreset, "00", sizeof(sPreset));
+					strncpy(sPreset, "50", sizeof(sPreset));
 				}
+				else strncpy(sPreset, "50", sizeof(sPreset));
+
 				int customImage = 16;//Frost
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, sAnnaPresets);
 				if (result.empty()) //Switch is not yet in the system so create it
 				{
-					std::string options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Home|Away|Night|Vacation;LevelOffHidden:true;LevelActions:00|10|20|30|40", false));
+					std::string options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Home|Away|Night|Vacation|Frost;LevelOffHidden:true;LevelActions:00|10|20|30|40|50", false));
 					m_sql.safe_query(
 						"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
 						"VALUES (%d, '%08X', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')", m_HwdID, sAnnaPresets, 0, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, 0, "Anna Presets", sPreset, customImage, options_str.c_str());

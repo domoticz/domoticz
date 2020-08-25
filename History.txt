@@ -16,7 +16,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: RTL433, Switched to Json input
 - Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
 - Implemented: Websocket notification for secondary/sub devices
-- Implemented: ZWave, Legend and tooltips in Neighbor’s overview
+- Implemented: ZWave, Legend and tooltips in Neighborï¿½s overview
 - Updated: dzVents version 3.0.11 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 - Updated: eVehicles, added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: OpenZWave configuration files
@@ -30,6 +30,7 @@ Version 2020.xxxx (xxxx)
 - Fixed: Font in events editor on MacOS
 - Fixed: Possible crash in CEventSystem::SetEventTrigger
 - Fixed: Sound device was incorrectly displayed on the Floorplan
+- Fixed Annatherm Presets usage in Events, Please use the following percentages: 10% for Home, 20% for Away, 30% Night 40% for Vacation
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.2 (April 26th 2020)

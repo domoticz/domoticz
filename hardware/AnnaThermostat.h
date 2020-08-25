@@ -16,6 +16,8 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SetSetpoint(const int idx, const float temp);
 	void SetProgramState(const int newState);
+	bool AnnaSetPreset(uint8_t level);
+
 private:
 	void Init();
 	bool StartHardware() override;
@@ -27,7 +29,6 @@ private:
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	bool SetAway(const bool bIsAway);
 	bool AnnaToggleProximity(bool bToggle);
-	bool AnnaSetPreset(uint8_t level);
 	bool AnnaGetLocation();
 	
 private:
