@@ -123,13 +123,18 @@ std::string szWWWFolder;
 std::string szWebRoot;
 std::string dbasefile;
 
+#define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
+#define VCGENCMDARMSPEEDCOMMAND "vcgencmd measure_clock arm"
+#define VCGENCMDV3DSPEEDCOMMAND "vcgencmd measure_clock v3d"
+#define VCGENCMDCORESPEEDCOMMAND "vcgencmd measure_clock core"
+
 bool bHasInternalTemperature=false;
-std::string szInternalTemperatureCommand = "vcgencmd measure_temp";
+std::string szInternalTemperatureCommand = "";
 
 bool bHasInternalClockSpeeds=false;
-std::string szInternalARMSpeedCommand = "vcgencmd measure_clock arm";
-std::string szInternalV3DSpeedCommand = "vcgencmd measure_clock v3d";
-std::string szInternalCoreSpeedCommand = "vcgencmd measure_clock core";
+std::string szInternalARMSpeedCommand = "";
+std::string szInternalV3DSpeedCommand = "";
+std::string szInternalCoreSpeedCommand = "";
 
 bool bHasInternalVoltage=false;
 std::string szInternalVoltageCommand = "";
@@ -471,7 +476,7 @@ void CheckForOnboardSensors()
 	//Check if we have vcgencmd (are running on a RaspberryPi)
 	//
 	int returncode=0;
-	std::vector<std::string> ret = ExecuteCommandAndReturn ("vcgencmd measure_temp",returncode);
+	std::vector<std::string> ret = ExecuteCommandAndReturn (VCGENCMDTEMPCOMMAND,returncode);
 
 	if (ret.empty()) {
 		// _log.Log(LOG_STATUS,"No vcgencmd detected (empty string)");
@@ -482,13 +487,13 @@ void CheckForOnboardSensors()
 		} else {
 			_log.Log(LOG_STATUS,"Hardware Monitor: Raspberry Pi detected");
 			//Core temperature of BCM2835 SoC
-			szInternalTemperatureCommand = "vcgencmd measure_temp";
+			szInternalTemperatureCommand = VCGENCMDTEMPCOMMAND;
 			bHasInternalTemperature = true;
 
 			//PI Clock speeds	
-			szInternalARMSpeedCommand = "vcgencmd measure_clock arm";
-			szInternalV3DSpeedCommand = "vcgencmd measure_clock v3d";
-			szInternalCoreSpeedCommand = "vcgencmd measure_clock core";
+			szInternalARMSpeedCommand = VCGENCMDARMSPEEDCOMMAND;
+			szInternalV3DSpeedCommand = VCGENCMDV3DSPEEDCOMMAND;
+			szInternalCoreSpeedCommand = VCGENCMDCORESPEEDCOMMAND;
 			bHasInternalClockSpeeds=true;
 		}
 	}
