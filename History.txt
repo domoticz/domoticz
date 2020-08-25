@@ -3,6 +3,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: Allow complete IPv6 address in local network setting
 - Implemented: Counter meter type now supports a divider
 - Implemented: Custom icons for RGB/W
+- Implemented: Hardware Monitor, Add clock speeds for Raspberry Pi
 - Implemented: Honeywell, Add cooling control and Fahrenheit support
 - Implemented: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
 - Implemented: Inverted energy icon colors in report
