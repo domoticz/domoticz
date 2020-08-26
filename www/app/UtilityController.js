@@ -340,15 +340,21 @@ define(['app', 'livesocket'], function (app) {
 				}
 				else if (item.SubType == "Thermostat Mode") {
 					status = "";
+					bigtext = item.Data;
+				}
+				else if (item.SubType == "Thermostat Operating State") {
+					status = "";
+					bigtext = item.Data;
 				}
 				else if (item.SubType == "Thermostat Fan Mode") {
 					status = "";
+					bigtext = item.Data;
 				}
 				else if (item.SubType == "Waterflow") {
 					status = "";
 					bigtext = item.Data;
 				}
-
+				
 				if (typeof item.Usage != 'undefined') {
 					bigtext = item.Usage;
 				}
@@ -559,6 +565,16 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SubType == "Waterflow") {
 								xhtm += item.Data;
 							}
+							else if (item.SubType == "Thermostat Mode") {
+								xhtm += item.Data;
+							}
+							else if (item.SubType == "Thermostat Operating State") {
+								xhtm += item.Data;
+							}
+							else if (item.SubType == "Thermostat Fan Mode") {
+								xhtm += item.Data;
+							}
+							
 							xhtm += '</td>\n';
 							xhtm += '\t      <td id="img">';
 							var status = "";
@@ -679,6 +695,10 @@ define(['app', 'livesocket'], function (app) {
 								status = "";
 							}
 							else if (item.SubType == "Thermostat Mode") {
+								xhtm += '<img src="images/mode48.png" height="48" width="48"></td>\n';
+								status = "";
+							}
+							else if (item.SubType == "Thermostat Operating State") {
 								xhtm += '<img src="images/mode48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
