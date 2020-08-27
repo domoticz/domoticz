@@ -1751,6 +1751,9 @@
     <ClInclude Include="..\notifications\NotificationSMS.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationMoceanSMS.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
     <ClInclude Include="..\notifications\NotificationHelper.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -2474,6 +2477,9 @@
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationSMS.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationMoceanSMS.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationHelper.cpp">

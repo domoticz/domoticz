@@ -37,6 +37,20 @@ define(['app'], function (app) {
 					}
 					extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellTo=" + ClickatellTo;
 					break;
+					case "moceansms":
+						var MoceanAPIKey = encodeURIComponent($("#moceansmstable #MoceanAPIKey").val());
+						var MoceanAPISecret = encodeURIComponent($("#moceansmstable #MoceanAPISecret").val());
+						var MoceanTo = encodeURIComponent($("#moceansmstable #MoceanTo").val());
+						var MoceanFrom = encodeURIComponent($("#moceansmstable #MoceanFrom").val());
+						if (MoceanAPIKey == "" || MoceanAPISecret == "" || MoceanTo == "") {
+							ShowNotify($.t('Mocean API key, API secret, and destination are required!...'), 3500, true);
+							return;
+						}
+						if (MoceanFrom == "") {
+							MoceanFrom = 'Domoticz';
+						}
+						extraparams = "mocean-api-key=" + MoceanAPIKey + "&mocean-api-secret=" + MoceanAPISecret + "&mocean-to=" + MoceanTo + "&mocean-from=" + MoceanFrom;
+						break;
 				case "http":
 					var HTTPField1 = encodeURIComponent($("#httptable #HTTPField1").val());
 					var HTTPField2 = encodeURIComponent($("#httptable #HTTPField2").val());
@@ -320,6 +334,21 @@ define(['app'], function (app) {
 					}
 					if (typeof data.ClickatellTo != 'undefined') {
 						$("#smstable #ClickatellTo").val(atob(data.ClickatellTo));
+					}
+					if (typeof data.MoceanEnabled != 'undefined') {
+						$("#moceansmstable #MoceanEnabled").prop('checked', data.MoceanEnabled == 1);
+					}
+					if (typeof data.MoceanAPIKey != 'undefined') {
+						$("#moceansmstable #MoceanAPIKey").val(atob(data.MoceanAPIKey));
+					}
+					if (typeof data.MoceanAPISecret != 'undefined') {
+						$("#moceansmstable #MoceanAPISecret").val(atob(data.MoceanAPISecret));
+					}
+					if (typeof data.MoceanTo != 'undefined') {
+						$("#moceansmstable #MoceanTo").val(atob(data.MoceanTo));
+					}
+					if (typeof data.MoceanFrom != 'undefined') {
+						$("#moceansmstable #MoceanFrom").val(atob(data.MoceanFrom));
 					}
 
 					if (typeof data.HTTPEnabled != 'undefined') {

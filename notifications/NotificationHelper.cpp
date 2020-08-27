@@ -16,6 +16,7 @@
 #include "NotificationEmail.h"
 #include "NotificationTelegram.h"
 #include "NotificationSMS.h"
+#include "NotificationMoceanSMS.h"
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
@@ -48,6 +49,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationPushalot());
 	AddNotifier(new CNotificationEmail());
 	AddNotifier(new CNotificationSMS());
+	AddNotifier(new CNotificationMoceanSMS());
 	AddNotifier(new CNotificationHTTP());
 	AddNotifier(new CNotificationKodi());
 	AddNotifier(new CNotificationLogitechMediaServer());
