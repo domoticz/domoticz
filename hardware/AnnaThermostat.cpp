@@ -721,7 +721,7 @@ void CAnnaThermostat::GetMeterDetails()
 	}
 	return;
 }
-
+ 
 // Checks if the USername and password are filled in
 bool CAnnaThermostat::CheckLoginData()
 {
