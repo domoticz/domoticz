@@ -597,14 +597,14 @@ void CAnnaThermostat::GetMeterDetails()
 						SendSwitch(sAnnaFlameState, 1, 255, false, 0, sname);
 					}
 					//make device ID
-					const int NodeID = sAnnaFlameState;
-					unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
-					unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
-					unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
-					unsigned char ID4 = (unsigned char)NodeID & 0xFF;
+					//const int NodeID = sAnnaFlameState;
+					//unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
+					//unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
+					//unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
+					//unsigned char ID4 = (unsigned char)NodeID & 0xFF;
 
-					char szIdx[10];
-					sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+					//char szIdx[10];
+					//sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 					//m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", 5, m_HwdID,szIdx);
 				}
 
@@ -681,19 +681,39 @@ void CAnnaThermostat::GetMeterDetails()
 				}
 				else strncpy(sPreset, "50", sizeof(sPreset));
 
+                // setting up code to let Domoticz know the selector is changed
+				_tGeneralSwitch xcmd;
+				xcmd.len = sizeof(_tGeneralSwitch) - 1;
+	            xcmd.id = sAnnaPresets;
+	            xcmd.type = pTypeGeneralSwitch;
+	            xcmd.subtype = sSwitchGeneralSwitch;
+	            xcmd.unitcode = 1;
+	 			_eSwitchType switchtype;
+				switchtype = STYPE_Selector;
+
+				xcmd.subtype = sSwitchTypeSelector;
+				xcmd.level = std::stoi(sPreset);
+				
+				std::string PresetName = "Anna Preset";
+
 				int customImage = 16;//Frost
+
+				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd,  PresetName.c_str(), 255);
+			
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, sAnnaPresets);
+                result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, sAnnaPresets);
 				if (result.empty()) //Switch is not yet in the system so create it
 				{
 					std::string options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Home|Away|Night|Vacation|Frost;LevelOffHidden:true;LevelActions:00|10|20|30|40|50", false));
 					m_sql.safe_query(
 						"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-						"VALUES (%d, '%08X', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')", m_HwdID, sAnnaPresets, 0, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, 0, "Anna Presets", sPreset, customImage, options_str.c_str());
+						"VALUES (%d, '%08X', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')", m_HwdID, sAnnaPresets, 1, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, 0,PresetName.c_str() , sPreset, customImage, options_str.c_str());
 				}
 				else
 				{
-					result = m_sql.safe_query("UPDATE DeviceStatus SET sValue = '%q' where (HardwareID==%d) AND (DeviceID=='%08X')", sPreset, m_HwdID, sAnnaPresets);
+
+					result = m_sql.safe_query("UPDATE DeviceStatus SET sValue = '%q' WHERE (HardwareID==%d) AND (DeviceID=='%08X')", sPreset, m_HwdID, sAnnaPresets);
+                   
 				}
 			}
 		}
