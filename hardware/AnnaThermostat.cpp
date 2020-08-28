@@ -714,7 +714,7 @@ void CAnnaThermostat::GetMeterDetails()
                 }
                 else
                     {
-                    float_t old_value; 
+                    float old_value; 
                     old_value = std::stof(result[1].at(1));
 
                     if (m_Preset_Value == -1) { //Code that wil handle updating domoticz only IF the switch been changed via app or on the Anna/smile iteself
