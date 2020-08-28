@@ -313,6 +313,7 @@ bool CAnnaThermostat::AnnaSetPreset(uint8_t level)
         return false;
     }
 #endif	
+    m_Preset_Value = level; // rember las know state of preset switch
     return true;
 }
 
@@ -719,6 +720,7 @@ void CAnnaThermostat::GetMeterDetails()
 
                     if (m_Preset_Value == -1) { //Code that wil handle updating domoticz only IF the switch been changed via app or on the Anna/smile iteself
                         result = m_sql.safe_query("UPDATE DeviceStatus SET sValue = '%q' WHERE (HardwareID==%d) AND (DeviceID=='%08X')", sPreset, m_HwdID, sAnnaPresets);
+                    m_Preset_Value = std::stof(sPreset); //storing old value
                     }
                 }
             }
