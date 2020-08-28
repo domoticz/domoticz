@@ -39,6 +39,7 @@ private:
 	std::string m_ThermostatID;
 	std::string m_ProximityID;
 	std::string m_PresetID;
+	std::float_t m_Preset_Value;
 	std::shared_ptr<std::thread> m_thread;
 	AnnaLocationInfo m_AnnaLocation;
 };
