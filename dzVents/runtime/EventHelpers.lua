@@ -387,6 +387,15 @@ local function EventHelpers(domoticz, mainMethod)
 		for eventIdx, eventHandler in pairs(events) do
 
 			if (eventHandler.logging) then
+				if type(eventHandler.logging) ~= 'table' then
+					if type(eventHandler.logging) == 'number' then
+						local level = eventHandler.logging
+						eventHandler.logging = {}
+						eventHandler.logging.level = level
+					end
+					utils.log(eventHandler.type .. ' script ' .. eventHandler.name .. '.lua has a malformed logging section. Check the documentation.', utils.LOG_FORCE)
+				end
+
 				if (eventHandler.logging.level ~= nil) then
 					_G.logLevel = eventHandler.logging.level
 				end
@@ -647,6 +656,12 @@ local function EventHelpers(domoticz, mainMethod)
 				else
 					if (mode == 'timer' and j == 'timer') then
 						-- { ['timer'] = { 'every minute ', 'every hour' } }
+
+						if type(event) ~= 'table' then
+							utils.log(logScript .. module.name .. '.lua has a malformed timer-section. Check the documentation.', utils.LOG_FORCE)
+							event = { event }
+						end
+
 						local triggered, def = self.processTimeRules(event)
 						if (triggered) then
 							-- this one can be executed
