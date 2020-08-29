@@ -13527,7 +13527,7 @@ void MainWorker::HeartbeatCheck()
 						}
 					}
 					else {
-						totNum = pHardware->m_DataTimeout / 60;
+						totNum = pHardware->m_DataTimeout / 86400;
 						if (totNum == 1) {
 							sDataTimeout = "Day";
 						}
