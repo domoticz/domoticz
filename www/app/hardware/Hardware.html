@@ -1143,7 +1143,7 @@
 				<td><input type="text" id="activeinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="1" />&nbsp;(<span data-i18n="Minutes"></span>).</td>
 			</tr>
 			<tr>
-				<td></td>
+				<td><input type="hidden" id="comboallowwakeup" value="1" /></td>
 				<td>
 					Two interval types need to be specified:<ul>
 						<li>Default interval is used when the car is not at home, or home but not charging or using climate controls<br />
@@ -1152,6 +1152,7 @@
 					</ul>
 				</td>
 			</tr>
+			<!--
 			<tr>
 				<td align="right" style="width:110px"><label id="lblallowwakeup" for="name"><span data-i18n="Allow wake up"></span>:</label></td>
 				<td>
@@ -1165,14 +1166,19 @@
 				<td></td>
 				<td>
 					<span>
-					Not used, here for compatibility reasons. <br />
-					<br />
+					Not used, here for compatibility reasons.
+					</span>
+				</td>
+			</tr>
+			-->
+			<tr>
+				<td></td>
+				<td>
 					For entering the Username/Password below:<ul>
 						<li>Username : This should be <i>[client_id]:[client_secret]</i> as provided via the Developers Console from Mercedes.</li>
 						<li>Password: This should be a valid <i>Oauth2 Authorisation code</i> provided after completing the authorisation process.</li>
 						<span>(the <i>code</i> part of the localhost URL you have been redirected to.)</span>
 					</ul>
-					</span>
 				</td>
 			</tr>
 		</table>

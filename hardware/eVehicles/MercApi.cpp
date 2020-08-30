@@ -38,6 +38,8 @@ License: Public domain
 
 #define MBAPITIMEOUT (30)
 
+#define MERC_REFRESHTOKEN_CLEARED "Refreshtoken cleared because it was invalid!"
+
 CMercApi::CMercApi(const std::string username, const std::string password, const std::string vinnr)
 {
 	m_username = username;
@@ -92,28 +94,41 @@ CMercApi::~CMercApi()
 bool CMercApi::Login()
 {
 	_log.Log(LOG_NORM, "MercApi: Attempting login (using Refresh token for now!).");
+
+	if (m_refreshtoken == "" || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED)
+	{
+		m_refreshtoken = m_authtoken;
+	}
 	return RefreshLogin();
 }
 
 bool CMercApi::RefreshLogin()
 {
-	_log.Log(LOG_NORM, "MercApi: Refreshing login credentials.");
+	bool bSuccess = false;
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+
+	_log.Debug(DEBUG_NORM, "MercApi: Refreshing login credentials.");
 	m_authenticating = true;
+
 	if (GetAuthToken("", "", true))
 	{	
-		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
-		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), szLastUpdate.c_str(), m_uservar_refreshtoken_idx);
-
-		_log.Log(LOG_NORM, "MercApi: Refresh successful.");
-		m_authenticating = false;
-		return true;
+		_log.Log(LOG_NORM, "MercApi: Login credentials Refresh successful.");
+		bSuccess = true;
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "MercApi: Failed to refresh login credentials.");
+		m_accesstoken = "";
+		if (m_refreshtoken != "")
+		{
+			m_refreshtoken = MERC_REFRESHTOKEN_CLEARED;
+		}
 	}
 
-	_log.Log(LOG_ERROR, "MercApi: Failed to refresh login credentials.");
-	m_accesstoken = "";
-	m_refreshtoken = "";
 	m_authenticating = false;
-	return false;
+	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), szLastUpdate.c_str(), m_uservar_refreshtoken_idx);
+
+	return bSuccess;
 }
 
 bool CMercApi::GetAllData(tAllCarData& data)
@@ -156,36 +171,70 @@ void CMercApi::GetLocationData(Json::Value& jsondata, tLocationData& data)
 
 bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
 {
-	return true; // not implemented for Mercedes
-	/*
 	Json::Value reply;
+	bool bData = false;
 
-	if (GetData("charge_state", reply))
+	if (GetData("electricvehicle", reply))
 	{
-		GetChargeData(reply["response"], data);
-		return true;
+		if (reply.size() == 0)
+		{
+			bData = true;	// This occurs when the API call return a 204 (No Content). So everything is valid/ok, just no data
+		}
+		else
+		{
+			if (!reply.isArray())
+			{
+				_log.Log(LOG_ERROR, "MercApi: Unexpected reply from ElectricVehicle.");
+			}
+			else
+			{
+				GetChargeData(reply, data);
+				bData = true;
+			}
+		}
 	}
-	return false;
-	*/
+
+	return bData;
 }
 
 void CMercApi::GetChargeData(Json::Value& jsondata, CVehicleApi::tChargeData& data)
 {
-	data.battery_level = jsondata["battery_level"].asFloat();
-	data.status_string = jsondata["charging_state"].asString();
-	data.is_connected = (data.status_string != "Disconnected");
-	data.is_charging = (data.status_string == "Charging") || (data.status_string == "Starting");
-	data.charge_limit = jsondata["charge_limit_soc"].asInt();
-
-	if(data.status_string == "Disconnected")
-		data.status_string = "Charge Cable Disconnected";
-
-	if (data.is_charging)
+	uint8_t cnt = 0;
+	do
 	{
-		data.status_string.append(" (until ");
-		data.status_string.append(std::to_string(data.charge_limit));
-		data.status_string.append("%)");
-	}
+		Json::Value iter;
+
+		iter = jsondata[cnt];
+		for (auto const& id : iter.getMemberNames())
+		{
+			if(!(iter[id].isNull()))
+			{
+				_log.Debug(DEBUG_NORM, "MercApi: Found non empty field %s", id.c_str());
+
+				if (id == "soc")
+				{
+					Json::Value iter2;
+					iter2 = iter[id];
+					if(!iter2["value"].empty())
+					{
+						_log.Debug(DEBUG_NORM, "MercApi: SoC has value %s", iter2["value"].asString().c_str());
+						data.battery_level = atof(iter2["value"].asString().c_str());
+					}
+				}
+				if (id == "rangeelectric")
+				{
+					Json::Value iter2;
+					iter2 = iter[id];
+					if(!iter2["value"].empty())
+					{
+						_log.Debug(DEBUG_NORM, "MercApi: RangeElectric has value %s", iter2["value"].asString().c_str());
+						data.status_string = "Approximate range " + iter2["value"].asString() + " " + m_config.distance_unit;
+					}
+				}
+			}
+		}
+		cnt++;
+	} while (!jsondata[cnt].empty());
 }
 
 bool CMercApi::GetClimateData(tClimateData& data)
@@ -334,7 +383,14 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 					{
 						_log.Debug(DEBUG_NORM, "MercApi: DoorLockStatusVehicle has value %s", iter2["value"].asString().c_str());
 						data.car_open = (iter2["value"].asString() == "1" || iter2["value"].asString() == "2" ? false : true);
-						data.car_open_message = (data.car_open ? "Your Mercedes is open" : "Your Mercedes is locked");
+						if(iter2["value"].asString() == "3")
+						{
+							data.car_open_message = "Your Mercedes is partly unlocked";
+						}
+						else
+						{
+							data.car_open_message = (data.car_open ? "Your Mercedes is open" : "Your Mercedes is locked");
+						}
 					}
 				}
 				if (id == "odo")
@@ -351,48 +407,6 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 		}
 		cnt++;
 	} while (!jsondata[cnt].empty());
-
-	/*
-	data.odo = (jsondata["odometer"].asFloat());
-	if (!m_config.unit_miles)
-		data.odo = data.odo * (float)1.60934;
-
-	if (jsondata["df"].asBool() ||
-		jsondata["pf"].asBool() ||
-		jsondata["pr"].asBool() ||
-		jsondata["dr"].asBool())
-	{
-		data.car_open = true;
-		data.car_open_message = "Door open";
-	}
-	else if (
-		jsondata["ft"].asBool() ||
-		jsondata["rt"].asBool())
-	{
-		data.car_open = true;
-		data.car_open_message = "Trunk open";
-	}
-	else if (
-		jsondata["fd_window"].asBool() ||
-		jsondata["fp_window"].asBool() ||
-		jsondata["rp_window"].asBool() ||
-		jsondata["rd_window"].asBool())
-	{
-		data.car_open = true;
-		data.car_open_message = "Window open";
-	}
-	else if (
-		!jsondata["locked"].asBool())
-	{
-		data.car_open = true;
-		data.car_open_message = "Unlocked";
-	}
-	else
-	{
-		data.car_open = false;
-		data.car_open_message = "Locked";
-	}
-	*/
 }
 
 bool CMercApi::GetData(std::string datatype, Json::Value& reply)
@@ -541,6 +555,8 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 
 bool CMercApi::SendCommand(eCommandType command, std::string parameter)
 {
+	return true; // Not implemented
+	/*
 	std::string command_string;
 	Json::Value reply;
 	std::string parameters = "";
@@ -598,6 +614,7 @@ bool CMercApi::SendCommand(eCommandType command, std::string parameter)
 	}
 
 	return false;
+	*/
 }
 
 bool CMercApi::SendCommand(std::string command, Json::Value& reply, std::string parameters)
@@ -691,7 +708,7 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 	m_accesstoken = _jsRoot["access_token"].asString();
 	if (m_accesstoken.size() == 0)
 	{
-		_log.Log(LOG_ERROR, "MercApi: Received token is zero length.");
+		_log.Log(LOG_ERROR, "MercApi: Received access token is zero length.");
 		return false;
 	}
 
@@ -705,7 +722,6 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 	{
 		_log.Log(LOG_STATUS, "MercApi: Received new refresh token %s .", m_refreshtoken.c_str());
 	}
-	
 
 	_log.Debug(DEBUG_NORM, "MercApi: Received access token from API.");
 
