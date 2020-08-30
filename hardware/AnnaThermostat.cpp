@@ -313,8 +313,7 @@ bool CAnnaThermostat::AnnaSetPreset(uint8_t level)
         return false;
     }
 #endif	
-    m_Preset_Value = level; // rember las know state of preset switch
-    return true;
+     return true;
 }
 
 bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
