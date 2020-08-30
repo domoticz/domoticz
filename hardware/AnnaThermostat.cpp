@@ -284,7 +284,7 @@ bool CAnnaThermostat::AnnaSetPreset(uint8_t level)
         Log(LOG_STATUS, "AnnaTherm: Invalid value for Preset %i .. Aborting Switch", level);
         return false;
     }
-    Log(LOG_STATUS, "AnnaTherm: Setting Preset to: %s", szTemp);
+    Log(LOG_STATUS, "Switching Anna gateway preset to: %s", szTemp);
     sPostData << "<locations>";
     sPostData << "<location id=\"";
     sPostData << m_AnnaLocation.m_ALocationID;
@@ -690,38 +690,33 @@ void CAnnaThermostat::GetMeterDetails()
                 xcmd.len = sizeof(_tGeneralSwitch) - 1;
                 xcmd.id = sAnnaPresets;
                 xcmd.type = pTypeGeneralSwitch;
-                xcmd.subtype = sSwitchGeneralSwitch;
+                //xcmd.subtype = sSwitchGeneralSwitch;
                 xcmd.unitcode = 1;
-                 _eSwitchType switchtype;
-                switchtype = STYPE_Selector;
-
                 xcmd.subtype = sSwitchTypeSelector;
                 xcmd.level = std::stoi(sPreset);
                 
                 std::string PresetName = "Anna Preset";
-
+                _eSwitchType switchtype;
+                switchtype = STYPE_Selector;
                 int customImage = 16;//Frost
-
             
                 std::vector<std::vector<std::string> > result;
-                result = m_sql.safe_query("SELECT ID , sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, sAnnaPresets);
+                result = m_sql.safe_query("SELECT ID , sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, sAnnaPresets, xcmd.unitcode);
                 m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd,  PresetName.c_str(), 255);
                 if (result.empty()) //Switch is not yet in the system so create it
                 {
                     std::string options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Home|Away|Night|Vacation|Frost;LevelOffHidden:true;LevelActions:00|10|20|30|40|50", false));
-                    m_sql.safe_query(
-                        "INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-                        "VALUES (%d, '%08X', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')", m_HwdID, sAnnaPresets, 1, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, 0,PresetName.c_str() , sPreset, customImage, options_str.c_str());
-                }
+                    //m_sql.safe_query(
+                    //    "INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
+                    //    "VALUES (%d, '%08X', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')", m_HwdID, sAnnaPresets, 1, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, 0,PresetName.c_str() , sPreset, customImage, options_str.c_str());
+                    m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i, Options='%q' WHERE(HardwareID == %d) AND (DeviceID=='%08X') AND (Unit == '%d')", PresetName.c_str(), (switchtype), customImage, options_str.c_str(), m_HwdID, sAnnaPresets, xcmd.unitcode);
+                 }
                 else
-                    {
-                    float old_value; 
-                    old_value = std::stof(result[1].at(1));
-
-                    if (m_Preset_Value == -1) { //Code that wil handle updating domoticz only IF the switch been changed via app or on the Anna/smile iteself
-                        result = m_sql.safe_query("UPDATE DeviceStatus SET sValue = '%q' WHERE (HardwareID==%d) AND (DeviceID=='%08X')", sPreset, m_HwdID, sAnnaPresets);
-                    m_Preset_Value = std::stof(sPreset); //storing old value
-                    }
+                {
+                    int old_value = atoi(result[0][1].c_str()); 
+                    if (old_value != xcmd.level) 
+                        Log(LOG_STATUS, "Syncing %s with Anna Gateway preset - Received : %s", PresetName.c_str(), tmpstr.c_str());
+                    result = m_sql.safe_query("UPDATE DeviceStatus SET sValue = '%q' WHERE (HardwareID==%d) AND (DeviceID=='%08X')", sPreset, m_HwdID, sAnnaPresets);          
                 }
             }
         }
@@ -730,7 +725,7 @@ void CAnnaThermostat::GetMeterDetails()
     return;
 }
  
-// Checks if the USername and password are filled in
+// Checks if the Username and password are filled in
 bool CAnnaThermostat::CheckLoginData()
 {
     if (m_UserName.size() == 0)
