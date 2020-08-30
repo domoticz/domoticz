@@ -94,7 +94,6 @@ void CAnnaThermostat::CAnnaThermostat::Init()
     m_AnnaLocation.m_ALocationID = "";
     m_AnnaLocation.m_ALocationName = "";
     m_AnnaLocation.m_ALocationType = "";
-    m_Preset_Value = -1;  // Indicate Preset has not been read from Anna since plugin started
 }
 
 bool CAnnaThermostat::StartHardware()
