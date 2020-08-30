@@ -9,7 +9,7 @@ class CAnnaThermostat : public CDomoticzHardwareBase
 		 std::string m_ALocationName;
 		 std::string m_ALocationType;
 	};
-	
+
 public:
 	CAnnaThermostat(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password);
 	~CAnnaThermostat(void);
@@ -30,7 +30,7 @@ private:
 	bool SetAway(const bool bIsAway);
 	bool AnnaToggleProximity(bool bToggle);
 	bool AnnaGetLocation();
-	
+
 private:
 	std::string m_IPAddress;
 	unsigned short m_IPPort;
