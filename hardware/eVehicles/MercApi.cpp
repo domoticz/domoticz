@@ -218,7 +218,7 @@ void CMercApi::GetChargeData(Json::Value& jsondata, CVehicleApi::tChargeData& da
 					if(!iter2["value"].empty())
 					{
 						_log.Debug(DEBUG_NORM, "MercApi: SoC has value %s", iter2["value"].asString().c_str());
-						data.battery_level = atof(iter2["value"].asString().c_str());
+						data.battery_level = static_cast<float>(atof(iter2["value"].asString().c_str()));
 					}
 				}
 				if (id == "rangeelectric")
@@ -400,7 +400,7 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 					if(!iter2["value"].empty())
 					{
 						_log.Debug(DEBUG_NORM, "MercApi: Odo has value %s", iter2["value"].asString().c_str());
-						data.odo = atof(iter2["value"].asString().c_str());
+						data.odo = static_cast<float>(atof(iter2["value"].asString().c_str()));
 					}
 				}
 			}

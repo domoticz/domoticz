@@ -824,7 +824,7 @@ void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
 
 						if (is_number(sValue))
 						{
-							float fValue = std::atof(sValue.c_str());
+							float fValue = static_cast<float>(std::atof(sValue.c_str()));
 							SendCustom(VEHICLE_CUSTOM, iChildID, fValue, sLabel);
 						}
 						else
