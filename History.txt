@@ -1,4 +1,5 @@
 Version 2020.xxxx (xxxx)
+- Implemented: Mercedes Me API's (BYOCAR) as an (e)Vehicle supporting lock/open, odo, fuellevel
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: Allow complete IPv6 address in local network setting
 - Implemented: Counter meter type now supports a divider

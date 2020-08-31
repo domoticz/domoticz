@@ -1024,8 +1024,7 @@ namespace http {
 						bDoAdd = false;
 					}
 #endif
-
-		}
+				}
 #endif
 #endif
 #ifndef WITH_OPENZWAVE
@@ -1045,9 +1044,11 @@ namespace http {
 #endif
 				if (ii == HTYPE_PythonPlugin)
 					bDoAdd = false;
+
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
-	}
+			}
+
 			//return a sorted hardware list
 			int ii = 0;
 			for (const auto & itt : _htypes)
@@ -1257,6 +1258,7 @@ namespace http {
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
 				(htype == HTYPE_Tesla) ||
+				(htype == HTYPE_Mercedes) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -1654,6 +1656,7 @@ namespace http {
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
 				(htype == HTYPE_Tesla) ||
+				(htype == HTYPE_Mercedes) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{

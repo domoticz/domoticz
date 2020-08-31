@@ -53,6 +53,7 @@ CTeslaApi::CTeslaApi(const std::string username, const std::string password, con
 	m_capabilities.has_odo = true;
 	m_capabilities.has_lock_status = true;
 	m_capabilities.has_charge_limit = true;
+	m_capabilities.has_custom_data = false;
 	m_capabilities.sleep_interval = 20;
 }
 
@@ -235,6 +236,11 @@ void CTeslaApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 		data.car_open = false;
 		data.car_open_message = "Locked";
 	}
+}
+
+bool CTeslaApi::GetCustomData(tCustomData& data)
+{
+	return true;
 }
 
 void CTeslaApi::GetUnitData(Json::Value& jsondata, tConfigData &config)

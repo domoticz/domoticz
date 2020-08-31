@@ -1127,6 +1127,62 @@
 			</tr>
 		</table>
 	</div>
+	<div id="divmercedes">
+		<br>
+		<table class="display" id="hardwareparamsmercedes" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:110px"><label><span data-i18n="VIN"></span>:</label></td>
+				<td><input type="text" id="vinnr" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label><span data-i18n="Default interval"></span>:</label></td>
+				<td><input type="text" id="defaultinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="10" />&nbsp;(<span data-i18n="Minutes"></span>)</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="awayinterval"><span data-i18n="Active interval"></span>:</label></td>
+				<td><input type="text" id="activeinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="1" />&nbsp;(<span data-i18n="Minutes"></span>).</td>
+			</tr>
+			<tr>
+				<td><input type="hidden" id="comboallowwakeup" value="1" /></td>
+				<td>
+					Two interval types need to be specified:<ul>
+						<li>Default interval is used when the car is not at home, or home but not charging or using climate controls<br />
+							Note: Mercedes Me does not support a 'sleep' state, so the default interval can be anything (> 2 minutes to prevent hitting limits).</li>
+						<li>Active interval is used when the car is home, and charging or using climate controls (not implemented at the moment)</li>
+					</ul>
+				</td>
+			</tr>
+			<!--
+			<tr>
+				<td align="right" style="width:110px"><label id="lblallowwakeup" for="name"><span data-i18n="Allow wake up"></span>:</label></td>
+				<td>
+					<select id="comboallowwakeup" style="width:60px" class="combobox ui-corner-all">
+						<option value="0">False</option>
+						<option value="1">True</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					<span>
+					Not used, here for compatibility reasons.
+					</span>
+				</td>
+			</tr>
+			-->
+			<tr>
+				<td></td>
+				<td>
+					For entering the Username/Password below:<ul>
+						<li>Username : This should be <i>[client_id]:[client_secret]</i> as provided via the Developers Console from Mercedes.</li>
+						<li>Password: This should be a valid <i>Oauth2 Authorisation code</i> provided after completing the authorisation process.</li>
+						<span>(the <i>code</i> part of the localhost URL you have been redirected to.)</span>
+					</ul>
+				</td>
+			</tr>
+		</table>
+	</div>
 	<div id="divlocation">
 		<br>
 		<table class="display" id="hardwareparamslocation" border="0" cellpadding="0" cellspacing="20">

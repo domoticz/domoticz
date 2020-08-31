@@ -2177,6 +2177,9 @@
     <ClInclude Include="..\hardware\eVehicles\TeslaApi.h">
       <Filter>Devices\eVehicles</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\MercApi.h">
+      <Filter>Devices\eVehicles</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\eVehicles\VehicleApi.h">
       <Filter>Devices\eVehicles</Filter>
     </ClInclude>
@@ -2921,6 +2924,9 @@
       <Filter>Devices\OctoPrint</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\eVehicles\TeslaApi.cpp">
+      <Filter>Devices\eVehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eVehicles\MercApi.cpp">
       <Filter>Devices\eVehicles</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\eVehicles\eVehicle.cpp">
