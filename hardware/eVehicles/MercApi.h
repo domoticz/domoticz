@@ -1,11 +1,9 @@
 /************************************************************************
 
-Tesla implementation of VehicleApi baseclass
-Author: MrHobbes74 (github.com/MrHobbes74)
+Merceded implementation of VehicleApi baseclass
+Author: KidDigital (github.com/kiddigital)
 
-21/02/2020 1.0 Creation
-13/03/2020 1.1 Added keep asleep support
-28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+24/07/2020 1.0 Creation
 
 License: Public domain
 
@@ -15,11 +13,11 @@ License: Public domain
 #include "../../main/json_helper.h"
 #include "VehicleApi.h"
 
-class CTeslaApi: public CVehicleApi
+class CMercApi: public CVehicleApi
 {
 public:
-	CTeslaApi(const std::string username, const std::string password, const std::string vin);
-	~CTeslaApi();
+	CMercApi(const std::string username, const std::string password, const std::string vin);
+	~CMercApi();
 
 	bool Login() override;
 	bool RefreshLogin() override;
@@ -37,13 +35,13 @@ private:
 		Get
 	};
 	bool GetData(std::string datatype, Json::Value& reply);
+	bool GetResourceData(std::string datatype, Json::Value& reply);
+	bool ProcessAvailableResources(Json::Value& jsondata);
 	bool SendCommand(std::string command, Json::Value& reply, std::string parameters = "");
-	bool FindCarInAccount();
 	void GetLocationData(Json::Value& jsondata, tLocationData& data);
 	void GetChargeData(Json::Value& jsondata, tChargeData& data);
 	void GetClimateData(Json::Value& jsondata, tClimateData& data);
 	void GetVehicleData(Json::Value& jsondata, tVehicleData& data);
-	void GetUnitData(Json::Value& jsondata, tConfigData& data);
 	bool GetAuthToken(const std::string username, const std::string password, const bool refreshUsingToken = false);
 	bool SendToApi(const eApiMethod eMethod, const std::string& sUrl, const std::string& sPostData, std::string& sResponse, const std::vector<std::string>& vExtraHeaders, Json::Value& jsDecodedResponse, const bool bSendAuthHeaders = true, const int timeout = 0);
 
@@ -51,8 +49,14 @@ private:
 	std::string m_password;
 	std::string m_VIN;
 
+	bool m_authenticating;
 	std::string m_authtoken;
+	std::string m_accesstoken;
 	std::string m_refreshtoken;
-	uint64_t m_carid;
-};
+	std::string m_uservar_refreshtoken;
+	uint64_t m_uservar_refreshtoken_idx;
 
+	uint64_t m_carid;
+	uint32_t m_crc;
+	std::string m_fields;
+};

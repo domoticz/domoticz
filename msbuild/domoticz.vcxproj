@@ -593,6 +593,7 @@
     <ClInclude Include="..\hardware\ETH8020.h" />
     <ClInclude Include="..\hardware\eVehicles\eVehicle.h" />
     <ClInclude Include="..\hardware\eVehicles\TeslaApi.h" />
+    <ClInclude Include="..\hardware\eVehicles\MercApi.h" />
     <ClInclude Include="..\hardware\eVehicles\VehicleApi.h" />
     <ClInclude Include="..\hardware\EvohomeBase.h" />
     <ClInclude Include="..\hardware\EvohomeRadio.h" />
@@ -890,6 +891,7 @@
     <ClCompile Include="..\hardware\ETH8020.cpp" />
     <ClCompile Include="..\hardware\eVehicles\eVehicle.cpp" />
     <ClCompile Include="..\hardware\eVehicles\TeslaApi.cpp" />
+    <ClCompile Include="..\hardware\eVehicles\MercApi.cpp" />
     <ClCompile Include="..\hardware\EvohomeBase.cpp" />
     <ClCompile Include="..\hardware\EvohomeRadio.cpp" />
     <ClCompile Include="..\hardware\EvohomeScript.cpp" />

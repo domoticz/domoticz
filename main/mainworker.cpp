@@ -983,6 +983,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Tesla:
 		pHardware = new CeVehicle(ID, CeVehicle::Tesla, Username, Password, Mode1, Mode2, Mode3, Extra);
 		break;
+	case HTYPE_Mercedes:
+		pHardware = new CeVehicle(ID, CeVehicle::Mercedes, Username, Password, Mode1, Mode2, Mode3, Extra);
+		break;
 	case HTYPE_Honeywell:
 		pHardware = new CHoneywell(ID, Username, Password, Extra);
 		break;
@@ -12331,10 +12334,24 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				}
 			}
 		}
-		else if (((switchtype == STYPE_BlindsPercentage) ||
-			(switchtype == STYPE_BlindsPercentageInverted)) &&
-			(gswitch.cmnd == gswitch_sSetLevel) && (level == 100))
-			gswitch.cmnd = gswitch_sOn;
+		else if (
+			(
+				(switchtype == STYPE_BlindsPercentage)
+				|| (switchtype == STYPE_BlindsPercentageInverted)
+				|| (switchtype == STYPE_VenetianBlindsUS)
+				|| (switchtype == STYPE_VenetianBlindsEU)
+				)
+			&& (gswitch.cmnd == gswitch_sSetLevel) && (level == 100)
+		) {
+			if (pHardware->HwdType == HTYPE_OpenZWave)
+			{
+				//For Multilevel switches, 255 (0xFF) means Restore to most recent (non-zero) level,
+				//which is perfect for dimmers, but for blinds (and using the slider), we set it to 99%
+				level = 99;
+			}
+			else
+				gswitch.cmnd = gswitch_sOn;
+		}
 
 		gswitch.level = (uint8_t)level;
 		gswitch.rssi = 12;
@@ -13527,7 +13544,7 @@ void MainWorker::HeartbeatCheck()
 						}
 					}
 					else {
-						totNum = pHardware->m_DataTimeout / 60;
+						totNum = pHardware->m_DataTimeout / 86400;
 						if (totNum == 1) {
 							sDataTimeout = "Day";
 						}
