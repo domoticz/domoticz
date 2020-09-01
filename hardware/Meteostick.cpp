@@ -19,6 +19,8 @@ using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 
+#define round(a) ( int ) ( a + .5 )
+
 #define USE_868_Mhz
 #define RAIN_IN_MM
 
