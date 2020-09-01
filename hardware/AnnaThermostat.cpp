@@ -701,18 +701,18 @@ void CAnnaThermostat::GetMeterDetails()
 				std::vector<std::vector<std::string> > result;
 				std::string options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Home|Away|Night|Vacation|Frost;LevelOffHidden:true;LevelActions:00|10|20|30|40|50", false));
 				result = m_sql.safe_query("SELECT ID , sValue, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, sAnnaPresets, xcmd.unitcode);
-   	            bool bUpdateOptions = true;
+   	            int bUpdateOptions = -1;
 				 	if (!result.empty()){
 						bUpdateOptions = strcmp (options_str.c_str(), result[0][2].c_str());
-							if(bUpdateOptions)
+							if(bUpdateOptions != 0)
 							{ 
 								Log(LOG_STATUS, "The layout of %s has been changed - Updating..", PresetName.c_str());
 								//Log(LOG_STATUS, "New value is : %s", result[0][2].c_str());
                					//Log(LOG_STATUS, "Old value is : %s", result[0][2].c_str());
-               					}
+               				}
 			        }
 				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd,  PresetName.c_str(), 255);
-				if (result.empty() || bUpdateOptions )//Switch is new or has older look and feel  so update it
+				if (result.empty() || bUpdateOptions != 0 )//Switch is new or has older look and feel  so update it
 				{
 						//m_sql.safe_query(
 					//    "INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
