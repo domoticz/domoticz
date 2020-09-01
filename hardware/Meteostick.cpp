@@ -218,14 +218,14 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	tsen.WIND.id1 = 0;
 	tsen.WIND.id2 = Idx;
 
-	int aw = std::lrint(Direction);
+	int aw = round(Direction);
 	tsen.WIND.directionh = (BYTE)(aw / 256);
 	aw -= (tsen.WIND.directionh * 256);
 	tsen.WIND.directionl = (BYTE)(aw);
 
 	tsen.WIND.av_speedh = 0;
 	tsen.WIND.av_speedl = 0;
-	int sw = std::lrint(Speed*10.0f);
+	int sw = round(Speed*10.0f);
 	tsen.WIND.av_speedh = (BYTE)(sw / 256);
 	sw -= (tsen.WIND.av_speedh * 256);
 	tsen.WIND.av_speedl = (BYTE)(sw);

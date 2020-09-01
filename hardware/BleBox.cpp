@@ -606,9 +606,9 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 		case Color_LedOn: {
 			if (m_RGBWColorState.mode != ColorModeNone && !m_RGBWisWhiteState)
 			{
-				red = int(std::round(m_RGBWColorState.r * m_RGBWbrightnessState / 255.0f));
-				green = int(std::round(m_RGBWColorState.g * m_RGBWbrightnessState / 255.0f));
-				blue = int(std::round(m_RGBWColorState.b * m_RGBWbrightnessState / 255.0f));
+				red = int(round(m_RGBWColorState.r * m_RGBWbrightnessState / 255.0f));
+				green = int(round(m_RGBWColorState.g * m_RGBWbrightnessState / 255.0f));
+				blue = int(round(m_RGBWColorState.b * m_RGBWbrightnessState / 255.0f));
 				white = 0;
 			}
 			else
@@ -650,7 +650,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 		}
 		case Color_SetBrightnessLevel: {
 			int BrightnessBase = (int)pLed->value;
-			int dMax_Send = (int)(std::round((255.0f / 100.0f) * float(BrightnessBase)));
+			int dMax_Send = (int)(round((255.0f / 100.0f) * float(BrightnessBase)));
 
 			m_RGBWbrightnessState = dMax_Send;
 
@@ -663,9 +663,9 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 			}
 			else
 			{
-				red = int(std::round(m_RGBWColorState.r * dMax_Send / 255.0f));
-				green = int(std::round(m_RGBWColorState.g * dMax_Send / 255.0f));
-				blue = int(std::round(m_RGBWColorState.b * dMax_Send / 255.0f));
+				red = int(round(m_RGBWColorState.r * dMax_Send / 255.0f));
+				green = int(round(m_RGBWColorState.g * dMax_Send / 255.0f));
+				blue = int(round(m_RGBWColorState.b * dMax_Send / 255.0f));
 				white = 0;
 			}
 			break;

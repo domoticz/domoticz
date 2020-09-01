@@ -110,3 +110,5 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 
 std::string GenerateUUID();
 double round_digits(double dIn, const int totDigits);
+
+#define round(a) (int) ( a + .5)

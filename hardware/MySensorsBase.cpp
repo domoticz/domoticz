@@ -19,7 +19,6 @@
 
 #include <ctime>
 
-// TODO: use std::lrint() instead
 #define round(a) ( int ) ( a + .5 )
 #define MAX_PAYLOAD_LENGTH 25 //https://www.mysensors.org/download/serial_api_20
 
