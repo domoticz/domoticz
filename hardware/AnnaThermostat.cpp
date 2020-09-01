@@ -699,12 +699,16 @@ void CAnnaThermostat::GetMeterDetails()
 				int customImage = 16;//Frost
 
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID , sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, sAnnaPresets, xcmd.unitcode);
+				std::string options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Home|Away|Night|Vacation|Frost;LevelOffHidden:true;LevelActions:00|10|20|30|40|50", false));
+				result = m_sql.safe_query("SELECT ID , sValue, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, sAnnaPresets, xcmd.unitcode);
+	            Log(LOG_STATUS, "Option str: %s", options_str.c_str());
+			    if (!result.empty())
+					Log(LOG_STATUS, "Result is : %s", result[0][2].c_str());
+			
 				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd,  PresetName.c_str(), 255);
-				if (result.empty()) //Switch is not yet in the system so create it
+				if (result.empty() ||  (strcmp (options_str.c_str(), result[0][2].c_str()) != 0) )//Switch is new or has older look and feel  so update it
 				{
-					std::string options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Home|Away|Night|Vacation|Frost;LevelOffHidden:true;LevelActions:00|10|20|30|40|50", false));
-					//m_sql.safe_query(
+						//m_sql.safe_query(
 					//    "INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
 					//    "VALUES (%d, '%08X', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')", m_HwdID, sAnnaPresets, 1, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, 0,PresetName.c_str() , sPreset, customImage, options_str.c_str());
 					m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i, Options='%q' WHERE(HardwareID == %d) AND (DeviceID=='%08X') AND (Unit == '%d')", PresetName.c_str(), (switchtype), customImage, options_str.c_str(), m_HwdID, sAnnaPresets, xcmd.unitcode);
