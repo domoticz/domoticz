@@ -2654,7 +2654,15 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQu
 			item.sValue : iterator->second.sValue);
 	}
 	luaTable.Publish();
-	
+
+        luaTable.InitTable(lua_state, "otherdevices_idx_svalues", (int)m_devicestates.size(), 0);
+        for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+        {
+                luaTable.AddString(iterator->second.ID, (iterator->first == item.id && item.reason == REASON_DEVICE) ?
+                        item.sValue : iterator->second.sValue);
+        }
+        luaTable.Publish();
+
 	luaTable.InitTable(lua_state, "otherdevices_idx", (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
