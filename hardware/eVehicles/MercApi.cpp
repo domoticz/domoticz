@@ -36,9 +36,9 @@ License: Public domain
 #define MERC_URL "https://api.mercedes-benz.com"
 #define MERC_API "/vehicledata/v1/vehicles"
 
-#define MBAPITIMEOUT (30)
-
+#define MERC_APITIMEOUT (30)
 #define MERC_REFRESHTOKEN_CLEARED "Refreshtoken cleared because it was invalid!"
+#define MERC_REFRESHTOKEN_USERVAR "mercedesme_refreshtoken"
 
 CMercApi::CMercApi(const std::string username, const std::string password, const std::string vinnr)
 {
@@ -49,7 +49,7 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	m_authtoken = password;
 	m_accesstoken = "";
 	m_refreshtoken = "";
-	m_uservar_refreshtoken = "mercedesme_refreshtoken";
+	m_uservar_refreshtoken = MERC_REFRESHTOKEN_USERVAR;
 	m_uservar_refreshtoken_idx = 0;
 	m_authenticating = false;
 
@@ -89,17 +89,40 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 
 CMercApi::~CMercApi()
 {
+	m_fields = "";
 }
 
 bool CMercApi::Login()
 {
-	_log.Log(LOG_NORM, "MercApi: Attempting login (using Refresh token for now!).");
+	bool bSuccess = false;
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
 	if (m_refreshtoken == "" || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED)
 	{
-		m_refreshtoken = m_authtoken;
+		_log.Log(LOG_NORM, "MercApi: Attempting login (using provided Authorization code).");
+
+		m_authenticating = true;
+
+		if (GetAuthToken(m_username, m_authtoken, false))
+		{
+			_log.Log(LOG_NORM, "MercApi: Login successful.");
+			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), szLastUpdate.c_str(), m_uservar_refreshtoken_idx);
+			bSuccess = true;
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "MercApi: Login unsuccessful!");
+		}
+
+		m_authenticating = false;
 	}
-	return RefreshLogin();
+	else
+	{
+		_log.Log(LOG_NORM, "MercApi: Attempting (re)login (using stored refresh token!).");
+		bSuccess = RefreshLogin();
+	}
+
+	return bSuccess;
 }
 
 bool CMercApi::RefreshLogin()
@@ -434,7 +457,7 @@ bool CMercApi::GetResourceData(std::string datatype, Json::Value& reply)
 	std::string _sUrl = ss.str();
 	std::string _sResponse;
 
-	if (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), reply, true, (MBAPITIMEOUT / 2)))
+	if (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), reply, true, (MERC_APITIMEOUT / 2)))
 	{
 		_log.Log(LOG_ERROR, "MercApi: Failed to get resource data %s.", datatype.c_str());
 		return false;
@@ -648,19 +671,18 @@ bool CMercApi::SendCommand(std::string command, Json::Value& reply, std::string 
 // Requests an access token from the MB OAuth Api.
 bool CMercApi::GetAuthToken(const std::string username, const std::string password, const bool refreshUsingToken)
 {
-	/*
-	if (username.size() == 0 && !refreshUsingToken)
+	if (!refreshUsingToken && username.size() == 0)
 	{
 		_log.Log(LOG_ERROR, "MercApi: No username specified.");
 		return false;
 	}
-	if (username.size() == 0 && !refreshUsingToken)
+	if (!refreshUsingToken && username.size() == 0)
 	{
 		_log.Log(LOG_ERROR, "MercApi: No password specified.");
 		return false;
 	}
-	*/
-	if (refreshUsingToken && m_refreshtoken.size() == 0)
+
+	if (refreshUsingToken && (m_refreshtoken.size() == 0 || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED))
 	{
 		_log.Log(LOG_ERROR, "MercApi: No refresh token to perform refresh!");
 		return false;
@@ -670,7 +692,7 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 	ss << MERC_URL_AUTH << MERC_API_TOKEN;
 	std::string _sUrl = ss.str();
 	std::ostringstream s;
-	std::string _sGrantType = (refreshUsingToken ? "refresh_token" : "code");
+	std::string _sGrantType = (refreshUsingToken ? "refresh_token" : "authorization_code");
 
 	s << "grant_type=" << _sGrantType;
 
@@ -680,8 +702,8 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "MercApi: Failed to get token. Only Refresh supported for now!");
-		return false;
+		s << "&code=" << password;
+		s << "&redirect_uri=https://localhost";
 	}
 
 	std::string sPostData = s.str();
@@ -732,16 +754,16 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, const std::string& sPostData,
 	std::string& sResponse, const std::vector<std::string>& vExtraHeaders, Json::Value& jsDecodedResponse, const bool bSendAuthHeaders, const int timeout)
 {
-	try 
+	// If there is no token stored then there is no point in doing a request. Unless we specifically
+	// decide not to do authentication.
+	if (m_accesstoken.size() == 0 && bSendAuthHeaders)
 	{
-		// If there is no token stored then there is no point in doing a request. Unless we specifically
-		// decide not to do authentication.
-		if (m_accesstoken.size() == 0 && bSendAuthHeaders) 
-		{
-			_log.Log(LOG_ERROR, "MercApi: No access token available.");
-			return false;
-		}
+		_log.Log(LOG_ERROR, "MercApi: No access token available.");
+		return false;
+	}
 
+	try
+	{
 		// Prepare the headers. Copy supplied vector.
 		std::vector<std::string> _vExtraHeaders = vExtraHeaders;
 
@@ -757,8 +779,8 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		// Increase default timeout
 		if(timeout == 0)
 		{
-			HTTPClient::SetConnectionTimeout(MBAPITIMEOUT);
-			HTTPClient::SetTimeout(MBAPITIMEOUT);
+			HTTPClient::SetConnectionTimeout(MERC_APITIMEOUT);
+			HTTPClient::SetTimeout(MERC_APITIMEOUT);
 		}
 		else
 		{
