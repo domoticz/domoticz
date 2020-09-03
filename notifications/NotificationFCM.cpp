@@ -94,7 +94,7 @@ bool CNotificationFCM::SendMessageImplementation(
 		return true;
 
 	std::string sTo;
-	for (const auto itt : result)
+	for (const auto& itt : result)
 	{
 		if (!sTo.empty())
 			sTo += ", ";

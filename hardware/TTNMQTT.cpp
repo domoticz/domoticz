@@ -922,11 +922,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				int iAltDevId = (DeviceID << 8) | channel;
 				if (bTemp && bHumidity && bBaro)
 				{
-					SendTempHumBaroSensorFloat(iAltDevId, BatteryLevel, temp, (int)rint(hum), baro, (uint8_t)nforecast, DeviceName, rssi);
+					SendTempHumBaroSensorFloat(iAltDevId, BatteryLevel, temp, (int)std::rint(hum), baro, (uint8_t)nforecast, DeviceName, rssi);
 				}
 				else if(bTemp && bHumidity)
 				{
-					SendTempHumSensor(iAltDevId, BatteryLevel, temp, (int)rint(hum), DeviceName, rssi);
+					SendTempHumSensor(iAltDevId, BatteryLevel, temp, (int)std::rint(hum), DeviceName, rssi);
 				}
 				else if(bTemp && bBaro)
 				{
@@ -940,7 +940,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 					}
 					if (bHumidity)
 					{
-						SendHumiditySensor(iAltDevId, BatteryLevel, (int)rint(hum), DeviceName, rssi);
+						SendHumiditySensor(iAltDevId, BatteryLevel, (int)std::rint(hum), DeviceName, rssi);
 					}
 					if (bBaro)
 					{
@@ -999,7 +999,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 						fDomLat = std::stod(Latitude);
 						fDomLon = std::stod(Longitude);
 
-						uint64_t nSsrDistance = static_cast<int>(rint(1000 * distanceEarth(fDomLat, fDomLon, ssrlat, ssrlon)));
+						uint64_t nSsrDistance = static_cast<int>(std::rint(1000 * distanceEarth(fDomLat, fDomLon, ssrlat, ssrlon)));
 						SendCustomSensor(DeviceID, (iGpsChannel + 64), BatteryLevel, (float)nSsrDistance, DeviceName + " Home Distance", "meters", rssi);
 						//_log.Log(LOG_STATUS, "TTN_MQTT: Distance between Sensordevice and Domoticz Home is %i meters!", nSsrDistance);
 					}
@@ -1030,7 +1030,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			}
 			else if (!(ssrlat == 0 && ssrlon == 0))
 			{
-				uint64_t nGwDistance = static_cast<int>(rint(1000 * distanceEarth(gwlat, gwlon, ssrlat, ssrlon)));
+				uint64_t nGwDistance = static_cast<int>(std::rint(1000 * distanceEarth(gwlat, gwlon, ssrlat, ssrlon)));
 				SendCustomSensor(DeviceID, (channel + 128), BatteryLevel, (float)nGwDistance, DeviceName + " Gateway Distance", "meters", rssi);
 			//	_log.Log(LOG_STATUS, "TTN_MQTT: Distance between Sensordevice and gateway is %i meters!", nGwDistance);
 			}

@@ -53,6 +53,7 @@ typedef unsigned char       BYTE;
 #include <sstream>
 #include <string>
 #include <thread>
+#include <cmath>
 
 // third-party
 #include <json/json.h>
