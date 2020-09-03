@@ -96,6 +96,8 @@ void CeVehicle::Init()
 	m_car.charge_state = "";
 	m_command_nr_tries = 0;
 	m_setcommand_scheduled = false;
+	m_home_lat = 0;
+	m_home_lon = 0;
 }
 
 void CeVehicle::SendAlert()
@@ -245,15 +247,39 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 
 bool CeVehicle::StartHardware()
 {
+	int nValue;
+	std::string sValue;
+	std::vector<std::string> strarray;
+
 	RequestStart();
 
 	Init();
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CeVehicle::Do_Work, this);
 	SetThreadNameInt(m_thread->native_handle());
 	if (!m_thread)
 		return false;
 	m_bIsStarted = true;
+
+	if (m_sql.GetPreferencesVar("Location", nValue, sValue))
+		StringSplit(sValue, ";", strarray);
+
+	if (strarray.size() != 2)
+	{
+		Log(LOG_ERROR, "No location set in Domoticz. Assuming car is not home.");
+		m_car.home_state = NotAtHome;
+	}
+	else
+	{
+		std::string Latitude = strarray[0];
+		std::string Longitude = strarray[1];
+		m_home_lat = std::stod(Latitude);
+		m_home_lon = std::stod(Longitude);
+
+		Log(LOG_STATUS, "Using Domoticz home location (Lat %s, Lon %s) as car's home location.", Latitude.c_str(), Longitude.c_str());
+	}
+
 	sOnConnected(this);
 	return true;
 }
@@ -713,33 +739,17 @@ bool CeVehicle::GetLocationState()
 
 void CeVehicle::UpdateLocationData(CVehicleApi::tLocationData& data)
 {
-	int nValue;
-	std::string sValue;
-	std::vector<std::string> strarray;
-	if (m_sql.GetPreferencesVar("Location", nValue, sValue))
-		StringSplit(sValue, ";", strarray);
-
-	if (strarray.size() != 2)
+	if (m_home_lat != 0 && m_home_lon != 0)
 	{
-		Log(LOG_ERROR, "No location set in Domoticz. Assuming car is not home.");
-		m_car.home_state = NotAtHome;
-	}
-	else
-	{
-		std::string Latitude = strarray[0];
-		std::string Longitude = strarray[1];
-		double LaDz = std::stod(Latitude);
-		double LoDz = std::stod(Longitude);
-
-		if ((std::fabs(LaDz - data.latitude) < 2E-4) && (std::fabs(LoDz - data.longitude) < 2E-3) && !data.is_driving)
+		if ((std::fabs(m_home_lat - data.latitude) < 2E-4) && (std::fabs(m_home_lon - data.longitude) < 2E-3) && !data.is_driving)
 			m_car.home_state = AtHome;
 		else
 			m_car.home_state = NotAtHome;
+
+		Debug(DEBUG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, (m_car.home_state == AtHome) ? "true" : "false");
+
+		m_car.is_driving = data.is_driving;
 	}
-
-	Debug(DEBUG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, (m_car.home_state == AtHome) ? "true" : "false");
-
-	m_car.is_driving = data.is_driving;
 }
 
 bool CeVehicle::GetClimateState()
