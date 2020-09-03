@@ -89,7 +89,6 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 
 CMercApi::~CMercApi()
 {
-	m_fields = "";
 }
 
 bool CMercApi::Login()
