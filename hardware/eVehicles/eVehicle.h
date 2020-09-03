@@ -125,6 +125,8 @@ private:
 	int m_defaultinterval;
 	int m_activeinterval;
 	bool m_allowwakeup;
+	double m_home_lat;
+	double m_home_lon;
 
 	tVehicle m_car;
 	CVehicleApi *m_api;
