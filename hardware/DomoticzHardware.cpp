@@ -1035,7 +1035,7 @@ void CDomoticzHardwareBase::SendSecurity1Sensor(const int NodeID, const int Devi
 {
 	RBUF m_sec1;
 	memset(&m_sec1, 0, sizeof(RBUF));
-	
+
 	m_sec1.SECURITY1.packetlength = sizeof(m_sec1) -1;
 	m_sec1.SECURITY1.packettype = pTypeSecurity1;
 	m_sec1.SECURITY1.subtype = DeviceSubType;
@@ -1045,6 +1045,52 @@ void CDomoticzHardwareBase::SendSecurity1Sensor(const int NodeID, const int Devi
 	m_sec1.SECURITY1.status = Status;
 	m_sec1.SECURITY1.rssi = RssiLevel;
 	m_sec1.SECURITY1.battery_level = BatteryLevel;
-	
+
 	sDecodeRXMessage(this, (const unsigned char*)& m_sec1.SECURITY1, defaultname.c_str(), BatteryLevel);
+}
+
+void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t ChildID, const int sValue, const std::string& defaultname, const int customImage , const bool Dropdown, const std::string& LevelNames,const std::string& LevelActions, const bool nooff /*levenames = "a|b|c", levelactions ="10|20|30"*/)
+{
+	_tGeneralSwitch xcmd;
+	xcmd.len = sizeof(_tGeneralSwitch) - 1;
+	xcmd.type = pTypeGeneralSwitch;
+	xcmd.subtype = sSwitchTypeSelector;
+	xcmd.id = NodeID;
+	xcmd.unitcode = ChildID; //Do we support multiple copies of the same selector switch ??
+	xcmd.level = sValue;
+
+	_eSwitchType switchtype;
+	switchtype = STYPE_Selector;
+
+	  std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, xcmd.unitcode);
+	bool bDoesExists = !result.empty();
+
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd,  defaultname.c_str(), 255);  // will create the base switch if not exist
+
+	if (!bDoesExists)//Switch is new so  we need to update it with all relevant info
+	{
+		std::stringstream build_str; //building up selector option string
+		build_str << "SelectorStyle:";
+		if (Dropdown)
+			build_str << "1";
+		else
+			build_str << "0";
+		build_str << ";LevelNames:" << LevelNames.c_str() << ";LevelOffHidden:";
+		if (nooff)
+			build_str <<  "true";
+		else
+			build_str << "false";
+		build_str << ";LevelActions:" << LevelActions.c_str();
+		std::string options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions( build_str.str(), false));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', sValue=%i, SwitchType=%d, CustomImage=%i,options='%q' WHERE(HardwareID == %d) AND (DeviceID=='%08X') AND (Unit == '%d')", defaultname.c_str(), sValue, (switchtype), customImage, options_str.c_str(), m_HwdID, NodeID, xcmd.unitcode);
+	}
+	else
+	{
+		//Check Level
+		int slevel = std::stoi(result[0][1]);
+		if (slevel == sValue)
+			return; // no need to uodate
+		result = m_sql.safe_query("UPDATE DeviceStatus SET sValue=%i WHERE (HardwareID==%d) AND (DeviceID=='%08X')", sValue, m_HwdID, NodeID);
+	}
 }
