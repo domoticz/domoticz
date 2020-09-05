@@ -1,5 +1,4 @@
 Version 2020.xxxx (xxxx)
-- Implemented: Mercedes Me API's (BYOCAR) as an (e)Vehicle supporting lock/open, odo, fuellevel
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: Allow complete IPv6 address in local network setting
 - Implemented: Counter meter type now supports a divider
@@ -8,6 +7,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: Honeywell, Add cooling control and Fahrenheit support
 - Implemented: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
 - Implemented: Inverted energy icon colors in report
+- Implemented: Mercedes Me API's (BYOCAR) as an (e)Vehicle supporting lock/open, odo, fuellevel
 - Implemented: Meteorologisk (Meteorologisk institutt Norway) hardware support
 - Implemented: P1 Meter, added support for Encryption
 - Implemented: RFXCom Byron BY doorbell
@@ -19,7 +19,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
 - Implemented: Websocket notification for secondary/sub devices
 - Implemented: ZWave, Legend and tooltips in Neighbor�s overview
-- Updated: dzVents version 3.0.11 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: dzVents version 3.0.12 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 - Updated: eVehicles, added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: OpenZWave configuration files
 - Updated: Openweathermap has been improved
