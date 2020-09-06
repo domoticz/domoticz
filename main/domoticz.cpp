@@ -123,6 +123,7 @@ std::string szWWWFolder;
 std::string szWebRoot;
 std::string dbasefile;
 
+#define VCGENCMDDETECTCOMMAND "which vcgencmd"
 #define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
 #define VCGENCMDARMSPEEDCOMMAND "vcgencmd measure_clock arm"
 #define VCGENCMDV3DSPEEDCOMMAND "vcgencmd measure_clock v3d"
@@ -476,13 +477,13 @@ void CheckForOnboardSensors()
 	//Check if we have vcgencmd (are running on a RaspberryPi)
 	//
 	int returncode=0;
-	std::vector<std::string> ret = ExecuteCommandAndReturn (VCGENCMDTEMPCOMMAND,returncode);
+	std::vector<std::string> ret = ExecuteCommandAndReturn (VCGENCMDDETECTCOMMAND,returncode);
 
 	if (ret.empty()) {
 		// _log.Log(LOG_STATUS,"No vcgencmd detected (empty string)");
 	} else {
 		std::string tmpline=ret[0];
-		if (tmpline.find("temp=")==std::string::npos) {
+		if (tmpline.find("vcgencmd")==std::string::npos) {
 			// _log.Log(LOG_STATUS,"Wrong vcgencmd output (%s)",tmpline.c_str());
 		} else {
 			_log.Log(LOG_STATUS,"Hardware Monitor: Raspberry Pi detected");
