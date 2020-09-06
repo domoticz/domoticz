@@ -69,7 +69,7 @@ protected:
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
 
-    //Heartbeat thread for classes that can not provide this themselves
+	//Heartbeat thread for classes that can not provide this themselves
 	void StartHeartbeatThread();
 	void StartHeartbeatThread(const char* ThreadName);
 	void StopHeartbeatThread();
@@ -123,11 +123,12 @@ protected:
 	void SendZWaveAlarmSensor(const int NodeID, const uint8_t InstanceID, const int BatteryLevel, const uint8_t aType, const int aValue, const std::string& alarmLabel, const std::string &defaultname);
 	void SendFanSensor(const int Idx, const int BatteryLevel, const int FanSpeed, const std::string &defaultname);
 	void SendSecurity1Sensor(const int NodeID, const int DeviceSubType, const int BatteryLevel, const int Status, const std::string &defaultname, const int RssiLevel = 12);
-
+	void SendSelectorSwitch(const int NodeID, const uint8_t ChildID, const std::string sValue, const std::string& defaultname, const int customImage , const bool nDropdown, const std::string& LevelNames,const std::string& LevelActions, const bool bHideOff);
+	int  MigrateSelectorSwitch(const int NodeID, const uint8_t ChildID, const std::string& LevelNames, const std::string& LevelActions,const bool bMigrate );
 	int m_iHBCounter = { 0 };
 	bool m_bIsStarted = { false };
 private:
-    void Do_Heartbeat_Work();
+	void Do_Heartbeat_Work();
 
 	volatile bool m_stopHeartbeatrequested = { false };
 	std::shared_ptr<std::thread> m_Heartbeatthread = { nullptr };
