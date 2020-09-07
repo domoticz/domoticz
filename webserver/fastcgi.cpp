@@ -347,7 +347,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 		fcgi_params[rName] = CURLEncode::URLEncode(ittHeader->value);
 	}
 #ifdef WIN32
-	fullexecmd = "SET QUERY_STRING="+szQueryString + " & " + fullexecmd;
+	fullexecmd = "SET QUERY_STRING=\""+szQueryString + "\" & " + fullexecmd;
 #else
 	fullexecmd = "export QUERY_STRING='"+szQueryString + "' && " + fullexecmd;
 #endif
