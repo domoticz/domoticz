@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.11',
+	DZVERSION = '3.0.12',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -427,10 +427,16 @@ function self.rgbToHSB(r, g, b)
 end
 
 local function loopGlobal(parm, baseType)
+	if parm == nil then return false end
 	local res = 'id'
-	if type(parm) == 'number' then res = 'name' end
+	local search = parm
+	if type(parm) == 'table' then
+		search = search.id
+	elseif type(parm) == 'number' then
+		res = 'name'
+	end
 	for i, item in ipairs(_G.domoticzData) do
-		if item.baseType == baseType and ( item.id == parm or item.name == parm ) then return item[res] end
+		if item.baseType == baseType and ( item.id == search or item.name == search ) then return item[res] end
 	end
 	return false
 end

@@ -9,6 +9,7 @@ local function Variable(domoticz, data)
 		['type'] = data.variableType,
 		['changed'] = data.changed,
 		['id'] = data.id,
+		['idx'] = data.id,
 		['lastUpdate'] = Time(data.lastUpdate),
 	}
 

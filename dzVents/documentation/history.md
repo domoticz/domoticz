@@ -1,3 +1,6 @@
+[3.0.12]
+- Add option to use device, camera, group, scene and variable objects as parm to deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods.
+
 [3.0.11]
 - Add sensorValue attribute to custom sensor
 - Add solarnoon as moment in time (like sunrise / sunset ) 
