@@ -95,9 +95,9 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
 
-	int HomeIdx = node_id / 100;
-	int ZoneIdx = (node_id % 100) / 10;
-	int ServiceIdx = (node_id % 100) % 10;
+	int HomeIdx = node_id / 1000;
+	int ZoneIdx = (node_id % 1000) / 100;
+	int ServiceIdx = (node_id % 1000) % 100;
 
 	_log.Debug(DEBUG_HARDWARE, "Tado: Node %d = home %s zone %s device %d", node_id, m_TadoHomes[HomeIdx].Name.c_str(), m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name.c_str(), ServiceIdx);
 
@@ -128,9 +128,9 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 {
 	_log.Log(LOG_NORM, "Tado: CreateOverlay() called with idx=%d, temp=%f, termination type=%s", idx, temp, terminationType.c_str());
 
-	int HomeIdx = idx / 100;
-	int ZoneIdx = (idx % 100) / 10;
-	int ServiceIdx = (idx % 100) % 10;
+	int HomeIdx = idx / 1000;
+	int ZoneIdx = (idx % 1000) / 100;
+	int ServiceIdx = (idx % 1000) % 100;
 
 	// Check if the zone actually exists.
 	if (m_TadoHomes.size() == 0 || m_TadoHomes[HomeIdx].Zones.size() == 0)
@@ -295,14 +295,14 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 
 		// Zone Home/away
 		//bool _bTadoAway = !(_jsRoot["tadoMode"].asString() == "HOME");
-		//UpdateSwitch((unsigned char)ZoneIndex * 10 + 1, _bTadoAway, home.Name + " " + zone.Name + " Away");
+		//UpdateSwitch((unsigned char)ZoneIndex * 100 + 1, _bTadoAway, home.Name + " " + zone.Name + " Away");
 
 		// Zone setpoint
 		float _fSetpointC = 0;
 		if (_jsRoot["setting"]["temperature"]["celsius"].isNumeric())
 			_fSetpointC = _jsRoot["setting"]["temperature"]["celsius"].asFloat();
 		if (_fSetpointC > 0) {
-			SendSetPointSensor((unsigned char)ZoneIndex * 10 + 2, _fSetpointC, home.Name + " " + zone.Name + " Setpoint");
+			SendSetPointSensor((unsigned char)ZoneIndex * 100 + 2, _fSetpointC, home.Name + " " + zone.Name + " Setpoint");
 		}
 
 		// Current zone inside temperature
@@ -315,7 +315,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		if (_jsRoot["sensorDataPoints"]["humidity"]["percentage"].isNumeric())
 			fCurrentHumPct = _jsRoot["sensorDataPoints"]["humidity"]["percentage"].asFloat();
 		if (_fCurrentTempC > 0) {
-			SendTempHumSensor(ZoneIndex * 10 + 3, 255, _fCurrentTempC, (int)fCurrentHumPct, home.Name + " " + zone.Name + " TempHum");
+			SendTempHumSensor(ZoneIndex * 100 + 3, 255, _fCurrentTempC, (int)fCurrentHumPct, home.Name + " " + zone.Name + " TempHum");
 		}
 
 		// Manual override of zone setpoint
@@ -324,7 +324,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		{
 			_bManualControl = true;
 		}
-		UpdateSwitch((unsigned char)ZoneIndex * 10 + 4, _bManualControl, home.Name + " " + zone.Name + " Manual Setpoint Override");
+		UpdateSwitch((unsigned char)ZoneIndex * 100 + 4, _bManualControl, home.Name + " " + zone.Name + " Manual Setpoint Override");
 
 
 		// Heating Enabled
@@ -333,7 +333,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		bool _bHeatingEnabled = false;
 		if (_sType == "HEATING" && _sPower == "ON")
 			_bHeatingEnabled = true;
-		UpdateSwitch((unsigned char)ZoneIndex * 10 + 5, _bHeatingEnabled, home.Name + " " + zone.Name + " Heating Enabled");
+		UpdateSwitch((unsigned char)ZoneIndex * 100 + 5, _bHeatingEnabled, home.Name + " " + zone.Name + " Heating Enabled");
 
 		// Heating Power percentage
 		std::string _sHeatingPowerType = _jsRoot["activityDataPoints"]["heatingPower"]["type"].asString();
@@ -342,9 +342,9 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		if (_sHeatingPowerType == "PERCENTAGE" && _sHeatingPowerPercentage >= 0 && _sHeatingPowerPercentage <= 100)
 		{
 			_bHeatingOn = _sHeatingPowerPercentage > 0;
-			UpdateSwitch((unsigned char)ZoneIndex * 10 + 6, _bHeatingOn, home.Name + " " + zone.Name + " Heating On");
+			UpdateSwitch((unsigned char)ZoneIndex * 100 + 6, _bHeatingOn, home.Name + " " + zone.Name + " Heating On");
 
-			SendPercentageSensor(ZoneIndex * 10 + 7, 0, 255, (float)_sHeatingPowerPercentage, home.Name + " " + zone.Name + " Heating Power");
+			SendPercentageSensor(ZoneIndex * 100 + 7, 0, 255, (float)_sHeatingPowerPercentage, home.Name + " " + zone.Name + " Heating Power");
 		}
 
 		return true;
@@ -378,7 +378,7 @@ bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
 
 		// Home/away
 		bool _bTadoAway = !(_jsRoot["presence"].asString() == "HOME");
-		UpdateSwitch((unsigned char)HomeIndex * 100 + 0, _bTadoAway, home.Name + " Away");
+		UpdateSwitch((unsigned char)HomeIndex * 1000 + 0, _bTadoAway, home.Name + " Away");
 
 		return true;
 	}
@@ -457,9 +457,9 @@ bool CTado::CancelOverlay(const int Idx)
 {
 	_log.Debug(DEBUG_HARDWARE, "Tado: CancelSetpointOverlay() called with idx=%d", Idx);
 
-	int HomeIdx = Idx / 100;
-	int ZoneIdx = (Idx % 100) / 10;
-	//int ServiceIdx = (Idx % 100) % 10;
+	int HomeIdx = Idx / 1000;
+	int ZoneIdx = (Idx % 1000) / 100;
+	//int ServiceIdx = (Idx % 1000) % 100;
 
 	// Check if the home and zone actually exist.
 	if (m_TadoHomes.size() == 0 || m_TadoHomes[HomeIdx].Zones.size() == 0)
