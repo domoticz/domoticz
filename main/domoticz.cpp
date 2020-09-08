@@ -502,12 +502,12 @@ void CheckForOnboardSensors()
 				std::vector<std::string> ret = ExecuteCommandAndReturn(VCGENCMDTEMPCOMMAND, returncode);
 
 				if (ret.empty()) {
-					// _log.Log(LOG_STATUS,"No vcgencmd detected (empty string)");
+					_log.Log(LOG_STATUS,"It seems vcgencmd is not installed. If you would like use the hardware monitor, consider installing this!");
 				}
 				else {
 					std::string tmpline = ret[0];
 					if (tmpline.find("temp=") == std::string::npos) {
-						// _log.Log(LOG_STATUS,"Wrong vcgencmd output (%s)",tmpline.c_str());
+						_log.Log(LOG_STATUS, "It seems vcgencmd is not installed. If you would like use the hardware monitor, consider installing this!");
 					}
 					else {
 						//Core temperature of BCM2835 SoC
