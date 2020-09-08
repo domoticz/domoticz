@@ -103,7 +103,7 @@ bool CDenkoviDevices::StartHardware()
 
 	Init();
 
-	//Start worker thread
+	//Start worker thread 
 	m_thread = std::make_shared<std::thread>(&CDenkoviDevices::Do_Work, this);
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
@@ -145,6 +145,12 @@ bool CDenkoviDevices::StartHardware()
 	case DDEV_SmartDEN_PLC:
 		_log.Log(LOG_STATUS, "SmartDEN PLC: Started");
 		break;
+	case DDEV_SmartDEN_IP_16_R_MT:
+		_log.Log(LOG_STATUS, "SmartDEN IP-16R-MT: Started");
+		break;
+	case DDEV_SmartDEN_IP_16_R_MQ:
+		_log.Log(LOG_STATUS, "SmartDEN IP-16R-MQ: Started");
+		break;		
 	}
 	return (m_thread != NULL);
 }
@@ -216,6 +222,12 @@ void CDenkoviDevices::Do_Work()
 	case DDEV_SmartDEN_PLC:
 		_log.Log(LOG_STATUS, "SmartDEN PLC: Worker stopped...");
 		break;
+	case DDEV_SmartDEN_IP_16_R_MT:
+		_log.Log(LOG_STATUS, "SmartDEN IP-16R-MT: Worker stopped...");
+		break;
+	case DDEV_SmartDEN_IP_16_R_MQ:
+		_log.Log(LOG_STATUS, "SmartDEN IP-16R-MQ: Worker stopped...");
+		break;		
 	}
 }
 
@@ -286,6 +298,12 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		case DDEV_SmartDEN_PLC:
 			_log.Log(LOG_ERROR, "SmartDEN PLC: Please enter a password.");
 			break;
+		case DDEV_SmartDEN_IP_16_R_MT:
+			_log.Log(LOG_ERROR, "SmartDEN IP-16R-MT: Please enter a password.");
+			break;	
+		case DDEV_SmartDEN_IP_16_R_MQ:
+			_log.Log(LOG_ERROR, "SmartDEN IP-16R-MQ: Please enter a password.");
+			break;	
 		}
 		return false;
 	}
@@ -521,7 +539,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			return false;
 		}
 		//int io = pSen1->LIGHTING2.id4;//Relay1 to Relay8 and AO1 to AO2
-		if (io > 8)
+		if (io > 8) 
 			return false;
 
 		std::stringstream szURL;
@@ -598,15 +616,23 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		}
 		return true;  
 	}
+	case DDEV_SmartDEN_IP_16_R_MQ:
+	case DDEV_SmartDEN_IP_16_R_MT:	
 	case DDEV_SmartDEN_IP_Watchdog:
 	case DDEV_SmartDEN_IP_16_Relays: {
-		//int ioType = pSen->id;
+
+		std::string devName;		
+		switch (m_iModel)
+		{
+			case DDEV_SmartDEN_IP_16_R_MQ: devName = "SmartDEN IP-16R-MQ"; break;
+			case DDEV_SmartDEN_IP_16_R_MT: devName = "SmartDEN IP-16T-MQ"; break;
+			case DDEV_SmartDEN_IP_16_Relays: devName = "SmartDEN IP-16R"; break;
+			case DDEV_SmartDEN_IP_Watchdog: devName = "SmartDEN IP-Watchdog"; break;
+		}
+
 		if (ioType != DIOType_Relay)
 		{
-			if (m_iModel == DDEV_SmartDEN_IP_Watchdog)
-				_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Not a valid Relay switch.");
-			else
-				_log.Log(LOG_ERROR, "SmartDEN IP-16R: Not a valid Relay switch.");
+			_log.Log(LOG_ERROR, "%s: Not a valid Relay switch.",devName.c_str());			 
 			return false;
 		}
 		//int Relay = pSen->unitcode;
@@ -627,27 +653,18 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			szURL << "1";
 		}
 		else {
-			if (m_iModel == DDEV_SmartDEN_IP_Watchdog)
-				_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Not a valid command. Relay could be On or Off.");
-			else
-				_log.Log(LOG_ERROR, "SmartDEN IP-16R: Not a valid command. Relay could be On or Off.");
+			_log.Log(LOG_ERROR, "%s: Not a valid command. Relay could be On or Off.",devName.c_str());
 			return false;
 		}
 		std::string sResult;
 		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
-			if (m_iModel == DDEV_SmartDEN_IP_Watchdog)
-				_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Error sending relay command to: %s", m_szIPAddress.c_str());
-			else
-				_log.Log(LOG_ERROR, "SmartDEN IP-16R: Error sending relay command to: %s", m_szIPAddress.c_str());
+			_log.Log(LOG_ERROR, "%s: Error sending relay command to: %s",devName.c_str(), m_szIPAddress.c_str());			 
 			return false;
 		}
 		if (sResult.find("CurrentState") == std::string::npos)
 		{
-			if (m_iModel == DDEV_SmartDEN_IP_Watchdog)
-				_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Error sending relay command to: %s", m_szIPAddress.c_str());
-			else
-				_log.Log(LOG_ERROR, "SmartDEN IP-16R: Error sending relay command to: %s", m_szIPAddress.c_str());
+			_log.Log(LOG_ERROR, "%s: Error sending relay command to: %s",devName.c_str(), m_szIPAddress.c_str());
 			return false;
 		}
 		return true;
@@ -778,7 +795,7 @@ uint16_t CDenkoviDevices::DAEnetIP2GetAiValue(std::string tmpstr, const int &aiN
 	pos2 = tmpstr.find(",", pos1 + 2);
 	ss << std::hex << tmpstr.substr(pos1 + 2, pos2 - (pos1 + 2)).c_str();
 	ss >> b;
-	return (uint8_t)b;
+	return (uint16_t)b;
 }
 
 float CDenkoviDevices::DAEnetIP2CalculateAi(int adc, const int &valType) {
@@ -845,7 +862,13 @@ void CDenkoviDevices::GetMeterDetails()
 			break;
 		case DDEV_SmartDEN_PLC:
 			_log.Log(LOG_ERROR, "SmartDEN PLC: Please enter a password.");
+			break;		
+		case DDEV_SmartDEN_IP_16_R_MQ:
+			_log.Log(LOG_ERROR, "SmartDEN IP-16R-MQ: Please enter a password.");
 			break;
+		case DDEV_SmartDEN_IP_16_R_MT:
+			_log.Log(LOG_ERROR, "SmartDEN IP-16R-MT: Please enter a password.");
+			break;	
 		}
 		return;
 	}
@@ -914,6 +937,12 @@ void CDenkoviDevices::GetMeterDetails()
 		case DDEV_SmartDEN_PLC:
 			_log.Log(LOG_ERROR, "SmartDEN PLC: Error connecting to: %s", m_szIPAddress.c_str());
 			break;
+		case DDEV_SmartDEN_IP_16_R_MT:
+			_log.Log(LOG_ERROR, "SmartDEN IP-16R-MT: Error connecting to: %s", m_szIPAddress.c_str());
+			break;
+		case DDEV_SmartDEN_IP_16_R_MQ:
+			_log.Log(LOG_ERROR, "SmartDEN IP-16R-MQ Error connecting to: %s", m_szIPAddress.c_str());
+			break;		
 		}
 		return;
 	}
@@ -953,6 +982,12 @@ void CDenkoviDevices::GetMeterDetails()
 		case DDEV_SmartDEN_PLC:
 			_log.Log(LOG_ERROR, "SmartDEN PLC: Error connecting to: %s", m_szIPAddress.c_str());
 			break;
+		case DDEV_SmartDEN_IP_16_R_MT:
+			_log.Log(LOG_ERROR, "SmartDEN IP-16R-MT: Error connecting to: %s", m_szIPAddress.c_str());
+			break;
+		case DDEV_SmartDEN_IP_16_R_MQ:
+			_log.Log(LOG_ERROR, "SmartDEN IP-16R-MQ: Error connecting to: %s", m_szIPAddress.c_str());
+			break;		
 		}
 		return;
 	}
@@ -997,6 +1032,12 @@ void CDenkoviDevices::GetMeterDetails()
 		case DDEV_SmartDEN_PLC:
 			_log.Log(LOG_ERROR, "SmartDEN PLC: Error getting status");
 			break;
+		case DDEV_SmartDEN_IP_16_R_MT:
+			_log.Log(LOG_ERROR, "SmartDEN IP-16R-MT: Error getting status");
+			break;
+		case DDEV_SmartDEN_IP_16_R_MQ:
+			_log.Log(LOG_ERROR, "SmartDEN IP-16R-MQ: Error getting status");
+			break;		
 		}
 		return;
 	}
@@ -1217,7 +1258,7 @@ void CDenkoviDevices::GetMeterDetails()
 			tmpName = DAEnetIP3GetIo(sResult2, DAENETIP3_PORTB_SNAME_DEF + io.str());
 			name = "Digital Input " + std::to_string(ii + 1) + " (" + tmpName + ")";
 			SendSwitch(DIOType_DI, (uint8_t)(ii + 1), 255, ((pins&(0x01 << ii)) != 0) ? true : false, 0, name);
-		}
+		} 
 
 		for (ii = 0; ii < 8; ii++)//8 analog inputs
 		{
@@ -1227,6 +1268,8 @@ void CDenkoviDevices::GetMeterDetails()
 			SendCustomSensor(DIOType_AI, (uint8_t)(ii + 1), 255, static_cast<float>(atoi(tmpMeasure.c_str())), "Analog Input Scaled " + std::to_string(ii + 1) + " (" + tmpName + ")", tmpstr);
 		}
 	}
+	case DDEV_SmartDEN_IP_16_R_MT://has only relays
+	case DDEV_SmartDEN_IP_16_R_MQ:  
 	case DDEV_SmartDEN_IP_16_Relays: {//has only relays
 		bool bHaveRelays = false;
 		for (ii = 1; ii < (int)results.size(); ii++)
@@ -1283,7 +1326,7 @@ void CDenkoviDevices::GetMeterDetails()
 			}
 		}
 		break;
-	}
+	}	 
 	case DDEV_SmartDEN_Notifier:
 	case DDEV_SmartDEN_Logger: {
 		bool bHaveDigitalInput = false;
