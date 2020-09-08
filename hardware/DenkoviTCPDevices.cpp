@@ -63,6 +63,9 @@ bool CDenkoviTCPDevices::StartHardware()
 	case DDEV_WIFI_16R_Modbus:
 		_log.Log(LOG_STATUS, "WiFi 16 Relays-TCP Modbus: Started");
 		break;
+	case DDEV_SmartDEN_IP_16_R_MT_MODBUS:
+		_log.Log(LOG_STATUS, "smartDEN IP-16R-MT: Started");
+		break;	
 	}
 	return (m_thread != NULL);
 }
@@ -124,6 +127,7 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 		}
 		break;
 	}
+	case DDEV_SmartDEN_IP_16_R_MT_MODBUS:
 	case DDEV_WIFI_16R_Modbus: {
 		m_respBuff.append((const char * )pData, length);
 		m_uiReceivedDataLength += (uint16_t)length;
@@ -183,6 +187,9 @@ void CDenkoviTCPDevices::OnDisconnect() {
 	case DDEV_WIFI_16R_Modbus:
 		_log.Log(LOG_STATUS, "WiFi 16 Relays-TCP Modbus: Disconnected");
 		break;
+	case DDEV_SmartDEN_IP_16_R_MT_MODBUS:
+		_log.Log(LOG_STATUS, "smartDEN IP-16R-MT: Disconnected");
+		break;	
 	}
 }
 
@@ -194,6 +201,10 @@ void CDenkoviTCPDevices::OnError(const boost::system::error_code& /*error*/) {
 	case DDEV_WIFI_16R_Modbus:
 		_log.Log(LOG_STATUS, "WiFi 16 Relays-TCP Modbus: Error occured.");
 		break;
+	case DDEV_SmartDEN_IP_16_R_MT_MODBUS:
+		_log.Log(LOG_STATUS, "smartDEN IP-16R-MT: Error occured.");
+		break;	
+		
 	}
 }
 
@@ -235,6 +246,9 @@ void CDenkoviTCPDevices::Do_Work()
 	case DDEV_WIFI_16R_Modbus:
 		_log.Log(LOG_STATUS, "WiFi 16 Relays-TCP Modbus: Worker stopped...");
 		break;
+	case DDEV_SmartDEN_IP_16_R_MT_MODBUS:
+		_log.Log(LOG_STATUS, "smartDEN IP-16R-MT: Worker stopped...");
+		break;	
 	}
 }
 
@@ -272,6 +286,7 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 		write(szCmd.str());
 		return true;
 	}
+	case DDEV_SmartDEN_IP_16_R_MT_MODBUS:
 	case DDEV_WIFI_16R_Modbus: {
 		std::stringstream szCmd;
 		//int ioType = pSen->id;
@@ -324,6 +339,7 @@ void CDenkoviTCPDevices::GetMeterDetails()
 		write("ask//");
 		break;
 	}
+	case DDEV_SmartDEN_IP_16_R_MT_MODBUS:
 	case DDEV_WIFI_16R_Modbus: {
 		m_Cmd = _eDaeTcpState::DAE_READ_COILS_CMD;
 		m_pReq.prId[0] = 0;
