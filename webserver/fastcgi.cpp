@@ -120,10 +120,9 @@ struct _tFCGI_UnknownTypeRecord {
 	_tFCGI_UnknownTypeBody body;
 };
 
-std::string ExecuteCommandAndReturnRaw(const std::string &szCommand)
+std::vector<char> ExecuteCommandAndReturnRaw(const std::string &szCommand)
 {
-	std::string ret;
-
+	std::vector<char> myData;
 	try
 	{
 		FILE *fp;
@@ -136,11 +135,18 @@ std::string ExecuteCommandAndReturnRaw(const std::string &szCommand)
 #endif
 		if (fp != NULL)
 		{
-			char path[1035];
-			/* Read the output a line at a time - output it. */
-			while (fgets(path, sizeof(path) - 1, fp) != NULL)
-			{
-				ret += path;
+			for (;;) {
+				const int BufferSize = 1024;
+
+				const size_t oldSize = myData.size();
+				myData.resize(myData.size() + BufferSize);        
+
+				const unsigned bytesRead = fread(&myData[oldSize], 1, BufferSize,fp);
+				myData.resize(oldSize + bytesRead);
+
+				if (bytesRead == 0) {
+					break;
+				}
 			}
 			/* close */
 #ifdef WIN32
@@ -154,7 +160,7 @@ std::string ExecuteCommandAndReturnRaw(const std::string &szCommand)
 	{
 
 	}
-	return ret;
+	return myData;
 }
 
 extern std::istream & safeGetline(std::istream & is, std::string & line);
@@ -353,7 +359,8 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 #endif
 
 	_log.Debug(DEBUG_NORM, "[PHP] Command: %s", fullexecmd.c_str());
-	std::string pret = ExecuteCommandAndReturnRaw(fullexecmd);
+	std::vector<char> v = ExecuteCommandAndReturnRaw(fullexecmd);
+	std::string pret(v.begin(), v.end());
 	if (pret.empty())
 	{
 		rep = reply::stock_reply(reply::not_found);
