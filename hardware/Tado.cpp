@@ -90,16 +90,19 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false;
 
-	int node_id = pCmd->LIGHTING2.id4;
-
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
 
-	int HomeIdx = node_id / 1000;
-	int ZoneIdx = (node_id % 1000) / 100;
-	int ServiceIdx = (node_id % 1000) % 100;
+	int HomeIdx = pCmd->LIGHTING2.id2;
+	int ZoneIdx = pCmd->LIGHTING2.id3;
+	int ServiceIdx = pCmd->LIGHTING2.id4;
 
-	_log.Debug(DEBUG_HARDWARE, "Tado: Node %d = home %s zone %s device %d", node_id, m_TadoHomes[HomeIdx].Name.c_str(), m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name.c_str(), ServiceIdx);
+	int node_id = (HomeIdx * 1000) + (ZoneIdx * 100) + ServiceIdx;
+	
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", 0, HomeIdx, ZoneIdx, ServiceIdx);
+
+	_log.Debug(DEBUG_HARDWARE, "Tado: Node %s = home %s zone %s device %d", szIdx, m_TadoHomes[HomeIdx].Name.c_str(), m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name.c_str(), ServiceIdx);
 
 	// ServiceIdx 1 = Away (Read only)
 	// ServiceIdx 2 = Setpoint => should be handled in SetSetPoint
@@ -182,10 +185,19 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 	return true;
 }
 
-void CTado::SetSetpoint(const int idx, const float temp)
+void CTado::SetSetpoint(const int id2, const int id3, const int id4, const float temp)
 {
-	_log.Log(LOG_NORM, "Tado: SetSetpoint() called with idx=%d, temp=%f", idx, temp);
-	CreateOverlay(idx, temp, true, "TADO_MODE");
+	
+	int HomeIdx = id2;
+	int ZoneIdx = id3;
+	int ServiceIdx = id4;
+
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", 0, HomeIdx, ZoneIdx, ServiceIdx);
+	_log.Log(LOG_NORM, "Tado: SetSetpoint() called with idx=%d, temp=%f", szIdx, temp);
+	
+	int _idx = (HomeIdx * 1000) + (ZoneIdx * 100) + ServiceIdx; 
+	CreateOverlay(_idx, temp, true, "TADO_MODE");
 }
 
 // Requests an authentication token from the Tado OAuth Api.
@@ -302,7 +314,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		if (_jsRoot["setting"]["temperature"]["celsius"].isNumeric())
 			_fSetpointC = _jsRoot["setting"]["temperature"]["celsius"].asFloat();
 		if (_fSetpointC > 0) {
-			SendSetPointSensor((unsigned char)ZoneIndex * 100 + 2, _fSetpointC, home.Name + " " + zone.Name + " Setpoint");
+			SendSetPointSensor(ZoneIndex * 100 + 2, _fSetpointC, home.Name + " " + zone.Name + " Setpoint");
 		}
 
 		// Current zone inside temperature
@@ -324,7 +336,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		{
 			_bManualControl = true;
 		}
-		UpdateSwitch((unsigned char)ZoneIndex * 100 + 4, _bManualControl, home.Name + " " + zone.Name + " Manual Setpoint Override");
+		UpdateSwitch(ZoneIndex * 100 + 4, _bManualControl, home.Name + " " + zone.Name + " Manual Setpoint Override");
 
 
 		// Heating Enabled
@@ -333,7 +345,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		bool _bHeatingEnabled = false;
 		if (_sType == "HEATING" && _sPower == "ON")
 			_bHeatingEnabled = true;
-		UpdateSwitch((unsigned char)ZoneIndex * 100 + 5, _bHeatingEnabled, home.Name + " " + zone.Name + " Heating Enabled");
+		UpdateSwitch(ZoneIndex * 100 + 5, _bHeatingEnabled, home.Name + " " + zone.Name + " Heating Enabled");
 
 		// Heating Power percentage
 		std::string _sHeatingPowerType = _jsRoot["activityDataPoints"]["heatingPower"]["type"].asString();
@@ -342,7 +354,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		if (_sHeatingPowerType == "PERCENTAGE" && _sHeatingPowerPercentage >= 0 && _sHeatingPowerPercentage <= 100)
 		{
 			_bHeatingOn = _sHeatingPowerPercentage > 0;
-			UpdateSwitch((unsigned char)ZoneIndex * 100 + 6, _bHeatingOn, home.Name + " " + zone.Name + " Heating On");
+			UpdateSwitch(ZoneIndex * 100 + 6, _bHeatingOn, home.Name + " " + zone.Name + " Heating On");
 
 			SendPercentageSensor(ZoneIndex * 100 + 7, 0, 255, (float)_sHeatingPowerPercentage, home.Name + " " + zone.Name + " Heating Power");
 		}
@@ -378,7 +390,7 @@ bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
 
 		// Home/away
 		bool _bTadoAway = !(_jsRoot["presence"].asString() == "HOME");
-		UpdateSwitch((unsigned char)HomeIndex * 1000 + 0, _bTadoAway, home.Name + " Away");
+		UpdateSwitch(HomeIndex * 1000 + 0, _bTadoAway, home.Name + " Away");
 
 		return true;
 	}
@@ -390,14 +402,18 @@ bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
 	}
 }
 
-void CTado::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string & defaultname)
+void CTado::SendSetPointSensor(const int Idx, const float Temp, const std::string & defaultname)
 {
+	int HomeIdx = Idx / 1000;
+	int ZoneIdx = (Idx % 1000) / 100;
+	int ServiceIdx = (Idx % 1000) % 100;
+
 	_tThermostat thermos;
 	thermos.subtype = sTypeThermSetpoint;
 	thermos.id1 = 0;
-	thermos.id2 = 0;
-	thermos.id3 = 0;
-	thermos.id4 = Idx;
+	thermos.id2 = HomeIdx;
+	thermos.id3 = ZoneIdx;
+	thermos.id4 = ServiceIdx;
 	thermos.dunit = 0;
 
 	thermos.temp = Temp;
@@ -406,11 +422,16 @@ void CTado::SendSetPointSensor(const unsigned char Idx, const float Temp, const 
 }
 
 // Creates or updates on/off switches.
-void CTado::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
+void CTado::UpdateSwitch(const int Idx, const bool bOn, const std::string &defaultname)
 {
+	
+	int HomeIdx = Idx / 1000;
+	int ZoneIdx = (Idx % 1000) / 100;
+	int ServiceIdx = (Idx % 1000) % 100;
+
 	//bool bDeviceExits = true;
 	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	sprintf(szIdx, "%X%02X%02X%02X", 0, HomeIdx, ZoneIdx, ServiceIdx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 		m_HwdID, pTypeLighting2, sTypeAC, szIdx);
@@ -431,9 +452,9 @@ void CTado::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::str
 	lcmd.LIGHTING2.packettype = pTypeLighting2;
 	lcmd.LIGHTING2.subtype = sTypeAC;
 	lcmd.LIGHTING2.id1 = 0;
-	lcmd.LIGHTING2.id2 = 0;
-	lcmd.LIGHTING2.id3 = 0;
-	lcmd.LIGHTING2.id4 = Idx;
+	lcmd.LIGHTING2.id2 = HomeIdx;
+	lcmd.LIGHTING2.id3 = ZoneIdx;
+	lcmd.LIGHTING2.id4 = ServiceIdx;
 	lcmd.LIGHTING2.unitcode = 1;
 	int level = 15;
 	if (!bOn)
