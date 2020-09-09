@@ -77,6 +77,11 @@ private:
 	uint8_t m_reqBuff[100];
 	uint16_t m_uiReceivedDataLength = 0;
 	uint16_t m_uiTransactionCounter = 0;
+	const char *szDenkoviHardwareNamesTCP[3] = {
+		"WiFi 16 Relays-VCP", 
+		"WiFi 16 Relays-TCP Modbus", 
+		"smartDEN IP-16R-MT"
+		}; 
 protected:
 	void OnConnect() override;
 	void OnDisconnect() override;
