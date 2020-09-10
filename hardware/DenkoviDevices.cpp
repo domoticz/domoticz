@@ -72,6 +72,22 @@ enum _eDenkoviIOType
 	DIOType_TXT			//8
 };
 
+const char *szDenkoviHardwareNames[14] = {
+		"DAEnetIP4", 
+		"smartDEN IP-16R", 
+		"smartDEN IP-32IN",
+		"smartDEN IP-Maxi",
+		"smartDEN IP-Watchdog",
+		"smartDEN Logger",
+		"smartDEN Notifier",
+		"DAEnetIP3",
+		"DAEnetIP2 (DAEnetIP2 v2)",
+		"DAEnetIP2 (DAEnetIP2 v2) 8 Relay Module - LM35DZ",
+		"smartDEN Opener",
+		"smartDEN IP-PLC",
+		"smartDEN IP-16R-MT",
+		"smartDEN IP-16R-MQ"
+		}; 
 
 CDenkoviDevices::CDenkoviDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password, const int pollInterval, const int model) :
 	m_szIPAddress(IPAddress),
