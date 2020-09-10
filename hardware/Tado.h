@@ -29,6 +29,7 @@ class CTado : public CDomoticzHardwareBase
 			std::string Name;
 			std::string HomeId;
 			std::string Type;
+			bool OpenWindowDetectionSupported;
 
 			bool operator < (const _tTadoZone& str) const
 			{
