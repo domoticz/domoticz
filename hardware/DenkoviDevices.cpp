@@ -159,7 +159,7 @@ void CDenkoviDevices::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	Log(LOG_STATUS, "%s: Stopped. %s",szDenkoviHardwareNames[m_iModel]);	 
+	Log(LOG_STATUS, "%s: Stopped.",szDenkoviHardwareNames[m_iModel]);	 
 }
 
 bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*length*/)
