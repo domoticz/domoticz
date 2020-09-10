@@ -51,22 +51,6 @@ private:
 	std::string m_Password;
 	int m_pollInterval;
 	int m_iModel; 
-	std::shared_ptr<std::thread> m_thread; 
-	const char *szDenkoviHardwareNames[14] = {
-		"DAEnetIP4", 
-		"smartDEN IP-16R", 
-		"smartDEN IP-32IN",
-		"smartDEN IP-Maxi",
-		"smartDEN IP-Watchdog",
-		"smartDEN Logger",
-		"smartDEN Notifier",
-		"DAEnetIP3",
-		"DAEnetIP2 (DAEnetIP2 v2)",
-		"DAEnetIP2 (DAEnetIP2 v2) 8 Relay Module - LM35DZ",
-		"smartDEN Opener",
-		"smartDEN IP-PLC",
-		"smartDEN IP-16R-MT",
-		"smartDEN IP-16R-MQ"
-		};  
+	std::shared_ptr<std::thread> m_thread;  
 
 };
