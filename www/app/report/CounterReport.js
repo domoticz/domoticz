@@ -133,7 +133,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         bindings: {
             device: '<',
             selectedYear: '<',
-            selectedMonth: '<'
+            selectedMonth: '<',
+            isOnlyUsage: '<',
         },
         templateUrl: 'app/report/CounterReport.html',
         controller: DeviceCounterReportController
@@ -206,21 +207,24 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 });
             }
 
-            if (vm.isMonthView) {
+            if (vm.isMonthView && !vm.isOnlyUsage) {
                 columns.push({ title: $.t('Counter'), data: 'counter', render: counterRenderer });
             }
 
-            columns.push({ title: $.t('Usage'), data: 'usage', render: counterRenderer });
+            columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Generated') : $.t('Usage'), data: 'usage', render: counterRenderer });
 
-			if (!['Counter Incremental'].includes(vm.device.SubType))
-				columns.push({ title: $.t('Costs'), data: 'cost', render: costRenderer });
+            if (!['Counter Incremental'].includes(vm.device.SubType) && (vm.device.SwitchTypeVal != 3))
+                columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Earnings') : $.t('Costs'), data: 'cost', render: costRenderer });
 
             columns.push({
                 title: '<>',
                 orderable: false,
                 data: 'trend',
                 render: function (data) {
-                    return '<img src="images/' + data + '.png">'
+					var ret='<img src="images/';
+					if (vm.device.SwitchTypeVal === 4) ret+="g";
+					ret+=data + '.png">';
+                    return ret;
                 }
             });
 
@@ -239,9 +243,13 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         function showUsageChart(data) {
             var chartElement = $element.find('#usagegraph');
             var series = [];
+            var valueQuantity = "Count";
+            if (typeof vm.device.ValueQuantity != 'undefined') {
+                    valueQuantity = vm.device.ValueQuantity;
+            }
 
             var chartName = vm.device.SwitchTypeVal === 4 ? 'Generated' : 'Usage';
-            var yAxisName = ['Energy', 'Gas', 'Water', 'Water', 'Energy'][vm.device.SwitchTypeVal];
+            var yAxisName = ['Energy', 'Gas', 'Water', valueQuantity, 'Energy'][vm.device.SwitchTypeVal];
 
             series.push({
                 name: $.t(chartName),

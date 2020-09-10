@@ -19,7 +19,7 @@ public:
 	virtual ~BleBox();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	int GetDeviceType(const std::string &IPAddress);
-	void AddNode(const std::string &name, const std::string &IPAddress);
+	void AddNode(const std::string &name, const std::string &IPAddress, bool reloadNodes);
 	void RemoveNode(const int id);
 	void RemoveAllNodes();
 	void SetSettings(const int pollIntervalsec);
@@ -28,7 +28,7 @@ public:
 	bool DoesNodeExists(const Json::Value &root, const std::string &node);
 	bool DoesNodeExists(const Json::Value &root, const std::string &node, const std::string &value);
 	std::string GetUptime(const std::string &IPAddress);
-	void SearchNodes(const std::string &ipmask);
+	void SearchNodes(const std::string &pattern);
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -57,4 +57,6 @@ private:
 	_tColor m_RGBWColorState;
 	bool m_RGBWisWhiteState;
 	int m_RGBWbrightnessState;
+
+	bool PrepareHostList(const std::string& pattern, std::vector<std::string>& hosts);
 };

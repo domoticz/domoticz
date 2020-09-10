@@ -19,7 +19,7 @@
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
-#include "NotificationGCM.h"
+#include "NotificationFCM.h"
 
 #include "NotificationBrowser.h"
 #define __STDC_FORMAT_MACROS
@@ -51,7 +51,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationHTTP());
 	AddNotifier(new CNotificationKodi());
 	AddNotifier(new CNotificationLogitechMediaServer());
-	AddNotifier(new CNotificationGCM());
+	AddNotifier(new CNotificationFCM());
 	AddNotifier(new CNotificationBrowser());
 }
 
@@ -93,17 +93,19 @@ bool CNotificationHelper::SendMessage(
 
 bool CNotificationHelper::SendMessageEx(
 	const uint64_t Idx,
-	const std::string &Name,
-	const std::string &Subsystems,
-	const std::string &Subject,
-	const std::string &Text,
-	const std::string &ExtraData,
+	const std::string& Name,
+	const std::string& Subsystems,
+	const std::string& Subject,
+	const std::string& Text,
+	const std::string& ExtraData,
 	int Priority,
-	const std::string &Sound,
+	const std::string& Sound,
 	const bool bFromNotification)
 {
 	bool bRet = false;
 	bool bThread = true;
+
+	bool bIsTestMessage = (Subject == "Domoticz test") && (Text == "Domoticz test message!");
 
 	if (Priority == -100)
 	{
@@ -134,13 +136,16 @@ bool CNotificationHelper::SendMessageEx(
 		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
 		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && iter->second->IsConfigured())
 		{
-			if (bThread)
+			if ((iter->second->m_IsEnabled) || bIsTestMessage)
 			{
-				boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
-				SetThreadName(SendMessageEx.native_handle(), "SendMessageEx");
+				if (bThread)
+				{
+					boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
+					SetThreadName(SendMessageEx.native_handle(), "SendMessageEx");
+				}
+				else
+					bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 			}
-			else
-				bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
 	return bRet;
@@ -409,7 +414,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					fValue2 = fValue;
 					if (meterType == 1) {
 						//inches
-						fValue2 *= 0.393701f;
+						fValue2 *= 0.3937007874015748f;
 					}
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
 				case sTypeBaro:
@@ -1018,19 +1023,19 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						break;
 					case STYPE_Contact:
 						notValue = "Open";
-						szExtraData += "Image=contact48_open|";
+						szExtraData += "Image=Contact48_On|";
 						break;
 					case STYPE_DoorContact:
 						notValue = "Open";
-						szExtraData += "Image=door48open|";
+						szExtraData += "Image=Door48_On|";
 						break;
 					case STYPE_DoorLock:
 						notValue = "Locked";
-						szExtraData += "Image=door48|";
+						szExtraData += "Image=Door48_Off|";
 						break;
 					case STYPE_DoorLockInverted:
 						notValue = "Unlocked";
-						szExtraData += "Image=door48open|";
+						szExtraData += "Image=Door48_On|";
 						break;
 					case STYPE_Motion:
 						notValue = "movement detected";
@@ -1053,11 +1058,11 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						break;
 					case STYPE_DoorLock:
 						notValue = "Unlocked";
-						szExtraData += "Image=door48open|";
+						szExtraData += "Image=Door48_On|";
 						break;
 					case STYPE_DoorLockInverted:
 						notValue = "Locked";
-						szExtraData += "Image=door48|";
+						szExtraData += "Image=Door48_Off|";
 						break;
 					default:
 						notValue = ">> OFF";
@@ -1205,7 +1210,14 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	ltime.tm_mday = tm1.tm_mday;
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
-	if (subType != sTypeRAINWU)
+	if (subType == sTypeRAINWU || subType == sTypeRAINByRate)
+	{
+		//value is already total rain
+		double total_real = mvalue;
+		total_real *= AddjMulti;
+		CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
+	}
+	else
 	{
 		result = m_sql.safe_query("SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 			Idx, szDateEnd);
@@ -1219,13 +1231,6 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 			total_real *= AddjMulti;
 			CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
 		}
-	}
-	else
-	{
-		//value is already total rain
-		double total_real = mvalue;
-		total_real *= AddjMulti;
-		CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
 	}
 	return false;
 }

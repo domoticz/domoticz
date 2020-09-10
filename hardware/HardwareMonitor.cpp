@@ -63,6 +63,11 @@
 extern bool bHasInternalTemperature;
 extern std::string szInternalTemperatureCommand;
 
+extern bool bHasInternalClockSpeeds;
+extern std::string szInternalARMSpeedCommand;
+extern std::string szInternalV3DSpeedCommand;
+extern std::string szInternalCoreSpeedCommand;
+
 extern bool bHasInternalVoltage;
 extern std::string szInternalVoltageCommand;
 
@@ -177,6 +182,7 @@ void CHardwareMonitor::Do_Work()
 				try
 				{
 					FetchUnixCPU();
+					FetchClockSpeeds();
 				}
 				catch (...)
 				{
@@ -225,6 +231,7 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 
 void CHardwareMonitor::GetInternalTemperature()
 {
+	// _log.Log(LOG_STATUS,"Getting  Internal Temperature");
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand, returncode);
 	if (ret.empty())
@@ -247,6 +254,101 @@ void CHardwareMonitor::GetInternalTemperature()
 	{
 		SendTempSensor(1, 255, temperature, "Internal Temperature");
 	}
+}
+
+void CHardwareMonitor::GetInternalARMClockSpeed()
+{
+	// _log.Log(LOG_STATUS,"Getting  ARM Clock speed");
+	float ArmClockSpeed;
+	int returncode = 0;
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalARMSpeedCommand, returncode);
+	if (ret.empty())
+	{ 
+		// _log.Log(LOG_STATUS,"string empty");
+		return;
+	}
+	std::string tmpline = ret[0];
+	if (tmpline.find("frequency") == std::string::npos)
+	{
+		// _log.Log(LOG_STATUS,"Frequency not found (%s)",tmpline.c_str());
+		return;
+	}
+
+	std::vector<std::string> strarray;
+	StringSplit(tmpline,"=",strarray);
+
+	if (strarray.size()==2)
+	{
+		ArmClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
+	}
+	
+	// _log.Log(LOG_STATUS,"Updating sensor with value %.2f",ArmClockSpeed);
+
+
+	SendCustomSensor(0, 1, 255, ArmClockSpeed, "Arm Clock Speed","Mhz");
+}
+
+void CHardwareMonitor::GetInternalV3DClockSpeed()
+{
+	// _log.Log(LOG_STATUS,"Getting  V3D Clock speed");
+	float V3DClockSpeed;
+	int returncode = 0;
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalV3DSpeedCommand, returncode);
+	if (ret.empty())
+	{ 
+		// _log.Log(LOG_STATUS,"string empty");
+		return;
+	}
+	std::string tmpline = ret[0];
+	if (tmpline.find("frequency") == std::string::npos)
+	{
+		// _log.Log(LOG_STATUS,"Frequency not found (%s)",tmpline.c_str());
+		return;
+	}
+
+	std::vector<std::string> strarray;
+	StringSplit(tmpline,"=",strarray);
+
+	if (strarray.size()==2)
+	{
+		V3DClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
+	}
+	
+	// _log.Log(LOG_STATUS,"Updating sensor with value %.2f",V3DClockSpeed);
+
+
+	SendCustomSensor(0, 2, 255, V3DClockSpeed, "V3D Clock Speed","Mhz");
+}
+
+void CHardwareMonitor::GetInternalCoreClockSpeed()
+{
+	// _log.Log(LOG_STATUS,"Getting  Core Clock speed");
+	float CoreClockSpeed;
+	int returncode = 0;
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCoreSpeedCommand, returncode);
+	if (ret.empty())
+	{ 
+		// _log.Log(LOG_STATUS,"string empty");
+		return;
+	}
+	std::string tmpline = ret[0];
+	if (tmpline.find("frequency") == std::string::npos)
+	{
+		// _log.Log(LOG_STATUS,"Frequency not found (%s)",tmpline.c_str());
+		return;
+	}
+
+	std::vector<std::string> strarray;
+	StringSplit(tmpline,"=",strarray);
+
+	if (strarray.size()==2)
+	{
+		CoreClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
+	}
+	
+	// _log.Log(LOG_STATUS,"Updating sensor with value %.2f",CoreClockSpeed);
+
+	SendCustomSensor(0, 3, 255, CoreClockSpeed, "Core Clock Speed","Mhz");
 }
 
 void CHardwareMonitor::GetInternalVoltage()
@@ -316,6 +418,15 @@ void CHardwareMonitor::FetchData()
 	if (bHasInternalCurrent)
 		GetInternalCurrent();
 #endif
+}
+
+void CHardwareMonitor::FetchClockSpeeds()
+{
+	if (bHasInternalClockSpeeds) {
+		GetInternalARMClockSpeed();
+		GetInternalV3DClockSpeed();
+		GetInternalCoreClockSpeed();
+	}
 }
 
 void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue)

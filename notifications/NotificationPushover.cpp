@@ -2,6 +2,7 @@
 #include "NotificationPushover.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/Logger.h"
+#include "../main/json_helper.h"
 
 CNotificationPushover::CNotificationPushover() : CNotificationBase(std::string("pushover"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
@@ -41,7 +42,7 @@ bool CNotificationPushover::SendMessageImplementation(
 		}
 	}
 
-	if (Sound != "") {
+	if (!Sound.empty()) {
 		sPostData << "&sound=" << Sound;
 	}
 
@@ -57,10 +58,31 @@ bool CNotificationPushover::SendMessageImplementation(
 #ifndef WIN32
 	HTTPClient::SetSecurityOptions(false, false);
 #endif
-
 	if (!bRet)
-		_log.Log(LOG_ERROR, "Pushover: %s", sResult.c_str());
-	return bRet;
+	{
+		_log.Log(LOG_ERROR, "Pushover: Could not send message!");
+		return false;
+	}
+
+	Json::Value root;
+	bRet = ParseJSon(sResult, root);
+	if (!bRet)
+	{
+		_log.Log(LOG_ERROR, "Pushover: Invalid response received!");
+		return false;
+	}
+	if (!root["status"].empty())
+	{
+		int iStatus = root["status"].asInt();
+		if (iStatus != 0)
+			return true;
+		for (const auto& itt : root["errors"])
+		{
+			_log.Log(LOG_ERROR, "Pushover: Error, %s", itt.asString().c_str());
+		}
+	}
+	_log.Log(LOG_ERROR, "Pushover: Invalid response received!");
+	return false;
 }
 
 bool CNotificationPushover::IsConfigured()

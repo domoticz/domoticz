@@ -1,47 +1,67 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!-- 
 Aeotec DSB29 Door/Window Sensor (2nd Edition) 
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584513
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:001D:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsb29.png</MetaDataItem>
+    <MetaDataItem id="001D" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/772/</MetaDataItem>
+    <MetaDataItem id="001D" name="FrequencyName" type="0002">U.S. / Canada / Mexico / CEPT (Europe) / Australia / New Zealand</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://aeotec.com/z-wave-door-window-sensor</MetaDataItem>
+    <MetaDataItem name="Name">Door Window Sensor G2</MetaDataItem>
+    <MetaDataItem id="001D" name="Identifier" type="0002">DSB29-ZWAU</MetaDataItem>
+    <MetaDataItem name="Description">We always think of tools in our house as ‘doing things’. Switches turn lights on. Remotes turn TVs off. Things do the basic stuff we tell them to – nothing more, nothing less. 
+That’s a description of a house of the past. 
 
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" genre="config" instance="1" index="1" label="Toggle the sensor binary report value when the Magnet switch is opened/closed." min="0" max="1" value="0" size="1">
-			<Help>Default setting: Open: FF, Close: 00</Help>
-			<Item label="Open: FF, Close: 00" value="0"/>
-			<Item label="Open: 00, Close: FF" value="1"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="2" label="Enable wake up 10 minutes when the power is switched on." min="0" max="1" value="0" size="1">
-			<Help>Default setting: Disable</Help>
-			<Item label="Disable" value="0"/>
-			<Item label="Enable" value="1"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="3" label="Toggle the basic set value when Magnet switch is opened/closed." min="0" max="1" value="0" size="1">
-			<Help>Default setting: Open: FF, Close: 00</Help>
-			<Item label="Open: FF, Close: 00" value="0"/>
-			<Item label="Open: 00, Close: FF" value="1"/>
-		</Value>
-		<Value type="int" genre="config" instance="1" index="121" label="Determines which report will be sent when Magnet switch is opened/ closed." min="0" max="65535" value="255" size="4">
-			<Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0->Battery report, 4->Sensor Binary, 8->Basic Set, Default setting: 0x00000100 (Basic Set)
+The house of today has intelligence built in. Or at least it should. 
+
+Inspired by the humble thermostat, Aeotec’s Z-Wave Door &amp; Window Sensor sits as a part of our Intelligence range. Like a thermostat, we’ve designed it to find things out, to understand things about your home, and to then use that information to make your home more comfortable, to make your life easier. 
+
+The Door &amp; Window Sensor finds out something very simple – whether a door or a window, or in fact any object in your home, is open or closed. But there’s power in simplicity. Power that allows you to inform the rest of your Z-Wave network about your selected doors and windows. Like a thermostat lets your heating and cooling systems know what they should do next, Aeotec’s Z-Wave Door &amp; Window Sensor does the same. Perhaps an open door means that your lights should turn on and welcome you home. Perhaps an open window means that an alarm should be trigged. Whatever it means to your home, with door and window sensors installed, your Z-Wave network will have both the power and the itelligence to do it.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/701/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/764/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/772/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Toggle the sensor binary report value when the Magnet switch is opened/closed." max="1" min="0" size="1" type="list" value="0">
+      <Help>Default setting: Open: FF, Close: 00</Help>
+      <Item label="Open: FF, Close: 00" value="0"/>
+      <Item label="Open: 00, Close: FF" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Enable wake up 10 minutes when the power is switched on." max="1" min="0" size="1" type="list" value="0">
+      <Help>Default setting: Disable</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Toggle the basic set value when Magnet switch is opened/closed." max="1" min="0" size="1" type="list" value="0">
+      <Help>Default setting: Open: FF, Close: 00</Help>
+      <Item label="Open: FF, Close: 00" value="0"/>
+      <Item label="Open: 00, Close: FF" value="1"/>
+    </Value>
+    <Value genre="config" index="121" instance="1" label="Determines which report will be sent when Magnet switch is opened/ closed." max="65535" min="0" size="4" type="int" value="255">
+      <Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0->Battery report, 4->Sensor Binary, 8->Basic Set, Default setting: 0x00000100 (Basic Set)
 			Ideal Setting for OZW is 17 (Sensor Binary and Battery Report)</Help>
-		</Value>
-		<Value type="short" index="254" genre="config" label="Device Tag" units="" min="0" max="255" value="0">
-			<Help>Device Tag</Help>
-		</Value>
-		<Value type="button" index="255" genre="config" label="Reset configuration settings to factory defaults" write_only="true" value="0" >
-			<Help>Reset to factory defaults.</Help>
-		</Value>
-	</CommandClass>
-
-	<!-- Basic set as report -->
-	<CommandClass id="32" setasreport="true"/>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">		
-		<Associations num_groups="1">
-			<Group index="1" max_associations="6" label="Lifeline" />
-		</Associations>
-	</CommandClass>
-
+    </Value>
+    <Value genre="config" index="254" label="Device Tag" max="255" min="0" type="short" units="" value="0">
+      <Help>Device Tag</Help>
+    </Value>
+    <Value genre="config" index="255" label="Reset configuration settings to factory defaults" type="button" value="0" write_only="true">
+      <Help>Reset to factory defaults.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="6"/>
+    </Associations>
+  </CommandClass>
 </Product>

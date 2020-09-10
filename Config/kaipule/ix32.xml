@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kaipule IX32 PIR Sensor -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 	<!-- Configuration -->
 	<CommandClass id="112">
 		<Value type="byte" genre="config" instance="1" index="1" label="Basic Set Level" size="1" min="1" max="255" value="255">

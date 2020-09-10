@@ -5,6 +5,8 @@
 
 namespace Plugins {
 
+	class CPlugin;
+
 	typedef struct {
 		PyObject_HEAD
 		int			ImageID;
@@ -112,6 +114,7 @@ namespace Plugins {
 	PyObject* CDevice_insert(CDevice* self);
 	PyObject* CDevice_update(CDevice *self, PyObject *args, PyObject *kwds);
 	PyObject* CDevice_delete(CDevice* self);
+	PyObject* CDevice_touch(CDevice* self);
 	PyObject* CDevice_str(CDevice* self);
 
 	static PyMemberDef CDevice_members[] = {
@@ -142,6 +145,7 @@ namespace Plugins {
 		{ "Create", (PyCFunction)CDevice_insert, METH_NOARGS, "Create the device in Domoticz." },
 		{ "Update", (PyCFunction)CDevice_update, METH_VARARGS | METH_KEYWORDS, "Update the device values in Domoticz." },
 		{ "Delete", (PyCFunction)CDevice_delete, METH_NOARGS, "Delete the device in Domoticz." },
+		{ "Touch", (PyCFunction)CDevice_touch, METH_NOARGS, "Notify Domoticz that device has been seen." },
 		{ NULL }  /* Sentinel */
 	};
 
@@ -202,6 +206,7 @@ namespace Plugins {
 		CPluginTransport*	pTransport;
 		PyObject*			Protocol;
 		CPluginProtocol*	pProtocol;
+		PyObject*			Parent;
 	} CConnection;
 
 	void CConnection_dealloc(CConnection* self);
@@ -222,6 +227,7 @@ namespace Plugins {
 		{ "Address", T_OBJECT,	offsetof(CConnection, Address), READONLY, "Address" },
 		{ "Port", T_OBJECT,	offsetof(CConnection, Port), READONLY, "Port" },
 		{ "Baud", T_INT, offsetof(CConnection, Baud), READONLY, "Baud" },
+		{ "Parent", T_OBJECT, offsetof(CConnection, Parent), READONLY, "Parent connection" },
 		{ NULL }  /* Sentinel */
 	};
 

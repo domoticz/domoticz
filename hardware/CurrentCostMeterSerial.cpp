@@ -10,9 +10,11 @@
 
 #include <string>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 //
 //Class CurrentCostMeterSerial

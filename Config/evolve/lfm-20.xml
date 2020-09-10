@@ -1,0 +1,14 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0113:3133:5246</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/evolve/lfm-20.png</MetaDataItem>
+    <MetaDataItem id="3133" name="ZWProductPage" type="5246">https://products.z-wavealliance.org/products/1007/</MetaDataItem>
+    <MetaDataItem name="Description">Scene Capable Fixture Relay</MetaDataItem>
+    <MetaDataItem name="Name">Evolve LFM-20</MetaDataItem>
+    <MetaDataItem id="3133" name="Identifier" type="5246">LFM-20</MetaDataItem>
+    <MetaDataItem id="3133" name="FrequencyName" type="5246">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1007/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

@@ -1,77 +1,92 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0009:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsb09104.png</MetaDataItem>
+    <MetaDataItem id="0009" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/141/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.aeon-labs.com/site/products/category/1/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.aeon-labs.com/site/support/</MetaDataItem>
+    <MetaDataItem name="Description">The Aeon Labs Smart Energy Monitor is a low-cost energy monitor for the entire home. It can wirelessly report immediate wattage and kWh usage to central control point gateways such as the 4HomeMedia CP and can be easily and safely installed by anyone. 
+</MetaDataItem>
+    <MetaDataItem id="0009" name="FrequencyName" type="0002">U.S. / Canada / Mexico / CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Aeon Labs Home Energy Meter EU</MetaDataItem>
+    <MetaDataItem id="0009" name="Identifier" type="0002">DSB09xxx-ZWUS v1.54</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/140/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/141/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
 Aeotec DSB09104 Home Energy Meter
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584509
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="short" index="1" genre="config" label="Country Voltage" units="volts" min="0" max="240" value="120">
+    <Value genre="config" index="1" label="Country Voltage" max="240" min="0" type="short" units="volts" value="120">
       <Help>
 	Voltage to calculate wattage from amperage. US=120. EU,ANZ=240.
       </Help>
     </Value>
-    <Value type="byte" index="3" genre="config" label="Power changed" units="" min="0" max="1" value="0">
+    <Value genre="config" index="3" label="Power changed" max="1" min="0" type="byte" units="" value="0">
       <Help>
 	Automatic report only when power is changed.
       </Help>
     </Value>
-    <Value type="short" index="4" genre="config" label="Wattage Threshold" units="watts" value="50">
+    <Value genre="config" index="4" label="Wattage Threshold" type="short" units="watts" value="50">
       <Help>
 	Threshold change in wattage to induce a automatic report (whole HEM).
       </Help>
     </Value>
-    <Value type="short" index="5" genre="config" label="Wattage Threshold C1" units="watts" value="50">
+    <Value genre="config" index="5" label="Wattage Threshold C1" type="short" units="watts" value="50">
       <Help>
 	Threshold change in wattage to induce a automatic report (Clamp 1).
       </Help>
     </Value>
-    <Value type="short" index="6" genre="config" label="Wattage Threshold C2" units="watts" value="50">
+    <Value genre="config" index="6" label="Wattage Threshold C2" type="short" units="watts" value="50">
       <Help>
 	Threshold change in wattage to induce a automatic report (Clamp 2).
       </Help>
     </Value>
-    <Value type="short" index="7" genre="config" label="Wattage Threshold C3" units="watts" value="50">
+    <Value genre="config" index="7" label="Wattage Threshold C3" type="short" units="watts" value="50">
       <Help>
 	Threshold change in wattage to induce a automatic report (Clamp 3).
       </Help>
     </Value>
-    <Value type="byte" index="8" genre="config" label="Wattage Percentage Change" units="%" value="10">
+    <Value genre="config" index="8" label="Wattage Percentage Change" type="byte" units="%" value="10">
       <Help>
 	Percentage change in wattage to induce a automatic report (whole HEM).
       </Help>
     </Value>
-    <Value type="byte" index="9" genre="config" label="Wattage Percentage Change C1" units="%" value="10">
+    <Value genre="config" index="9" label="Wattage Percentage Change C1" type="byte" units="%" value="10">
       <Help>
 	Percentage change in wattage to induce a automatic report (Clamp 1).
       </Help>
     </Value>
-    <Value type="byte" index="10" genre="config" label="Wattage Percentage Change C2" units="%" value="10">
+    <Value genre="config" index="10" label="Wattage Percentage Change C2" type="byte" units="%" value="10">
       <Help>
 	Percentage change in wattage to induce a automatic report (Clamp 2).
       </Help>
     </Value>
-    <Value type="byte" index="11" genre="config" label="Wattage Percentage Change C3" units="%" value="10">
+    <Value genre="config" index="11" label="Wattage Percentage Change C3" type="byte" units="%" value="10">
       <Help>
 	Percentage change in wattage to induce a automatic report (Clamp 3).
       </Help>
     </Value>
-    <Value type="byte" index="12" genre="config" label="Accumulate energy" units="" min="0" max="1" value="0">
+    <Value genre="config" index="12" label="Accumulate energy" max="1" min="0" type="byte" units="" value="0">
       <Help>
 	Accumulate energy when Battery Powered.
       </Help>
     </Value>
-    <Value type="byte" index="20" genre="config" label="USB powered" units="" min="0" max="1" read_only="true" value="0">
+    <Value genre="config" index="20" label="USB powered" max="1" min="0" read_only="true" type="byte" units="" value="0">
       <Help>
 	This byte denotes whether the product is using batteries (value = 0) or using USB power (value = 1).
       </Help>
     </Value>
-    <Value type="int" index="100" genre="config" label="Reset #101-103" units="" value="0" write_only="true" affects="101,102,103">
+    <Value affects="101,102,103" genre="config" index="100" label="Reset #101-103" type="int" units="" value="0" write_only="true">
       <Help>
 	Reset to default parameters number 101-103. Any value other then 0 will initiate this reset.
       </Help>
     </Value>
-    <Value type="int" index="101" genre="config" label="Group 1 Reports" units="" value="0">
+    <Value genre="config" index="101" label="Group 1 Reports" type="int" units="" value="0">
       <Help>
 	Which reports need to send in group1. Format is as follows:
 	Byte 1 (msb): Reserved
@@ -94,7 +109,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584509
                 Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
       </Help>
     </Value>
-    <Value type="int" index="102" genre="config" label="Group 2 Reports" units="" value="0">
+    <Value genre="config" index="102" label="Group 2 Reports" type="int" units="" value="0">
       <Help>
 	Which reports need to send in group2. Format is as follows:
 	Byte 1 (msb): Reserved
@@ -117,7 +132,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584509
                 Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
       </Help>
     </Value>
-    <Value type="int" index="103" genre="config" label="Group 3 Reports" units="" value="0">
+    <Value genre="config" index="103" label="Group 3 Reports" type="int" units="" value="0">
       <Help>
 	Which reports need to send in group3. Format is as follows:
 	Byte 1 (msb): Reserved
@@ -140,52 +155,53 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584509
                 Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
       </Help>
     </Value>
-    <Value type="int" index="110" genre="config" label="Reset #111-113" units="" value="0" write_only="true" affects="111,112,113">
+    <Value affects="111,112,113" genre="config" index="110" label="Reset #111-113" type="int" units="" value="0" write_only="true">
       <Help>
 	Reset to default parameters number 111-113. Any value other then 0 will initiate this reset.
       </Help>
     </Value>
-    <Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" value="720">
+    <Value genre="config" index="111" label="Group 1 Interval" type="int" units="seconds" value="720">
       <Help>
 	The interval of sending report group 1.
       </Help>
     </Value>
-    <Value type="int" index="112" genre="config" label="Group 2 Interval" units="seconds" value="720">
+    <Value genre="config" index="112" label="Group 2 Interval" type="int" units="seconds" value="720">
       <Help>
 	The interval of sending report group 2.
       </Help>
     </Value>
-    <Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" value="720">
+    <Value genre="config" index="113" label="Group 3 Interval" type="int" units="seconds" value="720">
       <Help>
 	The interval of sending report group 3.
       </Help>
     </Value>
-    <Value type="int" index="253" genre="config" label="Unit Recalibration (dangerous)" units="" value="0" write_only="true">
+    <Value genre="config" index="253" label="Unit Recalibration (dangerous)" type="int" units="" value="0" write_only="true">
       <Help>
 	Re-calibrate (will destroy factory calibration). CONTACT AEON LABS before using.
       </Help>
     </Value>
-    <Value type="short" index="254" genre="config" label="Device Tag" units="" value="0">
+    <Value genre="config" index="254" label="Device Tag" type="short" units="" value="0">
       <Help>
 	Device tag.
       </Help>
     </Value>
-    <Value type="int" index="255" genre="config" label="Reset default configuration" units="" value="0" write_only="true" affects="all">
+    <Value affects="all" genre="config" index="255" label="Reset default configuration" type="int" units="" value="0" write_only="true">
       <Help>
 	Reset to the default configuration.
       </Help>
     </Value>
   </CommandClass>
-
   <!-- COMMAND_CLASS_WAKE_UP.  This class is in the list reported by the HEM, but it does not
   respond to requests.  It still needs to be supported so that wake up notifications are handled. -->
-  <CommandClass id="132" create_vars="false" />
-
+  <CommandClass id="132">
+    <Compatibility>
+      <CreateVars>false</CreateVars>
+    </Compatibility>
+  </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="1" label="Lifeline" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>
-

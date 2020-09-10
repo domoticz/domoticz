@@ -44,15 +44,23 @@ define(['app'], function (app) {
         }
 
         function updateEvent(event) {
-            return domoticzApi.sendCommand('create', {
-                type: 'events',
-                eventid: event.id,
-                name: event.name,
-                interpreter: event.interpreter,
-                eventtype: event.type,
-                xml: event.xmlstatement,
-                logicarray: event.logicarray,
-                eventstatus: event.eventstatus
+            return $http({
+                method: 'POST',
+                url: 'event_create.webem',
+                data: $httpParamSerializer({
+                    eventid: event.id,
+                    name: event.name,
+                    interpreter: event.interpreter,
+                    eventtype: event.type,
+                    xml: event.xmlstatement,
+                    logicarray: event.logicarray,
+                    eventstatus: event.eventstatus
+                }),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }).then(function (response) {
+                return domoticzApi.errorHandler(response.data)
             });
         }
 

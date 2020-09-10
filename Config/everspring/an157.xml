@@ -1,0 +1,24 @@
+<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0001:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/an157.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/895/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0004">Malaysia / Hong Kong / U.S. / Canada / Mexico / U.S. / Canada / Mexico / CEPT (Europe) / CEPT (Europe) / CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.everspring.com/AN145.aspx</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.everspring.com/AN145.aspx</MetaDataItem>
+    <MetaDataItem name="Description">he AN145-1 Screw-in On/OFF Module is a transceiver which is a Z-Wave TM enabled device and is fully compatiable with any Z-WAVE TM enabled network. The Plug type of AN145-1 is E26</MetaDataItem>
+    <MetaDataItem name="Name">Lamp Holder</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/33/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/34/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/207/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/214/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/215/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/274/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/276/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/895/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0001" name="Identifier" type="0004">AN145-1_Ever_0910</MetaDataItem>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

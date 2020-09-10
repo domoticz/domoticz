@@ -1,0 +1,89 @@
+<div id="hardwarecontent" class="container">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Nodes">Nodes</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="mysensorsnodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+        <tr>
+            <th width="80" align="center" data-i18n="NodeID">NodeID</th>
+            <th align="left" data-i18n="Name">Name</th>
+            <th align="left" data-i18n="Sketch Name">Sketch Name</th>
+            <th width="60" align="left" data-i18n="Version">Version</th>
+            <th width="60" align="left" data-i18n="Childs">Childs</th>
+            <th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
+        </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+            </td>
+            <td align="right">
+                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshMySensorsNodeTable();">Refresh</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr id="trNodeSettings">
+            <td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name"></span>:</label></td>
+            <td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+    </table>
+    <br>
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Childs">Childs</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="mysensorsactivetable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+        <tr valign="middle">
+            <th width="40" align="center" data-i18n="ChildID">ChildID</th>
+            <th width="160" align="left" data-i18n="Type">Type</th>
+            <th align="80" data-i18n="Name">Name</th>
+            <th data-i18n="Values">Values</th>
+            <th width="80" align="left" data-i18n="Ack">Ack</th>
+            <th width="100" align="left" data-i18n="Ack Timeout">Ack Timeout</th>
+            <th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
+        </tr>
+        </thead>
+    </table>
+    <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstyle3-dis" id="activedeviceupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+                <a class="btnstyle3-dis" id="activedevicedelete" data-i18n="Delete">Delete</a>
+            </td>
+            <td align="right">
+                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="MySensorsRefreshActiveDevicesTable();">Refresh</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <div id="trChildSettings">
+        <table id="mchildsettings" border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td align="right" style="width:120px"><span data-i18n="Ack"></span>:</td>
+                <td><input type="checkbox" id="Ack"/><label for="Ack"/></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="Ack"><span data-i18n="Ack Timeout"></span>:</label></td>
+                <td><input type="text" id="AckTimeout" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(ms)</td>
+            </tr>
+        </table>
+    </div>
+    <input type="hidden" id="idx" name="idx" value="-1">
+</div>

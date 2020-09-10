@@ -95,7 +95,7 @@ private:
 #ifndef NOCLOUD
 class CTCPServerProxied : public CTCPServerIntBase {
 public:
-	CTCPServerProxied(CTCPServer *pRoot, std::shared_ptr<http::server::CProxyClient> proxy);
+	CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy);
 	~CTCPServerProxied(void);
 	virtual void start() override;
 	virtual void stop() override;
@@ -107,7 +107,7 @@ public:
 	bool OnIncomingData(const std::string &token, const unsigned char *data, size_t bytes_transferred);
 	CSharedClient *FindClient(const std::string &token);
 private:
-	std::shared_ptr<http::server::CProxyClient> m_pProxyClient;
+	http::server::CProxyClient *m_pProxyClient;
 };
 #endif
 
@@ -120,7 +120,7 @@ public:
 
 	bool StartServer(const std::string &address, const std::string &port);
 #ifndef NOCLOUD
-	bool StartServer(std::shared_ptr<http::server::CProxyClient> proxy);
+	bool StartServer(http::server::CProxyClient *proxy);
 #endif
 	void StopServer();
 	void SendToAll(const int HardwareID, const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);

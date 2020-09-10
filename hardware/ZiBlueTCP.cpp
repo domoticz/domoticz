@@ -83,11 +83,6 @@ void CZiBlueTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData((const char*)pData,length);
 }
 
-void CZiBlueTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"ZiBlue: Error: %s",e.what());
-}
-
 void CZiBlueTCP::OnError(const boost::system::error_code& error)
 {
 	if (

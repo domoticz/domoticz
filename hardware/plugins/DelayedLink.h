@@ -14,6 +14,44 @@
 #include <frameobject.h>
 #include "../../main/Helper.h"
 
+#if PY_VERSION_HEX >= 0x030800f0
+static inline void
+py3__Py_DECREF(const char *filename, int lineno, PyObject *op)
+{
+	(void)filename; /* may be unused, shut up -Wunused-parameter */
+	(void)lineno; /* may be unused, shut up -Wunused-parameter */
+	_Py_DEC_REFTOTAL;
+	if (--op->ob_refcnt != 0)
+	{
+#ifdef Py_REF_DEBUG
+	if (op->ob_refcnt < 0)
+	{
+		_Py_NegativeRefcount(filename, lineno, op);
+	}
+#endif
+	}
+	else
+	{
+		_Py_Dealloc(op);
+	}
+}
+
+#undef Py_DECREF
+#define Py_DECREF(op) py3__Py_DECREF(__FILE__, __LINE__, _PyObject_CAST(op))
+
+static inline void
+py3__Py_XDECREF(PyObject *op)
+{
+	if (op != NULL)
+	{
+		Py_DECREF(op);
+	}
+}
+
+#undef Py_XDECREF
+#define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
+#endif
+
 namespace Plugins {
 
 #ifdef WIN32
@@ -77,8 +115,10 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_Items, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_New, Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyList_Size, PyObject*);
+		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyTuple_Size, PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyList_Append, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_GetItem, PyObject* COMMA Py_ssize_t);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyTuple_GetItem, PyObject* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(int, PyList_SetItem, PyObject* COMMA Py_ssize_t COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(void*, PyModule_GetState, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyState_FindModule, struct PyModuleDef*);
@@ -125,6 +165,9 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PyEval_SetTrace, Py_tracefunc COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_Str, PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_IsTrue, PyObject*);
+		DECLARE_PYTHON_SYMBOL(double, PyFloat_AsDouble, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetIter, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyIter_Next, PyObject*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -157,6 +200,12 @@ namespace Plugins {
 				if (!shared_lib_) FindLibrary("python3.6", true);
 				if (!shared_lib_) FindLibrary("python3.5", true);
 				if (!shared_lib_) FindLibrary("python3.4", true);
+#ifdef __FreeBSD__
+				if (!shared_lib_) FindLibrary("python3.7m", true);
+				if (!shared_lib_) FindLibrary("python3.6m", true);
+				if (!shared_lib_) FindLibrary("python3.5m", true);
+				if (!shared_lib_) FindLibrary("python3.4m", true);
+#endif /* FreeBSD */
 #endif
 				if (shared_lib_)
 				{
@@ -199,7 +248,9 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyDict_Items);
 					RESOLVE_PYTHON_SYMBOL(PyList_New);
 					RESOLVE_PYTHON_SYMBOL(PyList_Size);
-					RESOLVE_PYTHON_SYMBOL(PyList_GetItem); 
+					RESOLVE_PYTHON_SYMBOL(PyTuple_Size);
+					RESOLVE_PYTHON_SYMBOL(PyList_GetItem);
+					RESOLVE_PYTHON_SYMBOL(PyTuple_GetItem);
 					RESOLVE_PYTHON_SYMBOL(PyList_SetItem);
 					RESOLVE_PYTHON_SYMBOL(PyList_Append);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetState);
@@ -250,6 +301,9 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyEval_SetTrace);
 					RESOLVE_PYTHON_SYMBOL(PyObject_Str);
 					RESOLVE_PYTHON_SYMBOL(PyObject_IsTrue);
+					RESOLVE_PYTHON_SYMBOL(PyFloat_AsDouble);
+					RESOLVE_PYTHON_SYMBOL(PyObject_GetIter);
+					RESOLVE_PYTHON_SYMBOL(PyIter_Next);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -397,7 +451,9 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyDict_Items			pythonLib->PyDict_Items
 #define PyList_New				pythonLib->PyList_New
 #define PyList_Size				pythonLib->PyList_Size
+#define PyTuple_Size			pythonLib->PyTuple_Size
 #define PyList_GetItem			pythonLib->PyList_GetItem
+#define PyTuple_GetItem			pythonLib->PyTuple_GetItem
 #define PyList_SetItem			pythonLib->PyList_SetItem
 #define PyList_Append			pythonLib->PyList_Append
 #define PyModule_GetState		pythonLib->PyModule_GetState
@@ -451,4 +507,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyEval_SetTrace			pythonLib->PyEval_SetTrace
 #define PyObject_Str			pythonLib->PyObject_Str
 #define	PyObject_IsTrue			pythonLib->PyObject_IsTrue
+#define PyFloat_AsDouble		pythonLib->PyFloat_AsDouble
+#define	PyObject_GetIter		pythonLib->PyObject_GetIter
+#define	PyIter_Next				pythonLib->PyIter_Next
 }

@@ -1,0 +1,64 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027A:0003:000C</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zse19.png</MetaDataItem>
+    <MetaDataItem id="0003" name="ZWProductPage" type="000C">https://products.z-wavealliance.org/products/3116/</MetaDataItem>
+    <MetaDataItem name="Name">S2 Multisiren</MetaDataItem>
+    <MetaDataItem name="ResetDescription">If your primary controller is missing or inoperable, you may need to reset the device to factory settings. To complete the reset process manually, make sure the Multisiren is powered, then CLICK-CLICK-CLICKCLICK’N’HOLD the Z-Wave button for AT LEAST 5 SECONDS. The LED indicator will flash to confirm successful reset. 
+NOTE: All previously recorded activity and custom settings will be erased from the device’s memory.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Bring the Multisiren within direct range of your Z-Wave gateway (hub).
+2. Put the Z-Wave hub into exclusion mode (not sure how to do that? ask@getzooz.com).
+3. Click the Z-Wave button on the Multisiren 3 times quickly to finalize the process.
+4. Your hub will confirm exclusion and the device will disappear from your controller's device list.</MetaDataItem>
+    <MetaDataItem name="Description">FEATURES:
+- Audio and visual alarm triggered by other Z-Wave devices
+- Configurable siren alarm duration
+- Built-in temperature and humidity sensor (if Multilevel Sensor is supported)
+- Audio Speaker for custom sound playback (if Sound Switch is supported)
+- S2 security protocol and the latest 500 Z-Wave chip for faster and safer wireless communication
+- Tamper protection, low-battery alerts
+
+SPECS:
+- Model Number: ZSE19
+- Z-Wave Signal Frequency: 908.42 MHz
+- Power: 4 x LR14 (C Cell) battery
+- Range: Up to 100 feet line of sight
+- Operating Temperature: 14-104° F (-10-40° C)
+- Operating Humidity: 0-80%
+- Installation and Use: Indoor only</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">AUTO INCLUSION:
+1. Initiate inclusion (pairing) in the app (or web interface). Not sure how? ask@getzooz.com
+If you’re using an S2 hub, it may ask you to enter the DSK key printed on the back cover sticker to complete secure inclusion.
+
+2. Insert the batteries as instructed above (if you already did, take them out for at least 15 seconds before starting the inclusion process). The LED indicator will start blinking and the Multisiren will join the network automatically.
+
+MANUAL INCLUSION:
+Put your Z-Wave hub into inclusion mode and click the Z-Wave button on the Multisiren 3 times quickly.</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="000C">ZSE19</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3116/zooz-z-wave-plus-s2-multisiren-zse19-manual.pdf</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="000C">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3116/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- https://products.z-wavealliance.org/products/3116 -->
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Siren Alarm Duration" max="600" min="10" size="2" type="short" units="seconds" value="600">
+      <Help>Siren Alarm Duration, in seconds.  Defaults to 600 (10 minutes).</Help>
+    </Value>
+    <Value genre="config" index="2" label="Temp/Humidity Reporting Interval" max="1440" min="1" size="2" type="short" units="minutes" value="1440">
+      <Help>Reporting interval for temperature and humidity sensor, in miuntes.  Defaults to 1440 (24 hours).</Help>
+    </Value>
+    <Value genre="config" index="3" label="Custom Sound Selection for Audio Speaker" max="99" min="0" size="1" type="byte" units="" value="0">
+      <Help>Selector for custom audio files that have been manually uploaded to the alarm unit.  0 sets to no sound (default), while 1-99 selects the sound file number in the library to be used.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

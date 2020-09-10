@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
   <!-- Zipato Bulb 2 -->
   <!-- Configuration Parameters -->
   <CommandClass id="112">
@@ -19,9 +19,6 @@
     <Associations num_groups="1">
       <Group index="1" max_associations="5" label="Report"  />
     </Associations>
-  </CommandClass>
-  
-  <CommandClass id="51" colorchannels="31" > 
   </CommandClass>
 </Product>
 

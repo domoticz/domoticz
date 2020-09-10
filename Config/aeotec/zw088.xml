@@ -1,33 +1,57 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-Aeotec ZW088 Key Fob Gen5
-https://aeotec.freshdesk.com/helpdesk/attachments/6009584698
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'> 
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0058:0101</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw088.png</MetaDataItem>
+    <MetaDataItem id="0058" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/1165/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press and hold the "Learn" for 3 seconds will trigger sending the Wake up notification command. </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Short press the “Exclude” button on the Key Fob, it will go into exclusion state and its red LED will blink slowly to wait excluding other slave Z-Wave devices from its network.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Use this procedure only in the event that the primary controller is missing or otherwise inoperable.
+
+Press and hold the “Mode” button and “Learn” button for 20 seconds and then release.</MetaDataItem>
+    <MetaDataItem name="Description">Key Fob Gen5 is a fully functional Z-wave remote controller, which can include, exclude and control the other Z-Wave certified devices.  It also can be acted a secondary controller in a network.  
+
+It is a four buttons design. You can use each button to control your home’s Z-Wave devices and build a Z-Wave network for them. 
+
+Products that are Z-Wave certified can be used and communicate with other Z-Wave certified devices.
+</MetaDataItem>
+    <MetaDataItem id="0058" name="Identifier" type="0101">ZW088-A</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1178/Instructions - Aeon Labs Key Fob Gen5 MCert.pdf</MetaDataItem>
+    <MetaDataItem name="Name">Key Fob Gen5</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Short press the “Include” button on the Key Fob, it will go into inclusion state and its blue LED will blink slowly to wait including other slave Z-Wave devices.</MetaDataItem>
+    <MetaDataItem id="0058" name="FrequencyName" type="0101">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1165/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1177/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1178/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0058" name="ZWProductPage" type="0201">https://products.z-wavealliance.org/products/1177/</MetaDataItem>
+    <MetaDataItem id="0058" name="FrequencyName" type="0201">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="0058" name="Identifier" type="0201">ZW088-B</MetaDataItem>
+    <MetaDataItem id="0058" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1178/</MetaDataItem>
+    <MetaDataItem id="0058" name="Identifier" type="0001">ZW088-C</MetaDataItem>
+    <MetaDataItem id="0058" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+  </MetaData>
+  <!-- Aeon Labs Key Fob Gen5 -->
   <!-- Basic and SwitchMultiLevel are for when the KeyFob is in Group Mode.
   You should configure the device to operate in Scene Mode instead if you
   wish to integrate it with your application -->
-  <CommandClass id="32" action="remove" />
-  <CommandClass id="38" action="remove" />
-  
+  <CommandClass action="remove" id="32"/>
+  <CommandClass action="remove" id="38"/>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-     <Value type="list" index="250" genre="config" label="Mode" units="" min="0" max="1" size="1" value="0">
+    <Value genre="config" index="250" label="Mode" max="1" min="0" size="1" type="list" units="" value="0">
       <Help>Enable selective Group Mode or Scene Mode when the Key Fob is in Use mode</Help>
-      <Item label="Group" value="0" />
-      <Item label="Scene" value="1" />
+      <Item label="Group" value="0"/>
+      <Item label="Scene" value="1"/>
     </Value>
-     
-    <Value type="button" index="255" genre="config" label="Reset configuration" units="" write_only="true" value="0">
+    <Value genre="config" index="255" label="Reset configuration" type="button" units="" value="0" write_only="true">
       <Help>Reset configuration set up to default setting</Help>
     </Value>
   </CommandClass>
-
   <!-- COMMAND_CLASS_ASSOCIATION -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="1" label="Lifeline" max_associations="5"/>
     </Associations>
   </CommandClass>
-
 </Product>

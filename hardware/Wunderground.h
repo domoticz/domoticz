@@ -15,6 +15,7 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
+	std::string GetWeatherStationFromGeo();
 private:
 	bool m_bForceSingleStation;
 	bool m_bFirstTime;

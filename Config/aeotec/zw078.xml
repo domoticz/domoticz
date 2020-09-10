@@ -1,48 +1,75 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Aeotec ZW078 Heavy Duty Smart Switch Gen5
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584699
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>  
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:004E:0103</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw078.png</MetaDataItem>
+    <MetaDataItem id="004E" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/1133/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Action button that you can find on the product's housing for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">N/A</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1142/Heavy Duty Smart Switch Gen5 Manual.pdf</MetaDataItem>
+    <MetaDataItem name="Description">Aeon Labs Heavy Duty Smart Switch is a Z-Wave device that can report the wattage energy usage and KWH usage to a Z-Wave Controller (especially a gateway), it can be controlled by other Z-Wave devices to turn on/off loads, it can bear up to 40A current of resister loads. It also acts as a repeater that forward Z-Wave command messages to destination nodes if the originating controller is out of range from the destination node.
+By taking advantage of the Z-Wave mesh network, commands can be routed to their destination via intermediary “listening” Z-Wave products. Products that are Z-Wave certified can be used and communicate with other Z-Wave certified devices.
+
+</MetaDataItem>
+    <MetaDataItem name="Name">Heavy Duty Smart Switch Gen5</MetaDataItem>
+    <MetaDataItem id="004E" name="Identifier" type="0103">ZW078-A</MetaDataItem>
+    <MetaDataItem id="004E" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/998/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1089/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1133/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1142/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="004E" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/1089/</MetaDataItem>
+    <MetaDataItem id="004E" name="Identifier" type="0203">ZW078-B</MetaDataItem>
+    <MetaDataItem id="004E" name="FrequencyName" type="0203">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="004E" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1142/</MetaDataItem>
+    <MetaDataItem id="004E" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="004E" name="Identifier" type="0003">ZW078-C</MetaDataItem>
+  </MetaData>
   <Protocol refreshonnodeinfoframe="false"/>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" index="3" genre="config" label="Current Overload Protection" size="1" value="0">
+    <Value genre="config" index="3" label="Current Overload Protection" size="1" type="list" value="0">
       <Help>
       Current Overload Protection. Load will be closed when
       the Current more than 39.5A and the time more than 5
       seconds
       </Help>
-      <Item label="Disable" value="0" />
-      <Item label="Enable" value="1" />
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
     </Value>
-    <Value type="list" index="20" genre="config" label="LED Mode" size="1" value="0">
+    <Value genre="config" index="20" label="LED Mode" size="1" type="list" value="0">
       <Help>LED status after power on</Help>
       <Item label="Last Status" value="0"/>
       <Item label="On" value="1"/>
       <Item label="Off" value="2"/>
     </Value>
-    <Value type="list" index="80" genre="config" label="Notification status" units="" size="1" value="0">
+    <Value genre="config" index="80" label="Notification status" size="1" type="list" units="" value="0">
       <Help>
 	Enables automatic notifications to associated devices whenever there is a state change.
       </Help>
-      <Item label="None" value="0" />
-      <Item label="Hail" value="1" />
-      <Item label="Basic" value="2" />
+      <Item label="None" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Basic" value="2"/>
     </Value>
-    <Value type="bool" index="90" genre="config" label="Enable Wattage Reports" units="" value="1">
+    <Value genre="config" index="90" label="Enable Wattage Reports" type="bool" units="" value="1">
       <Help>Enable/disable Wattage threshold and percent.</Help>
     </Value>
-    <Value type="short" index="91" genre="config" label="Wattage threshold" units="watts" min="0" max="32000" value="50">
+    <Value genre="config" index="91" label="Wattage threshold" max="32000" min="0" type="short" units="watts" value="50">
       <Help>The minimum change in wattage for a report to be sent.</Help>
     </Value>
-    <Value type="byte" index="92" genre="config" label="Wattage threshold percent" units="%" min="0" max="99" value="10">
+    <Value genre="config" index="92" label="Wattage threshold percent" max="99" min="0" type="byte" units="%" value="10">
       <Help>Minimum change in percent of wattage to send a report.</Help>
     </Value>
-    <Value type="button" index="100" genre="config" label="Default Group Reports" units="" write_only="true" value="0" affects="101,102,103">
+    <Value affects="101,102,103" genre="config" index="100" label="Default Group Reports" type="button" units="" value="0" write_only="true">
       <Help>Set report types for groups 1, 2 and 3 to default.</Help>
     </Value>
-    <Value type="int" index="101" genre="config" label="Report type sent in Reporting Group 1" units="" value="4">
+    <Value genre="config" index="101" label="Report type sent in Reporting Group 1" type="int" units="" value="4">
       <Help>
           Defines the type of report sent for reporting group 1.
           1 is meter report for voltage.
@@ -59,7 +86,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584699
           bit 0 voltage
       </Help>
     </Value>
-    <Value type="int" index="102" genre="config" label="Report type sent in Reporting Group 2" units="" value="8">
+    <Value genre="config" index="102" label="Report type sent in Reporting Group 2" type="int" units="" value="8">
       <Help>
           Defines the type of report sent for reporting group 2.
           1 is meter report for voltage.
@@ -76,7 +103,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584699
           bit 0 voltage
       </Help>
     </Value>
-    <Value type="int" index="103" genre="config" label="Report type sent in Reporting Group 3" units="" value="0">
+    <Value genre="config" index="103" label="Report type sent in Reporting Group 3" type="int" units="" value="0">
       <Help>
           Defines the type of report sent for reporting group 3.
           1 is meter report for voltage.
@@ -93,41 +120,39 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584699
           bit 0 voltage
       </Help>
     </Value>
-    <Value type="button" index="110" genre="config" label="Default Group Time" units="" write_only="true" value="0" affects="111,112,113">
+    <Value affects="111,112,113" genre="config" index="110" label="Default Group Time" type="button" units="" value="0" write_only="true">
       <Help>Set time interval for sending reports for groups 1, 2 and 3 to default.</Help>
     </Value>
-    <Value type="int" index="111" genre="config" label="Send interval G1" units="seconds" min="0" max="65535" value="5">
+    <Value genre="config" index="111" label="Send interval G1" max="65535" min="0" type="int" units="seconds" value="5">
       <Help>Defines the time interval when the defined report for group 1 is sent.</Help>
     </Value>
-    <Value type="int" index="112" genre="config" label="Send interval G2" units="seconds" min="0" max="65535" value="120">
+    <Value genre="config" index="112" label="Send interval G2" max="65535" min="0" type="int" units="seconds" value="120">
       <Help>Defines the time interval when the defined report for group 2 is sent.</Help>
     </Value>
-    <Value type="int" index="113" genre="config" label="Send interval G3" units="seconds" min="0" max="65535" value="120">
+    <Value genre="config" index="113" label="Send interval G3" max="65535" min="0" type="int" units="seconds" value="120">
       <Help>Defines the time interval when the defined report for group 3 is sent.</Help>
     </Value>
-      <Value type="list" index="200" genre="config" label="Partner ID" units="" min="0" max="1" size="1" value="0">
-          <Item label="Aeon Labs Standard Product" value="0" />
-          <Item label="Other" value="1" />
-      </Value>
-    <Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" size="1" value="0">
+    <Value genre="config" index="200" label="Partner ID" max="1" min="0" size="1" type="list" units="" value="0">
+      <Item label="Aeon Labs Standard Product" value="0"/>
+      <Item label="Other" value="1"/>
+    </Value>
+    <Value genre="config" index="252" label="Lock/Unlock Configuration" max="1" min="0" size="1" type="list" value="0">
       <Help>Lock/ unlock all configuration parameters</Help>
       <Item label="Unlock" value="0"/>
       <Item label="Lock" value="1"/>
     </Value>
-      <Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
-          <Help>Reset to factory defaults</Help>
-          <Item label="Reset to factory default setting" value="0"/>
-          <Item label="Normal" value="1"/>
-          <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
-      </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
   </CommandClass>
-
- <!-- Association Groups -->
+  <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" max_associations="5" label="LifeLine" />
-      <Group index="2" max_associations="5" label="Retransmit Switch CC" />
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Retransmit Switch CC" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>
-

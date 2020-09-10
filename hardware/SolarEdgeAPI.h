@@ -20,7 +20,7 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	void GetSite();
+	bool GetSite();
 	void GetInverters();
 	void GetMeterDetails();
 	void GetInverterDetails(const _tInverterSettings *pInverterSettings, const int iInverterNumber);

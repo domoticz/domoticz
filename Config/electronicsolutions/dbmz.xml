@@ -1,23 +1,46 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Electronic Solutions Inc DBMZ Motor Control -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- Electronic Solutions Inc DBMZ Motor Control --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0033:3032:5250</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/electronicsolutions/dbmz.png</MetaDataItem>
+    <MetaDataItem id="3032" name="ZWProductPage" type="5250">https://products.z-wavealliance.org/products/305/</MetaDataItem>
+    <MetaDataItem name="Description">DC Motor Controller for window coverings.Z-Wave DC motor control, packaged in a “Plug &amp; Play” Box. Z-Wave radio allows for bi-directional RF communications with other Z-Wave products in the market. Allows for total switched load of up to 2 Amps at 27VDC.
+
+By utilizing the Z-Wave standard, the DBMZ is guaranteed interoperability between systems and devices from other Z-Wave enabled products.
+
+In order for scene functionality to operate correctly, the calibration sequence MUST be performed. See the technical documentation for more details.
+
+DC Power supply needed, see Power Supplies for selections.
+
+This product has passed a stringent conformance test to assure it meets the Z-Wave standard for complete interoperability with all other devices and controls. </MetaDataItem>
+    <MetaDataItem id="3032" name="FrequencyName" type="5250">Malaysia / India / Hong Kong / CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://elec-solutions.com/products/z-wave/dbmz.html</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://elec-solutions.com/home.html</MetaDataItem>
+    <MetaDataItem name="Name">DC Motor Controller - Window coverings</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/40/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/41/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/42/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/305/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="3032" name="Identifier" type="5250">DBMZ EU</MetaDataItem>
+  </MetaData>
   <!-- Configuration -->
   <CommandClass id="112">
-    <Value type="list" genre="config" instance="1" index="1" label="Calibration" min="0" max="3" value="0" size="1">
+    <Value genre="config" index="1" instance="1" label="Calibration" max="3" min="0" size="1" type="list" value="0">
       <Help>Unit calibration state</Help>
-      <Item label="Normal" value="0" />
-      <Item label="Calibration" value="1" />
-	  <Item label="Factory default" value="129" />
+      <Item label="Normal" value="0"/>
+      <Item label="Calibration" value="1"/>
+      <Item label="Factory default" value="129"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="2" label="Motor direction" min="0" max="1" value="0" size="1">
+    <Value genre="config" index="2" instance="1" label="Motor direction" max="1" min="0" size="1" type="list" value="0">
       <Help>Unit motor direction state</Help>
-      <Item label="Normal" value="0" />
-      <Item label="Reversed" value="1" />
+      <Item label="Normal" value="0"/>
+      <Item label="Reversed" value="1"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="3" label="Tilt feature" min="0" max="1" value="0" size="1">
+    <Value genre="config" index="3" instance="1" label="Tilt feature" max="1" min="0" size="1" type="list" value="0">
       <Help>Unit tilt feature state</Help>
-      <Item label="No" value="0" />
-      <Item label="Yes" value="1" />
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
     </Value>
   </CommandClass>
 </Product>

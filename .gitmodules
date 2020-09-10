@@ -1,0 +1,16 @@
+[submodule "extern/jsoncpp"]
+	path = extern/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp.git
+	ignore = dirty
+[submodule "extern/mosquitto"]
+	path = extern/mosquitto
+	url = https://github.com/eclipse/mosquitto.git
+	ignore = dirty
+[submodule "extern/sqlite-amalgamation"]
+	path = extern/sqlite-amalgamation
+	url = https://github.com/azadkuh/sqlite-amalgamation.git
+	ignore = dirty
+[submodule "minizip"]
+	path = extern/minizip
+	url = https://github.com/domoticz/minizip.git
+	ignore = dirty

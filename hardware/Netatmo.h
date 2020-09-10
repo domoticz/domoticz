@@ -46,6 +46,8 @@ private:
 	std::map<int,float> m_RainOffset;
 	std::map<int, float> m_OldRainCounter;
 
+	std::map<int, bool> m_bNetatmoRefreshed;
+
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;

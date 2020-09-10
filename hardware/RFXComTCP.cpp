@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "RFXComTCP.h"
 #include "../main/Logger.h"
-//#include <boost/bind.hpp>
-//#include <boost/asio.hpp>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
@@ -84,11 +82,6 @@ void RFXComTCP::OnData(const unsigned char *pData, size_t length)
 {
 	std::lock_guard<std::mutex> l(readQueueMutex);
 	onInternalMessage(pData, length);
-}
-
-void RFXComTCP::OnError(const std::exception e)
-{
-	Log(LOG_ERROR, "Error: %s", e.what());
 }
 
 void RFXComTCP::OnError(const boost::system::error_code& error)

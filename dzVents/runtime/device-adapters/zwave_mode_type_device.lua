@@ -1,0 +1,48 @@
+return {
+
+	baseType = 'device',
+
+	name = 'Z-Wave mode type device adapter',
+
+	matches = function(device, adapterManager)
+		local res = (device.deviceSubType == 'Thermostat Mode') 
+				 or (device.deviceSubType == 'Thermostat Fan Mode')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateMode')
+		end
+		return res
+	end,
+
+	process = function(device, data, domoticz, utils, adapterManager)
+
+		local _modes = device.modes and utils.stringSplit(device.modes, ';') or {}
+		-- we have to combine tupels into one
+		local modesLookup = {}
+		local modes = {}
+
+		for i, j in pairs(_modes) do
+
+			if ( (i/2) ~= math.floor(i/2) ) then -- only the odds which are the ids
+				local label = _modes[i + 1]
+				if (label ~= nil) then
+					modesLookup[tonumber(_modes[i])] = label
+				end
+			else
+				table.insert(modes, _modes[i])
+			end
+
+		end
+
+		device.modes = modes
+		device.modeString = modesLookup[device.mode]
+
+		function device.updateMode(modeString)
+			for i, mode in pairs(modesLookup) do
+				if (mode == modeString) then
+					return device.update(i, modeString) -- 20190112 Changed 2nd parm from i to modeString to include modeString in logs
+				end
+			end
+		end
+
+	end
+}

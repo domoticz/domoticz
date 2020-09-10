@@ -4,7 +4,7 @@ define(['app', 'log/factories'], function (app) {
         bindings: {
             device: '<',
         },
-        templateUrl: 'views/log/device_temperature_log.html',
+        templateUrl: 'app/log/TemperatureLog.html',
         controller: function() {
             var vm = this;
 
@@ -47,11 +47,6 @@ define(['app', 'log/factories'], function (app) {
                                         y: -36
                                     }
                                 }
-                            },
-                            credits: {
-                                enabled: true,
-                                href: "http://www.domoticz.com",
-                                text: "Domoticz.com"
                             },
                             xAxis: {
                                 type: 'datetime'
@@ -140,7 +135,12 @@ define(['app', 'log/factories'], function (app) {
 											}
 										}
 									}
-								}
+								},
+                                areasplinerange: {
+                                    marker: {
+                                        enabled: false
+                                    }
+                                }
                             },
                             title: {
                                 text: getChartTitle()
@@ -184,7 +184,7 @@ define(['app', 'log/factories'], function (app) {
                             chart.yAxis[1].visibility = vm.range !== 'day';
                         });
                 }
-                
+
                 function getChartType() {
 					if (vm.deviceType === 'Thermostat') return 'line';
 					return 'spline';

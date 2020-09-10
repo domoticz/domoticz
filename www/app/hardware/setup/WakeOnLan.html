@@ -1,0 +1,47 @@
+<div id="hardwarecontent" class="container">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Nodes">Nodes</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="nodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+        <tr>
+            <th width="70" align="center" data-i18n="ID">ID</th>
+            <th width="150" align="left" data-i18n="Name">Name</th>
+            <th align="left" data-i18n="Mac Address">Mac Address</th>
+        </tr>
+        </thead>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+            </td>
+            <td align="right">
+                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Clear" onclick="WOLClearNodes();">Clear</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <table class="display" id="nodeparamstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name"></span>:</label></td>
+            <td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="nodemac"><span data-i18n="Mac Address">Mac Address</span>:</label></td>
+            <td><input type="text" id="nodemac" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btnstyle3" onclick="AddWOLNode();" data-i18n="Add">Add</a></td>
+        </tr>
+    </table>
+</div>

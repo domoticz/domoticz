@@ -1,0 +1,179 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">ID Lock 150 Z-Wave module</MetaDataItem>
+    <MetaDataItem name="Description">A module enabling your ID Lock digital door lock to a Z-Wave Plus enabled digital door Lock.
+
+The module is compatible with ID Lock 101 and ID Lock 150.
+
+It enables your ID Lock to operate in a Z-Wave network with numerous access control funtions and notifications.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0373:0001:0003</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://idlock.no/z-wave/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://idlock.no/kundesenter/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/idlock/idlock150.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://idlock.no/wp-content/uploads/2019/08/IDLock150_ZWave_UserManual_v3.02.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Activate by touching the touch panel with finger(s), the palm of the hand on the outside unit or by pushing the key button on the inside unit.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Inclusion – (Puts your device in inclusion mode)
+
+•	 Push and hold key button until all LEDs on touch panel activates (with ID Lock in an unlocked state).
+•	 Release button.
+•	 Enter Master PIN followed by * on touch panel.
+•	 Press digit "2" for settings followed by * on touch panel.
+•	 Press digit “5” on touch panel.
+
+Inclusion mode starts immediately. LED indicator below logo signals this by flashing blue.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Exclusion – (Puts your device in exclusion mode)
+
+•	 Push and hold key button until all LEDs on touch panel activates (with ID Lock in an unlocked state).
+•	 Release button.
+•	 Enter Master PIN followed by * on touch panel.
+•	 Press digit "2" for settings followed by * on touch panel.
+•	 Press digit “5” on touch panel.
+
+Exclusion mode starts immediately. LED indicator below logo signals this by flashing blue.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Device reset – (This will reset RF interface module to factory default settings)
+Warning: Please do only proceed with the following reset procedure, if primary network controller is missing or otherwise inoperable.
+
+RESET Z-WAVE MODULE:
+
+• Push and hold key button until all LEDs on touch panel activates (with ID Lock in an unlocked state).
+• Release button.
+• Enter Master PIN followed by * on keypad.
+• Press digit "2" for settings followed by * on keypad.
+• Press digit “0” on keypad.
+
+If the Z-wave module is not included in a Z-wave network the door lock will also return to factory settings when following the above procedure.
+
+FACTORY RESET DOOR LOCK FIRMWARE:
+
+•	 Push and hold inside lock/unlock button while inserting the fourth battery.
+•	 Receive reset sound.
+•	 Release button.
+•	 Receive confirmation sound.</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2780/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0003">ID-150</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2780/xml</Entry>
+      <Entry author="Eirik Hodne" date="25 Aug 2019" revision="3">Update as per the 1.4.9/1.6 firmware specification</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+
+  <!--COMMAND_CLASS_CONFIGURATION_V1-->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Door Lock Mode" max="3" min="0" size="1" type="list" units="" value="1">
+      <Help>
+        Door Lock Mode
+        Autolock Mode, Manual lock mode, Activate Away Mode, Deactivate Away Mode
+        Default Value : 1 ( Auto lock, Away off )
+      </Help>
+      <Item label="Manual lock, Away off" value="0"/>
+      <Item label="Auto lock, Away off" value="1"/>
+      <Item label="Manual lock, Away on" value="2"/>
+      <Item label="Auto lock, Away on" value="3"/>
+    </Value>
+    <Value genre="config" index="2" label="RFID Mode" max="9" min="5" size="1" type="list" units="" value="5">
+      <Help>
+        RFID Mode
+        RFID activated
+        RFID deactivated
+        Default Value: 5 (RFID activated)
+      </Help>
+      <Item label="RFID activated" value="5"/>
+      <Item label="RFID deactivated" value="9"/>
+    </Value>
+    <Value genre="config" index="3" label="Door Hinge Direction" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+        Door Hinge Position
+        Default Value : 0 (Right hinged operation)
+      </Help>
+      <Item label="Right hinged operation" value="0"/>
+      <Item label="Left hinged operation" value="1"/>
+    </Value>
+    <Value genre="config" index="4" label="Door Audio Volume" max="6" min="0" size="1" type="list" units="" value="5" write_only="true">
+      <Help>
+        Door Audio Volume Level
+        This parameter is a set only parameter. If the value is changed locally on the door lock, this value will not change.
+        Default Value : 5
+      </Help>
+      <Item label="No Sound" value="0"/>
+      <Item label="Level 1" value="1"/>
+      <Item label="Level 2" value="2"/>
+      <Item label="Level 3" value="3"/>
+      <Item label="Level 4" value="4"/>
+      <Item label="Level 5" value="5"/>
+      <Item label="Max. Sound Level" value="6"/>
+    </Value>
+    <Value genre="config" index="5" label="Door ReLock Mode" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
+        Door ReLock Mode
+        Default Value: 1 (Enabled)
+      </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="6" label="Service PIN Mode" max="9" min="0" size="1" type="list" units="" value="0" write_only="true">
+      <Help>
+        Service PIN Mode
+        A configuration get command on this parameter returns the latest set parameter value (set by Z-wave).
+        This is a set only value, if changed locally on keypad these values are not changed on Z-wave module. Value 5 and 6 are for future use on door lock.
+        Disabled: Disables both PIN and Service PIN menu on door lock
+
+        Default Value: 0 (Deactivated)
+      </Help>
+      <Item label="Deactivated" value="0"/>
+      <Item label="1 times used" value="1"/>
+      <Item label="2 times used" value="2"/>
+      <Item label="5 times used" value="3"/>
+      <Item label="10 times used" value="4"/>
+      <Item label="Not used (for future use)" value="5"/>
+      <Item label="Not used (for future use)" value="6"/>
+      <Item label="Always valid" value="7"/>
+      <Item label="12 Hours used" value="8"/>
+      <Item label="24 Hours used" value="9"/>
+      <Item label="Disabled (PIN and Service PIN)" value="254" />
+    </Value>
+    <Value genre="config" index="7" label="Door Lock Model Type" max="150" min="101" read_only="true" type="byte" units="" value="150">
+      <Help>
+        Door Lock Model Type
+        This configuration is only accepted by configuration get command
+        It is a read only parameter. Default value depends on the door lock model type.
+      </Help>
+    </Value>
+    <Value genre="config" index="8" label="Updater Mode" max="3" min="0" type="list" units="" value="0" size="1">
+      <Help>
+        Updater Mode
+
+        Enables use of the Updater app.
+        Default Value: 0 (Off, no sound)
+      </Help>
+      <Item label="Off (no sound)" value="0"/>
+      <Item label="On (no sound)" value="1"/>
+      <Item label="Off" value="2"/>
+      <Item label="On" value="3"/>
+    </Value>
+    <Value genre="config" index="9" label="Master PIN Unlock Mode" max="1" min="0" read_only="true" type="list" units="" value="1" size="1">
+      <Help>
+        Master PIN Unlock Mode
+      </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="10" label="Retrieve RFID Information" type="int" units="">
+      <Help>
+        Configuration Report for retriving the RFID information
+        Byte 1: Para1 (msb)
+        Byte 2: Para2
+        Byte 3: Para3
+        Byte 4: Para4 (lsb)
+      </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Instance index="1"/>
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

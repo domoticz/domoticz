@@ -3,13 +3,15 @@
 // ~~~~~~~~~~
 //
 #include "stdafx.h"
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "server.hpp"
 #include <fstream>
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+
+using namespace boost::placeholders;
 
 extern bool g_bIsWSL;
 

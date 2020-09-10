@@ -3,7 +3,7 @@
 #include <deque>
 
 //We use a resolution of 5 degrees (360/5 = 72)
-struct _tWindCalculationStruct
+struct _tWindCalculator
 {
 	int m_minute_counter[100];//WIND_DEGREE_TABLE_COUNT
 	std::deque<unsigned char> m_history_fifo;
@@ -19,7 +19,7 @@ struct _tWindCalculationStruct
 	int m_MinGust;
 
 	//constructor
-	_tWindCalculationStruct();
+	_tWindCalculator();
 
 	void Init();
 	double AddValueAndReturnAvarage(const double degree);

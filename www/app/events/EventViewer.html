@@ -29,6 +29,15 @@
         >
 
         <div class="pull-right">
+            <div class="events-editor-file__type input-prepend" ng-show="$ctrl.isTriggerAvailable()">
+                <label class="add-on" for="trigger">{{:: 'Trigger' | translate }}</label>
+                <select id="trigger"
+                        ng-model="$ctrl.eventData.type"
+                        ng-options="item.value as item.label for item in ::$ctrl.eventTypes"
+                        ng-change="$ctrl.markEventAsUpdated()">
+                </select>
+            </div>
+
             <div class="btn-group" ng-if="$ctrl.eventData.interpreter === 'Blockly'">
                 <button class="btn btn-default"
                         type="button"
@@ -43,6 +52,15 @@
                     {{:: 'Export' | translate}}
                 </button>
             </div>
+
+            <a class="btn btn-default"
+               href="https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting"
+               target="_blank"
+               title="{{:: 'dzVents Documentation' | translate}}"
+               ng-if="$ctrl.eventData.interpreter === 'dzVents'"
+            >
+               <i class="icon-question-sign" /> {{:: 'Help' | translate }}
+            </a>
 
             <div class="btn-group">
                 <button class="btn btn-primary"

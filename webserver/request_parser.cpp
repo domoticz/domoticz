@@ -309,6 +309,11 @@ boost::tribool request_parser::consume(request& req, const char* &pInput, const 
 				  }
 			  }
 
+			  // check on content_length, we might be done already
+			  if (req.content_length == 0) {
+				  return true;
+			  }
+
 			  state_ = reading_content;
 			  return boost::indeterminate;
 		  }

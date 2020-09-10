@@ -7,7 +7,7 @@ define(['app', 'events/factories'], function (app) {
             onDelete: '&'
         },
         templateUrl: 'app/events/EventViewer.html',
-        controller: function ($scope, $element, $q, $timeout, $modal, bootbox, domoticzEventsApi, blocklyToolbox) {
+        controller: function ($scope, $element, $q, $timeout, $uibModal, bootbox, domoticzEventsApi, blocklyToolbox) {
             var vm = this;
             var aceEditor;
             var blocklyWorkspace;
@@ -19,8 +19,17 @@ define(['app', 'events/factories'], function (app) {
             vm.importEvent = importEvent;
             vm.exportEvent = exportEvent;
             vm.markEventAsUpdated = markEventAsUpdated;
+            vm.isTriggerAvailable = isTriggerAvailable;
 
             function init() {
+                vm.eventTypes = [
+                    { value: 'All', label: 'All' },
+                    { value: 'Device', label: 'Device' },
+                    { value: 'Security', label: 'Security' },
+                    { value: 'Time', label: 'Time' },
+                    { value: 'UserVariable', label: 'User variable' }
+                ];
+
                 $q
                     .resolve(vm.event.interpreter
                         ? Object.assign({}, vm.event)
@@ -47,6 +56,10 @@ define(['app', 'events/factories'], function (app) {
                             }
                         });
                     });
+            }
+
+            function isTriggerAvailable() {
+                return vm.eventData && ['Blockly', 'Lua', 'Python'].includes(vm.eventData.interpreter);
             }
 
             function markEventAsUpdated() {
@@ -129,7 +142,7 @@ define(['app', 'events/factories'], function (app) {
             }
 
             function importEvent() {
-                $modal.open({
+                $uibModal.open({
                     templateUrl: 'app/events/importEventModal.html'
                 }).result.then(function (scriptData) {
                     try {
@@ -149,7 +162,7 @@ define(['app', 'events/factories'], function (app) {
 
                 scope.scriptData = Blockly.Xml.domToText(xml);
 
-                $modal.open({
+                $uibModal.open({
                     scope: scope,
                     templateUrl: 'app/events/exportEventModal.html'
                 });

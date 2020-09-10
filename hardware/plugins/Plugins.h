@@ -3,6 +3,7 @@
 #include "../DomoticzHardware.h"
 #include "../hardwaretypes.h"
 #include "../../notifications/NotificationBase.h"
+#include "PythonObjects.h"
 
 #ifndef byte
 typedef unsigned char byte;
@@ -61,6 +62,7 @@ namespace Plugins {
 		~CPlugin(void);
 
 		int		PollInterval(int Interval = -1);
+		void*	PythonModule() { return m_PyModule; };
 		void	Notifier(std::string Notifier = "");
 		void	AddConnection(CPluginTransport*);
 		void	RemoveConnection(CPluginTransport*);
@@ -97,8 +99,6 @@ namespace Plugins {
 		bool	HasNodeFailed(const int Unit);
 
 		std::string			m_PluginKey;
-		std::string			m_Username;
-		std::string			m_Password;
 		void*				m_DeviceDict;
 		void*				m_ImageDict;
 		void*				m_SettingsDict;
@@ -128,6 +128,14 @@ namespace Plugins {
 			const int Priority,
 			const std::string &Sound,
 			const bool bFromNotification);
+	};
+
+	//
+//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
+//
+	struct module_state {
+		CPlugin* pPlugin;
+		PyObject* error;
 	};
 
 }

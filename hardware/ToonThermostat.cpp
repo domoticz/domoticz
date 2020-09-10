@@ -8,11 +8,7 @@
 #include "../main/mainworker.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../json/json.h"
-
-#include <boost/uuid/uuid.hpp>            // uuid class
-#include <boost/uuid/uuid_generators.hpp> // generators
-#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
+#include "../main/json_helper.h"
 
 #ifdef _DEBUG
 //	#define DEBUG_ToonThermostat
@@ -244,7 +240,6 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 
 void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
@@ -288,12 +283,9 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
-
 std::string CToonThermostat::GetRandom()
 {
-	boost::uuids::uuid uuid = boost::uuids::random_generator()();
-	std::string suuid = boost::uuids::to_string(uuid);
-	return suuid;
+	return GenerateUUID();
 }
 
 bool CToonThermostat::Login()
@@ -304,7 +296,7 @@ bool CToonThermostat::Login()
 	}
 	m_ClientID = "";
 	std::stringstream sstr;
-	sstr << "username=" << m_UserName << "&password=" << m_Password;
+	sstr << "username=" << m_UserName << "&password=" << CURLEncode::URLEncode(m_Password);
 	std::string szPostdata=sstr.str();
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
@@ -324,8 +316,7 @@ bool CToonThermostat::Login()
 #endif
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
@@ -384,7 +375,7 @@ bool CToonThermostat::Login()
 #endif
 
 	root.clear();
-	bRet = jReader.parse(sResult, root);
+	bRet = ParseJSon(sResult, root);
 	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
@@ -478,8 +469,7 @@ bool CToonThermostat::SwitchLight(const std::string &UUID, const int SwitchState
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
@@ -523,8 +513,7 @@ bool CToonThermostat::SwitchAll(const int SwitchState)
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
@@ -622,8 +611,7 @@ void CToonThermostat::GetMeterDetails()
 	SaveString2Disk(sResult, szFileName);
 #endif
 
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
@@ -921,8 +909,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 		}
 
 		Json::Value root;
-		Json::Reader jReader;
-		bool bRet = jReader.parse(sResult, root);
+		bool bRet = ParseJSon(sResult, root);
 		if (!bRet)
 		{
 			_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
@@ -979,8 +966,7 @@ void CToonThermostat::SetProgramState(const int newState)
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: setProgramState request not successful, restarting..!");

@@ -151,6 +151,17 @@
     padding: 2px;
 }
 
+.events-editor-file__type {
+    color: #000;
+}
+
+.events-editor-file__type > select {
+    background-color: #FFF;
+    height: 30px;
+    color: #000;
+    border: 1px solid #ccc;
+}
+
 .events-editor-file__content {
     position: absolute !important;
     top: 46px;

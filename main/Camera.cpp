@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <iostream>
 #include "Camera.h"
+#include "HTMLSanitizer.h"
 #include "localtime_r.h"
 #include "Logger.h"
 #include "Helper.h"
@@ -11,7 +12,7 @@
 #include "SQLHelper.h"
 #include "WebServer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
 
 #define CAMERA_POLL_INTERVAL 30
 
@@ -132,7 +133,7 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 	std::string szURLPreFix = (pCamera->Protocol == CPROTOCOL_HTTP) ? "http" : "https";
 
 	if ((!bHaveUPinURL) && ((pCamera->Username != "") || (pCamera->Password != "")))
-		s_str << szURLPreFix << "://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
+		s_str << szURLPreFix << "://" << CURLEncode::URLEncode(pCamera->Username) << ":" << CURLEncode::URLEncode(pCamera->Password) << "@" << pCamera->Address << ":" << pCamera->Port;
 	else
 		s_str << szURLPreFix << "://" << pCamera->Address << ":" << pCamera->Port;
 	return s_str.str();
@@ -404,6 +405,26 @@ namespace http {
 				}
 			}
 		}
+		void CWebServer::RType_CamerasUser(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "OK";
+			root["title"] = "Cameras";
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Name FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");
+			if (!result.empty())
+			{
+				int ii = 0;
+				for (const auto& itt : result)
+				{
+					std::vector<std::string> sd = itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					ii++;
+				}
+			}
+		}
 		void CWebServer::GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep)
 		{
 			std::string request_path;
@@ -448,13 +469,13 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string senabled = request::findValue(&req, "enabled");
-			std::string address = request::findValue(&req, "address");
+			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = request::findValue(&req, "username");
+			std::string username = HTMLSanitizer::Sanitize(request::findValue(&req, "username"));
 			std::string password = request::findValue(&req, "password");
-			std::string timageurl = request::findValue(&req, "imageurl");
+			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
 			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
 			if (
 				(name == "") ||
@@ -497,13 +518,13 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string senabled = request::findValue(&req, "enabled");
-			std::string address = request::findValue(&req, "address");
+			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = request::findValue(&req, "username");
+			std::string username = HTMLSanitizer::Sanitize(request::findValue(&req, "username"));
 			std::string password = request::findValue(&req, "password");
-			std::string timageurl = request::findValue(&req, "imageurl");
+			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
 			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
 			if (
 				(name == "") ||

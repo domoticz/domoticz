@@ -4,6 +4,7 @@
             <tr>
                 <td id="name" ng-bind="item.Name"></td>
                 <td id="bigtext" class="ng-cloak">
+					<img ng-show="ctrl.displayTrend({{item.trend}})" height="12" ng-src="images/arrow_{{ctrl.trendState(item.trend)}}.png">
                     <span ng-show="ctrl.displayTemp()">{{item.Temp}}&#176; {{tempsign}}</span>
                     <span ng-show="ctrl.displaySetPoint() && ctrl.isSetPointOn()">({{item.SetPoint}}&#176; {{tempsign}})</span>
                     <span ng-show="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">(Off)</span>

@@ -1,50 +1,80 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Product xmlns="http://code.google.com/p/open-zwave/">
-   <!-- Configuration Parameters -->
-   <CommandClass id="112">
-      <Value type="list" genre="config" instance="1" index="1" label="Selected Relay" value="3" size="1">
-         <Help>If the controller treats this device as a single channel relay/switch, you may select which one of the relays that will report and respond to commands. Default setting: Relay 1 + Relay 2</Help>
-         <Item label="Relay 1" value="1" />
-         <Item label="Relay 2" value="2" />
-         <Item label="Relay 1 + Relay 2" value="3" />
-      </Value>
-      <Value type="list" genre="config" instance="1" index="2" label="Inputs S1 and S2 configuration" value="1" size="1">
-         <Help>To match different kind of external switches, the inputs S1 and S2 can be set to either Edge Mode, Pulse Mode or Edge/Toggle Mode. Edge Mode: The Position of the external switch determines the switching state of the relay. After a wireless switching command it may be needed to operate the switch twice to return to the direct relation of switch position and relay state. Toggle Mode: Each ON-Position of the external switch will toggle the state of the relays. This mode is particularly suited for mono-stable switches. Edge/Toggle-Mode: Every change of the state of the external switch results in a change of the relay state. Default setting: Edge Mode</Help>
-         <Item label="Edge Mode" value="1" />
-         <Item label="Pulse Mode" value="2" />
-         <Item label="Edge/Toggle Mode" value="3" />
-      </Value>
-      <Value type="list" genre="config" instance="1" index="3" label="Switch state after cycling power" value="1" size="1">
-         <Help>When the AC power returns, e.g. after a power failure, the relay states can be set to Off, On or to retain it's last state . Default setting: Retain last state</Help>
-         <Item label="Switch Off" value="0" />
-         <Item label="Retain last state" value="1" />
-         <Item label="Switch On" value="2" />
-      </Value>
-      <Value type="short" genre="config" instance="1" index="4" label="Auto off" min="0" max="32767" value="0">
-         <Help>After being switched on, the relays can be set to automatically switch off after the specified time. Available settings: 1-32767: time in seconds, 0: function disabled. Default setting: 0</Help>
-      </Value>
-      <Value type="list" genre="config" instance="1" index="5" label="Z-Wave Off command action" value="0" size="1">
-         <Help>Action when a Z-Wave Off command is received. Default setting: Switch Off</Help>
-         <Item label="Switch Off" value="0" />
-         <Item label="Ignore" value="1" />
-         <Item label="Toggle switch" value="2" />
-         <Item label="Switch On" value="3" />
-      </Value>
-      <Value type="list" genre="config" instance="1" index="6" label="Existence of endpoint 3 Action" value="1" size="1">
-         <Help>The endpoint3 of Multi-Channel Command Class is related to relay1 and relay2. It may be redundant for the need to control relay1 or relay2 individually. When the Existence of Endpoint3 is set as 0, the endpoint3 of Multi-Channel Command Class will be disabled.  Default setting: Endpoint3 disable</Help>
-         <Item label="Endpoint3 disable" value="0" />
-         <Item label="Endpoint3 exists" value="1" />
-      </Value>
-   </CommandClass>
-   <CommandClass id="96" mapping="endpoints" />
-   <!-- COMMAND_CLASS_ALARM does not respond to requests -->
-   <CommandClass id="113" action="remove" />
-   <!-- Association Groups -->
-   <CommandClass id="133">
-      <Associations num_groups="3">
-         <Group index="1" max_associations="1" label="Relay 1 and 2 together" />
-         <Group index="2" max_associations="1" label="Relay 1" />
-         <Group index="3" max_associations="1" label="Relay 2" />
-      </Associations>
-   </CommandClass>
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:0004:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/philio/pan06.png</MetaDataItem>
+    <MetaDataItem id="0004" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/854/</MetaDataItem>
+    <MetaDataItem id="0004" name="Identifier" type="0001">PAN06-2</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Switch Module</MetaDataItem>
+    <MetaDataItem id="0004" name="FrequencyName" type="0001">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">Features:
+- World first two relay Z-wave 400 series module in a very slim case.
+- Input voltage AC100~240V / DC24~60V.
+- Adopt Z-Wave protocol to secure the success of wireless two way communication.
+- Slim design, easy install.
+- Adopt newest Z-wave 400series chip, support multichannel operation and higher data rate (9.6/40/100kbps).
+- Resistive load 1500W X 2.
+- Two dry contact relay.
+- Z-Wave V6.02
+- Very low electricity consumption, meet Europe year 2012 energy-related products requirement directive 2009/125/EC no. 1275/2008.
+- LVD:EN 60669-2-1:2004+A1:2009+A12:2010,
+- EN 60669-2-2 :2006
+- EN 60669-1:1999+A1:2002+A2:2008+IS1:2009
+- R&amp;TTE: EN 301489, EN 300200,</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/822/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/854/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem name="ProductPage">http://philio-tech.com/</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Selected Relay" size="1" type="list" value="3">
+      <Help>If the controller treats this device as a single channel relay/switch, you may select which one of the relays that will report and respond to commands. Default setting: Relay 1 + Relay 2</Help>
+      <Item label="Relay 1" value="1"/>
+      <Item label="Relay 2" value="2"/>
+      <Item label="Relay 1 + Relay 2" value="3"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Inputs S1 and S2 configuration" size="1" type="list" value="1">
+      <Help>To match different kind of external switches, the inputs S1 and S2 can be set to either Edge Mode, Pulse Mode or Edge/Toggle Mode. Edge Mode: The Position of the external switch determines the switching state of the relay. After a wireless switching command it may be needed to operate the switch twice to return to the direct relation of switch position and relay state. Toggle Mode: Each ON-Position of the external switch will toggle the state of the relays. This mode is particularly suited for mono-stable switches. Edge/Toggle-Mode: Every change of the state of the external switch results in a change of the relay state. Default setting: Edge Mode</Help>
+      <Item label="Edge Mode" value="1"/>
+      <Item label="Pulse Mode" value="2"/>
+      <Item label="Edge/Toggle Mode" value="3"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Switch state after cycling power" size="1" type="list" value="1">
+      <Help>When the AC power returns, e.g. after a power failure, the relay states can be set to Off, On or to retain it's last state . Default setting: Retain last state</Help>
+      <Item label="Switch Off" value="0"/>
+      <Item label="Retain last state" value="1"/>
+      <Item label="Switch On" value="2"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Auto off" max="32767" min="0" type="short" value="0">
+      <Help>After being switched on, the relays can be set to automatically switch off after the specified time. Available settings: 1-32767: time in seconds, 0: function disabled. Default setting: 0</Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Z-Wave Off command action" size="1" type="list" value="0">
+      <Help>Action when a Z-Wave Off command is received. Default setting: Switch Off</Help>
+      <Item label="Switch Off" value="0"/>
+      <Item label="Ignore" value="1"/>
+      <Item label="Toggle switch" value="2"/>
+      <Item label="Switch On" value="3"/>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Existence of endpoint 3 Action" size="1" type="list" value="1">
+      <Help>The endpoint3 of Multi-Channel Command Class is related to relay1 and relay2. It may be redundant for the need to control relay1 or relay2 individually. When the Existence of Endpoint3 is set as 0, the endpoint3 of Multi-Channel Command Class will be disabled.  Default setting: Endpoint3 disable</Help>
+      <Item label="Endpoint3 disable" value="0"/>
+      <Item label="Endpoint3 exists" value="1"/>
+    </Value>
+  </CommandClass>
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ALARM does not respond to requests -->
+  <CommandClass action="remove" id="113"/>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Relay 1 and 2 together" max_associations="1"/>
+      <Group index="2" label="Relay 1" max_associations="1"/>
+      <Group index="3" label="Relay 2" max_associations="1"/>
+    </Associations>
+  </CommandClass>
 </Product>

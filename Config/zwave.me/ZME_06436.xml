@@ -1,7 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Taken from http://en.z-wave.me/docs/ZME_0643x_UserManual.pdf-->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
+<!--Taken from http://en.z-wave.me/docs/ZME_0643x_UserManual.pdf--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0115:0003:1000</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zwave.me/ZME_06436.png</MetaDataItem>
+    <MetaDataItem id="0003" name="ZWProductPage" type="1000">https://products.z-wavealliance.org/products/583/</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="1000">ZME_05436</MetaDataItem>
+    <MetaDataItem name="Description">This Z-Wave.Me switching Flush-Mountable  is intended to control window or door blinds.  
+A 230V powered pattress box is needed for installation. The Flush-Mountable has two buttons. 
+In order to use them for local control the insert needs to be completed with a switching paddle and a mounting frame of one of the DUWI switching series “Everlux” or “Arcada”.  
+
+Technical Data:
+•	Power rating: 230V, 50 Hz
+•	Switched load: up to 1800W motor
+•	Outputs: 2 switches interlocked against each other
+•	Duration of switching signal: 2 min.
+•	Local interaction: 2 buttons for inclusion, exclusion and association
+•	Dimensions: 48mmx52mmx27mm
+•	Power supply:  via 230 V power
+•	Distance: up to 100 m outdoor, up to 30 m within buildings
+</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.pepper1.net/zwavedb/device/119</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://en.z-wave.me/content/z-wave-hardware</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="1000">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave.Me - Flush Mountable Blind Control</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/583/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
 	<!--IMPORTANT: Controllers may only allow to configure signed values. 
 	    In order to set values in the range  128?255 for parameters 4,  5 and 6 the
 	    value sent in the application shall be the desired value minus 256. 
@@ -11,87 +36,85 @@
 	    use value equal to desired value minus 65536. For example, to set auto
 	    switch off period to 10 hours =36000s it may be needed to set a value
 	    36000?65536=?29536.-->
-
-	<CommandClass id="112">
-		<Value type="list" index="1" genre="config" label="Set LED indication mode" units="" min="1" max="99" value="3" size="1">
-			<Item label="Disabled" value="0" />
-			<Item label="Show switch/dimmer state / when in motion or inactive (for blinds)" value="1" />
-			<Item label="Night mode (inverted switch state)" value="2" />
-			<Item label="Operated by Indicator Command Class (default)" value="3" />
-			<Item label="Show if not closed (for blinds only)" value="4" />
-		</Value>
-		<Value type="int" index="2" genre="config" label="Automatically open or close after" units="seconds" min="0" max="65535" value="0">
-			<Help>If not zero, automatically switch off/close blind after a user defined time</Help>
-		</Value>
-		<Value type="list" index="3" genre="config" label="What to do on RF off command" value="0" size="1">
-			<Help>If not zero, automatically switch off/close blind after a user defined time</Help>
-			<Item label="Switch off (default)" value="0" />
-			<Item label="Ignore" value="1" />
-			<Item label="Switch on" value="2" />
-		</Value>
-		<Value type="byte" index="4" genre="config" label="Full close time" units="Second" min="0" max="255" value="60" size="1">
-			<Help>Time to go from opened to closed state. Used to estimate the current level. Note that in Permanent motion mode the reported value would a be Closed or Opened, while all Basic and Multilevel Set values (1-99, 255) would Open except 0 value that would Close.</Help>
-		</Value>
-		<Value type="byte" index="5" genre="config" label="Full open time" units="Second" min="0" max="255" value="60" size="1">
-			<Help>Time to go from closed to open state. This value may differ from Full close time for some blinds due to gravity. Used to estimate the current level. Note that in Permanent motion mode the reported value would a be Closed or Opened, while all Basic and Multilevel Set values (1-99, 255) would Open except 0 value that would Close.</Help>
-		</Value>
-		<Value type="byte" index="6" genre="config" label="Node Id of the blocking device" min="0" max="232" value="0">
-			<Help>Id of the device which commands would be interpreted not as Open/Close, but as block/unblock. Usefull with door opening detector: if the door is open, block the blind not to break shades while they move.</Help>
-		</Value>
-		<Value type="list" index="7" genre="config" label="On which command from blocking node to enable the protection" min="0" max="1" value="0" size="1">
-			<Help>Defines which command from blocking device to interpret as closed door and hence, unprotected.</Help>
-			<Item label="on On (default)" value="0" />
-			<Item label="on Off" value="1" />
-		</Value>
-		<Value type="list" index="8" genre="config" label="Stop or Revert if opposite button is pressed" units="" min="0" max="2" size="1" value="0">
-			<Help>Defines behaviour on open press while closing and vice versa. To allow Stop behavior when switched by remote, use Stop by Basic</Help>
-			<Item label="Stop (by buttons and Binary) (Default)" value="0" />
-			<Item label="Stop (by buttons, Binary and Basic)" value="1" />
-			<Item label="Revert" value="2" />
-		</Value>
-		<Value type="list" index="9" genre="config" label="Invert open and close relays" units="" min="0" max="1" size="1" value="0">
-			<Help>Allow exchanging open and close relays if blind control is wired to the motor incorrectly</Help>
-			<Item label="No (default)" value="0" />
-			<Item label="Yes" value="1" />
-		</Value>
-		<Value type="byte" index="10" genre="config" label="Typical click timeout" units="x 10 milliseconds" min="1" max="100" value="50">
-			<Help>Typical time used to differentiate click, hold, double and triple clicks.</Help>
-		</Value>
-		<Value type="list" index="11" genre="config" label="Invert buttons" value="0" size="1">
-		  <Item label="No default)" value="0" />
-		  <Item label="Yes" value="1" />
-		</Value>
-		<Value type="list" index="12" genre="config" label="Switch by buttons" value="1" size="1">
-			<Help>If disabled, the local operations by buttons will not switch the load, but only send commands to On/Off association group. In  this mode buttons are not linked with the switch anymore. They can be used separately: buttons to control remote device, switch will operate by RF commands only. </Help>
-			<Item label="No" value="0" />
-			<Item label="By single press and hold (default)" value="1" />
-			<Item label="By double press and hold" value="1" />
-		</Value>
-		<Value type="list" index="13" genre="config" label="Action on button single press or hold" value="1" size="1">
-			<Help>Defines which command should be sent on button single press or hold. Basic commands are sent to Association group. Switch All commands are sent broadcast. </Help>
-			<Item label="Disabled" value="0" />
-			<Item label="Switch On, Off and dim using Basic Set(default)" value="1" />
-			<Item label="Switch All On/Off" value="1" />
-		</Value>
-		<Value type="list" index="14" genre="config" label="Action on button double press or hold" value="0" size="1">
-			<Help>Defines which command should be sent on button double press or press-hold. Basic commands are sent to Association group.   Switch   All commands are sent broadcast. If not disabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands.</Help>
-			<Item label="Disabled (don't wait for double click,default)" value="0" />
-			<Item label="Switch On, Off and dim using Basic Set" value="1" />
-			<Item label="Switch All On/Off" value="1" />
-		</Value>
-		<Value type="list" index="15" genre="config" label="Send the following Switch All commands" value="1" size="1">
-			<Item label="Switch All Off only (default)" value="1" />
-			<Item label="Switch All On only" value="1" />
-			<Item label="Switch All On and Off" value="255" />
-		</Value>
-	</CommandClass>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="3">
-			<Group index="1" max_associations="8" label="Group 1" auto="false"/>
-			<Group index="2" max_associations="8" label="Group 2" />
-			<Group index="3" max_associations="8" label="Lifeline" auto="true"/>
-		</Associations>
-	</CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Set LED indication mode" max="99" min="1" size="1" type="list" units="" value="3">
+      <Item label="Disabled" value="0"/>
+      <Item label="Show switch/dimmer state / when in motion or inactive (for blinds)" value="1"/>
+      <Item label="Night mode (inverted switch state)" value="2"/>
+      <Item label="Operated by Indicator Command Class (default)" value="3"/>
+      <Item label="Show if not closed (for blinds only)" value="4"/>
+    </Value>
+    <Value genre="config" index="2" label="Automatically open or close after" max="65535" min="0" type="int" units="seconds" value="0">
+      <Help>If not zero, automatically switch off/close blind after a user defined time</Help>
+    </Value>
+    <Value genre="config" index="3" label="What to do on RF off command" size="1" type="list" value="0">
+      <Help>If not zero, automatically switch off/close blind after a user defined time</Help>
+      <Item label="Switch off (default)" value="0"/>
+      <Item label="Ignore" value="1"/>
+      <Item label="Switch on" value="2"/>
+    </Value>
+    <Value genre="config" index="4" label="Full close time" max="255" min="0" size="1" type="byte" units="Second" value="60">
+      <Help>Time to go from opened to closed state. Used to estimate the current level. Note that in Permanent motion mode the reported value would a be Closed or Opened, while all Basic and Multilevel Set values (1-99, 255) would Open except 0 value that would Close.</Help>
+    </Value>
+    <Value genre="config" index="5" label="Full open time" max="255" min="0" size="1" type="byte" units="Second" value="60">
+      <Help>Time to go from closed to open state. This value may differ from Full close time for some blinds due to gravity. Used to estimate the current level. Note that in Permanent motion mode the reported value would a be Closed or Opened, while all Basic and Multilevel Set values (1-99, 255) would Open except 0 value that would Close.</Help>
+    </Value>
+    <Value genre="config" index="6" label="Node Id of the blocking device" max="232" min="0" type="byte" value="0">
+      <Help>Id of the device which commands would be interpreted not as Open/Close, but as block/unblock. Usefull with door opening detector: if the door is open, block the blind not to break shades while they move.</Help>
+    </Value>
+    <Value genre="config" index="7" label="On which command from blocking node to enable the protection" max="1" min="0" size="1" type="list" value="0">
+      <Help>Defines which command from blocking device to interpret as closed door and hence, unprotected.</Help>
+      <Item label="on On (default)" value="0"/>
+      <Item label="on Off" value="1"/>
+    </Value>
+    <Value genre="config" index="8" label="Stop or Revert if opposite button is pressed" max="2" min="0" size="1" type="list" units="" value="0">
+      <Help>Defines behaviour on open press while closing and vice versa. To allow Stop behavior when switched by remote, use Stop by Basic</Help>
+      <Item label="Stop (by buttons and Binary) (Default)" value="0"/>
+      <Item label="Stop (by buttons, Binary and Basic)" value="1"/>
+      <Item label="Revert" value="2"/>
+    </Value>
+    <Value genre="config" index="9" label="Invert open and close relays" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Allow exchanging open and close relays if blind control is wired to the motor incorrectly</Help>
+      <Item label="No (default)" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="10" label="Typical click timeout" max="100" min="1" type="byte" units="x 10 milliseconds" value="50">
+      <Help>Typical time used to differentiate click, hold, double and triple clicks.</Help>
+    </Value>
+    <Value genre="config" index="11" label="Invert buttons" size="1" type="list" value="0">
+      <Item label="No default)" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="12" label="Switch by buttons" size="1" type="list" value="1">
+      <Help>If disabled, the local operations by buttons will not switch the load, but only send commands to On/Off association group. In  this mode buttons are not linked with the switch anymore. They can be used separately: buttons to control remote device, switch will operate by RF commands only. </Help>
+      <Item label="No" value="0"/>
+      <Item label="By single press and hold (default)" value="1"/>
+      <Item label="By double press and hold" value="1"/>
+    </Value>
+    <Value genre="config" index="13" label="Action on button single press or hold" size="1" type="list" value="1">
+      <Help>Defines which command should be sent on button single press or hold. Basic commands are sent to Association group. Switch All commands are sent broadcast. </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Switch On, Off and dim using Basic Set(default)" value="1"/>
+      <Item label="Switch All On/Off" value="1"/>
+    </Value>
+    <Value genre="config" index="14" label="Action on button double press or hold" size="1" type="list" value="0">
+      <Help>Defines which command should be sent on button double press or press-hold. Basic commands are sent to Association group.   Switch   All commands are sent broadcast. If not disabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands.</Help>
+      <Item label="Disabled (don't wait for double click,default)" value="0"/>
+      <Item label="Switch On, Off and dim using Basic Set" value="1"/>
+      <Item label="Switch All On/Off" value="1"/>
+    </Value>
+    <Value genre="config" index="15" label="Send the following Switch All commands" size="1" type="list" value="1">
+      <Item label="Switch All Off only (default)" value="1"/>
+      <Item label="Switch All On only" value="1"/>
+      <Item label="Switch All On and Off" value="255"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group auto="false" index="1" label="Group 1" max_associations="8"/>
+      <Group index="2" label="Group 2" max_associations="8"/>
+      <Group auto="true" index="3" label="Lifeline" max_associations="8"/>
+    </Associations>
+  </CommandClass>
 </Product>

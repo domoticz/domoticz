@@ -106,11 +106,6 @@ void DomoticzTCP::OnData(const unsigned char *pData, size_t length)
 	onInternalMessage((const unsigned char *)pData, length, false); // Do not check validity, this might be non RFX-message
 }
 
-void DomoticzTCP::OnError(const std::exception e)
-{
-	Log(LOG_ERROR, "Error: %s", e.what());
-}
-
 void DomoticzTCP::OnError(const boost::system::error_code& error)
 {
 	if (
@@ -205,7 +200,7 @@ bool DomoticzTCP::StartHardwareProxy()
 
 bool DomoticzTCP::ConnectInternalProxy()
 {
-	std::shared_ptr<http::server::CProxyClient> proxy;
+	http::server::CProxyClient *proxy;
 	const int version = 1;
 	// we temporarily use the instance id as an identifier for this connection, meanwhile we get a token from the proxy
 	// this means that we connect connect twice to the same server
@@ -232,7 +227,7 @@ bool DomoticzTCP::StopHardwareProxy()
 
 void DomoticzTCP::DisconnectProxy()
 {
-	std::shared_ptr<http::server::CProxyClient> proxy;
+	http::server::CProxyClient *proxy;
 
 	proxy = m_webservers.GetProxyForMaster(this);
 	if (proxy) {
@@ -250,7 +245,7 @@ void DomoticzTCP::writeProxy(const char *data, size_t size)
 {
 	/* send data to slave */
 	if (isConnectedProxy()) {
-		std::shared_ptr<http::server::CProxyClient> proxy = m_webservers.GetProxyForMaster(this);
+		http::server::CProxyClient *proxy = m_webservers.GetProxyForMaster(this);
 		if (proxy) {
 			proxy->WriteMasterData(token, data, size);
 		}

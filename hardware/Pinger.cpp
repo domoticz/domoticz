@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Pinger.h"
 #include "../main/Helper.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../main/RFXtrx.h"
@@ -9,7 +10,7 @@
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
 
 #include <boost/asio.hpp>
 
@@ -17,6 +18,14 @@
 #include "pinger/ipv4_header.h"
 
 #include <iostream>
+
+using namespace boost::placeholders;
+
+#if BOOST_VERSION >= 107000
+#define GET_IO_SERVICE(s) ((boost::asio::io_context&)(s).get_executor().context())
+#else
+#define GET_IO_SERVICE(s) ((s).get_io_service())
+#endif
 
 class pinger
 	: private domoticz::noncopyable
@@ -76,7 +85,7 @@ private:
 				num_tries_++;
 				if (num_tries_ > 4)
 				{
-					resolver_.get_io_service().stop();
+					GET_IO_SERVICE(resolver_).stop();
 				}
 				else
 				{
@@ -118,7 +127,7 @@ private:
 			if (num_replies_++ == 0)
 				timer_.cancel();
 			m_PingState = true;
-			resolver_.get_io_service().stop();
+			GET_IO_SERVICE(resolver_).stop();
 		}
 		else
 		{
@@ -195,7 +204,24 @@ bool CPinger::StopHardware()
 
 bool CPinger::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_log.Log(LOG_ERROR, "Pinger: This is a read-only sensor!");
+	const tRBUF* pSen = reinterpret_cast<const tRBUF*>(pdata);
+
+	unsigned char packettype = pSen->ICMND.packettype;
+	//unsigned char subtype=pSen->ICMND.subtype;
+
+	if (packettype != pTypeLighting2)
+		return false;
+
+	uint16_t nodeID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
+
+	//Find our Node
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name, MacAddress FROM WOLNodes WHERE (ID==%d)", nodeID);
+	if (result.empty())
+		_log.Log(LOG_ERROR, "Pinger: Unknown ID (%08X)", nodeID);
+	else
+		_log.Log(LOG_ERROR, "Pinger: This is a read-only sensor! (Name: %s, IP: %s)", result[0][0].c_str(), result[0][1].c_str());
+
 	return false;
 }
 
@@ -517,8 +543,8 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
-			std::string ip = request::findValue(&req, "ip");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Timeout = atoi(request::findValue(&req, "timeout").c_str());
 			if (
 				(hwid == "") ||
@@ -550,8 +576,8 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			std::string name = request::findValue(&req, "name");
-			std::string ip = request::findValue(&req, "ip");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Timeout = atoi(request::findValue(&req, "timeout").c_str());
 			if (
 				(hwid == "") ||

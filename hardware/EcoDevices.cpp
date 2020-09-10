@@ -33,9 +33,10 @@ Version history
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include <../tinyxpath/xpath_static.h>
+#include "../tinyxpath/tinyxml.h"
+#include "../tinyxpath/xpath_static.h"
 #include "../webserver/Base64.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include <sstream>
 
 #ifdef _DEBUG
@@ -53,24 +54,24 @@ Version history
 #define RELEASE_RT2 29
 
 CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort,
-	const std::string &username, const std::string &password, const int datatimeout, const int model, const int ratelimit):
-m_szIPAddress(IPAddress),
-m_username(username),
-m_password(password)
+	const std::string &username, const std::string &password, const int datatimeout, const int model, const int ratelimit) :
+	m_szIPAddress(IPAddress),
+	m_username(username),
+	m_password(password)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
 	m_iModel = model;
 
-        // Updates must be at least every 5mn in order to keep consistent historical data
+	// Updates must be at least every 5mn in order to keep consistent historical data
 	m_iDataTimeout = (datatimeout >= 300 || datatimeout == 0) ? 300 : datatimeout;
 
- 	// system seems unstable if going too fast
+	// system seems unstable if going too fast
 	m_iRateLimit = (ratelimit < 2) ? 2 : ratelimit;
 
-        // RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate)
-	// down to Timeout in order to avoir watchdog errors due to this user configuration mistake.
-        if (m_iRateLimit > m_iDataTimeout)   m_iRateLimit = m_iDataTimeout;
+	// RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate)
+// down to Timeout in order to avoir watchdog errors due to this user configuration mistake.
+	if (m_iRateLimit > m_iDataTimeout)   m_iRateLimit = m_iDataTimeout;
 
 	Init();
 }
@@ -88,11 +89,11 @@ void CEcoDevices::Init()
 	// Is the device we poll password protected?
 	m_ssURL.str("");
 	if ((m_username.size() > 0) && (m_password.size() > 0))
-        	m_ssURL << "http://" << m_username << ":" << m_password << "@";
-        else
-                m_ssURL <<"http://";
+		m_ssURL << "http://" << m_username << ":" << m_password << "@";
+	else
+		m_ssURL << "http://";
 
-        m_ssURL << m_szIPAddress << ":" << m_usIPPort;
+	m_ssURL << m_szIPAddress << ":" << m_usIPPort;
 
 }
 
@@ -164,6 +165,9 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	teleinfo.DEMAIN = S_xpath_string(XMLdoc.RootElement(), "/response/DEMAIN/text()").c_str();
 	teleinfo.ISOUSC = i_xpath_int(XMLdoc.RootElement(), "/response/ISOUSC/text()");
 	teleinfo.PAPP = i_xpath_int(XMLdoc.RootElement(), "/response/PAPP/text()");
+	if ( teleinfo.PAPP > 0 ) {
+		teleinfo.withPAPP = true;
+	}
 	teleinfo.BASE = i_xpath_int(XMLdoc.RootElement(), "/response/BASE/text()");
 	teleinfo.HCHC = i_xpath_int(XMLdoc.RootElement(), "/response/HCHC/text()");
 	teleinfo.HCHP = i_xpath_int(XMLdoc.RootElement(), "/response/HCHP/text()");
@@ -285,7 +289,7 @@ void CEcoDevices::GetMeterDetails()
 	else
 	{
 		message = "EcoDevices firmware needs to be at least version ";
-		message = message + std::to_string(min_major) + "." + std::to_string(min_minor) +  "." + std::to_string(min_release);
+		message = message + std::to_string(min_major) + "." + std::to_string(min_minor) + "." + std::to_string(min_release);
 		message = message + ", current version is " + m_status.version;
 		_log.Log(LOG_ERROR, "(%s) %s", m_Name.c_str(), message.c_str());
 		return;
@@ -376,8 +380,7 @@ void CEcoDevices::GetMeterRT2Details()
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", m_Name.c_str());
@@ -471,6 +474,9 @@ void CEcoDevices::GetMeterRT2Details()
 	m_teleinfo1.DEMAIN = XMLmap["DEMAIN"];
 	m_teleinfo1.ISOUSC = atoi(XMLmap["ISOUSC"].c_str());
 	m_teleinfo1.PAPP = atoi(XMLmap["PAPP"].c_str());
+	if ( m_teleinfo1.PAPP > 0 ) {
+		m_teleinfo1.withPAPP = true;
+	}
 	m_teleinfo1.BASE = atoi(XMLmap["BASE"].c_str());
 	m_teleinfo1.HCHC = atoi(XMLmap["HCHC"].c_str());
 	m_teleinfo1.HCHP = atoi(XMLmap["HCHP"].c_str());

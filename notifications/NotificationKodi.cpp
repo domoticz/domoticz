@@ -131,7 +131,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 				szTypeImage = "doorbell48";
 				break;
 			case STYPE_Contact:
-				szTypeImage = "contact48";
+				szTypeImage = "Contact48";
 				break;
 			case STYPE_Blinds:
 			case STYPE_BlindsPercentage:
@@ -160,13 +160,13 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 				szTypeImage = "pushon48";
 				break;
 			case STYPE_DoorContact:
-				szTypeImage = "door48";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_DoorLock:
-				szTypeImage = "door48open";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_DoorLockInverted:
-				szTypeImage = "door48";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_Media:
 				if (posCustom >= 0)

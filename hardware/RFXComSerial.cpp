@@ -7,12 +7,12 @@
 #include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
 
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <ctime>
 
@@ -23,7 +23,11 @@
 #include <pwd.h>
 #endif
 
+using namespace boost::placeholders;
+
 #define RETRY_DELAY 30
+
+#define RFX_WRITE_DELAY 300
 
 extern std::string szStartupFolder;
 
@@ -82,7 +86,7 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_serial.setStopbits(serial::stopbits_one);
 	m_serial.setFlowcontrol(serial::flowcontrol_none);
 
-	serial::Timeout stimeout = serial::Timeout::simpleTimeout(100);
+	serial::Timeout stimeout = serial::Timeout::simpleTimeout(200);
 	m_serial.setTimeout(stimeout);
 }
 
@@ -308,7 +312,7 @@ bool RFXComSerial::UpgradeFirmware()
 
 	m_szUploadMessage = "Bootloader, Start programming...";
 	Log(LOG_STATUS, m_szUploadMessage);
-	for (auto itt : firmwareBuffer)
+	for (const auto& itt : firmwareBuffer)
 	{
 		icntr++;
 		if (icntr % 5 == 0)
@@ -682,7 +686,7 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, int m
 		try
 		{
 			size_t twrite = m_serial.write((const uint8_t *)&output_buffer, tot_bytes);
-			sleep_milliseconds(100);
+			sleep_milliseconds(RFX_WRITE_DELAY);
 			if (twrite == tot_bytes)
 			{
 				int rcount = 0;
@@ -921,6 +925,7 @@ namespace http {
 				pRFXComSerial->UploadFirmware(outputfile);
 			}
 		}
+
 		void CWebServer::SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
 			redirect_uri = "/index.html";
@@ -1007,8 +1012,8 @@ namespace http {
 			{
 				//For now disable setting the protocols on a 868Mhz device
 			}
-
 		}
+
 		void CWebServer::Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "ERR";

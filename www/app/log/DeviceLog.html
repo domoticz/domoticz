@@ -1,0 +1,18 @@
+<div class="container js-device-logs">
+    <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+    <a class="btnstyle pull-right"
+       ng-if="::vm.isReportAvailable()"
+       ng-href="#/Devices/{{ ::vm.deviceIdx }}/Report"
+    >
+        {{ ::'Report' | translate }}
+    </a>
+
+    <h2 class="page-header">{{ ::vm.pageName }}</h2>
+
+    <device-text-log ng-if="::vm.isTextLog()" device-idx="::vm.deviceIdx" />
+    <device-light-log ng-if="::vm.isLightLog()" device-idx="::vm.deviceIdx" />
+    <device-temperature-log ng-if="::vm.isTemperatureLog()" device="::vm.device" />
+    <device-graph-log ng-if="::vm.isGraphLog()" device="::vm.device" />
+
+    <div class="js-device-log-content"></div>
+</div>

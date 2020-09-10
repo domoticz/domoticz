@@ -1,9 +1,9 @@
-define(['app', 'log/factories', 'log/components'], function (app) {
+define(['app', 'log/factories'], function (app) {
     app.component('deviceGraphLog', {
         bindings: {
             device: '<'
         },
-        templateUrl: 'views/log/device_graph_log.html',
+        templateUrl: 'app/log/GraphLog.html',
     });
 
     app.component('deviceLogChart', {

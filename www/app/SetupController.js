@@ -30,15 +30,12 @@ define(['app'], function (app) {
 			switch (subsystem) {
 				case "clickatell":
 					var ClickatellAPI = encodeURIComponent($("#smstable #ClickatellAPI").val());
-					var ClickatellUser = encodeURIComponent($("#smstable #ClickatellUser").val());
-					var ClickatellPassword = encodeURIComponent($("#smstable #ClickatellPassword").val());
 					var ClickatellTo = encodeURIComponent($("#smstable #ClickatellTo").val());
-					var ClickatellFrom = encodeURIComponent($("#smstable #ClickatellFrom").val());
-					if (ClickatellAPI == "" || ClickatellUser == "" || ClickatellPassword == "" || ClickatellTo == "" || ClickatellFrom == "") {
+					if (ClickatellAPI == "" || ClickatellTo == "") {
 						ShowNotify($.t('All Clickatell fields are required!...'), 3500, true);
 						return;
 					}
-					extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellUser=" + ClickatellUser + "&ClickatellPassword=" + ClickatellPassword + "&ClickatellTo=" + ClickatellTo + "&ClickatellFrom=" + ClickatellFrom;
+					extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellTo=" + ClickatellTo;
 					break;
 				case "http":
 					var HTTPField1 = encodeURIComponent($("#httptable #HTTPField1").val());
@@ -164,7 +161,7 @@ define(['app'], function (app) {
 					}
 					extraparams = 'LmsPlayerMac=' + $("#lmstable #LmsPlayerMac").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
 					break;
-				case "gcm":
+				case "fcm":
 					break;
 				default:
 					return;
@@ -176,7 +173,7 @@ define(['app'], function (app) {
 				success: function (data) {
 					if (data.status != "OK") {
 						HideNotify();
-						if ((subsystem == "http") || (subsystem == "kodi") || (subsystem == "lms") || (subsystem == "gcm")) {
+						if ((subsystem == "http") || (subsystem == "kodi") || (subsystem == "lms") || (subsystem == "fcm")) {
 							ShowNotify($.t('Problem Sending Notification'), 3000, true);
 						}
 						else if (subsystem == "email") {
@@ -321,17 +318,8 @@ define(['app'], function (app) {
 					if (typeof data.ClickatellAPI != 'undefined') {
 						$("#smstable #ClickatellAPI").val(atob(data.ClickatellAPI));
 					}
-					if (typeof data.ClickatellUser != 'undefined') {
-						$("#smstable #ClickatellUser").val(atob(data.ClickatellUser));
-					}
-					if (typeof data.ClickatellPassword != 'undefined') {
-						$("#smstable #ClickatellPassword").val(atob(data.ClickatellPassword));
-					}
 					if (typeof data.ClickatellTo != 'undefined') {
 						$("#smstable #ClickatellTo").val(atob(data.ClickatellTo));
-					}
-					if (typeof data.ClickatellFrom != 'undefined') {
-						$("#smstable #ClickatellFrom").val(atob(data.ClickatellFrom));
 					}
 
 					if (typeof data.HTTPEnabled != 'undefined') {
@@ -391,8 +379,8 @@ define(['app'], function (app) {
 					if (typeof data.LmsDuration != 'undefined') {
 						$("#lmstable #LmsDuration").val(data.LmsDuration);
 					}
-					if (typeof data.GCMEnabled != 'undefined') {
-						$("#gcmtable #GCMEnabled").prop('checked', data.GCMEnabled == 1);
+					if (typeof data.FCMEnabled != 'undefined') {
+						$("#gcmtable #FCMEnabled").prop('checked', data.FCMEnabled == 1);
 					}
 					if (typeof data.LightHistoryDays != 'undefined') {
 						$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
@@ -404,10 +392,13 @@ define(['app'], function (app) {
 						$("#shortlogtable #comboshortloginterval").val(data.ShortLogInterval);
 					}
 					if (typeof data.DashboardType != 'undefined') {
-						$("#dashmodetable #combosdashtype").val(data.DashboardType);
+						$("#settingscontent #combosdashtype").val(data.DashboardType);
+					}
+					if (typeof data.AllowWidgetOrdering != 'undefined') {
+						$("#settingscontent #AllowWidgetOrdering").prop('checked', data.AllowWidgetOrdering == 1);
 					}
 					if (typeof data.MobileType != 'undefined') {
-						$("#mobilemodetable #combosmobiletype").val(data.MobileType);
+						$("#settingscontent #combosmobiletype").val(data.MobileType);
 					}
 					if (typeof data.WebUserName != 'undefined') {
 						$scope.OldAdminUser=data.WebUserName;
@@ -598,6 +589,9 @@ define(['app'], function (app) {
 					if (typeof data.LogEventScriptTrigger != 'undefined') {
 						$("#eventsystemtable #LogEventScriptTrigger").prop('checked', data.LogEventScriptTrigger == 1);
 					}
+					if (typeof data.EventSystemLogFullURL != 'undefined') {
+						$("#eventsystemtable #EventSystemLogFullURL").prop('checked', data.EventSystemLogFullURL == 1);
+					}
 
 					if (typeof data.FloorplanPopupDelay != 'undefined') {
 						$("#floorplanoptionstable #FloorplanPopupDelay").val(data.FloorplanPopupDelay);
@@ -625,10 +619,6 @@ define(['app'], function (app) {
 					}
 					if (typeof data.FloorplanInactiveOpacity != 'undefined') {
 						$("#floorplancolourtable #FloorplanInactiveOpacity").val(data.FloorplanInactiveOpacity);
-					}
-
-					if (typeof data.AllowWidgetOrdering != 'undefined') {
-						$("#dashmodetable #AllowWidgetOrdering").prop('checked', data.AllowWidgetOrdering == 1);
 					}
 					if (typeof data.SecOnDelay != 'undefined') {
 						$("#sectable #SecOnDelay").val(data.SecOnDelay);
@@ -733,11 +723,22 @@ define(['app'], function (app) {
 				}
 			}
 
-			$.post("storesettings.webem", $("#settings").serialize(), function (data) {
-				$scope.$apply(function () {
-					$window.location = '/#Dashboard';
-					$window.location.reload();
-				});
+			$http.post('storesettings', new FormData(document.querySelector("#settings")), {
+				transformRequest: angular.identity,
+				headers: { 'Content-Type': undefined }
+			}).then(function successCallback(response) {
+			    var data = response.data;
+			    if (data.status != "OK") {
+			        HideNotify();
+					ShowNotify($.t("Problem saving settings!"), 2000, true);
+					return;
+			    }
+				$window.location = '/#Dashboard';
+				$window.location.reload();
+			}, function errorCallback(response) {
+			    HideNotify();
+				ShowNotify($.t("Problem saving settings!"), 2000, true);
+				return;
 			});
 		}
 
@@ -812,17 +813,39 @@ define(['app'], function (app) {
 							bootbox.alert($.t('Please enter a Address to search for!...'), 3500, true);
 							return false;
 						}
-						geocoder = new google.maps.Geocoder();
-						geocoder.geocode({ 'address': address }, function (results, status) {
-							if (status == google.maps.GeocoderStatus.OK) {
-								$('#dialog-findlatlong #latitude').val(results[0].geometry.location.lat().toFixed(6));
-								$('#dialog-findlatlong #longitude').val(results[0].geometry.location.lng().toFixed(6));
-							} else {
-								bootbox.alert($.t('Geocode was not successful for the following reason') + ': ' + status);
+						var url = "https://www.mapquestapi.com/geocoding/v1/address?key=XN5Eyt9GjLaRPG6T2if7VtUueRLckR8b&inFormat=kvp&outFormat=json&thumbMaps=false&location=" + address;
+						$http({
+							url: url,
+							async: true,
+							dataType: 'json'
+						}).then(function successCallback(response) {
+							var data = response.data;
+							var bIsOK = false;
+							if(data.hasOwnProperty('results')) {
+								if (data['results'][0]['locations'].length > 0) {
+									$('#dialog-findlatlong #latitude').val(data['results'][0]['locations'][0]['displayLatLng']['lat']);
+									$('#dialog-findlatlong #longitude').val(data['results'][0]['locations'][0]['displayLatLng']['lng']);//.toFixed(6)
+									bIsOK = true;
+								}
+							} 
+							if (!bIsOk) {
+								bootbox.alert($.t('Geocode was not successful for the following reason') + ': Invalid/No data returned!');
 							}
+						}, function errorCallback(response) {
+							bootbox.alert($.t('Geocode was not successful for the following reason') + ': ' + response.statusText);
 						});
 						return false;
 					});
+					if ('geolocation' in navigator) {
+						$('#geodetect').click(function () {
+							navigator.geolocation.getCurrentPosition(function (location) {
+								$('#dialog-findlatlong #latitude').val(location.coords.latitude);
+								$('#dialog-findlatlong #longitude').val(location.coords.longitude);
+							});
+						});
+					} else {
+						$('#georow').hide();
+					}
 				},
 				close: function () {
 					$(this).dialog("close");

@@ -47,4 +47,5 @@ private:
 	static double revolution(double x);
 	static double rev180(double x);
 	static double GMST0(double d);
+	static void fixRoundIssue(int* hour, int* minute);
 };

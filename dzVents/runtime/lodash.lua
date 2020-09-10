@@ -4,21 +4,23 @@
 -- @author Ted Moghimi
 -- @license MIT
 
+-- 20200120; added _.isEqual ( http://lua-users.org/lists/lua-l/2014-09/msg00463.html )
+
 local _ = {
-    _VERSION = '0.02'
+    _VERSION = '0.03'
 }
 
 --- Array
 -- @section Array
 
 ---
--- Creates an array of elements split into groups the length of size. 
--- If collection can’t be split evenly, the final chunk will be the 
+-- Creates an array of elements split into groups the length of size.
+-- If collection can’t be split evenly, the final chunk will be the
 -- remaining elements.
 -- @usage local t = _.chunk({'x', 'y', 'z', 1, 2, 3, 4, true , false}, 4)
 -- _.print(t)
 -- --> {{"x", "y", "z", 1}, {2, 3, 4, true}, {false}}
--- 
+--
 -- @param array The array to process.
 -- @param[opt=1] size The length of each chunk.
 -- @return the new array containing chunks.
@@ -26,7 +28,7 @@ _.chunk = function (array, size)
     local t = {}
     local size = size == 0 and 1 or size or 1
     local c, i = 1, 1
-    while true do   
+    while true do
         t[i] = {}
         for j = 1, size do
             _.push(t[i], array[c])
@@ -41,7 +43,7 @@ _.chunk = function (array, size)
 end
 
 ---
--- Creates an array with all falsey values removed. The values false, 
+-- Creates an array with all falsey values removed. The values false,
 -- nil are falsey.
 -- @usage local t = _.compact({'x', 'y', nil, 1, 2, 3, false, true , false})
 -- _.print(t)
@@ -51,17 +53,17 @@ end
 -- @return Returns the new array of filtered values
 _.compact = function (array)
     local t = {}
-    for k, v in pairs(array) do     
+    for k, v in pairs(array) do
         if v then
             _.push(t, v)
         end
-    end 
+    end
     return t
 end
 
 
 ---
--- Creates an array of unique array values not included in the other 
+-- Creates an array of unique array values not included in the other
 -- provided arrays.
 -- @usage _.print(_.difference({3, 1, 2, 9, 5, 9}, {4, 5}, {9, 1}))
 -- --> {3, 2}
@@ -91,17 +93,17 @@ end
 -- Creates a slice of array with n elements dropped from the beginning.
 -- @usage _.print(_.drop({1, 2, 3, 4, 5, 6}, 2))
 -- --> {3, 4, 5, 6}
--- 
+--
 -- @param array The array to query.
 -- @param[opt=1] n The number of elements to drop.
 -- @return Returns the slice of array.
 _.drop = function (array, n)
-    local n = n or 1    
+    local n = n or 1
     return _.slice(array, n + 1)
 end
 
 
-local callIteratee = function (predicate, selfArg, ...) 
+local callIteratee = function (predicate, selfArg, ...)
     local result
     local predicate = predicate or _.identity
     if selfArg then
@@ -120,7 +122,7 @@ end
 -- @param array The array to query.
 -- @param[opt=1] n The number of elements to drop.
 -- @return Returns the slice of array.
-_.dropRight = function (array, n)   
+_.dropRight = function (array, n)
     local n = n or 1
     return _.slice(array, nil, #array - n)
 end
@@ -131,7 +133,7 @@ local dropWhile = function(array, predicate, selfArg, start, step, right)
     local c = start
     while not _.isNil(array[c]) do
         ::cont::
-        if #t == 0 and 
+        if #t == 0 and
             callIteratee(predicate, selfArg, array[c], c, array) then
             c = c + step
             goto cont
@@ -141,13 +143,13 @@ local dropWhile = function(array, predicate, selfArg, start, step, right)
         else
             _.push(t, array[c])
         end
-        c = c + step            
-    end 
+        c = c + step
+    end
     return t
 end
 
 ---
--- Creates a slice of array excluding elements dropped from the end. 
+-- Creates a slice of array excluding elements dropped from the end.
 -- Elements are dropped until predicate returns falsey.
 -- @usage _.print(_.dropRightWhile({1, 5, 2, 3, 4, 5, 4, 4}, function(n)
 --    return n > 3
@@ -163,7 +165,7 @@ _.dropRightWhile = function(array, predicate, selfArg)
 end
 
 ---
--- Creates a slice of array excluding elements dropped from the beginning. 
+-- Creates a slice of array excluding elements dropped from the beginning.
 -- Elements are dropped until predicate returns falsey.
 -- @usage _.print(_.dropWhile({1, 2, 2, 3, 4, 5, 4, 4, 2}, function(n)
 --    return n < 3
@@ -178,12 +180,24 @@ _.dropWhile = function(array, predicate, selfArg)
     return dropWhile(array, predicate, selfArg, 1, 1)
 end
 
+
+---
+-- Push value to first element of array
+---
+--@Usage local array = {1, 2, 3, 4}
+-- _.enqueue(array, 5)
+-- _print(array)
+-- --> {5, 1, 2, 3, 4}
+--
+-- @param array; Array to modify
+-- @param: value; Value to fill first element of Array with
+-- @return array
 _.enqueue = function (array, value)
     return table.insert(array, 1, value)
 end
 
 ---
--- Fills elements of array with value from start up to, including, end. 
+-- Fills elements of array with value from start up to, including, end.
 -- @usage local array = {1, 2, 3, 4}
 -- _.fill(array, 'x', 2, 3)
 -- _.print(array)
@@ -210,14 +224,14 @@ local findIndex = function(array, predicate, selfArg, start, step)
         if callIteratee(predicate, selfArg, array[c], c, array) then
             return c
         end
-        c = c + step            
-    end 
+        c = c + step
+    end
     return -1
 end
 
 ---
--- This method is like [_.find](#_.find) except that it returns the index of the 
--- first element predicate returns truthy for instead of the element itself. 
+-- This method is like [_.find](#_.find) except that it returns the index of the
+-- first element predicate returns truthy for instead of the element itself.
 -- @usage _.print(_.findIndex({{a = 1}, {a = 2}, {a = 3}, {a = 2}, {a = 3}}, function(v)
 --     return v.a == 3
 -- end))
@@ -232,8 +246,8 @@ _.findIndex = function (array, predicate, selfArg)
 end
 
 ---
--- This method is like [_.findIndex](#_.findIndex) except that it iterates over 
--- elements of collection from right to left. 
+-- This method is like [_.findIndex](#_.findIndex) except that it iterates over
+-- elements of collection from right to left.
 -- @usage _.print(_.findLastIndex({{a = 1}, {a = 2}, {a = 3}, {a = 2}, {a = 3}}, function(v)
 --     return v.a == 3
 -- end))
@@ -260,8 +274,8 @@ _.first = function (array)
 end
 
 ---
--- Flattens a nested array. 
--- If isDeep is true the array is recursively flattened, otherwise 
+-- Flattens a nested array.
+-- If isDeep is true the array is recursively flattened, otherwise
 -- it’s only flattened a single level.
 -- @usage _.print(_.flatten({1, 2, {3, 4, {5, 6}}}))
 -- --> {1, 2, 3, 4, {5, 6}}
@@ -279,10 +293,10 @@ _.flatten = function(array, isDeep)
             if isDeep then
                 childeren = _.flatten(v)
             else
-                childeren = v               
+                childeren = v
             end
             for k2, v2 in ipairs(childeren) do
-                _.push(t, v2) 
+                _.push(t, v2)
             end
         else
             _.push(t, v)
@@ -306,17 +320,17 @@ end
 -- Gets the index at which the first occurrence of value is found in array.
 -- @usage _.print(_.indexOf({2, 3, 'x', 4}, 'x'))
 -- --> 3
--- 
+--
 -- @param array The array to search.
 -- @param value The value to search for.
 -- @param[opt=1] fromIndex The index to search from.
 -- @return  Returns the index of the matched value, else -1.
-_.indexOf = function (array, value, fromIndex)    
-    return _.findIndex(array, function(n) 
+_.indexOf = function (array, value, fromIndex)
+    return _.findIndex(array, function(n)
         return n == value
     end)
 end
--- 
+--
 
 ---
 -- Gets all but the last element of array.
@@ -328,10 +342,10 @@ end
 _.initial = function (array)
     return _.slice(array, nil, #array - 1)
 end
--- 
+--
 
 ---
--- Creates an array of unique values that are included in all of the 
+-- Creates an array of unique values that are included in all of the
 -- provided arrays.
 -- @usage _.print(_.intersection({1, 2}, {4, 2}, {2, 1}))
 -- --> {2}
@@ -350,7 +364,7 @@ _.intersection = function (...)
                 break
             end
         end
-        if not notFound then 
+        if not notFound then
             _.push(t, v)
         end
     end
@@ -381,7 +395,7 @@ end
 -- @param[opt=#array] fromIndex The index to search from.
 -- @return  Returns the index of the matched value, else -1.
 _.lastIndexOf = function (array, value, fromIndex)
-   return _.findLastIndex(array, function(n) 
+   return _.findLastIndex(array, function(n)
         return n == value
     end)
 end
@@ -400,14 +414,14 @@ _.pull = function(array, ...)
     local i = 1
     while not _.isNil(array[i]) do
         for k, v in ipairs(_.table(...)) do
-            if array[i] == v then 
+            if array[i] == v then
                 table.remove(array, i)
                 goto cont
             end
         end
         i = i + 1
         ::cont::
-    end 
+    end
     return array
 end
 
@@ -416,9 +430,9 @@ _.push = function (array, value)
 end
 
 ---
--- Removes elements from array corresponding to the given indexes and 
--- returns an array of the removed elements. Indexes may be specified 
--- as an array of indexes or as individual arguments. 
+-- Removes elements from array corresponding to the given indexes and
+-- returns an array of the removed elements. Indexes may be specified
+-- as an array of indexes or as individual arguments.
 -- @usage local array = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'}
 -- local t = _.pullAt(array, 4, 9, 8)
 -- _.print(array)
@@ -434,7 +448,7 @@ _.pullAt = function (array, ...)
     local tmp = _.table(...)
     table.sort(tmp, function(a, b)
         return _.gt(a, b)
-    end)    
+    end)
     for i, index in ipairs(tmp) do
         _.enqueue(t, table.remove(array, index))
     end
@@ -442,7 +456,7 @@ _.pullAt = function (array, ...)
 end
 
 ---
--- Removes all elements from array that predicate returns truthy for 
+-- Removes all elements from array that predicate returns truthy for
 -- and returns an array of the removed elements.
 -- @usage local array = {1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 1, 2, 3, 5, 4}
 -- local t = _.remove(array, function(value)
@@ -464,10 +478,10 @@ _.remove = function(array, predicate)
         if predicate(array[c], c, array) then
             _.push(t, table.remove(array, c))
             goto cont
-        end        
+        end
         c = c + 1
         ::cont::
-    end 
+    end
     return t
 end
 
@@ -484,8 +498,8 @@ end
 
 
 ---
--- Reverses the array so the first element becomes the last, the second 
--- element becomes the second to last, and so on. 
+-- Reverses the array so the first element becomes the last, the second
+-- element becomes the second to last, and so on.
 -- @usage _.print(_.reverse({1, 2, 3, 'a', 'b'}))
 -- --> {'b', 'a', 3, 2, 1}
 --
@@ -501,10 +515,10 @@ end
 
 
 ---
--- Creates a slice of array from start up to, including, end. 
+-- Creates a slice of array from start up to, including, end.
 -- @usage _.print(_.slice({1, 2, 3, 4, 5, 6}, 2, 3))
 -- --> {2, 3}
--- 
+--
 -- @param array The array to slice.
 -- @param[opt=1] start The start position.
 -- @param[opt=#array] stop The end position
@@ -512,10 +526,10 @@ end
 _.slice = function (array, start, stop)
     local start = start or 1
     local stop = stop or #array
-    local t = {}    
+    local t = {}
     for i=start, stop do
-        t[i - start + 1] = array[i]     
-    end 
+        t[i - start + 1] = array[i]
+    end
     return t
 end
 
@@ -537,7 +551,7 @@ end
 -- Creates a slice of array with n elements taken from the end.
 -- @usage _.print(_.takeRight({1, 2, 3, 4, 5}, 3))
 -- --> {3, 4, 5}
--- 
+--
 -- @param array The array to query.
 -- @param[opt=1] n The number of elements to take.
 -- @return Returns the slice of array.
@@ -559,15 +573,15 @@ local takeWhile = function(array, predicate, selfArg, start, step, right)
         else
             break
         end
-        c = c + step            
-    end 
+        c = c + step
+    end
     return t
 end
 
 ---
 -- Creates a slice of array with elements taken from the end. Elements
--- are taken until predicate returns falsey. The predicate is bound to 
--- selfArg and invoked with three arguments: (value, index, array). 
+-- are taken until predicate returns falsey. The predicate is bound to
+-- selfArg and invoked with three arguments: (value, index, array).
 -- @usage _.print(_.takeRightWhile({1, 2, 3, 4, 5, 6, 7, 8}, function(n)
 --     return n > 4
 -- end))
@@ -581,7 +595,7 @@ _.takeRightWhile = function (array, predicate, selfArg)
 end
 
 ---
--- Creates an array of unique values, from all of the 
+-- Creates an array of unique values, from all of the
 -- provided arrays.
 -- @usage _.print(_.union({1, 2}, {4, 2}, {2, 1}))
 -- --> {1, 2, 4}
@@ -589,10 +603,10 @@ end
 -- @param ... The arrays to inspect
 _.union = function (...)
     local tmp = _.table(...)
-    local t = {}    
+    local t = {}
     for i, array in ipairs(tmp) do
         for i2, v in ipairs(array) do
-            if _.indexOf(t, v) == -1 then                
+            if _.indexOf(t, v) == -1 then
                 _.push(t, v)
             end
         end
@@ -604,8 +618,8 @@ end
 
 ---
 -- Creates a slice of array with elements taken from the beginning. Elements
--- are taken until predicate returns falsey. The predicate is bound to 
--- selfArg and invoked with three arguments: (value, index, array). 
+-- are taken until predicate returns falsey. The predicate is bound to
+-- selfArg and invoked with three arguments: (value, index, array).
 -- @usage _.print(_.takeWhile({1, 2, 3, 4, 5, 6, 7, 8}, function(n)
 --     return n < 5
 -- end))
@@ -619,11 +633,11 @@ _.takeWhile = function (array, predicate, selfArg)
 end
 
 ---
--- Creates a duplicate-free version of an array in which only the first 
--- occurence of each element is kept. If an iteratee function is provided 
--- it’s invoked for each element in the array to generate the criterion 
--- by which uniqueness is computed. The iteratee is bound to thisArg and 
--- invoked with three arguments: (value, index, array). 
+-- Creates a duplicate-free version of an array in which only the first
+-- occurence of each element is kept. If an iteratee function is provided
+-- it’s invoked for each element in the array to generate the criterion
+-- by which uniqueness is computed. The iteratee is bound to thisArg and
+-- invoked with three arguments: (value, index, array).
 -- @usage _.print(_.uniq({1, 3, 2, 2}))
 -- --> {1, 3, 2}
 --_.print(_.uniq({{x=1}, {x=2}, {x=2}, {x=3}, {x=1}}, function(n)
@@ -650,7 +664,7 @@ end
 
 ---
 -- The inverse of _.pairs; this method returns an object composed from
--- arrays of property names and values. Provide either a single two dimensional 
+-- arrays of property names and values. Provide either a single two dimensional
 -- array, e.g. [[key1, value1], [key2, value2]] or two arrays, one of
 -- property names and one of corresponding values.
 -- @usage _.print(_.zipObject({{'fred', 30}, {'alex', 20}}))
@@ -677,8 +691,8 @@ end
 
 
 ---
--- This method is like [_.zip](#_.zip) except that it accepts an array of grouped 
--- elements and creates an array regrouping the elements to their pre-zip 
+-- This method is like [_.zip](#_.zip) except that it accepts an array of grouped
+-- elements and creates an array regrouping the elements to their pre-zip
 -- configuration.
 -- @usage local t = _.zip({'a', 'b', 'c'}, {1, 2, 3}, {10, 20, 30})
 -- _.print(t)
@@ -693,7 +707,7 @@ _.unzip = function (array)
 end
 
 ---
--- Creates an array excluding all provided values 
+-- Creates an array excluding all provided values
 -- @usage _.print(_.without({1,1, 2, 3, 2, 3, 5, 5, 1, 2},  5, 1))
 -- --> {2, 3, 2, 3, 2}
 --
@@ -712,8 +726,8 @@ _.without = function (array, ...)
 end
 
 ---
--- Creates an array of grouped elements, the first of which contains 
--- the first elements of the given arrays, the second of which contains 
+-- Creates an array of grouped elements, the first of which contains
+-- the first elements of the given arrays, the second of which contains
 -- the second elements of the given arrays, and so on.
 -- @usage local t = _.zip({'a', 'b', 'c'}, {1, 2, 3}, {10, 20, 30})
 -- _.print(t)
@@ -724,7 +738,7 @@ end
 _.zip = function (...)
     local t = {}
     for i, array in ipairs(_.table(...)) do
-        for j, v in ipairs(array) do  
+        for j, v in ipairs(array) do
             t[j] = t[j] or {}
             t[j][i] = v
         end
@@ -736,14 +750,14 @@ end
 -- @section Collection
 
 ---
--- Creates an array of elements corresponding to the given keys, 
--- or indexes, of collection. Keys may be specified as individual 
+-- Creates an array of elements corresponding to the given keys,
+-- or indexes, of collection. Keys may be specified as individual
 -- arguments or as arrays of keys.
 -- @usage _.print(_.at({'1', '2', '3', '4', a='a', b='b'}, {1, 2}, 'b'))
 -- --> {"1", "2", "b"}
 --
 -- @param collection The collection to iterate over.
--- @param ... The property names or indexes of elements to pick, 
+-- @param ... The property names or indexes of elements to pick,
 -- specified individually or in arrays.
 -- @return Return the new array of picked elements.
 _.at = function (collection, ...)
@@ -761,13 +775,13 @@ _.at = function (collection, ...)
 end
 
 ---
--- Creates an object composed of keys generated from the results of 
--- running each element of collection through iteratee. The corresponding 
--- value of each key is the number of times the key was returned by 
+-- Creates an object composed of keys generated from the results of
+-- running each element of collection through iteratee. The corresponding
+-- value of each key is the number of times the key was returned by
 -- iteratee. The iteratee is bound to selfArg and invoked with three arguments:
--- (value, index|key, collection). 
+-- (value, index|key, collection).
 --
--- @usage _.print(_.countBy({4.3, 6.1, 6.4}, function(n) 
+-- @usage _.print(_.countBy({4.3, 6.1, 6.4}, function(n)
 --   return math.floor(n)
 -- end))
 -- --> {[4]=1, [6]=2}
@@ -792,16 +806,16 @@ _.countBy = function (collection, iteratee, selfArg)
 end
 
 ---
--- Creates an object composed of keys generated from the results of 
--- running each element of collection through iteratee. The corresponding 
--- value of each key is an array of the elements responsible for generating 
+-- Creates an object composed of keys generated from the results of
+-- running each element of collection through iteratee. The corresponding
+-- value of each key is an array of the elements responsible for generating
 -- the key. The iteratee is bound to selfArg and invoked with three arguments:
--- (value, index|key, collection). 
--- @usage _.print(_.groupBy({4.3, 6.1, 6.4}, function(n) 
+-- (value, index|key, collection).
+-- @usage _.print(_.groupBy({4.3, 6.1, 6.4}, function(n)
 --   return math.floor(n)
 -- end))
 -- --> {[4]={4.3}, [6]={6.1, 6.4}}
--- 
+--
 -- @param collection The collection to iterate over. (table|string)
 -- @param[opt=_.identity] iteratee The function invoked per iteration.
 -- @param[opt] selfArg The self binding of predicate.
@@ -822,11 +836,11 @@ _.groupBy = function (collection, iteratee, selfArg)
 end
 
 ---
--- Creates an object composed of keys generated from the results of 
--- running each element of collection through iteratee. The corresponding 
--- value of each key is the last element responsible for generating the key. 
+-- Creates an object composed of keys generated from the results of
+-- running each element of collection through iteratee. The corresponding
+-- value of each key is the last element responsible for generating the key.
 -- The iteratee function is bound to selfArg and invoked with three arguments:
--- (value, index|key, collection). 
+-- (value, index|key, collection).
 -- @usage local keyData = {
 --     {dir='l', a=1},
 --     {dir='r', a=2}
@@ -852,9 +866,9 @@ _.indexBy = function (collection, iteratee, selfArg)
 end
 
 ---
--- Checks if predicate returns truthy for all elements of collection. 
+-- Checks if predicate returns truthy for all elements of collection.
 -- The predicate is bound to selfArg and invoked with three arguments:
--- (value, index|key, collection). 
+-- (value, index|key, collection).
 -- @usage _.print(_.every({1, 2, 3, 4, '5', 6}, _.isNumber))
 -- --> false
 -- _.print(_.every({1, 2, 3, 4, 5, 6}, _.isNumber))
@@ -876,23 +890,23 @@ local filter = function(collection, predicate, selfArg, reject)
     local t = {}
     for k, v in _.iter(collection) do
         local check = callIteratee(predicate, selfArg, v, k, collection)
-        if reject then 
+        if reject then
             if not check then
                 _.push(t, v)
-            end     
+            end
         else
             if check then
                 _.push(t, v)
-            end         
-        end         
+            end
+        end
     end
     return t
 end
 
 ---
--- Iterates over elements of collection, returning an array of all 
--- elements predicate returns truthy for. The predicate is bound to 
--- selfArg and invoked with three arguments: (value, index|key, collection). 
+-- Iterates over elements of collection, returning an array of all
+-- elements predicate returns truthy for. The predicate is bound to
+-- selfArg and invoked with three arguments: (value, index|key, collection).
 -- @usage _.print(_.filter({1, 2, 3, 4, '5', 6, '7'}, _.isNumber))
 -- --> {1, 2, 3, 4, 6}
 --
@@ -906,8 +920,8 @@ end
 ---
 -- Iterates over elements of collection invoking iteratee for each element.
 -- The iteratee is bound to selfArg and invoked with three arguments:
--- (value, index|key, collection). Iteratee functions may exit iteration 
--- early by explicitly returning false. 
+-- (value, index|key, collection). Iteratee functions may exit iteration
+-- early by explicitly returning false.
 --
 -- @param collection The collection to iterate over. (table|string)
 -- @param[opt=_.identity] predicate The function invoked per iteration
@@ -921,7 +935,7 @@ _.forEach = function (collection, predicate, selfArg)
 end
 
 ---
--- This method is like [_.forEach](#_.forEach) except that it iterates 
+-- This method is like [_.forEach](#_.forEach) except that it iterates
 -- over elements of collection from right to left.
 --
 -- @param collection The collection to iterate over. (table|string)
@@ -936,7 +950,7 @@ _.forEachRight = function (collection, predicate, selfArg)
 end
 
 ---
--- Checks if target is in collection. 
+-- Checks if target is in collection.
 -- @usage print(_.includes({1, 2, 'x', 3, ['5']=4, x=3, 5}, 'x'))
 -- --> true
 -- print(_.includes({1, 2, 'x', 3, ['5']=4, x=3, 5}, 'z'))
@@ -951,8 +965,8 @@ _.includes = function (collection, target)
 end
 
 ---
--- Invokes method of each element in collection, returning an array of the 
--- results of each invoked method. Any additional arguments are provided 
+-- Invokes method of each element in collection, returning an array of the
+-- results of each invoked method. Any additional arguments are provided
 -- to each invoked method. func bound to, each element in collection.
 -- @usage _.print(_.invoke({'1.first', '2.second', '3.third'}, string.sub, 1, 1))
 -- --> {"1", "2", "3"}
@@ -971,8 +985,8 @@ end
 
 ---
 -- Creates an array of values by running each element in collection through
--- iteratee. The iteratee is bound to selfArg and invoked with three 
--- arguments: (value, index|key, collection). 
+-- iteratee. The iteratee is bound to selfArg and invoked with three
+-- arguments: (value, index|key, collection).
 -- @usage _.print(_.map({1, 2, 3, 4, 5, 6, 7, 8, 9}, function(n)
 --     return n * n
 -- end))
@@ -990,11 +1004,11 @@ _.map = function (collection, iteratee, selfArg)
 end
 
 ---
--- Creates an array of elements split into two groups, the first of 
--- which contains elements predicate returns truthy for, while the second 
--- of which contains elements predicate returns falsey for. The predicate 
--- is bound to selfArg and invoked with three arguments: 
--- (value, index|key, collection). 
+-- Creates an array of elements split into two groups, the first of
+-- which contains elements predicate returns truthy for, while the second
+-- of which contains elements predicate returns falsey for. The predicate
+-- is bound to selfArg and invoked with three arguments:
+-- (value, index|key, collection).
 -- @usage _.print(_.partition({1, 2, 3, 4, 5, 6, 7}, function (n)
 --     return n > 3
 -- end))
@@ -1016,7 +1030,7 @@ _.partition = function (collection, predicate, selfArg)
     return t
 end
 
---- 
+---
 -- Gets the property value of path from all elements in collection.
 -- @usage local users = {
 --   { user = 'barney', age = 36, child = {age = 5}},
@@ -1031,7 +1045,7 @@ end
 -- @param path The path of the property to pluck.
 _.pluck = function (collection, path)
     local t = {}
-    for k, value in _.iter(collection) do 
+    for k, value in _.iter(collection) do
         _.push(t, _.get(value, path))
     end
     return t
@@ -1039,22 +1053,22 @@ end
 
 
 ---
--- Reduces collection to a value which is the accumulated result of 
--- running each element in collection through iteratee, where each 
--- successive invocation is supplied the return value of the previous. 
+-- Reduces collection to a value which is the accumulated result of
+-- running each element in collection through iteratee, where each
+-- successive invocation is supplied the return value of the previous.
 -- If accumulator is not provided the first element of collection is used
---  as the initial value. The iteratee is bound to selfArg and invoked 
--- with four arguments: (accumulator, value, index|key, collection). 
+--  as the initial value. The iteratee is bound to selfArg and invoked
+-- with four arguments: (accumulator, value, index|key, collection).
 -- @usage _.print(_.reduce({1, 2, 3}, function(total, n)
 --   return n + total;
 -- end))
 -- --> 6
--- _.print(_.reduce({a = 1, b = 2}, function(result, n, key) 
+-- _.print(_.reduce({a = 1, b = 2}, function(result, n, key)
 --     result[key] = n * 3
 --     return result;
 -- end, {}))
 -- --> {["a"]=3, ["b"]=6}
--- 
+--
 -- @param collection The collection to iterate over.
 -- @param[opt=_.identity] iteratee The function invoked per iteration.
 -- @param[opt=<first element>] accumulator The initial value.
@@ -1062,9 +1076,9 @@ end
 -- @return Returns the accumulated value.
 _.reduce = function (collection, iteratee, accumulator, selfArg)
     local accumulator = accumulator
-    for k, v in _.iter(collection) do 
-        if _.isNil(accumulator) then 
-            accumulator = v 
+    for k, v in _.iter(collection) do
+        if _.isNil(accumulator) then
+            accumulator = v
         else
             accumulator =  callIteratee(iteratee, selfArg, accumulator, v, k, collection)
         end
@@ -1073,14 +1087,14 @@ _.reduce = function (collection, iteratee, accumulator, selfArg)
 end
 
 ---
--- This method is like _.reduce except that it iterates over elements 
+-- This method is like _.reduce except that it iterates over elements
 -- of collection from right to left.
 -- @usage local array = {0, 1, 2, 3, 4, 5};
--- _.print(_.reduceRight(array, function(str, other) 
+-- _.print(_.reduceRight(array, function(str, other)
 --   return str .. other
 -- end, ''))
 -- --> 543210
--- 
+--
 -- @param collection The collection to iterate over.
 -- @param[opt=_.identity] iteratee The function invoked per iteration.
 -- @param[opt=<first element>] accumulator The initial value.
@@ -1088,9 +1102,9 @@ end
 -- @return Returns the accumulated value.
 _.reduceRight = function (collection, iteratee, accumulator, selfArg)
     local accumulator = accumulator
-    for k, v in _.iterRight(collection) do 
-        if _.isNil(accumulator) then 
-            accumulator = v 
+    for k, v in _.iterRight(collection) do
+        if _.isNil(accumulator) then
+            accumulator = v
         else
             accumulator =  callIteratee(iteratee, selfArg, accumulator, v, k, collection)
         end
@@ -1099,7 +1113,7 @@ _.reduceRight = function (collection, iteratee, accumulator, selfArg)
 end
 
 ---
--- The opposite of [_.filter](#_.filter); this method returns the elements of 
+-- The opposite of [_.filter](#_.filter); this method returns the elements of
 -- collection that predicate does not return truthy for.
 -- @usage _.print(_.reject({1, 2, 3, 4, '5', 6, '7'}, _.isNumber))
 -- --> {"5", "7"}
@@ -1117,7 +1131,7 @@ end
 -- --> {5, "x", 1, 23}
 -- _.print(_.sample({1, 2, 3, a=4, b='x', 5, 23, 24}))
 -- --> 4
--- 
+--
 -- @param collection The collection to sample.
 -- @param[opt=1] n The number of elements to sample.
 -- @return Returns the random sample(s).
@@ -1125,7 +1139,7 @@ _.sample = function (collection, n)
     local n = n or 1
     local t = {}
     local keys = _.keys(collection)
-    for i=1, n do        
+    for i=1, n do
         local pick = keys[_.random(1, #keys)]
         _.push(t, _.get(collection, {pick}))
     end
@@ -1133,7 +1147,7 @@ _.sample = function (collection, n)
 end
 
 ---
--- Gets the size of collection by returning its length for array-like 
+-- Gets the size of collection by returning its length for array-like
 -- values or the number of own enumerable properties for objects.
 -- @usage _.print(_.size({'abc', 'def'}))
 -- --> 2
@@ -1153,10 +1167,10 @@ _.size = function (collection)
 end
 
 ---
--- Checks if predicate returns truthy for any element of collection. 
--- The function returns as soon as it finds a passing value and does 
--- not iterate over the entire collection. The predicate is bound to 
--- selfArg and invoked with three arguments: (value, index|key, collection). 
+-- Checks if predicate returns truthy for any element of collection.
+-- The function returns as soon as it finds a passing value and does
+-- not iterate over the entire collection. The predicate is bound to
+-- selfArg and invoked with three arguments: (value, index|key, collection).
 --
 -- @usage _.print(_.some({1, 2, 3, 4, 5, 6}, _.isString))
 -- --> false
@@ -1176,10 +1190,10 @@ _.some = function (collection, predicate, selfArg)
 end
 
 ---
--- Creates an array of elements, sorted in ascending order by the 
--- results of running each element in a collection through iteratee. 
--- The iteratee is bound to selfArg and 
--- invoked with three arguments: (value, index|key, collection). 
+-- Creates an array of elements, sorted in ascending order by the
+-- results of running each element in a collection through iteratee.
+-- The iteratee is bound to selfArg and
+-- invoked with three arguments: (value, index|key, collection).
 -- @usage local t = {1, 2, 3}
 -- _.print(_.sortBy(t, function (a)
 --     return math.sin(a)
@@ -1195,7 +1209,7 @@ end
 --     return a.user
 -- end))
 -- --> {{["user"]="alex"}, {["user"]="fred"}, {["user"]="john"}, {["user"]="zoee"}}
--- 
+--
 -- @param collection The collection to iterate over.
 -- @param[opt=_.identity] predicate The function invoked per iteration
 -- @param[opt] selfArg The self binding of predicate.
@@ -1204,10 +1218,10 @@ _.sortBy = function (collection, predicate, selfArg)
     local t ={}
     local empty = true
     local previous
-    for k, v in _.iter(collection) do 
-        if empty then 
+    for k, v in _.iter(collection) do
+        if empty then
             _.push(t, v)
-            previous = callIteratee(predicate, selfArg, v, k, collection)            
+            previous = callIteratee(predicate, selfArg, v, k, collection)
             empty = false
         else
             local r = callIteratee(predicate, selfArg, v, k, collection)
@@ -1216,16 +1230,16 @@ _.sortBy = function (collection, predicate, selfArg)
                 previous = r
             else
                 table.insert(t, #t, v)
-            end            
+            end
         end
     end
     return t
 end
 
 ---
--- Iterates over elements of collection, returning the first element 
+-- Iterates over elements of collection, returning the first element
 -- predicate returns truthy for. The predicate is bound to selfArg and
--- invoked with three arguments: (value, index|key, collection). 
+-- invoked with three arguments: (value, index|key, collection).
 -- @usage _.print(_.find({{a = 1}, {a = 2}, {a = 3}, {a = 2}, {a = 3}}, function(v)
 --     return v.a == 3
 -- end))
@@ -1245,7 +1259,7 @@ end
 ---
 -- This method is like _.find except that it iterates over elements of
 -- collection from right to left.
--- @usage _.findLast({{a = 1}, {a = 2}, {a = 3, x = 1}, {a = 2}, {a = 3, x = 2}}, 
+-- @usage _.findLast({{a = 1}, {a = 2}, {a = 3, x = 1}, {a = 2}, {a = 3, x = 2}},
 -- function(v)
 --     return v.a == 3
 -- end))
@@ -1270,11 +1284,11 @@ end
 --  or more times.
 -- @usage local printAfter3 = _.after(3, print)
 -- for i = 1, 5 do
---    printAfter3('done', i)    
--- end 
+--    printAfter3('done', i)
+-- end
 -- --> done 4
 -- --> done 5
--- 
+--
 -- @param n The number of calls before func invoked.
 -- @param func The function to restrict.
 -- @return Returns the new restricted function.
@@ -1289,7 +1303,7 @@ _.after = function(n, func)
 end
 
 ---
--- Creates a function that accepts up to n arguments ignoring any 
+-- Creates a function that accepts up to n arguments ignoring any
 -- additional arguments.
 -- @usage local printOnly3 =_.ary(print, 3)
 -- printOnly3(1, 2, 3, 'x', 'y', 6)
@@ -1312,7 +1326,7 @@ end
 
 ---
 -- Creates a function that invokes func while it’s called less than n times.
--- Subsequent calls to the created function return the result of the 
+-- Subsequent calls to the created function return the result of the
 -- last func invocation.
 -- @usage local printBefore3 = _.before(3, print)
 -- for i = 1, 10 do
@@ -1330,7 +1344,7 @@ _.before = function (n, func)
     local result
     return function (...)
         if _.lte(i, n) then
-            result = func(...)  
+            result = func(...)
         end
         i = i + 1
         return result
@@ -1338,14 +1352,14 @@ _.before = function (n, func)
 end
 
 ---
--- Creates a function that runs each argument through a corresponding 
+-- Creates a function that runs each argument through a corresponding
 -- transform function.
--- @usage local increment = function(...) 
+-- @usage local increment = function(...)
 --     return _.args(_.map(_.table(...), function(n)
 --         return n + 1
 --     end))
 -- end
--- local pow = function(...) 
+-- local pow = function(...)
 --     return _.args(_.map(_.table(...), function(n)
 --         return n * n
 --     end))
@@ -1357,17 +1371,17 @@ end
 -- -->  4   9   16
 --
 -- @param func The function to wrap
--- @param ... The functions to transform arguments, specified as 
+-- @param ... The functions to transform arguments, specified as
 -- individual functions or arrays of functions.
 -- @return Returns the new function.
 _.modArgs = function (func, ...)
     local transforms = {}
     for i, v in ipairs( _.table(...)) do
-        if _.isFunction(v) then 
-            _.push(transforms, v) 
+        if _.isFunction(v) then
+            _.push(transforms, v)
         elseif _.isTable(v) then
             for k2, v2 in _.iter(v) do
-                if _.isFunction(v2) then _.push(transforms, v2) end    
+                if _.isFunction(v2) then _.push(transforms, v2) end
             end
         end
     end
@@ -1389,7 +1403,7 @@ _.modArgs = function (func, ...)
 end
 
 ---
--- Creates a function that negates the result of the predicate func. 
+-- Creates a function that negates the result of the predicate func.
 -- The func predicate is invoked with arguments of the created function.
 -- @usage local isEven = function (n)
 --     return n % 2 == 0
@@ -1399,7 +1413,7 @@ end
 -- --> {2, 4, 6}
 -- _.print(_.filter({1, 2, 3, 4, 5, 6}, isOdd))
 -- --> {1, 3, 5}
--- 
+--
 -- @param func The preadicate to negate.
 -- @return Returns the new function
 _.negate = function (func)
@@ -1428,12 +1442,12 @@ end
 -- @param func The function to restrict.
 -- @return Returns the new function.
 _.once = function (func)
-    local called = false; 
+    local called = false;
     local result
     return function(...)
         if not called then
             result = func(...)
-            called = true            
+            called = true
         end
         return result
     end
@@ -1441,11 +1455,11 @@ end
 
 
 ---
--- Creates a function that invokes func with arguments arranged according 
--- to the specified indexes where the argument value at the first index 
--- is provided as the first argument, the argument value at the second 
+-- Creates a function that invokes func with arguments arranged according
+-- to the specified indexes where the argument value at the first index
+-- is provided as the first argument, the argument value at the second
 -- index is provided as the second argument, and so on.
--- @usage local rearged = _.rearg(function(a, b, c) 
+-- @usage local rearged = _.rearg(function(a, b, c)
 --   return {a, b, c};
 -- end, 2, 1, 3)
 -- _.print(rearged('a', 'b', 'c'))
@@ -1454,25 +1468,25 @@ end
 -- --> {"a", "b", "c"}
 --
 -- @param func The function to rearrange arguments for.
--- @param ... The arranged argument indexes, specified as individual 
+-- @param ... The arranged argument indexes, specified as individual
 -- indexes or arrays of indexes.
 -- @return Returns the new function.
 _.rearg = function (func, ...)
     local indexes = {}
     for i, v in ipairs(_.table(...)) do
-        if _.isNumber(v) then 
-            _.push(indexes, v) 
+        if _.isNumber(v) then
+            _.push(indexes, v)
         elseif _.isTable(v) then
             for k2, v2 in _.iter(v) do
-                if _.isNumber(v2) then _.push(indexes, v2) end    
+                if _.isNumber(v2) then _.push(indexes, v2) end
             end
         end
     end
     return function(...)
         local args = _.table(...)
         local newArgs = {}
-        for i, index in ipairs(indexes) do  
-            _.push(newArgs, args[index]) 
+        for i, index in ipairs(indexes) do
+            _.push(newArgs, args[index])
         end
         if #indexes == 0 then
             return func(...)
@@ -1496,7 +1510,7 @@ end
 -- @param value value to cast
 -- @return Returns arguments
 _.args = function (value)
-    if _.isTable(value) then return table.unpack(value) 
+    if _.isTable(value) then return table.unpack(value)
     else return table.unpack({value})
     end
 end
@@ -1512,7 +1526,7 @@ end
 -- @param other The other value to compare.
 _.gt = function (value, other, ...)
     local value, other = _.cast(value, other)
-    if _.isString(value) or _.isNumber(value) then 
+    if _.isString(value) or _.isNumber(value) then
         return value > other
     elseif _.isFunction(value) then
         return value(...) > other(...)
@@ -1529,17 +1543,17 @@ end
 --
 -- @param value The value to compare.
 -- @param other The other value to compare.
-_.gte = function (value, other, ...)    
-    if _.isNil(value) or _.isBoolean(value) then 
+_.gte = function (value, other, ...)
+    if _.isNil(value) or _.isBoolean(value) then
         return value == other
     end
     local value, other = _.cast(value, other)
-    if _.isString(value) or _.isNumber(value) then 
+    if _.isString(value) or _.isNumber(value) then
         return value >= other
     elseif _.isFunction(value) then
         return value(...) >= other(...)
     elseif _.isTable(value) then
-        return false 
+        return false
     end
     return false
 end
@@ -1559,7 +1573,7 @@ end
 
 ---
 -- Checks if value is empty. A value is considered empty unless it’s an
--- arguments table, array, string with a length greater than 0 or an 
+-- arguments table, array, string with a length greater than 0 or an
 --object with own enumerable properties.
 --@usage _.print(_.isEmpty(true))
 -- --> true
@@ -1585,6 +1599,60 @@ _.isEmpty = function (value)
         return true
     end
 end
+
+---
+-- Checks if parm1 and parm2 are equal. Parm can be a boolean, string, number, function or table
+---
+--@usage _.print(_.isEqual(true))
+-- --> true
+-- _.print(_.isEmpty(1))
+-- --> true
+-- _.print(_.isEmpty({1, 2, 3}))
+-- --> false
+-- _.print(_.isEmpty({a= 1}))
+-- --> false
+--
+-- @param parm1, parm2 The values to compare
+-- @return Returns true if values are equal, else false.
+
+_.isEqual = function (parm1, parm2)
+    local avoid_loops = {}
+    local function recurse(t1, t2)
+        if type(t1) ~= type(t2) then return false end
+        if type(t1) ~= "table" then return t1 == t2 end
+        if avoid_loops[t1] then return avoid_loops[t1] == t2 end
+        avoid_loops[t1] = t2
+        local t2keys = {}
+        local t2tablekeys = {}
+        for k, _ in pairs(t2) do
+            if type(k) == "table" then table.insert(t2tablekeys, k) end
+            t2keys[k] = true
+        end
+        for k1, v1 in pairs(t1) do
+            local v2 = t2[k1]
+            if type(k1) == "table" then
+                local ok = false
+                for i, tk in ipairs(t2tablekeys) do
+                    if _.isEqual(k1, tk) and recurse(v1, t2[tk]) then
+                        table.remove(t2tablekeys, i)
+                        t2keys[tk] = nil
+                        ok = true
+                        break
+                    end
+                end
+                if not ok then return false end
+            else
+                if v2 == nil then return false end
+                t2keys[k1] = nil
+                if not recurse(v1, v2) then return false end
+            end
+        end
+        if next(t2keys) then return false end
+        return true
+    end
+    return recurse(parm1, parm2)
+end
+
 
 ---
 -- Checks if value is classified as a function primitive.
@@ -1653,7 +1721,7 @@ _.isTable = function(value)
 end
 
 -- local implicitCast function (...)
---     if 
+--     if
 -- end
 
 ---
@@ -1667,7 +1735,7 @@ end
 -- @param other The other value to compare.
 _.lt = function (value, other, ...)
     local value, other = _.cast(value, other)
-    if _.isString(value) or _.isNumber(value) then 
+    if _.isString(value) or _.isNumber(value) then
         return value < other
     elseif _.isFunction(value) then
         return value(...) < other(...)
@@ -1683,12 +1751,12 @@ end
 -- --> true
 -- @param value The value to compare.
 -- @param other The other value to compare.
-_.lte = function (value, other, ...)    
-    if _.isNil(value) or _.isBoolean(value) then 
+_.lte = function (value, other, ...)
+    if _.isNil(value) or _.isBoolean(value) then
         return value == other
     end
     local value, other = _.cast(value, other)
-    if _.isString(value) or _.isNumber(value) then 
+    if _.isString(value) or _.isNumber(value) then
         return value <= other
     elseif _.isFunction(value) then
         return value(...) <= other(...)
@@ -1711,7 +1779,7 @@ _.cast = function (a, b)
 end
 
 ---
--- Cast parameters to a function that return passed parameters. 
+-- Cast parameters to a function that return passed parameters.
 -- @usage local f = _.func(1, 2, 3)
 -- _.print(f())
 -- --> 1    2   3
@@ -1744,7 +1812,7 @@ end
 
 ---
 -- Cast anything to boolean. If any function detected, call and cast its
--- result. Return false for 0, nil, table and empty string. 
+-- result. Return false for 0, nil, table and empty string.
 -- @usage print(_.bool({1, 2, 3}))
 -- --> false
 -- print(_.bool("123"))
@@ -1759,21 +1827,21 @@ end
 -- @return casted value
 _.bool = function (value, ...)
     local bool = false
-    if _.isString(value) then     
+    if _.isString(value) then
         bool = #value > 0
     elseif _.isBoolean(value) then
         bool = value
     elseif _.isNumber(value) then
         bool = value ~= 0
     elseif _.isFunction(value) then
-        bool = _.bool(value(...))    
+        bool = _.bool(value(...))
     end
     return bool
 end
 
 ---
 -- Cast anything to number. If any function detected, call and cast its
--- result. Return 0 for nil and table. 
+-- result. Return 0 for nil and table.
 -- @usage print(_.num({1, 2, 3}))
 -- --> 0
 -- print(_.num("123"))
@@ -1788,7 +1856,7 @@ end
 -- @return casted value
 _.num = function (value, ...)
     local num = 0
-    if _.isString(value) then   
+    if _.isString(value) then
         ok = pcall(function()
             num = value + 0
         end)
@@ -1796,20 +1864,20 @@ _.num = function (value, ...)
             num = math.huge
         end
     elseif _.isBoolean(value) then
-        num = value and 1 or 0    
+        num = value and 1 or 0
     elseif _.isNumber(value) then
         num = value
     elseif _.isFunction(value) then
         num = _.num(value(...))
     end
-    return num 
+    return num
 end
 
 
 local dblQuote = function (v)
     return '"'..v..'"'
 end
-   
+
 ---
 -- Cast anything to string. If any function detected, call and cast its
 -- result.
@@ -1824,7 +1892,7 @@ end
 _.str = function (value, ...)
     local str = '';
     -- local v;
-    if _.isString(value) then     
+    if _.isString(value) then
         str = value
     elseif _.isBoolean(value) then
         str = value and 'true' or 'false'
@@ -1832,18 +1900,18 @@ _.str = function (value, ...)
         str = 'nil'
     elseif _.isNumber(value) then
         str = value .. ''
-    elseif _.isFunction(value) then       
+    elseif _.isFunction(value) then
         str = _.str(value(...))
     elseif _.isTable(value) then
         str = '{'
         for k, v in pairs(value) do
             v = _.isString(v) and dblQuote(v) or _.str(v, ...)
             if _.isNumber(k) then
-                str = str .. v .. ', '              
+                str = str .. v .. ', '
             else
                 str = str .. '[' .. dblQuote(k) .. ']=' .. v .. ', '
             end
-        end     
+        end
         str = str:sub(0, #str - 2) .. '}'
     end
     return str
@@ -1854,7 +1922,7 @@ end
 -- @section Number
 
 ---
--- Checks if n is between start and up to but not including, end. 
+-- Checks if n is between start and up to but not including, end.
 -- If end is not specified it’s set to start with start then set to 0.
 -- @usage print(_.inRange(-3, -4, 8))
 -- --> true
@@ -1870,8 +1938,8 @@ _.inRange = function (n, start, stop)
 end
 
 ---
--- Produces a random number between min and max (inclusive). 
--- If only one argument is provided a number between 0 and the given 
+-- Produces a random number between min and max (inclusive).
+-- If only one argument is provided a number between 0 and the given
 -- number is returned. If floating is true, a floating-point number is
 -- returned instead of an integer.
 -- @usage _.print(_.random())
@@ -1892,15 +1960,40 @@ _.random = function (min, max, floating)
     local r = math.random(minim, maxim)
     if floating then
         r = r + math.random()
-    end 
+    end
     return r
 end
+
+---
+-- Rounds a float number to the required number of decimals
+-- If only one argument is provided it's round to an integer
+-- @usage _print(_.round(math.pi)
+-- --> 3
+-- _.print(_.round(math.pi, 2)
+-- --> 3.14
+--
+-- @param the float to convert
+-- @param[opt=1] the number of deceimals to round to
+-- @return Returns the round number.
+_.round = function (x, n)
+    x = tonumber(x)
+    if not(_.isNumber(x)) then return x end
+    n = 10^(n or 0)
+	x = x * n
+	if x >= 0 then
+		x = math.floor(x + 0.5)
+	else
+		x = math.ceil(x - 0.5)
+	end
+	return x / n
+end
+
 
 --- Object
 -- @section Object
 
 ---
--- Gets the property value at path of object. If the resolved value 
+-- Gets the property value at path of object. If the resolved value
 -- is nil the defaultValue is used in its place.
 -- @usage local object = {a={b={c={d=5}}}}
 -- _.print(_.get(object, {'a', 'b', 'c', 'd'}))
@@ -1916,7 +2009,7 @@ _.get = function (object, path, defaultValue)
         local c = 1
         while not _.isNil(path[c]) do
             if not _.isTable(value) then return defaultValue end
-            value = value[path[c]]    
+            value = value[path[c]]
             c = c + 1
         end
         return value or defaultValue
@@ -1946,13 +2039,13 @@ _.has = function (object, path)
         end
         c = c + 1
     end
-    return exist   
+    return exist
 end
 
 ---
--- This method is like _.find except that it returns the key of the 
--- first element predicate returns truthy for instead of the element itself. 
--- @usage _.print(_.findKey({a={a = 1}, b={a = 2}, c={a = 3, x = 1}}, 
+-- This method is like _.find except that it returns the key of the
+-- first element predicate returns truthy for instead of the element itself.
+-- @usage _.print(_.findKey({a={a = 1}, b={a = 2}, c={a = 3, x = 1}},
 -- function(v)
 --     return v.a == 3
 -- end))
@@ -1971,9 +2064,9 @@ _.findKey = function (object, predicate, selfArg)
 end
 
 ---
--- This method is like _.find except that it returns the key of the 
--- first element predicate returns truthy for instead of the element itself. 
--- @usage _.print(_.findLastKey({a={a=3}, b={a = 2}, c={a=3, x = 1}}, 
+-- This method is like _.find except that it returns the key of the
+-- first element predicate returns truthy for instead of the element itself.
+-- @usage _.print(_.findLastKey({a={a=3}, b={a = 2}, c={a=3, x = 1}},
 -- function(v)
 --     return v.a == 3
 -- end))
@@ -1992,7 +2085,7 @@ _.findLastKey = function (object, predicate, selfArg)
 end
 
 ---
--- Creates an array of function property names from all enumerable 
+-- Creates an array of function property names from all enumerable
 -- properties, own and inherited, of object.
 -- @usage _.print(_.functions(table))
 -- --> {"concat", "insert", "maxn", "pack", "remove", "sort", "unpack"}
@@ -2010,8 +2103,8 @@ _.functions = function(object)
 end
 
 ---
--- Creates an object composed of the inverted keys and values of object. 
--- If object contains duplicate values, subsequent values overwrite 
+-- Creates an object composed of the inverted keys and values of object.
+-- If object contains duplicate values, subsequent values overwrite
 -- property assignments of previous values unless multiValue is true.
 -- @usage _.print(_.invert({a='1', b='2', c='3', d='3'}))
 -- --> {[2]="b", [3]="d", [1]="a"}
@@ -2026,17 +2119,17 @@ _.invert = function (object, multiValue)
     for k, v in _.iter(object) do
         if multiValue and not _.isNil(t[v]) then
             t[v] = { t[v] }
-            _.push(t[v], k)            
+            _.push(t[v], k)
         else
-            t[v] = k 
+            t[v] = k
         end
     end
     return t
-    
+
 end
 
 local getSortedKeys = function(collection, desc)
-    local sortedKeys = {} 
+    local sortedKeys = {}
     for k, v in pairs(collection) do
         table.insert(sortedKeys, k)
     end
@@ -2049,12 +2142,12 @@ local getSortedKeys = function(collection, desc)
 end
 
 ---
--- Creates an array of the own enumerable property names of object. 
+-- Creates an array of the own enumerable property names of object.
 -- @usage _.print(_.keys("test"))
 -- --> {1, 2, 3, 4}
 -- _.print(_.keys({a=1, b=2, c=3}))
 -- --> {"c", "b", "a"}
--- 
+--
 -- @param object The object to query. (table|string)
 -- @return Returns the array of property names.
 _.keys = function (object)
@@ -2069,7 +2162,7 @@ _.keys = function (object)
     end
 end
 
---- 
+---
 -- Creates a two dimensional array of the key-value pairs for object.
 -- @usage  _.print(_.pairs({1, 2, 'x', a='b'}))
 -- --> {{1, 1}, {2, 2}, {3, "x"}, {"a", "b"}}
@@ -2098,21 +2191,21 @@ end
 -- @return Returns the resolved value.
 _.result = function (object, path, defaultValue, ...)
     local result = _.get(object, path, defaultValue)
-    if _.isFunction(result) then 
+    if _.isFunction(result) then
         return result(...)
-    else 
+    else
         return result
     end
 end
 
 
 ---
--- Creates an array of the own enumerable property values of object. 
+-- Creates an array of the own enumerable property values of object.
 -- @usage _.print(_.values("test"))
 -- --> {"t", "e", "s", "t"}
 -- _.print(_.values({a=1, b=2, c=3}))
 -- --> {1, 3, 2}
--- 
+--
 -- @param object The object to query. (table|string)
 -- @return Returns the array of property values.
 _.values = function (object)
@@ -2139,7 +2232,7 @@ end
 --
 -- @param value Any value.
 -- @return Returns the new function.
-_.constant = function(value) 
+_.constant = function(value)
     return _.func(value)
 end
 
@@ -2168,10 +2261,10 @@ end
 _.iter = function(value)
     if _.isString(value) then
         local i = 0
-        return function()            
+        return function()
             if _.lt(i, #value) then
                 i = i + 1
-                local c = value:sub(i, i)                
+                local c = value:sub(i, i)
                 return i, c
             end
         end
@@ -2185,10 +2278,10 @@ end
 _.iterRight = function(value)
     if _.isString(value) then
         local i = #value + 1
-        return function()            
+        return function()
             if _.gt(i, 1) then
                 i = i - 1
-                local c = value:sub(i, i)                
+                local c = value:sub(i, i)
                 return i, c
             end
         end
@@ -2212,7 +2305,7 @@ _.noop = function(...) return nil end
 
 
 ---
--- Print more readable representation of arguments using _.str 
+-- Print more readable representation of arguments using _.str
 -- @usage _.print({1, 2, 3, 4, {k=2, {'x', 'y'}}})
 -- --> {1, 2, 3, 4, {{"x", "y"}, [k]=2}}
 --
@@ -2220,16 +2313,16 @@ _.noop = function(...) return nil end
 -- @return Return human readable string of the value
 _.print = function(...)
     local t = _.table(...)
-    for i, v in ipairs(t) do 
+    for i, v in ipairs(t) do
         t[i] = _.str(t[i])
     end
     return print(_.args(t))
 end
-    
+
 ---
--- Creates an array of numbers (positive and/or negative) progressing 
--- from start up to, including, end. 
--- If end is not specified it’s set to start with start then set to 1. 
+-- Creates an array of numbers (positive and/or negative) progressing
+-- from start up to, including, end.
+-- If end is not specified it’s set to start with start then set to 1.
 -- @usage _.print(_.range(5, 20, 3))
 -- --> {5, 8, 11, 14, 17, 20}
 --
@@ -2238,19 +2331,19 @@ end
 -- @param[opt=1] step The value to increment or decrement by
 -- @return Returns the new array of numbers
 _.range = function(start, ...)
-    local start = start 
+    local start = start
     local args = _.table(...)
     local a, b, c
     if #args == 0 then
-        a = 1   -- according to lua 
+        a = 1   -- according to lua
         b = start
         c = 1
     else
         a = start
-        b = args[1] 
+        b = args[1]
         c = args[2] or 1
     end
-    local t = {}    
+    local t = {}
     for i = a, b, c do
         _.push(t, i)
     end

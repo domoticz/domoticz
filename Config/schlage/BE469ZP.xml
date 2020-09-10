@@ -1,0 +1,202 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/003B:0469:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/schlage/BE469ZP.png</MetaDataItem>
+    <MetaDataItem id="0469" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/3130/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">One-button Remove lock from Z-Wave Network (Exclusion) 
+
+1.	Place your home automation system or panel into the “Remove” or Exclusion Mode (Refer to the respective documentation for that specific home automation system or panel device for details). 
+2.	Remove the battery cover of the deadbolt. 
+3.	Press then release the button on the PCB. 
+4.	An LED will flash amber indicating the “Remove” or Exclusion process is in progress. 
+5.	When a green LED flashes 3 times, the “Remove” or Exclusion process is completed successfully. 
+6.	If a red LED turns ON, try repeating steps 1-3 
+
+Interactive Instruction for Remove  https://instructions.allegion.com/instr/86/2581</MetaDataItem>
+    <MetaDataItem id="0469" name="Identifier" type="0001">BE469ZP</MetaDataItem>
+    <MetaDataItem id="0469" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">The Schlage Connect™ Smart Deadbolt combines advanced features and compatibility with your home automation or security system, allowing you to control your lock from anywhere and freeing you from the hassles of lost keys, getting locked out, or hiding a spare for friends and family.
+
+The lock comes preprogrammed with two access codes and can hold up to 30 unique codes for family members and trusted friends. The fingerprint-resistant touchscreen helps access codes stay private, minimizing tell-tale wear that can tip off possible intruders.
+
+The Schlage Connect Smart Deadbolt is battery-powered with a low battery warning that gives you weeks of advanced notice before it runs out. With guaranteed fit on standard doors, it’s easy for homeowners to install in minutes with just a screwdriver. The touchscreen continues to work in the event of a power outage, so you don’t have to worry about getting locked out – plus, a back-up key is included with the lock for peace of mind.
+
+The Schlage Connect Smart Deadbolt incorporates Z-Wave Plus S2 technology, an enhanced security protocol that features an additional layer of AES encryption of wireless signals. The Z-Wave technology allows you to integrate your exterior door locks with other Z-Wave smart home devices, such as cameras, motion detectors, lights and thermostats, bringing the safety, simplicity and style of Schlage to your smart home. 
+</MetaDataItem>
+    <MetaDataItem name="Name">Schlage Connect Smart Deadbolt</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">One-button Add lock to Z-Wave Network (Inclusion) 
+
+1.	Place your home automation system or panel into the “Add” or Inclusion Mode (Refer to the respective documentation for that specific home automation system or panel device for details). 
+2.	Remove the battery cover of the deadbolt. 
+3.	Press then release the button on the PCB.
+4.	An LED will flash amber indicating the “Add” or Inclusion process is in progress. 
+•	If the Security Scheme is Security 2 (S2), verify the DSK of the lock at the Z-Wave Controller. The PIN Code portion of the Z-Wave DSK will be needed.
+5.	When a green LED turns ON, the “Add” or Inclusion has completed successfully. 
+6.	If a red LED turns ON, try repeating steps 1-3 
+ 
+Interactive Instruction for Add  
+https://instructions.allegion.com/instr/86/2543
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3130/Connect_QSG_Add_Remove_FDR_Association.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Steps for One-button Factory Default Reset 
+
+1.	Remove the battery cover of the deadbolt
+2.	Press and hold the button on the PCB for 7 (seven) seconds. 
+While holding the button pressed, after 1 sec LED will be lit for 2 sec. and turn OFF; continue to press and hold the button until the LED will be lit again and release the button.
+3.	The LED will blink red three times and the green check on the touchscreen will blink if the Factory Default Reset is successful. 
+4.	To check that the lock was reset, press the Schlage Button and enter one of the Default User Codes. If the reset was successful, the Default User Codes will unlock the deadbolt. 
+NOTE: Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3130/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="Beeper" max="255" min="1" size="1" type="list" units="" value="255">
+      <Help>
+				Enable or disable the keypad beeper.
+			</Help>
+      <Item label="Enable" value="255"/>
+      <Item label="Disable" value="0"/>
+    </Value>
+    <Value genre="config" index="4" label="Vacation Mode" max="255" min="1" size="1" type="list" units="" value="0">
+      <Help>
+				Enable or disable vacation mode.
+				Disables all user codes, preventing all codes from unlocking the deadbolt.
+				Enable for extra security while you are away for an extended period of time.
+			</Help>
+      <Item label="Enable" value="255"/>
+      <Item label="Disable" value="0"/>
+    </Value>
+    <Value genre="config" index="5" label="Lock and Leave Mode" max="255" min="1" size="1" type="list" units="" value="255">
+      <Help>
+				Enable or disable Lock and Leave Mode. 
+				When enabled: Press the Schlage button on the keypad to lock the deadbolt (Default setting).
+				When disabled: Press the Schlage button on the keypad and then enter a user code to lock the deadbolt.
+			</Help>
+      <Item label="Enable" value="255"/>
+      <Item label="Disable" value="0"/>
+    </Value>
+    <Value genre="config" index="7" label="Lock Alarm Mode" max="3" min="0" size="1" type="list" units="" value="0">
+      <Help>
+				By default the alarm is turned off by default. After intalling, you can turn the alarm on.
+				
+				Alert
+				 Alarms when the door opens or closes.
+				 Perfect for monitoring the door while you are home.
+				 After the alarm is triggered, there is a built-in 3-second delay for it to reset.
+				 sounds two short beeps.
+				 
+				Tamper
+				 Alarms when the lock is disturbed while locked.
+				 Senses subtle activity at the lock.
+				 Sounds 15 second alarm (90 dB).
+				 
+				Forced Entry
+				 Alarms when significant force pushes against the door while locked.
+				 Perfect for nighttime or when you are away from home.
+				 Least sensitive mode. Sounds 3-minute shrill, steady alarm (90dB).
+			</Help>
+      <Item label="Alarm Off" value="0"/>
+      <Item label="Alert" value="1"/>
+      <Item label="Tamper" value="2"/>
+      <Item label="Forced Entry" value="3"/>
+    </Value>
+    <Value genre="config" index="8" label="Alarm Alert Sensitivity" max="5" min="1" size="1" type="list" units="" value="3">
+      <Help>
+				Each alarm mode is preset to a sensitivity level of 3.
+				If your alarm is sounding too frequently, or not frequently enough, try changing this setting.
+				If you change the alarm mode, the sensitivity will revert back to the default setting.
+			</Help>
+      <Item label="Most Sensitive" value="1"/>
+      <Item label="Medium/high Sensitivity" value="2"/>
+      <Item label="Medium Sensitivity" value="3"/>
+      <Item label="Medium/low Sensitivity" value="4"/>
+      <Item label="Least Sensitivity" value="5"/>
+    </Value>
+    <Value genre="config" index="9" label="Alarm Tamper Sensitivity" max="5" min="1" size="1" type="list" units="" value="3">
+      <Help>
+				Each alarm mode is preset to a sensitivity level of 3.
+				If your alarm is sounding too frequently, or not frequently enough, try changing this setting.
+				If you change the alarm mode, the sensitivity will revert back to the default setting.
+			</Help>
+      <Item label="Most Sensitive" value="1"/>
+      <Item label="Medium/high Sensitivity" value="2"/>
+      <Item label="Medium Sensitivity" value="3"/>
+      <Item label="Medium/low Sensitivity" value="4"/>
+      <Item label="Least Sensitivity" value="5"/>
+    </Value>
+    <Value genre="config" index="10" label="Alarm Forced Entry Sensitivity" max="5" min="1" size="1" type="list" units="" value="3">
+      <Help>
+				Each alarm mode is preset to a sensitivity level of 3.
+				If your alarm is sounding too frequently, or not frequently enough, try changing this setting.
+				If you change the alarm mode, the sensitivity will revert back to the default setting.
+			</Help>
+      <Item label="Most Sensitive" value="1"/>
+      <Item label="Medium/high Sensitivity" value="2"/>
+      <Item label="Medium Sensitivity" value="3"/>
+      <Item label="Medium/low Sensitivity" value="4"/>
+      <Item label="Least Sensitivity" value="5"/>
+    </Value>
+    <Value genre="config" index="11" label="Disable Local Alarm Controls" max="255" min="0" size="1" type="list" units="" value="255">
+      <Help>
+				This configuration setting controls the ability to ENABLE or DISABLE local control of the built-in alarm function.
+			</Help>
+      <Item label="Enable local alarm controls" value="255"/>
+      <Item label="Disable local alarm controls" value="0"/>
+    </Value>
+    <Value genre="config" index="12" label="Electronic transition count" read_only="true" size="4" type="int">
+      <Help>
+				Indicates the number of transitions from locked to unlocked or unlocked to locked state via electronic activation.
+			</Help>
+    </Value>
+    <Value genre="config" index="13" label="Mechanical transition count" read_only="true" size="4" type="int">
+      <Help>
+				Indicates the number of transitions from locked to unlocked or unlocked to locked state via mechanical activation.
+			</Help>
+    </Value>
+    <Value genre="config" index="14" label="Electronic failed count" read_only="true" size="4" type="int">
+      <Help>
+				Indicates the number of failed electronic activation attempts for this lock.
+			</Help>
+    </Value>
+    <Value genre="config" index="15" label="Auto Lock" max="255" min="0" size="1" type="list" units="" value="0">
+      <Help>
+				When enabled, the lock will automatically relock 30 seconds after unlocking. (Disabled by default.)
+			</Help>
+      <Item label="Enable" value="255"/>
+      <Item label="Disable" value="0"/>
+    </Value>
+    <Value genre="config" index="16" label="User code legnth " max="8" min="4" size="1" type="byte" units="" value="4">
+      <Help>
+				Choose user code length between 4 and 8 digits.
+				IMPORTANT: All user codes must be the same length.
+			</Help>
+    </Value>
+    <Value genre="config" index="17" label="Electrical High Preload Transition Count" read_only="true" size="4" type="int">
+      <Help>
+				Indicates the number of transitions from locked to unlocked or unlocked to locked state via electronic activation that indicated a high preload on the deadbolt.
+				This is a subset of Electronic transition count.
+				High preload occurs when the bolt is obstructed and the motor needs to use more power to throw the bolt.
+				Adjust door and strike plate to ensure the bolt can move freely. This will save battery power. 
+			</Help>
+    </Value>
+    <Value genre="config" index="18" label="Bootloader Version" read_only="true" size="1" type="byte">
+      <Help>The version of the bootloader in the lock.</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="LifeLine" max_associations="2"/>
+    </Associations>
+  </CommandClass>
+  <CommandClass id="113">
+    <!-- These Door Locks don't send a DoorLockReport when the
+		Lock Status is Changed, but instead send a Alarm Message -
+		So we trigger a Refresh of the DoorLock Command Class when
+		we recieve a Alarm Message Instead -->
+    <TriggerRefreshValue Genre="user" Index="0" Instance="1">
+      <RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
+    </TriggerRefreshValue>
+  </CommandClass>
+</Product>

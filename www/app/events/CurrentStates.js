@@ -14,7 +14,7 @@ define(['app', 'events/factories'], function (app) {
                     paging: false,
                     columns: [
                         { title: $.t('Idx'), data: 'id', type: 'num', width: '10%' },
-                        { title: $.t('Last update'), data: 'lastupdate', type: 'date', width: '20%' },
+                        { title: $.t('Last update'), data: 'lastupdate', type: 'date-us', width: '20%' },
                         { title: $.t('Name'), data: 'name', width: '34%' },
                         { title: $.t('State'), data: 'value', width: '18%' },
                         { title: $.t('Value'), data: 'values', width: '18%' }

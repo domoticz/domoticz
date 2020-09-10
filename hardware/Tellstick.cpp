@@ -7,7 +7,7 @@
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
 
 CTellstick::CTellstick(const TelldusFunctions& functions, const int ID, int repeats, int repeatInterval)
     : m_td(functions),
@@ -149,7 +149,7 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
         pos = message.find(";", pos+1);
     }
     if (!deviceId.empty() && !winddirection.empty() && ! windaverage.empty() && ! windgust.empty()) {
-        SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), static_cast<float>(atof(windaverage.c_str())), static_cast<float>(atof(windgust.c_str())), 0, 0, false, "Wind");
+        SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), static_cast<float>(atof(windaverage.c_str())), static_cast<float>(atof(windgust.c_str())), 0, 0, false, false, "Wind");
     }
 }
 
@@ -291,7 +291,7 @@ void CTellstick::ThreadSendCommands()
             SendCommand(it->first, it->second.genSwitch);
             ++it->second.repeat;
             if (it->second.repeat > m_numRepeats)
-                m_commands.erase(it++);
+                it = m_commands.erase(it);
             else
             {
                 it->second.repeatTimePoint += m_repeatInterval;

@@ -19,11 +19,12 @@ License: Public domain
 
 #include <algorithm>
 #include <ctime>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <iostream>
 #include <string>
 
+using namespace boost::placeholders;
 
 COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate)
 {
@@ -356,12 +357,12 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		return false;
 	}
 
-	if (!writeRead(command.frame_open.c_str(), command.frame_open.length(), silent)) {
+	if (!writeRead(command.m_frameOpen.c_str(), command.m_frameOpen.length(), silent)) {
 		m_bWriting = false;
 		return false;
 	}
 	if (!silent) {
-		_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.frame_open.c_str(), m_readBuffer);
+		_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.m_frameOpen.c_str(), m_readBuffer);
 	}
 
 	if (!ParseData((char*)m_readBuffer, m_readBufferSize, response)) {

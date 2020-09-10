@@ -9,11 +9,13 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 
@@ -158,7 +160,7 @@ void Meteostick::readCallback(const char *data, size_t len)
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
-bool Meteostick::WriteToHardware(const char *pdata, const unsigned char length)
+bool Meteostick::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
@@ -200,7 +202,7 @@ void Meteostick::SendTempBaroSensorInt(const unsigned char Idx, const float Temp
 	float dTempAtSea = (Temp - (-273.15f)) + dTempGradient * altitude;
 	float dBasis = 1 - dTempGradient * altitude / dTempAtSea;
 	float dExponent = 0.03416f / dTempGradient;
-	float dPressure = Baro / pow(dBasis,dExponent);
+	float dPressure = Baro / std::pow(dBasis,dExponent);
 
 	SendTempBaroSensor(Idx, 255, Temp, dPressure, defaultname);
 }
@@ -233,12 +235,8 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	tsen.WIND.gusth = 0;
 	tsen.WIND.gustl = 0;
 
-	//this is not correct, why no wind temperature? and only chill?
 	tsen.WIND.chillh = 0;
 	tsen.WIND.chilll = 0;
-	//tsen.WIND.temperatureh = 0;
-	//tsen.WIND.temperaturel = 0;
-	//tsen.WIND.tempsign = (Temp >= 0) ? 0 : 1;
 
 	float dWindSpeed = Speed * 3.6f;
 	float dWindChill = Temp;
@@ -246,15 +244,13 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	{
 		float dBasis = dWindSpeed;
 		float dExponent = 0.16f;
-		float dWind = pow(dBasis,dExponent);
+		float dWind = std::pow(dBasis,dExponent);
 		dWindChill = (13.12f + 0.6215f * Temp - 11.37f * dWind + 0.3965f * Temp * dWind);
 	}
 	dWindChill*=10.0f;
 	tsen.WIND.chillsign = (dWindChill >= 0) ? 0 : 1;
-	//tsen.WIND.temperatureh = (BYTE)(dWindChill / 256);
 	tsen.WIND.chillh = (BYTE)(dWindChill / 256);
 	dWindChill -= (tsen.WIND.chillh * 256);
-	//tsen.WIND.temperaturel = (BYTE)(dWindChill);
 	tsen.WIND.chilll = (BYTE)(dWindChill);
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), 255);
@@ -266,7 +262,7 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeLeafWetness;
 	gdevice.intval1 = Wetness;
-	gdevice.id = finalID;
+	gdevice.id = (uint8_t)finalID;
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255);
 }
 

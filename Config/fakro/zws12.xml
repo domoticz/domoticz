@@ -1,6 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Fakro ZWS12 Chain actuator 12VDC -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- Fakro ZWS12 Chain actuator 12VDC --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0085:0001:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fakro/zws12.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/105/</MetaDataItem>
+    <MetaDataItem name="Name">Fakro CHAIN ACTUATOR ZWS12</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.fakro.com/htmlen/376.php</MetaDataItem>
+    <MetaDataItem name="Description">Window opener 12VDCThe ZWS12 and ZW230 chain motors thanks to their small dimensions and suitable force output are ideal for roof window operating, being fully compatible with the Z-Wave system. The motors can be applied in both centre pivot and top hung and pivot roof windows as well as windows of non-standard dimensions.
+The maximum chain reach is 24cm for ZWS12 and 36cm for ZW230. The motors are equipped with built-in overload protection which acts as a sensor of correct window closing.</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.fakro.com/htmlen/376.php</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/105/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration -->
   <!--
   <CommandClass id="112">
@@ -55,11 +67,10 @@
     </Value>
   </CommandClass>
   -->
-
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="5" label="Lifeline"/>
+      <Group index="1" label="Lifeline" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>
