@@ -38,7 +38,9 @@ define(['app', 'log/factories'], function (app) {
                                 x: -30,
                                 y: -36
                             }
-                        }
+                        },
+                        panning: true,
+                        panKey: 'shift'
                     },
                     xAxis: {
                         type: 'datetime'
