@@ -40,6 +40,8 @@ define(['app', 'log/factories'], function (app) {
 
             vm.wasCtrlMouseDown = false;
             vm.wasCtrlMouseUp = false;
+            vm.mouseDownPosition;
+            vm.mouseUpPosition;
             vm.isZoomLeftSticky = false;
             vm.isZoomRightSticky = false;
 
@@ -70,8 +72,9 @@ define(['app', 'log/factories'], function (app) {
                                     vm.isZoomRightSticky = false;
                                     consoledebug('Reset zoom: left-sticky:' + vm.isZoomLeftSticky + ', right-sticky:' + vm.isZoomRightSticky);
                                 } else {
-                                    vm.isZoomLeftSticky = vm.wasCtrlMouseDown;
-                                    vm.isZoomRightSticky = vm.wasCtrlMouseUp;
+                                    const wasMouseUpRightOfMouseDown = vm.mouseDownPosition < vm.mouseUpPosition;
+                                    vm.isZoomLeftSticky = wasMouseUpRightOfMouseDown ? vm.wasCtrlMouseDown : vm.wasCtrlMouseUp;
+                                    vm.isZoomRightSticky = wasMouseUpRightOfMouseDown ? vm.wasCtrlMouseUp : vm.wasCtrlMouseDown;
                                     consoledebug('Set zoom: left-sticky:' + vm.isZoomLeftSticky + ', right-sticky:' + vm.isZoomRightSticky);
                                 }
                             }
@@ -147,11 +150,13 @@ define(['app', 'log/factories'], function (app) {
                 chart.container.onmousedown = function (e) {
                     consoledebug('Mousedown ' + vm.range + ' ctrl:' + e.ctrlKey);
                     vm.wasCtrlMouseDown = e.ctrlKey;
+                    vm.mouseDownPosition = e.clientX;
                     vm.chartOnMouseDown(e);
                 };
                 chart.container.onmouseup = function (e) {
                     consoledebug('Mouseup ' + vm.range + ' ctrl:' + e.ctrlKey);
                     vm.wasCtrlMouseUp = e.ctrlKey;
+                    vm.mouseUpPosition = e.clientX;
                 };
 
                 refreshChartData();
