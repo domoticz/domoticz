@@ -60,6 +60,7 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 
 	m_crc = 0;
 	m_fields = "";
+	m_fieldcnt = -1;
 
 	m_capabilities.has_battery_level = false;
 	m_capabilities.has_charge_command = false;
@@ -335,47 +336,51 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 bool CMercApi::GetCustomData(tCustomData& data)
 {
 	Json::Value reply;
+	std::vector<std::string> strarray;
 	bool bCustom = true;
 
 	if (m_capabilities.has_custom_data)
 	{
-		std::vector<std::string> strarray;
-
+		m_fieldcnt--;
 		StringSplit(m_fields, ",", strarray);
-		for(uint8_t i=0; i<strarray.size(); i++)
+
+		if(m_fieldcnt < 0)
 		{
-			reply.clear();
-			if (GetResourceData(strarray[i], reply))
+			m_fieldcnt = strarray.size();
+		}
+		else
+		{
+			if (GetResourceData(strarray[m_fieldcnt], reply))
 			{
 				if(reply.size() == 0)
 				{
-					_log.Debug(DEBUG_NORM, "MercApi: Got empty data for resource %s", strarray[i].c_str());
+					_log.Debug(DEBUG_NORM, "MercApi: Got empty data for resource %s", strarray[m_fieldcnt].c_str());
 				}
 				else
 				{
-					//_log.Debug(DEBUG_NORM, "MercApi: Got data for resource %s :\n%s", strarray[i].c_str(),reply.toStyledString().c_str());
+					//_log.Debug(DEBUG_NORM, "MercApi: Got data for resource %s :\n%s", strarray[m_fieldcnt].c_str(),reply.toStyledString().c_str());
 
-					if (!reply[strarray[i]].empty())
+					if (!reply[strarray[m_fieldcnt]].empty())
 					{
-						if (reply[strarray[i]].isMember("value"))
+						if (reply[strarray[m_fieldcnt]].isMember("value"))
 						{
-							std::string resourceValue = reply[strarray[i]]["value"].asString();
+							std::string resourceValue = reply[strarray[m_fieldcnt]]["value"].asString();
 
 							Json::Value customItem;
-							customItem["id"] = i;
+							customItem["id"] = m_fieldcnt;
 							customItem["value"] = resourceValue;
-							customItem["label"] = strarray[i];
+							customItem["label"] = strarray[m_fieldcnt];
 
 							data.customdata.append(customItem);
 
-							_log.Debug(DEBUG_NORM, "MercApi: Got data for resource (%d) %s : %s", i, strarray[i].c_str(), resourceValue.c_str());
+							_log.Debug(DEBUG_NORM, "MercApi: Got data for resource (%d) %s : %s", m_fieldcnt, strarray[m_fieldcnt].c_str(), resourceValue.c_str());
 						}
 					}
 				}
 			}
 			else
 			{
-				_log.Debug(DEBUG_NORM,"MercApi: Failed to retrieve data for resource %s!", strarray[i].c_str());
+				_log.Debug(DEBUG_NORM,"MercApi: Failed to retrieve data for resource %s!", strarray[m_fieldcnt].c_str());
 			}
 		}
 	}
@@ -470,7 +475,7 @@ bool CMercApi::GetResourceData(std::string datatype, Json::Value& reply)
 bool CMercApi::IsAwake()
 {
 	// Current Mercedes Me (API) does not have an 'Awake' state
-	// So we fake one, we just request all available resources that are available for the current (BYO)CAR
+	// So we fake one, we just request the list of all available resources that are available for the current (BYO)CAR
 
 	std::stringstream ss;
 	ss << MERC_URL << MERC_API << "/" << m_VIN << "/resources";
@@ -521,8 +526,6 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 		_log.Debug(DEBUG_NORM, "CRC32 of content is the not the same (%d).. start processing", crc);
 	}
 
-	m_crc = crc;
-
 	try
 	{
 		do
@@ -556,8 +559,15 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 
 		if (ss.str().length() > 0)
 		{
+			std::vector<std::string> strarray;
+
 			m_fields = ss.str();
-			_log.Log(LOG_STATUS, "Found resource fields: %s", m_fields.c_str());
+			StringSplit(m_fields, ",", strarray);
+			m_fieldcnt = strarray.size();
+
+			_log.Log(LOG_STATUS, "Found %d resource fields: %s", m_fieldcnt, m_fields.c_str());
+
+			m_crc = crc;
 
 			bProcessed = true;
 		}
