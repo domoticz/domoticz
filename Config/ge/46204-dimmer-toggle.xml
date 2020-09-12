@@ -1,0 +1,67 @@
+<!-- GE(Jasco) 46203 Z-Wave Plus Dimmer Switch -->
+<!-- Configuration Parameters - per http://products.z-wavealliance.org/products/3323 -->
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3237:4944</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/46204-dimmer-toggle.png</MetaDataItem>
+    <MetaDataItem id="3235" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/3352/</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Smart Toggle Dimmer</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/3352/14295.46204%20Binder.pdf</MetaDataItem>
+    <MetaDataItem id="3235" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Quickly press ON (up) button three times then immediately press the OFF (down)  button three times. 
+    NOTE: This should only be used in the event your network’s
+    primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to add a device to the Z-Wave network.
+    2. Once the controller is ready to add your device, press up and release the toggle. Please reference the controller’s manual for instructions.
+    Now, you have complete control to turn your fixture ON/OFF or dim according to groups, scenes, schedules and interactive automations programmed by your controller. If your Z-Wave certified controller features remote access, you can control your fixture from your mobile devices.</MetaDataItem>
+    <MetaDataItem name="Description">In-Wall Smart Toggle Dimmer with QuickFit and SimpleWire enhancements. Revolutionary QuickFit design features a housing depth that is up to 20 percent smaller than the previous Z-Wave models. This reduced size coupled with the elimination of heat taps provides a better fit in older style boxes and multi-gang configurations. SimpleWire technology allows line and load to automatically be configured with auto-sensing line-load terminals. All of this is coupled with Z-Wave S2 and Smart Start allows for effortless installation while being safer than ever!</MetaDataItem>
+    <MetaDataItem id="3237" name="Identifier" type="4944">14295/46204/ZW3011</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove and reset the device: 
+    1. Follow the instructions for your Z-Wave certified controller to remove a device from the Z-Wave network. 
+    2. Once the controller is ready to remove your device, press up and release the toggle.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Dejan Zelic" date="14 Jul 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/3352/XML</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Indication Configuration" max="3" min="0" size="1" type="list" value="2">
+      <Help>Adjust the LED status to default, invert, always OFF or always ON</Help>
+      <Item label="Device is ON, LED is OFF; device is OFF, LED is ON" value="0"/>
+      <Item label="Device is ON, LED is ON; device is OFF, LED is OFF" value="1"/>
+      <Item label="LED always OFF" value="2"/>
+      <Item label="LED always ON" value="3"/>
+    </Value>
+    <Value genre="config" index="6" label="Dim up/down rate" max="1" min="0" size="1" type="list" value="0">
+      <Help>Adjust the speed at which the ramps to a specific value other than 0 and FF</Help>
+      <Item label="Dim up/down the light to the specified level quickly by command except value 0 and FF" value="0"/>
+      <Item label="Dim up/down the light to the specified level slowly by command except value 0 and ff" value="1"/>
+    </Value>
+    <Value genre="config" index="16" label="Switch Mode" max="1" min="0" size="1" type="list" value="0">
+      <Help>Turn your dimmer into an On/Off switch with switch mode</Help>
+      <Item label="Disable normal operation" value="0"/>
+      <Item label="Enable switch mode" value="1"/>
+    </Value>
+    <Value genre="config" index="19" label="Alternate Exclusion"  max="1" min="0" size="1" type="list" value="0">
+      <Help>Never accidentally remove a device during with alternate exclusion</Help>
+      <Item label="Normal operation, press any button on the device" value="0"/>
+      <Item label="Press two times ON button and two times OFF button, LED will flash 5 times if exclusion is successful" value="1"/>
+    </Value>
+    <Value genre="config" index="30" label="Minimum Dim Threshold" max="99" min="1" type="byte" units="" value="1">
+      <Help>Set the minimum dimmer threshold</Help>
+    </Value>
+    <Value genre="config" index="31" label="Maximum Brightness Threshold" max="99" min="1" type="byte" units="" value="99">
+      <Help>Set the brightness threshold</Help>
+    </Value>
+    <Value genre="config" index="32" label="Default Brightness Level" max="99" min="0" type="byte" units="" value="0">
+      <Help>Set the default brightness level that the dimmer will turn on when being controlled manually</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

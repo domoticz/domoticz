@@ -43,6 +43,7 @@ protected:
 	virtual void Do_Work() = 0;
 	virtual void Do_Send(std::string str) = 0;
 	virtual void Idle_Work();
+	void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname);
 private:
 	typedef boost::function< bool(CEvohomeMsg &msg) > fnc_evohome_decode;
 	void Send();
@@ -78,6 +79,8 @@ private:
 	bool DecodeSysInfo(CEvohomeMsg &msg);
 	bool DecodeZoneName(CEvohomeMsg &msg);
 	bool DecodeHeatDemand(CEvohomeMsg &msg);
+	bool DecodeOpenThermBridge(CEvohomeMsg &msg);
+        bool DecodeOpenThermSetpoint(CEvohomeMsg &msg);
 	bool DecodeZoneInfo(CEvohomeMsg &msg);
 	bool DecodeBinding(CEvohomeMsg &msg);
 	bool DecodeActuatorState(CEvohomeMsg &msg);
@@ -102,7 +105,6 @@ protected:
 	std::shared_ptr<std::thread> m_thread;
 	int m_retrycntr;
 	int m_nBufPtr;
-	bool m_bDoRestart;
 
 	unsigned int MultiControllerID[5];
 	bool AllSensors;

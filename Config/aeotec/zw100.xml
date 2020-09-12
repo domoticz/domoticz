@@ -2,31 +2,34 @@
 Aeotec ZW100 MultiSensor 6
 https://aeotec.freshdesk.com/helpdesk/attachments/6028954764
 V1.10 + V1.11 (12/14/2017)
---><Product Revision="21" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="24" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0064:0102</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw100.png</MetaDataItem>
-    <MetaDataItem id="0064" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/1810/</MetaDataItem>
+    <MetaDataItem id="0064" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/2684/</MetaDataItem>
     <MetaDataItem id="0064" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem name="WakeupDescription">Pressing the Z-Wave button once will trigger sending the Wake up notification command. If press and hold the Z-Wave button for 3 seconds, the MultiSensor will wake up for 10 minutes.</MetaDataItem>
     <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Z-Wave button that you can find in the back of the product.</MetaDataItem>
     <MetaDataItem id="0064" name="Identifier" type="0102">ZW100-A</MetaDataItem>
     <MetaDataItem name="Name">MultiSensor 6</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Z-Wave button that you can find in back of the product.</MetaDataItem>
-    <MetaDataItem name="Description">Aeotec by Aeon Labs’ MultiSensor looks like a motion sensor and it acts like one too. But it’s also so much more. Installing this 1 piece of Z-Wave® technology is the same as installing 6 pieces of Z-Wave technology. Your home control network will immediately understand motion, temperature, humidity, light, Ultraviolet and Vibration readings wherever MultiSensor installed. Those intelligent readings will equate to intelligence automation. And intelligent automation will give you the perfect, smart home.</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec MultiSensor 6 looks like a motion sensor and it acts like one too. But it’s also so much more. Installing this 1 piece of Z-Wave® technology is the same as installing 6 pieces of Z-Wave technology. Your home control network will immediately understand motion, temperature, humidity, light, Ultraviolet and Vibration readings wherever MultiSensor installed. Those intelligent readings will equate to intelligence automation. And intelligent automation will give you the perfect, smart home.</MetaDataItem>
     <MetaDataItem name="ResetDescription">Press and hold the Z-Wave button that you can find in back of the product for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1812/Aeon Labs MultiSensor 6 manual.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2714/Aeon Labs MultiSensor 6 manual.pdf</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="17">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1390/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="18">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1403/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="19">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1404/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="20">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1810/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="21">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1812/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="22">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2684/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="23">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2695/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="24">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2714/xml</Entry>
     </ChangeLog>
-    <MetaDataItem id="0064" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1812/</MetaDataItem>
+    <MetaDataItem id="0064" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2714/</MetaDataItem>
     <MetaDataItem id="0064" name="Identifier" type="0002">ZW100-C</MetaDataItem>
     <MetaDataItem id="0064" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem id="0064" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/1404/</MetaDataItem>
+    <MetaDataItem id="0064" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/2695/</MetaDataItem>
     <MetaDataItem id="0064" name="Identifier" type="0202">ZW100-B</MetaDataItem>
     <MetaDataItem id="0064" name="FrequencyName" type="0202">Australia / New Zealand</MetaDataItem>
   </MetaData>

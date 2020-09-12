@@ -14,6 +14,44 @@
 #include <frameobject.h>
 #include "../../main/Helper.h"
 
+#if PY_VERSION_HEX >= 0x030800f0
+static inline void
+py3__Py_DECREF(const char *filename, int lineno, PyObject *op)
+{
+	(void)filename; /* may be unused, shut up -Wunused-parameter */
+	(void)lineno; /* may be unused, shut up -Wunused-parameter */
+	_Py_DEC_REFTOTAL;
+	if (--op->ob_refcnt != 0)
+	{
+#ifdef Py_REF_DEBUG
+	if (op->ob_refcnt < 0)
+	{
+		_Py_NegativeRefcount(filename, lineno, op);
+	}
+#endif
+	}
+	else
+	{
+		_Py_Dealloc(op);
+	}
+}
+
+#undef Py_DECREF
+#define Py_DECREF(op) py3__Py_DECREF(__FILE__, __LINE__, _PyObject_CAST(op))
+
+static inline void
+py3__Py_XDECREF(PyObject *op)
+{
+	if (op != NULL)
+	{
+		Py_DECREF(op);
+	}
+}
+
+#undef Py_XDECREF
+#define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
+#endif
+
 namespace Plugins {
 
 #ifdef WIN32
@@ -128,6 +166,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_Str, PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_IsTrue, PyObject*);
 		DECLARE_PYTHON_SYMBOL(double, PyFloat_AsDouble, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetIter, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyIter_Next, PyObject*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -262,6 +302,8 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyObject_Str);
 					RESOLVE_PYTHON_SYMBOL(PyObject_IsTrue);
 					RESOLVE_PYTHON_SYMBOL(PyFloat_AsDouble);
+					RESOLVE_PYTHON_SYMBOL(PyObject_GetIter);
+					RESOLVE_PYTHON_SYMBOL(PyIter_Next);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -466,4 +508,6 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyObject_Str			pythonLib->PyObject_Str
 #define	PyObject_IsTrue			pythonLib->PyObject_IsTrue
 #define PyFloat_AsDouble		pythonLib->PyFloat_AsDouble
+#define	PyObject_GetIter		pythonLib->PyObject_GetIter
+#define	PyIter_Next				pythonLib->PyIter_Next
 }

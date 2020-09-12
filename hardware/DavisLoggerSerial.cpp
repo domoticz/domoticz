@@ -8,12 +8,14 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #ifdef _DEBUG
 //#define DEBUG_DAVIS
@@ -280,15 +282,15 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		uint8_t forecast = 0;
 
 		if ((forecastitem & 0x01) == 0x01)
-			forecast = wsbaroforcast_rain;
+			forecast = wsbaroforecast_rain;
 		else if ((forecastitem & 0x02) == 0x02)
-			forecast = wsbaroforcast_cloudy;
+			forecast = wsbaroforecast_cloudy;
 		else if ((forecastitem & 0x04) == 0x04)
-			forecast = wsbaroforcast_some_clouds;
+			forecast = wsbaroforecast_some_clouds;
 		else if ((forecastitem & 0x08) == 0x08)
-			forecast = wsbaroforcast_sunny;
+			forecast = wsbaroforecast_sunny;
 		else if ((forecastitem & 0x10) == 0x10)
-			forecast = wsbaroforcast_snow;
+			forecast = wsbaroforecast_snow;
 
 		SendTempHumBaroSensorFloat(tempIdx++, 255, InsideTemperature, InsideHumidity, BaroMeter, forecast, "THB");
 	}

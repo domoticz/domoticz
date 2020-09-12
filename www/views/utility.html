@@ -2,11 +2,15 @@
     <form>
         <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
+            <td align="right" style="width:120px"><label>Idx: </label></td>
+			<td><span id="deviceidx" /></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
-			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
 		</tr>
 		</table>
@@ -16,11 +20,15 @@
     <form>
         <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
+            <td align="right" style="width:200px"><label>Idx: </label></td>
+			<td><span id="deviceidx" /></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
-			<td align="right" style="width:200px"><label for="sensoraxis"><span data-i18n="Axis Label"></span>:</label></td>
+			<td align="right"><label for="sensoraxis"><span data-i18n="Axis Label"></span>:</label></td>
 			<td><input type="text" id="sensoraxis" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
 		<tr>
@@ -41,11 +49,15 @@
     <form>
         <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
+            <td align="right" style="width:120px"><label>Idx: </label></td>
+			<td><span id="deviceidx" /></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
-			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
 		</tr>
         <tr>
@@ -77,11 +89,15 @@
     <form>
         <table class="display" id="energytable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
+            <td align="right" style="width:120px"><label>Idx: </label></td>
+			<td><span id="deviceidx" /></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
-			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
 		</tr>
         <tr>
@@ -92,7 +108,7 @@
           </select></td>
 		</tr>
         <tr>
-             <td align="right" style="width:120px"><label for="EnergyMeterMode"><span data-i18n="Energy read">Energy read</span>: </label></td>
+             <td align="right"><label for="EnergyMeterMode"><span data-i18n="Energy read">Energy read</span>: </label></td>
              <td>
              <input type="radio" name="EnergyMeterMode" id="EnergyMeterMode2" value="1" >&nbsp;&nbsp;<span data-i18n="Computed">&nbsp;&nbsp;Computed</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|
              <input type="radio" name="EnergyMeterMode" id="EnergyMeterMode1" value="0" checked>&nbsp;&nbsp;<span data-i18n="From device">From device</span>
@@ -105,15 +121,19 @@
     <form>
         <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label><span data-i18n="Name">Name</span>: </label></td>
+            <td align="right" style="width:120px"><label>Idx: </label></td>
+			<td><span id="deviceidx" /></td>
+        </tr>
+        <tr>
+          <td align="right"><label><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
-			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
 		</tr>
         <tr>
-          <td align="right" style="width:60px"><label><span data-i18n="Display">Display</span>: </label></td>
+          <td align="right"><label><span data-i18n="Display">Display</span>: </label></td>
           <td>
 			<select id="combometertype" style="width:150px" class="combobox ui-corner-all">
 				<option value="0">Centimeters</option>
@@ -128,11 +148,15 @@
     <form>
         <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
+            <td align="right" style="width:120px"><label>Idx: </label></td>
+			<td><span id="deviceidx" /></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
-			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
 		</tr>
 		<tr>
@@ -150,11 +174,15 @@
     <form>
         <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
+            <td align="right" style="width:120px"><label>Idx: </label></td>
+			<td><span id="deviceidx" /></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
-			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
 		</tr>
 		<tr>
@@ -188,11 +216,15 @@
     <form>
         <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
+            <td align="right" style="width:120px"><label>Idx: </label></td>
+			<td><span id="deviceidx" /></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
-			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
 		</tr>
 		<tr>

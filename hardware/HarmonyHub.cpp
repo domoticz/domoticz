@@ -50,7 +50,7 @@ History:
 #include "../main/mainworker.h"
 #include "../webserver/Base64.h"
 #include "csocket.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 
 #define CONNECTION_ID				"446f6d6f-7469-637a-2d48-61726d6f6e79" // `Domoticz-Harmony` in ASCII
@@ -965,9 +965,8 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 
 		std::string szJsonString = szQueryResponse->substr(pos + 8);
 		Json::Value j_result;
-		Json::Reader jReader;
 
-		bool ret = jReader.parse(szJsonString.c_str(), j_result);
+		bool ret = ParseJSon(szJsonString.c_str(), j_result);
 		if ((!ret) || (!j_result.isObject()))
 		{
 			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");

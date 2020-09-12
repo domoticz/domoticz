@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<NotificationTypes xmlns='https://github.com/OpenZWave/open-zwave' Revision="8">
-    <!--  Please keep this file in Sync with the Localization.xml file for the Notification CC -->
-    <!--  If you are adding new Types or Params, Please also consider updating ValueIDIndexesDefines.def -->
+<NotificationTypes xmlns='https://github.com/OpenZWave/open-zwave' Revision="11">
+	<!-- Last Updated with Version 11 - 1/1/20 -->
+	<!-- Please keep Localization.xml in sync with NotificationCCTypes.xml -->
+	<!-- If you are adding new Types or Params, Please also consider updating ValueIDIndexesDefines.def -->
+	<!-- Bump Revision number, run "xmllint format" and "make xmltest" before submitting -->
 	<AlarmType id="1" name="Smoke Alarm">
 		<AlarmEvent id="0" name="Clear">
 			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
@@ -27,14 +29,14 @@
 		</AlarmEvent>
 	</AlarmType>
 
-	<AlarmType id="2" name="Carbon Monoxied">
+	<AlarmType id="2" name="Carbon Monoxide">
 		<AlarmEvent id="0" name="Clear">
 			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
 		</AlarmEvent>
-		<AlarmEvent id="1" name="Carbon Monoxied Detected at Location">
+		<AlarmEvent id="1" name="Carbon Monoxide Detected at Location">
 			<AlarmEventParam id="257" type="location" name="Alert Location" />
 		</AlarmEvent>
-		<AlarmEvent id="2" name="Carbon Monoxied Detected at Unknown Location">
+		<AlarmEvent id="2" name="Carbon Monoxide Detected at Unknown Location">
 		</AlarmEvent>
 		<AlarmEvent id="3" name="Test">
 			<AlarmEventParam id="258" type="list" name="Result">
@@ -48,20 +50,20 @@
 		</AlarmEvent>
 		<AlarmEvent id="6" name="Silenced">
 		</AlarmEvent>
-		<AlarmEvent id="7" name="Maintence Required: Periodic Inspection">
+		<AlarmEvent id="7" name="Maintenance Required: Periodic Inspection">
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
 	</AlarmType>
 
-	<AlarmType id="3" name="Carbon Dixoide">
+	<AlarmType id="3" name="Carbon Dioxide">
 		<AlarmEvent id="0" name="Clear">
 			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
 		</AlarmEvent>
-		<AlarmEvent id="1" name="Carbon Dixoide Detected at Location">
+		<AlarmEvent id="1" name="Carbon Dioxide Detected at Location">
 			<AlarmEventParam id="257" type="location" name="Alert Location" />
 		</AlarmEvent>
-		<AlarmEvent id="2" name="Carbon Dixoid Detected at Unknown Location">
+		<AlarmEvent id="2" name="Carbon Dioxide Detected at Unknown Location">
 		</AlarmEvent>
 		<AlarmEvent id="3" name="Test">
 			<AlarmEventParam id="258" type="list" name="Result">
@@ -75,7 +77,7 @@
 		</AlarmEvent>
 		<AlarmEvent id="6" name="Silenced">
 		</AlarmEvent>
-		<AlarmEvent id="7" name="Maintence Required: Periodic Inspection">
+		<AlarmEvent id="7" name="Maintenance Required: Periodic Inspection">
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
@@ -110,6 +112,11 @@
 		</AlarmEvent>
 		<AlarmEvent id="11" name="Maintenance_Required: Periodic Inspection">
 		</AlarmEvent>
+		<AlarmEvent id="12" name="Rapid temperature fall at Location">
+			<AlarmEventParam id="257" type="location" name="Alert Location" />
+		</AlarmEvent>
+		<AlarmEvent id="13" name="Rapid temperature fall at Unknown Location">
+		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
 	</AlarmType>
@@ -123,10 +130,10 @@
 		</AlarmEvent>
 		<AlarmEvent id="2" name="Water Leak at Unknown Location">
 		</AlarmEvent>
-		<AlarmEvent id="3" name="Water Level Droped at Location">
+		<AlarmEvent id="3" name="Water Level Dropped at Location">
 			<AlarmEventParam id="257" type="location" name="Alert Location" />
 		</AlarmEvent>
-		<AlarmEvent id="4" name="Water Level Droped at Unnknown Location">
+		<AlarmEvent id="4" name="Water Level Dropped at Unknown Location">
 		</AlarmEvent>
 		<AlarmEvent id="5" name="Replace Filter">
 		</AlarmEvent>
@@ -145,6 +152,24 @@
 				<Item id="3" label="Above High Threshold" />
 				<Item id="4" label="Max" />
 			</AlarmEventParam>
+		</AlarmEvent>
+		<AlarmEvent id="8" name="Water Temperature">
+			<AlarmEventParam id="259" type="list" name="Type">
+				<Item id="1" label="No Data" />
+				<Item id="2" label="Below Low Threshold" />
+				<Item id="3" label="Above High Threshold" />
+			</AlarmEventParam>
+		</AlarmEvent>
+		<AlarmEvent id="9" name="Water Level">
+			<AlarmEventParam id="259" type="list" name="Type">
+				<Item id="1" label="No Data" />
+				<Item id="2" label="Below Low Threshold" />
+				<Item id="3" label="Above High Threshold" />
+			</AlarmEventParam>
+		</AlarmEvent>
+		<AlarmEvent id="10" name="Sump Pump Active">
+		</AlarmEvent>
+		<AlarmEvent id="11" name="Sump Pump Failure">
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
@@ -176,7 +201,7 @@
 		</AlarmEvent>
 		<AlarmEvent id="10" name="Auto Lock Not Fully Locked">
 		</AlarmEvent>
-		<AlarmEvent id="11" name="Lock Jamed">
+		<AlarmEvent id="11" name="Lock Jammed">
 		</AlarmEvent>
 		<AlarmEvent id="12" name="All User Codes Deleted">
 		</AlarmEvent>
@@ -202,6 +227,13 @@
 		</AlarmEvent>
 		<AlarmEvent id="23" name="Door/Window Closed">
 		</AlarmEvent>
+		<AlarmEvent id="24" name="Window/door handle is open">
+		</AlarmEvent>
+		<AlarmEvent id="25" name="Window/door handle is closed">
+		</AlarmEvent>
+		<AlarmEvent id="26" name="Messaging User Code entered via keypad">
+			<AlarmEventParam id="260" type="usercodereport" name="UserCode" />
+		</AlarmEvent>
 		<AlarmEvent id="64" name="Barrier Initializing">
 			<AlarmEventParam id="262" type="list" name="Progress">
 				<Item id="0" label="Process Complete" />
@@ -221,13 +253,13 @@
 		</AlarmEvent>
 		<AlarmEvent id="70" name="Barrier Malfunction">
 		</AlarmEvent>
-		<AlarmEvent id="71" name="Barrier Vacaction Mode">
+		<AlarmEvent id="71" name="Barrier Vacation Mode">
 			<AlarmEventParam id="263" type="list" name="Mode">
 				<Item id="0" label="Disabled" />
 				<Item id="255" label="Enabled" />
 			</AlarmEventParam>
 		</AlarmEvent>
-		<AlarmEvent id="72" name="Barrier Saftey Beam Obstruction">
+		<AlarmEvent id="72" name="Barrier Safety Beam Obstruction">
 			<AlarmEventParam id="264" type="list" name="Obstruction">
 				<Item id="0" label="No Obstruction" />
 				<Item id="255" label="Obstruction" />
@@ -258,7 +290,7 @@
 		</AlarmEvent>
 		<AlarmEvent id="3" name="Tampering -  Cover Removed">
 		</AlarmEvent>
-		<AlarmEvent id="4" name="Tamperting - Invalid Code">
+		<AlarmEvent id="4" name="Tampering - Invalid Code">
 		</AlarmEvent>
 		<AlarmEvent id="5" name="Glass Breakage at Location">
 			<AlarmEventParam id="257" type="location" name="Alert Location" />
@@ -271,6 +303,13 @@
 		<AlarmEvent id="8" name="Motion Detected at Unknown Location">
 		</AlarmEvent>
 		<AlarmEvent id="9" name="Tampering - Product Moved">
+		</AlarmEvent>
+		<AlarmEvent id="10" name="Impact detected">
+		</AlarmEvent>
+		<AlarmEvent id="11" name="Magnetic field interference detected">
+		</AlarmEvent>
+		<AlarmEvent id="12" name="RF Jamming detected">
+			<AlarmEventParam id="272" type="byte" name="RSSI Level" />
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
@@ -292,7 +331,7 @@
 		</AlarmEvent>
 		<AlarmEvent id="6" name="Over Current Detected">
 		</AlarmEvent>
-		<AlarmEvent id="7" name="Over Voltage Voltage">
+		<AlarmEvent id="7" name="Over Voltage Detected">
 		</AlarmEvent>
 		<AlarmEvent id="8" name="Over Load Detected">
 		</AlarmEvent>
@@ -309,6 +348,10 @@
 		<AlarmEvent id="14" name="Battery Low">
 		</AlarmEvent>
 		<AlarmEvent id="15" name="Battery Critical">
+		</AlarmEvent>
+		<AlarmEvent id="16" name="Back-up battery is low">
+		</AlarmEvent>
+		<AlarmEvent id="18" name="Back-up battery disconnected">
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
@@ -334,6 +377,12 @@
 		</AlarmEvent>
 		<AlarmEvent id="7" name="Emergency Shutoff">
 		</AlarmEvent>
+		<AlarmEvent id="8" name="Digital input high state">
+		</AlarmEvent>
+		<AlarmEvent id="9" name="Digital input low state">
+		</AlarmEvent>
+		<AlarmEvent id="10" name="Digital input open">
+		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown_Event">
 		</AlarmEvent>
 	</AlarmType>
@@ -347,6 +396,8 @@
 		<AlarmEvent id="2" name="Contact Fire Department">
 		</AlarmEvent>
 		<AlarmEvent id="3" name="Contact Medical Service">
+		</AlarmEvent>
+		<AlarmEvent id="4" name="Panic alert">
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
@@ -431,13 +482,27 @@
 		</AlarmEvent>
 		<AlarmEvent id="5" name="Sitting On Edge Of Bed">
 		</AlarmEvent>
-		<AlarmEvent id="6" name="Volatile Organic Level">
+		<AlarmEvent id="6" name="Volatile Organic Compound Level">
 			<AlarmEventParam id="268" type="list" name="Pollution Level">
 				<Item id="1" label="Clean" />
 				<Item id="2" label="Slightly Polluted" />
 				<Item id="3" label="Moderately Polluted" />
 				<Item id="4" label="Highly Polluted" />
 			</AlarmEventParam>
+		</AlarmEvent>
+		<AlarmEvent id="7" name="Sleep apnea detected">
+			<AlarmEventParam id="268" type="list" name="breath level">
+				<Item id="1" label="Low Breath" />
+				<Item id="2" label="No Breath" />
+			</AlarmEventParam>
+		</AlarmEvent>
+		<AlarmEvent id="8" name="Sleep stage 0 detected (Dreaming/REM)">
+		</AlarmEvent>
+		<AlarmEvent id="9" name="Sleep stage 1 detected (Light sleep, non-REM 1)">
+		</AlarmEvent>
+		<AlarmEvent id="10" name="Sleep stage 2 detected (Medium sleep, non-REM 2)">
+		</AlarmEvent>
+		<AlarmEvent id="11" name="Sleep stage 3 detected (Deep sleep, non-REM 3)">
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
@@ -501,6 +566,8 @@
 		</AlarmEvent>
 		<AlarmEvent id="2" name="Moisture Detected">
 		</AlarmEvent>
+		<AlarmEvent id="3" name="Freeze">
+		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
 	</AlarmType>
@@ -541,9 +608,120 @@
 		</AlarmEvent>
 		<AlarmEvent id="4" name="Toxic Gas Detected Unknown Location">
 		</AlarmEvent>
-		<AlarmEvent id="5" name="Test">
+		<AlarmEvent id="5" name="Alarm Test">
 		</AlarmEvent>
-		<AlarmEvent id="6" name="Replacement Required (Unspecified)">
+		<AlarmEvent id="6" name="Replacement Required">
+		</AlarmEvent>
+		<AlarmEvent id="254" name="Unknown Event">
+		</AlarmEvent>
+	</AlarmType>
+
+	<AlarmType id="19" name="Pest Control">
+		<AlarmEvent id="0" name="Clear">
+			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
+		</AlarmEvent>
+		<AlarmEvent id="1" name="Trap armed at Location">
+			<AlarmEventParam id="257" type="location" name="Alert Location" />
+		</AlarmEvent>
+		<AlarmEvent id="2" name="Trap armed">
+		</AlarmEvent>
+		<AlarmEvent id="3" name="Trap re-arm required at Location">
+			<AlarmEventParam id="257" type="location" name="Alert Location" />
+		</AlarmEvent>
+		<AlarmEvent id="4" name="Trap re-arm required">
+		</AlarmEvent>
+		<AlarmEvent id="5" name="Pest detected at Location">
+			<AlarmEventParam id="257" type="location" name="Alert Location" />
+		</AlarmEvent>
+		<AlarmEvent id="6" name="Pest detected">
+		</AlarmEvent>
+		<AlarmEvent id="7" name="Pest exterminated at Location">
+			<AlarmEventParam id="257" type="location" name="Alert Location" />
+		</AlarmEvent>
+		<AlarmEvent id="8" name="Pest exterminated">
+		</AlarmEvent>
+		<AlarmEvent id="254" name="Unknown Event">
+		</AlarmEvent>
+	</AlarmType>
+
+	<AlarmType id="20" name="Light">
+		<AlarmEvent id="0" name="Clear">
+			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
+		</AlarmEvent>
+		<AlarmEvent id="1" name="Light detected">
+		</AlarmEvent>
+		<AlarmEvent id="2" name="Light color transition detected">
+		</AlarmEvent>
+		<AlarmEvent id="254" name="Unknown Event">
+		</AlarmEvent>
+	</AlarmType>
+
+	<AlarmType id="21" name="Water Quality Monitoring">
+		<AlarmEvent id="0" name="Clear">
+			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
+		</AlarmEvent>
+		<AlarmEvent id="1" name="Chlorine">
+			<AlarmEventParam id="259" type="list" name="Threshold">
+				<Item id="1" label="Below Low Threshold" />
+				<Item id="2" label="Above High Threshold" />
+			</AlarmEventParam>
+		</AlarmEvent>
+		<AlarmEvent id="2" name="Acidity (pH)">
+			<AlarmEventParam id="259" type="list" name="Threshold">
+				<Item id="1" label="Below Low Threshold" />
+				<Item id="2" label="Above High Threshold" />
+				<Item id="3" label="Decreasing pH" />
+				<Item id="4" label="Increasing pH" />
+			</AlarmEventParam>
+		</AlarmEvent>
+		<AlarmEvent id="3" name="Water Oxidation">
+			<AlarmEventParam id="259" type="list" name="Type">
+				<Item id="1" label="Below Low Threshold" />
+				<Item id="2" label="Above High Threshold" />
+			</AlarmEventParam>
+		</AlarmEvent>
+		<AlarmEvent id="4" name="Chlorine empty">
+		</AlarmEvent>
+		<AlarmEvent id="5" name="Acidity (pH) empty">
+		</AlarmEvent>
+		<AlarmEvent id="6" name="Waterflow measuring station shortage detected">
+		</AlarmEvent>
+		<AlarmEvent id="7" name="Waterflow clear water shortage detected">
+		</AlarmEvent>
+		<AlarmEvent id="8" name="Disinfection system error detected">
+			<AlarmEventParam id="1" type="byte" name="Error" />
+		</AlarmEvent>
+		<AlarmEvent id="9" name="Filter cleaning ongoing">
+			<AlarmEventParam id="1" type="byte" name="Progress" />
+		</AlarmEvent>
+		<AlarmEvent id="10" name="Heating operation ongoing">
+		</AlarmEvent>
+		<AlarmEvent id="11" name="Filter pump operation ongoing">
+		</AlarmEvent>
+		<AlarmEvent id="12" name="Freshwater operation ongoing">
+		</AlarmEvent>
+		<AlarmEvent id="13" name="Dry protection operation active">
+		</AlarmEvent>
+		<AlarmEvent id="14" name="Water tank is empty">
+		</AlarmEvent>
+		<AlarmEvent id="15" name="Water tank level is unknown">
+		</AlarmEvent>
+		<AlarmEvent id="16" name="Water tank is full">
+		</AlarmEvent>
+		<AlarmEvent id="17" name="Collective disorder">
+		</AlarmEvent>
+		<AlarmEvent id="254" name="Unknown Event">
+		</AlarmEvent>
+	</AlarmType>
+
+	<AlarmType id="22" name="Home Monitoring">
+		<AlarmEvent id="0" name="Clear">
+			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
+		</AlarmEvent>
+		<AlarmEvent id="1" name="Home occupied at Location">
+			<AlarmEventParam id="257" type="location" name="Alert Location" />
+		</AlarmEvent>
+		<AlarmEvent id="2" name="Home occupied">
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>

@@ -21,7 +21,7 @@ require.config({
 		'blockly': '../js/blockly/blockly_compressed',
 		'blockly-blocks': '../js/blockly/blocks_compressed',
 		'blockly-msg-en': '../js/blockly/msg/en',
-		'luxon': '../js/luxon.min',
+		'luxon': '../js/luxon.min'
 	},
 	shim: {
 		'angularAMD': ['angular'],

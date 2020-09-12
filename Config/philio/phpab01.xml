@@ -1,32 +1,25 @@
-<!-- PH-PAB01.eu Micromodule Energy Meter  --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- PH-PAB01.eu Micromodule Energy Meter  --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:001A:0006</MetaDataItem>
-    <MetaDataItem name="ProductPic">images/philio/phpab01.png</MetaDataItem>
-    <MetaDataItem id="001A" name="ZWProductPage" type="0006">https://products.z-wavealliance.org/products/1599/</MetaDataItem>
-    <MetaDataItem name="Description">This dual meter module is a transceiver which is a Z-WaveTM enabled device and is fully compatible with any Z-WaveTM enabled network. This product can be included and operated in any Z-Wave network with other Z-Wave certified devices from other manufacturers and/or other applications. And it can act as repeaters within the network regardless of vendor to increase reliability of the network.   
- 
-Mini size design let the module can easily hide itself into the electricity distribution box and that will be good for the house decoration. This dual meter module is able to detect Instant power wattage (13800W/230Vac)(60 Amperes) of connected light or appliances.   
- 
-
-
-</MetaDataItem>
-    <MetaDataItem id="001A" name="Identifier" type="0006">PAB01-1</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">1. Put your Z-Wave controller into inclusion mode by following the instructions provided by the controller manufacturer. 
-2. Pressing Include button three times within 2 seconds will enter inclusion mode.   
-</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1599/PAB01 manual-20151110.pdf</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zipato/phpab01.png</MetaDataItem>
+    <MetaDataItem id="001A" name="ZWProductPage" type="0006">https://products.z-wavealliance.org/products/2420/</MetaDataItem>
+    <MetaDataItem name="Description">This product can be operated in any Z-Wave network with other Z-Wave  certified  devices  from  other  manufacturers.  All  non-battery operated nodes within the network will act as repeaters regardless  of  vendor  to  increase  reliability  of  the  network. Zipato  Energy  Meter  monitors  total  electricity  consumption of connected appliances and reports it to Zipato or any other Z-Wave enabled controller in real time. Small and compact size allows  easy  installation  in  majority  of  electricity  distribution boxes. It supports two loads upto 6000W each (@ 120V).</MetaDataItem>
+    <MetaDataItem id="001A" name="Identifier" type="0006">ph-pab01</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Put your Z-Wave controller into inclusion mode by following the instructions provided by the controller manufacturer.
+Pressing On/Off (Include) button three times within 2 seconds will enter inclusion mode.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2420/ph-pab01 - MM Energy Meter User Manual v1.1 - Print.pdf</MetaDataItem>
     <MetaDataItem id="001A" name="FrequencyName" type="0006">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="Name">Smart Energy In Wall Meter</MetaDataItem>
-    <MetaDataItem name="ResetDescription">Use this procedure only in the event that the primary controller is lost or otherwise inoperable.
-
-1. Pressing INCLUDE_BUTTON three times within 2 seconds will enter inclusion mode.
-2. Within 1 second, press Include button again for 5 seconds. 
-3. IDs are excluded. </MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">1. Put your Z-Wave controller into exclusion mode by following the instructions provided by the controller manufacturer.   
-2. Pressing Include button three times within 2 seconds will enter exclusion mode. 
-3. Node ID has been excluded. </MetaDataItem>
+    <MetaDataItem name="Name">Micromodule Energy Meter, Z-Wave</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.
+Pressing On/Off (Include) button three times within 2 seconds will enter inclusion mode.
+Within 1 second, press and hold On/Off (Include) button again for 5 seconds until LED is off.
+IDs are excluded.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Put your Z-Wave controller into exclusion mode by following the instructions provided by the controller manufacturer.
+Pressing On/Off (Include) button three times within 2 seconds will enter exclusion mode.
+Node ID has been excluded.</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1599/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2420/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Remove COMMAND_CLASS_BASIC -->

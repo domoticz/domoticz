@@ -28,7 +28,7 @@ public:
 	bool DoesNodeExists(const Json::Value &root, const std::string &node);
 	bool DoesNodeExists(const Json::Value &root, const std::string &node, const std::string &value);
 	std::string GetUptime(const std::string &IPAddress);
-	void SearchNodes(const std::string &ipmask);
+	void SearchNodes(const std::string &pattern);
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -57,4 +57,6 @@ private:
 	_tColor m_RGBWColorState;
 	bool m_RGBWisWhiteState;
 	int m_RGBWbrightnessState;
+
+	bool PrepareHostList(const std::string& pattern, std::vector<std::string>& hosts);
 };

@@ -5,7 +5,6 @@
 //
 #ifdef ENABLE_PYTHON
 
-#include <tinyxml.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -14,14 +13,15 @@
 #include "PluginMessages.h"
 #include "PluginTransports.h"
 
-#include "../main/Helper.h"
-#include "../main/Logger.h"
-#include "../main/SQLHelper.h"
-#include "../main/WebServer.h"
-#include "../main/mainworker.h"
-#include "../main/EventSystem.h"
-#include "../json/json.h"
-#include "../main/localtime_r.h"
+#include <json/json.h>
+#include "../../main/EventSystem.h"
+#include "../../main/Helper.h"
+#include "../../main/mainworker.h"
+#include "../../main/localtime_r.h"
+#include "../../main/Logger.h"
+#include "../../main/SQLHelper.h"
+#include "../../main/WebServer.h"
+#include "../../tinyxpath/tinyxml.h"
 #ifdef WIN32
 #	include <direct.h>
 #else
@@ -305,6 +305,12 @@ namespace Plugins {
 		}
 	}
 
+	void BoostWorkers()
+	{
+		
+		ios.run();
+	}
+
 	void CPluginSystem::Do_Work()
 	{
 		while (!m_bAllPluginsStarted)
@@ -315,11 +321,15 @@ namespace Plugins {
 		_log.Log(LOG_STATUS, "PluginSystem: Entering work loop.");
 
 		// Create initial IO Service thread
-		ios.reset();
+		ios.restart();
 		// Create some work to keep IO Service alive
 		auto work = boost::asio::io_service::work(ios);
-		boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-		SetThreadName(bt.native_handle(), "PluginMgr_IO");
+		boost::thread_group BoostThreads;
+		for (int i = 0; i < 1; i++)
+		{
+			boost::thread*	bt = BoostThreads.create_thread(BoostWorkers);
+			SetThreadName(bt->native_handle(), "Plugin_ASIO");
+		}
 
 		while (!IsStopRequested(50))
 		{
@@ -377,27 +387,30 @@ namespace Plugins {
 			}
 		}
 
+		// Shutdown IO workers
+		ios.stop();
+		BoostThreads.join_all();
+
 		_log.Log(LOG_STATUS, "PluginSystem: Exiting work loop.");
 	}
 
-	void CPluginSystem::DeviceModified(uint64_t ID)
+	void CPluginSystem::DeviceModified(uint64_t DevIdx)
 	{
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT HardwareID,Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", ID);
-		if (!result.empty())
-		{
-			std::vector<std::string> sd = result[0];
-			std::string sHwdID = sd[0];
-			std::string Unit = sd[1];
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
-			if (pHardware != NULL)
-			{
-				//std::vector<std::string> sd = result[0];
-				_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
-				Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
-				pPlugin->DeviceModified(atoi(Unit.c_str()));
-			}
-		}
+		result = m_sql.safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", DevIdx);
+		if (result.empty())
+			return;
+		std::vector<std::string> sd = result[0];
+		std::string sHwdID = sd[0];
+		std::string Unit = sd[1];
+		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
+		if (pHardware == nullptr)
+			return;
+		//std::vector<std::string> sd = result[0];
+		//GizMoCuz: Why does this work with UNIT ? Why not use the device idx which is always unique ?
+		_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
+		Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
+		pPlugin->DeviceModified(atoi(Unit.c_str()));
 	}
 }
 

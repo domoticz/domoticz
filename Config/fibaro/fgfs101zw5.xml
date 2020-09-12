@@ -1,44 +1,52 @@
-<!-- Fibaro FGFS101 Zwave+ Flood Sensor --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Fibaro FGFS101 Zwave+ Flood Sensor --><Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1002:0B01</MetaDataItem>
     <MetaDataItem name="ProductPic">images/fibaro/fgfs101zw5.png</MetaDataItem>
-    <MetaDataItem id="1002" name="ZWProductPage" type="0B01">https://products.z-wavealliance.org/products/1354/</MetaDataItem>
+    <MetaDataItem id="1002" name="ZWProductPage" type="0B01">https://products.z-wavealliance.org/products/2791/</MetaDataItem>
     <MetaDataItem name="ResetDescription">1) Open the cover by turning it counter-clockwise. 
-2) Make sure the sensor is connected to a battery or a DC power supply.
-3) Press and hold the TMP button for 15-20 seconds until LED glows yellow to confirm entering into 4th menu option.
-4) Release and click the TMP button to start reset procedure.
-5) The LED glowing red and then turning off will confirm successful reset. Reset completion will be also confirmed by an acoustic signal.
-Note! Resetting the device is not the recommended way of removing the device from the Z-Wave network. Use reset procedure only if the primary controller is missing or inoperable.
+2) Make sure the device is powered (either by a battery or a DC power supply).
+3) Press and hold the TMP button for 15-20 seconds until LED glows yellow (4th menu position).
+4) Release and click the TMP button to start the reset procedure.
+5) Successful reset will be confirmed with the LED indicator changing colour to red and an acoustic signal.
+Use reset procedure only if the primary controller is missing or inoperable.
 </MetaDataItem>
     <MetaDataItem id="1002" name="Identifier" type="0B01">FGFS-101</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1642/FGK-10x-US-T-v1.0.pdf</MetaDataItem>
-    <MetaDataItem name="WakeupDescription">FIBARO Flood Sensor will wake up at a defined time interval and will ALWAYS try to communicate with the main controller. There is a possibility to wake up the device manually by clicking the TMP button.</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">1) Open the cover by turning it counter-clockwise. 
-2) Make sure the sensor is connected to a battery or a DC power supply.
-3) Locate the sensor nearby the main Z-Wave controller.
-4) Set the main Z-Wave controller into learning mode (see main controller's operating manual).
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3327/FGFS-101-EN-T-v2.11.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">FIBARO Flood Sensor will wake up at a defined time interval and will always try to communicate with the main controller. There is a possibility to wake up the device manually by clicking the TMP button</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1) Open the cover by turning it counter-clockwise.
+2) Make sure the device is powered (either by a battery or a DC power supply).
+3) Place the device within the direct range of your Z-Wave controller.
+4) Set the main controller in remove mode (see the controller’s manual).
 5) Quickly, triple click the TMP button located inside the casing.
-6) Wait for the device to be excluded from the system. Successful exclusion will be confirmed by the controller.
+6) Wait for the removing process to end.  
+7) Successful removing will be confirmed by the Z-Wave controller’s message.
 </MetaDataItem>
     <MetaDataItem name="InclusionDescription">1) Open the cover by turning it counter-clockwise.
 2) Remove battery blocker.
-3) Locate the sensor nearby the main Z-Wave controller.
-4) Set the main Z-Wave controller into learning mode (see main controller's operating manual).
+3) Place the device within the direct range of your Z-Wave controller.
+4) Set the main controller in (security/non-security) add mode (see the controller’s manual).
 5) Quickly, triple click the TMP button located inside the casing.
-6) Wait for the device to be included into the system. Successful inclusion will be confirmed by the controller.
-7) Close the cover by turning it clockwise.
-8) Place the sensor onto a surface prone to flooding. Three electrodes underneath the device should evenly touch the surface.
+6) Wait for the adding process to end. 
+7) Successful adding will be confirmed by the Z-Wave controller’s message.
+8) Close the cover by turning it clockwise.
+9) Place the sensor onto a surface prone to flooding. Three electrodes underneath the device should evenly touch the surface.
 </MetaDataItem>
-    <MetaDataItem name="Description">FIBARO Flood Sensor is a universal, Z-Wave Plus compatible, flood and temperature sensor. The device can be powered using battery, 12/24V DC power supply or both. Flood alarm is sent to the Z-Wave network devices or additionally to any alarm system controller through opening a NC contact using the external power supply. The device has built in temperature sensor that allows to monitor ambient temperature. FIBARO Flood Sensor is designed to be placed on the floor or mounted on a wall (in this case Flood Sensor probes should be extended using addition wire). The device has a built-in visual LED indicator and an acoustic alarm. LED diode signals flood, operating mode or the Z-Wave network communication range. In addition, the sensor is equipped with a tilt sensor reporting tilt or movement to the main controller e.g. when someone has taken the Sensor from its original location.  FIBARO Flood Sensor is sink-proof, which means it drifts on the water surface and keeps on sending alarm signal in case of substantial inundation of water. Flood Sensor is compatible with any Z-Wave or Z-Wave+ Controller.</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Flood Sensor is a universal, Z-Wave Plus compatible, flood and temperature sensor. The device can be powered using battery, 12/24V DC power supply or both. Flood alarm is sent to the Z-Wave network devices or additionally to any alarm system controller through opening a NC contact using the external power supply. The device has a built-in temperature sensor that allows to monitor ambient temperature. FIBARO Flood Sensor is designed to be placed on the floor or mounted on a wall (in this case Flood Sensor probes should be extended using addition wire). The device has a built-in visual LED indicator and an acoustic alarm. The LED indicator signals flood, operating mode or the Z-Wave network communication range. In addition, the device is equipped with a sensor reporting tilt or movement to the main controller e.g. when someone has taken the Sensor from its original location.  FIBARO Flood Sensor is sink-proof, which means it drifts on the water surface and keeps on sending alarm signal in case of substantial inundation of water (if not wired). Flood Sensor is compatible with any Z-Wave or Z-Wave+ Controller.</MetaDataItem>
     <MetaDataItem id="1002" name="FrequencyName" type="0B01">CEPT (Europe)</MetaDataItem>
     <MetaDataItem name="Name">FIBARO Flood Sensor</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1354/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1642/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2742/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2791/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3327/xml</Entry>
     </ChangeLog>
-    <MetaDataItem id="2002" name="ZWProductPage" type="0B01">https://products.z-wavealliance.org/products/1642/</MetaDataItem>
+    <MetaDataItem id="2002" name="ZWProductPage" type="0B01">https://products.z-wavealliance.org/products/2742/</MetaDataItem>
     <MetaDataItem id="2002" name="Identifier" type="0B01">FGFS-101</MetaDataItem>
     <MetaDataItem id="2002" name="FrequencyName" type="0B01">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="1003" name="ZWProductPage" type="0B01">https://products.z-wavealliance.org/products/3327/</MetaDataItem>
+    <MetaDataItem id="1003" name="Identifier" type="0B01">FGFS-101</MetaDataItem>
+    <MetaDataItem id="1003" name="FrequencyName" type="0B01">CEPT (Europe)</MetaDataItem>
   </MetaData>
   <!-- Configuration -->
   <CommandClass id="112">

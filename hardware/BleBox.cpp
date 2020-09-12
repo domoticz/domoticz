@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "BleBox.h"
 #include "hardwaretypes.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/Helper.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
@@ -113,16 +114,6 @@ void BleBox::GetDevicesState()
 		{
 			switch (itt.second)
 			{
-			case 0:
-			{
-				if (DoesNodeExists(root, "state") == false)
-					break;
-
-				const bool state = root["state"].asBool();
-
-				SendSwitch(IP, 0, 255, state, 0, DevicesType[itt.second].name);
-				break;
-			}
 			case 1:
 			{
 				if (DoesNodeExists(root, "shutter") == false)
@@ -194,6 +185,7 @@ void BleBox::GetDevicesState()
 				SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt.second].name);
 				break;
 			}
+			case 0:
 			case 6:
 			{
 				if ((DoesNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
@@ -355,33 +347,6 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 		{
 			switch (type)
 			{
-			case 0:
-			{
-				std::string state;
-				if (output->LIGHTING2.cmnd == light2_sOn)
-				{
-					state = "1";
-				}
-				else
-				{
-					state = "0";
-				}
-
-				Json::Value root = SendCommand(IPAddress, "/s/" + state);
-				if (root.empty())
-					return false;
-
-				if (DoesNodeExists(root, "state") == false)
-					return false;
-
-				if (root["state"].asString() != state)
-				{
-					Log(LOG_ERROR, "state not changed!");
-					return false;
-				}
-				break;
-			}
-
 			case 1: // shutterbox
 			{
 				int percentage = 0;
@@ -494,7 +459,8 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 				break;
 			}
 
-			case 6: //switchboxd
+			case 0: // switchbox
+			case 6: // switchboxd
 			{
 				std::string state;
 				std::string relayNumber;
@@ -900,8 +866,8 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
-			std::string ip = request::findValue(&req, "ip");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			if (
 				(hwid == "") ||
 				(name == "") ||
@@ -1027,8 +993,7 @@ Json::Value BleBox::SendCommand(const std::string & IPAddress, const std::string
 		return root;
 	}
 
-	Json::Reader jReader;
-	if (!jReader.parse(result, root))
+	if (!ParseJSon(result, root))
 	{
 		Log(LOG_ERROR, "Invalid json received!");
 		return root;
@@ -1251,18 +1216,41 @@ void BleBox::UpdateFirmware()
 	}
 }
 
-void BleBox::SearchNodes(const std::string & ipmask)
+void BleBox::SearchNodes(const std::string & pattern)
 {
-	std::vector<std::string> strarray;
-	StringSplit(ipmask, ".", strarray); // ipmask - expected "x.y.z.*"
-	if (strarray.size() != 4)
+	std::vector<std::string> hosts;
+	if(!PrepareHostList(pattern, hosts))
+	{
+		Log(LOG_ERROR, "Invalid or unsupported IP pattern : %s (expected e.g. 192.168.1.*)", pattern.c_str());
 		return;
-	if (strarray[3] != "*")
-		return;
-	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
-		return;
+	}
 
 	std::vector<std::thread> searchingThreads;
+	for(auto&& host : hosts)
+		if (m_devices.find(host) == m_devices.end())
+			searchingThreads.emplace_back(&BleBox::AddNode, this, "unknown", std::ref(host), false);
+
+	for (auto&& thread : searchingThreads)
+	{
+		thread.join();
+	}
+
+	ReloadNodes();
+}
+
+bool BleBox::PrepareHostList(const std::string& pattern, std::vector<std::string>& hosts)
+{
+	std::vector<std::string> strarray;
+	StringSplit(pattern, ".", strarray);
+
+	if (strarray.size() != 4)
+		return false;
+
+	if (strarray[3] != "*")
+		return false;
+
+	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
+		return false;
 
 	std::stringstream sstr;
 	sstr << strarray[0] << "." << strarray[1] << "." << strarray[2] << ".";
@@ -1270,18 +1258,9 @@ void BleBox::SearchNodes(const std::string & ipmask)
 
 	for (unsigned int i = 1; i < 255; ++i)
 	{
-		std::string IPAddress = ipStart + std::to_string(i);
-
-		if (m_devices.find(IPAddress) == m_devices.end())
-		{
-			searchingThreads.emplace_back(&BleBox::AddNode, this, "unknown", IPAddress, false);
-		}
+		std::string host = ipStart + std::to_string(i);
+		hosts.push_back(host);
 	}
 
-	for (auto& thread : searchingThreads)
-	{
-		thread.join();
-	}
-
-	ReloadNodes();
+	return !hosts.empty();
 }

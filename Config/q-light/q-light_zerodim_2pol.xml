@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0433:000E:0003</MetaDataItem>  
+    <MetaDataItem name="ProductPic">images/q-light/q-light_zerodim_2pol.png</MetaDataItem>	
+    <MetaDataItem id="000E" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3881</MetaDataItem>  
+    <MetaDataItem id="000E" name="Identifier" type="0003">Zerodim</MetaDataItem>	
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3881/Instructions_ZerodimZwave_2pol_Norsk_A4.pdf</MetaDataItem>	
+    <MetaDataItem name="Description">Zerodim Z-Wave by Q-light is a wireless smart home device.
+Features:
+- 0-99% dimming range
+- 2-180W LED load
+- Compatible with any Z-Wave or Z-Wave Plus Controller
+- There is memorized function at power off
+- OverLoad protection
+- Soft start function
+- SmartStart
+- This device is a security enable Z-Wave Plus product that is able to use encrypted Z-Wave Plus messages to communicate to other security enable Z-Wave Plus products.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">
+1. Place the Zerodim Z-Wave within the direct range of your Z-Wave controller.
+2. Identify switch rotary knob (turns the light on).
+3. Set the main controller in (security/non-security) add mode (see the controller’s manual).
+4. Quickly, three times press switch rotary knob.
+5. Wait for the removing process to end.
+6. Successful removing will be confirmed by the Z-Wave controller’s message.
+	</MetaDataItem>
+    <MetaDataItem id="000E" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Q-light Zerodim Z-Wave</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Resetting the Zerodim Z-Wave:
+1. Quickly, nine times press switch rotary knob.
+2. Wait for the resetting process to end, the lamp will be set to maximum brightness.
+
+Device reset statues: Turn on the light at maximum brightness.
+	</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">
+Classic Learn Mode:
+1. Place the Zerodim Z-Wave within the direct range of your Z-Wave controller.
+2. Identify switch rotary knob (turns the light on).
+3. Set the main controller in (security/non-security) add mode (see the controller’s manual).
+4. Quickly, three times press switch rotary knob.
+5. Wait for the adding process to end.
+6. Successful adding will be confirmed by the Z-Wave controller’s message.
+
+SmartStart Learn Mode:
+1. Scanning the Z-Wave QR Code present on the product with a controller providing SmartStart inclusion.
+2. No further action is required and the SmartStart product will be added automaticall within 10 minutes of being switched on in the network vicinity.
+3. The QR Code and DSK are attached to the back of the product case, as shown below:
+	</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Geir Råness - git@winning.no" date="03 July 2020" revision="1">Initial release</Entry>
+      <Entry author="Geir Råness - git@winning.no" date="06 July 2020" revision="2">fix associations</Entry>
+    </ChangeLog>
+  </MetaData>
+  
+  <CommandClass id="112">
+    <Value genre="config" instance="1" index="1" value="10" label="Minimum brightness level" units="%" size="1" min="1" max="98" type="byte">
+      <Help>
+Set the desired value from 1 to 98% for the minimum dim level that the dimmer is restricted to, the dimmer will not go lower than the value set here.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="2" value="99" label="Maximum brightness level" units="%" size="1" min="2" max="99" type="byte">
+      <Help>
+Set the desired value from 2 to 99% for the maximum dim level that the dimmer is restricted to; the dimmer will not go higher than the value set here.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="3" value="1" label="Automatic control - dimming step size" units="%" size="1" min="1" max="99" type="byte">
+      <Help>
+This parameter defines the percentage value of dimming step during the automatic control.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="4" value="1" label="Automatic control - time of a dimming step" units="ms" size="1" min="1" max="255" type="byte">
+      <Help>
+This parameter defines the time of single dimming step set in parameter 3 during the automatic control.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="5" value="1" label="Manual control - dimming step size" units="step" size="1" min="1" max="99" type="byte">
+      <Help>
+This parameter defines the percentage value of dimming step during the manual control.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="6" value="5" label="Manual control - time of a dimming step" units="ms" size="1" min="1" max="255" type="byte">
+      <Help>
+This parameter defines the time of single dimming step setin parameter 5 during the manual control.	  
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="7" value="1" label="Memory function after power failure" size="1" min="0" max="1" type="list">
+      <Help>Set the desired value from 0 to 1 to turn on/off the memory function.Setting this value to 0 turns off the dimmer's Memory fucntion.Setting this value to 1 truns on the dimmer's Memory function.</Help>
+	    <Item value="0" label="Device does not save the state before a power failure, it returns to off position"/>
+      <Item value="1" label="Device restores it's state before power failure"/>
+    </Value>
+    <Value genre="config" instance="1" index="8" value="1" label="Scene ID set" units="step" size="1" min="1" max="255" type="byte">
+      <Help>
+Scene ID is set by this configuration.
+
+Note: The actual action of each SCENE ID are set by
+SCENE_ACTUATOR_CONF(0x26) command.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="9" value="0" label="Timer functionality (auto - off)" units="seconds" size="2" min="0" max="32767" type="short">
+    <Help>
+This parameter allows to automatically switch off the device after specified time from switching on the light source. It may be useful when the Zerodim Z-Wave is installed in the stairway.
+
+Available settings: 
+0 - Function disabled. 
+1-32767 - time to turn off measured in seconds (1s-9.1h)
+    </Help>
+    </Value>
+
+  </CommandClass>
+
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="1" />
+      <Group index="2" label="On/Off (rotary nob) / Mirror of endpoint 1, group 2" max_associations="5" />
+      <Group index="3" label="Dimmer (rotary nob) / Mirror of endpoint 1, group 3" max_associations="5" />
+    </Associations>
+  </CommandClass>
+
+</Product>

@@ -1,4 +1,41 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:1201</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgcd001.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="1201">https://products.z-wavealliance.org/products/2336/</MetaDataItem>
+    <MetaDataItem name="Name">FIBARO CO Sensor</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The CO Sensor needs to be woken up to receive information about the new configuration from the Z-Wave controller, like parameters and associations. To wake up the sensor manually click the button located on the casing.</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="1201">FGCD-001</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1)	Press and hold the button.
+2)	Release the button when LED indicator glows white.
+3)	Click the button when LED indicator glows yellow.
+4)	After few seconds the device will be reset (confirmed by red LED indicator).
+
+Resetting the device is not the recommended way of removing the device from the Z-Wave network. use the reset procedure only if the primary controller is missing or inoperable.
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1)	Place the device within direct range of the Z-Wave controller.
+2)	Set the main Z-Wave controller in (security/non-security) adding mode (see the controller’s manual).
+3)	Quickly, triple click the button located on the casing.
+4)	Wait for the device to be added into the system.
+5)	Successful adding will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1)	Place the device within direct range of the Z-Wave controller.
+2)	Set the main Z-Wave controller in remove mode (see the controller’s manual).
+3)	Quickly, triple click the button located on the casing.
+4)	Wait for the removing process to end.
+5)	Successful removing will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3000/FGCD-001-EN-T-v1.1.pdf</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="1201">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO CO Sensor is an ultra-light, compact, battery-powered carbon monoxide detector, designed to be placed on a wall. Its high sensitivity allows to detect the presence of the carbon monoxide (CO) gas at the early stage in order to prevent carbon monoxide poisoning. Alarm is signalled with a built-in siren, blinking LED indicator and by sending commands to Z-Wave network devices. Additionally, the device is equipped with a temperature sensor.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2336/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3000/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="1001" name="ZWProductPage" type="1201">https://products.z-wavealliance.org/products/3000/</MetaDataItem>
+    <MetaDataItem id="1001" name="FrequencyName" type="1201">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="1001" name="Identifier" type="1201">FGCD-001</MetaDataItem>
+  </MetaData>
   <!--
 	FIBARO CO Sensor FGCD-001
 	http://products.z-wavealliance.org/products/2336

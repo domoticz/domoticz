@@ -1,50 +1,32 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/015D:231C:0111</MetaDataItem>
     <MetaDataItem name="ProductPic">images/zooz/zen21.png</MetaDataItem>
     <MetaDataItem id="231C" name="ZWProductPage" type="0111">https://products.z-wavealliance.org/products/1945/</MetaDataItem>
-    <MetaDataItem name="ResetDescription">The switch will be reset to factory defaults only by exclusion using a Z-Wave controller. You may use any certified Z-Wave controller to exclude and reset the switch. This device may not be reset manually when the network’s primary controller is missing or otherwise inoperable. NOTE: All previously recorded activity and custom settings will be erased from the device’s memory.</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">1. Bring your Z-Wave gateway hub or controller as close to the switch as possible
-2. Put your Z-Wave controller in exclusion mode
-3. Tap the switch on and off quickly 3 times to complete the exclusion process
-4. The device should disappear from your controller's device list
-
-Please repeat the process following all steps carefully if the first attempt is unsuccessful</MetaDataItem>
-    <MetaDataItem name="Name">Zooz Z-Wave On / Off Light Switch</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Press and hold the top button for at least 3 seconds while you apply AC power to this device.
+2. Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to exclude a device from the Z-Wave network.
+2. Once the controller is ready to Exclude your device, press up and release the front button to exclude it from the network.
+</MetaDataItem>
+    <MetaDataItem name="Name">In-wall Smart Switch</MetaDataItem>
     <MetaDataItem id="231C" name="FrequencyName" type="0111">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">1. Bring your Z-Wave gateway hub or controller as close to the switch as possible
-2. Put your Z-Wave controller in inclusion mode
-3. Tap the switch on and off quickly 3 times to finalize the inclusion process
-4. A new on/off device should appear on your controller's device list
-
-Troubleshooting Tips:
-If you are unable to include the Z-Wave switch to your controller, please try one of the following:
-- Bring the controller closer to your Z-Wave switch or use a hand-held secondary controller for inclusion
-- Tap your Z-Wave switch quicker 4 or 5 times once you put the controller in the inclusion mode to ensure the command has gone through
-- Put your controller in the EXCLUSION mode and tap the switch quickly 3 times, then try adding it to your network again</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1945/zooz-z-wave-plus-on-off-switch-zen21-manual.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to include a device to the Z-Wave network.
+2. Once the controller is ready to include your device, press up and release the toggle to include it in the network.
+3. Once your controller has confirmed that the device has been included, refresh the Z-Wave network to optimize performance.
+4. The device is associated in the same group when it included in setting process. 
+Now you can control your Z-Wave device according to groups, scenes, schedules and automation programmed.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2348/ZW30manual170412.pdf</MetaDataItem>
     <MetaDataItem id="231C" name="Identifier" type="0111">ZEN21</MetaDataItem>
-    <MetaDataItem name="Description">PRODUCT FEATURES:
-- Manual or remote on/off control from your mobile device or computer (when included to a Z-Wave gateway controller)
-- Z-Wave Plus with improved 500 chip for faster and safer wireless communication
-- Works with LED, CFL, and incandescent bulbs
-- Based on universal binary switch command class - supported by most Z-Wave controllers
-- May be associated and grouped with other Z-Wave devices for advanced home automation
-- Simple elegant design with screwless snap-on wall plate included
-- Built-in Z-Wave signal repeater for a stronger and more reliable network
-- Single pole installation only, neutral wire required
-
-SPECIFICATIONS:
-Model Number: ZEN21
-Z-Wave Signal Frequency: 908.42 MHz
-Power: 120 VAC, 60 Hz
-Maximum Loads: 960W Incandescent, 1800W (15A) Resistive, ½ HP Motor
-Range: Up to 100 feet line of sight between the Wireless Controller and the closest Z-Wave receiver module
-Operating Temperature: 32-104° F (0-40° C)
-Installation and Use: Indoor only</MetaDataItem>
+    <MetaDataItem name="Description">It is an In-wall type device controlled by Z-Wave controller and can be configured in Z-Wave sensor network, if Z-Wave certified controller features remote access, you can control lights at home from your mobile phone separately, and manual On/Off light by push button .</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1945/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2348/xml</Entry>
     </ChangeLog>
+    <MetaDataItem id="1E1C" name="ZWProductPage" type="B111">https://products.z-wavealliance.org/products/2348/</MetaDataItem>
+    <MetaDataItem id="1E1C" name="FrequencyName" type="B111">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="1E1C" name="Identifier" type="B111">ZW30</MetaDataItem>
   </MetaData>
   <!-- https://products.z-wavealliance.org/products/1945 -->
   <!-- Configuration Parameters -->

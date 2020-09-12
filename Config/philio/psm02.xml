@@ -1,4 +1,4 @@
-<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:0002:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/philio/psm02.png</MetaDataItem>
@@ -27,6 +27,7 @@ Features
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/821/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/835/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/836/xml</Entry>
+      <Entry author="gizmocuz - " date="28 Jul 2019" revision="8">Fix Philio door sensors #1898</Entry>
     </ChangeLog>
     <MetaDataItem name="ProductPage">http://philio-tech.com/</MetaDataItem>
   </MetaData>
@@ -139,9 +140,6 @@ Features
     <SensorMap index="0" type="12"/>
     <SensorMap index="1" type="10"/>
     <SensorMap index="2" type="8"/>
-    <Compatibility>
-      <CreateVars>false</CreateVars>
-    </Compatibility>
   </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">

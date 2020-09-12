@@ -3,9 +3,6 @@
 
 #include <math.h>
 #include "localtime_r.h"
-//#include <sys/timeb.h>
-#include <boost/date_time/c_local_time_adjustor.hpp>
-#include <boost/date_time/posix_time/posix_time_types.hpp>
 
 
 #ifndef PI
@@ -21,7 +18,7 @@
 /* Some conversion factors between radians and degrees */
 
 #ifndef PI
- #define PI		3.1415926535897932384
+#define PI		3.1415926535897932384
 #endif
 
 #define RADEG	 ( 180.0 / PI )
@@ -95,57 +92,75 @@
 #define astronomical_twilight(year,month,day,lon,lat,start,end)  \
 		__sunriset__( year, month, day, lon, lat, -18.0, 0, start, end )
 
-boost::posix_time::time_duration get_utc_offset() {
-	using namespace boost::posix_time;
+double get_utc_offset() {
+	time_t gmt, rawtime = time(NULL);
+	struct tm* ptm;
 
-	// boost::date_time::c_local_adjustor uses the C-API to adjust a
-	// moment given in utc to the same moment in the local time zone.
-	typedef boost::date_time::c_local_adjustor<ptime> local_adj;
+#if !defined(WIN32)
+	struct tm gbuf;
+	ptm = gmtime_r(&rawtime, &gbuf);
+#else
+	ptm = gmtime(&rawtime);
+#endif
+	// Request that mktime() looksup dst in timezone database
+	ptm->tm_isdst = -1;
+	gmt = mktime(ptm);
 
-	const ptime utc_now = second_clock::universal_time();
-	const ptime now = local_adj::utc_to_local(utc_now);
+	double utc_offset = (double)difftime(rawtime, gmt) / 3600.0;
 
-	return now - utc_now;
+	return utc_offset;
 }
 
-bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, _tSubRiseSetResults &result)
+void SunRiseSet::fixRoundIssue(int* hour, int* minute)
+{
+	if (*minute > 59)
+	{
+		*minute = 0;
+		*hour = ( *hour + 1 ) % 24;
+	}
+}
+
+bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, _tSubRiseSetResults& result)
 {
 	time_t sekunnit;
 	/** First get current time **/
 	time(&sekunnit);
 	struct tm ltime;
-	localtime_r(&sekunnit,&ltime);
+	localtime_r(&sekunnit, &ltime);
 	// this is Y2K compliant algorithm
 	int year = 1900 + ltime.tm_year;
 	int month = ltime.tm_mon + 1;
 	int day = ltime.tm_mday;
-	return GetSunRiseSet(latit, longit, year,month,day,result);
+	return GetSunRiseSet(latit, longit, year, month, day, result);
 }
 
-bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const int year, const int month, const int day, _tSubRiseSetResults &result)
-{
-	result.latit=latit;
-	result.longit=longit;
-	result.year=year;
-	result.month=month;
-	result.day=day;
 
-	boost::posix_time::time_duration uoffset=get_utc_offset();
-	double timezone=(double)(uoffset.ticks()/3600000000LL);
+bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const int year, const int month, const int day, _tSubRiseSetResults& result)
+{
+	result.latit = latit;
+	result.longit = longit;
+	result.year = year;
+	result.month = month;
+	result.day = day;
+	
+	double timezone = get_utc_offset();
 	// Assuming we now got the diff in hours and minutes here. Do we?
 
 	double daylen; //, civlen, nautlen, astrlen;
 	double rise, set, civ_start, civ_end, naut_start, naut_end, astr_start, astr_end;
 	int rs, civ, naut, astr;
 
-	daylen = day_length(year,month,day,longit,latit);
+	daylen = day_length(year, month, day, longit, latit);
 	//civlen = day_civil_twilight_length(year,month,day,longit,latit);
 	//nautlen = day_nautical_twilight_length(year,month,day,longit,latit);
 	//astrlen = day_astronomical_twilight_length(year,month,day,longit,latit);
 
+
 	double _tmpH;
-	result.DaylengthMins = static_cast<int>(std::round(modf(daylen, &_tmpH)*60));
+	result.DaylengthMins = static_cast<int>(round(modf(daylen, &_tmpH) * 60));
 	result.DaylengthHours = static_cast<int>(_tmpH);
+	//fix a possible rounding issue above
+	SunRiseSet::fixRoundIssue(&result.DaylengthHours, &result.DaylengthMins);
 
 	rs = sun_rise_set(year, month, day, longit, latit, &rise, &set);
 	civ = civil_twilight(year, month, day, longit, latit, &civ_start, &civ_end);
@@ -154,177 +169,180 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 
 	rise = UtcToLocal(rise, timezone);
 	set = UtcToLocal(set, timezone);
-	result.SunAtSouthMin = static_cast<int>(std::round(modf((rise+set)/2.0, &_tmpH)*60));
+	result.SunAtSouthMin = static_cast<int>(round(modf((rise + set) / 2.0, &_tmpH) * 60));
 	result.SunAtSouthHour = static_cast<int>(_tmpH);
 
-	switch(rs) {
-		case 0:
-			result.SunRiseMin = static_cast<int>(std::round(modf(rise, &_tmpH)*60));
-			result.SunRiseHour = static_cast<int>(_tmpH);
-			result.SunSetMin = static_cast<int>(std::round(modf(set, &_tmpH)*60));
-			result.SunSetHour = static_cast<int>(_tmpH);
-			//fix a possible rounding issue above
-			if (result.SunRiseMin > 59)
-			{
-				result.SunRiseMin = 0;
-				result.SunRiseHour = (result.SunRiseHour + 1) % 24;
-			}
-			if (result.SunSetMin > 59)
-			{
-				result.SunSetMin = 0;
-				result.SunSetHour = (result.SunSetHour + 1) % 24;
-			}
-			break;
-		case +1:
-		case -1:
-			// Sun below/above horizon in the space of 24 hours
-			result.SunRiseMin = 0; // Which is actually not true, but it works like previous version.
-			result.SunRiseHour = 0;
-			result.SunSetMin = 0;
-			result.SunSetHour = 0;
-			break;
+	switch (rs) {
+	case 0:
+		result.SunRiseMin = static_cast<int>(round(modf(rise, &_tmpH) * 60));
+		result.SunRiseHour = static_cast<int>(_tmpH);
+		result.SunSetMin = static_cast<int>(round(modf(set, &_tmpH) * 60));
+		result.SunSetHour = static_cast<int>(_tmpH);
+		//fix a possible rounding issue above
+		SunRiseSet::fixRoundIssue(&result.SunRiseHour, &result.SunRiseMin);
+		SunRiseSet::fixRoundIssue(&result.SunSetHour, &result.SunSetMin);
+		break;
+	case +1:
+	case -1:
+		// Sun below/above horizon in the space of 24 hours
+		result.SunRiseMin = 0; // Which is actually not true, but it works like previous version.
+		result.SunRiseHour = 0;
+		result.SunSetMin = 0;
+		result.SunSetHour = 0;
+		break;
 	}
 
-	switch(civ) {
-		case 0:
-			civ_start = UtcToLocal(civ_start, timezone);
-			civ_end = UtcToLocal(civ_end, timezone);
-			result.CivilTwilightStartMin = static_cast<int>(std::round(modf(civ_start, &_tmpH)*60));
-			result.CivilTwilightStartHour = static_cast<int>(_tmpH);
-			result.CivilTwilightEndMin = static_cast<int>(std::round(modf(civ_end, &_tmpH)*60));
-			result.CivilTwilightEndHour = static_cast<int>(_tmpH);
-			break;
-		case +1:
-		case -1:
-			// Never as bright/darker than civil twilight
-			result.CivilTwilightStartMin = 0;
-			result.CivilTwilightStartHour = 0;
-			result.CivilTwilightEndMin = 0;
-			result.CivilTwilightEndHour = 0;
-			break;
+	switch (civ) {
+	case 0:
+		civ_start = UtcToLocal(civ_start, timezone);
+		civ_end = UtcToLocal(civ_end, timezone);
+		result.CivilTwilightStartMin = static_cast<int>(round(modf(civ_start, &_tmpH) * 60));
+		result.CivilTwilightStartHour = static_cast<int>(_tmpH);
+		result.CivilTwilightEndMin = static_cast<int>(round(modf(civ_end, &_tmpH) * 60));
+		result.CivilTwilightEndHour = static_cast<int>(_tmpH);
+		//fix a possible rounding issue above
+		SunRiseSet::fixRoundIssue(&result.CivilTwilightStartHour, &result.CivilTwilightStartMin);
+		SunRiseSet::fixRoundIssue(&result.CivilTwilightEndHour, &result.CivilTwilightEndMin);
+		break;
+	case +1:
+	case -1:
+		// Never as bright/darker than civil twilight
+		result.CivilTwilightStartMin = 0;
+		result.CivilTwilightStartHour = 0;
+		result.CivilTwilightEndMin = 0;
+		result.CivilTwilightEndHour = 0;
+		break;
 	}
 
-	switch(naut) {
-		case 0:
-			naut_start = UtcToLocal(naut_start, timezone);
-			naut_end = UtcToLocal(naut_end, timezone);
-			result.NauticalTwilightStartMin = static_cast<int>(std::round(modf(naut_start, &_tmpH)*60));
-			result.NauticalTwilightStartHour = static_cast<int>(_tmpH);
-			result.NauticalTwilightEndMin = static_cast<int>(std::round(modf(naut_end, &_tmpH)*60));
-			result.NauticalTwilightEndHour = static_cast<int>(_tmpH);
-			break;
-		case +1:
-		case -1:
-			// Never as bright/darker than nautical twilight
-			result.NauticalTwilightStartMin = 0;
-			result.NauticalTwilightStartHour = 0;
-			result.NauticalTwilightEndMin = 0;
-			result.NauticalTwilightEndHour = 0;
-			break;
+	switch (naut) {
+	case 0:
+		naut_start = UtcToLocal(naut_start, timezone);
+		naut_end = UtcToLocal(naut_end, timezone);
+		result.NauticalTwilightStartMin = static_cast<int>(round(modf(naut_start, &_tmpH) * 60));
+		result.NauticalTwilightStartHour = static_cast<int>(_tmpH);
+		result.NauticalTwilightEndMin = static_cast<int>(round(modf(naut_end, &_tmpH) * 60));
+		result.NauticalTwilightEndHour = static_cast<int>(_tmpH);
+		//fix a possible rounding issue above
+		SunRiseSet::fixRoundIssue(&result.NauticalTwilightStartHour, &result.NauticalTwilightStartMin);
+		SunRiseSet::fixRoundIssue(&result.NauticalTwilightEndHour, &result.NauticalTwilightEndMin);
+		break;
+	case +1:
+	case -1:
+		// Never as bright/darker than nautical twilight
+		result.NauticalTwilightStartMin = 0;
+		result.NauticalTwilightStartHour = 0;
+		result.NauticalTwilightEndMin = 0;
+		result.NauticalTwilightEndHour = 0;
+		break;
 	}
 
-	switch(astr) {
-		case 0:
-			astr_start = UtcToLocal(astr_start, timezone);
-			astr_end = UtcToLocal(astr_end, timezone);
-			result.AstronomicalTwilightStartMin = static_cast<int>(std::round(modf(astr_start, &_tmpH)*60));
-			result.AstronomicalTwilightStartHour = static_cast<int>(_tmpH);
-			result.AstronomicalTwilightEndMin = static_cast<int>(std::round(modf(astr_end, &_tmpH)*60));
-			result.AstronomicalTwilightEndHour = static_cast<int>(_tmpH);
-			break;
-		case +1:
-		case -1:
-			// Never as bright/darker than astronomical twilight
-			result.AstronomicalTwilightStartMin = 0;
-			result.AstronomicalTwilightStartHour = 0;
-			result.AstronomicalTwilightEndMin = 0;
-			result.AstronomicalTwilightEndHour = 0;
-			break;
+	switch (astr) {
+	case 0:
+		astr_start = UtcToLocal(astr_start, timezone);
+		astr_end = UtcToLocal(astr_end, timezone);
+		result.AstronomicalTwilightStartMin = static_cast<int>(round(modf(astr_start, &_tmpH) * 60));
+		result.AstronomicalTwilightStartHour = static_cast<int>(_tmpH);
+		result.AstronomicalTwilightEndMin = static_cast<int>(round(modf(astr_end, &_tmpH) * 60));
+		result.AstronomicalTwilightEndHour = static_cast<int>(_tmpH);
+		//fix a possible rounding issue above
+		SunRiseSet::fixRoundIssue(&result.AstronomicalTwilightStartHour, &result.AstronomicalTwilightStartMin);
+		SunRiseSet::fixRoundIssue(&result.AstronomicalTwilightEndHour, &result.AstronomicalTwilightEndMin);
+		break;
+	case +1:
+	case -1:
+		// Never as bright/darker than astronomical twilight
+		result.AstronomicalTwilightStartMin = 0;
+		result.AstronomicalTwilightStartHour = 0;
+		result.AstronomicalTwilightEndMin = 0;
+		result.AstronomicalTwilightEndHour = 0;
+		break;
 	}
 
 	return true;
 }
+
+
 /* The "workhorse" function for sun rise/set times */
 
-int SunRiseSet::__sunriset__( int year, int month, int day, double lon, double lat,
-                  double altit, int upper_limb, double *trise, double *tset )
-/***************************************************************************/
-/* Note: year,month,date = calendar date, 1801-2099 only.             */
-/*       Eastern longitude positive, Western longitude negative       */
-/*       Northern latitude positive, Southern latitude negative       */
-/*       The longitude value IS critical in this function!            */
-/*       altit = the altitude which the Sun should cross              */
-/*               Set to -35/60 degrees for rise/set, -6 degrees       */
-/*               for civil, -12 degrees for nautical and -18          */
-/*               degrees for astronomical twilight.                   */
-/*         upper_limb: non-zero -> upper limb, zero -> center         */
-/*               Set to non-zero (e.g. 1) when computing rise/set     */
-/*               times, and to zero when computing start/end of       */
-/*               twilight.                                            */
-/*        *rise = where to store the rise time                        */
-/*        *set  = where to store the set  time                        */
-/*                Both times are relative to the specified altitude,  */
-/*                and thus this function can be used to compute       */
-/*                various twilight times, as well as rise/set times   */
-/* Return value:  0 = sun rises/sets this day, times stored at        */
-/*                    *trise and *tset.                               */
-/*               +1 = sun above the specified "horizon" 24 hours.     */
-/*                    *trise set to time when the sun is at south,    */
-/*                    minus 12 hours while *tset is set to the south  */
-/*                    time plus 12 hours. "Day" length = 24 hours     */
-/*               -1 = sun is below the specified "horizon" 24 hours   */
-/*                    "Day" length = 0 hours, *trise and *tset are    */
-/*                    both set to the time when the sun is at south.  */
-/*                                                                    */
-/**********************************************************************/
+int SunRiseSet::__sunriset__(int year, int month, int day, double lon, double lat,
+	double altit, int upper_limb, double* trise, double* tset)
+	/***************************************************************************/
+	/* Note: year,month,date = calendar date, 1801-2099 only.             */
+	/*       Eastern longitude positive, Western longitude negative       */
+	/*       Northern latitude positive, Southern latitude negative       */
+	/*       The longitude value IS critical in this function!            */
+	/*       altit = the altitude which the Sun should cross              */
+	/*               Set to -35/60 degrees for rise/set, -6 degrees       */
+	/*               for civil, -12 degrees for nautical and -18          */
+	/*               degrees for astronomical twilight.                   */
+	/*         upper_limb: non-zero -> upper limb, zero -> center         */
+	/*               Set to non-zero (e.g. 1) when computing rise/set     */
+	/*               times, and to zero when computing start/end of       */
+	/*               twilight.                                            */
+	/*        *rise = where to store the rise time                        */
+	/*        *set  = where to store the set  time                        */
+	/*                Both times are relative to the specified altitude,  */
+	/*                and thus this function can be used to compute       */
+	/*                various twilight times, as well as rise/set times   */
+	/* Return value:  0 = sun rises/sets this day, times stored at        */
+	/*                    *trise and *tset.                               */
+	/*               +1 = sun above the specified "horizon" 24 hours.     */
+	/*                    *trise set to time when the sun is at south,    */
+	/*                    minus 12 hours while *tset is set to the south  */
+	/*                    time plus 12 hours. "Day" length = 24 hours     */
+	/*               -1 = sun is below the specified "horizon" 24 hours   */
+	/*                    "Day" length = 0 hours, *trise and *tset are    */
+	/*                    both set to the time when the sun is at south.  */
+	/*                                                                    */
+	/**********************************************************************/
 {
 	double  d,  /* Days since 2000 Jan 0.0 (negative before) */
-	sr,         /* Solar distance, astronomical units */
-	sRA,        /* Sun's Right Ascension */
-	sdec,       /* Sun's declination */
-	sradius,    /* Sun's apparent radius */
-	t,          /* Diurnal arc */
-	tsouth,     /* Time when Sun is at south */
-	sidtime;    /* Local sidereal time */
+		sr,         /* Solar distance, astronomical units */
+		sRA,        /* Sun's Right Ascension */
+		sdec,       /* Sun's declination */
+		sradius,    /* Sun's apparent radius */
+		t,          /* Diurnal arc */
+		tsouth,     /* Time when Sun is at south */
+		sidtime;    /* Local sidereal time */
 
 	int rc = 0; /* Return cde from function - usually 0 */
 
 	/* Compute d of 12h local mean solar time */
-	d = days_since_2000_Jan_0(year,month,day) + 0.5 - lon/360.0;
+	d = days_since_2000_Jan_0(year, month, day) + 0.5 - lon / 360.0;
 
 	/* Compute the local sidereal time of this moment */
 	sidtime = revolution(GMST0(d) + 180.0 + lon);
 
 	/* Compute Sun's RA, Decl and distance at this moment */
-	sun_RA_dec( d, &sRA, &sdec, &sr );
+	sun_RA_dec(d, &sRA, &sdec, &sr);
 
 	/* Compute time when Sun is at south - in hours UT */
-	tsouth = 12.0 - rev180(sidtime - sRA)/15.0;
+	tsouth = 12.0 - rev180(sidtime - sRA) / 15.0;
 
 	/* Compute the Sun's apparent radius in degrees */
 	sradius = 0.2666 / sr;
 
 	/* Do correction to upper limb, if necessary */
-	if ( upper_limb )
+	if (upper_limb)
 		altit -= sradius;
 
 	/* Compute the diurnal arc that the Sun traverses to reach */
 	/* the specified altitude altit: */
 	{
 		double cost;
-		cost = ( sind(altit) - sind(lat) * sind(sdec) ) /
-		( cosd(lat) * cosd(sdec) );
-		if ( cost >= 1.0 )
-		rc = -1, t = 0.0;       /* Sun always below altit */
-		else if ( cost <= -1.0 )
-		rc = +1, t = 12.0;      /* Sun always above altit */
+		cost = (sind(altit) - sind(lat) * sind(sdec)) /
+			(cosd(lat) * cosd(sdec));
+		if (cost >= 1.0)
+			rc = -1, t = 0.0;       /* Sun always below altit */
+		else if (cost <= -1.0)
+			rc = +1, t = 12.0;      /* Sun always above altit */
 		else
-		t = acosd(cost)/15.0;   /* The diurnal arc, hours */
+			t = acosd(cost) / 15.0;   /* The diurnal arc, hours */
 	}
 
 	/* Store rise and set times - in hours UT */
 	*trise = tsouth - t;
-	*tset  = tsouth + t;
+	*tset = tsouth + t;
 
 	return rc;
 }	/* __sunriset__ */
@@ -333,7 +351,7 @@ int SunRiseSet::__sunriset__( int year, int month, int day, double lon, double l
 /* The "workhorse" function */
 
 
-double SunRiseSet::__daylen__( int year, int month, int day, double lon, double lat, double altit, int upper_limb )
+double SunRiseSet::__daylen__(int year, int month, int day, double lon, double lat, double altit, int upper_limb)
 /**********************************************************************/
 /* Note: year,month,date = calendar date, 1801-2099 only.             */
 /*       Eastern longitude positive, Western longitude negative       */
@@ -351,45 +369,45 @@ double SunRiseSet::__daylen__( int year, int month, int day, double lon, double 
 /**********************************************************************/
 {
 	double  d,	/* Days since 2000 Jan 0.0 (negative before) */
-	obl_ecl,	/* Obliquity (inclination) of Earth's axis */
-	sr,			/* Solar distance, astronomical units */
-	slon,		/* True solar longitude */
-	sin_sdecl,	/* Sine of Sun's declination */
-	cos_sdecl,	/* Cosine of Sun's declination */
-	sradius,	/* Sun's apparent radius */
-	t;			/* Diurnal arc */
+		obl_ecl,	/* Obliquity (inclination) of Earth's axis */
+		sr,			/* Solar distance, astronomical units */
+		slon,		/* True solar longitude */
+		sin_sdecl,	/* Sine of Sun's declination */
+		cos_sdecl,	/* Cosine of Sun's declination */
+		sradius,	/* Sun's apparent radius */
+		t;			/* Diurnal arc */
 
-	/* Compute d of 12h local mean solar time */
-	d = days_since_2000_Jan_0(year,month,day) + 0.5 - lon/360.0;
+		/* Compute d of 12h local mean solar time */
+	d = days_since_2000_Jan_0(year, month, day) + 0.5 - lon / 360.0;
 
 	/* Compute obliquity of ecliptic (inclination of Earth's axis) */
 	obl_ecl = 23.4393 - 3.563E-7 * d;
 
 	/* Compute Sun's ecliptic longitude and distance */
-	sunpos( d, &slon, &sr );
+	sunpos(d, &slon, &sr);
 
 	/* Compute sine and cosine of Sun's declination */
 	sin_sdecl = sind(obl_ecl) * sind(slon);
-	cos_sdecl = sqrt( 1.0 - sin_sdecl * sin_sdecl );
+	cos_sdecl = sqrt(1.0 - sin_sdecl * sin_sdecl);
 
 	/* Compute the Sun's apparent radius, degrees */
 	sradius = 0.2666 / sr;
 
 	/* Do correction to upper limb, if necessary */
-	if ( upper_limb )
-	altit -= sradius;
+	if (upper_limb)
+		altit -= sradius;
 
 	/* Compute the diurnal arc that the Sun traverses to reach */
 	/* the specified altitude altit: */
 	{
 		double cost;
-		cost = ( sind(altit) - sind(lat) * sin_sdecl ) /
-				( cosd(lat) * cos_sdecl );
-		if ( cost >= 1.0 )
+		cost = (sind(altit) - sind(lat) * sin_sdecl) /
+			(cosd(lat) * cos_sdecl);
+		if (cost >= 1.0)
 			t = 0.0;	/* Sun always below altit */
-		else if ( cost <= -1.0 )
+		else if (cost <= -1.0)
 			t = 24.0;	/* Sun always above altit */
-		else t = (2.0/15.0) * acosd(cost); /* The diurnal arc, hours */
+		else t = (2.0 / 15.0) * acosd(cost); /* The diurnal arc, hours */
 	}
 	return t;
 }	/* __daylen__ */
@@ -397,7 +415,7 @@ double SunRiseSet::__daylen__( int year, int month, int day, double lon, double 
 
 /* This function computes the Sun's position at any instant */
 
-void SunRiseSet::sunpos( double d, double *lon, double *r )
+void SunRiseSet::sunpos(double d, double* lon, double* r)
 /******************************************************/
 /* Computes the Sun's ecliptic longitude and distance */
 /* at an instant given in d, number of days since     */
@@ -406,30 +424,30 @@ void SunRiseSet::sunpos( double d, double *lon, double *r )
 /******************************************************/
 {
 	double	M,		/* Mean anomaly of the Sun */
-			w,		/* Mean longitude of perihelion */
-					/* Note: Sun's mean longitude = M + w */
-			e,		/* Eccentricity of Earth's orbit */
-			E,		/* Eccentric anomaly */
-			x, y,	/* x, y coordinates in orbit */
-			v;		/* True anomaly */
+		w,		/* Mean longitude of perihelion */
+				/* Note: Sun's mean longitude = M + w */
+		e,		/* Eccentricity of Earth's orbit */
+		E,		/* Eccentric anomaly */
+		x, y,	/* x, y coordinates in orbit */
+		v;		/* True anomaly */
 
-	/* Compute mean elements */
+/* Compute mean elements */
 	M = revolution(356.0470 + 0.9856002585 * d);
 	w = 282.9404 + 4.70935E-5 * d;
 	e = 0.016709 - 1.151E-9 * d;
 
 	/* Compute true longitude and radius vector */
-	E = M + e * RADEG * sind(M) * ( 1.0 + e * cosd(M) );
+	E = M + e * RADEG * sind(M) * (1.0 + e * cosd(M));
 	x = cosd(E) - e;
-	y = sqrt( 1.0 - e*e ) * sind(E);
-	*r = sqrt( x*x + y*y );              /* Solar distance */
-	v = atan2d( y, x );                  /* True anomaly */
+	y = sqrt(1.0 - e * e) * sind(E);
+	*r = sqrt(x * x + y * y);              /* Solar distance */
+	v = atan2d(y, x);                  /* True anomaly */
 	*lon = v + w;                        /* True solar longitude */
-	if ( *lon >= 360.0 )
-	*lon -= 360.0;                   /* Make it 0..360 degrees */
+	if (*lon >= 360.0)
+		*lon -= 360.0;                   /* Make it 0..360 degrees */
 }
 
-void SunRiseSet::sun_RA_dec( double d, double *RA, double *dec, double *r )
+void SunRiseSet::sun_RA_dec(double d, double* RA, double* dec, double* r)
 /******************************************************/
 /* Computes the Sun's equatorial coordinates RA, Decl */
 /* and also its distance, at an instant given in d,   */
@@ -439,7 +457,7 @@ void SunRiseSet::sun_RA_dec( double d, double *RA, double *dec, double *r )
 	double lon, obl_ecl, x, y, z;
 
 	/* Compute Sun's ecliptical coordinates */
-	sunpos( d, &lon, r );
+	sunpos(d, &lon, r);
 
 	/* Compute ecliptic rectangular coordinates (z=0) */
 	x = *r * cosd(lon);
@@ -453,8 +471,8 @@ void SunRiseSet::sun_RA_dec( double d, double *RA, double *dec, double *r )
 	y = y * cosd(obl_ecl);
 
 	/* Convert to spherical coordinates */
-	*RA = atan2d( y, x );
-	*dec = atan2d( z, sqrt(x*x + y*y) );
+	*RA = atan2d(y, x);
+	*dec = atan2d(z, sqrt(x * x + y * y));
 
 }	/* sun_RA_dec */
 
@@ -467,12 +485,12 @@ void SunRiseSet::sun_RA_dec( double d, double *RA, double *dec, double *r )
 
 #define INV360    ( 1.0 / 360.0 )
 
-double SunRiseSet::revolution( double x )
+double SunRiseSet::revolution(double x)
 /*****************************************/
 /* Reduce angle to within 0..360 degrees */
 /*****************************************/
 {
-	return( x - 360.0 * floor( x * INV360 ) );
+	return(x - 360.0 * floor(x * INV360));
 }	/* revolution */
 
 double SunRiseSet::UtcToLocal(double time, double tz)
@@ -481,15 +499,15 @@ double SunRiseSet::UtcToLocal(double time, double tz)
 /*********************************************/
 {
 	time += tz;
-	return((time > 24.0) ? time-24.0 : (time < 0.0) ? time+24.0 : time);
+	return((time > 24.0) ? time - 24.0 : (time < 0.0) ? time + 24.0 : time);
 }
 
-double SunRiseSet::rev180( double x )
+double SunRiseSet::rev180(double x)
 /*********************************************/
 /* Reduce angle to within +180..+180 degrees */
 /*********************************************/
 {
-	return( x - 360.0 * floor( x * INV360 + 0.5 ) );
+	return(x - 360.0 * floor(x * INV360 + 0.5));
 }	/* revolution */
 
 /*******************************************************************/
@@ -526,8 +544,8 @@ double SunRiseSet::GMST0(double d)
 	/* add these numbers, I'll let the C compiler do it for me.  */
 	/* Any decent C compiler will add the constants at compile   */
 	/* time, imposing no runtime or code overhead.               */
-	sidtim0 = revolution( ( 180.0 + 356.0470 + 282.9404 ) +
-			( 0.9856002585 + 4.70935E-5 ) * d );
+	sidtim0 = revolution((180.0 + 356.0470 + 282.9404) +
+		(0.9856002585 + 4.70935E-5) * d);
 	return sidtim0;
 }	/* GMST0 */
 

@@ -83,7 +83,6 @@ local testQuietOnSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 49,
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -103,11 +102,71 @@ local testQuietOnSwitch = function(name)
 	return res
 end
 
+local testRenameSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["name"] = name,
+		["state"] = "Off",
+		["deviceSubType"] = "Switch";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["deviceType"] = "Light/Switch";
+	})
+	dev.switchOn().afterSec(2)
+	tstMsg('Test Rename switch device', res)
+	return res
+end
+
+local testProtectSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["name"] = name,
+		["state"] = "Off",
+		["deviceSubType"] = "Switch";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["deviceType"] = "Light/Switch";
+	})
+	dev.switchOn().afterSec(3)
+	tstMsg('Test Protect switch device', res)
+	return res
+end
+
+local testWildcardsSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["name"] = name,
+		["maxDimLevel"] = 100,
+		["baseType"] = dz.BASETYPE_DEVICE,
+		["state"] = "On",
+		["deviceSubType"] = "Switch";
+		["switchType"] = "Dimmer",
+		["switchTypeValue"] = 7,
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["batteryLevel"] = nil; -- 255 == nil
+		["changed"] = false;
+		["timedOut"] = false;
+		["deviceType"] = "Light/Switch";
+	})
+	dev. dimTo(1).afterSec(4)
+	tstMsg('Test Wildcard switch device', res)
+	return res
+end
+
 local testQuietOffSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 50,
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -128,13 +187,12 @@ local testQuietOffSwitch = function(name)
 	return res
 end
 
-
 local testDimmer = function(name)
 	local dev = dz.devices(name)
 
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 40,
+		["id"] = 43,
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -291,6 +349,7 @@ end
 local testCounterIncremental = function(name)
 	local dev = dz.devices(name)
 	local res = true
+	local res2 = true
 	res = res and checkAttributes(dev, {
 		["id"] = 8,
 		["name"] = name,
@@ -310,8 +369,12 @@ local testCounterIncremental = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateCounter(1234)
-	tstMsg('Test counter incremental device', res)
-	return res
+	tstMsg('Test method updateCounter for counter incremental device', res)
+
+	dev.incrementCounter(10).afterSec(10)
+	tstMsg('Test method incrementCounter for counter incremental device', res2)
+
+	return res and res2
 end
 
 local testCustomSensor = function(name)
@@ -564,7 +627,7 @@ local testRain = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 19,
+		["id"] = 20,
 		["name"] = name,
 		["rain"] = 0,
 		["rainRate"] = 0,
@@ -588,7 +651,7 @@ local testRGB = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 20,
+		["id"] = 22,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["maxDimLevel"] = 100,
@@ -612,7 +675,7 @@ local testRGBW = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 21,
+		["id"] = 23,
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		["state"] = "On",
@@ -637,7 +700,7 @@ local testScaleWeight = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 22,
+		["id"] = 24,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		['weight'] = 0,
@@ -660,7 +723,7 @@ local testSelectorSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 23,
+		["id"] = 25,
 		["name"] = name,
 		['levelName'] = 'Off',
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -677,13 +740,16 @@ local testSelectorSwitch = function(name)
 		["timedOut"] = false;
 	})
 
-	res = res and ( dz.logDevice(dev) == nil )
-	res = res and expectEql('Off',  dev.levelNames[1])
+	res = res and ( dz.logObject(dev, nil, 'device' ) == nil )
+	res = res and expectEql('Off', dev.levelNames[1])
 	res = res and expectEql('Level1', dev.levelNames[2])
 	res = res and expectEql('Level2', dev.levelNames[3])
 	res = res and expectEql('Level3', dev.levelNames[4])
 
 	dev.switchSelector(30) -- level3
+	dev.switchSelector('Level3').checkFirst().afterSec(2) -- Will be checked in stage 2 with a script
+	dev.switchSelector('Level3').checkFirst().afterSec(4)
+	dev.switchSelector('Level3').checkFirst().afterSec(6)
 	tstMsg('Test selector switch device', res)
 	return res
 end
@@ -692,7 +758,7 @@ local testSoilMoisture = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 25,
+		["id"] = 27,
 		["name"] = name,
 		["moisture"] = 3,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -716,7 +782,7 @@ local testSolarRadiation = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 26,
+		["id"] = 28,
 		["name"] = name,
 		["radiation"] = 1,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -740,7 +806,7 @@ local testSoundLevel = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 27,
+		["id"] = 29,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["level"] = 65,
@@ -764,7 +830,7 @@ local testTemperature = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 28,
+		["id"] = 30,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["name"] = name,
 		["temperature"] = 0,
@@ -784,6 +850,29 @@ local testTemperature = function(name)
 	return res
 end
 
+local testBackup = function()
+	local res = true
+
+	dz.openURL(dz.settings['Domoticz url'] .. '/backupdatabase.php')
+
+	tstMsg('Test Backup', res)
+	return res
+end
+
+local testEmit = function()
+	local res = true
+
+	dz.openURL(dz.settings['Domoticz url'] .."/json.htm?type=command%26param=customevent%26event=myEvents2%26data=someencodedstring" )
+
+	local myEventTable = { a ='a', b = '2'}
+	dz.emitEvent('myEvents3').afterSec(2)
+	dz.emitEvent('myEvents4','myEventString').afterSec(4)
+	dz.emitEvent('myEvents5',myEventTable).afterSec(6)
+
+	tstMsg('Test Emits', res)
+	return res
+end
+
 local testAPITemperature = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -798,7 +887,7 @@ local testTempHum = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 29,
+		["id"] = 31,
 		["name"] = name,
 		["temperature"] = 0,
 		["humidity"] = 50,
@@ -824,7 +913,7 @@ local testTempHumBaro = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 30,
+		["id"] = 32,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["temperature"] = 0,
@@ -850,7 +939,7 @@ local testTempBaro = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 41,
+		["id"] = 44,
 		["name"] = name,
 		["temperature"] = 0,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -876,7 +965,7 @@ local testText = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 31,
+		["id"] = 33,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["text"] = 'Hello World',
@@ -901,7 +990,7 @@ local testThermostatSetpoint = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 32,
+		["id"] = 34,
 		["name"] = name,
 		["setPoint"] = 20.5,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -917,8 +1006,8 @@ local testThermostatSetpoint = function(name)
 	})
 
 	dev.updateSetPoint(11)
-	dev.updateSetPoint(22).afterSec(2)  --  20190112 Add afterSec
-	dev.updateSetPoint(33).afterSec(200)  --  20190112 Add afterSec
+	dev.updateSetPoint(22).afterSec(2)
+	dev.updateSetPoint(33).afterSec(200)
 	tstMsg('Test thermostat device', res)
 	return res
 end
@@ -927,7 +1016,7 @@ local testUsageElectric = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 33,
+		["id"] = 35,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["WhActual"] = 0,
@@ -951,7 +1040,7 @@ local testUV = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 34,
+		["id"] = 36,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["uv"] = 0,
@@ -976,7 +1065,7 @@ local testVisibility = function(name)
 	local res = true
 	res = res and expectEql(103, math.floor(dev.visibility * 10))
 	res = res and checkAttributes(dev, {
-		["id"] = 35,
+		["id"] = 37,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Visibility";
@@ -999,7 +1088,7 @@ local testVoltage = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 36,
+		["id"] = 38,
 		["name"] = name,
 		["voltage"] = 0,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -1023,7 +1112,7 @@ local testWaterflow = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 37,
+		["id"] = 39,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["flow"] = 0,
@@ -1294,9 +1383,9 @@ local testLastUpdates = function()
 			local devTime = device.lastUpdate.secondsSinceMidnight
 
 			local delta = now - device.lastUpdate.secondsSinceMidnight
-			--print('now:' .. now .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)
+			-- print('now:' .. now .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)
 			-- test if lastUpdate for the device is close to domoticz time
-			local ok = (devTime <= now and delta < 6)
+			local ok = (devTime <= now and delta < 15)
 			acc = acc and ok
 			if (expectEql(true, ok, device.name .. ' lastUpdate is not correctly set') == false) then
 				print('now:' .. now .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)
@@ -1374,6 +1463,14 @@ local testHTTPSwitch = function(name)
 	return res
 end
 
+local testDocumentationSwitch = function(name)
+	local res = true
+	local dev = dz.devices(name)
+	dev.switchOn()
+	tstMsg('Start test documentation switch device', res)
+	return res
+end
+
 local testDescriptionSwitchDevice = function(name)
 	local res = true
 	local dev = dz.devices(name)
@@ -1422,6 +1519,8 @@ return {
 		res = res and testAlert('vdAlert')
 		res = res and testAmpere3('vdAmpere3')
 		res = res and testAmpere1('vdAmpere1')
+		res = res and testBackup()
+		res = res and testEmit()
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testBarometer('vdBarometer')
 		res = res and testCounter('vdCounter')
@@ -1439,7 +1538,10 @@ return {
 		res = res and testPressureBar('vdPressureBar')
 		res = res and testQuietOnSwitch('vdQuietOnSwitch')
 		res = res and testQuietOffSwitch('vdQuietOffSwitch')
+		res = res and testWildcardsSwitch('vdWildcardsSwitch')
 		res = res and testRain('vdRain')
+		res = res and testProtectSwitch('vdProtectSwitch')
+		res = res and testRenameSwitch('vdRenameSwitch')
 		res = res and testRGB('vdRGBSwitch')
 		res = res and testRGBW('vdRGBWSwitch')
 		res = res and testScaleWeight('vdScaleWeight')
@@ -1460,8 +1562,8 @@ return {
 		res = res and testVisibility("vdVisibility")
 		res = res and testVoltage("vdVoltage")
 		res = res and testWaterflow("vdWaterflow")
-		res = res and testWind('vdWind', 38, "WTGR800")
-		res = res and testWind('vdWindTempChill', 39, "TFA")
+		res = res and testWind('vdWind', 41, "WTGR800")
+		res = res and testWind('vdWindTempChill', 42, "TFA")
 		res = res and testScene('scScene')
 		res = res and testGroup('gpGroup')
 		res = res and testVariableInt('varInteger')
@@ -1482,13 +1584,14 @@ return {
 		res = res and testLocation();
 		res = res and testVersion();
 		res = res and testHTTPSwitch('vdHTTPSwitch');
+		res = res and testDocumentationSwitch('vdDocumentationSwitch');
 		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
 		res = res and testDescriptionSwitchDevice('vdDescriptionSwitch');
 		res = res and testDescriptionSwitchScene('scDescriptionScene');
 		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
 		res = res and testSnapshot();
 		res = res and testManagedCounter('vdManagedCounter');
-		
+
 		storeLastUpdates()
 
 		log('Finishing stage 1')

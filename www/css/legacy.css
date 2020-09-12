@@ -2,22 +2,22 @@
 
 .brand h1 {
 	float: left;
-	margin-left: 32px;
-	margin-top: -48px;
+	margin-left: 36px;
+	margin-top: -51px;
 	text-decoration: none;
 }
 
 .brand h2 {
 	float: left;
-	margin-left: 142px;
-	margin-top: -24px;
+	margin-left: 38px;
+	margin-top: -17px;
 }
 
 .brand img {
-	width: 40px;
-	height: 40px;
+	width: 42px;
+	height: 42px;
 	margin-left: -10px;
-	margin-top: -8px;
+	margin-top: -10px;
 }
 
 @media (min-width: 768px) and (max-width: 1200px) {
@@ -1017,10 +1017,17 @@ div.item.statusEvoSetPointMin td#name{
 }
 .zwave_help {
 	font-style: normal;
-	color: #ddd;
+	color: #bbd;
 }
 .zwave_last_update {
 	font-style: italic;
 	font-size: smaller;
 	color: #e0c0ff;
+}
+
+#highcharts-menu #hr {
+	margin: 120px 0;
+}
+#highcharts-menu-item {
+	padding: 100px 100px;
 }

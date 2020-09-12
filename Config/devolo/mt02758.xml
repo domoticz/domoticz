@@ -1,8 +1,31 @@
 <!--
 devolo Siren MT02758
 http://products.z-wavealliance.org/products/2308
--->
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0175:000A:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/devolo/mt02758.png</MetaDataItem>
+    <MetaDataItem id="000A" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/2308/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Have Z-Wave™ Controller entered exclusion mode.
+2. Pressing tamper key three times within 1.5 seconds to enter the exclusion mode.
+Node ID has been excluded.</MetaDataItem>
+    <MetaDataItem name="Description">Siren MT02758 is a wireless siren, based on Z-Wave™  technology. It is the Z-Wave™  plus product, it support the security, OTA... Those newest features   of   the  Z-Wave™   technology.</MetaDataItem>
+    <MetaDataItem name="Name">Siren</MetaDataItem>
+    <MetaDataItem id="000A" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="000A" name="Identifier" type="0004">MT02758</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2308/MT02758_manual.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Notice: Use this procedure only in the event that the primary controller is lost or otherwise inoperable.
+1. Pressing tamper key four times within 1.5 seconds and do not release the tamper key in the 4 pressed, and the LED will light ON.
+2. After 3 seconds the LED will turn OFF, after that within 2 seconds, release the tamper key. If successful, the LED will light ON one second. Otherwise, the LED will flash once.
+3. IDs are excluded and all settings will reset to factory default.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Have Z-Wave™ Controller entered inclusion mode.
+2. Pressing tamper key three times within 1.5 seconds
+to enter the inclusion mode.
+3. After add successful, the LED will light ON 1 second</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2308/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value genre="config" index="7" label="Customer Function" size="1" type="list" value="0">

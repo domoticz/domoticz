@@ -1,0 +1,131 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/031E:000d:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/inovelli/lzw60.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="000d">https://products.z-wavealliance.org/products/3723</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://inovelli.com/shop/smart-sensors/z-wave-4-in-1-sensor/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://inovelli.com/shop/smart-sensors/z-wave-4-in-1-sensor/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To Exclude your switch, put your HUB in exclusion mode and press the Sensor Button on the back of the device one (1) time.</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="000d">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3723/Inovelli%204-1%20Sensor%20Manual.pdf</MetaDataItem>
+    <MetaDataItem name="Description">Control and Monitor Temperature, Light, Motion, and Humidity with the 4 in 1 Sensor.</MetaDataItem>
+    <MetaDataItem name="Name">LZW60 4-in-1 Sensor</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="000d">LZW60</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To include your switch, start the inclusion process on your HUB and Sensor Button on the back of the device one (1) time.</MetaDataItem>
+
+    <ChangeLog>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="7 Nov 2019" revision="1">Initial Release</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" type="byte" size="1" index="10" label="Low Battery Power Level Alarm" min="10" max="50" value="10">
+      <Help>
+      Value at which the sensor reports low battery to the gateway
+	  Range:10-50
+      Default: 10
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="12" label="PIR Sensitivity" min="0" max="10" value="8">
+      <Help>
+      Change the sensitivity of the PIR (Motion) Sensor
+	  0 = off, 1 = Low sensitivity, 10 = High sensitivity
+      Default: 8
+      </Help>
+    </Value>
+    <Value genre="config" type="short" size="2" index="13" label="PIR Trigger Time (seconds)" min="5" max="15300" value="30">
+      <Help>
+      The amount of seconds between motion detection (ie: the interval)
+	  Range:5-15300
+      Default: 30
+      </Help>
+    </Value>
+    <Value genre="config" type="list" size="1" index="14" label="Basic Set Command Send after PIR Trigger" min="0" max="1" value="0">
+      <Help>
+      Should Basic Set Command be sent after PIR is triggered? This is used to turn other devices on/off when motion is detected.
+      Default: No
+      </Help>
+	  <Item value="0" label="No"/>
+	  <Item value="1" label="Yes"/>
+    </Value>
+    <Value genre="config" type="list" size="1" index="15" label="PIR Trigger Correspondence Action" min="0" max="1" value="0">
+      <Help>
+      Ability to reverse the Basic Set behavior for devices associated in group 2
+      Default: ON when motion is tripped, OFF when motion stops
+      </Help>
+	  <Item value="0" label="ON when motion is tripped, OFF when motion stops"/>
+	  <Item value="1" label="OFF when motion is tripped, ON when motion stops"/>
+    </Value>
+    <Value genre="config" type="int" size="4" index="101" label="Temperature Sensor Read Interval" min="0" max="2768400" value="7200">
+      <Help>
+      The interval in which the temperature sensor is checked, in seconds. Set to 0 to disable (Note: will be rounded to the nearest minute)
+      Default: 7200 (2 hours)
+      </Help>
+    </Value>
+    <Value genre="config" type="int" size="4" index="102" label="Humidity Sensor Read Interval" min="0" max="2768400" value="7200">
+      <Help>
+      The interval in which the humidity sensor is checked, in seconds. Set to 0 to disable (Note: will be rounded to the nearest minute)
+      Default: 7200 (2 hours)
+      </Help>
+    </Value>	
+    <Value genre="config" type="int" size="4" index="103" label="Luminance Sensor Read Interval" min="0" max="2768400" value="7200">
+      <Help>
+      The interval in which the luminance sensor is checked, in seconds. Set to 0 to disable (Note: will be rounded to the nearest minute)
+      Default: 7200 (2 hours)
+      </Help>
+    </Value>	
+    <Value genre="config" type="int" size="4" index="104" label="Battery Level Read Interval" min="0" max="2768400" value="86400">
+      <Help>
+      The interval in which the battery level is checked, in seconds. Set to 0 to disable (Note: will be rounded to the nearest minute)
+      Default: 86400 (24 hours)
+      </Help>
+    </Value>	
+    <Value genre="config" type="list" size="1" index="110" label="Sensor Report Method" min="0" max="1" value="0">
+      <Help>
+      Sensor reports are only checked at the interval defined in parameters 101-104.  Should the sensor data always be reported, or only if the value has changed more than the threshold configured in parameters 111-114?
+	  Always: Send sensor data every interval, even if the value did not change.
+	  Threshold: Send sensor data on interval, but only if the value has changed by more than the defined threshold since the last report was sent.
+	  Default: Always
+      </Help>
+	  <Item value="0" label="Always"/>
+	  <Item value="1" label="Threshold" />
+    </Value>
+    <Value genre="config" type="short" size="2" index="111" label="Temperature Threshold" min="1" max="500" value="10">
+      <Help>
+      Set the temperature threshold of the sensor.  If Sensor Report Method = "Threshold", the temperature change must exceed this value in order to be reported to the hub.
+	  Range: 1-500
+	  1 = 0.1 degrees Celcius, 500 = 50 degrees Celcuis
+      Default: 10 (1 degree Celcuis)
+      </Help>
+    </Value>	
+    <Value genre="config" type="byte" size="1" index="112" label="Humidity Threshold" min="1" max="32" value="5">
+      <Help>
+      Set the humidity threshold of the sensor.  If Sensor Report Method = "Threshold", the humidity change must exceed this value in order to be reported to the hub.
+	  Range: 1-32, 1 = 1%, 32 = 32%
+      Default: 5%
+      </Help>
+    </Value>	
+    <Value genre="config" type="short" size="2" index="113" label="Luminance Threshold" min="1" max="65528" value="150">
+      <Help>
+      Set the luminance threshold of the sensor (in lux).  If Sensor Report Method = "Threshold", the luminance change must exceed this value in order to be reported to the hub.
+	  Range: 1-65528
+      Default: 150
+      </Help>
+    </Value>		
+    <Value genre="config" type="byte" size="1" index="114" label="Battery Threshold" min="1" max="100" value="10">
+      <Help>
+      Set the battery threshold of the sensor (percent).  If Sensor Report Method = "Threshold", the battery level change must exceed this value in order to be reported to the hub.
+	  Range: 1-100
+      Default: 10
+      </Help>
+    </Value>	
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5" />
+      <Group index="2" label="PIR Trigger Basic Set" max_associations="5" />
+    </Associations>
+  </CommandClass>
+</Product>

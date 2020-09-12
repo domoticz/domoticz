@@ -3,7 +3,7 @@
 #include "../main/Helper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/Logger.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../httpclient/UrlEncode.h"
 
 CNotificationTelegram::CNotificationTelegram() : CNotificationBase(std::string("telegram"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
@@ -37,7 +37,6 @@ bool CNotificationTelegram::SendMessageImplementation(
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 	Json::Value json;
-	Json::StyledWriter jsonWriter;
 
 	//Build url
 	sBuildUrl << "https://api.telegram.org/bot" << _apikey << "/sendMessage";
@@ -54,7 +53,9 @@ bool CNotificationTelegram::SendMessageImplementation(
 
 	if ( Priority < 0 )
 		json["disable_notification"] = 1;
-	sPostData = jsonWriter.write(json);
+
+
+	sPostData = JSonToFormatString(json);
 
 	//Add the required Content Type
 	ExtraHeaders.push_back("Content-Type: application/json");

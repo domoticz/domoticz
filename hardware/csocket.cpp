@@ -13,10 +13,9 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
-#include <sys/errno.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/poll.h>
+#include <poll.h>
 #endif
 
 #ifndef WIN32

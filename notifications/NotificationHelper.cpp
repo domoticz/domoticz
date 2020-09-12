@@ -19,7 +19,7 @@
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
-#include "NotificationGCM.h"
+#include "NotificationFCM.h"
 
 #include "NotificationBrowser.h"
 #define __STDC_FORMAT_MACROS
@@ -51,7 +51,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationHTTP());
 	AddNotifier(new CNotificationKodi());
 	AddNotifier(new CNotificationLogitechMediaServer());
-	AddNotifier(new CNotificationGCM());
+	AddNotifier(new CNotificationFCM());
 	AddNotifier(new CNotificationBrowser());
 }
 
@@ -93,17 +93,19 @@ bool CNotificationHelper::SendMessage(
 
 bool CNotificationHelper::SendMessageEx(
 	const uint64_t Idx,
-	const std::string &Name,
-	const std::string &Subsystems,
-	const std::string &Subject,
-	const std::string &Text,
-	const std::string &ExtraData,
+	const std::string& Name,
+	const std::string& Subsystems,
+	const std::string& Subject,
+	const std::string& Text,
+	const std::string& ExtraData,
 	int Priority,
-	const std::string &Sound,
+	const std::string& Sound,
 	const bool bFromNotification)
 {
 	bool bRet = false;
 	bool bThread = true;
+
+	bool bIsTestMessage = (Subject == "Domoticz test") && (Text == "Domoticz test message!");
 
 	if (Priority == -100)
 	{
@@ -134,13 +136,16 @@ bool CNotificationHelper::SendMessageEx(
 		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
 		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && iter->second->IsConfigured())
 		{
-			if (bThread)
+			if ((iter->second->m_IsEnabled) || bIsTestMessage)
 			{
-				boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
-				SetThreadName(SendMessageEx.native_handle(), "SendMessageEx");
+				if (bThread)
+				{
+					boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
+					SetThreadName(SendMessageEx.native_handle(), "SendMessageEx");
+				}
+				else
+					bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 			}
-			else
-				bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
 	return bRet;
@@ -409,7 +414,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					fValue2 = fValue;
 					if (meterType == 1) {
 						//inches
-						fValue2 *= 0.393701f;
+						fValue2 *= 0.3937007874015748f;
 					}
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
 				case sTypeBaro:

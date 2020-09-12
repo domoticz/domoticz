@@ -1,4 +1,4 @@
-<!-- Philio: PAN08-1 In Wall Roller Shutter Controller with Power Measurement --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Philio: PAN08-1 In Wall Roller Shutter Controller with Power Measurement --><Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:0006:0001</MetaDataItem>
     <MetaDataItem name="ProductPic">images/philio/pan08.png</MetaDataItem>
@@ -6,8 +6,7 @@
     <MetaDataItem id="0006" name="FrequencyName" type="0001">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem name="ProductPage">http://www.philio-tech.com/p_switch.htm</MetaDataItem>
     <MetaDataItem name="Description">The in-wall Roller Shutter Controller is designed to switch rise/lower roller shutter connected to its terminals using radio waves, controllers and a push button directly connected to this Roller Controller. 
-This in-wall Roller Shutter Controller is a transceiver which is a Z-Wave Plus™
- enabled device and is fully compatible with any Z-Wave™ enabled network. Slim design let the Controller can easily hide itself into the wall box and that will be good for the house decoration.   
+This in-wall Roller Shutter Controller is a transceiver which is a Z-Wave Plus™ enabled device and is fully compatible with any Z-Wave™ enabled network. Slim design let the Controller can easily hide itself into the wall box and that will be good for the house decoration.   
 The new smart relay calibration technology can reduce the inrush current caused by the load and let the module work perfectly with many kind of Roller Shutter.     
 This in-wall Roller Shutter Controller is able to detect position of the Shutter by using the patterned power measuring method, so it can be remote controlled not only fully up or down, but also can be adjusted to ex. 30% or 50%.  And  when  manual controlled by push button, the controller also can memorize the position and send the new shutter position to its controller (ex. IP-Gateway). </MetaDataItem>
     <MetaDataItem name="Name">Roller shutter controller</MetaDataItem>
@@ -16,18 +15,20 @@ This in-wall Roller Shutter Controller is able to detect position of the Shutter
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/880/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/891/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1164/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2580/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2914/xml</Entry>
     </ChangeLog>
-    <MetaDataItem id="0015" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1164/</MetaDataItem>
+    <MetaDataItem id="0015" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/2914/</MetaDataItem>
     <MetaDataItem name="ResetDescription">Use this procedure only in the event that the primary controller is lost or otherwise inoperable. 
 1. Pressing Include button three times within 2 seconds will enter inclusion mode.
 2.  Within 1 second, press Include button again for 5 seconds. </MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1164/PAN08-1A manual-20141027.doc</MetaDataItem>
-    <MetaDataItem id="0015" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2914/PAN08 manual-20180423.pdf</MetaDataItem>
+    <MetaDataItem id="0015" name="FrequencyName" type="0001">CEPT (Europe) / Brazil / Japan</MetaDataItem>
     <MetaDataItem name="InclusionDescription">1.  Put your Z-Wave controller into inclusion mode by following the instructions provided by the controller manufacturer. 
 2.  Pressing Include button three times within 2 seconds will enter inclusion mode. </MetaDataItem>
     <MetaDataItem name="ExclusionDescription">1.  Put your Z-Wave controller into exclusion mode by following the instructions provided by the controller manufacturer. 
 2.  Pressing Include button three times within 2 seconds will enter exclusion mode. </MetaDataItem>
-    <MetaDataItem id="0015" name="Identifier" type="0001">PAN08-1A</MetaDataItem>
+    <MetaDataItem id="0015" name="Identifier" type="0001">PAN08-3</MetaDataItem>
   </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">

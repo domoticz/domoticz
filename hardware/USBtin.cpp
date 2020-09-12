@@ -14,7 +14,7 @@ History :
 - 2017-10-01 : Creation by X.PONCET
 
 - 2018-01-22 : Update :
-# for feature add to MultiblocV8 Class: manual creation up to 127 virtual switch, ability to learn eatch switch to any blocks output
+# for feature add to MultiblocV8: manual creation up to 127 virtual switch, ability to learn eatch switch to any blocks output
 
 */
 #include "stdafx.h"
@@ -27,13 +27,15 @@ History :
 #include "../main/SQLHelper.h"
 
 #include <algorithm>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <string>
 #include <time.h>
+
+using namespace boost::placeholders;
 
 #define USBTIN_BAUD_RATE         115200
 #define USBTIN_PARITY            boost::asio::serial_port_base::parity::none

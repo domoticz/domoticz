@@ -7,22 +7,18 @@ Description : This class manage the CAN MultiblocV8 Layer
 - Treatment of each Life frame receive
 - Up to 30 blocs can be manage actually !
 - Complete management of input/output of SFSP Blocs (Master and Slave) up to 8 Master and 8 slaves in one CAN network
-- On one SFSP blocs : 6 PWM output, 1 Power Voltage reading, 4 wired input.
-- An SFSP Master blocks contain an EnOcean receiver (315 or 868Mhz). each wireless switch receive is created in the domoticz dbb.
+- On one SFSP blocs : 6 PWM output, 1 Power Voltage reading, 4 wired input and for Master blocs : each wireless switch receive is created in the domoticz dbb.
 - Description of the SFSP bloc : http://www.scheiber.com/doc_technique/sfsp-2012-a1/
-- In Domoticz: up to 127 virtual sfsp switch can be created, each can be learn to any output.
 
 History :
 - 2017-10-01 : Creation by X.PONCET
+
 
 - 2018-01-22 : Update :
 # add feature : manual creation up to 127 virtual switch, ability to learn eatch switch to any blocks output
 # add feature : now possibility to Enter/Exit Learn mode Or Clear Mode for all SFSP Blocks
 	(each blocks detected blocks automatically creates 3 associated buttons for Learn/Exit Learn and Clear, usefull if the blocks is not accessible )
 
-- 2019-06-04 : Update :
-# removal of functinonality that was requesting blocs on Current info - the current is not precise enough with loads less than 1.0 Amp
-# modification of description above
 
 */
 #include "stdafx.h"

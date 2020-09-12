@@ -1,29 +1,34 @@
 <!--
 Smart Smoke Sensor HS1SA-Z
 http://products.z-wavealliance.org/products/1936
---><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0260:1000:8002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/heiman/HS1SA-Z.png</MetaDataItem>
-    <MetaDataItem id="1000" name="ZWProductPage" type="8002">https://products.z-wavealliance.org/products/1936/</MetaDataItem>
-    <MetaDataItem name="Description">The smart smoke sensor detects smoke, and sends an alarm signals to alert  of danger.  When the smart smoke sensor detects smoke, it will send an alarm notification to your gateway through wireless Z-Wave communication protocol.  Then the gateway will send the notification to the server, the server interprets the signal and transfers the signal to users' APP.   The smart smoke sensor has high stability  and sensitivity,  which will alert house of fire effectively. </MetaDataItem>
-    <MetaDataItem name="InclusionDescription">-  Click [Add] icon in Z-Wave PC Controller Program.
+    <MetaDataItem id="1000" name="ZWProductPage" type="8002">https://products.z-wavealliance.org/products/3006/</MetaDataItem>
+    <MetaDataItem name="Description">The Smart Smoke Alarm adopts Z-Wave protocol, when the sensor detects smoke to the set level, it will issue  acoustic-optic alarm to alert the users and also send alarm notifications to gateway immediately.It's suitable to be installed in living room, office,warehouse,and etc.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">-  Click [Add] icon in Z-Wave Controller .
 -  Press the Net_Button 3 times within 1.5s, Green LED is Blinking 3 times within 1 second.
--  If Inclusion Process is successful, Green led will turn off.</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">-  Click [Remove] icon in Z-Wave PC Controller Program
+-  If Inclusion Process is successful, Green led will turn off.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">-  Click [Remove] icon in Z-Wave Controller
 -  Press the Net_Button 3 times within 1.5s 
--  If Exclusion Process is successful, Green led is Blinking 6 times, then turn off.</MetaDataItem>
+-  If Exclusion Process is successful, Green led is Blinking 6 times, then turn off.
+</MetaDataItem>
     <MetaDataItem name="WakeupDescription">-  Wake up Notification is transmitted every 24 hours by default.
--  Wake up Notification is transmitted after Notification Report is Transmitted</MetaDataItem>
-    <MetaDataItem name="ResetDescription">-Long press Net_Button while installing batteries in HS1SA-Z. 
+-  Wake up Notification is transmitted after Notification Report is Transmitted </MetaDataItem>
+    <MetaDataItem name="ResetDescription">--Long press Net_Button while installing batteries in the product.
 - Device Reset Locally notification is Transmitted.
--Please use this procedure only when the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
     <MetaDataItem id="1000" name="Identifier" type="8002">HS1SA-Z</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1936/HS1SA-Z documentation (1).doc</MetaDataItem>
-    <MetaDataItem name="Name">Smart Smoke Sensor</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3006/HS1SA-Z S2-documentation_3.pdf</MetaDataItem>
+    <MetaDataItem name="Name">Smart Smoke Alarm</MetaDataItem>
     <MetaDataItem id="1000" name="FrequencyName" type="8002">CEPT (Europe)</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1936/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2710/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3006/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Association Groups -->

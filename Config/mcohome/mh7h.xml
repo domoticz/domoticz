@@ -1,4 +1,49 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/015F:5102:0702</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/mcohome/mh7h.png</MetaDataItem>
+    <MetaDataItem id="5102" name="ZWProductPage" type="0702">https://products.z-wavealliance.org/products/2900/</MetaDataItem>
+    <MetaDataItem name="Name">Heating Thermostat</MetaDataItem>
+    <MetaDataItem id="5102" name="FrequencyName" type="0702">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">In normal working interface, press &amp; hold S4 to enter interface for adding or removing of Z-Wave network. Before device removed from network,  a Node ID will display on the screen. Then press S4 once. If removing is succeed,  “- - -”will display on the screen in a few seconds. 
+
+A node ID can always inform us whether the device is in the network or not.When removed, the device will restore its factory setting.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">A parameter P18 in the secret menu can be used to restore factory setting locally. Please use this procedure only when the network primary controller is missing or otherwise inoperable. ; And a parameter FF can be used to restore the factory setting via Z-Wave.</MetaDataItem>
+    <MetaDataItem id="5102" name="Identifier" type="0702">MH7H-WH/EH</MetaDataItem>
+    <MetaDataItem name="Description"> MH7H-WH is mainly applied to control wall mounted boiler, water valve/pump etc. , while MH7H-EH is for electrical heating system.The device is of high reliability and practicability, which can be included and operated in any Z-Wave network with other Z-Wave certified devices from any other manufacturers. All non-battery operated nodes within the network will act as repeaters regardless of vendor to increase reliability of the network.
+
+Features：
+	Capacitive touch buttons 
+	Tempered glass panel, PC alloy enclosure
+	Precise temperature calibration function
+	Attractive appearance
+	Clear display, easy to operate 
+
+Specification:
+	Power Supply：AC85-260V, 50/60HZ
+	Output: MH7H-WH ≤5A ; MH7H-EH≤ 16A
+	Self Consumption：≤1W
+	External Temp. Sensor(optional): NTC  R25℃=15KΩ  
+        B25℃/50℃=3550K 
+	Working Environment：0-50℃;  0-90% RH（Non-
+        condensation)
+	Temperature Setting：5-37 ℃（41-99℉）（Adjustable）
+	Dimension：86* 86*15mm 
+	Hole Pitch：60-61mm 
+
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2900/MH7H User Manual.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">In normal working interface, press &amp; hold S4 to enter interface for adding or removing of Z-Wave network. Before device added into network, “- - -” will display on the screen. Then press S4 once, device will enter learning mode to get a node ID. If adding is succeed, a node ID will display on the screen in a few seconds. 
+
+A node ID can always inform us whether the device is in the network or not.
+
+After adding, turn off the device and then turn it on. Now the device is ready to be operated by controller/ gateway in Z-Wave network.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2900/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <CommandClass id="64">
     <Value genre="user" index="0" instance="1" label="Mode" max="0" min="0" read_only="false" type="list" units="" value="0" write_only="false">
       <Item label="Off" value="0"/>

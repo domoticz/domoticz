@@ -8,11 +8,13 @@
 #include "../main/localtime_r.h"
 
 #include <algorithm>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 #include <iostream>
 #include <string>
+
+using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 #define OTGW_READ_INTERVAL 10

@@ -72,7 +72,6 @@ void MySensorsTCP::OnDisconnect()
 
 void MySensorsTCP::Do_Work()
 {
-	bool bFirstTime = true;
 	int sec_counter = 0;
 	_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	connect(m_szIPAddress, m_usIPPort);
@@ -102,11 +101,6 @@ void MySensorsTCP::Do_Work()
 void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
 {
 	ParseData(pData, length);
-}
-
-void MySensorsTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR, "MySensors: %s", e.what());
 }
 
 void MySensorsTCP::OnError(const boost::system::error_code& error)

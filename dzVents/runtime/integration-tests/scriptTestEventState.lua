@@ -31,7 +31,7 @@ return {
 	},
 	execute = function(dz, item)
 
-		local function sleep (a) 
+		local function sleep (a)
 			local function osExecute(cmd)
 				local fileHandle = assert(io.popen(cmd, 'r'))
 				local commandOutput = assert(fileHandle:read('*a'))
@@ -52,7 +52,7 @@ return {
 			end
 
 			local rc = osExecute("sleep " .. a)
-			if rc ~= 0 then 
+			if rc ~= 0 then
 				dz.log("We seem to be on Windows; trying os.execute now", dz.LOG_FORCE )
 				os.execute("timeout " .. a)
 				dz.log("That took you some time !", dz.LOG_FORCE )
@@ -116,11 +116,11 @@ return {
 			local ok = true
 
 			if (dz.data.switchStates ~= 'OnOffOnOff') then
-				print('Error: ' .. dz.data.switchStates)
+				print('switchStates Error: ' .. dz.data.switchStates)
 				ok = false
 			end
-			if (dz.data.sceneStates ~= 'OnOffOnOff') then
-				print('Error: ' .. dz.data.sceneStates)
+			if (dz.data.sceneStates ~= 'OnOn') then -- Scenes can no longer be switched Off
+				print('sceneStates Error: ' .. dz.data.sceneStates)
 				ok = false
 			end
 			if (dz.data.varStates ~= '10203040') then

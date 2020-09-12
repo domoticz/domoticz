@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Eurotronic Z-Wave Plus air quality sensor
+Product website: https://eurotronic.org/produkte/sensoren/luftguetesensor/
+-->
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+   <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0148:0001:0005</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/eurotronic/eur_airquality.png</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Start Inclusion mode of your primary Z-Wave Controller.
+Press the network button three times within 1 second.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://eurotronic.org/wp-content/uploads/2020/02/LGS-Z-Wave-Plus_BDA_web_EN-1.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Start Exclusion mode of your primary Z-Wave Controller.
+Press the network button three times within 1 second.</MetaDataItem>
+    <MetaDataItem name="Name">Air Quality Sensor</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+
+Press and hold the network button for at least 10 seconds. The Air Quality Sensor Z-Wave Plus will indicate
+the reset blinking pattern once the reset is completed.
+</MetaDataItem>
+    <MetaDataItem name="Description">This Z-Wave sensor provides comprehensive information on indoor
+air quality.
+• Multicolor LED for signalling ventilation recommendations
+• Returns the following values:
+  - VOC value (volatile organic compounds) in ppm
+  - CO2 value (as CO2 equivalent) in ppm
+  - Temperature (°C)
+  - Humidity (%)
+  - Dew point (°C)
+• Supports Z-Wave Plus S2 security (encryption)
+• Z-Wave repeater function
+• Operation with plug-in power supply unit
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="gpgmailencrypt@gmx.de" date="13 Mar 2020" revision="2">Initial Metadata Import from https://eurotronic.org/wp-content/uploads/2020/02/LGS-Z-Wave-Plus_BDA_web_EN-1.pdf/</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0001" name="FrequencyName" type="0005">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0005">https://eurotronic.org/produkte/sensoren/luftguetesensor/</MetaDataItem>
+  </MetaData>
+
+  <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Instance index="1"/>
+        <Value type="byte" genre="config" instance="1" index="1" label="Temperature on Change Reporting" min="0" max="50" value="5" size="1">
+            <Help>
+                0: No on change reporting (only time-based reports)
+                1-50: report if temperature changed by delta = 0,1°C - 5,0°C 
+                Default: 5
+            </Help>
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="2" label="Humidity on Change Reporting" min="0" max="10" value="5" size="1">
+            <Help>
+                0: No on change reporting (only time-based reports)
+                1-10: report if humidity changed by delta = 1% ...10%
+                Default: 5
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="3" label="Temperature Scale" min="0" max="1" value="0" size="1">
+            <Help>
+                Temperature in Degrees Celcius
+                Temperature in Degrees Fahrenheit
+                Default: Temperature in Degrees Celcius
+            </Help>
+            <Item label="Celsius" value="0" />
+            <Item label="Fahrenheit" value="1" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="4" label="Temperature Resolution" min="0" max="2" value="1" size="1">
+            <Help>
+                No resolution (example 22°C)
+                1/10 resolution (example 22.3°C)
+                1/100 resolution (example 22.35°C)
+                Default: No resolution (example 22°C)
+            </Help>
+             <Item label="No resolution (example 22°C)" value="0" />
+             <Item label="1/10 resolution (example 22.3°C)" value="1" />
+             <Item label="1/100 resolution (example 22.35°C)" value="2" />
+       </Value>
+        <Value type="list" genre="config" instance="1" index="5" label="Humidity Resolution" min="0" max="2" value="0" size="1">
+            <Help>
+                No resolution (example 33%)
+                1/10 resolution (example 33.4%)
+                1/100 resolution (example 33.45%
+                Default: No resolution (example 33%
+            </Help>
+             <Item label="No resolution (example 33%)" value="0" />
+             <Item label="1/10 resolution (example 33.4%)" value="1" />
+             <Item label="1/100 resolution (example 33.45%)" value="2" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="6" label="VOC on Change Reporting" min="0" max="10" value="5" size="1">
+            <Help>
+                0: No on change reporting (only time-based reports)
+                1-10: report if VOC reading changed by 100ppb - 1000ppb 
+                Default: 5
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="7" label="CO2eq on Change Reporting" min="0" max="10" value="5" size="1">
+            <Help>
+                0: No on change reporting (only time-based reports)
+                1-10: report if CO2eq reading changed by 100ppm - 1000ppm 
+                Default: 5
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="8" label="Air quality indication via LED" min="0" max="1" value="1" size="1">
+            <Help>
+                0: No air quality indication via LEDs
+                1: Indicate measuered air quality via LEDs
+                Default: 1
+            </Help>
+            <Item label="No air quality indication via LEDs" value="0" />
+            <Item label="Indicate measuered air quality via LEDs" value="1" />
+        </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="1" label="Lifeline" />
+      <Group index="2" max_associations="5" label="Temperature" />
+    </Associations>
+  </CommandClass>
+</Product>

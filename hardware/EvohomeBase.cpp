@@ -25,7 +25,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
 #include "../main/WebServer.h"
-#include "../json/json.h"
+#include <json/json.h>
 
 
 extern std::string szUserDataFolder;
@@ -173,28 +173,28 @@ std::string CEvohomeBase::GetZoneName(uint8_t nZone)
 }
 
 
-int CEvohomeBase::GetControllerID()
+unsigned int CEvohomeBase::GetControllerID()
 {
 	std::lock_guard<std::mutex> l(m_mtxControllerID);
 	return m_nDevID;
 }
 
 
-void CEvohomeBase::SetControllerID(int nID)
+void CEvohomeBase::SetControllerID(unsigned int nID)
 {
 	std::lock_guard<std::mutex> l(m_mtxControllerID);
 	m_nDevID=nID;
 }
 
 
-int CEvohomeBase::GetGatewayID()
+unsigned int CEvohomeBase::GetGatewayID()
 {
 	std::lock_guard<std::mutex> l(m_mtxGatewayID);
 	return m_nMyID;
 }
 
 
-void CEvohomeBase::SetGatewayID(int nID)
+void CEvohomeBase::SetGatewayID(unsigned int nID)
 {
 	std::lock_guard<std::mutex> l(m_mtxGatewayID);
 	m_nMyID=nID;

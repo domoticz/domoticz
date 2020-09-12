@@ -1,11 +1,11 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0129:0B00:8003</MetaDataItem>
     <MetaDataItem name="ProductPic">images/assa_abloy/nexTouch.png</MetaDataItem>
-    <MetaDataItem id="0B00" name="ZWProductPage" type="8003">https://products.z-wavealliance.org/products/1857/</MetaDataItem>
-    <MetaDataItem name="Name">nexTouch Wireless Push Button with Z-Wave</MetaDataItem>
+    <MetaDataItem id="0B00" name="ZWProductPage" type="8003">https://products.z-wavealliance.org/products/2439/</MetaDataItem>
+    <MetaDataItem name="Name">nexTouch Wireless Key Free Push Button with Z-Wave</MetaDataItem>
     <MetaDataItem id="0B00" name="Identifier" type="8003">NTB620-ZW2</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1970/nexTouch TS Manual for Cert.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2440/nexTouch TS Manual for Cert.pdf</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">1. Enter the 4-8 digit master PIN code followed by the gear key.
 2. Press the 7 key followed by the gear key.
 3. Press the 3 key followed by the gear key.</MetaDataItem>
@@ -31,9 +31,11 @@ Yale nexTouch offers many benefits for the small business owner, including easy 
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1857/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1970/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2439/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2440/xml</Entry>
     </ChangeLog>
-    <MetaDataItem id="0B00" name="ZWProductPage" type="8001">https://products.z-wavealliance.org/products/1970/</MetaDataItem>
-    <MetaDataItem id="0B00" name="Identifier" type="8001">NTB610-ZW2</MetaDataItem>
+    <MetaDataItem id="0B00" name="ZWProductPage" type="8001">https://products.z-wavealliance.org/products/2440/</MetaDataItem>
+    <MetaDataItem id="0B00" name="Identifier" type="8001">NTB630-ZW2</MetaDataItem>
     <MetaDataItem id="0B00" name="FrequencyName" type="8001">U.S. / Canada / Mexico</MetaDataItem>
   </MetaData>
   <!-- Yale nexTouch Wireless Touchscreen with Z-Wave (NTB620-ZW2)

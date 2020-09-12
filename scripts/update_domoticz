@@ -15,14 +15,14 @@ MACH=`uname -m`
 # Restart on OSX
 if [ ${OS} = "darwin" ]; then
   launchctl unload /System/Library/LaunchAgents/com.domoticz.server.plist
-  echo "Please standby ... (waiting 15 seconds)"
-  sleep 15
+  echo "Please standby ..."
+  sleep 2
   launchctl load /System/Library/LaunchAgents/com.domoticz.server.plist
 else
   sudo service domoticz.sh stop
   sudo systemctl stop domoticz.service
-  echo "please standby... (waiting 15 seconds)"
-  sleep 15
+  echo "Please standby ..."
+  sleep 2
   sudo service domoticz.sh start
   sudo systemctl start domoticz.service
 fi

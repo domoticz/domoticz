@@ -28,7 +28,8 @@ return {
 		device['whTotal'] = nil
 		device['WhTotal'] = data.data.whTotal
 		device['whActual'] = nil
-		device['WhActual'] = data.data.whActual
+		device['WhActual'] = data.data.whActual -- left in for compatibility reasons
+		device['actualWatt'] = data.data.whActual or 0
 
 		device['counterToday'] = info['value']
 

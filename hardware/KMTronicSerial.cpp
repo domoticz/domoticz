@@ -10,11 +10,13 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 
 //#define DEBUG_KMTronic
+
+using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 
@@ -185,7 +187,7 @@ void KMTronicSerial::GetRelayStates()
 	bool bIs485 = false;
 	for (int iBoard = 0; iBoard < 6; iBoard++)
 	{
-		SendBuf[1] = 0xA1 + iBoard;
+		SendBuf[1] = (uint8_t)(0xA1 + iBoard);
 		if (WriteInt(SendBuf, 3, true))
 		{
 			bIs485 = true;
@@ -253,7 +255,7 @@ void KMTronicSerial::GetRelayStates()
 	SendBuf[2] = 0x03;
 	for (ii = 0; ii < Max_KMTronic_Relais; ii++)
 	{
-		SendBuf[1] = ii+1;
+		SendBuf[1] = (uint8_t)(ii+1);
 		if (WriteInt(SendBuf, 3,true))
 		{
 			if (m_bufferpos == 3)

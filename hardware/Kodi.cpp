@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "Kodi.h"
 #include "../hardware/hardwaretypes.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/EventSystem.h"
 #include "../main/Helper.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
@@ -93,14 +94,14 @@ std::string	CKodiNode::CKodiStatus::StatusMessage()
 	}
 	while (sStatus.length() > MAX_TITLE_LEN)
 	{
-		int begin = sStatus.find_first_of("(",0);
-		int end = sStatus.find_first_of(")", begin);
+		size_t begin = sStatus.find_first_of("(",0);
+		size_t end = sStatus.find_first_of(")", begin);
 		if ((std::string::npos == begin) || (std::string::npos == end) || (begin >= end)) break;
 		sStatus.erase(begin, end - begin + 1);
 	}
 	while (sStatus.length() > MAX_TITLE_LEN)
 	{
-		int end = sStatus.find_last_of(",");
+		size_t end = sStatus.find_last_of(",");
 		if (std::string::npos == end) break;
 		sStatus = sStatus.substr(0, end);
 	}
@@ -185,13 +186,12 @@ void CKodiNode::handleMessage(std::string& pMessage)
 {
 	try
 	{
-		Json::Reader jReader;
 		Json::Value root;
 		std::string	sMessage;
 		std::stringstream ssMessage;
 
 		_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
-		bool bRet = jReader.parse(pMessage, root);
+		bool bRet = ParseJSon(pMessage, root);
 		if ((!bRet) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "Kodi: (%s) PARSE ERROR: '%s'", m_Name.c_str(), pMessage.c_str());
@@ -381,7 +381,6 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (root["result"]["item"].isMember("label"))			m_CurrentStatus.Label(root["result"]["item"]["label"].asCString());
 							if ((m_CurrentStatus.PlayerID() != "") && (m_CurrentStatus.Type() != "picture")) // request final details
 							{
-								std::string	sMessage;
 								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetProperties\",\"id\":1002,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"live\",\"percentage\",\"speed\"]}}";
 								handleWrite(sMessage);
 							}
@@ -413,7 +412,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (sAction != "Nothing")
 							{
 								m_Stoppable = true;
-								std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System." + sAction + "\",\"id\":1008}";
+								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System." + sAction + "\",\"id\":1008}";
 								handleWrite(sMessage);
 							}
 						}
@@ -524,6 +523,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 
 void CKodiNode::UpdateStatus()
 {
+	//This has to be rebuild! No direct poking in the database, please use CMainWorker::UpdateDevice
+
 	std::vector<std::vector<std::string> > result;
 	m_CurrentStatus.LastOK(mytime(NULL));
 
@@ -539,7 +540,7 @@ void CKodiNode::UpdateStatus()
 	if (m_CurrentStatus.LogRequired(m_PreviousStatus))
 	{
 		if (m_CurrentStatus.IsStreaming()) sLogText += " - " + m_CurrentStatus.LogMessage();
-		result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", m_ID, int(m_CurrentStatus.Status()), sLogText.c_str());
+		result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) VALUES (%d, %d, '%q','%q')", m_ID, int(m_CurrentStatus.Status()), sLogText.c_str(), "Kodi");
 		_log.Log(LOG_NORM, "Kodi: (%s) Event: '%s'.", m_Name.c_str(), sLogText.c_str());
 	}
 
@@ -1000,7 +1001,7 @@ void CKodi::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPingTimeoutms = PingTimeoutms;
 }
 
-bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
+bool CKodi::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -1312,8 +1313,8 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
-			std::string ip = request::findValue(&req, "ip");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Port = atoi(request::findValue(&req, "port").c_str());
 			if (
 				(hwid == "") ||
@@ -1345,8 +1346,8 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			std::string name = request::findValue(&req, "name");
-			std::string ip = request::findValue(&req, "ip");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Port = atoi(request::findValue(&req, "port").c_str());
 			if (
 				(hwid == "") ||

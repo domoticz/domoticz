@@ -7,8 +7,9 @@
 #include "SQLHelper.h"
 #include "mainworker.h"
 #include "WebServer.h"
+#include "HTMLSanitizer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "boost/date_time/gregorian/gregorian.hpp"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -837,7 +838,7 @@ void CScheduler::CheckSchedules()
 
 						}
 */
-						if (!m_mainworker.SwitchScene(itt.RowID, switchcmd))
+						if (!m_mainworker.SwitchScene(itt.RowID, switchcmd, "timer"))
 						{
 							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %" PRIu64 ", Time: %s", itt.RowID, ltimeBuf);
 						}
@@ -903,7 +904,7 @@ void CScheduler::CheckSchedules()
 									ilevel = 0; // force level to a valid value for Selector
 								}
 							}
-							if (!m_mainworker.SwitchLight(itt.RowID, switchcmd, ilevel, itt.Color, false, 0))
+							if (!m_mainworker.SwitchLight(itt.RowID, switchcmd, ilevel, itt.Color, false, 0, "timer"))
 							{
 								_log.Log(LOG_ERROR, "Error sending switch command, DevID: %" PRIu64 ", Time: %s", itt.RowID, ltimeBuf);
 							}
@@ -1484,8 +1485,9 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "ClearTimer";
 			m_sql.safe_query(
-				"DELETE FROM Timers WHERE (DeviceRowID == '%q')",
-				idx.c_str()
+				"DELETE FROM Timers WHERE ((DeviceRowID == '%q') AND (TimerPlan == %d))",
+				idx.c_str(),
+				m_sql.m_ActiveTimerPlan
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
@@ -2185,7 +2187,12 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			if (name.empty())
+			{
+				session.reply_status = reply::bad_request;
+				return;
+			}
 			root["status"] = "OK";
 			root["title"] = "AddTimerPlan";
 			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
@@ -2202,11 +2209,12 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = request::findValue(&req, "name");
-			if (
-				(name.empty())
-				)
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			if (name.empty())
+			{
+				session.reply_status = reply::bad_request;
 				return;
+			}
 
 			root["status"] = "OK";
 			root["title"] = "UpdateTimerPlan";
@@ -2258,7 +2266,7 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if (
 				(name.empty())
 				)

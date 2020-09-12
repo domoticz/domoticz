@@ -62,3 +62,7 @@
 .btn-group > .btn {
     border-radius: 0;
 }
+
+hr {
+  margin: 5px 0;
+}

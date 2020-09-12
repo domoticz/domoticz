@@ -4,7 +4,7 @@
 #include "DomoticzHardware.h"
 #include "P1MeterBase.h"
 
-#define RX_BUFFER_SIZE 100
+#define RX_BUFFER_SIZE 256
 
 class CRFXBase: public P1MeterBase
 {
@@ -38,6 +38,8 @@ protected:
 	bool onInternalMessage(const unsigned char *pBuffer, const size_t Len, const bool checkValid = true);
 	virtual bool StartHardware() = 0;
 	virtual bool StopHardware() = 0;
+
+	time_t m_LastP1Received = 0;
 
 	std::mutex readQueueMutex;
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE] = { 0 };

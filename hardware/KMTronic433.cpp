@@ -9,10 +9,12 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 //#define DEBUG_KMTronic
 
@@ -47,8 +49,6 @@ bool KMTronic433::StartHardware()
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
-
-	return true;
 }
 
 bool KMTronic433::StopHardware()

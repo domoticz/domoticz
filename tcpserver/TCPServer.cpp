@@ -11,7 +11,7 @@
 #include "../main/localtime_r.h"
 #include <boost/asio.hpp>
 #include <algorithm>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 namespace tcp {
 namespace server {

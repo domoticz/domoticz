@@ -16,10 +16,12 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #define Rego6XX_RETRY_DELAY 30
 #define Rego6XX_COMMAND_DELAY 5
@@ -379,7 +381,7 @@ bool CRego6XXSerial::ParseData()
         			strcpy(m_Rego6XXTemp.ID, g_allRegisters[m_pollcntr].name);
 					m_Rego6XXTemp.temperature =  (float)(data * 0.1);
                     if((m_Rego6XXTemp.temperature >= -48.2) && // -48.3 means no sensor.
-                        ((fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
+                        ((std::fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
 			 (difftime(atime,g_allRegisters[m_pollcntr].lastSent) >= 300))) // Send at least every 5 minutes
                     {
                         g_allRegisters[m_pollcntr].lastSent = atime;

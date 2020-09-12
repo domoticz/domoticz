@@ -166,11 +166,6 @@ void Comm5SMTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData, length);
 }
 
-void Comm5SMTCP::OnError(const std::exception e)
-{
-	Log(LOG_ERROR, "Error: %s", e.what());
-}
-
 void Comm5SMTCP::OnError(const boost::system::error_code& error)
 {
 	switch (error.value())

@@ -1,66 +1,111 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-    <!--
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0208:000F:0200</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/hank/hkzw-fld01.png</MetaDataItem>
+    <MetaDataItem id="000F" name="ZWProductPage" type="0200">https://products.z-wavealliance.org/products/2641/</MetaDataItem>
+    <MetaDataItem name="Description">Flood Sensor is capable of both detecting leaks and floods and when the level of water gets too low in pool or tank, Flood Sensor can work with your z-wave network to prevent emergencies such as burst water boiler to leaking air conditioners. With Z-Wave, the scope to save money is endless.
+
+The features list:
+1)	Z-Wave Plus certified for wide compatibility (500 serials product).
+2)	Security 0 and security 2 framework implemented with AES-128 encryption.
+3)	Contains an extension water detecting probe. 
+4)	Temperature measurement.
+5)	Vibration sensor.
+6)	The battery life is up to 1 year. 
+7)	Low battery alert
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1)Power on the device,
+2) Press and hold the Z button for more than 20 seconds,
+3) If holding time more than 20seconds, the LED indicator will keep on for 2 seconds, which means resetting is complete.
+4) The reset feature works only when the device has been included into a Z-Wave network.
+
+Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.
+
+
+</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press and hold the Z button for more than 5 seconds and release.</MetaDataItem>
+    <MetaDataItem name="Name">Flood Sensor</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1) Open the cover.
+2) Place the device within the direct range of your Z-Wave controller.
+3) Set the main controller remove mode (see the controller’s manual).
+4) Triple click the Z-button quickly, the LED indicator should blink fast.
+5) Wait for the removing process to end.
+6) Successful adding will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem id="000F" name="Identifier" type="0200">HKZW-FLD01</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1) Open the cover.
+2) Place the device within the direct range of your Z-Wave controller.
+3) Set the main controller in add mode (see the controller’s manual).
+4) Click the Z-button once or triple click the Z-button quickly, the LED indicator should blink fast. 
+5) Wait for the adding process to end.
+6) Successful adding will be confirmed by the Z-Wave controller’s message.
+
+</MetaDataItem>
+    <MetaDataItem id="000F" name="FrequencyName" type="0200">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2641/Flood Sensor Specification Engineering.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2641/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
       Hank HKZW-FLD01 Flood Sensor
       https://products.z-wavealliance.org/products/2641
     -->
 
     <!-- Configuration -->
-    <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="14" label="Enable/Disable BASIC SET command" size="1" min="0" max="1" value="0">
-            <Help>The Flood sensor can send BASIC SET command to nodes associated with group 2.</Help>
-            <Item value="0" label="Disable"/>
-            <Item value="1" label="Enable"/>
-        </Value>
-        <Value type="list" genre="config" instance="1" index="15" label="Value of the BASIC SET" size="1" min="0" max="1" value="0">
-            <Help>The Flood sensor can reverse its value of BASIC SET when flooding is triggered.</Help>
-            <Item value="0" label="Send BASIC SET VALUE = 255 to nodes associated with group 2 when flooding alarm is triggered. Send BASIC SET VALUE = 0 to nodes associated with group 2 when flooding alarm is canceled."/>
-            <Item value="1" label="Send BASIC SET VALUE = 0 to nodes associated with group 2 when flooding alarm is triggered. Send BASIC SET VALUE = 255 to nodes associated with group 2 when flooding alarm is canceled."/>
-        </Value>
-        <Value type="list" genre="config" instance="1" index="17" label="Enable/Disable flooding alarm" size="1" min="0" max="1" value="1">
-            <Help></Help>
-            <Item value="0" label="Disable"/>
-            <Item value="1" label="Enable"/>
-        </Value>
-        <Value type="list" genre="config" instance="1" index="18" label="Enable/Disable shock alarm" size="1" min="0" max="1" value="0">
-            <Help></Help>
-            <Item value="0" label="Disable"/>
-            <Item value="1" label="Enable"/>
-        </Value>
-        <Value type="list" genre="config" instance="1" index="19" label="Enable/Disable high temperature alarm" size="1" min="0" max="1" value="0">
-            <Help></Help>
-            <Item value="0" label="Disable"/>
-            <Item value="1" label="Enable"/>
-        </Value>
-        <Value type="short" genre="config" instance="1" index="20" label="Set the high temperature alarm trigger value" size="2" min="-670" max="2570">
-            <Help>US: -670 - 2570 (-67 - 257 F)
+  <CommandClass id="112">
+    <Value genre="config" index="14" instance="1" label="Enable/Disable BASIC SET command" max="1" min="0" size="1" type="list" value="0">
+      <Help>The Flood sensor can send BASIC SET command to nodes associated with group 2.</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Value of the BASIC SET" max="1" min="0" size="1" type="list" value="0">
+      <Help>The Flood sensor can reverse its value of BASIC SET when flooding is triggered.</Help>
+      <Item label="Send BASIC SET VALUE = 255 to nodes associated with group 2 when flooding alarm is triggered. Send BASIC SET VALUE = 0 to nodes associated with group 2 when flooding alarm is canceled." value="0"/>
+      <Item label="Send BASIC SET VALUE = 0 to nodes associated with group 2 when flooding alarm is triggered. Send BASIC SET VALUE = 255 to nodes associated with group 2 when flooding alarm is canceled." value="1"/>
+    </Value>
+    <Value genre="config" index="17" instance="1" label="Enable/Disable flooding alarm" max="1" min="0" size="1" type="list" value="1">
+      <Help></Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="18" instance="1" label="Enable/Disable shock alarm" max="1" min="0" size="1" type="list" value="0">
+      <Help></Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="19" instance="1" label="Enable/Disable high temperature alarm" max="1" min="0" size="1" type="list" value="0">
+      <Help></Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="20" instance="1" label="Set the high temperature alarm trigger value" max="2570" min="-670" size="2" type="short">
+      <Help>US: -670 - 2570 (-67 - 257 F)
             Other: -550 - 1250 (-55 - 125 C)</Help>
-        </Value>
-        <Value type="list" genre="config" instance="1" index="21" label="Enable/Disable low temperature alarm" size="1" min="0" max="1" value="0">
-            <Help></Help>
-            <Item value="0" label="Disable"/>
-            <Item value="1" label="Enable"/>
-        </Value>
-        <Value type="short" genre="config" instance="1" index="22" label="Set the low temperature alarm trigger value" size="2" min="-670" max="2570" value="0">
-            <Help>US: -670 - 2570 (-67 - 257 F)
+    </Value>
+    <Value genre="config" index="21" instance="1" label="Enable/Disable low temperature alarm" max="1" min="0" size="1" type="list" value="0">
+      <Help></Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="22" instance="1" label="Set the low temperature alarm trigger value" max="2570" min="-670" size="2" type="short" value="0">
+      <Help>US: -670 - 2570 (-67 - 257 F)
             Other: -550 - 1250 (-55 - 125 C)</Help>
-        </Value>
-        <Value type="list" genre="config" instance="1" index="24" label="Enable/Disable blinking LED when alarm being triggered" size="1" min="0" max="1" value="1">
-            <Help></Help>
-            <Item value="0" label="Disable"/>
-            <Item value="1" label="Enable"/>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="32" label="Level of low battery" size="1" min="10" max="50" value="20">
-            <Help>This parameter defines a battery level as the "low battery".</Help>
-        </Value>
-    </CommandClass>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="2">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="BASIC SET command"/>
-        </Associations>
-    </CommandClass>
-
+    </Value>
+    <Value genre="config" index="24" instance="1" label="Enable/Disable blinking LED when alarm being triggered" max="1" min="0" size="1" type="list" value="1">
+      <Help></Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="32" instance="1" label="Level of low battery" max="50" min="10" size="1" type="byte" value="20">
+      <Help>This parameter defines a battery level as the "low battery".</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="BASIC SET command" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

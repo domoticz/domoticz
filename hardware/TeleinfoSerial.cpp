@@ -28,8 +28,10 @@ History :
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
+
+using namespace boost::placeholders;
 
 CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate, const bool disable_crc, const int ratelimit)
 {

@@ -27,7 +27,13 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		if (device.deviceSubType == 'RGBWW') then
+		local function methodNotAvailableMessage(device, methodName)
+			domoticz.log('Method ' .. methodName .. ' is not available for device ' .. ' "' .. device.name .. '"' , utils.LOG_ERROR)
+			domoticz.log('(id=' .. device.id .. ', type=' .. device.deviceType .. ', subtype=' .. device.deviceSubType .. ', hardwareType=' .. device.hardwareType .. ')', utils.LOG_ERROR)
+			domoticz.log('If you believe this is not correct, please report on the forum.', utils.LOG_ERROR)
+		end
+
+		if (device.deviceSubType == 'RGBWW') or (device.deviceSubType == 'WW')  then
 			function device.setKelvin(kelvin)
 				local url
 				url = domoticz.settings['Domoticz url'] ..
@@ -44,17 +50,27 @@ return {
 		end
 
 		function device.increaseBrightness()
-			local url
-			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?param=brightnessup&type=command&idx=' .. device.id
-			return domoticz.openURL(url)
+			-- API will be removed; kept here until then to get user reports (if any)
+			if false and device.hardwareType and device.hardwareType == 'YeeLight LED' then 
+				local url
+				url = domoticz.settings['Domoticz url'] ..
+						'/json.htm?param=brightnessup&type=command&idx=' .. device.id
+				return domoticz.openURL(url)
+			else
+				methodNotAvailableMessage(device, 'increaseBrightness')
+			end
 		end
 
 		function device.decreaseBrightness()
-			local url
-			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?param=brightnessdown&type=command&idx=' .. device.id
-			return domoticz.openURL(url)
+            -- API will be removed; kept here until then to get user reports (if any)
+			if false and device.hardwareType and device.hardwareType == 'YeeLight LED' then 
+				local url
+				url = domoticz.settings['Domoticz url'] ..
+						'/json.htm?param=brightnessdown&type=command&idx=' .. device.id
+				return domoticz.openURL(url)
+			else
+				methodNotAvailableMessage(device, 'decreaseBrightness')
+			end
 		end
 
 		function device.setNightMode()
@@ -65,13 +81,17 @@ return {
 		end
 
 		function device.setDiscoMode(modeNum)
-			if (type(modeNum) ~= 'number' or modeNum < 1 or modeNum > 9) then
-				domoticz.log('Mode number needs to be a number from 1-9', utils.LOG_ERROR)
+			if false then  -- API will be removed; kept here until then to get user reports (if any)
+                if (type(modeNum) ~= 'number' or modeNum < 1 or modeNum > 9) then
+                    domoticz.log('Mode number needs to be a number from 1-9', utils.LOG_ERROR)
+                end
+                local url
+                url = domoticz.settings['Domoticz url'] ..
+                        '/json.htm?param=discomodenum' .. tonumber(modeNum) .. '&type=command&idx=' .. device.id
+                return domoticz.openURL(url)
+            else
+				methodNotAvailableMessage(device, 'setDiscoMode')
 			end
-			local url
-			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?param=discomodenum' .. tonumber(modeNum) .. '&type=command&idx=' .. device.id
-			return domoticz.openURL(url)
 		end
 
 		local function inRange(value, low, high)
@@ -94,14 +114,14 @@ return {
 		end
 
 		function device.setRGB(r, g, b)
-		  if not(validRGB(r, g, b)) then RGBError() return false end
-		  local h, s, b, isWhite = domoticz.utils.rgbToHSB(r, g, b)
-			url = domoticz.settings['Domoticz url'] ..
-				'/json.htm?param=setcolbrightnessvalue&type=command' ..
-				'&idx=' .. device.id   ..
-				'&hue=' .. tostring(h) ..
-				'&brightness=' .. tostring(b) ..
-				'&iswhite=' .. tostring(isWhite)
+			if not(validRGB(r, g, b)) then RGBError() return false end
+			local h, s, b, isWhite = domoticz.utils.rgbToHSB(r, g, b)
+			local url = domoticz.settings['Domoticz url'] ..
+						'/json.htm?param=setcolbrightnessvalue&type=command'  ..
+						'&idx=' .. device.id ..
+						'&hue=' .. math.floor(tonumber(h) + 0.5) .. 
+						'&brightness=' .. math.floor(tonumber(b) + 0.5) ..
+						'&iswhite=' .. tostring(isWhite)
 			return domoticz.openURL(url)
 		end
 

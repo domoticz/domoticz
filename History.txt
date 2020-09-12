@@ -1,18 +1,110 @@
-Version 4.xxxxx (xxx 2019)
+Version 2020.xxxx (xxxx)
+- Implemented: Added optional parameter 'level' to addlogmessage JSON
+- Implemented: Allow complete IPv6 address in local network setting
+- Implemented: Counter meter type now supports a divider
+- Implemented: Custom icons for RGB/W
+- Implemented: Hardware Monitor, Add clock speeds for Raspberry Pi
+- Implemented: Honeywell, Add cooling control and Fahrenheit support
+- Implemented: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
+- Implemented: Inverted energy icon colors in report
+- Implemented: Mercedes Me API's (BYOCAR) as an (e)Vehicle supporting lock/open, odo, fuellevel
+- Implemented: Meteorologisk (Meteorologisk institutt Norway) hardware support
+- Implemented: P1 Meter, added support for Encryption
+- Implemented: RFXCom Byron BY doorbell
+- Implemented: RTL433, Added RF Signal Strength in device tab based on reported SNR
+- Implemented: RTL433, Added Pressure (PSI) type
+- Implemented: RTL433, Added UV type
+- Implemented: RTL433, Added X-10 Security support
+- Implemented: RTL433, Switched to Json input
+- Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
+- Implemented: Websocket notification for secondary/sub devices
+- Implemented: ZWave, Legend and tooltips in Neighbor�s overview
+- Updated: dzVents version 3.0.12 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: eVehicles, added ODO meter, unlock/open alert, max charge level to Tesla module
+- Updated: OpenZWave configuration files
+- Updated: Openweathermap has been improved
+- Updated: TTNMQTT, Better GPS/Locations handling, distance calculation (Geofencing)
+- Updated: TTNMQTT, Improved calculation and storage of signal-levels
+- Changed: During a database backup we now 'sleep' when the status != OK
+- Changed: Differentiate kWh, kVah, kVar and kVarh
+- Fixed: Changing a value from a Thermostat Setpoint via the JSON API/MQTT resulted in a double event trigger
+- Fixed: Distance sensor was converting to miles instead of inches
+- Fixed: Font in events editor on MacOS
+- Fixed: Possible crash in CEventSystem::SetEventTrigger
+- Fixed: Sound device was incorrectly displayed on the Floorplan
+- Fixed Annatherm Presets usage in Events, Please use the following percentages: 10% for Home, 20% for Away, 30% Night 40% for Vacation
+- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
+
+Version 2020.2 (April 26th 2020)
+- Implemented: GUI: New Update controller code
+- Implemented: GUI: Real-time updates of history-logs on device / scene changes
+- Fixed: Battery level Real-time updates 
+- Fixed: Daikin wifi adaptor module
+- Fixed: Delete device now propagates to all relevant tables
+- Fixed: Possible security issue in the websocket layer
+- Fixed: Unwanted RFY protection popup
+- Updated: BuienRadar, Now possible to enter Station_ID or Latitude/Longitude
+- Updated: Deprecated Google Cloud Messaging system(gcm) replaced by Firebase Cloud Messaging (fcm)
+- Updated: dzVents version 3.0.2 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: OpenZWave configuration files
+- Updated: OpenZWave library for windows
+- Updated: MQTT add option to enable/disable loop prevention
+- Changed: Removed external library dependencies from repository
+- Updated: Translations
+- Updated: TTNMQTT, improved handling CayenneLPP channels
+- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
+
+Version 2020.1 (March 22th 2020)
+- Implemented: BuienRadar
 - Implemented: DarkSky CloudCover sensor
+- Implemented: eVehicles framework, with Tesla as first hardware module
 - Implemented: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
+- Implemented: Floorplan, add support for SVG
 - Implemented: GUI, OpenZWave added Refresh Node Information button, styling
+- Implemented: GUI: real-time updates on Devices tab (Websockets)
+- Implemented: GUI: Sun/Rain icons
+- Implemented: Hue, Add Support for Geo fence sensor, dimmer switches and Hue LCG002 GU10 spot
+- Implemented: Octoprint hardware module
+- Implemented: OpenZWave, JSON call to retrieve current battery levels for all nodes
+- Implemented: OpenZWave, Support for Loudness sensor
+- Implemented: OpenZWave, Support for Particulate_Mater_2_5 (Dust) sensor (ug/m3)
+- Implemented: OpenZWave, Support for Smoke density (%)
+- Implemented: OpenZWave, Support for Volatile_Organic_Compound (CO2, ppm)
+- Implemented: OpenZWave, Support for Frequency sensor
+- Implemented: Option to replace switch with another (same type)
+- Implemented: Per User favorites (with viewer rights)
+- Implemented: RFXCom implemented datatimeout for external P1 sensor
+- Implemented: RTL433, added Power (Watt) type
+- Implemented: RTL433, added rainfall_mm type
+- Implemented: Xiaomi, added Wireless Single Wall Switch
+- Implemented: DisableLogAutoUpdate and AddDBLogEntry device options for counters, to be enabled from plugins
+- Fixed: API, allow variabletype to be entered as text or integer in adduservariable and updateuservariable (#3320)
+- Fixed: GUI, Choosing Icon for ARC type switches
 - Fixed: GUI, Dashboard icon incremental counter (energy generated) not correct (#3231)
 - Fixed: GUI, device table initial order column
 - Fixed: GUI, Switch Log, date parsing in device log (#3206)
 - Fixed: GUI, Floorplan, contact type can no longer be switch
+- Fixed: GUI, Floorplan, custom image for Custom Sensor
 - Fixed: GUI, Floorplan, fixed blind switching (#3267)
 - Fixed: GUI, Weight Log now displays correct Unit (#3211)
 - Fixed: GUI, OpenZWave Abort Include/Exclude button
-- Fixed: YouLess, possible buffer overflow (#3261)
-- Fixed: notification, Telegram error when odd number of underscores in text
+- Fixed: Blockly, handling incorrect time field
+- Fixed: Enery Generated report icon colors
+- Fixed: Evohome Web for updated library
+- Fixed: Google Notification System
+  Fixed: PhilipsHue
+- Fixed: SMS Notification System
+- Fixed: Telegram notification when odd number of underscores in text
+- Fixed: Youless, possible buffer overflow (#3261)
+- Updated: Domoticz scripts now run directly in the background
+- Updated: dzVents version 3.0.1 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: HighCharts
+- Updated: Lua 5.3
+- Updated: Mosquitto 1.68
 - Updated: OpenZWave version 1.6
-- Updated: dzVents (version 2.4.22, See dzVents/documentation/history.md)
+- Updated: P1: Add support for Belgian and Luxembourgian meters
+- Updated: SQLite 3.31.1
+- Updated: Translations
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)

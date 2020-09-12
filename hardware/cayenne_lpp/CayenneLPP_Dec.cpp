@@ -13,7 +13,7 @@
 
 #include "stdafx.h"
 #include "CayenneLPP_Dec.h"
-#include "../../json/json.h"
+#include <json/json.h>
 
 /*
 Example Usage:

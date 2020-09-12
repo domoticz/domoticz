@@ -8,13 +8,15 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <cmath>
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #define ENOCEAN_RETRY_DELAY 30
 
@@ -36,7 +38,7 @@ struct _tTableLookup3
 	const char* Label;
 };
 
-const char *LookupTable2(const _tTableLookup2 *pOrgTable, unsigned long ID)
+const char* LookupTable2(const _tTableLookup2* pOrgTable, unsigned long ID)
 {
 	while (pOrgTable->Label)
 	{
@@ -48,7 +50,7 @@ const char *LookupTable2(const _tTableLookup2 *pOrgTable, unsigned long ID)
 	return ">>Unkown... Please report!<<";
 }
 
-const char *LookupTable3(const _tTableLookup3 *pOrgTable, unsigned long ID1, unsigned long ID2)
+const char* LookupTable3(const _tTableLookup3* pOrgTable, unsigned long ID1, unsigned long ID2)
 {
 	while (pOrgTable->Label)
 	{
@@ -123,8 +125,58 @@ const char* Get_EnoceanManufacturer(unsigned long ID)
 		{ 0x03F, "SENSORTEC" },
 		{ 0x040, "JAEGER_DIREKT" },
 		{ 0x041, "AIR_SYSTEM_COMPONENTS_INC" },
+		{ 0x042, "ERMINE Corp." },
+		{ 0x043, "SODA GmbH" },
+		{ 0x045, "Holter Regelarmaturen GmbH Co. KG" },
 		{ 0x046, "NodOn" },
+		{ 0x047, "DEUTA Controls GmbH" },
 		{ 0x048, "Ewattch" },
+		{ 0x049, "Micropelt GmbH" },
+		{ 0x04A, "Caleffi Spa." },
+		{ 0x04B, "Digital Concept" },
+		{ 0x04C, "Emerson Climate Technologies" },
+		{ 0x04D, "ADEE electronic" },
+		{ 0x04E, "ALTECON srl" },
+		{ 0x04F, "Nanjing Putian elecommunications Co." },
+		{ 0x050, "Terralux" },
+		{ 0x051, "iEXERGY GmbH" },
+		{ 0x052, "Connectivity Solutions GmbH" },
+		{ 0x053, "Oventrop GmbH Co. KG" },
+		{ 0x054, "Builing Automation Products" },
+		{ 0x055, "Functional Devices, Inc." },
+		{ 0x056, "OGGA" },
+		{ 0x057, "itho daalderop" },
+		{ 0x058, "Resol" },
+		{ 0x059, "Advanced Devices" },
+		{ 0x05A, "Autani LLC." },
+		{ 0x05B, "Dr. Riedel GmbH" },
+		{ 0x05C, "HOPPE Holding AG" },
+		{ 0x05D, "SIEGENIA-AUBI KG" },
+		{ 0x05E, "ADEO Services" },
+		{ 0x05F, "EiMSIG, EFP GmbH" },
+		{ 0x060, "VIMAR S.p.a." },
+		{ 0x061, "Glen Dimplex" },
+		{ 0x062, "PMDM GmbH" },
+		{ 0x063, "Hubbell Lighting" },
+		{ 0x064, "Debflex S.A." },
+		{ 0x065, "Perfactory Sensorsystems" },
+		{ 0x066, "Watty Corporation" },
+		{ 0x067, "WAGO Kontakttechnik GmbH Co. KG" },
+		{ 0x068, "Kessel AG" },
+		{ 0x069, "Aug. GmbH Co. KG" },
+		{ 0x06A, "DECELECT" },
+		{ 0x06B, "MST Industries" },
+		{ 0x06C, "Becker Antriebs GmbH" },
+		{ 0x06D, "Nexelec" },
+		{ 0x06E, "Wieland Electric GmbH" },
+		{ 0x06F, "AVIDSEN" },
+		{ 0x070, "CWS-boco International GmbH" },
+		{ 0x071, "Roto Frank AG" },
+		{ 0x072, "ALM Controls e.k." },
+		{ 0x073, "Tommaso Technologies Ltd." },
+		{ 0x074, "Rehaus AG + Co." },
+		{ 0x075, "Inaba Denki Sangyo Co. Ltd." },
+		{ 0x076, "Hager Control SAS" },
 		{ 0x7FF, "Multi user Manufacturer ID" },
 		{ 0, NULL }
 	};
@@ -138,8 +190,8 @@ struct _t4BSLookup
 	const int Org;
 	const int Func;
 	const int Type;
-	const char *Description;
-	const char *Label;
+	const char* Description;
+	const char* Label;
 };
 
 const _t4BSLookup T4BSTable[] =
@@ -286,7 +338,7 @@ const _t4BSLookup T4BSTable[] =
 
 const char* Get_Enocean4BSType(const int Org, const int Func, const int Type)
 {
-	const _t4BSLookup *pOrgTable = (const _t4BSLookup *)&T4BSTable;
+	const _t4BSLookup* pOrgTable = (const _t4BSLookup*)&T4BSTable;
 	while (pOrgTable->Label)
 	{
 		if (
@@ -303,7 +355,7 @@ const char* Get_Enocean4BSType(const int Org, const int Func, const int Type)
 
 const char* Get_Enocean4BSDesc(const int Org, const int Func, const int Type)
 {
-	const _t4BSLookup *pOrgTable = (const _t4BSLookup *)&T4BSTable;
+	const _t4BSLookup* pOrgTable = (const _t4BSLookup*)&T4BSTable;
 	while (pOrgTable->Label)
 	{
 		if (
@@ -765,7 +817,7 @@ enocean_data_structure_MDA* enocean_convert_to_MDA(const enocean_data_structure*
 	return out;
 }
 
-unsigned char enocean_calc_checksum(const enocean_data_structure *input_data) {
+unsigned char enocean_calc_checksum(const enocean_data_structure* input_data) {
 	unsigned char checksum = 0;
 	checksum += input_data->H_SEQ_LENGTH;
 	checksum += input_data->ORG;
@@ -798,16 +850,16 @@ char* enocean_gethex_internal(BYTE* in, const int framesize) {
 }
 
 
-char* enocean_hexToHuman(const enocean_data_structure *pFrame)
+char* enocean_hexToHuman(const enocean_data_structure* pFrame)
 {
 	const int framesize = sizeof(enocean_data_structure);
 	// every byte of the frame takes 2 characters in the human representation + the length of the text blocks (without trailing '\0');
 	const int stringsize = (framesize * 2) + 1 + sizeof(HR_TYPE) - 1 + sizeof(HR_RPS) - 1 + sizeof(HR_DATA) - 1 + sizeof(HR_SENDER) - 1 + sizeof(HR_STATUS) - 1;
-	char *humanString = (char*)malloc(stringsize);
+	char* humanString = (char*)malloc(stringsize);
 	if (!humanString)
 		return NULL;
-	char *tempstring = humanString;
-	char *temphexstring;
+	char* tempstring = humanString;
+	char* temphexstring;
 	sprintf(tempstring, HR_TYPE);
 	tempstring += sizeof(HR_TYPE) - 1;
 
@@ -968,7 +1020,7 @@ bool CEnOceanESP2::OpenSerialDevice()
 		open(m_szSerialPort, 9600); //ECP2 open with 9600
 		_log.Log(LOG_STATUS, "EnOcean: Using serial port: %s", m_szSerialPort.c_str());
 	}
-	catch (boost::exception & e)
+	catch (boost::exception& e)
 	{
 		_log.Log(LOG_ERROR, "EnOcean: Error opening serial port!");
 #ifdef _DEBUG
@@ -1002,7 +1054,7 @@ bool CEnOceanESP2::OpenSerialDevice()
 	return true;
 }
 
-void CEnOceanESP2::readCallback(const char *data, size_t len)
+void CEnOceanESP2::readCallback(const char* data, size_t len)
 {
 	size_t ii = 0;
 	while (ii < len)
@@ -1056,14 +1108,14 @@ void CEnOceanESP2::readCallback(const char *data, size_t len)
 	}
 }
 
-bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char /*length*/)
+bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 {
 	if (m_id_base == 0)
 		return false;
 	if (!isOpen())
 		return false;
 
-	RBUF *tsen = (RBUF*)pdata;
+	RBUF* tsen = (RBUF*)pdata;
 	if (tsen->LIGHTING2.packettype != pTypeLighting2)
 		return false; //only allowed to control switches
 
@@ -1125,7 +1177,7 @@ bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char /*leng
 			iLevel = tsen->LIGHTING2.level;
 			if (iLevel > 15)
 				iLevel = 15;
-			float fLevel = (100.0f / 15.0f)*float(iLevel);
+			float fLevel = (100.0f / 15.0f) * float(iLevel);
 			if (fLevel > 99.0f)
 				fLevel = 100.0f;
 			iLevel = (uint8_t)(fLevel);
@@ -1175,13 +1227,13 @@ bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char /*leng
 	return true;
 }
 
-void CEnOceanESP2::SendDimmerTeachIn(const char *pdata, const unsigned char /*length*/)
+void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*length*/)
 {
 	if (m_id_base == 0)
 		return;
 	if (isOpen()) {
 
-		RBUF *tsen = (RBUF*)pdata;
+		RBUF* tsen = (RBUF*)pdata;
 		if (tsen->LIGHTING2.packettype != pTypeLighting2)
 			return; //only allowed to control switches
 
@@ -1235,7 +1287,7 @@ float CEnOceanESP2::GetValueRange(const float InValue, const float ScaleMax, con
 
 bool CEnOceanESP2::ParseData()
 {
-	enocean_data_structure *pFrame = (enocean_data_structure*)&m_buffer;
+	enocean_data_structure* pFrame = (enocean_data_structure*)&m_buffer;
 	unsigned char Checksum = enocean_calc_checksum(pFrame);
 	if (Checksum != pFrame->CHECKSUM)
 		return false; //checksum Mismatch!
@@ -1352,7 +1404,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.unitcode = SecondRockerID + 10;
 					tsen.LIGHTING2.cmnd = (SecondUpDown == 1) ? light2_sOn : light2_sOff;
 				}
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char*)&tsen.LIGHTING2, NULL, 255);
 			}
 		}
 		break;
@@ -1396,7 +1448,7 @@ bool CEnOceanESP2::ParseData()
 			result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
 			if (result.empty())
 			{
-				char *pszHumenTxt = enocean_hexToHuman(pFrame);
+				char* pszHumenTxt = enocean_hexToHuman(pFrame);
 				if (pszHumenTxt)
 				{
 					_log.Log(LOG_NORM, "EnOcean: Need Teach-In for %s", pszHumenTxt);
@@ -1426,7 +1478,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 				tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXMETER, NULL, 255);
 			}
 			else if (szST == "AMR.Electricity")
 			{
@@ -1439,7 +1491,7 @@ bool CEnOceanESP2::ParseData()
 				umeter.id4 = (BYTE)pFrame->ID_BYTE0;
 				umeter.dunit = 1;
 				umeter.fusage = (float)cvalue;
-				sDecodeRXMessage(this, (const unsigned char *)&umeter, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char*)&umeter, NULL, 255);
 			}
 			else if (szST == "AMR.Gas")
 			{
@@ -1457,7 +1509,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 				tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXMETER, NULL, 255);
 			}
 			else if (szST == "AMR.Water")
 			{
@@ -1475,7 +1527,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 				tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXMETER, NULL, 255);
 			}
 			else if (szST.find("RoomOperatingPanel") == 0)
 			{
@@ -1529,11 +1581,11 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 
 					tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-					int at10 = round(std::abs(temp*10.0f));
+					int at10 = round(std::abs(temp * 10.0f));
 					tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 					at10 -= (tsen.TEMP.temperatureh * 256);
 					tsen.TEMP.temperaturel = (BYTE)(at10);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, -1);
+					sDecodeRXMessage(this, (const unsigned char*)&tsen.TEMP, NULL, -1);
 				}
 			}
 			else if (szST == "LightSensor.01")
@@ -1574,7 +1626,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXSENSOR, NULL, 255);
 				}
 				_tLightMeter lmeter;
 				lmeter.id1 = (BYTE)pFrame->ID_BYTE3;
@@ -1583,7 +1635,7 @@ bool CEnOceanESP2::ParseData()
 				lmeter.id4 = (BYTE)pFrame->ID_BYTE0;
 				lmeter.dunit = 1;
 				lmeter.fLux = lux;
-				sDecodeRXMessage(this, (const unsigned char *)&lmeter, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char*)&lmeter, NULL, 255);
 			}
 			else if (szST.find("Temperature") == 0)
 			{
@@ -1632,11 +1684,11 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 
 				tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-				int at10 = round(std::abs(temp*10.0f));
+				int at10 = round(std::abs(temp * 10.0f));
 				tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 				at10 -= (tsen.TEMP.temperatureh * 256);
 				tsen.TEMP.temperaturel = (BYTE)(at10);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, -1);
+				sDecodeRXMessage(this, (const unsigned char*)&tsen.TEMP, NULL, -1);
 			}
 			else if (szST == "TempHum")
 			{
@@ -1659,13 +1711,13 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP_HUM.id2 = pFrame->ID_BYTE1;
 				tsen.TEMP_HUM.battery_level = 9;
 				tsen.TEMP_HUM.tempsign = (temp >= 0) ? 0 : 1;
-				int at10 = round(std::abs(temp*10.0f));
+				int at10 = round(std::abs(temp * 10.0f));
 				tsen.TEMP_HUM.temperatureh = (BYTE)(at10 / 256);
 				at10 -= (tsen.TEMP_HUM.temperatureh * 256);
 				tsen.TEMP_HUM.temperaturel = (BYTE)(at10);
 				tsen.TEMP_HUM.humidity = (BYTE)hum;
 				tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, -1);
+				sDecodeRXMessage(this, (const unsigned char*)&tsen.TEMP_HUM, NULL, -1);
 			}
 			else if (szST == "OccupancySensor.01")
 			{
@@ -1687,7 +1739,7 @@ bool CEnOceanESP2::ParseData()
 						tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 						tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 						tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
+						sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXSENSOR, NULL, 255);
 					}
 
 					bool bPIROn = (pFrame->DATA_BYTE1 > 127);
@@ -1705,7 +1757,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.rssi = 12;
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char*)&tsen.LIGHTING2, NULL, 255);
 				}
 				else {
 					//Error code
@@ -1728,7 +1780,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXSENSOR, NULL, 255);
 
 					bool bPIROn = (pFrame->DATA_BYTE0 & 0x80) != 0;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -1745,7 +1797,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.rssi = 12;
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char*)&tsen.LIGHTING2, NULL, 255);
 				}
 				else {
 					//Error code
@@ -1768,7 +1820,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXSENSOR, NULL, 255);
 
 					int lux = (pFrame->DATA_BYTE2 << 2) | (pFrame->DATA_BYTE1 >> 6);
 					if (lux > 1000)
@@ -1780,7 +1832,7 @@ bool CEnOceanESP2::ParseData()
 					lmeter.id4 = (BYTE)pFrame->ID_BYTE0;
 					lmeter.dunit = 1;
 					lmeter.fLux = (float)lux;
-					sDecodeRXMessage(this, (const unsigned char *)&lmeter, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char*)&lmeter, NULL, 255);
 
 					bool bPIROn = (pFrame->DATA_BYTE0 & 0x80) != 0;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -1797,7 +1849,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.rssi = 12;
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char*)&tsen.LIGHTING2, NULL, 255);
 				}
 				else {
 					//Error code
@@ -1808,7 +1860,7 @@ bool CEnOceanESP2::ParseData()
 	break;
 	default:
 	{
-		char *pszHumenTxt = enocean_hexToHuman(pFrame);
+		char* pszHumenTxt = enocean_hexToHuman(pFrame);
 		if (pszHumenTxt)
 		{
 			_log.Log(LOG_NORM, "EnOcean: %s", pszHumenTxt);

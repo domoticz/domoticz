@@ -108,6 +108,9 @@
 #include "codecs.h"
 #include "pyerrors.h"
 
+/* this is a weird place to put this. But pyerrors.h defines snprintf and later other libraries rely on std::snprintf (which clashes) */
+#undef snprintf
+
 #include "pystate.h"
 
 #include "pyarena.h"

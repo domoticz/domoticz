@@ -8,13 +8,13 @@ local function Camera(domoticz, data, dummyLogger)
 	local state
 	local adapterManager = Adapters(dummyLogger)
 
-	function self.dump()
-		domoticz.logCamera(self)
+	function self.dump( filename )
+		domoticz.logObject(self, filename, 'Camera')
 	end
 
 	self['name'] = data.name
 	self['id'] = data.id -- actually, this is the idx
-	self['idx'] = data.id -- for completeness
+	self['idx'] = self.id -- for completeness
 	self['baseType'] = data.baseType
 
 	if (_G.TESTMODE) then

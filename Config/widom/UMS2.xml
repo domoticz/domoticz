@@ -1,0 +1,128 @@
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem id="0800" name="ProductPage">https://www.widom.it/en/smart-roller-shutter/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/widom/UMS2.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://www.widom.it/wp-content/uploads/2019/03/Widom_Smart_Roller_Shutter_EN_0.pdf</MetaDataItem>
+    <MetaDataItem id="0800" name="Identifier" type="1214">UMS2</MetaDataItem>
+    <MetaDataItem name="Name">WiDOM Smart Roller Shutter</MetaDataItem>
+    <MetaDataItem name="Description">WiDom Smart Roller Shutter is an "in wall device", for the multilevel control of roller shutter motors.
+        It can accurately control the opening and closing of blinds, curtains, shutters, venetian blinds as requested by the user through local commands or remotely
+        using computers, smartphones, tablets.</MetaDataItem>
+    <MetaDataItem id="0800" name="FrequencyName" type="1214">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Giuseppe Tiddia - giuseppe.tiddia@widom.it" date="18 Nov 2019" revision="2">Initial Metadata</Entry>
+      <Entry author="Giuseppe Tiddia - giuseppe.tiddia@widom.it" date="18 Nov 2019" revision="3">Some fixes comparing with openHab exported file</Entry>
+      <Entry author="Giuseppe Tiddia - giuseppe.tiddia@widom.it" date="17 Feb 2020" revision="4">Added product image</Entry>
+    </ChangeLog>
+  </MetaData>
+
+<!-- Configuration  -->
+  <CommandClass id="112">
+     <Value type="byte" genre="config" instance="1" index="1" label="Numbers of clicks to control the loads" size="1" value="3">
+      <Help>Define which sequences of click control the local load. (Default Value: 3)</Help>
+      <Item label="DISABLED" value="0"/>
+      <Item label="ONE_CLICK" value="1"/>
+      <Item label="TWO_CLICKS" value="2"/>
+      <Item label="ONE_CLICK and TWO_CLICKS" value="3"/>
+    </Value>
+    <Value  type="byte" genre="config" instance="1" index="2" label="Favorite level for ON position" max="100" min="50"  units="%" size="1" value="100">
+      <Help>
+        50 to 100: 50-100% opening level (100% correspond to completely open)
+        (Default Value: 100)
+      </Help>
+    </Value>
+    <Value  type="byte" genre="config" instance="1" index="3" label="Favorite level for OFF position" max="50" min="0"  units="%" size="1" value="0">
+      <Help>
+        0 to 49: 0-49% opening level (0 correspond to completely closed)
+        (Default Value: 0)
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="4" label="Value used for devices belonging to Group 2 using UP button" max="100" min="-1" size="1" value="-1">
+      <Help>
+        Value used for devices belonging to Group 2 when UP button receive 1 Click
+        1-99 : Dimming purpose
+        0 : OFF
+        -1 : ON (Default Value)
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="5" label="Value used for devices belonging to Group 2 using DOWN button" max="100" min="-1" size="1" value="0">
+      <Help>
+        Value used for devices belonging to Group 2 when DOWN button receive 1 Click
+        1-99 : Dimming purpose
+        0 : OFF (Default Value)
+        -1 : ON 
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="6" label="Value used for devices belonging to Group 3 using UP button" max="100" min="-1" size="1" value="-1">
+      <Help>
+        Value used for devices belonging to Group 3 when UP button receive 2 Clicks
+        1-99 : Dimming purpose
+        0 : OFF
+        -1 : ON (Default Value)
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="7" label="Value used for devices belonging to Group 3 using DOWN button" max="100" min="-1" size="1" value="0">
+      <Help>
+        Value used for devices belonging to Group 3 when DOWN button receive 2 Clicks
+        1-99 : Dimming purpose
+        0 : OFF (Default Value)
+        -1 : ON
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="8" label="Value used for devices belonging to Group 4 using UP button" max="100" min="-1" size="1" value="-1">
+      <Help>
+        Value used for devices belonging to Group 4 when UP button receive 3 Clicks
+        1-99 : Dimming purpose
+        0 : OFF
+        -1 : ON (Default Value)
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="9" label="Value used for devices belonging to Group 4 using DOWN button" max="100" min="-1" size="1" value="0">
+      <Help>
+        Value used for devices belonging to Group 4 when DOWN button receive 3 Clicks
+        1-99 : Dimming purpose
+        0 : OFF (Default Value)
+        -1 : ON
+      </Help>
+    </Value>
+    <Value  type="list" genre="config" instance="1" index="20" label="Calibration" size="1" value="1">
+      <Help>
+        Defines the status of the calibration procedure. By default, as soon as the device has been included, the 
+        calibration starts in automatic mode. At the end of the calibration, this parameter is set to 1. 
+        Afterwards the calibration can be done again by setting this parameter to 0 (AUTO) or 2 (MANUAL) and clicking 
+        on any external button. If the calibration is set in AUTO mode, it will be completed automatically.
+        If the calibration is set in MANUAL mode, a click on any external button is necessary to carry on the next step. 
+        During the calibration, the LED indicator blinks repeatedly in BLUE.
+        (Default Value: 0)
+      </Help>
+      <Item label="TO_BE_DONE_AUTO" value="0"/>
+      <Item label="DONE" value="1"/>
+      <Item label="TO_BE_DONE_MANUAL" value="2"/>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="21" label="Motor idle state definition" max="3000" min="0" size="2" value="1000">
+      <Help>
+        Defines the level of power consumption under which the motor is considered steady (stationary)
+        0 to 3000 : Expressed in hundredths of Watt (ex. 3000=30 Watt)
+        (Default Value: 1000)
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="22" label="Limit switch recognition" max="127" min="0" size="1" value="30">
+      <Help>
+        The motor has reached the limit switch when its power consumption is lower than PLIMIT (the power defined in parameter No. 21) for an amount of time defined by this parameter. 
+        1 to 127 : Expressed in hundredths of Watt (ex. 3000=30 Watt)
+        0 : Limit Switch ignored
+        (Default Value: 30)
+      </Help>
+    </Value>
+</CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="8"/>
+      <Group index="2" label="1 Click" max_associations="8"/>
+      <Group index="3" label="2 Clicks" max_associations="8"/>
+      <Group index="4" label="2 Clicks" max_associations="8"/>
+    </Associations>
+  </CommandClass>
+</Product>

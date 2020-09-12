@@ -63,10 +63,12 @@ const char *szHelp =
 "\t-wwwroot file_path (for example D:\\www)\n"
 "\t-dbase file_path (for example D:\\domoticz.db)\n"
 "\t-userdata file_path (for example D:\\domoticzdata)\n"
+"\t-approot file_path (for example D:\\domoticz)\n"
 #else
 "\t-wwwroot file_path (for example /opt/domoticz/www)\n"
 "\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
 "\t-userdata file_path (for example /opt/domoticz)\n"
+"\t-approot file_path (for example /opt/domoticz)\n"
 #endif
 "\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 "\t-startupdelay seconds (default=0)\n"
@@ -121,8 +123,18 @@ std::string szWWWFolder;
 std::string szWebRoot;
 std::string dbasefile;
 
+#define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
+#define VCGENCMDARMSPEEDCOMMAND "vcgencmd measure_clock arm"
+#define VCGENCMDV3DSPEEDCOMMAND "vcgencmd measure_clock v3d"
+#define VCGENCMDCORESPEEDCOMMAND "vcgencmd measure_clock core"
+
 bool bHasInternalTemperature=false;
-std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
+std::string szInternalTemperatureCommand = "";
+
+bool bHasInternalClockSpeeds=false;
+std::string szInternalARMSpeedCommand = "";
+std::string szInternalV3DSpeedCommand = "";
+std::string szInternalCoreSpeedCommand = "";
 
 bool bHasInternalVoltage=false;
 std::string szInternalVoltageCommand = "";
@@ -132,11 +144,13 @@ std::string szInternalCurrentCommand = "";
 
 
 std::string szAppVersion="???";
+int iAppRevision=0;
 std::string szAppHash="???";
 std::string szAppDate="???";
 std::string szPyVersion="None";
 int ActYear;
 time_t m_StartTime=time(NULL);
+std::string szRandomUUID = "???";
 
 MainWorker m_mainworker;
 CLogger _log;
@@ -215,9 +229,6 @@ void daemonize(const char *rundir, const char *pidfile)
 		exit(EXIT_FAILURE);
 	}
     
-    /* call srand once for the entire app */
-    std::srand((unsigned int)std::time(nullptr));
-    
 	if (pid > 0)
 	{
 		/* Child created ok, so exit parent process */
@@ -247,7 +258,7 @@ void daemonize(const char *rundir, const char *pidfile)
 
 	/* write pid to lockfile */
 	int twrite=write(pidFilehandle, str, strlen(str));
-	if (twrite != strlen(str))
+	if (twrite != int(strlen(str)))
 	{
 		syslog(LOG_INFO, "Could not write to lock file %s, exiting", pidfile);
 		exit(EXIT_FAILURE);
@@ -447,9 +458,8 @@ static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
 
 void GetAppVersion()
 {
-	std::stringstream sstr;
-	sstr << VERSION_STRING << APPVERSION;
-	szAppVersion = sstr.str();
+	szAppVersion = VERSION_STRING;
+	iAppRevision = APPVERSION;
 	szAppHash = APPHASH;
 	char szTmp[200];
 	struct tm ltime;
@@ -479,18 +489,43 @@ void CheckForOnboardSensors()
 			getline(infile, sLine);
 			if (
 				(sLine.find("BCM2708") != std::string::npos) ||
-				(sLine.find("BCM2709") != std::string::npos)
+				(sLine.find("BCM2709") != std::string::npos) ||
+				(sLine.find("BCM2711") != std::string::npos) ||
+				(sLine.find("BCM2835") != std::string::npos)
+
 				)
 			{
-				//Core temperature of BCM2835 SoC
 				_log.Log(LOG_STATUS, "System: Raspberry Pi");
-				szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
-				bHasInternalTemperature = true;
-				break;
+				//Check if we have vcgencmd (are running on a RaspberryPi)
+				//
+				int returncode = 0;
+				std::vector<std::string> ret = ExecuteCommandAndReturn(VCGENCMDTEMPCOMMAND, returncode);
+
+				if (ret.empty()) {
+					_log.Log(LOG_STATUS,"It seems vcgencmd is not installed. If you would like use the hardware monitor, consider installing this!");
+				}
+				else {
+					std::string tmpline = ret[0];
+					if (tmpline.find("temp=") == std::string::npos) {
+						_log.Log(LOG_STATUS, "It seems vcgencmd is not installed. If you would like use the hardware monitor, consider installing this!");
+					}
+					else {
+						//Core temperature of BCM2835 SoC
+						szInternalTemperatureCommand = VCGENCMDTEMPCOMMAND;
+						bHasInternalTemperature = true;
+
+						//PI Clock speeds	
+						szInternalARMSpeedCommand = VCGENCMDARMSPEEDCOMMAND;
+						szInternalV3DSpeedCommand = VCGENCMDV3DSPEEDCOMMAND;
+						szInternalCoreSpeedCommand = VCGENCMDCORESPEEDCOMMAND;
+						bHasInternalClockSpeeds = true;
+					}
+				}
 			}
 		}
 		infile.close();
 	}
+
 	if (!bHasInternalTemperature)
 	{
 		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
@@ -805,6 +840,11 @@ int main(int argc, char**argv)
 #if defined(__linux__)
 	g_bIsWSL = IsWSL();
 #endif
+
+	/* call srand once for the entire app */
+	std::srand((unsigned int)std::time(nullptr));
+	szRandomUUID = GenerateUUID();    
+
 	GetAppVersion();
 	DisplayAppVersion();
 
@@ -1132,9 +1172,9 @@ int main(int argc, char**argv)
 
 	if ((g_bRunAsDaemon)||(g_bUseSyslog))
 	{
-		int idx, logfacility = 0;
+		int logfacility = 0;
 
-		for ( idx = 0; idx < sizeof(facilities)/sizeof(facilities[0]); idx++ ) 
+		for ( size_t idx = 0; idx < sizeof(facilities)/sizeof(facilities[0]); idx++ ) 
 		{
 			if (strcmp(facilities[idx].facname, logfacname.c_str()) == 0) 
 			{

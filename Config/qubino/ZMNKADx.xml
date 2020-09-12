@@ -1,0 +1,171 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+    <MetaData>
+        <MetaDataItem name="Name">LUXY Smart Switch</MetaDataItem>
+        <MetaDataItem name="Description">The Qubino LUXY Smart Switch is ideal for gentle illumination of any room, for visual and sound notifications, and for controling various loads, using the built-in relay.</MetaDataItem>
+        <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0052:0008</MetaDataItem>
+        <MetaDataItem name="ProductPage">https://qubino.com</MetaDataItem>
+        <MetaDataItem name="ProductSupport">https://support.qubino.com/support/home</MetaDataItem>
+        <MetaDataItem name="ProductPic">images/qubino/ZMNKADx.png</MetaDataItem>
+        <MetaDataItem name="InclusionDescription">
+            Manual inclusion is triggered by the following procedure:
+            Full white needs to be active (c-button 2). The user can select it by quickly pressing the c-button2 once.
+            When full white is enabled, press c-button3 and hold it for 5 seconds (while white is glowing, hold c-button3 for 5 seconds).
+            After 5 seconds, the device starts flashing, with the following pattern: green 1 second on, 0.5 second off.
+            Once the device receives a nodeId or after 10 seconds, it stops flashing and turns green.
+        </MetaDataItem>
+        <MetaDataItem name="ExclusionDescription">
+            Exclusion is triggered by the following procedure:
+            Full white needs to be active (c-button 2).
+            When full white is enabled, press c-button3 and hold it for 5 seconds (while white is glowing hold c-button3 for 5 seconds).
+            After 5 seconds, the device starts flashing with the following pattern: red 1 second on, 0.5 second off.
+            Once the device loses its nodeId or after 10 seconds, it stops flashing and turns red.
+        </MetaDataItem>
+        <MetaDataItem name="ResetDescription">
+            Reset is triggered after the following procedure:
+            Full white needs to be active (c-button 2).
+            When full white is enabled, press c-button5 and hold it for 10 seconds.
+            After 10 seconds, the device starts flashing with the following pattern: blue 1 second on, 0.5 second off.
+            After 10 seconds the device stops flashing and turns blue.
+            The procedure is available always.
+        </MetaDataItem>
+        <ChangeLog>
+            <Entry author="K.Petrovcic@goap.si" date="22 January 2020" revision="1">Initial Import</Entry>
+            <Entry author="Justin Hammond" date="24 June 2020" revision="2">Add Product Pic</Entry>
+        </ChangeLog>
+    </MetaData>
+
+    <!-- Configuration Command Class -->
+    <CommandClass id="112">
+		
+		<Value genre="config" instance="1" index="1" value="0" label="Relay contact type" units="" size="1" min="0" max="1" type="list">
+			  <Help>
+				Relay contact type.
+			  </Help>
+		  <Item value="0" label="NO (normally open) output type" />
+		  <Item value="1" label="NC (normally close) output type" />
+		</Value>
+		
+		<Value genre="config" index="3" instance="1" label="Turning off alarming" max="1" min="0" size="1" type="list" value="1">
+            <Help>
+				With this parameter, you can determine, how to turn off the alarm.
+				
+				0 => only by z-wave command (basic set, switch multilevel set, switch multilevel start/stop level change, sound switch play tone, sound switch
+				configuration, switch color set, switch color start/stop level change, notification report idle)
+				
+				1 => capacitive input (up, down, left, right) or z-wave command (basic set, switch multilevel set, switch multilevel start/stop level change, sound
+				switch play tone, sound switch configuration, switch color set, switch color start/stop level change, notification report idle)
+			</Help>
+            <Item label="With a Z-Wave command" value="0"/>
+            <Item label="With the capacitive input or a Z-Wave command" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="10" instance="1" label="Auto on timer" units="second" max="32535" min="0" size="2" type="short" value="0">
+            <Help>
+                Default value = 0
+                0 => Disabled
+                30 to 32535 => 30 - 32535 seconds after which the device turns on.
+            </Help>
+        </Value>
+		
+        <Value genre="config" index="11" instance="1" label="Auto off timer" units="second" max="32535" min="0" size="2" type="short" value="0">
+            <Help>
+                Default value = 0
+                0 => Disabled
+                30 to 32535 => 30 - 32535 seconds after which the device turns off.
+            </Help>
+        </Value>
+		
+		<Value genre="config" index="12" instance="1" label="Auto on timer relay" units="second" max="32535" min="0" size="2" type="short" value="0">
+            <Help>
+                Default value = 0
+                0 => Disabled
+                30 to 32535 => 30 - 32535 seconds after which the device turns on.
+            </Help>
+        </Value>
+		
+        <Value genre="config" index="13" instance="1" label="Auto off timer relay" units="second" max="32535" min="0" size="2" type="short" value="0">
+            <Help>
+                Default value = 0
+                0 => Disabled
+                30 to 32535 => 30 - 32535 seconds after which the device turns off.
+            </Help>
+        </Value>
+		
+		<Value genre="config" index="30" instance="1" label="Restore state on power failure" max="1" min="0" size="1" type="list" value="1">
+            <Help>
+				With this parameter, the user can select if the state of the device (color, brightness) should be restored, after a power failure.
+				
+				Default value = 1
+				1 – Enabled (the device will restore state on power failure)
+				0 – Disabled (the device will not restore state on power failure and will remain off)
+			</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="31" instance="1" label="Restore relay state on power failure" max="1" min="0" size="1" type="list" value="1">
+            <Help>
+				With this parameter, the user can select if the state of the built-in relay should be restored, after a power failure.
+					
+				Default value = 1
+				1 – Enabled (the device will restore state on power failure)
+				0 – Disabled (the device will not restore state on power failure and will remain off)
+			</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="40" instance="1" label="Watt Power Consumption Reporting Threshold for Load" units="" max="100" min="0" size="1" type="byte" value="10">
+            <Help>
+                Choose by how much the power consumption needs to increase or decrease to be reported. 
+				Values correspond to percentages, so if 10 is set (by default), the device will report any power consumption changes of 10% or more compared to the last reading.
+
+				Default value = 10
+				0 => Power consumption reporting disabled
+				1 to 100 => 1% - 100% Power consumption reporting enabled. 
+				
+				New value is reported only when Wattage in real time changes by more than the percentage value set in this parameter compared to the previous Wattage reading, starting at 1% (the lowest value possible).
+				NOTE: Power consumption needs to increase or decrease by at least 1 Watt to be reported, REGARDLESS of percentage set in this parameter.
+            </Help>
+        </Value>
+		
+		<Value genre="config" index="42" instance="1" label="Watt Power Consumption Reporting Time Threshold for Load" units="second" max="32535" min="0" size="2" type="short" value="0">
+            <Help>
+                Set value refers to the time interval for power consumption reporting (Watts). 
+				
+				Default value = 0
+				0 => Power consumption reporting disabled
+				30 to 32535 => 30 - 32535 seconds. Power consumption reporting enabled. Report is sent according to time interval (value) set here.
+            </Help>
+        </Value>
+		
+		<Value genre="config" index="70" instance="1" label="Overload safety switch" units="" max="2300" min="0" size="2" type="short" value="2300">
+            <Help>
+                The function allows turning off the controlled device in case of exceeding the defined power for more than 5s. 
+				The controlled device can be turned back on by input I1 or by sending an actuation command.
+
+				Default value = 2300
+				0 => function not active
+				1 to 2300 => 1 W – 2300W
+
+				NOTE: This functionality is not an overload safety protection, please check the technical specifications chapter for more details in the official manual.
+
+				In case of an overload event, the device will send the following message to the gateway/controller:
+				NOTIFICATION_REPORT_V8(type=0x08=POWER_MANAGEMENT, event=0x08=Overload detected)
+			</Help>
+        </Value>
+		
+    </CommandClass>
+	
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="5">
+		  <Group index="1" label="Lifeline" max_associations="1"/>
+		  <Group index="2" label="LEDs on/off" max_associations="5" />
+		  <Group index="3" label="Change of brightness" max_associations="5" />
+		  <Group index="4" label="Change of color" max_associations="5" />
+		  <Group index="5" label="Relay on/off" max_associations="5" />
+		</Associations>
+    </CommandClass>
+	
+</Product>

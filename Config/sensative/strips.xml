@@ -1,9 +1,9 @@
-<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="15" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/019A:0003:0003</MetaDataItem>
     <MetaDataItem name="ProductPic">images/sensative/strips.png</MetaDataItem>
-    <MetaDataItem id="0003" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1863/</MetaDataItem>
-    <MetaDataItem name="ResetDescription">In order to reset Strips (only possible when the connection to the controller is lost):
+    <MetaDataItem id="0003" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3388/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only when your Z-Wave controller is missing or otherwise inoperable:
 
 1. Place the round magnet at the rounded edge of Strips. 
 
@@ -44,25 +44,34 @@ When the LED blinks, move the magnet away. Repeat 3 times in total within 10 sec
 
 3. A long LED blink indicates that the add process was successful.
 </MetaDataItem>
-    <MetaDataItem id="0003" name="Identifier" type="0003">11 01 012</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0003">11 01 015</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">1. Set the controller in remove mode  (See your controller’s manual).  
 
 2. Place the round magnet at the rounded edge of Strips. 
 When the LED blinks, move the magnet away. Repeat 3 times in total within 10 seconds. 
 
 3. A long LED blink indicates that the remove process was successful.</MetaDataItem>
-    <MetaDataItem name="Description">Strips by Sensative is an ultra-thin magnetic sensor designed to monitor windows and doors for your safety. It´s so thin that it can be mounted invisibly in the tiny gap between the frame and the door or window. 
+    <MetaDataItem name="Description">Strips Guard is an ultra-thin magnetic sensor designed to monitor windows and doors for your safety. It´s so thin that it can be mounted invisibly in the tiny gap between the frame and the door or window. 
 It is as easy to mount as a sticker using Strips's  adhesive tape.
-Strips is Z-Wave plus compliant and can be used with any existing Z-Wave smarthome systems. </MetaDataItem>
+Strips Guard is Z-Wave plus compliant and can be used with any existing Z-Wave smarthome systems. </MetaDataItem>
     <MetaDataItem name="Name">Strips-MaZw</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1863/US Manual - USINS 11 01 012 R1A 2016.06.29.pdf</MetaDataItem>
-    <MetaDataItem id="0003" name="FrequencyName" type="0003">CEPT (Europe) / U.S. / Canada / Mexico / CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3388/Strips Guard EU R3.pdf</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0003">CEPT (Europe) / U.S. / Canada / Mexico / CEPT (Europe) / U.S. / Canada / Mexico / CEPT (Europe) / U.S. / Canada / Mexico / U.S. / Canada / Mexico / CEPT (Europe) / CEPT (Europe) / CEPT (Europe) / U.S. / Canada / Mexico / Australia / New Zealand / India</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1510/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1753/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1790/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1862/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1863/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2073/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2080/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2144/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2146/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="11">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2827/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="12">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3296/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="13">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3297/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="14">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3369/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="15">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3388/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->

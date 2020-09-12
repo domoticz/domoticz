@@ -1,14 +1,17 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0148:0001:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/eurotronic/eur_cometz.png</MetaDataItem>
-    <MetaDataItem id="0001" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1601/</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2202/</MetaDataItem>
     <MetaDataItem id="0001" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem id="0001" name="Identifier" type="0002">Comet Z</MetaDataItem>
-    <MetaDataItem name="Description">HVAC- Radiator Controller</MetaDataItem>
-    <MetaDataItem name="Name">Eurotronic Comet Z</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0002">LIZY001</MetaDataItem>
+    <MetaDataItem name="Description">Comap LIZY001</MetaDataItem>
+    <MetaDataItem name="Name">LIZY001</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1601/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2200/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2201/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2202/xml</Entry>
     </ChangeLog>
   </MetaData>
   <CommandClass id="64">

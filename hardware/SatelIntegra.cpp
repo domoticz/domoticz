@@ -19,16 +19,16 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-typedef struct tModel {
+typedef struct tSatelModel {
 	unsigned int id;
 	const char* name;
 	unsigned int zones;
 	unsigned int outputs;
-} Model;
+} SatelModel;
 
 #define TOT_MODELS 9
 
-static Model models[TOT_MODELS] =
+static SatelModel models[TOT_MODELS] =
 {
 	{ 0, "Integra 24", 24, 20 },
 	{ 1, "Integra 32", 32, 32 },
@@ -353,7 +353,7 @@ bool SatelIntegra::GetInfo()
 				cmd[0] = 0x7C; // INT-RS/ETHM version
 				if (SendCommand(cmd, 1, buffer, 13) > 0)
 				{
-					m_data32 = ((buffer[12] & 2) == 2) && (m_modelIndex == 72); // supported and required 256 PLUS
+					m_data32 = ((buffer[12] & 1) == 1) && (m_modelIndex == 72); // supported and required 256 PLUS
 
 					_log.Log(LOG_STATUS, "Satel Integra: ETHM-1 ver. %c.%c%c %c%c%c%c-%c%c-%c%c (32 bytes mode = %s)",
 						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10], buffer[11], m_data32 ? "true" : "false");
@@ -1092,8 +1092,7 @@ void expandForSpecialValue(std::list<unsigned char> &result)
 	{
 		if (*it == specialValue)
 		{
-			result.insert(++it, 0xF0);
-			it--;
+			it = result.insert(++it, 0xF0);
 		}
 	}
 }

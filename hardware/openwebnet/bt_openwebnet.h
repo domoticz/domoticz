@@ -11,6 +11,8 @@
 #define OPENWEBNET_MSG_OPEN_KO  "*#*0##"
 #define OPENWEBNET_COMMAND_SESSION "*99*0##"
 #define OPENWEBNET_EVENT_SESSION "*99*1##"
+#define OPENWEBNET_AUTH_REQ_SHA1 "*98*1##"
+#define OPENWEBNET_AUTH_REQ_SHA2 "*98*2##"
 #define OPENWEBNET_END_FRAME "##"
 #define OPENWEBNET_COMMAND_SOCKET_DURATION 30
 
@@ -110,6 +112,7 @@ enum  {
 	LIGHTING_WHAT_DOWN_ONE_LEVEL = 31,
 	LIGHTING_WHAT_COMMAND_TRANSLATION = 1000
 };
+
 
 // Auxiliary what
 enum {
@@ -301,6 +304,30 @@ enum {
 	SOUND_DIFFUSION_DIMENSION_LOUDNESS = 20
 };
 
+
+enum {
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_TIME = 0,					/* Read/Write */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE = 1,					/* Read/Write */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_IP_ADDRESS = 10,			/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_NET_MASK = 11,				/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_MAC_ADDRESS = 12,			/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DEVICE_TYPE = 15,			/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_FIRMWARE_VERSION = 16,		/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_UPTIME = 19,				/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE_AND_TIME = 22,			/* Read/Write */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_KERNEL_VERSION = 23,		/* Read		  */
+	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DISTRIBUTION_VERSION = 24	/* Read		  */
+};
+
+enum {
+	GATEWAY_MODEL_MHSERVER = 2,
+	GATEWAY_MODEL_MH200 = 4,
+	GATEWAY_MODEL_F452 = 6,
+	GATEWAY_MODEL_F452V = 7,
+	GATEWAY_MODEL_MHSERVER2 = 11,
+	GATEWAY_MODEL_H4684 = 13
+};
+
 class bt_openwebnet {
 
 private:
@@ -353,36 +380,35 @@ private:
   static std::string getWhoDescription(const std::string& who);
 
   // contents of normal frame
-  std::string who;
-  std::vector<std::string> addresses;
-  std::string what;
-  std::vector<std::string> whatParameters;
-  std::string where;
-  std::vector<std::string> whereParameters;
-  std::string level;
-  std::string sInterface;
-  std::string when;
-  std::string dimension;
-  std::vector<std::string> values;
+  std::string m_who;
+  std::vector<std::string> m_addresses;
+  std::string m_what;
+  std::vector<std::string> m_whatParameters;
+  std::string m_where;
+  std::vector<std::string> m_whereParameters;
+  std::string m_level;
+  std::string m_sInterface;
+  std::string m_when;
+  std::string m_dimension;
+  std::vector<std::string> m_values;
 
   // frame length
-  int length_frame_open;
+  int m_lengthFrameOpen;
 
 public:
 
   // frame
-	std::string frame_open;
+  std::string m_frameOpen;
 
   // type of frame open
-  int frame_type;
+  int m_frameType;
 
   //indicates extended frame
-  bool extended;
+  bool m_extended;
 
   // constructors
   bt_openwebnet();
   explicit bt_openwebnet(const std::string& message);
-  bt_openwebnet(int who, int what, int where, int group);
   bt_openwebnet(const std::string& who, const std::string& what, const std::string& where, const std::string& when);
 
   void CreateNullMsgOpen();
@@ -400,9 +426,11 @@ public:
   void CreateWrDimensionMsgOpen2(const std::string& who, const std::string& where, const std::string& dimension, const std::vector<std::string>& value);
   void CreateWrDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& lev, const std::string& strInterface, const std::string& dimension, const std::vector<std::string>& value);
   
-  void CreateTimeReqMsgOpen();
+  void CreateGatewayReqMsgOpen(const std::string& dimension);
 
-	void CreateSetTimeMsgOpen();
+  void CreateDateTimeReqMsgOpen();
+  void CreateSetDateTimeMsgOpen(const std::string& tzString);
+
   //general message
   void CreateMsgOpen(const std::string& message);
 

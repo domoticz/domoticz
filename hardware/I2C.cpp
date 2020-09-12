@@ -397,7 +397,7 @@ void I2C::MCP23017_Init()
 	unsigned char nvalue;
 	uint16_t GPIO_reg = 0xFFFF;
 	int unit;
-	bool value;
+	bool value = false;
 
 	results = m_sql.safe_query("SELECT Unit, nValue FROM DeviceStatus WHERE (HardwareID = %d) AND (DeviceID like '000%02X%%');", m_HwdID, m_i2c_addr);
 	if (!results.empty())
@@ -450,7 +450,6 @@ void I2C::MCP23017_ReadChipDetails()
 	return;
 #else
 	//	uint16_t data = 0;
-	uint16_t cur_iodir = 0;
 	i2c_data data;
 	int rc;
 
@@ -479,7 +478,6 @@ int I2C::MCP23017_WritePin(uint8_t pin_number, uint8_t  value)
 #else
 	_log.Log(LOG_NORM, "GPIO: WRITE TO MCP23017 pin:%d, value: %d, i2c_address:%d", pin_number, value, m_i2c_addr);
 	uint16_t pin_mask = 0, iodir_mask = 0;
-	unsigned char gpio_port, iodir_port;
 	uint16_t new_data = 0;
 	i2c_data cur_data, cur_iodir;
 	int rc;
@@ -739,7 +737,6 @@ int I2C::I2CReadReg16(int fd, unsigned char reg, i2c_data *data)
 #ifndef HAVE_LINUX_I2C
 	return -1;
 #else
-	int rc;
 	//i2c_data data;
 	struct i2c_rdwr_ioctl_data messagebuffer;
 	struct i2c_msg read_reg[3] = {
@@ -749,11 +746,6 @@ int I2C::I2CReadReg16(int fd, unsigned char reg, i2c_data *data)
 	messagebuffer.nmsgs = 2;                  		//Two message/action
 	messagebuffer.msgs = read_reg;            		//load the 'read__reg' message into the buffer
 	return ioctl(fd, I2C_RDWR, &messagebuffer); 		//Send the buffer to the bus and returns a send status
-//	if (rc < 0) {
-//		_log.Log(LOG_NORM, "I2C::I2CReadReg16. %s, Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
-//		return rc;
-//	}
-	//return data.word ;
 #endif
 }
 
@@ -765,7 +757,7 @@ int I2C::HTU21D_checkCRC8(uint16_t data)
 	{
 		if (data & 0x8000)
 		{
-			data = (data << 1) ^ HTU21D_CRC8_POLYNOMINAL;
+			data = (uint16_t)((data << 1) ^ HTU21D_CRC8_POLYNOMINAL);
 		}
 		else
 		{
@@ -1097,7 +1089,7 @@ double I2C::bmp_ppl_DensityAlt(double PAlt, double Temp) {
 #define FC_BMP085_UNKNOWN 5			//
 
 //Should be called every minute
-int I2C::bmp_CalculateForecast(const float pressure)
+uint8_t I2C::bmp_CalculateForecast(const float pressure)
 {
 	double dP_dt = 0;
 
@@ -1200,9 +1192,9 @@ int I2C::bmp_CalculateForecast(const float pressure)
 		return FC_BMP085_UNKNOWN; // Unknown
 }
 
-int I2C::CalculateForcast(const float pressure)
+uint8_t I2C::CalculateForecast(const float pressure)
 {
-	int forecast = bmp_CalculateForecast(pressure);
+	uint8_t forecast = bmp_CalculateForecast(pressure);
 	if (forecast != m_LastForecast)
 	{
 		m_LastForecast = forecast;
@@ -1239,7 +1231,7 @@ int I2C::CalculateForcast(const float pressure)
 				nforecast = bmpbaroforecast_rain;
 			else if (pressure >= 1029)
 				nforecast = bmpbaroforecast_sunny;
-			m_LastSendForecast = nforecast;
+			m_LastSendForecast = (unsigned char)nforecast;
 		}
 		break;
 		}
@@ -1294,7 +1286,7 @@ void I2C::bmp_Read_BMP_SensorDetails()
 	//this is probably not good, need to take the rising/falling of the pressure into account?
 	//any help would be welcome!
 
-	tsensor.forecast = CalculateForcast(((float)pressure) * 10.0f);
+	tsensor.forecast = CalculateForecast(((float)pressure) * 10.0f);
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor, NULL, 255);
 }
 
@@ -1477,36 +1469,36 @@ void I2C::bmp_Read_BME_SensorDetails()
 	}
 	close(fd);
 #endif
-	int forecast = CalculateForcast(((float)pressure) * 10.0f);
+	uint8_t forecast = CalculateForecast(((float)pressure) * 10.0f);
 	//We are using the TempHumBaro Float type now, convert the forecast
-	int nforecast = wsbaroforcast_some_clouds;
+	int nforecast = wsbaroforecast_some_clouds;
 	if (pressure <= 980)
-		nforecast = wsbaroforcast_heavy_rain;
+		nforecast = wsbaroforecast_heavy_rain;
 	else if (pressure <= 995)
 	{
 		if (temperature > 1)
-			nforecast = wsbaroforcast_rain;
+			nforecast = wsbaroforecast_rain;
 		else
-			nforecast = wsbaroforcast_snow;
+			nforecast = wsbaroforecast_snow;
 	}
 	else if (pressure >= 1029)
-		nforecast = wsbaroforcast_sunny;
+		nforecast = wsbaroforecast_sunny;
 	switch (forecast)
 	{
 	case bmpbaroforecast_sunny:
-		nforecast = wsbaroforcast_sunny;
+		nforecast = wsbaroforecast_sunny;
 		break;
 	case bmpbaroforecast_cloudy:
-		nforecast = wsbaroforcast_cloudy;
+		nforecast = wsbaroforecast_cloudy;
 		break;
 	case bmpbaroforecast_thunderstorm:
-		nforecast = wsbaroforcast_heavy_rain;
+		nforecast = wsbaroforecast_heavy_rain;
 		break;
 	case bmpbaroforecast_rain:
 		if (temperature > 1)
-			nforecast = wsbaroforcast_rain;
+			nforecast = wsbaroforecast_rain;
 		else
-			nforecast = wsbaroforcast_snow;
+			nforecast = wsbaroforecast_snow;
 		break;
 	}
 

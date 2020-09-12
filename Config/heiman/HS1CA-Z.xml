@@ -1,30 +1,32 @@
 <!--
 CO Sensor HS1CA-Z
 http://products.z-wavealliance.org/products/1940
---><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0260:1000:8005</MetaDataItem>
-    <MetaDataItem name="ProductPic">images/heiman/HS1CA-Z.png</MetaDataItem>
-    <MetaDataItem id="1000" name="ZWProductPage" type="8005">https://products.z-wavealliance.org/products/1940/</MetaDataItem>
-    <MetaDataItem name="Description">The smart carbon monoxide sensor detects CO, and sends alarm signals to alert people of the danger.  When the smart carbon monoxide  sensor detects CO, it will send an alarm notification to the gateway through wireless Z-Wave communication protocol, then the gateway sends the notification to server, the server interprets the signal and transfers the signal to users' APP.   The smart carbon monoxide sensor has high stability and sensitivity,  which will protect house from CO poisoning effectively. </MetaDataItem>
-    <MetaDataItem name="InclusionDescription">-  Click [Add] icon in Z-Wave PC Controller Program.
--  Press the Net_Button 3 times within 1.5s, Green LED is Blinking 3 times within 1 second.
--  If Inclusion Process is successful, Green LED will turn off.</MetaDataItem>
-    <MetaDataItem name="WakeupDescription">-  Wake up Notification is transmitted every 24 hours by default.
--  Wake up Notification is transmitted after Notification Report is Transmitted</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zipato/HS1CA-Z.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="8005">https://products.z-wavealliance.org/products/2699/</MetaDataItem>
+    <MetaDataItem name="Description">Zipato Carbon Monoxide Sensor (Z-Wave) is designed to give early warning of higher carbon monoxide level, based on Z-Wave technology.  Z-Wave is a wireless communication protocol designed for remote control of appliances in residential automated homes and light commercial environments. </MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Press button on sensor 3 times within 1.5s, Green LED will blink 3 times within 1 second.
+
+If Inclusion Process is successful, Green led will turn off.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Wake up Notification is transmitted every 24 hours by default.
+Wake up Notification is transmitted after Notification Report is Transmitted </MetaDataItem>
     <MetaDataItem id="1000" name="FrequencyName" type="8005">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="ResetDescription">-Long press Net_Button while installing batteries in HS1CA-Z. 
-- Device Reset Locally notification is Transmitted.
--Please use this procedure only when the network primary controller is 
-missing or otherwise inoperable.</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">-  Click [Remove] icon in Z-Wave PC Controller Program
--  Press the Net_Button 3 times within 1.5s 
--  If Exclusion Process is successful, Green LED is Blinking 6 times, then turn off.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1940/HS1CA-Z documentation.doc</MetaDataItem>
-    <MetaDataItem name="Name">Smart Carbon Monoxide Sensor</MetaDataItem>
-    <MetaDataItem id="1000" name="Identifier" type="8005">HS1CA-Z</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Remove battery.
+Insert battery while holding button on sensor.
+
+Please use this procedure only when the network primary
+controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Press button on sensor 3 times within 1.5s, Green LED will blink 3 times within 1 second.
+
+If Inclusion Process is successful, Green led will turn off.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2699/hm-hs1ca-z-Smart-Carbon-Monoxide-Sensor-Z-Wave-User-Manual-1.0.pdf</MetaDataItem>
+    <MetaDataItem name="Name">Zipato Carbon Monoxide Sensor</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="8005">hm-hs1ca-z.eu</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1940/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2699/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Association Groups -->

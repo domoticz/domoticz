@@ -1,5 +1,5 @@
 <!-- Zipato mini keypad RFID -->
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <!-- Configuration -->
   <CommandClass id="112">
     <Value genre="config" index="1" instance="1" label="Set to Default" type="byte" value="0">
@@ -24,6 +24,11 @@
   <CommandClass id="113">
     <Compatibility>
       <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="99">
+    <Compatibility>
+      <ExposeRawUserCodes>true</ExposeRawUserCodes>
     </Compatibility>
   </CommandClass>
   <!-- Association Groups -->

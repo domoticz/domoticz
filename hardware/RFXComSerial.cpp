@@ -7,12 +7,12 @@
 #include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include <json/json.h>
 
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <ctime>
 
@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <pwd.h>
 #endif
+
+using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 
@@ -310,7 +312,7 @@ bool RFXComSerial::UpgradeFirmware()
 
 	m_szUploadMessage = "Bootloader, Start programming...";
 	Log(LOG_STATUS, m_szUploadMessage);
-	for (auto itt : firmwareBuffer)
+	for (const auto& itt : firmwareBuffer)
 	{
 		icntr++;
 		if (icntr % 5 == 0)
@@ -923,6 +925,7 @@ namespace http {
 				pRFXComSerial->UploadFirmware(outputfile);
 			}
 		}
+
 		void CWebServer::SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
 			redirect_uri = "/index.html";
@@ -1009,8 +1012,8 @@ namespace http {
 			{
 				//For now disable setting the protocols on a 868Mhz device
 			}
-
 		}
+
 		void CWebServer::Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "ERR";

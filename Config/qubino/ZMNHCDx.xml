@@ -1,4 +1,48 @@
-<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0052:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/qubino/ZMNHCDx.png</MetaDataItem>
+    <MetaDataItem id="0052" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2505/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">•	Connect module to power supply (with 
+temperature sensor connected - if purchased),
+•	auto-inclusion (works for about 5 seconds after connected to power supply) or
+•	press push button I1 three times within 3s (3 times change switch state within 3 seconds) or
+•	press service button S (only applicable for 24 V SELV supply voltage) for more than 2 second.
+
+NOTE1: For auto-inclusion procedure, first set main controller into inclusion mode and then connect module to power supply.
+
+NOTE2: When connecting temperature sensor to module that has already been included, you have to exclude module first. Switch off power supply, connect the sensor and re-include the module.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">•	Connect module to power supply 
+•	bring module within maximum 1 meter (3 feet) of the main controller,
+•	enable add/remove mode on main controller,
+•	press push button I1 five times within 3s (5 times change switch state within 3 seconds) in the first 60 seconds after the module is connected to the power supply or
+•	press service button S (only applicable for 24 V SELV supply voltage)  for more than 6 second.
+By this function all parameters of the module are set to default values and own ID is deleted.
+
+If push button I1 is pressed three times within 3s (or service button S is pressed more than 2 and less than 6 seconds) module is excluded, but configuration parameters are not set to default values. 
+
+NOTE: Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+
+NOTE: If the module is included with parameters 71 with value different to default and module reset is done, wait at least 30s before next inclusion
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">•	press push button I1 five times within 3s (5 times change switch state within 3 seconds) in the first 60 seconds after the module is connected to the power supply or
+•	press service button S (only applicable for 24 V SELV supply voltage)  for more than 6 second.
+
+NOTE: Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem name="Description">This Z-Wave module is used to control the motor of blinds, rollers, shades, venetian blinds, etc … The module can be controlled either through a Z-Wave network or through the wall switch. Precise positioning is supported for motors equipped with mechanical or electronic end switches. The module is designed to be mounted inside a “flush mounting box”, hidden behind a traditional wall switch. Module measures power consumption of motor and support connection of digital temperature sensor. It is designed to act as repeater in order to improve range and stability of Z-Wave network.                      
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2505/Qubino_Flush Shutter PLUS extended manual_eng_2.2.pdf</MetaDataItem>
+    <MetaDataItem id="0052" name="Identifier" type="0003">ZMNHCD3</MetaDataItem>
+    <MetaDataItem name="Name">Flush Shutter</MetaDataItem>
+    <MetaDataItem id="0052" name="FrequencyName" type="0003">CEPT (Europe) / Australia / New Zealand / U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2376/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2504/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2505/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!--
 	Qubino: ZMNHCDx Flush shutter zwave+
 

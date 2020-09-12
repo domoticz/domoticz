@@ -29,7 +29,14 @@
    <xs:attribute name='type' type='xs:string' use='required'/>
    <xs:attribute name='id' type='xs:string' use='required'/>
    <xs:attribute name='name' type='xs:string' use='required'/>
-   <xs:attribute name='config' type='xs:anyURI' use='optional'/>
+   <xs:attribute name='config' use='optional'>
+     <xs:simpleType>
+       <xs:restriction base="xs:string">
+          <xs:pattern value="\S+"/>
+       </xs:restriction>
+     </xs:simpleType>
+   </xs:attribute>
   </xs:complexType>
  </xs:element>
+
 </xs:schema>
