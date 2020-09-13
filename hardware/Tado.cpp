@@ -111,6 +111,7 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 	// ServiceIdx 5 = Heating Enabled
 	// ServiceIdx 6 = Heating On (Read only)
 	// ServiceIdx 7 = Heating Power (Read only)
+	// ServiceIdx 8 = Open Window Detected (Read only)
 
 	// Cancel setpoint override.
 	if (ServiceIdx == 4 && !bIsOn) return CancelOverlay(node_id);
@@ -359,6 +360,19 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 			SendPercentageSensor(ZoneIndex * 100 + 7, 0, 255, (float)_sHeatingPowerPercentage, home.Name + " " + zone.Name + " Heating Power");
 		}
 
+		// Open Window Detected
+		if (zone.OpenWindowDetectionSupported)
+		{
+			bool _bOpenWindowDetected = false;
+			if (_jsRoot["openWindowDetected"].isBool())
+			{
+				_bOpenWindowDetected = _jsRoot["openWindowDetected"].asBool();
+			}
+			
+			UpdateSwitch(ZoneIndex * 100 + 8, _bOpenWindowDetected, home.Name + " " + zone.Name + " Open Window Detected");
+
+		}
+		
 		return true;
 	}
 	catch (std::exception& e)
@@ -872,6 +886,7 @@ bool CTado::GetZones(_tTadoHome &tTadoHome) {
 		_TadoZone.Id = _jsRoot[zoneIdx]["id"].asString();
 		_TadoZone.Name = _jsRoot[zoneIdx]["name"].asString();
 		_TadoZone.Type = _jsRoot[zoneIdx]["type"].asString();
+		_TadoZone.OpenWindowDetectionSupported = _jsRoot[zoneIdx]["openWindowDetection"]["supported"].asBool();
 
 		_log.Log(LOG_STATUS, "Tado: Registered Zone %s '%s' of type %s", _TadoZone.Id.c_str(), _TadoZone.Name.c_str(), _TadoZone.Type.c_str());
 
