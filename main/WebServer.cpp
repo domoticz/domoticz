@@ -516,6 +516,7 @@ namespace http {
 
 			RegisterCommandCode("getconfig", boost::bind(&CWebServer::Cmd_GetConfig, this, _1, _2, _3), true);
 			RegisterCommandCode("getlocation", boost::bind(&CWebServer::Cmd_GetLocation, this, _1, _2, _3));
+			RegisterCommandCode("getforecastconfig", boost::bind(&CWebServer::Cmd_GetForecastConfig, this, _1, _2, _3));
 			RegisterCommandCode("sendnotification", boost::bind(&CWebServer::Cmd_SendNotification, this, _1, _2, _3));
 			RegisterCommandCode("emailcamerasnapshot", boost::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1, _2, _3));
 			RegisterCommandCode("udevice", boost::bind(&CWebServer::Cmd_UpdateDevice, this, _1, _2, _3));
@@ -2883,6 +2884,7 @@ namespace http {
 			}
 		}
 
+		// Could now be obsolete as only 1 usage was found in Forecast screen, which now uses other command
 		void CWebServer::Cmd_GetLocation(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights == -1)
@@ -2890,6 +2892,7 @@ namespace http {
 				session.reply_status = reply::forbidden;
 				return;//Only auth user allowed
 			}
+			root["title"] = "GetLocation";
 			std::string Latitude = "1";
 			std::string Longitude = "1";
 			std::string sValue;
@@ -2902,10 +2905,40 @@ namespace http {
 				{
 					Latitude = strarray[0];
 					Longitude = strarray[1];
+					root["status"] = "OK";
 				}
 			}
 			root["Latitude"] = Latitude;
 			root["Longitude"] = Longitude;
+		}
+
+		void CWebServer::Cmd_GetForecastConfig(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;//Only auth user allowed
+			}
+			root["title"] = "GetForecastConfig";
+			std::string Latitude = "1";
+			std::string Longitude = "1";
+			std::string sValue;
+			if (m_sql.GetPreferencesVar("Location", sValue))
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+
+				if (strarray.size() == 2)
+				{
+					Latitude = strarray[0];
+					Longitude = strarray[1];
+					root["status"] = "OK";
+				}
+			}
+			root["Latitude"] = Latitude;
+			root["Longitude"] = Longitude;
+
+			root["Forecastdevice"] = "0";
 		}
 
 		void CWebServer::Cmd_SendNotification(WebEmSession & session, const request& req, Json::Value &root)
