@@ -10,8 +10,6 @@ local self = {
 	DZVERSION = '3.0.12',
 }
 
-
-
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
 	if type(value_of_unsupported_type) == 'function' then
 		return '"Function"'
@@ -25,40 +23,38 @@ function math.pow(x, y)
 	return x^y
 end
 
----
 -- Cast anything but functions to string
 self.str = function (value)
-    local dblQuote = function (v)
-        return '"'..v..'"'
-    end
-    
-    local str = '';
-    -- local v;
-    if _.isString(value) then
-        str = value
-    elseif _.isBoolean(value) then
-        str = value and 'true' or 'false'
-    elseif _.isNil(value) then
-        str = 'nil'
-    elseif _.isNumber(value) then
-        str = value .. ''
-    elseif _.isFunction(value) then
-        str = 'function'
-    elseif _.isTable(value) then
-        str = '{'
-        for k, v in pairs(value) do
-            v = _.isString(v) and dblQuote(v) or _.str(v)
-            if _.isNumber(k) then
-                str = str .. v .. ', '
-            else
-                str = str .. '[' .. dblQuote(k) .. ']=' .. v .. ', '
-            end
-        end
-        str = str:sub(0, #str - 2) .. '}'
-    end
-    return str
-end
+	local dblQuote = function (v)
+		return '"'..v..'"'
+	end
 
+	local str = '';
+	-- local v;
+	if _.isString(value) then
+		str = value
+	elseif _.isBoolean(value) then
+		str = value and 'true' or 'false'
+	elseif _.isNil(value) then
+		str = 'nil'
+	elseif _.isNumber(value) then
+		str = value .. ''
+	elseif _.isFunction(value) then
+		str = 'function'
+	elseif _.isTable(value) then
+		str = '{'
+		for k, v in pairs(value) do
+			v = _.isString(v) and dblQuote(v) or _.str(v)
+			if _.isNumber(k) then
+				str = str .. v .. ', '
+			else
+				str = str .. '[' .. dblQuote(k) .. ']=' .. v .. ', '
+			end
+		end
+		str = str:sub(0, #str - 2) .. '}'
+	end
+	return str
+end
 
 function self.setLogMarker(logMarker)
 	_G.logMarker = logMarker or _G.moduleLabel
