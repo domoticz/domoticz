@@ -346,7 +346,7 @@ bool CMercApi::GetCustomData(tCustomData& data)
 
 		if(m_fieldcnt < 0)
 		{
-			m_fieldcnt = strarray.size();
+			m_fieldcnt = static_cast<int16_t>(strarray.size());
 		}
 		else
 		{
@@ -563,7 +563,7 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 
 			m_fields = ss.str();
 			StringSplit(m_fields, ",", strarray);
-			m_fieldcnt = strarray.size();
+			m_fieldcnt = static_cast<int16_t>(strarray.size());
 
 			_log.Log(LOG_STATUS, "Found %d resource fields: %s", m_fieldcnt, m_fields.c_str());
 

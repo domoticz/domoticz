@@ -4,6 +4,7 @@
 #include <sstream>
 #include "../httpclient/UrlEncode.h"
 #include "../main/Helper.h"
+#include "../main/Logger.h"
 
 //(c) 2016 GizMoCuz
 
