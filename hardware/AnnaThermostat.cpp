@@ -146,7 +146,7 @@ void CAnnaThermostat::Do_Work()
 			{
 				FixPresetUnit(); // making sure the preset is unit it  set to 0. Note to self dont mess with unit numbers
 				InitialMessageMigrateCheck();
-            	bFirstTime = false;
+				bFirstTime = false;
 			}
 			GetMeterDetails();
 		}
@@ -505,10 +505,10 @@ void CAnnaThermostat::GetMeterDetails()
 		}
 		for (pElem; pElem; pElem = pElem->NextSiblingElement())
 		{
-          
+
 			sname = GetElementChildValue(pElem, "type");
-		    //tmpstr = GetPeriodMeasurement(pElem);
-            //Log (LOG_NORM,"%s : %s ", sname.c_str(), tmpstr.c_str());
+			//tmpstr = GetPeriodMeasurement(pElem);
+			//Log (LOG_NORM,"%s : %s ", sname.c_str(), tmpstr.c_str());
 			if (sname == "temperature")
 			{
 				tmpstr = GetPeriodMeasurement(pElem);
@@ -783,7 +783,7 @@ bool CAnnaThermostat::AnnaGetLocation()
 
 bool CAnnaThermostat::InitialMessageMigrateCheck()
 {
-	bool retval = false;	
+	bool retval = false;
 	// Showing we are starting Annatherm and
 	// notify users in the log how to use the event system once per startup
 	Log(LOG_NORM, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -795,20 +795,20 @@ bool CAnnaThermostat::InitialMessageMigrateCheck()
 	Log(LOG_NORM, "Adjusting the Temp manually on the ANNA or via App, forces the ANNA to set Scenes to Off!!");
 	Log(LOG_NORM, "KNOWN ISSUE: The Gateway will not send an update  if the prvious scene is choosen again!");
 	Log(LOG_NORM, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    
+
 	if( MigrateSelectorSwitch(sAnnaPresets, 0, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS,true)== 1)
 	{
 		Log(LOG_STATUS, "Scene Selector switch updated to Version: %s ! ", ANNA_VERSION.c_str());
-        retval = true;
+		retval = true;
 	}
-	return retval;	
+	return retval;
 }
 void CAnnaThermostat::FixPresetUnit()
 {   // This function will make sure that from now on  that the Preset switch in the Plugwise plugin will be using unit 0
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, sAnnaPresets, 1);
 	if (result.empty())
-	    return;  // switch doen not exist yet
+		return;  // switch doen not exist yet
 	m_sql.safe_query("UPDATE DeviceStatus SET unit = 0 WHERE (HardwareID==%d) AND (DeviceID=='%08X' AND (Unit == '%d')", m_HwdID, sAnnaPresets, 1);
-	  
+
 }
