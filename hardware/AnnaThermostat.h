@@ -44,4 +44,3 @@ private:
 	std::shared_ptr<std::thread> m_thread;
 	AnnaLocationInfo m_AnnaLocation;
 };
-

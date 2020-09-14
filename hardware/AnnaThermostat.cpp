@@ -33,9 +33,8 @@ const std::string ANNA_LEVEL_ACTIONS = "00|10|20|30|40|50";
 
 
 //#define _DEBUG // toggle for reading and writing local files
-
 #ifdef _DEBUG
-//define DEBUG_AnnaThermostat
+//#define DEBUG_AnnaThermostat
 #define DEBUG_ANNA_APPLIANCE_READ  "/tmp/anna/appliances.xml"
 #define DEBUG_ANNA_WRITE           "/tmp/anna/output.txt"
 #define DEBUG_ANNA_LOCATION_READ   "/tmp/anna/location.xml"
@@ -78,8 +77,6 @@ CAnnaThermostat::CAnnaThermostat(const int ID, const std::string& IPAddress, con
 {
 	m_HwdID = ID;
 	Init();
-//    GetMeterDetails();
-
 }
 
 CAnnaThermostat::~CAnnaThermostat(void)
@@ -675,7 +672,7 @@ void CAnnaThermostat::GetMeterDetails()
 				else strncpy(sPreset, "50", sizeof(sPreset));
 
 				std::string PresetName = "Anna Preset";
-				SendSelectorSwitch(sAnnaPresets,  0, sPreset , PresetName.c_str(), 16, false, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS, true);
+				SendSelectorSwitch(sAnnaPresets,  1, sPreset , PresetName.c_str(), 16, false, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS, true);
 			}
 		}
 		pAppliance = pAppliance->NextSiblingElement("appliance");
@@ -796,7 +793,7 @@ bool CAnnaThermostat::InitialMessageMigrateCheck()
 	Log(LOG_NORM, "KNOWN ISSUE: The Gateway will not send an update  if the prvious scene is choosen again!");
 	Log(LOG_NORM, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
-	if( MigrateSelectorSwitch(sAnnaPresets, 0, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS,true)== 1)
+	if( MigrateSelectorSwitch(sAnnaPresets, 1, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS,true)== 1)
 	{
 		Log(LOG_STATUS, "Scene Selector switch updated to Version: %s ! ", ANNA_VERSION.c_str());
 		retval = true;
@@ -806,9 +803,8 @@ bool CAnnaThermostat::InitialMessageMigrateCheck()
 void CAnnaThermostat::FixPresetUnit()
 {   // This function will make sure that from now on  that the Preset switch in the Plugwise plugin will be using unit 0
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, sAnnaPresets, 1);
+	result = m_sql.safe_query("SELECT Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, sAnnaPresets, 0);
 	if (result.empty())
 		return;  // switch doen not exist yet
-	m_sql.safe_query("UPDATE DeviceStatus SET unit = 0 WHERE (HardwareID==%d) AND (DeviceID=='%08X' AND (Unit == '%d')", m_HwdID, sAnnaPresets, 1);
-
+	m_sql.safe_query("UPDATE DeviceStatus SET unit = 1 WHERE (HardwareID==%d) AND (DeviceID=='%08X' AND (Unit == '%d')", m_HwdID, sAnnaPresets, 0);
 }
