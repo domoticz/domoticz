@@ -30,6 +30,8 @@ private:
 	bool SetAway(const bool bIsAway);
 	bool AnnaToggleProximity(bool bToggle);
 	bool AnnaGetLocation();
+	bool InitialMessageMigrateCheck();
+	void FixPresetUnit();
 
 private:
 	std::string m_IPAddress;
