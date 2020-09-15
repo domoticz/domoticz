@@ -24,7 +24,7 @@ function math.pow(x, y)
 end
 
 -- Cast anything but functions to string
-self.str = function (value)
+self.toStr = function (value)
 	local dblQuote = function (v)
 		return '"'..v..'"'
 	end
@@ -44,7 +44,7 @@ self.str = function (value)
 	elseif _.isTable(value) then
 		str = '{'
 		for k, v in pairs(value) do
-			v = _.isString(v) and dblQuote(v) or _.str(v)
+			v = _.isString(v) and dblQuote(v) or self.toStr(v)
 			if _.isNumber(k) then
 				str = str .. v .. ', '
 			else
@@ -420,7 +420,7 @@ function self.log(msg, level)
 	end
 
 	if (level <= lLevel) then
-		self.print(tostring(marker) .. self.str(msg))
+		self.print(tostring(marker) .. self.toStr(msg))
 	end
 end
 
