@@ -31,7 +31,7 @@ private:
 	bool AnnaToggleProximity(bool bToggle);
 	bool AnnaGetLocation();
 	bool InitialMessageMigrateCheck();
-	void FixPresetUnit();
+	void FixUnit();
 
 private:
 	std::string m_IPAddress;

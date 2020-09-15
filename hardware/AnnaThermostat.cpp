@@ -141,7 +141,7 @@ void CAnnaThermostat::Do_Work()
 			sec_counter = 0;
 			if (bFirstTime)
 			{
-				FixPresetUnit(); // making sure the preset is unit it  set to 0. Note to self dont mess with unit numbers
+				FixUnit(); // Making sure the unit ID's are set to 1.  Req for future extensions
 				InitialMessageMigrateCheck();
 				bFirstTime = false;
 			}
@@ -160,7 +160,7 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	thermos.id2 = 0;
 	thermos.id3 = 0;
 	thermos.id4 = Idx;
-	thermos.dunit = 0;
+	thermos.dunit = 1;
 	thermos.temp = Temp;
 	sDecodeRXMessage(this, (const unsigned char*)&thermos, defaultname.c_str(), 255);
 }
@@ -631,7 +631,7 @@ void CAnnaThermostat::GetMeterDetails()
 					{
 						bSwitch = false;
 					}
-					SendSwitch(sAnnaProximity, 0, 255, bSwitch, 0, sname);
+					SendSwitch(sAnnaProximity, 1, 255, bSwitch, 0, sname);
 				}
 			}
 			else if (sname == "preset_state")
@@ -790,7 +790,7 @@ bool CAnnaThermostat::InitialMessageMigrateCheck()
 	Log(LOG_NORM, "Any other value will be refused! ");
 	Log(LOG_NORM, "To Detect changes in scripts use 'Off, Home, Away, Night, Vacation, Frost'");
 	Log(LOG_NORM, "Adjusting the Temp manually on the ANNA or via App, forces the ANNA to set Scenes to Off!!");
-	Log(LOG_NORM, "KNOWN ISSUE: The Gateway will not send an update  if the prvious scene is choosen again!");
+	Log(LOG_NORM, "KNOWN ISSUE: The Gateway will not send an correct update if the previous scene is choosen again!");
 	Log(LOG_NORM, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
 	if( MigrateSelectorSwitch(sAnnaPresets, 1, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS,true)== 1)
@@ -800,11 +800,15 @@ bool CAnnaThermostat::InitialMessageMigrateCheck()
 	}
 	return retval;
 }
-void CAnnaThermostat::FixPresetUnit()
+void CAnnaThermostat::FixUnit()
 {   // This function will make sure that from now on  that the Preset switch in the Plugwise plugin will be using unit 0
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, sAnnaPresets, 0);
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == '%d')", m_HwdID,  0);
 	if (result.empty())
 		return;  // switch doen not exist yet
-	m_sql.safe_query("UPDATE DeviceStatus SET unit = 1 WHERE (HardwareID==%d) AND (DeviceID=='%08X' AND (Unit == '%d')", m_HwdID, sAnnaPresets, 0);
+	
+    for( int i = 0;i < result.size(); ++i) 
+ 		{  
+	     	m_sql.safe_query("UPDATE DeviceStatus SET unit = 1 WHERE (ID==%s)", result [i][0].c_str());
+ 		}	 
 }
