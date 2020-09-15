@@ -20,4 +20,6 @@ private:
 	/* config vars */
 	std::string _clickatellApi;
 	std::string _clickatellTo;
+	std::string _clickatellFrom;
+
 };

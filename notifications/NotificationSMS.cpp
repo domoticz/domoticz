@@ -10,6 +10,7 @@ CNotificationSMS::CNotificationSMS() : CNotificationBase(std::string("clickatell
 	SetupConfig(std::string("ClickatellEnabled"), &m_IsEnabled);
 	SetupConfigBase64(std::string("ClickatellAPI"), _clickatellApi);
 	SetupConfigBase64(std::string("ClickatellTo"), _clickatellTo);
+	SetupConfigBase64(std::string("ClickatellFrom"), _clickatellFrom);
 }
 
 CNotificationSMS::~CNotificationSMS()
@@ -41,16 +42,29 @@ bool CNotificationSMS::SendMessageImplementation(
 	if (thisTo.empty())
 		return false;
 
-	std::string sResult;
-	std::stringstream sPostData;
+	std::string thisFrom = CURLEncode::URLDecode(_clickatellFrom);
+	_log.Log(LOG_NORM, "From: " + thisFrom);
 
-	sPostData
+	stdreplace(thisFrom, "+", "");
+	stdreplace(thisFrom, " ", "");
+	thisFrom = stdstring_trim(thisFrom);
+
+	std::string sResult;
+	std::stringstream sGetData;
+
+	sGetData
 		<< "apiKey=" << _clickatellApi
 		<< "&to=" << thisTo
 		<< "&content=" << Text;
 
+	if (!thisFrom.empty()) {
+		sGetData << "&from=" << thisFrom;
+	}
+		
+	_log.Log(LOG_NORM, "Get params: " + sGetData.str());
+
 	std::vector<std::string> ExtraHeaders;
-	bRet |= HTTPClient::POST("https://platform.clickatell.com/messages/http/send", sPostData.str(), ExtraHeaders, sResult);
+	bRet |= HTTPClient::GET("https://platform.clickatell.com/messages/http/send?" + sGetData.str(), ExtraHeaders, sResult);
 	if (sResult.find("ERR:") != std::string::npos)
 	{
 		//We have an error
