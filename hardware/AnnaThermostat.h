@@ -30,6 +30,8 @@ private:
 	bool SetAway(const bool bIsAway);
 	bool AnnaToggleProximity(bool bToggle);
 	bool AnnaGetLocation();
+	bool InitialMessageMigrateCheck();
+	void FixUnit();
 
 private:
 	std::string m_IPAddress;
@@ -42,4 +44,3 @@ private:
 	std::shared_ptr<std::thread> m_thread;
 	AnnaLocationInfo m_AnnaLocation;
 };
-
