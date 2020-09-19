@@ -431,7 +431,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 									$.t('Friday'),
 									$.t('Saturday')
 								]
-							}
+							}/* to be used when all graphs are timezone aware,
+							global: {
+								timezoneOffset: new Date().getTimezoneOffset()
+							}*/
 						});
 
 						$rootScope.MakeGlobalConfig();
