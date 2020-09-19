@@ -66,3 +66,12 @@
 hr {
   margin: 5px 0;
 }
+
+#img img:hover, 
+#img1 img:hover,
+#img2 img:hover,
+#img3 img:hover
+{
+	transform: scale(1.1);
+    transition: .3s;
+}
