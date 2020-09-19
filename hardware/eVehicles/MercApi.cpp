@@ -30,11 +30,12 @@ License: Public domain
 // - Vehicle status
 // - Electric Vehicle status (even possible for non-electric/hybrid vehicles)
 // so use the following 5 scope's: mb:vehicle:mbdata:vehiclestatus mb:vehicle:mbdata:fuelstatus mb:vehicle:mbdata:payasyoudrive mb:vehicle:mbdata:vehiclelock mb:vehicle:mbdata:evstatus
-#define MERC_URL_AUTH "https://api.secure.mercedes-benz.com"
-#define MERC_API_AUTH "/oidc10/auth/oauth/v2/authorize"
-#define MERC_API_TOKEN "/oidc10/auth/oauth/v2/token"
+// and we need the additional scope to get a refresh token: offline_access
+#define MERC_URL_AUTH "https://id.mercedes-benz.com"
+#define MERC_API_AUTH "as/authorization.oauth2"
+#define MERC_API_TOKEN "/as/token.oauth2"
 #define MERC_URL "https://api.mercedes-benz.com"
-#define MERC_API "/vehicledata/v1/vehicles"
+#define MERC_API "/vehicledata/v2/vehicles"
 
 #define MERC_APITIMEOUT (30)
 #define MERC_REFRESHTOKEN_CLEARED "Refreshtoken cleared because it was invalid!"
