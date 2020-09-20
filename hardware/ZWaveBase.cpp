@@ -863,7 +863,7 @@ void ZWaveBase::ValidateBeforeSendKwhMeter(const _tZWaveDevice* pEnergyDevice, c
 
 	if (false == mKWHChecker[id].ValidateValue(mtotal, MAX_ALLOWED_RATE_FOR_KWH, "ZWave node " + std::to_string(nodeID)))
 	{
-		_log.Debug(LOG_NORM, "ZWave: Rejected value. See previous message. (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		_log.Log(LOG_NORM, "ZWave: Rejected value. See previous message. (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return;
 	}
 
