@@ -35,9 +35,6 @@ bool CNotificationSMS::SendMessageImplementation(
 	stdreplace(thisTo, "+", "");
 	stdreplace(thisTo, " ", "");
 
-	// One can send to multiple destination addresses by delimiting the addresses with commas
-	stdreplace(thisTo, ";", ",");
-
 	thisTo = stdstring_trim(thisTo);
 	if (thisTo.empty())
 		return false;
@@ -49,22 +46,48 @@ bool CNotificationSMS::SendMessageImplementation(
 	stdreplace(thisFrom, " ", "");
 	thisFrom = stdstring_trim(thisFrom);
 
-	std::string sResult;
-	std::stringstream sGetData;
+	if (thisTo.find(";") != std::string::npos) {
+		std::vector<std::string> recipients;
+		StringSplit(thisTo, ";", recipients);
 
-	sGetData
-		<< "apiKey=" << _clickatellApi
-		<< "&to=" << thisTo
-		<< "&content=" << Text;
+		thisTo = "";
+		for (size_t i = 0; i < recipients.size(); i++) {
+			thisTo = thisTo + "\"" + recipients.at(i) + "\"" + ",";
+		}
+
+		if (!thisTo.empty()) {
+			thisTo.pop_back();
+		}
+	}
+	else {
+		thisTo = "\"" + thisTo + "\"";
+	}
+	
+	std::string sResult;
+	std::stringstream sJsonPostData;
+
+	std::string message = CURLEncode::URLDecode(Text);
+	sJsonPostData
+		<< "{"
+		<< "\"content\":" << "\"" << message << "\","
+		<< "\"to\":" << "[" << thisTo << "],";
 
 	if (!thisFrom.empty()) {
-		sGetData << "&from=" << thisFrom;
+		sJsonPostData << "\"from\":" << "\"" << thisFrom << "\",";
 	}
-		
-	_log.Log(LOG_NORM, "Get params: " + sGetData.str());
+
+	sJsonPostData
+		<< "\"binary\": false,"
+		<< "\"charset\": \"UTF-8\""
+		<< "}";
+
+	_log.Log(LOG_NORM, "Json params: " + sJsonPostData.str());
 
 	std::vector<std::string> ExtraHeaders;
-	bRet |= HTTPClient::GET("https://platform.clickatell.com/messages/http/send?" + sGetData.str(), ExtraHeaders, sResult);
+	ExtraHeaders.push_back("Authorization: " + _clickatellApi);
+	ExtraHeaders.push_back("Content-Type: application/json");
+	ExtraHeaders.push_back("Accept: application/json");
+	bRet |= HTTPClient::POST("https://platform.clickatell.com/messages", sJsonPostData.str(), ExtraHeaders, sResult);
 	if (sResult.find("ERR:") != std::string::npos)
 	{
 		//We have an error
