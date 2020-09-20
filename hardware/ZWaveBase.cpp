@@ -844,7 +844,7 @@ void ZWaveBase::ValidateBeforeSendKwhMeter(const _tZWaveDevice* pEnergyDevice, c
 
 	if (musage > MAX_ALLOWED_VALUE_FOR_WATT)
 	{
-		_log.Log(LOG_ERROR, "ZWave: Rejected value. Watt Value above limit. value:%f (NodeID: %d, 0x%02x)", musage, nodeID, nodeID);
+		_log.Log(LOG_NORM, "ZWave: Rejected value. Watt Value above limit. value:%f (NodeID: %d, 0x%02x)", musage, nodeID, nodeID);
 		return;
 	}
 
@@ -852,7 +852,7 @@ void ZWaveBase::ValidateBeforeSendKwhMeter(const _tZWaveDevice* pEnergyDevice, c
 	//Keep them out of the filter at all as these can exceed of 50% of the received value's.
 	if (mtotal < MIN_ALLOWED_VALUE_FOR_KWH)
 	{
-		_log.Log(LOG_ERROR, "ZWave: Rejected value. Value is extreme negative. Typically a transmission error. value:%f (NodeID: %d, 0x%02x)", mtotal, nodeID, nodeID);
+		_log.Log(LOG_NORM, "ZWave: Rejected value. Value is extreme negative. Typically a transmission error. value:%f (NodeID: %d, 0x%02x)", mtotal, nodeID, nodeID);
 		return;
 	}
 
@@ -863,7 +863,7 @@ void ZWaveBase::ValidateBeforeSendKwhMeter(const _tZWaveDevice* pEnergyDevice, c
 
 	if (false == mKWHChecker[id].ValidateValue(mtotal, MAX_ALLOWED_RATE_FOR_KWH, "ZWave node " + std::to_string(nodeID)))
 	{
-		_log.Debug(DEBUG_HARDWARE, "ZWave: Rejected value. See previous message. (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		_log.Debug(LOG_NORM, "ZWave: Rejected value. See previous message. (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return;
 	}
 
@@ -875,7 +875,7 @@ void ZWaveBase::ValidateBeforeSendWattMeter(const uint8_t NodeID, const uint8_t 
 {
 	if (musage > MAX_ALLOWED_VALUE_FOR_WATT)
 	{
-		_log.Log(LOG_ERROR, "ZWave: Watt very high...  Usage: %f (NodeID: %d, 0x%02x)", musage, NodeID, NodeID);
+		_log.Log(LOG_NORM, "ZWave: Watt very high...  Usage: %f (NodeID: %d, 0x%02x)", musage, NodeID, NodeID);
 		return;
 	}
 
