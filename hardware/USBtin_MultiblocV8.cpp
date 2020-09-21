@@ -466,6 +466,7 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 				switch(RefBloc){
 					case BLOC_SFSP_M :
 					case BLOC_SFSP_E :
+					case BLOC_9 :
 						//requete analogique (tension alim) / analog send request for Power tension of SFSP Blocs
 						Rqid= (type_E_ANA_1_TO_4<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
 						SendRequest(Rqid);
