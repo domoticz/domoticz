@@ -585,24 +585,33 @@
                                     <div id="collapseOne7" class="collapse show" role="tabpanel" aria-labelledby="headingClickatell"
                                       data-parent="#accordionEx">
                                         <div class="card-body">
-                                        <table class="display" id="smstable" border="0" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-                                            <td><input type="checkbox" id="ClickatellEnabled" name="ClickatellEnabled"/><label for="ClickatellEnabled"/></td>
-                                        </tr>
-                                        <tr>
-                                            <td align="right"><label for="ClickatellAPI"><span data-i18n="API Key">API Key</span>: </label></td>
-                                            <td><input type="input" id="ClickatellAPI" name="ClickatellAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-                                        </tr>
-                                        <tr>
-                                            <td align="right"><label for="ClickatellTo"><span data-i18n="To"></span>: </label></td>
-                                            <td><input type="input" id="ClickatellTo" name="ClickatellTo" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('clickatell')">Test</button></td>
-                                        </tr>
-                                        <tr>
-                                            <td></td>
-                                            <td><span data-i18n="(Separate by a semicolon, For Example"></span>: +3123456789;+44567890)</td>
-                                        </tr>
-                                        </table>
+											<table class="display" id="smstable" border="0" cellpadding="0" cellspacing="0">
+												<tr>
+													<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+													<td><input type="checkbox" id="ClickatellEnabled" name="ClickatellEnabled" /><label for="ClickatellEnabled" /></td>
+												</tr>
+												<tr>
+													<td align="right"><label for="ClickatellAPI"><span data-i18n="API Key">API Key</span>: </label></td>
+													<td><input type="input" id="ClickatellAPI" name="ClickatellAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+												</tr>
+												<tr>
+													<td align="right"><label for="ClickatellTo"><span data-i18n="To"></span>: </label></td>
+													<td><input type="input" id="ClickatellTo" name="ClickatellTo" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+												</tr>
+												<tr>
+													<td></td>
+													<td><span data-i18n="(Separate by a semicolon, For Example"></span>: +3123456789;+44567890)</td>
+												</tr>
+												<tr>
+													<td align="right"><label for="ClickatellFrom"><span data-i18n="From"></span>: </label></td>
+													<td><input type="input" id="ClickatellFrom" name="ClickatellFrom" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('clickatell')">Test</button></td>
+												</tr>
+												<tr>
+													<td></td>
+													<td><span data-i18n="(Optional - used in two way comunication"></span>: +3123456789)</td>
+												</tr>
+
+											</table>
                                         <span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="http://www.clickatell.com/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
                                         <br />
                                         </div>
