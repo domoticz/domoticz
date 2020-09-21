@@ -19,6 +19,10 @@ History :
 # add feature : now possibility to Enter/Exit Learn mode Or Clear Mode for all SFSP Blocks
 	(each blocks detected blocks automatically creates 3 associated buttons for Learn/Exit Learn and Clear, usefull if the blocks is not accessible )
 
+- 2020-09-21 : Update :
+# remove auto request on current consumed (no enough precision)
+# update devices name list (NomRefBloc)
+# update : check bloc if lost: no more repeating errors (log) if a bloc disappears (just one message) and with an understandable message
 
 */
 #include "stdafx.h"
@@ -132,7 +136,9 @@ History :
 #define BLOC_SFSP_M                     0x14
 #define BLOC_SFSP_E                     0x15
 
-std::string NomRefBloc[45]={
+#define NomRefBloc_MAX_SIZE 			78
+
+std::string NomRefBloc[NomRefBloc_MAX_SIZE]={
 	"UNDEFINED",
 	"DOMOTICZ",
 	"NAVIGRAPH_VER",
@@ -177,9 +183,43 @@ std::string NomRefBloc[45]={
 	"NAVICOLOR_PT2",
 	"CLIM_DOMETIC",
 	"FACADE_CARLING",
-	" ",
-	// "SELECTEUR_MDP",
+	"REPARTITEUR_MDP",
+	"SELECTEUR_MDP",
+	"INTERFACE_CAN_CAN_CONFIGURABLE",
+	"INTERFACE_CAN_CAN_SD",
+	"TABLEAU_VOILIER",
+	"TABLEAU_COUPE_BATTERIE",
+	"COFFRET_COUPE_BATTERIE_MDP",
+	"CLIMATISEUR_WEBASTO",
+	"INTERFACE_CAN_CAN_MULTIRESEAUX",
+	"BLOC_SFSP_2G4",
+	"BLOC_MULTICOM",
+	"NAVICOLOR_ST3",
+	"NAVICOLOR_GT2",
+	"FACADE_2_4T",
+	"TABLEAU_CATA",
+	"BLOC_EMB",
+	"WATERMAKER_DESSALATOR",
+	"BATTERIE_EZA",
+	"WATERMAKER_ECO_SISTEMS",
+	"FACADE_SILICONNE_6T_ETANCHE",
+	"BLOC_10",
+	"BLOC_11",
+	"BATTERIE_EPSILOR",
+	"CLIMATISEUR_VENTILO_CONVECTEUR_FRIGOMAR",
+	"BLOC_GALVATEST",
+	"CONVERTISSEUR_CRISTEC",
+	"MB_BOX",
+	"INTERFACE_CAN_CAN_NMEA2000",
+	"BLOC_9_V3",
+	"TOOLCHAIN_V8",
+	"CONFIGURATEUR_V8",
+	"INTERFACE_BLE_CAN",
+	"CENTRALE_FROID_FRIGOMAR",
+	"CLIMATISEUR_MONOBLOC_FRIGOMAR",
 };
+
+
 
 USBtin_MultiblocV8::USBtin_MultiblocV8()
 {
@@ -401,7 +441,7 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 	}
 	//if the blocs allready exist :
 	if( BIT_FIND_BLOC == true ){
-		//on le met à jours :
+		//update bloc values:
 		m_BlocList_CAN[IndexBLoc].VersionH = bufferdata[0];
 		m_BlocList_CAN[IndexBLoc].VersionM = bufferdata[1];
 		m_BlocList_CAN[IndexBLoc].VersionL = bufferdata[2];
@@ -420,8 +460,8 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 				m_BlocList_CAN[IndexBLoc].VersionL = bufferdata[2];
 				m_BlocList_CAN[IndexBLoc].CongifurationCrc = ( bufferdata[3]<<8 )+bufferdata[4];
 				m_BlocList_CAN[IndexBLoc].Status = BLOC_ALIVE;
-				m_BlocList_CAN[IndexBLoc].NbAliveFrameReceived = 0;
-				_log.Log(LOG_NORM,"MultiblocV8: new bloc detected: %s# Coding: %d network: %d", NomRefBloc[RefBloc].c_str(),Codage,Ssreseau);
+				m_BlocList_CAN[IndexBLoc].NbAliveFrameReceived = 1;
+				_log.Log(LOG_STATUS,"MultiblocV8: bloc detected: %s Coding: %d Network: %d", NomRefBloc[RefBloc].c_str(),Codage,Ssreseau);
 				//checking if we must send request, to refresh the hardware in domoticz dispositifs :
 				switch(RefBloc){
 					case BLOC_SFSP_M :
@@ -438,7 +478,6 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 						SendRequest(Rqid);
 
 						//Créates 3 switch for Learning, Learning Exit and Clearing switches store into blocs
-
 						std::string defaultname = NomRefBloc[RefBloc].c_str();
 						std::string defaultnamenormal = defaultname + " LEARN EXIT";
 						std::string defaultnamelearn = defaultname + " LEARN ENTRY";
@@ -457,7 +496,7 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 						//InsertUpdateControlSwitch(sID_SFSPCommandBase, 0, defaultnamenextlearning.c_str() );
 
 						sID = type_COMMANDE_ETAT_BLOC<<SHIFT_TYPE_TRAME; //creates a unique Reset Switch to restart all presents blocks
-						InsertUpdateControlSwitch(sID, BLOC_STATES_RESET, "RESET ALL MULTIBLOC V8 Blocks" );
+						InsertUpdateControlSwitch(sID, BLOC_STATES_RESET, "RESET ALL MULTIBLOC V8 Blocs" );
 						break;
 				}
 				break;
@@ -497,21 +536,30 @@ void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int C
 //call every 3 sec...
 void  USBtin_MultiblocV8::BlocList_CheckBloc(){
 	int i;
-	int RefBlocAlive = 0;
+	//int RefBlocAlive = 0;
 	unsigned long Rqid = 0;
+	int RefBloc;
+	char Codage;
+	char Subnetwork;
+	
 	for(i = 0;i < MAX_NUMBER_BLOC;i++){
 		if( m_BlocList_CAN[i].BlocID != 0 ){ //Si présence d'un ID
 			//we extract the blocs reference :
-			RefBlocAlive = (( m_BlocList_CAN[i].BlocID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
+			//RefBloc = (( m_BlocList_CAN[i].BlocID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
+			RefBloc = (m_BlocList_CAN[i].BlocID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE;
+			Codage = (m_BlocList_CAN[i].BlocID & MSK_CODAGE_MODULE) >> SHIFT_CODAGE_MODULE;
+			Subnetwork = m_BlocList_CAN[i].BlocID & MSK_SRES_MODULE;
 			//and check the bloc state :
-			if( m_BlocList_CAN[i].Status == BLOC_NOTALIVE ){
+			if( m_BlocList_CAN[i].Status == BLOC_NOTALIVE && m_BlocList_CAN[i].NbAliveFrameReceived > 0){
 				//le bloc a été perdu / bloc lost...
-				_log.Log(LOG_ERROR,"MultiblocV8: Bloc Lost with ref #%d# ",RefBlocAlive);
+				//_log.Log(LOG_ERROR,"MultiblocV8: Bloc Lost with ref #%d# ",RefBloc);
+				_log.Log(LOG_ERROR,"MultiblocV8: bloc lost: %s Coding: %d Network: %d", NomRefBloc[RefBloc].c_str(),Codage,Subnetwork);
+				m_BlocList_CAN[i].NbAliveFrameReceived = 0;
 			}
 			else{ //le bloc est en vie / Alive !
 				//on vérifie si il y'a des requetes automatique à envoyer : / checking if we must send request
-				//_log.Log(LOG_NORM,"MultiblocV8: BlocAlive with ref #%d# ",RefBlocAlive);
-				switch(RefBlocAlive){
+				//_log.Log(LOG_NORM,"MultiblocV8: BlocAlive with ref #%d# ",RefBloc);
+				switch(RefBloc){
 					case BLOC_SFSP_M :
 					case BLOC_SFSP_E :
 						if( m_BOOL_TaskAGo == true ){
@@ -663,7 +711,7 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,bool
 	int level = int(rlevel);
 	//Extract the RefBloc Type
 	uint8_t RefBloc = (uint8_t)((sID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
-	if (RefBloc >= 45)// _countof(NomRefBloc))
+	if (RefBloc > NomRefBloc_MAX_SIZE)// _countof(NomRefBloc))
 		return;
 
 	tRBUF lcmd;
