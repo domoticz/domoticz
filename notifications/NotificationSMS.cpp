@@ -40,7 +40,6 @@ bool CNotificationSMS::SendMessageImplementation(
 		return false;
 
 	std::string thisFrom = CURLEncode::URLDecode(_clickatellFrom);
-	_log.Log(LOG_NORM, "From: " + thisFrom);
 
 	stdreplace(thisFrom, "+", "");
 	stdreplace(thisFrom, " ", "");
@@ -81,18 +80,18 @@ bool CNotificationSMS::SendMessageImplementation(
 		<< "\"charset\": \"UTF-8\""
 		<< "}";
 
-	_log.Log(LOG_NORM, "Json params: " + sJsonPostData.str());
+	_log.Log(LOG_NORM, "Clickatell SMS notification json: " + sJsonPostData.str());
 
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Authorization: " + _clickatellApi);
 	ExtraHeaders.push_back("Content-Type: application/json");
 	ExtraHeaders.push_back("Accept: application/json");
 	bRet |= HTTPClient::POST("https://platform.clickatell.com/messages", sJsonPostData.str(), ExtraHeaders, sResult);
+	_log.Log(LOG_NORM, "Clickatell SMS Gateway: %s", sResult.c_str());
 	if (sResult.find("ERR:") != std::string::npos)
 	{
 		//We have an error
 		bRet = false;
-		_log.Log(LOG_ERROR, "Clickatell SMS Gateway: %s", sResult.c_str());
 	}
 	return bRet;
 }
