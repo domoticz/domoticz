@@ -82,8 +82,9 @@ bool CNotificationSMS::SendMessageImplementation(
 
 	_log.Log(LOG_NORM, "Clickatell SMS notification json: " + sJsonPostData.str());
 
+	std::string apiKey = CURLEncode::URLDecode(_clickatellApi);
 	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("Authorization: " + _clickatellApi);
+	ExtraHeaders.push_back("Authorization: " + apiKey);
 	ExtraHeaders.push_back("Content-Type: application/json");
 	ExtraHeaders.push_back("Accept: application/json");
 	bRet |= HTTPClient::POST("https://platform.clickatell.com/messages", sJsonPostData.str(), ExtraHeaders, sResult);
