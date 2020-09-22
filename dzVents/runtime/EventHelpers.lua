@@ -26,14 +26,6 @@ local function EventHelpers(domoticz, mainMethod)
 			package.path
 	end
 
-	--if (_G.TESTMODE) then
-	--	-- make sure you run the tests from the tests folder !!!!
-	--	_G.scriptsFolderPath = currentPath .. 'scripts'
-	--	package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
-	--	package.path = package.path .. ';' .. currentPath .. 'data/?.lua'
-	--	package.path = package.path .. ';' .. currentPath .. '/../?.lua'
-	--end
-
 	local webRoot = globalvariables['domoticz_webroot']
 	local _url = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
 
@@ -820,7 +812,15 @@ local function EventHelpers(domoticz, mainMethod)
 
 		for scriptTrigger, scripts in pairs(allEventScripts) do
 
-			if (string.find(scriptTrigger, '*')) then -- a wild-card was used
+			local function strFind(str, key)
+				return string.find(str, key)
+			end
+
+			local ok, res = pcall(strFind, scriptTrigger, '*');
+			if not ok then
+				utils.log('Script name: ' .. scripts[1].name  .. '.lua, has a malformed on = section. The trigger = ' .. _.str(scriptTrigger) , utils.LOG_ERROR)
+				allEventScripts[scriptTrigger] = ''
+			elseif res then -- a wild-card was used
 				scriptTrigger = ('^' .. scriptTrigger:gsub("[%^$]","."):gsub("*", ".*") .. '$')
 
 				local function sMatch(text, match) -- specialized sanitized match function to allow combination of Lua magic chars in wildcards

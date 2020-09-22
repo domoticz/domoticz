@@ -3,7 +3,7 @@ local _ = require 'lodash'
 --package.path = package.path .. ";../?.lua"
 
 local scriptPath = ''
-package.path =  ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;../../../scripts/lua/?.lua;' .. package.path
+package.path = ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;../../../scripts/lua/?.lua;' .. package.path
 
 local LOG_INFO = 2
 local LOG_DEBUG = 3
@@ -137,12 +137,28 @@ describe('event helpers', function()
 			assert.is_same(utils.leadingZeros(999,2),'999')
 		end)
 
-		it('should return nil for os.execute (echo)', function()
+		it('should return nil for osexecute (echo)', function()
 			assert.is_nil(utils.osExecute('echo test > testfile.out'))
 		end)
 
 		it('should return nil for os.execute (rm)', function()
 			assert.is_nil(utils.osExecute('rm testfile.out'))
+		end)
+
+		it('should return nil for osCommand (echo)', function()
+			local res, rc = utils.osCommand('echo test > testfile.out')
+			assert.is_same(rc, 0)
+			assert.is_same(res, '')
+		end)
+
+		it('should return nil for osCommand (rm)', function()
+			local res, rc = utils.osCommand('rm -fv nofile.nofile ')
+			assert.is_same(rc, 0)
+			assert.is_same(res, '')
+			local res, rc = utils.osCommand('rm -v testfile.out')
+			assert.is_same(rc, 0)
+			assert.is_same(res:sub(1,4), "remo")
+
 		end)
 
 		it('should return false if a file does not exist', function()
@@ -360,7 +376,7 @@ describe('event helpers', function()
 			assert.is_same(utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
 		end)
 
-		  it('should match a string with Lua magic chars', function()
+		it('should match a string with Lua magic chars', function()
 			assert.is_same(string.sMatch("testing (A-B-C) testing","(A-B-C)"), "(A-B-C)")
 			assert.is_not(string.match("testing (A-B-C) testing", "(A-B-C)"), "(A-B-C)")
 		end)
