@@ -680,7 +680,17 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **url**: internal url to access the API service.
 	- **webRoot**: `webroot` value as specified when starting the Domoticz service.
  - **sms(message [, delay] <sup>3.0.10</sup> )**: *Function*. Sends an sms if it is configured in Domoticz. Optional parm delay is delay in seconds.
- - **snapshot(cameraID or camera Name<sup>2.4.15</sup>,subject)**:<sup>2.4.11</sup> *Function*. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
+ - **snapshot(cameraID(s) or camera Name(s)<sup>3.0.13</sup>,subject)**: *Function*. Sends email with a camera snapshots if email is configured and set for attachments in Domoticz. Send 1 or multiple camerIDs -names in ; separated string or array.
+
+```Lua
+	dz.snapshot() -- defaults to id = 1, subject domoticz
+	dz.snapshot(1,'dz') -- subject dz
+	dz.snapshot('1;2;3') -- ; separated string
+	dz.snapshot({1,4,7}) --  table
+	dz.snapshot('test;test2') -- ; separated string
+	dz.snapshot({'test', 'test2'}) -- table
+```
+
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
@@ -750,12 +760,13 @@ The domoticz object holds all information about your Domoticz system. It has glo
 			domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
 			domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300
 	```
-	- **osExecute(cmd)**: *Function*:  Execute an os command.
+	- **osCommand(cmd)**: *Function*:  Execute an OS command and return result and returncode.
+	- **osExecute(cmd)**: *Function*:  Execute an OS command.
 	- **rightPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.
 	- **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
 	- **sceneExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid scene ^3.0.12^ or sceneID and return ID when entered with valid sceneName or false when not a scene, sceneID or sceneName of an existing scene
 	- **setLogMarker([marker])**: *Function*: <sup>2.5.2</sup> set logMarker to 'marker'. Defaults to scriptname. Can be used to change logMarker based on flow in script
-	- **stringSplit(string, [separator ])**:<sup>2.4.19</sup> *Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words.
+	- **stringSplit(string [,separator ] [,convert ]<sup>3.0.13</sup>)**:<sup>2.4.19</sup> *Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words. Default convert is false when set to true it will convert strings to number where possible.
 	- **stringToSeconds(str)**:  *Function*: <sup>3.0.1</sup>  Returns number of seconds between now and str.	
 	*Examples:*
 
@@ -2459,6 +2470,13 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and/or `::1` and you're good to go.
 
 # History
+
+## [3.0.13]
+- Add utils.osCommand (caption)
+- Improved utils.stringSplit (implicit conversion to number on request)
+- Made eventHelpers more resilient to coding errors in the on = section
+- Made log function more resilient when logitem is table with embedded function(s)
+- Improved domoticz.snapshot() to enable snapshot of multiple cameras (in one Email)
 
 ## [3.0.12]
 - Add option to use device, camera, group, scene and variable objects as parm to deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods.

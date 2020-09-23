@@ -851,7 +851,7 @@ describe('Domoticz', function()
 			collection.forEach(function(var)
 				table.insert(res, var.name)
 			end)
-			assert.is_same({ "a", "b", "c", "var with spaces", "x", "z",  }, values(res))
+			assert.is_same({ "a", "b", "c", "var with spaces", "x", "z", }, values(res))
 
 			local filtered = collection.filter(function(var)
 				return var.id < 4
@@ -1100,7 +1100,9 @@ describe('Domoticz', function()
 
 		it('should split a string ', function()
 			assert.is_same(domoticz.utils.stringSplit("A-B-C", "-")[2],"B")
-			assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
+			assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua")[7], "Domoticz.lua")
+			assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua", "%s%p")[7], "Domoticz")
+			assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua", "%p")[2], "lua")
 		end)
 	end)
 

@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.12',
+	DZVERSION = '3.0.13',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -91,12 +91,12 @@ function self.fileExists(name)
 	return code ~= 2
 end
 
-function self.stringSplit(text, sep)
+function self.stringSplit(text, sep, convert)
 	if not(text) then return {} end
 	local sep = sep or '%s'
 	local t = {}
 	for str in string.gmatch(text, "([^"..sep.."]+)") do
-		table.insert(t, str)
+		table.insert(t, ( convert and tonumber(str) ) or str)
 	end
 	return t
 end
@@ -176,6 +176,13 @@ function self.toCelsius(f, relative)
 		return f*(1/1.8)
 	end
 	return ((f-32) / 1.8)
+end
+
+function self.osCommand(cmd)
+	local file = assert ( io.popen(cmd) )
+	local output = assert ( file:read('*all') )
+	local rc = { file:close() }
+	return output, rc[3]
 end
 
 function self.osExecute(cmd)
@@ -267,7 +274,7 @@ function self.fromJSON(json, fallback)
 
 end
 
-function self.fromBase64(codedString)  -- from http://lua-users.org/wiki/BaseSixtyFour
+function self.fromBase64(codedString) -- from http://lua-users.org/wiki/BaseSixtyFour
 	if type(codedString) ~= 'string' then
 		self.log('fromBase64: parm should be a string; you supplied a ' .. type(codedString), self.LOG_ERROR)
 		return nil
@@ -314,7 +321,7 @@ function self.isXML(str, content)
 	local str = str or ''
 	local content = content or ''
 	local xmlPattern = '^%s*%<.+%>%s*$'
-	local ret = ( str:match(xmlPattern) == str  or content:find('application/xml') or content:find('text/xml')) and not(str:sub(1,30):find('DOCTYPE html') )
+	local ret = ( str:match(xmlPattern) == str or content:find('application/xml') or content:find('text/xml')) and not(str:sub(1,30):find('DOCTYPE html') )
 	return ret
 
 end
@@ -526,7 +533,7 @@ function self.dumpSelection(object, selection)
 			self.print('')
 			self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
 		end
-		if object.baseType ~= 'variable'  and object.baseType ~= 'hardware' then
+		if object.baseType ~= 'variable' and object.baseType ~= 'hardware' then
 			self.print('> adapters: ' .. table.concat(object._adapters or {},', ') )
 		end
 		if object.baseType == 'device' then
