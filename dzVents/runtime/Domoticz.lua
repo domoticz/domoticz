@@ -152,12 +152,26 @@ local function Domoticz(settings)
 	end
 
 	-- have domoticz send snapshot
-	function self.snapshot(cameraID, subject)
-		if tostring(cameraID):match("%a") then
-			cameraID = self.cameras(cameraID).id
+	function self.snapshot(cameraIDS, subject)
+		local subject = subject or 'domoticz'
+		local cameraIDS = cameraIDS or 1
+
+		local cameraIDS = ( type(cameraIDS) == 'table' and cameraIDS ) or utils.stringSplit(cameraIDS,'%p')
+
+		for index, camera in ipairs(cameraIDS) do
+			if tostring(camera):match('%a') then
+				cameraIDS[index] = self.cameras(camera).id
+			end
 		end
-		local snapshotCommand = "SendCamera:" .. cameraID
-		return TimedCommand(self, snapshotCommand , subject, 'camera') -- works with afterXXX
+
+		if not( cameraIDS[2] ) then
+			local snapshotCommand = "SendCamera:" .. cameraIDS[1]
+			return TimedCommand(self, snapshotCommand , subject, 'camera')
+		else
+			cameraIDS = table.concat(cameraIDS, ';')
+			subject = self.utils.urlEncode(subject)
+			return TimedCommand(self, 'OpenURL', self.settings['Domoticz url'] .. "/json.htm?type=command&param=emailcamerasnapshot&camidx=" .. cameraIDS .. '&subject=' .. subject , 'camera')
+		end
 	end
 
 	-- have domoticz send an sms
