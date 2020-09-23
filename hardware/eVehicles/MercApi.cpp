@@ -348,6 +348,7 @@ bool CMercApi::GetCustomData(tCustomData& data)
 		if(m_fieldcnt < 0)
 		{
 			m_fieldcnt = static_cast<int16_t>(strarray.size());
+			_log.Debug(DEBUG_NORM, "MercApi: Reset Customfield count to %d", m_fieldcnt);
 		}
 		else
 		{
@@ -359,7 +360,7 @@ bool CMercApi::GetCustomData(tCustomData& data)
 				}
 				else
 				{
-					//_log.Debug(DEBUG_NORM, "MercApi: Got data for resource %s :\n%s", strarray[m_fieldcnt].c_str(),reply.toStyledString().c_str());
+					_log.Debug(DEBUG_RECEIVED, "MercApi: Got data for resource %s :\n%s", strarray[m_fieldcnt].c_str(),reply.toStyledString().c_str());
 
 					if (!reply[strarray[m_fieldcnt]].empty())
 					{
