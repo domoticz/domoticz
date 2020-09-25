@@ -26,6 +26,7 @@ local function EventHelpers(domoticz, mainMethod)
 			package.path
 	end
 
+	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,scenes,groups,variables,devices'
 	local webRoot = globalvariables['domoticz_webroot']
 	local _url = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
 
@@ -469,9 +470,8 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			local rule = string.lower(_rule)
-
 			if (now.matchesRule(rule)) then
-				return true, rule
+				return true, _rule
 			end
 		end
 
@@ -642,15 +642,24 @@ local function EventHelpers(domoticz, mainMethod)
 			local logScript = (module.type == 'external' and 'Script ' or 'Internal script ')
 
 			for j, event in pairs(module.on) do
+				if type(j) ~= 'string' or type(event) ~= 'table' or validEventTypes:find(j) == nil then
+					if not self.scripts[i].invalidOnSection then
+						self.scripts[i].invalidOnSection = true
+						if type(j) == "string" and validEventTypes:find(j) == nil then
+							utils.log('Valid eventTypes are: ' .. validEventTypes, utils.LOG_DEBUG )
+							utils.log('You entered "' .. tostring(j) .. '" in the on = section. Maybe you meant "' .. utils.fuzzyLookup(j, utils.stringSplit(validEventTypes,',')) ..'"?', utils.LOG_FORCE)
+						else
+							utils.log('You entered "' .. utils.toStr(event) .. '" as trigger but the eventType is not (properly) set')
+						end
+						utils.log(logScript .. module.name .. '.lua has an invalid on = section;  please check the wiki. Skipping it until fixed.', utils.LOG_ERROR)
+					end
 
-				if (not (type(j) == 'string' or type(event) == 'table')) then
-					utils.log(logScript .. module.name .. '.lua has a malformed on-section. Check the documentation. Skipping', utils.LOG_DEBUG)
 				else
 					if (mode == 'timer' and j == 'timer') then
 						-- { ['timer'] = { 'every minute ', 'every hour' } }
 
 						if type(event) ~= 'table' then
-							utils.log(logScript .. module.name .. '.lua has a malformed timer-section. Check the documentation.', utils.LOG_FORCE)
+							utils.log(logScript .. module.name .. '.lua has a malformed timer = section. Check the documentation.', utils.LOG_FORCE)
 							event = { event }
 						end
 
@@ -682,13 +691,13 @@ local function EventHelpers(domoticz, mainMethod)
 
 						-- { ['scenes'] = { 'scA', ['scB'] = { ..timedefs }, .. }
 
-						for devIdx, scgrpName in pairs(event) do
+						for scgrpIdx, scgrpName in pairs(event) do
 
 							-- detect if scgrpName is of the form ['devB'] = { 'every hour' }
 							if (type(scgrpName) == 'table') then
 								local triggered, def = self.processTimeRules(scgrpName, testTime)
 								if (triggered) then
-									addBindingEvent(bindings, devIdx, module)
+									addBindingEvent(bindings, scgrpIdx, module)
 								end
 							else
 								-- a single scene or group name (or id)
@@ -744,7 +753,6 @@ local function EventHelpers(domoticz, mainMethod)
 				end
 			end
 		end
-
 		return bindings, self.errModules
 	end
 
@@ -1165,7 +1173,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 		local customEvents = _G.notification and _G.notification.customEvents or nil
 
-		if (dcustomEvents ~= nil) then
+		if (customEvents ~= nil) then
 			for i, customEvent in pairs(customEvents) do
 				table.insert(items, '- Custom: ' .. customEvent.type) -- .. ' - ' .. customEvent.status)
 				length = length + 1

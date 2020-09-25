@@ -6,8 +6,9 @@ local self = {
 	LOG_FORCE = 0.5,
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
+	LOG_WARNING = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.13',
+	DZVERSION = '3.0.14',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -54,6 +55,33 @@ self.toStr = function (value)
 		str = str:sub(0, #str - 2) .. '}'
 	end
 	return str
+end
+
+self.fuzzyLookup = function (search, target) -- search must be string/number, target must be string/number or array of string/numbers
+	if type(target) == 'table' then
+		local lowestFuzzyValue = math.maxinteger
+		local lowestFuzzyKey = ''
+		for _, targetString in ipairs(target) do
+			local fuzzyValue =  self.fuzzyLookup(search, targetString) 
+			if  fuzzyValue < lowestFuzzyValue then
+				lowestFuzzyKey = targetString
+				lowestFuzzyValue = fuzzyValue
+			end
+		end
+		return lowestFuzzyKey
+	else
+		local search, target = (tostring(search)):lower(), (tostring(target)):lower()
+		local searchLength, targetLength, res = #search, #target, {}
+		for i = 0, searchLength do res[i] = { [0] = i } end
+		for j = 1, targetLength do res[0][j] = j end
+		for k = 1, searchLength do
+			for l = 1, targetLength do
+				local cost = search:sub(k,k) == target:sub(l,l) and 0 or 1
+				res[k][l] = math.min(res[k-1][l]+1, res[k][l-1]+1, res[k-1][l-1]+cost)
+			end
+		end
+		return res[searchLength][targetLength]
+	end
 end
 
 function self.setLogMarker(logMarker)

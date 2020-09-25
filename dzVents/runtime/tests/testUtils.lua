@@ -94,12 +94,13 @@ describe('event helpers', function()
 			end
 
 			_G.logLevel = utils.LOG_INFO
-
 			utils.log('something', utils.LOG_DEBUG)
 			assert.is_nil(printed)
 
 			_G.logLevel = utils.LOG_ERROR
 			utils.log('error', utils.LOG_INFO)
+			assert.is_nil(printed)
+			utils.log('error', utils.LOG_WARNING)
 			assert.is_nil(printed)
 
 			_G.logLevel = 0
@@ -374,6 +375,13 @@ describe('event helpers', function()
 		it('should split a string ', function()
 			assert.is_same(utils.stringSplit("A-B-C", "-")[2],"B")
 			assert.is_same(utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
+		end)
+
+		it('should fuzzy match  a string ', function()
+			assert.is_same(utils.fuzzyLookup('HtpRepsonse','httpResponse'),3)
+			assert.is_same(utils.fuzzyLookup('httpResponse','httpResponse'),0)
+			local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,scenes,groups,variables,devices'
+			assert.is_same(utils.fuzzyLookup('CutsomeEvent',utils.stringSplit(validEventTypes,',')),'customEvents')
 		end)
 
 		it('should match a string with Lua magic chars', function()
