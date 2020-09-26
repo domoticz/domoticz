@@ -105,3 +105,4 @@ define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
             };
         }
     });
+});
