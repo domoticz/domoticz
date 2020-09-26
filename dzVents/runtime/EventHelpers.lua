@@ -26,7 +26,7 @@ local function EventHelpers(domoticz, mainMethod)
 			package.path
 	end
 
-	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,scenes,groups,variables,devices'
+	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,scenes,groups,variables'
 	local webRoot = globalvariables['domoticz_webroot']
 	local _url = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
 
