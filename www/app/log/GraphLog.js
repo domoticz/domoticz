@@ -25,7 +25,7 @@ define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
             },
             template: '<div></div>',
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzDataPointApi, domoticzApi, domoticzGlobals) {
+            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
 
                 const self = this;
 
@@ -37,7 +37,7 @@ define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
                         chartParams(
                             self.range,
                             self.device,
-                            self.domoticzGlobals.Get5MinuteHistoryDaysGraphTitle(),
+                            domoticzGlobals.Get5MinuteHistoryDaysGraphTitle(),
                             function() { return self.logCtrl.autoRefresh; })
                     );
                 }
@@ -104,5 +104,5 @@ define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
                 autoRefreshIsEnabled: autoRefreshIsEnabled
             };
         }
-    });
-});
+    }
+);
