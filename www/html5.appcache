@@ -668,7 +668,7 @@ js/ng-grid-flexible-height.js
 js/ng-grid.min.js
 js/ngDraggable.js
 js/ngload.min.js
-js/require.js
+js/require.min.js
 js/respond.min.js
 js/ui-bootstrap.min.js
 js/wow.min.js
