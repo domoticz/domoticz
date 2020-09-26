@@ -21,7 +21,13 @@ require.config({
 		'blockly': '../js/blockly/blockly_compressed',
 		'blockly-blocks': '../js/blockly/blocks_compressed',
 		'blockly-msg-en': '../js/blockly/msg/en',
-		'luxon': '../js/luxon.min'
+		'luxon': '../js/luxon.min',
+		Base: 'log/Base',
+		AngularBase: 'log/AngularBase',
+		DomoticzBase: 'log/DomoticzBase',
+		RefreshingChart: 'log/RefreshingChart',
+		RefreshingSingleChart: 'log/RefreshingSingleChart',
+		RefreshingMinMaxAvgChart: 'log/RefreshingMinMaxAvgChart'
 	},
 	shim: {
 		'angularAMD': ['angular'],
