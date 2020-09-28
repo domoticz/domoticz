@@ -729,22 +729,21 @@ void COpenWeatherMap::GetMeterDetails()
 		SendPercentageSensor(7, 1, 255, clouds, "Clouds %");
 	}
 
-	//Rain (only present if their is rain (or snow))
-	float rainmm = 0;
+	//Rain (only present if their is rain)
+	float precipitation = 0;
 	if (!current["rain"].empty() && !current["rain"]["1h"].empty())
 	{
-		rainmm = current["rain"]["1h"].asFloat();
+		precipitation = current["rain"]["1h"].asFloat();
 	}
-	else
-	{	// Maybe it is not raining but snowing... we show this as 'rain' as well (for now at least)
-		if (!current["snow"].empty() && !current["snow"]["1h"].empty())
-		{
-			rainmm = current["snow"]["1h"].asFloat();
-		}
+
+	//Snow (only present if their is snow), add together with rain as precipitation
+	if (!current["snow"].empty() && !current["snow"]["1h"].empty())
+	{
+		precipitation += current["snow"]["1h"].asFloat();
 	}
-	SendRainRateSensor(8, 255, rainmm, "Rain (Snow)");
-	m_itIsRaining = rainmm > 0;
-	SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it Raining");
+	SendRainRateSensor(8, 255, precipitation, "Precipitation");
+	m_itIsRaining = precipitation > 0;
+	SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it raining/snowing");
 
 	// Process daily forecast data if available
 	if (root["daily"].empty())
