@@ -2,23 +2,20 @@
 <refreshing-single-chart
         class="device-log-chart"
         device="::$ctrl.device"
-        range="day"
-/>
+        range="day"></refreshing-single-chart>
 
 <h2>{{ ::'Month' | translate }}</h2>
 <refreshing-min-max-avg-chart
         class="device-log-chart"
         device="::$ctrl.device"
         range="month"
-        chart-title="Last Month"
-/>
+        chart-title="Last Month"></refreshing-min-max-avg-chart>
 
 <h2>{{ ::'Year' | translate }}</h2>
 <refreshing-min-max-avg-chart
         class="device-log-chart"
         device="::$ctrl.device"
         range="year"
-        chart-title="Last Year"
-/>
+        chart-title="Last Year"></refreshing-min-max-avg-chart>
 
 <label><input type="checkbox" ng-model="$ctrl.autoRefresh"> {{ ::'Auto refresh on device update' | translate }}</label>
