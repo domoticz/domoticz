@@ -7,7 +7,8 @@
 enum _eDenkoviTCPDevice
 {
 	DDEV_WIFI_16R = 0,						//0
-	DDEV_WIFI_16R_Modbus					//1
+	DDEV_WIFI_16R_Modbus,					//1
+	DDEV_SmartDEN_IP_16_R_MT_MODBUS			//2
 };
 
 #define DMODBUS_READ_COILS						1
@@ -75,7 +76,7 @@ private:
 	std::string m_respBuff;
 	uint8_t m_reqBuff[100];
 	uint16_t m_uiReceivedDataLength = 0;
-	uint16_t m_uiTransactionCounter = 0;
+	uint16_t m_uiTransactionCounter = 0; 
 protected:
 	void OnConnect() override;
 	void OnDisconnect() override;

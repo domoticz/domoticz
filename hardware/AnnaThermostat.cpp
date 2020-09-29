@@ -15,7 +15,6 @@
 
 // Plugwise Anna Thermostat
 // Anna Sensors
-
 // Anna Switches
 
 #define sAnneBoilerState 8
@@ -24,15 +23,18 @@
 #define sAnnaPresets     11
 #define sAnnaComfort     12
 
-const std::string ANNA_GET_STATUS = "/core/appliances";
-const std::string ANNA_LOCATION = "/cache/domain_objects;class=Location";
-const std::string ANNA_SET_LOCATION = "/core/locations";
+const std::string ANNA_VERSION       = "1.0.1";
+const std::string ANNA_GET_STATUS    = "/core/appliances";
+const std::string ANNA_LOCATION      = "/cache/domain_objects;class=Location";
+const std::string ANNA_SET_LOCATION  = "/core/locations";
+const std::string ANNA_LEVEL_NAMES   = "Off|Home|Away|Night|Vacation|Frost";
+const std::string ANNA_LEVEL_ACTIONS = "00|10|20|30|40|50";
+
 
 
 //#define _DEBUG // toggle for reading and writing local files
-
 #ifdef _DEBUG
-//define DEBUG_AnnaThermostat
+//#define DEBUG_AnnaThermostat
 #define DEBUG_ANNA_APPLIANCE_READ  "/tmp/anna/appliances.xml"
 #define DEBUG_ANNA_WRITE           "/tmp/anna/output.txt"
 #define DEBUG_ANNA_LOCATION_READ   "/tmp/anna/location.xml"
@@ -75,8 +77,6 @@ CAnnaThermostat::CAnnaThermostat(const int ID, const std::string& IPAddress, con
 {
 	m_HwdID = ID;
 	Init();
-//    GetMeterDetails();
-
 }
 
 CAnnaThermostat::~CAnnaThermostat(void)
@@ -98,15 +98,6 @@ void CAnnaThermostat::CAnnaThermostat::Init()
 
 bool CAnnaThermostat::StartHardware()
 {
-	// Showing we are starting Annatherm and
-	// notify users in the log how to use the event system once per startup
-	Log(LOG_NORM, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-	Log(LOG_NORM, "AnnaTherm: Notice: To change presets in events, please use the following percentages levels:");
-	Log(LOG_NORM, "10%% for Home, 20%% for Away, 30%% for Night, 40%% for Vacation & 50%% for Frost (Lua use 'Set Level: 20')");
-	Log(LOG_NORM, "Any other value will set Annatherm for safety to frost protection! ");
-	Log(LOG_NORM, "To Detect changes in scripts use 'Off, Home, Away, Night, Vacation, Frost'");
-	Log(LOG_NORM, "Adjusting the Temp manually on the ANNA or via App, forces the ANNA to set Scenes to Off!!");
-	Log(LOG_NORM, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
 	RequestStart();
 	Init();
@@ -148,7 +139,12 @@ void CAnnaThermostat::Do_Work()
 		if ((sec_counter % ANNA_POLL_INTERVAL == 0) || (bFirstTime))
 		{
 			sec_counter = 0;
-			bFirstTime = false;
+			if (bFirstTime)
+			{
+				FixUnit(); // Making sure the unit ID's are set to 1.  Req for future extensions
+				InitialMessageMigrateCheck();
+				bFirstTime = false;
+			}
 			GetMeterDetails();
 		}
 
@@ -164,7 +160,7 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	thermos.id2 = 0;
 	thermos.id3 = 0;
 	thermos.id4 = Idx;
-	thermos.dunit = 0;
+	thermos.dunit = 1;
 	thermos.temp = Temp;
 	sDecodeRXMessage(this, (const unsigned char*)&thermos, defaultname.c_str(), 255);
 }
@@ -506,7 +502,10 @@ void CAnnaThermostat::GetMeterDetails()
 		}
 		for (pElem; pElem; pElem = pElem->NextSiblingElement())
 		{
+
 			sname = GetElementChildValue(pElem, "type");
+			//tmpstr = GetPeriodMeasurement(pElem);
+			//Log (LOG_NORM,"%s : %s ", sname.c_str(), tmpstr.c_str());
 			if (sname == "temperature")
 			{
 				tmpstr = GetPeriodMeasurement(pElem);
@@ -599,18 +598,7 @@ void CAnnaThermostat::GetMeterDetails()
 					{
 						SendSwitch(sAnnaFlameState, 1, 255, false, 0, sname);
 					}
-					//make device ID
-					//const int NodeID = sAnnaFlameState;
-					//unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
-					//unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
-					//unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
-					//unsigned char ID4 = (unsigned char)NodeID & 0xFF;
-
-					//char szIdx[10];
-					//sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-					//m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", 5, m_HwdID,szIdx);
 				}
-
 			}
 			else if (sname == "proximity_sensor_state")
 			{
@@ -643,7 +631,7 @@ void CAnnaThermostat::GetMeterDetails()
 					{
 						bSwitch = false;
 					}
-					SendSwitch(sAnnaProximity, 0, 255, bSwitch, 0, sname);
+					SendSwitch(sAnnaProximity, 1, 255, bSwitch, 0, sname);
 				}
 			}
 			else if (sname == "preset_state")
@@ -683,39 +671,8 @@ void CAnnaThermostat::GetMeterDetails()
 				}
 				else strncpy(sPreset, "50", sizeof(sPreset));
 
-				// setting up code to let Domoticz know the selector is changed
-				_tGeneralSwitch xcmd;
-				xcmd.len = sizeof(_tGeneralSwitch) - 1;
-				xcmd.id = sAnnaPresets;
-				xcmd.type = pTypeGeneralSwitch;
-				//xcmd.subtype = sSwitchGeneralSwitch;
-				xcmd.unitcode = 1;
-				xcmd.subtype = sSwitchTypeSelector;
-				xcmd.level = std::stoi(sPreset);
-
 				std::string PresetName = "Anna Preset";
-				_eSwitchType switchtype;
-				switchtype = STYPE_Selector;
-				int customImage = 16;//Frost
-
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID , sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, sAnnaPresets, xcmd.unitcode);
-				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd,  PresetName.c_str(), 255);
-				if (result.empty()) //Switch is not yet in the system so create it
-				{
-					std::string options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Home|Away|Night|Vacation|Frost;LevelOffHidden:true;LevelActions:00|10|20|30|40|50", false));
-					//m_sql.safe_query(
-					//    "INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-					//    "VALUES (%d, '%08X', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')", m_HwdID, sAnnaPresets, 1, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, 0,PresetName.c_str() , sPreset, customImage, options_str.c_str());
-					m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i, Options='%q' WHERE(HardwareID == %d) AND (DeviceID=='%08X') AND (Unit == '%d')", PresetName.c_str(), (switchtype), customImage, options_str.c_str(), m_HwdID, sAnnaPresets, xcmd.unitcode);
-				 }
-				else
-				{
-					int old_value = atoi(result[0][1].c_str());
-					if (old_value != xcmd.level)
-						Log(LOG_STATUS, "Syncing %s with Anna Gateway preset - Received : %s", PresetName.c_str(), tmpstr.c_str());
-					result = m_sql.safe_query("UPDATE DeviceStatus SET sValue = '%q' WHERE (HardwareID==%d) AND (DeviceID=='%08X')", sPreset, m_HwdID, sAnnaPresets);
-				}
+				SendSelectorSwitch(sAnnaPresets,  1, sPreset , PresetName.c_str(), 16, false, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS, true);
 			}
 		}
 		pAppliance = pAppliance->NextSiblingElement("appliance");
@@ -818,4 +775,40 @@ bool CAnnaThermostat::AnnaGetLocation()
 		return false;
 	}	m_AnnaLocation.m_ALocationType = pElem->GetText();
 	return true;
+}
+
+
+bool CAnnaThermostat::InitialMessageMigrateCheck()
+{
+	bool retval = false;
+	// Showing we are starting Annatherm and
+	// notify users in the log how to use the event system once per startup
+	Log(LOG_NORM, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	Log(LOG_NORM, "Plugwise Plugin Version: %s", ANNA_VERSION.c_str() );
+	Log(LOG_NORM, "Notice: To change the preset by way of scripts/events, please use the following percentages levels:");
+	Log(LOG_NORM, "10%% for Home, 20%% for Away, 30%% for Night, 40%% for Vacation & 50%% for Frost (Lua use 'Set Level: 20')");
+	Log(LOG_NORM, "Any other value will be refused! ");
+	Log(LOG_NORM, "To Detect changes in scripts use 'Off, Home, Away, Night, Vacation, Frost'");
+	Log(LOG_NORM, "Adjusting the Temp manually on the ANNA or via App, forces the ANNA to set Scenes to Off!!");
+	Log(LOG_NORM, "KNOWN ISSUE: The Gateway will not send an correct update if the previous scene is choosen again!");
+	Log(LOG_NORM, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+	if( MigrateSelectorSwitch(sAnnaPresets, 1, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS,true)== 1)
+	{
+		Log(LOG_STATUS, "Scene Selector switch updated to Version: %s ! ", ANNA_VERSION.c_str());
+		retval = true;
+	}
+	return retval;
+}
+void CAnnaThermostat::FixUnit()
+{   // This function will make sure that from now on  that the Preset switch in the Plugwise plugin will be using unit 0
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == '%d')", m_HwdID,  0);
+	if (result.empty())
+		return;  // switch doen not exist yet
+	
+    for( int i = 0;i < result.size(); ++i) 
+ 		{  
+	     	m_sql.safe_query("UPDATE DeviceStatus SET unit = 1 WHERE (ID==%s)", result [i][0].c_str());
+ 		}	 
 }

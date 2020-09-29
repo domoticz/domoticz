@@ -4,6 +4,7 @@
 #include <sstream>
 #include "../httpclient/UrlEncode.h"
 #include "../main/Helper.h"
+#include "../main/Logger.h"
 
 //(c) 2016 GizMoCuz
 
@@ -120,10 +121,9 @@ struct _tFCGI_UnknownTypeRecord {
 	_tFCGI_UnknownTypeBody body;
 };
 
-std::string ExecuteCommandAndReturnRaw(const std::string &szCommand)
+std::vector<char> ExecuteCommandAndReturnRaw(const std::string &szCommand)
 {
-	std::string ret;
-
+	std::vector<char> myData;
 	try
 	{
 		FILE *fp;
@@ -136,11 +136,18 @@ std::string ExecuteCommandAndReturnRaw(const std::string &szCommand)
 #endif
 		if (fp != NULL)
 		{
-			char path[1035];
-			/* Read the output a line at a time - output it. */
-			while (fgets(path, sizeof(path) - 1, fp) != NULL)
-			{
-				ret += path;
+			for (;;) {
+				const int BufferSize = 1024;
+
+				const size_t oldSize = myData.size();
+				myData.resize(myData.size() + BufferSize);        
+
+				const unsigned bytesRead = fread(&myData[oldSize], 1, BufferSize,fp);
+				myData.resize(oldSize + bytesRead);
+
+				if (bytesRead == 0) {
+					break;
+				}
 			}
 			/* close */
 #ifdef WIN32
@@ -154,7 +161,7 @@ std::string ExecuteCommandAndReturnRaw(const std::string &szCommand)
 	{
 
 	}
-	return ret;
+	return myData;
 }
 
 extern std::istream & safeGetline(std::istream & is, std::string & line);
@@ -173,10 +180,12 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 	std::multimap<std::string, std::string> parameters;
 
 	std::string request_path2 = req.uri; // we need the raw request string to parse the get-request
+	std::string szQueryString;
 	size_t paramPos = request_path2.find_first_of('?');
 	if (paramPos != std::string::npos)
 	{
 		std::string params = request_path2.substr(paramPos + 1);
+		szQueryString = request_path2.substr(paramPos + 1);
 		std::string name;
 		std::string value;
 
@@ -288,7 +297,6 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 	gfci.paddingLength = 0;
 	request_id_++;
 
-	std::string szQueryString;
 
 	std::string str_params;
 	std::multimap<std::string, std::string>::const_iterator itt;
@@ -300,12 +308,6 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 		str_params.append(itt->first);
 		str_params.append("=");
 		str_params.append(itt->second);
-
-		if (!szQueryString.empty())
-			szQueryString += "&";
-		szQueryString.append(itt->first);
-		szQueryString.append("=");
-		szQueryString.append(CURLEncode::URLEncode(itt->second));
 	}
 
 	std::string fullexecmd = settings.php_cgi_path + " " + full_path;
@@ -336,10 +338,10 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 
 	fullexecmd += " SERVER_SOFTWARE=Domoticz";
 	fullexecmd += " SERVER_NAME=localhost";
-	fullexecmd += " SERVER_ADDR=" + CURLEncode::URLEncode(settings.listening_address);
+	fullexecmd += " SERVER_ADDR='" + settings.listening_address + "'";
 	fullexecmd += " SERVER_PORT=" + settings.listening_port;
 	fullexecmd += " REMOTE_ADDR=" + req.host_address;
-	fullexecmd += " REMOTE_PORT=" + req.host_port;
+	fullexecmd += " QUERY_STRING='" + szQueryString + "'"; 
 
 	std::vector<header>::const_iterator ittHeader;
 	for (ittHeader = req.headers.begin(); ittHeader != req.headers.end(); ++ittHeader)
@@ -347,12 +349,19 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 		std::string rName = "HTTP_" + ittHeader->name;
 		stdreplace(rName, "-", "_");
 		stdupper(rName);
-		fullexecmd += " " + rName + "=" + CURLEncode::URLEncode(ittHeader->value);
+		fullexecmd += " " + rName + "='" + ittHeader->value + "'";
 
 		fcgi_params[rName] = CURLEncode::URLEncode(ittHeader->value);
 	}
+#ifdef WIN32
+	fullexecmd = "SET QUERY_STRING=\""+szQueryString + "\" & " + fullexecmd;
+#else
+	fullexecmd = "export QUERY_STRING='"+szQueryString + "' && " + fullexecmd;
+#endif
 
-	std::string pret = ExecuteCommandAndReturnRaw(fullexecmd);
+	_log.Debug(DEBUG_NORM, "[PHP] Command: %s", fullexecmd.c_str());
+	std::vector<char> v = ExecuteCommandAndReturnRaw(fullexecmd);
+	std::string pret(v.begin(), v.end());
 	if (pret.empty())
 	{
 		rep = reply::stock_reply(reply::not_found);
@@ -363,6 +372,8 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 	bool bDoneWithHeaders = false;
 	while (!bDoneWithHeaders)
 	{
+		if (pret[0] == '\r') pret=pret.substr(1);	//Skip CR symbol if present
+		
 		size_t tpos = pret.find('\n');
 		if (tpos == std::string::npos)
 		{

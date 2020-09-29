@@ -473,29 +473,57 @@ void GetAppVersion()
 #if !defined WIN32
 void CheckForOnboardSensors()
 {
-	//Check if we have vcgencmd (are running on a RaspberryPi)
-	//
-	int returncode=0;
-	std::vector<std::string> ret = ExecuteCommandAndReturn (VCGENCMDTEMPCOMMAND,returncode);
+	//Check if we are running on a RaspberryPi
+	std::string sLine = "";
+	std::ifstream infile;
 
-	if (ret.empty()) {
-		// _log.Log(LOG_STATUS,"No vcgencmd detected (empty string)");
-	} else {
-		std::string tmpline=ret[0];
-		if (tmpline.find("temp=")==std::string::npos) {
-			// _log.Log(LOG_STATUS,"Wrong vcgencmd output (%s)",tmpline.c_str());
-		} else {
-			_log.Log(LOG_STATUS,"Hardware Monitor: Raspberry Pi detected");
-			//Core temperature of BCM2835 SoC
-			szInternalTemperatureCommand = VCGENCMDTEMPCOMMAND;
-			bHasInternalTemperature = true;
+#if defined(__FreeBSD__)
+	infile.open("/compat/linux/proc/cpuinfo");
+#else
+	infile.open("/proc/cpuinfo");
+#endif
+	if (infile.is_open())
+	{
+		while (!infile.eof())
+		{
+			getline(infile, sLine);
+			if (
+				(sLine.find("BCM2708") != std::string::npos) ||
+				(sLine.find("BCM2709") != std::string::npos) ||
+				(sLine.find("BCM2711") != std::string::npos) ||
+				(sLine.find("BCM2835") != std::string::npos)
 
-			//PI Clock speeds	
-			szInternalARMSpeedCommand = VCGENCMDARMSPEEDCOMMAND;
-			szInternalV3DSpeedCommand = VCGENCMDV3DSPEEDCOMMAND;
-			szInternalCoreSpeedCommand = VCGENCMDCORESPEEDCOMMAND;
-			bHasInternalClockSpeeds=true;
+				)
+			{
+				_log.Log(LOG_STATUS, "System: Raspberry Pi");
+				//Check if we have vcgencmd (are running on a RaspberryPi)
+				//
+				int returncode = 0;
+				std::vector<std::string> ret = ExecuteCommandAndReturn(VCGENCMDTEMPCOMMAND, returncode);
+
+				if (ret.empty()) {
+					_log.Log(LOG_STATUS,"It seems vcgencmd is not installed. If you would like use the hardware monitor, consider installing this!");
+				}
+				else {
+					std::string tmpline = ret[0];
+					if (tmpline.find("temp=") == std::string::npos) {
+						_log.Log(LOG_STATUS, "It seems vcgencmd is not installed. If you would like use the hardware monitor, consider installing this!");
+					}
+					else {
+						//Core temperature of BCM2835 SoC
+						szInternalTemperatureCommand = VCGENCMDTEMPCOMMAND;
+						bHasInternalTemperature = true;
+
+						//PI Clock speeds	
+						szInternalARMSpeedCommand = VCGENCMDARMSPEEDCOMMAND;
+						szInternalV3DSpeedCommand = VCGENCMDV3DSPEEDCOMMAND;
+						szInternalCoreSpeedCommand = VCGENCMDCORESPEEDCOMMAND;
+						bHasInternalClockSpeeds = true;
+					}
+				}
+			}
 		}
+		infile.close();
 	}
 
 	if (!bHasInternalTemperature)

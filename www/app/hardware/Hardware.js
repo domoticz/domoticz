@@ -4371,8 +4371,11 @@ define(['app'], function (app) {
 						else if (text.indexOf("Denkovi") >= 0) {
 							$("#hardwarecontent #divpollinterval").show();
 							$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(10000);
-							if (text.indexOf("Modules with LAN (HTTP)") >= 0)
+							if (text.indexOf("Modules with LAN (HTTP)") >= 0){
 								$("#hardwarecontent #divmodeldenkovidevices").show();
+								$("#hardwarecontent #password").show();
+								$("#hardwarecontent #lblpassword").show();
+							}
 							else if (text.indexOf("Modules with LAN (TCP)") >= 0) {
 								$("#hardwarecontent #divmodeldenkovitcpdevices").show();
 								var board = $("#hardwarecontent #divmodeldenkovitcpdevices #combomodeldenkovitcpdevices option:selected").val();
@@ -4384,7 +4387,9 @@ define(['app'], function (app) {
 									$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #lbldenkovislaveid").show();
 									$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #denkovislaveid").show();
 								}
-							}
+								$("#hardwarecontent #password").hide();
+								$("#hardwarecontent #lblpassword").hide();
+							}							
 							$("#hardwarecontent #username").hide();
 							$("#hardwarecontent #lblusername").hide();
 						}

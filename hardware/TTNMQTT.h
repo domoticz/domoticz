@@ -36,6 +36,8 @@ protected:
 	std::string m_CAFilename;
 	std::string m_TopicIn;
 	std::shared_ptr<std::thread> m_thread;
+	double m_DomLat;
+	double m_DomLon;
 
 	virtual bool StartHardware() override;
 	virtual bool StopHardware() override;

@@ -12692,7 +12692,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		else if (pHardware->HwdType == HTYPE_Tado)
 		{
 			CTado* pGateway = reinterpret_cast<CTado*>(pHardware);
-			pGateway->SetSetpoint(ID4, TempValue);
+			pGateway->SetSetpoint(ID2, ID3, ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_Netatmo)
 		{

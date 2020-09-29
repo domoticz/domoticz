@@ -59,4 +59,5 @@ private:
 	uint64_t m_carid;
 	uint32_t m_crc;
 	std::string m_fields;
+	int16_t m_fieldcnt;
 };

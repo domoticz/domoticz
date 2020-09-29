@@ -1316,10 +1316,20 @@ end
 
 local testSnapshot = function()
 	local res = true
+	res = res and dz.snapshot()
+	tstMsg('Test camera snaphot with defaults',res)
 	res = res and dz.snapshot(1,"stage1 snapshot").afterSec(4)
 	tstMsg('Test camera snaphot with id',res)
 	res = res and dz.snapshot("camera1","stage1 snapshot").afterSec(4)
 	tstMsg('Test camera snaphot with name',res)
+	res = res and dz.snapshot("camera1;camera1","stage1 snapshot").afterSec(5)
+	tstMsg('Test camera snaphot with names',res)
+	res = res and dz.snapshot("1;1","stage1 snapshot").afterSec(5)
+	tstMsg('Test camera snaphot with IDs',res)
+	res = res and dz.snapshot({"camera1","camera1"},"stage1 snapshot")
+	tstMsg('Test camera snaphot with names',res)
+	res = res and dz.snapshot({1,1},"stage1 snapshot").afterSec(5)
+	tstMsg('Test camera snaphot with IDs in table',res)
 	return res
 end
 
@@ -1599,7 +1609,7 @@ return {
 			log('Results stage 1: FAILED!!!!', dz.LOG_ERROR)
 		else
 			log('Results stage 1: SUCCEEDED')
-			dz.devices('stage2Trigger').switchOn().afterSec(20)   -- 20 seconds because of repeatAfter tests
+			dz.devices('stage2Trigger').switchOn().afterSec(20) -- 20 seconds because of repeatAfter tests
 		end
 	end
 }

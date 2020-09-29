@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Helper.h"
-#include "Logger.h"
 #ifdef WIN32
 #include "dirent_windows.h"
 #include <direct.h>

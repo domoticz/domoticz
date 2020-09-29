@@ -16,7 +16,9 @@ enum _eDenkoviDevice
 	DDEV_DAEnet_IP2,								//8
 	DDEV_DAEnet_IP2_8_RELAYS,						//9
 	DDEV_SmartDEN_Opener,							//10
-	DDEV_SmartDEN_PLC								//11
+	DDEV_SmartDEN_PLC,								//11
+	DDEV_SmartDEN_IP_16_R_MT,						//12
+	DDEV_SmartDEN_IP_16_R_MQ						//13
 };
 
 class CDenkoviDevices : public CDomoticzHardwareBase
@@ -48,7 +50,7 @@ private:
 	unsigned short m_usIPPort;
 	std::string m_Password;
 	int m_pollInterval;
-	int m_iModel;
-	//boost::shared_ptr<boost::thread> m_thread;
-	std::shared_ptr<std::thread> m_thread;
+	int m_iModel; 
+	std::shared_ptr<std::thread> m_thread;  
+
 };

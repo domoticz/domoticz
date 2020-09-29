@@ -25,7 +25,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("3.0.11")
+	m_version("3.0.14")
 {
 	m_bdzVentsExist = false;
 }
@@ -725,7 +725,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	std::string sTitle;
 	m_sql.GetPreferencesVar("Title", sTitle);
 	luaTable.AddString("domoticz_title", sTitle);
-	
+
 	// Only when location entered in the settings
 	// Add to table
 	bool locationSet = false;

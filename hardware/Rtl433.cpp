@@ -80,9 +80,15 @@ bool CRtl433::ParseJsonLine(const std::string& sLine)
 		size_t totFields = root.size();
 		for (size_t ii = 0; ii < totFields; ii++)
 		{
-			std::string vname = root.getMemberNames()[ii];
-			std::string vvalue = root[root.getMemberNames()[ii]].asString();
-			_Field[vname] = vvalue;
+			if (
+				(!root[root.getMemberNames()[ii]].isObject())
+				&& (!root[root.getMemberNames()[ii]].isArray())
+				)
+			{
+				std::string vname = root.getMemberNames()[ii];
+				std::string vvalue = root[root.getMemberNames()[ii]].asString();
+				_Field[vname] = vvalue;
+			}
 		}
 		return ParseData(_Field);
 	}
