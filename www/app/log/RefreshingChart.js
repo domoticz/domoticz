@@ -83,7 +83,11 @@ define(['DomoticzBase'], function (DomoticzBase) {
                                 }
 
                                 self.domoticzDatapointApi
-                                    .deletePoint(self.device.idx, event.point, self.dataSupplier.dataPointIsShort())
+                                    .deletePoint(
+                                        self.device.idx,
+                                        event.point,
+                                        self.dataSupplier.dataPointIsShort(),
+                                        new Date().getTimezoneOffset())
                                     .then(function () {
                                         self.$route.reload();
                                     });

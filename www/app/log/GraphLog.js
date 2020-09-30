@@ -56,6 +56,9 @@ define(['app', 'RefreshingChart'],
                                 dateFromDataItem: function(dataItem) {
                                     return GetLocalDateTimeFromString(dataItem.d);
                                 },
+                                dataPointIsShort: function() {
+                                    return true;
+                                },
                                 seriesSuppliers: [
                                     {
                                         showInLegend: false,
@@ -116,6 +119,9 @@ define(['app', 'RefreshingChart'],
                                 },
                                 dateFromDataItem: function(dataItem) {
                                     return GetLocalDateFromString(dataItem.d);
+                                },
+                                dataPointIsShort: function() {
+                                    return false;
                                 },
                                 seriesSuppliers: [
                                     {
@@ -192,6 +198,9 @@ define(['app', 'RefreshingChart'],
                                 },
                                 dateFromDataItem: function(dataItem) {
                                     return GetLocalDateFromString(dataItem.d);
+                                },
+                                dataPointIsShort: function() {
+                                    return false;
                                 },
                                 seriesSuppliers: [
                                     {

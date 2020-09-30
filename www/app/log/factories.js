@@ -38,7 +38,7 @@ define(['app'], function (app) {
             deletePoint: deletePoint
         };
 
-        function deletePoint(deviceIdx, point, isShort) {
+        function deletePoint(deviceIdx, point, isShort, timezoneOffset=0) {
             return $q(function (resolve, reject) {
                 if (!permissions.hasPermission('Admin')) {
                     HideNotify();
@@ -47,8 +47,8 @@ define(['app'], function (app) {
                 }
 
                 var dateString = isShort
-                    ? Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', point.x)
-                    : Highcharts.dateFormat('%Y-%m-%d', point.x);
+                    ? Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', point.x - timezoneOffset*60*1000)
+                    : Highcharts.dateFormat('%Y-%m-%d', point.x - timezoneOffset*60*1000);
 
                 var message = $.t("Are you sure to remove this value at") + " ?:\n\n" + $.t("Date") + ": " + dateString + " \n" + $.t("Value") + ": " + point.y;
 
