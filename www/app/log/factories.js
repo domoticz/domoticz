@@ -2,7 +2,35 @@ define(['app'], function (app) {
 
     app.constant('domoticzGlobals', {
         Get5MinuteHistoryDaysGraphTitle: Get5MinuteHistoryDaysGraphTitle,
-        chartPointClickNew: chartPointClickNew
+        chartPointClickNew: chartPointClickNew,
+        valueKeyForDevice: function(device) {
+            if (device.SubType === 'Lux') {
+                return 'lux'
+            } else if (device.Type === 'Usage') {
+                return 'u'
+            } else {
+                return 'v';
+            }
+        },
+        chartTypeForDevice: function(device) {
+            if (['Custom Sensor', 'Waterflow', 'Percentage'].includes(device.SubType)) {
+                return 'Percentage';
+            } else {
+                return 'counter';
+            }
+        },
+        sensorNameForDevice: function(device) {
+            if (device.Type === 'Usage') {
+                return $.t('Usage');
+            } else {
+                return $.t(device.SubType)
+            }
+        },
+        axisTitleForDevice: function(device) {
+            const sensorName = this.sensorNameForDevice(device);
+            const unit = device.getUnit();
+            return device.SubType === 'Custom Sensor' ? unit : sensorName + ' (' + unit + ')';
+        }
     });
 
     app.factory('domoticzDataPointApi', function ($q, domoticzApi, permissions) {

@@ -539,8 +539,6 @@ app/log/GraphLog.js
 app/log/LightLog.html
 app/log/LightLog.js
 app/log/RefreshingChart.js
-app/log/RefreshingMinMaxAvgChart.js
-app/log/RefreshingSingleChart.js
 app/log/SceneLog.html
 app/log/SceneLog.js
 app/log/TemperatureLog.html

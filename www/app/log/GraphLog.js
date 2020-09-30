@@ -1,5 +1,5 @@
-define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
-    function (app, RefreshingSingleChart, RefreshingMinMaxAvgChart) {
+define(['app', 'RefreshingChart'],
+    function (app, RefreshingChart) {
 
         app.component('deviceGraphLog', {
             bindings: {
@@ -13,24 +13,24 @@ define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
             }
         });
 
-        app.component('refreshingSingleChart', {
+        app.component('refreshingDayChart', {
             require: {
                 logCtrl: '^deviceGraphLog'
             },
             bindings: {
                 device: '<',
                 deviceType: '<',
-                degreeType: '<',
-                range: '@'
+                degreeType: '<'
             },
             template: '<div></div>',
             controllerAs: 'vm',
             controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
 
                 const self = this;
+                self.range = 'day';
 
                 self.$onInit = function () {
-                    new RefreshingSingleChart(
+                    new RefreshingChart(
                         baseParams($),
                         angularParams($location, $route, $scope, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
@@ -38,13 +38,42 @@ define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
                             self.range,
                             self.device,
                             domoticzGlobals.Get5MinuteHistoryDaysGraphTitle(),
-                            function() { return self.logCtrl.autoRefresh; })
+                            function() { return self.logCtrl.autoRefresh; },
+                            {
+                                valueAxes: function() {
+                                    return [{
+                                        title: {
+                                            text: domoticzGlobals.axisTitleForDevice(self.device)
+                                        },
+                                        labels: {
+                                            formatter: function () {
+                                                const value = self.device.getUnit() === 'vM' ? Highcharts.numberFormat(this.value, 0) : this.value;
+                                                return value + ' ' + self.device.getUnit();
+                                            }
+                                        }
+                                    }];
+                                },
+                                dateFromDataItem: function(dataItem) {
+                                    return GetLocalDateTimeFromString(dataItem.d);
+                                },
+                                seriesSuppliers: [
+                                    {
+                                        showInLegend: false,
+                                        name: domoticzGlobals.sensorNameForDevice(self.device),
+                                        colorIndex: 0,
+                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
+                                        valueFromDataItem: function(dataItem) {
+                                            return dataItem[this.valueKey];
+                                        }
+                                    }
+                                ]
+                            })
                     );
                 }
             }
         });
 
-        app.component('refreshingMinMaxAvgChart', {
+        app.component('refreshingMonthChart', {
             require: {
                 logCtrl: '^deviceGraphLog'
             },
@@ -52,7 +81,6 @@ define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
                 device: '<',
                 deviceType: '<',
                 degreeType: '<',
-                range: '@',
                 chartTitle: '@'
             },
             template: '<div></div>',
@@ -60,9 +88,10 @@ define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
             controller: function ($location, $route, $scope, $element, domoticzDataPointApi, domoticzApi, domoticzGlobals) {
 
                 const self = this;
+                self.range = 'month';
 
                 self.$onInit = function () {
-                    new RefreshingMinMaxAvgChart(
+                    new RefreshingChart(
                         baseParams($),
                         angularParams($location, $route, $scope, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
@@ -70,7 +99,127 @@ define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
                             self.range,
                             self.device,
                             $.t(self.chartTitle),
-                            function() { return self.logCtrl.autoRefresh; })
+                            function() { return self.logCtrl.autoRefresh; },
+                            {
+                                valueAxes: function() {
+                                    return [{
+                                        title: {
+                                            text: domoticzGlobals.axisTitleForDevice(self.device)
+                                        },
+                                        labels: {
+                                            formatter: function () {
+                                                const value = self.device.getUnit() === 'vM' ? Highcharts.numberFormat(this.value, 0) : this.value;
+                                                return value + ' ' + self.device.getUnit();
+                                            }
+                                        }
+                                    }];
+                                },
+                                dateFromDataItem: function(dataItem) {
+                                    return GetLocalDateFromString(dataItem.d);
+                                },
+                                seriesSuppliers: [
+                                    {
+                                        colorIndex: 3,
+                                        name: 'min',
+                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
+                                        valueFromDataItem: function(dataItem) {
+                                            return dataItem[this.valueKey + '_min'];
+                                        }
+                                    },
+                                    {
+                                        colorIndex: 2,
+                                        name: 'max',
+                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
+                                        valueFromDataItem: function(dataItem) {
+                                            return dataItem[this.valueKey + '_max'];
+                                        }
+                                    },
+                                    {
+                                        colorIndex: 0,
+                                        name: 'avg',
+                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
+                                        valueFromDataItem: function(dataItem) {
+                                            return dataItem[this.valueKey + '_avg'];
+                                        }
+                                    }
+                                ]
+                            })
+                    );
+                }
+            }
+        });
+
+        app.component('refreshingYearChart', {
+            require: {
+                logCtrl: '^deviceGraphLog'
+            },
+            bindings: {
+                device: '<',
+                deviceType: '<',
+                degreeType: '<',
+                chartTitle: '@'
+            },
+            template: '<div></div>',
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $element, domoticzDataPointApi, domoticzApi, domoticzGlobals) {
+
+                const self = this;
+                self.range = 'year';
+
+                self.$onInit = function () {
+                    new RefreshingChart(
+                        baseParams($),
+                        angularParams($location, $route, $scope, $element),
+                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        chartParams(
+                            self.range,
+                            self.device,
+                            $.t(self.chartTitle),
+                            function() { return self.logCtrl.autoRefresh; },
+                            {
+                                valueAxes: function() {
+                                    return [{
+                                        title: {
+                                            text: domoticzGlobals.axisTitleForDevice(self.device)
+                                        },
+                                        labels: {
+                                            formatter: function () {
+                                                const value = self.device.getUnit() === 'vM' ? Highcharts.numberFormat(this.value, 0) : this.value;
+                                                return value + ' ' + self.device.getUnit();
+                                            }
+                                        }
+                                    }];
+                                },
+                                dateFromDataItem: function(dataItem) {
+                                    return GetLocalDateFromString(dataItem.d);
+                                },
+                                seriesSuppliers: [
+                                    {
+                                        colorIndex: 3,
+                                        name: 'min',
+                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
+                                        valueFromDataItem: function(dataItem) {
+                                            return dataItem[this.valueKey + '_min'];
+                                        }
+                                    },
+                                    {
+                                        colorIndex: 2,
+                                        name: 'max',
+                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
+                                        valueFromDataItem: function(dataItem) {
+                                            return dataItem[this.valueKey + '_max'];
+                                        }
+                                    },
+                                    {
+                                        colorIndex: 0,
+                                        name: 'avg',
+                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
+                                        valueFromDataItem: function(dataItem) {
+                                            return dataItem[this.valueKey + '_avg'];
+                                        }
+                                    }
+                                ]
+                            })
                     );
                 }
             }
@@ -96,12 +245,13 @@ define(['app', 'RefreshingSingleChart', 'RefreshingMinMaxAvgChart'],
                 datapointApi: datapointApi
             };
         }
-        function chartParams(range, device, chartTitle, autoRefreshIsEnabled) {
+        function chartParams(range, device, chartTitle, autoRefreshIsEnabled, dataSupplier) {
             return {
                 range: range,
                 device: device,
                 chartTitle: chartTitle,
-                autoRefreshIsEnabled: autoRefreshIsEnabled
+                autoRefreshIsEnabled: autoRefreshIsEnabled,
+                dataSupplier: dataSupplier
             };
         }
     }

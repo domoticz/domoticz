@@ -1,11 +1,5 @@
 define(['DomoticzBase'], function (DomoticzBase) {
 
-    RefreshingChart.prototype.getChartUnit = null;
-    RefreshingChart.prototype.dataPointIsShort = null;
-    RefreshingChart.prototype.loadData = null;
-    RefreshingChart.prototype.getDataEdgeLeft = null;
-    RefreshingChart.prototype.getDataEdgeRight = null;
-
     function RefreshingChart(baseParams, angularParams, domoticzParams, params) {
         DomoticzBase.call(this, baseParams, angularParams, domoticzParams);
         const self = this;
@@ -13,6 +7,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.range = params.range;
         self.chartTitle = params.chartTitle;
         self.device = params.device;
+        self.dataSupplier = params.dataSupplier;
         self.chart = self.$element.highcharts(self.createChartDefinition()).highcharts();
 
         self.chartOnMouseDown = self.chart.container.onmousedown;
@@ -72,21 +67,11 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     }
                 }
             },
-            yAxis: {
-                title: {
-                    text: self.getAxisTitle()
-                },
-                labels: {
-                    formatter: function () {
-                        const value = self.getChartUnit() === 'vM' ? Highcharts.numberFormat(this.value, 0) : this.value;
-                        return value + ' ' + self.getChartUnit();
-                    }
-                }
-            },
+            yAxis: self.dataSupplier.valueAxes(),
             tooltip: {
                 crosshairs: true,
                 shared: true,
-                valueSuffix: ' ' + self.getChartUnit()
+                valueSuffix: ' ' + self.device.getUnit()
             },
             plotOptions: {
                 series: {
@@ -98,7 +83,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
                                 }
 
                                 self.domoticzDatapointApi
-                                    .deletePoint(self.device.idx, event.point, self.dataPointIsShort())
+                                    .deletePoint(self.device.idx, event.point, self.dataSupplier.dataPointIsShort())
                                     .then(function () {
                                         self.$route.reload();
                                     });
@@ -142,7 +127,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
     RefreshingChart.prototype.createDataRequest = function () {
         return {
             type: 'graph',
-            sensor: this.getChartType(),
+            sensor: this.domoticzGlobals.chartTypeForDevice(this.device),
             range: this.range,
             idx: this.device.idx
         };
@@ -159,95 +144,116 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     return;
                 }
 
-                let dataEdgeLeft = -1;
-                let dataEdgeRight = -1
-                let chartEdgeLeft = -1;
-                let chartEdgeRight = -1;
-                let zoomLeft = -1;
-                let zoomRight = -1;
-                let zoomLeftRelativeToEdge = null;
-                let zoomRightRelativeToEdge = null;
+                const dataEdgeLeft = getDataEdgeLeft(data);
+                const dataEdgeRight = getDataEdgeRight(data);
+                const chartEdgeLeft = getChartEdgeLeft();
+                const chartEdgeRight = getChartEdgeRight();
+                const zoomEdgeLeft = getZoomEdgeLeft();
+                const zoomEdgeRight = getZoomEdgeRight();
 
-                determineDataEdges();
-                determineCurrentZoomEdges();
-                self.loadData(data);
-                setNewZoomEdgesAndRedraw();
+                self.consoledebug(
+                    'dataEdgeLeft:' + new Date(dataEdgeLeft).toString()
+                    + ', dataEdgeRight:' + new Date(dataEdgeRight).toString());
+                if (self.chart.series.length !== 0) {
+                    self.consoledebug(
+                        'chartEdgeLeft:' + new Date(chartEdgeLeft).toString() + (chartEdgeLeft !== dataEdgeLeft ? '!' : '=')
+                        + ', chartEdgeRight:' + new Date(chartEdgeRight).toString() + (chartEdgeRight !== dataEdgeRight ? '!' : '='));
 
-                function determineDataEdges() {
-                    dataEdgeLeft = self.getDataEdgeLeft(data);
-                    dataEdgeRight = self.getDataEdgeRight(data);
-                    self.consoledebug('dataEdgeLeft:' + new Date(dataEdgeLeft).toString() + ', dataEdgeRight:' + new Date(dataEdgeRight).toString());
+                    self.consoledebug(
+                        'zoomEdgeLeft:' + new Date(zoomEdgeLeft).toString()
+                        + ', zoomEdgeRight:' + new Date(zoomEdgeRight).toString());
                 }
 
-                function determineCurrentZoomEdges() {
-                    if (self.chart.series.length !== 0) {
-                        chartEdgeLeft = self.chart.series[0].xData[0];
-                        chartEdgeRight = self.chart.series[0].xData[self.chart.series[0].xData.length - 1];
-                        self.consoledebug(
-                            'chartEdgeLeft:' + new Date(chartEdgeLeft).toString() + (chartEdgeLeft !== dataEdgeLeft ? '!' : '=')
-                            + ', chartEdgeRight:' + new Date(chartEdgeRight).toString() + (chartEdgeRight !== dataEdgeRight ? '!' : '='));
+                loadDataInChart(data);
+                setNewZoomEdgesAndRedraw();
 
-                        zoomLeft = self.chart.xAxis[0].min;
-                        zoomRight = self.chart.xAxis[0].max;
-                        self.consoledebug(
-                            'zoomLeft:' + new Date(zoomLeft).toString()
-                            + ', zoomRight:' + new Date(zoomRight).toString());
-                        zoomLeftRelativeToEdge = zoomLeft - chartEdgeLeft;
-                        zoomRightRelativeToEdge = zoomRight - chartEdgeRight;
-                        self.consoledebug(
-                            'zoomLeftRelativeToEdge:' + zoomLeftRelativeToEdge
-                            + ', zoomRightRelativeToEdge:' + zoomRightRelativeToEdge);
-                    }
+                function loadDataInChart(data) {
+                    let seriesIndex = -1;
+                    self.dataSupplier.seriesSuppliers.forEach(function(seriesSupplier) {
+                        seriesIndex++;
+                        self.consoledebug('series:' + seriesIndex);
+                        const series = [];
+                        data.result.forEach(function (item) {
+                            const valueString = seriesSupplier.valueFromDataItem(item);
+                            if (valueString !== undefined) {
+                                series.push([self.dataSupplier.dateFromDataItem(item), parseFloat(valueString)]);
+                            }
+                        });
+                        if (series.length !== 0) {
+                            if (self.chart.series.length === seriesIndex) {
+                                self.chart.addSeries(
+                                    {
+                                        showInLegend: seriesSupplier.showInLegend !== undefined ? seriesSupplier.showInLegend : true,
+                                        name: seriesSupplier.name,
+                                        color: Highcharts.getOptions().colors[seriesSupplier.colorIndex],
+                                        data: series
+                                    },
+                                    false
+                                );
+                            } else {
+                                self.chart.series[seriesIndex].setData(series, false);
+                            }
+                        } else {
+                            if (seriesIndex < self.chart.series.length) {
+                                self.chart.series[seriesIndex].setData(series, false);
+                            }
+                        }
+                    });
                 }
 
                 function setNewZoomEdgesAndRedraw() {
-                    const zoomRight1 = self.isZoomRightSticky || zoomRightRelativeToEdge === null
-                        ? zoomRight
-                        : dataEdgeRight + zoomRightRelativeToEdge;
-                    const zoomLeft1 = self.isZoomLeftSticky || zoomLeftRelativeToEdge === null
-                        ? zoomLeft
-                        : dataEdgeLeft + zoomLeftRelativeToEdge;
-                    if (zoomLeft1 !== zoomLeft || zoomRight1 !== zoomRight) {
+                    const zoomEdgeRight1 = self.isZoomRightSticky || zoomEdgeRight === -1 || chartEdgeRight === -1
+                        ? zoomEdgeRight
+                        : dataEdgeRight + (zoomEdgeRight - chartEdgeRight);
+                    const zoomEdgeLeft1 = self.isZoomLeftSticky || zoomEdgeLeft === -1 || chartEdgeLeft === -1
+                        ? zoomEdgeLeft
+                        : dataEdgeLeft + (zoomEdgeLeft - chartEdgeLeft);
+                    if (zoomEdgeLeft1 !== zoomEdgeLeft || zoomEdgeRight1 !== zoomEdgeRight) {
                         self.consoledebug(
-                            'zoomLeft1:' + zoomLeft1 + ' (' + new Date(zoomLeft1).toString() + ')'
-                            + ', zoomRight1:' + zoomRight1 + ' (' + new Date(zoomRight1).toString() + ')');
-                        self.chart.xAxis[0].setExtremes(zoomLeft1, zoomRight1, true);
+                            'zoomEdgeLeft1:' + zoomEdgeLeft1 + ' (' + new Date(zoomEdgeLeft1).toString() + ')'
+                            + ', zoomEdgeRight1:' + zoomEdgeRight1 + ' (' + new Date(zoomEdgeRight1).toString() + ')');
+                        self.chart.xAxis[0].setExtremes(zoomEdgeLeft1, zoomEdgeRight1, true);
                     } else {
                         self.chart.redraw();
                     }
                 }
+
+                function getDataEdgeLeft(data) {
+                    return self.dataSupplier.dateFromDataItem(data.result[0]);
+                }
+
+                function getDataEdgeRight(data) {
+                    return self.dataSupplier.dateFromDataItem(data.result[data.result.length - 1]);
+                }
+
+                function getChartEdgeLeft() {
+                    if (self.chart.series.length === 0) {
+                        return -1;
+                    }
+                    return self.chart.series[0].xData[0];
+                }
+
+                function getChartEdgeRight() {
+                    if (self.chart.series.length === 0) {
+                        return -1;
+                    }
+                    return self.chart.series[0].xData[self.chart.series[0].xData.length - 1];
+                }
+
+                function getZoomEdgeLeft() {
+                    if (self.chart.series.length === 0) {
+                        return -1;
+                    }
+                    return self.chart.xAxis[0].min;
+                }
+
+                function getZoomEdgeRight() {
+                    if (self.chart.series.length === 0) {
+                        return -1;
+                    }
+                    return self.chart.xAxis[0].max;
+                }
             });
-    }
-    RefreshingChart.prototype.getPointValueKey = function () {
-        if (this.device.SubType === 'Lux') {
-            return 'lux'
-        } else if (this.device.Type === 'Usage') {
-            return 'u'
-        } else {
-            return 'v';
-        }
-    }
-    RefreshingChart.prototype.getChartType = function () {
-        if (['Custom Sensor', 'Waterflow', 'Percentage'].includes(this.device.SubType)) {
-            return 'Percentage';
-        } else {
-            return 'counter';
-        }
-    }
-    RefreshingChart.prototype.getAxisTitle = function () {
-        const sensor = this.getSensorName();
-        const unit = this.getChartUnit();
-        return this.device.SubType === 'Custom Sensor' ? unit : sensor + ' (' + unit + ')';
-    }
-    RefreshingChart.prototype.getSensorName = function () {
-        if (this.device.Type === 'Usage') {
-            return this.$.t('Usage');
-        } else {
-            return this.$.t(this.device.SubType)
-        }
-    }
-    RefreshingChart.prototype.getChartUnit = function () {
-        return this.device.getUnit();
     }
 
     return RefreshingChart;
