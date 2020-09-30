@@ -29,12 +29,13 @@ describe('RefreshingDayChart', function () {
                     datapointApi: datapointApi
                 };
             }
-            function chartParams(range, device, chartTitle, autoRefreshIsEnabled) {
+            function chartParams(range, device, chartTitle, autoRefreshIsEnabled, dataSupplier) {
                 return {
                     range: range,
                     device: device,
                     chartTitle: chartTitle,
-                    autoRefreshIsEnabled: autoRefreshIsEnabled
+                    autoRefreshIsEnabled: autoRefreshIsEnabled,
+                    dataSupplier: dataSupplier
                 };
             }
             requirejs(['main.js'], function () {
@@ -66,7 +67,10 @@ describe('RefreshingDayChart', function () {
                     const domoticzGlobals = {
                         Get5MinuteHistoryDaysGraphTitle: function() {
                             return 'Get5MinuteHistoryDaysGraphTitle';
-                        }
+                        },
+                        chartTypeForDevice: function(device) { return 'chartType:'+device.idx; },
+                        sensorNameForDevice: function(device) { return 'sensorName:'+device.idx; },
+                        axisTitleForDevice: function(device) { return 'axisTitle:'+device.idx; }
                     };
                     simple.mock($element, 'highcharts').callFn(function (x) {
                         return {
@@ -84,20 +88,42 @@ describe('RefreshingDayChart', function () {
                     simple.mock(domoticzApi, 'sendRequest').returnWith(domoticzApiResponse);
                     simple.mock($scope, '$on').callFn(function (eventType, handler) { console.log('installed:'+handler+' for '+eventType); });
                     simple.mock($, 't').callFn(function (text) { return text; });
-                    requirejs(['RefreshingChart', 'RefreshingSingleChart'], function (RefreshingChart, RefreshingSingleChart) {
-                        const sut = new RefreshingSingleChart(
+                    requirejs(['RefreshingChart'], function (RefreshingChart) {
+                        const sut = new RefreshingChart(
                             baseParams($),
                             angularParams($location, null, $scope, $element),
                             domoticzParams(domoticzGlobals, domoticzApi, null),
-                            chartParams('day', device, 'Chart Title', function() { return true; })
-                        );
-                    });
-                    requirejs(['RefreshingMinMaxAvgChart'], function (RefreshingMinMaxAvgChart) {
-                        const sut = new RefreshingMinMaxAvgChart(
-                            baseParams($),
-                            angularParams($location, null, $scope, $element),
-                            domoticzParams(domoticzGlobals, domoticzApi,null),
-                            chartParams('day', device, 'Chart Title', function() { return true; })
+                            chartParams(
+                                'day',
+                                device,
+                                'Chart Title',
+                                function() { return true; },
+                                {
+                                    valueAxes: function() {
+                                        return [{
+                                            title: {
+                                                text: 'Axis Title'
+                                            },
+                                            labels: {
+                                                formatter: function () {
+                                                    return 'value' + ' ' + 'unit';
+                                                }
+                                            }
+                                        }];
+                                    },
+                                    dateFromDataItem: function(dataItem) {
+                                        return dataItem.d;
+                                    },
+                                    seriesSuppliers: [
+                                        {
+                                            valueKey: 'v',
+                                            valueFromDataItem: function(dataItem) {
+                                                return dataItem[this.valueKey];
+                                            }
+                                        }
+                                    ]
+                                }
+                            )
                         );
                     });
                 });

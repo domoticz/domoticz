@@ -11,7 +11,7 @@ require.config({
         'highcharts-ng': 'js/highcharts-ng.min',
         'angularAMD': 'js/angularAMD.min',
         'angular-tree-control': 'js/angular-tree-control',
-        jquery: '../www-test/js/jquery-3.5.1.min',
+        jquery: '../www-test/js/jquery-3.5.1',
         Base: 'app/log/Base',
         AngularBase: 'app/log/AngularBase',
         DomoticzBase: 'app/log/DomoticzBase',
