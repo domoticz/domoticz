@@ -1,4 +1,4 @@
-define(['app', 'RefreshingChart'],
+define(['app', 'RefreshingChart', 'log/factories'],
     function (app, RefreshingChart) {
 
         app.component('deviceGraphLog', {
@@ -13,14 +13,12 @@ define(['app', 'RefreshingChart'],
             }
         });
 
-        app.component('refreshingDayChart', {
+        app.component('shortChart', {
             require: {
                 logCtrl: '^deviceGraphLog'
             },
             bindings: {
-                device: '<',
-                deviceType: '<',
-                degreeType: '<'
+                device: '<'
             },
             template: '<div></div>',
             controllerAs: 'vm',
@@ -35,63 +33,43 @@ define(['app', 'RefreshingChart'],
                         angularParams($location, $route, $scope, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
                         chartParams(
-                            self.range,
-                            self.device,
+                            domoticzGlobals,
+                            self,
                             domoticzGlobals.Get5MinuteHistoryDaysGraphTitle(),
-                            function() { return self.logCtrl.autoRefresh; },
-                            {
-                                valueAxes: function() {
-                                    return [{
-                                        title: {
-                                            text: domoticzGlobals.axisTitleForDevice(self.device)
-                                        },
-                                        labels: {
-                                            formatter: function () {
-                                                const value = self.device.getUnit() === 'vM' ? Highcharts.numberFormat(this.value, 0) : this.value;
-                                                return value + ' ' + self.device.getUnit();
-                                            }
-                                        }
-                                    }];
-                                },
-                                dateFromDataItem: function(dataItem) {
-                                    return GetLocalDateTimeFromString(dataItem.d);
-                                },
-                                dataPointIsShort: function() {
-                                    return true;
-                                },
-                                seriesSuppliers: [
-                                    {
+                            true,
+                            function (dataItem, yearOffset=0) {
+                                return GetLocalDateTimeFromString(dataItem.d, yearOffset);
+                            },
+                            [
+                                {
+                                    id: 'power',
+                                    name: domoticzGlobals.sensorNameForDevice(self.device),
+                                    valueKeySuffix: '',
+                                    template: {
                                         showInLegend: false,
-                                        name: domoticzGlobals.sensorNameForDevice(self.device),
-                                        colorIndex: 0,
-                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
-                                        valueFromDataItem: function(dataItem) {
-                                            return dataItem[this.valueKey];
-                                        }
+                                        colorIndex: 0
                                     }
-                                ]
-                            })
+                                }
+                            ]
+                        )
                     );
                 }
             }
         });
 
-        app.component('refreshingMonthChart', {
+        app.component('longChart', {
             require: {
                 logCtrl: '^deviceGraphLog'
             },
             bindings: {
                 device: '<',
-                deviceType: '<',
-                degreeType: '<',
-                chartTitle: '@'
+                chartTitle: '@',
+                range: '@'
             },
             template: '<div></div>',
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzDataPointApi, domoticzApi, domoticzGlobals) {
-
+            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
-                self.range = 'month';
 
                 self.$onInit = function () {
                     new RefreshingChart(
@@ -99,136 +77,40 @@ define(['app', 'RefreshingChart'],
                         angularParams($location, $route, $scope, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
                         chartParams(
-                            self.range,
-                            self.device,
+                            domoticzGlobals,
+                            self,
                             $.t(self.chartTitle),
-                            function() { return self.logCtrl.autoRefresh; },
-                            {
-                                valueAxes: function() {
-                                    return [{
-                                        title: {
-                                            text: domoticzGlobals.axisTitleForDevice(self.device)
-                                        },
-                                        labels: {
-                                            formatter: function () {
-                                                const value = self.device.getUnit() === 'vM' ? Highcharts.numberFormat(this.value, 0) : this.value;
-                                                return value + ' ' + self.device.getUnit();
-                                            }
-                                        }
-                                    }];
-                                },
-                                dateFromDataItem: function(dataItem) {
-                                    return GetLocalDateFromString(dataItem.d);
-                                },
-                                dataPointIsShort: function() {
-                                    return false;
-                                },
-                                seriesSuppliers: [
-                                    {
-                                        colorIndex: 3,
-                                        name: 'min',
-                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
-                                        valueFromDataItem: function(dataItem) {
-                                            return dataItem[this.valueKey + '_min'];
-                                        }
-                                    },
-                                    {
-                                        colorIndex: 2,
-                                        name: 'max',
-                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
-                                        valueFromDataItem: function(dataItem) {
-                                            return dataItem[this.valueKey + '_max'];
-                                        }
-                                    },
-                                    {
-                                        colorIndex: 0,
-                                        name: 'avg',
-                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
-                                        valueFromDataItem: function(dataItem) {
-                                            return dataItem[this.valueKey + '_avg'];
-                                        }
+                            false,
+                            function (dataItem, yearOffset=0) {
+                                return GetLocalDateFromString(dataItem.d, yearOffset);
+                            },
+                            [
+                                {
+                                    id: 'min',
+                                    name: 'min',
+                                    valueKeySuffix: '_min',
+                                    template: {
+                                        colorIndex: 3
                                     }
-                                ]
-                            })
-                    );
-                }
-            }
-        });
-
-        app.component('refreshingYearChart', {
-            require: {
-                logCtrl: '^deviceGraphLog'
-            },
-            bindings: {
-                device: '<',
-                deviceType: '<',
-                degreeType: '<',
-                chartTitle: '@'
-            },
-            template: '<div></div>',
-            controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzDataPointApi, domoticzApi, domoticzGlobals) {
-
-                const self = this;
-                self.range = 'year';
-
-                self.$onInit = function () {
-                    new RefreshingChart(
-                        baseParams($),
-                        angularParams($location, $route, $scope, $element),
-                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParams(
-                            self.range,
-                            self.device,
-                            $.t(self.chartTitle),
-                            function() { return self.logCtrl.autoRefresh; },
-                            {
-                                valueAxes: function() {
-                                    return [{
-                                        title: {
-                                            text: domoticzGlobals.axisTitleForDevice(self.device)
-                                        },
-                                        labels: {
-                                            formatter: function () {
-                                                const value = self.device.getUnit() === 'vM' ? Highcharts.numberFormat(this.value, 0) : this.value;
-                                                return value + ' ' + self.device.getUnit();
-                                            }
-                                        }
-                                    }];
                                 },
-                                dateFromDataItem: function(dataItem) {
-                                    return GetLocalDateFromString(dataItem.d);
-                                },
-                                dataPointIsShort: function() {
-                                    return false;
-                                },
-                                seriesSuppliers: [
-                                    {
-                                        colorIndex: 3,
-                                        name: 'min',
-                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
-                                        valueFromDataItem: function(dataItem) {
-                                            return dataItem[this.valueKey + '_min'];
-                                        }
-                                    },
-                                    {
-                                        colorIndex: 2,
-                                        name: 'max',
-                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
-                                        valueFromDataItem: function(dataItem) {
-                                            return dataItem[this.valueKey + '_max'];
-                                        }
-                                    },
-                                    {
-                                        colorIndex: 0,
-                                        name: 'avg',
-                                        valueKey: domoticzGlobals.valueKeyForDevice(self.device),
-                                        valueFromDataItem: function(dataItem) {
-                                            return dataItem[this.valueKey + '_avg'];
-                                        }
+                                {
+                                    id: 'max',
+                                    name: 'max',
+                                    valueKeySuffix: '_max',
+                                    template: {
+                                        colorIndex: 2
                                     }
-                                ]
-                            })
+                                },
+                                {
+                                    id: 'avg',
+                                    name: 'avg',
+                                    valueKeySuffix: '_avg',
+                                    template: {
+                                        colorIndex: 0
+                                    }
+                                }
+                            ]
+                        )
                     );
                 }
             }
@@ -254,13 +136,41 @@ define(['app', 'RefreshingChart'],
                 datapointApi: datapointApi
             };
         }
-        function chartParams(range, device, chartTitle, autoRefreshIsEnabled, dataSupplier) {
+        function chartParams(domoticzGlobals, ctrl, chartTitle, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
             return {
-                range: range,
-                device: device,
+                range: ctrl.range,
+                device: ctrl.device,
                 chartTitle: chartTitle,
-                autoRefreshIsEnabled: autoRefreshIsEnabled,
-                dataSupplier: dataSupplier
+                autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
+                dataSupplier: {
+                    yAxes: [
+                        {
+                            title: {
+                                text: domoticzGlobals.axisTitleForDevice(ctrl.device)
+                            },
+                            labels: {
+                                formatter: function () {
+                                    return ctrl.device.getUnit() === 'vM' ? Highcharts.numberFormat(this.value, 0) : this.value;
+                                }
+                            }
+                        }
+                    ],
+                    valueSuffix: ' ' + ctrl.device.getUnit(),
+                    timestampFromDataItem: timestampFromDataItem,
+                    isShortLogChart: isShortLogChart,
+                    seriesSuppliers: seriesSuppliers.map(function (seriesSupplier) {
+                        const valueKey = domoticzGlobals.valueKeyForDevice(ctrl.device);
+                        seriesSupplier.dataItemIsValid = function (dataItem) {
+                            return dataItem[valueKey + seriesSupplier.valueKeySuffix] !== undefined;
+                        }
+                        seriesSupplier.valuesFromDataItem = [
+                            function (dataItem) {
+                                return dataItem[valueKey + seriesSupplier.valueKeySuffix];
+                            }
+                        ];
+                        return seriesSupplier;
+                    })
+                }
             };
         }
     }

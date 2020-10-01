@@ -1,33 +1,41 @@
 define(['app'], function (app) {
 
+    function valueKeyForDevice(device) {
+        if (device.SubType === 'Lux') {
+            return 'lux'
+        } else if (device.Type === 'Usage') {
+            return 'u'
+        } else {
+            return 'v';
+        }
+    }
+
+    function sensorTypeForDevice(device) {
+        if (['Custom Sensor', 'Waterflow', 'Percentage'].includes(device.SubType)) {
+            return 'Percentage';
+        } else if (['LaCrosse TX3'].includes(device.SubType)) {
+            return 'temp';
+        } else {
+            return 'counter';
+        }
+    }
+
+    function sensorNameForDevice(device) {
+        if (device.Type === 'Usage') {
+            return $.t('Usage');
+        } else {
+            return $.t(device.SubType)
+        }
+    }
+
     app.constant('domoticzGlobals', {
         Get5MinuteHistoryDaysGraphTitle: Get5MinuteHistoryDaysGraphTitle,
         chartPointClickNew: chartPointClickNew,
-        valueKeyForDevice: function(device) {
-            if (device.SubType === 'Lux') {
-                return 'lux'
-            } else if (device.Type === 'Usage') {
-                return 'u'
-            } else {
-                return 'v';
-            }
-        },
-        chartTypeForDevice: function(device) {
-            if (['Custom Sensor', 'Waterflow', 'Percentage'].includes(device.SubType)) {
-                return 'Percentage';
-            } else {
-                return 'counter';
-            }
-        },
-        sensorNameForDevice: function(device) {
-            if (device.Type === 'Usage') {
-                return $.t('Usage');
-            } else {
-                return $.t(device.SubType)
-            }
-        },
+        valueKeyForDevice: valueKeyForDevice,
+        sensorTypeForDevice: sensorTypeForDevice,
+        sensorNameForDevice: sensorNameForDevice,
         axisTitleForDevice: function(device) {
-            const sensorName = this.sensorNameForDevice(device);
+            const sensorName = sensorNameForDevice(device);
             const unit = device.getUnit();
             return device.SubType === 'Custom Sensor' ? unit : sensorName + ' (' + unit + ')';
         }

@@ -3,7 +3,10 @@ define(['DomoticzBase'], function (DomoticzBase) {
     function RefreshingChart(baseParams, angularParams, domoticzParams, params) {
         DomoticzBase.call(this, baseParams, angularParams, domoticzParams);
         const self = this;
-        self.consoledebug('device:' + params.device.idx);
+        self.consoledebug('device -> '
+            + 'idx:' + params.device.idx
+            + ', type:' + params.device.Type
+            + ', subtype:' + params.device.SubType);
         self.range = params.range;
         self.chartTitle = params.chartTitle;
         self.device = params.device;
@@ -25,11 +28,26 @@ define(['DomoticzBase'], function (DomoticzBase) {
 
         self.refreshChartData();
 
-        self.$scope.$on('device_update', function (event, device) {
-            if (params.autoRefreshIsEnabled() && device.idx === self.device.idx) {
-                self.refreshChartData();
+        self.refreshTimestamp = 0;
+        self.$scope.$on('time_update', function (event, update) {
+            if (params.autoRefreshIsEnabled()) {
+                const serverTime = GetLocalTimestampFromString(update.serverTime);
+                const secondsIntoCurrentSlot = Math.floor(serverTime % (300*1000) / 1000);
+                if (5 < secondsIntoCurrentSlot) {
+                    const currentSlot = Math.floor(serverTime / (300 * 1000));
+                    const refreshSlot = Math.floor(self.refreshTimestamp / (300 * 1000));
+                    if (refreshSlot < currentSlot) {
+                        self.refreshChartData();
+                        self.refreshTimestamp = serverTime;
+                    }
+                }
             }
         });
+        // self.$scope.$on('device_update', function (event, device) {
+        //     if (params.autoRefreshIsEnabled() && device.idx === self.device.idx) {
+        //         self.refreshChartData();
+        //     }
+        // });
     }
 
     RefreshingChart.prototype = Object.create(DomoticzBase.prototype);
@@ -67,11 +85,11 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     }
                 }
             },
-            yAxis: self.dataSupplier.valueAxes(),
+            yAxis: self.dataSupplier.yAxes,
             tooltip: {
                 crosshairs: true,
                 shared: true,
-                valueSuffix: ' ' + self.device.getUnit()
+                valueSuffix: self.dataSupplier.valueSuffix
             },
             plotOptions: {
                 series: {
@@ -81,12 +99,11 @@ define(['DomoticzBase'], function (DomoticzBase) {
                                 if (event.shiftKey !== true) {
                                     return;
                                 }
-
                                 self.domoticzDatapointApi
                                     .deletePoint(
                                         self.device.idx,
                                         event.point,
-                                        self.dataSupplier.dataPointIsShort(),
+                                        self.dataSupplier.isShortLogChart,
                                         new Date().getTimezoneOffset())
                                     .then(function () {
                                         self.$route.reload();
@@ -113,6 +130,30 @@ define(['DomoticzBase'], function (DomoticzBase) {
                             }
                         }
                     }
+                },
+                line: {
+                    lineWidth: 3,
+                    states: {
+                        hover: {
+                            lineWidth: 3
+                        }
+                    },
+                    marker: {
+                        enabled: false,
+                        states: {
+                            hover: {
+                                enabled: true,
+                                symbol: 'circle',
+                                radius: 5,
+                                lineWidth: 1
+                            }
+                        }
+                    }
+                },
+                areasplinerange: {
+                    marker: {
+                        enabled: false
+                    }
                 }
             },
             title: {
@@ -131,7 +172,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
     RefreshingChart.prototype.createDataRequest = function () {
         return {
             type: 'graph',
-            sensor: this.domoticzGlobals.chartTypeForDevice(this.device),
+            sensor: this.domoticzGlobals.sensorTypeForDevice(this.device),
             range: this.range,
             idx: this.device.idx
         };
@@ -172,34 +213,51 @@ define(['DomoticzBase'], function (DomoticzBase) {
                 setNewZoomEdgesAndRedraw();
 
                 function loadDataInChart(data) {
-                    let seriesIndex = -1;
                     self.dataSupplier.seriesSuppliers.forEach(function(seriesSupplier) {
-                        seriesIndex++;
-                        self.consoledebug('series:' + seriesIndex);
-                        const series = [];
-                        data.result.forEach(function (item) {
-                            const valueString = seriesSupplier.valueFromDataItem(item);
-                            if (valueString !== undefined) {
-                                series.push([self.dataSupplier.dateFromDataItem(item), parseFloat(valueString)]);
+                        const chartSeries = self.chart.get(seriesSupplier.id);
+                        self.consoledebug('series: \'' + seriesSupplier.id + '\'' + (chartSeries === undefined ? ' (new)' : ''));
+                        const datapoints = [];
+                        if (seriesSupplier.previous === undefined || !seriesSupplier.previous) {
+                            data.result.forEach(function (item) {
+                                if (seriesSupplier.dataItemIsValid(item)) {
+                                    const datapoint = [self.dataSupplier.timestampFromDataItem(item)];
+                                    seriesSupplier.valuesFromDataItem.forEach(function(valueFromDataItem) {
+                                        datapoint.push(valueFromDataItem(item));
+                                    });
+                                    datapoints.push(datapoint);
+                                }
+                            });
+                        } else {
+                            if (data.resultprev !== undefined) {
+                                data.resultprev.forEach(function (item) {
+                                    if (seriesSupplier.dataItemIsValid(item)) {
+                                        const datapoint = [self.dataSupplier.timestampFromDataItem(item, 1)];
+                                        seriesSupplier.valuesFromDataItem.forEach(function (valueFromDataItem) {
+                                            datapoint.push(valueFromDataItem(item));
+                                        });
+                                        datapoints.push(datapoint);
+                                    }
+                                });
                             }
-                        });
-                        if (series.length !== 0) {
-                            if (self.chart.series.length === seriesIndex) {
-                                self.chart.addSeries(
-                                    {
-                                        showInLegend: seriesSupplier.showInLegend !== undefined ? seriesSupplier.showInLegend : true,
-                                        name: seriesSupplier.name,
-                                        color: Highcharts.getOptions().colors[seriesSupplier.colorIndex],
-                                        data: series
-                                    },
-                                    false
-                                );
+                        }
+                        if (datapoints.length !== 0) {
+                            if (chartSeries === undefined) {
+                                const series = seriesSupplier.template;
+                                series.id = seriesSupplier.id;
+                                if (seriesSupplier.name !== undefined) {
+                                    series.name = $.t(seriesSupplier.name);
+                                }
+                                if (series.colorIndex !== undefined) {
+                                    series.color = Highcharts.getOptions().colors[series.colorIndex];
+                                }
+                                series.data = datapoints;
+                                self.chart.addSeries(series, false);
                             } else {
-                                self.chart.series[seriesIndex].setData(series, false);
+                                chartSeries.setData(datapoints, false);
                             }
                         } else {
-                            if (seriesIndex < self.chart.series.length) {
-                                self.chart.series[seriesIndex].setData(series, false);
+                            if (chartSeries !== undefined) {
+                                chartSeries.setData(datapoints, false);
                             }
                         }
                     });
@@ -223,11 +281,11 @@ define(['DomoticzBase'], function (DomoticzBase) {
                 }
 
                 function getDataEdgeLeft(data) {
-                    return self.dataSupplier.dateFromDataItem(data.result[0]);
+                    return self.dataSupplier.timestampFromDataItem(data.result[0]);
                 }
 
                 function getDataEdgeRight(data) {
-                    return self.dataSupplier.dateFromDataItem(data.result[data.result.length - 1]);
+                    return self.dataSupplier.timestampFromDataItem(data.result[data.result.length - 1]);
                 }
 
                 function getChartEdgeLeft() {
