@@ -692,13 +692,13 @@ void COpenWeatherMap::GetMeterDetails()
 		{
 			wind_degrees = current["wind_deg"].asInt();
 
-			bool bHaveTemp = (temp != -999.9f);
-			float rTemp = (bHaveTemp ? temp : 0);
-			float rFlTemp = rTemp;
+			//we need to assume temp and chill temperatures are availabe to define subtype of wind device. 
+			//It is possible that sometimes in the API a temperature is missing, but it should not change a device type.
+			//Therefor set that temp to 0
+			float wind_temp = (temp != -999.9f ? temp : 0);
+			float wind_chill = (fltemp != -999.9f ? fltemp : 0); //Wind_chill is same as feels like temperature
 
-			if ((rTemp < 10.0) && (windspeed_ms >= 1.4))
-				rFlTemp = 0; //if we send 0 as chill, it will be calculated
-			SendWind(4, 255, wind_degrees, windspeed_ms, windgust_ms, rTemp, rFlTemp, bHaveTemp, true, "Wind");
+			SendWind(4, 255, wind_degrees, windspeed_ms, windgust_ms, wind_temp, wind_chill, true, true, "Wind");
 		}
 	}
 
