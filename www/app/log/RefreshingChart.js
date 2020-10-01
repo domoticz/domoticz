@@ -222,7 +222,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
                                 if (seriesSupplier.dataItemIsValid(item)) {
                                     const datapoint = [self.dataSupplier.timestampFromDataItem(item)];
                                     seriesSupplier.valuesFromDataItem.forEach(function(valueFromDataItem) {
-                                        datapoint.push(valueFromDataItem(item));
+                                        datapoint.push(parseFloat(valueFromDataItem(item)));
                                     });
                                     datapoints.push(datapoint);
                                 }
@@ -233,7 +233,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
                                     if (seriesSupplier.dataItemIsValid(item)) {
                                         const datapoint = [self.dataSupplier.timestampFromDataItem(item, 1)];
                                         seriesSupplier.valuesFromDataItem.forEach(function (valueFromDataItem) {
-                                            datapoint.push(valueFromDataItem(item));
+                                            datapoint.push(parseFloat(valueFromDataItem(item)));
                                         });
                                         datapoints.push(datapoint);
                                     }
