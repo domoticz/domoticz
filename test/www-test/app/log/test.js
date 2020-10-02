@@ -53,6 +53,8 @@ describe('RefreshingDayChart', function () {
                     };
                     const device = {
                         idx: 1234,
+                        Type: 'Type',
+                        SubType: 'SubType',
                         getUnit: function() {
                             return 'kWh;'
                         }
@@ -68,7 +70,7 @@ describe('RefreshingDayChart', function () {
                         Get5MinuteHistoryDaysGraphTitle: function() {
                             return 'Get5MinuteHistoryDaysGraphTitle';
                         },
-                        chartTypeForDevice: function(device) { return 'chartType:'+device.idx; },
+                        sensorTypeForDevice: function(device) { return 'chartType:'+device.idx; },
                         sensorNameForDevice: function(device) { return 'sensorName:'+device.idx; },
                         axisTitleForDevice: function(device) { return 'axisTitle:'+device.idx; }
                     };
@@ -86,7 +88,7 @@ describe('RefreshingDayChart', function () {
                         };
                     });
                     simple.mock(domoticzApi, 'sendRequest').returnWith(domoticzApiResponse);
-                    simple.mock($scope, '$on').callFn(function (eventType, handler) { console.log('installed:'+handler+' for '+eventType); });
+                    simple.mock($scope, '$on').callFn(function (eventType, handler) { console.log('installed:handler for event type '+eventType); });
                     simple.mock($, 't').callFn(function (text) { return text; });
                     requirejs(['RefreshingChart'], function (RefreshingChart) {
                         const sut = new RefreshingChart(
