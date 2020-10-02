@@ -13,7 +13,7 @@ define(['app'], function (app) {
     function sensorTypeForDevice(device) {
         if (['Custom Sensor', 'Waterflow', 'Percentage'].includes(device.SubType)) {
             return 'Percentage';
-        } else if (['LaCrosse TX3'].includes(device.SubType)) {
+        } else if (device.Type.includes('Temp') === true) {
             return 'temp';
         } else {
             return 'counter';
