@@ -15,6 +15,14 @@ define(['app'], function (app) {
             return 'Percentage';
         } else if (device.Type.includes('Temp') === true) {
             return 'temp';
+        } else if (device.Type.includes('Rain') === true) {
+            return 'rain';
+        } else if (device.Type.includes('Fan') === true) {
+            return 'fan';
+        } else if (device.Type.includes('Wind') === true) {
+            return 'wind';
+        } else if (device.Type.includes('UV') === true) {
+            return 'uv';
         } else {
             return 'counter';
         }
