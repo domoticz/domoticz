@@ -1,13 +1,12 @@
 <div id="devicescontent">
-    <page-loading-indicator ng-hide="::$ctrl.devices" />
+    <page-loading-indicator ng-hide="::$ctrl.devices"></page-loading-indicator>
 
     <div class="page-devices-wrapper" ng-if="::$ctrl.devices">
         <section class="top-panel">
             <device-filter-by-usage
                     class="btn-group"
                     ng-model="$ctrl.filter"
-                    ng-change="$ctrl.applyFilter()"
-            />
+                    ng-change="$ctrl.applyFilter()"></device-filter-by-usage>
 
             <button class="btn btn-default pull-right" ng-click="$ctrl.refreshDevices()">{{:: 'Refresh' | translate}}</button>
         </section>
@@ -18,8 +17,7 @@
                     devices="$ctrl.devices"
                     ng-show="$ctrl.isListExpanded"
                     ng-model="$ctrl.filter"
-                    ng-change="$ctrl.applyFilter()"
-            />
+                    ng-change="$ctrl.applyFilter()"></devices-filters>
 
             <button type="button"
                     class="splitter"
@@ -28,7 +26,7 @@
                 <i ng-class="{'icon-chevron-left': $ctrl.isListExpanded, 'icon-chevron-right': !$ctrl.isListExpanded}"></i>
             </button>
 
-            <devices-table class="devices-table" devices="$ctrl.filteredDevices" on-update="$ctrl.refreshDevices()"/>
+            <devices-table class="devices-table" devices="$ctrl.filteredDevices" on-update="$ctrl.refreshDevices()"></devices-table>
         </section>
     </div>
 </div>
@@ -78,8 +76,7 @@
                            required
                            minlength="2"
                            maxlength="100"
-                           ng-model="$ctrl.device.Name"
-                    />
+                           ng-model="$ctrl.device.Name">
                 </div>
             </div>
             <div class="control-group" ng-if="::$ctrl.isLightDevice">
@@ -102,8 +99,7 @@
                             class="form-control"
                             required
                             ng-model="$ctrl.mainDevice"
-                            ng-options="item.idx as item.Name for item in ::$ctrl.mainDevices"
-                    />
+                            ng-options="item.idx as item.Name for item in ::$ctrl.mainDevices"></select>
                 </div>
             </div>
         </form>
@@ -139,8 +135,7 @@
                            required
                            minlength="2"
                            maxlength="100"
-                           ng-model="$ctrl.device.Name"
-                    />
+                           ng-model="$ctrl.device.Name">
                 </div>
             </div>
         </form>

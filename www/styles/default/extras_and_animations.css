@@ -73,7 +73,7 @@ Although I've also seen "some clouds". But that may come from a MySensors custom
 
 */
 
-*/ #dashcontent div.item.Barometer tr #img img:hover,
+#dashcontent div.item.Barometer tr #img img:hover,
 #dashcontent div.item.Pressure tr #img img:hover,
 #dashcontent div.item.TempHumidityBaro tr #img img:hover,
 #dashcontent div.item.WeatherStation tr #img img:hover {
@@ -324,7 +324,7 @@ body{
 input[type='checkbox']:not(.noscheck) {
 	max-height: 0;
 	max-width: 0;
-	opacity: 0;
+	/* opacity: 0; */
 }
 
 	input[type='checkbox']:not(.noscheck) + label {

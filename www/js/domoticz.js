@@ -709,14 +709,25 @@ function GetUTCFromString(s) {
 	);
 }
 
-function GetLocalDateTimeFromString(s) {
+function GetLocalDateTimeFromString(s, yearOffset=0) {
 	return new Date(
-		parseInt(s.substring(0, 4), 10),
+		parseInt(s.substring(0, 4), 10) + yearOffset,
 		parseInt(s.substring(5, 7), 10) - 1,
 		parseInt(s.substring(8, 10), 10),
 		parseInt(s.substring(11, 13), 10),
 		parseInt(s.substring(14, 16), 10),
 		0
+	).getTime();
+}
+
+function GetLocalTimestampFromString(s, yearOffset=0) {
+	return new Date(
+		parseInt(s.substring(0, 4), 10) + yearOffset,
+		parseInt(s.substring(5, 7), 10) - 1,
+		parseInt(s.substring(8, 10), 10),
+		parseInt(s.substring(11, 13), 10),
+		parseInt(s.substring(14, 16), 10),
+		parseInt(s.substring(17, 19), 10)
 	).getTime();
 }
 
@@ -731,9 +742,9 @@ function GetUTCFromStringSec(s) {
 	);
 }
 
-function GetLocalDateFromString(s) {
+function GetLocalDateFromString(s, yearOffset=0) {
 	return new Date(
-		parseInt(s.substring(0, 4), 10),
+		parseInt(s.substring(0, 4), 10) + yearOffset,
 		parseInt(s.substring(5, 7), 10) - 1,
 		parseInt(s.substring(8, 10), 10)).getTime();
 }
