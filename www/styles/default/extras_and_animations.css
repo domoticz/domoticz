@@ -324,7 +324,7 @@ body{
 input[type='checkbox']:not(.noscheck) {
 	max-height: 0;
 	max-width: 0;
-	/* opacity: 0; */
+	opacity: 0;
 }
 
 	input[type='checkbox']:not(.noscheck) + label {
