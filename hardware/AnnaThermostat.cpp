@@ -807,8 +807,8 @@ void CAnnaThermostat::FixUnit()
 	if (result.empty())
 		return;  // switch doen not exist yet
 	
-    for( int i = 0;i < result.size(); ++i) 
- 		{  
-	     	m_sql.safe_query("UPDATE DeviceStatus SET unit = 1 WHERE (ID==%s)", result [i][0].c_str());
- 		}	 
+	for (const auto &it : result)
+	{
+		m_sql.safe_query("UPDATE DeviceStatus SET unit = 1 WHERE (ID==%s)", it.at(0).c_str());
+	}
 }
