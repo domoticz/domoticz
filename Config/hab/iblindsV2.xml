@@ -1,0 +1,52 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0287:000D:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/hab/iblinds.png</MetaDataItem>
+    <MetaDataItem id="000D" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2486/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">The Device Reset Locally function is used to reset the device to fatory default.  The reset operation resets protocol data (HomeID, NodeID) as well as all application specific data to factory default values.
+NOTE: Please only use this function when the primary controller is missing or inoperable!
+1.      Press the INC / EXC button 3
+Press the INC / EXC button 3 times within 5 seconds to enable the device reset function.
+2.      Wait 30 Seconds Press CLBR button
+After device is reset wait 30 seconds and press the CLBR button to reboot the device and make it ready for Z-Wave Inclusion.  </MetaDataItem>
+    <MetaDataItem id="000D" name="Identifier" type="0003">iblindsV2</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2486/iBlind_User_Guide.pdf</MetaDataItem>
+    <MetaDataItem name="Description">An intelligent Z-Wave blind motor that installs out of sight in existing Horizontal (2" and 2 1/2" slatted-style) blind headrails. Use iBlinds to tilt the slats open, closed or use the value slider for precise positioning of the slat tilt angle.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Follow the directions for your Z-Wave device to place it in the exclusion mode.
+Press the exclude button once and wait for the device to be removed from the Z-Wave network.
+ </MetaDataItem>
+    <MetaDataItem name="Name">iblinds V2</MetaDataItem>
+    <MetaDataItem id="000D" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Follow the directions for your Z-Wave hub/controller to place it in the add for inclusion mode.
+Press the inclusion button once and wait for the device to be discovered and joined to the Z-Wave network.  Follow the directions of your Z-Wave controller to uniquely identify your iblinds device.   (Ex: Bedroom iblind)
+Note: If the device is not joined to the network.  Press the CLBR button Wait 1 minutes and repeat steps 1 and 2 again.  If you continue to have trouble joining the iblinds motor to the Z-Wave network follow the Z-Wave network Exclusion process below.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="mike240se" date="10 Jul 2020" revision="1">Initial metadata</Entry>
+      <Entry author="chancehiblinds" date="16 Sept 2020" revision="2">Folder namechange to hab, minor typos</Entry>
+    </ChangeLog>
+  </MetaData>
+   <!-- Configuration Parameters -->
+        <CommandClass id="38">
+                <Compatibility>
+                        <NoRefreshAfterSet index="0">true</NoRefreshAfterSet>
+                </Compatibility>
+        </CommandClass>
+        <CommandClass id="112">
+                <Value type="list" genre="config" instance="1" index="1" label="Auto Calibration Torque" units="" read_only="false" write_only="false" verify_changes="false" min="1" max="5" vindex="0" size="1">
+                                <Help>Changing the Auto Calibration torque will allow you to change the initial calibration torque. Use at your own risk!</Help>
+                                <Item label="Calibrate using default torque " value="1" />
+                                <Item label="Reduce calibration torque by 1 factor" value="2" />
+                                <Item label="Reduce calibration torque by 2 factors" value="3" />
+                                <Item label="Increase calibration torque by .5 factor" value="4" />
+                                <Item label="Increase calibration torque by 1 factor" value="5" />
+                </Value>
+        </CommandClass>
+
+   <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>
