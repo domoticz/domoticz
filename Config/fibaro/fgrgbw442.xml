@@ -1,0 +1,313 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">RGBW Controller 2</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO RGBW Controller 2 is a universal, Z-Wave Plus compatible RGB/RGBW controller.
+FIBARO RGBW Controller 2 uses PWM output signal, allowing it to control LED, RGB, RGBW strips, halogen lights and other resistive loads. It can also measure active power and energy consumed by the load. Controlled devices may be powered by 12 or 24V DC.
+Inputs support momentary/toggle switches and 0-10V analog sensors, like temperature sensors, humidity sensors, light sensors etc.
+
+Main features of FIBARO RGBW Controller:
+- Compatible with any certified Z-Wave or Z-Wave Plus controller.
+- Supports Z-Wave network Security Modes: S0 with AES-128 encryption and S2 Authenticated with PRNG-based encryption.
+- Works as a Z-Wave signal repeater.
+- Allows for controlling: » RGB/RGBW LED strip,
+- one-color LED strips,
+- halogen lights,
+- other compliant resistive loads.
+- Allows for connecting to inputs:
+- switches/buttons,
+- 0-10V analog sensors or potentiometers.
+- Active power and energy metering.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:0902</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.fibaro.com/en/products/rgbw-controller/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://manuals.fibaro.com/rgbw-2/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgrgbw442.png</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The FIBARO RGBW Controller 2 is powered with mains voltage so it is always awake.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Power the device.
+2. Set the main controller in (Security/non-Security Mode) add mode (see the controller’s manual).
+3. Quickly, three times click the service button.
+4. If you are adding in Security S2 Authenticated, input the underlined part of the DSK (label on the box).
+5. LED will start blinking yellow, wait for the adding process to end.
+6. Adding result will be confirmed by the Z-Wave controller’s message and the LED:
+  - Green - successful (non-secure, S0, S2 Unauthenticated),
+  - Magenta - successful (Security S2 Authenticated),
+  - Red - not successful.
+</MetaDataItem>
+   <MetaDataItem name="ExclusionDescription">1. Power the device.
+2. Set the main controller into remove mode (see the controller’s manual).
+3. Quickly, three times click the service button.
+4. LED will start blinking yellow, wait for the removing process to end.
+5. Successful removing will be confirmed by the Z-Wave controller’s message and red LED colour.
+</MetaDataItem>
+   <MetaDataItem name="ResetDescription">1. Press and hold the service button to enter the menu.
+2. Release service button when the device glows yellow.
+3. Quickly click the service button to confirm.
+4. After few seconds the device will be restarted, which is signalled with the red colour.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="nouknouk" date="08 September 2020" revision="1">Initial version</Entry>
+    </ChangeLog>
+    <MetaDataItem id="1000" name="ZWProductPage" type="0902">https://products.z-wavealliance.org/products/3589/</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="0902">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="092">FGRGBW-442</MetaDataItem>
+    <MetaDataItem id="2000" name="ZWProductPage" type="0902">https://products.z-wavealliance.org/products/3656/</MetaDataItem>
+    <MetaDataItem id="2000" name="FrequencyName" type="0902">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="2000" name="Identifier" type="0902">FGRGBW-442</MetaDataItem>
+    <MetaDataItem id="3000" name="ZWProductPage" type="0902">https://products.z-wavealliance.org/products/3655/</MetaDataItem>
+    <MetaDataItem id="3000" name="FrequencyName" type="0902">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="3000" name="Identifier" type="0902">FGRGBW-442</MetaDataItem>
+    <MetaDataItem id="4000" name="ZWProductPage" type="0902">https://products.z-wavealliance.org/products/3654/</MetaDataItem>
+    <MetaDataItem id="4000" name="FrequencyName" type="0902">Russia</MetaDataItem>
+    <MetaDataItem id="4000" name="Identifier" type="0902">FGRGBW-442</MetaDataItem>
+  </MetaData>
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="51">
+    <Value genre="user" index="0" instance="1" label="Color" type="string" units="#RRGGBBWW" value="#00000000" verify_changes="false"/>
+    <Compatibility>
+      <ColorIndexBug>true</ColorIndexBug>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Remember device status before the power failure" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter determines how the device will react in the event of power supply failure (e.g. power outage or taking out from the electrical outlet). After the power supply is back on, the device can be restored to previous state or remain switched off. Default 0.</Help>
+      <Item label="device remains switched off" value="0"/>
+      <Item label="device restores the state from before the power failure" value="1"/>
+    </Value>
+    <Value genre="config" index="20" instance="1" label="Input 1 - operating mode" size="1" type="list" value="2">
+      <Help>This parameter allows to choose mode of 1st input (IN1). Change it depending on connected device. Default 2 (momentary switch).</Help>
+      <Item label="Analog input without internal pull-up (Sensor Multilevel)" value="0"/>
+      <Item label="Analog input with internal pull-up (Sensor Multilevel)" value="1"/>
+      <Item label="Momentary switch (Central Scene)" value="2"/>
+      <Item label="Toggle switch: switch state on every input change (Central Scene)" value="3"/>
+      <Item label="Toggle switch: contact closed - ON, contact opened - OFF (Central Scene)" value="4"/>
+    </Value>
+    <Value genre="config" index="21" instance="1" label="Input 2 - operating mode" size="1" type="list" value="2">
+      <Help>This parameter allows to choose mode of 2nd input (IN2). Change it depending on connected device. Default 2 (momentary switch).</Help>
+      <Item label="Analog input without internal pull-up (Sensor Multilevel)" value="0"/>
+      <Item label="Analog input with internal pull-up (Sensor Multilevel)" value="1"/>
+      <Item label="Momentary switch (Central Scene)" value="2"/>
+      <Item label="Toggle switch: switch state on every input change (Central Scene)" value="3"/>
+      <Item label="Toggle switch: contact closed - ON, contact opened - OFF (Central Scene)" value="4"/>
+    </Value>
+    <Value genre="config" index="22" instance="1" label="Input 3 - operating mode" size="1" type="list" value="2">
+      <Help>This parameter allows to choose mode of 3rd input (IN3). Change it depending on connected device. Default 2 (momentary switch).</Help>
+      <Item label="Analog input without internal pull-up (Sensor Multilevel)" value="0"/>
+      <Item label="Analog input with internal pull-up (Sensor Multilevel)" value="1"/>
+      <Item label="Momentary switch (Central Scene)" value="2"/>
+      <Item label="Toggle switch: switch state on every input change (Central Scene)" value="3"/>
+      <Item label="Toggle switch: contact closed - ON, contact opened - OFF (Central Scene)" value="4"/>
+    </Value>
+    <Value genre="config" index="23" instance="1" label="Input 4 - operating mode" size="1" type="list" value="2">
+      <Help>This parameter allows to choose mode of 4th input (IN4). Change it depending on connected device. Default 2 (momentary switch).</Help>
+      <Item label="Analog input without internal pull-up (Sensor Multilevel)" value="0"/>
+      <Item label="Analog input with internal pull-up (Sensor Multilevel)" value="1"/>
+      <Item label="Momentary switch (Central Scene)" value="2"/>
+      <Item label="Toggle switch: switch state on every input change (Central Scene)" value="3"/>
+      <Item label="Toggle switch: contact closed - ON, contact opened - OFF (Central Scene)" value="4"/>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Alarm configuration - 1st slot" size="4" type="int" value="0">
+      <Help>This parameter determines to which alarm frames and how the device should react.
+The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B [MSB] - notification Type.
+2B - notification Status.
+3B - Event/State Parameters.
+4B [LSB] action:
+    0x00 - no reaction
+    0x0X - turn off selected channel
+    0x1X - turn on selected channel
+    0x2X - blink selected channel
+    0x3Y - activate alarm sequence
+Default setting: [0x00, 0x00, 0x00, 0x00]</Help>
+    </Value>
+    <Value genre="config" index="31" instance="1" label="Alarm configuration - 2nd slot" size="4" type="int" value="1358888960">
+      <Help>This parameter determines to which alarm frames and how the device should react.
+The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B [MSB] - notification Type.
+2B - notification Status.
+3B - Event/State Parameters.
+4B [LSB] action:
+    0x00 - no reaction
+    0x0X - turn off selected channel
+    0x1X - turn on selected channel
+    0x2X - blink selected channel
+    0x3Y - activate alarm sequence
+Default setting: [0x05, 0xFF, 0x00, 0x00] (Water Alarm, any notification, no action)</Help>
+    </Value>
+    <Value genre="config" index="32" instance="1" label="Alarm configuration - 3rd slot" size="4" type="int" value="33488896">
+      <Help>This parameter determines to which alarm frames and how the device should react.
+The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B [MSB] - notification Type.
+2B - notification Status.
+3B - Event/State Parameters.
+4B [LSB] action:
+    0x00 - no reaction
+    0x0X - turn off selected channel
+    0x1X - turn on selected channel
+    0x2X - blink selected channel
+    0x3Y - activate alarm sequence
+Default setting: [0x01, 0xFF, 0x00, 0x00] (Smoke Alarm, any notification, no action)</Help>
+    </Value>
+    <Value genre="config" index="33" instance="1" label="Alarm configuration - 4th slot" size="4" type="int" value="50266112">
+      <Help>This parameter determines to which alarm frames and how the device should react.
+The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B [MSB] - notification Type.
+2B - notification Status.
+3B - Event/State Parameters.
+4B [LSB] action:
+    0x00 - no reaction
+    0x0X - turn off selected channel
+    0x1X - turn on selected channel
+    0x2X - blink selected channel
+    0x3Y - activate alarm sequence
+Default setting: [0x02, 0xFF, 0x00, 0x00] (CO Alarm, any notification, no action)</Help>
+    </Value>
+    <Value genre="config" index="34" instance="1" label="Alarm configuration - 5th slot" size="4" type="int" value="83820544">
+      <Help>This parameter determines to which alarm frames and how the device should react.
+The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B [MSB] - notification Type.
+2B - notification Status.
+3B - Event/State Parameters.
+4B [LSB] action:
+    0x00 - no reaction
+    0x0X - turn off selected channel
+    0x1X - turn on selected channel
+    0x2X - blink selected channel
+    0x3Y - activate alarm sequence
+Default setting: [0x04, 0xFF, 0x00, 0x00] (Heat Alarm, any notification, no action)</Help>
+    </Value>
+    <Value genre="config" index="35" instance="1" label="Duration of alarm signalization" max="32400" min="0" size="2" type="short" units="sec" value="600">
+      <Help>This parameter determines the duration of alarm signaling (flashing mode and/or alarm sequence). Available values:
+0 - infinite signalization
+1-32400 (1s-9h, 1s step)
+Default 600 (10min).</Help>
+    </Value>
+    <Value genre="config" index="40" instance="1" label="Input 1 - sent scenes" max="15" min="0" type="byte" value="15">
+      <Help>This parameter defines which actions result in sending scene ID and attribute assigned to them. Parameter is relevant only if parameter 20 is set to 2, 3 or 4. Actions can be summed up, e.g. 1+2+4+8=15 and entered as a value for the parameter. Available values:
+1 - Key pressed 1 time
+2 - Key pressed 2 times
+4 - Key pressed 3 times
+8 - Key hold down and key released
+Default 15.</Help>
+    </Value>
+    <Value genre="config" index="41" instance="1" label="Input 2 - sent scenes" max="15" min="0" type="byte" value="15">
+      <Help>This parameter defines which actions result in sending scene ID and attribute assigned to them. Parameter is relevant only if parameter 20 is set to 2, 3 or 4. Actions can be summed up, e.g. 1+2+4+8=15 and entered as a value for the parameter. Available values:
+1 - Key pressed 1 time
+2 - Key pressed 2 times
+4 - Key pressed 3 times
+8 - Key hold down and key released
+Default 15.</Help>
+    </Value>
+    <Value genre="config" index="42" instance="1" label="Input 3 - sent scenes" max="15" min="0" type="byte" value="15">
+      <Help>This parameter defines which actions result in sending scene ID and attribute assigned to them. Parameter is relevant only if parameter 20 is set to 2, 3 or 4. Actions can be summed up, e.g. 1+2+4+8=15 and entered as a value for the parameter. Available values:
+1 - Key pressed 1 time
+2 - Key pressed 2 times
+4 - Key pressed 3 times
+8 - Key hold down and key released
+Default 15.</Help>
+    </Value>
+    <Value genre="config" index="43" instance="1" label="Input 4 - sent scenes" max="15" min="0" type="byte" value="15">
+      <Help>This parameter defines which actions result in sending scene ID and attribute assigned to them. Parameter is relevant only if parameter 20 is set to 2, 3 or 4. Actions can be summed up, e.g. 1+2+4+8=15 and entered as a value for the parameter. Available values:
+1 - Key pressed 1 time
+2 - Key pressed 2 times
+4 - Key pressed 3 times
+8 - Key hold down and key released
+Default 15.</Help>
+    </Value>
+    <Value genre="config" index="62" instance="1" label="Power reports - periodic" max="32400" min="0" size="2" type="short" units="sec" value="3600">
+      <Help>This parameter determines in what time intervals the periodic power reports are sent to the main controller. Periodic reports do not depend of power change (parameter 61). Available values:
+0 - periodic reports are disabled
+30-32400 (30-32400s) - report interval
+Default 3600 (1h).</Help>
+    </Value>
+    <Value genre="config" index="63" instance="1" label="Analog inputs reports and output change on input change" max="100" min="0" size="2" type="short" value="5">
+      <Help>This parameter defines minimal change (from the last reported) of analog input voltage that results in sending new report and change in the output value. Parameter is relevant only for analog inputs (parameter 20, 21, 22 or 23 set to 0 or 1). Available values:
+0 - reporting on change disabled
+1-100 (0.1-10V, 0.1V step)
+Default 5 (0.5V).</Help>
+    </Value>
+    <Value genre="config" index="64" instance="1" label="Analog inputs reports - periodic" max="32400" min="0" size="2" type="short" units="sec" value="0">
+      <Help>This parameter defines reporting period of analog inputs value. Periodical reports are independent from changes in value (parameter 63). Parameter is relevant only for analog inputs (parameter 20, 21, 22 or 23 set to 0 or 1). Available values:
+0 - periodical reports disabled
+30-32400 (30-32400s, 1s step)
+Default 0 (periodical reports disabled).</Help>
+    </Value>
+    <Value genre="config" index="65" instance="1" label="Energy reports - on change" max="500" min="0" size="2" type="short" value="10">
+      <Help>This parameter determines the minimum change in consumed energy that will result in sending new energy report to the main controller. Energy reports are sent no often than every 30 seconds. Available values:
+0 - reports are disabled
+1-500 (0.01 - 5 kWh) - change in energy
+Default 10 (0.1 kWh).</Help>
+    </Value>
+    <Value genre="config" index="66" instance="1" label="Energy reports - periodic" max="32400" min="0" size="2" type="short" units="sec" value="3600">
+      <Help>This parameter determines in what time intervals the periodic energy reports are sent to the main controller. Periodic reports do not depend of energy change (parameter 65) Available values:
+0 - periodic reports are disabled
+30-32400 (30-32400s) - report interval
+Default 3600 (1h).
+</Help>
+    </Value>
+    <Value genre="config" index="150" instance="1" label="Inputs - LED colour control mode" size="1" type="list" value="0">
+      <Help>This parameter determines how connected switches control LED strips. Default 0.</Help>
+      <Item label="RGBW mode (every input controls output with the same number, IN1‑OUT1, IN2‑OUT2, IN3‑OUT3, IN4‑OUT4)" value="0"/>
+      <Item label="HSB and White mode (inputs works in HSB color model, IN1‑H (Hue), IN2‑S (Saturation), IN3‑B (Brightness), IN4‑White (OUT4)" value="1"/>
+    </Value>
+    <Value genre="config" index="151" instance="1" label="Local control - transition time" max="254" min="0" size="2" type="short" units="sec" value="3">
+      <Help>This parameter determines time of smooth transition between 0% and 100% when controlling with connected switches. Available values:
+0 - instantly
+1-127 (1s-127s, 1s step)
+128-254 (1min-127min, 1min step)
+Default 3.</Help>
+    </Value>
+    <Value genre="config" index="152" instance="1" label="Remote control - transition time" max="254" min="0" size="2" type="short" units="sec" value="3">
+      <Help>This parameter determines time of smooth transition between initial and target state when controlling via Z-Wave network. Available values:
+0 - instantly
+1-127 (1s-127s, 1s step)
+128-254 (1min-127min, 1min step)
+Default 3.</Help>
+    </Value>
+    <Value genre="config" index="154" instance="1" label="ON frame value for single click" max="4294967295" min="0" type="int" value="4294967295">
+      <Help>This parameter defines value sent to devices in association groups. The parameters consist of 4 bytes, each byte reserved for separate channel, from least significant (IN1) to most significant (IN4). Applicable for Basic Set and Switch Multilevel Set commands. Available values:
+For every byte: 0-99, 255.
+Default 4294967295 (0xFF FF FF FF - 255 for all channels).</Help>
+    </Value>
+    <Value genre="config" index="155" instance="1" label="OFF frame value for single click" max="4294967295" min="0" type="int" value="0">
+      <Help>This parameter defines value sent to devices in association groups. The parameters consist of 4 bytes, each byte reserved for separate channel, from least significant (IN1) to most significant (IN4). Applicable for Basic Set and Switch Multilevel Set commands. Available values:
+For every byte: 0-99, 255.
+Default 0 (0x00 00 00 00 - 0 for all channels).</Help>
+    </Value>
+    <Value genre="config" index="156" instance="1" label="ON frame value for double click" max="0" min="0" type="int" value="4294967295">
+      <Help>This parameter defines value sent to devices in association groups. The parameters consist of 4 bytes, each byte reserved for separate channel, from least significant (IN1) to most significant (IN4). Applicable for Basic Set and Switch Multilevel Set commands. Available values:
+For every byte: 0-99, 255.
+Default 0 (0x63 63 63 63 - 99 for all channels).</Help>
+    </Value>
+    <Value genre="config" index="157" instance="1" label="Start programmed sequence" size="1" type="list" value="0">
+      <Help>Setting this parameter will start programmed sequence with selected number. User can define own sequences via controller. Default 0.</Help>
+      <Item label="sequence inactive" value="0"/>
+      <Item label="user-defined sequence 1" value="1"/>
+      <Item label="user-defined sequence 2" value="2"/>
+      <Item label="user-defined sequence 3" value="3"/>
+      <Item label="user-defined sequence 4" value="4"/>
+      <Item label="user-defined sequence 5" value="5"/>
+      <Item label="Fireplace sequence" value="6"/>
+      <Item label="Storm sequence" value="7"/>
+      <Item label="Rainbow sequence" value="8"/>
+      <Item label="Aurora sequence" value="9"/>
+      <Item label="Police (red-white-blue) sequence" value="10"/>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="10">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="RGBW Sync" max_associations="5"/>
+      <Group index="3" label="On/Off (IN1)" max_associations="5"/>
+      <Group index="4" label="Dimmer (IN1)" max_associations="5"/>
+      <Group index="5" label="On/Off (IN2)" max_associations="5"/>
+      <Group index="6" label="Dimmer (IN2)" max_associations="5"/>
+      <Group index="7" label="On/Off (IN3)" max_associations="5"/>
+      <Group index="8" label="Dimmer (IN3)" max_associations="5"/>
+      <Group index="9" label="On/Off (IN4)" max_associations="5"/>
+      <Group index="10" label="Dimmer (IN4)" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

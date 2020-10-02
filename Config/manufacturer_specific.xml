@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="111" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="122" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -24,7 +24,9 @@
   <Manufacturer id="0117" name="Abilia"></Manufacturer>
   <Manufacturer id="0400" name="Abode"></Manufacturer>
   <Manufacturer id="0409" name="ABUS August Bremicker Sohne KG"></Manufacturer>
-  <Manufacturer id="0403" name="ABUS Security-Center GmbH Co. KG"></Manufacturer>
+  <Manufacturer id="0403" name="ABUS Security-Center GmbH Co. KG">
+     <Product config="abus/SHRM10000.xml" id="0003" name="Smart Smoke Sensor SHRM10000" type="0002"/>
+  </Manufacturer>
   <Manufacturer id="034A" name="AcroComm Corp"></Manufacturer>
   <Manufacturer id="0001" name="ACT">
     <Product id="3130" name="ZCS101 Serial Interface" type="4349"/>
@@ -346,7 +348,9 @@
   <Manufacturer id="0145" name="Buffalo">
     <Product config="buffalo/hw-100v15a-zw.xml" id="0004" name="HW-100V15A-ZW Measure Power Monitor" type="0001"/>
   </Manufacturer>
-  <Manufacturer id="0190" name="Building 36 Technologies"></Manufacturer>
+  <Manufacturer id="0190" name="Building 36 Technologies">
+    <Product config="building36/b36-t10.xml" id="0001" name="B36-T10" type="0001"/>
+  </Manufacturer>
   <Manufacturer id="0396" name="Bulcraft Control"></Manufacturer>
   <Manufacturer id="0026" name="BuLogics"></Manufacturer>
   <Manufacturer id="0398" name="Calix"></Manufacturer>
@@ -498,7 +502,9 @@
     <Product config="ecolink/floodfreeze.xml" id="0010" name="Flood/Freeze Sensor" type="0005"/>
     <Product config="ecolink/firefighter.xml" id="000f" name="FireFighter" type="0005"/>
   </Manufacturer>
-  <Manufacturer id="0157" name="EcoNet Controls"></Manufacturer>
+  <Manufacturer id="015d" name="EcoNet Controls">
+    <Product config="econet/ezw1204.xml" id="c41c" name="EZW1204 Water Leak Sensor" type="2003"/>
+  </Manufacturer>
   <Manufacturer id="039D" name="ECS"></Manufacturer>
   <Manufacturer id="031F" name="Eelectron SpA"></Manufacturer>
   <Manufacturer id="026B" name="Ei Electronics"></Manufacturer>
@@ -715,6 +721,10 @@
     <Product config="fibaro/fgrgbwm441.xml" id="2000" name="FGRGBWM441 RGBW Controller" type="0900"/>
     <Product config="fibaro/fgrgbwm441.xml" id="3000" name="FGRGBWM441 RGBW Controller" type="0900"/>
     <Product config="fibaro/fgrgbwm441.xml" id="4000" name="FGRGBWM441 RGBW Controller" type="0900"/>
+    <Product config="fibaro/fgrgbw442.xml" id="1000" name="FGRGBW442 RGBW Controller 2" type="0902"/>
+    <Product config="fibaro/fgrgbw442.xml" id="2000" name="FGRGBW442 RGBW Controller 2" type="0902"/>
+    <Product config="fibaro/fgrgbw442.xml" id="3000" name="FGRGBW442 RGBW Controller 2" type="0902"/>
+    <Product config="fibaro/fgrgbw442.xml" id="4000" name="FGRGBW442 RGBW Controller 2" type="0902"/>
     <Product config="fibaro/fgss101.xml" id="1000" name="FGSS101 Smoke Sensor" type="0c00"/>
     <Product config="fibaro/fgsd002.xml" id="1002" name="FGSD002 Smoke Sensor" type="0c02"/>
     <Product config="fibaro/fgsd002.xml" id="1003" name="FGSD002 Smoke Sensor" type="0c02"/>
@@ -757,6 +767,7 @@
     <Product config="fortrezz/wwa02.xml" id="0109" name="WWA-02 Water and Temperature Alarm" type="0023"/>
     <Product id="0216" name="WWA-01AA Wireless Water and Freeze Alarm" type="0053"/>
     <Product config="fortrezz/wv01.xml" id="020c" name="WV-01 Automated Water Shut-Off Valve" type="0213"/>
+    <Product config="fortrezz/wv01.xml" id="aa06" name="WV-01 Automated Water Shut-Off Valve" type="0233"/>
     <Product config="fortrezz/wv01.xml" id="0300" name="WV-01 Automated Water Shut-Off Valve" type="0241"/>
     <Product config="fortrezz/wv01.xml" id="0216" name="WV-01 Automated Water Shut-Off Valve" type="0243"/>
     <Product config="fortrezz/ssa2.xml" id="0109" name="SSA1 / SSA2 - Siren/Strobe Light Alarm" type="0311"/>
@@ -802,6 +813,7 @@
     <Product config="ge/26933-motion-dimmer.xml" id="3034" name="26933 Smart Motion Dimmer" type="494d"/>
     <Product config="ge/14291-switch.xml" id="3036" name="14291 In-Wall Smart Switch" type="4952"/>
     <Product config="ge/46201-switch.xml" id="3135" name="46201 In-Wall Smart Switch" type="4952"/>
+    <Product config="ge/46202-switch.xml" id="3137" name="46202 In-Wall Smart Switch" type="4952"/>
     <Product config="ge/46203-dimmer.xml" id="3235" name="46203 In-Wall Smart Dimmer" type="4944"/>
     <Product config="ge/46204-dimmer-toggle.xml" id="3237" name="In-Wall Smart Toggle Dimmer" type="4944"/>
     <Product config="ge/14292-toggle-switch.xml" id="3037" name="14292 In-Wall Smart Toggle Switch" type="4952"/>
@@ -850,7 +862,10 @@
   <Manufacturer id="037B" name="Guardtec Inc">
     <Product type="0002" id="0001" name="GKW-2000D Door Lock" config="guardtec/gkw2000d.xml"/>
   </Manufacturer>
-  <Manufacturer id="0287" name="HAB Home Intelligence LLC"></Manufacturer>
+  <Manufacturer id="0287" name="HAB Home Intelligence LLC">
+    <Product type="0003" id="000D" name="iblinds V2" config="hab/iblindsV2.xml"/>
+    <Product type="0004" id="0071" name="iblinds V3" config="hab/iblindsV3.xml"/>
+  </Manufacturer>
   <Manufacturer id="030D" name="Hampoo"></Manufacturer>
   <Manufacturer id="040A" name="Hangzhou Hikvision Digital Technology Co. Ltd"></Manufacturer>
   <Manufacturer id="0387" name="HangZhou iMagic Technology Co. Ltd"></Manufacturer>
@@ -941,6 +956,8 @@
     <Product config="honeywell/39351-ZW3010.xml" id="3235" name="39351 / ZW3010 In-Wall Smart Dimmer" type="4944"/>
     <Product config="honeywell/39358-ZW4002.xml" id="3131" name="39358 / ZW4002 In-Wall Fan Control" type="4944"/>
     <Product config="honeywell/39449-ZW4106.xml" id="3033" name="39449 / ZW4106 Plug-in Smart Switch" type="5052"/>
+    <Product config="honeywell/2681-plugin-dimmer.xml" id="3038" name="39336 / ZW3104 Plug-in Dimmer" type="5044"/>
+    <Product config="honeywell/3830-zw3107.xml" id="3033" name="39446 / ZW3107 Plug-in Dimmer" type="5044"/>
   </Manufacturer>
   <Manufacturer id="0313" name="Hoppe"></Manufacturer>
   <Manufacturer id="0377" name="HORNBACH Baumarkt AG"></Manufacturer>
@@ -1563,6 +1580,7 @@
     <Product config="shenzen_neo/nas-wr01z.xml" id="0087" name="NAS-WR01Z Power plug 12A" type="0003"/>
     <Product config="shenzen_neo/nas-wr01z.xml" id="1087" name="NAS-WR01Z Power plug 12A" type="0003"/>
     <!-- NAS-WR01ZE and NAS-WR01Z hardware looks identical but are based on different SDK-->
+    <Product config="shenzen_neo/nas-wr01ze.xml" id="1027" name="NAS-WR01ZE Power plug 12A" type="0100"/>
     <Product config="shenzen_neo/nas-wr01ze.xml" id="1027" name="NAS-WR01ZE Power plug 12A" type="0200"/>
     <Product config="shenzen_neo/nas-wr01z.xml" id="2087" name="NAS-WR01Z Power plug 12A" type="0003"/>
     <Product config="shenzen_neo/nas-pd01z.xml" id="0083" name="NAS-PD01Z Battery Powered PIR Sensor" type="0003"/>
@@ -1570,6 +1588,7 @@
     <!-- NAS-PD02Z exist with and without temp sensor and different params but same IDs https://github.com/OpenZWave/open-zwave/issues/1866 -->
     <Product config="shenzen_neo/nas-pd02z.xml" id="108d" name="NAS-PD02Z Battery Powered PIR Sensor V2" type="0003"/>
     <Product config="shenzen_neo/nas-pd02z.xml" id="008d" name="NAS-PD02Z Battery Powered PIR Sensor V2" type="0003"/>
+    <Product config="shenzen_neo/nas-pd03z.xml" id="1031" name="NAS-PD03Z Battery Powered PIR Sensor V2" type="0200"/>
     <Product config="shenzen_neo/nas-ws02z.xml" id="0085" name="Water Leakage Detector" type="0003"/>
     <Product config="shenzen_neo/nas-ws02z.xml" id="1085" name="Water Leakage Detector" type="0003"/>
     <Product config="shenzen_neo/nas-ws02z.xml" id="6085" name="Water Leakage Detector" type="0003"/>
@@ -1583,7 +1602,9 @@
     <Product config="shenzen_neo/ls01ch.xml" id="008c" name="Wall Switch (1 channel)" type="0003"/>
     <Product config="shenzen_neo/ls01ch.xml" id="108c" name="Wall Switch (1 channel)" type="0003"/>
   </Manufacturer>
-  <Manufacturer id="032C" name="Shenzhen Saykey Technology"></Manufacturer>
+  <Manufacturer id="032C" name="Shenzhen Saykey Technology">
+	<Product config="shenzen_saykey/sk-3007-05.xml" id="0005" name="Curtain Motor Control with external module" type="3007"/>
+  </Manufacturer>
   <Manufacturer id="036C" name="Shenzhen Sen5 Technology"></Manufacturer>
   <Manufacturer id="0381" name="Shenzhen Thingsview Tech"></Manufacturer>
   <Manufacturer id="0250" name="Shenzhen Tripath Digital Audio Equipment"></Manufacturer>
@@ -1676,6 +1697,7 @@
   <Manufacturer id="019b" name="ThermoFloor AS">
     <Product config="thermofloor/heatit021.xml" id="0001" name="Heatit Thermostat TF 021" type="0001"/>
     <Product config="thermofloor/heatit056.xml" id="0202" name="Heatit Thermostat TF 056" type="0003"/>
+    <Product config="thermofloor/heatit058.xml" id="0203" name="Heatit Thermostat TF 058" type="0003"/>
     <Product config="thermofloor/heatit-zdim.xml" id="2200" name="Heatit ZDim" type="0003"/>
     <Product config="thermofloor/heatitz8.xml" id="0xa305" name="Heatit Z-Push Button 8" type="0x0300"/>
     <Product config="thermofloor/heatit20a.xml" id="020a" name="Heatit Z-Water TF 20a" type="0003"/>
@@ -1727,10 +1749,18 @@
   </Manufacturer>
   <Manufacturer id="0330" name="Sunricher">
     <Product config="sunricher/srzv9001t4dimeu.xml" id="a10d" name="Touch Panel Wall Controller - ZSC-01D" type="0003"/>
+    <Product config="sunricher/srzv9001k12dimz4.xml" id="b302" name="SR-ZV9001 4 Channel Dimmer Remote Control" type="0300"/>
+    <Product config="sunricher/srzv9001k12dimz4.xml" id="b302" name="SR-ZV9001 4 Channel Dimmer Remote Control" type="0301"/>
+    <Product config="sunricher/srzv9001k12dimz4.xml" id="b302" name="SR-ZV9001 4 Channel Dimmer Remote Control" type="0302"/>
+    <Product config="sunricher/srzv9001k12dimz5.xml" id="b301" name="SR-ZV9001 5 Channel Dimmer Remote Control" type="0300"/>
+    <Product config="sunricher/srzv9001k12dimz5.xml" id="b301" name="SR-ZV9001 5 Channel Dimmer Remote Control" type="0301"/>
+    <Product config="sunricher/srzv9001k12dimz5.xml" id="b301" name="SR-ZV9001 5 Channel Dimmer Remote Control" type="0302"/>
     <Product config="sunricher/srzv9001k8.xml" id="a305" name="Wall Controller - SR-ZV9001" type="0300"/>
     <Product config="sunricher/zv9101.xml" id="d005" name="Dimmer ZV-9101" type="0200"/>
     <Product config="sunricher/srzv9101sachpeu.xml" id="d00c" name="Dimmer ZV9040" type="0200"/>
     <Product config="sunricher/srzv9003t4rgbweu.xml" id="a107" name="Z-Wave Wall Controller - SR-ZV9003T4-RGBW-EU" type="0300"/>
+    <Product config="sunricher/srzv9001tccteu.xml" id="a104" name="Z-Wave Wall Controller - SR-ZV9001T-CCT-EU" type="0300"/>
+    <Product config="sunricher/zv9101fa.xml" id="d002" name="Dimmer ZV-9101FA" type="0200"/>
   </Manufacturer>
   <Manufacturer id="0049" name="Twisthink"></Manufacturer>
   <Manufacturer id="0270" name="Ubitech"></Manufacturer>
@@ -1753,7 +1783,10 @@
   <Manufacturer id="008c" name="Vera Control">
     <Product config="vera/vera2.xml" id="0001" name="Vera Lite" type="0001"/>
   </Manufacturer>
-  <Manufacturer id="0080" name="Vero Duco"></Manufacturer>
+  <Manufacturer id="0080" name="Vero Duco">
+    <Product config="duco/DucoBox.xml" id="0001" name="DucoBox Motor" type="0003"/>
+    <Product config="duco/Ducotronic_CO-RH_sensor.xml" id="0001" name="DucoBox CO/RH Sensor" type="0004"/> 
+  </Manufacturer>
   <Manufacturer id="0237" name="Vestel Elektronik Ticaret ve Sanayi"></Manufacturer>
   <Manufacturer id="0053" name="Viewsonic"></Manufacturer>
   <Manufacturer id="005e" name="ViewSonic Corporation"></Manufacturer>
@@ -1957,6 +1990,7 @@
     <Product config="zooz/zen23.xml" id="1e1c" name="ZEN23 Toggle Switch" type="1111"/>
     <Product config="zooz/zen24.xml" id="1f1c" name="ZEN24 Dimmer Switch" type="0111"/>
     <Product config="inovelli/nzw97.xml" id="6100" name="NZW97 Inovelli Dual Outdoor Z-Wave Plug" type="6100"/>
+    <Product config="inovelli/nzw31.xml" id="1f01" name="NZW31 Inovelli Dimmer" type="1f01"/>
   </Manufacturer>
   <Manufacturer id="0315" name="zwaveproducts.com">
     <Product type="4447" id="3031" name="PA-100" config="zwp/PA-100.xml"/>

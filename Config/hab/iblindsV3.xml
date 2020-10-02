@@ -1,0 +1,71 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<MetaData>
+    <MetaDataItem name="Name">iblinds</MetaDataItem>
+    <MetaDataItem name="Description">An intelligent blind motor, a Z-Wave device designed for tilting Venetian (two inch slatted-style) blinds. Open and close the blinds and use a value slider for precise positioning of the tilt angle.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0287:0071:0004</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://myiblinds.com/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://support.myiblinds.com</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/hab/iblindsV3.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">http://support.myiblinds.com/wp-content/uploads/2019/06/User-Guide-v1.0.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press Include/Exclude button</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Follow the directions for your Z-Wave hub/controller to place it into inclusion mode. Press the inclusion button three times and wait for the device to be discovered and joined to the Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Follow the directions for your Z-Wave device to place it in the exclusion mode. Press the exclude button three times and wait for the device to be removed from the Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Charge adapter button can be used to reset the device and perform manual auto calibration: press and hold the Charge Adapter button for 10 seconds.</MetaDataItem>
+    <MetaDataItem id="0071" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/2486/features</MetaDataItem>
+    <MetaDataItem id="0071" name="FrequencyName" type="0004">U.S. / Canada/ Mexico</MetaDataItem>
+    <MetaDataItem id="0071" name="FrequencyName" type="0004">CEPT</MetaDataItem>
+    <MetaDataItem id="0071" name="FrequencyName" type="0004">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="0071" name="Identifier" type="0004">iblinds V3</MetaDataItem>
+  <!--TODO : Change Frequency to represent Global with new ZWave 700 Series-->
+    <ChangeLog>
+      <Entry author="Chance Huddleston chance@habhomeintel.com" date="8 Sept 2020" revision="1">Initial Release</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" type="byte" size="1" index="1" label="Close Interval" min="16" max="32" value="22">
+      <Help>
+	  Auto Calibration Tightness
+	  Lower value = tighter
+	  Higher value = looser
+	  MUST BE RECALIBRATED
+	  Range:16-32
+      Default: 22
+      </Help>
+    </Value>
+    <Value genre="config" type="list" size="1" index="2" label="Reverse Direction" min="0" max="1" value="0">
+      <Help>
+	   Reverse closing direction
+      </Help>
+ 	   <Item value="0" label="False"/>
+	   <Item value="1" label="True"/>
+    </Value>
+    <!--The 3rd Index Configuration Parameter is not used, DO NOT ADD-->
+    <Value genre="config" type="byte" size="1" index="4" label="Default ON Value" min="0" max="100" value="50">
+      <Help>
+	  Value that iblinds will open to by Default
+      Default: 50
+      </Help>
+    </Value>
+    <Value genre="config" type="list" size="1" index="5" label="Reset Button Disable" min="0" max="1" value="0">
+      <Help>
+	   Will disable the reset button on the motor, preventing it from accidentally being pressed
+      </Help>
+ 	   <Item value="0" label="False"/>
+	   <Item value="1" label="True"/>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="6" label="Speed" min="0" max="100" value="0">
+      <Help>
+	  How fast iblinds will close in seconds
+      Default:0
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1" />
+    </Associations>
+  </CommandClass>
+</Product>
