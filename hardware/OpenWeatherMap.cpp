@@ -692,13 +692,13 @@ void COpenWeatherMap::GetMeterDetails()
 		{
 			wind_degrees = current["wind_deg"].asInt();
 
-			bool bHaveTemp = (temp != -999.9f);
-			float rTemp = (bHaveTemp ? temp : 0);
-			float rFlTemp = rTemp;
+			//we need to assume temp and chill temperatures are availabe to define subtype of wind device. 
+			//It is possible that sometimes in the API a temperature is missing, but it should not change a device type.
+			//Therefor set that temp to 0
+			float wind_temp = (temp != -999.9f ? temp : 0);
+			float wind_chill = (fltemp != -999.9f ? fltemp : 0); //Wind_chill is same as feels like temperature
 
-			if ((rTemp < 10.0) && (windspeed_ms >= 1.4))
-				rFlTemp = 0; //if we send 0 as chill, it will be calculated
-			SendWind(4, 255, wind_degrees, windspeed_ms, windgust_ms, rTemp, rFlTemp, bHaveTemp, true, "Wind");
+			SendWind(4, 255, wind_degrees, windspeed_ms, windgust_ms, wind_temp, wind_chill, true, true, "Wind");
 		}
 	}
 
@@ -729,22 +729,21 @@ void COpenWeatherMap::GetMeterDetails()
 		SendPercentageSensor(7, 1, 255, clouds, "Clouds %");
 	}
 
-	//Rain (only present if their is rain (or snow))
-	float rainmm = 0;
+	//Rain (only present if their is rain)
+	float precipitation = 0;
 	if (!current["rain"].empty() && !current["rain"]["1h"].empty())
 	{
-		rainmm = current["rain"]["1h"].asFloat();
+		precipitation = current["rain"]["1h"].asFloat();
 	}
-	else
-	{	// Maybe it is not raining but snowing... we show this as 'rain' as well (for now at least)
-		if (!current["snow"].empty() && !current["snow"]["1h"].empty())
-		{
-			rainmm = current["snow"]["1h"].asFloat();
-		}
+
+	//Snow (only present if their is snow), add together with rain as precipitation
+	if (!current["snow"].empty() && !current["snow"]["1h"].empty())
+	{
+		precipitation += current["snow"]["1h"].asFloat();
 	}
-	SendRainRateSensor(8, 255, rainmm, "Rain (Snow)");
-	m_itIsRaining = rainmm > 0;
-	SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it Raining");
+	SendRainRateSensor(8, 255, precipitation, "Precipitation");
+	m_itIsRaining = precipitation > 0;
+	SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it raining/snowing");
 
 	// Process daily forecast data if available
 	if (root["daily"].empty())
