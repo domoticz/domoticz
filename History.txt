@@ -16,6 +16,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: RTL433, Added UV type
 - Implemented: RTL433, Added X-10 Security support
 - Implemented: RTL433, Switched to Json input
+- Implemented: Temperature Chart, Live update for Day chart
 - Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
 - Implemented: Websocket notification for secondary/sub devices
 - Implemented: ZWave, Legend and tooltips in Neighbor�s overview
