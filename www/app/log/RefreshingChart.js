@@ -42,9 +42,9 @@ define(['DomoticzBase'], function (DomoticzBase) {
                         self.refreshChartData(self.sensorType);
                         self.refreshTimestamp = serverTime;
                     }
-                } else {
-                    self.refreshTimestamp = 0;
                 }
+            } else {
+                self.refreshTimestamp = 0;
             }
         });
         // self.$scope.$on('device_update', function (event, device) {
