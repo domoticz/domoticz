@@ -28,7 +28,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
             self.mouseUpPosition = e.clientX;
         };
 
-        self.refreshChartData(self.sensorType);
+        self.refreshChartData();
 
         self.refreshTimestamp = 0;
         self.$scope.$on('time_update', function (event, update) {
@@ -39,7 +39,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     const currentSlot = Math.floor(serverTime / (300 * 1000));
                     const refreshSlot = Math.floor(self.refreshTimestamp / (300 * 1000));
                     if (refreshSlot < currentSlot) {
-                        self.refreshChartData(self.sensorType);
+                        self.refreshChartData();
                         self.refreshTimestamp = serverTime;
                     }
                 }
@@ -49,7 +49,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
         });
         // self.$scope.$on('device_update', function (event, device) {
         //     if (params.autoRefreshIsEnabled() && device.idx === self.device.idx) {
-        //         self.refreshChartData(self.sensorType);
+        //         self.refreshChartData();
         //     }
         // });
     }
