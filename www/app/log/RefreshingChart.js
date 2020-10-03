@@ -40,6 +40,8 @@ define(['DomoticzBase'], function (DomoticzBase) {
                         self.refreshChartData();
                         self.refreshTimestamp = serverTime;
                     }
+                } else {
+                    self.refreshTimestamp = 0;
                 }
             }
         });
