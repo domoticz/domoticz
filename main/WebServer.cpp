@@ -2939,6 +2939,12 @@ namespace http {
 			root["Longitude"] = Longitude;
 
 			root["Forecastdevice"] = "0";
+			sValue = "";
+			sValue.clear();
+			if (m_sql.GetUserVariable("forecastdevice", USERVARTYPE_INTEGER, sValue))
+			{
+				root["Forecastdevice"] = sValue;
+			}
 		}
 
 		void CWebServer::Cmd_SendNotification(WebEmSession & session, const request& req, Json::Value &root)
