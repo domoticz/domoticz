@@ -35,6 +35,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
                 self.range = 'day';
+                self.sensorType = 'temp';
 
                 self.$onInit = function() {
                     self.chart = new RefreshingChart(
@@ -122,6 +123,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             range: ctrl.range,
             device: ctrl.device,
+            sensorType: ctrl.sensorType,
             chartTitle: $.t('Temperature') + ' ' + chartTitle,
             autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
             dataSupplier: {
