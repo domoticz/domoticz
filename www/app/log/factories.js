@@ -13,8 +13,6 @@ define(['app'], function (app) {
     function sensorTypeForDevice(device) {
         if (['Custom Sensor', 'Waterflow', 'Percentage'].includes(device.SubType)) {
             return 'Percentage';
-        } else if (device.Type.includes('Temp') === true) {
-            return 'temp';
         } else if (device.Type.includes('Rain') === true) {
             return 'rain';
         } else if (device.Type.includes('Fan') === true) {
