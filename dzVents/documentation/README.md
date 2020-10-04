@@ -761,8 +761,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
 			domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
 			domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300
 	```
-	- **osCommand(cmd)**: *Function*:  Execute an OS command and return result and returncode.
-	- **osExecute(cmd)**: *Function*:  Execute an OS command.
+	- **osCommand(cmd)**: *Function*: <sup>3.0.13</sup> Execute an OS command and return result and returncode.
+	- **osExecute(cmd)**: *Function*: Execute an OS command. (no return)
 	- **rightPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.
 	- **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
 	- **sceneExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid scene ^3.0.12^ or sceneID and return ID when entered with valid sceneName or false when not a scene, sceneID or sceneName of an existing scene

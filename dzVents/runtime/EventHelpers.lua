@@ -27,6 +27,8 @@ local function EventHelpers(domoticz, mainMethod)
 	end
 
 	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,scenes,groups,variables'
+	local inValidEventTypes = 'on,logging,active,data,execute'
+
 	local webRoot = globalvariables['domoticz_webroot']
 	local _url = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
 
@@ -646,8 +648,13 @@ local function EventHelpers(domoticz, mainMethod)
 					if not self.scripts[i].invalidOnSection then
 						self.scripts[i].invalidOnSection = true
 						if type(j) == "string" and validEventTypes:find(j) == nil then
-							utils.log('Valid eventTypes are: ' .. validEventTypes, utils.LOG_DEBUG )
-							utils.log('You entered "' .. tostring(j) .. '" in the on = section. Maybe you meant "' .. utils.fuzzyLookup(j, utils.stringSplit(validEventTypes,',')) ..'"?', utils.LOG_FORCE)
+							if inValidEventTypes:find(j) then
+								utils.log('You entered "' .. tostring(j) .. '" in the on = section. Probably you misplaced your curly brackets', utils.LOG_FORCE)
+							else
+								utils.log('Valid eventTypes are: ' .. validEventTypes, utils.LOG_DEBUG )
+								utils.log('You entered "' .. tostring(j) .. '" in the on = section. Maybe you meant "' .. utils.fuzzyLookup(j, utils.stringSplit(validEventTypes,',')) ..'"?', utils.LOG_FORCE)
+							end
+
 						else
 							utils.log('You entered "' .. utils.toStr(event) .. '" as trigger but the eventType is not (properly) set')
 						end
