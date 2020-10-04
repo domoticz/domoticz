@@ -2919,10 +2919,16 @@ namespace http {
 				session.reply_status = reply::forbidden;
 				return;//Only auth user allowed
 			}
-			root["title"] = "GetForecastConfig";
+
 			std::string Latitude = "1";
 			std::string Longitude = "1";
-			std::string sValue;
+			std::string sValue, sFURL, forecast_url;
+			std::stringstream ss, sURL;
+			uint8_t iSucces = 0;
+
+			root["title"] = "GetForecastConfig";
+			root["status"] = "Error";
+
 			if (m_sql.GetPreferencesVar("Location", sValue))
 			{
 				std::vector<std::string> strarray;
@@ -2932,18 +2938,83 @@ namespace http {
 				{
 					Latitude = strarray[0];
 					Longitude = strarray[1];
-					root["status"] = "OK";
+					iSucces++;
 				}
+				root["Latitude"] = Latitude;
+				root["Longitude"] = Longitude;
+				sValue = "";
+				sValue.clear();
 			}
-			root["Latitude"] = Latitude;
-			root["Longitude"] = Longitude;
 
 			root["Forecastdevice"] = "0";
-			sValue = "";
-			sValue.clear();
 			if (m_sql.GetUserVariable("forecastdevice", USERVARTYPE_INTEGER, sValue))
 			{
 				root["Forecastdevice"] = sValue;
+				sValue = "";
+				sValue.clear();
+			}
+
+			if (root["Forecastdevice"] != "0")
+			{
+				int iHardwareID = atoi(root["Forecastdevice"].asString().c_str());
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
+				if (pHardware != NULL)
+				{
+					if (pHardware->HwdType == HTYPE_OpenWeatherMap)
+					{
+						root["Forecastdevicetype"] = HTYPE_OpenWeatherMap;
+						COpenWeatherMap *pWHardware = reinterpret_cast<COpenWeatherMap*>(pHardware);
+						forecast_url = pWHardware->GetForecastURL();
+						if (forecast_url != "")
+						{
+							sFURL = forecast_url;
+						}
+					}
+					else if (pHardware->HwdType == HTYPE_BuienRadar)
+					{
+						root["Forecastdevicetype"] = HTYPE_BuienRadar;
+						CBuienRadar *pWHardware = reinterpret_cast<CBuienRadar*>(pHardware);
+						forecast_url = pWHardware->GetForecastURL();
+						if (forecast_url != "")
+						{
+							sFURL = forecast_url;
+						}
+					}
+					else
+					{
+						root["Forecastdevice"] = "0";	// reset to 0
+					}
+				}
+				else
+				{
+					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecastdevice"].asString().c_str());
+					root["Forecastdevice"] = "0";	// reset to 0
+				}
+			}
+
+			if (root["Forecastdevice"] == "0" && iSucces == 1)
+			{
+				sURL << "//forecast.io/embed/#lat=";
+				sURL << Latitude << "&lon=" << Longitude;
+				sURL << "&units=ca&color=#00aaff";
+
+				sFURL = ss.str();
+			}
+
+			if (!sFURL.empty())
+			{
+				ss << "<iframe style=" << "\"" << "background: #fff; height:245px;" << "\"";
+				ss << " class=" << "\"" << "cIFrameLarge" << "\"";
+				ss << " id=" << "\"" << "IMain" << "\"";
+				ss << " src=" << "\"" << sFURL << "\"" << ">"; 
+				ss << "</iframe>";
+				root["Forecasturl"] = ss.str();
+				iSucces++;
+			}
+
+			if (iSucces == 2)
+			{
+				root["status"] = "OK";
 			}
 		}
 

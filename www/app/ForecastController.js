@@ -10,23 +10,14 @@ define(['app'], function (app) {
 				dataType: 'json'
 			}).then(function successCallback(response) {
 				var data = response.data;
-				var htmlcontent = '<b>Error loading config</b>';
+				var htmlcontent = '<b>Error loading config or incorrect config data!</b>';
 				if (typeof data.status != 'undefined' && data.status == 'OK') {
-					if (typeof data.Forecastdevice == 'undefined' || (typeof data.Forecastdevice != 'undefined' && data.Forecastdevice == 0)) {
-						var units = "ca24";
-						if ($rootScope.config.TempSign == "F") {
-							units = "us12";
-						} else {
-							if ($rootScope.config.WindSign == "m/s")
-								units = "si24";
-							else if ($rootScope.config.WindSign == "km/h")
-								units = "ca24";
-							else if ($rootScope.config.WindSign == "mph")
-								units = "uk224";
-						}
-						htmlcontent = '<iframe style="background: #fff; height:245px;" class="cIFrameLarge" id="IMain" src="//forecast.io/embed/#lat=' + data.Latitude + '&lon=' + data.Longitude + '&units=ca&color=#00aaff"></iframe>';
+					if (typeof data.Forecasturl != 'undefined' && data.Forecasturl != '') {
+						htmlcontent = data.Forecasturl;
+					} else if (typeof data.Forecastdata != 'undefined' ) {
+						htmlcontent = 'Using forecastdevice ' + data.Forecastdata;
 					} else {
-						htmlcontent = 'Using forecastdevice ' + data.Forecastdevice;
+						htmlcontent = 'Neither a forecast URL or valid forecast data provided!';
 					}
 				}
 				$('#maincontent').html(htmlcontent);
