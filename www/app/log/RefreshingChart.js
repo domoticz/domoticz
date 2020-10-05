@@ -13,7 +13,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.chartTitle = params.chartTitle;
         self.device = params.device;
         self.dataSupplier = params.dataSupplier;
-        self.chart = self.$element.highcharts(self.createChartDefinition()).highcharts();
+        self.chart = self.$element.find('.chartcontainer').highcharts(self.createChartDefinition()).highcharts();
 
         self.chartOnMouseDown = self.chart.container.onmousedown;
         self.chart.container.onmousedown = function (e) {
@@ -63,7 +63,11 @@ define(['DomoticzBase'], function (DomoticzBase) {
             chart: {
                 type: 'spline',
                 zoomType: 'x',
+                marginTop: 45,
                 resetZoomButton: {
+                    theme: {
+                        display: 'none'
+                    },
                     position: {
                         x: -30,
                         y: -36
@@ -76,6 +80,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
                 type: 'datetime',
                 events: {
                     setExtremes: function (e) {
+                        self.consoledebug('setExtremes(' + new Date(e.min).toString() + ',' + new Date(e.max).toString() + ')');
                         if (e.min === null && e.max === null) {
                             self.isZoomLeftSticky = false;
                             self.isZoomRightSticky = false;
@@ -160,9 +165,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     }
                 }
             },
-            title: {
-                text: self.chartTitle
-            },
+            title: false,
             series: [],
             legend: {
                 enabled: true

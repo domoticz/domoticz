@@ -2175,3 +2175,42 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 	overflow-y: auto;
 	overflow-x: hidden;
 }
+
+div.chart h2 {
+	margin-bottom: 7px;
+}
+div.chartarea {
+	position: relative;
+}
+.chartarea button {
+	position: absolute;
+	top: 12px;
+	height: 20px;
+	border-radius: 7px;
+	border-width: 0px;
+	z-index: 2;
+	background-color: rgb(239, 239, 239);
+}
+.chartarea button.zoom1h {
+	width: 28px;
+	right: 50px;
+}
+.chartarea button.zoom3h {
+	width: 28px;
+	right: 94px;
+}
+.chartarea button.zoom1d {
+	width: 28px;
+	right: 138px;
+}
+.chartarea button.zoom3d {
+	width: 28px;
+	right: 182px;
+}
+.chartarea button.zoomreset {
+	width: 42px;
+	right: 226px;
+}
+.chartarea .chartcontainer {
+	height: 300px;
+}
