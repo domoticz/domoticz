@@ -133,6 +133,149 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                                             valueDecimals: 0
                                         }
                                     }
+                                },
+                                {
+                                    id: 'chill',
+                                    name: 'Chill',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.ch !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.ch;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'red',
+                                        yAxis: 0,
+                                        zIndex: 1,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        }
+                                    }
+                                },
+                                {
+                                    id: 'setpoint',
+                                    name: 'Set Point',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.se !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.se;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'blue',
+                                        yAxis: 0,
+                                        zIndex: 1,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        }
+                                    }
+                                }
+                            ]
+                        )
+                    );
+                };
+            }
+        }
+    });
+
+    app.directive('temperatureLongChart', function () {
+        return {
+            require: {
+                logCtrl: '^deviceTemperatureLog'
+            },
+            scope: {
+                device: '<',
+                degreeType: '<'
+            },
+            replace: true,
+            template: '<div style="height: 300px;"></div>',
+            bindToController: true,
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+                const self = this;
+                self.range = 'day';
+                self.sensorType = 'temp';
+
+                self.$onInit = function() {
+                    self.chart = new RefreshingChart(
+                        baseParams($),
+                        angularParams($location, $route, $scope, $element),
+                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        chartParams(
+                            domoticzGlobals,
+                            self,
+                            domoticzGlobals.Get5MinuteHistoryDaysGraphTitle(),
+                            true,
+                            function (dataItem, yearOffset=0) {
+                                return GetLocalDateTimeFromString(dataItem.d, yearOffset);
+                            },
+                            [
+                                {
+                                    id: 'temperature',
+                                    name: 'Temperature',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.te !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.te;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'yellow',
+                                        yAxis: 0,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        }
+                                    }
+                                },
+                                {
+                                    id: 'humidity',
+                                    name: 'Humidity',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.hu !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.hu;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'lime',
+                                        yAxis: 1,
+                                        tooltip: {
+                                            valueSuffix: ' %',
+                                            valueDecimals: 0
+                                        }
+                                    }
+                                },
+                                {
+                                    id: 'prev_temperature',
+                                    name: $.t('Past') + ' ' + $.t('Temperature'),
+                                    useDataItemFromPrevious: true,
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.te !== undefined && dataItem.ta !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.ta;
+                                        }
+                                    ],
+                                    color: 'rgba(224,224,230,0.8)',
+                                    zIndex: 3,
+                                    yAxis: 0,
+                                    tooltip: {
+                                        valueSuffix: ' ' + degreeSuffix,
+                                        valueDecimals: 1
+                                    },
+                                    visible: false
                                 }
                             ]
                         )

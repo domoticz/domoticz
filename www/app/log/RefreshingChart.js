@@ -224,7 +224,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
                         const chartSeries = self.chart.get(seriesSupplier.id);
                         self.consoledebug('series: \'' + seriesSupplier.id + '\'' + (chartSeries === undefined ? ' (new)' : ''));
                         const datapoints = [];
-                        if (seriesSupplier.previous === undefined || !seriesSupplier.previous) {
+                        if (seriesSupplier.useDataItemFromPrevious === undefined || !seriesSupplier.useDataItemFromPrevious) {
                             data.result.forEach(function (item) {
                                 if (seriesSupplier.dataItemIsValid(item)) {
                                     const datapoint = [self.dataSupplier.timestampFromDataItem(item)];
