@@ -2,6 +2,10 @@ define(['app'], function (app) {
 	app.controller('ForecastController', ['$scope', '$rootScope', '$location', '$http', '$interval', function ($scope, $rootScope, $location, $http, $interval) {
 		init();
 
+		goBack = function () {
+			SwitchLayout("Dashboard");
+		}
+
 		function init() {
 			$scope.MakeGlobalConfig();
 			$http({

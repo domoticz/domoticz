@@ -2925,6 +2925,7 @@ namespace http {
 			std::string sValue, sFURL, forecast_url;
 			std::stringstream ss, sURL;
 			uint8_t iSucces = 0;
+			bool iFrame = true;
 
 			root["title"] = "GetForecastConfig";
 			root["status"] = "Error";
@@ -2968,6 +2969,7 @@ namespace http {
 						if (forecast_url != "")
 						{
 							sFURL = forecast_url;
+							iFrame = false;
 						}
 					}
 					else if (pHardware->HwdType == HTYPE_BuienRadar)
@@ -2994,6 +2996,7 @@ namespace http {
 
 			if (root["Forecastdevice"] == "0" && iSucces == 1)
 			{
+				// This is the fallback URL at the moment (DarkSky)
 				sURL << "//forecast.io/embed/#lat=";
 				sURL << Latitude << "&lon=" << Longitude;
 				sURL << "&units=ca&color=#00aaff";
@@ -3003,11 +3006,19 @@ namespace http {
 
 			if (!sFURL.empty())
 			{
-				ss << "<iframe style=" << "\"" << "background: #fff; height:245px;" << "\"";
-				ss << " class=" << "\"" << "cIFrameLarge" << "\"";
-				ss << " id=" << "\"" << "IMain" << "\"";
-				ss << " src=" << "\"" << sFURL << "\"" << ">"; 
-				ss << "</iframe>";
+				if (iFrame)
+				{
+					ss << "<iframe style=" << "\"" << "background: #fff; height:245px;" << "\"";
+					ss << " class=" << "\"" << "cIFrameLarge" << "\"";
+					ss << " id=" << "\"" << "IMain" << "\"";
+					ss << " src=" << "\"" << sFURL << "\"" << ">"; 
+					ss << "</iframe>";
+				}
+				else
+				{
+					ss << sFURL;
+				}
+
 				root["Forecasturl"] = ss.str();
 				iSucces++;
 			}
