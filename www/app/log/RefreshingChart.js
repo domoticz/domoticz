@@ -15,15 +15,20 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.dataSupplier = params.dataSupplier;
         self.chart = self.$element.find('.chartcontainer').highcharts(self.createChartDefinition()).highcharts();
 
+        self.isZoomLeftSticky = false;
+        self.isZoomRightSticky = false;
+
+        self.$scope.chartTitle = self.chartTitle
+
         self.chartOnMouseDown = self.chart.container.onmousedown;
         self.chart.container.onmousedown = function (e) {
-            self.consoledebug('Mousedown ' + self + ' ctrl:' + e.ctrlKey);
+            self.consoledebug('Mousedown ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
             self.wasCtrlMouseDown = e.ctrlKey;
             self.mouseDownPosition = e.clientX;
             self.chartOnMouseDown(e);
         };
         self.chart.container.onmouseup = function (e) {
-            self.consoledebug('Mouseup ' + self + ' ctrl:' + e.ctrlKey);
+            self.consoledebug('Mouseup ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
             self.wasCtrlMouseUp = e.ctrlKey;
             self.mouseUpPosition = e.clientX;
         };
@@ -31,6 +36,43 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.refreshChartData();
 
         self.refreshTimestamp = 0;
+
+        self.$scope.zoomHours = function(hours) {
+            const xAxis = self.chart.xAxis[0];
+            const reference = xAxis.max < xAxis.dataMax ? xAxis.max : xAxis.dataMax;
+            zoom(reference - hours * 3600 * 1000, reference);
+        }
+
+        self.$scope.zoomDays = function(days) {
+            const xAxis = self.chart.xAxis[0];
+            const reference = xAxis.max < xAxis.dataMax ? xAxis.max : xAxis.dataMax;
+            zoom(reference - days * 24 * 3600 * 1000, reference);
+        }
+
+        self.$scope.zoomreset = function() {
+            const xAxis = self.chart.xAxis[0];
+            zoom(null, null);
+        }
+
+        self.$element.find('.chartcontainer').on('dblclick', function (e) {
+            const event = self.chart.pointer.normalize(e);
+            const plotX = event.chartX - self.chart.plotLeft;
+            const plotWidth = self.chart.plotSizeX;
+            const xAxis = self.chart.xAxis[0];
+            const plotRange = xAxis.max - xAxis.min;
+            const plotRangeNew = plotRange * .5;
+            const plotRangeCut = plotRange - plotRangeNew;
+            const plotRangeCutLeft = plotRangeCut * (plotX/plotWidth);
+            const plotRangeCutRight = plotRangeCut * ((plotWidth-plotX)/plotWidth);
+            zoom(xAxis.min + plotRangeCutLeft, -plotRangeCutRight + xAxis.max);
+        });
+
+        function zoom(min, max) {
+            const xAxis = self.chart.xAxis[0];
+            xAxis.setExtremes(min, max);
+            self.chart.redraw();
+        }
+
         self.$scope.$on('time_update', function (event, update) {
             if (params.autoRefreshIsEnabled()) {
                 const serverTime = GetLocalTimestampFromString(update.serverTime);
@@ -86,9 +128,12 @@ define(['DomoticzBase'], function (DomoticzBase) {
                             self.isZoomRightSticky = false;
                             self.consoledebug('Reset zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
                         } else {
-                            const wasMouseUpRightOfMouseDown = self.mouseDownPosition < self.mouseUpPosition;
-                            self.isZoomLeftSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseDown : self.wasCtrlMouseUp;
-                            self.isZoomRightSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseUp : self.wasCtrlMouseDown;
+                            const wasMouseDrag = self.mouseDownPosition !== self.mouseUpPosition;
+                            if (wasMouseDrag) {
+                                const wasMouseUpRightOfMouseDown = self.mouseDownPosition < self.mouseUpPosition;
+                                self.isZoomLeftSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseDown : self.wasCtrlMouseUp;
+                                self.isZoomRightSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseUp : self.wasCtrlMouseDown;
+                            }
                             self.consoledebug('Set zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
                         }
                     }

@@ -20,7 +20,7 @@ define(['app', 'RefreshingChart', 'log/factories'],
             bindings: {
                 device: '<'
             },
-            template: '<div></div>',
+            templateUrl: 'app/log/chart-day.html',
             controllerAs: 'vm',
             controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
@@ -65,7 +65,7 @@ define(['app', 'RefreshingChart', 'log/factories'],
                 chartTitle: '@',
                 range: '@'
             },
-            template: '<div></div>',
+            templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
             controllerAs: 'vm',
             controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;

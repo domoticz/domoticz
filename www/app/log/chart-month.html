@@ -1,0 +1,9 @@
+<div class="chart">
+    <h2 ng-bind="chartTitle"></h2>
+    <div class="chartarea">
+        <button class="zoom-1 zoom-button" ng-click="zoomDays(1*7)">1w</button>
+        <button class="zoom-2 zoom-button" ng-click="zoomDays(2*7)">2w</button>
+        <button class="zoom-3 zoom-reset" ng-click="zoomreset()">reset</button>
+        <div class="chartcontainer"></div>
+    </div>
+</div>

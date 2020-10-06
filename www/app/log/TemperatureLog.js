@@ -28,18 +28,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                 device: '<',
                 degreeType: '<'
             },
-            template: ''
-                + '<div class="chart">'
-                + '  <h2 ng-bind="vm.chartTitle"></h2>'
-                + '  <div class="chartarea">'
-                + '    <button class="zoom1h" ng-click="zoom1h()">1h</button>'
-                + '    <button class="zoom3h" ng-click="zoom3h()">3h</button>'
-                + '    <button class="zoom1d" ng-click="zoom1d()">1d</button>'
-                + '    <button class="zoom3d" ng-click="zoom3d()">3d</button>'
-                + '    <button class="zoomreset" ng-click="zoomreset()">reset</button>'
-                + '    <div class="chartcontainer"></div>'
-                + '  </div>'
-                + '</div>',
+            templateUrl: 'app/log/chart-day.html',
             replace: true,
             transclude: true,
             bindToController: true,
@@ -49,36 +38,6 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                 self.chartTitle = domoticzGlobals.Get5MinuteHistoryDaysGraphTitle();
                 self.range = 'day';
                 self.sensorType = 'temp';
-
-                $scope.zoom1h = function() {
-                    const xAxis = self.chart.chart.xAxis[0];
-                    xAxis.zoom(xAxis.dataMax - 1*3600*1000, xAxis.dataMax);
-                    self.chart.chart.redraw();
-                }
-
-                $scope.zoom3h = function() {
-                    const xAxis = self.chart.chart.xAxis[0];
-                    xAxis.zoom(xAxis.dataMax - 3*3600*1000, xAxis.dataMax);
-                    self.chart.chart.redraw();
-                }
-
-                $scope.zoom1d = function() {
-                    const xAxis = self.chart.chart.xAxis[0];
-                    xAxis.setExtremes(xAxis.dataMax - 1*24*3600*1000, xAxis.dataMax);
-                    self.chart.chart.redraw();
-                }
-
-                $scope.zoom3d = function() {
-                    const xAxis = self.chart.chart.xAxis[0];
-                    xAxis.setExtremes(xAxis.dataMax - 3*24*3600*1000, xAxis.dataMax);
-                    self.chart.chart.redraw();
-                }
-
-                $scope.zoomreset = function() {
-                    const xAxis = self.chart.chart.xAxis[0];
-                    xAxis.zoom(xAxis.dataMin, xAxis.dataMax);
-                    self.chart.chart.redraw();
-                }
 
                 self.$onInit = function() {
                     self.chart = new RefreshingChart(

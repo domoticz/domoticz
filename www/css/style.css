@@ -1941,7 +1941,7 @@ tspan {
 .device-log-chart {
 	display: block;
 	height: 300px;
-	margin-bottom: 24px;
+	margin-bottom: 38px;
 }
 
 .device-log-chart_sm {
@@ -2184,32 +2184,33 @@ div.chartarea {
 }
 .chartarea button {
 	position: absolute;
-	top: 12px;
-	height: 20px;
-	border-radius: 7px;
+	top: 10px;
+	height: 22px;
+	border-radius: 2px;
 	border-width: 0px;
 	z-index: 2;
-	background-color: rgb(239, 239, 239);
+	background-color: rgb(221, 221, 221);
 }
-.chartarea button.zoom1h {
-	width: 28px;
+.zoom-button {
+	width: 24px;
+}
+.zoom-reset {
+	width: 42px;
+}
+.zoom-1 {
 	right: 50px;
 }
-.chartarea button.zoom3h {
-	width: 28px;
-	right: 94px;
+.zoom-2 {
+	right: 90px;
 }
-.chartarea button.zoom1d {
-	width: 28px;
-	right: 138px;
+.zoom-3 {
+	right: 130px;
 }
-.chartarea button.zoom3d {
-	width: 28px;
-	right: 182px;
+.zoom-4 {
+	right: 170px;
 }
-.chartarea button.zoomreset {
-	width: 42px;
-	right: 226px;
+.zoom-5 {
+	right: 210px;
 }
 .chartarea .chartcontainer {
 	height: 300px;
