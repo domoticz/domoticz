@@ -1,22 +1,21 @@
 <temperature-short-chart
+        class="device-log-chart"
         device="::$ctrl.device"
         degree-type="::$ctrl.degreeType">
 </temperature-short-chart>
-<br>
 
-<h2>{{ ::'Month' | translate }}</h2>
-<temperature-log-chart
-        device-idx="::$ctrl.deviceIdx"
-        device-type="::$ctrl.deviceType"
+<temperature-long-chart
+        class="device-log-chart"
+        device="::$ctrl.device"
         degree-type="::$ctrl.degreeType"
+        chart-title="Last Month"
         range="month">
-</temperature-log-chart>
-<br>
+</temperature-long-chart>
 
-<h2>{{ ::'Year' | translate }}</h2>
-<temperature-log-chart
-        device-idx="::$ctrl.deviceIdx"
-        device-type="::$ctrl.deviceType"
+<temperature-long-chart
+        class="device-log-chart"
+        device="::$ctrl.device"
         degree-type="::$ctrl.degreeType"
+        chart-title="Last Year"
         range="year">
-</temperature-log-chart>
+</temperature-long-chart>

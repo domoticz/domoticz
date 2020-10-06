@@ -54,26 +54,6 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                             },
                             [
                                 {
-                                    id: 'temperature',
-                                    name: 'Temperature',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.te !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.te;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'yellow',
-                                        yAxis: 0,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        }
-                                    }
-                                },
-                                {
                                     id: 'humidity',
                                     name: 'Humidity',
                                     dataItemIsValid: function (dataItem) {
@@ -85,7 +65,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                                         }
                                     ],
                                     template: {
-                                        color: 'lime',
+                                        color: 'limegreen',
                                         yAxis: 1,
                                         tooltip: {
                                             valueSuffix: ' %',
@@ -134,6 +114,27 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                                             valueDecimals: 1
                                         }
                                     }
+                                },
+                                {
+                                    id: 'temperature',
+                                    name: 'Temperature',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.te !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.te;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'yellow',
+                                        yAxis: 0,
+                                        step: self.device.Type === 'Thermostat' ? 'left' : undefined,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        }
+                                    }
                                 }
                             ]
                         )
@@ -150,15 +151,16 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             scope: {
                 device: '<',
-                degreeType: '<'
+                degreeType: '<',
+                chartTitle: '@',
+                range: '@'
             },
             replace: true,
-            template: '<div style="height: 300px;"></div>',
+            templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
             bindToController: true,
             controllerAs: 'vm',
             controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
-                self.range = 'day';
                 self.sensorType = 'temp';
 
                 self.$onInit = function() {
@@ -169,32 +171,12 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                         chartParams(
                             domoticzGlobals,
                             self,
-                            domoticzGlobals.Get5MinuteHistoryDaysGraphTitle(),
-                            true,
+                            $.t(self.chartTitle),
+                            false,
                             function (dataItem, yearOffset=0) {
-                                return GetLocalDateTimeFromString(dataItem.d, yearOffset);
+                                return GetLocalDateFromString(dataItem.d, yearOffset);
                             },
                             [
-                                {
-                                    id: 'temperature',
-                                    name: 'Temperature',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.te !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.te;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'yellow',
-                                        yAxis: 0,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        }
-                                    }
-                                },
                                 {
                                     id: 'humidity',
                                     name: 'Humidity',
@@ -207,7 +189,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                                         }
                                     ],
                                     template: {
-                                        color: 'lime',
+                                        color: 'limegreen',
                                         yAxis: 1,
                                         tooltip: {
                                             valueSuffix: ' %',
@@ -216,9 +198,127 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                                     }
                                 },
                                 {
-                                    id: 'prev_temperature',
-                                    name: $.t('Past') + ' ' + $.t('Temperature'),
+                                    id: 'chill',
+                                    name: 'Chill',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.ch !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.ch;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'red',
+                                        yAxis: 0,
+                                        zIndex: 1,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        }
+                                    }
+                                },
+                                {
+                                    id: 'chillmin',
+                                    name: 'Chill_min',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.ch !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.cm;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'rgba(255,127,39,0.8)',
+                                        linkedTo: ':previous',
+                                        zIndex: 1,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        },
+                                        yAxis: 0
+                                    }
+                                },
+                                {
+                                    id: 'setpointavg',
+                                    name: $.t('Set Point') + '_avg',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.se !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.se;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'blue',
+                                        fillOpacity: 0.7,
+                                        zIndex: 2,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        },
+                                        yAxis: 0
+                                    }
+                                },
+                                {
+                                    id: 'setpointrange',
+                                    name: $.t('Set Point') + '_range',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.se !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.sm;
+                                        },
+                                        function (dataItem) {
+                                            return dataItem.sx;
+                                        },
+                                    ],
+                                    template: {
+                                        color: 'rgba(164,75,148,1.0)',
+                                        type: 'areasplinerange',
+                                        linkedTo: ':previous',
+                                        zIndex: 1,
+                                        lineWidth: 0,
+                                        fillOpacity: 0.5,
+                                        yAxis: 0,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        }
+                                    }
+                                },
+                                {
+                                    id: 'prev_setpoint',
+                                    name: $.t('Past') + ' ' + $.t('Set Point'),
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.sm !== undefined && dataItem.sx !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.sm;
+                                        },
+                                        function (dataItem) {
+                                            return dataItem.sx;
+                                        },
+                                    ],
                                     useDataItemFromPrevious: true,
+                                    template: {
+                                        color: 'rgba(223,212,246,0.8)',
+                                        zIndex: 3,
+                                        yAxis: 0,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        },
+                                        visible: false
+                                    }
+                                },
+                                {
+                                    id: 'temperature_avg',
+                                    name: 'Temperature',
                                     dataItemIsValid: function (dataItem) {
                                         return dataItem.te !== undefined && dataItem.ta !== undefined;
                                     },
@@ -227,14 +327,101 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                                             return dataItem.ta;
                                         }
                                     ],
-                                    color: 'rgba(224,224,230,0.8)',
-                                    zIndex: 3,
-                                    yAxis: 0,
-                                    tooltip: {
-                                        valueSuffix: ' ' + degreeSuffix,
-                                        valueDecimals: 1
+                                    template: {
+                                        color: 'yellow',
+                                        fillOpacity: 0.7,
+                                        yAxis: 0,
+                                        zIndex: 2,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        }
+                                    }
+                                },
+                                {
+                                    id: 'temperature',
+                                    name: 'Temperature range',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.te !== undefined;
                                     },
-                                    visible: false
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.tm;
+                                        },
+                                        function (dataItem) {
+                                            return dataItem.te;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'rgba(3,190,252,1.0)',
+                                        type: 'areasplinerange',
+                                        linkedTo: ':previous',
+                                        zIndex: 0,
+                                        lineWidth: 0,
+                                        fillOpacity: 0.5,
+                                        yAxis: 0,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        }
+                                    }
+                                },
+                                {
+                                    id: 'prev_temperature',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.te !== undefined && dataItem.ta !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.tm;
+                                        },
+                                        function (dataItem) {
+                                            return dataItem.te;
+                                        }
+                                    ],
+                                    useDataItemFromPrevious: true,
+                                    template: {
+                                        name: $.t('Past') + ' ' + $.t('Temperature'),
+                                        color: 'rgba(224,224,230,0.8)',
+                                        zIndex: 3,
+                                        yAxis: 0,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        },
+                                        visible: false
+                                    }
+                                },
+                                {
+                                    id: 'temp_trendline',
+                                    name: $.t('Trendline') + ' ' + $.t('Temperature'),
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.te !== undefined && dataItem.ta !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.ta;
+                                        }
+                                    ],
+                                    aggregateDataItems: function (datapoints, dataItems) {
+                                        const trendline = CalculateTrendLine(datapoints);
+                                        datapoints.length = 0;
+                                        if (trendline !== undefined) {
+                                            datapoints.push([trendline.x0, trendline.y0]);
+                                            datapoints.push([trendline.x1, trendline.y1]);
+                                        }
+                                    },
+                                    template: {
+                                        zIndex: 1,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        },
+                                        color: 'rgba(255,3,3,0.8)',
+                                        dashStyle: 'LongDash',
+                                        yAxis: 0,
+                                        visible: false
+                                    }
                                 }
                             ]
                         )
@@ -269,6 +456,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             range: ctrl.range,
             device: ctrl.device,
             sensorType: ctrl.sensorType,
+            chartType: ctrl.device.Type === 'Thermostat' ? 'line' : undefined,
             chartTitle: $.t('Temperature') + ' ' + chartTitle,
             autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
             dataSupplier: {
@@ -307,195 +495,4 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             }
         };
     }
-
-    app.directive('temperatureLogChart', function () {
-        return {
-            scope: {
-                deviceIdx: '<',
-                deviceType: '<',
-                degreeType: '<',
-                range: '@'
-            },
-            replace: true,
-            template: '<div style="height: 300px;"></div>',
-            bindToController: true,
-            controllerAs: 'vm',
-            controller: function ($scope, $element, $route, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
-                var vm = this;
-                var chart;
-
-                vm.$onInit = init;
-                vm.$onChanges = onChanges;
-
-                function init() {
-                    chart = $element
-                        .highcharts({
-                            chart: {
-                                type: getChartType(),
-                                zoomType: 'x',
-                                resetZoomButton: {
-                                    position: {
-                                        x: -30,
-                                        y: -36
-                                    }
-                                }
-                            },
-                            xAxis: {
-                                type: 'datetime'
-                            },
-                            yAxis: [{ //temp label
-                                labels: {
-                                    formatter: function () {
-                                        return this.value + '\u00B0 ' + vm.degreeType;
-                                    }
-                                },
-                                title: {
-                                    text: $.t('Degrees') + ' \u00B0' + vm.degreeType
-                                }
-                            }, { //humidity label
-                                showEmpty: false,
-                                allowDecimals: false,	//no need to show scale with decimals
-                                ceiling: 100,			//max limit for auto zoom, bug in highcharts makes this sometimes not considered.
-                                floor: 0,				//min limit for auto zoom
-                                minRange: 10,			//min range for auto zoom
-                                labels: {
-                                    formatter: function () {
-                                        return this.value + '%';
-                                    }
-                                },
-                                title: {
-                                    text: $.t('Humidity') + ' %'
-                                },
-                                opposite: true
-                            }],
-                            tooltip: {
-                                crosshairs: true,
-                                shared: true
-                            },
-                            plotOptions: {
-                                series: {
-                                    point: {
-                                        events: {
-                                            click: function (event) {
-                                                if (event.shiftKey != true) {
-                                                    return;
-                                                }
-
-                                                domoticzDataPointApi
-                                                    .deletePoint(vm.deviceIdx, event.point, vm.range === 'day')
-                                                    .then(function () {
-                                                        $route.reload();
-                                                    });
-                                            }
-                                        }
-                                    }
-                                },
-                                spline: {
-                                    lineWidth: 3,
-                                    states: {
-                                        hover: {
-                                            lineWidth: 3
-                                        }
-                                    },
-                                    marker: {
-                                        enabled: false,
-                                        states: {
-                                            hover: {
-                                                enabled: true,
-                                                symbol: 'circle',
-                                                radius: 5,
-                                                lineWidth: 1
-                                            }
-                                        }
-                                    }
-                                },
-								line: {
-									lineWidth: 3,
-									states: {
-										hover: {
-											lineWidth: 3
-										}
-									},
-									marker: {
-										enabled: false,
-										states: {
-											hover: {
-												enabled: true,
-												symbol: 'circle',
-												radius: 5,
-												lineWidth: 1
-											}
-										}
-									}
-								},
-                                areasplinerange: {
-                                    marker: {
-                                        enabled: false
-                                    }
-                                }
-                            },
-                            title: {
-                                text: getChartTitle()
-                            },
-                            legend: {
-                                enabled: true
-                            }
-                        })
-                        .highcharts();
-
-                    refreshChartData();
-                }
-
-                function onChanges(changesObj) {
-                    if (!chart) {
-                        return;
-                    }
-
-                    if (changesObj.deviceIdx || changesObj.range) {
-                        refreshChartData();
-                    }
-
-                    if (changesObj.deviceType) {
-                        chart.setTitle({text: getChartTitle()});
-                    }
-                }
-
-                function refreshChartData() {
-                    domoticzApi
-                        .sendRequest({
-                            type: 'graph',
-                            sensor: 'temp',
-                            range: vm.range,
-                            idx: vm.deviceIdx
-                        })
-                        .then(function (data) {
-                            if (typeof data.result != 'undefined') {
-                                AddDataToTempChart(data, chart, vm.range === 'day' ? 1 : 0, (vm.deviceType === 'Thermostat'));
-                                chart.redraw();
-                            }
-                            chart.yAxis[1].visibility = vm.range !== 'day';
-                        });
-                }
-
-                function getChartType() {
-					if (vm.deviceType === 'Thermostat') return 'line';
-					return 'spline';
-                }
-
-                function getChartTitle() {
-                    var titlePrefix = vm.deviceType === 'Humidity'
-                        ? $.t('Humidity')
-                        : $.t('Temperature');
-
-                    if (vm.range === 'day') {
-                        return titlePrefix + ' ' + domoticzGlobals.Get5MinuteHistoryDaysGraphTitle();
-                    } else if (vm.range === 'month') {
-                        return titlePrefix + ' ' + $.t('Last Month');
-                    } else if (vm.range === 'year') {
-                        return titlePrefix + ' ' + $.t('Last Year');
-                    }
-                }
-            }
-        }
-    });
 });

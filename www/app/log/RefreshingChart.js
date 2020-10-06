@@ -13,6 +13,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.chartTitle = params.chartTitle;
         self.device = params.device;
         self.dataSupplier = params.dataSupplier;
+        self.chartType = params.chartType;
         self.chart = self.$element.find('.chartcontainer').highcharts(self.createChartDefinition()).highcharts();
 
         self.isZoomLeftSticky = false;
@@ -37,19 +38,19 @@ define(['DomoticzBase'], function (DomoticzBase) {
 
         self.refreshTimestamp = 0;
 
-        self.$scope.zoomHours = function(hours) {
+        self.$scope.zoomHours = function (hours) {
             const xAxis = self.chart.xAxis[0];
             const reference = xAxis.max < xAxis.dataMax ? xAxis.max : xAxis.dataMax;
             zoom(reference - hours * 3600 * 1000, reference);
         }
 
-        self.$scope.zoomDays = function(days) {
+        self.$scope.zoomDays = function (days) {
             const xAxis = self.chart.xAxis[0];
             const reference = xAxis.max < xAxis.dataMax ? xAxis.max : xAxis.dataMax;
             zoom(reference - days * 24 * 3600 * 1000, reference);
         }
 
-        self.$scope.zoomreset = function() {
+        self.$scope.zoomreset = function () {
             const xAxis = self.chart.xAxis[0];
             zoom(null, null);
         }
@@ -62,8 +63,8 @@ define(['DomoticzBase'], function (DomoticzBase) {
             const plotRange = xAxis.max - xAxis.min;
             const plotRangeNew = plotRange * .5;
             const plotRangeCut = plotRange - plotRangeNew;
-            const plotRangeCutLeft = plotRangeCut * (plotX/plotWidth);
-            const plotRangeCutRight = plotRangeCut * ((plotWidth-plotX)/plotWidth);
+            const plotRangeCutLeft = plotRangeCut * (plotX / plotWidth);
+            const plotRangeCutRight = plotRangeCut * ((plotWidth - plotX) / plotWidth);
             zoom(xAxis.min + plotRangeCutLeft, -plotRangeCutRight + xAxis.max);
         });
 
@@ -76,7 +77,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.$scope.$on('time_update', function (event, update) {
             if (params.autoRefreshIsEnabled()) {
                 const serverTime = GetLocalTimestampFromString(update.serverTime);
-                const secondsIntoCurrentSlot = Math.floor(serverTime % (300*1000) / 1000);
+                const secondsIntoCurrentSlot = Math.floor(serverTime % (300 * 1000) / 1000);
                 if (5 < secondsIntoCurrentSlot) {
                     const currentSlot = Math.floor(serverTime / (300 * 1000));
                     const refreshSlot = Math.floor(self.refreshTimestamp / (300 * 1000));
@@ -103,7 +104,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
         const self = this;
         return {
             chart: {
-                type: 'spline',
+                type: self.chartType !== undefined ? self.chartType : 'spline',
                 zoomType: 'x',
                 marginTop: 45,
                 resetZoomButton: {
@@ -265,30 +266,18 @@ define(['DomoticzBase'], function (DomoticzBase) {
                 setNewZoomEdgesAndRedraw();
 
                 function loadDataInChart(data) {
-                    self.dataSupplier.seriesSuppliers.forEach(function(seriesSupplier) {
+                    self.dataSupplier.seriesSuppliers.forEach(function (seriesSupplier) {
                         const chartSeries = self.chart.get(seriesSupplier.id);
                         self.consoledebug('series: \'' + seriesSupplier.id + '\'' + (chartSeries === undefined ? ' (new)' : ''));
                         const datapoints = [];
                         if (seriesSupplier.useDataItemFromPrevious === undefined || !seriesSupplier.useDataItemFromPrevious) {
-                            data.result.forEach(function (item) {
-                                if (seriesSupplier.dataItemIsValid(item)) {
-                                    const datapoint = [self.dataSupplier.timestampFromDataItem(item)];
-                                    seriesSupplier.valuesFromDataItem.forEach(function(valueFromDataItem) {
-                                        datapoint.push(parseFloat(valueFromDataItem(item)));
-                                    });
-                                    datapoints.push(datapoint);
-                                }
+                            processDataItems(datapoints, data.result, seriesSupplier, function(item) {
+                                return self.dataSupplier.timestampFromDataItem(item);
                             });
                         } else {
                             if (data.resultprev !== undefined) {
-                                data.resultprev.forEach(function (item) {
-                                    if (seriesSupplier.dataItemIsValid(item)) {
-                                        const datapoint = [self.dataSupplier.timestampFromDataItem(item, 1)];
-                                        seriesSupplier.valuesFromDataItem.forEach(function (valueFromDataItem) {
-                                            datapoint.push(parseFloat(valueFromDataItem(item)));
-                                        });
-                                        datapoints.push(datapoint);
-                                    }
+                                processDataItems(datapoints, data.resultprev, seriesSupplier, function(item) {
+                                    return self.dataSupplier.timestampFromDataItem(item, 1);
                                 });
                             }
                         }
@@ -313,6 +302,22 @@ define(['DomoticzBase'], function (DomoticzBase) {
                             }
                         }
                     });
+                }
+                function processDataItems(datapoints, dataItems, seriesSupplier, timestampFromDataItem) {
+                    if (seriesSupplier.valuesFromDataItem !== undefined) {
+                        dataItems.forEach(function (item) {
+                            if (seriesSupplier.dataItemIsValid === undefined || seriesSupplier.dataItemIsValid(item)) {
+                                const datapoint = [timestampFromDataItem(item)];
+                                seriesSupplier.valuesFromDataItem.forEach(function (valueFromDataItem) {
+                                    datapoint.push(parseFloat(valueFromDataItem(item)));
+                                });
+                                datapoints.push(datapoint);
+                            }
+                        });
+                    }
+                    if (seriesSupplier.aggregateDataItems !== undefined) {
+                        seriesSupplier.aggregateDataItems(datapoints, dataItems);
+                    }
                 }
 
                 function setNewZoomEdgesAndRedraw() {
