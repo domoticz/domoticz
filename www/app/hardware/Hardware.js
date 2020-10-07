@@ -4583,7 +4583,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divremote #lblremoteport").hide();
 				$("#hardwarecontent #divremote #tcpport").hide();
-				$("#hardwarecontent #divpollintervalseconds #pollinterval").val(150);
+				$("#hardwarecontent #divpollintervalseconds #pollinterval").val(30);
 				$("#hardwarecontent #divpollintervalseconds").show();
 				$("#hardwarecontent #divlogin #username").val("operator")
 				$("#hardwarecontent #divlogin #password").val("operator")

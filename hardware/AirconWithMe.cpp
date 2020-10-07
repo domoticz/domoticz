@@ -11,34 +11,6 @@
 #include "../main/mainworker.h"
 #include "../main/Logger.h"
 
-
-static std::map<int32_t, UIDinfo> _UIDMap = 
-{ 
-	{1,   {1,   "Airco On/Off", NDT_SWITCH, true}},
-	{2,   {2,   "User mode", NDT_SELECTORSWITCH, true, {{"Auto", 0},{"Heat", 1},{"Dry", 2},{"Fan", 3},{"Cool", 4}}}},
-	{4,   {4,   "Fan Speed", NDT_SELECTORSWITCH, true, {{"Speed 1", 1},{"Speed 2", 2},{"Speed 3", 3},{"Speed 4", 4},{"Speed 5", 5},{"Speed 6", 6}}}},
-	{5,   {5,   "Vane Up/Down", NDT_SELECTORSWITCH, true, {{"Position 1", 1},{"Position 2", 2},{"Position 3", 3},{"Position 4", 4},{"Position 5", 5},{"Position 6", 6},{"Swing", 10}}}},
-	{9,   {9,   "User Setpoint", NDT_THERMOSTAT, true}},
-	{10,  {10,  "Return Path Temperature", NDT_THERMOMETER, false}},
-	{12,  {12,  "Remote Disable", NDT_SELECTORSWITCH, true, {{"Remote Enabled", 0},{"Remote Disabled", 1}}}},
-	{13,  {13,  "On Time (Hour)", NDT_HOUR, false}},
-	{14,  {14,  "Alarm Status", NDT_SWITCH, false}},
-	{15,  {15,  "Error Code", NDT_NUMBER, false}},
-	{37,  {37 , "Outdoor temperature", NDT_THERMOMETER, false}},
-};
-
-
-static std::vector<DeviceInfo> _DeviceInfo =
-{
-	{0xFF0001, "lastError", "LastError", NDT_NUMBER},
-	{0xFF0002, "rssi", "Wifi rssi", NDT_NUMBER},
-	{0xFF0003, "ssid", "Wifi ssid", NDT_STRING},
-	{0xFF0004, "acStatus", "Communication Error", NDT_SWITCH},
-	{0xFF0005, "wlanLNK", "Wifi Connected", NDT_SWITCH},
-	{0xFF0006, "powerStatus", "Power Status", NDT_NUMBER},
-	{0xFF0007, "wifiTxPower", "Wifi TX power", NDT_NUMBER},
-};
-
 CAirconWithMe::CAirconWithMe(const int id, const std::string& ipaddress, const unsigned short ipport, const std::string& users, const std::string& password, const int pollinterval)
 	: mIpAddress(ipaddress)
 	, mIpPort(ipport)
@@ -47,6 +19,32 @@ CAirconWithMe::CAirconWithMe(const int id, const std::string& ipaddress, const u
 	, mPollInterval(pollinterval)
 {
 	m_HwdID = id;
+    
+    _UIDMap =
+    {
+        {1,   {1,   "Airco On/Off", NDT_SWITCH, true}},
+        {2,   {2,   "User mode", NDT_SELECTORSWITCH, true, {{"Auto", 0},{"Heat", 1},{"Dry", 2},{"Fan", 3},{"Cool", 4}}}},
+        {4,   {4,   "Fan Speed", NDT_SELECTORSWITCH, true, {{"Speed 1", 1},{"Speed 2", 2},{"Speed 3", 3},{"Speed 4", 4},{"Speed 5", 5},{"Speed 6", 6}}}},
+        {5,   {5,   "Vane Up/Down", NDT_SELECTORSWITCH, true, {{"Position 1", 1},{"Position 2", 2},{"Position 3", 3},{"Position 4", 4},{"Position 5", 5},{"Position 6", 6},{"Swing", 10}}}},
+        {9,   {9,   "User Setpoint", NDT_THERMOSTAT, true}},
+        {10,  {10,  "Return Path Temperature", NDT_THERMOMETER, false}},
+        {12,  {12,  "Remote Disable", NDT_SELECTORSWITCH, true, {{"Remote Enabled", 0},{"Remote Disabled", 1}}}},
+        {13,  {13,  "On Time (Hour)", NDT_HOUR, false}},
+        {14,  {14,  "Alarm Status", NDT_SWITCH, false}},
+        {15,  {15,  "Error Code", NDT_NUMBER, false}},
+        {37,  {37 , "Outdoor temperature", NDT_THERMOMETER, false}},
+    };
+    
+    _DeviceInfo =
+    {
+        {0xFF0001, "lastError", "LastError", NDT_NUMBER},
+        {0xFF0002, "rssi", "Wifi rssi", NDT_NUMBER},
+        {0xFF0003, "ssid", "Wifi ssid", NDT_STRING},
+        {0xFF0004, "acStatus", "Communication Error", NDT_SWITCH},
+        {0xFF0005, "wlanLNK", "Wifi Connected", NDT_SWITCH},
+        {0xFF0006, "powerStatus", "Power Status", NDT_NUMBER},
+        {0xFF0007, "wifiTxPower", "Wifi TX power", NDT_NUMBER},
+    };
 }
 
 
