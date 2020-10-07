@@ -2195,7 +2195,8 @@ div.chartarea {
 	width: 24px;
 }
 .zoom-reset {
-	width: 42px;
+	padding-left: 6px;
+	padding-right: 6px;
 }
 .zoom-1 {
 	right: 50px;

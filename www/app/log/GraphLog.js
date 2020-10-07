@@ -1,4 +1,4 @@
-define(['app', 'RefreshingChart', 'log/factories'],
+define(['app', 'RefreshingChart'],
     function (app, RefreshingChart) {
 
         app.component('deviceGraphLog', {
@@ -13,7 +13,7 @@ define(['app', 'RefreshingChart', 'log/factories'],
             }
         });
 
-        app.component('shortChart', {
+        app.component('deviceShortChart', {
             require: {
                 logCtrl: '^deviceGraphLog'
             },
@@ -34,17 +34,15 @@ define(['app', 'RefreshingChart', 'log/factories'],
                         chartParams(
                             domoticzGlobals,
                             self,
-                            domoticzGlobals.Get5MinuteHistoryDaysGraphTitle(),
-                            true,
-                            function (dataItem, yearOffset=0) {
+                            true, function (dataItem, yearOffset = 0) {
                                 return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                             },
                             [
                                 {
                                     id: 'power',
-                                    name: domoticzGlobals.sensorNameForDevice(self.device),
                                     valueKeySuffix: '',
                                     template: {
+                                        name: domoticzGlobals.sensorNameForDevice(self.device),
                                         showInLegend: false,
                                         colorIndex: 0
                                     }
@@ -56,13 +54,12 @@ define(['app', 'RefreshingChart', 'log/factories'],
             }
         });
 
-        app.component('longChart', {
+        app.component('deviceLongChart', {
             require: {
                 logCtrl: '^deviceGraphLog'
             },
             bindings: {
                 device: '<',
-                chartTitle: '@',
                 range: '@'
             },
             templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
@@ -78,33 +75,32 @@ define(['app', 'RefreshingChart', 'log/factories'],
                         chartParams(
                             domoticzGlobals,
                             self,
-                            $.t(self.chartTitle),
                             false,
-                            function (dataItem, yearOffset=0) {
+                            function (dataItem, yearOffset = 0) {
                                 return GetLocalDateFromString(dataItem.d, yearOffset);
                             },
                             [
                                 {
                                     id: 'min',
-                                    name: 'min',
                                     valueKeySuffix: '_min',
                                     template: {
+                                        name: $.t('Minimum'),
                                         colorIndex: 3
                                     }
                                 },
                                 {
                                     id: 'max',
-                                    name: 'max',
                                     valueKeySuffix: '_max',
                                     template: {
+                                        name: $.t('Maximum'),
                                         colorIndex: 2
                                     }
                                 },
                                 {
                                     id: 'avg',
-                                    name: 'avg',
                                     valueKeySuffix: '_avg',
                                     template: {
+                                        name: $.t('Average'),
                                         colorIndex: 0
                                     }
                                 }
@@ -135,12 +131,11 @@ define(['app', 'RefreshingChart', 'log/factories'],
                 datapointApi: datapointApi
             };
         }
-        function chartParams(domoticzGlobals, ctrl, chartTitle, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
+        function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
             return {
                 range: ctrl.range,
                 device: ctrl.device,
 				sensorType: domoticzGlobals.sensorTypeForDevice(ctrl.device),
-                chartTitle: chartTitle,
                 autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
                 dataSupplier: {
                     yAxes: [

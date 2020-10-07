@@ -10,7 +10,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
             + ', sensorType:' + params.sensorType);
         self.sensorType = params.sensorType;
         self.range = params.range;
-        self.chartTitle = params.chartTitle;
+        self.chartName = params.chartName;
         self.device = params.device;
         self.dataSupplier = params.dataSupplier;
         self.chartType = params.chartType;
@@ -19,7 +19,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.isZoomLeftSticky = false;
         self.isZoomRightSticky = false;
 
-        self.$scope.chartTitle = self.chartTitle
+        self.$scope.chartTitle = chartTitle();
 
         self.chartOnMouseDown = self.chart.container.onmousedown;
         self.chart.container.onmousedown = function (e) {
@@ -37,6 +37,20 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.refreshChartData();
 
         self.refreshTimestamp = 0;
+
+        self.$scope.zoomLabel = function (label) {
+            const matcher = label.match(/^(?<count>[0-9]+)(?<letter>[HdwM])$/);
+            if (matcher !== null) {
+                const letter = matcher.groups.letter;
+                const duration =
+                    letter === 'H' ? 'Hour' :
+                        letter === 'd' ? 'Day' :
+                            letter === 'w' ? 'Week' :
+                                letter === 'M' ? 'Month' : '';
+                return matcher.groups.count + $.t(duration).substring(0, 1).toLowerCase();
+            }
+            return $.t(label).toLowerCase();
+        }
 
         self.$scope.zoomHours = function (hours) {
             const xAxis = self.chart.xAxis[0];
@@ -95,6 +109,24 @@ define(['DomoticzBase'], function (DomoticzBase) {
         //         self.refreshChartData();
         //     }
         // });
+
+        function chartTitle() {
+            if (self.chartName !== undefined) {
+                return self.chartName + ' ' + uncapitalize(chartTitlePeriod());
+            } else {
+                return chartTitlePeriod();
+            }
+
+            function chartTitlePeriod() {
+                return self.range === 'day' ? self.domoticzGlobals.Get5MinuteHistoryDaysGraphTitle() :
+                    self.range === 'month' ? $.t('Last Month') :
+                        self.range === 'year' ? $.t('Last Year') : '';
+            }
+
+            function uncapitalize(text) {
+                return text.substring(0, 1).toLowerCase() + text.substring(1);
+            }
+        }
     }
 
     RefreshingChart.prototype = Object.create(DomoticzBase.prototype);
@@ -271,12 +303,12 @@ define(['DomoticzBase'], function (DomoticzBase) {
                         self.consoledebug('series: \'' + seriesSupplier.id + '\'' + (chartSeries === undefined ? ' (new)' : ''));
                         const datapoints = [];
                         if (seriesSupplier.useDataItemFromPrevious === undefined || !seriesSupplier.useDataItemFromPrevious) {
-                            processDataItems(datapoints, data.result, seriesSupplier, function(item) {
+                            processDataItems(data.result, datapoints, seriesSupplier, function (item) {
                                 return self.dataSupplier.timestampFromDataItem(item);
                             });
                         } else {
                             if (data.resultprev !== undefined) {
-                                processDataItems(datapoints, data.resultprev, seriesSupplier, function(item) {
+                                processDataItems(data.resultprev, datapoints, seriesSupplier, function (item) {
                                     return self.dataSupplier.timestampFromDataItem(item, 1);
                                 });
                             }
@@ -285,9 +317,6 @@ define(['DomoticzBase'], function (DomoticzBase) {
                             if (chartSeries === undefined) {
                                 const series = seriesSupplier.template;
                                 series.id = seriesSupplier.id;
-                                if (seriesSupplier.name !== undefined) {
-                                    series.name = $.t(seriesSupplier.name);
-                                }
                                 if (series.colorIndex !== undefined) {
                                     series.color = Highcharts.getOptions().colors[series.colorIndex];
                                 }
@@ -303,7 +332,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
                         }
                     });
                 }
-                function processDataItems(datapoints, dataItems, seriesSupplier, timestampFromDataItem) {
+                function processDataItems(dataItems, datapoints, seriesSupplier, timestampFromDataItem) {
                     if (seriesSupplier.valuesFromDataItem !== undefined) {
                         dataItems.forEach(function (item) {
                             if (seriesSupplier.dataItemIsValid === undefined || seriesSupplier.dataItemIsValid(item)) {
@@ -315,8 +344,8 @@ define(['DomoticzBase'], function (DomoticzBase) {
                             }
                         });
                     }
-                    if (seriesSupplier.aggregateDataItems !== undefined) {
-                        seriesSupplier.aggregateDataItems(datapoints, dataItems);
+                    if (seriesSupplier.aggregateDatapoints !== undefined) {
+                        seriesSupplier.aggregateDatapoints(datapoints);
                     }
                 }
 

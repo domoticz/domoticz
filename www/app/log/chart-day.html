@@ -1,11 +1,11 @@
 <div class="chart">
     <h2 ng-bind="chartTitle"></h2>
     <div class="chartarea">
-        <button class="zoom-1 zoom-button" ng-click="zoomHours(1)">1h</button>
-        <button class="zoom-2 zoom-button" ng-click="zoomHours(3)">3h</button>
-        <button class="zoom-3 zoom-button" ng-click="zoomHours(1*24)">1d</button>
-        <button class="zoom-4 zoom-button" ng-click="zoomHours(3*24)">3d</button>
-        <button class="zoom-5 zoom-reset" ng-click="zoomreset()">reset</button>
+        <button class="zoom-1 zoom-button" ng-click="zoomHours(1)" ng-bind="zoomLabel('1H')"></button>
+        <button class="zoom-2 zoom-button" ng-click="zoomHours(3)" ng-bind="zoomLabel('3H')"></button>
+        <button class="zoom-3 zoom-button" ng-click="zoomHours(1*24)" ng-bind="zoomLabel('1d')"></button>
+        <button class="zoom-4 zoom-button" ng-click="zoomHours(3*24)" ng-bind="zoomLabel('3d')"></button>
+        <button class="zoom-5 zoom-reset" ng-click="zoomreset()" ng-bind="zoomLabel('Reset')"></button>
         <div class="chartcontainer"></div>
     </div>
 </div>

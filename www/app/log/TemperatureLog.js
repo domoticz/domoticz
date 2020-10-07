@@ -35,7 +35,6 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             controllerAs: 'vm',
             controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
-                self.chartTitle = domoticzGlobals.Get5MinuteHistoryDaysGraphTitle();
                 self.range = 'day';
                 self.sensorType = 'temp';
 
@@ -47,95 +46,15 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                         chartParams(
                             domoticzGlobals,
                             self,
-                            domoticzGlobals.Get5MinuteHistoryDaysGraphTitle(),
                             true,
-                            function (dataItem, yearOffset=0) {
+                            function (dataItem, yearOffset = 0) {
                                 return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                             },
                             [
-                                {
-                                    id: 'humidity',
-                                    name: 'Humidity',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.hu !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.hu;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'limegreen',
-                                        yAxis: 1,
-                                        tooltip: {
-                                            valueSuffix: ' %',
-                                            valueDecimals: 0
-                                        }
-                                    }
-                                },
-                                {
-                                    id: 'chill',
-                                    name: 'Chill',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.ch !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.ch;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'red',
-                                        yAxis: 0,
-                                        zIndex: 1,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        }
-                                    }
-                                },
-                                {
-                                    id: 'setpoint',
-                                    name: 'Set Point',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.se !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.se;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'blue',
-                                        yAxis: 0,
-                                        zIndex: 1,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        }
-                                    }
-                                },
-                                {
-                                    id: 'temperature',
-                                    name: 'Temperature',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.te !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.te;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'yellow',
-                                        yAxis: 0,
-                                        step: self.device.Type === 'Thermostat' ? 'left' : undefined,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        }
-                                    }
-                                }
+                                humiditySeriesSupplier(),
+                                chillSeriesSupplier(),
+                                setpointSeriesSupplier(),
+                                temperatureSeriesSupplier(self.device.Type)
                             ]
                         )
                     );
@@ -152,7 +71,6 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             scope: {
                 device: '<',
                 degreeType: '<',
-                chartTitle: '@',
                 range: '@'
             },
             replace: true,
@@ -171,258 +89,21 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                         chartParams(
                             domoticzGlobals,
                             self,
-                            $.t(self.chartTitle),
                             false,
-                            function (dataItem, yearOffset=0) {
+                            function (dataItem, yearOffset = 0) {
                                 return GetLocalDateFromString(dataItem.d, yearOffset);
                             },
                             [
-                                {
-                                    id: 'humidity',
-                                    name: 'Humidity',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.hu !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.hu;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'limegreen',
-                                        yAxis: 1,
-                                        tooltip: {
-                                            valueSuffix: ' %',
-                                            valueDecimals: 0
-                                        }
-                                    }
-                                },
-                                {
-                                    id: 'chill',
-                                    name: 'Chill',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.ch !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.ch;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'red',
-                                        yAxis: 0,
-                                        zIndex: 1,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        }
-                                    }
-                                },
-                                {
-                                    id: 'chillmin',
-                                    name: 'Chill_min',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.ch !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.cm;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'rgba(255,127,39,0.8)',
-                                        linkedTo: ':previous',
-                                        zIndex: 1,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        },
-                                        yAxis: 0
-                                    }
-                                },
-                                {
-                                    id: 'setpointavg',
-                                    name: $.t('Set Point') + '_avg',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.se !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.se;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'blue',
-                                        fillOpacity: 0.7,
-                                        zIndex: 2,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        },
-                                        yAxis: 0
-                                    }
-                                },
-                                {
-                                    id: 'setpointrange',
-                                    name: $.t('Set Point') + '_range',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.se !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.sm;
-                                        },
-                                        function (dataItem) {
-                                            return dataItem.sx;
-                                        },
-                                    ],
-                                    template: {
-                                        color: 'rgba(164,75,148,1.0)',
-                                        type: 'areasplinerange',
-                                        linkedTo: ':previous',
-                                        zIndex: 1,
-                                        lineWidth: 0,
-                                        fillOpacity: 0.5,
-                                        yAxis: 0,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        }
-                                    }
-                                },
-                                {
-                                    id: 'prev_setpoint',
-                                    name: $.t('Past') + ' ' + $.t('Set Point'),
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.sm !== undefined && dataItem.sx !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.sm;
-                                        },
-                                        function (dataItem) {
-                                            return dataItem.sx;
-                                        },
-                                    ],
-                                    useDataItemFromPrevious: true,
-                                    template: {
-                                        color: 'rgba(223,212,246,0.8)',
-                                        zIndex: 3,
-                                        yAxis: 0,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        },
-                                        visible: false
-                                    }
-                                },
-                                {
-                                    id: 'temperature_avg',
-                                    name: 'Temperature',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.te !== undefined && dataItem.ta !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.ta;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'yellow',
-                                        fillOpacity: 0.7,
-                                        yAxis: 0,
-                                        zIndex: 2,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        }
-                                    }
-                                },
-                                {
-                                    id: 'temperature',
-                                    name: 'Temperature range',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.te !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.tm;
-                                        },
-                                        function (dataItem) {
-                                            return dataItem.te;
-                                        }
-                                    ],
-                                    template: {
-                                        color: 'rgba(3,190,252,1.0)',
-                                        type: 'areasplinerange',
-                                        linkedTo: ':previous',
-                                        zIndex: 0,
-                                        lineWidth: 0,
-                                        fillOpacity: 0.5,
-                                        yAxis: 0,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        }
-                                    }
-                                },
-                                {
-                                    id: 'prev_temperature',
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.te !== undefined && dataItem.ta !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.tm;
-                                        },
-                                        function (dataItem) {
-                                            return dataItem.te;
-                                        }
-                                    ],
-                                    useDataItemFromPrevious: true,
-                                    template: {
-                                        name: $.t('Past') + ' ' + $.t('Temperature'),
-                                        color: 'rgba(224,224,230,0.8)',
-                                        zIndex: 3,
-                                        yAxis: 0,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        },
-                                        visible: false
-                                    }
-                                },
-                                {
-                                    id: 'temp_trendline',
-                                    name: $.t('Trendline') + ' ' + $.t('Temperature'),
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.te !== undefined && dataItem.ta !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.ta;
-                                        }
-                                    ],
-                                    aggregateDataItems: function (datapoints, dataItems) {
-                                        const trendline = CalculateTrendLine(datapoints);
-                                        datapoints.length = 0;
-                                        if (trendline !== undefined) {
-                                            datapoints.push([trendline.x0, trendline.y0]);
-                                            datapoints.push([trendline.x1, trendline.y1]);
-                                        }
-                                    },
-                                    template: {
-                                        zIndex: 1,
-                                        tooltip: {
-                                            valueSuffix: ' ' + degreeSuffix,
-                                            valueDecimals: 1
-                                        },
-                                        color: 'rgba(255,3,3,0.8)',
-                                        dashStyle: 'LongDash',
-                                        yAxis: 0,
-                                        visible: false
-                                    }
-                                }
+                                humiditySeriesSupplier(),
+                                chillSeriesSupplier(),
+                                chillMinimumSeriesSupplier(),
+                                setpointAverageSeriesSupplier(),
+                                setpointRangeSeriesSupplier(),
+                                setpointPreviousSeriesSupplier(),
+                                temperatureAverageSeriesSupplier(),
+                                temperatureRangeSeriesSupplier(),
+                                temperaturePreviousSeriesSupplier(),
+                                temperatureTrendlineSeriesSupplier()
                             ]
                         )
                     );
@@ -430,6 +111,330 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             }
         }
     });
+
+    function humiditySeriesSupplier() {
+        return {
+            id: 'humidity',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.hu !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.hu;
+                }
+            ],
+            template: {
+                name: $.t('Humidity'),
+                color: 'limegreen',
+                yAxis: 1,
+                tooltip: {
+                    valueSuffix: ' %',
+                    valueDecimals: 0
+                }
+            }
+        };
+    }
+
+    function chillSeriesSupplier() {
+        return {
+            id: 'chill',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.ch !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.ch;
+                }
+            ],
+            template: {
+                name: $.t('Chill'),
+                color: 'red',
+                yAxis: 0,
+                zIndex: 1,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                }
+            }
+        };
+    }
+
+    function setpointSeriesSupplier() {
+        return {
+            id: 'setpoint',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.se !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.se;
+                }
+            ],
+            template: {
+                name: $.t('Set Point'),
+                color: 'blue',
+                yAxis: 0,
+                zIndex: 1,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                }
+            }
+        };
+    }
+
+    function temperatureSeriesSupplier(deviceType) {
+        return {
+            id: 'temperature',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.te !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.te;
+                }
+            ],
+            template: {
+                name: $.t('Temperature'),
+                color: 'yellow',
+                yAxis: 0,
+                step: deviceType === 'Thermostat' ? 'left' : undefined,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                }
+            }
+        };
+    }
+
+    function chillMinimumSeriesSupplier() {
+        return {
+            id: 'chillmin',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.ch !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.cm;
+                }
+            ],
+            template: {
+                name: $.t('Chill') + ' ' + $.t('Minimum'),
+                color: 'rgba(255,127,39,0.8)',
+                linkedTo: ':previous',
+                zIndex: 1,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                },
+                yAxis: 0
+            }
+        };
+    }
+
+    function setpointAverageSeriesSupplier() {
+        return {
+            id: 'setpointavg',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.se !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.se;
+                }
+            ],
+            template: {
+                name: $.t('Set Point') + ' ' + $.t('Average'),
+                color: 'blue',
+                fillOpacity: 0.7,
+                zIndex: 2,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                },
+                yAxis: 0
+            }
+        };
+    }
+
+    function setpointRangeSeriesSupplier() {
+        return {
+            id: 'setpointrange',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.se !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.sm;
+                },
+                function (dataItem) {
+                    return dataItem.sx;
+                },
+            ],
+            template: {
+                name: $.t('Set Point') + ' ' + $.t('Range'),
+                color: 'rgba(164,75,148,1.0)',
+                type: 'areasplinerange',
+                linkedTo: ':previous',
+                zIndex: 1,
+                lineWidth: 0,
+                fillOpacity: 0.5,
+                yAxis: 0,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                }
+            }
+        };
+    }
+
+    function setpointPreviousSeriesSupplier() {
+        return {
+            id: 'prev_setpoint',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.sm !== undefined && dataItem.sx !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.sm;
+                },
+                function (dataItem) {
+                    return dataItem.sx;
+                },
+            ],
+            useDataItemFromPrevious: true,
+            template: {
+                name: $.t('Past') + ' ' + $.t('Set Point'),
+                color: 'rgba(223,212,246,0.8)',
+                zIndex: 3,
+                yAxis: 0,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                },
+                visible: false
+            }
+        };
+    }
+
+    function temperatureAverageSeriesSupplier() {
+        return {
+            id: 'temperature_avg',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.te !== undefined && dataItem.ta !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.ta;
+                }
+            ],
+            template: {
+                name: $.t('Temperature') + ' ' + $.t('Average'),
+                color: 'yellow',
+                fillOpacity: 0.7,
+                yAxis: 0,
+                zIndex: 2,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                }
+            }
+        };
+    }
+
+    function temperatureRangeSeriesSupplier() {
+        return {
+            id: 'temperature',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.te !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.tm;
+                },
+                function (dataItem) {
+                    return dataItem.te;
+                }
+            ],
+            template: {
+                name: $.t('Temperature') + ' ' + $.t('Range'),
+                color: 'rgba(3,190,252,1.0)',
+                type: 'areasplinerange',
+                linkedTo: ':previous',
+                zIndex: 0,
+                lineWidth: 0,
+                fillOpacity: 0.5,
+                yAxis: 0,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                }
+            }
+        };
+    }
+
+    function temperaturePreviousSeriesSupplier() {
+        return {
+            id: 'prev_temperature',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.te !== undefined && dataItem.ta !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.tm;
+                },
+                function (dataItem) {
+                    return dataItem.te;
+                }
+            ],
+            useDataItemFromPrevious: true,
+            template: {
+                name: $.t('Past') + ' ' + $.t('Temperature'),
+                color: 'rgba(224,224,230,0.8)',
+                zIndex: 3,
+                yAxis: 0,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                },
+                visible: false
+            }
+        };
+    }
+
+    function temperatureTrendlineSeriesSupplier() {
+        return {
+            id: 'temp_trendline',
+            dataItemIsValid: function (dataItem) {
+                return dataItem.te !== undefined && dataItem.ta !== undefined;
+            },
+            valuesFromDataItem: [
+                function (dataItem) {
+                    return dataItem.ta;
+                }
+            ],
+            aggregateDatapoints: function (datapoints) {
+                const trendline = CalculateTrendLine(datapoints);
+                datapoints.length = 0;
+                if (trendline !== undefined) {
+                    datapoints.push([trendline.x0, trendline.y0]);
+                    datapoints.push([trendline.x1, trendline.y1]);
+                }
+            },
+            template: {
+                name: $.t('Trendline') + ' ' + $.t('Temperature'),
+                zIndex: 1,
+                tooltip: {
+                    valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 1
+                },
+                color: 'rgba(255,3,3,0.8)',
+                dashStyle: 'LongDash',
+                yAxis: 0,
+                visible: false
+            }
+        };
+    }
 
     function baseParams(jquery) {
         return {
@@ -451,13 +456,13 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             datapointApi: datapointApi
         };
     }
-    function chartParams(domoticzGlobals, ctrl, chartTitle, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
+    function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
         return {
             range: ctrl.range,
             device: ctrl.device,
             sensorType: ctrl.sensorType,
             chartType: ctrl.device.Type === 'Thermostat' ? 'line' : undefined,
-            chartTitle: $.t('Temperature') + ' ' + chartTitle,
+            chartName: ctrl.device.Type === 'Humidity' ? $.t('Humidity') : $.t('Temperature'),
             autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
             dataSupplier: {
                 yAxes:
