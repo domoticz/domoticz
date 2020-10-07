@@ -1344,16 +1344,8 @@ define(['app'], function (app) {
 				}
 
 				var username = $("#hardwarecontent #divlogin #username").val();
-				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-
-				var Pollseconds = parseInt($("#hardwarecontent #divpollintervalseconds #pollinterval").val());
-				if ( Pollseconds < 5 ) 
-				{
-					ShowNotify($.t('Please enter interval with minimal 5 seconds!'), 2500, true);
-					return;
-				}
-
-				$.ajax({
+				
+                $.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&address=" + address +
 					"&username=" + encodeURIComponent(username) +
@@ -1361,8 +1353,7 @@ define(['app'], function (app) {
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
-					"&datatimeout=" + datatimeout +
-					"&Mode1=" + Pollseconds,
+					"&datatimeout=" + datatimeout,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2591,13 +2582,6 @@ define(['app'], function (app) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 
-				var Pollseconds = parseInt($("#hardwarecontent #divpollintervalseconds #pollinterval").val());
-				if ( Pollseconds < 5 ) 
-				{
-					ShowNotify($.t('Please enter interval with minimal 5 seconds!'), 2500, true);
-					return;
-				}
-
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&address=" + address +
@@ -2606,8 +2590,7 @@ define(['app'], function (app) {
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
-					"&datatimeout=" + datatimeout +
-					"&Mode1=" + Pollseconds,
+					"&datatimeout=" + datatimeout,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -4124,7 +4107,6 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("AirconWithMe") >= 0) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
-							$("#hardwarecontent #hardwareparamspollintervalseconds #pollinterval").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 							
@@ -4329,7 +4311,6 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
 			$("#hardwarecontent #divhttppoller").hide();
-			$("#hardwarecontent #divpollintervalseconds").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
@@ -4583,8 +4564,6 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divremote #lblremoteport").hide();
 				$("#hardwarecontent #divremote #tcpport").hide();
-				$("#hardwarecontent #divpollintervalseconds #pollinterval").val(30);
-				$("#hardwarecontent #divpollintervalseconds").show();
 				$("#hardwarecontent #divlogin #username").val("operator")
 				$("#hardwarecontent #divlogin #password").val("operator")
 				$("#hardwarecontent #divlogin").show();
