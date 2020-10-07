@@ -55,7 +55,7 @@ private:
     
 
 public:
-	CAirconWithMe(const int id, const std::string& ipaddress, const unsigned short ipport, const std::string& users, const std::string& password, const int pollinterval);
+	CAirconWithMe(const int id, const std::string& ipaddress, const unsigned short ipport, const std::string& users, const std::string& password);
 	virtual ~CAirconWithMe(void);
 
 	bool WriteToHardware(const char* pdata, const unsigned char length) override;

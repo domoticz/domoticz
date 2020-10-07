@@ -1109,7 +1109,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CMeteorologisk(ID, Password); //Password is location here.
 		break;
 	case HTYPE_AirconWithMe:
-		pHardware = new CAirconWithMe(ID, Address, Port, Username, Password, Mode1);
+		pHardware = new CAirconWithMe(ID, Address, Port, Username, Password);
 		break;
 	}
 

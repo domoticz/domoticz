@@ -11,12 +11,14 @@
 #include "../main/mainworker.h"
 #include "../main/Logger.h"
 
-CAirconWithMe::CAirconWithMe(const int id, const std::string& ipaddress, const unsigned short ipport, const std::string& users, const std::string& password, const int pollinterval)
+#define AIRCONWITHME_POLL_INTERVAL 30
+
+CAirconWithMe::CAirconWithMe(const int id, const std::string& ipaddress, const unsigned short ipport, const std::string& users, const std::string& password)
 	: mIpAddress(ipaddress)
 	, mIpPort(ipport)
 	, mUsername(users)
 	, mPassword(password)
-	, mPollInterval(pollinterval)
+    , mPollInterval(AIRCONWITHME_POLL_INTERVAL)
 {
 	m_HwdID = id;
     
