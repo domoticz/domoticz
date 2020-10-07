@@ -824,6 +824,8 @@ namespace Plugins {
 	{
 		if (self->pPlugin)
 		{
+			self->pPlugin->SetHeartbeatReceived();
+
 			int			nValue = self->nValue;
 			char*		sValue = NULL;
 			int			iSignalLevel = self->SignalLevel;
