@@ -145,6 +145,7 @@
 #include "../hardware/Buienradar.h"
 #include "../hardware/OctoPrintMQTT.h"
 #include "../hardware/Meteorologisk.h"
+#include "../hardware/AirconWithMe.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -1106,6 +1107,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Meteorologisk:
 		pHardware = new CMeteorologisk(ID, Password); //Password is location here.
+		break;
+	case HTYPE_AirconWithMe:
+		pHardware = new CAirconWithMe(ID, Address, Port, Username, Password);
 		break;
 	}
 

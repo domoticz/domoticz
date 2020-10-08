@@ -27,6 +27,9 @@
     <Filter Include="Devices\DomoticzInternal">
       <UniqueIdentifier>{68487f2d-089f-4a1b-a961-32f1cd6fb8de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\airconwithme">
+      <UniqueIdentifier>{14459b6b-fb4d-44f0-8dc5-dfee373c20d1}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Windows">
       <UniqueIdentifier>{b2fc9567-e487-4cee-b23e-9f6002b503b9}</UniqueIdentifier>
     </Filter>
@@ -1495,6 +1498,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\hardwaretypes.h">
       <Filter>Devices</Filter>
+    </ClInclude>  
+    <ClInclude Include="..\hardware\AirconWithMe.h">
+      <Filter>Devices\airconwithme</Filter>
     </ClInclude>
     <ClInclude Include="..\httpclient\UrlEncode.h">
       <Filter>HTTPClient</Filter>
@@ -2244,6 +2250,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\YouLess.cpp">
       <Filter>Devices\YouLess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\AirconWithMe.cpp">
+      <Filter>Devices\airconwithme</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\DomoticzHardware.cpp">
       <Filter>Devices</Filter>
