@@ -2176,20 +2176,28 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 	overflow-x: hidden;
 }
 
-div.chart h2 {
+.chart h2 {
 	margin-bottom: 7px;
 }
-div.chartarea {
+.chart-title-container {
+	position: absolute;
+	padding-top: 13px;
+	padding-left: 13px;
+	z-index: 1;
+}
+@media only screen and (max-width: 600px) {
+	.chart-title-container {
+		position: relative;
+	}
+}
+.chartarea {
 	position: relative;
 }
-.chartarea button {
+.zoom-buttons-container {
 	position: absolute;
-	top: 10px;
-	height: 22px;
-	border-radius: 2px;
-	border-width: 0px;
-	z-index: 2;
-	background-color: rgb(221, 221, 221);
+	right: 50px;
+	padding-top: 11px;
+	z-index: 1;
 }
 .zoom-button {
 	width: 24px;
@@ -2198,20 +2206,16 @@ div.chartarea {
 	padding-left: 6px;
 	padding-right: 6px;
 }
-.zoom-1 {
-	right: 50px;
+.chartarea button {
+	float: right;
+	height: 21px;
+	border-radius: 2px;
+	border-width: 0px;
+	background-color: transparent;
+	color: rgb(221, 221, 221);
 }
-.zoom-2 {
-	right: 90px;
-}
-.zoom-3 {
-	right: 130px;
-}
-.zoom-4 {
-	right: 170px;
-}
-.zoom-5 {
-	right: 210px;
+.chartarea button + button {
+	margin-right: 18px;
 }
 .chartarea .chartcontainer {
 	height: 300px;

@@ -18,6 +18,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
 
         self.isZoomLeftSticky = false;
         self.isZoomRightSticky = false;
+        self.isZoomed = false;
 
         self.$scope.chartTitle = chartTitle();
 
@@ -37,6 +38,8 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.refreshChartData();
 
         self.refreshTimestamp = 0;
+
+        self.$scope.zoomed = false;
 
         self.$scope.zoomLabel = function (label) {
             const matcher = label.match(/^(?<count>[0-9]+)(?<letter>[HdwM])$/);
@@ -155,12 +158,16 @@ define(['DomoticzBase'], function (DomoticzBase) {
                 type: 'datetime',
                 events: {
                     setExtremes: function (e) {
-                        self.consoledebug('setExtremes(' + new Date(e.min).toString() + ',' + new Date(e.max).toString() + ')');
+                        // self.consoledebug(
+                        //     'dataMin:' + new Date(self.chart.xAxis[0].dataMin).toString() + ', e.min:' + (e.min === null ? '' : new Date(e.min).toString())
+                        //     + 'dataMax:' + new Date(self.chart.xAxis[0].dataMax).toString() + ', e.max:' + (e.max === null ? '' : new Date(e.max).toString()));
                         if (e.min === null && e.max === null) {
+                            self.$scope.zoomed = self.isZoomed = false;
                             self.isZoomLeftSticky = false;
                             self.isZoomRightSticky = false;
                             self.consoledebug('Reset zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
                         } else {
+                            self.$scope.zoomed = self.isZoomed = true;
                             const wasMouseDrag = self.mouseDownPosition !== self.mouseUpPosition;
                             if (wasMouseDrag) {
                                 const wasMouseUpRightOfMouseDown = self.mouseDownPosition < self.mouseUpPosition;
@@ -350,20 +357,21 @@ define(['DomoticzBase'], function (DomoticzBase) {
                 }
 
                 function setNewZoomEdgesAndRedraw() {
-                    const zoomEdgeRight1 = self.isZoomRightSticky || zoomEdgeRight === -1 || chartEdgeRight === -1
-                        ? zoomEdgeRight
-                        : dataEdgeRight + (zoomEdgeRight - chartEdgeRight);
-                    const zoomEdgeLeft1 = self.isZoomLeftSticky || zoomEdgeLeft === -1 || chartEdgeLeft === -1
-                        ? zoomEdgeLeft
-                        : dataEdgeLeft + (zoomEdgeLeft - chartEdgeLeft);
-                    if (zoomEdgeLeft1 !== zoomEdgeLeft || zoomEdgeRight1 !== zoomEdgeRight) {
-                        self.consoledebug(
-                            'zoomEdgeLeft1:' + zoomEdgeLeft1 + ' (' + new Date(zoomEdgeLeft1).toString() + ')'
-                            + ', zoomEdgeRight1:' + zoomEdgeRight1 + ' (' + new Date(zoomEdgeRight1).toString() + ')');
-                        self.chart.xAxis[0].setExtremes(zoomEdgeLeft1, zoomEdgeRight1, true);
-                    } else {
-                        self.chart.redraw();
+                    if (self.isZoomed) {
+                        const zoomEdgeRight1 = self.isZoomRightSticky || zoomEdgeRight === -1 || chartEdgeRight === -1
+                            ? zoomEdgeRight
+                            : dataEdgeRight + (zoomEdgeRight - chartEdgeRight);
+                        const zoomEdgeLeft1 = self.isZoomLeftSticky || zoomEdgeLeft === -1 || chartEdgeLeft === -1
+                            ? zoomEdgeLeft
+                            : dataEdgeLeft + (zoomEdgeLeft - chartEdgeLeft);
+                        if (zoomEdgeLeft1 !== zoomEdgeLeft || zoomEdgeRight1 !== zoomEdgeRight) {
+                            self.consoledebug(
+                                'zoomEdgeLeft1:' + zoomEdgeLeft1 + ' (' + new Date(zoomEdgeLeft1).toString() + ')'
+                                + ', zoomEdgeRight1:' + zoomEdgeRight1 + ' (' + new Date(zoomEdgeRight1).toString() + ')');
+                            self.chart.xAxis[0].setExtremes(zoomEdgeLeft1, zoomEdgeRight1, false);
+                        }
                     }
+                    self.chart.redraw();
                 }
 
                 function getDataEdgeLeft(data) {
