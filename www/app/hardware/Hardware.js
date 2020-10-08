@@ -1334,7 +1334,36 @@ define(['app'], function (app) {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					}
 				});
-		        }
+		    }
+			else if (text.indexOf("AirconWithMe") >= 0) 
+			{
+				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (address == "") {
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
+					return;
+				}
+
+				var username = $("#hardwarecontent #divlogin #username").val();
+				
+                $.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&address=" + address +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+		    }
 		}
 
 		AddHardware = function () {
@@ -2539,6 +2568,36 @@ define(['app'], function (app) {
 					},
 					error: function () {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("AirconWithMe") >= 0) {
+				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (address == "") 
+				{
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
+					return;
+				}
+
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&address=" + address +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					}
 				});
 			}
@@ -4046,6 +4105,12 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Rtl433") >= 0) {
 							$("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val(data["Extra"]);
 						}
+						else if (data["Type"].indexOf("AirconWithMe") >= 0) {
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+							
+						}
 						if (
 							(data["Type"].indexOf("Domoticz") >= 0) ||
 							(data["Type"].indexOf("ICY") >= 0) ||
@@ -4493,6 +4558,14 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Evohome via Web") >= 0) {
 				$("#hardwarecontent #divevohomeweb").show();
+				$("#hardwarecontent #divlogin").show();
+			}
+			else if (text.indexOf("AirconWithMe") >= 0) {
+				$("#hardwarecontent #divremote").show();
+				$("#hardwarecontent #divremote #lblremoteport").hide();
+				$("#hardwarecontent #divremote #tcpport").hide();
+				$("#hardwarecontent #divlogin #username").val("operator")
+				$("#hardwarecontent #divlogin #password").val("operator")
 				$("#hardwarecontent #divlogin").show();
 			}
 			if (

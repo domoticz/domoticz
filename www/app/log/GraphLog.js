@@ -23,7 +23,6 @@ define(['app', 'RefreshingChart', 'log/factories'],
             template: '<div></div>',
             controllerAs: 'vm',
             controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
-
                 const self = this;
                 self.range = 'day';
 
@@ -140,6 +139,7 @@ define(['app', 'RefreshingChart', 'log/factories'],
             return {
                 range: ctrl.range,
                 device: ctrl.device,
+				sensorType: domoticzGlobals.sensorTypeForDevice(ctrl.device),
                 chartTitle: chartTitle,
                 autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
                 dataSupplier: {

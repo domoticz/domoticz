@@ -6,7 +6,9 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.consoledebug('device -> '
             + 'idx:' + params.device.idx
             + ', type:' + params.device.Type
-            + ', subtype:' + params.device.SubType);
+            + ', subtype:' + params.device.SubType
+            + ', sensorType:' + params.sensorType);
+        self.sensorType = params.sensorType;
         self.range = params.range;
         self.chartTitle = params.chartTitle;
         self.device = params.device;
@@ -172,7 +174,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
     RefreshingChart.prototype.createDataRequest = function () {
         return {
             type: 'graph',
-            sensor: this.domoticzGlobals.sensorTypeForDevice(this.device),
+            sensor: this.sensorType,
             range: this.range,
             idx: this.device.idx
         };
