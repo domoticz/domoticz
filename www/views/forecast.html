@@ -11,6 +11,12 @@
 		</table>
 	</div>
 
-    <div id="maincontent" align="center"><h2>No forecast information available. Please check settings.</h2></div>
+	<div id="fallback" align="center" ng-show="showFallback">
+		<h2>No forecast information available. Please check settings.</h2>
+	</div>
+
+	<div id="openweathermap" ng-show="showOWM" class="ng-hide">
+		<div id="openweathermap-widget-21">Here the OpenWeatherMap widget of your location should be shown!</div>
+	</div>
 
 </div>
