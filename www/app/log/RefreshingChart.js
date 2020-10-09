@@ -69,7 +69,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
 
         self.$scope.zoomreset = function () {
             const xAxis = self.chart.xAxis[0];
-            zoom(null, null);
+            zoom(xAxis.dataMin, xAxis.dataMax);
         }
 
         self.$element.find('.chartcontainer').on('dblclick', function (e) {
@@ -87,7 +87,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
 
         function zoom(min, max) {
             const xAxis = self.chart.xAxis[0];
-            xAxis.setExtremes(min, max);
+            xAxis.zoom(min, max);
             self.chart.redraw();
         }
 
@@ -158,16 +158,18 @@ define(['DomoticzBase'], function (DomoticzBase) {
                 type: 'datetime',
                 events: {
                     setExtremes: function (e) {
-                        // self.consoledebug(
-                        //     'dataMin:' + new Date(self.chart.xAxis[0].dataMin).toString() + ', e.min:' + (e.min === null ? '' : new Date(e.min).toString())
-                        //     + 'dataMax:' + new Date(self.chart.xAxis[0].dataMax).toString() + ', e.max:' + (e.max === null ? '' : new Date(e.max).toString()));
-                        if (e.min === null && e.max === null) {
-                            self.$scope.zoomed = self.isZoomed = false;
+                        const xAxis = self.chart.xAxis[0];
+                        self.consoledebug(function () {
+                            return 'setExtremes():\n'
+                            + 'dataMin:' + new Date(xAxis.dataMin).toString() + ', e.min:' + (e.min === null ? '' : new Date(e.min).toString()) + '\n'
+                            + 'dataMax:' + new Date(xAxis.dataMax).toString() + ', e.max:' + (e.max === null ? '' : new Date(e.max).toString());
+                        });
+                        if (e.min === null && e.max === null || e.min <= xAxis.dataMin && xAxis.dataMax <= e.max) {
                             self.isZoomLeftSticky = false;
                             self.isZoomRightSticky = false;
                             self.consoledebug('Reset zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
+                            self.$scope.zoomed = self.isZoomed = false;
                         } else {
-                            self.$scope.zoomed = self.isZoomed = true;
                             const wasMouseDrag = self.mouseDownPosition !== self.mouseUpPosition;
                             if (wasMouseDrag) {
                                 const wasMouseUpRightOfMouseDown = self.mouseDownPosition < self.mouseUpPosition;
@@ -175,6 +177,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
                                 self.isZoomRightSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseUp : self.wasCtrlMouseDown;
                             }
                             self.consoledebug('Set zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
+                            self.$scope.zoomed = self.isZoomed = true;
                         }
                     }
                 }
