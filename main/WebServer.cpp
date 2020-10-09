@@ -2971,6 +2971,11 @@ namespace http {
 							sFURL = forecast_url;
 							iFrame = false;
 						}
+						Json::Value forecast_data = pWHardware->GetForecastData();
+						if (!forecast_data.empty())
+						{
+							root["Forecastdata"] = forecast_data;
+						}
 					}
 					else if (pHardware->HwdType == HTYPE_BuienRadar)
 					{
@@ -2996,30 +3001,12 @@ namespace http {
 
 			if (root["Forecastdevice"] == "0" && iSucces == 1)
 			{
-				// This is the fallback URL at the moment (DarkSky)
-				sURL << "//forecast.io/embed/#lat=";
-				sURL << Latitude << "&lon=" << Longitude;
-				sURL << "&units=ca&color=#00aaff";
-
-				sFURL = ss.str();
+				// No forecast device, but we have geo coords, so enough for fallback
+				iSucces++;
 			}
-
-			if (!sFURL.empty())
+			else if (!sFURL.empty())
 			{
-				if (iFrame)
-				{
-					ss << "<iframe style=" << "\"" << "background: #fff; height:245px;" << "\"";
-					ss << " class=" << "\"" << "cIFrameLarge" << "\"";
-					ss << " id=" << "\"" << "IMain" << "\"";
-					ss << " src=" << "\"" << sFURL << "\"" << ">"; 
-					ss << "</iframe>";
-				}
-				else
-				{
-					ss << sFURL;
-				}
-
-				root["Forecasturl"] = ss.str();
+				root["Forecasturl"] = sFURL;
 				iSucces++;
 			}
 
