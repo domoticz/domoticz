@@ -60,19 +60,10 @@
 #define POLL_INTERVAL_MEM	80
 #define POLL_INTERVAL_DISK	170
 
-extern bool bHasInternalTemperature;
-extern std::string szInternalTemperatureCommand;
-
-extern bool bHasInternalClockSpeeds;
-extern std::string szInternalARMSpeedCommand;
-extern std::string szInternalV3DSpeedCommand;
-extern std::string szInternalCoreSpeedCommand;
-
-extern bool bHasInternalVoltage;
-extern std::string szInternalVoltageCommand;
-
-extern bool bHasInternalCurrent;
-extern std::string szInternalCurrentCommand;
+#define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
+#define VCGENCMDARMSPEEDCOMMAND "vcgencmd measure_clock arm"
+#define VCGENCMDV3DSPEEDCOMMAND "vcgencmd measure_clock v3d"
+#define VCGENCMDCORESPEEDCOMMAND "vcgencmd measure_clock core"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -93,7 +84,6 @@ CHardwareMonitor::CHardwareMonitor(const int ID)
 //	CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
 #endif
 }
-
 
 CHardwareMonitor::~CHardwareMonitor(void)
 {
@@ -121,6 +111,19 @@ bool CHardwareMonitor::StartHardware()
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
+
+	bHasInternalTemperature=false;
+	bHasInternalClockSpeeds=false;
+	bHasInternalVoltage=false;
+	bHasInternalCurrent=false;
+
+	szInternalTemperatureCommand = "";
+	szInternalARMSpeedCommand = "";
+	szInternalV3DSpeedCommand = "";
+	szInternalCoreSpeedCommand = "";
+	szInternalVoltageCommand = "";
+	szInternalCurrentCommand = "";
+
 #if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	// Busybox df doesn't support -x parameter
 	int returncode = 0;
@@ -128,6 +131,8 @@ bool CHardwareMonitor::StartHardware()
 	returncode == 0 ?
 		m_dfcommand = "df -x nfs -x tmpfs -x devtmpfs" :
 		m_dfcommand = "df";
+
+	CheckForOnboardSensors();
 #endif
 	return true;
 }
@@ -149,8 +154,7 @@ bool CHardwareMonitor::StopHardware()
 
 void CHardwareMonitor::Do_Work()
 {
-
-	_log.Log(LOG_STATUS, "Hardware Monitor: Started");
+	Log(LOG_STATUS, "Hardware Monitor: Started");
 
 	int msec_counter = 0;
 	int64_t sec_counter = POLL_INTERVAL_CPU - 5;
@@ -172,7 +176,7 @@ void CHardwareMonitor::Do_Work()
 				}
 				catch (...)
 				{
-					_log.Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching motherboard sensors!...");
+					Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching motherboard sensors!...");
 				}
 			}
 
@@ -186,7 +190,7 @@ void CHardwareMonitor::Do_Work()
 				}
 				catch (...)
 				{
-					_log.Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching CPU data!...");
+					Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching CPU data!...");
 				}
 			}
 
@@ -198,7 +202,7 @@ void CHardwareMonitor::Do_Work()
 				}
 				catch (...)
 				{
-					_log.Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching memory data!...");
+					Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching memory data!...");
 				}
 			}
 
@@ -210,13 +214,13 @@ void CHardwareMonitor::Do_Work()
 				}
 				catch (...)
 				{
-					_log.Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching disk data!...");
+					Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching disk data!...");
 				}
 			}
 #endif
 		}
 	}
-	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");
+	Log(LOG_STATUS,"Hardware Monitor: Stopped...");
 }
 
 void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname)
@@ -231,7 +235,7 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 
 void CHardwareMonitor::GetInternalTemperature()
 {
-	// _log.Log(LOG_STATUS,"Getting  Internal Temperature");
+	Debug(DEBUG_NORM,"Getting  Internal Temperature");
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand, returncode);
 	if (ret.empty())
@@ -258,19 +262,19 @@ void CHardwareMonitor::GetInternalTemperature()
 
 void CHardwareMonitor::GetInternalARMClockSpeed()
 {
-	// _log.Log(LOG_STATUS,"Getting  ARM Clock speed");
+	Debug(DEBUG_NORM,"Getting ARM Clock speed");
 	float ArmClockSpeed;
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalARMSpeedCommand, returncode);
 	if (ret.empty())
 	{ 
-		// _log.Log(LOG_STATUS,"string empty");
+		Debug(DEBUG_NORM,"String empty");
 		return;
 	}
 	std::string tmpline = ret[0];
 	if (tmpline.find("frequency") == std::string::npos)
 	{
-		// _log.Log(LOG_STATUS,"Frequency not found (%s)",tmpline.c_str());
+		Debug(DEBUG_NORM,"Frequency not found (%s)",tmpline.c_str());
 		return;
 	}
 
@@ -281,28 +285,27 @@ void CHardwareMonitor::GetInternalARMClockSpeed()
 	{
 		ArmClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
 	}
-	
-	// _log.Log(LOG_STATUS,"Updating sensor with value %.2f",ArmClockSpeed);
 
+	Debug(DEBUG_NORM,"Updating sensor with value %.2f",ArmClockSpeed);
 
 	SendCustomSensor(0, 1, 255, ArmClockSpeed, "Arm Clock Speed","Mhz");
 }
 
 void CHardwareMonitor::GetInternalV3DClockSpeed()
 {
-	// _log.Log(LOG_STATUS,"Getting  V3D Clock speed");
+	Debug(DEBUG_NORM,"Getting V3D Clock speed");
 	float V3DClockSpeed;
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalV3DSpeedCommand, returncode);
 	if (ret.empty())
 	{ 
-		// _log.Log(LOG_STATUS,"string empty");
+		Debug(DEBUG_NORM,"String empty");
 		return;
 	}
 	std::string tmpline = ret[0];
 	if (tmpline.find("frequency") == std::string::npos)
 	{
-		// _log.Log(LOG_STATUS,"Frequency not found (%s)",tmpline.c_str());
+		Debug(DEBUG_NORM,"Frequency not found (%s)",tmpline.c_str());
 		return;
 	}
 
@@ -313,28 +316,27 @@ void CHardwareMonitor::GetInternalV3DClockSpeed()
 	{
 		V3DClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
 	}
-	
-	// _log.Log(LOG_STATUS,"Updating sensor with value %.2f",V3DClockSpeed);
 
+	Debug(DEBUG_NORM,"Updating sensor with value %.2f",V3DClockSpeed);
 
 	SendCustomSensor(0, 2, 255, V3DClockSpeed, "V3D Clock Speed","Mhz");
 }
 
 void CHardwareMonitor::GetInternalCoreClockSpeed()
 {
-	// _log.Log(LOG_STATUS,"Getting  Core Clock speed");
+	Debug(DEBUG_NORM,"Getting Core Clock speed");
 	float CoreClockSpeed;
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCoreSpeedCommand, returncode);
 	if (ret.empty())
 	{ 
-		// _log.Log(LOG_STATUS,"string empty");
+		Debug(DEBUG_NORM,"String empty");
 		return;
 	}
 	std::string tmpline = ret[0];
 	if (tmpline.find("frequency") == std::string::npos)
 	{
-		// _log.Log(LOG_STATUS,"Frequency not found (%s)",tmpline.c_str());
+		Debug(DEBUG_NORM,"Frequency not found (%s)",tmpline.c_str());
 		return;
 	}
 
@@ -345,14 +347,15 @@ void CHardwareMonitor::GetInternalCoreClockSpeed()
 	{
 		CoreClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
 	}
-	
-	// _log.Log(LOG_STATUS,"Updating sensor with value %.2f",CoreClockSpeed);
+
+	Debug(DEBUG_NORM,"Updating sensor with value %.2f",CoreClockSpeed);
 
 	SendCustomSensor(0, 3, 255, CoreClockSpeed, "Core Clock Speed","Mhz");
 }
 
 void CHardwareMonitor::GetInternalVoltage()
 {
+	Debug(DEBUG_NORM,"Getting Internal Voltage");
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalVoltageCommand, returncode);
 	if (ret.empty())
@@ -376,6 +379,7 @@ void CHardwareMonitor::GetInternalVoltage()
 
 void CHardwareMonitor::GetInternalCurrent()
 {
+	Debug(DEBUG_NORM,"Getting Internal Current");
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCurrentCommand, returncode);
 	if (ret.empty())
@@ -401,7 +405,7 @@ void CHardwareMonitor::FetchData()
 {
 #ifdef WIN32
 	if (IsOHMRunning()) {
-		_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
+		Debug(DEBUG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 		RunWMIQuery("Sensor","Temperature");
 		RunWMIQuery("Sensor","Load");
 		RunWMIQuery("Sensor","Fan");
@@ -409,6 +413,8 @@ void CHardwareMonitor::FetchData()
 		return;
 	}
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+	Debug(DEBUG_NORM,"Fetching *NIX data (System sensors)");
+
 	if (bHasInternalTemperature)
 		GetInternalTemperature();
 
@@ -432,9 +438,7 @@ void CHardwareMonitor::FetchClockSpeeds()
 void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue)
 {
 	if (!m_HwdID) {
-#ifdef _DEBUG
-		_log.Log(LOG_NORM,"Hardware Monitor: Id not found!");
-#endif
+		Debug(DEBUG_NORM,"Hardware Monitor: Id not found!");
 		return;
 	}
 	int doffset = 0;
@@ -491,7 +495,7 @@ bool CHardwareMonitor::InitWMI()
 	hr = m_pLocator->ConnectServer(L"root\\OpenHardwareMonitor",NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesOHM);
 	if (FAILED(hr))
 	{
-		_log.Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");
+		Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");
 		return false;
 	}
 	hr = m_pLocator->ConnectServer(L"root\\CIMV2", NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesSystem);
@@ -512,7 +516,7 @@ bool CHardwareMonitor::InitWMI()
 */
 	if (!IsOHMRunning())
 	{
-		_log.Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");
+		Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");
 		return false;
 	}
 	return true;
@@ -530,7 +534,6 @@ void CHardwareMonitor::ExitWMI()
 		m_pLocator->Release();
 	m_pLocator = NULL;
 }
-
 
 bool CHardwareMonitor::IsOHMRunning()
 {
@@ -619,8 +622,8 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 						{
 							itemName = itemId + " " + itemName;
 						}
-						//itemId = "WMI"+itemId;
-						//_log.Log(LOG_NORM, "Hardware Monitor: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
+						itemId = "WMI"+itemId;
+						Debug(DEBUG_NORM, "Hardware Monitor: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
 						UpdateSystemSensor(qType, dindex, itemName, itemValue.str());
 						VariantClear(&vtProp);
 						dindex++;
@@ -742,208 +745,314 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	}
 #endif
 
-	void CHardwareMonitor::FetchUnixMemory()
-	{
-		//Memory
-		char szTmp[300];
-		float memusedpercentage = GetMemUsageLinux();
+void CHardwareMonitor::FetchUnixMemory()
+{
+	//Memory
+	char szTmp[300];
+	float memusedpercentage = GetMemUsageLinux();
 #ifndef __FreeBSD__
-		if (memusedpercentage == -1)
-		{
+	if (memusedpercentage == -1)
+	{
 #ifdef __OpenBSD__
-			memusedpercentage = GetMemUsageOpenBSD();
+		memusedpercentage = GetMemUsageOpenBSD();
 #else
-			//old (wrong) way
-			struct sysinfo mySysInfo;
-			int ret = sysinfo(&mySysInfo);
-			if (ret != 0)
-				return;
-			unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
-			memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
-#endif
-		}
-#endif
-		sprintf(szTmp,"%.2f",memusedpercentage);
-		UpdateSystemSensor("Load", 0, "Memory Usage", szTmp);
-#ifdef __linux__
-		float memProcess = GetProcessMemUsage();
-		if (memProcess != -1)
-		{
-			sprintf(szTmp, "%.2f", memProcess);
-			UpdateSystemSensor("Process", 0, "Process Usage", szTmp);
-		}
+		//old (wrong) way
+		struct sysinfo mySysInfo;
+		int ret = sysinfo(&mySysInfo);
+		if (ret != 0)
+			return;
+		unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
+		memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
 #endif
 	}
-
-	void CHardwareMonitor::FetchUnixCPU()
-	{
-		//CPU
-		char szTmp[300];
-		char cname[50];
-		if (m_lastquerytime==0)
-		{
-#if defined(__OpenBSD__)
-			//Get number of CPUs
-			// sysctl hw.ncpu
-			int mib[] = {CTL_HW, HW_NCPU};
-			int totcpu = -1;
-			size_t size = sizeof(totcpu);
-			long loads[CPUSTATES];
-			if (sysctl(mib, 2, &totcpu, &size, NULL, 0) <0){
-				_log.Log(LOG_ERROR, "sysctl NCPU failed.");
-				return;
-			}
-			m_lastquerytime = time_so_far();
-			// In the emd there will be single value, so using
-			// average loads doesn't generate that much error.
-			mib[0] = CTL_KERN;
-			mib[1] = KERN_CPTIME;
-			size = sizeof(loads);
-			if (sysctl(mib, 2, loads, &size, NULL, 0) < 0){
-				_log.Log(LOG_ERROR, "sysctl CPTIME failed.");
-				return;
-			}
-			//Interrupts aren't measured.
-			m_lastloadcpu = loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS];
-			m_totcpu=totcpu;
-#else
-			//first time
-			m_lastquerytime = time_so_far();
-			int actload1,actload2,actload3;
-			int totcpu=-1;
-#if defined(__FreeBSD__)
-			FILE *fIn = fopen("/compat/linux/proc/stat", "r");
-#else	// Linux
-			FILE *fIn = fopen("/proc/stat", "r");
 #endif
-			if (fIn!=NULL)
-			{
-				bool bFirstLine=true;
-				while( fgets(szTmp, sizeof(szTmp), fIn) != NULL )
-				{
-					int ret=sscanf(szTmp, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
-					if ((bFirstLine)&&(ret==4)) {
-						bFirstLine=false;
-						m_lastloadcpu=actload1+actload2+actload3;
-					}
-					char *cPos=strstr(cname,"cpu");
-					if (cPos==NULL)
-						break;
-					totcpu++;
-				}
-				fclose(fIn);
-			}
-			if (totcpu<1)
-				m_lastquerytime=0;
-			else
-				m_totcpu=totcpu;
-#endif // else __OpenBSD__
-		}
-		else
-		{
-			double acttime = time_so_far();
+	sprintf(szTmp,"%.2f",memusedpercentage);
+	UpdateSystemSensor("Load", 0, "Memory Usage", szTmp);
+#ifdef __linux__
+	float memProcess = GetProcessMemUsage();
+	if (memProcess != -1)
+	{
+		sprintf(szTmp, "%.2f", memProcess);
+		UpdateSystemSensor("Process", 0, "Process Usage", szTmp);
+	}
+#endif
+}
+
+void CHardwareMonitor::FetchUnixCPU()
+{
+	//CPU
+	char szTmp[300];
+	char cname[50];
+	if (m_lastquerytime==0)
+	{
 #if defined(__OpenBSD__)
-			int mib[] = {CTL_KERN, KERN_CPTIME};
-			long loads[CPUSTATES];
-			size_t size = sizeof(loads);
-			if (sysctl(mib, 2, loads, &size, NULL, 0) < 0){
-				_log.Log(LOG_ERROR, "sysctl CPTIME failed.");
-				return;
-			}else {
-				long long t = (loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS])-m_lastloadcpu;
-				double cpuper=((double(t) / (difftime(acttime,m_lastquerytime) * HZ)) * 100);///double(m_totcpu);
+		//Get number of CPUs
+		// sysctl hw.ncpu
+		int mib[] = {CTL_HW, HW_NCPU};
+		int totcpu = -1;
+		size_t size = sizeof(totcpu);
+		long loads[CPUSTATES];
+		if (sysctl(mib, 2, &totcpu, &size, NULL, 0) <0){
+			Log(LOG_ERROR, "sysctl NCPU failed.");
+			return;
+		}
+		m_lastquerytime = time_so_far();
+		// In the emd there will be single value, so using
+		// average loads doesn't generate that much error.
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_CPTIME;
+		size = sizeof(loads);
+		if (sysctl(mib, 2, loads, &size, NULL, 0) < 0){
+			Log(LOG_ERROR, "sysctl CPTIME failed.");
+			return;
+		}
+		//Interrupts aren't measured.
+		m_lastloadcpu = loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS];
+		m_totcpu=totcpu;
+#else
+		//first time
+		m_lastquerytime = time_so_far();
+		int actload1,actload2,actload3;
+		int totcpu=-1;
+#if defined(__FreeBSD__)
+		FILE *fIn = fopen("/compat/linux/proc/stat", "r");
+#else	// Linux
+		FILE *fIn = fopen("/proc/stat", "r");
+#endif
+		if (fIn!=NULL)
+		{
+			bool bFirstLine=true;
+			while( fgets(szTmp, sizeof(szTmp), fIn) != NULL )
+			{
+				int ret=sscanf(szTmp, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
+				if ((bFirstLine)&&(ret==4)) {
+					bFirstLine=false;
+					m_lastloadcpu=actload1+actload2+actload3;
+				}
+				char *cPos=strstr(cname,"cpu");
+				if (cPos==NULL)
+					break;
+				totcpu++;
+			}
+			fclose(fIn);
+		}
+		if (totcpu<1)
+			m_lastquerytime=0;
+		else
+			m_totcpu=totcpu;
+#endif // else __OpenBSD__
+	}
+	else
+	{
+		double acttime = time_so_far();
+#if defined(__OpenBSD__)
+		int mib[] = {CTL_KERN, KERN_CPTIME};
+		long loads[CPUSTATES];
+		size_t size = sizeof(loads);
+		if (sysctl(mib, 2, loads, &size, NULL, 0) < 0){
+			Log(LOG_ERROR, "sysctl CPTIME failed.");
+			return;
+		}else {
+			long long t = (loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS])-m_lastloadcpu;
+			double cpuper=((double(t) / (difftime(acttime,m_lastquerytime) * HZ)) * 100);///double(m_totcpu);
+			if (cpuper>0)
+			{
+				sprintf(szTmp,"%.2f", cpuper);
+				UpdateSystemSensor("Load", 1, "CPU_Usage", szTmp);
+			}
+			m_lastloadcpu = loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS];
+		}
+#else
+		int actload1,actload2,actload3;
+#if defined(__FreeBSD__)
+		FILE *fIn = fopen("/compat/linux/proc/stat", "r");
+#else	// Linux
+		FILE *fIn = fopen("/proc/stat", "r");
+#endif
+		if (fIn!=NULL)
+		{
+			int ret=fscanf(fIn, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
+			fclose(fIn);
+			if (ret==4)
+			{
+				long long t = (actload1+actload2+actload3)-m_lastloadcpu;
+				double cpuper=((t / (difftime(acttime,m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
 				if (cpuper>0)
 				{
 					sprintf(szTmp,"%.2f", cpuper);
 					UpdateSystemSensor("Load", 1, "CPU_Usage", szTmp);
 				}
-				m_lastloadcpu = loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS];
+				m_lastloadcpu=actload1+actload2+actload3;
 			}
-#else
-			int actload1,actload2,actload3;
-#if defined(__FreeBSD__)
-			FILE *fIn = fopen("/compat/linux/proc/stat", "r");
-#else	// Linux
-			FILE *fIn = fopen("/proc/stat", "r");
-#endif
-			if (fIn!=NULL)
+		}
+#endif //else Openbsd
+		m_lastquerytime=acttime;
+	}
+}
+
+void CHardwareMonitor::FetchUnixDisk()
+{
+	//Disk Usage
+	std::map<std::string, _tDUsageStruct> _disks;
+	std::map<std::string, std::string> _dmounts_;
+	int returncode = 0;
+	std::vector<std::string> _rlines=ExecuteCommandAndReturn(m_dfcommand, returncode);
+	if (!_rlines.empty())
+	{
+		for (const auto & ittDF : _rlines)
+		{
+			char dname[200];
+			char suse[30];
+			char smountpoint[300];
+			long numblock, usedblocks, availblocks;
+			int ret = sscanf(ittDF.c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+			if (ret == 6)
 			{
-				int ret=fscanf(fIn, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
-				fclose(fIn);
-				if (ret==4)
+				std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
+				if (it != _dmounts_.end())
 				{
-					long long t = (actload1+actload2+actload3)-m_lastloadcpu;
-					double cpuper=((t / (difftime(acttime,m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
-					if (cpuper>0)
+					if (it->second.length() < strlen(smountpoint))
 					{
-						sprintf(szTmp,"%.2f", cpuper);
-						UpdateSystemSensor("Load", 1, "CPU_Usage", szTmp);
+						continue;
 					}
-					m_lastloadcpu=actload1+actload2+actload3;
+				}
+#if defined(__linux__) || defined(__FreeBSD__) || defined (__OpenBSD__)
+				if (strstr(dname, "/dev") != NULL)
+#elif defined(__CYGWIN32__)
+				if (strstr(smountpoint, "/cygdrive/") != NULL)
+#endif
+				{
+					_tDUsageStruct dusage;
+					dusage.TotalBlocks = numblock;
+					dusage.UsedBlocks = usedblocks;
+					dusage.AvailBlocks = availblocks;
+					dusage.MountPoint = smountpoint;
+					_disks[dname] = dusage;
+					_dmounts_[dname] = smountpoint;
 				}
 			}
-#endif //else Openbsd
-			m_lastquerytime=acttime;
 		}
+		int dindex = 0;
+		for (const auto & ittDisks : _disks)
+		{
+			_tDUsageStruct dusage = ittDisks.second;
+			if (dusage.TotalBlocks > 0)
+			{
+				double UsagedPercentage = (100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
+				//std::cout << "Disk: " << ittDisks.first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
+				char szTmp[300];
+				sprintf(szTmp, "%.2f", UsagedPercentage);
+				std::string hddname = "HDD " + dusage.MountPoint;
+				UpdateSystemSensor("Load", 2 + dindex, hddname, szTmp);
+				dindex++;
+			}
+		}
+	}
+}
+#endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
+
+#if !defined WIN32
+void CHardwareMonitor::CheckForOnboardSensors()
+{
+	Debug(DEBUG_NORM,"Checking for onboard sensors");
+
+	//Check if we are running on a RaspberryPi
+	std::string sLine = "";
+	std::ifstream infile;
+
+#if defined(__FreeBSD__)
+	infile.open("/compat/linux/proc/cpuinfo");
+#else
+	infile.open("/proc/cpuinfo");
+#endif
+	if (infile.is_open())
+	{
+		while (!infile.eof())
+		{
+			getline(infile, sLine);
+			if (
+				(sLine.find("BCM2708") != std::string::npos) ||
+				(sLine.find("BCM2709") != std::string::npos) ||
+				(sLine.find("BCM2711") != std::string::npos) ||
+				(sLine.find("BCM2835") != std::string::npos)
+
+				)
+			{
+				Log(LOG_STATUS, "System: Raspberry Pi");
+				//Check if we have vcgencmd (are running on a RaspberryPi)
+				//
+				int returncode = 0;
+				std::vector<std::string> ret = ExecuteCommandAndReturn(VCGENCMDTEMPCOMMAND, returncode);
+
+				if (ret.empty()) {
+					Log(LOG_STATUS,"It seems vcgencmd is not installed. If you would like use the hardware monitor, consider installing this!");
+				}
+				else {
+					std::string tmpline = ret[0];
+					if (tmpline.find("temp=") == std::string::npos) {
+						Log(LOG_STATUS, "It seems vcgencmd is not installed. If you would like use the hardware monitor, consider installing this!");
+					}
+					else {
+						//Core temperature of BCM2835 SoC
+						szInternalTemperatureCommand = VCGENCMDTEMPCOMMAND;
+						bHasInternalTemperature = true;
+
+						//PI Clock speeds	
+						szInternalARMSpeedCommand = VCGENCMDARMSPEEDCOMMAND;
+						szInternalV3DSpeedCommand = VCGENCMDV3DSPEEDCOMMAND;
+						szInternalCoreSpeedCommand = VCGENCMDCORESPEEDCOMMAND;
+						bHasInternalClockSpeeds = true;
+					}
+				}
+			}
+		}
+		infile.close();
 	}
 
-	void CHardwareMonitor::FetchUnixDisk()
+	if (!bHasInternalTemperature)
 	{
-		//Disk Usage
-		std::map<std::string, _tDUsageStruct> _disks;
-		std::map<std::string, std::string> _dmounts_;
-		int returncode = 0;
-		std::vector<std::string> _rlines=ExecuteCommandAndReturn(m_dfcommand, returncode);
-		if (!_rlines.empty())
+		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
 		{
-			for (const auto & ittDF : _rlines)
-			{
-				char dname[200];
-				char suse[30];
-				char smountpoint[300];
-				long numblock, usedblocks, availblocks;
-				int ret = sscanf(ittDF.c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
-				if (ret == 6)
-				{
-					std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
-					if (it != _dmounts_.end())
-					{
-						if (it->second.length() < strlen(smountpoint))
-						{
-							continue;
-						}
-					}
-#if defined(__linux__) || defined(__FreeBSD__) || defined (__OpenBSD__)
-					if (strstr(dname, "/dev") != NULL)
-#elif defined(__CYGWIN32__)
-					if (strstr(smountpoint, "/cygdrive/") != NULL)
-#endif
-					{
-						_tDUsageStruct dusage;
-						dusage.TotalBlocks = numblock;
-						dusage.UsedBlocks = usedblocks;
-						dusage.AvailBlocks = availblocks;
-						dusage.MountPoint = smountpoint;
-						_disks[dname] = dusage;
-						_dmounts_[dname] = smountpoint;
-					}
-				}
-			}
-			int dindex = 0;
-			for (const auto & ittDisks : _disks)
-			{
-				_tDUsageStruct dusage = ittDisks.second;
-				if (dusage.TotalBlocks > 0)
-				{
-					double UsagedPercentage = (100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
-					//std::cout << "Disk: " << ittDisks.first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
-					char szTmp[300];
-					sprintf(szTmp, "%.2f", UsagedPercentage);
-					std::string hddname = "HDD " + dusage.MountPoint;
-					UpdateSystemSensor("Load", 2 + dindex, hddname, szTmp);
-					dindex++;
-				}
-			}
+			Log(LOG_STATUS, "System: Cubieboard/Cubietruck");
+			szInternalTemperatureCommand = "cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			bHasInternalTemperature = true;
+		}
+		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
+		{
+			Log(LOG_STATUS,"System: ODroid");
+			szInternalTemperatureCommand = "cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ if ($1 < 100) printf(\"temp=%d\\n\",$1); else printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			bHasInternalTemperature = true;
 		}
 	}
-#endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
+	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
+	{
+		szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalVoltage = true;
+	}
+	if (file_exist("/sys/class/power_supply/ac/current_now"))
+	{
+		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalCurrent = true;
+	}
+	//New Armbian Kernal 4.14+
+	if (file_exist("/sys/class/power_supply/axp20x-ac/voltage_now"))
+	{
+		szInternalVoltageCommand = "cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalVoltage = true;
+	}
+	if (file_exist("/sys/class/power_supply/axp20x-ac/current_now"))
+	{
+		szInternalCurrentCommand = "cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalCurrent = true;
+	}
+
+#if defined (__OpenBSD__)
+	szInternalTemperatureCommand = "sysctl hw.sensors.acpitz0.temp0|sed -e 's/.*temp0/temp/'|cut -d ' ' -f 1";
+	bHasInternalTemperature = true;
+	szInternalVoltageCommand = "sysctl hw.sensors.acpibat0.volt1|sed -e 's/.*volt1/volt/'|cut -d ' ' -f 1";
+	bHasInternalVoltage = true;
+	//bHasInternalCurrent = true;
+
+#endif
+}
+#endif

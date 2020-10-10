@@ -13,15 +13,13 @@ public:
 	explicit CHardwareMonitor(const int ID);
 	~CHardwareMonitor(void);
 	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) override { return false; };
-#if defined (__linux__)
-	float GetProcessMemUsage();
-#endif
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	double m_lastquerytime;
-	void Do_Work();
 	std::shared_ptr<std::thread> m_thread;
+
+	void Do_Work();
 	void FetchData();
 	void GetInternalTemperature();
 	void FetchClockSpeeds();
@@ -44,9 +42,25 @@ private:
 	void FetchUnixCPU();
 	void FetchUnixMemory();
 	void FetchUnixDisk();
+	void CheckForOnboardSensors();
+#if defined (__linux__)
+	float GetProcessMemUsage();
+#endif
 	long long m_lastloadcpu;
 	int m_totcpu;
 	std::string m_dfcommand;
 #endif
-};
+	bool bHasInternalTemperature;
+	std::string szInternalTemperatureCommand;
 
+	bool bHasInternalClockSpeeds;
+	std::string szInternalARMSpeedCommand;
+	std::string szInternalV3DSpeedCommand;
+	std::string szInternalCoreSpeedCommand;
+
+	bool bHasInternalVoltage;
+	std::string szInternalVoltageCommand;
+
+	bool bHasInternalCurrent;
+	std::string szInternalCurrentCommand;
+};
