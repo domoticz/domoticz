@@ -1,7 +1,7 @@
 /*
  Domoticz, Open Source Home Automation System
 
- Copyright (C) 2012,2015 Rob Peters (GizMoCuz)
+ Copyright (C) 2012,2020 Rob Peters (GizMoCuz)
 
  Domoticz is free software: you can redistribute it and/or modify it
  under the terms of the GNU General Public License as published
@@ -123,6 +123,7 @@ std::string szWWWFolder;
 std::string szWebRoot;
 std::string dbasefile;
 
+/*
 #define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
 #define VCGENCMDARMSPEEDCOMMAND "vcgencmd measure_clock arm"
 #define VCGENCMDV3DSPEEDCOMMAND "vcgencmd measure_clock v3d"
@@ -141,7 +142,7 @@ std::string szInternalVoltageCommand = "";
 
 bool bHasInternalCurrent=false;
 std::string szInternalCurrentCommand = "";
-
+*/
 
 std::string szAppVersion="???";
 int iAppRevision=0;
@@ -171,7 +172,6 @@ http::server::ssl_server_settings secure_webserver_settings;
 #endif
 bool bStartWebBrowser = true;
 bool g_bUseWatchdog = true;
-bool g_bIsWSL = false;
 
 #define DAEMON_NAME "domoticz"
 #define PID_FILE "/var/run/domoticz.pid" 
@@ -470,6 +470,7 @@ void GetAppVersion()
 	szAppDate = szTmp;
 }
 
+/*
 #if !defined WIN32
 void CheckForOnboardSensors()
 {
@@ -573,6 +574,7 @@ void CheckForOnboardSensors()
 #endif
 }
 #endif
+*/
 
 bool GetConfigBool(std::string szValue)
 {
@@ -837,9 +839,6 @@ int main(int argc, char**argv)
 #endif
 #endif
 	}
-#if defined(__linux__)
-	g_bIsWSL = IsWSL();
-#endif
 
 	/* call srand once for the entire app */
 	std::srand((unsigned int)std::time(nullptr));
@@ -848,9 +847,9 @@ int main(int argc, char**argv)
 	GetAppVersion();
 	DisplayAppVersion();
 
-#if !defined WIN32
-	CheckForOnboardSensors();
-#endif
+//#if !defined WIN32
+//	CheckForOnboardSensors();
+//#endif
 	if (!szStartupFolder.empty())
 		_log.Log(LOG_STATUS, "Startup Path: %s", szStartupFolder.c_str());
 
