@@ -1,6 +1,7 @@
 #pragma once
-//#include "../main/RFXtrx.h"
+
 #include "DomoticzHardware.h"
+
 #if defined WIN32
 	// for windows system info
 	#include <wbemidl.h>
@@ -10,17 +11,35 @@
 class CHardwareMonitor : public CDomoticzHardwareBase
 {
 public:
+	enum nOSType
+	{
+		OStype_Unknown = 0,
+		OStype_Linux = 1,
+		OStype_Rpi = 2,
+		OStype_WSL = 3,
+		OStype_CYGWIN = 4,
+		OStype_FreeBSD = 8,
+		OStype_OpenBSD = 9,
+		OStype_Windows = 14,
+		OStype_Apple = 15
+	};
+
 	explicit CHardwareMonitor(const int ID);
 	~CHardwareMonitor(void);
 	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) override { return false; };
+	bool GetOSType(nOSType &OStype);
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	double m_lastquerytime;
 	std::shared_ptr<std::thread> m_thread;
+	nOSType m_OStype;
 
 	void Do_Work();
 	void FetchData();
+	void FetchCPU();
+	void FetchMemory();
+	void FetchDisk();
 	void GetInternalTemperature();
 	void FetchClockSpeeds();
 	void GetInternalARMClockSpeed();
@@ -28,34 +47,22 @@ private:
 	void GetInternalCoreClockSpeed();
 	void GetInternalVoltage();
 	void GetInternalCurrent();
+	void CheckForOnboardSensors();
 	void UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue);
 	void SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname);
-#ifdef WIN32
-	bool InitWMI();
-	void ExitWMI();
-	bool IsOHMRunning();
-	void RunWMIQuery(const char* qTable, const std::string &qType);
-	IWbemLocator *m_pLocator;
-	IWbemServices *m_pServicesOHM;
-	IWbemServices *m_pServicesSystem;
-#elif defined (__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-	void FetchUnixCPU();
-	void FetchUnixMemory();
-	void FetchUnixDisk();
-	void CheckForOnboardSensors();
-	double time_so_far();
-#if defined (__linux__)
-	float GetProcessMemUsage();
-	float GetMemUsageLinux();
-	bool IsWSL();
-#endif
-#if defined (__FreeBSD__) || defined(__OpenBSD__)
-	float GetMemUsageOpenBSD();
-#endif
+
+	struct _tDUsageStruct
+	{
+		std::string MountPoint;
+		long long TotalBlocks;
+		long long UsedBlocks;
+		long long AvailBlocks;
+	};
+
 	long long m_lastloadcpu;
 	int m_totcpu;
 	std::string m_dfcommand;
-#endif
+
 	bool bHasInternalTemperature;
 	std::string szInternalTemperatureCommand;
 
@@ -69,4 +76,27 @@ private:
 
 	bool bHasInternalCurrent;
 	std::string szInternalCurrentCommand;
+
+#ifdef WIN32
+	bool InitWMI();
+	void ExitWMI();
+	bool IsOHMRunning();
+	void RunWMIQuery(const char* qTable, const std::string &qType);
+	IWbemLocator *m_pLocator;
+	IWbemServices *m_pServicesOHM;
+	IWbemServices *m_pServicesSystem;
+#elif defined (__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+	void FetchUnixCPU();
+	void FetchUnixMemory();
+	void FetchUnixDisk();
+	double time_so_far();
+#if defined (__linux__)
+	float GetProcessMemUsage();
+	float GetMemUsageLinux();
+	bool IsWSL();
+#endif
+#if defined (__FreeBSD__) || defined(__OpenBSD__)
+	float GetMemUsageOpenBSD();
+#endif
+#endif
 };

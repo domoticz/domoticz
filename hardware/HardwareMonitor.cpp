@@ -28,14 +28,6 @@
 	#include <limits>
 	#include <unistd.h>
 
-	struct _tDUsageStruct
-	{
-		std::string MountPoint;
-		long long TotalBlocks;
-		long long UsedBlocks;
-		long long AvailBlocks;
-	};
-
 //USER_HZ detection, from openssl code
 #ifndef HZ
 # if defined(_SC_CLK_TCK) && (!defined(OPENSSL_SYS_VMS) || __CTRL_VER >= 70000000)
@@ -53,7 +45,7 @@
 # endif
 #endif
 
-#endif
+#endif // defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined (__OpenBSD__)
 
 #define POLL_INTERVAL_CPU	30
 #define POLL_INTERVAL_TEMP	70
@@ -70,47 +62,24 @@
 CHardwareMonitor::CHardwareMonitor(const int ID)
 {
 	m_HwdID = ID;
-	m_bOutputLog = false;
 	m_lastquerytime = 0;
-#if defined (__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	m_totcpu = 0;
 	m_lastloadcpu = 0;
-#endif
 #ifdef WIN32
 	m_pLocator = NULL;
 	m_pServicesOHM = NULL;
 	m_pServicesSystem = NULL;
-	//	CoInitializeEx(0, COINIT_MULTITHREADED);
-//	CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
 #endif
 }
 
 CHardwareMonitor::~CHardwareMonitor(void)
 {
 	StopHardware();
-#ifdef WIN32
-//	CoUninitialize();
-#endif
 }
 
 bool CHardwareMonitor::StartHardware()
 {
-#ifdef __APPLE__
-	//sorry apple not supported for now
-	return false;
-#endif
 	StopHardware();
-
-	RequestStart();
-
-#ifdef WIN32
-	InitWMI();
-#endif
-	m_lastquerytime = 0;
-	m_thread = std::make_shared<std::thread>(&CHardwareMonitor::Do_Work, this);
-	SetThreadNameInt(m_thread->native_handle());
-	m_bIsStarted = true;
-	sOnConnected(this);
 
 	bHasInternalTemperature=false;
 	bHasInternalClockSpeeds=false;
@@ -124,16 +93,30 @@ bool CHardwareMonitor::StartHardware()
 	szInternalVoltageCommand = "";
 	szInternalCurrentCommand = "";
 
-#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-	// Busybox df doesn't support -x parameter
-	int returncode = 0;
-	std::vector<std::string> ret = ExecuteCommandAndReturn("df -x nfs -x tmpfs -x devtmpfs 2> /dev/null", returncode);
-	returncode == 0 ?
-		m_dfcommand = "df -x nfs -x tmpfs -x devtmpfs" :
-		m_dfcommand = "df";
+	if(!GetOSType(m_OStype))
+	{
+		Log(LOG_STATUS,"Hardware Monitor was not able to detect an (known) OS type!");
+	}
+	else if (m_OStype == OStype_Apple)
+	{
+		Log(LOG_ERROR,"Hardware Monitor does not (yet) support Apple hardware!");
+		return false;
+	}
 
 	CheckForOnboardSensors();
+
+	RequestStart();
+
+#ifdef WIN32
+	InitWMI();
 #endif
+
+	m_lastquerytime = 0;
+	m_thread = std::make_shared<std::thread>(&CHardwareMonitor::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
+	m_bIsStarted = true;
+	sOnConnected(this);
+
 	return true;
 }
 
@@ -154,7 +137,7 @@ bool CHardwareMonitor::StopHardware()
 
 void CHardwareMonitor::Do_Work()
 {
-	Log(LOG_STATUS, "Hardware Monitor: Started");
+	Log(LOG_STATUS, "Hardware Monitor: Started (OStype %d)", m_OStype);
 
 	int msec_counter = 0;
 	int64_t sec_counter = 140 - 2;	// Start at a moment that is close to most devicecheck intervals
@@ -180,12 +163,11 @@ void CHardwareMonitor::Do_Work()
 				}
 			}
 
-#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 			if (sec_counter % POLL_INTERVAL_CPU == 0)
 			{
 				try
 				{
-					FetchUnixCPU();
+					FetchCPU();
 					FetchClockSpeeds();
 				}
 				catch (...)
@@ -193,12 +175,11 @@ void CHardwareMonitor::Do_Work()
 					Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching CPU data!...");
 				}
 			}
-
 			if (sec_counter % POLL_INTERVAL_MEM == 0)
 			{
 				try
 				{
-					FetchUnixMemory();
+					FetchMemory();
 				}
 				catch (...)
 				{
@@ -210,14 +191,13 @@ void CHardwareMonitor::Do_Work()
 			{
 				try
 				{
-					FetchUnixDisk();
+					FetchDisk();
 				}
 				catch (...)
 				{
 					Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching disk data!...");
 				}
 			}
-#endif
 		}
 	}
 	Log(LOG_STATUS,"Hardware Monitor: Stopped...");
@@ -235,7 +215,7 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 
 void CHardwareMonitor::GetInternalTemperature()
 {
-	Debug(DEBUG_NORM,"Getting  Internal Temperature");
+	Debug(DEBUG_NORM,"Getting Internal Temperature");
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand, returncode);
 	if (ret.empty())
@@ -401,40 +381,6 @@ void CHardwareMonitor::GetInternalCurrent()
 	SendCurrent(1, current, "Internal Current");
 }
 
-void CHardwareMonitor::FetchData()
-{
-#ifdef WIN32
-	if (IsOHMRunning()) {
-		Debug(DEBUG_NORM,"Hardware Monitor: Fetching data (System sensors)");
-		RunWMIQuery("Sensor","Temperature");
-		RunWMIQuery("Sensor","Load");
-		RunWMIQuery("Sensor","Fan");
-		RunWMIQuery("Sensor","Voltage");
-		return;
-	}
-#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-	Debug(DEBUG_NORM,"Fetching *NIX data (System sensors)");
-
-	if (bHasInternalTemperature)
-		GetInternalTemperature();
-
-	if (bHasInternalVoltage)
-		GetInternalVoltage();
-
-	if (bHasInternalCurrent)
-		GetInternalCurrent();
-#endif
-}
-
-void CHardwareMonitor::FetchClockSpeeds()
-{
-	if (bHasInternalClockSpeeds) {
-		GetInternalARMClockSpeed();
-		GetInternalV3DClockSpeed();
-		GetInternalCoreClockSpeed();
-	}
-}
-
 void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue)
 {
 	if (!m_HwdID) {
@@ -472,15 +418,104 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 		float curr = static_cast<float>(atof(devValue.c_str()));
 		SendCurrent(doffset + dindex, curr, devName);
 	}
-#if defined (__linux__)
 	else if (qType == "Process")
 	{
 		doffset = 1500;
 		float usage = static_cast<float>(atof(devValue.c_str()));
 		SendCustomSensor(0, doffset + dindex, 255, usage, devName, "MB");
 	}
-#endif
 	return;
+}
+
+bool CHardwareMonitor::GetOSType(nOSType &OStype)
+{
+	OStype = OStype_Unknown;
+
+#if defined (__linux__)
+	OStype = OStype_Linux;
+
+	if (IsWSL())
+		OStype = OStype_WSL;
+#endif
+
+#if defined (__FreeBSD__)
+	OStype = OStype_FreeBSD;
+#endif
+
+#if defined (__OpenBSD__)
+	OStype = OStype_OpenBSD;
+#endif
+
+#if defined (__CYGWIN32__)
+	OStype = OStype_CYGWIN;
+#endif
+
+#ifdef WIN32
+	OStype = OStype_Windows;
+#endif
+
+#ifdef __APPLE__
+	OStype = OStype_Apple;
+#endif
+
+	if (OStype == OStype_Unknown)
+		return false;
+	return true;
+}
+
+void CHardwareMonitor::FetchCPU()
+{
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+	FetchUnixCPU();
+#endif
+}
+
+void CHardwareMonitor::FetchDisk()
+{
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+	FetchUnixDisk();
+#endif
+}
+
+void CHardwareMonitor::FetchMemory()
+{
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+	FetchUnixMemory();
+#endif
+}
+
+void CHardwareMonitor::FetchData()
+{
+#ifdef WIN32
+	if (IsOHMRunning()) {
+		Debug(DEBUG_NORM,"Fetching Windows sensor data (System sensors)");
+		RunWMIQuery("Sensor","Temperature");
+		RunWMIQuery("Sensor","Load");
+		RunWMIQuery("Sensor","Fan");
+		RunWMIQuery("Sensor","Voltage");
+		return;
+	}
+#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+	Debug(DEBUG_NORM,"Fetching *NIX sensor data (System sensors)");
+
+	if (bHasInternalTemperature)
+		GetInternalTemperature();
+
+	if (bHasInternalVoltage)
+		GetInternalVoltage();
+
+	if (bHasInternalCurrent)
+		GetInternalCurrent();
+#endif
+}
+
+void CHardwareMonitor::FetchClockSpeeds()
+{
+	if (bHasInternalClockSpeeds) {
+		GetInternalARMClockSpeed();
+		GetInternalV3DClockSpeed();
+		GetInternalCoreClockSpeed();
+	}
 }
 
 #ifdef WIN32
@@ -705,6 +740,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		float memusedpercentage = (100.0f / float(MemTotal))*MemUsed;
 		return memusedpercentage;
 	}
+
 #ifdef __OpenBSD__
 	float CHardwareMonitor::GetMemUsageOpenBSD()
 	{
@@ -951,12 +987,12 @@ void CHardwareMonitor::FetchUnixDisk()
 }
 #endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
 
-#if defined(__linux__)
 bool CHardwareMonitor::IsWSL()
 {
 	// Detect WSL according to https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364
 	bool is_wsl = false;
 
+#if defined(__linux__)
 	char buf[1024];
 
 	int status_fd = open("/proc/sys/kernel/osrelease", O_RDONLY);
@@ -984,19 +1020,36 @@ bool CHardwareMonitor::IsWSL()
 		is_wsl |= (strstr(buf, "Microsoft") != NULL);
 		is_wsl |= (strstr(buf, "WSL") != NULL);
 	}
+#endif
 
 	return is_wsl;
 }
-#endif
 
-#if !defined WIN32
 void CHardwareMonitor::CheckForOnboardSensors()
 {
 	Debug(DEBUG_NORM,"Checking for onboard sensors");
 
+#ifdef WIN32
+	Debug(DEBUG_NORM, "Detecting onboard sensors on Windows not supported this way! (But through openhardwaremonitor.org and WMI)");
+	return;
+#endif
+
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+	// Busybox df doesn't support -x parameter
+	int returncode = 0;
+	std::vector<std::string> ret = ExecuteCommandAndReturn("df -x nfs -x tmpfs -x devtmpfs 2> /dev/null", returncode);
+	returncode == 0 ?
+		m_dfcommand = "df -x nfs -x tmpfs -x devtmpfs" :
+		m_dfcommand = "df";
+
+#endif
+
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
+
 	//Check if we are running on a RaspberryPi
 	std::string sLine = "";
 	std::ifstream infile;
+	bool bPi = false;
 
 #if defined(__FreeBSD__)
 	infile.open("/compat/linux/proc/cpuinfo");
@@ -1017,6 +1070,7 @@ void CHardwareMonitor::CheckForOnboardSensors()
 				)
 			{
 				Log(LOG_STATUS, "System: Raspberry Pi");
+				bPi = true;
 				//Check if we have vcgencmd (are running on a RaspberryPi)
 				//
 				int returncode = 0;
@@ -1047,6 +1101,11 @@ void CHardwareMonitor::CheckForOnboardSensors()
 		infile.close();
 	}
 
+	if(!bPi)
+	{
+		Debug(DEBUG_NORM,"System does not seem to be a Raspberry Pi");
+	}
+
 	if (!bHasInternalTemperature)
 	{
 		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
@@ -1064,33 +1123,38 @@ void CHardwareMonitor::CheckForOnboardSensors()
 	}
 	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
 	{
+		Debug(DEBUG_NORM, "Internal voltage sensor detected");
 		szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
 		bHasInternalVoltage = true;
 	}
 	if (file_exist("/sys/class/power_supply/ac/current_now"))
 	{
+		Debug(DEBUG_NORM, "Internal current sensor detected");
 		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
 		bHasInternalCurrent = true;
 	}
 	//New Armbian Kernal 4.14+
 	if (file_exist("/sys/class/power_supply/axp20x-ac/voltage_now"))
 	{
+		Debug(DEBUG_NORM, "Internal voltage sensor detected");
 		szInternalVoltageCommand = "cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
 		bHasInternalVoltage = true;
 	}
 	if (file_exist("/sys/class/power_supply/axp20x-ac/current_now"))
 	{
+		Debug(DEBUG_NORM, "Internal current sensor detected");
 		szInternalCurrentCommand = "cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
 		bHasInternalCurrent = true;
 	}
+#endif
 
 #if defined (__OpenBSD__)
+	Debug(DEBUG_NORM, "Internal temperature- and voltage sensors detected");
 	szInternalTemperatureCommand = "sysctl hw.sensors.acpitz0.temp0|sed -e 's/.*temp0/temp/'|cut -d ' ' -f 1";
 	bHasInternalTemperature = true;
 	szInternalVoltageCommand = "sysctl hw.sensors.acpibat0.volt1|sed -e 's/.*volt1/volt/'|cut -d ' ' -f 1";
 	bHasInternalVoltage = true;
 	//bHasInternalCurrent = true;
+#endif
 
-#endif
 }
-#endif
