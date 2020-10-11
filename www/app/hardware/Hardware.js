@@ -649,7 +649,21 @@ define(['app'], function (app) {
 					extra = encodeURIComponent(extra);
 				}
 				else if ((text.indexOf("MQTT") >= 0)) {
-					extra = $("#hardwarecontent #divmqtt #filename").val();
+					extra = $("#hardwarecontent #divmqtt #filename").val().trim();
+					var mqtttopicin = $("#hardwarecontent #divmqtt #mqtttopicin").val().trim();
+					var mqtttopicout = $("#hardwarecontent #divmqtt #mqtttopicout").val().trim();
+					if (mqtttopicin.indexOf("#") >= 0) {
+						ShowNotify($.t('Publish Prefix cannot contain a "#" symbol!'), 2500, true);
+						return;
+					}
+					if (mqtttopicout.indexOf("#") >= 0) {
+						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
+						return;
+					}
+					if ((mqtttopicin!="")||(mqtttopicout!="")) {
+						extra += ";" + mqtttopicin + ";" + mqtttopicout;
+					}
+					
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
 					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
@@ -2079,6 +2093,19 @@ define(['app'], function (app) {
 				}
 				else if (text.indexOf("MQTT") >= 0) {
 					extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
+					var mqtttopicin = $("#hardwarecontent #divmqtt #mqtttopicin").val().trim();
+					var mqtttopicout = $("#hardwarecontent #divmqtt #mqtttopicout").val().trim();
+					if (mqtttopicin.indexOf("#") >= 0) {
+						ShowNotify($.t('Publish Prefix cannot contain a "#" symbol!'), 2500, true);
+						return;
+					}
+					if (mqtttopicout.indexOf("#") >= 0) {
+						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
+						return;
+					}
+					if ((mqtttopicin!="")||(mqtttopicout!="")) {
+						extra += ";" + mqtttopicin + ";" + mqtttopicout;
+					}
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
 					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
@@ -4097,7 +4124,19 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combopreventloop").val(data["Mode3"]);
 						}
 						else if (data["Type"].indexOf("MQTT") >= 0) {
-							$("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
+							$("#hardwarecontent #hardwareparamsmqtt #filename").val("");
+							$("#hardwarecontent #divmqtt #mqtttopicin").val("");
+							$("#hardwarecontent #divmqtt #mqtttopicout").val("");
+
+							// Break out any possible topic prefix pieces.
+							var CAfilenameParts = data["Extra"].split(";");
+							if (CAfilenameParts.length > 0)
+								$("#hardwarecontent #hardwareparamsmqtt #filename").val(CAfilenameParts[0]);
+							if (CAfilenameParts.length > 1)
+								$("#hardwarecontent #hardwareparamsmqtt #mqtttopicin").val(CAfilenameParts[1]);
+							if (CAfilenameParts.length > 2)
+								$("#hardwarecontent #hardwareparamsmqtt #mqtttopicout").val(CAfilenameParts[2]);
+						
 							$("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamsmqtt #combotlsversion").val(data["Mode2"]);
 							$("#hardwarecontent #hardwareparamsmqtt #combopreventloop").val(data["Mode3"]);
