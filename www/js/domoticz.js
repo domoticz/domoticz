@@ -6479,12 +6479,18 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 						}
 					});
 					if (bRedraw && me.redrawCnt == 1) {
+						const yAxisMin = iMin != 0 ? iMin : null;
+						const yAxisMax = iMax != 0 ? iMax : null;
+						console.log('00 Syncing yAxes to extremes (' + yAxisMin + ', ' + yAxisMax + ')');
 						$.each($.DayChart.highcharts().yAxis, function (iIndex_, oAxis_) {
+							console.log('00 Syncing yAxis:' + oAxis_.axisTitle.textStr);
 							oAxis_.setExtremes((iMin != 0) ? iMin : null, (iMax != 0) ? iMax : null, false);
 						});
 						me.redraw();
 					} else {
+						console.log('00 Resyncing yAxes to extremes (' + null + ', ' + null + ')');
 						$.each($.DayChart.highcharts().yAxis, function (iIndex_, oAxis_) {
+							console.log('00 Resyncing yAxis:' + oAxis_.axisTitle.textStr);
 							oAxis_.setExtremes(null, null, false); // next time rescale yaxis if necessary
 						});
 						me.redrawCnt = 0;

@@ -5,6 +5,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
         const self = this;
         self.consoledebug('device -> '
             + 'idx:' + params.device.idx
+            + ', name:' + params.device.Name
             + ', type:' + params.device.Type
             + ', subtype:' + params.device.SubType
             + ', sensorType:' + params.sensorType);
@@ -14,7 +15,8 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.device = params.device;
         self.dataSupplier = params.dataSupplier;
         self.chartType = params.chartType;
-        self.chart = self.$element.find('.chartcontainer').highcharts(self.createChartDefinition()).highcharts();
+        self.synchronizeYaxes = params.synchronizeYaxes;
+        self.chart = self.$element.find('.chartcontainer').highcharts(self.createChartDefinition(params.highchartParams)).highcharts();
 
         self.isZoomLeftSticky = false;
         self.isZoomRightSticky = false;
@@ -35,7 +37,9 @@ define(['DomoticzBase'], function (DomoticzBase) {
             self.mouseUpPosition = e.clientX;
         };
 
-        self.refreshChartData();
+        if (false) {
+            self.refreshChartData();
+        }
 
         self.refreshTimestamp = 0;
 
@@ -135,7 +139,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
     RefreshingChart.prototype = Object.create(DomoticzBase.prototype);
     RefreshingChart.prototype.constructor = RefreshingChart;
 
-    RefreshingChart.prototype.createChartDefinition = function () {
+    RefreshingChart.prototype.createChartDefinition = function (params) {
         const self = this;
         return {
             chart: {
@@ -152,7 +156,8 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     }
                 },
                 panning: true,
-                panKey: 'shift'
+                panKey: 'shift',
+                alignTicks: params !== undefined ? params.alignTicks : undefined
             },
             xAxis: {
                 type: 'datetime',
@@ -160,9 +165,9 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     setExtremes: function (e) {
                         const xAxis = self.chart.xAxis[0];
                         self.consoledebug(function () {
-                            return 'setExtremes():\n'
-                            + 'dataMin:' + new Date(xAxis.dataMin).toString() + ', e.min:' + (e.min === null ? '' : new Date(e.min).toString()) + '\n'
-                            + 'dataMax:' + new Date(xAxis.dataMax).toString() + ', e.max:' + (e.max === null ? '' : new Date(e.max).toString());
+                            return 'xAxis.setExtremes():\n'
+                            + '    dataMin:' + new Date(xAxis.dataMin).toString() + ', e.min:' + (e.min === null ? '' : new Date(e.min).toString()) + '\n'
+                            + '    dataMax:' + new Date(xAxis.dataMax).toString() + ', e.max:' + (e.max === null ? '' : new Date(e.max).toString());
                         });
                         if (e.min === null && e.max === null || e.min <= xAxis.dataMin && xAxis.dataMax <= e.max) {
                             self.isZoomLeftSticky = false;
@@ -182,7 +187,19 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     }
                 }
             },
-            yAxis: self.dataSupplier.yAxes,
+            yAxis: self.dataSupplier.yAxes.map(function (yAxis) {
+                if (yAxis.events === undefined) {
+                    yAxis.events = {};
+                }
+                yAxis.events.setExtremes = function (e) {
+                    self.consoledebug(function () {
+                        return 'yAxis(' + yAxis.title + ').setExtremes():\n'
+                            + '    dataMin:' + yAxis.dataMin + ', e.min:' + e.min + '\n'
+                            + '    dataMax:' + yAxis.dataMax + ', e.max:' + e.max;
+                    });
+                };
+                return yAxis;
+            }),
             tooltip: {
                 crosshairs: true,
                 shared: true,
@@ -251,6 +268,26 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     marker: {
                         enabled: false
                     }
+                },
+                areaspline: {
+                    lineWidth: 3,
+                    marker: {
+                        enabled: false
+                    },
+                    states: {
+                        hover: {
+                            lineWidth: 3
+                        }
+                    }
+                },
+                column: {
+                    minPointLength: 4,
+                    pointPadding: 0.1,
+                    groupPadding: 0,
+                    dataLabels: {
+                        enabled: false,
+                        color: 'white'
+                    }
                 }
             },
             title: false,
@@ -264,12 +301,13 @@ define(['DomoticzBase'], function (DomoticzBase) {
         };
     }
 
-    RefreshingChart.prototype.createDataRequest = function () {
+    RefreshingChart.prototype.createDataRequest = function (that) {
+        const self = that !== undefined ? that : this;
         return {
             type: 'graph',
-            sensor: this.sensorType,
-            range: this.range,
-            idx: this.device.idx
+            sensor: self.sensorType,
+            range: self.range,
+            idx: self.device.idx
         };
     }
 
@@ -305,10 +343,15 @@ define(['DomoticzBase'], function (DomoticzBase) {
                 }
 
                 loadDataInChart(data);
-                setNewZoomEdgesAndRedraw();
+                setNewZoomEdges();
+                synchronizeYaxes();
+                redrawChart();
 
                 function loadDataInChart(data) {
-                    self.dataSupplier.seriesSuppliers.forEach(function (seriesSupplier) {
+                    self.dataSupplier.seriesSuppliers.forEach(function (seriesSupplierOrFunction) {
+                        const seriesSupplier = typeof seriesSupplierOrFunction === 'function'
+                            ? seriesSupplierOrFunction(self.dataSupplier)
+                            : seriesSupplierOrFunction;
                         const chartSeries = self.chart.get(seriesSupplier.id);
                         self.consoledebug('series: \'' + seriesSupplier.id + '\'' + (chartSeries === undefined ? ' (new)' : ''));
                         const datapoints = [];
@@ -325,12 +368,15 @@ define(['DomoticzBase'], function (DomoticzBase) {
                         }
                         if (datapoints.length !== 0) {
                             if (chartSeries === undefined) {
-                                const series = seriesSupplier.template;
+                                const series = typeof seriesSupplier.template === 'function' ? seriesSupplier.template() : seriesSupplier.template;
                                 series.id = seriesSupplier.id;
                                 if (series.colorIndex !== undefined) {
                                     series.color = Highcharts.getOptions().colors[series.colorIndex];
                                 }
                                 series.data = datapoints;
+                                if (seriesSupplier.modifySeries !== undefined) {
+                                    seriesSupplier.modifySeries(seriesSupplier, series);
+                                }
                                 self.chart.addSeries(series, false);
                             } else {
                                 chartSeries.setData(datapoints, false);
@@ -343,6 +389,11 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     });
                 }
                 function processDataItems(dataItems, datapoints, seriesSupplier, timestampFromDataItem) {
+                    if (seriesSupplier.analyseDataItem !== undefined) {
+                        dataItems.slice(0, 48).forEach(function (dataItem) {
+                            seriesSupplier.analyseDataItem(dataItem);
+                        });
+                    }
                     if (seriesSupplier.valuesFromDataItem !== undefined) {
                         dataItems.forEach(function (item) {
                             if (seriesSupplier.dataItemIsValid === undefined || seriesSupplier.dataItemIsValid(item)) {
@@ -359,7 +410,7 @@ define(['DomoticzBase'], function (DomoticzBase) {
                     }
                 }
 
-                function setNewZoomEdgesAndRedraw() {
+                function setNewZoomEdges() {
                     if (self.isZoomed) {
                         const zoomEdgeRight1 = self.isZoomRightSticky || zoomEdgeRight === -1 || chartEdgeRight === -1
                             ? zoomEdgeRight
@@ -374,6 +425,36 @@ define(['DomoticzBase'], function (DomoticzBase) {
                             self.chart.xAxis[0].setExtremes(zoomEdgeLeft1, zoomEdgeRight1, false);
                         }
                     }
+                }
+
+                function synchronizeYaxes() {
+                    if (self.synchronizeYaxes === true) {
+                        self.chart.redraw();
+                        var iMin = 0, iMax = 0;
+                        const yAxesSynchronize = [];
+                        self.chart.series.forEach(function (series) {
+                            const yAxis = self.chart.yAxis[series.options.yAxis];
+                            if (!yAxesSynchronize.includes(yAxis)) {
+                                if (yAxis.min < iMin) {
+                                    iMin = yAxis.min;
+                                }
+                                if (yAxis.max > iMax) {
+                                    iMax = yAxis.max;
+                                }
+                                yAxesSynchronize.push(yAxis);
+                            }
+                        });
+                        const yAxisMinSynchronized = iMin != 0 ? iMin : null;
+                        const yAxisMaxSynchronized = iMax != 0 ? iMax : null;
+                        self.consoledebug('Syncing yAxes to extremes (' + yAxisMinSynchronized + ', ' + yAxisMaxSynchronized + '):');
+                        yAxesSynchronize.forEach(function (yAxis) {
+                            self.consoledebug('    yAxis:' + yAxis);
+                            yAxis.setExtremes(yAxisMinSynchronized, yAxisMaxSynchronized, false);
+                        });
+                    }
+                }
+
+                function redrawChart() {
                     self.chart.redraw();
                 }
 
