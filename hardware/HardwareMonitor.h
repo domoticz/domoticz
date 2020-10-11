@@ -43,8 +43,14 @@ private:
 	void FetchUnixMemory();
 	void FetchUnixDisk();
 	void CheckForOnboardSensors();
+	double time_so_far();
 #if defined (__linux__)
 	float GetProcessMemUsage();
+	float GetMemUsageLinux();
+	bool IsWSL();
+#endif
+#if defined (__FreeBSD__) || defined(__OpenBSD__)
+	float GetMemUsageOpenBSD();
 #endif
 	long long m_lastloadcpu;
 	int m_totcpu;

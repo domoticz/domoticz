@@ -157,7 +157,7 @@ void CHardwareMonitor::Do_Work()
 	Log(LOG_STATUS, "Hardware Monitor: Started");
 
 	int msec_counter = 0;
-	int64_t sec_counter = POLL_INTERVAL_CPU - 5;
+	int64_t sec_counter = 140 - 2;	// Start at a moment that is close to most devicecheck intervals
 	while (!IsStopRequested(500))
 	{
 		msec_counter++;
@@ -636,7 +636,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	}
 }
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-	double time_so_far()
+	double CHardwareMonitor::time_so_far()
 	{
 		struct timeval tp;
 		if (gettimeofday(&tp, (struct timezone *) NULL) == -1)
@@ -671,7 +671,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	}
 #endif
 
-	float GetMemUsageLinux()
+	float CHardwareMonitor::GetMemUsageLinux()
 	{
 #if defined(__FreeBSD__)
 		std::ifstream mfile("/compat/linux/proc/meminfo");
@@ -706,7 +706,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		return memusedpercentage;
 	}
 #ifdef __OpenBSD__
-	float GetMemUsageOpenBSD()
+	float CHardwareMonitor::GetMemUsageOpenBSD()
 	{
 		int mibTotalMem[2] = {
 			CTL_HW,
@@ -950,6 +950,44 @@ void CHardwareMonitor::FetchUnixDisk()
 	}
 }
 #endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
+
+#if defined(__linux__)
+bool CHardwareMonitor::IsWSL()
+{
+	// Detect WSL according to https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364
+	bool is_wsl = false;
+
+	char buf[1024];
+
+	int status_fd = open("/proc/sys/kernel/osrelease", O_RDONLY);
+	if (status_fd == -1)
+		return is_wsl;
+
+	ssize_t num_read = read(status_fd, buf, sizeof(buf) - 1);
+
+	if (num_read > 0)
+	{
+		buf[num_read] = 0;
+		is_wsl |= (strstr(buf, "Microsoft") != NULL);
+		is_wsl |= (strstr(buf, "WSL") != NULL);
+	}
+
+	status_fd = open("/proc/version", O_RDONLY);
+	if (status_fd == -1)
+		return is_wsl;
+
+	num_read = read(status_fd, buf, sizeof(buf) - 1);
+
+	if (num_read > 0)
+	{
+		buf[num_read] = 0;
+		is_wsl |= (strstr(buf, "Microsoft") != NULL);
+		is_wsl |= (strstr(buf, "WSL") != NULL);
+	}
+
+	return is_wsl;
+}
+#endif
 
 #if !defined WIN32
 void CHardwareMonitor::CheckForOnboardSensors()
