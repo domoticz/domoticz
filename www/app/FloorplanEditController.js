@@ -775,10 +775,12 @@ define(['app'], function (app) {
 										objData.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ') scale(' + $("#floorplangroup").attr("scalefactor") + ')');
 									}
 									$('#floorplaneditcontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
+/*									
 									if ($.browser.mozilla) // nasty hack for FireFox.  FireFox forgets to display the icon once you start dragging so we need to remind it
 									{
 										(event.target.style.display == "inline") ? event.target.style.display = "none" : event.target.style.display = "inline";
 									}
+*/									
 								}
 							})
 							.bind('dragstop', function (event, ui) {
