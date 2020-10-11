@@ -470,112 +470,6 @@ void GetAppVersion()
 	szAppDate = szTmp;
 }
 
-/*
-#if !defined WIN32
-void CheckForOnboardSensors()
-{
-	//Check if we are running on a RaspberryPi
-	std::string sLine = "";
-	std::ifstream infile;
-
-#if defined(__FreeBSD__)
-	infile.open("/compat/linux/proc/cpuinfo");
-#else
-	infile.open("/proc/cpuinfo");
-#endif
-	if (infile.is_open())
-	{
-		while (!infile.eof())
-		{
-			getline(infile, sLine);
-			if (
-				(sLine.find("BCM2708") != std::string::npos) ||
-				(sLine.find("BCM2709") != std::string::npos) ||
-				(sLine.find("BCM2711") != std::string::npos) ||
-				(sLine.find("BCM2835") != std::string::npos)
-
-				)
-			{
-				_log.Log(LOG_STATUS, "System: Raspberry Pi");
-				//Check if we have vcgencmd (are running on a RaspberryPi)
-				//
-				int returncode = 0;
-				std::vector<std::string> ret = ExecuteCommandAndReturn(VCGENCMDTEMPCOMMAND, returncode);
-
-				if (ret.empty()) {
-					_log.Log(LOG_STATUS,"It seems vcgencmd is not installed. If you would like use the hardware monitor, consider installing this!");
-				}
-				else {
-					std::string tmpline = ret[0];
-					if (tmpline.find("temp=") == std::string::npos) {
-						_log.Log(LOG_STATUS, "It seems vcgencmd is not installed. If you would like use the hardware monitor, consider installing this!");
-					}
-					else {
-						//Core temperature of BCM2835 SoC
-						szInternalTemperatureCommand = VCGENCMDTEMPCOMMAND;
-						bHasInternalTemperature = true;
-
-						//PI Clock speeds	
-						szInternalARMSpeedCommand = VCGENCMDARMSPEEDCOMMAND;
-						szInternalV3DSpeedCommand = VCGENCMDV3DSPEEDCOMMAND;
-						szInternalCoreSpeedCommand = VCGENCMDCORESPEEDCOMMAND;
-						bHasInternalClockSpeeds = true;
-					}
-				}
-			}
-		}
-		infile.close();
-	}
-
-	if (!bHasInternalTemperature)
-	{
-		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
-		{
-			_log.Log(LOG_STATUS, "System: Cubieboard/Cubietruck");
-			szInternalTemperatureCommand = "cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
-			bHasInternalTemperature = true;
-		}
-		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
-		{
-			//_log.Log(LOG_STATUS,"System: ODroid");
-			szInternalTemperatureCommand = "cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ if ($1 < 100) printf(\"temp=%d\\n\",$1); else printf (\"temp=%0.2f\\n\",$1/1000); }'";
-			bHasInternalTemperature = true;
-		}
-	}
-	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
-	{
-		szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalVoltage = true;
-	}
-	if (file_exist("/sys/class/power_supply/ac/current_now"))
-	{
-		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalCurrent = true;
-	}
-	//New Armbian Kernal 4.14+
-	if (file_exist("/sys/class/power_supply/axp20x-ac/voltage_now"))
-	{
-		szInternalVoltageCommand = "cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalVoltage = true;
-	}
-	if (file_exist("/sys/class/power_supply/axp20x-ac/current_now"))
-	{
-		szInternalCurrentCommand = "cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalCurrent = true;
-	}
-
-#if defined (__OpenBSD__)
-	szInternalTemperatureCommand = "sysctl hw.sensors.acpitz0.temp0|sed -e 's/.*temp0/temp/'|cut -d ' ' -f 1";
-	bHasInternalTemperature = true;
-	szInternalVoltageCommand = "sysctl hw.sensors.acpibat0.volt1|sed -e 's/.*volt1/volt/'|cut -d ' ' -f 1";
-	bHasInternalVoltage = true;
-	//bHasInternalCurrent = true;
-
-#endif
-}
-#endif
-*/
-
 bool GetConfigBool(std::string szValue)
 {
 	stdlower(szValue);
@@ -847,9 +741,6 @@ int main(int argc, char**argv)
 	GetAppVersion();
 	DisplayAppVersion();
 
-//#if !defined WIN32
-//	CheckForOnboardSensors();
-//#endif
 	if (!szStartupFolder.empty())
 		_log.Log(LOG_STATUS, "Startup Path: %s", szStartupFolder.c_str());
 
