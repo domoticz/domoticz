@@ -172,7 +172,6 @@ http::server::ssl_server_settings secure_webserver_settings;
 #endif
 bool bStartWebBrowser = true;
 bool g_bUseWatchdog = true;
-bool g_bIsWSL = false;
 
 #define DAEMON_NAME "domoticz"
 #define PID_FILE "/var/run/domoticz.pid" 
@@ -840,9 +839,6 @@ int main(int argc, char**argv)
 #endif
 #endif
 	}
-#if defined(__linux__)
-	g_bIsWSL = IsWSL();
-#endif
 
 	/* call srand once for the entire app */
 	std::srand((unsigned int)std::time(nullptr));
