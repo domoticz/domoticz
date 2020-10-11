@@ -50,6 +50,7 @@ private:
 	void CheckForOnboardSensors();
 	void UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue);
 	void SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname);
+	bool IsWSL();
 
 	struct _tDUsageStruct
 	{
@@ -93,7 +94,6 @@ private:
 #if defined (__linux__)
 	float GetProcessMemUsage();
 	float GetMemUsageLinux();
-	bool IsWSL();
 #endif
 #if defined (__FreeBSD__) || defined(__OpenBSD__)
 	float GetMemUsageOpenBSD();
