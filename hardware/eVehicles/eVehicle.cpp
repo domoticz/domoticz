@@ -255,13 +255,6 @@ bool CeVehicle::StartHardware()
 
 	Init();
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CeVehicle::Do_Work, this);
-	SetThreadNameInt(m_thread->native_handle());
-	if (!m_thread)
-		return false;
-	m_bIsStarted = true;
-
 	if (m_sql.GetPreferencesVar("Location", nValue, sValue))
 		StringSplit(sValue, ";", strarray);
 
@@ -279,6 +272,13 @@ bool CeVehicle::StartHardware()
 
 		Log(LOG_STATUS, "Using Domoticz home location (Lat %s, Lon %s) as car's home location.", Latitude.c_str(), Longitude.c_str());
 	}
+
+	//Start worker thread
+	m_thread = std::make_shared<std::thread>(&CeVehicle::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
+	if (!m_thread)
+		return false;
+	m_bIsStarted = true;
 
 	sOnConnected(this);
 	return true;
@@ -360,7 +360,8 @@ void CeVehicle::Do_Work()
 				if(fail_counter > 3)
 				{
 					Log(LOG_STATUS, "Aborting due to too many failed authentication attempts (and prevent getting blocked)!");
-					break;
+					RequestStop();
+					continue;
 				}
 			}
 
