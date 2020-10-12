@@ -137,7 +137,7 @@ bool CHardwareMonitor::StopHardware()
 
 void CHardwareMonitor::Do_Work()
 {
-	Log(LOG_STATUS, "Hardware Monitor: Started (OStype %d)", m_OStype);
+	Log(LOG_STATUS, "Hardware Monitor: Started (OStype %s)", TranslateOSTypeToString(m_OStype).c_str());
 
 	int msec_counter = 0;
 	int64_t sec_counter = 140 - 2;	// Start at a moment that is close to most devicecheck intervals
@@ -461,6 +461,40 @@ bool CHardwareMonitor::GetOSType(nOSType &OStype)
 	if (OStype == OStype_Unknown)
 		return false;
 	return true;
+}
+
+std::string CHardwareMonitor::TranslateOSTypeToString(nOSType OSType)
+{
+	std::string sOSType = "Unknown";
+
+	switch (OSType)
+	{
+		case OStype_Linux:
+			sOSType = "Linux";
+			break;
+		case OStype_Rpi:
+			sOSType = "Raspberry Pi Linux";
+			break;
+		case OStype_WSL:
+			sOSType = "WSL Linux";
+			break;
+		case OStype_CYGWIN:
+			sOSType = "CYGWIN Linux";
+			break;
+		case OStype_FreeBSD:
+			sOSType = "FreeBSD";
+			break;
+		case OStype_OpenBSD:
+			sOSType = "OpenBSD";
+			break;
+		case OStype_Windows:
+			sOSType = "Windows";
+			break;
+		case OStype_Apple:
+			sOSType = "Apple";
+			break;
+	}
+	return sOSType;
 }
 
 void CHardwareMonitor::FetchCPU()
@@ -1041,7 +1075,6 @@ void CHardwareMonitor::CheckForOnboardSensors()
 	returncode == 0 ?
 		m_dfcommand = "df -x nfs -x tmpfs -x devtmpfs" :
 		m_dfcommand = "df";
-
 #endif
 
 #if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
@@ -1105,6 +1138,10 @@ void CHardwareMonitor::CheckForOnboardSensors()
 	{
 		Debug(DEBUG_NORM,"System does not seem to be a Raspberry Pi");
 	}
+	else
+	{
+		m_OStype = OStype_Rpi;
+	}
 
 	if (!bHasInternalTemperature)
 	{
@@ -1154,7 +1191,6 @@ void CHardwareMonitor::CheckForOnboardSensors()
 	bHasInternalTemperature = true;
 	szInternalVoltageCommand = "sysctl hw.sensors.acpibat0.volt1|sed -e 's/.*volt1/volt/'|cut -d ' ' -f 1";
 	bHasInternalVoltage = true;
-	//bHasInternalCurrent = true;
 #endif
 
 }

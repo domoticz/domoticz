@@ -28,6 +28,7 @@ public:
 	~CHardwareMonitor(void);
 	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) override { return false; };
 	bool GetOSType(nOSType &OStype);
+	std::string TranslateOSTypeToString(nOSType);
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
