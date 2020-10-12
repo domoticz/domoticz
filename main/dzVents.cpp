@@ -25,7 +25,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("3.0.14")
+	m_version("3.0.15")
 {
 	m_bdzVentsExist = false;
 }
@@ -770,6 +770,7 @@ void CdzVents::ExportHardwareData(CLuaTable &luaTable, int& index, const std::ve
 void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_mainworker.m_eventsystem.m_devicestatesMutex);
+	std::vector<std::vector<std::string> > result;
 	int index = 1;
 	time_t now = mytime(NULL);
 	struct tm tm1;
@@ -778,6 +779,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	localtime_r(&now, &tLastUpdate);
 	int SensorTimeOut = 60;
 	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
 
 	struct tm ntime;
 	time_t checktime;
@@ -791,6 +793,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		CEventSystem::_tDeviceStatus sitem = iterator->second;
 		const char *dev_type = RFX_Type_Desc(sitem.devType, 1);
 		const char *sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
+		int id = sitem.ID;
 
 		bool triggerDevice = false;
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
@@ -925,7 +928,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
 
 	std::map<uint64_t, CEventSystem::_tScenesGroups>::const_iterator ittScenes;
-	std::vector<std::vector<std::string> > result;
+//	std::vector<std::vector<std::string> > result;
 
 	for (ittScenes = m_mainworker.m_eventsystem.m_scenesgroups.begin(); ittScenes != m_mainworker.m_eventsystem.m_scenesgroups.end(); ++ittScenes)
 	{
@@ -942,7 +945,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			}
 		}
 
-		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
+		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%u')", sgitem.ID);
 		if (result.empty())
 			description = "";
 		else
@@ -1096,6 +1099,27 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			index++;
 		}
 	}
+
+	// Now do the lastUpdated by information.
+	result = m_sql.safe_query("SELECT User, DeviceRowID , MAX(Date) FROM LightingLog WHERE DeviceRowid IN (SELECT ID FROM DeviceStatus WHERE Used = 1) and User <> '' GROUP BY DeviceRowID");
+	if (!result.empty())
+	{
+		for (const auto & itt : result)
+		{
+			std::vector<std::string> sd = itt;
+
+			luaTable.OpenSubTableEntry(index, 1, 3);
+
+			luaTable.AddString("user", sd[0]);
+			luaTable.AddInteger("id", atoi(sd[1].c_str()));
+			luaTable.AddString("baseType", "lastUpdater");
+
+			luaTable.CloseSubTableEntry(); // end entry
+
+			index++;
+		}
+	}
+
 
 	ExportHardwareData(luaTable, index, items);
 

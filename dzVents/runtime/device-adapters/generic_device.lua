@@ -88,6 +88,7 @@ return {
 			if (data.batteryLevel <= 100) then bat = data.batteryLevel end
 			if (data.signalLevel <= 100) then sig = data.signalLevel end
 
+			device['lastUpdater'] = ''
 			device['changed'] = data.changed
 			device['description'] = data.description
 			device['deviceType'] = data.deviceType
@@ -115,7 +116,7 @@ return {
 			end
 
 			device.isDevice = true
-		end
+		end 
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then
 			device['description'] = data.description

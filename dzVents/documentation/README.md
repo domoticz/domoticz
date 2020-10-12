@@ -188,15 +188,15 @@ The `on` section tells dzVents *when* the execute function has to be executed. I
 The `on` section has many kinds of subsections that *can all be used simultaneously* :
 
 #### customEvents = { ... } <sup>3.0.0</sup>
-A list of one or more custom event triggers. This eventTrigger can be activate by a json/api call, a MQTT message (when domoticz is setup to listen to such messages on the hardware tab) or by the dzVents internal command domoticz.emitEvent 
- - The name of the custom-event 
- - The name of the custom-event followed by a time constraint, such as: 
+A list of one or more custom event triggers. This eventTrigger can be activate by a json/api call, a MQTT message (when domoticz is setup to listen to such messages on the hardware tab) or by the dzVents internal command domoticz.emitEvent
+ - The name of the custom-event
+ - The name of the custom-event followed by a time constraint, such as:
 	`['start']  = { 'at 15:*', 'at 22:* on sat, sun' }` The script will be executed if domoticz is started, **and** it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [See time trigger rules](#timer_trigger_rules).
 
 ##### API
 	- curl: curl -d "{ 'a':10, 'b':20, 'some':'text', 'sub' : { 'x':10, 'y':20 } }" "http://<domoticzIP:domoticz port>/json.htm?type=command&param=customevent&event=<myCustomEvent>"
 	- JSON: **< domoticzIP : domoticz port >**/json.htm?type=command&param=customevent&event=<MyEvent>&data=myData
-	- MQTT simple:  {"command":"customevent", "event":"MyEvent","data":"myData"}  
+	- MQTT simple:  {"command":"customevent", "event":"MyEvent","data":"myData"}
 	- MQTT complex: {"command":"customevent","event":"MyEvent","data":"{\"idx\":29,\"test\":\"ok\"}" }
 	- emitEvent: domoticz.emitEvent('myCustomEvent' [,])
 		`domoticz.emitEvent('myEvent') -- no data`
@@ -341,7 +341,7 @@ The optional data section allows you to define local variables that will hold th
 The optional logging section allows you to override the global logging setting of dzVents as set in *Setup > Settings > Other > EventSystem > dzVents Log Level*. This can be handy when you only want this script to have extensive debug logging while the rest of your script executes silently. You have these options:
 
  - **level**: This is the log level you want for this script. Can be domoticz.LOG_INFO, domoticz.LOG_MODULE_EXEC_INFO, domoticz.LOG_DEBUG or domoticz.LOG_ERROR
- - **marker**: A string that is prefixed before each log message. That way you can easily create a filter in the Domoticz log to see just these messages. **marker** defaults to scriptname 
+ - **marker**: A string that is prefixed before each log message. That way you can easily create a filter in the Domoticz log to see just these messages. **marker** defaults to scriptname
 
 Example:
 ```Lua
@@ -579,7 +579,7 @@ There are several options for time triggers. It is important to know that Domoti
 			'every hour on sat',		-- you guessed it correctly
 			'at sunset',				-- uses sunset/sunrise/solarnoon info from Domoticz
 			'at sunrise',
-			'at solarnoon',				-- <sup>3.0.11</sup> 
+			'at solarnoon',				-- <sup>3.0.11</sup>
 			'at civiltwilightstart',	-- uses civil twilight start/end info from Domoticz
 			'at civiltwilightend',
 			'at sunset on sat,sun',
@@ -746,12 +746,13 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **fromBase64(string)**: *Function*: <sup>2.5.2</sup>) Decode a base64 string
 	- **fromJSON(json, fallback <sup>2.4.16</sup>)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
 	- **fromXML(xml, fallback )**: *Function*: <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: `local t = domoticz.utils.fromXML('<testtag>What a nice feature!</testtag>') Followed by: `print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.
-	- **fuzzyLookup(string, parm)**: *Function*: <sup>3.0.14</sup>. Search fuzzy matching string in parm. If parm is string it returns a number (lower is better match). If parm is array of strings it returns the best matching string.
+	- **fuzzyLookup([string|array of strings], parm)**: *Function*: <sup>3.0.14</sup>. Search fuzzy matching string in parm. If parm is string it returns a number (lower is better match). If parm is array of strings it returns the best matching string.
 	 - **groupExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with a valid group ^3.0.12^ or groupID and return ID when entered with valid groupName or false when not a group, groupID or groupName of an existing group
 	 - **hardwareExists(parm)**: *Function*: <sup>3.0.7</sup> returns name when entered with valid hardwareID or ID when entered with valid hardwareName or false when not a hardwareID or hardwareName of an existing (and active  )hardware module
 	- **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
 	- **isJSON(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'application/json' or string is enclosed in {} and `false` otherwise.
 	- **isXML(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'text/xml' or 'application/xml' or string is enclosed in <> and `false` otherwise.
+	- **lastUpdater([id|device])**: *Function*: <sup>3.0.15</sup> Returns user-, scriptname of who/what last updated a switch type device or n/a for other types.
 	- **leftPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.
 	- **centerPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.
 	- **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation.
@@ -864,14 +865,14 @@ The domoticz object has these constants available for use in your code e.g. `dom
 	if (item.baseType == domoticz.BASETYPE_DEVICE) then ... end
 	```
 
- - **BARO_CLOUDY, BARO_CLOUDY_RAIN, BARO_STABLE, BARO_SUNNY, BARO_THUNDERSTORM, BARO_NOINFO, BARO_UNSTABLE**: for updating barometric values.
- - **EVENT_TYPE_DEVICE**, **EVENT_TYPE_VARIABLE**, **EVENT_TYPE_CUSTOM**<sup>3.0.0</sup>**EVENT_TYPE_SECURITY**,  **EVENT_TYPE_HTTPRESPONSE**, **EVENT_TYPE_SYSTEM**<sup>3.0.0</sup> **EVENT_TYPE_TIMER**: triggerInfo types passed to the execute function in your scripts.
- - **EVOHOME_MODE_AUTO**, **EVOHOME_MODE_TEMPORARY_OVERRIDE**, **EVOHOME_MODE_PERMANENT_OVERRIDE**, **EVOHOME_MODE_FOLLOW_SCHEDULE** <sup>2.4.9</sup>: mode for EvoHome system.
- - **EVOHOME_MODE_AUTO**, **EVOHOME_MODE_AUTOWITHRESET**, **EVOHOME_MODE_AUTOWITHECO**, **EVOHOME_MODE_AWAY**, **EVOHOME_MODE_DAYOFF**, **EVOHOME_MODE_CUSTOM**, **EVOHOME_MODE_HEATINGOFF** <sup>2.4.23</sup>: mode for EvoHome controller
- - **HUM_COMFORTABLE**, **HUM_DRY**, **HUM_NORMAL**, **HUM_WET**: constant for humidity status.
+ - **BARO_CLOUDY, BARO_CLOUDY_RAIN, BARO_STABLE, BARO_SUNNY, BARO_THUNDERSTORM, BARO_NOINFO, BARO_UNSTABLE, BARO_COMPUTE** : for updating barometric values.
+ - **EVENT_TYPE_DEVICE, EVENT_TYPE_VARIABLE, EVENT_TYPE_CUSTOM<sup>3.0.0</sup>EVENT_TYPE_SECURITY,  EVENT_TYPE_HTTPRESPONSE, EVENT_TYPE_SYSTEM<sup>3.0.0</sup> EVENT_TYPE_TIMER**: triggerInfo types passed to the execute function in your scripts.
+ - **EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE, EVOHOME_MODE_PERMANENT_OVERRIDE, EVOHOME_MODE_FOLLOW_SCHEDULE** <sup>2.4.9</sup>: mode for EvoHome system.
+ - **EVOHOME_MODE_AUTO, EVOHOME_MODE_AUTOWITHRESET, EVOHOME_MODE_AUTOWITHECO, EVOHOME_MODE_AWAY, EVOHOME_MODE_DAYOFF, EVOHOME_MODE_CUSTOM, EVOHOME_MODE_HEATINGOFF** <sup>2.4.23</sup>: mode for EvoHome controller
+ - **HUM_COMFORTABLE, HUM_DRY, HUM_NORMAL, HUM_WET, HUM_COMPUTE** <sup>3.0.15</sup>: constant for humidity status.
  - **INTEGER**, **FLOAT**, **STRING**, **DATE**, **TIME**: variable types.
  - **LOG_DEBUG**, **LOG_ERROR**, **LOG_INFO**, **LOG_FORCE**: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
- - **NSS_FIREBASE**, **NSS_FIREBASE_CLOUD_MESSAGING**, **NSS_GOOGLE_DEVICES <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, **NSS_HTTP**, **NSS_KODI**, **NSS_LOGITECH_MEDIASERVER**, **NSS_NMA**,**NSS_PROWL**, **NSS_PUSHALOT**, **NSS_PUSHBULLET**, **NSS_PUSHOVER**, **NSS_PUSHSAFER**, **NSS_TELEGRAM** <sup>2.4.8</sup>, **NSS_GOOGLE_CLOUD_MESSAGING** <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
+ - **NSS_FIREBASE, NSS_FIREBASE_CLOUD_MESSAGING, NSS_GOOGLE_DEVICES <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM <sup>2.4.8</sup>, NSS_GOOGLE_CLOUD_MESSAGING** <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
  - **PRIORITY_LOW**, **PRIORITY_MODERATE**, **PRIORITY_NORMAL**, **PRIORITY_HIGH**, **PRIORITY_EMERGENCY**: for notification priority.
  - **SECURITY_ARMEDAWAY**, **SECURITY_ARMEDHOME**, **SECURITY_DISARMED**: for security state.
  - **SOUND_ALIEN** , **SOUND_BIKE**, **SOUND_BUGLE**, **SOUND_CASH_REGISTER**, **SOUND_CLASSICAL**, **SOUND_CLIMB** , **SOUND_COSMIC**, **SOUND_DEFAULT** , **SOUND_ECHO**, **SOUND_FALLING**  , **SOUND_GAMELAN**, **SOUND_INCOMING**, **SOUND_INTERMISSION**, **SOUND_MAGIC** , **SOUND_MECHANICAL**, **SOUND_NONE**, **SOUND_PERSISTENT**, **SOUND_PIANOBAR** , **SOUND_SIREN** , **SOUND_SPACEALARM**, **SOUND_TUGBOAT**  , **SOUND_UPDOWN**: for notification sounds.
@@ -903,6 +904,7 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **id**: *Number*. Index of the device. You can find the index in the device list (idx column) in Domoticz settings. It's not truly an index but is unique enough for dzVents to be treated as an id.
  - **idx**: *Number*. Same as id: index of the device
  - **lastUpdate**: *[Time Object](#Time_object)*: Time when the device was updated.
+ - **lastUpdater**: *String*: <sup>3.0.15</sup> user- or scriptname who/that last updated a type switch device. For other types it will return n/a.
  - **name**: *String*. Name of the device.
  - **nValue**: *Number*. Numerical representation of the state.
  - **protected**: *Boolean*. <sup>2.4.27</sup> True when device / scene / group is protected. False otherwise.
@@ -913,7 +915,7 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **setDescription(description)**: *Function*. <sup>2.4.16</sup> Generic method to update the description for all devices, groups and scenes. E.g.: device.setDescription(device.description .. '/nChanged by '.. item.trigger .. 'at ' .. domoticz.time.raw). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setIcon(iconNumber)**: *Function*. <sup>2.4.17</sup> method to update the icon for devices. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setState(newState)**: *Function*. Generic update method for switch-like devices. E.g.: device.setState('On'). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **setValues(nValue,[ sValue1, sValue2, ...])**: *Function*. <sup>2.4.17</sup> Generic alternative method to update device nValue, sValues. Uses domoticz JSON API to force subsequent pushes like influxdb and MQTT. nValue required but when set to nil it defaults to current nValue. sValue parms are optional and can be many. <sup>3.0.8</sup> If one of sValue parms is 'parsetrigger', subsequent eventscripts will be triggered. 
+ - **setValues(nValue,[ sValue1, sValue2, ...])**: *Function*. <sup>2.4.17</sup> Generic alternative method to update device nValue, sValues. Uses domoticz JSON API to force subsequent pushes like influxdb and MQTT. nValue required but when set to nil it defaults to current nValue. sValue parms are optional and can be many. <sup>3.0.8</sup> If one of sValue parms is 'parsetrigger', subsequent eventscripts will be triggered.
  - **state**: *String*. For switches, holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
  - **signalLevel**: *Number* If applicable for that device then it will be from 0-100.
  - **switchType**: *String*. See Domoticz devices table in Domoticz GUI(Switches tab). E.g. 'On/Off', 'Door Contact', 'Motion Sensor' or 'Blinds'
@@ -1009,7 +1011,7 @@ Note that if you do not find your specific device type here you can always inspe
  - **isPythonPlugin**: *Boolean*
  - **type**: : *String*
  - **typeValue**: : *Number*
-  
+
 #### Humidity sensor
  - **humidity**: *Number*
  - **humidityStatus**: *String*
@@ -1083,7 +1085,7 @@ See switch below.
 
 #### Rain meter
  - **rain**: *Number* (please note that this does return the rain total for today)
- - **rainRate**: *Number* 
+ - **rainRate**: *Number*
  - **updateRain(rate, counter)**: *Function*. (rate in mm * 100 per hour, counter is total in mm) Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### RGBW(W) / Lighting Limitless/Applamp
@@ -1184,7 +1186,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **humidityStatus**: *String*
  - **humidityStatusValue**: *Number*. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
  - **temperature**: *Number*
- - **updateTempHumBaro(temperature, humidity, status, pressure, forecast)**: *Function*. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **updateTempHumBaro(temperature, humidity, status, pressure, forecast)**: *Function*. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET, HUM_COMPUTE (let dzVents do the math)<sup>3.0.15</sup>. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Temperature, Humidity
  - **dewPoint**: *Number*
@@ -1192,7 +1194,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **humidityStatus**: *String*
  - **humidityStatusValue**: *Number*. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
  - **temperature**: *Number*
- - **updateTempHum(temperature, humidity, status)**: *Function*. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **updateTempHum(temperature, humidity [, status] )**: *Function*. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET or HUM_COMPUTE (let dzVents do the math)<sup>3.0.15</sup>. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Text
  - **text**: *String*
@@ -1201,6 +1203,12 @@ There are many switch-like devices. Not all methods are applicable for all switc
 #### Thermostat set point
  - **setPoint**: *Number*.
  - **updateSetPoint(setPoint)**:*Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+
+#### Thermostat type 3 (Mertik) <sup>3.0.15</sup>
+ - **mode**: *Number*. Current mode
+ - **modes**: *String*. List of all modes
+ - **modeString**: *String*. Current mode
+ - **updateMode(mode)**:*Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### UV sensor
  - **uv**: *Number*. UV index.
@@ -1258,10 +1266,10 @@ Many dzVents device methods support extra options, like controlling a delay or a
 	-- switch on for 2 minutes after 10 seconds
 	device.switchOn().afterSec(10).forMin(2)
 
-	-- switch on at a specic time / day 
+	-- switch on at a specic time / day
 	device.switchOn().at('09:00')                 -- earliest moment it will be 09:00 hr.
-	device.switchOn().at('08:53:30 on fri')       -- earliest moment it will be Friday at 08:53:30  
-	device.switchOn().at('08:53:30 on sat, sun')  -- earliest moment it will be Saturday or Sunday at 08:53:30 (whatever comes first) 
+	device.switchOn().at('08:53:30 on fri')       -- earliest moment it will be Friday at 08:53:30
+	device.switchOn().at('08:53:30 on sat, sun')  -- earliest moment it will be Saturday or Sunday at 08:53:30 (whatever comes first)
 
 	-- switch on for 2 minutes after a randomized delay of 1-10 minutes
 	device.switchOff().withinMin(10).forMin(2)
@@ -1284,7 +1292,7 @@ Many dzVents device methods support extra options, like controlling a delay or a
 ```
 
 #### Options
- - **at(hh:mm[:ss][ on [ ddd|dddd ] )**: *Function*.<sup>3.0.1</sup> Activates the command at a certain time [ on a certain day] 
+ - **at(hh:mm[:ss][ on [ ddd|dddd ] )**: *Function*.<sup>3.0.1</sup> Activates the command at a certain time [ on a certain day]
  - **afterHour(hours), afterMin(minutes), afterSec(seconds)**: *Function*. Activates the command after a certain number of hours, minutes or seconds.
  - **cancelQueuedCommands()**: *Function*.  Cancels queued commands. E.g. you switch on a device after 10 minutes:  `myDevice.switchOn().afterMin(10)`. Within those 10 minutes you can cancel that command by calling:  `myDevice.cancelQueuedCommands()`.
  - **checkFirst()**: *Function*. Checks if the **current** state of the device is different than the desired new state. If the target state is the same, no command is sent. If you do `mySwitch.switchOn().checkFirst()`, then no switch command is sent if the switch is already on. This command only works with switch-like devices. It is not available for toggle and dim commands, either.
@@ -1413,7 +1421,7 @@ See table below
  - **Note 2**: for `domoticz.openURL()` only `at()`, `afterAAA()` and `withinAAA()` is available.
  - **Note 3**: Note 2 also applies for all commands depending on openURL (like rgbwwDevice.setAaa() commands).
  - **Note 4**: Including dimTo, switchSelector, setLevel and similar methods.
- 
+
 #### Follow-up event triggers
 Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add `.silent()` to your commands (exception is updateSetPoint).
 
@@ -2472,6 +2480,13 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 # History
 
+## [3.0.15]
+- Add lastUpdater attribute to switchType devices
+- Add utils.lastUpdater function
+- Add device adapter for Thermostat type 3 devices (Mertik)
+- Add utils.humidityStatus
+- Add option to have dzVents compute humidity status
+
 ## [3.0.14]
 - Add utils.fuzzyLookup
 - Made eventHelpers more resilient to coding errors in the on = section
@@ -2487,19 +2502,19 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 ## [3.0.11]
 - Add sensorValue attribute to custom sensor
-- Add solarnoon as moment in time (like sunrise / sunset ) 
+- Add solarnoon as moment in time (like sunrise / sunset )
 
 ## [3.0.10]
 - Add NSS_GOOGLE_DEVICES for notification casting to Google home / Google chromecast
 - Add optional parm delay to domoticz.sendCommand, domoticz.email, domoticz.sms and domoticz.notify
 
 ## [3.0.9]
-- Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time. 
+- Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time.
 - Add function toUTC to time object.
 - Allow table as parm to function makeTime
 
 ## [3.0.8]
-- Allow IPv6 ::1 as localhost in domoticz settings 
+- Allow IPv6 ::1 as localhost in domoticz settings
 - Fixed bug that occurred when using a decimal number in afterSec (openURL and emitEvent)
 - Implement optional use of parsetrigger parm in setValues to trigger any subsequent eventscripts
 - Updated round.utils to correctly handle negative numbers and round to zero decimals
@@ -2511,22 +2526,22 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - Add hardwareInfo() function
 
 ## [3.0.5]
-- Add dumpSelection() method 
+- Add dumpSelection() method
 - Fixed settings.url
 
 ## [3.0.4]
-- Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC 
-- add isJSON, isXML functions to Utils 
+- Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC
+- add isJSON, isXML functions to Utils
 
 ## [3.0.3]
-- add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object) 
+- add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object)
 
 ## [3.0.2]
 - Add `PUT` and `DELETE` support to `openURL`
 - Ensure sending integer in nValue in update function
 - Fix sValue for custom sensor
 
-## [3.0.1] 
+## [3.0.1]
 - Add option `at()` to the various commands/methods
 - Add stringToSeconds() function
 

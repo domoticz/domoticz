@@ -51,6 +51,8 @@ return {
 	process = function (device, data, domoticz, utils, adapterManager)
 		-- from data: levelName, levelOffHidden, levelActions, maxDimLevel
 
+		device.lastUpdater = utils.lastUpdater(device.idx)
+
 		if (data.lastLevel ~= nil) then
 			-- dimmers that are switched off have a last level
 			device.lastLevel = data.lastLevel

@@ -61,9 +61,9 @@ end
 local testSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
-	res = res and checkAttributes(dev, {
-		["state"] = "On",
-	})
+	res = res and checkAttributes(dev, {["state"] = "On",})
+	handleResult ('Test switch device', res)
+	res = res and checkAttributes(dev, {["lastUpdater"] = "dzVents",})
 	handleResult ('Test switch device', res)
 	return res
 end

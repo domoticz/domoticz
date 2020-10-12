@@ -8,7 +8,7 @@ local self = {
 	LOG_INFO = 3,
 	LOG_WARNING = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.14',
+	DZVERSION = '3.0.15',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -62,7 +62,7 @@ self.fuzzyLookup = function (search, target) -- search must be string/number, ta
 		local lowestFuzzyValue = math.maxinteger
 		local lowestFuzzyKey = ''
 		for _, targetString in ipairs(target) do
-			local fuzzyValue =  self.fuzzyLookup(search, targetString) 
+			local fuzzyValue =  self.fuzzyLookup(search, targetString)
 			if  fuzzyValue < lowestFuzzyValue then
 				lowestFuzzyKey = targetString
 				lowestFuzzyValue = fuzzyValue
@@ -494,6 +494,28 @@ function self.rgbToHSB(r, g, b)
 	return hsb.h, hsb.s, hsb.b, isWhite
 end
 
+function self.lastUpdater(parm)
+
+	local search = parm
+	if type(parm) == 'table' then
+		search = search.id
+	end
+
+	for _, record in ipairs(_G.domoticzData) do
+		if record.baseType == 'lastUpdater' and record.id == search then
+			local isScript = record.user:find('EventSystem')
+			if isScript and record.user:find('dzVents') then
+				return 'dzVents'
+			elseif record.user == 'Admin' then
+				return 'Admin (or userless API call)'
+			else
+				return record.user
+			end
+		end
+	end
+	return 'n/a'
+end
+
 local function loopGlobal(parm, baseType)
 	if parm == nil then return false end
 	local res = 'id'
@@ -613,6 +635,21 @@ function self.hsbToRGB(h, s, v)
 	g = (g1+m) * 255
 	b = (b1+m) * 255
 	return r, g, b
+
+end
+
+ function self.humidityStatus (temperature, humidity)
+	local constants = domoticz or require('constants')
+	local temperature = tonumber(temperature)
+	local humidity = tonumber(humidity)
+
+	if humidity <= 30 then return constants.HUM_DRY
+	elseif humidity >= 70 then return constants.HUM_WET
+	elseif  humidity >= 35 and
+			humidity <= 65 and
+			temperature >= 22 and
+			temperature <= 26 then return constants.HUM_COMFORTABLE
+	else return constants.HUM_NORMAL end
 
 end
 
