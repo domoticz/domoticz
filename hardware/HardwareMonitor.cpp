@@ -493,6 +493,7 @@ std::string CHardwareMonitor::TranslateOSTypeToString(nOSType OSType)
 		case OStype_Apple:
 			sOSType = "Apple";
 			break;
+		default: break;
 	}
 	return sOSType;
 }
