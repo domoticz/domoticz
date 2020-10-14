@@ -465,7 +465,7 @@ bool CHardwareMonitor::GetOSType(nOSType &OStype)
 
 std::string CHardwareMonitor::TranslateOSTypeToString(nOSType OSType)
 {
-	std::string sOSType = "Unknown";
+	std::string sOSType = "";
 
 	switch (OSType)
 	{
@@ -492,6 +492,9 @@ std::string CHardwareMonitor::TranslateOSTypeToString(nOSType OSType)
 			break;
 		case OStype_Apple:
 			sOSType = "Apple";
+			break;
+		default:
+			sOSType = "Unknown";
 			break;
 	}
 	return sOSType;

@@ -96,6 +96,9 @@ private:
 	float GetProcessMemUsage();
 	float GetMemUsageLinux();
 #endif
+#if defined (__FreeBSD__)
+	float GetMemUsageLinux();
+#endif
 #if defined (__FreeBSD__) || defined(__OpenBSD__)
 	float GetMemUsageOpenBSD();
 #endif
