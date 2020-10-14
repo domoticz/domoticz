@@ -94,9 +94,8 @@ private:
 	double time_so_far();
 #if defined (__linux__)
 	float GetProcessMemUsage();
-	float GetMemUsageLinux();
 #endif
-#if defined (__FreeBSD__)
+#if defined (__linux__) || defined (__FreeBSD__)
 	float GetMemUsageLinux();
 #endif
 #if defined (__FreeBSD__) || defined(__OpenBSD__)
