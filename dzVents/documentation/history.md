@@ -1,5 +1,6 @@
 [3.0.15]
 - Add lastUpdater attribute to switchType devices
+- Fixed bug in domoticz.time.matchesRule (daterange was ignored when "on mon, tue" was also part of the rule)
 - Add utils.lastUpdater function
 - Add device adapter for Thermostat type 3 devices (Mertik)
 - Add utils.humidityStatus

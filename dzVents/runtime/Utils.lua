@@ -494,15 +494,10 @@ function self.rgbToHSB(r, g, b)
 	return hsb.h, hsb.s, hsb.b, isWhite
 end
 
-function self.lastUpdater(parm)
-
-	local search = parm
-	if type(parm) == 'table' then
-		search = search.id
-	end
+function self.lastUpdater(deviceIDX)
 
 	for _, record in ipairs(_G.domoticzData) do
-		if record.baseType == 'lastUpdater' and record.id == search then
+		if record.baseType == 'lastUpdater' and record.id == deviceIDX then
 			local isScript = record.user:find('EventSystem')
 			if isScript and record.user:find('dzVents') then
 				return 'dzVents'

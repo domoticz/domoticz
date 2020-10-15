@@ -608,7 +608,7 @@ There are several options for time triggers. It is important to know that Domoti
 			'every even week',			-- odd or even numbered weeks
 			'on 23/11',					-- on 23rd of november (dd/mm)
 			'on 23/11-25/12',			-- between 23/11 and 25/12
-			'on 2/3-18/3',11/8,10/10-14/10',
+			'on 2/3-8/3,7/8,6/10-14/10',-- between march 2 and 8, on august 7 and between october 6 and 14.
 			'on */2,15/*',				-- every day in February or
 										-- every 15th day of the month
 			'on -3/4,4/7-',				-- before 3/4 or after 4/7
@@ -752,7 +752,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
 	- **isJSON(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'application/json' or string is enclosed in {} and `false` otherwise.
 	- **isXML(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'text/xml' or 'application/xml' or string is enclosed in <> and `false` otherwise.
-	- **lastUpdater([id|device])**: *Function*: <sup>3.0.15</sup> Returns user-, scriptname of who/what last updated a switch type device or n/a for other types.
+	- **lastUpdater(idx)**: *Function*: <sup>3.0.15</sup> Returns user-, scriptname of who/what last updated a switch type device or n/a for other types.
 	- **leftPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.
 	- **centerPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.
 	- **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation.
@@ -2482,6 +2482,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 ## [3.0.15]
 - Add lastUpdater attribute to switchType devices
+- Fixed bug in domoticz.time.matchesRule (daterange was ignored when "on mon, tue" was also part of the rule)
 - Add utils.lastUpdater function
 - Add device adapter for Thermostat type 3 devices (Mertik)
 - Add utils.humidityStatus

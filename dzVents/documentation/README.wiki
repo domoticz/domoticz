@@ -586,7 +586,7 @@ There are several options for time triggers. It is important to know that Domoti
             'every even week',          -- odd or even numbered weeks
             'on 23/11',                 -- on 23rd of november (dd/mm)
             'on 23/11-25/12',           -- between 23/11 and 25/12
-            'on 2/3-18/3',11/8,10/10-14/10',
+            'on 2/3-8/3,7/8,6/10-14/10',-- between march 2 and 8, on august 7 and between october 6 and 14.
             'on */2,15/*',              -- every day in February or
                                         -- every 15th day of the month
             'on -3/4,4/7-',             -- before 3/4 or after 4/7
@@ -713,7 +713,7 @@ end</source></li>
 <li><p>'''inTable(table, searchString)''': ''Function'': <sup>2.4.21</sup> Returns <code>&quot;key&quot;</code> if table has searchString as a key, <code>&quot;value&quot;</code> if table has searchString as value and <code>false</code> otherwise.</p></li>
 <li><p>'''isJSON(string[, content])''': ''Function'': <sup>3.0.4</sup> Returns <code>true</code> if content is ‘application/json’ or string is enclosed in {} and <code>false</code> otherwise.</p></li>
 <li><p>'''isXML(string[, content])''': ''Function'': <sup>3.0.4</sup> Returns <code>true</code> if content is ‘text/xml’ or ‘application/xml’ or string is enclosed in &lt;&gt; and <code>false</code> otherwise.</p></li>
-<li><p>'''lastUpdater([id|device])''': ''Function'': <sup>3.0.15</sup> Returns user-, scriptname of who/what last updated a switch type device or n/a for other types.</p></li>
+<li><p>'''lastUpdater(idx)''': ''Function'': <sup>3.0.15</sup> Returns user-, scriptname of who/what last updated a switch type device or n/a for other types.</p></li>
 <li><p>'''leftPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.</p></li>
 <li><p>'''centerPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.</p></li>
 <li><p>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation. ''Examples:''</p></li></ul>
@@ -2429,6 +2429,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 == [3.0.15] ==
 
 * Add lastUpdater attribute to switchType devices
+* Fixed bug in domoticz.time.matchesRule (daterange was ignored when “on mon, tue” was also part of the rule)
 * Add utils.lastUpdater function
 * Add device adapter for Thermostat type 3 devices (Mertik)
 * Add utils.humidityStatus
