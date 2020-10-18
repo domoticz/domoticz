@@ -1,6 +1,6 @@
-define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.permissions', 'domoticz.api', 'livesocket', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appNotificationsModule, appPermissionsModule, apiModule, websocketModule, deviceFactory) {
+define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.permissions', 'domoticz.api', 'livesocket', 'devices/deviceFactory', 'angular-animate', 'ui-grid', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appNotificationsModule, appPermissionsModule, apiModule, websocketModule, deviceFactory) {
 	var app = angular.module('domoticz', [
-		'ngRoute', 'ngAnimate', 'ngGrid', 'ngSanitize',
+		'ngRoute', 'ngAnimate', 'ui.grid', 'ngSanitize',
 		'highcharts-ng', 'treeControl', 'ngDraggable', 'angular-md5',
 		'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue',
 		appRoutesModule.name, appPermissionsModule.name, appNotificationsModule.name,
@@ -431,7 +431,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 									$.t('Friday'),
 									$.t('Saturday')
 								]
-							}
+							}/* to be used when all graphs are timezone aware,
+							global: {
+								timezoneOffset: new Date().getTimezoneOffset()
+							}*/
 						});
 
 						$rootScope.MakeGlobalConfig();

@@ -560,7 +560,7 @@ void MySensorsBase::MakeAndSendWindSensor(const int nodeID, const std::string &s
 		fChill = fTemp;
 		if ((fTemp < 10.0) && (fWind >= 1.4))
 		{
-			fChill = 13.12f + 0.6215f*fTemp - 11.37f*pow(fWind*3.6f, 0.16f) + 0.3965f*fTemp*pow(fWind*3.6f, 0.16f);
+			fChill = 13.12f + 0.6215f*fTemp - 11.37f*std::pow(fWind*3.6f, 0.16f) + 0.3965f*fTemp*std::pow(fWind*3.6f, 0.16f);
 		}
 	}
 	int cNode = (nodeID << 8) | ChildID;

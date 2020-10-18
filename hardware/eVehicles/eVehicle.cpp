@@ -6,6 +6,7 @@ Author: MrHobbes74 (github.com/MrHobbes74)
 21/02/2020 1.0 Creation
 13/03/2020 1.1 Added keep asleep support
 28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+24/07/2020 1.3 Added new Mercedes Class (KidDigital)
 
 License: Public domain
 
@@ -13,6 +14,7 @@ License: Public domain
 #include "stdafx.h"
 #include "eVehicle.h"
 #include "TeslaApi.h"
+#include "MercApi.h"
 #include "../../main/Helper.h"
 #include "../../main/Logger.h"
 #include "../hardwaretypes.h"
@@ -34,6 +36,7 @@ License: Public domain
 #define VEHICLE_ALERT_LOCK 2
 #define VEHICLE_LEVEL_BATTERY 1
 #define VEHICLE_COUNTER_ODO 1
+#define VEHICLE_CUSTOM 9
 
 #define VEHICLE_MAXTRIES 5
 
@@ -50,6 +53,9 @@ CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& 
 	{
 	case Tesla:
 		m_api = new CTeslaApi(username, password, carid);
+		break;
+	case Mercedes:
+		m_api = new CMercApi(username, password, carid);
 		break;
 	default:
 		Log(LOG_ERROR, "Unsupported vehicle type.");
@@ -90,6 +96,8 @@ void CeVehicle::Init()
 	m_car.charge_state = "";
 	m_command_nr_tries = 0;
 	m_setcommand_scheduled = false;
+	m_home_lat = 0;
+	m_home_lon = 0;
 }
 
 void CeVehicle::SendAlert()
@@ -169,14 +177,12 @@ void CeVehicle::SendValueSwitch(int switchType, int value)
 		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_MAX_CHARGE, 1, 255, (value == 100), 0, m_Name + " Max charge limit switch");
 }
 
-
 void CeVehicle::SendTemperature(int tempType, float value)
 {
 	if ((tempType == VEHICLE_TEMP_INSIDE) && m_api->m_capabilities.has_inside_temp)
 		SendTempSensor(VEHICLE_TEMP_INSIDE, 255, value, m_Name + " Temperature");
 	if ((tempType == VEHICLE_TEMP_OUTSIDE) && m_api->m_capabilities.has_outside_temp)
 		SendTempSensor(VEHICLE_TEMP_OUTSIDE, 255, value, m_Name + " Outside Temperature");
-	;
 }
 
 void CeVehicle::SendPercentage(int percType, float value)
@@ -189,6 +195,18 @@ void CeVehicle::SendCounter(int countType, float value)
 {
 	if ((countType == VEHICLE_COUNTER_ODO) && m_api->m_capabilities.has_odo)
 		SendCustomSensor(VEHICLE_COUNTER_ODO, 1, 255, value, m_Name + " Odometer", m_api->m_config.distance_unit);
+}
+
+void CeVehicle::SendCustom(int countType, int ChildId, float value, std::string label)
+{
+	if ((countType == VEHICLE_CUSTOM) && m_api->m_capabilities.has_custom_data)
+		SendCustomSensor(VEHICLE_CUSTOM, ChildId, 255, value, m_Name + " " + label.c_str(), "");
+}
+
+void CeVehicle::SendText(int countType, int ChildId, std::string value, std::string label)
+{
+	if ((countType == VEHICLE_CUSTOM) && m_api->m_capabilities.has_custom_data)
+		SendTextSensor(VEHICLE_CUSTOM, ChildId, 255, value.c_str(), m_Name + " " + label.c_str());
 }
 
 bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
@@ -210,7 +228,7 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 		Log(LOG_ERROR, "Multiple tries requesting %s. Assuming car asleep.", GetCommandString(command).c_str());
 		m_car.wake_state = Asleep;
 		SendAlert();
-		return(false);
+		return false;
 	}
 	else
 	{
@@ -224,20 +242,44 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 		m_command_nr_tries++;
 	}
 
-	return(true);
+	return true;
 }
 
 bool CeVehicle::StartHardware()
 {
+	int nValue;
+	std::string sValue;
+	std::vector<std::string> strarray;
+
 	RequestStart();
 
 	Init();
+
+	if (m_sql.GetPreferencesVar("Location", nValue, sValue))
+		StringSplit(sValue, ";", strarray);
+
+	if (strarray.size() != 2)
+	{
+		Log(LOG_ERROR, "No location set in Domoticz. Assuming car is not home.");
+		m_car.home_state = NotAtHome;
+	}
+	else
+	{
+		std::string Latitude = strarray[0];
+		std::string Longitude = strarray[1];
+		m_home_lat = std::stod(Latitude);
+		m_home_lon = std::stod(Longitude);
+
+		Log(LOG_STATUS, "Using Domoticz home location (Lat %s, Lon %s) as car's home location.", Latitude.c_str(), Longitude.c_str());
+	}
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CeVehicle::Do_Work, this);
 	SetThreadNameInt(m_thread->native_handle());
 	if (!m_thread)
 		return false;
 	m_bIsStarted = true;
+
 	sOnConnected(this);
 	return true;
 }
@@ -292,8 +334,10 @@ std::string CeVehicle::GetCommandString(const eApiCommandType command)
 void CeVehicle::Do_Work()
 {
 	int sec_counter = 0;
+	int fail_counter = 0;
 	int interval = 1000;
 	bool initial_check = true;
+	bool bIsAborted = false;
 	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(interval))
@@ -304,13 +348,41 @@ void CeVehicle::Do_Work()
 		m_LastHeartbeat = now;
 
 		if (m_api == nullptr)
-			break;
+		{
+			Log(LOG_ERROR, "Aborting worker as there is no eVehicle provided!");
+			RequestStop();
+			continue;
+		}
 
 		// Only login if we should
-		if (!m_loggedin || (sec_counter % 68400 == 0))
+		if ((m_loggedin == false && bIsAborted == false) || (sec_counter % 68400 == 0))
 		{
 			Login();
-			sec_counter = 1;
+			if(!m_loggedin)
+			{
+				fail_counter++;
+				if(fail_counter > 3)
+				{
+					Log(LOG_ERROR, "Aborting due to too many failed authentication attempts (and prevent getting blocked)!");
+					fail_counter = 0;
+					bIsAborted = true;
+					continue;
+				}
+			}
+			else
+			{
+				sec_counter = 1;
+				fail_counter = 0;
+				bIsAborted = false;
+			}
+			continue;
+		}
+		else if (bIsAborted)
+		{
+			if (sec_counter % 7200 == 0)
+			{
+				Log(LOG_ERROR, "Worker inactive due to inability to authenticate! Please check credentials!");
+			}
 			continue;
 		}
 
@@ -663,6 +735,7 @@ bool CeVehicle::GetAllStates()
 		UpdateChargeData(reply.charge);
 		UpdateClimateData(reply.climate);
 		UpdateVehicleData(reply.vehicle);
+		UpdateCustomVehicleData(reply.custom);
 		return ConditionalReturn(true, Get_All_States);
 	}
 
@@ -684,33 +757,17 @@ bool CeVehicle::GetLocationState()
 
 void CeVehicle::UpdateLocationData(CVehicleApi::tLocationData& data)
 {
-	int nValue;
-	std::string sValue;
-	std::vector<std::string> strarray;
-	if (m_sql.GetPreferencesVar("Location", nValue, sValue))
-		StringSplit(sValue, ";", strarray);
-
-	if (strarray.size() != 2)
+	if (m_home_lat != 0 && m_home_lon != 0)
 	{
-		Log(LOG_ERROR, "No location set in Domoticz. Assuming car is not home.");
-		m_car.home_state = NotAtHome;
-	}
-	else
-	{
-		std::string Latitude = strarray[0];
-		std::string Longitude = strarray[1];
-		double LaDz = std::stod(Latitude);
-		double LoDz = std::stod(Longitude);
-
-		if ((std::fabs(LaDz - data.latitude) < 2E-4) && (std::fabs(LoDz - data.longitude) < 2E-3) && !data.is_driving)
+		if ((std::fabs(m_home_lat - data.latitude) < 2E-4) && (std::fabs(m_home_lon - data.longitude) < 2E-3) && !data.is_driving)
 			m_car.home_state = AtHome;
 		else
 			m_car.home_state = NotAtHome;
+
+		Debug(DEBUG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, (m_car.home_state == AtHome) ? "true" : "false");
+
+		m_car.is_driving = data.is_driving;
 	}
-
-	Log(LOG_NORM, "Location: %f %f Speed: %d Home: %s", data.latitude, data.longitude, data.speed, (m_car.home_state == AtHome) ? "true" : "false");
-
-	m_car.is_driving = data.is_driving;
 }
 
 bool CeVehicle::GetClimateState()
@@ -767,4 +824,50 @@ void CeVehicle::UpdateVehicleData(CVehicleApi::tVehicleData& data)
 		SendAlert(VEHICLE_ALERT_LOCK, 4, data.car_open_message);
 	else
 		SendAlert(VEHICLE_ALERT_LOCK, 1, data.car_open_message);
+}
+
+void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
+{
+	if (!data.customdata.empty())
+	{
+		try
+		{
+			uint8_t cnt = 0;
+			do
+			{
+				Json::Value iter;
+
+				iter = data.customdata[cnt];
+
+				//_log.Debug(DEBUG_NORM, "Starting to process custom data %d - %s", cnt, iter.asString().c_str());
+
+				if (!(iter["id"].empty() || iter["value"].empty() || iter["label"].empty()))
+				{
+						int iChildID = iter["id"].asInt();
+						Json::Value jValue = iter["value"];
+						std::string sLabel = iter["label"].asString();
+						std::string sValue = jValue.asString();
+
+						_log.Debug(DEBUG_NORM, "Processing custom data %d - %s - %s", iChildID, sValue.c_str(), sLabel.c_str());
+
+						if (is_number(sValue))
+						{
+							float fValue = static_cast<float>(std::atof(sValue.c_str()));
+							SendCustom(VEHICLE_CUSTOM, iChildID, fValue, sLabel);
+						}
+						else
+						{
+							SendText(VEHICLE_CUSTOM, iChildID, sValue, sLabel);
+						}
+				}
+				cnt++;
+			} while (!data.customdata[cnt].empty());
+			data.customdata.clear();
+		}
+		catch(const std::exception& e)
+		{
+			_log.Debug(DEBUG_NORM, "Crashed processing custom data %s!", e.what());
+			data.customdata.clear();
+		}
+	}
 }

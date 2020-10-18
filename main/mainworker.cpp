@@ -145,6 +145,7 @@
 #include "../hardware/Buienradar.h"
 #include "../hardware/OctoPrintMQTT.h"
 #include "../hardware/Meteorologisk.h"
+#include "../hardware/AirconWithMe.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -459,14 +460,14 @@ CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 
 CDomoticzHardwareBase* MainWorker::GetHardwareByIDType(const std::string& HwdId, const _eHardwareTypes HWType)
 {
-	if (HwdId == "")
-		return NULL;
+	if (HwdId.empty())
+		return nullptr;
 	int iHardwareID = atoi(HwdId.c_str());
 	CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
-	if (pHardware == NULL)
-		return NULL;
+	if (pHardware == nullptr)
+		return nullptr;
 	if (pHardware->HwdType != HWType)
-		return NULL;
+		return nullptr;
 	return pHardware;
 }
 
@@ -983,6 +984,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Tesla:
 		pHardware = new CeVehicle(ID, CeVehicle::Tesla, Username, Password, Mode1, Mode2, Mode3, Extra);
 		break;
+	case HTYPE_Mercedes:
+		pHardware = new CeVehicle(ID, CeVehicle::Mercedes, Username, Password, Mode1, Mode2, Mode3, Extra);
+		break;
 	case HTYPE_Honeywell:
 		pHardware = new CHoneywell(ID, Username, Password, Extra);
 		break;
@@ -1043,7 +1047,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new BleBox(ID, Mode1);
 		break;
 	case HTYPE_OpenWeatherMap:
-		pHardware = new COpenWeatherMap(ID, Username, Password);
+		pHardware = new COpenWeatherMap(ID, Username, Password, Mode1, Mode2);
 		break;
 	case HTYPE_Ec3kMeterTCP:
 		pHardware = new Ec3kMeterTCP(ID, Address, Port);
@@ -1103,6 +1107,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Meteorologisk:
 		pHardware = new CMeteorologisk(ID, Password); //Password is location here.
+		break;
+	case HTYPE_AirconWithMe:
+		pHardware = new CAirconWithMe(ID, Address, Port, Username, Password);
 		break;
 	}
 
@@ -3283,9 +3290,15 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 		strDirection = "---";
 
 	dDirection = round(dDirection);
-
+	
 	int intSpeed = (pResponse->WIND.av_speedh * 256) + pResponse->WIND.av_speedl;
 	int intGust = (pResponse->WIND.gusth * 256) + pResponse->WIND.gustl;
+
+	float AddjValue = 0.0f;
+	float AddjMulti = 1.0f;
+	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	intSpeed = int(float(intSpeed) * AddjMulti);
+	intGust = int(float(intGust) * AddjMulti);
 
 	if (pResponse->WIND.subtype == sTypeWIND6)
 	{
@@ -3315,9 +3328,6 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 				return;
 			}
 
-			float AddjValue = 0.0f;
-			float AddjMulti = 1.0f;
-			m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
 			temp += AddjValue;
 
 			if (!pResponse->WIND.chillsign)
@@ -3332,9 +3342,6 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 		}
 		else if (pResponse->WIND.subtype == sTypeWINDNoTemp)
 		{
-			float AddjValue = 0.0f;
-			float AddjMulti = 1.0f;
-			m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
 			temp += AddjValue;
 
 			if (!pResponse->WIND.chillsign)
@@ -6042,7 +6049,12 @@ void MainWorker::decode_Chime(const CDomoticzHardwareBase* pHardware, const tRBU
 	char szTmp[100];
 	uint8_t devType = pTypeChime;
 	uint8_t subType = pResponse->CHIME.subtype;
-	sprintf(szTmp, "%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+
+	if (pResponse->CHIME.subtype == sTypeByronBY)
+		sprintf(szTmp, "%02X%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2, pResponse->CHIME.sound);
+	else
+		sprintf(szTmp, "%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+
 	std::string ID = szTmp;
 	uint8_t Unit = pResponse->CHIME.sound;
 	uint8_t cmnd = pResponse->CHIME.sound;
@@ -6138,7 +6150,7 @@ void MainWorker::decode_Chime(const CDomoticzHardwareBase* pHardware, const tRBU
 			WriteMessage("subtype       = SelectPlus200689103");
 			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2, pResponse->CHIME.sound);
 			WriteMessage(szTmp);
 			break;
 		case sTypeEnvivo:
@@ -12106,15 +12118,24 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	break;
 	case pTypeChime:
 	{
+		level = 15;
 		tRBUF lcmd;
 		lcmd.CHIME.packetlength = sizeof(lcmd.CHIME) - 1;
 		lcmd.CHIME.packettype = dType;
 		lcmd.CHIME.subtype = dSubType;
 		lcmd.CHIME.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-		lcmd.CHIME.id1 = ID3;
-		lcmd.CHIME.id2 = ID4;
-		level = 15;
-		lcmd.CHIME.sound = Unit;
+		if (dSubType == sTypeByronBY)
+		{
+			lcmd.CHIME.id1 = ID2;
+			lcmd.CHIME.id2 = ID3;
+			lcmd.CHIME.sound = ID4;
+		}
+		else
+		{
+			lcmd.CHIME.id1 = ID3;
+			lcmd.CHIME.id2 = ID4;
+			lcmd.CHIME.sound = Unit;
+		}
 		lcmd.CHIME.filler = 0;
 		lcmd.CHIME.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CHIME)))
@@ -12317,10 +12338,30 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				}
 			}
 		}
-		else if (((switchtype == STYPE_BlindsPercentage) ||
-			(switchtype == STYPE_BlindsPercentageInverted)) &&
-			(gswitch.cmnd == gswitch_sSetLevel) && (level == 100))
-			gswitch.cmnd = gswitch_sOn;
+		else if (
+				(switchtype == STYPE_BlindsPercentage)
+				|| (switchtype == STYPE_BlindsPercentageInverted)
+				|| (switchtype == STYPE_VenetianBlindsUS)
+				|| (switchtype == STYPE_VenetianBlindsEU)
+				)
+		 {
+			if (((gswitch.cmnd == gswitch_sSetLevel) && (level == 100)) || (gswitch.cmnd == gswitch_sOn))
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					//For Multilevel switches, 255 (0xFF) means Restore to most recent (non-zero) level,
+					//which is perfect for dimmers, but for blinds (and using the slider), we set it to 99%
+					level = 99;
+
+					if (gswitch.cmnd == gswitch_sOn)
+					{
+					  	gswitch.cmnd = gswitch_sSetLevel;
+					}
+				}
+				else
+					gswitch.cmnd = gswitch_sOn;
+			}
+		}
 
 		gswitch.level = (uint8_t)level;
 		gswitch.rssi = 12;
@@ -12544,6 +12585,20 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue, cons
 	return true;
 }
 
+bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
+{
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
+	if (result.empty())
+		return false;
+
+	std::vector<std::string> sd = result[0];
+	return SetSetPointInt(sd, TempValue);
+}
+
 bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float TempValue)
 {
 	int HardwareID = atoi(sd[0].c_str());
@@ -12647,7 +12702,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		else if (pHardware->HwdType == HTYPE_Tado)
 		{
 			CTado* pGateway = reinterpret_cast<CTado*>(pHardware);
-			pGateway->SetSetpoint(ID4, TempValue);
+			pGateway->SetSetpoint(ID2, ID3, ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_Netatmo)
 		{
@@ -12730,20 +12785,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		}
 	}
 	return true;
-}
-
-bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
-{
-	//Get Device details
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
-		idx.c_str());
-	if (result.empty())
-		return false;
-
-	std::vector<std::string> sd = result[0];
-	return SetSetPointInt(sd, TempValue);
 }
 
 bool MainWorker::SetClockInt(const std::vector<std::string>& sd, const std::string& clockstr)
@@ -13513,7 +13554,7 @@ void MainWorker::HeartbeatCheck()
 						}
 					}
 					else {
-						totNum = pHardware->m_DataTimeout / 60;
+						totNum = pHardware->m_DataTimeout / 86400;
 						if (totNum == 1) {
 							sDataTimeout = "Day";
 						}
@@ -13550,13 +13591,35 @@ bool MainWorker::UpdateDevice(const int DevIdx, int nValue, std::string& sValue,
 
 bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID, const int unit, const int devType, const int subType, int nValue, std::string& sValue, const int signallevel, const int batterylevel, const bool parseTrigger)
 {
-	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
-
 	// Prevent hazardous modification of DB from JSON calls
-	if (!m_sql.DoesDeviceExist(HardwareID, DeviceID.c_str(), unit, devType, subType))
+	std::string devname = "Unknown";
+	uint64_t devidx = m_sql.GetDeviceIndex(HardwareID, DeviceID.c_str(), unit, devType, subType, devname);
+	if (devidx == (uint64_t)-1)
 		return false;
+	std::stringstream sidx;
+	sidx << devidx;
 
 	g_bUseEventTrigger = parseTrigger;
+
+	if (
+		((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
+		((devType == pTypeRadiator1) && (subType == sTypeSmartwares))
+		)
+	{
+		_log.Log(LOG_NORM, "Sending SetPoint to device....");
+		SetSetPoint(sidx.str(), static_cast<float>(atof(sValue.c_str())));
+#ifdef ENABLE_PYTHON
+		// notify plugin
+		m_pluginsystem.DeviceModified(devidx);
+#endif
+
+		// signal connected devices (MQTT, fibaro, http push ... ) about the update
+		//sOnDeviceReceived(HardwareID, devidx, devname, nullptr);
+		g_bUseEventTrigger = true;
+		return true;
+	}
+
+
 
 	unsigned long ID = 0;
 	std::stringstream s_strid;
@@ -13565,6 +13628,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID,
 
 	float temp = 12345.0f;
 
+	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
 	if (pHardware)
 	{
 		if (devType == pTypeLighting2)
@@ -13659,8 +13723,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID,
 		}
 	}
 
-	std::string devname = "Unknown";
-	const uint64_t devidx = m_sql.UpdateValue(
+	devidx = m_sql.UpdateValue(
 		HardwareID,
 		DeviceID.c_str(),
 		(const uint8_t)unit,
@@ -13714,18 +13777,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID,
 	// signal connected devices (MQTT, fibaro, http push ... ) about the update
 	sOnDeviceReceived(HardwareID, devidx, devname, nullptr);
 
-	std::stringstream sidx;
-	sidx << devidx;
-
-	if (
-		((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
-		((devType == pTypeRadiator1) && (subType == sTypeSmartwares))
-		)
-	{
-		_log.Log(LOG_NORM, "Sending SetPoint to device....");
-		SetSetPoint(sidx.str(), static_cast<float>(atof(sValue.c_str())));
-	}
-	else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode))
+	if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode))
 	{
 		_log.Log(LOG_NORM, "Sending Thermostat Mode to device....");
 		SetZWaveThermostatMode(sidx.str(), nValue);

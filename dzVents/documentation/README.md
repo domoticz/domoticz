@@ -84,7 +84,7 @@ Just to give you an idea! Everything in your Domoticz system is now logically av
 
 # Using dzVents with Domoticz
 In Domoticz go to **Setup > Settings > Other**  and in the section EventSystem make sure the check-box 'dzVents disabled' is not checked.
-Also make sure that in the Security section in the settings **(Setup > Settings > System > Local Networks (no username/password)** you allow 127.0.0.1 (and / or ::1 when using IPv6 ) to not need a password. dzVents uses that port to send certain commands to Domoticz. Finally make sure you have set your current location in **Setup > Settings > System > Location**, otherwise there is no way to determine nighttime/daytime state.
+Also make sure that in the Security section in the settings **(Setup > Settings > System > Local Networks (no username/password)** you allow 127.0.0.1 (and / or ::1 when using IPv6 ) to not need a password. dzVents does use this port to get the location settings and to send certain commands to Domoticz. Finally make sure you have set your current location in **Setup > Settings > System > Location**, otherwise there is no way to determine nighttime/daytime state.
 
 There are two ways of creating dzVents event scripts in Domoticz:
 
@@ -215,7 +215,7 @@ The customEvent object (second parameter in your execute function) has these att
 
 
 #### devices = { ... }
-A list of device-names or indexes. If a device in your system was updated (e.g. switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. **Note**: update does not necessarily means the device state or value has changed. Each device can be:
+A list of device-names or indexes. If a device in your system was updated (e.g. a switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. **Note**: update does not necessarily means the device state or value has changed. Each device can be:
 
  - The name of your device between string quotes. **You can use the asterisk (\*) wild-card here e.g. `PIR_*` or `*_PIR`**.  E.g.: `devices = { 'myDevice', 'anotherDevice', 123, 'pir*' }`
  - The index (idx) of your device (as the name may change, the index will usually stay the same, the index can be found in the devices section in Domoticz). **Note that idx is a number;**
@@ -680,7 +680,17 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **url**: internal url to access the API service.
 	- **webRoot**: `webroot` value as specified when starting the Domoticz service.
  - **sms(message [, delay] <sup>3.0.10</sup> )**: *Function*. Sends an sms if it is configured in Domoticz. Optional parm delay is delay in seconds.
- - **snapshot(cameraID or camera Name<sup>2.4.15</sup>,subject)**:<sup>2.4.11</sup> *Function*. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
+ - **snapshot(cameraID(s) or camera Name(s)<sup>3.0.13</sup>,subject)**: *Function*. Sends email with a camera snapshots if email is configured and set for attachments in Domoticz. Send 1 or multiple camerIDs -names in ; separated string or array.
+
+```Lua
+	dz.snapshot() -- defaults to id = 1, subject domoticz
+	dz.snapshot(1,'dz') -- subject dz
+	dz.snapshot('1;2;3') -- ; separated string
+	dz.snapshot({1,4,7}) --  table
+	dz.snapshot('test;test2') -- ; separated string
+	dz.snapshot({'test', 'test2'}) -- table
+```
+
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
@@ -710,12 +720,9 @@ The domoticz object holds all information about your Domoticz system. It has glo
 		domoticz.utils._.size({'abc', 'def'}))` Returns 2.
 		```
 
-	- **cameraExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid cameraID or ID when entered with valid cameraName or false when not a cameraID or cameraName of an existing camera
-	- **deviceExists(parm)**: *Function*: ^2.4.28^ returns name when
-		entered with valid deviceID or ID when entered with valid
-		deviceName or false when not a deviceID or deviceName of an
-		existing (and active)   device.
-		example:
+	- **cameraExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with a valid camera ^3.0.12^ or cameraID and return ID when entered with valid cameraName or false when not a camera, cameraID or cameraName of an existing camera
+	- **deviceExists(parm)**: *Function*: ^2.4.28^ returns name when entered with a valid device ^3.0.12^ or deviceID and returns ID when entered with valid deviceName or false when not a device, deviceID or deviceName of an existing (and active) device.
+		Example:
 
 		``` {.lua}
 		local dz = domoticz
@@ -739,7 +746,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **fromBase64(string)**: *Function*: <sup>2.5.2</sup>) Decode a base64 string
 	- **fromJSON(json, fallback <sup>2.4.16</sup>)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
 	- **fromXML(xml, fallback )**: *Function*: <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: `local t = domoticz.utils.fromXML('<testtag>What a nice feature!</testtag>') Followed by: `print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.
-	 - **groupExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid groupID or ID when entered with valid groupName or false when not a groupID or groupName of an existing group
+	- **fuzzyLookup(string, parm)**: *Function*: <sup>3.0.14</sup>. Search fuzzy matching string in parm. If parm is string it returns a number (lower is better match). If parm is array of strings it returns the best matching string.
+	 - **groupExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with a valid group ^3.0.12^ or groupID and return ID when entered with valid groupName or false when not a group, groupID or groupName of an existing group
 	 - **hardwareExists(parm)**: *Function*: <sup>3.0.7</sup> returns name when entered with valid hardwareID or ID when entered with valid hardwareName or false when not a hardwareID or hardwareName of an existing (and active  )hardware module
 	- **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
 	- **isJSON(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'application/json' or string is enclosed in {} and `false` otherwise.
@@ -753,12 +761,13 @@ The domoticz object holds all information about your Domoticz system. It has glo
 			domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
 			domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300
 	```
-	- **osExecute(cmd)**: *Function*:  Execute an os command.
+	- **osCommand(cmd)**: *Function*: <sup>3.0.13</sup> Execute an OS command and return result and returncode.
+	- **osExecute(cmd)**: *Function*: Execute an OS command. (no return)
 	- **rightPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.
 	- **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
-	- **sceneExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid sceneID or ID when entered with valid sceneName or false when not a sceneID or sceneName of an existing scene
+	- **sceneExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid scene ^3.0.12^ or sceneID and return ID when entered with valid sceneName or false when not a scene, sceneID or sceneName of an existing scene
 	- **setLogMarker([marker])**: *Function*: <sup>2.5.2</sup> set logMarker to 'marker'. Defaults to scriptname. Can be used to change logMarker based on flow in script
-	- **stringSplit(string, [separator ])**:<sup>2.4.19</sup> *Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words.
+	- **stringSplit(string [,separator ] [,convert ]<sup>3.0.13</sup>)**:<sup>2.4.19</sup> *Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words. Default convert is false when set to true it will convert strings to number where possible.
 	- **stringToSeconds(str)**:  *Function*: <sup>3.0.1</sup>  Returns number of seconds between now and str.	
 	*Examples:*
 
@@ -773,7 +782,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **toXML(luaTable, [header])**: *Function*. <sup>2.5.1</sup> Converts a Lua table to a xml string.
 	- **urlDecode(s)**: <sup>2.4.13</sup> *Function*. Simple deCoder to convert a string with escaped chars (%20, %3A and the likes) to human readable format.
 	- **urlEncode(s, [strSub])**: *Function*. Simple url encoder for string so you can use them in `openURL()`. `strSub` is optional and defaults to + but you can also pass %20 if you like/need.
-	- **variableExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid variableID or ID when entered with valid variableName or false when not a variableID or variableName of an existing variable
+	- **variableExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with a valid variable ^3.0.12^ or variableID and return ID when entered with valid variableName or false when not a variable, variableID or variableName of an existing variable
 	- **leadingZeros(number, length)**: *Function*: <sup>2.4.27</sup> Precede number with given zeros to given length.
 	- **variables(idx/name)**: *Function*. A function returning a variable by it's name or idx. See  [Variable object API]
 (#Variable_object_API_.28user_variables.29) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). **Note that you cannot do `for i, j in pairs(domoticz.variables()) do .. end`**.
@@ -1073,7 +1082,7 @@ See switch below.
  - **updatePressure(pressure)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Rain meter
- - **rain**: *Number*
+ - **rain**: *Number* (please note that this does return the rain total for today)
  - **rainRate**: *Number* 
  - **updateRain(rate, counter)**: *Function*. (rate in mm * 100 per hour, counter is total in mm) Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
@@ -2462,6 +2471,19 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and/or `::1` and you're good to go.
 
 # History
+
+## [3.0.14]
+- Add utils.fuzzyLookup
+- Made eventHelpers more resilient to coding errors in the on = section
+
+## [3.0.13]
+- Add utils.osCommand (caption)
+- Improved utils.stringSplit (implicit conversion to number on request)
+- Made log function more resilient when logitem is table with embedded function(s)
+- Improved domoticz.snapshot() to enable snapshot of multiple cameras (in one Email)
+
+## [3.0.12]
+- Add option to use device, camera, group, scene and variable objects as parm to deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods.
 
 ## [3.0.11]
 - Add sensorValue attribute to custom sensor

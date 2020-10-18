@@ -202,7 +202,7 @@ void Meteostick::SendTempBaroSensorInt(const unsigned char Idx, const float Temp
 	float dTempAtSea = (Temp - (-273.15f)) + dTempGradient * altitude;
 	float dBasis = 1 - dTempGradient * altitude / dTempAtSea;
 	float dExponent = 0.03416f / dTempGradient;
-	float dPressure = Baro / pow(dBasis,dExponent);
+	float dPressure = Baro / std::pow(dBasis,dExponent);
 
 	SendTempBaroSensor(Idx, 255, Temp, dPressure, defaultname);
 }
@@ -244,7 +244,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	{
 		float dBasis = dWindSpeed;
 		float dExponent = 0.16f;
-		float dWind = pow(dBasis,dExponent);
+		float dWind = std::pow(dBasis,dExponent);
 		dWindChill = (13.12f + 0.6215f * Temp - 11.37f * dWind + 0.3965f * Temp * dWind);
 	}
 	dWindChill*=10.0f;

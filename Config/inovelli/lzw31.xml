@@ -1,4 +1,4 @@
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/031E:0001:0003</MetaDataItem>
     <MetaDataItem name="ProductPic">images/inovelli/lzw31.png</MetaDataItem>
@@ -22,6 +22,8 @@ Only use either of these procedures in the event that the network primary contro
 Please Note: If this doesn't work, you can check to see if your switch is within Z-Wave Range by holding down the Configuration Button for 5-10 seconds (if it's not within range, the LED Bar will indicate Red and if it is within Range, the LED Bar will indicate Green). If your switch indicates Red, please move the switch closer to the HUB. If your switch indicates Green, please try running an Exclusion to reset your switch.</MetaDataItem>
     <ChangeLog>
       <Entry author="Eric Maycock - ericm@inovelli.com" date="7 Nov 2019" revision="1">Initial Release</Entry>
+      <Entry author="Brett Daugherty and SirDeadlyStrike" date="23 Jul 2020" revision="2">Update config for Firmware 1.47+</Entry>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="24 Jul 2020" revision="3">Clarifying which scenes are disabled with parameter 51</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->
@@ -191,6 +193,21 @@ Please Note: If this doesn't work, you can check to see if your switch is within
     <Item value="0" label="Load Only"/>
     <Item value="1" label="3-way Toggle"/>
     <Item value="2" label="3-way Momentary"/>
+    </Value>
+    <Value genre="config" type="list" size="1" index="51" label="Instant On" min="0" max="1" value="1">
+       <Help>
+       Enables instant on (ie: disables the 700ms button delay). Note, if you disable the delay, it will also disable scene control except for the following: Up pres
+sed, held, released, Down pressed, held, released &amp; config button pressed.
+       </Help>
+       <Item value="0" label="Enabled (no delay)"/>
+       <Item value="1" label="Disabled (700ms delay)"/>
+    </Value>
+    <Value genre="config" type="list" size="1" index="52" label="Smart Bulb Mode" min="0" max="1" value="0">
+      <Help>
+      Optimize power output to be more compatible with smart bulbs. This prevents the dimmer from being able to dim and makes it act like an ON / OFF switch. (firmware 1.47+)
+    </Help>
+    <Item value="0" label="Smart Bulb Mode Disabled (Default)"/>
+    <Item value="1" label="Smart Bulb Mode Enabled"/>
     </Value>
   </CommandClass>
 

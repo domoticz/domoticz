@@ -1,4 +1,4 @@
-define(['app', 'log/factories'], function (app) {
+define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingChart) {
 
     app.component('deviceTemperatureLog', {
         bindings: {
@@ -6,15 +6,162 @@ define(['app', 'log/factories'], function (app) {
         },
         templateUrl: 'app/log/TemperatureLog.html',
         controller: function() {
-            var vm = this;
+            const $ctrl = this;
+            $ctrl.autoRefresh = true;
 
-            vm.$onInit = function() {
-                vm.deviceIdx = vm.device.idx;
-                vm.deviceType = vm.device.Type;
-                vm.degreeType = $.myglobals.tempsign;
+            $ctrl.$onInit = function() {
+                $ctrl.deviceIdx = $ctrl.device.idx;
+                $ctrl.deviceType = $ctrl.device.Type;
+                $ctrl.degreeType = $.myglobals.tempsign;
             }
         }
     });
+
+    const degreeSuffix = '\u00B0' + $.myglobals.tempsign;
+
+    app.directive('temperatureShortChart', function () {
+        return {
+            require: {
+                logCtrl: '^deviceTemperatureLog'
+            },
+            scope: {
+                device: '<',
+                degreeType: '<'
+            },
+            replace: true,
+            template: '<div style="height: 300px;"></div>',
+            bindToController: true,
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+                const self = this;
+                self.range = 'day';
+                self.sensorType = 'temp';
+
+                self.$onInit = function() {
+                    self.chart = new RefreshingChart(
+                        baseParams($),
+                        angularParams($location, $route, $scope, $element),
+                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        chartParams(
+                            domoticzGlobals,
+                            self,
+                            domoticzGlobals.Get5MinuteHistoryDaysGraphTitle(),
+                            true,
+                            function (dataItem, yearOffset=0) {
+                                return GetLocalDateTimeFromString(dataItem.d, yearOffset);
+                            },
+                            [
+                                {
+                                    id: 'temperature',
+                                    name: 'Temperature',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.te !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.te;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'yellow',
+                                        yAxis: 0,
+                                        tooltip: {
+                                            valueSuffix: ' ' + degreeSuffix,
+                                            valueDecimals: 1
+                                        }
+                                    }
+                                },
+                                {
+                                    id: 'humidity',
+                                    name: 'Humidity',
+                                    dataItemIsValid: function (dataItem) {
+                                        return dataItem.hu !== undefined;
+                                    },
+                                    valuesFromDataItem: [
+                                        function (dataItem) {
+                                            return dataItem.hu;
+                                        }
+                                    ],
+                                    template: {
+                                        color: 'lime',
+                                        yAxis: 1,
+                                        tooltip: {
+                                            valueSuffix: ' %',
+                                            valueDecimals: 0
+                                        }
+                                    }
+                                }
+                            ]
+                        )
+                    );
+                };
+            }
+        }
+    });
+
+    function baseParams(jquery) {
+        return {
+            jquery: jquery
+        };
+    }
+    function angularParams(location, route, scope, element) {
+        return {
+            location: location,
+            route: route,
+            scope: scope,
+            element: element
+        };
+    }
+    function domoticzParams(globals, api, datapointApi) {
+        return {
+            globals: globals,
+            api: api,
+            datapointApi: datapointApi
+        };
+    }
+    function chartParams(domoticzGlobals, ctrl, chartTitle, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
+        return {
+            range: ctrl.range,
+            device: ctrl.device,
+            sensorType: ctrl.sensorType,
+            chartTitle: $.t('Temperature') + ' ' + chartTitle,
+            autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
+            dataSupplier: {
+                yAxes:
+                    [
+                        {
+                            title: {
+                                text: $.t('Degrees') + ' \u00B0' + ctrl.degreeType
+                            },
+                            labels: {
+                                formatter: function () {
+                                    return this.value + '\u00B0 ' + ctrl.degreeType;
+                                }
+                            }
+                        },
+                        {
+                            title: {
+                                text: $.t('Humidity') + ' %'
+                            },
+                            labels: {
+                                formatter: function () {
+                                    return this.value + '%';
+                                }
+                            },
+                            showEmpty: false,
+                            allowDecimals: false,	//no need to show scale with decimals
+                            ceiling: 100,			//max limit for auto zoom, bug in highcharts makes this sometimes not considered.
+                            floor: 0,				//min limit for auto zoom
+                            minRange: 10,			//min range for auto zoom
+                            opposite: true
+                        }
+                    ],
+                timestampFromDataItem: timestampFromDataItem,
+                isShortLogChart: isShortLogChart,
+                seriesSuppliers: seriesSuppliers
+            }
+        };
+    }
 
     app.directive('temperatureLogChart', function () {
         return {
@@ -28,7 +175,7 @@ define(['app', 'log/factories'], function (app) {
             template: '<div style="height: 300px;"></div>',
             bindToController: true,
             controllerAs: 'vm',
-            controller: function ($scope, $element, $route, domoticzApi, domoticzDataPointApi, domoticzGlobals) {
+            controller: function ($scope, $element, $route, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 var vm = this;
                 var chart;
 

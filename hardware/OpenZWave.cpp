@@ -614,7 +614,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			_log.Log(LOG_STATUS, "OpenZWave: Invalid NodeID received. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 			return;
 		}
-		// One of the node values has changed
 		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->eState = NSTATE_AWAKE;
@@ -626,11 +625,16 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			_log.Log(LOG_ERROR, "OpenZWave: Type_ValueChanged, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_ValueRefreshed:
-		// One of the node values has changed
-		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if ((_nodeID == 0) || (_nodeID == 255))
+		{
+			_log.Log(LOG_STATUS, "OpenZWave: Invalid NodeID received. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
+			return;
+		}
+		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->eState = NSTATE_AWAKE;
-			//UpdateValue(nodeInfo, vID);
+			nodeInfo->LastSeen = m_updateTime;
+			UpdateValue(nodeInfo, vID);
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 		}
 		else

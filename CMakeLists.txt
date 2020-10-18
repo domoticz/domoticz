@@ -182,6 +182,7 @@ hardware/1Wire/1WireByKernel.cpp
 hardware/1Wire/1WireCommon.cpp
 hardware/1Wire/1WireForWindows.cpp
 hardware/AccuWeather.cpp
+hardware/AirconWithMe.cpp
 hardware/AnnaThermostat.cpp
 hardware/Arilux.cpp
 hardware/ASyncSerial.cpp
@@ -219,6 +220,7 @@ hardware/EnOceanESP3.cpp
 hardware/EnphaseAPI.cpp
 hardware/Ec3kMeterTCP.cpp
 hardware/eVehicles/TeslaApi.cpp
+hardware/eVehicles/MercApi.cpp
 hardware/eVehicles/eVehicle.cpp
 hardware/EvohomeBase.cpp
 hardware/EvohomeRadio.cpp

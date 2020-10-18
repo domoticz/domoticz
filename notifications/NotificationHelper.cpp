@@ -414,7 +414,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					fValue2 = fValue;
 					if (meterType == 1) {
 						//inches
-						fValue2 *= 0.393701f;
+						fValue2 *= 0.3937007874015748f;
 					}
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
 				case sTypeBaro:

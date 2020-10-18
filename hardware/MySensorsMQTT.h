@@ -9,8 +9,8 @@ public:
 		const int ID,
 		const std::string& Name,
 		const std::string& IPAddress, const unsigned short usIPPort,
-		const std::string& Username, const std::string& Password, const std::string& CAfilename, const int TLS_Version,
-		const int Topics,
+		const std::string& Username, const std::string& Password, const std::string& CAfilenameExtra, const int TLS_Version,
+		const int PublishScheme,
 		const bool PreventLoop
 	);
 	~MySensorsMQTT(void);

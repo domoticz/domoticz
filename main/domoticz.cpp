@@ -1,7 +1,7 @@
 /*
  Domoticz, Open Source Home Automation System
 
- Copyright (C) 2012,2015 Rob Peters (GizMoCuz)
+ Copyright (C) 2012,2020 Rob Peters (GizMoCuz)
 
  Domoticz is free software: you can redistribute it and/or modify it
  under the terms of the GNU General Public License as published
@@ -123,15 +123,26 @@ std::string szWWWFolder;
 std::string szWebRoot;
 std::string dbasefile;
 
+/*
+#define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
+#define VCGENCMDARMSPEEDCOMMAND "vcgencmd measure_clock arm"
+#define VCGENCMDV3DSPEEDCOMMAND "vcgencmd measure_clock v3d"
+#define VCGENCMDCORESPEEDCOMMAND "vcgencmd measure_clock core"
+
 bool bHasInternalTemperature=false;
-std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
+std::string szInternalTemperatureCommand = "";
+
+bool bHasInternalClockSpeeds=false;
+std::string szInternalARMSpeedCommand = "";
+std::string szInternalV3DSpeedCommand = "";
+std::string szInternalCoreSpeedCommand = "";
 
 bool bHasInternalVoltage=false;
 std::string szInternalVoltageCommand = "";
 
 bool bHasInternalCurrent=false;
 std::string szInternalCurrentCommand = "";
-
+*/
 
 std::string szAppVersion="???";
 int iAppRevision=0;
@@ -161,7 +172,6 @@ http::server::ssl_server_settings secure_webserver_settings;
 #endif
 bool bStartWebBrowser = true;
 bool g_bUseWatchdog = true;
-bool g_bIsWSL = false;
 
 #define DAEMON_NAME "domoticz"
 #define PID_FILE "/var/run/domoticz.pid" 
@@ -460,85 +470,6 @@ void GetAppVersion()
 	szAppDate = szTmp;
 }
 
-#if !defined WIN32
-void CheckForOnboardSensors()
-{
-	//Check if we are running on a RaspberryPi
-	std::string sLine = "";
-	std::ifstream infile;
-
-#if defined(__FreeBSD__)
-	infile.open("/compat/linux/proc/cpuinfo");
-#else
-	infile.open("/proc/cpuinfo");
-#endif
-	if (infile.is_open())
-	{
-		while (!infile.eof())
-		{
-			getline(infile, sLine);
-			if (
-				(sLine.find("BCM2708") != std::string::npos) ||
-				(sLine.find("BCM2709") != std::string::npos)
-				)
-			{
-				//Core temperature of BCM2835 SoC
-				_log.Log(LOG_STATUS, "System: Raspberry Pi");
-				szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
-				bHasInternalTemperature = true;
-				break;
-			}
-		}
-		infile.close();
-	}
-	if (!bHasInternalTemperature)
-	{
-		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
-		{
-			_log.Log(LOG_STATUS, "System: Cubieboard/Cubietruck");
-			szInternalTemperatureCommand = "cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
-			bHasInternalTemperature = true;
-		}
-		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
-		{
-			//_log.Log(LOG_STATUS,"System: ODroid");
-			szInternalTemperatureCommand = "cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ if ($1 < 100) printf(\"temp=%d\\n\",$1); else printf (\"temp=%0.2f\\n\",$1/1000); }'";
-			bHasInternalTemperature = true;
-		}
-	}
-	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
-	{
-		szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalVoltage = true;
-	}
-	if (file_exist("/sys/class/power_supply/ac/current_now"))
-	{
-		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalCurrent = true;
-	}
-	//New Armbian Kernal 4.14+
-	if (file_exist("/sys/class/power_supply/axp20x-ac/voltage_now"))
-	{
-		szInternalVoltageCommand = "cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalVoltage = true;
-	}
-	if (file_exist("/sys/class/power_supply/axp20x-ac/current_now"))
-	{
-		szInternalCurrentCommand = "cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalCurrent = true;
-	}
-
-#if defined (__OpenBSD__)
-	szInternalTemperatureCommand = "sysctl hw.sensors.acpitz0.temp0|sed -e 's/.*temp0/temp/'|cut -d ' ' -f 1";
-	bHasInternalTemperature = true;
-	szInternalVoltageCommand = "sysctl hw.sensors.acpibat0.volt1|sed -e 's/.*volt1/volt/'|cut -d ' ' -f 1";
-	bHasInternalVoltage = true;
-	//bHasInternalCurrent = true;
-
-#endif
-}
-#endif
-
 bool GetConfigBool(std::string szValue)
 {
 	stdlower(szValue);
@@ -802,9 +733,6 @@ int main(int argc, char**argv)
 #endif
 #endif
 	}
-#if defined(__linux__)
-	g_bIsWSL = IsWSL();
-#endif
 
 	/* call srand once for the entire app */
 	std::srand((unsigned int)std::time(nullptr));
@@ -813,9 +741,6 @@ int main(int argc, char**argv)
 	GetAppVersion();
 	DisplayAppVersion();
 
-#if !defined WIN32
-	CheckForOnboardSensors();
-#endif
 	if (!szStartupFolder.empty())
 		_log.Log(LOG_STATUS, "Startup Path: %s", szStartupFolder.c_str());
 

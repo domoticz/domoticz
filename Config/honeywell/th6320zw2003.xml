@@ -1,4 +1,4 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0039:0008:0011</MetaDataItem>
     <MetaDataItem name="ProductPic">images/honeywell/th6320zw2003.png</MetaDataItem>
@@ -36,12 +36,14 @@ Please use the reset procedure only when the primary controller is missing or in
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2583/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2893/xml</Entry>
+      <Entry author="Kyle Zimmerman" date="09 Sept 2020" revision="4">Thermostat requires 2 bytes for precision, not 1. Sending 1 results in decimal degrees (common in Celcius) setting the temperature to the minimum value.</Entry>
     </ChangeLog>
   </MetaData>
   <!-- This thermostat's setpoint descriptions are 1 based, not 0 -->
   <CommandClass id="67">
     <Compatibility>
       <Base>0</Base>
+      <OverridePrecision>2</OverridePrecision>
     </Compatibility>
   </CommandClass>
   <CommandClass id="112">

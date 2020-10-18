@@ -10,6 +10,7 @@ CNotificationSMS::CNotificationSMS() : CNotificationBase(std::string("clickatell
 	SetupConfig(std::string("ClickatellEnabled"), &m_IsEnabled);
 	SetupConfigBase64(std::string("ClickatellAPI"), _clickatellApi);
 	SetupConfigBase64(std::string("ClickatellTo"), _clickatellTo);
+	SetupConfigBase64(std::string("ClickatellFrom"), _clickatellFrom);
 }
 
 CNotificationSMS::~CNotificationSMS()
@@ -34,28 +35,64 @@ bool CNotificationSMS::SendMessageImplementation(
 	stdreplace(thisTo, "+", "");
 	stdreplace(thisTo, " ", "");
 
-	// One can send to multiple destination addresses by delimiting the addresses with commas
-	stdreplace(thisTo, ";", ",");
-
 	thisTo = stdstring_trim(thisTo);
 	if (thisTo.empty())
 		return false;
 
+	std::string thisFrom = CURLEncode::URLDecode(_clickatellFrom);
+
+	stdreplace(thisFrom, "+", "");
+	stdreplace(thisFrom, " ", "");
+	thisFrom = stdstring_trim(thisFrom);
+
+	if (thisTo.find(";") != std::string::npos) {
+		std::vector<std::string> recipients;
+		StringSplit(thisTo, ";", recipients);
+
+		thisTo = "";
+		for (size_t i = 0; i < recipients.size(); i++) {
+			thisTo = thisTo + "\"" + recipients.at(i) + "\"" + ",";
+		}
+
+		if (!thisTo.empty()) {
+			thisTo.pop_back();
+		}
+	}
+	else {
+		thisTo = "\"" + thisTo + "\"";
+	}
+	
 	std::string sResult;
-	std::stringstream sPostData;
+	std::stringstream sJsonPostData;
 
-	sPostData
-		<< "apiKey=" << _clickatellApi
-		<< "&to=" << thisTo
-		<< "&content=" << Text;
+	std::string message = CURLEncode::URLDecode(Text);
+	sJsonPostData
+		<< "{"
+		<< "\"content\":" << "\"" << message << "\","
+		<< "\"to\":" << "[" << thisTo << "],";
 
+	if (!thisFrom.empty()) {
+		sJsonPostData << "\"from\":" << "\"" << thisFrom << "\",";
+	}
+
+	sJsonPostData
+		<< "\"binary\": false,"
+		<< "\"charset\": \"UTF-8\""
+		<< "}";
+
+	_log.Log(LOG_NORM, "Clickatell SMS notification json: " + sJsonPostData.str());
+
+	std::string apiKey = CURLEncode::URLDecode(_clickatellApi);
 	std::vector<std::string> ExtraHeaders;
-	bRet |= HTTPClient::POST("https://platform.clickatell.com/messages/http/send", sPostData.str(), ExtraHeaders, sResult);
+	ExtraHeaders.push_back("Authorization: " + apiKey);
+	ExtraHeaders.push_back("Content-Type: application/json");
+	ExtraHeaders.push_back("Accept: application/json");
+	bRet |= HTTPClient::POST("https://platform.clickatell.com/messages", sJsonPostData.str(), ExtraHeaders, sResult);
+	_log.Log(LOG_NORM, "Clickatell SMS Gateway: %s", sResult.c_str());
 	if (sResult.find("ERR:") != std::string::npos)
 	{
 		//We have an error
 		bRet = false;
-		_log.Log(LOG_ERROR, "Clickatell SMS Gateway: %s", sResult.c_str());
 	}
 	return bRet;
 }

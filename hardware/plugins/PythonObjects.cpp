@@ -824,6 +824,8 @@ namespace Plugins {
 	{
 		if (self->pPlugin)
 		{
+			self->pPlugin->SetHeartbeatReceived();
+
 			int			nValue = self->nValue;
 			char*		sValue = NULL;
 			int			iSignalLevel = self->SignalLevel;
@@ -1066,6 +1068,7 @@ namespace Plugins {
 	{
 		if ((self->pPlugin) && (self->HwdID != -1) && (self->Unit != -1))
 		{
+			self->pPlugin->SetHeartbeatReceived();
 			std::string sID = std::to_string(self->ID);
 			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%s' WHERE (ID == %s )", TimeToString(NULL, TF_DateTime).c_str(), sID.c_str());
 		}

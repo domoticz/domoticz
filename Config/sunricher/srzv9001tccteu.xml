@@ -1,0 +1,43 @@
+<Product Revision="1"
+  xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Z-Wave CCT Wall Controller</MetaDataItem>
+    <MetaDataItem name="Description">The Wall controller is a Security Enabled Z-Wave Plus device that can both control another Z-Wave device.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0330:0300:a104</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.sunricher.com/touch-panel-dual-color-z-wave-secondary-controller-sr-zv9001t-cct.html#product_tabs_description_tabbed</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.sunricher.com/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sunricher/srzv9001tccteu.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://www.sunricher.com/media/resources/manual/SR-ZV9001T-CCT-EU%20Instruction.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Short press the “inclusion/exclusion” button, or press and hold down “ALL ON/OFF” button for over 3 seconds, the wall controller will be set to inclusion mode, and waiting to be included, then LED indicator turns on and blinks 6 times quickly to indicate successful inclusion.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Short press the “inclusion/exclusion” button, or press and hold down “ALL ON/OFF” button for over 3 seconds, the wall controller will be set to exclusion mode, and waiting to be excluded, then LED indicator turns on and shows 3 short blinks and 1 long blink to indicate successful exclusion.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down “inclusion/exclusion” button for over 8 seconds, LED indicator blinks slowly to indicate successful factory reset, release “inclusion/exclusion” button,the wall controller will restart automatically.</MetaDataItem>
+    <!-- <MetaDataItem id="a104" name="ZWProductPage" type="0300">https://products.z-wavealliance.org/products/2945</MetaDataItem> -->
+    <MetaDataItem id="a104" name="FrequencyName" type="0300">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0104" name="Identifier" type="0300">SR-ZV9001T-CCT-EU</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Mark Broadbent" date="24 Aug 2020" revision="1">Initial entry based on manufacturer data and test device</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="3" instance="1" label="Choose working mode of the remote control" size="1" type="list" value="1">
+      <Help>
+              Choose working mode of the remote control.
+        </Help>
+      <Item label="Choose activation of scenes in gateway mode" value="0"/>
+      <Item label="Choose direct control of associated devices mode" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- This device has no real or virtual outputs so cannot be controlled or polled, basic class is 'controlling' only -->
+  <CommandClass id="32">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- The Association Group Information -->
+  <CommandClass id="142">
+    <Associations num_groups="2">
+      <Group index="1" label="LifeLine" max_associations="1"/>
+      <Group index="2" label="Launch 1" max_associations="12"/>
+    </Associations>
+  </CommandClass>
+</Product>

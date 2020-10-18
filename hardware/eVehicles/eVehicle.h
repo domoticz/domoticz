@@ -6,6 +6,7 @@ Author: MrHobbes74 (github.com/MrHobbes74)
 21/02/2020 1.0 Creation
 13/03/2020 1.1 Added keep asleep support
 28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+24/07/2020 1.3 Added new Mercedes Class (KidDigital)
 
 License: Public domain
 
@@ -20,7 +21,8 @@ class CeVehicle : public CDomoticzHardwareBase
 {
 public:
 	enum eVehicleType {
-		Tesla
+		Tesla,
+		Mercedes
 	};
 
 	CeVehicle(const int ID, const eVehicleType vehicletype, const std::string& username, const std::string& password, int defaultinterval, int activeinterval, bool allowwakeup, const std::string& carid);
@@ -96,6 +98,7 @@ private:
 	bool GetClimateState();
 	void UpdateClimateData(CVehicleApi::tClimateData& data);
 	void UpdateVehicleData(CVehicleApi::tVehicleData& data);
+	void UpdateCustomVehicleData(CVehicleApi::tCustomData& data);
 	bool DoSetCommand(tApiCommand command);
 
 	void AddCommand(eApiCommandType command_type, std::string command_parameter = "");
@@ -109,6 +112,8 @@ private:
 	void SendTemperature(int tempType, float value);
 	void SendPercentage(int percType, float value);
 	void SendCounter(int countType, float value);
+	void SendCustom(int countType, int ChildId, float value, std::string label);
+	void SendText(int countType, int ChildId, std::string value, std::string label);
 
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -120,6 +125,8 @@ private:
 	int m_defaultinterval;
 	int m_activeinterval;
 	bool m_allowwakeup;
+	double m_home_lat;
+	double m_home_lon;
 
 	tVehicle m_car;
 	CVehicleApi *m_api;
@@ -130,4 +137,3 @@ private:
 	eAlertType m_currentalert;
 	std::string m_currentalerttext;
 };
-

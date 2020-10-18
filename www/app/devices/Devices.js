@@ -316,6 +316,7 @@ define(['app', 'livesocket'], function(app) {
                 var isToggleAvailable =
                     (['Light/Switch', 'Lighting 2'].includes(device.Type) && [0, 7, 9, 10].includes(device.SwitchTypeVal))
                     || device.Type === 'Color Switch'
+                    || device.Type === 'Chime'
                     || device.isScene();
 
                 if (isToggleAvailable) {

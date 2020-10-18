@@ -62,6 +62,7 @@ define(function () {
                 } else if (
                     (['Light/Switch', 'Lighting 2'].includes(this.Type) && [0, 7, 9, 10].includes(this.SwitchTypeVal))
                     || this.Type === 'Color Switch'
+                    || this.Type === 'Chime'
                 ) {
                     return this.isActive()
                         ? deviceLightApi.switchOff(this.idx)

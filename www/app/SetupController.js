@@ -36,6 +36,10 @@ define(['app'], function (app) {
 						return;
 					}
 					extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellTo=" + ClickatellTo;
+					var ClickatellFrom = encodeURIComponent($("#smstable #ClickatellFrom").val());
+					if (ClickatellFrom != "") {
+						extraparams = extraparams + "&ClickatellFrom=" + ClickatellFrom;
+					}
 					break;
 				case "http":
 					var HTTPField1 = encodeURIComponent($("#httptable #HTTPField1").val());
@@ -320,6 +324,9 @@ define(['app'], function (app) {
 					}
 					if (typeof data.ClickatellTo != 'undefined') {
 						$("#smstable #ClickatellTo").val(atob(data.ClickatellTo));
+					}
+					if (typeof data.ClickatellFrom != 'undefined') {
+						$("#smstable #ClickatellFrom").val(atob(data.ClickatellFrom));
 					}
 
 					if (typeof data.HTTPEnabled != 'undefined') {

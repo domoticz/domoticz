@@ -29,6 +29,7 @@ public:
 	bool GetChargeData(tChargeData& data) override;
 	bool GetClimateData(tClimateData& data) override;
 	bool GetVehicleData(tVehicleData& data) override;
+	bool GetCustomData(tCustomData& data) override;
 	bool IsAwake() override;
 private:
 	enum eApiMethod {
@@ -52,6 +53,6 @@ private:
 
 	std::string m_authtoken;
 	std::string m_refreshtoken;
-	int64_t m_carid;
+	uint64_t m_carid;
 };
 

@@ -2572,7 +2572,7 @@ bool CSQLHelper::OpenDatabase()
 			//OpenZWave COMMAND_CLASS_METER new index, need to delete the cache!
 			std::vector<std::string> root_files_;
 			DirectoryListing(root_files_, szUserDataFolder + "Config", false, true);
-			for (auto itt : root_files_)
+			for (const auto& itt : root_files_)
 			{
 				if (itt.find("ozwcache_0x") != std::string::npos)
 				{
@@ -2710,7 +2710,7 @@ bool CSQLHelper::OpenDatabase()
 			dbToMigrate.push_back(_tPushHelper("GooglePubSubLink", CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB));
 			dbToMigrate.push_back(_tPushHelper("FibaroLink", CBasePush::PushType::PUSHTYPE_FIBARO));
 
-			for (auto itt : dbToMigrate)
+			for (const auto& itt : dbToMigrate)
 			{
 				safe_query(
 					"INSERT INTO PushLink (PushType, DeviceID, DelimitedValue, TargetType, TargetVariable, TargetDeviceID, TargetProperty, Enabled, IncludeUnit) "
@@ -4431,15 +4431,13 @@ uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const un
 	return ulID;
 }
 
-bool CSQLHelper::DoesDeviceExist(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType) {
+uint64_t CSQLHelper::GetDeviceIndex(const int HardwareID, const std::string& ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, std::string& devname) {
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
-	if (result.empty()) {
-		return false;
-	}
-	else {
-		return true;
-	}
+	result = safe_query("SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID.c_str(), unit, devType, subType);
+	if (result.empty())
+		return -1;
+	devname = result[0].at(1);
+	return std::stoull(result[0].at(0));
 }
 
 uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string& devname, const bool bUseOnOffAction)
@@ -7768,16 +7766,28 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 
 	// Open the sqlite3_backup object used to accomplish the transfer
 	pBackup = sqlite3_backup_init(pFile, "main", m_dbase, "main");
+
+	time_t startTime = time(nullptr);
+
 	if (pBackup)
 	{
 		// Each iteration of this loop copies 5 database pages from database
 		// pDb to the backup database.
 		do {
-			rc = sqlite3_backup_step(pBackup, 5);
+			rc = sqlite3_backup_step(pBackup, 256);
 			//xProgress(  sqlite3_backup_remaining(pBackup), sqlite3_backup_pagecount(pBackup) );
-			//if( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED ){
-			  //sqlite3_sleep(250);
-			//}
+			if( rc==SQLITE_BUSY || rc==SQLITE_LOCKED ){
+			  sqlite3_sleep(250);
+			}
+			if (rc == SQLITE_BUSY || rc == SQLITE_LOCKED) {
+				time_t actTime = time(nullptr);
+				if (actTime - startTime > 2 * 60)
+				{
+					//Backup should be done in 2 minutes
+					_log.Log(LOG_ERROR, "SQLHelper: Problem making backup! Check destination folder/rights. Process timeout!");
+					break;
+				}
+			}
 		} while (rc == SQLITE_OK || rc == SQLITE_BUSY || rc == SQLITE_LOCKED);
 
 		/* Release resources allocated by backup_init(). */

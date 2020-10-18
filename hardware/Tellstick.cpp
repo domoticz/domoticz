@@ -291,7 +291,7 @@ void CTellstick::ThreadSendCommands()
             SendCommand(it->first, it->second.genSwitch);
             ++it->second.repeat;
             if (it->second.repeat > m_numRepeats)
-                m_commands.erase(it++);
+                it = m_commands.erase(it);
             else
             {
                 it->second.repeatTimePoint += m_repeatInterval;

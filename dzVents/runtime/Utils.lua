@@ -6,8 +6,9 @@ local self = {
 	LOG_FORCE = 0.5,
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
+	LOG_WARNING = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.11',
+	DZVERSION = '3.0.14',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -21,6 +22,66 @@ end
 function math.pow(x, y)
 	self.log('Function math.pow(x, y) has been deprecated in Lua 5.3. Please consider changing code to x^y', self.LOG_FORCE)
 	return x^y
+end
+
+-- Cast anything but functions to string
+self.toStr = function (value)
+	local dblQuote = function (v)
+		return '"'..v..'"'
+	end
+
+	local str = '';
+	-- local v;
+	if _.isString(value) then
+		str = value
+	elseif _.isBoolean(value) then
+		str = value and 'true' or 'false'
+	elseif _.isNil(value) then
+		str = 'nil'
+	elseif _.isNumber(value) then
+		str = value .. ''
+	elseif _.isFunction(value) then
+		str = 'function'
+	elseif _.isTable(value) then
+		str = '{'
+		for k, v in pairs(value) do
+			v = _.isString(v) and dblQuote(v) or self.toStr(v)
+			if _.isNumber(k) then
+				str = str .. v .. ', '
+			else
+				str = str .. '[' .. dblQuote(k) .. ']=' .. v .. ', '
+			end
+		end
+		str = str:sub(0, #str - 2) .. '}'
+	end
+	return str
+end
+
+self.fuzzyLookup = function (search, target) -- search must be string/number, target must be string/number or array of string/numbers
+	if type(target) == 'table' then
+		local lowestFuzzyValue = math.maxinteger
+		local lowestFuzzyKey = ''
+		for _, targetString in ipairs(target) do
+			local fuzzyValue =  self.fuzzyLookup(search, targetString) 
+			if  fuzzyValue < lowestFuzzyValue then
+				lowestFuzzyKey = targetString
+				lowestFuzzyValue = fuzzyValue
+			end
+		end
+		return lowestFuzzyKey
+	else
+		local search, target = (tostring(search)):lower(), (tostring(target)):lower()
+		local searchLength, targetLength, res = #search, #target, {}
+		for i = 0, searchLength do res[i] = { [0] = i } end
+		for j = 1, targetLength do res[0][j] = j end
+		for k = 1, searchLength do
+			for l = 1, targetLength do
+				local cost = search:sub(k,k) == target:sub(l,l) and 0 or 1
+				res[k][l] = math.min(res[k-1][l]+1, res[k][l-1]+1, res[k-1][l-1]+cost)
+			end
+		end
+		return res[searchLength][targetLength]
+	end
 end
 
 function self.setLogMarker(logMarker)
@@ -58,12 +119,12 @@ function self.fileExists(name)
 	return code ~= 2
 end
 
-function self.stringSplit(text, sep)
+function self.stringSplit(text, sep, convert)
 	if not(text) then return {} end
 	local sep = sep or '%s'
 	local t = {}
 	for str in string.gmatch(text, "([^"..sep.."]+)") do
-		table.insert(t, str)
+		table.insert(t, ( convert and tonumber(str) ) or str)
 	end
 	return t
 end
@@ -143,6 +204,13 @@ function self.toCelsius(f, relative)
 		return f*(1/1.8)
 	end
 	return ((f-32) / 1.8)
+end
+
+function self.osCommand(cmd)
+	local file = assert ( io.popen(cmd) )
+	local output = assert ( file:read('*all') )
+	local rc = { file:close() }
+	return output, rc[3]
 end
 
 function self.osExecute(cmd)
@@ -234,7 +302,7 @@ function self.fromJSON(json, fallback)
 
 end
 
-function self.fromBase64(codedString)  -- from http://lua-users.org/wiki/BaseSixtyFour
+function self.fromBase64(codedString) -- from http://lua-users.org/wiki/BaseSixtyFour
 	if type(codedString) ~= 'string' then
 		self.log('fromBase64: parm should be a string; you supplied a ' .. type(codedString), self.LOG_ERROR)
 		return nil
@@ -281,7 +349,7 @@ function self.isXML(str, content)
 	local str = str or ''
 	local content = content or ''
 	local xmlPattern = '^%s*%<.+%>%s*$'
-	local ret = ( str:match(xmlPattern) == str  or content:find('application/xml') or content:find('text/xml')) and not(str:sub(1,30):find('DOCTYPE html') )
+	local ret = ( str:match(xmlPattern) == str or content:find('application/xml') or content:find('text/xml')) and not(str:sub(1,30):find('DOCTYPE html') )
 	return ret
 
 end
@@ -387,7 +455,7 @@ function self.log(msg, level)
 	end
 
 	if (level <= lLevel) then
-		self.print(tostring(marker) .. _.str(msg))
+		self.print(tostring(marker) .. self.toStr(msg))
 	end
 end
 
@@ -427,10 +495,16 @@ function self.rgbToHSB(r, g, b)
 end
 
 local function loopGlobal(parm, baseType)
+	if parm == nil then return false end
 	local res = 'id'
-	if type(parm) == 'number' then res = 'name' end
+	local search = parm
+	if type(parm) == 'table' then
+		search = search.id
+	elseif type(parm) == 'number' then
+		res = 'name'
+	end
 	for i, item in ipairs(_G.domoticzData) do
-		if item.baseType == baseType and ( item.id == parm or item.name == parm ) then return item[res] end
+		if item.baseType == baseType and ( item.id == search or item.name == search ) then return item[res] end
 	end
 	return false
 end
@@ -487,7 +561,7 @@ function self.dumpSelection(object, selection)
 			self.print('')
 			self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
 		end
-		if object.baseType ~= 'variable'  and object.baseType ~= 'hardware' then
+		if object.baseType ~= 'variable' and object.baseType ~= 'hardware' then
 			self.print('> adapters: ' .. table.concat(object._adapters or {},', ') )
 		end
 		if object.baseType == 'device' then

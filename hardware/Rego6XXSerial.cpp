@@ -381,7 +381,7 @@ bool CRego6XXSerial::ParseData()
         			strcpy(m_Rego6XXTemp.ID, g_allRegisters[m_pollcntr].name);
 					m_Rego6XXTemp.temperature =  (float)(data * 0.1);
                     if((m_Rego6XXTemp.temperature >= -48.2) && // -48.3 means no sensor.
-                        ((fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
+                        ((std::fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
 			 (difftime(atime,g_allRegisters[m_pollcntr].lastSent) >= 300))) // Send at least every 5 minutes
                     {
                         g_allRegisters[m_pollcntr].lastSent = atime;

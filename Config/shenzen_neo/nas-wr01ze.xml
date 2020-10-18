@@ -1,8 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
   <!--
   Shenzhen NEO Electronics (Neo-CoolCam) Smart Power Plug EU
   -->
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0258:1027:0200</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/shenzen_neo/nas-wr01ze.png</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Add the Device (Smart Plug) to Z‐Wave Network
+1.Make sure the sensor is powered. 
+2.Set Z‐Wave controller or Z‐Wave gateway into inclusion mode (Refer to the controller or gateway operating manual) 
+3.Press the button three times within 1.5 second, the device will enter inclusion mode. And the LED will flash on and off with green alternately five times within 2 seconds. </MetaDataItem>
+    <MetaDataItem name="WakeupDescription">this power plug is connected to power, not battery powered</MetaDataItem>
+    <MetaDataItem name="Description">This product can be included and operated in any Z‐Wave network with other Z‐Wave certified devices from other manufacturers and/or other applications. All non‐battery operated nodes within the network will act as repeaters regardless of vendor to increase reliability of the network.
+
+In the front casing, there is button that is used to carry out include, exclude or reset factory default settings on PCB Board.
+
+When power is first supplied, the LED will flash on and off with yellow alternately every 1 second intervals within 5 seconds if the detector has not been added a Z‐Wave network, otherwise the LED will flash on and off 5 times with cyan alternately every 300 millisecond. Please get familiar with the terms below before starting the operations.
+
+This Plug has function that remembers the relay states, the plug will turn on after power up next time if the plug is turn on before the power cut‐off.</MetaDataItem>
+    <MetaDataItem name="Name">Smart Power Plug </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Delete the Device (Smart Plug) from Z‐Wave Network
+1.Make sure the sensor is powered. 
+2.Set Z‐Wave controller or Z‐Wave gateway into exclusion mode (Refer to the controller or gateway operating manual) 
+3.Press the button three times within 1.5 second, the device will enter exclusion mode. And the LED will flash on and off with yellow alternately five times within 2 seconds.  </MetaDataItem>
+    <MetaDataItem name="ResetDescription">Note:  to use the reset procedure only when the primary controller is missing or inoperable.
+Restore the Device (Smart Plug) to Factory Default Settings
+
+Reset procedure will delete all information on the Z‐Wave network and Z‐Wave controller or Z‐Wave Gateway, and restore the sensor to factory default settings.
+1.Make sure the sensor is powered. 
+
+2.Press and hold the button more than 10 seconds until the LED blink with red color. 
+
+3.Release the button. </MetaDataItem>
+    <MetaDataItem id="1027" name="Identifier" type="0200">NAS-WR01ZE</MetaDataItem>
+    <MetaDataItem id="1027" name="Identifier" type="0100">NAS-WR01ZE</MetaDataItem>
+    <MetaDataItem id="1027" name="FrequencyName" type="0100">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="David Burrows - david@burrows.org" date="19 Aug 2020" revision="2">Added metadata, and added US version (type 0100) that is branded "Power Plug" with no model number displayed. There is no matching Z-Wave Alliance database entry.</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
   <Value type="list" genre="config" instance="1" index="1" label="Remember Relay ON/OFF status" value="1" size="1">

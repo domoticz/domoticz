@@ -528,13 +528,17 @@ app/hardware/setup/ZWave.js
 app/log/components/DeviceLevelChart.js
 app/log/components/DeviceOnOffChart.js
 app/log/components/DeviceTextLogTable.js
+app/log/AngularBase.js
+app/log/Base.js
 app/log/DeviceLog.html
 app/log/DeviceLog.js
+app/log/DomoticzBase.js
 app/log/factories.js
 app/log/GraphLog.html
 app/log/GraphLog.js
 app/log/LightLog.html
 app/log/LightLog.js
+app/log/RefreshingChart.js
 app/log/SceneLog.html
 app/log/SceneLog.js
 app/log/TemperatureLog.html
@@ -653,7 +657,7 @@ js/FileSaver.js
 js/highcharts-ng.min.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
-js/jquery-3.4.1.min.js
+js/jquery-3.5.1.min.js
 js/jquery-ui.min.js
 js/jquery.ddslick.min.js
 js/jquery.isotope.min.js
@@ -668,7 +672,7 @@ js/ng-grid-flexible-height.js
 js/ng-grid.min.js
 js/ngDraggable.js
 js/ngload.min.js
-js/require.js
+js/require.min.js
 js/respond.min.js
 js/ui-bootstrap.min.js
 js/wow.min.js

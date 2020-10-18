@@ -1092,8 +1092,7 @@ void expandForSpecialValue(std::list<unsigned char> &result)
 	{
 		if (*it == specialValue)
 		{
-			result.insert(++it, 0xF0);
-			it--;
+			it = result.insert(++it, 0xF0);
 		}
 	}
 }

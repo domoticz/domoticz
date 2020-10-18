@@ -16,7 +16,7 @@ class CTado : public CDomoticzHardwareBase
 		~CTado(void);
 		CTado(const int ID, const std::string &username, const std::string &password);
 		bool WriteToHardware(const char *pdata, const unsigned char length) override;
-		void SetSetpoint(const int idx, const float temp);
+		void SetSetpoint(const int id2, const int id3, const int id4, const float temp);
 	private:
 		void Init();
 		bool StartHardware() override;
@@ -29,6 +29,7 @@ class CTado : public CDomoticzHardwareBase
 			std::string Name;
 			std::string HomeId;
 			std::string Type;
+			bool OpenWindowDetectionSupported;
 
 			bool operator < (const _tTadoZone& str) const
 			{
@@ -64,8 +65,8 @@ class CTado : public CDomoticzHardwareBase
 		bool GetAuthToken(std::string & authtoken, std::string & refreshtoken, const bool refreshUsingToken);
 		bool GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome &home, _tTadoZone & zone);
 		bool GetHomeState(const int HomeIndex, _tTadoHome & home);
-		void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
-		void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string & defaultname);
+		void SendSetPointSensor(const int Idx, const float Temp, const std::string &defaultname);
+		void UpdateSwitch(const int Idx, const bool bOn, const std::string & defaultname);
 		bool CreateOverlay(const int idx, const float temp, const bool heatingenabled, const std::string &termination = "TADO_MODE");
 		bool CancelOverlay(const int Idx);
 		bool MatchValueFromJSKey(const std::string &sKeyName, const std::string &sJavascriptData, std::string & sValue);

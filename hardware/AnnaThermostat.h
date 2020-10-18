@@ -9,13 +9,15 @@ class CAnnaThermostat : public CDomoticzHardwareBase
 		 std::string m_ALocationName;
 		 std::string m_ALocationType;
 	};
-	
+
 public:
 	CAnnaThermostat(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password);
 	~CAnnaThermostat(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SetSetpoint(const int idx, const float temp);
 	void SetProgramState(const int newState);
+	bool AnnaSetPreset(uint8_t level);
+
 private:
 	void Init();
 	bool StartHardware() override;
@@ -27,9 +29,10 @@ private:
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	bool SetAway(const bool bIsAway);
 	bool AnnaToggleProximity(bool bToggle);
-	bool AnnaSetPreset(uint8_t level);
 	bool AnnaGetLocation();
-	
+	bool InitialMessageMigrateCheck();
+	void FixUnit();
+
 private:
 	std::string m_IPAddress;
 	unsigned short m_IPPort;
@@ -41,4 +44,3 @@ private:
 	std::shared_ptr<std::thread> m_thread;
 	AnnaLocationInfo m_AnnaLocation;
 };
-

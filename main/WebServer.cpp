@@ -36,6 +36,7 @@
 #include "../hardware/eHouseTCP.h"
 #include "../hardware/USBtin.h"
 #include "../hardware/USBtin_MultiblocV8.h"
+#include "../hardware/AirconWithMe.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -1024,8 +1025,7 @@ namespace http {
 						bDoAdd = false;
 					}
 #endif
-
-		}
+				}
 #endif
 #endif
 #ifndef WITH_OPENZWAVE
@@ -1045,9 +1045,11 @@ namespace http {
 #endif
 				if (ii == HTYPE_PythonPlugin)
 					bDoAdd = false;
+
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
-	}
+			}
+
 			//return a sorted hardware list
 			int ii = 0;
 			for (const auto & itt : _htypes)
@@ -1257,6 +1259,7 @@ namespace http {
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
 				(htype == HTYPE_Tesla) ||
+				(htype == HTYPE_Mercedes) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -1345,7 +1348,11 @@ namespace http {
 			}
 			else if (htype == HTYPE_EcoCompteur) {
 				//all fine here!
-			} else if (htype == HTYPE_Meteorologisk) {
+			}
+			else if (htype == HTYPE_Meteorologisk) {
+				//all fine here!
+			} 
+			else if (htype == HTYPE_AirconWithMe) {
 				//all fine here!
 			}
 			else
@@ -1654,6 +1661,7 @@ namespace http {
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
 				(htype == HTYPE_Tesla) ||
+				(htype == HTYPE_Mercedes) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -1742,7 +1750,10 @@ namespace http {
 			else if (htype == HTYPE_EnphaseAPI) {
 				//all fine here!
 			}
-			else if(htype == HTYPE_Meteorologisk) {
+			else if (htype == HTYPE_Meteorologisk) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_AirconWithMe) {
 				//all fine here!
 			}
 			else
@@ -10938,7 +10949,7 @@ namespace http {
 							else
 							{
 								//Imperial
-								sprintf(szTmp, "%.1f in", vis*0.6214f);
+								sprintf(szTmp, "%.1f in", vis * 0.3937007874015748f);
 							}
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -11379,7 +11390,10 @@ namespace http {
 
 		void CWebServer::UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			redirect_uri = "/index.html";
+			Json::Value root;
+			root["title"] = "UploadFloorplanImage";
+			root["status"] = "ERR";
+
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
@@ -11396,8 +11410,13 @@ namespace http {
 			if (!result.empty())
 			{
 				if (!m_sql.safe_UpdateBlobInTableWithID("Floorplans", "Image", result[0][0], imagefile))
+				{
 					_log.Log(LOG_ERROR, "SQL: Problem inserting floorplan image into database! ");
+				}
+				else
+					root["status"] = "OK";
 			}
+			redirect_uri = root.toStyledString();
 		}
 
 		void CWebServer::GetFloorplanImage(WebEmSession & session, const request& req, reply & rep)
@@ -14316,7 +14335,12 @@ namespace http {
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								float fValue = float(atof(sd[0].c_str())) / vdiv;
 								if (metertype == 1)
-									fValue *= 0.6214f;
+								{
+									if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
+										fValue *= 0.3937007874015748f; //inches
+									else
+										fValue *= 0.6214f; //miles
+								}
 								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
 									sprintf(szTmp, "%.3f", fValue);
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
@@ -14989,6 +15013,7 @@ namespace http {
 
 							int intSpeed = atoi(sd[1].c_str());
 							int intGust = atoi(sd[2].c_str());
+
 							if (m_sql.m_windunit != WINDUNIT_Beaufort)
 							{
 								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
@@ -16243,8 +16268,18 @@ namespace http {
 
 								if (metertype == 1)
 								{
-									fValue1 *= 0.6214f;
-									fValue2 *= 0.6214f;
+									if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
+									{
+										//Inches
+										fValue1 *= 0.3937007874015748f;
+										fValue2 *= 0.3937007874015748f;
+									}
+									else
+									{
+										//Miles
+										fValue1 *= 0.6214f;
+										fValue2 *= 0.6214f;
+									}
 								}
 								if (
 									((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
@@ -16847,8 +16882,18 @@ namespace http {
 							float fValue2 = float(atof(result[0][1].c_str())) / vdiv;
 							if (metertype == 1)
 							{
-								fValue1 *= 0.6214f;
-								fValue2 *= 0.6214f;
+								if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
+								{
+									//Inches
+									fValue1 *= 0.3937007874015748f;
+									fValue2 *= 0.3937007874015748f;
+								}
+								else
+								{
+									//Miles
+									fValue1 *= 0.6214f;
+									fValue2 *= 0.6214f;
+								}
 							}
 
 							if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))

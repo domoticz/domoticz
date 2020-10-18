@@ -1,7 +1,7 @@
 <!-- 
 Kwikset smartcode 
 http://s7d5.scene7.com/is/content/BDHHI/z-wave-configuration
---><Product Revision="14" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="15" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0090:0001:0001</MetaDataItem>
     <MetaDataItem name="ProductPic">images/kwikset/smartcode.png</MetaDataItem>
@@ -33,6 +33,7 @@ SmartKey: Re-key the lock in seconds</MetaDataItem>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="12">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2188/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="13">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2237/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="14">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2369/xml</Entry>
+      <Entry author="Russell Troxel - russelltroxel@gmail.com" date="08 Jun 2020" revision="15">Fixed TriggerRefresh Index to properly update lock status via Access Control.</Entry>
     </ChangeLog>
     <MetaDataItem id="0642" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2188/</MetaDataItem>
     <MetaDataItem name="WakeupDescription">Even though the lock is sleeping, all buttons are active and can be used to initiate any lock activity.
@@ -376,7 +377,7 @@ To perform a factory reset, please perform the following:
 		Lock Status is Changed, but instead send a Alarm Message -
 		So we trigger a Refresh of the DoorLock Command Class when
 		we recieve a Alarm Message Instead -->
-    <TriggerRefreshValue Genre="user" Index="0" Instance="1">
+    <TriggerRefreshValue Genre="user" Index="6" Instance="1">
       <RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
     </TriggerRefreshValue>
   </CommandClass>
