@@ -1,3 +1,10 @@
+[3.0.15]
+- Add updatedBy attribute to switchType devices-, scenes- and groups.
+- Fixed bug in domoticz.time.matchesRule (daterange was ignored when "on mon, tue" was also part of the rule)
+- Add device adapter for Thermostat type 3 devices (Mertik)
+- Add utils.humidityStatus
+- Add option to have dzVents compute humidity status
+
 [3.0.14]
 - Add utils.fuzzyLookup
 - Made eventHelpers more resilient to coding errors in the on = section
@@ -13,19 +20,19 @@
 
 [3.0.11]
 - Add sensorValue attribute to custom sensor
-- Add solarnoon as moment in time (like sunrise / sunset ) 
+- Add solarnoon as moment in time (like sunrise / sunset )
 
 [3.0.10]
 - Add NSS_GOOGLE_DEVICES for notification casting to Google home / Google chromecast
 - Add optional parm delay to domoticz.sendCommand, domoticz.email, domoticz.sms and domoticz.notify
 
 [3.0.9]
-- Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time. 
+- Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time.
 - Add function toUTC to time object.
 - Allow table as parm to function makeTime
 
 [3.0.8]
-- Allow IPv6 ::1 as localhost in domoticz settings 
+- Allow IPv6 ::1 as localhost in domoticz settings
 - Fixed bug that occurred when using a decimal number in afterSec (openURL and emitEvent)
 - Implement optional use of parsetrigger parm in setValues to trigger any subsequent eventscripts
 - Updated round.utils to correctly handle negative numbers and round to zero decimals
@@ -41,22 +48,22 @@
 - fixed settings.url
 
 [3.0.4]
-- Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC 
-- add isJSON, isXML functions to Utils 
+- Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC
+- add isJSON, isXML functions to Utils
 
 [3.0.3]
-- add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object) 
+- add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object)
 
 [3.0.2]
 - Add `PUT` and `DELETE` support to `openURL`
 - Ensure sending integer in nValue in update function
 - Fix sValue for custom sensor
 
-[3.0.1] 
+[3.0.1]
 - Add option 'at' to the various commands/methods
- 
-[3.0.0] 
- - Add system-events triggers as option to the on = { ... } section. Scripts can now be triggered based on these system-events: 
+
+[3.0.0]
+ - Add system-events triggers as option to the on = { ... } section. Scripts can now be triggered based on these system-events:
 	 - start
 	 - stop
 	 - manualBackupFinished,
@@ -78,7 +85,7 @@
 [2.5.6]
 - Add dayName, monthName, monthAbbrName and time as time attributes
 - Add _.round, _.isEqual functions to lodash.lua
-- Add testLodash.lua as testModule for lodash 
+- Add testLodash.lua as testModule for lodash
 
 [2.5.5]
 - Add Zwave fan to Zwave mode device adapter
@@ -89,7 +96,7 @@
 - Add string.sMatch to utils
 - Made wildcard handling more resilient when magic chars are part of script triggers
 
-[2.5.3] 
+[2.5.3]
 - Add timealert / errors for long running scripts
 - Add triggerHTTPResponse()
 
@@ -128,7 +135,7 @@
 
 [2.4.25]
 - Add rawDateTime
-- fix for combined device / civil[day|night]time trigger rule 
+- fix for combined device / civil[day|night]time trigger rule
 - fix for checkFirst on stopped status
 
 [2.4.24]
@@ -138,12 +145,12 @@
 - Add method setMode for evohome device
 - Add method incrementCounter for incremental counter
 - Prepared for Firebase notifications. Firebase (fcm) is the replacement for Google Cloud Messaging gcm)
-- fix wildcard device 
+- fix wildcard device
 
 [2.4.22]
 - selector.switchSelector method accepts levelNames
 - increased selector.switchSelector resilience
-- fix wildcard timerule 
+- fix wildcard timerule
 
 [2.4.21]
 - fixed wrong direction for open() and close() for some types of blinds
@@ -151,7 +158,7 @@
 - Add sValue attribute to devices
 
 [2.4.20]
-- Add quietOn() and quietOff() method to switchType devices 
+- Add quietOn() and quietOff() method to switchType devices
 
 [2.4.19]
 - Add stringSplit function to domoticz.utils.
@@ -162,7 +169,7 @@
 
 [2.4.17]
 - Add function dumpTable() to domoticz.utils
-- Add setValues() method to devices 
+- Add setValues() method to devices
 - Add setIcon() method for devices
 
 [2.4.16]
@@ -171,21 +178,21 @@
 - Add setHue, setColor, setHex, getColor for RGBW(W) devices
 - Add setDescription for devices, groups and scenes
 - Add volumeUp / volumeDown for Logitech Media Server (LMS)
-- Changed domoticz.utils.fromJSON (add optional fallback param) 
+- Changed domoticz.utils.fromJSON (add optional fallback param)
 
-[2.4.15] 
+[2.4.15]
 - Add option to use camera name in snapshot command
 - Add domoticz.settings.domoticzVersion
 - Add domoticz.settings.dzVentsVersion
 
 [2.4.14]
-- Added domoticz.settings.location.longitude and domoticz.settings.location.latitude 
+- Added domoticz.settings.location.longitude and domoticz.settings.location.latitude
 - Added check for- and message when call to openURL cannot open local (127.0.0.1)
-- **BREAKING CHANGE** :Changed domoticz.settings.location to domoticz.settings.location.name (domoticz settings location Name) 
+- **BREAKING CHANGE** :Changed domoticz.settings.location to domoticz.settings.location.name (domoticz settings location Name)
 - prevent call to updateCounter with table
 
 [2.4.13]
-- Added domoticz.settings.location (domoticz settings location Name) 
+- Added domoticz.settings.location (domoticz settings location Name)
 - Added domoticz.urlDecode method to convert an urlEncoded string to human readable format
 
 [2.4.12]
@@ -200,16 +207,16 @@
 
 [2.4.9]
 - Added evohome hotwater device (state, mode, untilDate and setHotWater function)
-- Added mode and untilDate for evohome zone devices 
+- Added mode and untilDate for evohome zone devices
 - Added EVOHOME_MODE_FOLLOW_SCHEDULE as mode for evohome devices
-- Add speedMs and gustMs from wind devices 
+- Add speedMs and gustMs from wind devices
 - bugfix for youless device (0 handling)
 - bugfix for time ( twilightstart and twilightend handling)
 - Added tests for twilight and device functions (hotwater) and attributes (evohome- and wind devices)
 - Fixed some date-range rule checking
 - Fixed integration tests by changing API call for creating a domoticz variable (saveuservariable was changed to adduservariable)
-- Fixed combined timer where one part of the combination is even or odd week. 
-- Added tests for combined timer with even/odd week 
+- Fixed combined timer where one part of the combination is even or odd week.
+- Added tests for combined timer with even/odd week
 
 [2.4.8]
 - Added telegram as option for domoticz.notify
