@@ -2947,23 +2947,23 @@ namespace http {
 				sValue.clear();
 			}
 
-			root["Forecastdevice"] = "0";
-			if (m_sql.GetUserVariable("forecastdevice", USERVARTYPE_INTEGER, sValue))
+			root["Forecasthardware"] = "0";
+			if (m_sql.GetUserVariable("forecasthardware", USERVARTYPE_INTEGER, sValue))
 			{
-				root["Forecastdevice"] = sValue;
+				root["Forecasthardware"] = sValue;
 				sValue = "";
 				sValue.clear();
 			}
 
-			if (root["Forecastdevice"] != "0")
+			if (root["Forecasthardware"] != "0")
 			{
-				int iHardwareID = atoi(root["Forecastdevice"].asString().c_str());
+				int iHardwareID = atoi(root["Forecasthardware"].asString().c_str());
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
 				if (pHardware != NULL)
 				{
 					if (pHardware->HwdType == HTYPE_OpenWeatherMap)
 					{
-						root["Forecastdevicetype"] = HTYPE_OpenWeatherMap;
+						root["Forecasthardwaretype"] = HTYPE_OpenWeatherMap;
 						COpenWeatherMap *pWHardware = reinterpret_cast<COpenWeatherMap*>(pHardware);
 						forecast_url = pWHardware->GetForecastURL();
 						if (forecast_url != "")
@@ -2979,7 +2979,7 @@ namespace http {
 					}
 					else if (pHardware->HwdType == HTYPE_BuienRadar)
 					{
-						root["Forecastdevicetype"] = HTYPE_BuienRadar;
+						root["Forecasthardwaretype"] = HTYPE_BuienRadar;
 						CBuienRadar *pWHardware = reinterpret_cast<CBuienRadar*>(pHardware);
 						forecast_url = pWHardware->GetForecastURL();
 						if (forecast_url != "")
@@ -2989,17 +2989,17 @@ namespace http {
 					}
 					else
 					{
-						root["Forecastdevice"] = "0";	// reset to 0
+						root["Forecasthardware"] = "0";	// reset to 0
 					}
 				}
 				else
 				{
-					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecastdevice"].asString().c_str());
-					root["Forecastdevice"] = "0";	// reset to 0
+					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
+					root["Forecasthardware"] = "0";	// reset to 0
 				}
 			}
 
-			if (root["Forecastdevice"] == "0" && iSucces == 1)
+			if (root["Forecasthardware"] == "0" && iSucces == 1)
 			{
 				// No forecast device, but we have geo coords, so enough for fallback
 				iSucces++;
