@@ -104,9 +104,6 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 #if !defined(WIN32)
 	bool IsDebuggerPresent(void);
 #endif
-#if defined(__linux__)
-	bool IsWSL(void); //Detects if running under Windows Subsystem for Linux (WSL)
-#endif
 
 std::string GenerateUUID();
 double round_digits(double dIn, const int totDigits);
