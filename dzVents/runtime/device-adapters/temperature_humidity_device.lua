@@ -23,13 +23,18 @@ return {
 
 		-- from data: dewPoint, humidity, humidityStatus, temperature
 
-		device.humidityStatusValue = humidityMapping[string.lower(device.humidityStatus or '')] or -1
+		local humVal = humidityMapping[string.lower(device.humidityStatus or '')] or -1
+		device.humidityStatusValue = humVal
+
 
 		function device.updateTempHum(temperature, humidity, status)
-			if status == nil or status == -1 then status = utils.humidityStatus(temperature, humidity) end -- HUM_COMPUTE or nil
+			if (status == nil) then
+				-- when no status is provided, domoticz will not set the device obviously
+				utils.log('No status provided. Temperature + humidity not set', utils.LOG_ERROR)
+				return
+			end
 
-			local value = temperature .. ';' .. humidity .. ';' .. status
-
+			local value = tostring(temperature) .. ';' .. tostring(humidity) .. ';' .. tostring(status)
 			return device.update(0, value)
 		end
 

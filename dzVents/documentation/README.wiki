@@ -184,7 +184,7 @@ A list of one or more custom event triggers. This eventTrigger can be activate b
 
 <pre>- curl: curl -d &quot;{ 'a':10, 'b':20, 'some':'text', 'sub' : { 'x':10, 'y':20 } }&quot; &quot;http://&lt;domoticzIP:domoticz port&gt;/json.htm?type=command&amp;param=customevent&amp;event=&lt;myCustomEvent&gt;&quot;
 - JSON: **&lt; domoticzIP : domoticz port &gt;**/json.htm?type=command&amp;param=customevent&amp;event=&lt;MyEvent&gt;&amp;data=myData
-- MQTT simple:  {&quot;command&quot;:&quot;customevent&quot;, &quot;event&quot;:&quot;MyEvent&quot;,&quot;data&quot;:&quot;myData&quot;}
+- MQTT simple:  {&quot;command&quot;:&quot;customevent&quot;, &quot;event&quot;:&quot;MyEvent&quot;,&quot;data&quot;:&quot;myData&quot;}  
 - MQTT complex: {&quot;command&quot;:&quot;customevent&quot;,&quot;event&quot;:&quot;MyEvent&quot;,&quot;data&quot;:&quot;{\&quot;idx\&quot;:29,\&quot;test\&quot;:\&quot;ok\&quot;}&quot; }
 - emitEvent: domoticz.emitEvent('myCustomEvent' [,])
     `domoticz.emitEvent('myEvent') -- no data`
@@ -557,7 +557,7 @@ There are several options for time triggers. It is important to know that Domoti
             'every hour on sat',        -- you guessed it correctly
             'at sunset',                -- uses sunset/sunrise/solarnoon info from Domoticz
             'at sunrise',
-            'at solarnoon',             -- <sup>3.0.11</sup>
+            'at solarnoon',             -- <sup>3.0.11</sup> 
             'at civiltwilightstart',    -- uses civil twilight start/end info from Domoticz
             'at civiltwilightend',
             'at sunset on sat,sun',
@@ -586,7 +586,7 @@ There are several options for time triggers. It is important to know that Domoti
             'every even week',          -- odd or even numbered weeks
             'on 23/11',                 -- on 23rd of november (dd/mm)
             'on 23/11-25/12',           -- between 23/11 and 25/12
-            'on 2/3-8/3,7/8,6/10-14/10',-- between march 2 and 8, on august 7 and between october 6 and 14.
+            'on 2/3-18/3',11/8,10/10-14/10',
             'on */2,15/*',              -- every day in February or
                                         -- every 15th day of the month
             'on -3/4,4/7-',             -- before 3/4 or after 4/7
@@ -685,7 +685,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 <source lang="lua">  _u = domoticz.utils
   print(_u.rightPad('test',10) .. '|||') -- =>  test    |||</source>
 <ul>
-<li><p>'''_.lodashFunctions''': This is an entire collection with very handy Luafunctions. Read more about [[#lodash_for_Lua|lodash]]. E.g.: <code>{.lua}      domoticz.utils._.size({'abc', 'def'}))` Returns 2.</code></p></li>
+<li><p>'''_.lodash''': This is an entire collection with very handy Lua functions. Read more about [[#lodash_for_Lua|lodash]]. E.g.: <code>{.lua}      domoticz.utils._.size({'abc', 'def'}))` Returns 2.</code></p></li>
 <li><p>'''cameraExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with a valid camera <sup>3.0.12</sup> or cameraID and return ID when entered with valid cameraName or false when not a camera, cameraID or cameraName of an existing camera</p></li>
 <li><p>'''deviceExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with a valid device <sup>3.0.12</sup> or deviceID and returns ID when entered with valid deviceName or false when not a device, deviceID or deviceName of an existing (and active) device. Example:</p>
 <source lang="lua">local dz = domoticz
@@ -707,7 +707,7 @@ end</source></li>
 <li><p>'''fromBase64(string)''': ''Function'': <sup>2.5.2</sup>) Decode a base64 string</p></li>
 <li><p>'''fromJSON(json, fallback <sup>2.4.16</sup>)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.</p></li>
 <li><p>'''fromXML(xml, fallback )''': ''Function'': <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: <code>local t = domoticz.utils.fromXML('&lt;testtag&gt;What a nice feature!&lt;/testtag&gt;') Followed by:</code>print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.</p></li>
-<li><p>'''fuzzyLookup([string|array of strings], parm)''': ''Function'': <sup>3.0.14</sup>. Search fuzzy matching string in parm. If parm is string it returns a number (lower is better match). If parm is array of strings it returns the best matching string.</p></li>
+<li><p>'''fuzzyLookup(string, parm)''': ''Function'': <sup>3.0.14</sup>. Search fuzzy matching string in parm. If parm is string it returns a number (lower is better match). If parm is array of strings it returns the best matching string.</p></li>
 <li><p>'''groupExists(parm)''': ''Function'': <sup>2.4.28</sup> returns name when entered with a valid group <sup>3.0.12</sup> or groupID and return ID when entered with valid groupName or false when not a group, groupID or groupName of an existing group</p></li>
 <li><p>'''hardwareExists(parm)''': ''Function'': <sup>3.0.7</sup> returns name when entered with valid hardwareID or ID when entered with valid hardwareName or false when not a hardwareID or hardwareName of an existing (and active )hardware module</p></li>
 <li><p>'''inTable(table, searchString)''': ''Function'': <sup>2.4.21</sup> Returns <code>&quot;key&quot;</code> if table has searchString as a key, <code>&quot;value&quot;</code> if table has searchString as value and <code>false</code> otherwise.</p></li>
@@ -721,7 +721,7 @@ end</source></li>
         domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
         domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300</source>
 <ul>
-<li><p>'''osCommand(cmd)''': ''Function'': <sup>3.0.13</sup> Execute an OS command and return result and returncode.</p></li>
+<li><p>'''osCommand(cmd)''': ''Function'':<sup>3.0.13</sup> Execute an OS command and return result and returncode.</p></li>
 <li><p>'''osExecute(cmd)''': ''Function'': Execute an OS command. (no return)</p></li>
 <li><p>'''rightPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.</p></li>
 <li><p>'''round(number, [decimalPlaces])''': ''Function''. Helper function to round numbers. Default decimalPlaces is 0.</p></li>
@@ -811,14 +811,14 @@ The domoticz object has these constants available for use in your code e.g. <co
 
 * '''ALERTLEVEL_GREY''', '''ALERTLEVEL_GREEN''', '''ALERTLEVEL_ORANGE''', '''ALERTLEVEL_RED''', '''ALERTLEVEL_YELLOW''': for updating text sensors.
 * '''BASETYPE_CUSTOM_EVENT''' <sup>3.0.0</sup>,'''BASETYPE_DEVICE''', '''BASETYPE_SCENE''', '''BASETYPE_GROUP''', '''BASETYPE_HARDWARE''' <sup>3.0.7</sup>, '''BASETYPE_VARIABLE''', '''BASETYPE_SECURITY''', '''BASETYPE_TIMER''', '''BASETYPE_HTTP_RESPONSE''', '''BASETYPE_SYSTEM'''<sup>3.0.0</sup>: indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object: <code>Lua     if (item.baseType == domoticz.BASETYPE_DEVICE) then ... end</code>
-* '''BARO_CLOUDY, BARO_CLOUDY_RAIN, BARO_STABLE, BARO_SUNNY, BARO_THUNDERSTORM, BARO_NOINFO, BARO_UNSTABLE, BARO_COMPUTE''' : for updating barometric values.
-* '''EVENT_TYPE_DEVICE, EVENT_TYPE_VARIABLE, EVENT_TYPE_CUSTOM<sup>3.0.0</sup>EVENT_TYPE_SECURITY, EVENT_TYPE_HTTPRESPONSE, EVENT_TYPE_SYSTEM<sup>3.0.0</sup> EVENT_TYPE_TIMER''': triggerInfo types passed to the execute function in your scripts.
-* '''EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE, EVOHOME_MODE_PERMANENT_OVERRIDE, EVOHOME_MODE_FOLLOW_SCHEDULE''' <sup>2.4.9</sup>: mode for EvoHome system.
-* '''EVOHOME_MODE_AUTO, EVOHOME_MODE_AUTOWITHRESET, EVOHOME_MODE_AUTOWITHECO, EVOHOME_MODE_AWAY, EVOHOME_MODE_DAYOFF, EVOHOME_MODE_CUSTOM, EVOHOME_MODE_HEATINGOFF''' <sup>2.4.23</sup>: mode for EvoHome controller
-* '''HUM_COMFORTABLE, HUM_DRY, HUM_NORMAL, HUM_WET, HUM_COMPUTE''' <sup>3.0.15</sup>: constant for humidity status.
+* '''BARO_CLOUDY, BARO_CLOUDY_RAIN, BARO_STABLE, BARO_SUNNY, BARO_THUNDERSTORM, BARO_NOINFO, BARO_UNSTABLE''': for updating barometric values.
+* '''EVENT_TYPE_DEVICE''', '''EVENT_TYPE_VARIABLE''', '''EVENT_TYPE_CUSTOM'''<sup>3.0.0</sup>'''EVENT_TYPE_SECURITY''', '''EVENT_TYPE_HTTPRESPONSE''', '''EVENT_TYPE_SYSTEM'''<sup>3.0.0</sup> '''EVENT_TYPE_TIMER''': triggerInfo types passed to the execute function in your scripts.
+* '''EVOHOME_MODE_AUTO''', '''EVOHOME_MODE_TEMPORARY_OVERRIDE''', '''EVOHOME_MODE_PERMANENT_OVERRIDE''', '''EVOHOME_MODE_FOLLOW_SCHEDULE''' <sup>2.4.9</sup>: mode for EvoHome system.
+* '''EVOHOME_MODE_AUTO''', '''EVOHOME_MODE_AUTOWITHRESET''', '''EVOHOME_MODE_AUTOWITHECO''', '''EVOHOME_MODE_AWAY''', '''EVOHOME_MODE_DAYOFF''', '''EVOHOME_MODE_CUSTOM''', '''EVOHOME_MODE_HEATINGOFF''' <sup>2.4.23</sup>: mode for EvoHome controller
+* '''HUM_COMFORTABLE''', '''HUM_DRY''', '''HUM_NORMAL''', '''HUM_WET''': constant for humidity status.
 * '''INTEGER''', '''FLOAT''', '''STRING''', '''DATE''', '''TIME''': variable types.
 * '''LOG_DEBUG''', '''LOG_ERROR''', '''LOG_INFO''', '''LOG_FORCE''': for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
-* '''NSS_FIREBASE, NSS_FIREBASE_CLOUD_MESSAGING, NSS_GOOGLE_DEVICES <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM <sup>2.4.8</sup>, NSS_GOOGLE_CLOUD_MESSAGING''' <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
+* '''NSS_FIREBASE''', '''NSS_FIREBASE_CLOUD_MESSAGING''', '''NSS_GOOGLE_DEVICES <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, '''NSS_HTTP''', '''NSS_KODI''', '''NSS_LOGITECH_MEDIASERVER''', '''NSS_NMA''','''NSS_PROWL''', '''NSS_PUSHALOT''', '''NSS_PUSHBULLET''', '''NSS_PUSHOVER''', '''NSS_PUSHSAFER''', '''NSS_TELEGRAM** <sup>2.4.8</sup>, '''NSS_GOOGLE_CLOUD_MESSAGING''' <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
 * '''PRIORITY_LOW''', '''PRIORITY_MODERATE''', '''PRIORITY_NORMAL''', '''PRIORITY_HIGH''', '''PRIORITY_EMERGENCY''': for notification priority.
 * '''SECURITY_ARMEDAWAY''', '''SECURITY_ARMEDHOME''', '''SECURITY_DISARMED''': for security state.
 * '''SOUND_ALIEN''' , '''SOUND_BIKE''', '''SOUND_BUGLE''', '''SOUND_CASH_REGISTER''', '''SOUND_CLASSICAL''', '''SOUND_CLIMB''' , '''SOUND_COSMIC''', '''SOUND_DEFAULT''' , '''SOUND_ECHO''', '''SOUND_FALLING''' , '''SOUND_GAMELAN''', '''SOUND_INCOMING''', '''SOUND_INTERMISSION''', '''SOUND_MAGIC''' , '''SOUND_MECHANICAL''', '''SOUND_NONE''', '''SOUND_PERSISTENT''', '''SOUND_PIANOBAR''' , '''SOUND_SIREN''' , '''SOUND_SPACEALARM''', '''SOUND_TUGBOAT''' , '''SOUND_UPDOWN''': for notification sounds.
@@ -850,7 +850,7 @@ If for some reason you miss a specific attribute or data for a device, then like
 * '''icon''': ''String''. Name of the icon in Domoticz GUI.
 * '''id''': ''Number''. Index of the device. You can find the index in the device list (idx column) in Domoticz settings. It’s not truly an index but is unique enough for dzVents to be treated as an id.
 * '''idx''': ''Number''. Same as id: index of the device
-* '''lastUpdate''': ''[[#Time_object|Time Object]]'': Time when the device was updated. **Note: The lastUpdate for devices that triggered the script at hand is in fact the previousUpdate time. The real lastUpdate time for these “script triggering” devices is the current time.
+* '''lastUpdate''': ''[[#Time_object|Time Object]]'': Time when the device was updated.
 * '''name''': ''String''. Name of the device.
 * '''nValue''': ''Number''. Numerical representation of the state.
 * '''protected''': ''Boolean''. <sup>2.4.27</sup> True when device / scene / group is protected. False otherwise.
@@ -870,7 +870,6 @@ If for some reason you miss a specific attribute or data for a device, then like
 * '''timedOut''': ''Boolean''. Is true when the device couldn’t be reached.
 * '''unit''': ''Number''. Device unit. See device list in Domoticz’ settings for the unit.
 * '''update(&lt; params &gt;)''': ''Function''. Generic update method. Accepts any number of parameters that will be sent back to Domoticz. There is no need to pass the device.id here. It will be passed for you. Example to update a temperature: <code>device.update(0,12)</code>. This will eventually result in a commandArray entry <code>['UpdateDevice']='&lt;idx&gt;|0|12'</code>. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
-* '''updatedBy''': ''String'': <sup>3.0.15</sup> user- or scriptname who/that last updated a type switch device or group/ scene. For other types or for devices where user is not- or no longer available it will return n/a. The information is available for max the number of days in the past as you set the number of available days in Log History for Light/ Switches
 
 === Device attributes and methods for specific devices ===
 
@@ -1174,7 +1173,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''humidityStatus''': ''String''
 * '''humidityStatusValue''': ''Number''. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
 * '''temperature''': ''Number''
-* '''updateTempHumBaro(temperature, humidity, status, pressure, forecast)''': ''Function''. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET, HUM_COMPUTE (let dzVents do the math)<sup>3.0.15</sup>. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''updateTempHumBaro(temperature, humidity, status, pressure, forecast)''': ''Function''. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 ==== Temperature, Humidity ====
 
@@ -1183,7 +1182,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''humidityStatus''': ''String''
 * '''humidityStatusValue''': ''Number''. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
 * '''temperature''': ''Number''
-* '''updateTempHum(temperature, humidity [, status] )''': ''Function''. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET or HUM_COMPUTE (let dzVents do the math)<sup>3.0.15</sup>. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''updateTempHum(temperature, humidity, status)''': ''Function''. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 ==== Text ====
 
@@ -1194,13 +1193,6 @@ There are many switch-like devices. Not all methods are applicable for all switc
 
 * '''setPoint''': ''Number''.
 * '''updateSetPoint(setPoint)''':''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
-
-==== Thermostat type 3 (Mertik) <sup>3.0.15</sup> ====
-
-* '''mode''': ''Number''. Current mode
-* '''modes''': ''String''. List of all modes
-* '''modeString''': ''String''. Current mode
-* '''updateMode(mode)''':''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 ==== UV sensor ====
 
@@ -1268,10 +1260,10 @@ Many dzVents device methods support extra options, like controlling a delay or a
     -- switch on for 2 minutes after 10 seconds
     device.switchOn().afterSec(10).forMin(2)
 
-    -- switch on at a specic time / day
+    -- switch on at a specic time / day 
     device.switchOn().at('09:00')                 -- earliest moment it will be 09:00 hr.
-    device.switchOn().at('08:53:30 on fri')       -- earliest moment it will be Friday at 08:53:30
-    device.switchOn().at('08:53:30 on sat, sun')  -- earliest moment it will be Saturday or Sunday at 08:53:30 (whatever comes first)
+    device.switchOn().at('08:53:30 on fri')       -- earliest moment it will be Friday at 08:53:30  
+    device.switchOn().at('08:53:30 on sat, sun')  -- earliest moment it will be Saturday or Sunday at 08:53:30 (whatever comes first) 
 
     -- switch on for 2 minutes after a randomized delay of 1-10 minutes
     device.switchOff().withinMin(10).forMin(2)
@@ -2424,14 +2416,6 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and/or <code>::1</code> and you’re good to go.
 
 = History =
-
-== [3.0.15] ==
-
-* Add updatedBy attribute to switchType devices-, scenes- and groups.
-* Fixed bug in domoticz.time.matchesRule (daterange was ignored when “on mon, tue” was also part of the rule)
-* Add device adapter for Thermostat type 3 devices (Mertik)
-* Add utils.humidityStatus
-* Add option to have dzVents compute humidity status
 
 == [3.0.14] ==
 

@@ -61,9 +61,9 @@ end
 local testSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
-	res = res and checkAttributes(dev, {["state"] = "On",})
-	handleResult ('Test switch device', res)
-	res = res and checkAttributes(dev, {["updatedBy"] = "dzVents",})
+	res = res and checkAttributes(dev, {
+		["state"] = "On",
+	})
 	handleResult ('Test switch device', res)
 	return res
 end
@@ -536,7 +536,7 @@ local testGroup = function(name)
 		["id"] = 2,
 		["name"] = name,
 		['state'] = 'On',
-		['baseType'] = 'group',
+		['baseType'] = 'group'
 	})
 	handleResult('Test group', res)
 	return res
@@ -768,8 +768,6 @@ local testSceneDumps = function(name)
 	res = res and ( sc.dumpSelection('attributes') == nil )
 	res = res and ( sc.dumpSelection('functions') == nil )
 	res = res and ( sc.dumpSelection('tables') == nil )
-    utils.log('updatedBy is ' .. sc.updatedBy, utils.LOG_FORCE)
-    res = res and checkAttributes(sc, {["updatedBy"] = "dzVents",})
 	handleResult('Test scene dumps', res)
 	return res
 end

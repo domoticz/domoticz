@@ -443,8 +443,8 @@ local function Time(sDate, isUTC, _testMS)
 
 	-- returns true if self.day is on the rule: on day1,day2...
 	function self.ruleIsOnDay(rule)
-
-		local days = string.match(rule, '%s+on%s+(.+)$') or string.match(rule, '^%s*on%s+(.+)$')
+		
+        local days = string.match(rule, '%s+on%s+(.+)$') or string.match(rule, '^%s*on%s+(.+)$')
 		if (isEmpty(days)) then
 			return nil
 		end
@@ -473,6 +473,7 @@ local function Time(sDate, isUTC, _testMS)
 		end
 		return nil -- no 'on <days>' was specified in the rule
 	end
+
 
 	-- returns true if self.week matches rule in week 1,3,4 / every odd-week, every even-week, in week 5-12,23,44
 	function self.ruleIsInWeek(rule)
@@ -523,7 +524,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	function self.ruleIsOnDate(rule)
 
-		local dates = rule:gsub('(on%s+[%a+])',''):match('on%s+([0-9%*%/%,% %-]*)') -- strip on ddd before matching rule
+		local dates = string.match(rule, 'on% ([0-9%*%/%,% %-]*)')
 		if (isEmpty(dates)) then
 			return nil
 		end

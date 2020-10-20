@@ -37,7 +37,6 @@ local deviceAdapters = {
 	'soundlevel_device',
 	'switch_device',
 	'thermostat_setpoint_device',
-	'thermostat_type_3_device',
 	'temperature_device',
 	'temperature_barometer_device',
 	'temperature_humidity_device',

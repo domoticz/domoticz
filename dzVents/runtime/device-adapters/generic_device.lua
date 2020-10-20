@@ -80,17 +80,6 @@ return {
 		device.isHTTPResponse = false
 		device.isSecurity = false
 
-        -- All baseTypes
-        device['changed'] = data.changed
-        device['protected'] = data.protected
-        device['description'] = data.description
-        device['lastUpdate'] = Time(data.lastUpdate)
-        device['updatedBy'] = data.updatedBy or 'n/a'
-        if device.updatedBy == '' then device.updatedBy = 'n/a'
-        elseif device.updatedBy == 'Admin' then device.updatedBy = 'Admin (or userless login)'
-        elseif device.updatedBy:find('EventSystem') and device.updatedBy:find('dzVents') then device.updatedBy = 'dzVents'
-        end
-
 		if (data.baseType == 'device') then
 
 			local bat
@@ -99,6 +88,8 @@ return {
 			if (data.batteryLevel <= 100) then bat = data.batteryLevel end
 			if (data.signalLevel <= 100) then sig = data.signalLevel end
 
+			device['changed'] = data.changed
+			device['description'] = data.description
 			device['deviceType'] = data.deviceType
 			device['hardwareName'] = data.data.hardwareName
 			device['hardwareType'] = data.data.hardwareType
@@ -112,6 +103,7 @@ return {
 			device['batteryLevel'] = bat
 			device['signalLevel'] = sig
 			device['deviceSubType'] = data.subType
+			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = data.rawData
 			device['nValue'] = data.data._nValue
 			device['sValue'] = data.data._state or ( table.concat(device.rawData,';') ~= '' and  table.concat(device.rawData,';') ) or nil
@@ -126,13 +118,18 @@ return {
 		end
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then
+			device['description'] = data.description
+			device['protected'] = data.protected
+			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = { [1] = data.data._state }
+			device['changed'] = data.changed
 			device['cancelQueuedCommands'] = function()
 				domoticz.sendCommand('Cancel', {
 					type = 'scene',
 					idx = data.id
 				})
 			end
+
 		end
 
 		setStateAttribute(data.data._state, device, _states)

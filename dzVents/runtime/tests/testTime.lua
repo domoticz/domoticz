@@ -1824,21 +1824,6 @@ describe('Time', function()
 
 		describe('combis', function()
 
-			it('WIKI example: at daytime on mon,thu', function()
-				_G.timeofday = { ['Daytime'] = false }
-				local t = Time('2020-10-15 01:04:00')
-				assert.is_false(t.matchesRule('at daytime on mon,thu'))
-				assert.is_true(t.matchesRule('at nighttime on mon,thu'))
-			end)
-
-			it('WIKI example: every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,thu on 20/9-18/11', function()
-				_G.timeofday = { ['SunsetInMinutes'] = 1220 , ['SunriseInMinutes'] = 480 }
-				local t = Time('2020-10-15 08:10:00')
-				assert.is_true(t.matchesRule('every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,thu on 20/9-18/11'))
-				local t = Time('2020-10-15 08:11:00')
-				assert.is_false(t.matchesRule('every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,thu on 20/9-18/11'))
-			end)
-
 			it('should return false when not on every second sunday between 1:00 and 1:30', function()
 				local t = Time('2018-12-30 01:04:00') -- on Sunday, odd week at 01:04
 				assert.is_false(t.matchesRule('between 1:00 and 1:30 on sun every odd week'))
@@ -1854,16 +1839,6 @@ describe('Time', function()
 
 				assert.is_false(t.matchesRule('every minute on tue'))
 
-			end)
-
-			it('should return false when outside date window', function() -- double on
-				local t = Time('2020-10-15 03:00:00')
-				assert.is_true(t.matchesRule('at 3:00 on mon,thu,fri,sun on 20/04-16/10'))
-				assert.is_true(t.matchesRule('at 3:00 on mon,thu,fri,sun on 2/4-2/11'))
-				assert.is_false(t.matchesRule('at 3:01 on mon,thu,fri,sun on 2/4-2/11'))
-				assert.is_false(t.matchesRule('at 3:00 on mon,wed,fri,sun on 2/4-2/11'))
-				assert.is_false(t.matchesRule('at 3:00 on mon,thu,fri,sun on 2/4-16/9'))
-				assert.is_false(t.matchesRule('at 3:00 on mon,thu,fri,sun on 20/04-16/09'))
 			end)
 
 			it('at sunset on mon', function()
