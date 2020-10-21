@@ -636,7 +636,7 @@ js/noty/noty.css
 js/noty/relax.css
 
 js/angular-animate.min.js
-js/angular-md5-min.js
+js/angular-md5.min.js
 js/angular-round-progress-directive.js
 js/angular-route.min.js
 js/angular-sanitize.min.js
@@ -668,8 +668,6 @@ js/jquery-ui-timepicker-addon.js
 js/jquery.wheelcolorpicker.js
 js/luxon.min.js
 js/md5.js
-js/ng-grid-flexible-height.js
-js/ng-grid.min.js
 js/ngDraggable.js
 js/ngload.min.js
 js/require.min.js
