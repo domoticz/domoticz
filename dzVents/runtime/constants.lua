@@ -5,6 +5,7 @@ return {
 	['ALERTLEVEL_RED'] = 4,
 	['ALERTLEVEL_YELLOW'] = 2,
 	['BARO_CLOUDY'] = 'cloudy',	   -- true mapping to numbers is done in the device adapters for baro and temphumbaro devices
+	['BARO_COMPUTE'] = 'compute',
 	['BARO_NOINFO'] = 'noinfo',
 	['BARO_PARTLYCLOUDY'] = 'partlycloudy',
 	['BARO_RAIN'] = 'rain',
@@ -43,6 +44,7 @@ return {
 	['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
 	['FLOAT'] = 'float',
 	['HUM_COMFORTABLE'] = 1,
+	['HUM_COMPUTE'] = -1,
 	['HUM_DRY'] = 2,
 	['HUM_NORMAL'] = 0,
 	['HUM_WET'] = 3,
