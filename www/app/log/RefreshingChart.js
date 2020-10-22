@@ -35,6 +35,10 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
         refreshChartData(initialZoom);
         configureZooming();
 
+        self.$scope.$on('$routeChangeStart', function($event, next, current) {
+            self.chart.tooltip.hide();
+        });
+
         if (true) {
             refreshChartDataEveryTimeUpdate();
         } else {
