@@ -6822,8 +6822,8 @@ void MainWorker::decode_evohome2(const CDomoticzHardwareBase* pHardware, const t
 		BatteryLevel = pEvo->battery_level;
 	else
 	{
-		if (dType == pTypeEvohomeWater && pEvo->updatetype == pEvoHW->updSetPoint)
-			sprintf(szTmp, "%s", pEvo->temperature ? "On" : "Off");
+		if (dType == pTypeEvohomeWater && pEvo->updatetype == pEvoHW->updSetPoint && !pEvo->temperature)
+			sprintf(szTmp, "%s", "Off");
 		else
 			sprintf(szTmp, "%.2f", pEvo->temperature / 100.0f);
 

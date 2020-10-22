@@ -41,11 +41,12 @@ enum evoCommands
 	cmdSetpointOverride = 0x2349,
 	cmdDHWState = 0x1F41,
 	cmdDHWTemp = 0x1260,
+        cmdDHWSettings = 0x10A0,//DHW settings sent between controller and DHW sensor can also be requested by the gateway
 	cmdControllerMode = 0x2E04,
 	cmdControllerHeatDemand = 0x0008,//Heat demand sent by the controller for CH / DHW / Boiler  (F9/FA/FC)
 	cmdOpenThermBridge = 0x3220,//OT Bridge Status messages
 	cmdOpenThermSetpoint = 0x22D9,//OT Bridge Control Setpoint
-	cmdActuatorState = 0x3EF0,
+ 	cmdActuatorState = 0x3EF0,
 	cmdActuatorCheck = 0x3B00,
 	cmdBinding = 0x1FC9,
 	cmdExternalSensor = 0x0002,
@@ -94,13 +95,14 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	RegisterDecoder(cmdSetpointOverride, boost::bind(&CEvohomeRadio::DecodeSetpointOverride, this, _1));
 	RegisterDecoder(cmdDHWState, boost::bind(&CEvohomeRadio::DecodeDHWState, this, _1));
 	RegisterDecoder(cmdDHWTemp, boost::bind(&CEvohomeRadio::DecodeDHWTemp, this, _1));
+        RegisterDecoder(cmdDHWSettings, boost::bind(&CEvohomeRadio::DecodeDHWSettings, this, _1));
 	RegisterDecoder(cmdControllerMode, boost::bind(&CEvohomeRadio::DecodeControllerMode, this, _1));
 	RegisterDecoder(cmdSysInfo, boost::bind(&CEvohomeRadio::DecodeSysInfo, this, _1));
 	RegisterDecoder(cmdZoneName, boost::bind(&CEvohomeRadio::DecodeZoneName, this, _1));
 	RegisterDecoder(cmdZoneHeatDemand, boost::bind(&CEvohomeRadio::DecodeHeatDemand, this, _1));
 	RegisterDecoder(cmdOpenThermBridge, boost::bind(&CEvohomeRadio::DecodeOpenThermBridge, this, _1));
 	RegisterDecoder(cmdOpenThermSetpoint, boost::bind(&CEvohomeRadio::DecodeOpenThermSetpoint, this, _1));
-	RegisterDecoder(cmdZoneInfo, boost::bind(&CEvohomeRadio::DecodeZoneInfo, this, _1));
+ 	RegisterDecoder(cmdZoneInfo, boost::bind(&CEvohomeRadio::DecodeZoneInfo, this, _1));
 	RegisterDecoder(cmdControllerHeatDemand, boost::bind(&CEvohomeRadio::DecodeHeatDemand, this, _1));
 	RegisterDecoder(cmdBinding, boost::bind(&CEvohomeRadio::DecodeBinding, this, _1));
 	RegisterDecoder(cmdActuatorState, boost::bind(&CEvohomeRadio::DecodeActuatorState, this, _1));
@@ -346,6 +348,12 @@ void CEvohomeRadio::RequestDHWTemp()
 }
 
 
+void CEvohomeRadio::RequestDHWSettings()
+{
+        AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetControllerID(), cmdDHWSettings).Add(uint8_t(0)));
+}
+
+
 void CEvohomeRadio::RequestControllerMode()
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetControllerID(), cmdControllerMode).Add(uint8_t(0xFF)));
@@ -373,6 +381,7 @@ void CEvohomeRadio::RequestCurrentState()
 	RequestControllerMode();
 	RequestDHWTemp();
 	RequestDHWState();
+        RequestDHWSettings();
 	RequestZoneStartupInfo(0);
 	RequestDeviceInfo(0);
 }
@@ -385,7 +394,8 @@ void CEvohomeRadio::RequestZoneState()
 		RequestSetPointOverride(i);
 	//Trying this linked to DHW heat demand instead...that won't be adequate do it here too!
 	RequestDHWState();
-	SendExternalSensor();
+        RequestDHWSettings();
+ 	SendExternalSensor();
 	SendZoneSensor();
 }
 
@@ -1076,9 +1086,10 @@ bool CEvohomeRadio::DecodeDHWState(CEvohomeMsg& msg)//1F41
 	tsen.subtype = sTypeEvohomeWater;
 	RFX_SETID3(msg.GetID(0), tsen.id1, tsen.id2, tsen.id3) //will be id of controller so must use zone number
 
-		tsen.zone = msg.payload[0] + 1;////NA to DHW...controller is 0 so let our zones start from 1...
+	tsen.zone = msg.payload[0] + 1;////NA to DHW...controller is 0 so let our zones start from 1...
 	tsen.updatetype = updSetPoint;//state
-	tsen.temperature = msg.payload[1];//just on or off for DHW
+        // m_DHWSetpoint defaults to 6000 until a value is read and stored
+	tsen.temperature = msg.payload[1] ? m_DHWSetpoint : 0;//no longer just on or off for DHW
 	if (tsen.temperature == 0xFF)// temperature = 255 if DHW not installed
 		return true;
 	int nMode = ConvertMode(m_evoToDczOverrideMode, msg.payload[2]);
@@ -1150,6 +1161,39 @@ bool CEvohomeRadio::DecodeDHWTemp(CEvohomeMsg& msg)//1260
 	}
 
 	return true;
+}
+
+
+bool CEvohomeRadio::DecodeDHWSettings(CEvohomeMsg& msg)//10a0
+{
+        char tag[] = "DHW_SETTINGS";
+
+        // Filter out messages from other controllers
+        // This also filters out messages sent direct from sensor as can't uniquely identify its DeviceID so added workaround of regularly requesting temp from control$
+        if (msg.GetID(0) != GetControllerID())
+                return true;
+
+        if (msg.payloadsize != 6) {
+                Log(false, LOG_STATUS, "evohome: %s: ERROR: DHW settings msg with an unexpected payload size: %d", tag, msg.payloadsize);
+                return false;
+        }
+
+        //for DHW DevNo is always 0 and not relevant
+        if (msg.payload[0] != 0) {
+                Log(true, LOG_STATUS, "evohome: %s: WARNING: sensor reading with zone != 0: 0x%x - %d", tag, msg.GetID(0), msg.payload[0]);
+		return true;
+        }
+
+	// Store the m_DHWSetpoint for whenever the DHW Setpoint is used
+        m_DHWSetpoint = msg.payload[1] << 8 | msg.payload[2];
+        Log(true, LOG_STATUS, "evohome: %s: DHW Setpoint Stored = %d C", tag, m_DHWSetpoint);
+
+        // The DHW Overrun time is in byte 4
+        Log(true, LOG_STATUS, "evohome: %s: DHW Overrun Time = %d mins", tag, msg.payload[3]);
+        // The DHW Differential is in byte 5 and 6
+        Log(true, LOG_STATUS, "evohome: %s: DHW Differential Temperature = %d C", tag, msg.payload[4] << 8 | msg.payload[5]);
+
+        return true;
 }
 
 
@@ -1438,7 +1482,8 @@ bool CEvohomeRadio::DecodeHeatDemand(CEvohomeMsg& msg)
 	{
 		szDevType = "DHW"; //DHW zone valve
 		RequestDHWState();//Trying to link the DHW state refresh to the heat demand...will be broadcast when the controller turns on or off DHW but maybe not if the heat demand doesn't change? (e.g. no heat demand but controller DHW state goes from off to on)
-	}
+	        RequestDHWSettings();
+ 	}
 	else if (nDevNo == 0xf9)//249
 		szDevType = "Heating"; //Central Heating zone valve
 
@@ -1971,7 +2016,8 @@ void CEvohomeRadio::Idle_Work()
 				for (uint8_t i = 0; i < nZoneCount; i++)
 					RequestZoneTemp(i);
 				RequestDHWTemp();  // Request DHW temp from controller as workaround for being unable to identify DeviceID
-			}
+ 			        RequestDHWSettings();
+ 			}
 			if (AllSensors == false) // Check whether individual zone sensors has been activated
 			{
 				std::vector<std::vector<std::string> > result;

@@ -54,6 +54,7 @@ private:
 	void RequestSysInfo();
 	void RequestDHWState();
 	void RequestDHWTemp();
+        void RequestDHWSettings();
 	void RequestZoneInfo(uint8_t nZone);
 	void RequestZoneTemp(uint8_t nZone);
 	void RequestZoneName(uint8_t nZone);
@@ -75,13 +76,14 @@ private:
 	bool DecodeZoneTemp(CEvohomeMsg &msg);
 	bool DecodeDHWState(CEvohomeMsg &msg);
 	bool DecodeDHWTemp(CEvohomeMsg &msg);
+        bool DecodeDHWSettings(CEvohomeMsg &msg);
 	bool DecodeControllerMode(CEvohomeMsg &msg);
 	bool DecodeSysInfo(CEvohomeMsg &msg);
 	bool DecodeZoneName(CEvohomeMsg &msg);
 	bool DecodeHeatDemand(CEvohomeMsg &msg);
 	bool DecodeOpenThermBridge(CEvohomeMsg &msg);
         bool DecodeOpenThermSetpoint(CEvohomeMsg &msg);
-	bool DecodeZoneInfo(CEvohomeMsg &msg);
+ 	bool DecodeZoneInfo(CEvohomeMsg &msg);
 	bool DecodeBinding(CEvohomeMsg &msg);
 	bool DecodeActuatorState(CEvohomeMsg &msg);
 	bool DecodeActuatorCheck(CEvohomeMsg &msg);
@@ -143,4 +145,6 @@ protected:
 	typedef tmap_relay_check::value_type tmap_relay_check_pair;
 
 	bool m_bStartup[2];
+
+	int16_t m_DHWSetpoint = 6000;
 };
