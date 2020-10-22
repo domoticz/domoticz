@@ -1,14 +1,5 @@
-define(['app', 'RefreshingChart'],
-    function (app, RefreshingChart) {
-
-        const deviceTypes = {
-            EnergyUsed: 0,
-            Gas: 1,
-            Water: 2,
-            Counter: 3,
-            EnergyGenerated: 4,
-            Time: 5,
-        };
+define(['app', 'lodash', 'RefreshingChart'],
+    function (app, _, RefreshingChart) {
 
         app.component('deviceCounterLog', {
             bindings: {
@@ -22,7 +13,7 @@ define(['app', 'RefreshingChart'],
             }
         });
 
-        app.component('counterTimeChart', {
+        app.component('counterDayChart', {
             require: {
                 logCtrl: '^deviceCounterLog'
             },
@@ -31,186 +22,675 @@ define(['app', 'RefreshingChart'],
             },
             templateUrl: 'app/log/chart-day.html',
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
                 self.range = 'day';
 
-                const seriesTypes = {
-                    Counter: 'Counter',
-                    InstantAndCounter: 'InstantAndCounter',
-                    P1: 'P1'
-                };
-
                 self.$onInit = function () {
-                    const chart = new RefreshingChart(
+                    self.chart = new RefreshingChart(
                         baseParams($),
-                        angularParams($location, $route, $scope, $element),
+                        angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParams(
-                            domoticzGlobals,
-                            self,
+                        chartParamsDay(domoticzGlobals, self,
                             {
                                 isShortLogChart: true,
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateTimeFromString(dataItem.d, yearOffset);
+                                },
+                                extendDataRequest: function (dataRequest) {
+                                    dataRequest.method = 1;
+                                    return dataRequest;
                                 }
                             },
-                            [
-                                function(dataSupplier) {
-                                    const seriesSupplier = {
-                                        id: 'eUsed',
-                                        seriesType: seriesTypes.InstantAndCounter,
-                                        valueDecimals: 0,
-                                        analyseDataItem: function (dataItem) {
-                                            const self = this;
-                                            if (dataItem.v2 !== undefined) {
-                                                self.seriesType = seriesTypes.P1;
-                                            }
-                                            if (self.valueDecimals !== 1 && dataItem.v % 1 !== 0) {
-                                                self.valueDecimals = 1;
-                                            }
-                                        },
-                                        dataItemIsValid: function (dataItem) {
-                                            return dataItem.eu !== undefined;
-                                        },
-                                        valuesFromDataItem: [
-                                            function (dataItem) {
-                                                return dataItem.eu;
-                                            }
-                                        ],
-                                        template: {
-                                            name: self.device.SwitchTypeVal === deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
-                                            tooltip: {
-                                                valueSuffix: ' Wh',
-                                                valueDecimals: this.valueDecimals
-                                            },
-                                            yAxis: 0
-                                        }
-                                    };
-                                    if (seriesSupplier.seriesType === seriesTypes.InstantAndCounter) {
-                                        seriesSupplier.template.type = 'column';
-                                        seriesSupplier.template.pointRange = 3600 * 1000;
-                                        seriesSupplier.template.zIndex = 5;
-                                        seriesSupplier.template.animation = false;
-                                        seriesSupplier.template.color = 'rgba(3,190,252,0.8)';
-                                    }
-                                    if (seriesSupplier.seriesType === seriesTypes.P1) {
-                                        seriesSupplier.template.type = 'area';
-                                        seriesSupplier.template.color = 'rgba(120,150,220,0.9)';
-                                        seriesSupplier.template.fillOpacity = 0.2;
-                                    }
-                                    return seriesSupplier;
-                                },
-                                {
-                                    id: 'eGen',
-                                    valueDecimals: 0,
-                                    analyseDataItem: function (dataItem) {
-                                        const self = this;
-                                        if (self.valueDecimals !== 1 && dataItem.eg % 1 !== 0) {
-                                            self.valueDecimals = 1;
-                                        }
-                                    },
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.eg !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.eg;
-                                        }
-                                    ],
-                                    template : {
-                                        type: 'area',
-                                        name: $.t('Energy Returned'),
-                                        tooltip: {
-                                            valueSuffix: ' Wh',
-                                            valueDecimals: this.valueDecimals
-                                        },
-                                        color: 'rgba(120,220,150,0.9)',
-                                        fillOpacity: 0.2,
-                                        yAxis: 0,
-                                        //visible: false
-                                    }
-                                },
-                                {
-                                    id: 'usage1',
-                                    seriesType: seriesTypes.Counter,
-                                    valueDecimals: 0,
-                                    analyseDataItem: function (dataItem) {
-                                        const self = this;
-                                        if (self.seriesType !== seriesTypes.P1 && dataItem.eu !== undefined) {
-                                            self.seriesType = seriesTypes.InstantAndCounter;
-                                        }
-                                        if (dataItem.v2 !== undefined) {
-                                            self.seriesType = seriesTypes.P1;
-                                        }
-                                        if (self.valueDecimals !== 1 && dataItem.v % 1 !== 0) {
-                                            self.valueDecimals = 1;
-                                        }
-                                    },
-                                    dataItemIsValid: function (dataItem) {
-                                        return dataItem.v !== undefined;
-                                    },
-                                    valuesFromDataItem: [
-                                        function (dataItem) {
-                                            return dataItem.v;
-                                        }
-                                    ],
-                                    template: function () {
-                                        const selfSeriesSupplier = this;
-                                        const deviceType = self.device.SwitchTypeVal;
-                                        if (selfSeriesSupplier.seriesType === seriesTypes.Counter) {
-                                            return {
-                                                name: deviceType === deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
-                                                color: 'rgba(3,190,252,0.8)',
-                                                tooltip: {
-                                                    valueSuffix: ' Wh',
-                                                    valueDecimals: selfSeriesSupplier.valueDecimals
-                                                },
-                                                stack: 'susage',
-                                                yAxis: 0
-                                            };
-                                        }
-                                        if (selfSeriesSupplier.seriesType === seriesTypes.InstantAndCounter) {
-                                            return {
-                                                type: 'spline',
-                                                name: deviceType === deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
-                                                color: 'rgba(255,255,0,0.8)',
-                                                tooltip: {
-                                                    valueSuffix: ' Watt',
-                                                    valueDecimals: selfSeriesSupplier.valueDecimals
-                                                },
-                                                stack: 'susage',
-                                                zIndex: 10,
-                                                yAxis: 1
-                                            };
-                                        }
-                                        if (selfSeriesSupplier.seriesType === seriesTypes.P1) {
-                                            return {
-                                                name: $.t('Usage') + ' 1',
-                                                color: 'rgba(60,130,252,0.8)',
-                                                tooltip: {
-                                                    valueSuffix: ' Watt',
-                                                    valueDecimals: this.valueDecimals
-                                                },
-                                                stack: 'susage',
-                                                yAxis: 1
-                                            };
-                                        }
-                                        return {};
-                                    }
-                                }
-                            ]
+                            []
+                                .concat(instantAndCounterShortSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(counterShortSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(p1ShortSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(powerReturnedShortSeriesSuppliers(self.device.SwitchTypeVal))
                         )
                     );
-                    chart.createDataRequest = function () {
-                        const request = RefreshingChart.prototype.createDataRequest(this);
-                        request.method = 1;
-                        return request;
-                    }
-
                 }
             }
         });
+
+        app.component('counterWeekChart', {
+            require: {
+                logCtrl: '^deviceCounterLog'
+            },
+            bindings: {
+                device: '<'
+            },
+            templateUrl: 'app/log/chart-week.html',
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+                const self = this;
+                self.range = 'week';
+
+                self.$onInit = function () {
+                    self.chart = new RefreshingChart(
+                        baseParams($),
+                        angularParams($location, $route, $scope, $timeout, $element),
+                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        chartParamsWeek(domoticzGlobals, self,
+                            {
+                                isShortLogChart: false,
+                                timestampFromDataItem: function (dataItem, yearOffset = 0) {
+                                    return GetLocalDateFromString(dataItem.d, yearOffset);
+                                }
+                            },
+                            []
+                                .concat(instantAndCounterLongSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(counterLongSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(p1LongSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(powerReturnedLongSeriesSuppliers(self.device.SwitchTypeVal))
+                        )
+                    );
+                }
+            }
+        });
+
+        app.component('counterMonthChart', {
+            require: {
+                logCtrl: '^deviceCounterLog'
+            },
+            bindings: {
+                device: '<'
+            },
+            templateUrl: 'app/log/chart-month.html',
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+                const self = this;
+                self.range = 'month';
+
+                self.$onInit = function () {
+                    self.chart = new RefreshingChart(
+                        baseParams($),
+                        angularParams($location, $route, $scope, $timeout, $element),
+                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        chartParamsMonthYear(domoticzGlobals, self,
+                            {
+                                isShortLogChart: false,
+                                timestampFromDataItem: function (dataItem, yearOffset = 0) {
+                                    return GetLocalDateFromString(dataItem.d, yearOffset);
+                                }
+                            },
+                            []
+                                .concat(counterMonthYearSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(powerReturnedMonthYearSeriesSuppliers(self.device.SwitchTypeVal))
+                        )
+                    );
+                }
+            }
+        });
+
+        app.component('counterYearChart', {
+            require: {
+                logCtrl: '^deviceCounterLog'
+            },
+            bindings: {
+                device: '<'
+            },
+            templateUrl: 'app/log/chart-year.html',
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+                const self = this;
+                self.range = 'year';
+
+                self.$onInit = function () {
+                    self.chart = new RefreshingChart(
+                        baseParams($),
+                        angularParams($location, $route, $scope, $timeout, $element),
+                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        chartParamsMonthYear(domoticzGlobals, self,
+                            {
+                                isShortLogChart: false,
+                                timestampFromDataItem: function (dataItem, yearOffset = 0) {
+                                    return GetLocalDateFromString(dataItem.d, yearOffset);
+                                }
+                            },
+                            []
+                                .concat(counterMonthYearSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(powerReturnedMonthYearSeriesSuppliers(self.device.SwitchTypeVal))
+                        )
+                    );
+                }
+            }
+        });
+
+        function counterEnergy(dataItemValueKey, seriesSupplier) {
+            return completeSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemKeys) {
+                return dataItemKeys.includes('v') && !dataItemKeys.includes('eu') && !dataItemKeys.includes('v2');
+            });
+        }
+
+        function counterEnergyTotal(dataItemValueKeys, seriesSupplier) {
+            return completeSeriesSupplier(seriesSupplier, dataItemValueKeys, function (dataItemKeys) {
+                return dataItemKeys.includes('v');
+            });
+        }
+
+        function counterShortSeriesSuppliers(deviceType) {
+            return [
+                counterEnergy('v', {
+                    id: 'counterEnergyUsedOrGenerated',
+                    series: {
+                        type: 'spline',
+                        name: deviceType === deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1)
+                        },
+                        color: 'rgba(3,190,252,0.8)',
+                        stack: 'susage',
+                        yAxis: 0
+                    }
+                })
+            ];
+        }
+
+        function counterLongSeriesSuppliers(deviceType) {
+            return [
+                counterEnergy('v', {
+                    id: 'counterEnergyUsedOrGenerated',
+                    valueDecimals: 3,
+                    series: {
+                        type: 'column',
+                        name: deviceType === deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                        },
+                        color: 'rgba(3,190,252,0.8)',
+                        stack: 'susage',
+                        yAxis: 0
+                    }
+                })
+            ];
+        }
+
+        function counterMonthYearSeriesSuppliers(deviceType) {
+            return [
+                {
+                    id: 'counterEnergyUsedOrGeneratedTotal',
+                    dataItemIsValid: function (dataItem) {
+                        return dataItem.v !== undefined;
+                    },
+                    valuesFromDataItem: [
+                        function (dataItem) {
+                            return parseFloat(dataItem.v) + (dataItem.v2 !== undefined ? parseFloat(dataItem.v2) : 0.0);
+                        }
+                    ],
+                    template: {
+                        type: 'column',
+                        name: deviceType === deviceTypes.EnergyUsed ? $.t('Total Usage') : deviceType === deviceTypes.EnergyGenerated ? $.t('Total Generated') : $.t('Total Return'),
+                        zIndex: 2,
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueDecimals: 3
+                        },
+                        color: 'rgba(3,190,252,0.8)',
+                        yAxis: 0
+                    }
+                },
+                {
+                    id: 'counterEnergyUsedOrGeneratedTotalTrendline',
+                    dataItemIsValid: function (dataItem) {
+                        return dataItem.v !== undefined;
+                    },
+                    valuesFromDataItem: [
+                        function (dataItem) {
+                            return parseFloat(dataItem.v) + (dataItem.v2 !== undefined ? parseFloat(dataItem.v2) : 0.0);
+                        }
+                    ],
+                    aggregateDatapoints: function (datapoints) {
+                        const trendline = CalculateTrendLine(datapoints);
+                        datapoints.length = 0;
+                        if (trendline !== undefined) {
+                            datapoints.push([trendline.x0, trendline.y0]);
+                            datapoints.push([trendline.x1, trendline.y1]);
+                        }
+                    },
+                    template: {
+                        name: $.t('Trendline') + ' ' + (deviceType === deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
+                        zIndex: 1,
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueDecimals: 3
+                        },
+                        color: 'rgba(255,3,3,0.8)',
+                        dashStyle: 'LongDash',
+                        yAxis: 0,
+                        visible: false
+                    }
+                },
+                {
+                    id: 'counterEnergyUsedOrGeneratedPrevious',
+                    dataItemIsValid: function (dataItem) {
+                        return dataItem.v !== undefined;
+                    },
+                    valuesFromDataItem: [
+                        function (dataItem) {
+                            return parseFloat(dataItem.v) + (dataItem.v2 !== undefined ? parseFloat(dataItem.v2) : 0.0);
+                        }
+                    ],
+                    useDataItemsFromPrevious: true,
+                    template: {
+                        name: $.t('Past') + ' ' + (deviceType === deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueDecimals: 3
+                        },
+                        color: 'rgba(190,3,252,0.8)',
+                        yAxis: 0,
+                        visible: false
+                    }
+                }
+            ];
+        }
+
+        function instantAndCounterPowerAndEnergy(dataItemValueKey, seriesSupplier) {
+            return completeSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemKeys) {
+                return dataItemKeys.includes('v') && dataItemKeys.includes('eu') && !dataItemKeys.includes('v2');
+            });
+        }
+
+        function instantAndCounterShortSeriesSuppliers(deviceType) {
+            return [
+                instantAndCounterPowerAndEnergy('eu', {
+                    id: 'instantAndCounterEnergyUsedOrGenerated',
+                    series: {
+                        type: 'column',
+                        pointRange: 3600 * 1000,
+                        zIndex: 5,
+                        animation: false,
+                        name: deviceType === deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1)
+                        },
+                        color: 'rgba(3,190,252,0.8)',
+                        yAxis: 0
+                    }
+                }),
+                instantAndCounterPowerAndEnergy('v', {
+                    id: 'instantAndCounterPowerUsedOrGenerated',
+                    series: {
+                        name: deviceType === deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
+                        zIndex: 10,
+                        type: 'spline',
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.power(valueMultipliers.m1)
+                        },
+                        color: 'rgba(255,255,0,0.8)',
+                        stack: 'susage',
+                        yAxis: 1
+                    }
+                })
+            ];
+        }
+
+        function instantAndCounterLongSeriesSuppliers(deviceType) {
+            return [
+                instantAndCounterPowerAndEnergy('eu', {
+                    id: 'instantAndCounterEnergyUsedOrGenerated',
+                    valueDecimals: 3,
+                    series: {
+                        type: 'column',
+                        pointRange: 3600 * 1000,
+                        zIndex: 5,
+                        animation: false,
+                        name: deviceType === deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                        },
+                        color: 'rgba(3,190,252,0.8)',
+                        yAxis: 0
+                    }
+                }),
+                instantAndCounterPowerAndEnergy('v', {
+                    id: 'instantAndCounterPowerUsedOrGenerated',
+                    valueDecimals: 3,
+                    series: {
+                        name: deviceType === deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
+                        zIndex: 10,
+                        type: 'column',
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                        },
+                        color: 'rgba(3,190,252,0.8)',
+                        stack: 'susage',
+                        yAxis: 0
+                    }
+                })
+            ];
+        }
+
+        function p1PowerAndEnergyUsed(dataItemValueKey, seriesSupplier) {
+            return completeSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemKeys) {
+                return dataItemKeys.includes('v') && dataItemKeys.includes('eu') && dataItemKeys.includes('v2');
+            });
+        }
+
+        function p1PowerAndEnergyGenerated(dataItemValueKey, seriesSupplier) {
+            return completeSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemKeys) {
+                return dataItemKeys.includes(dataItemValueKey);
+            });
+        }
+
+        function p1ShortSeriesSuppliers(deviceType) {
+            return [
+                p1PowerAndEnergyUsed('eu', {
+                    id: 'p1EnergyUsedArea',
+                    series: {
+                        type: 'area',
+                        name: $.t('Energy Usage'),
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1)
+                        },
+                        color: 'rgba(120,150,220,0.9)',
+                        fillOpacity: 0.2,
+                        yAxis: 0,
+                        visible: false
+                    }
+                }),
+                p1PowerAndEnergyGenerated('eg', {
+                    id: 'p1EnergyGeneratedArea',
+                    series: {
+                        type: 'area',
+                        name: $.t('Energy Returned'),
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1)
+                        },
+                        color: 'rgba(120,220,150,0.9)',
+                        fillOpacity: 0.2,
+                        yAxis: 0,
+                        visible: false
+                    }
+                }),
+                p1PowerAndEnergyUsed('v', {
+                    id: 'p1PowerUsed',
+                    series: {
+                        name: $.t('Usage') + ' 1',
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.power(valueMultipliers.m1)
+                        },
+                        color: 'rgba(60,130,252,0.8)',
+                        stack: 'susage',
+                        yAxis: 1
+                    }
+                }),
+                p1PowerAndEnergyGenerated('v2', {
+                    id: 'p1PowerGenerated',
+                    series: {
+                        name: $.t('Usage') + ' 2',
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.power(valueMultipliers.m1)
+                        },
+                        color: 'rgba(3,190,252,0.8)',
+                        stack: 'susage',
+                        yAxis: 1
+                    }
+                })
+            ];
+        }
+
+        function p1LongSeriesSuppliers(deviceType) {
+            return [
+                p1PowerAndEnergyUsed('eu', {
+                    id: 'p1EnergyUsedArea',
+                    valueDecimals: 3,
+                    series: {
+                        type: 'area',
+                        name: $.t('Energy Usage'),
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                        },
+                        color: 'rgba(120,150,220,0.9)',
+                        fillOpacity: 0.2,
+                        yAxis: 0,
+                        visible: false
+                    }
+                }),
+                p1PowerAndEnergyGenerated('eg', {
+                    id: 'p1EnergyGeneratedArea',
+                    valueDecimals: 3,
+                    series: {
+                        type: 'area',
+                        name: $.t('Energy Returned'),
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                        },
+                        color: 'rgba(120,220,150,0.9)',
+                        fillOpacity: 0.2,
+                        yAxis: 0,
+                        visible: false
+                    }
+                }),
+                p1PowerAndEnergyUsed('v', {
+                    id: 'p1EnergyUsed',
+                    valueDecimals: 3,
+                    series: {
+                        name: $.t('Usage') + ' 1',
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                        },
+                        color: 'rgba(60,130,252,0.8)',
+                        stack: 'susage',
+                        yAxis: 0
+                    }
+                }),
+                p1PowerAndEnergyGenerated('v2', {
+                    id: 'p1EnergyGenerated',
+                    valueDecimals: 3,
+                    series: {
+                        name: $.t('Usage') + ' 2',
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                        },
+                        color: 'rgba(3,190,252,0.8)',
+                        stack: 'susage',
+                        yAxis: 0
+                    }
+                })
+            ];
+        }
+
+        function powerReturned(dataItemValueKey, seriesSupplier) {
+            return completeSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemKeys) {
+                return dataItemKeys.includes(dataItemValueKey);
+            });
+        }
+
+        function powerReturnedShortSeriesSuppliers(deviceType) {
+            return [
+                powerReturned('r1', {
+                    id: 'powerReturned1',
+                    series: {
+                        name: $.t('Return') + ' 1',
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.power(valueMultipliers.m1)
+                        },
+                        color: 'rgba(30,242,110,0.8)',
+                        stack: 'sreturn',
+                        yAxis: 1
+                    }
+                }),
+                powerReturned('r2', {
+                    id: 'powerReturned2',
+                    series: {
+                        name: $.t('Return') + ' 2',
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.power(valueMultipliers.m1)
+                        },
+                        color: 'rgba(3,252,190,0.8)',
+                        stack: 'sreturn',
+                        yAxis: 1
+                    }
+                })
+            ];
+        }
+
+        function powerReturnedLongSeriesSuppliers(deviceType) {
+            return [
+                powerReturned('r1', {
+                    id: 'powerReturned1',
+                    valueDecimals: 3,
+                    series: {
+                        name: $.t('Return') + ' 1',
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                        },
+                        color: 'rgba(30,242,110,0.8)',
+                        stack: 'sreturn',
+                        yAxis: 0
+                    }
+                }),
+                powerReturned('r2', {
+                    id: 'powerReturned2',
+                    valueDecimals: 3,
+                    series: {
+                        name: $.t('Return') + ' 2',
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                        },
+                        color: 'rgba(3,252,190,0.8)',
+                        stack: 'sreturn',
+                        yAxis: 0
+                    }
+                })
+            ];
+        }
+
+        function powerReturnedMonthYearSeriesSuppliers(deviceType) {
+            return [
+                {
+                    id: 'powerReturnedTotal',
+                    dataItemIsValid: function (dataItem) {
+                        return dataItem.r1 !== undefined;
+                    },
+                    valuesFromDataItem: [
+                        function (dataItem) {
+                            return parseFloat(dataItem.r1) + (dataItem.r2 !== undefined ? parseFloat(dataItem.r2) : 0.0);
+                        }
+                    ],
+                    template: {
+                        name: $.t('Total Return'),
+                        zIndex: 1,
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueDecimals: 3
+                        },
+                        color: 'rgba(3,252,190,0.8)',
+                        yAxis: 0
+                    }
+                },
+                {
+                    id: 'powerReturnedTotalTrendline',
+                    dataItemIsValid: function (dataItem) {
+                        return dataItem.r1 !== undefined;
+                    },
+                    valuesFromDataItem: [
+                        function (dataItem) {
+                            return parseFloat(dataItem.r1) + (dataItem.r2 !== undefined ? parseFloat(dataItem.r2) : 0.0);
+                        }
+                    ],
+                    aggregateDatapoints: function (datapoints) {
+                        const trendline = CalculateTrendLine(datapoints);
+                        datapoints.length = 0;
+                        if (trendline !== undefined) {
+                            datapoints.push([trendline.x0, trendline.y0]);
+                            datapoints.push([trendline.x1, trendline.y1]);
+                        }
+                    },
+                    template: {
+                        name: $.t('Trendline') + ' ' + $.t('Return'),
+                        zIndex: 1,
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueDecimals: 3
+                        },
+                        color: 'rgba(255,127,39,0.8)',
+                        dashStyle: 'LongDash',
+                        yAxis: 0,
+                        visible: false
+                    }
+                },
+                {
+                    id: 'powerReturnedTotalPrevious',
+                    dataItemIsValid: function (dataItem) {
+                        return dataItem.r1 !== undefined;
+                    },
+                    valuesFromDataItem: [
+                        function (dataItem) {
+                            return parseFloat(dataItem.r1) + (dataItem.r2 !== undefined ? parseFloat(dataItem.r2) : 0.0);
+                        }
+                    ],
+                    useDataItemsFromPrevious: true,
+                    template: {
+                        name: $.t('Past') + ' ' + $.t('Return'),
+                        tooltip: {
+                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueDecimals: 3
+                        },
+                        color: 'rgba(252,190,3,0.8)',
+                        yAxis: 0,
+                        visible: false
+                    }
+                }
+            ];
+        }
+
+        function completeSeriesSupplier(seriesSupplier, dataItemValueKeys, dataItemKeysAreSupported) {
+            return _.merge(
+                {
+                    valueDecimals: 0,
+                    dataItemKeys: [],
+                    analyseDataItem: function (dataItem) {
+                        const self = this;
+                        dataItemKeysCollect(dataItem);
+                        valueDecimalsCalculate(dataItem);
+
+                        function dataItemKeysCollect(dataItem) {
+                            Object.keys(dataItem)
+                                .filter(function (key) {
+                                    return !self.dataItemKeys.includes(key);
+                                })
+                                .forEach(function (key) {
+                                    self.dataItemKeys.push(key);
+                                });
+                        }
+
+                        function valueDecimalsCalculate(dataItem) {
+                            if (self.valueDecimals === 0 && dataItemValueKeys.reduce(function (valueDecimals, dataItemValueKey) { return valueDecimals + dataItem[dataItemValueKey] % 1; }, 0) !== 0) {
+                                self.valueDecimals = 1;
+                            }
+                        }
+                    },
+                    dataItemIsValid: function (dataItem) {
+                        return dataItemKeysAreSupported(this.dataItemKeys) && dataItemValueKeys.some(function (dataItemValueKey) { return dataItem[dataItemValueKey] !== undefined; });
+                    },
+                    valuesFromDataItem: [
+                        function (dataItem) {
+                            return dataItemValueKeys.reduce(function (totalValue, dataItemValueKey) {
+                                const dataItemElement = dataItem[dataItemValueKey];
+                                if (dataItemElement === undefined) {
+                                    return totalValue;
+                                }
+                                return totalValue + parseFloat(dataItemElement);
+                            }, 0.0);
+                        }
+                    ],
+                    template: function () {
+                        return _.merge(
+                            {
+                                tooltip: {
+                                    valueDecimals: seriesSupplier.valueDecimals
+                                }
+                            },
+                            seriesSupplier.series
+                        );
+                    }
+                },
+                seriesSupplier
+            );
+        }
 
         app.component('deviceLongChart', {
             require: {
@@ -222,68 +702,188 @@ define(['app', 'RefreshingChart'],
             },
             templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
 
                 self.$onInit = function () {
                     new RefreshingChart(
                         baseParams($),
-                        angularParams($location, $route, $scope, $element),
+                        angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParams(
-                            domoticzGlobals,
-                            self,
+                        chartParamsWeek(domoticzGlobals, self, {
+                            isShortLogChart: false,
+                            timestampFromDataItem: function (dataItem, yearOffset = 0) {
+                                return GetLocalDateFromString(dataItem.d, yearOffset);
+                            }
+                        }, [
                             {
-                                isShortLogChart: false,
-                                timestampFromDataItem: function (dataItem, yearOffset = 0) {
-                                    return GetLocalDateFromString(dataItem.d, yearOffset);
+                                id: 'min',
+                                dataItemValueKeySuffix: '_min',
+                                colorIndex: 3,
+                                template: {
+                                    name: $.t('Minimum')
                                 }
                             },
-                            [
-                                {
-                                    id: 'min',
-                                    valueKeySuffix: '_min',
-                                    template: {
-                                        name: $.t('Minimum'),
-                                        colorIndex: 3
-                                    }
-                                },
-                                {
-                                    id: 'max',
-                                    valueKeySuffix: '_max',
-                                    template: {
-                                        name: $.t('Maximum'),
-                                        colorIndex: 2
-                                    }
-                                },
-                                {
-                                    id: 'avg',
-                                    valueKeySuffix: '_avg',
-                                    template: {
-                                        name: $.t('Average'),
-                                        colorIndex: 0
-                                    }
+                            {
+                                id: 'max',
+                                dataItemValueKeySuffix: '_max',
+                                colorIndex: 2,
+                                template: {
+                                    name: $.t('Maximum')
                                 }
-                            ]
-                        )
+                            },
+                            {
+                                id: 'avg',
+                                dataItemValueKeySuffix: '_avg',
+                                colorIndex: 0,
+                                template: {
+                                    name: $.t('Average')
+                                }
+                            }
+                        ])
                     );
                 }
             }
         });
+
+        function chartParamsDay(domoticzGlobals, ctrl, dataSupplierTemplate, seriesSuppliers) {
+            return {
+                highchartTemplate: {
+                    chart: {
+                        alignTicks: false
+                    },
+                    tooltip: {
+                        shared: false
+                    },
+                    plotOptions: {
+                        series: {
+                            matchExtremes: true
+                        }
+                    }
+                },
+                synchronizeYaxes: true,
+                range: ctrl.range,
+                device: ctrl.device,
+				sensorType: 'counter',
+                chartName: ctrl.device.SwitchTypeVal === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
+                autoRefreshIsEnabled: function() {
+                    return ctrl.logCtrl.autoRefresh;
+                },
+                dataSupplier:
+                    _.merge(
+                        {
+                            yAxes:
+                                [
+                                    {
+                                        title: {
+                                            text: $.t('Energy') + ' (Wh)'
+                                        }
+                                    },
+                                    {
+                                        title: {
+                                            text: $.t('Power') + ' (Watt)'
+                                        },
+                                        opposite: true
+                                    }
+                                ],
+                            seriesSuppliers: seriesSuppliers
+                        },
+                        dataSupplierTemplate
+                    )
+            };
+        }
+
+        function chartParamsWeek(domoticzGlobals, ctrl, dataSupplierTemplate, seriesSuppliers) {
+            return {
+                highchartTemplate: {
+                    chart: {
+                        type: 'column',
+                        marginRight:10
+                    },
+                    xAxis: {
+                        dateTimeLabelFormats: {
+                            day: '%a'
+                        },
+                        tickInterval: 24 * 3600 * 1000
+                    },
+                    plotOptions: {
+                        column: {
+                            dataLabels: {
+                                enabled: true
+                            }
+                        }
+                    }
+                },
+                range: ctrl.range,
+                device: ctrl.device,
+				sensorType: 'counter',
+                chartName: ctrl.device.SwitchTypeVal === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
+                autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
+                dataSupplier:
+                    _.merge(
+                        {
+                            yAxes:
+                                [
+                                    {
+                                        maxPadding: 0.2,
+                                        title: {
+                                            text: $.t('Energy') + ' (kWh)'
+                                        }
+                                    }
+                                ],
+                            seriesSuppliers: seriesSuppliers
+                        },
+                        dataSupplierTemplate
+                    )
+            };
+        }
+
+        function chartParamsMonthYear(domoticzGlobals, ctrl, dataSupplierTemplate, seriesSuppliers) {
+            return {
+                highchartTemplate: {
+                    chart: {
+                        marginRight:10
+                    }
+                },
+                range: ctrl.range,
+                device: ctrl.device,
+				sensorType: 'counter',
+                chartName: ctrl.device.SwitchTypeVal === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
+                autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
+                dataSupplier:
+                    _.merge(
+                        {
+                            yAxes:
+                                [
+                                    {
+                                        title: {
+                                            text: $.t('Energy') + ' (kWh)'
+                                        }
+                                    }
+                                ],
+                            seriesSuppliers: seriesSuppliers
+                        },
+                        dataSupplierTemplate
+                    )
+            };
+        }
 
         function baseParams(jquery) {
             return {
                 jquery: jquery
             };
         }
-        function angularParams(location, route, scope, element) {
+
+        function angularParams(location, route, scope, timeout, element) {
             return {
                 location: location,
                 route: route,
                 scope: scope,
+                timeout: timeout,
                 element: element
             };
         }
+
         function domoticzParams(globals, api, datapointApi) {
             return {
                 globals: globals,
@@ -291,34 +891,49 @@ define(['app', 'RefreshingChart'],
                 datapointApi: datapointApi
             };
         }
-        function chartParams(domoticzGlobals, ctrl, dataSupplierTemplate, seriesSuppliers) {
-            const dataSupplier = dataSupplierTemplate;
-            dataSupplier.yAxes = [
-                {
-                    title: {
-                        text: $.t('Energy') + ' (Wh)'
-                    }
-                },
-                {
-                    title: {
-                        text: $.t('Power') + ' (Watt)'
-                    },
-                    opposite: true
+
+        const deviceTypes = {
+            EnergyUsed: 0,
+            Gas: 1,
+            Water: 2,
+            Counter: 3,
+            EnergyGenerated: 4,
+            Time: 5,
+        };
+
+        const valueMultipliers = {
+            m1: 'm1',
+            m1000: 'm1000',
+            forRange: function (range) {
+                return range === 'day' ? this.m1
+                    : range === 'week' ? this.m1000
+                    : null;
+            }
+        }
+
+        const valueUnits = {
+            Wh: 'Wh',
+            kWh: 'kWh',
+            W: 'Watt',
+            kW: 'kW',
+            energy: function (multiplier) {
+                if (multiplier === valueMultipliers.m1) {
+                    return this.Wh;
                 }
-            ];
-            dataSupplier.seriesSuppliers = seriesSuppliers;
-            return {
-                highchartParams: {
-                    alignTicks: false
-                },
-                synchronizeYaxes: true,
-                range: ctrl.range,
-                device: ctrl.device,
-				sensorType: 'counter',
-                chartName: ctrl.device.SwitchTypeVal === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
-                autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
-                dataSupplier: dataSupplier
-            };
+                if (multiplier === valueMultipliers.m1000) {
+                    return this.kWh;
+                }
+                return '';
+            },
+            power: function (multiplier) {
+                if (multiplier === valueMultipliers.m1) {
+                    return this.W;
+                }
+                if (multiplier === valueMultipliers.m1000) {
+                    return this.kW;
+                }
+                return '';
+            }
         }
     }
 );

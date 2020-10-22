@@ -20,8 +20,6 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
 
                 if (isSmartLog()) {
                     ShowSmartLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
-                } else if (isCounterLogSpline() && $location.search().old !== undefined) {
-                    ShowCounterLogSpline('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
                 } else if (isCounterLog()) {
                     ShowCounterLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
                 }
