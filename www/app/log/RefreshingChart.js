@@ -1,6 +1,11 @@
-define(['DomoticzBase'], function (DomoticzBase) {
+define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
+    function (_, DomoticzBase, DataLoader, ChartLoader, ChartZoomer) {
 
-    function RefreshingChart(baseParams, angularParams, domoticzParams, params) {
+    function RefreshingChart(
+            baseParams, angularParams, domoticzParams, params,
+            dataLoader = new DataLoader(),
+            chartLoader = new ChartLoader(),
+            chartZoomer = new ChartZoomer()) {
         DomoticzBase.call(this, baseParams, angularParams, domoticzParams);
         const self = this;
         self.consoledebug('device -> '
@@ -14,9 +19,12 @@ define(['DomoticzBase'], function (DomoticzBase) {
         self.chartName = params.chartName;
         self.device = params.device;
         self.dataSupplier = params.dataSupplier;
-        self.chartType = params.chartType;
+        self.extendDataRequest = params.dataSupplier.extendDataRequest || function (dataRequest) { return dataRequest; };
+        self.seriesSuppliers = completeSeriesSuppliers(params.dataSupplier);
         self.synchronizeYaxes = params.synchronizeYaxes;
-        self.chart = self.$element.find('.chartcontainer').highcharts(self.createChartDefinition(params.highchartParams)).highcharts();
+        self.chart = self.$element.find('.chartcontainer').highcharts(createChartDefinition(params.highchartTemplate)).highcharts();
+        self.autoRefreshIsEnabled = params.autoRefreshIsEnabled;
+        self.refreshTimestamp = 0;
 
         self.isZoomLeftSticky = false;
         self.isZoomRightSticky = false;
@@ -24,476 +32,518 @@ define(['DomoticzBase'], function (DomoticzBase) {
 
         self.$scope.chartTitle = chartTitle();
 
-        self.chartOnMouseDown = self.chart.container.onmousedown;
-        self.chart.container.onmousedown = function (e) {
-            self.consoledebug('Mousedown ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
-            self.wasCtrlMouseDown = e.ctrlKey;
-            self.mouseDownPosition = e.clientX;
-            self.chartOnMouseDown(e);
-        };
-        self.chart.container.onmouseup = function (e) {
-            self.consoledebug('Mouseup ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
-            self.wasCtrlMouseUp = e.ctrlKey;
-            self.mouseUpPosition = e.clientX;
-        };
+        refreshChartData(initialZoom);
+        configureZooming();
 
-        if (false) {
-            self.refreshChartData();
+        if (true) {
+            refreshChartDataEveryTimeUpdate();
+        } else {
+            refreshChartDataEveryDeviceUpdate();
         }
 
-        self.refreshTimestamp = 0;
+        function refreshChartDataEveryTimeUpdate() {
+            self.$scope.$on('time_update', function (event, update) {
+                if (self.autoRefreshIsEnabled()) {
+                    const serverTime = GetLocalTimestampFromString(update.serverTime);
+                    const secondsIntoCurrentSlot = Math.floor(serverTime % (300 * 1000) / 1000);
+                    if (3 < secondsIntoCurrentSlot) {
+                        const currentSlot = Math.floor(serverTime / (300 * 1000));
+                        const refreshSlot = Math.floor(self.refreshTimestamp / (300 * 1000));
+                        if (refreshSlot < currentSlot) {
+                            refreshChartData();
+                            self.refreshTimestamp = serverTime;
+                        }
+                    }
+                } else {
+                    self.refreshTimestamp = 0;
+                }
+            });
+        }
 
-        self.$scope.zoomed = false;
+        function refreshChartDataEveryDeviceUpdate() {
+            self.$scope.$on('device_update', function (event, device) {
+                if (params.autoRefreshIsEnabled() && device.idx === self.device.idx) {
+                    refreshChartData();
+                }
+            });
+        }
 
-        self.$scope.zoomLabel = function (label) {
-            const matcher = label.match(/^(?<count>[0-9]+)(?<letter>[HdwM])$/);
-            if (matcher !== null) {
-                const letter = matcher.groups.letter;
-                const duration =
-                    letter === 'H' ? 'Hour' :
-                        letter === 'd' ? 'Day' :
-                            letter === 'w' ? 'Week' :
-                                letter === 'M' ? 'Month' : '';
-                return matcher.groups.count + $.t(duration).substring(0, 1).toLowerCase();
+        function createChartDefinition(template) {
+            return _.merge({
+                        chart: {
+                            type: 'spline',
+                            zoomType: 'x',
+                            marginTop: 45,
+                            resetZoomButton: {
+                                theme: {
+                                    display: 'none'
+                                },
+                                position: {
+                                    x: -30,
+                                    y: -36
+                                }
+                            },
+                            panning: true,
+                            panKey: 'shift'
+                        },
+                        xAxis: {
+                            type: 'datetime',
+                            events: {
+                                setExtremes: function (e) {
+                                    const xAxis = self.chart.xAxis[0];
+                                    self.consoledebug(function () {
+                                        return 'xAxis.setExtremes():\n'
+                                            + '    dataMin:' + dateToString(xAxis.dataMin) + ', e.min:' + dateToString(e.min) + '\n'
+                                            + '    dataMax:' + dateToString(xAxis.dataMax) + ', e.max:' + dateToString(e.max);
+                                    });
+                                    if (e.min === null && e.max === null || e.min <= xAxis.dataMin && xAxis.dataMax <= e.max) {
+                                        self.isZoomLeftSticky = false;
+                                        self.isZoomRightSticky = false;
+                                        self.isZoomed = false;
+                                        self.consoledebug('Reset zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
+                                    } else {
+                                        const wasMouseDrag = self.mouseDownPosition !== self.mouseUpPosition;
+                                        if (wasMouseDrag) {
+                                            const wasMouseUpRightOfMouseDown = self.mouseDownPosition < self.mouseUpPosition;
+                                            self.isZoomLeftSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseDown : self.wasCtrlMouseUp;
+                                            self.isZoomRightSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseUp : self.wasCtrlMouseDown;
+                                        }
+                                        self.isZoomed = true;
+                                        self.consoledebug('Set zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
+                                    }
+                                    synchronizeYaxes();
+                                    self.$timeout(function () { self.$scope.zoomed = self.isZoomed; }, 0, true);
+                                }
+                            }
+                        },
+                        yAxis: self.dataSupplier.yAxes.map(function (yAxis) {
+                            return _.merge(
+                                {
+                                    events: {
+                                        setExtremes: function (e) {
+                                            self.consoledebug(function () {
+                                                return 'yAxis(' + yAxisToString(yAxis) + ').setExtremes():\n'
+                                                    + '    dataMin:' + yAxis.dataMin + ', e.min:' + e.min + '\n'
+                                                    + '    dataMax:' + yAxis.dataMax + ', e.max:' + e.max;
+                                            });
+                                        }
+                                    }
+                                },
+                                yAxis
+                            );
+                        }),
+                        tooltip: {
+                            followTouchMove: self.$location.search().followTouchMove !== 'false',
+                            outside: true,
+                            crosshairs: true,
+                            shared: true,
+                            valueSuffix: self.dataSupplier.valueSuffix
+                        },
+                        plotOptions: {
+                            series: {
+                                point: {
+                                    events: {
+                                        click: function (event) {
+                                            if (event.shiftKey !== true) {
+                                                return;
+                                            }
+                                            self.domoticzDatapointApi
+                                                .deletePoint(self.device.idx, event.point, self.dataSupplier.isShortLogChart, new Date().getTimezoneOffset())
+                                                .then(function () {
+                                                    self.$route.reload();
+                                                });
+                                        }
+                                    }
+                                }
+                            },
+                            spline: {
+                                lineWidth: 3,
+                                states: {
+                                    hover: {
+                                        lineWidth: 3
+                                    }
+                                },
+                                marker: {
+                                    enabled: false,
+                                    states: {
+                                        hover: {
+                                            enabled: true,
+                                            symbol: 'circle',
+                                            radius: 5,
+                                            lineWidth: 1
+                                        }
+                                    }
+                                }
+                            },
+                            line: {
+                                lineWidth: 3,
+                                states: {
+                                    hover: {
+                                        lineWidth: 3
+                                    }
+                                },
+                                marker: {
+                                    enabled: false,
+                                    states: {
+                                        hover: {
+                                            enabled: true,
+                                            symbol: 'circle',
+                                            radius: 5,
+                                            lineWidth: 1
+                                        }
+                                    }
+                                }
+                            },
+                            areasplinerange: {
+                                marker: {
+                                    enabled: false
+                                }
+                            },
+                            areaspline: {
+                                lineWidth: 3,
+                                marker: {
+                                    enabled: false
+                                },
+                                states: {
+                                    hover: {
+                                        lineWidth: 3
+                                    }
+                                }
+                            },
+                            column: {
+                                minPointLength: 4,
+                                pointPadding: 0.1,
+                                groupPadding: 0,
+                                dataLabels: {
+                                    enabled: false,
+                                    color: 'white'
+                                }
+                            }
+                        },
+                        title: false,
+                        series: [],
+                        legend: {
+                            enabled: true
+                        },
+                        time: {
+                            timezoneOffset: new Date().getTimezoneOffset()
+                        }
+                    },
+                    template
+                );
+        }
+
+        function refreshChartData(afterChartRefreshed) {
+            const dataRequest = createDataRequest();
+            const stopwatchDataRequest = stopwatch(function() { return 'sendRequest(' + JSON.stringify(dataRequest) + ')'; });
+            self.domoticzApi
+                .sendRequest(dataRequest)
+                .then(function (data) {
+                    self.consoledebug(function () { return stopwatchDataRequest.log(); });
+                    self.consoledebug(function () { return '[' + new Date().toString() + '] refreshing ' + self; });
+
+                    if (typeof data.result === 'undefined') {
+                        return;
+                    }
+
+                    const stopwatchCycle = stopwatch('cycle');
+                    loadDataInChart(data);
+                    synchronizeYaxes();
+                    redrawChart();
+                    self.consoledebug(function () { return stopwatchCycle.log(); });
+                    if (afterChartRefreshed !== undefined) {
+                        afterChartRefreshed();
+                    }
+
+                    function loadDataInChart(data) {
+                        const chartAnalysis = chartZoomer.analyseChart(self);
+                        dataLoader.loadData(data, self);
+                        chartLoader.loadChart(self);
+                        chartZoomer.zoomChart(self, chartAnalysis);
+                    }
+
+                    function redrawChart() {
+                        self.chart.redraw();
+                    }
+                });
+
+            function createDataRequest() {
+                return self.extendDataRequest({
+                    type: 'graph',
+                    sensor: self.sensorType,
+                    range: self.range,
+                    idx: self.device.idx
+                });
             }
-            return $.t(label).toLowerCase();
         }
 
-        self.$scope.zoomHours = function (hours) {
-            const xAxis = self.chart.xAxis[0];
-            const reference = xAxis.max < xAxis.dataMax ? xAxis.max : xAxis.dataMax;
-            zoom(reference - hours * 3600 * 1000, reference);
+        function synchronizeYaxes() {
+            if (self.synchronizeYaxes) {
+                const yAxes = self.chart.series
+                    .map(function (series) { return self.chart.yAxis[series.options.yAxis]; })
+                    .reduce(function (yAxes, yAxis) { if (!yAxes.includes(yAxis)) { yAxes.push(yAxis); } return yAxes; }, []);
+                yAxes.forEach(function (yAxis) {
+                    yAxis.setExtremes(null, null, false);
+                });
+                self.chart.redraw();
+
+                const iMin = yAxes.map(function (yAxis) { return yAxis.min; }).reduce(min, Infinity);
+                const iMax = yAxes.map(function (yAxis) { return yAxis.max; }).reduce(max, -Infinity);
+
+                const yAxisMinSynchronized = iMin === Infinity ? null : iMin;
+                const yAxisMaxSynchronized = iMax === -Infinity ? null : iMax;
+                self.consoledebug('Synchronizing yAxes to extremes (' + yAxisMinSynchronized + ', ' + yAxisMaxSynchronized + '):');
+                yAxes.forEach(function (yAxis) {
+                    self.consoledebug('    yAxis:' + yAxisToString(yAxis));
+                    yAxis.setExtremes(yAxisMinSynchronized, yAxisMaxSynchronized, false);
+                });
+            }
+
+
+            function min(valueMin, value) {
+                return Math.min(value, valueMin);
+            }
+
+            function max(valueMax, value) {
+                return Math.max(value, valueMax);
+            }
+
         }
 
-        self.$scope.zoomDays = function (days) {
-            const xAxis = self.chart.xAxis[0];
-            const reference = xAxis.max < xAxis.dataMax ? xAxis.max : xAxis.dataMax;
-            zoom(reference - days * 24 * 3600 * 1000, reference);
+        function configureZooming() {
+            const intermediateTouchEndDelay = intParam('endDelay', 500);
+            const touchStartDelay = intParam('startDelay', 400);
+
+            self.chart.container.addEventListener('touchstart', function (e) {
+                if (self.touchEndTimestamp === undefined || self.touchEndTimestamp + intermediateTouchEndDelay < e.timeStamp) {
+                    self.touchStartTimestamp = e.timeStamp;
+                    self.touchEndTimestamp = undefined;
+                }
+            });
+            self.chart.container.addEventListener('touchmove', function (e) {
+                if (self.touchStartTimestamp !== undefined && self.touchStartTimestamp + touchStartDelay < e.timeStamp) {
+                    self.chart.pointer.followTouchMove = false;
+                }
+                self.touchStartTimestamp = undefined;
+            });
+            self.chart.container.addEventListener('touchend', function (e) {
+                self.touchEndTimestamp = e.timeStamp;
+                self.chart.pointer.followTouchMove = true;
+                self.touchStartTimestamp = undefined;
+            });
+            self.chart.container.addEventListener('mousedown', function (e) {
+                self.consoledebug('Mousedown ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
+                self.wasCtrlMouseDown = e.ctrlKey;
+                self.mouseDownPosition = e.clientX;
+            });
+            self.chart.container.addEventListener('mouseup', function (e) {
+                self.consoledebug('Mouseup ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
+                self.wasCtrlMouseUp = e.ctrlKey;
+                self.mouseUpPosition = e.clientX;
+            });
+
+            self.$scope.zoomed = false;
+
+            self.$scope.zoomLabel = function (label) {
+                const matcher = label.match(/^(?<count>[0-9]+)(?<letter>[HdwM])$/);
+                if (matcher !== null) {
+                    const letter = matcher.groups.letter;
+                    const duration =
+                        letter === 'H' ? 'Hour' :
+                            letter === 'd' ? 'Day' :
+                                letter === 'w' ? 'Week' :
+                                    letter === 'M' ? 'Month' : '';
+                    return matcher.groups.count + $.t(duration).substring(0, 1).toLowerCase();
+                }
+                return $.t(label).toLowerCase();
+            }
+
+            self.$scope.zoomHours = function (hours) {
+                const xAxis = self.chart.xAxis[0];
+                const reference = xAxis.max < xAxis.dataMax ? xAxis.max : xAxis.dataMax;
+                zoom(reference - hours * 3600 * 1000, reference);
+            }
+
+            self.$scope.zoomDays = function (days) {
+                const xAxis = self.chart.xAxis[0];
+                const reference = xAxis.max < xAxis.dataMax ? xAxis.max : xAxis.dataMax;
+                zoom(reference - days * 24 * 3600 * 1000, reference);
+            }
+
+            self.$scope.zoomreset = function () {
+                const xAxis = self.chart.xAxis[0];
+                zoom(xAxis.dataMin, xAxis.dataMax);
+            }
+
+            self.$element.find('.chartcontainer').on('dblclick', function (e) {
+                const event = self.chart.pointer.normalize(e);
+                const plotX = event.chartX - self.chart.plotLeft;
+                const plotWidth = self.chart.plotSizeX;
+                const xAxis = self.chart.xAxis[0];
+                const plotRange = xAxis.max - xAxis.min;
+                const plotRangeNew = plotRange * .5;
+                const plotRangeCut = plotRange - plotRangeNew;
+                const plotRangeCutLeft = plotRangeCut * (plotX / plotWidth);
+                const plotRangeCutRight = plotRangeCut * ((plotWidth - plotX) / plotWidth);
+                zoom(xAxis.min + plotRangeCutLeft, -plotRangeCutRight + xAxis.max);
+            });
+
+            function intParam(parameterName, defaultValue) {
+                const parameterValue = self.$location.search()[parameterName];
+                if (parameterValue === undefined || !parameterValue.match(/^[0-9]+$/)) {
+                    return defaultValue;
+                }
+                return parseInt(parameterValue);
+            }
         }
 
-        self.$scope.zoomreset = function () {
-            const xAxis = self.chart.xAxis[0];
-            zoom(xAxis.dataMin, xAxis.dataMax);
-        }
+        function initialZoom() {
+            if (zoomValue('zoom') !== undefined) {
+                zoomPreset(zoomValue('zoom'), /^(?<value>[0-9]+)d$/, self.$scope.zoomDays);
+                zoomPreset(zoomValue('zoom'), /^(?<value>[0-9]+)h$/, self.$scope.zoomHours);
+            }
+            if (zoomValue('zoomleft') !== undefined || zoomValue('zoomright') !== undefined) {
+                zoom(
+                    zoomDateTimeEdge(zoomValue('zoomleft'), self.chart.xAxis[0].min),
+                    zoomDateTimeEdge(zoomValue('zoomright'), self.chart.xAxis[0].max));
+            }
+            if (zoomValue('left-sticky') !== undefined) {
+                self.isZoomLeftSticky = true;
+            }
+            if (zoomValue('right-sticky') !== undefined) {
+                self.isZoomRightSticky = true;
+            }
 
-        self.$element.find('.chartcontainer').on('dblclick', function (e) {
-            const event = self.chart.pointer.normalize(e);
-            const plotX = event.chartX - self.chart.plotLeft;
-            const plotWidth = self.chart.plotSizeX;
-            const xAxis = self.chart.xAxis[0];
-            const plotRange = xAxis.max - xAxis.min;
-            const plotRangeNew = plotRange * .5;
-            const plotRangeCut = plotRange - plotRangeNew;
-            const plotRangeCutLeft = plotRangeCut * (plotX / plotWidth);
-            const plotRangeCutRight = plotRangeCut * ((plotWidth - plotX) / plotWidth);
-            zoom(xAxis.min + plotRangeCutLeft, -plotRangeCutRight + xAxis.max);
-        });
+            function zoomDateTimeEdge(parameterValue, defaultValue=null) {
+                if (parameterValue === undefined) {
+                    return defaultValue;
+                }
+                return GetLocalDateTimeFromString(parameterValue);
+            }
+
+            function zoomPreset(zoomPresetValue, regex, zoomFunction) {
+                const match = zoomPresetValue.match(regex);
+                if (match) {
+                    zoomFunction(parseInt(match.groups.value));
+                }
+            }
+
+            function zoomValue(zoomParameter) {
+                return self.$location.search()[self.range + '.' + zoomParameter];
+            }
+        }
 
         function zoom(min, max) {
-            const xAxis = self.chart.xAxis[0];
-            xAxis.zoom(min, max);
+            self.chart.xAxis[0].zoom(min, max);
+            synchronizeYaxes();
             self.chart.redraw();
         }
 
-        self.$scope.$on('time_update', function (event, update) {
-            if (params.autoRefreshIsEnabled()) {
-                const serverTime = GetLocalTimestampFromString(update.serverTime);
-                const secondsIntoCurrentSlot = Math.floor(serverTime % (300 * 1000) / 1000);
-                if (5 < secondsIntoCurrentSlot) {
-                    const currentSlot = Math.floor(serverTime / (300 * 1000));
-                    const refreshSlot = Math.floor(self.refreshTimestamp / (300 * 1000));
-                    if (refreshSlot < currentSlot) {
-                        self.refreshChartData();
-                        self.refreshTimestamp = serverTime;
-                    }
-                }
-            } else {
-                self.refreshTimestamp = 0;
-            }
-        });
-        // self.$scope.$on('device_update', function (event, device) {
-        //     if (params.autoRefreshIsEnabled() && device.idx === self.device.idx) {
-        //         self.refreshChartData();
-        //     }
-        // });
-
         function chartTitle() {
             if (self.chartName !== undefined) {
-                return self.chartName + ' ' + uncapitalize(chartTitlePeriod());
+                return self.chartName + ' ' + chartTitlePeriod();
             } else {
                 return chartTitlePeriod();
             }
 
             function chartTitlePeriod() {
-                return self.range === 'day' ? self.domoticzGlobals.Get5MinuteHistoryDaysGraphTitle() :
-                    self.range === 'month' ? $.t('Last Month') :
-                        self.range === 'year' ? $.t('Last Year') : '';
+                return self.range === 'day' ? self.domoticzGlobals.Get5MinuteHistoryDaysGraphTitle()
+                    : self.range === 'week' ? $.t('Last Week')
+                        : self.range === 'month' ? $.t('Last Month')
+                            : self.range === 'year' ? $.t('Last Year')
+                                : '';
             }
+        }
 
-            function uncapitalize(text) {
-                return text.substring(0, 1).toLowerCase() + text.substring(1);
+        function completeSeriesSuppliers(dataSupplier) {
+            return dataSupplier.seriesSuppliers
+                .map(function (seriesSupplierOrFunction) {
+                    if (typeof seriesSupplierOrFunction === 'function') {
+                        return seriesSupplierOrFunction(dataSupplier);
+                    } else {
+                        return seriesSupplierOrFunction;
+                    }
+                })
+                .map(function (seriesSupplier) {
+                    return _.merge({
+                        useDataItemsFromPrevious: false,
+                        dataSupplier: dataSupplier,
+                        timestampFromDataItem: function (dataItem) {
+                            if (!this.useDataItemsFromPrevious) {
+                                return dataSupplier.timestampFromDataItem(dataItem);
+                            } else {
+                                return dataSupplier.timestampFromDataItem(dataItem, 1);
+                            }
+                        }
+                    }, seriesSupplier);
+                });
+        }
+
+        function dateToString(date) {
+            if (date === undefined) {
+                return 'undefined';
             }
+            if (date === null) {
+                return 'null';
+            }
+            if (date === Infinity) {
+                return 'Infinity';
+            }
+            if (date === -Infinity) {
+                return '-Infinity';
+            }
+            return new Date(date).toString();
+        }
+
+        function yAxisToString(yAxis) {
+            if (yAxis === undefined) {
+                return 'undefined';
+            }
+            if (yAxis.title === undefined) {
+                return 'yAxis.undefined';
+            }
+            if (yAxis.title.text === undefined) {
+                return 'yAxis.title.undefined';
+            }
+            return yAxis.title.text;
         }
     }
 
     RefreshingChart.prototype = Object.create(DomoticzBase.prototype);
     RefreshingChart.prototype.constructor = RefreshingChart;
 
-    RefreshingChart.prototype.createChartDefinition = function (params) {
-        const self = this;
-        return {
-            chart: {
-                type: self.chartType !== undefined ? self.chartType : 'spline',
-                zoomType: 'x',
-                marginTop: 45,
-                resetZoomButton: {
-                    theme: {
-                        display: 'none'
-                    },
-                    position: {
-                        x: -30,
-                        y: -36
-                    }
-                },
-                panning: true,
-                panKey: 'shift',
-                alignTicks: params !== undefined ? params.alignTicks : undefined
+    RefreshingChart.prototype.toString = function () {
+        return this.chartName + ' ' + this.range;
+    };
+
+    function stopwatch(label, f, indent='') {
+        const timer = {
+            label : label,
+            indent: indent,
+            startTime: Date.now(),
+            stop: function() {
+                this.endTime = Date.now();
             },
-            xAxis: {
-                type: 'datetime',
-                events: {
-                    setExtremes: function (e) {
-                        const xAxis = self.chart.xAxis[0];
-                        self.consoledebug(function () {
-                            return 'xAxis.setExtremes():\n'
-                            + '    dataMin:' + new Date(xAxis.dataMin).toString() + ', e.min:' + (e.min === null ? '' : new Date(e.min).toString()) + '\n'
-                            + '    dataMax:' + new Date(xAxis.dataMax).toString() + ', e.max:' + (e.max === null ? '' : new Date(e.max).toString());
-                        });
-                        if (e.min === null && e.max === null || e.min <= xAxis.dataMin && xAxis.dataMax <= e.max) {
-                            self.isZoomLeftSticky = false;
-                            self.isZoomRightSticky = false;
-                            self.consoledebug('Reset zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
-                            self.$scope.zoomed = self.isZoomed = false;
-                        } else {
-                            const wasMouseDrag = self.mouseDownPosition !== self.mouseUpPosition;
-                            if (wasMouseDrag) {
-                                const wasMouseUpRightOfMouseDown = self.mouseDownPosition < self.mouseUpPosition;
-                                self.isZoomLeftSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseDown : self.wasCtrlMouseUp;
-                                self.isZoomRightSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseUp : self.wasCtrlMouseDown;
-                            }
-                            self.consoledebug('Set zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
-                            self.$scope.zoomed = self.isZoomed = true;
-                        }
-                    }
+            lapsedMsecs: function () {
+                if (this.endTime === undefined) {
+                    return Date.now() - this.startTime;
                 }
+                return this.endTime - this.startTime;
             },
-            yAxis: self.dataSupplier.yAxes.map(function (yAxis) {
-                if (yAxis.events === undefined) {
-                    yAxis.events = {};
-                }
-                yAxis.events.setExtremes = function (e) {
-                    self.consoledebug(function () {
-                        return 'yAxis(' + yAxis.title + ').setExtremes():\n'
-                            + '    dataMin:' + yAxis.dataMin + ', e.min:' + e.min + '\n'
-                            + '    dataMax:' + yAxis.dataMax + ', e.max:' + e.max;
-                    });
-                };
-                return yAxis;
-            }),
-            tooltip: {
-                crosshairs: true,
-                shared: true,
-                valueSuffix: self.dataSupplier.valueSuffix
+            log: function () {
+                return this.indent
+                    + (typeof this.label === 'function' ? this.label() : this.label)
+                    + ': ' + this.lapsedMsecs() + 'msecs';
             },
-            plotOptions: {
-                series: {
-                    point: {
-                        events: {
-                            click: function (event) {
-                                if (event.shiftKey !== true) {
-                                    return;
-                                }
-                                self.domoticzDatapointApi
-                                    .deletePoint(
-                                        self.device.idx,
-                                        event.point,
-                                        self.dataSupplier.isShortLogChart,
-                                        new Date().getTimezoneOffset())
-                                    .then(function () {
-                                        self.$route.reload();
-                                    });
-                            }
-                        }
-                    }
-                },
-                spline: {
-                    lineWidth: 3,
-                    states: {
-                        hover: {
-                            lineWidth: 3
-                        }
-                    },
-                    marker: {
-                        enabled: false,
-                        states: {
-                            hover: {
-                                enabled: true,
-                                symbol: 'circle',
-                                radius: 5,
-                                lineWidth: 1
-                            }
-                        }
-                    }
-                },
-                line: {
-                    lineWidth: 3,
-                    states: {
-                        hover: {
-                            lineWidth: 3
-                        }
-                    },
-                    marker: {
-                        enabled: false,
-                        states: {
-                            hover: {
-                                enabled: true,
-                                symbol: 'circle',
-                                radius: 5,
-                                lineWidth: 1
-                            }
-                        }
-                    }
-                },
-                areasplinerange: {
-                    marker: {
-                        enabled: false
-                    }
-                },
-                areaspline: {
-                    lineWidth: 3,
-                    marker: {
-                        enabled: false
-                    },
-                    states: {
-                        hover: {
-                            lineWidth: 3
-                        }
-                    }
-                },
-                column: {
-                    minPointLength: 4,
-                    pointPadding: 0.1,
-                    groupPadding: 0,
-                    dataLabels: {
-                        enabled: false,
-                        color: 'white'
-                    }
-                }
-            },
-            title: false,
-            series: [],
-            legend: {
-                enabled: true
-            },
-            time: {
-                timezoneOffset: new Date().getTimezoneOffset()
+            split: function (label) {
+                return stopwatch(label, indent='    ');
             }
         };
-    }
-
-    RefreshingChart.prototype.createDataRequest = function (that) {
-        const self = that !== undefined ? that : this;
-        return {
-            type: 'graph',
-            sensor: self.sensorType,
-            range: self.range,
-            idx: self.device.idx
-        };
-    }
-
-    RefreshingChart.prototype.refreshChartData = function () {
-        const self = this;
-        self.domoticzApi
-            .sendRequest(self.createDataRequest())
-            .then(function (data) {
-                self.consoledebug('[' + new Date().toString() + '] refreshing ' + self);
-
-                if (typeof data.result === 'undefined') {
-                    return;
-                }
-
-                const dataEdgeLeft = getDataEdgeLeft(data);
-                const dataEdgeRight = getDataEdgeRight(data);
-                const chartEdgeLeft = getChartEdgeLeft();
-                const chartEdgeRight = getChartEdgeRight();
-                const zoomEdgeLeft = getZoomEdgeLeft();
-                const zoomEdgeRight = getZoomEdgeRight();
-
-                self.consoledebug(
-                    'dataEdgeLeft:' + new Date(dataEdgeLeft).toString()
-                    + ', dataEdgeRight:' + new Date(dataEdgeRight).toString());
-                if (self.chart.series.length !== 0) {
-                    self.consoledebug(
-                        'chartEdgeLeft:' + new Date(chartEdgeLeft).toString() + (chartEdgeLeft !== dataEdgeLeft ? '!' : '=')
-                        + ', chartEdgeRight:' + new Date(chartEdgeRight).toString() + (chartEdgeRight !== dataEdgeRight ? '!' : '='));
-
-                    self.consoledebug(
-                        'zoomEdgeLeft:' + new Date(zoomEdgeLeft).toString()
-                        + ', zoomEdgeRight:' + new Date(zoomEdgeRight).toString());
-                }
-
-                loadDataInChart(data);
-                setNewZoomEdges();
-                synchronizeYaxes();
-                redrawChart();
-
-                function loadDataInChart(data) {
-                    self.dataSupplier.seriesSuppliers.forEach(function (seriesSupplierOrFunction) {
-                        const seriesSupplier = typeof seriesSupplierOrFunction === 'function'
-                            ? seriesSupplierOrFunction(self.dataSupplier)
-                            : seriesSupplierOrFunction;
-                        const chartSeries = self.chart.get(seriesSupplier.id);
-                        self.consoledebug('series: \'' + seriesSupplier.id + '\'' + (chartSeries === undefined ? ' (new)' : ''));
-                        const datapoints = [];
-                        if (seriesSupplier.useDataItemFromPrevious === undefined || !seriesSupplier.useDataItemFromPrevious) {
-                            processDataItems(data.result, datapoints, seriesSupplier, function (item) {
-                                return self.dataSupplier.timestampFromDataItem(item);
-                            });
-                        } else {
-                            if (data.resultprev !== undefined) {
-                                processDataItems(data.resultprev, datapoints, seriesSupplier, function (item) {
-                                    return self.dataSupplier.timestampFromDataItem(item, 1);
-                                });
-                            }
-                        }
-                        if (datapoints.length !== 0) {
-                            if (chartSeries === undefined) {
-                                const series = typeof seriesSupplier.template === 'function' ? seriesSupplier.template() : seriesSupplier.template;
-                                series.id = seriesSupplier.id;
-                                if (series.colorIndex !== undefined) {
-                                    series.color = Highcharts.getOptions().colors[series.colorIndex];
-                                }
-                                series.data = datapoints;
-                                if (seriesSupplier.modifySeries !== undefined) {
-                                    seriesSupplier.modifySeries(seriesSupplier, series);
-                                }
-                                self.chart.addSeries(series, false);
-                            } else {
-                                chartSeries.setData(datapoints, false);
-                            }
-                        } else {
-                            if (chartSeries !== undefined) {
-                                chartSeries.setData(datapoints, false);
-                            }
-                        }
-                    });
-                }
-                function processDataItems(dataItems, datapoints, seriesSupplier, timestampFromDataItem) {
-                    if (seriesSupplier.analyseDataItem !== undefined) {
-                        dataItems.slice(0, 48).forEach(function (dataItem) {
-                            seriesSupplier.analyseDataItem(dataItem);
-                        });
-                    }
-                    if (seriesSupplier.valuesFromDataItem !== undefined) {
-                        dataItems.forEach(function (item) {
-                            if (seriesSupplier.dataItemIsValid === undefined || seriesSupplier.dataItemIsValid(item)) {
-                                const datapoint = [timestampFromDataItem(item)];
-                                seriesSupplier.valuesFromDataItem.forEach(function (valueFromDataItem) {
-                                    datapoint.push(parseFloat(valueFromDataItem(item)));
-                                });
-                                datapoints.push(datapoint);
-                            }
-                        });
-                    }
-                    if (seriesSupplier.aggregateDatapoints !== undefined) {
-                        seriesSupplier.aggregateDatapoints(datapoints);
-                    }
-                }
-
-                function setNewZoomEdges() {
-                    if (self.isZoomed) {
-                        const zoomEdgeRight1 = self.isZoomRightSticky || zoomEdgeRight === -1 || chartEdgeRight === -1
-                            ? zoomEdgeRight
-                            : dataEdgeRight + (zoomEdgeRight - chartEdgeRight);
-                        const zoomEdgeLeft1 = self.isZoomLeftSticky || zoomEdgeLeft === -1 || chartEdgeLeft === -1
-                            ? zoomEdgeLeft
-                            : dataEdgeLeft + (zoomEdgeLeft - chartEdgeLeft);
-                        if (zoomEdgeLeft1 !== zoomEdgeLeft || zoomEdgeRight1 !== zoomEdgeRight) {
-                            self.consoledebug(
-                                'zoomEdgeLeft1:' + zoomEdgeLeft1 + ' (' + new Date(zoomEdgeLeft1).toString() + ')'
-                                + ', zoomEdgeRight1:' + zoomEdgeRight1 + ' (' + new Date(zoomEdgeRight1).toString() + ')');
-                            self.chart.xAxis[0].setExtremes(zoomEdgeLeft1, zoomEdgeRight1, false);
-                        }
-                    }
-                }
-
-                function synchronizeYaxes() {
-                    if (self.synchronizeYaxes === true) {
-                        self.chart.redraw();
-                        var iMin = 0, iMax = 0;
-                        const yAxesSynchronize = [];
-                        self.chart.series.forEach(function (series) {
-                            const yAxis = self.chart.yAxis[series.options.yAxis];
-                            if (!yAxesSynchronize.includes(yAxis)) {
-                                if (yAxis.min < iMin) {
-                                    iMin = yAxis.min;
-                                }
-                                if (yAxis.max > iMax) {
-                                    iMax = yAxis.max;
-                                }
-                                yAxesSynchronize.push(yAxis);
-                            }
-                        });
-                        const yAxisMinSynchronized = iMin != 0 ? iMin : null;
-                        const yAxisMaxSynchronized = iMax != 0 ? iMax : null;
-                        self.consoledebug('Syncing yAxes to extremes (' + yAxisMinSynchronized + ', ' + yAxisMaxSynchronized + '):');
-                        yAxesSynchronize.forEach(function (yAxis) {
-                            self.consoledebug('    yAxis:' + yAxis);
-                            yAxis.setExtremes(yAxisMinSynchronized, yAxisMaxSynchronized, false);
-                        });
-                    }
-                }
-
-                function redrawChart() {
-                    self.chart.redraw();
-                }
-
-                function getDataEdgeLeft(data) {
-                    return self.dataSupplier.timestampFromDataItem(data.result[0]);
-                }
-
-                function getDataEdgeRight(data) {
-                    return self.dataSupplier.timestampFromDataItem(data.result[data.result.length - 1]);
-                }
-
-                function getChartEdgeLeft() {
-                    if (self.chart.series.length === 0) {
-                        return -1;
-                    }
-                    return self.chart.series[0].xData[0];
-                }
-
-                function getChartEdgeRight() {
-                    if (self.chart.series.length === 0) {
-                        return -1;
-                    }
-                    return self.chart.series[0].xData[self.chart.series[0].xData.length - 1];
-                }
-
-                function getZoomEdgeLeft() {
-                    if (self.chart.series.length === 0) {
-                        return -1;
-                    }
-                    return self.chart.xAxis[0].min;
-                }
-
-                function getZoomEdgeRight() {
-                    if (self.chart.series.length === 0) {
-                        return -1;
-                    }
-                    return self.chart.xAxis[0].max;
-                }
-            });
+        if (f !== undefined) {
+            f();
+            timer.stop();
+        }
+        return timer;
     }
 
     return RefreshingChart;

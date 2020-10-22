@@ -33,7 +33,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             transclude: true,
             bindToController: true,
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
                 self.range = 'day';
                 self.sensorType = 'temp';
@@ -41,7 +41,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                 self.$onInit = function() {
                     self.chart = new RefreshingChart(
                         baseParams($),
-                        angularParams($location, $route, $scope, $element),
+                        angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
                         chartParams(
                             domoticzGlobals,
@@ -73,18 +73,18 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                 degreeType: '<',
                 range: '@'
             },
-            replace: true,
             templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
+            replace: true,
             bindToController: true,
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
                 self.sensorType = 'temp';
 
                 self.$onInit = function() {
                     self.chart = new RefreshingChart(
                         baseParams($),
-                        angularParams($location, $route, $scope, $element),
+                        angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
                         chartParams(
                             domoticzGlobals,
@@ -120,7 +120,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.hu;
+                    return parseFloat(dataItem.hu);
                 }
             ],
             template: {
@@ -143,7 +143,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.ch;
+                    return parseFloat(dataItem.ch);
                 }
             ],
             template: {
@@ -167,7 +167,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.se;
+                    return parseFloat(dataItem.se);
                 }
             ],
             template: {
@@ -191,7 +191,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.te;
+                    return parseFloat(dataItem.te);
                 }
             ],
             template: {
@@ -215,7 +215,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.cm;
+                    return parseFloat(dataItem.cm);
                 }
             ],
             template: {
@@ -240,7 +240,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.se;
+                    return parseFloat(dataItem.se);
                 }
             ],
             template: {
@@ -265,10 +265,10 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.sm;
+                    return parseFloat(dataItem.sm);
                 },
                 function (dataItem) {
-                    return dataItem.sx;
+                    return parseFloat(dataItem.sx);
                 },
             ],
             template: {
@@ -296,13 +296,13 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.sm;
+                    return parseFloat(dataItem.sm);
                 },
                 function (dataItem) {
-                    return dataItem.sx;
-                },
+                    return parseFloat(dataItem.sx);
+                }
             ],
-            useDataItemFromPrevious: true,
+            useDataItemsFromPrevious: true,
             template: {
                 name: $.t('Past') + ' ' + $.t('Set Point'),
                 color: 'rgba(223,212,246,0.8)',
@@ -325,7 +325,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.ta;
+                    return parseFloat(dataItem.ta);
                 }
             ],
             template: {
@@ -350,10 +350,10 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.tm;
+                    return parseFloat(dataItem.tm);
                 },
                 function (dataItem) {
-                    return dataItem.te;
+                    return parseFloat(dataItem.te);
                 }
             ],
             template: {
@@ -381,13 +381,13 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.tm;
+                    return parseFloat(dataItem.tm);
                 },
                 function (dataItem) {
-                    return dataItem.te;
+                    return parseFloat(dataItem.te);
                 }
             ],
-            useDataItemFromPrevious: true,
+            useDataItemsFromPrevious: true,
             template: {
                 name: $.t('Past') + ' ' + $.t('Temperature'),
                 color: 'rgba(224,224,230,0.8)',
@@ -410,7 +410,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return dataItem.ta;
+                    return parseFloat(dataItem.ta);
                 }
             ],
             aggregateDatapoints: function (datapoints) {
@@ -441,11 +441,12 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             jquery: jquery
         };
     }
-    function angularParams(location, route, scope, element) {
+    function angularParams(location, route, scope, timeout, element) {
         return {
             location: location,
             route: route,
             scope: scope,
+            timeout: timeout,
             element: element
         };
     }
@@ -458,10 +459,14 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     }
     function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
         return {
+            highchartTemplate: {
+                chart: {
+                    type: ctrl.device.Type === 'Thermostat' ? 'line' : undefined
+                }
+            },
             range: ctrl.range,
             device: ctrl.device,
             sensorType: ctrl.sensorType,
-            chartType: ctrl.device.Type === 'Thermostat' ? 'line' : undefined,
             chartName: ctrl.device.Type === 'Humidity' ? $.t('Humidity') : $.t('Temperature'),
             autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
             dataSupplier: {

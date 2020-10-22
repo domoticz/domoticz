@@ -22,14 +22,14 @@ define(['app', 'RefreshingChart'],
             },
             templateUrl: 'app/log/chart-day.html',
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
                 self.range = 'day';
 
                 self.$onInit = function () {
                     new RefreshingChart(
                         baseParams($),
-                        angularParams($location, $route, $scope, $element),
+                        angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
                         chartParams(
                             domoticzGlobals,
@@ -41,10 +41,10 @@ define(['app', 'RefreshingChart'],
                                 {
                                     id: 'power',
                                     valueKeySuffix: '',
+                                    colorIndex: 0,
                                     template: {
                                         name: domoticzGlobals.sensorNameForDevice(self.device),
-                                        showInLegend: false,
-                                        colorIndex: 0
+                                        showInLegend: false
                                     }
                                 }
                             ]
@@ -64,13 +64,13 @@ define(['app', 'RefreshingChart'],
             },
             templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
 
                 self.$onInit = function () {
                     new RefreshingChart(
                         baseParams($),
-                        angularParams($location, $route, $scope, $element),
+                        angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
                         chartParams(
                             domoticzGlobals,
@@ -83,25 +83,25 @@ define(['app', 'RefreshingChart'],
                                 {
                                     id: 'min',
                                     valueKeySuffix: '_min',
+                                    colorIndex: 3,
                                     template: {
-                                        name: $.t('Minimum'),
-                                        colorIndex: 3
+                                        name: $.t('Minimum')
                                     }
                                 },
                                 {
                                     id: 'max',
                                     valueKeySuffix: '_max',
+                                    colorIndex: 2,
                                     template: {
-                                        name: $.t('Maximum'),
-                                        colorIndex: 2
+                                        name: $.t('Maximum')
                                     }
                                 },
                                 {
                                     id: 'avg',
                                     valueKeySuffix: '_avg',
+                                    colorIndex: 0,
                                     template: {
-                                        name: $.t('Average'),
-                                        colorIndex: 0
+                                        name: $.t('Average')
                                     }
                                 }
                             ]
@@ -116,11 +116,12 @@ define(['app', 'RefreshingChart'],
                 jquery: jquery
             };
         }
-        function angularParams(location, route, scope, element) {
+        function angularParams(location, route, scope, timeout, element) {
             return {
                 location: location,
                 route: route,
                 scope: scope,
+                timeout: timeout,
                 element: element
             };
         }
@@ -160,7 +161,7 @@ define(['app', 'RefreshingChart'],
                         }
                         seriesSupplier.valuesFromDataItem = [
                             function (dataItem) {
-                                return dataItem[valueKey + seriesSupplier.valueKeySuffix];
+                                return parseFloat(dataItem[valueKey + seriesSupplier.valueKeySuffix]);
                             }
                         ];
                         return seriesSupplier;
