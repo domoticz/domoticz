@@ -692,60 +692,6 @@ define(['app', 'lodash', 'RefreshingChart'],
             );
         }
 
-        app.component('deviceLongChart', {
-            require: {
-                logCtrl: '^deviceGraphLog'
-            },
-            bindings: {
-                device: '<',
-                range: '@'
-            },
-            templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
-            controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
-                const self = this;
-
-                self.$onInit = function () {
-                    new RefreshingChart(
-                        baseParams($),
-                        angularParams($location, $route, $scope, $timeout, $element),
-                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParamsWeek(domoticzGlobals, self, {
-                            isShortLogChart: false,
-                            timestampFromDataItem: function (dataItem, yearOffset = 0) {
-                                return GetLocalDateFromString(dataItem.d, yearOffset);
-                            }
-                        }, [
-                            {
-                                id: 'min',
-                                dataItemValueKeySuffix: '_min',
-                                colorIndex: 3,
-                                template: {
-                                    name: $.t('Minimum')
-                                }
-                            },
-                            {
-                                id: 'max',
-                                dataItemValueKeySuffix: '_max',
-                                colorIndex: 2,
-                                template: {
-                                    name: $.t('Maximum')
-                                }
-                            },
-                            {
-                                id: 'avg',
-                                dataItemValueKeySuffix: '_avg',
-                                colorIndex: 0,
-                                template: {
-                                    name: $.t('Average')
-                                }
-                            }
-                        ])
-                    );
-                }
-            }
-        });
-
         function chartParamsDay(domoticzGlobals, ctrl, dataSupplierTemplate, seriesSuppliers) {
             return {
                 highchartTemplate: {
