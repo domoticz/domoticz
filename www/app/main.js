@@ -25,7 +25,10 @@ require.config({
 		Base: 'log/Base',
 		AngularBase: 'log/AngularBase',
 		DomoticzBase: 'log/DomoticzBase',
-		RefreshingChart: 'log/RefreshingChart'
+		RefreshingChart: 'log/RefreshingChart',
+		DataLoader: 'log/DataLoader',
+		ChartLoader: 'log/ChartLoader',
+		ChartZoomer: 'log/ChartZoomer'
 	},
 	shim: {
 		'angularAMD': ['angular'],
