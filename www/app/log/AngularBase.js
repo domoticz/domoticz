@@ -6,6 +6,7 @@ define(['Base'], function (Base) {
         this.$location = params.location;
         this.$route = params.route;
         this.$scope = params.scope;
+        this.$timeout = params.timeout;
         this.$element = params.element;
     }
 
