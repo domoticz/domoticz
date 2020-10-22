@@ -292,14 +292,11 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'prev_setpoint',
             dataItemIsValid: function (dataItem) {
-                return dataItem.sm !== undefined && dataItem.sx !== undefined;
+                return dataItem.se !== undefined;
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return parseFloat(dataItem.sm);
-                },
-                function (dataItem) {
-                    return parseFloat(dataItem.sx);
+                    return parseFloat(dataItem.se);
                 }
             ],
             useDataItemsFromPrevious: true,
