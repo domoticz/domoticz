@@ -255,13 +255,6 @@ bool CeVehicle::StartHardware()
 
 	Init();
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CeVehicle::Do_Work, this);
-	SetThreadNameInt(m_thread->native_handle());
-	if (!m_thread)
-		return false;
-	m_bIsStarted = true;
-
 	if (m_sql.GetPreferencesVar("Location", nValue, sValue))
 		StringSplit(sValue, ";", strarray);
 
@@ -279,6 +272,13 @@ bool CeVehicle::StartHardware()
 
 		Log(LOG_STATUS, "Using Domoticz home location (Lat %s, Lon %s) as car's home location.", Latitude.c_str(), Longitude.c_str());
 	}
+
+	//Start worker thread
+	m_thread = std::make_shared<std::thread>(&CeVehicle::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
+	if (!m_thread)
+		return false;
+	m_bIsStarted = true;
 
 	sOnConnected(this);
 	return true;
@@ -337,6 +337,7 @@ void CeVehicle::Do_Work()
 	int fail_counter = 0;
 	int interval = 1000;
 	bool initial_check = true;
+	bool bIsAborted = false;
 	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(interval))
@@ -347,24 +348,41 @@ void CeVehicle::Do_Work()
 		m_LastHeartbeat = now;
 
 		if (m_api == nullptr)
-			break;
+		{
+			Log(LOG_ERROR, "Aborting worker as there is no eVehicle provided!");
+			RequestStop();
+			continue;
+		}
 
 		// Only login if we should
-		if (!m_loggedin || (sec_counter % 68400 == 0))
+		if ((m_loggedin == false && bIsAborted == false) || (sec_counter % 68400 == 0))
 		{
 			Login();
 			if(!m_loggedin)
 			{
 				fail_counter++;
-
 				if(fail_counter > 3)
 				{
-					Log(LOG_STATUS, "Aborting due to too many failed authentication attempts (and prevent getting blocked)!");
-					break;
+					Log(LOG_ERROR, "Aborting due to too many failed authentication attempts (and prevent getting blocked)!");
+					fail_counter = 0;
+					bIsAborted = true;
+					continue;
 				}
 			}
-
-			sec_counter = 1;
+			else
+			{
+				sec_counter = 1;
+				fail_counter = 0;
+				bIsAborted = false;
+			}
+			continue;
+		}
+		else if (bIsAborted)
+		{
+			if (sec_counter % 7200 == 0)
+			{
+				Log(LOG_ERROR, "Worker inactive due to inability to authenticate! Please check credentials!");
+			}
 			continue;
 		}
 

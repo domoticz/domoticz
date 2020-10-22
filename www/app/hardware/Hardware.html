@@ -1331,20 +1331,38 @@
 				<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Publish Topic">Publish Topic</span>:</label></td>
 				<td>
 					<select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
-						<option value="1">out</option>
+						<option value="1">Flat</option>
 						<option value="2"><Floor>/<Room></option>
-						<option value="3">out + <Floor>/<Room></option>
+						<option value="3">Flat + <Floor>/<Room></option>
+						<option value="4">Index</option>
+						<option value="8">Name</option>
 						<option value="0">None</option>
 					</select>
 					<br>
 					<span>
 						Select the Topic('s) Domoticz will use to publish outgoing messages. <br>
-						<b>Flat</b> - publish outgoing messagen on topic domoticz/out.<br>
-						<b>Hierarchical</b> - publish outgoing messagen on topic domoticz/out/${floorplan name}/${plan name}.<br>
+						<b>Flat</b> - publish outgoing messagen on topic {domoticz/out}.<br>
+						<b>Hierarchical</b> - publish outgoing messagen on topic {domoticz/out}/${floorplan name}/${plan name}.<br>
 						<b>Combined</b> - Use both <b>Flat</b> and <b>Hierarchical</b> topic schemes.<br>
+						<b>Index</b> - publish outgoing messagen on topic {domoticz/out}/$idx<br>
+						<b>Name</b> - publish outgoing messagen on topic {domoticz/out}/$name<br>
 						<b>None</b> - disable outgoing messages.<br>
 						<br>
 						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.
+				</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="mqtttopicin"><span data-i18n="Topic In Prefix"></span>:</label></td>
+				<td>
+					<input type="text" id="mqtttopicin" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all">
+					&#8592;&nbsp;<span data-i18n="Leave empty for"></span>&nbsp;<b>domoticz/in</b>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="mqtttopicout"><span data-i18n="Topic Out Prefix"></span>:</label></td>
+				<td>
+					<input type="text" id="mqtttopicout" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all">
+					&#8592;&nbsp;<span data-i18n="Leave empty for"></span>&nbsp;<b>domoticz/out</b>
 				</td>
 			</tr>
 			<tr>

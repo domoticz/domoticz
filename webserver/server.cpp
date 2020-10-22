@@ -13,11 +13,8 @@
 
 using namespace boost::placeholders;
 
-extern bool g_bIsWSL;
-
 namespace http {
 namespace server {
-
 
 server_base::server_base(const server_settings & settings, request_handler & user_request_handler) :
 		io_service_(),
@@ -67,8 +64,7 @@ void server_base::run() {
 	// for new incoming connections.
 	try {
 		is_running = true;
-		// Don't enable heartbeat in WSL due to https://github.com/Microsoft/WSL/issues/3091 (Fixed in Windows 10 1809 / build 17686)
-		if (!g_bIsWSL) heart_beat(boost::system::error_code());
+		heart_beat(boost::system::error_code());
 		io_service_.run();
 		is_running = false;
 	} catch (std::exception& e) {

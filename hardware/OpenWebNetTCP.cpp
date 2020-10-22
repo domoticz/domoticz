@@ -1909,11 +1909,8 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 	whoStr << WHO_TEMPERATURE_CONTROL;
 	std::string sWho = whoStr.str();
 
-	std::stringstream whereStr;
-	whereStr << (where - OPENWEBNET_GROUP_ID);
-	std::string sWhere = "";
 	// add # to set value permanent
-	sWhere += "#" + whereStr.str();
+	std::string sWhere = "#" + getWhereForWrite(where);	
 
 	std::stringstream dimensionStr;
 	dimensionStr << TEMPERATURE_CONTROL_DIMENSION_SET_POINT_TEMPERATURE;

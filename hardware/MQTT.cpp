@@ -31,13 +31,13 @@ MQTT::MQTT(
 	const int ID,
 	const std::string& IPAddress, const unsigned short usIPPort,
 	const std::string& Username, const std::string& Password,
-	const std::string& CAfilename, const int TLS_Version,
-	const int Topics, const std::string& MQTTClientID,
+	const std::string& CAfilenameExtra, const int TLS_Version,
+	const int PublishScheme, const std::string& MQTTClientID,
 	const bool PreventLoop) :
 	m_szIPAddress(IPAddress),
 	m_UserName(Username),
 	m_Password(Password),
-	m_CAFilename(CAfilename),
+	m_CAFilename(CAfilenameExtra),
 	mosqdz::mosquittodz(MQTTClientID.c_str())
 {
 	m_HwdID = ID;
@@ -46,9 +46,24 @@ MQTT::MQTT(
 	mosqdz::lib_init();
 
 	m_usIPPort = usIPPort;
-	m_publish_topics = (_ePublishTopics)Topics;
+	m_publish_scheme = (_ePublishTopics)PublishScheme;
+
 	m_TopicIn = TOPIC_IN;
 	m_TopicOut = TOPIC_OUT;
+
+	std::vector<std::string> strarray;
+	StringSplit(CAfilenameExtra, ";", strarray);
+	if (strarray.size() > 1)
+	{
+		m_CAFilename = strarray[0];
+		if (!strarray[1].empty())
+			m_TopicIn = strarray[1];
+		if (strarray.size() > 2)
+		{
+			if (!strarray[2].empty())
+				m_TopicOut = strarray[2];
+		}
+	}
 
 	m_TLS_Version = (TLS_Version < 3) ? TLS_Version : 0; //see szTLSVersions
 
@@ -772,12 +787,13 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 			sIndex++;
 		}
 		std::string message = root.toStyledString();
-		if (m_publish_topics & PT_out)
+		if (m_publish_scheme & PT_out)
 		{
-			SendMessage(TOPIC_OUT, message);
+			SendMessage(m_TopicOut, message);
 		}
 
-		if (m_publish_topics & PT_floor_room) {
+		if (m_publish_scheme & PT_floor_room)
+		{
 			result = m_sql.safe_query("SELECT F.Name, P.Name, M.DeviceRowID FROM Plans as P, Floorplans as F, DeviceToPlansMap as M WHERE P.FloorplanID=F.ID and M.PlanID=P.ID and M.DeviceRowID=='%" PRIu64 "'", DeviceRowIdx);
 			for (size_t i = 0; i < result.size(); i++)
 			{
@@ -785,10 +801,23 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 				std::string floor = sd[0];
 				std::string room = sd[1];
 				std::stringstream topic;
-				topic << TOPIC_OUT << "/" << floor << "/" + room;
+				topic << m_TopicOut << "/" << floor << "/" + room;
 
 				SendMessage(topic.str(), message);
 			}
+		}
+
+		if (m_publish_scheme & PT_device_idx)
+		{
+			std::stringstream topic;
+			topic << m_TopicOut << "/" << DeviceRowIdx;
+			SendMessage(topic.str(), message);
+		}
+		if (m_publish_scheme & PT_device_name)
+		{
+			std::stringstream topic;
+			topic << m_TopicOut << "/" << name;
+			SendMessage(topic.str(), message);
 		}
 	}
 }
@@ -856,8 +885,8 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string&/*SceneName*
 		}
 	*/
 	std::string message = root.toStyledString();
-	if (m_publish_topics & PT_out)
+	if (m_publish_scheme & PT_out)
 	{
-		SendMessage(TOPIC_OUT, message);
+		SendMessage(m_TopicOut, message);
 	}
 }
