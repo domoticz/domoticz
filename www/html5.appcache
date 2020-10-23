@@ -669,6 +669,8 @@ js/jquery.wheelcolorpicker.js
 js/lodash-custom.merge.min.js
 js/luxon.min.js
 js/md5.js
+js/moment-with-locales.min.js
+js/moment-timezone-with-data.min.js
 js/ngDraggable.js
 js/ngload.min.js
 js/require.min.js

@@ -152,7 +152,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                                                 return;
                                             }
                                             self.domoticzDatapointApi
-                                                .deletePoint(self.device.idx, event.point, self.dataSupplier.isShortLogChart, new Date().getTimezoneOffset())
+                                                .deletePoint(self.device.idx, event.point, self.dataSupplier.isShortLogChart, Intl.DateTimeFormat().resolvedOptions().timeZone)
                                                 .then(function () {
                                                     self.$route.reload();
                                                 });
@@ -230,7 +230,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                             enabled: true
                         },
                         time: {
-                            timezoneOffset: new Date().getTimezoneOffset()
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                         }
                     },
                     template
