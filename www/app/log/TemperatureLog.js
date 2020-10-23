@@ -374,14 +374,11 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'prev_temperature',
             dataItemIsValid: function (dataItem) {
-                return dataItem.te !== undefined && dataItem.ta !== undefined;
+                return dataItem.ta !== undefined;
             },
             valuesFromDataItem: [
                 function (dataItem) {
-                    return parseFloat(dataItem.tm);
-                },
-                function (dataItem) {
-                    return parseFloat(dataItem.te);
+                    return parseFloat(dataItem.ta);
                 }
             ],
             useDataItemsFromPrevious: true,
