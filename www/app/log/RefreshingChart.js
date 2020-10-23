@@ -283,9 +283,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
 
         function synchronizeYaxes() {
             if (self.synchronizeYaxes) {
-                const yAxes = self.chart.series
-                    .map(function (series) { return self.chart.yAxis[series.options.yAxis]; })
-                    .reduce(function (yAxes, yAxis) { if (!yAxes.includes(yAxis)) { yAxes.push(yAxis); } return yAxes; }, []);
+                const yAxes = self.chart.series.map(getYaxisForSeries).reduce(collectToSet, []);
                 yAxes.forEach(function (yAxis) {
                     yAxis.setExtremes(null, null, false);
                 });
@@ -303,7 +301,6 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                 });
             }
 
-
             function min(valueMin, value) {
                 return Math.min(value, valueMin);
             }
@@ -312,6 +309,16 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                 return Math.max(value, valueMax);
             }
 
+            function getYaxisForSeries(series) {
+                return self.chart.yAxis[series.options.yAxis];
+            }
+
+            function collectToSet(set, item) {
+                if (!set.includes(item)) {
+                    set.push(item);
+                }
+                return set;
+            }
         }
 
         function configureZooming() {
