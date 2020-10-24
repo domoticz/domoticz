@@ -10,8 +10,6 @@ CBaroForecastCalculator::CBaroForecastCalculator()
 	Init();
 }
 
-CBaroForecastCalculator::~CBaroForecastCalculator() = default;
-
 void CBaroForecastCalculator::Init()
 {
 	m_baro_minuteCount = 0;
