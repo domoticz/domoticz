@@ -3350,7 +3350,8 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 			float wspeedms = float(intSpeed) / 10.0f;
 			if ((temp < 10.0) && (wspeedms >= 1.4))
 			{
-				float chillJatTI = 13.12f + 0.6215f * temp - 11.37f * pow(wspeedms * 3.6f, 0.16f) + 0.3965f * temp * pow(wspeedms * 3.6f, 0.16f);
+				float chillJatTI = 13.12f + 0.6215f * temp - 11.37f * std::pow(wspeedms * 3.6f, 0.16f)
+						   + 0.3965f * temp * std::pow(wspeedms * 3.6f, 0.16f);
 				chill = chillJatTI;
 			}
 		}

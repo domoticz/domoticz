@@ -538,8 +538,8 @@ int CTTNMQTT::CalcDomoticsRssiFromLora(const int gwrssi, const float gwsnr)
 	// rssi between -150 and 0 dBm
 	// snr between -20 and +10 dB
 	// Domoticz expects something between 0 and 11 of what?
-	// But 0 feels weird as how could we measure 'no signal' 
-	if (iCalc >= -30 || rint(gwsnr) > 7)
+	// But 0 feels weird as how could we measure 'no signal'
+	if (iCalc >= -30 || std::rint(gwsnr) > 7)
 		iCalc = 9;
 	else if (iCalc > -40)
 		iCalc = 8;
@@ -703,7 +703,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 				UTCttntime = MetaData["time"].asString().c_str();
 				sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
-				constructTime(msgtime, t, y, M, d, h, m, (int)floor(s));
+				constructTime(msgtime, t, y, M, d, h, m, (int)std::floor(s));
 			}
 			if (!(MetaData["latitude"].empty() || MetaData["longitude"].empty()))
 			{
@@ -736,10 +736,8 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 						bool bPrevGwGeo = (!(gwlat == 0 || gwlon == 0));
 
 						// Is this gateway closer to the sensor than the previous one (or is this the first/only one)
-						if (lsnr > 0 && floor(lsnr) >= floor(gwsnr))
-						{
-							if (floor(lsnr) == floor(gwsnr))
-							{
+						if (lsnr > 0 && std::floor(lsnr) >= std::floor(gwsnr)) {
+							if (std::floor(lsnr) == std::floor(gwsnr)) {
 								if(!bGwGeo && bPrevGwGeo)
 								{
 									if (floor((lrssi/10)) > floor((gwrssi/10)))
@@ -759,15 +757,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 										bBetter = true;
 									}
 								}
-							}
-							else
-							{
+							} else {
 								// Postitive SNR is better by a full point at least
 								bBetter = true;
 							}
-						}
-						else if (lsnr <= 0 && lrssi > gwrssi)
-						{
+						} else if (lsnr <= 0 && lrssi > gwrssi) {
 							if(!bGwGeo && bPrevGwGeo)
 							{
 								// The previous found closest GW has Geo info and this one doesn't
