@@ -13,7 +13,7 @@ namespace http {
 
 		CWebServerHelper::CWebServerHelper()
 		{
-			m_pDomServ = NULL;
+			m_pDomServ = nullptr;
 		}
 
 		CWebServerHelper::~CWebServerHelper()
@@ -76,11 +76,13 @@ namespace http {
 			proxymanager.Stop();
 			// restart
 #ifdef WWW_ENABLE_SSL
-			cWebem *my_pWebEm = (plainServer_ != NULL ? plainServer_->m_pWebEm : (secureServer_ != NULL ? secureServer_->m_pWebEm : NULL));
+			cWebem *my_pWebEm = (plainServer_ != nullptr ? plainServer_->m_pWebEm
+								     : (secureServer_ != nullptr ? secureServer_->m_pWebEm : nullptr));
 #else
 			cWebem* my_pWebEm = plainServer_ != NULL ? plainServer_->m_pWebEm : NULL;
 #endif
-			if (my_pWebEm == NULL) {
+			if (my_pWebEm == nullptr)
+			{
 				_log.Log(LOG_ERROR, "No servers are configured. Hence mydomoticz will not be started either (if configured)");
 				return;
 			}

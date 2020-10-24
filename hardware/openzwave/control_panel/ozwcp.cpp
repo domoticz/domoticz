@@ -77,11 +77,11 @@ char* strsep(char** stringp, const char* delim)
 	char* start = *stringp;
 	char* p;
 
-	p = (start != NULL) ? strpbrk(start, delim) : NULL;
+	p = (start != nullptr) ? strpbrk(start, delim) : nullptr;
 
-	if (p == NULL)
+	if (p == nullptr)
 	{
-		*stringp = NULL;
+		*stringp = nullptr;
 	}
 	else
 	{
@@ -107,7 +107,7 @@ MyNode::MyNode(int32 const ind) : type(0)
 		return;
 	}
 	newGroup(ind);
-	setTime(time(NULL));
+	setTime(time(nullptr));
 	setChanged(true);
 	nodes[ind] = this;
 	nodecount++;
@@ -143,10 +143,11 @@ void MyNode::remove(int32 const ind)
 #endif
 		return;
 	}
-	if (nodes[ind] != NULL) {
+	if (nodes[ind] != nullptr)
+	{
 		addRemoved(ind);
 		delete nodes[ind];
-		nodes[ind] = NULL;
+		nodes[ind] = nullptr;
 		nodecount--;
 	}
 }
@@ -177,7 +178,7 @@ void MyNode::addValue(OpenZWave::ValueID id)
 {
 	MyValue* v = new MyValue(id);
 	values.push_back(v);
-	setTime(time(NULL));
+	setTime(time(nullptr));
 	setChanged(true);
 }
 
@@ -206,7 +207,7 @@ void MyNode::removeValue(OpenZWave::ValueID id)
 			valueTypeStr(id.GetType()));
 #endif
 	}
-	setTime(time(NULL));
+	setTime(time(nullptr));
 	setChanged(true);
 }
 
@@ -217,7 +218,7 @@ void MyNode::removeValue(OpenZWave::ValueID id)
  */
 void MyNode::saveValue(OpenZWave::ValueID id)
 {
-	setTime(time(NULL));
+	setTime(time(nullptr));
 	setChanged(true);
 }
 
@@ -229,7 +230,7 @@ void MyNode::newGroup(uint8 node)
 {
 	try
 	{
-		if (OpenZWave::Manager::Get() == NULL)
+		if (OpenZWave::Manager::Get() == nullptr)
 			return;
 
 		int n = OpenZWave::Manager::Get()->GetNumGroups(homeId, node);
@@ -263,7 +264,7 @@ void MyNode::addGroup(uint8 node, uint8 g, uint8 n, uint8* v)
 			(*it)->grouplist.clear();
 			for (int i = 0; i < n; i++)
 				(*it)->grouplist.push_back(v[i]);
-			setTime(time(NULL));
+			setTime(time(nullptr));
 			setChanged(true);
 			return;
 		}
@@ -281,7 +282,7 @@ MyGroup* MyNode::getGroup(uint8 i)
 	for (std::vector<MyGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
 		if ((*it)->groupid == i)
 			return *it;
-	return NULL;
+	return nullptr;
 }
 
 /*
@@ -310,9 +311,10 @@ void MyNode::updateGroup(uint8 node, uint8 grp, char* glist)
 }
 	v = new uint8[(*it)->max];
 	n = 0;
-	while (p != NULL && *p && n < (*it)->max) {
+	while (p != nullptr && *p && n < (*it)->max)
+	{
 		np = strsep(&p, ",");
-		v[n++] = (uint8)strtol(np, NULL, 10);
+		v[n++] = (uint8)strtol(np, nullptr, 10);
 	}
 	/* Look for nodes in the passed-in argument list, if not present add them */
 	std::vector<uint8>::iterator nit;
@@ -349,12 +351,14 @@ void MyNode::updatePoll(char* ilist, char* plist)
 		char* np;
 
 		p = ilist;
-		while (p != NULL && *p) {
+		while (p != nullptr && *p)
+		{
 			np = strsep(&p, ",");
 			ids.push_back(np);
 		}
 		p = plist;
-		while (p != NULL && *p) {
+		while (p != nullptr && *p)
+		{
 			np = strsep(&p, ",");
 			polls.push_back(*np == '1' ? true : false);
 		}
@@ -369,7 +373,8 @@ void MyNode::updatePoll(char* ilist, char* plist)
 		std::vector<bool>::iterator pit = polls.begin();
 		while (it != ids.end() && pit != polls.end()) {
 			v = lookup(*it);
-			if (v == NULL) {
+			if (v == nullptr)
+			{
 #ifdef OZW_WRITE_LOG
 				Log::Write(LogLevel_Error, "updatePoll: value %s not found\n", *it);
 #endif
@@ -424,48 +429,48 @@ MyValue* MyNode::lookup(std::string data)
 	size_t pos1, pos2;
 	std::string str;
 
-	node = (uint8)strtol(data.c_str(), NULL, 10);
+	node = (uint8)strtol(data.c_str(), nullptr, 10);
 	if (node == 0)
-		return NULL;
+		return nullptr;
 	pos1 = data.find("-", 0);
 	if (pos1 == std::string::npos)
-		return NULL;
+		return nullptr;
 	pos2 = data.find("-", ++pos1);
 	if (pos2 == std::string::npos)
-		return NULL;
+		return nullptr;
 	str = data.substr(pos1, pos2 - pos1);
 	cls = cclassNum(str.c_str());
 	if (cls == 0xFF)
-		return NULL;
+		return nullptr;
 	pos1 = pos2;
 	pos2 = data.find("-", ++pos1);
 	if (pos2 == std::string::npos)
-		return NULL;
+		return nullptr;
 	str = data.substr(pos1, pos2 - pos1);
 	vg = valueGenreNum(str.c_str());
 	pos1 = pos2;
 	pos2 = data.find("-", ++pos1);
 	if (pos2 == std::string::npos)
-		return NULL;
+		return nullptr;
 	str = data.substr(pos1, pos2 - pos1);
 	typ = valueTypeNum(str.c_str());
 	pos1 = pos2;
 	pos2 = data.find("-", ++pos1);
 	if (pos2 == std::string::npos)
-		return NULL;
+		return nullptr;
 	str = data.substr(pos1, pos2 - pos1);
-	inst = (uint8)strtol(str.c_str(), NULL, 10);
+	inst = (uint8)strtol(str.c_str(), nullptr, 10);
 	pos1 = pos2 + 1;
 	str = data.substr(pos1);
-	ind = (uint8)strtol(str.c_str(), NULL, 10);
+	ind = (uint8)strtol(str.c_str(), nullptr, 10);
 	OpenZWave::ValueID id(homeId, node, vg, cls, inst, ind, typ);
 	MyNode* n = nodes[node];
-	if (n == NULL)
-		return NULL;
+	if (n == nullptr)
+		return nullptr;
 	for (std::vector<MyValue*>::iterator it = n->values.begin(); it != n->values.end(); it++)
 		if ((*it)->id == id)
 			return *it;
-	return NULL;
+	return nullptr;
 }
 
 /*
@@ -483,7 +488,7 @@ MyValue* MyNode::getValue(size_t n)
 {
 	if (n < values.size())
 		return values[n];
-	return NULL;
+	return nullptr;
 }
 
 /*
@@ -495,7 +500,8 @@ void MyNode::setAllChanged(bool ch)
 	int i = 0;
 	int j = 1;
 	while (j <= nodecount && i < MAX_NODES) {
-		if (nodes[i] != NULL) {
+		if (nodes[i] != nullptr)
+		{
 			nodes[i]->setChanged(true);
 			j++;
 		}
@@ -544,10 +550,10 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 				valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 				id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-			if (nodes[nodeID] == NULL)
+			if (nodes[nodeID] == nullptr)
 				return;
 			nodes[nodeID]->addValue(id);
-			nodes[nodeID]->setTime(time(NULL));
+			nodes[nodeID]->setTime(time(nullptr));
 			nodes[nodeID]->setChanged(true);
 			break;
 		case OpenZWave::Notification::Type_ValueRemoved:
@@ -557,10 +563,10 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 				valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 				id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-			if (nodes[nodeID] == NULL)
+			if (nodes[nodeID] == nullptr)
 				return;
 			nodes[nodeID]->removeValue(id);
-			nodes[nodeID]->setTime(time(NULL));
+			nodes[nodeID]->setTime(time(nullptr));
 			nodes[nodeID]->setChanged(true);
 			break;
 		case OpenZWave::Notification::Type_ValueChanged:
@@ -570,7 +576,7 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 				valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 				id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-			if (nodes[nodeID] == NULL)
+			if (nodes[nodeID] == nullptr)
 				return;
 			nodes[nodeID]->saveValue(id);
 			break;
@@ -581,9 +587,9 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 				valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 				id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-			if (nodes[nodeID] == NULL)
+			if (nodes[nodeID] == nullptr)
 				return;
-			nodes[_notification->GetNodeId()]->setTime(time(NULL));
+			nodes[_notification->GetNodeId()]->setTime(time(nullptr));
 			nodes[_notification->GetNodeId()]->setChanged(true);
 			break;
 		case OpenZWave::Notification::Type_Group:
@@ -592,12 +598,12 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 			Log::Write(LogLevel_Info, "Notification: Group Home 0x%08x Node %d Group %d",
 				_notification->GetHomeId(), _notification->GetNodeId(), _notification->GetGroupIdx());
 #endif
-			uint8* v = NULL;
+			uint8 *v = nullptr;
 			int8 n = OpenZWave::Manager::Get()->GetAssociations(homeId, _notification->GetNodeId(), _notification->GetGroupIdx(), &v);
-			if (nodes[nodeID] == NULL)
+			if (nodes[nodeID] == nullptr)
 				return;
 			nodes[_notification->GetNodeId()]->addGroup(_notification->GetNodeId(), _notification->GetGroupIdx(), n, v);
-			if (v != NULL)
+			if (v != nullptr)
 				delete[] v;
 		}
 		break;
@@ -637,7 +643,7 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 				valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 				id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-			if (nodes[nodeID] == NULL)
+			if (nodes[nodeID] == nullptr)
 				return;
 			nodes[_notification->GetNodeId()]->saveValue(id);
 			needsave = true;
@@ -649,7 +655,7 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 				valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 				id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-			if (nodes[nodeID] == NULL)
+			if (nodes[nodeID] == nullptr)
 				return;
 			nodes[_notification->GetNodeId()]->saveValue(id);
 			break;
@@ -660,7 +666,7 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 				valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 				id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-			if (nodes[nodeID] == NULL)
+			if (nodes[nodeID] == nullptr)
 				return;
 			nodes[_notification->GetNodeId()]->saveValue(id);
 			break;
@@ -755,19 +761,19 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 #ifdef OZW_WRITE_LOG
 			Log::Write(LogLevel_Info, "Notification: Essential Node %d Queries Complete", _notification->GetNodeId());
 #endif
-			if (nodes[nodeID] == NULL)
+			if (nodes[nodeID] == nullptr)
 				return;
-			nodes[_notification->GetNodeId()]->setTime(time(NULL));
+			nodes[_notification->GetNodeId()]->setTime(time(nullptr));
 			nodes[_notification->GetNodeId()]->setChanged(true);
 			break;
 		case OpenZWave::Notification::Type_NodeQueriesComplete:
 #ifdef OZW_WRITE_LOG
 			Log::Write(LogLevel_Info, "Notification: Node %d Queries Complete", _notification->GetNodeId());
 #endif
-			if (nodes[nodeID] == NULL)
+			if (nodes[nodeID] == nullptr)
 				return;
 			nodes[_notification->GetNodeId()]->sortValues();
-			nodes[_notification->GetNodeId()]->setTime(time(NULL));
+			nodes[_notification->GetNodeId()]->setTime(time(nullptr));
 			nodes[_notification->GetNodeId()]->setChanged(true);
 			needsave = true;
 			break;
@@ -812,9 +818,9 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 				Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d Awake",
 					_notification->GetHomeId(), _notification->GetNodeId());
 #endif
-				if (nodes[nodeID] == NULL)
+				if (nodes[nodeID] == nullptr)
 					return;
-				nodes[_notification->GetNodeId()]->setTime(time(NULL));
+				nodes[_notification->GetNodeId()]->setTime(time(nullptr));
 				nodes[_notification->GetNodeId()]->setChanged(true);
 				break;
 			case OpenZWave::Notification::Code_Sleep:
@@ -823,9 +829,9 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 					_notification->GetHomeId(), _notification->GetNodeId());
 #endif
 				{
-					if (nodes[nodeID] == NULL)
+					if (nodes[nodeID] == nullptr)
 						return;
-					nodes[nodeID]->setTime(time(NULL));
+					nodes[nodeID]->setTime(time(nullptr));
 					nodes[nodeID]->setChanged(true);
 				}
 				break;
@@ -835,9 +841,9 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 				Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d Dead",
 					_notification->GetHomeId(), _notification->GetNodeId());
 #endif
-				if (nodes[nodeID] == NULL)
+				if (nodes[nodeID] == nullptr)
 					return;
-				nodes[nodeID]->setTime(time(NULL));
+				nodes[nodeID]->setTime(time(nullptr));
 				nodes[nodeID]->setChanged(true);
 			}
 			break;
@@ -982,7 +988,7 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement* ep)
 {
 	try
 	{
-		if (OpenZWave::Manager::Get() == NULL)
+		if (OpenZWave::Manager::Get() == nullptr)
 			return;
 
 		int32 idcnt = nodes[i]->getValueCount();
@@ -1103,9 +1109,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 		if (noop)
 			noop = false;
 		bcnt = logbytes;
-		if (stat("./Config/OZW_Log.txt", &buf) != -1 &&
-			buf.st_size > bcnt &&
-			(fp = fopen("./Config/OZW_Log.txt", "r")) != NULL)
+		if (stat("./Config/OZW_Log.txt", &buf) != -1 && buf.st_size > bcnt && (fp = fopen("./Config/OZW_Log.txt", "r")) != nullptr)
 		{
 			if (bcnt == 0)
 			{
@@ -1159,7 +1163,8 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 			i = 0;
 			j = 1;
 			while (j <= MyNode::getNodeCount() && i < MAX_NODES) {
-				if (nodes[i] != NULL && nodes[i]->getChanged()) {
+				if (nodes[i] != nullptr && nodes[i]->getChanged())
+				{
 					bool listening;
 					bool flirs;
 					bool zwaveplus;
@@ -1276,7 +1281,7 @@ std::string COpenZWaveControlPanel::SetNodeValue(const std::string& arg1, const 
 	try
 	{
 		MyValue* val = MyNode::lookup(arg1);
-		if (val != NULL)
+		if (val != nullptr)
 		{
 			if (!OpenZWave::Manager::Get()->SetValue(val->getId(), arg2))
 			{
@@ -1299,7 +1304,7 @@ std::string COpenZWaveControlPanel::SetNodeButton(const std::string& arg1, const
 	try
 	{
 		MyValue* val = MyNode::lookup(arg1);
-		if (val != NULL)
+		if (val != nullptr)
 		{
 			if (arg2 == "true")
 			{
@@ -1442,7 +1447,7 @@ std::string COpenZWaveControlPanel::UpdateGroup(const std::string& fun, const in
 {
 	if ((node_id == 0) || (node_id > 254))
 		return "ERR";
-	if (nodes[node_id] == NULL)
+	if (nodes[node_id] == nullptr)
 		return "ERR";
 	char* szGList = strdup(gList.c_str());
 	nodes[node_id]->updateGroup(node_id, group_id, szGList);
@@ -1546,7 +1551,8 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 		i = 0;
 		j = 1;
 		while (j <= cnt && i < MAX_NODES) {
-			if (nodes[i] != NULL) {
+			if (nodes[i] != nullptr)
+			{
 				len = OpenZWave::Manager::Get()->GetNodeNeighbors(homeId, i, &neighbors);
 				if (len > 0) {
 					TiXmlElement* nodeElement = new TiXmlElement("node");
@@ -1666,7 +1672,8 @@ std::string COpenZWaveControlPanel::GetCPStats()
 		while (j <= cnt && i < MAX_NODES) {
 			struct OpenZWave::Node::NodeData ndata;
 
-			if (nodes[i] != NULL) {
+			if (nodes[i] != nullptr)
+			{
 				OpenZWave::Manager::Get()->GetNodeStatistics(homeId, i, &ndata);
 				TiXmlElement* nodeElement = new TiXmlElement("node");
 				snprintf(str, sizeof(str), "%d", i);

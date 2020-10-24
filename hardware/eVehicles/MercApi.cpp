@@ -96,7 +96,7 @@ CMercApi::~CMercApi()
 bool CMercApi::Login()
 {
 	bool bSuccess = false;
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	if (m_refreshtoken == "" || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED)
 	{
@@ -129,7 +129,7 @@ bool CMercApi::Login()
 bool CMercApi::RefreshLogin()
 {
 	bool bSuccess = false;
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	_log.Debug(DEBUG_NORM, "MercApi: Refreshing login credentials.");
 	m_authenticating = true;

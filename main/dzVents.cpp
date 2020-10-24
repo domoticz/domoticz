@@ -754,7 +754,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	luaTable.AddString("domoticz_listening_port", m_webservers.our_listener_port);
 	luaTable.AddString("domoticz_webroot", szWebRoot);
 	luaTable.AddString("domoticz_start_time", m_mainworker.m_eventsystem.m_szStartTime);
-	luaTable.AddString("currentTime", TimeToString(NULL, TF_DateTimeMs));
+	luaTable.AddString("currentTime", TimeToString(nullptr, TF_DateTimeMs));
 	luaTable.AddInteger("systemUptime", SystemUptime());
 	luaTable.AddString("domoticz_version", szAppVersion);
 	luaTable.AddString("dzVents_version", GetVersion());
@@ -771,7 +771,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	int index = 1;
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm tm1;
 	localtime_r(&now, &tm1);
 	struct tm tLastUpdate;

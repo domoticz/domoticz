@@ -103,15 +103,15 @@ static std::string errors[4] =
 	"Server error"
 };
 
-MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort) :
-	m_IPPort(IPPort),
-	m_IPAddress(IPAddress),
-	m_socket(NULL),
-	m_LastAlarms(0),
-	m_LastWarnings(0),
-	m_LastDevices(0),
-	m_LastState(0),
-	m_LastQuickAccess(0)
+MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort)
+	: m_IPPort(IPPort)
+	, m_IPAddress(IPAddress)
+	, m_socket(nullptr)
+	, m_LastAlarms(0)
+	, m_LastWarnings(0)
+	, m_LastDevices(0)
+	, m_LastState(0)
+	, m_LastQuickAccess(0)
 {
 	_log.Log(LOG_STATUS, "MultiFun: Create instance");
 	m_HwdID = ID;
@@ -173,7 +173,7 @@ void MultiFun::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter % MULTIFUN_POLL_INTERVAL == 0)
@@ -275,7 +275,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 bool MultiFun::ConnectToDevice()
 {
-	if (m_socket != NULL)
+	if (m_socket != nullptr)
 		return true;
 
 	m_socket = new csocket();
@@ -296,13 +296,13 @@ bool MultiFun::ConnectToDevice()
 
 void MultiFun::DestroySocket()
 {
-	if (m_socket != NULL)
+	if (m_socket != nullptr)
 	{
 #ifdef DEBUG_MultiFun
 		_log.Log(LOG_STATUS, "MultiFun: destroy socket");
 #endif
 		delete m_socket;
-		m_socket = NULL;
+		m_socket = nullptr;
 	}
 }
 

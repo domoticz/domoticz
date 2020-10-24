@@ -244,7 +244,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
-		struct curl_slist *headers = NULL;
+		struct curl_slist *headers = nullptr;
 		if (ExtraHeaders.size() > 0)
 		{
 			std::vector<std::string>::const_iterator itt;
@@ -286,7 +286,8 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 
 		curl_easy_cleanup(curl);
 
-		if (headers != NULL) {
+		if (headers != nullptr)
+		{
 			curl_slist_free_all(headers); /* free the header list */
 		}
 
@@ -323,7 +324,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_POST, 1);
 
-		struct curl_slist *headers = NULL;
+		struct curl_slist *headers = nullptr;
 		if (ExtraHeaders.size() > 0)
 		{
 			std::vector<std::string>::const_iterator itt;
@@ -357,7 +358,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 
 		curl_easy_cleanup(curl);
 
-		if (headers != NULL)
+		if (headers != nullptr)
 		{
 			curl_slist_free_all(headers); /* free the header list */
 		}
@@ -393,7 +394,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 		//curl_easy_setopt(curl, CURLOPT_PUT, 1);
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 
-		struct curl_slist *headers = NULL;
+		struct curl_slist *headers = nullptr;
 		if (ExtraHeaders.size() > 0)
 		{
 			std::vector<std::string>::const_iterator itt;
@@ -427,7 +428,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 
 		curl_easy_cleanup(curl);
 
-		if (headers != NULL)
+		if (headers != nullptr)
 		{
 			curl_slist_free_all(headers); /* free the header list */
 		}
@@ -463,7 +464,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 		//curl_easy_setopt(curl, CURLOPT_PUT, 1);
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
 
-		struct curl_slist *headers = NULL;
+		struct curl_slist *headers = nullptr;
 		if (ExtraHeaders.size() > 0)
 		{
 			std::vector<std::string>::const_iterator itt;
@@ -497,7 +498,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 
 		curl_easy_cleanup(curl);
 
-		if (headers != NULL)
+		if (headers != nullptr)
 		{
 			curl_slist_free_all(headers); /* free the header list */
 		}
@@ -540,7 +541,7 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 		}
 
-		struct curl_slist *headers = NULL;
+		struct curl_slist *headers = nullptr;
 		if (ExtraHeaders.size() > 0)
 		{
 			std::vector<std::string>::const_iterator itt;
@@ -579,7 +580,8 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 
 		curl_easy_cleanup(curl);
 
-		if (headers != NULL) {
+		if (headers != nullptr)
+		{
 			curl_slist_free_all(headers); /* free the header list */
 		}
 		return bOK;

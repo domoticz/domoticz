@@ -506,7 +506,7 @@ void CEnOceanESP3::Do_Work()
 			sec_counter++;
 			if (sec_counter % 12 == 0)
 			{
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 		}
 
@@ -597,11 +597,11 @@ bool CEnOceanESP3::OpenSerialDevice()
 	//Request BASE_ID
 	m_bBaseIDRequested=true;
 	buf[0] = CO_RD_IDBASE;
-	sendFrameQueue(PACKET_COMMON_COMMAND,buf,1,NULL,0);
+	sendFrameQueue(PACKET_COMMON_COMMAND, buf, 1, nullptr, 0);
 
 	//Request Version
 	buf[0] = CO_RD_VERSION;
-	sendFrameQueue(PACKET_COMMON_COMMAND,buf,1,NULL,0);
+	sendFrameQueue(PACKET_COMMON_COMMAND, buf, 1, nullptr, 0);
 
 	return true;
 }
@@ -794,7 +794,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 		//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6]);
 		//_log.Log(LOG_ERROR,buff);
 
-		sendFrameQueue(PACKET_RADIO,buf,7,NULL,0);
+		sendFrameQueue(PACKET_RADIO, buf, 7, nullptr, 0);
 
 		//Next command is send a bit later (button release)
 		buf[1] = 0;				// no button press
@@ -802,7 +802,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 		//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6]);
 		//_log.Log(LOG_ERROR,buff);
 
-		sendFrameQueue(PACKET_RADIO,buf,7,NULL,0);
+		sendFrameQueue(PACKET_RADIO, buf, 7, nullptr, 0);
 	}
 	else
 	{
@@ -830,7 +830,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 			buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
 			buf[9] = 0x30;
 
-			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+			sendFrameQueue(PACKET_RADIO, buf, 10, nullptr, 0);
 
 			//char buff[512];
 			//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],buf[8],buf[9]);
@@ -841,7 +841,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 			buf[9] = 0x20;
 			//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],buf[8],buf[9]);
 			//_log.Log(LOG_ERROR,buff);
-			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+			sendFrameQueue(PACKET_RADIO, buf, 10, nullptr, 0);
 		}
 		else
 		{
@@ -859,7 +859,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 			else
 				buf[4]=0x09;//Dim On
 
-			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+			sendFrameQueue(PACKET_RADIO, buf, 10, nullptr, 0);
 		}
 	}
 
@@ -906,7 +906,7 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char /*le
 		{
 			return;//double not supported yet!
 		}
-		sendFrame(PACKET_RADIO,buf,10,NULL,0);
+		sendFrame(PACKET_RADIO, buf, 10, nullptr, 0);
 	}
 }
 
@@ -993,143 +993,134 @@ bool CEnOceanESP3::ParseData()
 		sprintf(szTmp,"Unhandled Packet Type (0x%02x)",m_ReceivedPacketType);
 		_log.Log(LOG_STATUS, "%s", szTmp);
 	}
-/*
-	enocean_data_structure *pFrame=(enocean_data_structure*)&m_buffer;
-	unsigned char Checksum=enocean_calc_checksum(pFrame);
-	if (Checksum!=pFrame->CHECKSUM)
-		return false; //checksum Mismatch!
+	/*
+		enocean_data_structure *pFrame=(enocean_data_structure*)&m_buffer;
+		unsigned char Checksum=enocean_calc_checksum(pFrame);
+		if (Checksum!=pFrame->CHECKSUM)
+			return false; //checksum Mismatch!
 
-	long id = (pFrame->ID_BYTE3 << 24) + (pFrame->ID_BYTE2 << 16) + (pFrame->ID_BYTE1 << 8) + pFrame->ID_BYTE0;
-	char szDeviceID[20];
-	sprintf(szDeviceID,"%08X",(unsigned int)id);
+		long id = (pFrame->ID_BYTE3 << 24) + (pFrame->ID_BYTE2 << 16) + (pFrame->ID_BYTE1 << 8) + pFrame->ID_BYTE0;
+		char szDeviceID[20];
+		sprintf(szDeviceID,"%08X",(unsigned int)id);
 
-	//Handle possible OK/Errors
-	bool bStopProcessing=false;
-	if (pFrame->H_SEQ_LENGTH==0x8B)
-	{
+		//Handle possible OK/Errors
+		bool bStopProcessing=false;
+		if (pFrame->H_SEQ_LENGTH==0x8B)
+		{
+			switch (pFrame->ORG)
+			{
+			case 0x58:
+				//OK
+	#ifdef _DEBUG
+				_log.Log(LOG_NORM,"EnOcean: OK");
+	#endif
+				bStopProcessing=true;
+				break;
+			case 0x28:
+				_log.Log(LOG_ERROR,"EnOcean: ERR_MODEM_NOTWANTEDACK");
+				bStopProcessing=true;
+				break;
+			case 0x29:
+				_log.Log(LOG_ERROR,"EnOcean: ERR_MODEM_NOTACK");
+				bStopProcessing=true;
+				break;
+			case 0x0C:
+				_log.Log(LOG_ERROR,"EnOcean: ERR_MODEM_DUP_ID");
+				bStopProcessing=true;
+				break;
+			case 0x08:
+				_log.Log(LOG_ERROR,"EnOcean: Error in H_SEQ");
+				bStopProcessing=true;
+				break;
+			case 0x09:
+				_log.Log(LOG_ERROR,"EnOcean: Error in LENGTH");
+				bStopProcessing=true;
+				break;
+			case 0x0A:
+				_log.Log(LOG_ERROR,"EnOcean: Error in CHECKSUM");
+				bStopProcessing=true;
+				break;
+			case 0x0B:
+				_log.Log(LOG_ERROR,"EnOcean: Error in ORG");
+				bStopProcessing=true;
+				break;
+			case 0x22:
+				_log.Log(LOG_ERROR,"EnOcean: ERR_TX_IDRANGE");
+				bStopProcessing=true;
+				break;
+			case 0x1A:
+				_log.Log(LOG_ERROR,"EnOcean: ERR_ IDRANGE");
+				bStopProcessing=true;
+				break;
+			}
+		}
+		if (bStopProcessing)
+			return true;
+
 		switch (pFrame->ORG)
 		{
-		case 0x58:
-			//OK
-#ifdef _DEBUG
-			_log.Log(LOG_NORM,"EnOcean: OK");
-#endif
-			bStopProcessing=true;
-			break;
-		case 0x28:
-			_log.Log(LOG_ERROR,"EnOcean: ERR_MODEM_NOTWANTEDACK");
-			bStopProcessing=true;
-			break;
-		case 0x29:
-			_log.Log(LOG_ERROR,"EnOcean: ERR_MODEM_NOTACK");
-			bStopProcessing=true;
-			break;
-		case 0x0C:
-			_log.Log(LOG_ERROR,"EnOcean: ERR_MODEM_DUP_ID");
-			bStopProcessing=true;
-			break;
-		case 0x08:
-			_log.Log(LOG_ERROR,"EnOcean: Error in H_SEQ");
-			bStopProcessing=true;
-			break;
-		case 0x09:
-			_log.Log(LOG_ERROR,"EnOcean: Error in LENGTH");
-			bStopProcessing=true;
-			break;
-		case 0x0A:
-			_log.Log(LOG_ERROR,"EnOcean: Error in CHECKSUM");
-			bStopProcessing=true;
-			break;
-		case 0x0B:
-			_log.Log(LOG_ERROR,"EnOcean: Error in ORG");
-			bStopProcessing=true;
-			break;
-		case 0x22:
-			_log.Log(LOG_ERROR,"EnOcean: ERR_TX_IDRANGE");
-			bStopProcessing=true;
-			break;
-		case 0x1A:
-			_log.Log(LOG_ERROR,"EnOcean: ERR_ IDRANGE");
-			bStopProcessing=true;
-			break;
-		}
-	}
-	if (bStopProcessing)
-		return true;
-
-	switch (pFrame->ORG)
-	{
-	case C_ORG_INF_IDBASE:
-		m_id_base = (pFrame->DATA_BYTE3 << 24) + (pFrame->DATA_BYTE2 << 16) + (pFrame->DATA_BYTE1 << 8) + pFrame->DATA_BYTE0;
-		_log.Log(LOG_STATUS,"EnOcean: Transceiver ID_Base: 0x%08x",m_id_base);
-		break;
-	case C_ORG_RPS:
-		if (pFrame->STATUS & S_RPS_NU) {
-			//Rocker
-			// NU == 1, N-Message
-			unsigned char RockerID=(pFrame->DATA_BYTE3 & DB3_RPS_NU_RID) >> DB3_RPS_NU_RID_SHIFT;
-			unsigned char UpDown=(pFrame->DATA_BYTE3 & DB3_RPS_NU_UD) >> DB3_RPS_NU_UD_SHIFT;
-			unsigned char Pressed=(pFrame->DATA_BYTE3 & DB3_RPS_NU_PR)>>DB3_RPS_NU_PR_SHIFT;
-			unsigned char SecondRockerID=(pFrame->DATA_BYTE3 & DB3_RPS_NU_SRID)>>DB3_RPS_NU_SRID_SHIFT;
-			unsigned char SecondUpDown=(pFrame->DATA_BYTE3 & DB3_RPS_NU_SUD)>>DB3_RPS_NU_SUD_SHIFT;
-			unsigned char SecondAction=(pFrame->DATA_BYTE3 & DB3_RPS_NU_SA)>>DB3_RPS_NU_SA_SHIFT;
-#ifdef _DEBUG
-			_log.Log(LOG_NORM,"Received RPS N-Message Node 0x%08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
-				id,
-				RockerID,
-				UpDown,
-				Pressed,
-				SecondRockerID,
-				SecondUpDown,
-				SecondAction);
-#endif
-			//We distinguish 3 types of buttons from a switch: Left/Right/Left+Right
-			if (Pressed==1)
-			{
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.LIGHTING2.packetlength=sizeof(tsen.LIGHTING2)-1;
-				tsen.LIGHTING2.packettype=pTypeLighting2;
-				tsen.LIGHTING2.subtype=sTypeAC;
-				tsen.LIGHTING2.seqnbr=0;
-				tsen.LIGHTING2.id1=(BYTE)pFrame->ID_BYTE3;
-				tsen.LIGHTING2.id2=(BYTE)pFrame->ID_BYTE2;
-				tsen.LIGHTING2.id3=(BYTE)pFrame->ID_BYTE1;
-				tsen.LIGHTING2.id4=(BYTE)pFrame->ID_BYTE0;
-				tsen.LIGHTING2.level=0;
-				tsen.LIGHTING2.rssi=12;
-
-				if (SecondAction==0)
+		case C_ORG_INF_IDBASE:
+			m_id_base = (pFrame->DATA_BYTE3 << 24) + (pFrame->DATA_BYTE2 << 16) + (pFrame->DATA_BYTE1 << 8) +
+	pFrame->DATA_BYTE0; _log.Log(LOG_STATUS,"EnOcean: Transceiver ID_Base: 0x%08x",m_id_base); break; case C_ORG_RPS: if (pFrame->STATUS
+	& S_RPS_NU) {
+				//Rocker
+				// NU == 1, N-Message
+				unsigned char RockerID=(pFrame->DATA_BYTE3 & DB3_RPS_NU_RID) >> DB3_RPS_NU_RID_SHIFT;
+				unsigned char UpDown=(pFrame->DATA_BYTE3 & DB3_RPS_NU_UD) >> DB3_RPS_NU_UD_SHIFT;
+				unsigned char Pressed=(pFrame->DATA_BYTE3 & DB3_RPS_NU_PR)>>DB3_RPS_NU_PR_SHIFT;
+				unsigned char SecondRockerID=(pFrame->DATA_BYTE3 & DB3_RPS_NU_SRID)>>DB3_RPS_NU_SRID_SHIFT;
+				unsigned char SecondUpDown=(pFrame->DATA_BYTE3 & DB3_RPS_NU_SUD)>>DB3_RPS_NU_SUD_SHIFT;
+				unsigned char SecondAction=(pFrame->DATA_BYTE3 & DB3_RPS_NU_SA)>>DB3_RPS_NU_SA_SHIFT;
+	#ifdef _DEBUG
+				_log.Log(LOG_NORM,"Received RPS N-Message Node 0x%08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i
+	SUD: %i Second Action: %i", id, RockerID, UpDown, Pressed, SecondRockerID, SecondUpDown, SecondAction); #endif
+				//We distinguish 3 types of buttons from a switch: Left/Right/Left+Right
+				if (Pressed==1)
 				{
-					//Left/Right Up/Down
-					tsen.LIGHTING2.unitcode=RockerID+1;
-					tsen.LIGHTING2.cmnd=(UpDown==1)?light2_sOn:light2_sOff;
+					RBUF tsen;
+					memset(&tsen,0,sizeof(RBUF));
+					tsen.LIGHTING2.packetlength=sizeof(tsen.LIGHTING2)-1;
+					tsen.LIGHTING2.packettype=pTypeLighting2;
+					tsen.LIGHTING2.subtype=sTypeAC;
+					tsen.LIGHTING2.seqnbr=0;
+					tsen.LIGHTING2.id1=(BYTE)pFrame->ID_BYTE3;
+					tsen.LIGHTING2.id2=(BYTE)pFrame->ID_BYTE2;
+					tsen.LIGHTING2.id3=(BYTE)pFrame->ID_BYTE1;
+					tsen.LIGHTING2.id4=(BYTE)pFrame->ID_BYTE0;
+					tsen.LIGHTING2.level=0;
+					tsen.LIGHTING2.rssi=12;
+
+					if (SecondAction==0)
+					{
+						//Left/Right Up/Down
+						tsen.LIGHTING2.unitcode=RockerID+1;
+						tsen.LIGHTING2.cmnd=(UpDown==1)?light2_sOn:light2_sOff;
+					}
+					else
+					{
+						//Left+Right Up/Down
+						tsen.LIGHTING2.unitcode=SecondRockerID+10;
+						tsen.LIGHTING2.cmnd=(SecondUpDown==1)?light2_sOn:light2_sOff;
+					}
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255);
 				}
-				else
-				{
-					//Left+Right Up/Down
-					tsen.LIGHTING2.unitcode=SecondRockerID+10;
-					tsen.LIGHTING2.cmnd=(SecondUpDown==1)?light2_sOn:light2_sOff;
-				}
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 			}
-		}
-		break;
-	case C_ORG_4BS:
-		break;
-	default:
-		{
-			char *pszHumenTxt=enocean_hexToHuman(pFrame);
-			if (pszHumenTxt)
+			break;
+		case C_ORG_4BS:
+			break;
+		default:
 			{
-				_log.Log(LOG_NORM, "EnOcean: %s", pszHumenTxt);
-				free(pszHumenTxt);
+				char *pszHumenTxt=enocean_hexToHuman(pFrame);
+				if (pszHumenTxt)
+				{
+					_log.Log(LOG_NORM, "EnOcean: %s", pszHumenTxt);
+					free(pszHumenTxt);
+				}
 			}
+			break;
 		}
-		break;
-	}
-*/
-    return true;
+	*/
+	return true;
 }
 
 void CEnOceanESP3::ParseRadioDatagram()
@@ -1181,7 +1172,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 				tsen.LIGHTING2.rssi=12;
 				tsen.LIGHTING2.unitcode=1;
 				tsen.LIGHTING2.cmnd=(UpDown==1)?light2_sOn:light2_sOff;
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255);
 			}
 			break;
 		case RORG_4BS: // 4 byte communication
@@ -1288,7 +1279,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 						tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255);
 					}
 					else if (szST=="AMR.Electricity")
 					{
@@ -1301,7 +1292,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						umeter.id4=(BYTE)ID_BYTE0;
 						umeter.dunit=1;
 						umeter.fusage=(float)cvalue;
-						sDecodeRXMessage(this, (const unsigned char *)&umeter, NULL, 255);
+						sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, 255);
 					}
 					else if (szST=="AMR.Gas")
 					{
@@ -1319,7 +1310,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 						tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255);
 					}
 					else if (szST=="AMR.Water")
 					{
@@ -1337,7 +1328,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 						tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255);
 					}
 					else if (szST.find("RoomOperatingPanel") == 0)
 					{
@@ -1395,7 +1386,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.TEMP.temperatureh=(BYTE)(at10/256);
 							at10-=(tsen.TEMP.temperatureh*256);
 							tsen.TEMP.temperaturel=(BYTE)(at10);
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, -1);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1);
 						}
 					}
 					else if (szST == "LightSensor.01")
@@ -1433,7 +1424,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.rssi=(ID_BYTE0&0xF0)>>4;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255);
 						}
 						_tLightMeter lmeter;
 						lmeter.id1=(BYTE)ID_BYTE3;
@@ -1442,7 +1433,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						lmeter.id4=(BYTE)ID_BYTE0;
 						lmeter.dunit=1;
 						lmeter.fLux=lux;
-						sDecodeRXMessage(this, (const unsigned char *)&lmeter, NULL, 255);
+						sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255);
 					}
 					else if (szST.find("Temperature")==0)
 					{
@@ -1495,7 +1486,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP.temperatureh=(BYTE)(at10/256);
 						at10-=(tsen.TEMP.temperatureh*256);
 						tsen.TEMP.temperaturel=(BYTE)(at10);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, -1);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1);
 					}
 					else if (szST.find("TempHum")==0)
 					{
@@ -1524,7 +1515,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
 						tsen.TEMP_HUM.humidity=(BYTE)hum;
 						tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, -1);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, nullptr, -1);
 					}
 					else if (szST == "OccupancySensor.01")
 					{
@@ -1546,7 +1537,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 								tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
 								tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 								tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-								sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
+								sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr,
+										 255);
 							}
 
 							bool bPIROn = (DATA_BYTE1 > 127);
@@ -1564,7 +1556,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.rssi = 12;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255);
 						}
 						else {
 							//Error code
@@ -1587,7 +1579,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255);
 
 							bool bPIROn = (DATA_BYTE0 & 0x80)!=0;
 							memset(&tsen, 0, sizeof(RBUF));
@@ -1604,7 +1596,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.rssi = 12;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255);
 						}
 						else {
 							//Error code
@@ -1627,7 +1619,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255);
 
 							int lux = (DATA_BYTE2 << 2) | (DATA_BYTE1>>6);
 							if (lux > 1000)
@@ -1639,7 +1631,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							lmeter.id4 = (BYTE)ID_BYTE0;
 							lmeter.dunit = 1;
 							lmeter.fLux = (float)lux;
-							sDecodeRXMessage(this, (const unsigned char *)&lmeter, NULL, 255);
+							sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255);
 
 							bool bPIROn = (DATA_BYTE0 & 0x80)!=0;
 							memset(&tsen, 0, sizeof(RBUF));
@@ -1656,7 +1648,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.rssi = 12;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255);
 						}
 						else {
 							//Error code
@@ -1826,7 +1818,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							);
 #endif //ENOCEAN_BUTTON_DEBUG
 
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255);
 					}
 				}
 				else
@@ -1884,7 +1876,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 #endif // ENOCEAN_BUTTON_DEBUG
 
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255);
 					}
 				}
 			}
@@ -1966,7 +1958,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 #endif //ENOCEAN_BUTTON_DEBUG
 
 								_log.Log(LOG_NORM, "EnOcean: channel = %d", nbc+1);
-								sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+								sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr,
+										 255);
 							}
 							return;
 						}
@@ -2072,7 +2065,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 #endif //ENOCEAN_BUTTON_DEBUG
 
 						// Never learn device from D2-01-0C because subtype may be incorrect
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255);
 
 						// Note: if a device uses simultaneously RPS and VLD (ex: nodon inwall module), it can be partially initialized.
 						//			Domoticz will show device status but some functions may not work because EnoceanSensors table has no info on this device (until teach-in is performed)

@@ -182,7 +182,7 @@ void SatelIntegra::Do_Work()
 		heartbeatInterval += interval;
 
 		if (heartbeatInterval >= HEARTBEAT_INTERVAL_MS) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 			heartbeatInterval = 0;
 		}
 
@@ -251,7 +251,7 @@ bool SatelIntegra::CheckAddress()
 	else
 	{
 		hostent *he = gethostbyname(m_IPAddress.c_str());
-		if (he == NULL)
+		if (he == nullptr)
 		{
 			_log.Log(LOG_ERROR, "Satel Integra: cannot resolve host name");
 			return false;
@@ -418,7 +418,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 
 				if (firstTime)
 				{
-					m_LastHeartbeat = mytime(NULL);
+					m_LastHeartbeat = mytime(nullptr);
 
 					unsigned char buffer[21];
 #ifdef DEBUG_SatelIntegra
@@ -493,7 +493,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 				{
 					if (firstTime)
 					{
-						m_LastHeartbeat = mytime(NULL);
+						m_LastHeartbeat = mytime(nullptr);
 
 						unsigned char buffer[21];
 #ifdef DEBUG_SatelIntegra
@@ -1143,7 +1143,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	struct timeval tv;
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
-	if (select(m_socket + 1, &rfds, NULL, NULL, &tv) < 0)
+	if (select(m_socket + 1, &rfds, nullptr, nullptr, &tv) < 0)
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: connection lost.");
 		DestroySocket();

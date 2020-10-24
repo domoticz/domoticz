@@ -37,10 +37,10 @@ Serial::SerialImpl::SerialImpl (const string &port, unsigned long baudrate,
     baudrate_ (baudrate), parity_ (parity),
     bytesize_ (bytesize), stopbits_ (stopbits), flowcontrol_ (flowcontrol)
 {
-  read_mutex = CreateMutex(NULL, false, NULL);
-  write_mutex = CreateMutex(NULL, false, NULL);
-  if (port_.empty () == false)
-    open ();
+	read_mutex = CreateMutex(nullptr, false, nullptr);
+	write_mutex = CreateMutex(nullptr, false, nullptr);
+	if (port_.empty() == false)
+		open();
 }
 
 Serial::SerialImpl::~SerialImpl ()
@@ -304,10 +304,11 @@ Serial::SerialImpl::available ()
     return 0;
   }
   COMSTAT cs;
-  if (!ClearCommError(fd_, NULL, &cs)) {
-    stringstream ss;
-    ss << "Error while checking status of the serial port: " << GetLastError();
-    THROW (IOException, ss.str().c_str());
+  if (!ClearCommError(fd_, nullptr, &cs))
+  {
+	  stringstream ss;
+	  ss << "Error while checking status of the serial port: " << GetLastError();
+	  THROW(IOException, ss.str().c_str());
   }
   return static_cast<size_t>(cs.cbInQue);
 }
@@ -332,10 +333,11 @@ Serial::SerialImpl::read (uint8_t *buf, size_t size)
     throw PortNotOpenedException ("Serial::read");
   }
   DWORD bytes_read;
-  if (!ReadFile(fd_, buf, static_cast<DWORD>(size), &bytes_read, NULL)) {
-    stringstream ss;
-    ss << "Error while reading from the serial port: " << GetLastError();
-    THROW (IOException, ss.str().c_str());
+  if (!ReadFile(fd_, buf, static_cast<DWORD>(size), &bytes_read, nullptr))
+  {
+	  stringstream ss;
+	  ss << "Error while reading from the serial port: " << GetLastError();
+	  THROW(IOException, ss.str().c_str());
   }
   return (size_t) (bytes_read);
 }
@@ -347,10 +349,11 @@ Serial::SerialImpl::write (const uint8_t *data, size_t length)
     throw PortNotOpenedException ("Serial::write");
   }
   DWORD bytes_written;
-  if (!WriteFile(fd_, data, static_cast<DWORD>(length), &bytes_written, NULL)) {
-    stringstream ss;
-    ss << "Error while writing to the serial port: " << GetLastError();
-    THROW (IOException, ss.str().c_str());
+  if (!WriteFile(fd_, data, static_cast<DWORD>(length), &bytes_written, nullptr))
+  {
+	  stringstream ss;
+	  ss << "Error while writing to the serial port: " << GetLastError();
+	  THROW(IOException, ss.str().c_str());
   }
   return (size_t) (bytes_written);
 }
@@ -536,12 +539,15 @@ Serial::SerialImpl::waitForChange ()
     return false;
   }
 
-  if (!WaitCommEvent(fd_, &dwCommEvent, NULL)) {
-    // An error occurred waiting for the event.
-    return false;
-  } else {
-    // Event has occurred.
-    return true;
+  if (!WaitCommEvent(fd_, &dwCommEvent, nullptr))
+  {
+	  // An error occurred waiting for the event.
+	  return false;
+  }
+  else
+  {
+	  // Event has occurred.
+	  return true;
   }
 }
 

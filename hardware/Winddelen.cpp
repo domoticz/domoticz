@@ -109,7 +109,7 @@ void CWinddelen::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % WINDDELEN_POLL_INTERVAL == 0)
 		{

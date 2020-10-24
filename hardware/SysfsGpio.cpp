@@ -256,7 +256,7 @@ void CSysfsGpio::Do_Work()
 
 		if (counter % HEARTBEAT_COUNT == 0)	/* Heartbeat maintenance */
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (m_polling_enabled)
@@ -361,7 +361,7 @@ void CSysfsGpio::EdgeDetectThread()
 		//-------------------------------------------------------------------
 		//	Wait for GPIO interrupt.
 		//
-		int retval = select(m_maxfd + 1, NULL, NULL, &tmp_fds, &tv);
+		int retval = select(m_maxfd + 1, nullptr, nullptr, &tmp_fds, &tv);
 
 		if (IsStopRequested(0))
 		{
@@ -817,10 +817,10 @@ void CSysfsGpio::UpdateDeviceID(int pin)
 			}
 
 			/* extract hex device sub-id's */
-			m_saved_state[index].id1 = strtol(sdeviceid.substr(0, 1).c_str(), NULL, 16) & 0xFF;
-			m_saved_state[index].id2 = strtol(sdeviceid.substr(1, 2).c_str(), NULL, 16) & 0xFF;
-			m_saved_state[index].id3 = strtol(sdeviceid.substr(3, 2).c_str(), NULL, 16) & 0xFF;
-			m_saved_state[index].id4 = strtol(sdeviceid.substr(5, 2).c_str(), NULL, 16) & 0xFF;
+			m_saved_state[index].id1 = strtol(sdeviceid.substr(0, 1).c_str(), nullptr, 16) & 0xFF;
+			m_saved_state[index].id2 = strtol(sdeviceid.substr(1, 2).c_str(), nullptr, 16) & 0xFF;
+			m_saved_state[index].id3 = strtol(sdeviceid.substr(3, 2).c_str(), nullptr, 16) & 0xFF;
+			m_saved_state[index].id4 = strtol(sdeviceid.substr(5, 2).c_str(), nullptr, 16) & 0xFF;
 			m_saved_state[index].id_valid = 1;
 		}
 

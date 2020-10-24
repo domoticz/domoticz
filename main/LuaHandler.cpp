@@ -106,7 +106,7 @@ void CLuaHandler::luaStop(lua_State *L, lua_Debug *ar)
 	if (ar->event == LUA_HOOKCOUNT)
 	{
 		(void)ar;  /* unused arg. */
-		lua_sethook(L, NULL, 0, 0);
+		lua_sethook(L, nullptr, 0, 0);
 		luaL_error(L, "LuaHandler: Lua script execution exceeds maximum number of lines");
 		lua_close(L);
 	}

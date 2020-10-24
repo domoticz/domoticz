@@ -36,7 +36,8 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(
 	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
 	CLogitechMediaServer* pLMS = dynamic_cast<CLogitechMediaServer*>(pHardware);
 
-	if (pHardware == NULL) {
+	if (pHardware == nullptr)
+	{
 		std::stringstream logline;
 		logline << "Error sending notification: 'Logitech Media Server' not found in Hardware-list";
 		_log.Log(LOG_ERROR, "%s", logline.str().c_str());

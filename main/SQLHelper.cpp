@@ -586,7 +586,7 @@ extern std::string szUserDataFolder;
 CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchRowID = 0;
-	m_dbase = NULL;
+	m_dbase = nullptr;
 	m_sensortimeoutcounter = 0;
 	m_bAcceptNewHardware = true;
 	m_bAllowWidgetOrdering = true;
@@ -625,12 +625,12 @@ bool CSQLHelper::OpenDatabase()
 	}
 #ifndef WIN32
 	//test, this could improve performance
-	sqlite3_exec(m_dbase, "PRAGMA synchronous = NORMAL", NULL, NULL, NULL);
-	sqlite3_exec(m_dbase, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
+	sqlite3_exec(m_dbase, "PRAGMA synchronous = NORMAL", nullptr, nullptr, nullptr);
+	sqlite3_exec(m_dbase, "PRAGMA journal_mode = WAL", nullptr, nullptr, nullptr);
 #else
 	sqlite3_exec(m_dbase, "PRAGMA journal_mode=DELETE", NULL, NULL, NULL);
 #endif
-	sqlite3_exec(m_dbase, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
+	sqlite3_exec(m_dbase, "PRAGMA foreign_keys = ON;", nullptr, nullptr, nullptr);
 	std::vector<std::vector<std::string> > result = query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
 	bool bNewInstall = (result.size() == 0);
 	int dbversion = 0;
@@ -643,14 +643,14 @@ bool CSQLHelper::OpenDatabase()
 			//This is very dangerous and should not be allowed
 			_log.Log(LOG_ERROR, "Database incompatible with this Domoticz version. (You cannot downgrade to an old Domoticz version!)");
 			sqlite3_close(m_dbase);
-			m_dbase = NULL;
+			m_dbase = nullptr;
 			return false;
 		}
 		//Pre-SQL Patches
 	}
 
 	//create database (if not exists)
-	sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+	sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
 	query(sqlCreateDeviceStatus);
 	query(sqlCreateDeviceStatusTrigger);
 	query(sqlCreateLightingLog);
@@ -746,7 +746,7 @@ bool CSQLHelper::OpenDatabase()
 	query("create index if not exists w_id_date_idx   on Wind(DeviceRowID, Date);");
 	query("create index if not exists wc_id_idx       on Wind_Calendar(DeviceRowID);");
 	query("create index if not exists wc_id_date_idx  on Wind_Calendar(DeviceRowID, Date);");
-	sqlite3_exec(m_dbase, "END TRANSACTION;", NULL, NULL, NULL);
+	sqlite3_exec(m_dbase, "END TRANSACTION;", nullptr, nullptr, nullptr);
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
 	{
@@ -792,7 +792,7 @@ bool CSQLHelper::OpenDatabase()
 		{
 			//P1 Smart meter power change, need to delete all short logs from today
 			char szDateStart[40];
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			struct tm ltime;
@@ -919,13 +919,13 @@ bool CSQLHelper::OpenDatabase()
 			result = query("SELECT RowID, (Temp_Max+Temp_Min)/2 FROM Temperature_Calendar");
 			if (!result.empty())
 			{
-				sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+				sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
 				for (const auto& itt : result)
 				{
 					std::vector<std::string> sd = itt;
 					safe_query("UPDATE Temperature_Calendar SET Temp_Avg=%.1f WHERE RowID='%q'", atof(sd[1].c_str()), sd[0].c_str());
 				}
-				sqlite3_exec(m_dbase, "END TRANSACTION;", NULL, NULL, NULL);
+				sqlite3_exec(m_dbase, "END TRANSACTION;", nullptr, nullptr, nullptr);
 			}
 		}
 		if (dbversion < 24)
@@ -1674,8 +1674,8 @@ bool CSQLHelper::OpenDatabase()
 			std::string fieldList = "[ID],[HardwareID],[DeviceID],[Unit],[Name],[Used],[Type],[SubType],[SwitchType],[Favorite],[SignalLevel],[BatteryLevel],[nValue],[sValue],[LastUpdate],[Order],[AddjValue],[AddjMulti],[AddjValue2],[AddjMulti2],[StrParam1],[StrParam2],[LastLevel],[Protected],[CustomImage],[Description],[Options]";
 			std::stringstream szQuery;
 
-			sqlite3_exec(m_dbase, "PRAGMA foreign_keys=off", NULL, NULL, NULL);
-			sqlite3_exec(m_dbase, "BEGIN TRANSACTION", NULL, NULL, NULL);
+			sqlite3_exec(m_dbase, "PRAGMA foreign_keys=off", nullptr, nullptr, nullptr);
+			sqlite3_exec(m_dbase, "BEGIN TRANSACTION", nullptr, nullptr, nullptr);
 
 			// Drop indexes and trigger
 			safe_query("DROP TRIGGER IF EXISTS devicestatusupdate");
@@ -1699,8 +1699,8 @@ bool CSQLHelper::OpenDatabase()
 			szQuery << "DROP TABLE IF EXISTS _" << tableName << "_old";
 			safe_query(szQuery.str().c_str());
 
-			sqlite3_exec(m_dbase, "END TRANSACTION", NULL, NULL, NULL);
-			sqlite3_exec(m_dbase, "PRAGMA foreign_keys=on", NULL, NULL, NULL);
+			sqlite3_exec(m_dbase, "END TRANSACTION", nullptr, nullptr, nullptr);
+			sqlite3_exec(m_dbase, "PRAGMA foreign_keys=on", nullptr, nullptr, nullptr);
 		}
 		if (dbversion < 93)
 		{
@@ -3294,11 +3294,11 @@ bool CSQLHelper::OpenDatabase()
 void CSQLHelper::CloseDatabase()
 {
 	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
-	if (m_dbase != NULL)
+	if (m_dbase != nullptr)
 	{
 		OptimizeDatabase(m_dbase);
 		sqlite3_close(m_dbase);
-		m_dbase = NULL;
+		m_dbase = nullptr;
 	}
 }
 
@@ -3317,7 +3317,7 @@ bool CSQLHelper::StartThread()
 	RequestStart();
 	m_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "SQLHelper");
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CSQLHelper::SwitchLightFromTasker(const std::string& idx, const std::string& switchcmd, const std::string& level, const std::string& color, const std::string& User)
@@ -3685,7 +3685,7 @@ bool CSQLHelper::DoesColumnExistsInTable(const std::string& columnname, const st
 
 	sqlite3_stmt* statement;
 	std::string szQuery = "SELECT " + columnname + " FROM " + tablename;
-	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, NULL) == SQLITE_OK)
+	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, nullptr) == SQLITE_OK)
 	{
 		columnExists = true;
 		sqlite3_finalize(statement);
@@ -3704,7 +3704,7 @@ void CSQLHelper::safe_exec_no_return(const char* fmt, ...)
 	va_end(args);
 	if (!zQuery)
 		return;
-	sqlite3_exec(m_dbase, zQuery, NULL, NULL, NULL);
+	sqlite3_exec(m_dbase, zQuery, nullptr, nullptr, nullptr);
 	sqlite3_free(zQuery);
 }
 
@@ -3712,14 +3712,14 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 {
 	if (!m_dbase)
 		return false;
-	sqlite3_stmt* stmt = NULL;
+	sqlite3_stmt *stmt = nullptr;
 	char* zQuery = sqlite3_mprintf("UPDATE %q SET %q = ? WHERE ID=%q", Table.c_str(), Column.c_str(), sID.c_str());
 	if (!zQuery)
 	{
 		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
 		return false;
 	}
-	int rc = sqlite3_prepare_v2(m_dbase, zQuery, -1, &stmt, NULL);
+	int rc = sqlite3_prepare_v2(m_dbase, zQuery, -1, &stmt, nullptr);
 	sqlite3_free(zQuery);
 	if (rc != SQLITE_OK) {
 		return false;
@@ -3767,7 +3767,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
 
-	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, 0) == SQLITE_OK)
+	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, nullptr) == SQLITE_OK)
 	{
 		int cols = sqlite3_column_count(statement);
 		while (true)
@@ -3779,9 +3779,9 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 				for (int col = 0; col < cols; col++)
 				{
 					char* value = (char*)sqlite3_column_text(statement, col);
-					if ((value == 0) && (col == 0))
+					if ((value == nullptr) && (col == 0))
 						break;
-					else if (value == 0)
+					else if (value == nullptr)
 						values.push_back(std::string("")); //insert empty string
 					else
 						values.push_back(value);
@@ -3834,7 +3834,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string& 
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
 
-	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, 0) == SQLITE_OK)
+	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, nullptr) == SQLITE_OK)
 	{
 		int cols = sqlite3_column_count(statement);
 		while (true)
@@ -3849,7 +3849,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string& 
 					char* value = (char*)sqlite3_column_blob(statement, col);
 					if ((blobSize == 0) && (col == 0))
 						break;
-					else if (value == 0)
+					else if (value == nullptr)
 						values.push_back(std::string("")); //insert empty string
 					else
 						values.push_back(std::string(value, value + blobSize));
@@ -4174,7 +4174,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 
 	std::string idx = result[0][0];
 
-	time_t now = time(0);
+	time_t now = time(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -4466,7 +4466,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 #ifdef ENABLE_PYTHON
 		//TODO: Plugins should perhaps be blocked from implicitly adding a device by update? It's most likely a bug due to updating a removed device..
 		CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HardwareID);
-		if (pHardware != NULL && pHardware->HwdType == HTYPE_PythonPlugin)
+		if (pHardware != nullptr && pHardware->HwdType == HTYPE_PythonPlugin)
 		{
 			_log.Debug(DEBUG_NORM, "CSQLHelper::UpdateValueInt: Notifying plugin %u about creation of device %u", HardwareID, unit);
 			Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
@@ -4485,7 +4485,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		stype = (_eSwitchType)atoi(result[0][3].c_str());
 		old_nValue = atoi(result[0][4].c_str());
 		old_sValue = result[0][5];
-		time_t now = time(0);
+		time_t now = time(nullptr);
 		struct tm ltime;
 		localtime_r(&now, &ltime);
 		//Commit: If Option 1: energy is computed as usage*time
@@ -4503,7 +4503,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 
 			interval = difftime(now, lutime);
 			StringSplit(result[0][5].c_str(), ";", parts);
-			nEnergy = static_cast<float>(strtof(parts[0].c_str(), NULL) * interval / 3600 + strtof(parts[1].c_str(), NULL)); //Rob: whats happening here... strtof ?
+			nEnergy = static_cast<float>(strtof(parts[0].c_str(), nullptr) * interval / 3600
+						     + strtof(parts[1].c_str(), nullptr)); // Rob: whats happening here... strtof ?
 			StringSplit(sValue, ";", parts);
 			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
@@ -4808,7 +4809,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 
 			_eHardwareTypes HWtype = HTYPE_Domoticz; //just a value
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HardwareID);
-			if (pHardware != NULL)
+			if (pHardware != nullptr)
 				HWtype = pHardware->HwdType;
 
 			//Check for notifications
@@ -5224,7 +5225,7 @@ void CSQLHelper::ScheduleShortlog()
 	try
 	{
 		//Force WAL flush
-		sqlite3_wal_checkpoint(m_dbase, NULL);
+		sqlite3_wal_checkpoint(m_dbase, nullptr);
 
 		UpdateTemperatureLog();
 		UpdateRainLog();
@@ -5258,7 +5259,7 @@ void CSQLHelper::ScheduleDay()
 	try
 	{
 		//Force WAL flush
-		sqlite3_wal_checkpoint(m_dbase, NULL);
+		sqlite3_wal_checkpoint(m_dbase, nullptr);
 
 		AddCalendarTemperature();
 		AddCalendarUpdateRain();
@@ -5284,7 +5285,7 @@ void CSQLHelper::ScheduleDay()
 
 void CSQLHelper::UpdateTemperatureLog()
 {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	if (now == 0)
 		return;
 	struct tm tm1;
@@ -5465,7 +5466,7 @@ void CSQLHelper::UpdateTemperatureLog()
 
 void CSQLHelper::UpdateRainLog()
 {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	if (now == 0)
 		return;
 	struct tm tm1;
@@ -5519,7 +5520,7 @@ void CSQLHelper::UpdateRainLog()
 
 void CSQLHelper::UpdateWindLog()
 {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	if (now == 0)
 		return;
 	struct tm tm1;
@@ -5593,7 +5594,7 @@ void CSQLHelper::UpdateWindLog()
 
 void CSQLHelper::UpdateUVLog()
 {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	if (now == 0)
 		return;
 	struct tm tm1;
@@ -5829,7 +5830,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 
 void CSQLHelper::UpdateMeter()
 {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	if (now == 0)
 		return;
 	struct tm tm1;
@@ -6096,7 +6097,7 @@ void CSQLHelper::UpdateMeter()
 
 void CSQLHelper::UpdateMultiMeter()
 {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	if (now == 0)
 		return;
 	struct tm tm1;
@@ -6207,7 +6208,7 @@ void CSQLHelper::UpdateMultiMeter()
 
 void CSQLHelper::UpdatePercentageLog()
 {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	if (now == 0)
 		return;
 	struct tm tm1;
@@ -6264,7 +6265,7 @@ void CSQLHelper::UpdatePercentageLog()
 
 void CSQLHelper::UpdateFanLog()
 {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	if (now == 0)
 		return;
 	struct tm tm1;
@@ -6329,7 +6330,7 @@ void CSQLHelper::AddCalendarTemperature()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
@@ -6398,7 +6399,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
@@ -6503,7 +6504,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
@@ -6706,7 +6707,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
@@ -6838,7 +6839,7 @@ void CSQLHelper::AddCalendarUpdateWind()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
@@ -6896,7 +6897,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
@@ -6946,7 +6947,7 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
@@ -7000,7 +7001,7 @@ void CSQLHelper::AddCalendarUpdateFan()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
@@ -7111,9 +7112,9 @@ void CSQLHelper::VacuumDatabase()
 
 void CSQLHelper::OptimizeDatabase(sqlite3* dbase)
 {
-	if (dbase == NULL)
+	if (dbase == nullptr)
 		return;
-	sqlite3_exec(dbase, "PRAGMA optimize;", NULL, NULL, NULL);
+	sqlite3_exec(dbase, "PRAGMA optimize;", nullptr, nullptr, nullptr);
 }
 
 void CSQLHelper::DeleteHardware(const std::string& idx)
@@ -7179,7 +7180,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 			std::string HwID = sd[0];
 			std::string Unit = sd[1];
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardwareByIDType(HwID, HTYPE_PythonPlugin);
-			if (pHardware != NULL)
+			if (pHardware != nullptr)
 			{
 				removeddevices.insert(std::make_pair(HwID, Unit));
 			}
@@ -7191,7 +7192,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
 
 		char* errorMessage;
-		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", NULL, NULL, &errorMessage);
+		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", nullptr, nullptr, &errorMessage);
 
 		for (const auto& itt : _idx)
 		{
@@ -7228,7 +7229,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 			//and now delete all records in the DeviceStatus table itself
 			safe_exec_no_return("DELETE FROM DeviceStatus WHERE (ID == '%q')", itt.c_str());
 		}
-		sqlite3_exec(m_dbase, "COMMIT TRANSACTION", NULL, NULL, &errorMessage);
+		sqlite3_exec(m_dbase, "COMMIT TRANSACTION", nullptr, nullptr, &errorMessage);
 	}
 #ifdef ENABLE_PYTHON
 	for (const auto& it : removeddevices)
@@ -7237,7 +7238,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 		int Unit = atoi(it.second.c_str());
 		// Notify plugin to sync plugins' device list
 		CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HwID);
-		if (pHardware != NULL && pHardware->HwdType == HTYPE_PythonPlugin)
+		if (pHardware != nullptr && pHardware->HwdType == HTYPE_PythonPlugin)
 		{
 			_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDevices: Notifying plugin %u about deletion of device %u", HwID, Unit);
 			Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
@@ -7261,7 +7262,7 @@ void CSQLHelper::DeleteScenes(const std::string& idx)
 		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
 
 		char* errorMessage;
-		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", NULL, NULL, &errorMessage);
+		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", nullptr, nullptr, &errorMessage);
 
 		for (const auto& itt : _idx)
 		{
@@ -7273,7 +7274,7 @@ void CSQLHelper::DeleteScenes(const std::string& idx)
 			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
-		sqlite3_exec(m_dbase, "COMMIT TRANSACTION", NULL, NULL, &errorMessage);
+		sqlite3_exec(m_dbase, "COMMIT TRANSACTION", nullptr, nullptr, &errorMessage);
 	}
 
 	m_notifications.ReloadNotifications();
@@ -7436,7 +7437,7 @@ void CSQLHelper::CleanupLightSceneLog()
 	GetPreferencesVar("LightHistoryDays", nMaxDays);
 
 	char szDateEnd[40];
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm tm1;
 	localtime_r(&now, &tm1);
 
@@ -7570,7 +7571,7 @@ void CSQLHelper::DeleteDataPoint(const char* ID, const std::string& Date)
 	{
 		char szDateEnd[100];
 
-		time_t now = mytime(NULL);
+		time_t now = mytime(nullptr);
 		struct tm tLastUpdate;
 		localtime_r(&now, &tLastUpdate);
 
@@ -7680,7 +7681,7 @@ bool CSQLHelper::RestoreDatabase(const std::string& dbase)
 	outfile.flush();
 	outfile.close();
 	//check if we can open the database (check if valid)
-	sqlite3* dbase_restore = NULL;
+	sqlite3 *dbase_restore = nullptr;
 	int rc = sqlite3_open(outputfile.c_str(), &dbase_restore);
 	if (rc)
 	{
@@ -7688,13 +7689,13 @@ bool CSQLHelper::RestoreDatabase(const std::string& dbase)
 		sqlite3_close(dbase_restore);
 		return false;
 	}
-	if (dbase_restore == NULL)
+	if (dbase_restore == nullptr)
 		return false;
 	//could still be not valid
 	std::stringstream ss;
 	ss << "SELECT sValue FROM Preferences WHERE (Key='DB_Version')";
 	sqlite3_stmt* statement;
-	if (sqlite3_prepare_v2(dbase_restore, ss.str().c_str(), -1, &statement, 0) != SQLITE_OK)
+	if (sqlite3_prepare_v2(dbase_restore, ss.str().c_str(), -1, &statement, nullptr) != SQLITE_OK)
 	{
 		_log.Log(LOG_ERROR, "Restore Database: Seems this is not our database, or it is corrupted!");
 		sqlite3_close(dbase_restore);
@@ -7709,7 +7710,7 @@ bool CSQLHelper::RestoreDatabase(const std::string& dbase)
 
 	//stop database
 	sqlite3_close(m_dbase);
-	m_dbase = NULL;
+	m_dbase = nullptr;
 	std::ofstream outfile2;
 	outfile2.open(m_dbase_name.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!outfile2.is_open())
@@ -7830,7 +7831,7 @@ uint64_t CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const ch
 
 void CSQLHelper::Lighting2GroupCmd(const std::string& ID, const unsigned char subType, const unsigned char GroupCmd)
 {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -7873,7 +7874,7 @@ uint64_t CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const 
 
 void CSQLHelper::HomeConfortGroupCmd(const std::string& ID, const unsigned char subType, const unsigned char GroupCmd)
 {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -8043,7 +8044,7 @@ void CSQLHelper::CheckBatteryLow()
 	if (result.empty())
 		return;
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm stoday;
 	localtime_r(&now, &stoday);
 
@@ -8088,7 +8089,7 @@ void CSQLHelper::CheckDeviceTimeout()
 
 	int SensorTimeOut = 60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm stoday;
 	localtime_r(&now, &stoday);
 	now -= (SensorTimeOut * 60);
@@ -8465,7 +8466,7 @@ bool CSQLHelper::UpdateUserVariable(const std::string& idx, const std::string& v
 	if (!CheckUserVariable(eVartype, varvalue, errorMessage))
 		return false;
 
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	safe_query(
 		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%q' WHERE (ID == '%q')",
@@ -8727,7 +8728,7 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 
 			uLong fsize;
 			unsigned char* pFBuf = (unsigned char*)(pos).Extract(fsize, 1);
-			if (pFBuf == NULL)
+			if (pFBuf == nullptr)
 			{
 				ErrorMessage = "Could not extract icons.txt";
 				return false;
@@ -8829,14 +8830,14 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 						std::string TableField = iItt.first;
 						std::string IconFile = rpath + iItt.second;
 
-						sqlite3_stmt* stmt = NULL;
+						sqlite3_stmt *stmt = nullptr;
 						char* zQuery = sqlite3_mprintf("UPDATE CustomImages SET %s = ? WHERE ID=%d", TableField.c_str(), RowID);
 						if (!zQuery)
 						{
 							_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
 							return false;
 						}
-						int rc = sqlite3_prepare_v2(m_dbase, zQuery, -1, &stmt, NULL);
+						int rc = sqlite3_prepare_v2(m_dbase, zQuery, -1, &stmt, nullptr);
 						sqlite3_free(zQuery);
 						if (rc != SQLITE_OK) {
 							ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
@@ -8849,7 +8850,7 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 						// SQLITE_STATIC because the statement is finalized
 						// before the buffer is freed:
 						pFBuf = (unsigned char*)in.find(IconFile).Extract(fsize);
-						if (pFBuf == NULL)
+						if (pFBuf == nullptr)
 						{
 							ErrorMessage = "Could not extract File: " + IconFile16;
 							if (iTotalAdded > 0)

@@ -97,7 +97,7 @@ bool CNotificationEmail::SendMessageImplementation(
 		stdreplace(HtmlBody, "$DEVNAME", Name);
 		stdreplace(HtmlBody, "$MESSAGE", MessageText);
 
-		std::string szDate = TimeToString(NULL, TF_DateTimeMs);
+		std::string szDate = TimeToString(nullptr, TF_DateTimeMs);
 		stdreplace(HtmlBody, "$DATETIME", szDate);
 	}
 	else

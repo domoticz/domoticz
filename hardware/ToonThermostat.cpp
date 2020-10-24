@@ -661,7 +661,7 @@ bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
 	if (root["powerUsage"].empty())
 		return false;
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	unsigned long powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
 	unsigned long powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
@@ -734,7 +734,7 @@ bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
 			m_lastSharedSendElectra = atime;
 			m_lastelectrausage = m_p1power.usagecurrent;
 			m_lastelectradeliv = m_p1power.delivcurrent;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, nullptr, 255);
 		}
 	}
 	return true;
@@ -744,7 +744,7 @@ bool CToonThermostat::ParseGasUsage(const Json::Value &root)
 {
 	if (root["gasUsage"].empty())
 		return false;
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	m_p1gas.gasusage = (unsigned long)(root["gasUsage"]["meterReading"].asFloat());
 
@@ -758,7 +758,7 @@ bool CToonThermostat::ParseGasUsage(const Json::Value &root)
 		{
 			m_lastSharedSendGas = atime;
 			m_lastgasusage = m_p1gas.gasusage;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, nullptr, 255);
 		}
 	}
 	return true;

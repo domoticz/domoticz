@@ -213,7 +213,7 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 
 	// Compare the time of the last update to the current time.
 	// For items changing frequently, update the value every 5 minutes, for all others update every 15 minutes
-	time_t currentTime = mytime(NULL);
+	time_t currentTime = mytime(nullptr);
 	bool updateFrequentChangingValues = (currentTime - m_LastUpdateFrequentChangingValues) >= 300;
 	if (updateFrequentChangingValues)
 		m_LastUpdateFrequentChangingValues = currentTime;

@@ -225,7 +225,7 @@ void CGpio::UpdateSwitch(const int pin, const bool value)
 	IOPinStatusPacket.LIGHTING1.seqnbr++;
 	IOPinStatusPacket.LIGHTING1.unitcode = pin;
 
-	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
+	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, nullptr, 255);
 
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
@@ -304,7 +304,7 @@ bool CGpio::StopHardware()
 	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
-		if (m_thread_interrupt[it->GetPin()] != NULL)
+		if (m_thread_interrupt[it->GetPin()] != nullptr)
 		{
 			m_thread_interrupt[it->GetPin()]->join();
 			m_thread_interrupt[it->GetPin()].reset();
@@ -435,7 +435,7 @@ CGpioPin* CGpio::GetPPinById(int id)
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 		if (it->GetPin() == id)
 			return &(*it);
-	return NULL;
+	return nullptr;
 }
 
 void CGpio::UpdateDeviceStates(bool forceUpdate)

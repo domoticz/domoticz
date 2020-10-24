@@ -39,32 +39,37 @@ namespace Plugins {
 
 		try
 		{
-			if (self == NULL) {
+			if (self == nullptr)
+			{
 				_log.Log(LOG_ERROR, "%s: Self is NULL.", __func__);
 			}
 			else {
 				self->ImageID = -1;
 				self->Base = PyUnicode_FromString("");
-				if (self->Base == NULL) {
+				if (self->Base == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Name = PyUnicode_FromString("");
-				if (self->Name == NULL) {
+				if (self->Name == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Description = PyUnicode_FromString("");
-				if (self->Description == NULL) {
+				if (self->Description == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Filename = PyUnicode_FromString("");
-				if (self->Filename == NULL) {
+				if (self->Filename == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
-				self->pPlugin = NULL;
+				self->pPlugin = nullptr;
 			}
 		}
 		catch (std::exception *e)
@@ -81,8 +86,8 @@ namespace Plugins {
 
 	int CImage_init(CImage *self, PyObject *args, PyObject *kwds)
 	{
-		char*		szFileName = NULL;
-		static char *kwlist[] = { "Filename", NULL };
+		char *szFileName = nullptr;
+		static char *kwlist[] = { "Filename", nullptr };
 
 		try
 		{
@@ -120,7 +125,7 @@ namespace Plugins {
 			}
 			else
 			{
-				CPlugin* pPlugin = NULL;
+				CPlugin *pPlugin = nullptr;
 				if (pModState) pPlugin = pModState->pPlugin;
 				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Image(Filename=\"MyImages.zip\")");
 				LogPythonException(pPlugin, __func__);
@@ -172,7 +177,8 @@ namespace Plugins {
 							for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
 							{
 								std::vector<std::string> sd = *itt;
-								CImage* pImage = (CImage*)CImage_new(&CImageType, (PyObject*)NULL, (PyObject*)NULL);
+								CImage *pImage = (CImage *)CImage_new(&CImageType, (PyObject *)nullptr,
+												      (PyObject *)nullptr);
 
 								PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
 								if (PyDict_SetItem((PyObject*)self->pPlugin->m_ImageDict, pKey, (PyObject*)pImage) == -1)
@@ -279,20 +285,23 @@ namespace Plugins {
 
 		try
 		{
-			if (self == NULL) {
+			if (self == nullptr)
+			{
 				_log.Log(LOG_ERROR, "%s: Self is NULL.", __func__);
 			}
 			else {
 				self->PluginKey = PyUnicode_FromString("");
-				if (self->PluginKey == NULL) {
+				if (self->PluginKey == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->HwdID = -1;
 				self->DeviceID = PyUnicode_FromString("");
-				if (self->DeviceID == NULL) {
+				if (self->DeviceID == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Unit = -1;
 				self->Type = 0;
@@ -301,25 +310,29 @@ namespace Plugins {
 				self->ID = -1;
 				self->LastLevel = 0;
 				self->Name = PyUnicode_FromString("");
-				if (self->Name == NULL) {
+				if (self->Name == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Description = PyUnicode_FromString("");
-				if (self->Description == NULL) {
+				if (self->Description == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->nValue = 0;
 				self->sValue = PyUnicode_FromString("");
-				if (self->sValue == NULL) {
+				if (self->sValue == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Options = PyDict_New();
-				if (self->Options == NULL) {
+				if (self->Options == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Image = 0;
 				self->Used = 0;
@@ -327,11 +340,12 @@ namespace Plugins {
 				self->BatteryLevel = 255;
 				self->TimedOut = 0;
 				self->Color = PyUnicode_FromString(NoColor.toJSONString().c_str());
-				if (self->Color == NULL) {
+				if (self->Color == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
-				self->pPlugin = NULL;
+				self->pPlugin = nullptr;
 			}
 		}
 		catch (std::exception *e)
@@ -515,18 +529,19 @@ namespace Plugins {
 
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
 	{
-		char*		Name = NULL;
-		char*		DeviceID = NULL;
+		char *Name = nullptr;
+		char *DeviceID = nullptr;
 		int			Unit = -1;
-		char*		TypeName = NULL;
+		char *TypeName = nullptr;
 		int			Type = -1;
 		int			SubType = -1;
 		int			SwitchType = -1;
 		int			Image = -1;
-		PyObject*	Options = NULL;
+		PyObject *Options = nullptr;
 		int			Used = -1;
-		char*		Description = NULL;
-		static char *kwlist[] = { "Name", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "DeviceID", "Description", NULL };
+		char *Description = nullptr;
+		static char *kwlist[] = { "Name",  "Unit",    "TypeName", "Type",     "Subtype",     "Switchtype",
+					  "Image", "Options", "Used",	  "DeviceID", "Description", nullptr };
 
 		try
 		{
@@ -622,7 +637,7 @@ namespace Plugins {
 			}
 			else
 			{
-				CPlugin* pPlugin = NULL;
+				CPlugin *pPlugin = nullptr;
 				if (pModState) pPlugin = pModState->pPlugin;
 				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Device(Name=\"myDevice\", Unit=0, TypeName=\"\", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1)");
 				LogPythonException(pPlugin, __func__);
@@ -744,7 +759,7 @@ namespace Plugins {
 						{
 							PyObject *pValueDict = PyDict_GetItemString(self->Options, "Custom");
 							std::string sOptionValue;
-							if (pValueDict == NULL)
+							if (pValueDict == nullptr)
 								sOptionValue = "";
 							else
 								sOptionValue = PyUnicode_AsUTF8(pValueDict);
@@ -827,28 +842,31 @@ namespace Plugins {
 			self->pPlugin->SetHeartbeatReceived();
 
 			int			nValue = self->nValue;
-			char*		sValue = NULL;
+			char *sValue = nullptr;
 			int			iSignalLevel = self->SignalLevel;
 			int			iBatteryLevel = self->BatteryLevel;
 			int			iImage = self->Image;
 			int			iTimedOut = self->TimedOut;
-			PyObject*	pOptionsDict = NULL;
+			PyObject *pOptionsDict = nullptr;
 
-			char*		Name = NULL;
-			char*		TypeName = NULL;
+			char *Name = nullptr;
+			char *TypeName = nullptr;
 			int			iType = self->Type;
 			int			iSubType = self->SubType;
 			int			iSwitchType = self->SwitchType;
 			int			iUsed = self->Used;
 			uint64_t 	DevRowIdx;
-			char*		Description = NULL;
-			char*		Color = NULL;
+			char *Description = nullptr;
+			char *Color = nullptr;
 			int			SuppressTriggers = false;
 
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			std::string	sDescription = PyUnicode_AsUTF8(self->Description);
-			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Used", "Description", "Color", "SuppressTriggers", NULL };
+			static char *kwlist[]
+				= { "nValue", "sValue",		  "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut",
+				    "Name",   "TypeName",	  "Type",  "Subtype",	  "Switchtype",	  "Used",    "Description",
+				    "Color",  "SuppressTriggers", nullptr };
 
 			// Try to extract parameters needed to update device settings
 			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
@@ -949,7 +967,7 @@ namespace Plugins {
 						sOptionValue = PyUnicode_AsUTF8(pValue);
 					}
 
-					time_t now = time(0);
+					time_t now = time(nullptr);
 					struct tm ltime;
 					localtime_r(&now, &ltime);
 					m_sql.UpdateDeviceValue("Options", iUsed, sID);
@@ -1070,7 +1088,8 @@ namespace Plugins {
 		{
 			self->pPlugin->SetHeartbeatReceived();
 			std::string sID = std::to_string(self->ID);
-			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%s' WHERE (ID == %s )", TimeToString(NULL, TF_DateTime).c_str(), sID.c_str());
+			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%s' WHERE (ID == %s )",
+					 TimeToString(nullptr, TF_DateTime).c_str(), sID.c_str());
 		}
 		else
 		{
@@ -1103,12 +1122,12 @@ namespace Plugins {
 		if (self->pTransport)
 		{
 			delete self->pTransport;
-			self->pTransport = NULL;
+			self->pTransport = nullptr;
 		}
 		if (self->pProtocol)
 		{
 			delete self->pProtocol;
-			self->pProtocol = NULL;
+			self->pProtocol = nullptr;
 		}
 
 		Py_TYPE(self)->tp_free((PyObject*)self);
@@ -1116,7 +1135,7 @@ namespace Plugins {
 
 	PyObject * CConnection_new(PyTypeObject * type, PyObject * args, PyObject * kwds)
 	{
-		CConnection *self = NULL;
+		CConnection *self = nullptr;
 		if ((CConnection *)type->tp_alloc)
 		{
 			self = (CConnection *)type->tp_alloc(type, 0);
@@ -1130,47 +1149,54 @@ namespace Plugins {
 
 		try
 		{
-			if (self == NULL) {
+			if (self == nullptr)
+			{
 				_log.Log(LOG_ERROR, "%s: Self is NULL.", __func__);
 			}
 			else {
 				self->Name = PyUnicode_FromString("");
-				if (self->Name == NULL) {
+				if (self->Name == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Address = PyUnicode_FromString("");
-				if (self->Address == NULL) {
+				if (self->Address == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Port = PyUnicode_FromString("");
-				if (self->Port == NULL) {
+				if (self->Port == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->LastSeen = PyUnicode_FromString("");
-				if (self->LastSeen == NULL) {
+				if (self->LastSeen == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Transport = PyUnicode_FromString("");
-				if (self->Transport == NULL) {
+				if (self->Transport == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 				self->Protocol = PyUnicode_FromString("None");
-				if (self->Protocol == NULL) {
+				if (self->Protocol == nullptr)
+				{
 					Py_DECREF(self);
-					return NULL;
+					return nullptr;
 				}
 
 				self->Parent = Py_None;
 				Py_INCREF(Py_None);
 
-				self->pPlugin = NULL;
-				self->pTransport = NULL;
-				self->pProtocol = NULL;
+				self->pPlugin = nullptr;
+				self->pTransport = nullptr;
+				self->pProtocol = nullptr;
 			}
 		}
 		catch (std::exception *e)
@@ -1187,13 +1213,13 @@ namespace Plugins {
 
 	int CConnection_init(CConnection * self, PyObject * args, PyObject * kwds)
 	{
-		char*		pName = NULL;
-		char*		pTransport = NULL;
-		char*		pProtocol = NULL;
-		char*		pAddress = NULL;
-		char*		pPort = NULL;
+		char *pName = nullptr;
+		char *pTransport = nullptr;
+		char *pProtocol = nullptr;
+		char *pAddress = nullptr;
+		char *pPort = nullptr;
 		int			iBaud = -1;
-		static char *kwlist[] = { "Name", "Transport", "Protocol", "Address", "Port", "Baud", NULL };
+		static char *kwlist[] = { "Name", "Transport", "Protocol", "Address", "Port", "Baud", nullptr };
 
 		try
 		{
@@ -1247,7 +1273,7 @@ namespace Plugins {
 			}
 			else
 			{
-				CPlugin* pPlugin = NULL;
+				CPlugin *pPlugin = nullptr;
 				if (pModState) pPlugin = pModState->pPlugin;
 				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Connection(Name=\"<Name>\", Transport=\"<Transport>\", Protocol=\"<Protocol>\", Address=\"<IP-Address>\", Port=\"<Port>\", Baud=0)");
 				LogPythonException(pPlugin, __func__);
@@ -1345,9 +1371,9 @@ namespace Plugins {
 		}
 		else
 		{
-			PyObject*	pData = NULL;
+			PyObject *pData = nullptr;
 			int			iDelay = 0;
-			static char *kwlist[] = { "Message", "Delay", NULL };
+			static char *kwlist[] = { "Message", "Delay", nullptr };
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", self->pPlugin->m_Name.c_str());

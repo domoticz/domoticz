@@ -78,7 +78,7 @@ namespace Plugins {
 		m_bEnabled = false;
 		m_bAllPluginsStarted = false;
 		m_iPollInterval = 10;
-		m_InitialPythonThread = NULL;
+		m_InitialPythonThread = nullptr;
 	}
 
 	CPluginSystem::~CPluginSystem(void)
@@ -282,7 +282,7 @@ namespace Plugins {
 
 	CDomoticzHardwareBase* CPluginSystem::RegisterPlugin(const int HwdID, const std::string & Name, const std::string & PluginKey)
 	{
-		CPlugin*	pPlugin = NULL;
+		CPlugin *pPlugin = nullptr;
 		if (m_bEnabled)
 		{
 			std::lock_guard<std::mutex> l(PluginMutex);
@@ -333,11 +333,11 @@ namespace Plugins {
 
 		while (!IsStopRequested(50))
 		{
-			time_t	Now = time(0);
+			time_t Now = time(nullptr);
 			bool	bProcessed = true;
 			while (bProcessed)
 			{
-				CPluginMessageBase* Message = NULL;
+				CPluginMessageBase *Message = nullptr;
 				bProcessed = false;
 
 				// Cycle once through the queue looking for the 1st message that is ready to process
@@ -515,7 +515,7 @@ namespace http {
 			Plugins::CPluginSystem Plugins;
 			std::map<int, CDomoticzHardwareBase*>*	PluginHwd = Plugins.GetHardware();
 			std::string		sRetVal = Hardware_Type_Desc(HTYPE_PythonPlugin);
-			Plugins::CPlugin*	pPlugin = NULL;
+			Plugins::CPlugin *pPlugin = nullptr;
 
 			// Disabled plugins will not be in plugin hardware map
 			if (PluginHwd->count(HwdID))

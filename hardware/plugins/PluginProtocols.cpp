@@ -161,7 +161,7 @@ namespace Plugins {
 
 	PyObject* CPluginProtocolJSON::JSONtoPython(Json::Value* pJSON)
 	{
-		PyObject* pRetVal = NULL;
+		PyObject *pRetVal = nullptr;
 
 		if (pJSON->isArray())
 		{
@@ -461,7 +461,8 @@ namespace Plugins {
 			PyObject* pObj = Py_BuildValue("s", sHeaderText.c_str());
 			PyObject* pPrevObj = PyDict_GetItemString((PyObject*)m_Headers, sHeaderName.c_str());
 			// Encode multi headers in a list
-			if (pPrevObj != NULL) {
+			if (pPrevObj != nullptr)
+			{
 				PyObject* pListObj = pPrevObj;
 				// First duplicate? Create a list and add previous value
 				if (!PyList_Check(pListObj))
@@ -495,7 +496,7 @@ namespace Plugins {
 		if (m_sRetainedData.size())
 		{
 			// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
-			ProcessInbound(new ReadEvent(pPlugin, pConnection, 0, NULL));
+			ProcessInbound(new ReadEvent(pPlugin, pConnection, 0, nullptr));
 			m_sRetainedData.clear();
 		}
 	}
@@ -584,7 +585,7 @@ namespace Plugins {
 							if (PyDict_SetItemString(pDataDict, "Headers", (PyObject*)m_Headers) == -1)
 								_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", "HTTP", "Headers");
 							Py_DECREF((PyObject*)m_Headers);
-							m_Headers = NULL;
+							m_Headers = nullptr;
 						}
 
 						if (sData.length())
@@ -619,7 +620,7 @@ namespace Plugins {
 							        break;
 							}
 							std::string		sChunkLine = sData.substr(0, uSizeEnd);
-							m_RemainingChunk = strtol(sChunkLine.c_str(), NULL, 16);
+							m_RemainingChunk = strtol(sChunkLine.c_str(), nullptr, 16);
 							sData = sData.substr(sData.find_first_of('\n') + 1);
 
 							// last chunk is zero length, but still has a terminator.  We aren't done until we have received the terminator as well
@@ -636,7 +637,7 @@ namespace Plugins {
 									if (PyDict_SetItemString(pDataDict, "Headers", (PyObject*)m_Headers) == -1)
 										_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", "HTTP", "Headers");
 									Py_DECREF((PyObject*)m_Headers);
-									m_Headers = NULL;
+									m_Headers = nullptr;
 								}
 
 								if (sPayload.length())
@@ -703,7 +704,7 @@ namespace Plugins {
 						if (PyDict_SetItemString(DataDict, "Headers", (PyObject*)m_Headers) == -1)
 							_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", "HTTP", "Headers");
 						Py_DECREF((PyObject*)m_Headers);
-						m_Headers = NULL;
+						m_Headers = nullptr;
 					}
 
 					if (sPayload.length())
@@ -733,7 +734,7 @@ namespace Plugins {
 			return retVal;
 		}
 
-		// Extract potential values.  Failures return NULL, success returns borrowed reference
+		// Extract potential values.  Failures return nullptr, success returns borrowed reference
 		PyObject* pVerb = PyDict_GetItemString(WriteMessage->m_Object, "Verb");
 		PyObject* pStatus = PyDict_GetItemString(WriteMessage->m_Object, "Status");
 		PyObject* pChunk = PyDict_GetItemString(WriteMessage->m_Object, "Chunk");
@@ -777,7 +778,7 @@ namespace Plugins {
 			sHttp += " HTTP/1.1\r\n";
 
 			// If username &/or password specified then add a basic auth header (if one was not supplied)
-			PyObject* pHead = NULL;
+			PyObject *pHead = nullptr;
 			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Authorization");
 			if (!pHead)
 			{
@@ -847,7 +848,7 @@ namespace Plugins {
 			sHttp += "\r\n";
 
 			// Add Date header if it is not supplied
-			PyObject* pHead = NULL;
+			PyObject *pHead = nullptr;
 			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Date");
 			if (!pHead)
 			{
@@ -860,7 +861,7 @@ namespace Plugins {
 			}
 
 			// Add Server header if it is not supplied
-			pHead = NULL;
+			pHead = nullptr;
 			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Server");
 			if (!pHead)
 			{
@@ -908,7 +909,8 @@ namespace Plugins {
 						{
 							PyObject* iterator = PyObject_GetIter(value);
 							PyObject* item;
-							while (item = PyIter_Next(iterator)) {
+							while ((item = PyIter_Next(iterator)))
+							{
 								if (PyUnicode_Check(item))
 								{
 									std::string	sValue = PyUnicode_AsUTF8(item);
@@ -938,7 +940,7 @@ namespace Plugins {
 			}
 
 			// Add Content-Length header if it is required but not supplied
-			PyObject* pLength = NULL;
+			PyObject *pLength = nullptr;
 			if (pHeaders)
 				pLength = PyDict_GetItemString(pHeaders, "Content-Length");
 			if (!pLength && pData && !pChunk)
@@ -956,7 +958,7 @@ namespace Plugins {
 			// Add Transfer-Encoding header if required but not supplied
 			if (pChunk)
 			{
-				PyObject* pHead = NULL;
+				PyObject *pHead = nullptr;
 				if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Transfer-Encoding");
 				if (!pHead)
 				{
@@ -1034,7 +1036,7 @@ namespace Plugins {
 
 	void CPluginProtocolICMP::ProcessInbound(const ReadEvent* Message)
 	{
-		PyObject* pObj = NULL;
+		PyObject *pObj = nullptr;
 		PyObject* pDataDict = PyDict_New();
 		int			iTotalData = 0;
 		int			iDataOffset = 0;
@@ -1096,7 +1098,7 @@ namespace Plugins {
 					iTotalData = pIPv4->total_length();
 					iDataOffset = pIPv4->header_length();
 				}
-				pIPv4Dict = NULL;
+				pIPv4Dict = nullptr;
 			}
 
 			PyObject* pIcmpDict = PyDict_New();
@@ -1165,7 +1167,7 @@ namespace Plugins {
 						iDataOffset += pIPv4->header_length() + sizeof(icmp_header);
 					}
 				}
-				pIcmpDict = NULL;
+				pIcmpDict = nullptr;
 			}
 		}
 		else
@@ -1244,7 +1246,7 @@ namespace Plugins {
 			byte		bResponseType = header & 0xF0;
 			byte		flags = header & 0x0F;
 			PyObject* pMqttDict = PyDict_New();
-			PyObject* pObj = NULL;
+			PyObject *pObj = nullptr;
 			uint16_t	iPacketIdentifier = 0;
 			long		iRemainingLength = 0;
 			long		multiplier = 1;
@@ -1455,7 +1457,7 @@ namespace Plugins {
 					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 				}
 				// Payload
-				const char* pPayload = (it == pktend) ? 0 : (const char*) & *it;
+				const char *pPayload = (it == pktend) ? nullptr : (const char *)&*it;
 				std::string	sPayload(pPayload, std::distance(it, pktend));
 				AddBytesToDict(pMqttDict, "Payload", sPayload);
 				break;
@@ -1524,7 +1526,7 @@ namespace Plugins {
 			return retVal;
 		}
 
-		// Extract potential values.  Failures return NULL, success returns borrowed reference
+		// Extract potential values.  Failures return nullptr, success returns borrowed reference
 		PyObject* pVerb = PyDict_GetItemString(WriteMessage->m_Object, "Verb");
 		if (pVerb)
 		{
@@ -1903,7 +1905,7 @@ namespace Plugins {
 			}
 			iOffset++;
 
-			byte* pbMask = NULL;
+			byte *pbMask = nullptr;
 			if (bMasked)
 			{
 				if (vMessage.size() < iOffset)
@@ -1928,7 +1930,7 @@ namespace Plugins {
 			}
 
 			PyObject* pDataDict = (PyObject*)PyDict_New();
-			PyObject* pPayload = NULL;
+			PyObject *pPayload = nullptr;
 
 			// Handle full message
 			PyObject* pObj = Py_BuildValue("N", PyBool_FromLong(bFinish));
@@ -2195,7 +2197,7 @@ namespace Plugins {
 					retVal.push_back(lPayloadLength & 0xFF);				// Longer length
 				}
 
-				byte* pbMask = NULL;
+				byte *pbMask = nullptr;
 				if (bMaskBit)
 				{
 					retVal.push_back(lMaskingKey >> 24);

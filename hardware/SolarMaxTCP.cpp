@@ -77,7 +77,7 @@ bool SolarMaxTCP::StartHardware()
 	{
 		// change Hostname in serveraddr
 		hostent *he = gethostbyname(m_szIPAddress.c_str());
-		if (he == NULL)
+		if (he == nullptr)
 		{
 			return false;
 		}
@@ -168,7 +168,7 @@ void SolarMaxTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (m_socket == INVALID_SOCKET)

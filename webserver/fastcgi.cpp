@@ -134,7 +134,7 @@ std::vector<char> ExecuteCommandAndReturnRaw(const std::string &szCommand)
 #else
 		fp = popen(szCommand.c_str(), "r");
 #endif
-		if (fp != NULL)
+		if (fp != nullptr)
 		{
 			for (;;) {
 				const int BufferSize = 1024;
@@ -223,10 +223,10 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 		const char *pContent_Type = request::get_req_header(&req, "Content-Type");
 		if (pContent_Type)
 		{
-			if (strstr(pContent_Type, "multipart") != NULL)
+			if (strstr(pContent_Type, "multipart") != nullptr)
 			{
 				const char *pBoundary = strstr(pContent_Type, "boundary=");
-				if (pBoundary != NULL)
+				if (pBoundary != nullptr)
 				{
 					std::string szBoundary = std::string("--") + (pBoundary + 9);
 					//Find boundary in content

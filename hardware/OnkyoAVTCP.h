@@ -19,7 +19,7 @@ private:
 	void ReceiveMessage(const char *pData, int Len);
 	void ReceiveSwitchMsg(const char *pData, int Len, bool muting, int ID);
 	bool ReceiveXML(const char *pData, int Len);
-	void EnsureSwitchDevice(int Unit, const char *options = NULL);
+	void EnsureSwitchDevice(int Unit, const char *options = nullptr);
 	std::string BuildSelectorOptions(const std::string & names, const std::string & ids);
 	void Do_Work();
 

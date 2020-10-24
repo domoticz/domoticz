@@ -221,8 +221,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		total-=tsen.ENERGY.total5*0x100;
 		tsen.ENERGY.total6=(unsigned char)(total);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY, NULL, 255);
-
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY, nullptr, 255);
 	}
 	else if (meterype==MTYPE_GAS)
 	{
@@ -232,7 +231,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		m_p1gas.subtype=sTypeP1Gas;
 		m_p1gas.gasusage=(unsigned long)(mtotal*1000.0);
 		m_p1gas.ID = ID;
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, nullptr, 255);
 	}
 	else
 	{
@@ -253,7 +252,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		tsen.RFXMETER.count2 = (BYTE)((counterA & 0x00FF0000) >> 16);
 		tsen.RFXMETER.count3 = (BYTE)((counterA & 0x0000FF00) >> 8);
 		tsen.RFXMETER.count4 = (BYTE)(counterA & 0x000000FF);
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255);
 	}
 }
 

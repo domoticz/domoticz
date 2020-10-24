@@ -41,7 +41,7 @@ bool CRFXBase::onInternalMessage(const unsigned char *pBuffer, const size_t Len,
 		if (m_rxbufferpos > m_rxbuffer[0])
 		{
 			if (!checkValid || CheckValidRFXData((uint8_t*)&m_rxbuffer))
-				sDecodeRXMessage(this, (const uint8_t*)&m_rxbuffer, NULL, -1);
+				sDecodeRXMessage(this, (const uint8_t *)&m_rxbuffer, nullptr, -1);
 			else
 				Log(LOG_ERROR, "Invalid data received!....");
 
@@ -254,7 +254,7 @@ void CRFXBase::Parse_Async_Data(const uint8_t *pData, const int Len)
 	case ATYPE_P1_DSMR_4:
 	case ATYPE_P1_DSMR_5:
 	default:
-		m_LastP1Received = time(NULL);
+		m_LastP1Received = time(nullptr);
 		ParseP1Data(pData, Len, false, 0);
 		break;
 	}
@@ -296,7 +296,7 @@ bool CRFXBase::SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned 
 	Response.ICMND.msg6 = Mode6;
 	if (!WriteToHardware((const char*)&Response, sizeof(Response.ICMND)))
 		return false;
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&Response, NULL, -1);
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&Response, nullptr, -1);
 	//Save it also
 	SendCommand(cmdSAVE);
 

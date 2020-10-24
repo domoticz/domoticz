@@ -86,7 +86,7 @@ static struct selector_name input_names[] = {
 	{ 0x56, "HDMI6" },
 	{ 0x57, "HDMI7" },
 	{ 0x80, "Source" },
-	{ 0, NULL },
+	{ 0, nullptr },
 };
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
@@ -100,19 +100,24 @@ static struct {
 	const char *options;
 	struct selector_name *default_names;
 } switch_types[] = {
-	{ "MVL", "AMT", "Master volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL, NULL },
-	{ "ZVL", "ZMT", "Zone 2 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL, NULL },
-	{ "VL3", "MT3", "Zone 3 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL, NULL },
-	{ "VL4", "MT4", "Zone 4 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL, NULL },
-	{ "PWR", NULL, "Master power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL, NULL },
-	{ "ZPW", NULL, "Zone 2 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL, NULL },
-	{ "PW3", NULL, "Zone 3 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL, NULL },
-	{ "PW4", NULL, "Zone 4 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL, NULL },
-	{ "SLI", NULL, "Master selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
-	{ "SLZ", NULL, "Zone 2 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
-	{ "SL2", NULL, "Zone 3 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
-	{ "SL3", NULL, "Zone 4 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
-	{ "HDO", NULL, "HDMI Output", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03" },
+	{ "MVL", "AMT", "Master volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
+	{ "ZVL", "ZMT", "Zone 2 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
+	{ "VL3", "MT3", "Zone 3 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
+	{ "VL4", "MT4", "Zone 4 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
+	{ "PWR", nullptr, "Master power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
+	{ "ZPW", nullptr, "Zone 2 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
+	{ "PW3", nullptr, "Zone 3 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
+	{ "PW4", nullptr, "Zone 4 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
+	{ "SLI", nullptr, "Master selector", STYPE_Selector, sSwitchTypeSelector, 5,
+	  "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
+	{ "SLZ", nullptr, "Zone 2 selector", STYPE_Selector, sSwitchTypeSelector, 5,
+	  "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
+	{ "SL2", nullptr, "Zone 3 selector", STYPE_Selector, sSwitchTypeSelector, 5,
+	  "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
+	{ "SL3", nullptr, "Zone 4 selector", STYPE_Selector, sSwitchTypeSelector, 5,
+	  "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
+	{ "HDO", nullptr, "HDMI Output", STYPE_Selector, sSwitchTypeSelector, 5,
+	  "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03" },
 };
 
 static struct {
@@ -135,7 +140,7 @@ OnkyoAVTCP::OnkyoAVTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
-	m_pPartialPkt = NULL;
+	m_pPartialPkt = nullptr;
 	m_PPktLen = 0;
 
 	// Ooops, changing Device ID was a mistake. Fix up migration for Main/Z2 power switches from
@@ -199,7 +204,7 @@ void OnkyoAVTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
@@ -352,7 +357,7 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 	result = m_sql.safe_query("SELECT Name,nValue,sValue,Options,ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == %d)",
 				  m_HwdID, ID, 0);
 	if (result.empty()) {
-		EnsureSwitchDevice(ID, NULL);
+		EnsureSwitchDevice(ID, nullptr);
 		result = m_sql.safe_query("SELECT Name,nValue,sValue,Options,ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == %d)",
 					  m_HwdID, ID, 0);
 		if (result.empty())
@@ -370,7 +375,7 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 		std::vector<std::string>::iterator itt2;
 		int i = 0;
 		for (itt2 = strarray.begin(); itt2 != strarray.end(); ++itt2) {
-			if (strtoul(itt2->c_str(), NULL, 16) == (unsigned long)level)
+			if (strtoul(itt2->c_str(), nullptr, 16) == (unsigned long)level)
 				break;
 			i += 10;
 		}
@@ -499,7 +504,7 @@ bool OnkyoAVTCP::ReceiveXML(const char *pData, int Len)
 				continue;
 
 			for (int i = 0; i < 3; i++) {
-				int zone_nr = strtoul(zone, NULL, 16);
+				int zone_nr = strtoul(zone, nullptr, 16);
 				if (zone_nr & (1 << i)) {
 					if (InputNames[i].empty())
 						InputNames[i] = "Off";
@@ -593,7 +598,7 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 		unsigned char *new_data = (unsigned char *)realloc(m_pPartialPkt, m_PPktLen + Len);
 		if (!new_data) {
 			free(m_pPartialPkt);
-			m_pPartialPkt = NULL;
+			m_pPartialPkt = nullptr;
 			m_PPktLen = 0;
 			_log.Log(LOG_ERROR, "OnkyoAVTCP: Failed to prepend previous data");
 			// We'll attempt to resync
@@ -620,7 +625,7 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 		Len -= 16 + data_size;
 		pData += 16 + data_size;
 	}
-	unsigned char *new_partial = NULL;
+	unsigned char *new_partial = nullptr;
 	if (Len) {
 		if (pData == m_pPartialPkt) {
 			m_PPktLen = Len;
@@ -670,7 +675,7 @@ namespace http {
 				// associated with the hardware.
 				case HTYPE_OnkyoAVTCP:
 					CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3].c_str(), HTYPE_OnkyoAVTCP);
-					if (pBaseHardware == NULL)
+					if (pBaseHardware == nullptr)
 						return;
 					OnkyoAVTCP *pOnkyoAVTCP = reinterpret_cast<OnkyoAVTCP*>(pBaseHardware);
 
