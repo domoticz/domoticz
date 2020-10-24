@@ -76,12 +76,7 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	m_wdayoff = 6; // saturday
 }
 
-
-CEvohomeWeb::~CEvohomeWeb(void)
-{
-	m_bIsStarted = false;
-}
-
+CEvohomeWeb::~CEvohomeWeb() { m_bIsStarted = false; }
 
 void CEvohomeWeb::Init()
 {

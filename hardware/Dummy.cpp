@@ -18,10 +18,7 @@ CDummy::CDummy(const int ID)
 	m_bSkipReceiveCheck = true;
 }
 
-CDummy::~CDummy(void)
-{
-	m_bIsStarted=false;
-}
+CDummy::~CDummy() { m_bIsStarted = false; }
 
 void CDummy::Init()
 {

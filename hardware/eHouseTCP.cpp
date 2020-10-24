@@ -70,7 +70,7 @@ h l O nr
 #define round(a) ( int ) ( a + .5 )
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Init Structures on start
-void eHouseTCP::InitStructs(void)
+void eHouseTCP::InitStructs()
 {
 	int i;
 	int to = EHOUSE_WIFI_MAX + 1;

@@ -72,10 +72,7 @@ CHardwareMonitor::CHardwareMonitor(const int ID)
 #endif
 }
 
-CHardwareMonitor::~CHardwareMonitor(void)
-{
-	StopHardware();
-}
+CHardwareMonitor::~CHardwareMonitor() { StopHardware(); }
 
 bool CHardwareMonitor::StartHardware()
 {

@@ -176,7 +176,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 	m_CurrentStatus = m_PreviousStatus;
 }
 
-CKodiNode::~CKodiNode(void)
+CKodiNode::~CKodiNode()
 {
 	handleDisconnect();
 	_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Destroyed.", m_Name.c_str());
@@ -895,10 +895,7 @@ CKodi::CKodi(const int ID)
 	SetSettings(10, 3000);
 }
 
-CKodi::~CKodi(void)
-{
-	m_bIsStarted = false;
-}
+CKodi::~CKodi() { m_bIsStarted = false; }
 
 bool CKodi::StartHardware()
 {

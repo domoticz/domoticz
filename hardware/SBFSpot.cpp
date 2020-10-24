@@ -33,9 +33,7 @@ CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 	Init();
 }
 
-CSBFSpot::~CSBFSpot(void)
-{
-}
+CSBFSpot::~CSBFSpot() {}
 
 void CSBFSpot::Init()
 {

@@ -325,8 +325,4 @@ int csocket::write( const char* pDataBuffer, unsigned int numBytesToWrite )
 	return(numBytesToWrite - numBytesRemaining);
 }
 
-
-csocket::SocketState csocket::getState( void ) const
-{
-	return m_socketState;
-}
+csocket::SocketState csocket::getState() const { return m_socketState; }

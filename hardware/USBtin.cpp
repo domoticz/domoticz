@@ -74,9 +74,7 @@ m_szSerialPort(devname)
 	Init();
 }
 
-USBtin::~USBtin(void){
-	StopHardware();
-}
+USBtin::~USBtin() { StopHardware(); }
 
 void USBtin::Init()
 {

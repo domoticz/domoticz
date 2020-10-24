@@ -61,9 +61,7 @@ CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::str
 	Init();
 }
 
-CHoneywell::~CHoneywell(void)
-{
-}
+CHoneywell::~CHoneywell() {}
 
 void CHoneywell::Init() { mTokenExpires = mytime(nullptr); }
 

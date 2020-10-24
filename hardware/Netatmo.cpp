@@ -76,9 +76,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	Init();
 }
 
-CNetatmo::~CNetatmo(void)
-{
-}
+CNetatmo::~CNetatmo() {}
 
 void CNetatmo::Init()
 {

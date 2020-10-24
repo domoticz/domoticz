@@ -126,9 +126,7 @@ GoodweAPI::GoodweAPI(const int ID, const std::string &userName, const int Server
 	Init();
 }
 
-GoodweAPI::~GoodweAPI(void)
-{
-}
+GoodweAPI::~GoodweAPI() {}
 
 void GoodweAPI::Init()
 {

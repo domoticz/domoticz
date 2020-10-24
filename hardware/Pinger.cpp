@@ -163,10 +163,7 @@ CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutm
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CPinger::~CPinger(void)
-{
-	m_bIsStarted = false;
-}
+CPinger::~CPinger() { m_bIsStarted = false; }
 
 bool CPinger::StartHardware()
 {

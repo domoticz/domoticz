@@ -23,9 +23,7 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsig
 #endif
 }
 
-DomoticzTCP::~DomoticzTCP(void)
-{
-}
+DomoticzTCP::~DomoticzTCP() {}
 
 #ifndef NOCLOUD
 bool DomoticzTCP::IsValidAPIKey(const std::string &IPAddress)

@@ -45,10 +45,7 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) :
 	SetSettings(10);
 }
 
-CLogitechMediaServer::~CLogitechMediaServer(void)
-{
-	m_bIsStarted = false;
-}
+CLogitechMediaServer::~CLogitechMediaServer() { m_bIsStarted = false; }
 
 Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort, const std::string &sPostdata)
 {

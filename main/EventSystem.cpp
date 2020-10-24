@@ -119,15 +119,9 @@ const CEventSystem::_tJsonMap CEventSystem::JsonMap[] = {{"Barometer", "baromete
 							 {"Voltage", "voltage", JTYPE_FLOAT},
 							 {nullptr, nullptr, JTYPE_STRING}};
 
-CEventSystem::CEventSystem(void)
-{
-	m_bEnabled = false;
-}
+CEventSystem::CEventSystem() { m_bEnabled = false; }
 
-CEventSystem::~CEventSystem(void)
-{
-	StopEventSystem();
-}
+CEventSystem::~CEventSystem() { StopEventSystem(); }
 
 void CEventSystem::StartEventSystem()
 {

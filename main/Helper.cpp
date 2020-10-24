@@ -1343,7 +1343,7 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 #endif
 
 #if !defined(WIN32)
-bool IsDebuggerPresent(void)
+bool IsDebuggerPresent()
 {
 #if defined(__linux__)
 	// Linux implementation: Search for 'TracerPid:' in /proc/self/status

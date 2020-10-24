@@ -112,7 +112,7 @@ class CPanasonicNode : public StoppableTask
 
 public:
 	CPanasonicNode(const int, const int, const int, const std::string&, const std::string&, const std::string&, const std::string&);
-	~CPanasonicNode(void);
+	~CPanasonicNode();
 	void			Do_Work();
 	void			SendCommand(const std::string &command);
 	void			SendCommand(const std::string &command, const int iValue);
@@ -266,10 +266,7 @@ CPanasonicNode::CPanasonicNode(const int pHwdID, const int PollIntervalsec, cons
 	m_CurrentStatus = m_PreviousStatus;
 }
 
-CPanasonicNode::~CPanasonicNode(void)
-{
-	StopThread();
-}
+CPanasonicNode::~CPanasonicNode() { StopThread(); }
 
 void CPanasonicNode::UpdateStatus(bool forceupdate)
 {
@@ -757,10 +754,7 @@ CPanasonic::CPanasonic(const int ID)
 	SetSettings(10, 3000);
 }
 
-CPanasonic::~CPanasonic(void)
-{
-	m_bIsStarted = false;
-}
+CPanasonic::~CPanasonic() { m_bIsStarted = false; }
 
 bool CPanasonic::StartHardware()
 {

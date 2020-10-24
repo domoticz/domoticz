@@ -66,9 +66,7 @@ EnphaseAPI::EnphaseAPI(const int ID, const std::string &IPAddress, const unsigne
 	m_HwdID = ID;
 }
 
-EnphaseAPI::~EnphaseAPI(void)
-{
-}
+EnphaseAPI::~EnphaseAPI() {}
 
 bool EnphaseAPI::StartHardware()
 {

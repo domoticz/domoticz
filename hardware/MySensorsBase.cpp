@@ -237,8 +237,8 @@ std::string MySensorsBase::GetMySensorsPresentationTypeStr(const enum _ePresenta
 	return "Unknown!";
 }
 
-MySensorsBase::MySensorsBase(void) :
-	m_GatewayVersion("?")
+MySensorsBase::MySensorsBase()
+	: m_GatewayVersion("?")
 {
 	m_bAckReceived = false;
 	m_AckNodeID = -1;
@@ -246,9 +246,7 @@ MySensorsBase::MySensorsBase(void) :
 	m_AckSetType = V_UNKNOWN;
 }
 
-MySensorsBase::~MySensorsBase(void)
-{
-}
+MySensorsBase::~MySensorsBase() {}
 
 void MySensorsBase::LoadDevicesFromDatabase()
 {

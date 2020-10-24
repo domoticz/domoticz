@@ -27,14 +27,9 @@ const CNotificationSystem::_tNotificationStatusTable CNotificationSystem::status
 	{ Notification::STATUS_WARNING,        "warning"         }
 };
 
-CNotificationSystem::CNotificationSystem(void)
-{
-}
+CNotificationSystem::CNotificationSystem() {}
 
-CNotificationSystem::~CNotificationSystem(void)
-{
-	Stop();
-}
+CNotificationSystem::~CNotificationSystem() { Stop(); }
 
 void CNotificationSystem::Start()
 {

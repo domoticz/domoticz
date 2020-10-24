@@ -72,10 +72,7 @@ MQTT::MQTT(
 	threaded_set(true);
 }
 
-MQTT::~MQTT(void)
-{
-	mosqdz::lib_cleanup();
-}
+MQTT::~MQTT() { mosqdz::lib_cleanup(); }
 
 bool MQTT::StartHardware()
 {

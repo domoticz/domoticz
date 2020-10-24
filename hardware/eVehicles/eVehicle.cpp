@@ -79,7 +79,7 @@ CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& 
 	m_allowwakeup = allowwakeup;
 }
 
-CeVehicle::~CeVehicle(void)
+CeVehicle::~CeVehicle()
 {
 	m_commands.clear();
 	delete m_api;

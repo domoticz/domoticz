@@ -112,12 +112,7 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	RegisterDecoder(cmdSync, boost::bind(&CEvohomeRadio::DecodeSync, this, _1));
 }
 
-
-CEvohomeRadio::~CEvohomeRadio(void)
-{
-	m_bIsStarted = false;
-}
-
+CEvohomeRadio::~CEvohomeRadio() { m_bIsStarted = false; }
 
 void CEvohomeRadio::RegisterDecoder(unsigned int cmd, fnc_evohome_decode fndecoder)
 {

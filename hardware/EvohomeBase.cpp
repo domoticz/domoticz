@@ -57,10 +57,9 @@ const char* CEvohomeBase::GetZoneModeName(uint8_t nZoneMode)
 	return m_szZoneMode[std::min(nZoneMode, (uint8_t)6)];
 }
 
-
-CEvohomeBase::CEvohomeBase(void) :
-	m_ZoneNames(m_nMaxZones),
-	m_ZoneOverrideLocal(m_nMaxZones)
+CEvohomeBase::CEvohomeBase()
+	: m_ZoneNames(m_nMaxZones)
+	, m_ZoneOverrideLocal(m_nMaxZones)
 {
 	m_HwdID=0;
 	m_nDevID=0;
@@ -69,12 +68,7 @@ CEvohomeBase::CEvohomeBase(void) :
 	m_nControllerMode=0;
 }
 
-
-CEvohomeBase::~CEvohomeBase(void)
-{
-	m_bIsStarted=false;
-}
-
+CEvohomeBase::~CEvohomeBase() { m_bIsStarted = false; }
 
 bool CEvohomeBase::SetZoneCount(uint8_t nZoneCount)
 {

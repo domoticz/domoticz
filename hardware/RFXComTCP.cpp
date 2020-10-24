@@ -16,9 +16,7 @@ RFXComTCP::RFXComTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_bReceiverStarted = false;
 }
 
-RFXComTCP::~RFXComTCP(void)
-{
-}
+RFXComTCP::~RFXComTCP() {}
 
 bool RFXComTCP::StartHardware()
 {

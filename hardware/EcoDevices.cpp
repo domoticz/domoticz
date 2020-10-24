@@ -76,11 +76,7 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	Init();
 }
 
-
-CEcoDevices::~CEcoDevices(void)
-{
-}
-
+CEcoDevices::~CEcoDevices() {}
 
 void CEcoDevices::Init()
 {
