@@ -771,12 +771,11 @@ namespace http {
 					_log.Log(LOG_ERROR, "WebServer PO unknown exception occurred");
 				}
 				std::string attachment;
-				size_t num = rep.headers.size();
-				for (size_t h = 0; h < num; h++)
+				for (const auto &header : rep.headers)
 				{
-					if (boost::iequals(rep.headers[h].name, "Content-Disposition"))
+					if (boost::iequals(header.name, "Content-Disposition"))
 					{
-						attachment = rep.headers[h].value.substr(rep.headers[h].value.find("=") + 1);
+						attachment = header.value.substr(header.value.find("=") + 1);
 						std::size_t last_dot_pos = attachment.find_last_of(".");
 						if (last_dot_pos != std::string::npos)
 						{
@@ -2051,9 +2050,9 @@ namespace http {
 
 			if (myWebem->myRemoteProxyIPs.size() > 0)
 			{
-				for (std::vector<std::string>::size_type i = 0; i < myWebem->myRemoteProxyIPs.size(); ++i)
+				for (auto &myRemoteProxyIP : myWebem->myRemoteProxyIPs)
 				{
-					if (session.remote_host == myWebem->myRemoteProxyIPs[i])
+					if (session.remote_host == myRemoteProxyIP)
 					{
 						const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
 						if (host_header != nullptr)
@@ -2227,11 +2226,11 @@ namespace http {
 
 					// find content type header
 					std::string content_type;
-					for (unsigned int h = 0; h < rep.headers.size(); h++)
+					for (auto &header : rep.headers)
 					{
-						if (boost::iequals(rep.headers[h].name, "Content-Type"))
+						if (boost::iequals(header.name, "Content-Type"))
 						{
-							content_type = rep.headers[h].value;
+							content_type = header.value;
 							break;
 						}
 					}

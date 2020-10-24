@@ -8660,8 +8660,10 @@ namespace http {
 			std::string szQuery;
 			bool isAlpha = true;
 			const std::string orderBy = order.c_str();
-			for (size_t i = 0; i < orderBy.size(); i++) {
-				if (!isalpha(orderBy[i])) {
+			for (char i : orderBy)
+			{
+				if (!isalpha(i))
+				{
 					isAlpha = false;
 				}
 			}
@@ -15136,9 +15138,9 @@ namespace http {
 							_directions[idir] = 0;
 						for (ii = 0; ii < 17; ii++)
 						{
-							for (int jj = 0; jj < 8; jj++)
+							for (int &jj : wdirtabletemp[ii])
 							{
-								wdirtabletemp[ii][jj] = 0;
+								jj = 0;
 							}
 						}
 

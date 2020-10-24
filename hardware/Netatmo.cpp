@@ -828,9 +828,8 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 	std::vector<_tNetatmoDevice> _netatmo_devices;
 
 	int iDevIndex = 0;
-	for (Json::Value::iterator itDevice = root["body"]["devices"].begin(); itDevice != root["body"]["devices"].end(); ++itDevice)
+	for (auto device : root["body"]["devices"])
 	{
-		Json::Value device = *itDevice;
 		if (!device["_id"].empty())
 		{
 			std::string id = device["_id"].asString();
@@ -855,9 +854,8 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 				if (device["modules"].isArray())
 				{
 					//Add modules for this device
-					for (Json::Value::iterator itModule = device["modules"].begin(); itModule != device["modules"].end(); ++itModule)
+					for (auto module : device["modules"])
 					{
-						Json::Value module = *itModule;
 						if (module.isObject())
 						{
 							//New Method (getstationsdata and getthermostatsdata)
@@ -959,9 +957,8 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 	}
 	mRoot = root["body"]["modules"];
 
-	for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
+	for (auto module : mRoot)
 	{
-		Json::Value module = *itModule;
 		if (module["_id"].empty())
 			continue;
 		std::string id = module["_id"].asString();
@@ -1277,9 +1274,8 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 			if (root["body"]["homes"][m_ActHome]["modules"].empty())
 				return false;
 			Json::Value mRoot = root["body"]["homes"][m_ActHome]["modules"];
-			for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
+			for (auto module : mRoot)
 			{
-				Json::Value module = *itModule;
 				if (!module["id"].empty())
 				{
 					std::string mID = module["id"].asString();
@@ -1293,9 +1289,8 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 			if (root["body"]["homes"][m_ActHome]["rooms"].empty())
 				return false;
 			mRoot = root["body"]["homes"][m_ActHome]["rooms"];
-			for (Json::Value::iterator itRoom = mRoot.begin(); itRoom != mRoot.end(); ++itRoom)
+			for (auto room : mRoot)
 			{
-				Json::Value room = *itRoom;
 				if (!room["id"].empty())
 				{
 					std::string rID = room["id"].asString();
@@ -1339,9 +1334,8 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 		Json::Value mRoot = root["body"]["home"]["modules"];
 
 		int iModuleIndex = 0;
-		for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
+		for (auto module : mRoot)
 		{
-			Json::Value module = *itModule;
 			if (!module["id"].empty())
 			{
 				std::string id = module["id"].asString();
@@ -1401,9 +1395,8 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 			return false;
 		Json::Value mRoot = root["body"]["home"]["rooms"];
 
-		for (Json::Value::iterator itRoom = mRoot.begin(); itRoom != mRoot.end(); ++itRoom)
+		for (auto room : mRoot)
 		{
-			Json::Value room = *itRoom;
 			if (!room["id"].empty())
 			{
 				std::string id = room["id"].asString();

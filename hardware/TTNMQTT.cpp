@@ -336,26 +336,26 @@ void CTTNMQTT::WriteInt(const std::string &sendStr)
 Json::Value CTTNMQTT::GetSensorWithChannel(const Json::Value &root, const uint8_t sChannel)
 {
 	Json::Value ret;
-	for (auto itt = root.begin(); itt != root.end(); ++itt)
+	for (const auto &itt : root)
 	{
-		uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
+		uint8_t channel = (uint8_t)itt["channel"].asInt();
 
-		if ((channel == sChannel) && !(*itt)["used"])
-			return (*itt);
+		if ((channel == sChannel) && !itt["used"])
+			return itt;
 	}
 	return ret;
 }
 
 void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const uint8_t sChannel)
 {
-	for (auto itt = root.begin(); itt != root.end(); ++itt)
+	for (auto &itt : root)
 	{
-		uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
-		std::string type = (*itt)["type"].asString();
+		uint8_t channel = (uint8_t)itt["channel"].asInt();
+		std::string type = itt["type"].asString();
 
 		if ((type == stype) && (channel == sChannel))
 		{
-			(*itt)["used"] = true;
+			itt["used"] = true;
 			return;
 		}
 	}
@@ -821,18 +821,19 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 		// Walk over the payload to find all used channels. Each channel represents a single sensor.
 		uint8_t chanSensors [65] = {};	// CayenneLPP Data Channel ranges from 0 to 64
-		for (auto itt = payload.begin(); itt != payload.end(); ++itt)
+		for (auto &itt : payload)
 		{
-			std::string type = (*itt)["type"].asString();
-			uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
+			std::string type = itt["type"].asString();
+			uint8_t channel = (uint8_t)itt["channel"].asInt();
 
 			// The following IS NOT part of the CayenneLPP specification
 			// But a 'hack'; when using the payload_fields (using the TTN external payload decoder)
 			// a 'batterylevel' field can be created (integer range between 0 and 100)
 			// Also, we do skip this reading for further processing
 			if (type == "batterylevel") {
-				if ((*itt)["value"].isNumeric()) {
-					BatteryLevel = (int)(*itt)["value"].asInt();
+				if (itt["value"].isNumeric())
+				{
+					BatteryLevel = (int)itt["value"].asInt();
 				}
 			}
 			else

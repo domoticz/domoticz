@@ -283,8 +283,8 @@ bool CEvohomeWeb::GetStatus()
 		get_v1_temps();
 
 	// cycle all zones for status
-	for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
-		DecodeZone(&m_tcs->zones[i]);
+	for (auto &i : m_tcs->zones)
+		DecodeZone(&i);
 
 	// hot water status
 	if (has_dhw(m_tcs))
@@ -304,9 +304,9 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 		if (sznewmode == "HeatingOff")
 		{
 			// cycle my zones to reflect the HeatingOff mode
-			for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
+			for (auto &i : m_tcs->zones)
 			{
-				zone* hz = &m_tcs->zones[i];
+				zone *hz = &i;
 				std::string szId, sztemperature;
 				szId = (*hz->installationInfo)["zoneId"].asString();
 				if ((m_showhdtemps) && !hz->hdtemp.empty())
@@ -328,9 +328,9 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 		}
 
 		// cycle my zones to restore scheduled temps
-		for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
+		for (auto &i : m_tcs->zones)
 		{
-			zone* hz = &m_tcs->zones[i];
+			zone *hz = &i;
 			std::string zonemode = "";
 			if (hz->status == nullptr) // don't touch invalid zone - it should already show as 'Offline'
 				continue;
@@ -1336,21 +1336,21 @@ CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(const std::string &zoneId)
 	if ((m_locations.size() == 0) && !full_installation())
 		return nullptr;
 
-	for (size_t l = 0; l < m_locations.size(); l++)
+	for (auto &m_location : m_locations)
 	{
-		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
+		for (auto &gateway : m_location.gateways)
 		{
-			for (size_t t = 0; t < m_locations[l].gateways[g].temperatureControlSystems.size(); t++)
+			for (auto &temperatureControlSystem : gateway.temperatureControlSystems)
 			{
-				for (size_t z = 0; z < m_locations[l].gateways[g].temperatureControlSystems[t].zones.size(); z++)
+				for (auto &zone : temperatureControlSystem.zones)
 				{
-					if (m_locations[l].gateways[g].temperatureControlSystems[t].zones[z].zoneId == zoneId)
-						return &m_locations[l].gateways[g].temperatureControlSystems[t].zones[z];
+					if (zone.zoneId == zoneId)
+						return &zone;
 				}
-				if (m_locations[l].gateways[g].temperatureControlSystems[t].dhw.size() > 0)
+				if (temperatureControlSystem.dhw.size() > 0)
 				{
-					if (m_locations[l].gateways[g].temperatureControlSystems[t].dhw[0].zoneId == zoneId)
-						return &m_locations[l].gateways[g].temperatureControlSystems[t].dhw[0];
+					if (temperatureControlSystem.dhw[0].zoneId == zoneId)
+						return &temperatureControlSystem.dhw[0];
 				}
 			}
 		}

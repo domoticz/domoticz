@@ -56,8 +56,9 @@ namespace http {
 
 		void CWebServerHelper::StopServers()
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->StopServer();
+			for (auto &it : serverCollection)
+			{
+				it->StopServer();
 			}
 			serverCollection.clear();
 			plainServer_.reset();
@@ -102,38 +103,43 @@ namespace http {
 
 		void CWebServerHelper::SetWebCompressionMode(const _eWebCompressionMode gzmode)
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->SetWebCompressionMode(gzmode);
-			 }
+			for (auto &it : serverCollection)
+			{
+				it->SetWebCompressionMode(gzmode);
+			}
 		}
 
 		void CWebServerHelper::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->SetAuthenticationMethod(amethod);
-			 }
+			for (auto &it : serverCollection)
+			{
+				it->SetAuthenticationMethod(amethod);
+			}
 		}
 
 		void CWebServerHelper::SetWebTheme(const std::string &themename)
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->SetWebTheme(themename);
-			 }
+			for (auto &it : serverCollection)
+			{
+				it->SetWebTheme(themename);
+			}
 		}
 
 		void CWebServerHelper::SetWebRoot(const std::string &webRoot)
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->SetWebRoot(webRoot);
-			 }
+			for (auto &it : serverCollection)
+			{
+				it->SetWebRoot(webRoot);
+			}
 			proxymanager.SetWebRoot(webRoot);
 		}
 
 		void CWebServerHelper::ClearUserPasswords()
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->ClearUserPasswords();
-			 }
+			for (auto &it : serverCollection)
+			{
+				it->ClearUserPasswords();
+			}
 		}
 
 		//JSon
@@ -164,9 +170,10 @@ namespace http {
 
 		void CWebServerHelper::ReloadCustomSwitchIcons()
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->ReloadCustomSwitchIcons();
-			 }
+			for (auto &it : serverCollection)
+			{
+				it->ReloadCustomSwitchIcons();
+			}
 		}
 	}
 

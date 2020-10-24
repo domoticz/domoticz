@@ -83,7 +83,9 @@ void C1WireByKernel::ThreadFunction()
 		// Thread is stopped
 	}
 	m_PendingChanges.clear();
-	for (DeviceCollection::iterator it = m_Devices.begin(); it != m_Devices.end(); ++it) { delete (*it).second; }
+	for (auto &m_Device : m_Devices)
+		delete m_Device.second;
+
 	m_Devices.clear();
 }
 
@@ -200,7 +202,9 @@ void C1WireByKernel::ThreadBuildDevicesList()
 	struct dirent *ent;
 	if ((dir = opendir(Wire1_Base_Dir)) != nullptr)
 	{
-		for (DeviceCollection::iterator it = m_Devices.begin(); it != m_Devices.end(); ++it) { delete (*it).second; }
+		for (auto &m_Device : m_Devices)
+			delete m_Device.second;
+
 		m_Devices.clear();
 		while ((ent = readdir(dir)) != nullptr)
 		{
@@ -530,8 +534,8 @@ void C1WireByKernel::ThreadWriteRawData8ChannelAddressableSwitch(const std::stri
 inline void std_to_upper(const std::string& str, std::string& converted)
 {
 	converted = "";
-	for (size_t i = 0; i < str.size(); ++i)
-		converted += (char)toupper(str[i]);
+	for (char c : str)
+		converted += (char)toupper(c);
 }
 
 void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const

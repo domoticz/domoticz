@@ -7821,9 +7821,9 @@ uint64_t CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const ch
 		subType,
 		nValue);
 
-	for (VectorVectorString::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+	for (const auto &itt : result)
 	{
-		unsigned char theUnit = atoi((*itt)[0].c_str()); // get the unit value
+		unsigned char theUnit = atoi(itt[0].c_str()); // get the unit value
 		devRowIndex = UpdateValue(HardwareID, ID, theUnit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction);
 	}
 	return devRowIndex;
@@ -7864,9 +7864,9 @@ uint64_t CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const 
 		subType,
 		nValue);
 
-	for (VectorVectorString::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+	for (const auto &itt : result)
 	{
-		unsigned char theUnit = atoi((*itt)[0].c_str()); // get the unit value
+		unsigned char theUnit = atoi(itt[0].c_str()); // get the unit value
 		devRowIndex = UpdateValue(HardwareID, ID, theUnit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction);
 	}
 	return devRowIndex;

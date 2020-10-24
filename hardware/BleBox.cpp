@@ -297,13 +297,10 @@ std::string BleBox::GetDeviceIP(const std::string & id)
 
 int BleBox::GetDeviceTypeByApiName(const std::string & apiName)
 {
-	for (unsigned int i = 0; i < TOT_DEVICE_TYPES; ++i)
-	{
-		if (DevicesType[i].api_name == apiName)
-		{
-			return DevicesType[i].unit;
-		}
-	}
+	for (const auto &i : DevicesType)
+		if (i.api_name == apiName)
+			return i.unit;
+
 	Log(LOG_ERROR, "unknown device api name(%s)", apiName.c_str());
 	return -1;
 }

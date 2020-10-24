@@ -57,8 +57,9 @@ CNotificationHelper::CNotificationHelper()
 
 CNotificationHelper::~CNotificationHelper()
 {
-	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
-		delete iter->second;
+	for (auto &m_notifier : m_notifiers)
+	{
+		delete m_notifier.second;
 	}
 }
 
@@ -131,20 +132,23 @@ bool CNotificationHelper::SendMessageEx(
 		ActiveSystems[*itt] = 1;
 	}
 
-	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter)
+	for (auto &m_notifier : m_notifiers)
 	{
-		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
-		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && iter->second->IsConfigured())
+		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(m_notifier.first);
+		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && m_notifier.second->IsConfigured())
 		{
-			if ((iter->second->m_IsEnabled) || bIsTestMessage)
+			if ((m_notifier.second->m_IsEnabled) || bIsTestMessage)
 			{
 				if (bThread)
 				{
-					boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
+					boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, m_notifier.second, Idx,
+										Name, Subject, Text, ExtraData, Priority, Sound,
+										bFromNotification));
 					SetThreadName(SendMessageEx.native_handle(), "SendMessageEx");
 				}
 				else
-					bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
+					bRet |= m_notifier.second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound,
+										 bFromNotification);
 			}
 		}
 	}
@@ -153,22 +157,26 @@ bool CNotificationHelper::SendMessageEx(
 
 void CNotificationHelper::SetConfigValue(const std::string &key, const std::string &value)
 {
-	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
-		iter->second->SetConfigValue(key, value);
+	for (auto &m_notifier : m_notifiers)
+	{
+		m_notifier.second->SetConfigValue(key, value);
 	}
 }
 
 void CNotificationHelper::ConfigFromGetvars(const request& req, const bool save)
 {
-	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
-		iter->second->ConfigFromGetvars(req, save);
+	for (auto &m_notifier : m_notifiers)
+	{
+		m_notifier.second->ConfigFromGetvars(req, save);
 	}
 }
 
 bool CNotificationHelper::IsInConfig(const std::string &Key)
 {
-	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
-		if (iter->second->IsInConfig(Key)) {
+	for (auto &m_notifier : m_notifiers)
+	{
+		if (m_notifier.second->IsInConfig(Key))
+		{
 			return true;
 		}
 	}
@@ -180,16 +188,18 @@ void CNotificationHelper::LoadConfig()
 	int tot = 0, active = 0;
 	std::stringstream logline;
 	logline << "Active notification Subsystems:";
-	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
+	for (auto &m_notifier : m_notifiers)
+	{
 		tot++;
-		iter->second->LoadConfig();
-		if (iter->second->IsConfigured()) {
-			if (iter->second->m_IsEnabled)
+		m_notifier.second->LoadConfig();
+		if (m_notifier.second->IsConfigured())
+		{
+			if (m_notifier.second->m_IsEnabled)
 			{
 				if (active == 0)
-					logline << " " << iter->first;
+					logline << " " << m_notifier.first;
 				else
-					logline << ", " << iter->first;
+					logline << ", " << m_notifier.first;
 				active++;
 			}
 		}

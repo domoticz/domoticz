@@ -334,22 +334,22 @@ void GoodweAPI::GetMeterDetails()
 		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received, or invalid username");
 		return;
 	}
-	for (Json::ArrayIndex i = 0; i < root.size(); i++)
+	for (auto &i : root)
 	{
 		// We use the received data only to retrieve station-id and station-name
 
-		if (root[i][BY_USER_STATION_ID].empty() )
+		if (i[BY_USER_STATION_ID].empty())
 		{
-			 _log.Log(LOG_ERROR,"GoodweAPI: no or invalid data received - StationID is missing!");
+			_log.Log(LOG_ERROR, "GoodweAPI: no or invalid data received - StationID is missing!");
 			return;
 		}
-		if (root[i][BY_USER_STATION_NAME].empty() )
+		if (i[BY_USER_STATION_NAME].empty())
 		{
-			 _log.Log(LOG_ERROR,"GoodweAPI: invalid data received - stationName is missing!");
+			_log.Log(LOG_ERROR, "GoodweAPI: invalid data received - stationName is missing!");
 			return;
 		}
-		std::string sStationId = root[i][BY_USER_STATION_ID].asString();
-		std::string sStationName = root[i][BY_USER_STATION_NAME].asString();
+		std::string sStationId = i[BY_USER_STATION_ID].asString();
+		std::string sStationName = i[BY_USER_STATION_NAME].asString();
 
 		ParseDeviceList(sStationId, sStationName);
 	}
@@ -389,9 +389,9 @@ void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string
 		return;
 	}
 
-	for (Json::ArrayIndex i = 0; i < result.size(); i++)
+	for (auto &i : result)
 	{
-		ParseDevice(result[i], sStationId, sStationName);
+		ParseDevice(i, sStationId, sStationName);
 	}
 }
 

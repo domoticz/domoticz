@@ -783,10 +783,10 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::
   frame << who;  frame << "*";
   frame << where; frame << "*#";
   frame << dimension;
-  for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); ++it)
+  for (const auto &it : value)
   {
 	  frame << "*";
-	  frame << *it;
+	  frame << it;
   }
   frame << "##";
 
@@ -851,10 +851,10 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::
 	  frame << "*";
 	  frame << dimension;
   }
-  for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); ++it)
+  for (const auto &it : value)
   {
 	  frame << "*";
-	  frame << *it;
+	  frame << it;
   }
   frame << "##";
 
@@ -2496,12 +2496,13 @@ std::string bt_openwebnet::vectorToString(const std::vector<std::string>& string
 {
 	std::stringstream frameStr;
 	bool begin = true;
-	for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); ++it) {
+	for (const auto &string : strings)
+	{
 		if (!begin) {
 			frameStr << ", ";
 		}
 		begin = false;
-		frameStr << *it;
+		frameStr << string;
 	}
 	return frameStr.str();
 }

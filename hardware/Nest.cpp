@@ -440,14 +440,12 @@ void CNest::GetMeterDetails()
 			std::string devName = devstring;
 			if (!root["where"].empty())
 			{
-				for (Json::Value::iterator itWhere = root["where"].begin(); itWhere != root["where"].end(); ++itWhere)
+				for (auto iwhere : root["where"])
 				{
-					Json::Value iwhere = *itWhere;
 					if (!iwhere["wheres"].empty())
 					{
-						for (Json::Value::iterator itWhereNest = iwhere["wheres"].begin(); itWhereNest != iwhere["wheres"].end(); ++itWhereNest)
+						for (auto iwhereItt : iwhere["wheres"])
 						{
-							Json::Value iwhereItt = *itWhereNest;
 							if (!iwhereItt["where_id"].empty())
 							{
 								std::string tmpWhereid = iwhereItt["where_id"].asString();
@@ -459,7 +457,6 @@ void CNest::GetMeterDetails()
 							}
 						}
 					}
-
 				}
 			}
 			bool bIAlarm = false;
@@ -554,9 +551,9 @@ void CNest::GetMeterDetails()
 		std::string StructureID = ittStructure.key().asString();
 		std::string StructureName = nstructure["name"].asString();
 
-		for (Json::Value::iterator ittDevice = nstructure["devices"].begin(); ittDevice != nstructure["devices"].end(); ++ittDevice)
+		for (auto &ittDevice : nstructure["devices"])
 		{
-			std::string devID = (*ittDevice).asString();
+			std::string devID = ittDevice.asString();
 			if (devID.find("device.")==std::string::npos)
 				continue;
 			std::string Serial = devID.substr(7);
@@ -582,9 +579,8 @@ void CNest::GetMeterDetails()
 				{
 					if (!root["where"][StructureID].empty())
 					{
-						for (Json::Value::iterator ittWheres = root["where"][StructureID]["wheres"].begin(); ittWheres != root["where"][StructureID]["wheres"].end(); ++ittWheres)
+						for (auto nwheres : root["where"][StructureID]["wheres"])
 						{
-							Json::Value nwheres = *ittWheres;
 							if (nwheres["where_id"] == where_id)
 							{
 								Name = StructureName + " " + nwheres["name"].asString();

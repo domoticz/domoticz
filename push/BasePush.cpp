@@ -449,8 +449,9 @@ std::vector<std::string> CBasePush::DropdownOptions(const uint64_t DeviceRowIdxI
 		std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
 		std::vector<std::string> tmpV;
 		StringSplit(sOptions, ",", tmpV);
-		for (int i = 0; i < (int)tmpV.size(); ++i) {
-			dropdownOptions.push_back(tmpV[i]);
+		for (auto &i : tmpV)
+		{
+			dropdownOptions.push_back(i);
 		}
 	}
 	else

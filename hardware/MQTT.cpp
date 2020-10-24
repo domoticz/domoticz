@@ -795,9 +795,9 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		if (m_publish_scheme & PT_floor_room)
 		{
 			result = m_sql.safe_query("SELECT F.Name, P.Name, M.DeviceRowID FROM Plans as P, Floorplans as F, DeviceToPlansMap as M WHERE P.FloorplanID=F.ID and M.PlanID=P.ID and M.DeviceRowID=='%" PRIu64 "'", DeviceRowIdx);
-			for (size_t i = 0; i < result.size(); i++)
+			for (auto &i : result)
 			{
-				sd = result[i];
+				sd = i;
 				std::string floor = sd[0];
 				std::string room = sd[1];
 				std::stringstream topic;

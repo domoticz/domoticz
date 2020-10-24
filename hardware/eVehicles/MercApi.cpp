@@ -829,8 +829,8 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 0);
 
 		// Debug response
-		for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
-			_ssResponseHeaderString << _vResponseHeaders[i];
+		for (auto &_vResponseHeader : _vResponseHeaders)
+			_ssResponseHeaderString << _vResponseHeader;
 		_log.Debug(DEBUG_RECEIVED, "MercApi: Performed request to Api: (%d)\n%s\nResponse headers: %s", _iHttpCode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 
 		switch(_iHttpCode)

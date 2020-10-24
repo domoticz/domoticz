@@ -176,8 +176,8 @@ void stdreplace(
 
 void stdupper(std::string &inoutstring)
 {
-	for (size_t i = 0; i < inoutstring.size(); ++i)
-		inoutstring[i] = toupper(inoutstring[i]);
+	for (char &i : inoutstring)
+		i = toupper(i);
 }
 
 void stdlower(std::string &inoutstring)
@@ -187,8 +187,8 @@ void stdlower(std::string &inoutstring)
 
 void stdupper(std::wstring& inoutstring)
 {
-	for (size_t i = 0; i < inoutstring.size(); ++i)
-		inoutstring[i] = towupper(inoutstring[i]);
+	for (wchar_t &i : inoutstring)
+		i = towupper(i);
 }
 
 void stdlower(std::wstring& inoutstring)
@@ -627,8 +627,9 @@ uint32_t IPToUInt(const std::string &ip)
 
 bool isInt(const std::string &s)
 {
-	for(size_t i = 0; i < s.length(); i++){
-		if(!isdigit(s[i]))
+	for (char i : s)
+	{
+		if (!isdigit(i))
 			return false;
 	}
 	return true;
@@ -711,14 +712,14 @@ int RemoveDir(const std::string &dirnames, std::string &errorPath)
 			}
 		}
 #else
-		for (size_t i = 0; i < splitresults.size(); i++)
+		for (auto &splitresult : splitresults)
 		{
-			if (!file_exist(splitresults[i].c_str()))
+			if (!file_exist(splitresult.c_str()))
 				continue;
-			ExecuteCommandAndReturn("rm -rf \"" + splitresults[i] + "\"", returncode);
+			ExecuteCommandAndReturn("rm -rf \"" + splitresult + "\"", returncode);
 			if (returncode)
 			{
-				errorPath = splitresults[i];
+				errorPath = splitresult;
 				break;
 			}
 		}

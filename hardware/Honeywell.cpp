@@ -242,14 +242,12 @@ void CHoneywell::GetThermostatData()
 	int devNr = 0;
 	mDeviceList.clear();
 	mLocationList.clear();
-	for (int locCnt = 0; locCnt < (int)root.size(); locCnt++)
+	for (auto location : root)
 	{
-		Json::Value location = root[locCnt];
 		Json::Value devices = location["devices"];
-		for (int devCnt = 0; devCnt < (int)devices.size(); devCnt++)
+		for (auto device : devices)
 		{
-			
-			Json::Value device = devices[devCnt];
+
 			std::string deviceName = device["name"].asString();
 			mDeviceList[devNr] = device;
 			mLocationList[devNr] = location["locationID"].asString();
@@ -323,17 +321,16 @@ void CHoneywell::GetThermostatData()
 			SendSwitch(10 * devNr + 9, 1, 255, circulationFanRequest, 0, desc);
 
 			devNr++;
+		}
 
-			}
-		
 		bool geoFenceEnabled = location["geoFenceEnabled"].asBool();
 		if (geoFenceEnabled) {
 			
 			Json::Value geofences = location["geoFences"];
 			bool bAway = true;
-			for (int geofCnt = 0; geofCnt < (int)geofences.size(); geofCnt++)
+			for (auto &geofence : geofences)
 			{
-				int withinFence = geofences[geofCnt]["geoOccupancy"]["withinFence"].asInt();
+				int withinFence = geofence["geoOccupancy"]["withinFence"].asInt();
 				if (withinFence > 0) {
 					bAway = false;
 					break;

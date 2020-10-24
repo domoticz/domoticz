@@ -232,9 +232,9 @@ void CHttpPush::DoHttpPush()
 						// Add additional headers
 						std::vector<std::string> ExtraHeaders2;
 						StringSplit(httpHeaders, "\r\n", ExtraHeaders2);
-						for (size_t i = 0; i < ExtraHeaders2.size(); i++)
+						for (auto &i : ExtraHeaders2)
 						{
-							ExtraHeaders.push_back(ExtraHeaders2[i]);
+							ExtraHeaders.push_back(i);
 						}
 					}
 					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, true, true))

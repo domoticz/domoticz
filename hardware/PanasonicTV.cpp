@@ -973,17 +973,17 @@ void CPanasonic::ReloadNodes()
 		std::lock_guard<std::mutex> l(m_mutex);
 
 		// create a vector to hold the nodes
-		for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+		for (auto sd : result)
 		{
-			std::vector<std::string> sd = *itt;
-			std::shared_ptr<CPanasonicNode>	pNode = (std::shared_ptr<CPanasonicNode>) new CPanasonicNode(m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+			std::shared_ptr<CPanasonicNode> pNode = (std::shared_ptr<CPanasonicNode>)new CPanasonicNode(
+				m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each Panasonic TV
-		for (std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		for (auto &m_pNode : m_pNodes)
 		{
-			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Starting thread.", (*itt)->m_Name.c_str());
-			(*itt)->StartThread();
+			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Starting thread.", m_pNode->m_Name.c_str());
+			m_pNode->StartThread();
 		}
 		sleep_milliseconds(100);
 	}
