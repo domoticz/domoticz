@@ -1105,7 +1105,7 @@ void eHouseTCP::UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsig
 // Preconditions: none
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-void eHouseTCP::TerminateUDP(void)
+void eHouseTCP::TerminateUDP()
 {
 	_log.Log(LOG_STATUS, "Terminate UDP");
 	char opt = 0;

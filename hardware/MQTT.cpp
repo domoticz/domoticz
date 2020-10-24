@@ -72,7 +72,7 @@ MQTT::MQTT(
 	threaded_set(true);
 }
 
-MQTT::~MQTT(void)
+MQTT::~MQTT()
 {
 	mosqdz::lib_cleanup();
 }

@@ -42,10 +42,7 @@ ZWaveBase::ZWaveBase() :
 	m_bInitState = true;
 }
 
-
-ZWaveBase::~ZWaveBase(void)
-{
-}
+ZWaveBase::~ZWaveBase() {}
 
 bool ZWaveBase::StartHardware()
 {

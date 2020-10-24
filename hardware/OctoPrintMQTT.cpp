@@ -69,7 +69,7 @@ COctoPrintMQTT::COctoPrintMQTT(const int ID, const std::string &IPAddress, const
 	mosqdz::lib_init();
 }
 
-COctoPrintMQTT::~COctoPrintMQTT(void)
+COctoPrintMQTT::~COctoPrintMQTT()
 {
 	mosqdz::lib_cleanup();
 }

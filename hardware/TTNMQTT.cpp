@@ -78,7 +78,7 @@ CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned sh
 	mosqdz::lib_init();
 }
 
-CTTNMQTT::~CTTNMQTT(void)
+CTTNMQTT::~CTTNMQTT()
 {
 	mosqdz::lib_cleanup();
 }

@@ -57,9 +57,7 @@ m_LocationKey("")
 	Init();
 }
 
-CAccuWeather::~CAccuWeather(void)
-{
-}
+CAccuWeather::~CAccuWeather() {}
 
 void CAccuWeather::Init()
 {

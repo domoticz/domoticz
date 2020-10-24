@@ -23,7 +23,7 @@ CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned sho
 	m_wol_port = Port;//9;
 }
 
-CWOL::~CWOL(void)
+CWOL::~CWOL()
 {
 	m_bIsStarted = false;
 }

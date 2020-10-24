@@ -168,7 +168,7 @@
 			return false;
 	}
 
-	PyObject *PythonEventsGetModule(void)
+	PyObject *PythonEventsGetModule()
 	{
 		PyObject *pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 

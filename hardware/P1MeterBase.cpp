@@ -119,15 +119,14 @@ P1Match p1_matchlist[] = {
 	{_eP1MatchType::LINE18,		P1TYPE_GASUSAGE,		P1GUDSMR2,	"gasusage",			1,  9}
 }; // must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of p1_matchlist
 
-P1MeterBase::P1MeterBase(void)
+P1MeterBase::P1MeterBase()
 {
 	m_bDisableCRC = true;
 	m_ratelimit = 0;
 	Init();
 }
 
-
-P1MeterBase::~P1MeterBase(void)
+P1MeterBase::~P1MeterBase()
 {
 	if (m_pDecryptBuffer)
 		delete[] m_pDecryptBuffer;

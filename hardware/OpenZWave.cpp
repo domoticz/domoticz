@@ -305,8 +305,7 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname) :
 	m_bAeotecBlinkingMode = false;
 }
 
-
-COpenZWave::~COpenZWave(void)
+COpenZWave::~COpenZWave()
 {
 	CloseSerialConnector();
 }

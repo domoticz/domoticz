@@ -30,9 +30,7 @@ CVolcraftCO20::CVolcraftCO20(const int ID)
 	m_HwdID=ID;
 }
 
-CVolcraftCO20::~CVolcraftCO20(void)
-{
-}
+CVolcraftCO20::~CVolcraftCO20() {}
 
 bool CVolcraftCO20::StartHardware()
 {

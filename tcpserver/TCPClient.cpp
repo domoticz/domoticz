@@ -15,7 +15,7 @@ CTCPClientBase::CTCPClientBase(CTCPServerIntBase *pManager)
 	m_bIsLoggedIn = false;
 }
 
-CTCPClientBase::~CTCPClientBase(void)
+CTCPClientBase::~CTCPClientBase()
 {
 	if (socket_) delete socket_;
 }
@@ -26,10 +26,7 @@ CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase *pManager
 	socket_ = new boost::asio::ip::tcp::socket(ios);
 }
 
-
-CTCPClient::~CTCPClient(void)
-{
-}
+CTCPClient::~CTCPClient() {}
 
 void CTCPClient::start()
 {

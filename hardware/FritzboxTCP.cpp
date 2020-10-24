@@ -44,9 +44,7 @@ FritzboxTCP::FritzboxTCP(const int ID, const std::string &IPAddress, const unsig
 	m_bufferpos = 0;
 }
 
-FritzboxTCP::~FritzboxTCP(void)
-{
-}
+FritzboxTCP::~FritzboxTCP() {}
 
 bool FritzboxTCP::StartHardware()
 {

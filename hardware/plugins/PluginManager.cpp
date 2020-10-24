@@ -81,9 +81,7 @@ namespace Plugins {
 		m_InitialPythonThread = nullptr;
 	}
 
-	CPluginSystem::~CPluginSystem(void)
-	{
-	}
+	CPluginSystem::~CPluginSystem() {}
 
 	bool CPluginSystem::StartPluginSystem()
 	{

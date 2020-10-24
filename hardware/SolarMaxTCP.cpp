@@ -51,9 +51,7 @@ std::string SolarMaxTCP::MakeRequestString()
 	return std::string(szSendRequest);
 }
 
-SolarMaxTCP::~SolarMaxTCP(void)
-{
-}
+SolarMaxTCP::~SolarMaxTCP() {}
 
 bool SolarMaxTCP::StartHardware()
 {

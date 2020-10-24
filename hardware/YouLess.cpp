@@ -20,9 +20,7 @@ m_Password(CURLEncode::URLEncode(password))
 	Init();
 }
 
-CYouLess::~CYouLess(void)
-{
-}
+CYouLess::~CYouLess() {}
 
 void CYouLess::Init()
 {

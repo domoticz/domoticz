@@ -18,14 +18,12 @@
 
 extern std::string szUserDataFolder;
 
-CCameraHandler::CCameraHandler(void)
+CCameraHandler::CCameraHandler()
 {
 	m_seconds_counter = 0;
 }
 
-CCameraHandler::~CCameraHandler(void)
-{
-}
+CCameraHandler::~CCameraHandler() {}
 
 void CCameraHandler::ReloadCameras()
 {

@@ -21,8 +21,7 @@ CTCPServerIntBase::CTCPServerIntBase(CTCPServer *pRoot)
 	m_pRoot=pRoot;
 }
 
-
-CTCPServerIntBase::~CTCPServerIntBase(void)
+CTCPServerIntBase::~CTCPServerIntBase()
 {
 //	stopAllClients();
 }
@@ -256,10 +255,7 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 			boost::asio::placeholders::error));
 }
 
-CTCPServerInt::~CTCPServerInt(void)
-{
-
-}
+CTCPServerInt::~CTCPServerInt() {}
 
 #ifndef NOCLOUD
 // our proxied server
@@ -268,9 +264,7 @@ CTCPServerProxied::CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClie
 	m_pProxyClient = proxy;
 }
 
-CTCPServerProxied::~CTCPServerProxied(void)
-{
-}
+CTCPServerProxied::~CTCPServerProxied() {}
 
 void CTCPServerProxied::start()
 {

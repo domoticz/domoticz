@@ -13,9 +13,7 @@ CRFLinkTCP::CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_usIPPort = usIPPort;
 }
 
-CRFLinkTCP::~CRFLinkTCP(void)
-{
-}
+CRFLinkTCP::~CRFLinkTCP() {}
 
 bool CRFLinkTCP::StartHardware()
 {

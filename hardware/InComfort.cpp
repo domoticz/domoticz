@@ -39,9 +39,7 @@ m_szIPAddress(IPAddress)
 	Init();
 }
 
-CInComfort::~CInComfort(void)
-{
-}
+CInComfort::~CInComfort() {}
 
 void CInComfort::Init()
 {

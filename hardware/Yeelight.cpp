@@ -58,9 +58,7 @@ Yeelight::Yeelight(const int ID)
 	m_bDoRestart = false;
 }
 
-Yeelight::~Yeelight(void)
-{
-}
+Yeelight::~Yeelight() {}
 
 bool Yeelight::StartHardware()
 {

@@ -126,9 +126,7 @@ m_Agreement(Agreement)
 	m_retry_counter = 0;
 }
 
-CToonThermostat::~CToonThermostat(void)
-{
-}
+CToonThermostat::~CToonThermostat() {}
 
 void CToonThermostat::Init()
 {

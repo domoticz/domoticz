@@ -179,9 +179,7 @@ XiaomiGateway::XiaomiGateway(const int ID)
 	m_ListenPort9898 = false;
 }
 
-XiaomiGateway::~XiaomiGateway(void)
-{
-}
+XiaomiGateway::~XiaomiGateway() {}
 
 bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char length)
 {

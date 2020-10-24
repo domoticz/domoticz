@@ -152,9 +152,7 @@ RelayNet::RelayNet(const int ID, const std::string &IPAddress, const unsigned sh
 
 //===========================================================================
 
-RelayNet::~RelayNet(void)
-{
-}
+RelayNet::~RelayNet() {}
 
 //===========================================================================
 

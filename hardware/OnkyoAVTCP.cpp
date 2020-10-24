@@ -150,7 +150,7 @@ OnkyoAVTCP::OnkyoAVTCP(const int ID, const std::string &IPAddress, const unsigne
 				 i, m_HwdID, i - 2, switch_types[i].switchType, switch_types[i].subtype);
 }
 
-OnkyoAVTCP::~OnkyoAVTCP(void)
+OnkyoAVTCP::~OnkyoAVTCP()
 {
 	free(m_pPartialPkt);
 }

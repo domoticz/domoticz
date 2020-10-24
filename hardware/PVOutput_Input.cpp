@@ -22,9 +22,7 @@ CPVOutputInput::CPVOutputInput(const int ID, const std::string& SID, const std::
 	Init();
 }
 
-CPVOutputInput::~CPVOutputInput(void)
-{
-}
+CPVOutputInput::~CPVOutputInput() {}
 
 void CPVOutputInput::Init()
 {

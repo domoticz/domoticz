@@ -52,9 +52,7 @@ Ec3kMeterTCP::Ec3kMeterTCP(const int ID, const std::string &IPAddress, const uns
 	m_limiter = new(Ec3kLimiter);
 }
 
-Ec3kMeterTCP::~Ec3kMeterTCP(void)
-{
-}
+Ec3kMeterTCP::~Ec3kMeterTCP() {}
 
 bool Ec3kMeterTCP::StartHardware()
 {
@@ -249,14 +247,12 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-Ec3kLimiter::Ec3kLimiter(void)
+Ec3kLimiter::Ec3kLimiter()
 {
-  no_meters = 0;
+	no_meters = 0;
 }
 
-Ec3kLimiter::~Ec3kLimiter(void)
-{
-}
+Ec3kLimiter::~Ec3kLimiter() {}
 
 bool Ec3kLimiter::update(int id)
 {

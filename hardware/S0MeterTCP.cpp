@@ -16,9 +16,7 @@ S0MeterTCP::S0MeterTCP(const int ID, const std::string &IPAddress, const unsigne
 	InitBase();
 }
 
-S0MeterTCP::~S0MeterTCP(void)
-{
-}
+S0MeterTCP::~S0MeterTCP() {}
 
 bool S0MeterTCP::StartHardware()
 {

@@ -28,7 +28,7 @@ CLogger::_tLogLineStruct::_tLogLineStruct(const _eLogLevel nlevel, const std::st
 	logmessage = nlogmessage;
 }
 
-CLogger::CLogger(void)
+CLogger::CLogger()
 {
 	m_bInSequenceMode = false;
 	m_bEnableLogThreadIDs = false;
@@ -39,7 +39,7 @@ CLogger::CLogger(void)
 	m_debug_flags = DEBUG_NORM;
 }
 
-CLogger::~CLogger(void)
+CLogger::~CLogger()
 {
 	if (m_outputfile.is_open())
 		m_outputfile.close();

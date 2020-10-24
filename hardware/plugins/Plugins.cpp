@@ -620,7 +620,7 @@ namespace Plugins {
 		m_bTracing = false;
 	}
 
-	CPlugin::~CPlugin(void)
+	CPlugin::~CPlugin()
 	{
 		m_bIsStarted = false;
 	}
