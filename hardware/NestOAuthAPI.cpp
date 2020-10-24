@@ -40,8 +40,6 @@ CNestOAuthAPI::CNestOAuthAPI(const int ID, const std::string &apikey, const std:
 	Init();
 }
 
-CNestOAuthAPI::~CNestOAuthAPI() = default;
-
 void CNestOAuthAPI::Init()
 {
 	m_bDoLogin = true;

@@ -692,8 +692,6 @@ CEnOceanESP2::CEnOceanESP2(const int ID, const std::string& devname, const int t
 	m_receivestate = ERS_SYNC1;
 }
 
-CEnOceanESP2::~CEnOceanESP2() = default;
-
 bool CEnOceanESP2::StartHardware()
 {
 	RequestStart();

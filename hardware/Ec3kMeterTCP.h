@@ -18,7 +18,7 @@ class Ec3kLimiter
 {
 public:
   Ec3kLimiter();
-  ~Ec3kLimiter();
+  ~Ec3kLimiter() = default;
   bool update(int id);
 
 private:
@@ -33,7 +33,7 @@ class Ec3kMeterTCP : public CDomoticzHardwareBase, ASyncTCP
 {
 public:
 	Ec3kMeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~Ec3kMeterTCP(void);
+	~Ec3kMeterTCP() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:

@@ -105,8 +105,6 @@ CDenkoviDevices::CDenkoviDevices(const int ID, const std::string &IPAddress, con
 	Init();
 }
 
-CDenkoviDevices::~CDenkoviDevices() = default;
-
 void CDenkoviDevices::Init()
 {
 }

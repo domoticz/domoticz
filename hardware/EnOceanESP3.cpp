@@ -427,8 +427,6 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int t
 	//ParseData();
 }
 
-CEnOceanESP3::~CEnOceanESP3() = default;
-
 bool CEnOceanESP3::StartHardware()
 {
 	RequestStart();

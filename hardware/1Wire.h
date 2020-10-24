@@ -10,7 +10,7 @@ class C1Wire : public CDomoticzHardwareBase
 {
 public:
 	explicit C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path);
-	virtual ~C1Wire();
+	~C1Wire() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void DetectSystem();

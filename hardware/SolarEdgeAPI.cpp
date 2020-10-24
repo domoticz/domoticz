@@ -59,8 +59,6 @@ SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string& APIKey) :
 	m_totalEnergy = 0;
 }
 
-SolarEdgeAPI::~SolarEdgeAPI() = default;
-
 bool SolarEdgeAPI::StartHardware()
 {
 	RequestStart();

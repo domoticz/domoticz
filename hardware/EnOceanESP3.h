@@ -24,7 +24,7 @@ class CEnOceanESP3: public AsyncSerial, public CDomoticzHardwareBase
 	};
 public:
 	CEnOceanESP3(const int ID, const std::string& devname, const int type);
-    ~CEnOceanESP3();
+	~CEnOceanESP3() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SendDimmerTeachIn(const char *pdata, const unsigned char length);
 	unsigned long m_id_base;

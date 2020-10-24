@@ -30,8 +30,6 @@ OTGWBase::OTGWBase()
 	m_bRequestVersion = true;
 }
 
-OTGWBase::~OTGWBase() = default;
-
 void OTGWBase::SetModes(const int Mode1, const int /*Mode2*/, const int /*Mode3*/, const int /*Mode4*/, const int /*Mode5*/, const int /*Mode6*/)
 {
 	m_OutsideTemperatureIdx=Mode1;

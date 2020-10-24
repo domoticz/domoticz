@@ -8,8 +8,6 @@ CurrentCostMeterBase::CurrentCostMeterBase()
 	Init();
 }
 
-CurrentCostMeterBase::~CurrentCostMeterBase() = default;
-
 void CurrentCostMeterBase::Init()
 {
 	m_buffer = "";

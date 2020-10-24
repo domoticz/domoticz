@@ -55,8 +55,6 @@ m_Location(Location)
 	Init();
 }
 
-CDarkSky::~CDarkSky() = default;
-
 void CDarkSky::Init()
 {
 }

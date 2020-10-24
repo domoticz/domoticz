@@ -25,7 +25,7 @@ class CDenkoviDevices : public CDomoticzHardwareBase
 {
 public:
 	CDenkoviDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password, const int pollInterval, const int model);
-	~CDenkoviDevices(void);
+	~CDenkoviDevices() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

@@ -22,7 +22,7 @@ public:
 		I2CTYPE_MCP23017
 	};
 	explicit I2C(const int ID, const _eI2CType DevType, const std::string &Address, const std::string &SerialPort, const int Mode1);
-	~I2C();
+	~I2C() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool StartHardware() override;

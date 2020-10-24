@@ -16,7 +16,7 @@ class Meteostick : public AsyncSerial, public CDomoticzHardwareBase
 	};
 public:
 	Meteostick(const int ID, const std::string& devname, const unsigned int baud_rate);
-	~Meteostick();
+	~Meteostick() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool StartHardware() override;

@@ -74,8 +74,6 @@ m_Password(Password)
 	Init();
 }
 
-CAtagOne::~CAtagOne() = default;
-
 void CAtagOne::SetModes(const int Mode1, const int /*Mode2*/, const int /*Mode3*/, const int /*Mode4*/, const int /*Mode5*/, const int /*Mode6*/)
 {
 	m_OutsideTemperatureIdx = Mode1;

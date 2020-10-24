@@ -17,8 +17,6 @@ m_szIPAddress(IPAddress)
 	m_usIPPort=usIPPort;
 }
 
-KMTronicUDP::~KMTronicUDP() = default;
-
 void KMTronicUDP::Init()
 {
 }

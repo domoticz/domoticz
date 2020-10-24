@@ -51,7 +51,7 @@ class CPhilipsHue : public CDomoticzHardwareBase
 
 public:
 	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username, const int poll, const int Options);
-	~CPhilipsHue(void);
+	~CPhilipsHue() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	static std::string RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username);
 private:

@@ -81,8 +81,6 @@ m_UserName(Username)
 	Init();
 }
 
-CPhilipsHue::~CPhilipsHue() = default;
-
 void CPhilipsHue::Init()
 {
 }

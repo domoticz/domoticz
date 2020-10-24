@@ -75,9 +75,9 @@ request_handler::request_handler(const std::string& doc_root, cWebem* webem)
 #endif
 }
 
+#ifndef WEBSERVER_DONT_USE_ZIP
 request_handler::~request_handler()
 {
-#ifndef WEBSERVER_DONT_USE_ZIP
 	if (m_uf!=NULL)
 	{
 		unzClose(m_uf);
@@ -86,8 +86,10 @@ request_handler::~request_handler()
 	if (m_pUnzipBuffer)
 		free(m_pUnzipBuffer);
 	m_pUnzipBuffer=NULL;
-#endif
 }
+#else
+request_handler::~request_handler() = default;
+#endif
 
 #ifndef WEBSERVER_DONT_USE_ZIP
 int request_handler::do_extract_currentfile(unzFile uf, const char* password, std::string &outputstr)

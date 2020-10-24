@@ -42,8 +42,6 @@ CTeleinfoBase::CTeleinfoBase()
 	InitTeleinfo();
 }
 
-CTeleinfoBase::~CTeleinfoBase() = default;
-
 void CTeleinfoBase::InitTeleinfo()
 {
 	m_bufferpos = 0;

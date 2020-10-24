@@ -50,7 +50,7 @@ class CDenkoviTCPDevices : public CDomoticzHardwareBase, ASyncTCP
 	};
 public:
 	CDenkoviTCPDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int pollInterval, const int model, const int slaveId);
-	~CDenkoviTCPDevices(void);
+	~CDenkoviTCPDevices() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

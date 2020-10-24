@@ -14,8 +14,6 @@ m_szSerialPort(devname)
 	m_retrycntr = RFLINK_RETRY_DELAY * 5;
 }
 
-CRFLinkSerial::~CRFLinkSerial() = default;
-
 bool CRFLinkSerial::StartHardware()
 {
 	RequestStart();

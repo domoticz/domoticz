@@ -11,7 +11,7 @@ class DomoticzTCP : public CRFXBase, ASyncTCP
 {
 public:
 	DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
-	~DomoticzTCP(void);
+	~DomoticzTCP() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 #ifndef NOCLOUD

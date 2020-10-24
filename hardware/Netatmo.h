@@ -12,7 +12,7 @@ class CNetatmo : public CDomoticzHardwareBase
 {
 public:
 	CNetatmo(const int ID, const std::string& username, const std::string& password);
-	~CNetatmo(void);
+	~CNetatmo() override = default;
 
 	bool WriteToHardware(const char *, const unsigned char) override;
 	void SetSetpoint(int idx, const float temp);

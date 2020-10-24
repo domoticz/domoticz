@@ -6,7 +6,7 @@ class KMTronicTCP : public KMTronicBase
 {
 public:
 	KMTronicTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
-	~KMTronicTCP(void);
+	~KMTronicTCP() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:

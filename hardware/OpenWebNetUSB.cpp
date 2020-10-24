@@ -36,8 +36,6 @@ COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigne
 	m_bEnableReceive = true;
 }
 
-COpenWebNetUSB::~COpenWebNetUSB() = default;
-
 bool COpenWebNetUSB::StartHardware()
 {
 	RequestStart();

@@ -63,8 +63,6 @@ m_Password(CURLEncode::URLEncode(Password))
 	Init();
 }
 
-CNest::~CNest() = default;
-
 void CNest::Init()
 {
 	m_AccessToken = "";

@@ -13,10 +13,11 @@ class CTado : public CDomoticzHardwareBase
 {
 
 	public:
-		~CTado(void);
-		CTado(const int ID, const std::string &username, const std::string &password);
-		bool WriteToHardware(const char *pdata, const unsigned char length) override;
-		void SetSetpoint(const int id2, const int id3, const int id4, const float temp);
+	  ~CTado() override = default;
+	  CTado(const int ID, const std::string &username, const std::string &password);
+	  bool WriteToHardware(const char *pdata, const unsigned char length) override;
+	  void SetSetpoint(const int id2, const int id3, const int id4, const float temp);
+
 	private:
 		void Init();
 		bool StartHardware() override;

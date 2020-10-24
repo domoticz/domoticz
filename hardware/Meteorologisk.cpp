@@ -55,8 +55,6 @@ CMeteorologisk::CMeteorologisk(const int ID, const std::string &Location) :
 	Init();
 }
 
-CMeteorologisk::~CMeteorologisk() = default;
-
 void CMeteorologisk::Init()
 {
 }

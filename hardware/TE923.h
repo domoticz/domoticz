@@ -10,7 +10,7 @@ class CTE923 : public CDomoticzHardwareBase
 {
 public:
 	explicit CTE923(const int ID);
-	~CTE923(void);
+	~CTE923() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

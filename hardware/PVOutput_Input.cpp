@@ -22,8 +22,6 @@ CPVOutputInput::CPVOutputInput(const int ID, const std::string& SID, const std::
 	Init();
 }
 
-CPVOutputInput::~CPVOutputInput() = default;
-
 void CPVOutputInput::Init()
 {
 	m_bHadConsumption = false;

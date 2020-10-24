@@ -7,8 +7,9 @@ class MySensorsTCP : public MySensorsBase, ASyncTCP
 {
 public:
 	MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~MySensorsTCP(void);
-public:
+	~MySensorsTCP() override = default;
+
+      public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
 private:

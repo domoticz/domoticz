@@ -20,8 +20,6 @@ m_Password(CURLEncode::URLEncode(password))
 	Init();
 }
 
-CYouLess::~CYouLess() = default;
-
 void CYouLess::Init()
 {
 	m_meter.len=sizeof(YouLessMeter)-1;

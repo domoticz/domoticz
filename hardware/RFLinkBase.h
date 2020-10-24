@@ -11,7 +11,7 @@ friend class CRFLinkSerial;
 friend class CRFLinkTCP;
 public:
 	CRFLinkBase();
-    virtual ~CRFLinkBase();
+	~CRFLinkBase() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	virtual bool WriteInt(const std::string &sendString) = 0;
 	bool m_bRFDebug; //should be publicly accessed via a get/set function

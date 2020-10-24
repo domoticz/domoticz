@@ -89,8 +89,6 @@ CDaikin::CDaikin(const int ID, const std::string& IPAddress, const unsigned shor
 	Init();
 }
 
-CDaikin::~CDaikin() = default;
-
 void CDaikin::Init()
 {
 }

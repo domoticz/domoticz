@@ -29,8 +29,6 @@ CDenkoviUSBDevices::CDenkoviUSBDevices(const int ID, const std::string& comPort,
 	Init();
 }
 
-CDenkoviUSBDevices::~CDenkoviUSBDevices() = default;
-
 void CDenkoviUSBDevices::Init()
 {
 }

@@ -27,8 +27,6 @@ CHEOS::CHEOS(const int ID, const std::string &IPAddress, const unsigned short us
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CHEOS::~CHEOS() = default;
-
 void CHEOS::ParseLine()
 {
 	if (m_bufferpos < 2)

@@ -78,8 +78,6 @@ void S0MeterBase::InitBase()
 	}
 }
 
-S0MeterBase::~S0MeterBase() = default;
-
 void S0MeterBase::ReloadLastTotals()
 {
 	//Reset internals

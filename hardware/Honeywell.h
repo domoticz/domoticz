@@ -12,7 +12,7 @@ class CHoneywell : public CDomoticzHardwareBase
 {
 public:
 	CHoneywell(const int ID, const std::string &Username, const std::string &Password, const std::string &Extra);
-	~CHoneywell(void);
+	~CHoneywell() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void SetSetpoint(const int idx, const float temp, const int nodeid);

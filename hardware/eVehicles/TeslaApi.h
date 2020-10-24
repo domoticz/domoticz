@@ -19,7 +19,7 @@ class CTeslaApi: public CVehicleApi
 {
 public:
 	CTeslaApi(const std::string username, const std::string password, const std::string vin);
-	~CTeslaApi();
+	~CTeslaApi() override = default;
 
 	bool Login() override;
 	bool RefreshLogin() override;

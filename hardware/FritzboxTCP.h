@@ -7,7 +7,7 @@ class FritzboxTCP : public CDomoticzHardwareBase, ASyncTCP
 {
 public:
 	FritzboxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~FritzboxTCP(void);
+	~FritzboxTCP() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:

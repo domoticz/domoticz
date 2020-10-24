@@ -19,8 +19,6 @@ RAVEn::RAVEn(const int ID, const std::string& devname)
     m_HwdID = ID;
 }
 
-RAVEn::~RAVEn() = default;
-
 bool RAVEn::StartHardware()
 {
 	RequestStart();

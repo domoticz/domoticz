@@ -21,17 +21,19 @@ public:
         boost::asio::serial_port_base::stop_bits opt_stop=
             boost::asio::serial_port_base::stop_bits(
                 boost::asio::serial_port_base::stop_bits::one));
-    ~P1MeterSerial();
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
-	bool StartHardware() override;
-	bool StopHardware() override;
-	void Do_Work();
-	void readCallback(const char *data, size_t len);
-private:
-	std::string m_szSerialPort;
-	unsigned int m_iBaudRate;
-	std::shared_ptr<std::thread> m_thread;
+    ~P1MeterSerial() override = default;
+    bool WriteToHardware(const char *pdata, const unsigned char length) override;
+
+  private:
+    bool StartHardware() override;
+    bool StopHardware() override;
+    void Do_Work();
+    void readCallback(const char *data, size_t len);
+
+  private:
+    std::string m_szSerialPort;
+    unsigned int m_iBaudRate;
+    std::shared_ptr<std::thread> m_thread;
 };
 
 #endif //BUFFEREDP1ASYNCSERIAL_H

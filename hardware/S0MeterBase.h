@@ -20,7 +20,7 @@ class S0MeterBase : public CDomoticzHardwareBase
 	};
 public:
 	S0MeterBase(void);
-	~S0MeterBase(void);
+	~S0MeterBase() override = default;
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 protected:

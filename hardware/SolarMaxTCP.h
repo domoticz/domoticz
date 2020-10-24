@@ -6,7 +6,7 @@ class SolarMaxTCP : public CDomoticzHardwareBase
 {
 public:
 	SolarMaxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~SolarMaxTCP(void);
+	~SolarMaxTCP() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:

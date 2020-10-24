@@ -5,8 +5,8 @@
 class CurrentCostMeterBase : public CDomoticzHardwareBase
 {
 public:
-	CurrentCostMeterBase(void);
-	virtual ~CurrentCostMeterBase(void);
+  CurrentCostMeterBase();
+  ~CurrentCostMeterBase() override = default;
 
 protected:
 	void ParseData(const char *pData, int Len);

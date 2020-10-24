@@ -42,7 +42,7 @@ class CEcoDevices : public CTeleinfoBase
 	};
 public:
 	CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const int  datatimeout, const int model, const int ratelimit);
-	~CEcoDevices();
+	~CEcoDevices() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool Login();

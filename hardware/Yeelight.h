@@ -7,7 +7,7 @@ class Yeelight : public CDomoticzHardwareBase
 {
 public:
 	explicit Yeelight(const int ID);
-	~Yeelight(void);
+	~Yeelight() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()> sDisconnected;
 	void InsertUpdateSwitch(

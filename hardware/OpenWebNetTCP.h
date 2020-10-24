@@ -34,7 +34,7 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	};
 public:
 	COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime, const int ownEnSync);
-	~COpenWebNetTCP(void);
+	~COpenWebNetTCP() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	bool SetSetpoint(const int idx, const float temp);
 	boost::signals2::signal<void()>	sDisconnected;

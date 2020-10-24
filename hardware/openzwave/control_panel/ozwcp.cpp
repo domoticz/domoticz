@@ -879,8 +879,6 @@ COpenZWaveControlPanel::COpenZWaveControlPanel() :
 {
 }
 
-COpenZWaveControlPanel::~COpenZWaveControlPanel() = default;
-
 /*
 * web_controller_update
 * Handle controller function feedback from library.

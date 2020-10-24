@@ -81,8 +81,6 @@ namespace Plugins {
 		m_InitialPythonThread = nullptr;
 	}
 
-	CPluginSystem::~CPluginSystem() = default;
-
 	bool CPluginSystem::StartPluginSystem()
 	{
 		// Flush the message queue (should already be empty)

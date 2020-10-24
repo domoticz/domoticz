@@ -77,8 +77,6 @@ CThermosmart::CThermosmart(const int ID, const std::string &Username, const std:
 	Init();
 }
 
-CThermosmart::~CThermosmart() = default;
-
 void CThermosmart::SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
 {
 	m_OutsideTemperatureIdx = Mode1;

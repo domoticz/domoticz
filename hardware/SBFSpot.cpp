@@ -33,8 +33,6 @@ CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 	Init();
 }
 
-CSBFSpot::~CSBFSpot() = default;
-
 void CSBFSpot::Init()
 {
 	m_SBFDataPath="";

@@ -11,9 +11,10 @@ class KMTronicBase : public CDomoticzHardwareBase
 	friend class KMTronic433;
 	friend class KMTronicUDP;
 public:
-	KMTronicBase(void);
-	~KMTronicBase(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+  KMTronicBase();
+  ~KMTronicBase() override = default;
+  bool WriteToHardware(const char *pdata, const unsigned char length) override;
+
 private:
 	virtual bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn) = 0;
 	void ParseData(const unsigned char *pData, int Len);

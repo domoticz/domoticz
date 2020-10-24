@@ -64,19 +64,22 @@ namespace Plugins {
 	public:
 		CPluginTransportTCP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : 
 			CPluginTransportIP(HwdID, pConnection, Address, Port), m_Socket(NULL), m_Resolver(ios), m_Acceptor(NULL) { };
-		virtual	bool		handleConnect();
-		virtual	bool		handleListen();
+		bool handleConnect() override;
+		bool handleListen() override;
 		virtual	void		handleAsyncResolve(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
 		virtual	void		handleAsyncConnect(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
 		virtual void		handleAsyncAccept(boost::asio::ip::tcp::socket* pSocket, const boost::system::error_code & error);
-		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
-		virtual void		handleWrite(const std::vector<byte>& pMessage);
-		virtual	bool		handleDisconnect();
-		virtual bool		ThreadPoolRequired() { return true; };
+		void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;
+		void handleWrite(const std::vector<byte> &pMessage) override;
+		bool handleDisconnect() override;
+		bool ThreadPoolRequired() override
+		{
+			return true;
+		};
 		boost::asio::ip::tcp::socket& Socket() { return *m_Socket; };
-		~CPluginTransportTCP();
+		~CPluginTransportTCP() override;
 
-	protected:
+	      protected:
 		boost::asio::ip::tcp::resolver	m_Resolver;
 		boost::asio::ip::tcp::acceptor	*m_Acceptor;
 		boost::asio::ip::tcp::socket	*m_Socket;
@@ -86,12 +89,13 @@ namespace Plugins {
 	{
 	public:
 		CPluginTransportTCPSecure(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportTCP(HwdID, pConnection, Address, Port), m_Context(NULL), m_TLSSock(NULL) { };
-		virtual	void		handleAsyncConnect(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
-		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
-		void handleWrite(const std::vector<byte>& pMessage);
-		~CPluginTransportTCPSecure();
+		void handleAsyncConnect(const boost::system::error_code &err,
+					boost::asio::ip::tcp::resolver::iterator endpoint_iterator) override;
+		void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;
+		void handleWrite(const std::vector<byte> &pMessage) override;
+		~CPluginTransportTCPSecure() override;
 
-	protected:
+	      protected:
 		bool VerifyCertificate(bool preverified, boost::asio::ssl::verify_context& ctx);
 
 		boost::asio::ssl::context*									m_Context;
@@ -102,12 +106,13 @@ namespace Plugins {
 	{
 	public:
 		CPluginTransportUDP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportIP(HwdID, pConnection, Address, Port), m_Socket(NULL), m_Resolver(ios) { };
-		virtual	bool		handleListen();
-		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
-		virtual void		handleWrite(const std::vector<byte>&);
-		virtual	bool		handleDisconnect();
-		~CPluginTransportUDP();
-	protected:
+		bool handleListen() override;
+		void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;
+		void handleWrite(const std::vector<byte> &) override;
+		bool handleDisconnect() override;
+		~CPluginTransportUDP() override;
+
+	      protected:
 		boost::asio::ip::udp::resolver	m_Resolver;
 		boost::asio::ip::udp::socket	*m_Socket;
 		boost::asio::ip::udp::endpoint	m_remote_endpoint;
@@ -117,14 +122,15 @@ namespace Plugins {
 	{
 	public:
 		CPluginTransportICMP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportIP(HwdID, pConnection, Address, Port), m_Socket(NULL), m_Resolver(ios), m_Timer(NULL), m_SequenceNo(-1) { };
-		virtual	void		handleAsyncResolve(const boost::system::error_code& err, boost::asio::ip::icmp::resolver::iterator endpoint_iterator);
-		virtual	bool		handleListen();
-		virtual void		handleTimeout(const boost::system::error_code&);
-		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
-		virtual void		handleWrite(const std::vector<byte>&);
-		virtual	bool		handleDisconnect();
-		~CPluginTransportICMP();
-	protected:
+		void handleAsyncResolve(const boost::system::error_code &err, boost::asio::ip::icmp::resolver::iterator endpoint_iterator);
+		bool handleListen() override;
+		void handleTimeout(const boost::system::error_code &);
+		void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;
+		void handleWrite(const std::vector<byte> &) override;
+		bool handleDisconnect() override;
+		~CPluginTransportICMP() override;
+
+	      protected:
 		boost::asio::ip::icmp::resolver		m_Resolver;
 		boost::asio::ip::icmp::socket*		m_Socket;
 		boost::asio::ip::icmp::endpoint		m_Endpoint;
@@ -140,11 +146,11 @@ namespace Plugins {
 		int					m_Baud;
 	public:
 		CPluginTransportSerial(int HwdID, PyObject* pConnection, const std::string& Port, int Baud);
-		~CPluginTransportSerial(void);
-		virtual	bool		handleConnect();
-		virtual void		handleRead(const char *data, std::size_t bytes_transferred);
-		virtual void		handleWrite(const std::vector<byte>&);
-		virtual	bool		handleDisconnect();
+		~CPluginTransportSerial() override = default;
+		bool handleConnect() override;
+		void handleRead(const char *data, std::size_t bytes_transferred) override;
+		void handleWrite(const std::vector<byte> &) override;
+		bool handleDisconnect() override;
 	};
 
-}
+} // namespace Plugins

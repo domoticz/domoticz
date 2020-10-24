@@ -38,14 +38,15 @@ class OTGWBase : public CDomoticzHardwareBase
 		int B;
 	};
 public:
-	OTGWBase(void);
-	~OTGWBase(void);
-	std::string m_szSerialPort;
-	unsigned int m_iBaudRate;
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	void SetSetpoint(const int idx, const float temp);
-	virtual bool WriteInt(const unsigned char *pData, const unsigned char Len) = 0;
-	std::string m_Version;
+  OTGWBase();
+  ~OTGWBase() override = default;
+  std::string m_szSerialPort;
+  unsigned int m_iBaudRate;
+  bool WriteToHardware(const char *pdata, const unsigned char length) override;
+  void SetSetpoint(const int idx, const float temp);
+  virtual bool WriteInt(const unsigned char *pData, const unsigned char Len) = 0;
+  std::string m_Version;
+
 protected:
 	void SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
 	void ParseData(const unsigned char *pData, int Len);

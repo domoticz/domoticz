@@ -42,8 +42,6 @@ m_refresh(refresh)
 	Init();
 }
 
-CHttpPoller::~CHttpPoller() = default;
-
 void CHttpPoller::Init()
 {
 }

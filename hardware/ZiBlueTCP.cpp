@@ -15,8 +15,6 @@ CZiBlueTCP::CZiBlueTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_retrycntr = ZiBlue_RETRY_DELAY;
 }
 
-CZiBlueTCP::~CZiBlueTCP() = default;
-
 bool CZiBlueTCP::StartHardware()
 {
 	RequestStart();

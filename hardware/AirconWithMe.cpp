@@ -49,8 +49,6 @@ CAirconWithMe::CAirconWithMe(const int id, const std::string& ipaddress, const u
     };
 }
 
-CAirconWithMe::~CAirconWithMe() = default;
-
 bool CAirconWithMe::StartHardware()
 {
 	RequestStart();

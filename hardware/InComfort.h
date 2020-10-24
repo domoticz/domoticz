@@ -15,7 +15,7 @@ class CInComfort : public CDomoticzHardwareBase
 {
 public:
 	CInComfort(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~CInComfort(void);
+	~CInComfort() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SetSetpoint(const int idx, const float temp);
 	void SetProgramState(const int newState);

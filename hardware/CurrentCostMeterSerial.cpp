@@ -26,8 +26,6 @@ CurrentCostMeterSerial::CurrentCostMeterSerial(const int ID, const std::string& 
 	m_HwdID=ID;
 }
 
-CurrentCostMeterSerial::~CurrentCostMeterSerial() = default;
-
 bool CurrentCostMeterSerial::StartHardware()
 {
 	RequestStart();

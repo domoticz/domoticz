@@ -246,8 +246,6 @@ MySensorsBase::MySensorsBase()
 	m_AckSetType = V_UNKNOWN;
 }
 
-MySensorsBase::~MySensorsBase() = default;
-
 void MySensorsBase::LoadDevicesFromDatabase()
 {
 	m_nodes.clear();

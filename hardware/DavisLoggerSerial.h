@@ -12,7 +12,7 @@ class CDavisLoggerSerial : public AsyncSerial, public CDomoticzHardwareBase
 	};
 public:
 	CDavisLoggerSerial(const int ID, const std::string& devname, unsigned int baud_rate);
-	~CDavisLoggerSerial(void);
+	~CDavisLoggerSerial() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool StartHardware() override;

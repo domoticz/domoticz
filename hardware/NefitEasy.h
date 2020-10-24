@@ -7,7 +7,7 @@ class CNefitEasy : public CDomoticzHardwareBase
 {
 public:
 	CNefitEasy(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~CNefitEasy(void);
+	~CNefitEasy() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SetSetpoint(const int idx, const float temp);
 private:

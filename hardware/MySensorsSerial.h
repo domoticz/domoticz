@@ -7,8 +7,9 @@ class MySensorsSerial : public AsyncSerial, public MySensorsBase
 {
 public:
 	MySensorsSerial(const int ID, const std::string& devname, const int Mode1);
-	~MySensorsSerial();
-private:
+	~MySensorsSerial() override = default;
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 

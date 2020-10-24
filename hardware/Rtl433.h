@@ -6,7 +6,7 @@ class CRtl433 : public CDomoticzHardwareBase
 {
 public:
 	explicit CRtl433(const int ID, const std::string &cmdline);
-	virtual ~CRtl433();
+	~CRtl433() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool StartHardware() override;

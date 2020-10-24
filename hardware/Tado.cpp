@@ -37,8 +37,6 @@ m_TadoPassword(password)
 	Init();
 }
 
-CTado::~CTado() = default;
-
 bool CTado::StartHardware()
 {
 	RequestStart();

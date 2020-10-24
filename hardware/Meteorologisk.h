@@ -6,7 +6,7 @@ class CMeteorologisk : public CDomoticzHardwareBase
 {
 public:
 	CMeteorologisk(const int ID, const std::string &Location);
-	~CMeteorologisk(void);
+	~CMeteorologisk() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	std::string GetForecastURL();
 private:

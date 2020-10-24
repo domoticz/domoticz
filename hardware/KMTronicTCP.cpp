@@ -43,8 +43,6 @@ m_Password(CURLEncode::URLEncode(password))
 	m_bIsTempDevice = false;
 }
 
-KMTronicTCP::~KMTronicTCP() = default;
-
 void KMTronicTCP::Init()
 {
 }

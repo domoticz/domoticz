@@ -22,8 +22,6 @@ m_Password(CURLEncode::URLEncode(password))
 	Init();
 }
 
-CETH8020::~CETH8020() = default;
-
 void CETH8020::Init()
 {
 }

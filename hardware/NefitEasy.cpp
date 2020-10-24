@@ -121,8 +121,6 @@ m_szIPAddress(IPAddress)
 	Init();
 }
 
-CNefitEasy::~CNefitEasy() = default;
-
 void CNefitEasy::Init()
 {
 	m_lastgasusage = 0;

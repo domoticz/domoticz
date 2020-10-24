@@ -10,7 +10,7 @@ class COpenWeatherMap : public CDomoticzHardwareBase
 {
 public:
 	COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location, const int adddayforecast, const int addhourforecast);
-	~COpenWeatherMap(void);
+	~COpenWeatherMap() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	std::string GetForecastURL();
 	Json::Value GetForecastData();

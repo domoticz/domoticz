@@ -31,8 +31,6 @@ OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned 
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5, Mode6);
 }
 
-OTGWSerial::~OTGWSerial() = default;
-
 bool OTGWSerial::StartHardware()
 {
 	RequestStart();

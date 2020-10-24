@@ -58,8 +58,6 @@ m_bFirstTime(true)
 	Init();
 }
 
-CWunderground::~CWunderground() = default;
-
 void CWunderground::Init()
 {
 	m_bFirstTime = true;

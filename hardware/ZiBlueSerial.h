@@ -7,8 +7,9 @@ class CZiBlueSerial: public AsyncSerial, public CZiBlueBase
 {
 public:
 	CZiBlueSerial(const int ID, const std::string& devname);
-    ~CZiBlueSerial();
-private:
+	~CZiBlueSerial() override = default;
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;

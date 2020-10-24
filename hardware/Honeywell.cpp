@@ -61,8 +61,6 @@ CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::str
 	Init();
 }
 
-CHoneywell::~CHoneywell() = default;
-
 void CHoneywell::Init()
 {
 	mTokenExpires = mytime(nullptr);

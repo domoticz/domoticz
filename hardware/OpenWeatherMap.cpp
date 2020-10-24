@@ -67,8 +67,6 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 	}
 }
 
-COpenWeatherMap::~COpenWeatherMap() = default;
-
 bool COpenWeatherMap::ResolveLocation(const std::string& Location, double& latitude, double& longitude, uint32_t& cityid, const bool IsCityName)
 {
 	std::string sResult;

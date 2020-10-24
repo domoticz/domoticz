@@ -12,7 +12,7 @@ class EnphaseAPI : public CDomoticzHardwareBase
 {
 public:
 	EnphaseAPI(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~EnphaseAPI(void);
+	~EnphaseAPI() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool StartHardware() override;

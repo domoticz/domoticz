@@ -475,6 +475,5 @@ public:
   std::string Extract_frame() const;
 
   // destructor
-  ~bt_openwebnet();
-
+  ~bt_openwebnet() = default;
 };
