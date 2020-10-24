@@ -100,7 +100,7 @@ static point get_closest_point_to_line(point A, point B, point P)
 	else if (t > 1.0)
 		t = 1.0;
 
-	return point(A.x + AB.x * t, A.y + AB.y * t);
+	return {A.x + AB.x * t, A.y + AB.y * t};
 }
 
 static double get_distance_between_two_points(point p1, point p2)
@@ -145,7 +145,7 @@ static point get_closest_point_to_point(point xy_point, const std::string &model
 	double cx = closest_point.x;
 	double cy = closest_point.y;
 
-	return point(cx, cy);
+	return {cx, cy};
 }
 
 void CPhilipsHue::RgbFromXY(const double x, const double y, const double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8)
