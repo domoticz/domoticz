@@ -134,7 +134,7 @@ void COctoPrintMQTT::on_connect(int rc)
 			m_IsConnected = true;
 			sOnConnected(this);
 		}
-		subscribe(NULL, m_TopicIn.c_str());
+		subscribe(nullptr, m_TopicIn.c_str());
 	}
 	else {
 		_log.Log(LOG_ERROR, "OCTO_MQTT: Connection failed!, restarting (rc=%d)", rc);
@@ -188,7 +188,7 @@ bool COctoPrintMQTT::ConnectIntEx()
 			_log.Log(LOG_STATUS, "OCTO_MQTT: enabled TLS mode");
 		}
 	}
-	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : NULL, (!m_Password.empty()) ? m_Password.c_str() : NULL);
+	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
 	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
 	if (rc != MOSQ_ERR_SUCCESS)
@@ -233,7 +233,7 @@ void COctoPrintMQTT::Do_Work()
 			sec_counter++;
 
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 
 			if (bFirstTime)
@@ -277,7 +277,7 @@ void COctoPrintMQTT::SendMessage(const std::string &Topic, const std::string &Me
 			_log.Log(LOG_STATUS, "OCTO_MQTT: Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(NULL, Topic.c_str(), Message.size(), Message.c_str());
+		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str());
 	}
 	catch (...)
 	{
@@ -296,7 +296,7 @@ void COctoPrintMQTT::WriteInt(const std::string &sendStr)
 
 void COctoPrintMQTT::UpdateUserVariable(const std::string &varName, const std::string &varValue)
 {
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	int ID;
 
@@ -381,7 +381,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 					return;
 				}
 				std::string szSensorName = strarray[2];
-				time_t atime = mytime(NULL);
+				time_t atime = mytime(nullptr);
 				if (m_LastSendTemp.find(szSensorName) != m_LastSendTemp.end())
 				{
 					time_t lastsend = m_LastSendTemp[szSensorName];

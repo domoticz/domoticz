@@ -133,7 +133,7 @@ void CAnnaThermostat::Do_Work()
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if ((sec_counter % ANNA_POLL_INTERVAL == 0) || (bFirstTime))
@@ -443,8 +443,7 @@ void CAnnaThermostat::GetMeterDetails()
 		return;
 	}
 	TiXmlDocument doc;
-	if (doc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8) && doc.Error())
-	{
+	if (doc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8) && doc.Error()) {
 		Log(LOG_ERROR, "AnnaTherm: Cannot parse XML");
 		return;
 	}
@@ -466,8 +465,7 @@ void CAnnaThermostat::GetMeterDetails()
 		TiXmlHandle hAppliance = TiXmlHandle(pAppliance);
 
 		pElem = pAppliance->FirstChildElement("name");
-		if (pElem == NULL)
-		{
+		if (pElem == nullptr) {
 			Log(LOG_ERROR, "AnnaTherm: Cannot find appliance attributes");
 			return;
 		}
@@ -476,8 +474,7 @@ void CAnnaThermostat::GetMeterDetails()
 		if ((m_ThermostatID.empty()) && ((ApplianceName == "Anna") || (ApplianceName == "Adam")))
 		{
 			pAttribute = pAppliance->FirstAttribute();
-			if (pAttribute != NULL)
-			{
+			if (pAttribute != nullptr) {
 				std::string aName = pAttribute->Name();
 				if (aName == "id")
 				{
@@ -606,8 +603,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (m_ProximityID.empty())
 				{
 					pAttribute = pAppliance->FirstAttribute();
-					if (pAttribute != NULL)
-					{
+					if (pAttribute != nullptr) {
 						std::string aName = pAttribute->Name();
 						if (aName == "id")
 						{
@@ -725,8 +721,7 @@ bool CAnnaThermostat::AnnaGetLocation()
 		return false;
 	}
 	TiXmlDocument doc;
-	if (doc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8) && doc.Error())
-	{
+	if (doc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8) && doc.Error()) {
 		Log(LOG_ERROR, "AnnaTherm: Cannot parse XML");
 		return false;
 	}
@@ -747,8 +742,7 @@ bool CAnnaThermostat::AnnaGetLocation()
 	if (m_AnnaLocation.m_ALocationID.empty())
 	{
 		pAttribute = pLocation->FirstAttribute();
-		if (pAttribute != NULL)
-		{
+		if (pAttribute != nullptr) {
 			std::string aName = pAttribute->Name();
 			if (aName == "id")
 			{
@@ -762,18 +756,17 @@ bool CAnnaThermostat::AnnaGetLocation()
 		}
 	}
 	pElem = pLocation->FirstChildElement("name");
-	if (pElem == NULL)
-	{
+	if (pElem == nullptr) {
 		Log(LOG_ERROR, "AnnaTherm: Cannot find Location name");
 		return false;
 	}
 	m_AnnaLocation.m_ALocationName = pElem->GetText();
 	pElem = pLocation->FirstChildElement("type");
-	if (pElem == NULL)
-	{
+	if (pElem == nullptr) {
 		Log(LOG_ERROR, "AnnaTherm: Cannot find Location type");
 		return false;
-	}	m_AnnaLocation.m_ALocationType = pElem->GetText();
+	}
+	m_AnnaLocation.m_ALocationType = pElem->GetText();
 	return true;
 }
 

@@ -64,15 +64,12 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct sockaddr_in
 		return FAILURE;
 
 	struct addrinfo *addr;
-	if (getaddrinfo(szRemoteHostName.c_str() , "0", 0, &addr) == 0)
-	{
+	if (getaddrinfo(szRemoteHostName.c_str(), "0", nullptr, &addr) == 0) {
 		struct sockaddr_in *saddr = (((struct sockaddr_in *)addr->ai_addr));
 		sa.sin_family = saddr->sin_family;
 		memcpy(&sa, saddr, sizeof(sockaddr_in));
 		return SUCCESS;
-	}
-	else
-	{
+	} else {
 		sa.sin_family = AF_INET;
 		if (inet_pton(sa.sin_family, szRemoteHostName.c_str(), &sa.sin_addr) == 1)
 			return SUCCESS;
@@ -230,7 +227,7 @@ int csocket::canRead( bool* readyToRead, float waitTime )
 		timeout.tv_usec = static_cast<int>((1000000.0f * (waitTime - (float)timeout.tv_sec)));
 	}
 
-	int n = select(m_socket + 1, &fds, NULL, NULL, &timeout);
+	int n = select(m_socket + 1, &fds, nullptr, nullptr, &timeout);
 	if (n < 0)
 	{
 		m_socketState = ERRORED;

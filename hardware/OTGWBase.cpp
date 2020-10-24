@@ -253,7 +253,7 @@ void OTGWBase::GetGatewayDetails()
 
 void OTGWBase::SendTime()
 {
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
@@ -555,7 +555,7 @@ namespace http {
 			cmnd = rcmnd + rdata;
 
 			OTGWBase *pOTGW = reinterpret_cast<OTGWBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
-			if (pOTGW == NULL)
+			if (pOTGW == nullptr)
 				return;
 
 			_log.Log(LOG_STATUS, "User: %s initiated a manual command: %s", session.username.c_str(), cmnd.c_str());

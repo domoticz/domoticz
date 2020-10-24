@@ -61,7 +61,7 @@ void CZiBlueSerial::Do_Work()
 			sec_counter++;
 
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 			if (isOpen())
 			{
@@ -136,7 +136,7 @@ bool CZiBlueSerial::OpenSerialDevice()
 	}
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
-	m_LastReceivedTime = mytime(NULL);
+	m_LastReceivedTime = mytime(nullptr);
 
 	setReadCallback(boost::bind(&CZiBlueSerial::readCallback, this, _1, _2));
 

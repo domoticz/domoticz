@@ -58,7 +58,7 @@ void CRFLinkSerial::Do_Work()
 			sec_counter++;
 
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 			if (isOpen())
 			{
@@ -90,7 +90,7 @@ void CRFLinkSerial::Do_Work()
 
 				if (sec_counter % 50 == 0)
 				{
-					time_t atime = mytime(NULL);
+					time_t atime = mytime(nullptr);
 					//Send ping (keep alive)
 					//_log.Log(LOG_STATUS, "RFLink: t1=%d t3=%d", atime, m_LastReceivedTime);
 					if (difftime(atime,m_LastReceivedTime) > 50) {
@@ -181,7 +181,7 @@ bool CRFLinkSerial::OpenSerialDevice()
 	}
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
-	m_LastReceivedTime = mytime(NULL);
+	m_LastReceivedTime = mytime(nullptr);
 
 	setReadCallback(boost::bind(&CRFLinkSerial::readCallback, this, _1, _2));
 	sOnConnected(this);

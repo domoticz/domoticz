@@ -93,7 +93,7 @@ CHarmonyHub::~CHarmonyHub(void)
 
 void CHarmonyHub::Init()
 {
-	m_connection=NULL;
+	m_connection = nullptr;
 	m_connectionstatus = DISCONNECTED;
 	m_bNeedMoreData = false;
 	m_bWantAnswer = false;
@@ -415,7 +415,7 @@ void CHarmonyHub::Do_Work()
 		{
 			// update heartbeat
 			hcounter = HEARTBEAT_SECONDS;
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	Logout();
@@ -535,7 +535,7 @@ void CHarmonyHub::ResetCommunicationSocket()
 {
 	if (m_connection)
 		delete m_connection;
-	m_connection = NULL;
+	m_connection = nullptr;
 	m_connectionstatus = DISCONNECTED;
 
 	m_bIsChangingActivity = false;
@@ -559,8 +559,7 @@ std::string CHarmonyHub::ReadFromSocket(csocket *connection)
 }
 std::string CHarmonyHub::ReadFromSocket(csocket *connection, float waitTime)
 {
-	if (connection == NULL)
-	{
+	if (connection == nullptr) {
 		return "</stream:stream>";
 	}
 
@@ -588,7 +587,7 @@ std::string CHarmonyHub::ReadFromSocket(csocket *connection, float waitTime)
 ************************************************************************/
 int CHarmonyHub::StartStream(csocket *connection)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
 	std::string szReq = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	return WriteToSocket(&szReq);
@@ -597,7 +596,7 @@ int CHarmonyHub::StartStream(csocket *connection)
 
 int CHarmonyHub::SendAuth(csocket *connection, const std::string &szUserName, const std::string &szPassword)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
 	std::string szAuth = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" mechanism=\"PLAIN\">";
 	std::string szCred = "\0";
@@ -612,7 +611,7 @@ int CHarmonyHub::SendAuth(csocket *connection, const std::string &szUserName, co
 
 int CHarmonyHub::SendPairRequest(csocket *connection)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
 	std::string szReq = "<iq type=\"get\" id=\"";
 	szReq.append(CONNECTION_ID);
@@ -624,7 +623,7 @@ int CHarmonyHub::SendPairRequest(csocket *connection)
 
 int CHarmonyHub::CloseStream(csocket *connection)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
 	std::string szReq = "</stream:stream>";
 	return WriteToSocket(&szReq);
@@ -638,7 +637,7 @@ int CHarmonyHub::CloseStream(csocket *connection)
 ************************************************************************/
 int CHarmonyHub::SendPing()
 {
-	if (m_connection == NULL || m_szAuthorizationToken.length() == 0)
+	if (m_connection == nullptr || m_szAuthorizationToken.length() == 0)
 		return -1;
 
 	std::string szReq = "<iq type=\"get\" id=\"";
@@ -663,11 +662,9 @@ int CHarmonyHub::SubmitCommand(const std::string &szCommand)
 }
 int CHarmonyHub::SubmitCommand(const std::string &szCommand, const std::string &szActivityId)
 {
-	if (m_connection == NULL || m_szAuthorizationToken.empty())
-	{
+	if (m_connection == nullptr || m_szAuthorizationToken.empty()) {
 		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
 		return false;
-
 	}
 
 	std::string szReq = "<iq type=\"get\" id=\"";

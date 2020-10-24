@@ -49,7 +49,7 @@ void CYouLess::Init()
 	m_bHaveP1OrS0 = false;
 	m_bCheckP1 = true;
 	m_lastgasusage = 0;
-	m_lastSharedSendGas = mytime(NULL);
+	m_lastSharedSendGas = mytime(nullptr);
 }
 
 bool CYouLess::StartHardware()
@@ -87,7 +87,7 @@ void CYouLess::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % YOULESS_POLL_INTERVAL == 0)
 		{
@@ -152,7 +152,7 @@ bool CYouLess::GetP1Details()
 		sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 
 		m_p1gas.gasusage = (unsigned long)(root["gas"].asDouble() * 1000);
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		if (
 			(m_p1gas.gasusage != m_lastgasusage) ||
 			(difftime(atime, m_lastSharedSendGas) >= 300)

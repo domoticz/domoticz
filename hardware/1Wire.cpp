@@ -20,13 +20,13 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path) :
-	m_system(NULL),
-	m_sensorThreadPeriod(sensorThreadPeriod),
-	m_switchThreadPeriod(switchThreadPeriod),
-	m_path(path),
-	m_bSensorFirstTime(true),
-	m_bSwitchFirstTime(true)
+C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string &path)
+	: m_system(nullptr)
+	, m_sensorThreadPeriod(sensorThreadPeriod)
+	, m_switchThreadPeriod(switchThreadPeriod)
+	, m_path(path)
+	, m_bSensorFirstTime(true)
+	, m_bSwitchFirstTime(true)
 {
 	m_HwdID = ID;
 
@@ -86,7 +86,7 @@ bool C1Wire::StartHardware()
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
-	return (m_threadSensors != NULL && m_threadSwitches != NULL);
+	return (m_threadSensors != nullptr && m_threadSwitches != nullptr);
 }
 
 bool C1Wire::StopHardware()
@@ -109,7 +109,7 @@ bool C1Wire::StopHardware()
 	if (m_system)
 	{
 		delete m_system;
-		m_system = NULL;
+		m_system = nullptr;
 	}
 	StopHeartbeatThread();
 	return true;

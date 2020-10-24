@@ -11,7 +11,7 @@ namespace server {
 CTCPClientBase::CTCPClientBase(CTCPServerIntBase *pManager)
 	: pConnectionManager(pManager)
 {
-	socket_ = NULL;
+	socket_ = nullptr;
 	m_bIsLoggedIn = false;
 }
 

@@ -513,7 +513,7 @@ void CHEOS::Do_Work()
 		m_lastUpdate++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (isConnected())
@@ -683,7 +683,7 @@ void CHEOS::UpdateNodeStatus(const std::string &DevID, const _eMediaStatus nStat
 {
 	std::vector<std::vector<std::string> > result;
 
-	time_t now = time(0);
+	time_t now = time(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -698,7 +698,7 @@ void CHEOS::UpdateNodesStatus(const std::string &DevID, const std::string &sStat
 {
 	std::vector<std::vector<std::string> > result;
 
-	time_t now = time(0);
+	time_t now = time(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -812,7 +812,7 @@ void CHEOS::ReloadNodes()
 			pnode.Name = sd[2];
 			pnode.nStatus = (_eMediaStatus)atoi(sd[3].c_str());
 			pnode.sStatus = sd[4];
-			pnode.LastOK = mytime(NULL);
+			pnode.LastOK = mytime(nullptr);
 
 			m_nodes.push_back(pnode);
 		}
@@ -845,7 +845,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_HEOS)
 				return;
@@ -887,7 +887,7 @@ namespace http {
 					switch (hType) {
 					case HTYPE_HEOS:
 						CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3].c_str(), HTYPE_HEOS);
-						if (pBaseHardware == NULL)
+						if (pBaseHardware == nullptr)
 							return;
 						CHEOS *pHEOS = reinterpret_cast<CHEOS*>(pBaseHardware);
 

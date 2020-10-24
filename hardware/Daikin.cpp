@@ -136,7 +136,7 @@ void CDaikin::Do_Work()
 		m_sec_counter++;
 
 		if (m_sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (m_sec_counter % Daikin_POLL_INTERVAL == 0)
@@ -144,7 +144,7 @@ void CDaikin::Do_Work()
 			GetMeterDetails();
 		}
 
-		current_time = mytime(NULL);
+		current_time = mytime(nullptr);
 
 		if (m_force_sci || ((current_time - m_last_setcontrolinfo > 2) && (last_sci_update < m_last_setcontrolinfo))) {
 			HTTPSetControlInfo(); // Fire HTTP request
@@ -707,7 +707,7 @@ bool CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 	// cible température
 	char szTmp[100];
 	sprintf(szTmp, "%.1f", temp);
-	AggregateSetControlInfo(szTmp, NULL, NULL, NULL, NULL, NULL);
+	AggregateSetControlInfo(szTmp, nullptr, nullptr, nullptr, nullptr, nullptr);
 
 	SendSetPointSensor(20, 1, 1, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface
 	return true;
@@ -722,7 +722,7 @@ bool CDaikin::SetGroupOnOFF(const bool OnOFF)
 		pow = "1";
 	else
 		pow = "0";
-	AggregateSetControlInfo(NULL, pow.c_str(), NULL, NULL, NULL, NULL);
+	AggregateSetControlInfo(nullptr, pow.c_str(), nullptr, nullptr, nullptr, nullptr);
 	return true;
 }
 
@@ -763,7 +763,10 @@ bool CDaikin::SetModeLevel(const int NewLevel)
 		stemp = m_dt[(NewLevel / 10)]; //szURL << "&stemp=" << m_dt[(NewLevel/10)];
 		shum = m_dh[(NewLevel / 10)]; //szURL << "&shum=" << m_dh[(NewLevel/10)];
 	}
-	AggregateSetControlInfo(stemp.c_str(), NULL, mode.c_str(), NULL, NULL, shum.c_str()); // temp & hum are memorized value from the device itself, they can be modified by another command safely (does not have to fire 2 different http request in case of instantly modification on temp or hum
+	AggregateSetControlInfo(
+		stemp.c_str(), nullptr, mode.c_str(), nullptr, nullptr,
+		shum.c_str()); // temp & hum are memorized value from the device itself, they can be modified by another command safely
+			       // (does not have to fire 2 different http request in case of instantly modification on temp or hum
 	return true;
 }
 
@@ -788,7 +791,7 @@ bool CDaikin::SetF_RateLevel(const int NewLevel)
 		f_rate = "7"; //szURL << "&f_rate=7";
 	else
 		return false;
-	AggregateSetControlInfo(NULL, NULL, NULL, f_rate.c_str(), NULL, NULL);
+	AggregateSetControlInfo(nullptr, nullptr, nullptr, f_rate.c_str(), nullptr, nullptr);
 	return true;
 }
 
@@ -807,26 +810,26 @@ bool CDaikin::SetF_DirLevel(const int NewLevel)
 		f_dir = "3"; //szURL << "&f_dir=3"; // vertical + horizontal wings motion
 	else
 		return false;
-	AggregateSetControlInfo(NULL, NULL, NULL, NULL, f_dir.c_str(), NULL);
+	AggregateSetControlInfo(nullptr, nullptr, nullptr, nullptr, f_dir.c_str(), nullptr);
 	return true;
 }
 
 void CDaikin::AggregateSetControlInfo(const char* Temp/* setpoint */, const char* OnOFF /* group on/off */, const char* ModeLevel, const char* FRateLevel, const char* FDirLevel, const char* Hum)
 {
-	time_t cmd_time = mytime(NULL);
+	time_t cmd_time = mytime(nullptr);
 	if (cmd_time - m_last_setcontrolinfo < 2) {
 		// another set request so keep old values, and update only the settled ones
-		if (Temp != NULL)
+		if (Temp != nullptr)
 			m_sci_Temp = Temp;
-		if (OnOFF != NULL)
+		if (OnOFF != nullptr)
 			m_sci_OnOFF = OnOFF;
-		if (ModeLevel != NULL)
+		if (ModeLevel != nullptr)
 			m_sci_ModeLevel = ModeLevel;
-		if (FRateLevel != NULL)
+		if (FRateLevel != nullptr)
 			m_sci_FRateLevel = FRateLevel;
-		if (FDirLevel != NULL)
+		if (FDirLevel != nullptr)
 			m_sci_FDirLevel = FDirLevel;
-		if (Hum != NULL)
+		if (Hum != nullptr)
 			m_sci_Hum = Hum;
 
 		m_last_setcontrolinfo = cmd_time;
@@ -837,27 +840,27 @@ void CDaikin::AggregateSetControlInfo(const char* Temp/* setpoint */, const char
 		}
 	}
 	else {
-		if (Temp != NULL)
+		if (Temp != nullptr)
 			m_sci_Temp = Temp;
 		else
 			m_sci_Temp = m_stemp;
-		if (OnOFF != NULL)
+		if (OnOFF != nullptr)
 			m_sci_OnOFF = OnOFF;
 		else
 			m_sci_OnOFF = m_pow;
-		if (ModeLevel != NULL)
+		if (ModeLevel != nullptr)
 			m_sci_ModeLevel = ModeLevel;
 		else
 			m_sci_ModeLevel = m_mode;
-		if (FRateLevel != NULL)
+		if (FRateLevel != nullptr)
 			m_sci_FRateLevel = FRateLevel;
 		else
 			m_sci_FRateLevel = m_f_rate;
-		if (FDirLevel != NULL)
+		if (FDirLevel != nullptr)
 			m_sci_FDirLevel = FDirLevel;
 		else
 			m_sci_FDirLevel = m_f_dir;
-		if (Hum != NULL)
+		if (Hum != nullptr)
 			m_sci_Hum = Hum;
 		else
 			m_sci_Hum = m_shum;

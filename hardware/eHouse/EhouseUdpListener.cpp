@@ -43,11 +43,10 @@ int TCPSocket = -1;
 void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
 	//	if (strlen((char *) &ECMn) < 1)
-	if (m_ECMn == NULL)
-	{
+	if (m_ECMn == nullptr) {
 		LOG(LOG_STATUS, "Allocating CommManager LAN Controller (192.168.%d.%d)", devaddrh, devaddrl);
 		m_ECMn = (struct CommManagerNamesT *) malloc(sizeof(struct CommManagerNamesT));
-		if (m_ECMn == NULL) {
+		if (m_ECMn == nullptr) {
 			LOG(LOG_ERROR, "CAN'T Allocate ECM Names Memory");
 			return;
 		}
@@ -56,8 +55,10 @@ void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
 		m_ECMn->AddrL = devaddrl;
 		m_ECM = (union CMStatusT *) malloc(sizeof(union CMStatusT));
 		m_ECMPrv = (union CMStatusT *) malloc(sizeof(union CMStatusT));
-		if (m_ECM == NULL) LOG(LOG_ERROR, "CAN'T Allocate ECM Memory");
-		if (m_ECMPrv == NULL) LOG(LOG_ERROR, "CAN'T Allocate ECMPrev Memory");
+		if (m_ECM == nullptr)
+			LOG(LOG_ERROR, "CAN'T Allocate ECM Memory");
+		if (m_ECMPrv == nullptr)
+			LOG(LOG_ERROR, "CAN'T Allocate ECMPrev Memory");
 	}
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,11 +67,10 @@ void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
 void eHouseTCP::eHPROaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
 	//	if (strlen((char *) &eHouseProN) < 1)
-	if (m_eHouseProN == NULL)
-	{
+	if (m_eHouseProN == nullptr) {
 		LOG(LOG_STATUS, "Allocating eHouse PRO Controller (192.168.%d.%d)", devaddrh, devaddrl);
 		m_eHouseProN = (struct eHouseProNamesT *) malloc(sizeof(struct eHouseProNamesT)); //Giz: ?? why use mallocs ?
-		if (m_eHouseProN == NULL) {
+		if (m_eHouseProN == nullptr) {
 			LOG(LOG_ERROR, "CAN'T Allocate PRO Names Memory");
 			return;
 		}
@@ -79,8 +79,10 @@ void eHouseTCP::eHPROaloc(int eHEIndex, int devaddrh, int devaddrl)
 		m_eHouseProN->AddrL[0] = devaddrl;
 		m_eHouseProStatus = (union eHouseProStatusUT *)  malloc(sizeof(union eHouseProStatusUT));
 		m_eHouseProStatusPrv = (union eHouseProStatusUT *) malloc(sizeof(union eHouseProStatusUT));
-		if (m_eHouseProStatus == NULL) LOG(LOG_ERROR, "CAN'T Allocate PRO Stat Memory");
-		if (m_eHouseProStatusPrv == NULL) LOG(LOG_ERROR, "CAN'T Allocate PRO Stat PRV Memory");
+		if (m_eHouseProStatus == nullptr)
+			LOG(LOG_ERROR, "CAN'T Allocate PRO Stat Memory");
+		if (m_eHouseProStatusPrv == nullptr)
+			LOG(LOG_ERROR, "CAN'T Allocate PRO Stat PRV Memory");
 	}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,11 +96,10 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 	for (i = 0; i <= eHEIndex; i++)
 	{
 		//if (strlen((char *) & (AuraN[i])) < 1)
-		if (m_AuraN[i] == NULL)
-		{
+		if (m_AuraN[i] == nullptr) {
 			LOG(LOG_STATUS, "Allocating Aura Thermostat (%d.%d)", devaddrh, i + 1);
 			m_AuraN[i] = (struct AuraNamesT *) malloc(sizeof(struct AuraNamesT));
-			if (m_AuraN[i] == NULL) {
+			if (m_AuraN[i] == nullptr) {
 				LOG(LOG_ERROR, "CAN'T Allocate AURA Names Memory");
 				return;
 			}
@@ -108,9 +109,11 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 			m_AuraDev[i] = (struct AURAT *) malloc(sizeof(struct AURAT));
 			m_AuraDevPrv[i] = (struct AURAT *) malloc(sizeof(struct AURAT));
 			m_adcs[i] = (struct CtrlADCT *) malloc(sizeof(struct CtrlADCT));
-			if (m_adcs[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate ADCs Memory");
-			if (m_AuraDev[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate AURA Stat Memory");
-			if (m_AuraDevPrv[i] == NULL) {
+			if (m_adcs[i] == nullptr)
+				LOG(LOG_ERROR, "CAN'T Allocate ADCs Memory");
+			if (m_AuraDev[i] == nullptr)
+				LOG(LOG_ERROR, "CAN'T Allocate AURA Stat Memory");
+			if (m_AuraDevPrv[i] == nullptr) {
 				LOG(LOG_ERROR, "CAN'T Allocate AURA Stat Prv Memory");
 				return;
 			}
@@ -131,11 +134,10 @@ void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 	for (i = 0; i <= eHEIndex; i++)
 	{
 		//	if (strlen((char *) & (eHEn[i])) < 1)
-		if (m_eHEn[i] == NULL)
-		{
+		if (m_eHEn[i] == nullptr) {
 			LOG(LOG_STATUS, "Allocating eHouse LAN controller (192.168.%d.%d)", devaddrh, i + m_INITIAL_ADDRESS_LAN);
 			m_eHEn[i] = (struct EtherneteHouseNamesT *) malloc(sizeof(struct EtherneteHouseNamesT));
-			if (m_eHEn[i] == NULL) {
+			if (m_eHEn[i] == nullptr) {
 				LOG(LOG_ERROR, "CAN'T Allocate LAN Names Memory");
 				return;
 			}
@@ -144,8 +146,9 @@ void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 			m_eHEn[i]->AddrL = i + m_INITIAL_ADDRESS_LAN;
 			m_eHERMs[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
 			m_eHERMPrev[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
-			if (m_eHERMs[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate LAN Stat Memory");
-			if (m_eHERMPrev[i] == NULL) {
+			if (m_eHERMs[i] == nullptr)
+				LOG(LOG_ERROR, "CAN'T Allocate LAN Stat Memory");
+			if (m_eHERMPrev[i] == nullptr) {
 				LOG(LOG_ERROR, "CAN'T Allocate LAN Stat Prv Memory");
 				return;
 			}
@@ -165,10 +168,9 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 	for (i = 0; i <= eHEIndex; i++)
 	{
 		//		if (strlen((char *) &eHn[i]) < 1)
-		if (m_eHn[i] == NULL)
-		{
+		if (m_eHn[i] == nullptr) {
 			m_eHn[i] = (struct eHouse1NamesT *) malloc(sizeof(struct eHouse1NamesT));
-			if (m_eHn[i] == NULL) {
+			if (m_eHn[i] == nullptr) {
 				LOG(LOG_ERROR, "CAN'T Allocate RS-485 Names Memory");
 				return;
 			}
@@ -192,8 +194,9 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 			LOG(LOG_STATUS, "Allocating eHouse RS-485 Controller (%d,%d)", m_eHn[i]->AddrH, m_eHn[i]->AddrL);
 			m_eHRMs[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
 			m_eHRMPrev[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
-			if (m_eHRMs[i] == NULL) LOG(LOG_ERROR, "CANT Allocate RS-485 Stat Memory");
-			if (m_eHRMPrev[i] == NULL) {
+			if (m_eHRMs[i] == nullptr)
+				LOG(LOG_ERROR, "CANT Allocate RS-485 Stat Memory");
+			if (m_eHRMPrev[i] == nullptr) {
 				LOG(LOG_ERROR, "CANT Allocate RS-485 Stat Prev Memory");
 				return;
 			}
@@ -213,11 +216,10 @@ void eHouseTCP::eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl)
 	for (i = 0; i <= eHEIndex; i++)
 	{
 		//			if (strlen((char *) &eHWIFIn[i]) < 1)
-		if (m_eHWIFIn[i] == NULL)
-		{
+		if (m_eHWIFIn[i] == nullptr) {
 			LOG(LOG_STATUS, "Allocating eHouse WiFi Controller (192.168.%d.%d)", devaddrh, m_INITIAL_ADDRESS_WIFI + i);
 			m_eHWIFIn[i] = (struct WiFieHouseNamesT *) malloc(sizeof(struct WiFieHouseNamesT));
-			if (m_eHWIFIn[i] == NULL) {
+			if (m_eHWIFIn[i] == nullptr) {
 				LOG(LOG_ERROR, "CAN'T Allocate WiFi Names Memory");
 				return;
 			}
@@ -227,8 +229,9 @@ void eHouseTCP::eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl)
 			m_eHWiFi[i] = (union WiFiStatusT *) malloc(sizeof(union WiFiStatusT));
 			m_eHWIFIs[i] = (union WIFIFullStatT *) malloc(sizeof(union WIFIFullStatT));
 			m_eHWIFIPrev[i] = (union WIFIFullStatT *) malloc(sizeof(union WIFIFullStatT));
-			if (m_eHWIFIs[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate WiFi Stat Memory");
-			if (m_eHWIFIPrev[i] == NULL) {
+			if (m_eHWIFIs[i] == nullptr)
+				LOG(LOG_ERROR, "CAN'T Allocate WiFi Stat Memory");
+			if (m_eHWIFIPrev[i] == nullptr) {
 				LOG(LOG_ERROR, "CAN'T Allocate WiFi Stat Memory");
 				return;
 			}
@@ -1617,8 +1620,7 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 	{
 		GetStr(data);
 		strncpy((char *)&m_eHn[nr]->Programs[i], (char *)&m_GetLine, sizeof(m_eHn[nr]->Programs[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == NULL))
-		{
+		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr)) {
 			k++;
 			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
 #ifdef UNLIMITED_PGM
@@ -1761,8 +1763,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	{
 		GetStr(data);
 		strncpy((char *)&m_eHEn[nr]->Programs[i], (char *)&m_GetLine, sizeof(m_eHEn[nr]->Programs[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == NULL))
-		{
+		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr)) {
 			k++;
 			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
 //			if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
@@ -1770,7 +1771,6 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 			if (k <= 10)
 #endif
 				strcat(PGMs, tmp);
-
 		}
 	}
 	
@@ -1789,8 +1789,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 		GetStr(data);
 		//printf("%s\r\n", (char *) &GetLine);
 		strncpy((char *)&m_eHEn[nr]->ADCPrograms[i], (char *)&m_GetLine, sizeof(m_eHEn[nr]->ADCPrograms[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == NULL))
-		{
+		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr)) {
 			k++;
 			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
@@ -1798,7 +1797,6 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 			if (k <= 10)
 #endif
 				strcat(PGMs, tmp);
-
 		}
 	}
 	PGMs[strlen(PGMs) - 1] = 0; //remove last '|'
@@ -1912,8 +1910,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	{
 		GetStr(data);
 		strncpy((char *)&m_ECMn->Programs[i], (char *)&m_GetLine, sizeof(m_ECMn->Programs[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == NULL))
-		{
+		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr)) {
 			k++;
 			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
@@ -1921,7 +1918,6 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 			if (k <= 10)
 #endif
 				strcat(PGMs, tmp);
-
 		}
 	}
 
@@ -1938,8 +1934,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	{
 		GetStr(data);
 		strncpy((char *)&m_ECMn->ADCPrograms[i], (char *)&m_GetLine, sizeof(m_ECMn->ADCPrograms[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == NULL))
-		{
+		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr)) {
 			k++;
 			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
@@ -1947,7 +1942,6 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 			if (k <= 10)
 #endif
 				strcat(PGMs, tmp);
-
 		}
 	}
 	PGMs[strlen(PGMs) - 1] = 0; //remove last '|'
@@ -2071,8 +2065,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	{
 		GetStr(data);
 		strncpy((char *)&m_eHouseProN->Programs[i], (char *)&m_GetLine, sizeof(m_eHouseProN->Programs[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == NULL))
-		{
+		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr)) {
 			k++;
 			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
@@ -2101,8 +2094,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	{
 		GetStr(data);
 		strncpy((char *)&m_eHouseProN->ADCPrograms[i], (char *)&m_GetLine, sizeof(m_eHouseProN->ADCPrograms[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == NULL))
-		{
+		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr)) {
 			k++;
 			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
@@ -2133,8 +2125,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		//if (i > 9) break;
 		GetStr(data);
 		strncpy((char *)&m_eHouseProN->SecuPrograms[i], (char *)&m_GetLine, sizeof(m_eHouseProN->SecuPrograms[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == NULL))
-		{
+		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr)) {
 			k++;
 			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
@@ -2145,7 +2136,6 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 
 			if (strlen(PGMs) > 400) break;
 		}
-
 	}
 	PGMs[strlen(PGMs) - 1] = 0; //remove last '|'
 	if (k > 0)
@@ -2166,8 +2156,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		//if (i > 9) break;
 		GetStr(data);
 		strncpy((char *)&m_eHouseProN->Zones[i], (char *)&m_GetLine, sizeof(m_eHouseProN->Zones[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == NULL))
-		{
+		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr)) {
 			k++;
 			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
@@ -2470,10 +2459,10 @@ void eHouseTCP::Do_Work()
 	int SecIter = 0;
 	unsigned char ou = 0;
 	//	LOG(LOG_STATUS, "TIM: %d", mytime(NULL) - m_LastHeartbeat);
-	m_LastHeartbeat = mytime(NULL);
+	m_LastHeartbeat = mytime(nullptr);
 	int prevtim, tim = clock();
 	prevtim = tim;
-	time_t tt = time(NULL);
+	time_t tt = time(nullptr);
 	while (!IsStopRequested(0))				//main loop
 	{
 		tim = clock();
@@ -2498,7 +2487,7 @@ void eHouseTCP::Do_Work()
 		if (m_ViaTCP)
 		{
 			if (m_NoDetectTCPPack > 0) m_NoDetectTCPPack--;
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 			if ((SecIter % 100) == 1)		//15-30 sec - send keep alive
 			{
 
@@ -2514,7 +2503,7 @@ void eHouseTCP::Do_Work()
 
 				//LOG(LOG_STATUS, "!!!!TTTTIM: %d", time(NULL) - tt);
 				//tt = time(NULL);
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 		char eh1 = 0;
 		size = sizeof(caddr);
@@ -2725,14 +2714,12 @@ void eHouseTCP::Do_Work()
 				}
 				//if( StatusDebug) printf("[UDP] Status: (%-3d,%-3d)  (%dB)\r\n", devaddrh, devaddrl, nbytes);
 				if (devaddrl > 199) i = EHOUSE1_RM_MAX + 3;
+				else if (devaddrh == 1) // HM index in status eH[0]
+					i = 0;
+				else if (devaddrh == 2) // EM index in status eH[0]
+					i = EHOUSE1_RM_MAX - 1;
 				else
-					if ((devaddrh == 1))							//HM index in status eH[0]
-						i = 0;
-					else
-						if ((devaddrh == 2))					//EM index in status eH[0]
-							i = EHOUSE1_RM_MAX - 1;
-						else
-							i = devaddrl;                //RM index in status the same as device address low - eH[devaddrl]
+					i = devaddrl; // RM index in status the same as device address low - eH[devaddrl]
 				if (udp_status[3] != 'l')
 				{
 					if (m_StatusDebug) _log.Log(LOG_STATUS, "[%s] St: (%-3d,%-3d) - OK (%dB)", LogPrefix, devaddrh, devaddrl, nbytes);
@@ -2925,7 +2912,7 @@ void eHouseTCP::Do_Work()
 							}
 							else
 							{
-								if ((devaddrh == 0x81))       //Aura Thermostats Via eHouse PRO
+								if (devaddrh == 0x81) // Aura Thermostats Via eHouse PRO
 								{
 									if (devaddrl >= MAX_AURA_DEVS) continue;
 									unsigned char aindex = 0;
@@ -3233,94 +3220,86 @@ void eHouseTCP::Do_Work()
 	int eHEIndex = 0;
 	for (eHEIndex = 0; eHEIndex < ETHERNET_EHOUSE_RM_MAX + 1; eHEIndex++)
 		//	if (strlen((char *) &eHEn[eHEIndex])>0)
-		if (m_eHEn[eHEIndex] != NULL)
-		{
+		if (m_eHEn[eHEIndex] != nullptr) {
 			LOG(LOG_STATUS, "Freeing 192.168.%d.%d", m_eHEn[eHEIndex]->AddrH, m_eHEn[eHEIndex]->AddrL);
 			free(m_eHEn[eHEIndex]);
-			m_eHEn[eHEIndex] = 0;
+			m_eHEn[eHEIndex] = nullptr;
 			free(m_eHERMs[eHEIndex]);
 			free(m_eHERMPrev[eHEIndex]);
-			m_eHERMs[eHEIndex] = 0;
-			m_eHERMPrev[eHEIndex] = 0;
+			m_eHERMs[eHEIndex] = nullptr;
+			m_eHERMPrev[eHEIndex] = nullptr;
 		}
 
 	for (eHEIndex = 0; eHEIndex < EHOUSE1_RM_MAX + 1; eHEIndex++)
 		//if (strlen((char *) &eHn[eHEIndex])>0)
-		if (m_eHn[eHEIndex] != NULL)
-		{
+		if (m_eHn[eHEIndex] != nullptr) {
 			LOG(LOG_STATUS, "Freeing (%d,%d)", m_eHn[eHEIndex]->AddrH, m_eHn[eHEIndex]->AddrL);
 			free(m_eHn[eHEIndex]);
-			m_eHn[eHEIndex] = 0;
+			m_eHn[eHEIndex] = nullptr;
 			free(m_eHRMs[eHEIndex]);
 			free(m_eHRMPrev[eHEIndex]);
-			m_eHRMs[eHEIndex] = 0;
-			m_eHRMPrev[eHEIndex] = 0;
+			m_eHRMs[eHEIndex] = nullptr;
+			m_eHRMPrev[eHEIndex] = nullptr;
 		}
-
 
 	for (eHEIndex = 0; eHEIndex < EHOUSE_WIFI_MAX + 1; eHEIndex++)
 		//	if (strlen((char *) &eHWIFIn[eHEIndex]) > 0)
-		if (m_eHWIFIn[eHEIndex] != NULL)
-		{
+		if (m_eHWIFIn[eHEIndex] != nullptr) {
 			LOG(LOG_STATUS, "Freeing 192.168.%d.%d", m_eHWIFIn[eHEIndex]->AddrH, m_eHWIFIn[eHEIndex]->AddrL);
 			free(m_eHWIFIn[eHEIndex]);
-			m_eHWIFIn[eHEIndex] = 0;
+			m_eHWIFIn[eHEIndex] = nullptr;
 			free(m_eHWiFi[eHEIndex]);
 			free(m_eHWIFIs[eHEIndex]);
 			free(m_eHWIFIPrev[eHEIndex]);
-			m_eHWiFi[eHEIndex] = 0;
-			m_eHWIFIs[eHEIndex] = 0;
-			m_eHWIFIPrev[eHEIndex] = 0;
+			m_eHWiFi[eHEIndex] = nullptr;
+			m_eHWIFIs[eHEIndex] = nullptr;
+			m_eHWIFIPrev[eHEIndex] = nullptr;
 		}
 
 	//if (strlen((char *) &ECMn) > 0)
-	if (m_ECMn != NULL)
-	{
+	if (m_ECMn != nullptr) {
 		LOG(LOG_STATUS, "Freeing 192.168.%d.%d", m_ECMn->AddrH, m_ECMn->AddrL);
 		free(m_ECMn);
-		m_ECMn = 0;
+		m_ECMn = nullptr;
 		free(m_ECM);
 		free(m_ECMPrv);
-		m_ECM = 0;
-		m_ECMPrv = 0;
+		m_ECM = nullptr;
+		m_ECMPrv = nullptr;
 	}
 
 	//if (strlen((char *) &eHouseProN) > 0)
-	if (m_eHouseProN != 0)
-	{
+	if (m_eHouseProN != nullptr) {
 		LOG(LOG_STATUS, "Freeing 192.168.%d.%d", m_eHouseProN->AddrH[0], m_eHouseProN->AddrL[0]);
 		free(m_eHouseProN);
-		m_eHouseProN = 0;
+		m_eHouseProN = nullptr;
 		free(m_eHouseProStatus);
 		free(m_eHouseProStatusPrv);
-		m_eHouseProStatus = 0;
-		m_eHouseProStatusPrv = 0;
+		m_eHouseProStatus = nullptr;
+		m_eHouseProStatusPrv = nullptr;
 	}
-
 
 	for (i = 0; i < EVENT_QUEUE_MAX; i++)
 	{
 
 		{
 			free(m_EvQ[i]);
-			m_EvQ[i] = 0;
+			m_EvQ[i] = nullptr;
 		}
 	}
 
 	for (i = 0; i < MAX_AURA_DEVS; i++)
 	{
 		//if (strlen((char *) & (AuraN[i])) < 1)
-		if (m_AuraN[i] != NULL)
-		{
+		if (m_AuraN[i] != nullptr) {
 			LOG(LOG_STATUS, "Free AURA (%d,%d)", 0x81, i + 1);
 			free(m_AuraN[i]);
-			m_AuraN[i] = 0;
+			m_AuraN[i] = nullptr;
 			free(m_AuraDev[i]);
 			free(m_AuraDevPrv[i]);
-			m_AuraDev[i] = 0;
-			m_AuraDevPrv[i] = 0;
+			m_AuraDev[i] = nullptr;
+			m_AuraDevPrv[i] = nullptr;
 			free(m_adcs[i]);
-			m_adcs[i] = 0;
+			m_adcs[i] = nullptr;
 		}
 	}
 

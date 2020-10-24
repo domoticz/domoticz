@@ -92,7 +92,7 @@ void CAirconWithMe::Do_Work()
 		countdown--;
 		if (countdown % 12 == 0) 
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (countdown == 0) 
 		{

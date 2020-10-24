@@ -538,7 +538,7 @@ void CTado::Do_Work()
 		iSecCounter++;
 		if (iSecCounter % 12 == 0)
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (iSecCounter % TADO_POLL_INTERVAL == 0)

@@ -149,7 +149,7 @@ void CHardwareMonitor::Do_Work()
 			msec_counter = 0;
 			sec_counter++;
 			if (sec_counter % 12 == 0)
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 
 			if (sec_counter % POLL_INTERVAL_TEMP == 0)
 			{
@@ -711,7 +711,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	double CHardwareMonitor::time_so_far()
 	{
 		struct timeval tp;
-		if (gettimeofday(&tp, (struct timezone *) NULL) == -1)
+		if (gettimeofday(&tp, (struct timezone *)nullptr) == -1)
 			return 0;
 		return ((double) (tp.tv_sec)) +
 			(((double) tp.tv_usec) * 0.000001 );
@@ -892,18 +892,16 @@ void CHardwareMonitor::FetchUnixCPU()
 #else	// Linux
 		FILE *fIn = fopen("/proc/stat", "r");
 #endif
-		if (fIn!=NULL)
-		{
+		if (fIn != nullptr) {
 			bool bFirstLine=true;
-			while( fgets(szTmp, sizeof(szTmp), fIn) != NULL )
-			{
+			while (fgets(szTmp, sizeof(szTmp), fIn) != nullptr) {
 				int ret=sscanf(szTmp, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
 				if ((bFirstLine)&&(ret==4)) {
 					bFirstLine=false;
 					m_lastloadcpu=actload1+actload2+actload3;
 				}
 				char *cPos=strstr(cname,"cpu");
-				if (cPos==NULL)
+				if (cPos == nullptr)
 					break;
 				totcpu++;
 			}
@@ -942,8 +940,7 @@ void CHardwareMonitor::FetchUnixCPU()
 #else	// Linux
 		FILE *fIn = fopen("/proc/stat", "r");
 #endif
-		if (fIn!=NULL)
-		{
+		if (fIn != nullptr) {
 			int ret=fscanf(fIn, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
 			fclose(fIn);
 			if (ret==4)
@@ -990,7 +987,7 @@ void CHardwareMonitor::FetchUnixDisk()
 					}
 				}
 #if defined(__linux__) || defined(__FreeBSD__) || defined (__OpenBSD__)
-				if (strstr(dname, "/dev") != NULL)
+				if (strstr(dname, "/dev") != nullptr)
 #elif defined(__CYGWIN32__)
 				if (strstr(smountpoint, "/cygdrive/") != NULL)
 #endif
@@ -1041,8 +1038,8 @@ bool CHardwareMonitor::IsWSL()
 	if (num_read > 0)
 	{
 		buf[num_read] = 0;
-		is_wsl |= (strstr(buf, "Microsoft") != NULL);
-		is_wsl |= (strstr(buf, "WSL") != NULL);
+		is_wsl |= (strstr(buf, "Microsoft") != nullptr);
+		is_wsl |= (strstr(buf, "WSL") != nullptr);
 	}
 
 	status_fd = open("/proc/version", O_RDONLY);
@@ -1054,8 +1051,8 @@ bool CHardwareMonitor::IsWSL()
 	if (num_read > 0)
 	{
 		buf[num_read] = 0;
-		is_wsl |= (strstr(buf, "Microsoft") != NULL);
-		is_wsl |= (strstr(buf, "WSL") != NULL);
+		is_wsl |= (strstr(buf, "Microsoft") != nullptr);
+		is_wsl |= (strstr(buf, "WSL") != nullptr);
 	}
 #endif
 

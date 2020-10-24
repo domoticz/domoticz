@@ -344,7 +344,7 @@ void CeVehicle::Do_Work()
 	{
 		interval = 1000;
 		sec_counter++;
-		time_t now = mytime(0);
+		time_t now = mytime(nullptr);
 		m_LastHeartbeat = now;
 
 		if (m_api == nullptr)

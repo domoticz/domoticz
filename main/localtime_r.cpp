@@ -4,7 +4,7 @@
 #include <string.h>
 #include "../main/Helper.h"
 
-time_t m_lasttime=time(NULL);
+time_t m_lasttime = time(nullptr);
 std::mutex& TimeMutex_() {
 	static std::mutex lTimeMutex_;
 	return lTimeMutex_;
@@ -58,9 +58,9 @@ time_t mytime(time_t * _Time)
  * Returns false if no time can be created
  */
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLdate) {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
-	if (localtime_r(&now, &ltime) == NULL)
+	if (localtime_r(&now, &ltime) == nullptr)
 		return false;
 	return ParseSQLdatetime(time, result, szSQLdate, ltime.tm_isdst);
 }
@@ -127,9 +127,9 @@ bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLd
  */
 
 bool constructTime(time_t &time, struct tm &result, const int year, const int month, const int day, const int hour, const int minute, const int second) {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
-	if (localtime_r(&now, &ltime) == NULL)
+	if (localtime_r(&now, &ltime) == nullptr)
 		return false;
 	return constructTime(time, result, year, month, day, hour, minute, second, ltime.tm_isdst);
 }
@@ -169,9 +169,9 @@ bool constructTime(time_t &time, struct tm &result, const int year, const int mo
  */
 
 bool getMidnight(time_t &time, struct tm &result) {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
-	if (localtime_r(&now, &ltime) == NULL)
+	if (localtime_r(&now, &ltime) == nullptr)
 		return false;
 	return constructTime(time, result, ltime.tm_year+1900, ltime.tm_mon+1, ltime.tm_mday, 0, 0, 0, ltime.tm_isdst);
 }
@@ -188,9 +188,9 @@ bool getMidnight(time_t &time, struct tm &result, int year, int month, int day) 
  * if you are only interested in the (corrected) date.
  */
 bool getNoon(time_t &time, struct tm &result) {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
-	if (localtime_r(&now, &ltime) == NULL)
+	if (localtime_r(&now, &ltime) == nullptr)
 		return false;
 	return constructTime(time, result, ltime.tm_year+1900, ltime.tm_mon+1, ltime.tm_mday, 12, 0, 0, ltime.tm_isdst);
 }

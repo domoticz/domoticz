@@ -158,7 +158,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			}
 			bool	bUseOnOff = false;
 			if (((nStatus == MSTAT_OFF) && bPingOK) || ((nStatus != MSTAT_OFF) && !bPingOK)) bUseOnOff = true;
-			time_t atime = mytime(NULL);
+			time_t atime = mytime(nullptr);
 			itt->LastOK = atime;
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
@@ -572,7 +572,7 @@ void CLogitechMediaServer::ReloadNodes()
 			pnode.IP = sd[2];
 			pnode.nStatus = MSTAT_UNKNOWN;
 			pnode.sStatus = "";
-			pnode.LastOK = mytime(NULL);
+			pnode.LastOK = mytime(nullptr);
 
 			std::vector<std::vector<std::string> > result2;
 			result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, pnode.szDevID);
@@ -643,7 +643,7 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 	if (result.size() == 1)
 	{
 		// Get connection details
-		long	DeviceID = strtol(result[0][0].c_str(), NULL, 16);
+		long DeviceID = strtol(result[0][0].c_str(), nullptr, 16);
 		result = m_sql.safe_query("SELECT Name, MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, DeviceID);
 		sPlayerId = result[0][1];
 	}
@@ -816,7 +816,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
@@ -844,7 +844,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
@@ -863,7 +863,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
+			if (pHardware == nullptr)
 				return;
 			if (pHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
@@ -897,7 +897,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;

@@ -97,7 +97,7 @@ void CMeteorologisk::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 300 == 0)
 		{
@@ -220,7 +220,7 @@ void CMeteorologisk::GetMeterDetails()
 	Json::Value timeseries = root["properties"]["timeseries"];
 
 	Json::Value selectedTimeserie = 0;
-	time_t now = time(NULL);
+	time_t now = time(nullptr);
 
 	for(int i = 0; i < (int)timeseries.size(); i++)
 	{

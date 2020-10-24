@@ -64,7 +64,7 @@ void CPVOutputInput::Do_Work()
 	_log.Log(LOG_STATUS, "PVOutput (Input): Worker started...");
 	while (!IsStopRequested(1000))
 	{
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		m_LastHeartbeat = atime;
 		struct tm ltime;
 		localtime_r(&atime, &ltime);

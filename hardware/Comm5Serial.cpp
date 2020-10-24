@@ -126,7 +126,7 @@ void Comm5Serial::Do_Work()
 
 	while (!IsStopRequested(100))
 	{
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 		if (msec_counter++ >= 40) 
 		{
 			//every 4 seconds ?

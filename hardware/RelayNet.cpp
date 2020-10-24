@@ -232,7 +232,7 @@ void RelayNet::Do_Work()
 		/*  Heartbeat maintenance  */
 		if (sec_counter  % 10 == 0)
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		/*  Prevent disconnect request by Relay Module  */

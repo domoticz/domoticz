@@ -334,12 +334,12 @@ namespace http {
                              repeats, repeatInterval, hwID);
 
             CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(hwID);
-            if (pBaseHardware == NULL)
-                return;
-            if (pBaseHardware->HwdType != HTYPE_Tellstick)
-                return;
-            CTellstick *pTellstick = reinterpret_cast<CTellstick*>(pBaseHardware);
-            pTellstick->SetSettings(repeats, repeatInterval);
-        }
+	    if (pBaseHardware == nullptr)
+		    return;
+	    if (pBaseHardware->HwdType != HTYPE_Tellstick)
+		    return;
+	    CTellstick *pTellstick = reinterpret_cast<CTellstick *>(pBaseHardware);
+	    pTellstick->SetSettings(repeats, repeatInterval);
+	}
     }
 }

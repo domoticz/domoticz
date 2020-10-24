@@ -167,7 +167,7 @@ void GoodweAPI::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 300 == 0)
 		{
@@ -289,7 +289,8 @@ std::string getStatusString(const int status)
 	case STATUS_WAITING: return "Waiting for the Sun";
 	case STATUS_NORMAL: return "Normal/ Working";
 	case STATUS_OFFLINE: return "Offline";
-	default: return ("Unkown status value " + status);
+	default:
+		return (&"Unkown status value "[status]);
 	}
 }
 
@@ -297,7 +298,7 @@ std::string getStatusString(const int status)
 void GoodweAPI::GetMeterDetails()
 {
 	std::string sResult;
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 

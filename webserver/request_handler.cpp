@@ -168,7 +168,7 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 	// propagate timestamp to browser
 	reply::add_header(&rep, "Last-Modified", convert_to_http_date(mInfo.last_written));
 	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
-	if (NULL == if_modified) {
+	if (nullptr == if_modified) {
 		// we have no if-modified header, continue to serve content
 		mInfo.is_modified = true;
 		//_log.Log(LOG_STATUS, "%s: No If-Modified-Since header", full_path.c_str());
@@ -239,10 +239,9 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	  )
 	{
 		const char *encoding_header;
-		if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != NULL)
-		{
+		if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != nullptr) {
 			//see if we support gzip
-			bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
+			bHaveGZipSupport = (strstr(encoding_header, "gzip") != nullptr);
 		}
 	}
   }

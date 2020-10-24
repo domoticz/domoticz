@@ -58,7 +58,7 @@ bool CTCPServerInt::IsUserHereFirstTime(const std::string &ip_string)
 	//
 	//	Log same IP-address first time and then once per day
 	//
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 
 	std::vector<_tTCPLogInfo>::iterator itt = m_incoming_domoticz_history.begin();
 	while (itt!= m_incoming_domoticz_history.end())
@@ -130,13 +130,13 @@ _tRemoteShareUser* CTCPServerIntBase::FindUser(const std::string &username)
 			return &m_users[ii];
 		ii++;
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool CTCPServerIntBase::HandleAuthentication(CTCPClient_ptr c, const std::string &username, const std::string &password)
 {
 	_tRemoteShareUser *pUser=FindUser(username);
-	if (pUser==NULL)
+	if (pUser == nullptr)
 		return false;
 
 	return ((pUser->Username==username)&&(pUser->Password==password));
@@ -183,7 +183,7 @@ void CTCPServerIntBase::SetRemoteUsers(const std::vector<_tRemoteShareUser> &use
 unsigned int CTCPServerIntBase::GetUserDevicesCount(const std::string &username)
 {
 	_tRemoteShareUser *pUser=FindUser(username);
-	if (pUser==NULL)
+	if (pUser == nullptr)
 		return 0;
 	return (unsigned int) pUser->Devices.size();
 }
@@ -209,8 +209,7 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 		if (pClient)
 		{
 			_tRemoteShareUser *pUser=FindUser(pClient->m_username);
-			if (pUser!=NULL)
-			{
+			if (pUser != nullptr) {
 				//check if we are allowed to get this device
 				bool bOk2Send=false;
 				if (pUser->Devices.size()==0)
@@ -321,7 +320,7 @@ bool CTCPServerProxied::OnNewConnection(const std::string &token, const std::str
 bool CTCPServerProxied::OnIncomingData(const std::string &token, const unsigned char *data, size_t bytes_transferred)
 {
 	CSharedClient *client = FindClient(token);
-	if (client == NULL) {
+	if (client == nullptr) {
 		return false;
 	}
 	client->OnIncomingData(data, bytes_transferred);
@@ -337,24 +336,24 @@ CSharedClient *CTCPServerProxied::FindClient(const std::string &token)
 			return pClient;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 #endif
 
 //Out main (wrapper) server
 CTCPServer::CTCPServer()
 {
-	m_pTCPServer = NULL;
+	m_pTCPServer = nullptr;
 #ifndef NOCLOUD
-	m_pProxyServer = NULL;
+	m_pProxyServer = nullptr;
 #endif
 }
 
 CTCPServer::CTCPServer(const int /*ID*/)
 {
-	m_pTCPServer = NULL;
+	m_pTCPServer = nullptr;
 #ifndef NOCLOUD
-	m_pProxyServer = NULL;
+	m_pProxyServer = nullptr;
 #endif
 }
 
@@ -362,10 +361,10 @@ CTCPServer::~CTCPServer()
 {
 	StopServer();
 #ifndef NOCLOUD
-	if (m_pProxyServer != NULL) {
+	if (m_pProxyServer != nullptr) {
 		m_pProxyServer->stop();
 		delete m_pProxyServer;
-		m_pProxyServer = NULL;
+		m_pProxyServer = nullptr;
 	}
 #endif
 }
@@ -381,7 +380,7 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 		{
 			exception = false;
 			StopServer();
-			if (m_pTCPServer != NULL) {
+			if (m_pTCPServer != nullptr) {
 				_log.Log(LOG_ERROR, "Stopping TCPServer should delete resources !");
 			}
 			m_pTCPServer = new CTCPServerInt(listen_address, port, this);
@@ -441,7 +440,7 @@ void CTCPServer::StopServer()
 	// This is the only time to delete it
 	if (m_pTCPServer) {
 		delete m_pTCPServer;
-		m_pTCPServer = NULL;
+		m_pTCPServer = nullptr;
 		_log.Log(LOG_STATUS, "TCPServer: shared server stopped");
 	}
 #ifndef NOCLOUD

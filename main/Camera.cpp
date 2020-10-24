@@ -66,7 +66,7 @@ void CCameraHandler::ReloadCameras()
 void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 {
 	cameraDevice *pCamera = GetCamera(CamID);
-	if (pCamera == NULL)
+	if (pCamera == nullptr)
 		return;
 	pCamera->mActiveDevices.clear();
 	std::vector<std::vector<std::string> > result;
@@ -111,7 +111,7 @@ uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, co
 std::string CCameraHandler::GetCameraURL(const std::string &CamID)
 {
 	cameraDevice* pCamera = GetCamera(CamID);
-	if (pCamera == NULL)
+	if (pCamera == nullptr)
 		return "";
 	return GetCameraURL(pCamera);
 }
@@ -119,7 +119,7 @@ std::string CCameraHandler::GetCameraURL(const std::string &CamID)
 std::string CCameraHandler::GetCameraURL(const uint64_t CamID)
 {
 	cameraDevice* pCamera = GetCamera(CamID);
-	if (pCamera == NULL)
+	if (pCamera == nullptr)
 		return "";
 	return GetCameraURL(pCamera);
 }
@@ -151,7 +151,7 @@ CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 		if (itt.ID == CamID)
 			return &itt;
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
@@ -249,7 +249,7 @@ bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned cha
 	std::lock_guard<std::mutex> l(m_mutex);
 
 	cameraDevice *pCamera = GetCamera(CamID);
-	if (pCamera == NULL)
+	if (pCamera == nullptr)
 		return false;
 
 	std::string szURL = GetCameraURL(pCamera);

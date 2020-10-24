@@ -124,7 +124,7 @@ bool CEvohomeWeb::StartSession()
 		return false;
 	}
 
-	m_sessiontimer = mytime(NULL) + 3599; // Honeywell will invalidate our session ID after an hour
+	m_sessiontimer = mytime(nullptr) + 3599; // Honeywell will invalidate our session ID after an hour
 	m_loggedon = true;
 	m_logonfailures = 0;
 
@@ -136,7 +136,7 @@ bool CEvohomeWeb::StartSession()
 		_log.Log(LOG_ERROR, "(%s) failed to retrieve installation info from server", m_Name.c_str());
 		return false;
 	}
-	m_tcs = NULL;
+	m_tcs = nullptr;
 	if (
 		(m_locations.size() > m_locationId) &&
 		(m_locations[m_locationId].gateways.size() > m_gatewayId) &&
@@ -161,7 +161,7 @@ bool CEvohomeWeb::StartSession()
 			std::vector<std::string> splitresults;
 			StringSplit(result[0][0], ";", splitresults);
 			if (splitresults.size()>0)
-				m_awaysetpoint = strtod(splitresults[0].c_str(), NULL);
+				m_awaysetpoint = strtod(splitresults[0].c_str(), nullptr);
 			if (splitresults.size()>1)
 				m_wdayoff = atoi(splitresults[1].c_str()) % 7;
 		}
@@ -215,7 +215,7 @@ void CEvohomeWeb::Do_Work()
 		sec_counter++;
 		m_lastconnect++;
 		if (sec_counter % 10 == 0)
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 
 		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect >= MINPOLINTERVAL))
 		{
@@ -313,7 +313,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				szId = (*hz->installationInfo)["zoneId"].asString();
 				if ((m_showhdtemps) && !hz->hdtemp.empty())
 					sztemperature = hz->hdtemp;
-				else if (hz->status != NULL)
+				else if (hz->status != nullptr)
 					sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
 				else
 				{
@@ -334,7 +334,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 		{
 			zone* hz = &m_tcs->zones[i];
 			std::string zonemode = "";
-			if (hz->status == NULL) // don't touch invalid zone - it should already show as 'Offline'
+			if (hz->status == nullptr) // don't touch invalid zone - it should already show as 'Offline'
 				continue;
 			if (hz->status->isMember("heatSetpointStatus"))
 				zonemode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
@@ -357,7 +357,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 				{
 					szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
-					setpoint = strtod(szsetpoint.c_str(), NULL);
+					setpoint = strtod(szsetpoint.c_str(), nullptr);
 				}
 
 				// Eco lowers the setpoint of all zones by 3 degrees, but resets a zone mode to Normal setting
@@ -368,7 +368,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 
 			if ((m_showhdtemps) && !hz->hdtemp.empty())
 				sztemperature = hz->hdtemp;
-			else if (hz->status != NULL)
+			else if (hz->status != nullptr)
 				sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
 			else
 			{
@@ -403,7 +403,7 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 	std::string zoneId(std::to_string((int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3)));
 
 	zone* hz = get_zone_by_ID(zoneId);
-	if (hz == NULL) // zone number not known by installation (manually added?)
+	if (hz == nullptr) // zone number not known by installation (manually added?)
 	{
 		_log.Log(LOG_ERROR, "(%s) attempt to change setpoint on unknown zone", m_Name.c_str());
 		return false;
@@ -419,7 +419,7 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 		if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 		{
 			szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
-			pEvo->temperature = (int16_t)(strtod(szsetpoint.c_str(), NULL) * 100);
+			pEvo->temperature = (int16_t)(strtod(szsetpoint.c_str(), nullptr) * 100);
 		}
 
 		if ((m_showschedule) && (!szuntil.empty()))
@@ -486,11 +486,11 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 
 void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 {
-	unsigned long ID = (unsigned long)(strtod(tcs->systemId.c_str(), NULL));
+	unsigned long ID = (unsigned long)(strtod(tcs->systemId.c_str(), nullptr));
 	std::string szsystemMode, szmodelType;
 	uint8_t sysmode = 0;
 
-	if (tcs->status == NULL)
+	if (tcs->status == nullptr)
 		szsystemMode = "Unknown";
 	else
 		szsystemMode = (*tcs->status)["systemModeStatus"]["mode"].asString();
@@ -525,7 +525,7 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 		if (!result.empty() && ((result[0][2] != devname) || (!result[0][3].empty())))
 		{
 			// also change lastupdate time to allow the web frontend to pick up the change
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm ltime;
 			localtime_r(&now, &ltime);
 			// also wipe StrParam1 - we do not also want to call the old (python) script when changing system mode
@@ -545,14 +545,11 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	std::stringstream ssUpdateStat;
 
 	szId = (*hz->installationInfo)["zoneId"].asString();
-	if (hz->status == NULL)
-	{
+	if (hz->status == nullptr) {
 		sztemperature = "-";
 		szsetpoint = "-";
 		szmode = "Offline";
-	}
-	else
-	{
+	} else {
 		sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
 		szsetpoint = (*hz->status)["heatSetpointStatus"]["targetTemperature"].asString();
 		if ((m_showhdtemps) && hz->hdtemp.empty())
@@ -567,13 +564,13 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 
 	unsigned long evoID = atol(szId.c_str());
 	std::string szsysmode;
-	if (m_tcs->status == NULL)
+	if (m_tcs->status == nullptr)
 		szsysmode = "Unknown";
 	else
 		szsysmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
 	if ((szsysmode == "Away") && (szmode == "FollowSchedule"))
 	{
-		double new_awaysetpoint = strtod(szsetpoint.c_str(), NULL);
+		double new_awaysetpoint = strtod(szsetpoint.c_str(), nullptr);
 		if (m_awaysetpoint != new_awaysetpoint)
 		{
 			m_awaysetpoint = new_awaysetpoint;
@@ -656,7 +653,9 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 {
 	// Hot Water is essentially just another zone
-	if ((tcs->status == NULL) || (!tcs->status->isMember("dhw") || !(*tcs->status)["dhw"].isMember("temperatureStatus") || !(*tcs->status)["dhw"].isMember("stateStatus")))
+	if ((tcs->status == nullptr)
+	    || (!tcs->status->isMember("dhw") || !(*tcs->status)["dhw"].isMember("temperatureStatus")
+		|| !(*tcs->status)["dhw"].isMember("stateStatus")))
 		return;
 
 	std::string szId, szmode;
@@ -791,7 +790,7 @@ std::string CEvohomeWeb::local_to_utc(const std::string &local_time)
 	if (m_tzoffset == -1)
 	{
 		// calculate timezone offset once
-		time_t now = mytime(NULL);
+		time_t now = mytime(nullptr);
 		struct tm utime;
 		gmtime_r(&now, &utime);
 		utime.tm_isdst = -1;
@@ -906,7 +905,7 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 
 	m_v2refresh_token = j_login["refresh_token"].asString();
 	int v2token_expiration_time = atoi(j_login["expires_in"].asString().c_str());
-	m_sessiontimer = mytime(NULL) + v2token_expiration_time; // Honeywell will invalidate our session ID after an hour
+	m_sessiontimer = mytime(nullptr) + v2token_expiration_time; // Honeywell will invalidate our session ID after an hour
 
 	std::stringstream atoken;
 	atoken << "Authorization: bearer " << j_login["access_token"].asString();
@@ -986,7 +985,7 @@ bool CEvohomeWeb::renew_login()
 
 	m_v2refresh_token = j_login["refresh_token"].asString();
 	int v2token_expiration_time = atoi(j_login["expires_in"].asString().c_str());
-	m_sessiontimer = mytime(NULL) + v2token_expiration_time; // Honeywell will invalidate our session ID after an hour
+	m_sessiontimer = mytime(nullptr) + v2token_expiration_time; // Honeywell will invalidate our session ID after an hour
 
 	std::stringstream atoken;
 	atoken << "Authorization: bearer " << j_login["access_token"].asString();
@@ -1334,7 +1333,7 @@ bool CEvohomeWeb::get_status(int location)
 CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(const std::string &zoneId)
 {
 	if ((m_locations.size() == 0) && !full_installation())
-		return NULL;
+		return nullptr;
 
 	for (size_t l = 0; l < m_locations.size(); l++)
 	{
@@ -1355,7 +1354,7 @@ CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(const std::string &zoneId)
 			}
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 
@@ -1387,7 +1386,7 @@ bool CEvohomeWeb::get_zone_schedule(const std::string &zoneId, const std::string
 		return false;
 
 	zone* hz = get_zone_by_ID(zoneId);
-	if (hz == NULL)
+	if (hz == nullptr)
 		return false;
 	bool ret = ParseJSon(sz_response, hz->schedule);
 	if (ret)
@@ -1423,7 +1422,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 		return "";
 
 	struct tm ltime;
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	localtime_r(&now, &ltime);
 	int year = ltime.tm_year;
 	int month = ltime.tm_mon;
@@ -1439,8 +1438,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 	}
 
 	// Hack: DayOff needs to reference a specific weekday rather than current
-	if (m_tcs->status != NULL)
-	{
+	if (m_tcs->status != nullptr) {
 		std::string szsystemMode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
 		if (szsystemMode == "DayOff")
 			wday = m_wdayoff;
@@ -1916,8 +1914,7 @@ void CEvohomeWeb::get_v1_temps()
 			std::string zoneId = (*j_dev)["deviceID"].asString();
 
 			zone *v2zone = get_zone_by_ID(zoneId);
-			if (v2zone != NULL)
-			{
+			if (v2zone != nullptr) {
 				double v1temp = (*j_dev)["thermostat"]["indoorTemperature"].asDouble();
 				if (v1temp > 127) // allow rounding error
 				{

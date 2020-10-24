@@ -92,7 +92,7 @@ void ZWaveBase::Do_Work()
 			msec_counter = 0;
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 		}
 
@@ -110,7 +110,7 @@ void ZWaveBase::Do_Work()
 			GetUpdates();
 			if (m_bControllerCommandInProgress == true)
 			{
-				time_t atime = mytime(NULL);
+				time_t atime = mytime(nullptr);
 				double tdiff = difftime(atime, m_ControllerCommandStartTime);
 				if (tdiff >= CONTROLLER_COMMAND_TIMEOUT)
 				{
@@ -133,7 +133,7 @@ std::string ZWaveBase::GenerateDeviceStringID(const _tZWaveDevice* pDevice)
 void ZWaveBase::InsertDevice(_tZWaveDevice device)
 {
 	device.string_id = GenerateDeviceStringID(&device);
-	device.lastreceived = mytime(NULL);
+	device.lastreceived = mytime(nullptr);
 #ifdef _DEBUG
 	bool bNewDevice = (m_devices.find(device.string_id) == m_devices.end());
 	if (bNewDevice)
@@ -413,14 +413,11 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		//Search Energy Device
 		const _tZWaveDevice* pEnergyDevice;
 		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWERENERGYMETER);
-		if (pEnergyDevice == NULL)
-		{
+		if (pEnergyDevice == nullptr) {
 			pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWERENERGYMETER);
-			if (pEnergyDevice == NULL)
-			{
+			if (pEnergyDevice == nullptr) {
 				pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWERENERGYMETER);
-				if (pEnergyDevice == NULL)
-				{
+				if (pEnergyDevice == nullptr) {
 					if (
 						(pDevice->Manufacturer_id == 0x010F) &&
 						(
@@ -497,19 +494,18 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		{
 			//Fibaro Wallplug, find power sensor with idx 4 (idx 1 only reports when plug goes on/off, idx 4 is live power)
 			pPowerDevice = FindDevice(pDevice->nodeID, 4, pDevice->indexID, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SENSOR_POWER);
-			if (pPowerDevice == NULL)
+			if (pPowerDevice == nullptr)
 				pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
 		}
 		else
 		{
 			pPowerDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWER);
-			if (pPowerDevice == NULL)
+			if (pPowerDevice == nullptr)
 				pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
 		}
-		if (pPowerDevice == NULL)
-		{
+		if (pPowerDevice == nullptr) {
 			pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWER);
-			if (pPowerDevice == NULL)
+			if (pPowerDevice == nullptr)
 				pPowerDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_POWER);
 		}
 		bool bHaveValidPowerDevice = false;
@@ -808,7 +804,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int 
 			)
 			return &itt.second;
 	}
-	return NULL;
+	return nullptr;
 }
 
 //Used for power/energy devices
@@ -823,7 +819,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceEx(const uint8_t nodeID, const in
 			)
 			return &itt.second;
 	}
-	return NULL;
+	return nullptr;
 }
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType)
@@ -837,7 +833,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int 
 			)
 			return &itt.second;
 	}
-	return NULL;
+	return nullptr;
 }
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType)
@@ -852,14 +848,14 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int 
 			)
 			return &itt.second;
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 {
 	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
-	_tZWaveDevice* pDevice = NULL;
+	_tZWaveDevice *pDevice = nullptr;
 
 	unsigned char packettype = pdata[1];
 	unsigned char subtype = pdata[2];
