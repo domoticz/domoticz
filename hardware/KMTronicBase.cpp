@@ -26,7 +26,7 @@ KMTronicBase::KMTronicBase()
 	}
 }
 
-KMTronicBase::~KMTronicBase() {}
+KMTronicBase::~KMTronicBase() = default;
 
 void KMTronicBase::ParseData(const unsigned char *pData, int Len)
 {

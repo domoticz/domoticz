@@ -23,7 +23,7 @@ CCameraHandler::CCameraHandler()
 	m_seconds_counter = 0;
 }
 
-CCameraHandler::~CCameraHandler() {}
+CCameraHandler::~CCameraHandler() = default;
 
 void CCameraHandler::ReloadCameras()
 {

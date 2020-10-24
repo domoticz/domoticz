@@ -469,9 +469,7 @@ namespace http {
 			m_pDomServ = domserv;
 		}
 
-		CProxyClient::~CProxyClient()
-		{
-		}
+		CProxyClient::~CProxyClient() = default;
 
 		void CProxyClient::Connect(http::server::cWebem *webEm)
 		{
@@ -491,10 +489,7 @@ namespace http {
 			return (_apikey != "" && _password != "" && _allowed_subsystems != 0);
 		}
 
-
-		CProxyManager::CProxyManager()
-		{
-		}
+		CProxyManager::CProxyManager() = default;
 
 		CProxyManager::~CProxyManager()
 		{

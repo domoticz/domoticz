@@ -8,7 +8,7 @@ CurrentCostMeterBase::CurrentCostMeterBase()
 	Init();
 }
 
-CurrentCostMeterBase::~CurrentCostMeterBase() {}
+CurrentCostMeterBase::~CurrentCostMeterBase() = default;
 
 void CurrentCostMeterBase::Init()
 {

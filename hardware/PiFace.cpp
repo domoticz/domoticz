@@ -87,11 +87,7 @@ CPiFace::CPiFace(const int ID)
     m_fd = 0;
 }
 
-CPiFace::~CPiFace()
-{
-
-}
-
+CPiFace::~CPiFace() = default;
 
 /***** config file stuff *****/
 
@@ -1229,10 +1225,7 @@ CIOCount::CIOCount()
     Cur_Interval = boost::posix_time::milliseconds(0);
 };
 
-CIOCount::~CIOCount()
-{
-
-};
+CIOCount::~CIOCount() = default;
 
 int CIOPinState::Update(bool New)
 {
@@ -1361,10 +1354,7 @@ CIOPinState::CIOPinState()
     Direction=' ';
 };
 
-CIOPinState::~CIOPinState()
-{
-
-};
+CIOPinState::~CIOPinState() = default;
 
 void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned char housecode, unsigned char initial_state)
 {
@@ -1588,10 +1578,7 @@ CIOPort::CIOPort()
 
 };
 
-CIOPort::~CIOPort()
-{
-
-};
+CIOPort::~CIOPort() = default;
 
 //Webserver helpers
 namespace http {

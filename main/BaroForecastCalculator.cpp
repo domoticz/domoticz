@@ -10,9 +10,7 @@ CBaroForecastCalculator::CBaroForecastCalculator()
 	Init();
 }
 
-CBaroForecastCalculator::~CBaroForecastCalculator()
-{
-}
+CBaroForecastCalculator::~CBaroForecastCalculator() = default;
 
 void CBaroForecastCalculator::Init()
 {

@@ -42,10 +42,7 @@ CTeleinfoBase::CTeleinfoBase()
 	InitTeleinfo();
 }
 
-
-CTeleinfoBase::~CTeleinfoBase()
-{
-}
+CTeleinfoBase::~CTeleinfoBase() = default;
 
 void CTeleinfoBase::InitTeleinfo()
 {

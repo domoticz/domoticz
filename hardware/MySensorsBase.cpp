@@ -246,7 +246,7 @@ MySensorsBase::MySensorsBase()
 	m_AckSetType = V_UNKNOWN;
 }
 
-MySensorsBase::~MySensorsBase() {}
+MySensorsBase::~MySensorsBase() = default;
 
 void MySensorsBase::LoadDevicesFromDatabase()
 {

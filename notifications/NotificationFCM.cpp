@@ -43,9 +43,7 @@ CNotificationFCM::CNotificationFCM() : CNotificationBase(std::string("fcm"), OPT
 	SetupConfig(std::string("FCMEnabled"), &m_IsEnabled);
 }
 
-CNotificationFCM::~CNotificationFCM()
-{
-}
+CNotificationFCM::~CNotificationFCM() = default;
 
 bool CNotificationFCM::IsConfigured()
 {

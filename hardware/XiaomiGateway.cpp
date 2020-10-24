@@ -179,7 +179,7 @@ XiaomiGateway::XiaomiGateway(const int ID)
 	m_ListenPort9898 = false;
 }
 
-XiaomiGateway::~XiaomiGateway() {}
+XiaomiGateway::~XiaomiGateway() = default;
 
 bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char length)
 {
@@ -904,9 +904,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	}
 }
 
-XiaomiGateway::xiaomi_udp_server::~xiaomi_udp_server()
-{
-}
+XiaomiGateway::xiaomi_udp_server::~xiaomi_udp_server() = default;
 
 void XiaomiGateway::xiaomi_udp_server::start_receive()
 {

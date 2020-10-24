@@ -11,9 +11,7 @@ CNotificationPushover::CNotificationPushover() : CNotificationBase(std::string("
 	SetupConfig(std::string("PushoverUser"), _apiuser);
 }
 
-CNotificationPushover::~CNotificationPushover()
-{
-}
+CNotificationPushover::~CNotificationPushover() = default;
 
 bool CNotificationPushover::SendMessageImplementation(
 	const uint64_t Idx,

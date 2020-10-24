@@ -94,7 +94,7 @@ COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const
 /**
 	destroys hardware OpenWebNet instance
 **/
-COpenWebNetTCP::~COpenWebNetTCP() {}
+COpenWebNetTCP::~COpenWebNetTCP() = default;
 
 /**
 	Start Hardware OpneWebNet Monitor/Worker Service

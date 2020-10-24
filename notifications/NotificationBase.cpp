@@ -18,9 +18,7 @@ m_IsEnabled(1)
 {
 }
 
-CNotificationBase::~CNotificationBase()
-{
-}
+CNotificationBase::~CNotificationBase() = default;
 
 void CNotificationBase::SetupConfig(const std::string &Key, std::string& Value)
 {

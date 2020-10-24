@@ -121,7 +121,7 @@ m_szIPAddress(IPAddress)
 	Init();
 }
 
-CNefitEasy::~CNefitEasy() {}
+CNefitEasy::~CNefitEasy() = default;
 
 void CNefitEasy::Init()
 {

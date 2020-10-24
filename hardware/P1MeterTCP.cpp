@@ -19,7 +19,7 @@ P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigne
 	}
 }
 
-P1MeterTCP::~P1MeterTCP() {}
+P1MeterTCP::~P1MeterTCP() = default;
 
 bool P1MeterTCP::StartHardware()
 {
