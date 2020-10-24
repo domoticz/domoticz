@@ -211,10 +211,7 @@ CRFLinkBase::CRFLinkBase()
 	*/
 }
 
-CRFLinkBase::~CRFLinkBase()
-{
-}
-
+CRFLinkBase::~CRFLinkBase() = default;
 
 /*
 void CRFLinkBase::Add2SendQueue(const char* pData, const size_t length)

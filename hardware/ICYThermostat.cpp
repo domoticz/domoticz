@@ -33,7 +33,7 @@ m_Password(Password)
 	Init();
 }
 
-CICYThermostat::~CICYThermostat() {}
+CICYThermostat::~CICYThermostat() = default;
 
 void CICYThermostat::Init()
 {

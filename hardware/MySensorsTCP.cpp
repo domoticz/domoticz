@@ -16,7 +16,7 @@ MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const uns
 	m_HwdID = ID;
 }
 
-MySensorsTCP::~MySensorsTCP() {}
+MySensorsTCP::~MySensorsTCP() = default;
 
 bool MySensorsTCP::StartHardware()
 {

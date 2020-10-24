@@ -102,9 +102,7 @@ CZiBlueBase::CZiBlueBase()
 	Init();
 }
 
-CZiBlueBase::~CZiBlueBase()
-{
-}
+CZiBlueBase::~CZiBlueBase() = default;
 
 void CZiBlueBase::Init()
 {

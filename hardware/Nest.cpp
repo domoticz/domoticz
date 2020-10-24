@@ -63,7 +63,7 @@ m_Password(CURLEncode::URLEncode(Password))
 	Init();
 }
 
-CNest::~CNest() {}
+CNest::~CNest() = default;
 
 void CNest::Init()
 {

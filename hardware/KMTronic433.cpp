@@ -30,10 +30,7 @@ KMTronic433::KMTronic433(const int ID, const std::string& devname)
 	m_retrycntr = RETRY_DELAY;
 }
 
-KMTronic433::~KMTronic433()
-{
-
-}
+KMTronic433::~KMTronic433() = default;
 
 bool KMTronic433::StartHardware()
 {

@@ -28,7 +28,7 @@ CScheduler::CScheduler()
 	srand((int)mytime(nullptr));
 }
 
-CScheduler::~CScheduler() {}
+CScheduler::~CScheduler() = default;
 
 void CScheduler::StartScheduler()
 {

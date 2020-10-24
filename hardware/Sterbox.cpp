@@ -24,7 +24,7 @@ m_Password(password)
 	Init();
 }
 
-CSterbox::~CSterbox() {}
+CSterbox::~CSterbox() = default;
 
 void CSterbox::Init()
 {

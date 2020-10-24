@@ -176,10 +176,7 @@ namespace tcp_proxy
 	{
 
 	}
-	acceptor::~acceptor()
-	{
-
-	}
+	acceptor::~acceptor() = default;
 
 	bool acceptor::accept_connections()
 	{

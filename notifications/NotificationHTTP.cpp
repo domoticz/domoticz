@@ -22,9 +22,7 @@ CNotificationHTTP::CNotificationHTTP() : CNotificationBase(std::string("http"), 
 	SetupConfigBase64(std::string("HTTPPostContentType"), _HTTPPostContentType);
 }
 
-CNotificationHTTP::~CNotificationHTTP()
-{
-}
+CNotificationHTTP::~CNotificationHTTP() = default;
 
 bool CNotificationHTTP::SendMessageImplementation(
 	const uint64_t Idx,

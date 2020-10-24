@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "NotificationObserver.h"
 
-CNotificationObserver::CNotificationObserver() {}
-
-CNotificationObserver::~CNotificationObserver() {}
+CNotificationObserver::CNotificationObserver() = default;
+CNotificationObserver::~CNotificationObserver() = default;

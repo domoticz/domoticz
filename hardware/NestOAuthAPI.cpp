@@ -40,7 +40,7 @@ CNestOAuthAPI::CNestOAuthAPI(const int ID, const std::string &apikey, const std:
 	Init();
 }
 
-CNestOAuthAPI::~CNestOAuthAPI() {}
+CNestOAuthAPI::~CNestOAuthAPI() = default;
 
 void CNestOAuthAPI::Init()
 {

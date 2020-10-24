@@ -16,7 +16,7 @@ CurrentCostMeterTCP::CurrentCostMeterTCP(const int ID, const std::string &IPAddr
 	m_HwdID=ID;
 }
 
-CurrentCostMeterTCP::~CurrentCostMeterTCP() {}
+CurrentCostMeterTCP::~CurrentCostMeterTCP() = default;
 
 bool CurrentCostMeterTCP::StartHardware()
 {

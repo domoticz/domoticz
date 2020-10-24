@@ -522,9 +522,7 @@ bt_openwebnet::bt_openwebnet(const std::string& who, const std::string& what, co
 
 
 // destructor
-bt_openwebnet::~bt_openwebnet()
-{
-}
+bt_openwebnet::~bt_openwebnet() = default;
 
 // creates the open message *who*what*where*when##
 void bt_openwebnet::CreateMsgOpen(const std::string& who, const std::string& what, const std::string& where, const std::string& when)

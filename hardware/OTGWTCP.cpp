@@ -16,7 +16,7 @@ OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned shor
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
 }
 
-OTGWTCP::~OTGWTCP() {}
+OTGWTCP::~OTGWTCP() = default;
 
 bool OTGWTCP::StartHardware()
 {

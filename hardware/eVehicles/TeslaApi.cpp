@@ -57,9 +57,7 @@ CTeslaApi::CTeslaApi(const std::string username, const std::string password, con
 	m_capabilities.sleep_interval = 20;
 }
 
-CTeslaApi::~CTeslaApi()
-{
-}
+CTeslaApi::~CTeslaApi() = default;
 
 bool CTeslaApi::Login()
 {

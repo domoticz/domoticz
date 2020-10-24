@@ -14,9 +14,7 @@ CNotificationPushsafer::CNotificationPushsafer() : CNotificationBase(std::string
 	SetupConfig(std::string("PushsaferImage"), _apiuser);
 }
 
-CNotificationPushsafer::~CNotificationPushsafer()
-{
-}
+CNotificationPushsafer::~CNotificationPushsafer() = default;
 
 bool CNotificationPushsafer::SendMessageImplementation(
 	const uint64_t Idx,

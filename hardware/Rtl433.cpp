@@ -39,9 +39,7 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	*/
 }
 
-CRtl433::~CRtl433()
-{
-}
+CRtl433::~CRtl433() = default;
 
 bool CRtl433::StartHardware()
 {

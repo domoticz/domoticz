@@ -9,9 +9,7 @@ CNotificationProwl::CNotificationProwl() : CNotificationBase(std::string("prowl"
 	SetupConfig(std::string("ProwlAPI"), _apikey);
 }
 
-CNotificationProwl::~CNotificationProwl()
-{
-}
+CNotificationProwl::~CNotificationProwl() = default;
 
 bool CNotificationProwl::SendMessageImplementation(
 	const uint64_t Idx,

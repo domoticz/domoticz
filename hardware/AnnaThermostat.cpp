@@ -79,7 +79,7 @@ CAnnaThermostat::CAnnaThermostat(const int ID, const std::string& IPAddress, con
 	Init();
 }
 
-CAnnaThermostat::~CAnnaThermostat() {}
+CAnnaThermostat::~CAnnaThermostat() = default;
 
 void CAnnaThermostat::OnError(const std::exception e)
 {

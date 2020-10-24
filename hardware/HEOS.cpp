@@ -27,7 +27,7 @@ CHEOS::CHEOS(const int ID, const std::string &IPAddress, const unsigned short us
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CHEOS::~CHEOS() {}
+CHEOS::~CHEOS() = default;
 
 void CHEOS::ParseLine()
 {

@@ -90,7 +90,7 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 	}
 }
 
-CBuienRadar::~CBuienRadar() {}
+CBuienRadar::~CBuienRadar() = default;
 
 void CBuienRadar::Init()
 {

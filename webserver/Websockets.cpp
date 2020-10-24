@@ -21,7 +21,8 @@ namespace http {
 			payloadlen = 0;
 			bytes_consumed = 0;
 		};
-		CWebsocketFrame::~CWebsocketFrame() {};
+
+		CWebsocketFrame::~CWebsocketFrame() = default;
 
 		std::string CWebsocketFrame::unmask(const uint8_t *mask, const uint8_t *bytes, size_t payloadlen) {
 			std::string result;
@@ -163,9 +164,7 @@ namespace http {
 			MyWrite = _MyWrite;
 		}
 
-		CWebsocket::~CWebsocket()
-		{
-		}
+		CWebsocket::~CWebsocket() = default;
 
 		boost::tribool CWebsocket::parse(const uint8_t *begin, size_t size, size_t &bytes_consumed, bool &keep_alive)
 		{

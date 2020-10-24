@@ -24,7 +24,7 @@ CTE923::CTE923(const int ID)
 	Init();
 }
 
-CTE923::~CTE923() {}
+CTE923::~CTE923() = default;
 
 void CTE923::Init()
 {

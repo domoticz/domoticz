@@ -91,7 +91,7 @@ MySensorsMQTT::MySensorsMQTT(
 
 }
 
-MySensorsMQTT::~MySensorsMQTT() {}
+MySensorsMQTT::~MySensorsMQTT() = default;
 
 bool MySensorsMQTT::StartHardware()
 {
