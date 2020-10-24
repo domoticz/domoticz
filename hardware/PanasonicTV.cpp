@@ -967,8 +967,8 @@ void CPanasonic::ReloadNodes()
 
 		// create a vector to hold the nodes
 		for (auto sd : result) {
-			std::shared_ptr<CPanasonicNode> pNode = (std::shared_ptr<CPanasonicNode>)new CPanasonicNode(
-				m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+			auto pNode
+				= std::make_shared<CPanasonicNode>(m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each Panasonic TV

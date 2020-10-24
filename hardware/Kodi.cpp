@@ -1164,14 +1164,14 @@ void CKodi::ReloadNodes()
 
 		// create a vector to hold the nodes
 		for (auto sd : result) {
-			std::shared_ptr<CKodiNode> pNode = (std::shared_ptr<CKodiNode>)new CKodiNode(
-				&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+			auto pNode = std::make_shared<CKodiNode>(&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2],
+								 sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each kodi
 		for (auto &m_pNode : m_pNodes) {
 			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", m_pNode->m_Name.c_str());
-			boost::thread *tAsync = new boost::thread(&CKodiNode::Do_Work, m_pNode);
+			auto tAsync = new boost::thread(&CKodiNode::Do_Work, m_pNode);
 			SetThreadName(tAsync->native_handle(), "KodiNode");
 		}
 		sleep_milliseconds(100);
