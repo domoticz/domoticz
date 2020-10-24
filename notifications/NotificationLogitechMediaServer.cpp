@@ -47,9 +47,7 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(
 	std::vector<std::string> results;
 	StringSplit(_PlayerMac, ";", results);
 
-	for (int i = 0; i < (int)results.size(); i++)
-	{
-		std::string sPlayerId = results[i];
+	for (auto sPlayerId : results) {
 		pLMS->SendText(sPlayerId, sSubject, Text, _Duration);
 	}
 	return true;

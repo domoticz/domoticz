@@ -225,14 +225,14 @@ void USBtin_MultiblocV8::ManageThreadV8(bool States)
 void USBtin_MultiblocV8::ClearingBlocList(){
 	_log.Log(LOG_NORM,"MultiblocV8: clearing BlocList");
 	//effacement du tableau à l'init
-	for(int i = 0;i < MAX_NUMBER_BLOC;i++){
-		m_BlocList_CAN[i].BlocID = 0;
-		m_BlocList_CAN[i].Status = 0;
-		m_BlocList_CAN[i].NbAliveFrameReceived = 0;
-		m_BlocList_CAN[i].VersionH = 0;
-		m_BlocList_CAN[i].VersionM = 0;
-		m_BlocList_CAN[i].VersionL = 0;
-		m_BlocList_CAN[i].CongifurationCrc = 0;
+	for (auto &i : m_BlocList_CAN) {
+		i.BlocID = 0;
+		i.Status = 0;
+		i.NbAliveFrameReceived = 0;
+		i.VersionH = 0;
+		i.VersionM = 0;
+		i.VersionL = 0;
+		i.CongifurationCrc = 0;
 	}
 }
 

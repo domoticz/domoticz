@@ -2443,30 +2443,22 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 
 	std::vector<std::string> oSplitResults;
 	StringSplit(oAction_, " ", oSplitResults);
-	for (std::vector<std::string>::const_iterator oIterator = oSplitResults.begin(); oIterator != oSplitResults.end(); ++oIterator) {
-		std::string sToken = *oIterator;
+	for (auto sToken : oSplitResults) {
 		if (sToken == "FOR") {
 			iLastTokenType = 1;
-		}
-		else if (sToken == "AFTER") {
+		} else if (sToken == "AFTER") {
 			iLastTokenType = 2;
-		}
-		else if (sToken == "RANDOM") {
+		} else if (sToken == "RANDOM") {
 			iLastTokenType = 3;
-		}
-		else if (sToken == "REPEAT") {
+		} else if (sToken == "REPEAT") {
 			iLastTokenType = 4;
-		}
-		else if (sToken == "INTERVAL") {
+		} else if (sToken == "INTERVAL") {
 			iLastTokenType = 5;
-		}
-		else if (sToken == "TURN") {
+		} else if (sToken == "TURN") {
 			iLastTokenType = 0;
-		}
-		else if (sToken == "TRIGGER") {
+		} else if (sToken == "TRIGGER") {
 			iLastTokenType = 0;
-		}
-		else if (sToken == "NOTRIGGER")
+		} else if (sToken == "NOTRIGGER")
 			oResults_.bEventTrigger = false;
 
 		else if (sToken.find("SECOND") != std::string::npos) {
@@ -3971,9 +3963,8 @@ bool CEventSystem::isEventscheduled(const std::string &eventName)
 		return foundIt;
 	}
 	else {
-		for (std::vector<_tTaskItem>::iterator it = currentTasks.begin(); it != currentTasks.end(); ++it)
-		{
-			if (it->_relatedEvent == eventName) {
+		for (auto &currentTask : currentTasks) {
+			if (currentTask._relatedEvent == eventName) {
 				foundIt = true;
 			}
 		}

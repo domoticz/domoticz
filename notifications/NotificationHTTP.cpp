@@ -67,9 +67,8 @@ bool CNotificationHTTP::SendMessageImplementation(
 			{
 				std::vector<std::string> ExtraHeaders2;
 				StringSplit(_HTTPPostHeaders, "\r\n", ExtraHeaders2);
-				for (size_t i = 0; i < ExtraHeaders2.size(); i++)
-				{
-					ExtraHeaders.push_back(ExtraHeaders2[i]);
+				for (auto &i : ExtraHeaders2) {
+					ExtraHeaders.push_back(i);
 				}
 			}
 			std::string httpData = _HTTPPostData;

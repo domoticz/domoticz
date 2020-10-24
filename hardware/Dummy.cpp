@@ -132,12 +132,10 @@ namespace http {
 			unsigned int subType = 0;
 			uint64_t DeviceRowIdx = (uint64_t )-1;
 
-			for (size_t i = 0; i < sizeof(mappedsensorname) / sizeof(mappedsensorname[0]); i++)
-			{
-				if (mappedsensorname[i].mappedvalue == sensortype)
-				{
-					type = mappedsensorname[i].type;
-					subType = mappedsensorname[i].subtype;
+			for (auto i : mappedsensorname) {
+				if (i.mappedvalue == sensortype) {
+					type = i.type;
+					subType = i.subtype;
 
 					int HwdID = atoi(idx.c_str());
 

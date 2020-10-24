@@ -442,16 +442,10 @@ void CNest::GetMeterDetails()
 			std::string devName = devstring;
 			if (!root["where"].empty())
 			{
-				for (Json::Value::iterator itWhere = root["where"].begin(); itWhere != root["where"].end(); ++itWhere)
-				{
-					Json::Value iwhere = *itWhere;
-					if (!iwhere["wheres"].empty())
-					{
-						for (Json::Value::iterator itWhereNest = iwhere["wheres"].begin(); itWhereNest != iwhere["wheres"].end(); ++itWhereNest)
-						{
-							Json::Value iwhereItt = *itWhereNest;
-							if (!iwhereItt["where_id"].empty())
-							{
+				for (auto iwhere : root["where"]) {
+					if (!iwhere["wheres"].empty()) {
+						for (auto iwhereItt : iwhere["wheres"]) {
+							if (!iwhereItt["where_id"].empty()) {
 								std::string tmpWhereid = iwhereItt["where_id"].asString();
 								if (tmpWhereid == whereid)
 								{
@@ -461,7 +455,6 @@ void CNest::GetMeterDetails()
 							}
 						}
 					}
-
 				}
 			}
 			bool bIAlarm = false;
@@ -556,9 +549,8 @@ void CNest::GetMeterDetails()
 		std::string StructureID = ittStructure.key().asString();
 		std::string StructureName = nstructure["name"].asString();
 
-		for (Json::Value::iterator ittDevice = nstructure["devices"].begin(); ittDevice != nstructure["devices"].end(); ++ittDevice)
-		{
-			std::string devID = (*ittDevice).asString();
+		for (auto &ittDevice : nstructure["devices"]) {
+			std::string devID = ittDevice.asString();
 			if (devID.find("device.")==std::string::npos)
 				continue;
 			std::string Serial = devID.substr(7);
@@ -584,11 +576,8 @@ void CNest::GetMeterDetails()
 				{
 					if (!root["where"][StructureID].empty())
 					{
-						for (Json::Value::iterator ittWheres = root["where"][StructureID]["wheres"].begin(); ittWheres != root["where"][StructureID]["wheres"].end(); ++ittWheres)
-						{
-							Json::Value nwheres = *ittWheres;
-							if (nwheres["where_id"] == where_id)
-							{
+						for (auto nwheres : root["where"][StructureID]["wheres"]) {
+							if (nwheres["where_id"] == where_id) {
 								Name = StructureName + " " + nwheres["name"].asString();
 								break;
 							}

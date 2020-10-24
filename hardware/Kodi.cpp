@@ -1130,17 +1130,15 @@ void CKodi::ReloadNodes()
 		std::lock_guard<std::mutex> l(m_mutex);
 
 		// create a vector to hold the nodes
-		for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
-		{
-			std::vector<std::string> sd = *itt;
-			std::shared_ptr<CKodiNode>	pNode = (std::shared_ptr<CKodiNode>) new CKodiNode(&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+		for (auto sd : result) {
+			std::shared_ptr<CKodiNode> pNode = (std::shared_ptr<CKodiNode>)new CKodiNode(
+				&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each kodi
-		for (std::vector<std::shared_ptr<CKodiNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
-		{
-			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", (*itt)->m_Name.c_str());
-			boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
+		for (auto &m_pNode : m_pNodes) {
+			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", m_pNode->m_Name.c_str());
+			boost::thread *tAsync = new boost::thread(&CKodiNode::Do_Work, m_pNode);
 			SetThreadName(tAsync->native_handle(), "KodiNode");
 		}
 		sleep_milliseconds(100);

@@ -2022,10 +2022,8 @@ namespace http {
 
 			if (myWebem->myRemoteProxyIPs.size() > 0)
 			{
-				for (std::vector<std::string>::size_type i = 0; i < myWebem->myRemoteProxyIPs.size(); ++i)
-				{
-					if (session.remote_host == myWebem->myRemoteProxyIPs[i])
-					{
+				for (auto &myRemoteProxyIP : myWebem->myRemoteProxyIPs) {
+					if (session.remote_host == myRemoteProxyIP) {
 						const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
 						if (host_header != nullptr) {
 							if (strstr(host_header, ",") != nullptr) {
@@ -2195,11 +2193,9 @@ namespace http {
 
 					// find content type header
 					std::string content_type;
-					for (unsigned int h = 0; h < rep.headers.size(); h++)
-					{
-						if (boost::iequals(rep.headers[h].name, "Content-Type"))
-						{
-							content_type = rep.headers[h].value;
+					for (auto &header : rep.headers) {
+						if (boost::iequals(header.name, "Content-Type")) {
+							content_type = header.value;
 							break;
 						}
 					}

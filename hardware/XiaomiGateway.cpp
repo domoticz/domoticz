@@ -1280,9 +1280,9 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				ret = ParseJSon(data.c_str(), root2);
 				if ((ret) || (!root2.isObject()))
 				{
-					for (int i = 0; i < (int)root2.size(); i++) {
+					for (const auto &i : root2) {
 						std::string message = "{\"cmd\" : \"read\",\"sid\":\"";
-						message.append(root2[i].asString().c_str());
+						message.append(i.asString().c_str());
 						message.append("\"}");
 						std::shared_ptr<std::string> message1(new std::string(message));
 						boost::asio::ip::udp::endpoint remote_endpoint;
@@ -1344,10 +1344,10 @@ void XiaomiGateway::XiaomiGatewayTokenManager::UpdateTokenSID(const std::string 
 {
 	bool found = false;
 	std::unique_lock<std::mutex> lock(m_mutex);
-	for (unsigned i = 0; i < m_GatewayTokens.size(); i++) {
-		if (boost::get<0>(m_GatewayTokens[i]) == ip) {
-			boost::get<1>(m_GatewayTokens[i]) = token;
-			boost::get<2>(m_GatewayTokens[i]) = sid;
+	for (auto &m_GatewayToken : m_GatewayTokens) {
+		if (boost::get<0>(m_GatewayToken) == ip) {
+			boost::get<1>(m_GatewayToken) = token;
+			boost::get<2>(m_GatewayToken) = sid;
 			found = true;
 		}
 	}
@@ -1362,9 +1362,9 @@ std::string XiaomiGateway::XiaomiGatewayTokenManager::GetToken(const std::string
 	std::string token = "";
 	bool found = false;
 	std::unique_lock<std::mutex> lock(m_mutex);
-	for (unsigned i = 0; i < m_GatewayTokens.size(); i++) {
-		if (boost::get<0>(m_GatewayTokens[i]) == ip) {
-			token = boost::get<1>(m_GatewayTokens[i]);
+	for (auto &m_GatewayToken : m_GatewayTokens) {
+		if (boost::get<0>(m_GatewayToken) == ip) {
+			token = boost::get<1>(m_GatewayToken);
 		}
 	}
 	return token;
@@ -1375,9 +1375,9 @@ std::string XiaomiGateway::XiaomiGatewayTokenManager::GetSID(const std::string &
 	std::string sid = "";
 	bool found = false;
 	std::unique_lock<std::mutex> lock(m_mutex);
-	for (unsigned i = 0; i < m_GatewayTokens.size(); i++) {
-		if (boost::get<0>(m_GatewayTokens[i]) == ip) {
-			sid = boost::get<2>(m_GatewayTokens[i]);
+	for (auto &m_GatewayToken : m_GatewayTokens) {
+		if (boost::get<0>(m_GatewayToken) == ip) {
+			sid = boost::get<2>(m_GatewayToken);
 		}
 	}
 	return sid;
