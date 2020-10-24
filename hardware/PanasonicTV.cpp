@@ -448,8 +448,7 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	iPosBegin = 0;
 	iPosEnd = 0;
 
-	while (1)
-	{
+	while (true) {
 		iPosBegin = pMessage.find(begin, iPosBegin);
 		if (iPosBegin == std::string::npos)
 			break;

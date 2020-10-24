@@ -208,7 +208,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 				flag_done = 1;
 			}
 			// the browser sends blanks as +
-			while (1) {
+			while (true) {
 				size_t p = value.find("+");
 				if (p == std::string::npos)
 					break;

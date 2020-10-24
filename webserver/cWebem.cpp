@@ -222,8 +222,7 @@ namespace http {
 		{
 			bool res = false;
 			size_t p = 0;
-			while (1)
-			{
+			while (true) {
 				// find next request for generated text
 				p = reply.find("<!--#embed", p);
 				if (p == std::string::npos)
@@ -483,8 +482,7 @@ namespace http {
 					flag_done = 1;
 				}
 				// the browser sends blanks as +
-				while (1)
-				{
+				while (true) {
 					size_t p = value.find("+");
 					if (p == std::string::npos)
 						break;
@@ -592,8 +590,7 @@ namespace http {
 						flag_done = 1;
 					}
 					// the browser sends blanks as +
-					while (1)
-					{
+					while (true) {
 						size_t p = value.find("+");
 						if (p == std::string::npos)
 							break;
@@ -710,8 +707,7 @@ namespace http {
 								flag_done = 1;
 							}
 							// the browser sends blanks as +
-							while (1)
-							{
+							while (true) {
 								size_t p = value.find("+");
 								if (p == std::string::npos)
 									break;
@@ -1377,7 +1373,7 @@ namespace http {
 
 			uint8_t IP[16] = { 0 };
 			if (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, ip.c_str(), &IP) != 1)
-				return 1;
+				return true;
 
 			int iASize = (!bIsIPv6) ? 4 : 16;
 			for (int ii = 0; ii < iASize; ii++)
