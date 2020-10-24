@@ -1553,7 +1553,7 @@ bool CEvohomeWeb::set_system_mode(const std::string &systemId, int mode)
 
 	std::string sz_putdata = "{\"SystemMode\":";
 	sz_putdata.append(std::to_string(mode));
-	sz_putdata.append(",\"TimeUntil\":null,\"Permanent\":true}");
+	sz_putdata.append(R"(,"TimeUntil":null,"Permanent":true})");
 
 	std::string sz_response = put_receive_data(sz_url, sz_putdata, m_SessionHeaders);
 	if (!sz_response.find("\"id\""))
@@ -1590,7 +1590,7 @@ bool CEvohomeWeb::set_temperature(const std::string &zoneId, const std::string &
 	std::string sz_putdata = "{\"HeatSetpointValue\":";
 	sz_putdata.append(temperature);
 	if (time_until == "")
-		sz_putdata.append(",\"SetpointMode\":1,\"TimeUntil\":null}");
+		sz_putdata.append(R"(,"SetpointMode":1,"TimeUntil":null})");
 	else
 	{
 		if (!verify_datetime(time_until))
@@ -1598,7 +1598,7 @@ bool CEvohomeWeb::set_temperature(const std::string &zoneId, const std::string &
 			_log.Log(LOG_ERROR, "(%s) ignored zone temperature override because of invalid 'time_until' value", m_Name.c_str());
 			return false;
 		}
-		sz_putdata.append(",\"SetpointMode\":2,\"TimeUntil\":\"");
+		sz_putdata.append(R"(,"SetpointMode":2,"TimeUntil":")");
 		sz_putdata.append(time_until.substr(0, 10));
 		sz_putdata.append("T");
 		sz_putdata.append(time_until.substr(11, 8));
@@ -1638,7 +1638,7 @@ bool CEvohomeWeb::cancel_temperature_override(const std::string &zoneId)
 	sz_url.append(zoneId);
 	sz_url.append("/heatSetpoint");
 
-	std::string sz_putdata = "{\"HeatSetpointValue\":0.0,\"SetpointMode\":0,\"TimeUntil\":null}";
+	std::string sz_putdata = R"({"HeatSetpointValue":0.0,"SetpointMode":0,"TimeUntil":null})";
 
 	std::string sz_response = put_receive_data(sz_url, sz_putdata, m_SessionHeaders);
 
@@ -1681,7 +1681,7 @@ bool CEvohomeWeb::set_dhw_mode(const std::string &dhwId, const std::string &mode
 
 	std::string sz_putdata = "{\"State\":";
 	if (mode == "auto")
-		sz_putdata.append("0,\"Mode\":0,\"UntilTime\":null}");
+		sz_putdata.append(R"(0,"Mode":0,"UntilTime":null})");
 	else
 	{
 		if (mode == "on")
@@ -1689,7 +1689,7 @@ bool CEvohomeWeb::set_dhw_mode(const std::string &dhwId, const std::string &mode
 		else
 			sz_putdata.append("0");
 		if (time_until == "")
-			sz_putdata.append(",\"Mode\":1,\"UntilTime\":null}");
+			sz_putdata.append(R"(,"Mode":1,"UntilTime":null})");
 		else
 		{
 			if (!verify_datetime(time_until))
@@ -1697,7 +1697,7 @@ bool CEvohomeWeb::set_dhw_mode(const std::string &dhwId, const std::string &mode
 				_log.Log(LOG_ERROR, "(%s) ignored hot water override because of invalid 'time_until' value", m_Name.c_str());
 				return false;
 			}
-			sz_putdata.append(",\"Mode\":2,\"UntilTime\":\"");
+			sz_putdata.append(R"(,"Mode":2,"UntilTime":")");
 			sz_putdata.append(time_until.substr(0, 10));
 			sz_putdata.append("T");
 			sz_putdata.append(time_until.substr(11, 8));
@@ -2000,18 +2000,17 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 		if (!httpOK)
 		{
 			 // sz_retcode contains a Curl status code
-			sz_response = "{\"code\":\"";
-			sz_response.append(sz_retcode);
-			sz_response.append("\",\"message\":\"");
-			if (!sz_rettext.empty())
-				sz_response.append(sz_rettext);
-			else
-			{
-				sz_response.append("HTTP client error ");
-				sz_response.append(sz_retcode);
-			}
-                        sz_response.append("\"}");
-			return sz_response;
+			 sz_response = R"({"code":")";
+			 sz_response.append(sz_retcode);
+			 sz_response.append(R"(","message":")");
+			 if (!sz_rettext.empty())
+				 sz_response.append(sz_rettext);
+			 else {
+				 sz_response.append("HTTP client error ");
+				 sz_response.append(sz_retcode);
+			 }
+			 sz_response.append("\"}");
+			 return sz_response;
 		}
 
 		if ((sz_retcode != "200") && (!sz_response.empty()))
@@ -2022,7 +2021,7 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 				size_t pos = sz_response.find_last_of("}");
 				if (pos != std::string::npos)
 				{
-					sz_response.insert(pos, ",\"code\":\"\"");
+					sz_response.insert(pos, R"(,"code":"")");
 					sz_response.insert(pos+9, sz_retcode);
 					return sz_response;
 				}
@@ -2033,11 +2032,11 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 	if (sz_response.empty())
 	{
 		if (sz_retcode.empty())
-			return "{\"code\":\"-1\",\"message\":\"Evohome portal did not return any data or status\"}";
+			return R"({"code":"-1","message":"Evohome portal did not return any data or status"})";
 
-		sz_response = "{\"code\":\"";
+		sz_response = R"({"code":")";
 		sz_response.append(sz_retcode);
-		sz_response.append("\",\"message\":\"");
+		sz_response.append(R"(","message":")");
 		if (!sz_rettext.empty())
 			sz_response.append(sz_rettext);
 		else
@@ -2056,12 +2055,12 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 	if (sz_response.find("<title>") != std::string::npos) // received an HTML page
 	{
 		std::stringstream ss_error;
-		ss_error << "{\"code\":\"";
+		ss_error << R"({"code":")";
 		if (!sz_retcode.empty())
 			ss_error << sz_retcode;
 		else
 			ss_error << "-1";
-		ss_error << "\",\"message\":\"";
+		ss_error << R"(","message":")";
 		int i = sz_response.find("<title>");
 		char* html = &sz_response[i];
 		i = 7;
@@ -2079,12 +2078,12 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 	if (sz_response.find("<html>") != std::string::npos) // received an HTML page without a title
 	{
 		std::stringstream ss_error;
-		ss_error << "{\"code\":\"";
+		ss_error << R"({"code":")";
 		if (!sz_retcode.empty())
 			ss_error << sz_retcode;
 		else
 			ss_error << "-1";
-		ss_error << "\",\"message\":\"";
+		ss_error << R"(","message":")";
 		size_t i = 0;
 		char* html = &sz_response[0];
 		char c;
@@ -2109,6 +2108,6 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 		ss_error << "\"}";
 		return ss_error.str();
 	}
-	return "{\"code\":\"-1\",\"message\":\"unhandled response\"}";
+	return R"({"code":"-1","message":"unhandled response"})";
 }
 

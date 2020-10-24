@@ -217,7 +217,8 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 
 	try
 	{
-		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:Aadly\"]]}";
+		std::string sPostdata
+			= R"({"id":1,"method":"slim.request","params":[")" + sPlayerId + R"(",["status","-",1,"tags:Aadly"]]})";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 		if (root.isNull())
@@ -355,7 +356,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 {
 	try
 	{
-		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"\",[\"serverstatus\",0,999]]}";
+		std::string sPostdata = R"({"id":1,"method":"slim.request","params":["",["serverstatus",0,999]]})";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 		if (root.isNull()) {
@@ -591,7 +592,7 @@ void CLogitechMediaServer::ReloadPlaylists()
 {
 	m_playlists.clear();
 
-	std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"\",[\"playlists\",0,999]]}";
+	std::string sPostdata = R"({"id":1,"method":"slim.request","params":["",["playlists",0,999]]})";
 	Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 	if (root.isNull()) {
@@ -649,80 +650,80 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 	{
 		//std::string	sLMSCall;
 		if (command == "Left") {
-			sLMSCmnd = "\"button\", \"arrow_left\"";
+			sLMSCmnd = R"("button", "arrow_left")";
 		}
 		else if (command == "Right") {
-			sLMSCmnd = "\"button\", \"arrow_right\"";
+			sLMSCmnd = R"("button", "arrow_right")";
 		}
 		else if (command == "Up") {
-			sLMSCmnd = "\"button\", \"arrow_up\"";
+			sLMSCmnd = R"("button", "arrow_up")";
 		}
 		else if (command == "Down") {
-			sLMSCmnd = "\"button\", \"arrow_down\"";
+			sLMSCmnd = R"("button", "arrow_down")";
 		}
 		else if (command == "Favorites") {
-			sLMSCmnd = "\"button\", \"favorites\"";
+			sLMSCmnd = R"("button", "favorites")";
 		}
 		else if (command == "Browse") {
-			sLMSCmnd = "\"button\", \"browse\"";
+			sLMSCmnd = R"("button", "browse")";
 		}
 		else if (command == "NowPlaying") {
-			sLMSCmnd = "\"button\", \"playdisp_toggle\"";
+			sLMSCmnd = R"("button", "playdisp_toggle")";
 		}
 		else if (command == "Shuffle") {
-			sLMSCmnd = "\"button\", \"shuffle_toggle\"";
+			sLMSCmnd = R"("button", "shuffle_toggle")";
 		}
 		else if (command == "Repeat") {
-			sLMSCmnd = "\"button\", \"repeat_toggle\"";
+			sLMSCmnd = R"("button", "repeat_toggle")";
 		}
 		else if (command == "Stop") {
-			sLMSCmnd = "\"button\", \"stop\"";
+			sLMSCmnd = R"("button", "stop")";
 		}
 		else if (command == "VolumeUp") {
-			sLMSCmnd = "\"mixer\", \"volume\", \"+2\"";
+			sLMSCmnd = R"("mixer", "volume", "+2")";
 		}
 		else if (command == "Mute") {
-			sLMSCmnd = "\"mixer\", \"muting\", \"toggle\"";
+			sLMSCmnd = R"("mixer", "muting", "toggle")";
 		}
 		else if (command == "VolumeDown") {
-			sLMSCmnd = "\"mixer\", \"volume\", \"-2\"";
+			sLMSCmnd = R"("mixer", "volume", "-2")";
 		}
 		else if (command == "Rewind") {
-			sLMSCmnd = "\"button\", \"rew.single\"";
+			sLMSCmnd = R"("button", "rew.single")";
 		}
 		else if (command == "Play") {
-			sLMSCmnd = "\"button\", \"play.single\"";
+			sLMSCmnd = R"("button", "play.single")";
 		}
 		else if (command == "PlayPlaylist") {
 			if (param == "") return false;
-			sLMSCmnd = "\"playlist\", \"play\", \"" + param + "\"";
+			sLMSCmnd = R"("playlist", "play", ")" + param + "\"";
 		}
 		else if (command == "PlayFavorites") {
-			sLMSCmnd = "\"favorites\", \"playlist\", \"play\"";
+			sLMSCmnd = R"("favorites", "playlist", "play")";
 		}
 		else if (command == "Pause") {
-			sLMSCmnd = "\"button\", \"pause.single\"";
+			sLMSCmnd = R"("button", "pause.single")";
 		}
 		else if (command == "Forward") {
-			sLMSCmnd = "\"button\", \"fwd.single\"";
+			sLMSCmnd = R"("button", "fwd.single")";
 		}
 		else if (command == "PowerOn") {
-			sLMSCmnd = "\"power\", \"1\"";
+			sLMSCmnd = R"("power", "1")";
 		}
 		else if (command == "PowerOff") {
-			sLMSCmnd = "\"power\", \"0\"";
+			sLMSCmnd = R"("power", "0")";
 		}
 		else if (command == "SetVolume") {
 			if (param == "") return false;
-			sLMSCmnd = "\"mixer\", \"volume\", \"" + param + "\"";
+			sLMSCmnd = R"("mixer", "volume", ")" + param + "\"";
 		}
 
 		if (sLMSCmnd != "")
 		{
-			std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[" + sLMSCmnd + "]]}";
+			std::string sPostdata = R"({"id":1,"method":"slim.request","params":[")" + sPlayerId + "\",[" + sLMSCmnd + "]]}";
 			Json::Value root = Query(m_IP, m_Port, sPostdata);
 
-			sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:uB\"]]}";
+			sPostdata = R"({"id":1,"method":"slim.request","params":[")" + sPlayerId + R"(",["status","-",1,"tags:uB"]]})";
 			root = Query(m_IP, m_Port, sPostdata);
 
 			if (root["player_connected"].asString() == "1")
@@ -772,7 +773,9 @@ void CLogitechMediaServer::SendText(const std::string &playerIP, const std::stri
 		std::string sFont = ""; //"huge";
 		std::string sBrightness = "4";
 		std::string sDuration = std::to_string(duration);
-		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + playerIP + "\",[\"show\",\"line1:" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness + "\",\"font:" + sFont + "\"]]}";
+		std::string sPostdata = R"({"id":1,"method":"slim.request","params":[")" + playerIP + R"(",["show","line1:)" + sLine1
+					+ "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness
+					+ "\",\"font:" + sFont + "\"]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 	}
 }

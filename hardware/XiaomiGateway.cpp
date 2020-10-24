@@ -214,7 +214,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 
 		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 || 
 			xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1 || ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG))) {
-			message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"158d00" + sid + "\",\"short_id\":0,\"data\":\"{\\\"" + cmdchannel + "\\\":\\\"" + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			message = R"({"cmd":"write","model":")" + cmddevice + R"(","sid":"158d00)" + sid + R"(","short_id":0,"data":"{\")"
+				  + cmdchannel + R"(\":\")" + cmdcommand + R"(\",\"key\":\"@gatewaykey\"}" })";
 		}
 		else if ((xcmd->subtype == sSwitchTypeSelector) && (xcmd->unitcode >= XiaomiUnitCode::GATEWAY_SOUND_ALARM_RINGTONE && xcmd->unitcode <= XiaomiUnitCode::GATEWAY_SOUND_DOORBELL) || (xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_MP3)) {
 			std::stringstream ss;
@@ -246,19 +247,23 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			}
 			m_GatewayMusicId = ss.str();
 			//sid.insert(0, m_GatewayPrefix);
-			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"mid\\\":" + m_GatewayMusicId.c_str() + ",\\\"vol\\\":" + m_GatewayVolume.c_str() + ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			message = R"({"cmd":"write","model":"gateway","sid":")" + m_GatewaySID + R"(","short_id":0,"data":"{\"mid\":)"
+				  + m_GatewayMusicId.c_str() + R"(,\"vol\":)" + m_GatewayVolume.c_str() + R"(,\"key\":\"@gatewaykey\"}" })";
 		}
 		else if (xcmd->subtype == sSwitchGeneralSwitch && xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_VOLUME_CONTROL) {
 			m_GatewayVolume = std::to_string(xcmd->level);
 			//sid.insert(0, m_GatewayPrefix);
-			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"mid\\\":" + m_GatewayMusicId.c_str() + ",\\\"vol\\\":" + m_GatewayVolume.c_str() + ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			message = R"({"cmd":"write","model":"gateway","sid":")" + m_GatewaySID + R"(","short_id":0,"data":"{\"mid\":)"
+				  + m_GatewayMusicId.c_str() + R"(,\"vol\":)" + m_GatewayVolume.c_str() + R"(,\"key\":\"@gatewaykey\"}" })";
 		}
 		else if (xcmd->subtype == sSwitchBlindsT2) {
 			int level = xcmd->level;
 			if (xcmd->cmnd == 1) {
 				level = 100;
 			}
-			message = "{\"cmd\":\"write\",\"model\":\"curtain\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"curtain_level\\\":\\\"" + std::to_string(level) + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			message = R"({"cmd":"write","model":"curtain","sid":"158d00)" + sid
+				  + R"(","short_id":9844,"data":"{\"curtain_level\":\")" + std::to_string(level)
+				  + R"(\",\"key\":\"@gatewaykey\"}" })";
 		}
 	}
 	else if (packettype == pTypeColorSwitch) {
@@ -267,11 +272,13 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 
 		if (xcmd->command == Color_LedOn) {
 			m_GatewayBrightnessInt = 100;
-			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":4294967295,\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			message = R"({"cmd":"write","model":"gateway","sid":")" + m_GatewaySID
+				  + R"(","short_id":0,"data":"{\"rgb\":4294967295,\"key\":\"@gatewaykey\"}" })";
 		}
 		else if (xcmd->command == Color_LedOff) {
 			m_GatewayBrightnessInt = 0;
-			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":0,\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			message = R"({"cmd":"write","model":"gateway","sid":")" + m_GatewaySID
+				  + R"(","short_id":0,"data":"{\"rgb\":0,\"key\":\"@gatewaykey\"}" })";
 		}
 		else if (xcmd->command == Color_SetColor) {
 			if (xcmd->color.mode == ColorModeRGB)
@@ -284,7 +291,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				uint32_t value = (m_GatewayBrightnessInt << 24) | (m_GatewayRgbR << 16) | (m_GatewayRgbG << 8) | (m_GatewayRgbB);
 
 				std::stringstream ss;
-				ss << "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" << m_GatewaySID << "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" << value << ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+				ss << R"({"cmd":"write","model":"gateway","sid":")" << m_GatewaySID << R"(","short_id":0,"data":"{\"rgb\":)"
+				   << value << R"(,\"key\":\"@gatewaykey\"}" })";
 				message = ss.str();
 			}
 			else
@@ -307,7 +315,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			uint32_t value = (m_GatewayBrightnessInt << 24) | (m_GatewayRgbR << 16) | (m_GatewayRgbG << 8) | (m_GatewayRgbB);
 
 			std::stringstream ss;
-			ss << "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" << m_GatewaySID << "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" << value << ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			ss << R"({"cmd":"write","model":"gateway","sid":")" << m_GatewaySID << R"(","short_id":0,"data":"{\"rgb\":)"
+			   << value << R"(,\"key\":\"@gatewaykey\"}" })";
 			message = ss.str();
 		}
 		else if (xcmd->command == Color_SetColorToWhite) {
@@ -876,7 +885,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 				boost::asio::ip::udp::endpoint listen_endpoint(mcast_addr, 9898);
 
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
-				std::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
+				std::shared_ptr<std::string> message(new std::string(R"({"cmd":"whois"})"));
 				boost::asio::ip::udp::endpoint remote_endpoint;
 				remote_endpoint = boost::asio::ip::udp::endpoint(mcast_addr, 4321);
 				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
@@ -885,7 +894,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 			}
 			else {
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
-				std::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
+				std::shared_ptr<std::string> message(new std::string(R"({"cmd":"whois"})"));
 				boost::asio::ip::udp::endpoint remote_endpoint;
 				remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);
 				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
@@ -1279,7 +1288,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				if ((ret) || (!root2.isObject()))
 				{
 					for (const auto &i : root2) {
-						std::string message = "{\"cmd\" : \"read\",\"sid\":\"";
+						std::string message = R"({"cmd" : "read","sid":")";
 						message.append(i.asString().c_str());
 						message.append("\"}");
 						std::shared_ptr<std::string> message1(new std::string(message));
@@ -1307,7 +1316,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_VOLUME_CONTROL, false, STYPE_Dimmer, 7, 0, cmd, "", "", 255);
 
 						// Query for list of devices
-						std::string message = "{\"cmd\" : \"get_id_list\"}";
+						std::string message = R"({"cmd" : "get_id_list"})";
 						std::shared_ptr<std::string> message2(new std::string(message));
 						boost::asio::ip::udp::endpoint remote_endpoint;
 						remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(TrueGateway->GetGatewayIp().c_str()), 9898);

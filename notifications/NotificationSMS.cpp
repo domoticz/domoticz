@@ -73,10 +73,9 @@ bool CNotificationSMS::SendMessageImplementation(
 		sJsonPostData << "\"from\":" << "\"" << thisFrom << "\",";
 	}
 
-	sJsonPostData
-		<< "\"binary\": false,"
-		<< "\"charset\": \"UTF-8\""
-		<< "}";
+	sJsonPostData << "\"binary\": false,"
+		      << R"("charset": "UTF-8")"
+		      << "}";
 
 	_log.Log(LOG_NORM, "Clickatell SMS notification json: " + sJsonPostData.str());
 

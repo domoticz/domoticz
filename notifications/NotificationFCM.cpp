@@ -136,8 +136,9 @@ bool CNotificationFCM::SendMessageImplementation(
 			ii++;
 		}
 
-		sstr << "], \"data\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", ";
-		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\" } }";
+		sstr << R"(], "data" : { "subject": ")" << Subject << R"(", "body": ")" << Text << R"(", "extradata": ")" << ExtraData
+		     << R"(", "priority": ")" << std::to_string(Priority) << "\", ";
+		sstr << R"("deviceid": ")" << std::to_string(Idx) << R"(", "message": ")" << Subject << "\" } }";
 		std::string szPostdata = sstr.str();
 
 		std::vector<std::string> ExtraHeaders;
@@ -179,8 +180,10 @@ bool CNotificationFCM::SendMessageImplementation(
 			ii++;
 		}
 
-		sstr << "], \"notification\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", \"sound\": \"default\", ";
-		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\", \"content_available\": true } }";
+		sstr << R"(], "notification" : { "subject": ")" << Subject << R"(", "body": ")" << Text << R"(", "extradata": ")"
+		     << ExtraData << R"(", "priority": ")" << std::to_string(Priority) << R"(", "sound": "default", )";
+		sstr << R"("deviceid": ")" << std::to_string(Idx) << R"(", "message": ")" << Subject
+		     << R"(", "content_available": true } })";
 		std::string szPostdata = sstr.str();
 
 		std::vector<std::string> ExtraHeaders;
