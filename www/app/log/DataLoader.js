@@ -40,8 +40,8 @@ define(function () {
                 function (seriesSupplier, dataItem) {
                     if (seriesSupplier.dataItemIsValid === undefined || seriesSupplier.dataItemIsValid(dataItem)) {
                         const datapoint = [seriesSupplier.timestampFromDataItem(dataItem)];
-                        seriesSupplier.valuesFromDataItem.forEach(function (valueFromDataItem) {
-                            datapoint.push(valueFromDataItem(dataItem));
+                        seriesSupplier.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
+                            datapoint.push(valueFromDataItem);
                         });
                         seriesSupplier.datapoints.push(datapoint);
                     }

@@ -479,6 +479,19 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                     return _.merge({
                         useDataItemsFromPrevious: false,
                         dataSupplier: dataSupplier,
+                        dataItemKeys: [],
+                        dataItemIsValid:
+                            function (dataItem) {
+                                return this.dataItemKeys.every(function (dataItemKey) {
+                                    return dataItem[dataItemKey] !== undefined;
+                                });
+                            },
+                        valuesFromDataItem:
+                            function (dataItem) {
+                                return this.dataItemKeys.map(function (dataItemKey) {
+                                    return parseFloat(dataItem[dataItemKey]);
+                                });
+                            },
                         timestampFromDataItem: function (dataItem) {
                             if (!this.useDataItemsFromPrevious) {
                                 return dataSupplier.timestampFromDataItem(dataItem);

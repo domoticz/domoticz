@@ -1,5 +1,5 @@
-define(['app', 'RefreshingChart'],
-    function (app, RefreshingChart) {
+define(['app', 'lodash', 'RefreshingChart'],
+    function (app, _, RefreshingChart) {
 
         app.component('deviceGraphLog', {
             bindings: {
@@ -155,16 +155,12 @@ define(['app', 'RefreshingChart'],
                     timestampFromDataItem: timestampFromDataItem,
                     isShortLogChart: isShortLogChart,
                     seriesSuppliers: seriesSuppliers.map(function (seriesSupplier) {
-                        const valueKey = domoticzGlobals.valueKeyForDevice(ctrl.device);
-                        seriesSupplier.dataItemIsValid = function (dataItem) {
-                            return dataItem[valueKey + seriesSupplier.valueKeySuffix] !== undefined;
-                        }
-                        seriesSupplier.valuesFromDataItem = [
-                            function (dataItem) {
-                                return parseFloat(dataItem[valueKey + seriesSupplier.valueKeySuffix]);
-                            }
-                        ];
-                        return seriesSupplier;
+                        return _.merge(
+                            {
+                                dataItemKeys: [domoticzGlobals.valueKeyForDevice(ctrl.device) + seriesSupplier.valueKeySuffix]
+                            },
+                            seriesSupplier
+                        );
                     })
                 }
             };

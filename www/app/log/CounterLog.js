@@ -158,14 +158,8 @@ define(['app', 'lodash', 'RefreshingChart'],
         });
 
         function counterEnergy(dataItemValueKey, seriesSupplier) {
-            return completeSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemKeys) {
-                return dataItemKeys.includes('v') && !dataItemKeys.includes('eu') && !dataItemKeys.includes('v2');
-            });
-        }
-
-        function counterEnergyTotal(dataItemValueKeys, seriesSupplier) {
-            return completeSeriesSupplier(seriesSupplier, dataItemValueKeys, function (dataItemKeys) {
-                return dataItemKeys.includes('v');
+            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
+                return dataItemsKeys.includes('v') && !dataItemsKeys.includes('eu') && !dataItemsKeys.includes('v2');
             });
         }
 
@@ -208,17 +202,10 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function counterMonthYearSeriesSuppliers(deviceType) {
             return [
-                {
+                completeMonthOrYearSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotal',
-                    dataItemIsValid: function (dataItem) {
-                        return dataItem.v !== undefined;
-                    },
-                    valuesFromDataItem: [
-                        function (dataItem) {
-                            return parseFloat(dataItem.v) + (dataItem.v2 !== undefined ? parseFloat(dataItem.v2) : 0.0);
-                        }
-                    ],
-                    template: {
+                    dataItemKeys: ['v', 'v2'],
+                    series: {
                         type: 'column',
                         name: deviceType === deviceTypes.EnergyUsed ? $.t('Total Usage') : deviceType === deviceTypes.EnergyGenerated ? $.t('Total Generated') : $.t('Total Return'),
                         zIndex: 2,
@@ -229,17 +216,10 @@ define(['app', 'lodash', 'RefreshingChart'],
                         color: 'rgba(3,190,252,0.8)',
                         yAxis: 0
                     }
-                },
-                {
+                }),
+                completeMonthOrYearSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotalTrendline',
-                    dataItemIsValid: function (dataItem) {
-                        return dataItem.v !== undefined;
-                    },
-                    valuesFromDataItem: [
-                        function (dataItem) {
-                            return parseFloat(dataItem.v) + (dataItem.v2 !== undefined ? parseFloat(dataItem.v2) : 0.0);
-                        }
-                    ],
+                    dataItemKeys: ['v', 'v2'],
                     aggregateDatapoints: function (datapoints) {
                         const trendline = CalculateTrendLine(datapoints);
                         datapoints.length = 0;
@@ -248,7 +228,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                             datapoints.push([trendline.x1, trendline.y1]);
                         }
                     },
-                    template: {
+                    series: {
                         name: $.t('Trendline') + ' ' + (deviceType === deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
                         zIndex: 1,
                         tooltip: {
@@ -260,19 +240,12 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0,
                         visible: false
                     }
-                },
-                {
+                }),
+                completeMonthOrYearSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedPrevious',
-                    dataItemIsValid: function (dataItem) {
-                        return dataItem.v !== undefined;
-                    },
-                    valuesFromDataItem: [
-                        function (dataItem) {
-                            return parseFloat(dataItem.v) + (dataItem.v2 !== undefined ? parseFloat(dataItem.v2) : 0.0);
-                        }
-                    ],
+                    dataItemKeys: ['v', 'v2'],
                     useDataItemsFromPrevious: true,
-                    template: {
+                    series: {
                         name: $.t('Past') + ' ' + (deviceType === deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
                         tooltip: {
                             valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
@@ -282,13 +255,13 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0,
                         visible: false
                     }
-                }
+                })
             ];
         }
 
         function instantAndCounterPowerAndEnergy(dataItemValueKey, seriesSupplier) {
-            return completeSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemKeys) {
-                return dataItemKeys.includes('v') && dataItemKeys.includes('eu') && !dataItemKeys.includes('v2');
+            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
+                return dataItemsKeys.includes('v') && dataItemsKeys.includes('eu') && !dataItemsKeys.includes('v2');
             });
         }
 
@@ -363,14 +336,14 @@ define(['app', 'lodash', 'RefreshingChart'],
         }
 
         function p1PowerAndEnergyUsed(dataItemValueKey, seriesSupplier) {
-            return completeSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemKeys) {
-                return dataItemKeys.includes('v') && dataItemKeys.includes('eu') && dataItemKeys.includes('v2');
+            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
+                return dataItemsKeys.includes('v') && dataItemsKeys.includes('eu') && dataItemsKeys.includes('v2');
             });
         }
 
         function p1PowerAndEnergyGenerated(dataItemValueKey, seriesSupplier) {
-            return completeSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemKeys) {
-                return dataItemKeys.includes(dataItemValueKey);
+            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
+                return dataItemsKeys.includes(dataItemValueKey);
             });
         }
 
@@ -493,8 +466,8 @@ define(['app', 'lodash', 'RefreshingChart'],
         }
 
         function powerReturned(dataItemValueKey, seriesSupplier) {
-            return completeSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemKeys) {
-                return dataItemKeys.includes(dataItemValueKey);
+            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
+                return dataItemsKeys.includes(dataItemValueKey);
             });
         }
 
@@ -560,17 +533,10 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function powerReturnedMonthYearSeriesSuppliers(deviceType) {
             return [
-                {
+                completeMonthOrYearSeriesSupplier({
                     id: 'powerReturnedTotal',
-                    dataItemIsValid: function (dataItem) {
-                        return dataItem.r1 !== undefined;
-                    },
-                    valuesFromDataItem: [
-                        function (dataItem) {
-                            return parseFloat(dataItem.r1) + (dataItem.r2 !== undefined ? parseFloat(dataItem.r2) : 0.0);
-                        }
-                    ],
-                    template: {
+                    dataItemKeys: ['r1', 'r2'],
+                    series: {
                         name: $.t('Total Return'),
                         zIndex: 1,
                         tooltip: {
@@ -580,17 +546,10 @@ define(['app', 'lodash', 'RefreshingChart'],
                         color: 'rgba(3,252,190,0.8)',
                         yAxis: 0
                     }
-                },
-                {
+                }),
+                completeMonthOrYearSeriesSupplier({
                     id: 'powerReturnedTotalTrendline',
-                    dataItemIsValid: function (dataItem) {
-                        return dataItem.r1 !== undefined;
-                    },
-                    valuesFromDataItem: [
-                        function (dataItem) {
-                            return parseFloat(dataItem.r1) + (dataItem.r2 !== undefined ? parseFloat(dataItem.r2) : 0.0);
-                        }
-                    ],
+                    dataItemKeys: ['r1', 'r2'],
                     aggregateDatapoints: function (datapoints) {
                         const trendline = CalculateTrendLine(datapoints);
                         datapoints.length = 0;
@@ -599,7 +558,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                             datapoints.push([trendline.x1, trendline.y1]);
                         }
                     },
-                    template: {
+                    series: {
                         name: $.t('Trendline') + ' ' + $.t('Return'),
                         zIndex: 1,
                         tooltip: {
@@ -611,19 +570,12 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0,
                         visible: false
                     }
-                },
-                {
+                }),
+                completeMonthOrYearSeriesSupplier({
                     id: 'powerReturnedTotalPrevious',
-                    dataItemIsValid: function (dataItem) {
-                        return dataItem.r1 !== undefined;
-                    },
-                    valuesFromDataItem: [
-                        function (dataItem) {
-                            return parseFloat(dataItem.r1) + (dataItem.r2 !== undefined ? parseFloat(dataItem.r2) : 0.0);
-                        }
-                    ],
+                    dataItemKeys: ['r1', 'r2'],
                     useDataItemsFromPrevious: true,
-                    template: {
+                    series: {
                         name: $.t('Past') + ' ' + $.t('Return'),
                         tooltip: {
                             valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
@@ -633,15 +585,15 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0,
                         visible: false
                     }
-                }
+                })
             ];
         }
 
-        function completeSeriesSupplier(seriesSupplier, dataItemValueKeys, dataItemKeysAreSupported) {
+        function completeShortOrLongSeriesSupplier(seriesSupplier, dataItemValueKeys, dataSeriesIsSupported) {
             return _.merge(
                 {
                     valueDecimals: 0,
-                    dataItemKeys: [],
+                    dataSeriesItemsKeys: [],
                     analyseDataItem: function (dataItem) {
                         const self = this;
                         dataItemKeysCollect(dataItem);
@@ -650,10 +602,10 @@ define(['app', 'lodash', 'RefreshingChart'],
                         function dataItemKeysCollect(dataItem) {
                             Object.keys(dataItem)
                                 .filter(function (key) {
-                                    return !self.dataItemKeys.includes(key);
+                                    return !self.dataSeriesItemsKeys.includes(key);
                                 })
                                 .forEach(function (key) {
-                                    self.dataItemKeys.push(key);
+                                    self.dataSeriesItemsKeys.push(key);
                                 });
                         }
 
@@ -664,19 +616,53 @@ define(['app', 'lodash', 'RefreshingChart'],
                         }
                     },
                     dataItemIsValid: function (dataItem) {
-                        return dataItemKeysAreSupported(this.dataItemKeys) && dataItemValueKeys.some(function (dataItemValueKey) { return dataItem[dataItemValueKey] !== undefined; });
+                        return dataSeriesIsSupported(this.dataSeriesItemsKeys) && dataItemValueKeys.some(function (dataItemValueKey) { return dataItem[dataItemValueKey] !== undefined; });
                     },
-                    valuesFromDataItem: [
-                        function (dataItem) {
-                            return dataItemValueKeys.reduce(function (totalValue, dataItemValueKey) {
-                                const dataItemElement = dataItem[dataItemValueKey];
-                                if (dataItemElement === undefined) {
-                                    return totalValue;
-                                }
-                                return totalValue + parseFloat(dataItemElement);
-                            }, 0.0);
+                    valuesFromDataItem: function (dataItem) {
+                        return [dataItemValueKeys.reduce(sumDataItemValue, 0.0)];
+
+                        function sumDataItemValue(totalValue, key) {
+                            const value = dataItem[key];
+                            if (value === undefined) {
+                                return totalValue;
+                            }
+                            return totalValue + parseFloat(value);
                         }
-                    ],
+                    },
+                    template: function () {
+                        return _.merge(
+                            {
+                                tooltip: {
+                                    valueDecimals: seriesSupplier.valueDecimals
+                                }
+                            },
+                            seriesSupplier.series
+                        );
+                    }
+                },
+                seriesSupplier
+            );
+        }
+
+        function completeMonthOrYearSeriesSupplier(seriesSupplier) {
+            return _.merge(
+                {
+                    dataItemKeys: [],
+                    dataItemIsValid:
+                        function (dataItem) {
+                            return this.dataItemKeys.length !== 0 && dataItem[this.dataItemKeys[0]] !== undefined;
+                        },
+                    valuesFromDataItem: function (dataItem) {
+                        return [this.dataItemKeys.reduce(sumDataItemValue, 0.0)];
+
+                        function sumDataItemValue(totalValue, key) {
+                            const value = dataItem[key];
+                            if (value === undefined) {
+                                return totalValue;
+                            }
+                            return totalValue + parseFloat(value);
+                        }
+                    },
                     template: function () {
                         return _.merge(
                             {

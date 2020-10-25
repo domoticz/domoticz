@@ -115,14 +115,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function humiditySeriesSupplier() {
         return {
             id: 'humidity',
-            dataItemIsValid: function (dataItem) {
-                return dataItem.hu !== undefined;
-            },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.hu);
-                }
-            ],
+            dataItemKeys: ['hu'],
             template: {
                 name: $.t('Humidity'),
                 color: 'limegreen',
@@ -138,14 +131,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function chillSeriesSupplier() {
         return {
             id: 'chill',
-            dataItemIsValid: function (dataItem) {
-                return dataItem.ch !== undefined;
-            },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.ch);
-                }
-            ],
+            dataItemKeys: ['ch'],
             template: {
                 name: $.t('Chill'),
                 color: 'red',
@@ -162,14 +148,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function setpointSeriesSupplier() {
         return {
             id: 'setpoint',
-            dataItemIsValid: function (dataItem) {
-                return dataItem.se !== undefined;
-            },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.se);
-                }
-            ],
+            dataItemKeys: ['se'],
             template: {
                 name: $.t('Set Point'),
                 color: 'blue',
@@ -186,14 +165,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function temperatureSeriesSupplier(deviceType) {
         return {
             id: 'temperature',
-            dataItemIsValid: function (dataItem) {
-                return dataItem.te !== undefined;
-            },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.te);
-                }
-            ],
+            dataItemKeys: ['te'],
             template: {
                 name: $.t('Temperature'),
                 color: 'yellow',
@@ -210,14 +182,10 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function chillMinimumSeriesSupplier() {
         return {
             id: 'chillmin',
+            dataItemKeys: ['cm'],
             dataItemIsValid: function (dataItem) {
                 return dataItem.ch !== undefined;
             },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.cm);
-                }
-            ],
             template: {
                 name: $.t('Chill') + ' ' + $.t('Minimum'),
                 color: 'rgba(255,127,39,0.8)',
@@ -235,14 +203,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function setpointAverageSeriesSupplier() {
         return {
             id: 'setpointavg',
-            dataItemIsValid: function (dataItem) {
-                return dataItem.se !== undefined;
-            },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.se);
-                }
-            ],
+            dataItemKeys: ['se'],
             template: {
                 name: $.t('Set Point') + ' ' + $.t('Average'),
                 color: 'blue',
@@ -260,17 +221,10 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function setpointRangeSeriesSupplier() {
         return {
             id: 'setpointrange',
+            dataItemKeys: ['sm', 'sx'],
             dataItemIsValid: function (dataItem) {
                 return dataItem.se !== undefined;
             },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.sm);
-                },
-                function (dataItem) {
-                    return parseFloat(dataItem.sx);
-                },
-            ],
             template: {
                 name: $.t('Set Point') + ' ' + $.t('Range'),
                 color: 'rgba(164,75,148,1.0)',
@@ -291,14 +245,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function setpointPreviousSeriesSupplier() {
         return {
             id: 'prev_setpoint',
-            dataItemIsValid: function (dataItem) {
-                return dataItem.se !== undefined;
-            },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.se);
-                }
-            ],
+            dataItemKeys: ['se'],
             useDataItemsFromPrevious: true,
             template: {
                 name: $.t('Past') + ' ' + $.t('Set Point'),
@@ -317,14 +264,10 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function temperatureAverageSeriesSupplier() {
         return {
             id: 'temperature_avg',
+            dataItemKeys: ['ta'],
             dataItemIsValid: function (dataItem) {
                 return dataItem.te !== undefined && dataItem.ta !== undefined;
             },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.ta);
-                }
-            ],
             template: {
                 name: $.t('Temperature') + ' ' + $.t('Average'),
                 color: 'yellow',
@@ -342,17 +285,10 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function temperatureRangeSeriesSupplier() {
         return {
             id: 'temperature',
+            dataItemKeys: ['tm', 'te'],
             dataItemIsValid: function (dataItem) {
                 return dataItem.te !== undefined;
             },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.tm);
-                },
-                function (dataItem) {
-                    return parseFloat(dataItem.te);
-                }
-            ],
             template: {
                 name: $.t('Temperature') + ' ' + $.t('Range'),
                 color: 'rgba(3,190,252,1.0)',
@@ -373,14 +309,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function temperaturePreviousSeriesSupplier() {
         return {
             id: 'prev_temperature',
-            dataItemIsValid: function (dataItem) {
-                return dataItem.ta !== undefined;
-            },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.ta);
-                }
-            ],
+            dataItemKeys: ['ta'],
             useDataItemsFromPrevious: true,
             template: {
                 name: $.t('Past') + ' ' + $.t('Temperature'),
@@ -399,14 +328,10 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
     function temperatureTrendlineSeriesSupplier() {
         return {
             id: 'temp_trendline',
+            dataItemKeys: ['ta'],
             dataItemIsValid: function (dataItem) {
                 return dataItem.te !== undefined && dataItem.ta !== undefined;
             },
-            valuesFromDataItem: [
-                function (dataItem) {
-                    return parseFloat(dataItem.ta);
-                }
-            ],
             aggregateDatapoints: function (datapoints) {
                 const trendline = CalculateTrendLine(datapoints);
                 datapoints.length = 0;
