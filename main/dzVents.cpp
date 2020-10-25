@@ -796,7 +796,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 		for (itt = items.begin(); itt != items.end(); ++itt)
 		{
-			if (sitem.ID == itt->id && itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
+			if (sitem.ID > 0 && sitem.ID == itt->id && itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
 			{
 				triggerDevice = true;
 				sitem.lastUpdate = itt->lastUpdate;
@@ -817,105 +817,107 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
 		bool timed_out = (now - checktime >= SensorTimeOut * 60);
-
-		luaTable.OpenSubTableEntry(index, 1, 12);
-
-		luaTable.AddString("name", sitem.deviceName);
-		luaTable.AddBool("protected", (sitem.protection == 1) );
-		luaTable.AddInteger("id", sitem.ID);
-		luaTable.AddString("baseType","device");
-		luaTable.AddString("deviceType", dev_type);
-		luaTable.AddString("subType", sub_type);
-		luaTable.AddString("switchType", Switch_Type_Desc((_eSwitchType)sitem.switchtype));
-		luaTable.AddInteger("switchTypeValue", sitem.switchtype);
-		luaTable.AddString("lastUpdate", sitem.lastUpdate);
-		luaTable.AddInteger("lastLevel", sitem.lastLevel);
-		luaTable.AddBool("changed", triggerDevice);
-		luaTable.AddBool("timedOut", timed_out);
-
-		//get all svalues separate
-		std::vector<std::string> strarray;
-		StringSplit(sitem.sValue, ";", strarray);
-
-		luaTable.OpenSubTableEntry("rawData", 0, 0);
-		for (uint8_t i = 0; i < strarray.size(); i++)
-			luaTable.AddString(i + 1, strarray[i]);
-
-		luaTable.CloseSubTableEntry();
-
-		luaTable.AddString("deviceID", sitem.deviceID);
-		luaTable.AddString("description", sitem.description);
-		luaTable.AddInteger("batteryLevel", sitem.batteryLevel);
-		luaTable.AddInteger("signalLevel", sitem.signalLevel);
-
-		luaTable.OpenSubTableEntry("data", 0, 0);
-		luaTable.AddString("_state", sitem.nValueWording);
-		luaTable.AddInteger("_nValue", sitem.nValue);
-		luaTable.AddInteger("hardwareID", sitem.hardwareID);
-
-		// Lux does not have it's own field yet.
-		if (sitem.devType == pTypeLux && sitem.subType == sTypeLux)
+		if (sitem.ID > 0)
 		{
-			int lux = 0;
-			if (strarray.size() > 0)
-				lux = atoi(strarray[0].c_str());
-			luaTable.AddNumber("lux", lux);
-		}
+			luaTable.OpenSubTableEntry(index, 1, 12);
 
-		if (sitem.devType == pTypeGeneral && sitem.subType == sTypeKwh)
-		{
-			long double value = 0.0f;
-			if (strarray.size() > 1)
-				value = atof(strarray[1].c_str());
-			luaTable.AddNumber("whTotal", value);
-			value = 0.0f;
-			if (strarray.size() > 0)
-				value = atof(strarray[0].c_str());
-			luaTable.AddNumber("whActual", value);
-		}
+			luaTable.AddString("name", sitem.deviceName);
+			luaTable.AddBool("protected", (sitem.protection == 1) );
+			luaTable.AddInteger("id", sitem.ID);
+			luaTable.AddString("baseType","device");
+			luaTable.AddString("deviceType", dev_type);
+			luaTable.AddString("subType", sub_type);
+			luaTable.AddString("switchType", Switch_Type_Desc((_eSwitchType)sitem.switchtype));
+			luaTable.AddInteger("switchTypeValue", sitem.switchtype);
+			luaTable.AddString("lastUpdate", sitem.lastUpdate);
+			luaTable.AddInteger("lastLevel", sitem.lastLevel);
+			luaTable.AddBool("changed", triggerDevice);
+			luaTable.AddBool("timedOut", timed_out);
 
-		// Now see if we have additional fields from the JSON data
-		if (sitem.JsonMapString.size() > 0)
-		{
-			std::map<uint8_t, std::string>::const_iterator itt;
-			for (itt = sitem.JsonMapString.begin(); itt != sitem.JsonMapString.end(); ++itt)
+			//get all svalues separate
+			std::vector<std::string> strarray;
+			StringSplit(sitem.sValue, ";", strarray);
+
+			luaTable.OpenSubTableEntry("rawData", 0, 0);
+			for (uint8_t i = 0; i < strarray.size(); i++)
+				luaTable.AddString(i + 1, strarray[i]);
+
+			luaTable.CloseSubTableEntry();
+
+			luaTable.AddString("deviceID", sitem.deviceID);
+			luaTable.AddString("description", sitem.description);
+			luaTable.AddInteger("batteryLevel", sitem.batteryLevel);
+			luaTable.AddInteger("signalLevel", sitem.signalLevel);
+
+			luaTable.OpenSubTableEntry("data", 0, 0);
+			luaTable.AddString("_state", sitem.nValueWording);
+			luaTable.AddInteger("_nValue", sitem.nValue);
+			luaTable.AddInteger("hardwareID", sitem.hardwareID);
+
+			// Lux does not have it's own field yet.
+			if (sitem.devType == pTypeLux && sitem.subType == sTypeLux)
 			{
-				if (strcmp(m_mainworker.m_eventsystem.JsonMap[itt->first].szOriginal, "LevelNames") == 0 ||
-					strcmp(m_mainworker.m_eventsystem.JsonMap[itt->first].szOriginal, "LevelActions") == 0)
-					luaTable.AddString(
-						m_mainworker.m_eventsystem.JsonMap[itt->first].szNew,
-						base64_decode(itt->second));
-				else
-					luaTable.AddString(
-						m_mainworker.m_eventsystem.JsonMap[itt->first].szNew,
-						itt->second);
+				int lux = 0;
+				if (strarray.size() > 0)
+					lux = atoi(strarray[0].c_str());
+				luaTable.AddNumber("lux", lux);
 			}
-		}
 
-		if (sitem.JsonMapFloat.size() > 0)
-		{
-			std::map<uint8_t, float>::const_iterator itt;
-			for (itt = sitem.JsonMapFloat.begin(); itt != sitem.JsonMapFloat.end(); ++itt)
-				luaTable.AddNumber(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
-		}
+			if (sitem.devType == pTypeGeneral && sitem.subType == sTypeKwh)
+			{
+				long double value = 0.0f;
+				if (strarray.size() > 1)
+					value = atof(strarray[1].c_str());
+				luaTable.AddNumber("whTotal", value);
+				value = 0.0f;
+				if (strarray.size() > 0)
+					value = atof(strarray[0].c_str());
+				luaTable.AddNumber("whActual", value);
+			}
 
-		if (sitem.JsonMapInt.size() > 0)
-		{
-			std::map<uint8_t, int>::const_iterator itt;
-			for (itt = sitem.JsonMapInt.begin(); itt != sitem.JsonMapInt.end(); ++itt)
-				luaTable.AddInteger(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
-		}
+			// Now see if we have additional fields from the JSON data
+			if (sitem.JsonMapString.size() > 0)
+			{
+				std::map<uint8_t, std::string>::const_iterator itt;
+				for (itt = sitem.JsonMapString.begin(); itt != sitem.JsonMapString.end(); ++itt)
+				{
+					if (strcmp(m_mainworker.m_eventsystem.JsonMap[itt->first].szOriginal, "LevelNames") == 0 ||
+						strcmp(m_mainworker.m_eventsystem.JsonMap[itt->first].szOriginal, "LevelActions") == 0)
+						luaTable.AddString(
+							m_mainworker.m_eventsystem.JsonMap[itt->first].szNew,
+							base64_decode(itt->second));
+					else
+						luaTable.AddString(
+							m_mainworker.m_eventsystem.JsonMap[itt->first].szNew,
+							itt->second);
+				}
+			}
 
-		if (sitem.JsonMapBool.size() > 0)
-		{
-			std::map<uint8_t, bool>::const_iterator itt;
-			for (itt = sitem.JsonMapBool.begin(); itt != sitem.JsonMapBool.end(); ++itt)
-				luaTable.AddBool(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
-		}
+			if (sitem.JsonMapFloat.size() > 0)
+			{
+				std::map<uint8_t, float>::const_iterator itt;
+				for (itt = sitem.JsonMapFloat.begin(); itt != sitem.JsonMapFloat.end(); ++itt)
+					luaTable.AddNumber(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
+			}
 
-		luaTable.CloseSubTableEntry();
-		luaTable.CloseSubTableEntry();
-		index++;
+			if (sitem.JsonMapInt.size() > 0)
+			{
+				std::map<uint8_t, int>::const_iterator itt;
+				for (itt = sitem.JsonMapInt.begin(); itt != sitem.JsonMapInt.end(); ++itt)
+					luaTable.AddInteger(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
+			}
+
+			if (sitem.JsonMapBool.size() > 0)
+			{
+				std::map<uint8_t, bool>::const_iterator itt;
+				for (itt = sitem.JsonMapBool.begin(); itt != sitem.JsonMapBool.end(); ++itt)
+					luaTable.AddBool(m_mainworker.m_eventsystem.JsonMap[itt->first].szNew, itt->second);
+			}
+
+			luaTable.CloseSubTableEntry();
+			luaTable.CloseSubTableEntry();
+			index++;
+		} 
 	}
 
 	devicestatesMutexLock.unlock();

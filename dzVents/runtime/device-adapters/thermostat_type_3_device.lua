@@ -5,7 +5,7 @@ return {
 	name = 'Thermostat type 3 device adapter',
 
 	matches = function (device, adapterManager)
-		local res = device.deviceSubType:find('Mertik') and device.deviceType == 'Thermostat 3'
+		local res = device.deviceSubType and device.deviceSubType:find('Mertik') and device.deviceType == 'Thermostat 3'
 		if (not res) then
 			adapterManager.addDummyMethod(device, 'updateMode')
 		end
