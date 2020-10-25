@@ -53,13 +53,10 @@ public:
 	// Return HTTP header value, or NULL if not found.
 	static const char *get_req_header(const request *preq, const char *name)
 	{
-		std::vector<header>::const_iterator itt;
+		for (const auto &header : preq->headers)
+			if (!mg_strcasecmp(name, header.name.c_str()))
+				return header.value.c_str();
 
-		for (itt=preq->headers.begin(); itt!=preq->headers.end(); ++itt)
-		{
-			if (!mg_strcasecmp(name, itt->name.c_str()))
-				return itt->value.c_str();
-		}
 		return NULL;
 	}
 

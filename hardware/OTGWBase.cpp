@@ -135,7 +135,6 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	if (tsize < 1)
 		return false;
 
-	Json::Value::const_iterator itt;
 	Json::ArrayIndex rsize = tempjson["result"].size();
 	if (rsize < 1)
 		return false;

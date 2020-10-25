@@ -36,20 +36,12 @@ std::mutex gatewaylist_mutex;
 
 XiaomiGateway * XiaomiGateway::GatewayByIp(std::string ip)
 {
-	XiaomiGateway *ret = nullptr;
-	{
-		std::unique_lock<std::mutex> lock(gatewaylist_mutex);
-		std::list<XiaomiGateway*>::iterator    it = gatewaylist.begin();
-		for (; it != gatewaylist.end(); it++)
-		{
-			if ((*it)->GetGatewayIp() == ip)
-			{
-				ret = (*it);
-				break;
-			};
-		};
-	}
-	return ret;
+	std::unique_lock<std::mutex> lock(gatewaylist_mutex);
+	for (const auto &gateway : gatewaylist)
+		if (gateway->GetGatewayIp() == ip)
+			return gateway;
+
+	return nullptr;
 }
 
 void XiaomiGateway::AddGatewayToList()
@@ -57,32 +49,25 @@ void XiaomiGateway::AddGatewayToList()
 	XiaomiGateway *maingw = nullptr;
 	{
 		std::unique_lock<std::mutex> lock(gatewaylist_mutex);
-		std::list<XiaomiGateway*>::iterator    it = gatewaylist.begin();
-		for (; it != gatewaylist.end(); it++)
+		for (const auto &gateway : gatewaylist)
 		{
-			if ((*it)->IsMainGateway())
+			if (gateway->IsMainGateway())
 			{
-				maingw = (*it);
+				maingw = gateway;
 				break;
 			};
 		};
 
 		if (!maingw)
-		{
 			SetAsMainGateway();
-		}
 		else
-		{
 			maingw->UnSetMainGateway();
-		}
 
 		gatewaylist.push_back(this);
 	}
 
 	if (maingw)
-	{
 		maingw->Restart();
-	}
 }
 
 void XiaomiGateway::RemoveFromGatewayList()
@@ -96,17 +81,12 @@ void XiaomiGateway::RemoveFromGatewayList()
 			UnSetMainGateway();
 
 			if (gatewaylist.begin() != gatewaylist.end())
-			{
-				std::list<XiaomiGateway*>::iterator    it = gatewaylist.begin();
-				maingw = (*it);
-			}
+				maingw = *gatewaylist.begin();
 		}
 	}
 
 	if (maingw)
-	{
 		maingw->Restart();
-	}
 }
 
 // Use this function to get local ip addresses via getifaddrs when Boost.Asio approach fails
@@ -1275,10 +1255,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				ret = ParseJSon(data.c_str(), root2);
 				if ((ret) || (!root2.isObject()))
 				{
-					for (const auto &i : root2)
+					for (const auto &r : root2)
 					{
 						std::string message = "{\"cmd\" : \"read\",\"sid\":\"";
-						message.append(i.asString().c_str());
+						message.append(r.asString().c_str());
 						message.append("\"}");
 						std::shared_ptr<std::string> message1(new std::string(message));
 						boost::asio::ip::udp::endpoint remote_endpoint;
@@ -1357,31 +1337,25 @@ void XiaomiGateway::XiaomiGatewayTokenManager::UpdateTokenSID(const std::string 
 
 std::string XiaomiGateway::XiaomiGatewayTokenManager::GetToken(const std::string & ip)
 {
-	std::string token = "";
+	std::string token;
 	bool found = false;
 	std::unique_lock<std::mutex> lock(m_mutex);
 	for (auto &m_GatewayToken : m_GatewayTokens)
-	{
 		if (boost::get<0>(m_GatewayToken) == ip)
-		{
 			token = boost::get<1>(m_GatewayToken);
-		}
-	}
+
 	return token;
 }
 
 std::string XiaomiGateway::XiaomiGatewayTokenManager::GetSID(const std::string & ip)
 {
-	std::string sid = "";
+	std::string sid;
 	bool found = false;
 	std::unique_lock<std::mutex> lock(m_mutex);
 	for (auto &m_GatewayToken : m_GatewayTokens)
-	{
 		if (boost::get<0>(m_GatewayToken) == ip)
-		{
 			sid = boost::get<2>(m_GatewayToken);
-		}
-	}
+
 	return sid;
 }
 

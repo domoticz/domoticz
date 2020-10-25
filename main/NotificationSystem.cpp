@@ -120,10 +120,9 @@ bool CNotificationSystem::Register(CNotificationObserver* pNotifier)
 
 	boost::unique_lock<boost::shared_mutex> lock(m_mutex);
 	for (auto &m_notifier : m_notifiers)
-	{
 		if (m_notifier == pNotifier)
 			return false;
-	}
+
 	m_notifiers.push_back(pNotifier);
 	return true;
 }

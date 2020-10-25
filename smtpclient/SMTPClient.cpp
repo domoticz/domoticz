@@ -52,10 +52,8 @@ void SMTPClient::SetTo(const std::string& To)
 	std::vector<std::string> results;
 	StringSplit(To, ";", results);
 
-	std::vector<std::string>::const_iterator itt;
-	for (itt = results.begin(); itt != results.end(); ++itt)
+	for (auto &sTo : results)
 	{
-		std::string sTo = *itt;
 		m_Recipients.push_back("<" + stdstring_trim(sTo) + ">");
 	}
 }
@@ -117,10 +115,9 @@ bool SMTPClient::SendEmail()
 
 	slist1 = nullptr;
 
-	std::vector<std::string>::const_iterator itt;
-	for (itt = m_Recipients.begin(); itt != m_Recipients.end(); ++itt)
+	for (const auto &r : m_Recipients)
 	{
-		slist1 = curl_slist_append(slist1, (*itt).c_str());
+		slist1 = curl_slist_append(slist1, r.c_str());
 	}
 
 	std::stringstream sstr;
@@ -223,7 +220,6 @@ const std::string SMTPClient::MakeMessage()
 	std::string ret;
 
 	int ii;
-	std::vector<std::string>::const_iterator itt;
 	char szBoundary[40];
 	char szBoundaryMixed[40];
 	sprintf(szBoundary, "--------------000000000000000000000000");
@@ -236,7 +232,7 @@ const std::string SMTPClient::MakeMessage()
 
 	//To (first one, rest in Cc)
 	ii = 0;
-	for (itt = m_Recipients.begin(); itt != m_Recipients.end(); ++itt)
+	for (auto itt = m_Recipients.begin(); itt != m_Recipients.end(); ++itt)
 	{
 		if (ii == 0)
 			ret += "To: " + *itt;
@@ -329,13 +325,12 @@ const std::string SMTPClient::MakeMessage()
 	{
 		ret += "\r\n";
 		// now add each attachment.
-		std::vector<std::pair<std::string, std::string> >::const_iterator it1;
-		for (it1 = m_Attachments.begin(); it1 != m_Attachments.end(); ++it1)
+		for (const auto &a : m_Attachments)
 		{
 			ret += "--" + std::string(szBoundaryMixed) + "\r\n";
-			if (it1->second.length() > 3)
+			if (a.second.length() > 3)
 			{ // long enough for an extension
-				std::string typ(it1->second.substr(it1->second.length() - 4, 4));
+				std::string typ(a.second.substr(a.second.length() - 4, 4));
 				if (typ == ".gif") { // gif format presumably
 					ret += "Content-Type: image/gif;\r\n";
 				}
@@ -362,16 +357,17 @@ const std::string SMTPClient::MakeMessage()
 					ret += "Content-Type: application/X-other-1;\r\n";
 				}
 			}
-			else {
+			else
+			{
 				// default to don't know
 				ret += "Content-Type: application/X-other-1;\r\n";
 			}
 
-			ret += "\tname=\"" + it1->second + "\"\r\n";
+			ret += "\tname=\"" + a.second + "\"\r\n";
 			ret += "Content-Transfer-Encoding: base64\r\n";
-			ret += "Content-Disposition: attachment;\r\n filename=\"" + it1->second + "\"\r\n\r\n";
+			ret += "Content-Disposition: attachment;\r\n filename=\"" + a.second + "\"\r\n\r\n";
 
-			ret.insert(ret.end(), it1->first.begin(), it1->first.end());
+			ret.insert(ret.end(), a.first.begin(), a.first.end());
 			ret += "\r\n";
 		}
 		ret += "--" + std::string(szBoundaryMixed) + "--\r\n";

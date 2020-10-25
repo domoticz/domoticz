@@ -270,10 +270,8 @@ void MainWorker::AddAllDomoticzHardware()
 		"SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
 	if (!result.empty())
 	{
-		for (const auto& itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
-
 			int ID = atoi(sd[0].c_str());
 			std::string Name = sd[1];
 			std::string sEnabled = sd[2];
@@ -301,14 +299,9 @@ void MainWorker::AddAllDomoticzHardware()
 
 void MainWorker::StartDomoticzHardware()
 {
-	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (auto& itt : m_hardwaredevices)
-	{
-		if (!itt->IsStarted())
-		{
-			itt->Start();
-		}
-	}
+	for (const auto &device : m_hardwaredevices)
+		if (!device->IsStarted())
+			device->Start();
 }
 
 void MainWorker::StopDomoticzHardware()
@@ -318,20 +311,18 @@ void MainWorker::StopDomoticzHardware()
 	std::vector<CDomoticzHardwareBase*> OrgHardwaredevices;
 	{
 		std::lock_guard<std::mutex> l(m_devicemutex);
-		for (auto& itt : m_hardwaredevices)
-		{
-			OrgHardwaredevices.push_back(itt);
-		}
+		for (const auto &device : m_hardwaredevices)
+			OrgHardwaredevices.push_back(device);
 		m_hardwaredevices.clear();
 	}
 
-	for (auto& itt : OrgHardwaredevices)
+	for (auto &device : OrgHardwaredevices)
 	{
 #ifdef ENABLE_PYTHON
-		m_pluginsystem.DeregisterPlugin(itt->m_HwdID);
+		m_pluginsystem.DeregisterPlugin(device->m_HwdID);
 #endif
-		itt->Stop();
-		delete itt;
+		device->Stop();
+		delete device;
 	}
 }
 
@@ -345,29 +336,17 @@ void MainWorker::GetAvailableWebThemes()
 	bool bFound = false;
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
-	{
-		for (const auto& itt : m_webthemes)
-		{
-			if (itt == sValue)
-			{
-				bFound = true;
-				break;
-			}
-		}
-	}
+		bFound = std::any_of(m_webthemes.begin(), m_webthemes.end(), [&](const std::string &s) { return s == sValue; });
+
 	if (!bFound)
-	{
 		m_sql.UpdatePreferencesVar("WebTheme", "default");
-	}
 }
 
 void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase* pHardware)
 {
 	int devidx = FindDomoticzHardware(pHardware->m_HwdID);
 	if (devidx != -1) //it is already there!, remove it
-	{
 		RemoveDomoticzHardware(m_hardwaredevices[devidx]);
-	}
 	std::lock_guard<std::mutex> l(m_devicemutex);
 	pHardware->sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4));
 	pHardware->sOnConnected.connect(boost::bind(&MainWorker::OnHardwareConnected, this, _1));
@@ -381,10 +360,8 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase* pHardware)
 	CDomoticzHardwareBase *pOrgHardware = nullptr;
 	{
 		std::lock_guard<std::mutex> l(m_devicemutex);
-		std::vector<CDomoticzHardwareBase*>::iterator itt;
-		for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+		for (auto itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 		{
-			pOrgHardware = *itt;
 			if (pOrgHardware == pHardware) {
 				m_hardwaredevices.erase(itt);
 				break;
@@ -425,9 +402,9 @@ int MainWorker::FindDomoticzHardware(int HwdId)
 {
 	std::lock_guard<std::mutex> l(m_devicemutex);
 	int ii = 0;
-	for (const auto& itt : m_hardwaredevices)
+	for (const auto &device : m_hardwaredevices)
 	{
-		if (itt->m_HwdID == HwdId)
+		if (device->m_HwdID == HwdId)
 			return ii;
 		ii++;
 	}
@@ -438,9 +415,9 @@ int MainWorker::FindDomoticzHardwareByType(const _eHardwareTypes HWType)
 {
 	std::lock_guard<std::mutex> l(m_devicemutex);
 	int ii = 0;
-	for (const auto& itt : m_hardwaredevices)
+	for (const auto &device : m_hardwaredevices)
 	{
-		if (itt->HwdType == HWType)
+		if (device->HwdType == HWType)
 			return ii;
 		ii++;
 	}
@@ -450,11 +427,10 @@ int MainWorker::FindDomoticzHardwareByType(const _eHardwareTypes HWType)
 CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 {
 	std::lock_guard<std::mutex> l(m_devicemutex);
-	for (auto& itt : m_hardwaredevices)
-	{
-		if (itt->m_HwdID == HwdId)
-			return itt;
-	}
+	for (const auto &device : m_hardwaredevices)
+		if (device->m_HwdID == HwdId)
+			return device;
+
 	return nullptr;
 }
 
@@ -474,11 +450,9 @@ CDomoticzHardwareBase* MainWorker::GetHardwareByIDType(const std::string& HwdId,
 CDomoticzHardwareBase* MainWorker::GetHardwareByType(const _eHardwareTypes HWType)
 {
 	std::lock_guard<std::mutex> l(m_devicemutex);
-	for (auto& itt : m_hardwaredevices)
-	{
-		if (itt->HwdType == HWType)
-			return itt;
-	}
+	for (const auto &device : m_hardwaredevices)
+		if (device->HwdType == HWType)
+			return device;
 	return nullptr;
 }
 
@@ -570,9 +544,9 @@ bool MainWorker::GetSunSettings()
 		StringSplit(m_LastSunriseSet, ";", strarray);
 		m_SunRiseSetMins.clear();
 
-		for (const auto& it : strarray)
+		for (const auto &str : strarray)
 		{
-			StringSplit(it, ":", hourMinItem);
+			StringSplit(str, ":", hourMinItem);
 			int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
 			m_SunRiseSetMins.push_back(intMins);
 		}
@@ -1555,12 +1529,10 @@ void MainWorker::ParseRFXLogFile()
 		AddDomoticzHardware(pHardware);
 	}
 
-	std::vector<std::string>::iterator itt;
 	unsigned char rxbuffer[600];
 	static const char* const lut = "0123456789ABCDEF";
-	for (itt = _lines.begin(); itt != _lines.end(); ++itt)
+	for (const auto &hexstring : _lines.begin())
 	{
-		std::string hexstring = *itt;
 		if (hexstring.size() % 2 != 0)
 			continue;//illegal
 		int totbytes = hexstring.size() / 2;
@@ -1667,9 +1639,8 @@ void MainWorker::Do_Work()
 		}
 		if (m_devicestorestart.size() > 0)
 		{
-			for (const auto& itt : m_devicestorestart)
+			for (const auto &hwid : m_devicestorestart)
 			{
-				int hwid = itt;
 				std::stringstream sstr;
 				sstr << hwid;
 				std::string idx = sstr.str();
@@ -1759,10 +1730,8 @@ void MainWorker::Do_Work()
 				{
 					//Heal the OpenZWave network
 					std::lock_guard<std::mutex> l(m_devicemutex);
-					std::vector<CDomoticzHardwareBase*>::iterator itt;
-					for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+					for (const auto &pHardware : m_hardwaredevices)
 					{
-						CDomoticzHardwareBase* pHardware = (*itt);
 						if (pHardware->HwdType == HTYPE_OpenZWave)
 						{
 							COpenZWave* pZWave = reinterpret_cast<COpenZWave*>(pHardware);
@@ -3115,10 +3084,8 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 				struct tm midnightTime;
 				getMidnight(countTime, midnightTime);
 
-				for (const auto& itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					float rate = (float)atof(sd[0].c_str()) / 10000.0f;
 					std::string date = sd[1];
 
@@ -6264,9 +6231,7 @@ void MainWorker::decode_UNDECODED(const CDomoticzHardwareBase* pHardware, const 
 	std::stringstream sHexDump;
 	uint8_t* pRXBytes = (uint8_t*)&pResponse->UNDECODED.msg1;
 	for (int i = 0; i < pResponse->UNDECODED.packetlength - 3; i++)
-	{
 		sHexDump << HEX(pRXBytes[i]);
-	}
 	WriteMessage(sHexDump.str().c_str());
 	procResult.DeviceRowIdx = -1;
 }
@@ -11664,16 +11629,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			{
 				//dim value we have to send multiple times
 				for (int iDim = 0; iDim < level; iDim++)
-				{
 					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
 						return false;
-				}
 			}
 			else
-			{
 				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
 					return false;
-			}
 		}
 		else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
 		{
@@ -13008,18 +12969,14 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 	result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (Activators!='')");
 	if (!result.empty())
 	{
-		for (const auto& itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
-
 			int SceneType = atoi(sd[1].c_str());
 
 			std::vector<std::string> arrayActivators;
 			StringSplit(sd[0], ";", arrayActivators);
-			for (const auto& ittAct : arrayActivators)
+			for (const auto &sCodeCmd : arrayActivators)
 			{
-				std::string sCodeCmd = ittAct;
-
 				std::vector<std::string> arrayCode;
 				StringSplit(sCodeCmd, ":", arrayCode);
 
@@ -13115,9 +13072,8 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 			);
 			if (!result.empty())
 			{
-				for (const auto& ittCam : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = ittCam;
 					std::string camidx = sd[0];
 					int delay = atoi(sd[1].c_str());
 					std::string subject;
@@ -13146,10 +13102,8 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 	if (result.empty())
 		return true; //no devices in the scene
 
-	for (const auto& itt : result)
+	for (const auto &sd : result)
 	{
-		std::vector<std::string> sd = itt;
-
 		int cmd = atoi(sd[1].c_str());
 		int level = atoi(sd[2].c_str());
 		_tColor color(sd[3]);
@@ -13258,16 +13212,12 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, c
 	result = m_sql.safe_query("SELECT ID, Activators, SceneType FROM Scenes WHERE (Activators!='')");
 	if (!result.empty())
 	{
-		for (const auto& itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
-
 			std::vector<std::string> arrayActivators;
 			StringSplit(sd[1], ";", arrayActivators);
-			for (const auto& ittAct : arrayActivators)
+			for (const auto &sCodeCmd : arrayActivators)
 			{
-				std::string sCodeCmd = ittAct;
-
 				std::vector<std::string> arrayCode;
 				StringSplit(sCodeCmd, ":", arrayCode);
 
@@ -13320,9 +13270,8 @@ void MainWorker::LoadSharedUsers()
 	result = m_sql.safe_query("SELECT ID, Username, Password FROM USERS WHERE ((RemoteSharing==1) AND (Active==1))");
 	if (!result.empty())
 	{
-		for (const auto& itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
 			tcp::server::_tRemoteShareUser suser;
 			suser.Username = base64_decode(sd[1]);
 			suser.Password = sd[2];
@@ -13331,9 +13280,8 @@ void MainWorker::LoadSharedUsers()
 			result2 = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%q')", sd[0].c_str());
 			if (!result2.empty())
 			{
-				for (const auto& itt2 : result2)
+				for (const auto &sd2 : result2)
 				{
-					std::vector<std::string> sd2 = itt2;
 					uint64_t ID = std::strtoull(sd2[0].c_str(), nullptr, 10);
 					suser.Devices.push_back(ID);
 				}
@@ -13412,7 +13360,6 @@ void MainWorker::HandleLogNotifications()
 	//Assemble notification message
 
 	std::stringstream sstr;
-	std::list<CLogger::_tLogLineStruct>::const_iterator itt;
 	std::string sTopic;
 
 	if (_loglines.size() > 1)
@@ -13422,14 +13369,12 @@ void MainWorker::HandleLogNotifications()
 	}
 	else
 	{
-		itt = _loglines.begin();
+		auto itt = _loglines.begin();
 		sTopic = "Domoticz: " + itt->logmessage;
 	}
 
-	for (itt = _loglines.begin(); itt != _loglines.end(); ++itt)
-	{
-		sstr << itt->logmessage << "<br>";
-	}
+	for (const auto &str : _loglines)
+		sstr << str.logmessage << "<br>";
 	m_sql.AddTaskItem(_tTaskItem::SendEmail(1, sTopic, sstr.str()));
 }
 
@@ -13465,14 +13410,16 @@ void MainWorker::HeartbeatCheck()
 	time_t now;
 	mytime(&now);
 
-	for (const auto& itt : m_componentheartbeats)
+	for (const auto &heartbeat : m_componentheartbeats)
 	{
-		double diff = difftime(now, itt.second.first);
+		double diff = difftime(now, heartbeat.second.first);
 		if (diff > 60)
 		{
-			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly (last update %f seconds ago)", itt.first.c_str(), diff);
+			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly (last update %f seconds ago)",
+				 heartbeat.first.c_str(), diff);
 			/* GizMoCuz: This causes long operations to crash (Like Issue #3011)
-						if (itt.second.second) // If the stalled component is marked as critical, call abort / raise signal
+						if (heartbeat.second.second) // If the stalled component is marked as critical, call abort /
+			raise signal
 						{
 							if (!IsDebuggerPresent())
 							{
@@ -13488,10 +13435,8 @@ void MainWorker::HeartbeatCheck()
 	}
 
 	//Check hardware heartbeats
-	std::vector<CDomoticzHardwareBase*>::const_iterator itt;
-	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+	for (const auto &pHardware : m_hardwaredevices)
 	{
-		CDomoticzHardwareBase* pHardware = (CDomoticzHardwareBase*)(*itt);
 		if (!pHardware->m_bSkipReceiveCheck)
 		{
 			//Skip Dummy Hardware

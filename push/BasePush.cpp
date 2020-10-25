@@ -449,10 +449,7 @@ std::vector<std::string> CBasePush::DropdownOptions(const uint64_t DeviceRowIdxI
 		std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
 		std::vector<std::string> tmpV;
 		StringSplit(sOptions, ",", tmpV);
-		for (auto &i : tmpV)
-		{
-			dropdownOptions.push_back(i);
-		}
+		std::copy(tmpV.begin(), tmpV.end(), std::back_inserter(dropdownOptions));
 	}
 	else
 	{
@@ -909,11 +906,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
 					int dType = atoi(sd[2].c_str());
 					int dSubType = atoi(sd[3].c_str());
 					std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);

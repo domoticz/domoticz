@@ -578,7 +578,7 @@ namespace http {
 				size_t q = 0;
 				size_t p = q;
 				int flag_done = 0;
-				std::string uri = params;
+				const std::string &uri = params;
 				while (!flag_done)
 				{
 					q = uri.find("=", p);
@@ -698,7 +698,7 @@ namespace http {
 						size_t q = 0;
 						size_t p = q;
 						int flag_done = 0;
-						std::string uri = params;
+						const std::string &uri = params;
 						while (!flag_done)
 						{
 							q = uri.find("=", p);
@@ -1120,13 +1120,9 @@ namespace http {
 		// Check the user's password, return 1 if OK
 		static int check_password(struct ah *ah, const std::string &ha1, const std::string &realm)
 		{
-			if (
-				(ah->nonce.size() == 0) &&
-				(ah->response.size() != 0)
-				)
-			{
+			if ((ah->nonce.size() == 0) && (ah->response.size() != 0))
 				return (ha1 == GenerateMD5Hash(ah->response));
-			}
+
 			return 0;
 		}
 
@@ -1143,11 +1139,10 @@ namespace http {
 		WebEmSession * cWebem::GetSession(const std::string & ssid)
 		{
 			std::unique_lock<std::mutex> lock(m_sessionsMutex);
-			std::map<std::string, WebEmSession>::iterator itt = m_sessions.find(ssid);
+			auto itt = m_sessions.find(ssid);
 			if (itt != m_sessions.end())
-			{
 				return &itt->second;
-			}
+
 			return nullptr;
 		}
 
@@ -1165,11 +1160,9 @@ namespace http {
 		void cWebem::RemoveSession(const std::string & ssid)
 		{
 			std::unique_lock<std::mutex> lock(m_sessionsMutex);
-			std::map<std::string, WebEmSession>::iterator itt = m_sessions.find(ssid);
+			auto itt = m_sessions.find(ssid);
 			if (itt != m_sessions.end())
-			{
 				m_sessions.erase(itt);
-			}
 		}
 
 		int cWebem::CountSessions()
@@ -1188,34 +1181,24 @@ namespace http {
 			{
 				std::unique_lock<std::mutex> lock(m_sessionsMutex);
 				time_t now = mytime(nullptr);
-				std::map<std::string, WebEmSession>::iterator itt;
-				for (itt = m_sessions.begin(); itt != m_sessions.end(); ++itt)
-				{
-					if (itt->second.timeout < now)
-					{
-						ssids.push_back(itt->second.id);
-					}
-				}
+				for (const auto &session : m_sessions)
+					if (session.second.timeout < now)
+						ssids.push_back(session.second.id);
 			}
-			std::vector<std::string>::iterator ssitt;
-			for (ssitt = ssids.begin(); ssitt != ssids.end(); ++ssitt)
+			for (const auto &ssid : ssids)
 			{
-				std::string ssid = *ssitt;
 				RemoveSession(ssid);
 			}
 			int after = CountSessions();
 			std::stringstream ss;
 			{
 				std::unique_lock<std::mutex> lock(m_sessionsMutex);
-				std::map<std::string, WebEmSession>::iterator itt;
 				int i = 0;
-				for (itt = m_sessions.begin(); itt != m_sessions.end(); ++itt)
+				for (const auto &session : m_sessions)
 				{
 					if (i > 0)
-					{
 						ss << ",";
-					}
-					ss << itt->second.id;
+					ss << session.second.id;
 					i += 1;
 				}
 			}
@@ -1332,19 +1315,18 @@ namespace http {
 						uname = base64_decode(uname);
 						upass = GenerateMD5Hash(base64_decode(upass));
 
-						std::vector<_tWebUserPassword>::iterator itt;
-						for (itt = myWebem->m_userpasswords.begin(); itt != myWebem->m_userpasswords.end(); ++itt)
+						for (const auto &my : myWebem->m_userpasswords)
 						{
-							if (itt->Username == uname)
+							if (my.Username == uname)
 							{
-								if (itt->Password != upass)
+								if (my.Password != upass)
 								{
 									m_failcounter++;
 									return 0;
 								}
 								session.isnew = true;
-								session.username = itt->Username;
-								session.rights = itt->userrights;
+								session.username = my.Username;
+								session.rights = my.userrights;
 								session.rememberme = false;
 								m_failcounter = 0;
 								return 1;
@@ -1356,20 +1338,19 @@ namespace http {
 				return 0;
 			}
 
-			std::vector<_tWebUserPassword>::iterator itt;
-			for (itt = myWebem->m_userpasswords.begin(); itt != myWebem->m_userpasswords.end(); ++itt)
+			for (const auto &my : myWebem->m_userpasswords)
 			{
-				if (itt->Username == _ah.user)
+				if (my.Username == _ah.user)
 				{
-					int bOK = check_password(&_ah, itt->Password, myWebem->m_DigistRealm);
+					int bOK = check_password(&_ah, my.Password, myWebem->m_DigistRealm);
 					if (!bOK)
 					{
 						m_failcounter++;
 						return 0;
 					}
 					session.isnew = true;
-					session.username = itt->Username;
-					session.rights = itt->userrights;
+					session.username = my.Username;
+					session.rights = my.userrights;
 					session.rememberme = false;
 					m_failcounter = 0;
 					return 1;
@@ -1391,12 +1372,8 @@ namespace http {
 
 			int iASize = (!bIsIPv6) ? 4 : 16;
 			for (int ii = 0; ii < iASize; ii++)
-			{
 				if (ipnetwork.Network[ii] != (IP[ii] & ipnetwork.Mask[ii]))
-				{
 					return false;
-				}
-			}
 
 			return true;
 		}
@@ -1410,14 +1387,8 @@ namespace http {
 			if (sHost.size() < 3)
 				return false;
 
-			for (const auto& itt : myWebem->m_localnetworks)
-			{
-				if (IsIPInRange(sHost, itt))
-				{
-					return true;
-				}
-			}
-			return false;
+			return std::any_of(myWebem->m_localnetworks.begin(), myWebem->m_localnetworks.end(),
+					   [&](const _tIPNetwork &my) { return IsIPInRange(sHost, my); });
 		}
 
 		const char * months[12] = {
@@ -1849,23 +1820,16 @@ namespace http {
 					if (myWebem->m_authmethod != AUTH_BASIC)
 					{
 						//Check if we need to bypass authentication (not when using basic-auth)
-						for (const auto& itt : myWebem->myWhitelistURLs)
-						{
-							if (req.uri.find(itt) == 0)
-							{
+						for (const auto &url : myWebem->myWhitelistURLs)
+							if (req.uri.find(url) == 0)
 								return true;
-							}
-						}
 
 						std::string cmdparam;
 						if (GetURICommandParameter(req.uri, cmdparam))
-						{
-							for (const auto& itt : myWebem->myWhitelistCommands)
-							{
-								if (cmdparam.find(itt) == 0)
+							for (const auto &cmd : myWebem->myWhitelistCommands)
+								if (cmdparam.find(cmd) == 0)
 									return true;
-							}
-						}
+
 						// Force login form
 						send_authorization_request(rep);
 						return false;
@@ -1884,9 +1848,7 @@ namespace http {
 			{
 				//Check first if we have a basic auth
 				if (authorize(session, req, rep))
-				{
 					return true;
-				}
 			}
 
 			if (myWebem->m_authmethod == AUTH_BASIC)
@@ -1910,23 +1872,16 @@ namespace http {
 			}
 
 			//Check if we need to bypass authentication (not when using basic-auth)
-			for (const auto& itt : myWebem->myWhitelistURLs)
-			{
-				if (req.uri.find(itt) == 0)
-				{
+			for (const auto &url : myWebem->myWhitelistURLs)
+				if (req.uri.find(url) == 0)
 					return true;
-				}
-			}
+
 			std::string cmdparam;
 			if (GetURICommandParameter(req.uri, cmdparam))
 			{
-				for (const auto& itt : myWebem->myWhitelistCommands)
-				{
-					if (cmdparam.find(itt) == 0)
-					{
+				for (const auto &cmd : myWebem->myWhitelistCommands)
+					if (cmdparam.find(cmd) == 0)
 						return true;
-					}
-				}
 			}
 
 			send_authorization_request(rep);
@@ -1990,13 +1945,12 @@ namespace http {
 				bool sessionExpires = false;
 				session.username = storedSession.username;
 				session.expires = storedSession.expires;
-				std::vector<_tWebUserPassword>::iterator ittu;
-				for (ittu = myWebem->m_userpasswords.begin(); ittu != myWebem->m_userpasswords.end(); ++ittu)
+				for (const auto &my : myWebem->m_userpasswords)
 				{
-					if (ittu->Username == session.username) // the user still exists
+					if (my.Username == session.username) // the user still exists
 					{
 						userExists = true;
-						session.rights = ittu->userrights;
+						session.rights = my.userrights;
 						break;
 					}
 				}
@@ -2118,7 +2072,7 @@ namespace http {
 					{
 						std::string sSID = scookie.substr(fpos + 7, upos - fpos - 7);
 						_log.Debug(DEBUG_WEBSERVER, "Web: Logout : remove session %s", sSID.c_str());
-						std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
+						auto itt = myWebem->m_sessions.find(sSID);
 						if (itt != myWebem->m_sessions.end())
 						{
 							myWebem->m_sessions.erase(itt);

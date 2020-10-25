@@ -336,26 +336,26 @@ void CTTNMQTT::WriteInt(const std::string &sendStr)
 Json::Value CTTNMQTT::GetSensorWithChannel(const Json::Value &root, const uint8_t sChannel)
 {
 	Json::Value ret;
-	for (const auto &itt : root)
+	for (const auto &r : root)
 	{
-		uint8_t channel = (uint8_t)itt["channel"].asInt();
+		uint8_t channel = (uint8_t)r["channel"].asInt();
 
-		if ((channel == sChannel) && !itt["used"])
-			return itt;
+		if ((channel == sChannel) && !r["used"])
+			return r;
 	}
 	return ret;
 }
 
 void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const uint8_t sChannel)
 {
-	for (auto &itt : root)
+	for (auto &r : root)
 	{
-		uint8_t channel = (uint8_t)itt["channel"].asInt();
-		std::string type = itt["type"].asString();
+		uint8_t channel = (uint8_t)r["channel"].asInt();
+		std::string type = r["type"].asString();
 
 		if ((type == stype) && (channel == sChannel))
 		{
-			itt["used"] = true;
+			r["used"] = true;
 			return;
 		}
 	}
@@ -510,7 +510,7 @@ bool CTTNMQTT::ConvertFields2Payload(const Json::Value &fields, Json::Value &pay
     if( fields.size() > 0 )
 	{
 		Debug(DEBUG_NORM, "Processing fields payload for %d fields!", fields.size());
-		for (auto const& id : fields.getMemberNames())
+		for (const auto &id : fields.getMemberNames())
 		{
 			if(!(fields[id].isNull()) && ConvertField2Payload(id.c_str(), fields[id].asString().c_str(), index + 1, index, payload))
 			{
@@ -821,19 +821,19 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 		// Walk over the payload to find all used channels. Each channel represents a single sensor.
 		uint8_t chanSensors [65] = {};	// CayenneLPP Data Channel ranges from 0 to 64
-		for (auto &itt : payload)
+		for (const auto &p : payload)
 		{
-			std::string type = itt["type"].asString();
-			uint8_t channel = (uint8_t)itt["channel"].asInt();
+			std::string type = p["type"].asString();
+			uint8_t channel = (uint8_t)p["channel"].asInt();
 
 			// The following IS NOT part of the CayenneLPP specification
 			// But a 'hack'; when using the payload_fields (using the TTN external payload decoder)
 			// a 'batterylevel' field can be created (integer range between 0 and 100)
 			// Also, we do skip this reading for further processing
 			if (type == "batterylevel") {
-				if (itt["value"].isNumeric())
+				if (p["value"].isNumeric())
 				{
-					BatteryLevel = (int)itt["value"].asInt();
+					BatteryLevel = (int)p["value"].asInt();
 				}
 			}
 			else

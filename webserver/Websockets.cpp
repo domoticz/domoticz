@@ -231,7 +231,7 @@ namespace http {
 		{
 			// we assume we received a gzipped json request
 			// todo: unzip the data
-			std::string the_data = packet_data;
+			const std::string &the_data = packet_data;
 			OnReceiveText(the_data);
 		}
 

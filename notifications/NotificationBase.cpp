@@ -230,14 +230,8 @@ bool CNotificationBase::IsInConfig(const std::string &Key)
 
 bool CNotificationBase::IsInConfigString(const std::string &Key)
 {
-	for (auto &_configValue : _configValues)
-	{
-		if (Key == _configValue.first)
-		{
-			return true;
-		}
-	}
-	return false;
+	return std::any_of(_configValues.begin(), _configValues.end(),
+			   [&](const std::pair<std::string, std::string *> &val) { return Key == val.first; });
 }
 
 bool CNotificationBase::IsInConfigInt(const std::string &Key)

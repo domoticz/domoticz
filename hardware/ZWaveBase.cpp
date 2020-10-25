@@ -204,8 +204,8 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 		// but instead of returning a single result, checks if there is more than one in memory
 		// device satisfying those criteria
 
-		std::map<std::string, _tZWaveDevice>::iterator itt;
-		for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+		auto itt = m_devices.begin();
+		while (itt != m_devices.end())
 		{
 			if (
 				// Node ID1 is not used when searching for switch-like devices, see ID1 = 0; at the start
@@ -236,6 +236,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 					break;
 				}
 			}
+			++itt;
 		}
 		if (itt != m_devices.end())
 		{
@@ -794,14 +795,10 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID)
 {
-	for (auto& itt : m_devices)
+	for (auto &m : m_devices)
 	{
-		if (
-			(itt.second.nodeID == nodeID) &&
-			(itt.second.instanceID == instanceID) &&
-			(itt.second.indexID == indexID)
-			)
-			return &itt.second;
+		if ((m.second.nodeID == nodeID) && (m.second.instanceID == instanceID) && (m.second.indexID == indexID))
+			return &m.second;
 	}
 	return nullptr;
 }
@@ -809,43 +806,32 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int 
 //Used for power/energy devices
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceEx(const uint8_t nodeID, const int instanceID, const _eZWaveDeviceType devType)
 {
-	for (auto& itt : m_devices)
+	for (auto &m : m_devices)
 	{
-		if (
-			(itt.second.nodeID == nodeID) &&
-			(itt.second.instanceID == instanceID) &&
-			(itt.second.devType == devType)
-			)
-			return &itt.second;
+		if ((m.second.nodeID == nodeID) && (m.second.instanceID == instanceID) && (m.second.devType == devType))
+			return &m.second;
 	}
 	return nullptr;
 }
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType)
 {
-	for (auto& itt : m_devices)
+	for (auto &m : m_devices)
 	{
-		if (
-			(itt.second.nodeID == nodeID) &&
-			((itt.second.instanceID == instanceID) || (instanceID == -1)) &&
-			(itt.second.devType == devType)
-			)
-			return &itt.second;
+		if ((m.second.nodeID == nodeID) && ((m.second.instanceID == instanceID) || (instanceID == -1))
+		    && (m.second.devType == devType))
+			return &m.second;
 	}
 	return nullptr;
 }
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType)
 {
-	for (auto& itt : m_devices)
+	for (auto &m : m_devices)
 	{
-		if (
-			(itt.second.nodeID == nodeID) &&
-			((itt.second.instanceID == instanceID) || (instanceID == -1)) &&
-			(itt.second.commandClassID == CommandClassID) &&
-			(itt.second.devType == devType)
-			)
-			return &itt.second;
+		if ((m.second.nodeID == nodeID) && ((m.second.instanceID == instanceID) || (instanceID == -1))
+		    && (m.second.commandClassID == CommandClassID) && (m.second.devType == devType))
+			return &m.second;
 	}
 	return nullptr;
 }

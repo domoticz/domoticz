@@ -473,7 +473,7 @@ bool YeeLightGetTag(const std::string &InputString, const std::string &Tag, std:
 
 bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector<std::string> &receivedip)
 {
-	std::string receivedString(szData);
+	const std::string &receivedString(szData);
 	//_log.Log(LOG_STATUS, receivedString.c_str());
 #ifdef DEBUG_YeeLightW
 	SaveString2Disk(receivedString, "E:\\YeeLight_receive.txt");
@@ -492,9 +492,10 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 
 	std::string yeelightLocation = dataString.c_str();
 	// check if we have received this ip already
-	size_t i;
-	for (i = 0; i < receivedip.size(); i++) {
-		if (std::strcmp(receivedip[i].c_str(), yeelightLocation.c_str()) == 0) {
+	for (const auto &ip : receivedip)
+	{
+		if (std::strcmp(ip.c_str(), yeelightLocation.c_str()) == 0)
+		{
 			//_log.Log(LOG_STATUS, "Already received: %s", yeelightLocation.c_str());
 			return false;
 		}

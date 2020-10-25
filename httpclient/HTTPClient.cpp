@@ -247,10 +247,9 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		struct curl_slist *headers = nullptr;
 		if (ExtraHeaders.size() > 0)
 		{
-			std::vector<std::string>::const_iterator itt;
-			for (itt = ExtraHeaders.begin(); itt != ExtraHeaders.end(); ++itt)
+			for (const auto &header : ExtraHeaders)
 			{
-				headers = curl_slist_append(headers, (*itt).c_str());
+				headers = curl_slist_append(headers, header.c_str());
 			}
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}
@@ -327,10 +326,9 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		struct curl_slist *headers = nullptr;
 		if (ExtraHeaders.size() > 0)
 		{
-			std::vector<std::string>::const_iterator itt;
-			for (itt = ExtraHeaders.begin(); itt != ExtraHeaders.end(); ++itt)
+			for (const auto &header : ExtraHeaders)
 			{
-				headers = curl_slist_append(headers, (*itt).c_str());
+				headers = curl_slist_append(headers, header.c_str());
 			}
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}
@@ -397,10 +395,9 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 		struct curl_slist *headers = nullptr;
 		if (ExtraHeaders.size() > 0)
 		{
-			std::vector<std::string>::const_iterator itt;
-			for (itt = ExtraHeaders.begin(); itt != ExtraHeaders.end(); ++itt)
+			for (const auto &header : ExtraHeaders)
 			{
-				headers = curl_slist_append(headers, (*itt).c_str());
+				headers = curl_slist_append(headers, header.c_str());
 			}
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}
@@ -467,10 +464,9 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 		struct curl_slist *headers = nullptr;
 		if (ExtraHeaders.size() > 0)
 		{
-			std::vector<std::string>::const_iterator itt;
-			for (itt = ExtraHeaders.begin(); itt != ExtraHeaders.end(); ++itt)
+			for (const auto &header : ExtraHeaders)
 			{
-				headers = curl_slist_append(headers, (*itt).c_str());
+				headers = curl_slist_append(headers, header.c_str());
 			}
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}
@@ -544,10 +540,9 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 		struct curl_slist *headers = nullptr;
 		if (ExtraHeaders.size() > 0)
 		{
-			std::vector<std::string>::const_iterator itt;
-			for (itt = ExtraHeaders.begin(); itt != ExtraHeaders.end(); ++itt)
+			for (const auto &header : ExtraHeaders)
 			{
-				headers = curl_slist_append(headers, (*itt).c_str());
+				headers = curl_slist_append(headers, header.c_str());
 			}
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}

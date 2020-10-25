@@ -307,14 +307,14 @@ bool RFXComSerial::UpgradeFirmware()
 
 	m_szUploadMessage = "Bootloader, Start programming...";
 	Log(LOG_STATUS, m_szUploadMessage);
-	for (const auto& itt : firmwareBuffer)
+	for (const auto &firmware : firmwareBuffer)
 	{
 		icntr++;
 		if (icntr % 5 == 0)
 		{
 			m_LastHeartbeat = mytime(nullptr);
 		}
-		unsigned long Address = itt.first;
+		unsigned long Address = firmware.first;
 		m_FirmwareUploadPercentage = (100.0f / float(firmwareBuffer.size()))*icntr;
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
@@ -336,8 +336,8 @@ bool RFXComSerial::UpgradeFirmware()
 			bcmd[2] = Address & 0xFF;
 			bcmd[3] = (Address & 0xFF00) >> 8;
 			bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
-			memcpy(bcmd + 5, itt.second.c_str(), itt.second.size());
-			bool ret = Write_TX_PKT(bcmd, 5 + itt.second.size(), 20);
+			memcpy(bcmd + 5, firmware.second.c_str(), firmware.second.size());
+			bool ret = Write_TX_PKT(bcmd, 5 + firmware.second.size(), 20);
 			if (!ret)
 			{
 				m_szUploadMessage = "Bootloader, unable to program firmware memory, please try again!!!";

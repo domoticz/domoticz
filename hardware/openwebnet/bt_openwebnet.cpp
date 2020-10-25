@@ -810,7 +810,7 @@ void bt_openwebnet::CreateWrDimensionMsgOpen2(const std::string& who, const std:
 	frame << who;  frame << "*";
 	frame << where; frame << "*#";
 	frame << dimension;
-	for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); ++it)
+	for (auto it = value.begin(); it != value.end(); ++it)
 	{
 		if (it == value.begin())
 			frame << "#";

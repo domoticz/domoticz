@@ -174,9 +174,8 @@ public:
 
 		std::vector<std::string> options_array;
 		boost::split(options_array, ssl_options, boost::is_any_of(","), boost::token_compress_on);
-		std::vector<std::string>::iterator itt;
-		for (itt = options_array.begin(); itt != options_array.end(); ++itt) {
-			std::string option = *itt;
+		for (const auto &option : options_array)
+		{
 			if (option.compare("default_workarounds") == 0) {
 				update_options(opts, boost::asio::ssl::context::default_workarounds);
 			} else if (option.compare("single_dh_use") == 0) {

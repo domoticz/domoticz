@@ -223,29 +223,29 @@ public:
 		std::vector<_eSetType> GetChildValueTypes()
 		{
 			std::vector<_eSetType> ret;
-			for (const auto & itt : values)
+			for (const auto &val : values)
 			{
-				ret.push_back(itt.first);
+				ret.push_back(val.first);
 			}
 			return ret;
 		}
 		std::vector<std::string> GetChildValues()
 		{
 			std::vector<std::string> ret;
-			for (const auto & itt : values)
+			for (const auto &val : values)
 			{
 				std::stringstream sstr;
-				if (itt.second.bFloatValue)
+				if (val.second.bFloatValue)
 				{
-					sstr << itt.second.floatValue;
+					sstr << val.second.floatValue;
 				}
-				else if (itt.second.bIntValue)
+				else if (val.second.bIntValue)
 				{
-					sstr << itt.second.intvalue;
+					sstr << val.second.intvalue;
 				}
-				else if (itt.second.bStringValue)
+				else if (val.second.bStringValue)
 				{
-					sstr << itt.second.stringValue;
+					sstr << val.second.stringValue;
 				}
 				else
 				{
@@ -255,10 +255,9 @@ public:
 			}
 			return ret;
 		}
-		bool GetValue(const _eSetType vType, int &intValue)
+		bool GetValue(const _eSetType vType, int &intValue) const
 		{
-			std::map<_eSetType, _tMySensorValue>::const_iterator itt;
-			itt = values.find(vType);
+			auto itt = values.find(vType);
 			if (itt == values.end())
 				return false;
 			if (!itt->second.bValidValue)
@@ -268,8 +267,7 @@ public:
 		}
 		bool GetValue(const _eSetType vType, float &floatValue)
 		{
-			std::map<_eSetType, _tMySensorValue>::const_iterator itt;
-			itt = values.find(vType);
+			auto itt = values.find(vType);
 			if (itt == values.end())
 				return false;
 			if (!itt->second.bValidValue)
@@ -279,8 +277,7 @@ public:
 		}
 		bool GetValue(const _eSetType vType, std::string &stringValue)
 		{
-			std::map<_eSetType, _tMySensorValue>::const_iterator itt;
-			itt = values.find(vType);
+			auto itt = values.find(vType);
 			if (itt == values.end())
 				return false;
 			if (!itt->second.bValidValue)
@@ -347,41 +344,31 @@ public:
 		}
 		_tMySensorChild* FindChildWithPresentationType(const _ePresentationType cType)
 		{
-			for (auto & itt : m_childs)
-			{
-				if (itt.presType == cType)
-				{
-					return &itt;
-				}
-			}
+			for (auto &m : m_childs)
+				if (m.presType == cType)
+					return &m;
 			return nullptr;
 		}
 		_tMySensorChild* FindChildWithPresentationType(const int ChildID, const _ePresentationType cType)
 		{
-			for (auto & itt : m_childs)
-			{
-				if ((itt.childID == ChildID) &&
-					(itt.presType == cType)
-					)
-				{
-					return &itt;
-				}
-			}
+			for (auto &m : m_childs)
+				if ((m.childID == ChildID) && (m.presType == cType))
+					return &m;
 			return nullptr;
 		}
 		_tMySensorChild* FindChildWithValueType(const int ChildID, const _eSetType valType)
 		{
-			for (auto & itt : m_childs)
+			for (auto &m : m_childs)
 			{
-				if (itt.childID == ChildID)
+				if (m.childID == ChildID)
 				{
-					for (const auto & itt2 : itt.values)
+					for (const auto &val : m.values)
 					{
-						if (itt2.first == valType)
+						if (val.first == valType)
 						{
-							if (!itt2.second.bValidValue)
+							if (!val.second.bValidValue)
 								return nullptr;
-							return &itt;
+							return &m;
 						}
 					}
 				}
@@ -390,15 +377,15 @@ public:
 		}
 		_tMySensorChild* FindChildByValueType(const _eSetType valType)
 		{
-			for (auto & itt : m_childs)
+			for (auto &m : m_childs)
 			{
-				for (const auto & itt2 : itt.values)
+				for (const auto &val : m.values)
 				{
-					if (itt2.first == valType)
+					if (val.first == valType)
 					{
-						if (!itt2.second.bValidValue)
+						if (!val.second.bValidValue)
 							return nullptr;
-						return &itt;
+						return &m;
 					}
 				}
 			}
@@ -406,13 +393,9 @@ public:
 		}
 		_tMySensorChild* FindChild(const int ChildID)
 		{
-			for (auto & itt : m_childs)
-			{
-				if (itt.childID == ChildID)
-				{
-					return &itt;
-				}
-			}
+			for (auto &m : m_childs)
+				if (m.childID == ChildID)
+					return &m;
 			return nullptr;
 		}
 	} MySensorNode;

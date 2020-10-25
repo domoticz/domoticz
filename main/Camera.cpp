@@ -36,10 +36,8 @@ void CCameraHandler::ReloadCameras()
 	if (!result.empty())
 	{
 		_log.Log(LOG_STATUS, "Camera: settings (re)loaded");
-		for (const auto & itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
-
 			cameraDevice citem;
 			citem.ID = std::stoull(sd[0]);
 			citem.Name = sd[1];
@@ -54,10 +52,10 @@ void CCameraHandler::ReloadCameras()
 		}
 	}
 
-	for (const auto & ittCam : _AddedCameras)
+	for (const auto &camera : _AddedCameras)
 	{
 		//Get Active Devices/Scenes
-		ReloadCameraActiveDevices(ittCam);
+		ReloadCameraActiveDevices(camera);
 	}
 }
 
@@ -71,9 +69,8 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 	result = m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID", CamID.c_str());
 	if (!result.empty())
 	{
-		for (const auto & itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
 			cameraActiveDevice aDevice;
 			aDevice.ID = std::stoull(sd[0]);
 			aDevice.DevSceneType = (unsigned char)atoi(sd[1].c_str());
@@ -92,17 +89,11 @@ uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, co
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
 {
 	std::lock_guard<std::mutex> l(m_mutex);
-	for (const auto & itt : m_cameradevices)
-	{
-		for (const auto & itt2 : itt.mActiveDevices)
-		{
-			if (
-				(itt2.DevSceneType == DevSceneType) &&
-				(itt2.DevSceneRowID == DevSceneID)
-				)
-				return itt.ID;
-		}
-	}
+	for (const auto &sd : m_cameradevices)
+		for (const auto &sd2 : sd.mActiveDevices)
+			if ((sd2.DevSceneType == DevSceneType) && (sd2.DevSceneRowID == DevSceneID))
+				return sd.ID;
+
 	return 0;
 }
 
@@ -144,10 +135,10 @@ CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const std::string &CamID
 
 CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 {
-	for (auto & itt : m_cameradevices)
+	for (auto &m : m_cameradevices)
 	{
-		if (itt.ID == CamID)
-			return &itt;
+		if (m.ID == CamID)
+			return &m;
 	}
 	return nullptr;
 }
@@ -386,10 +377,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
@@ -413,10 +402,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto& itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					ii++;

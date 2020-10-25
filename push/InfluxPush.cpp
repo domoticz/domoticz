@@ -114,10 +114,8 @@ void CInfluxPush::DoInfluxPush()
 	{
 		time_t atime = mytime(nullptr);
 		std::string sendValue;
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = *itt;
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
@@ -194,20 +192,18 @@ void CInfluxPush::Do_Work()
 
 		std::string sSendData;
 
-		std::vector<_tPushItem>::iterator itt = _items2do.begin();
-		while (itt != _items2do.end())
+		for (const auto &item : _items2do)
 		{
 			if (!sSendData.empty())
 				sSendData += '\n';
 
 			std::stringstream sziData;
-			sziData << itt->skey << " value=" << itt->svalue;
+			sziData << item.skey << " value=" << item.svalue;
 			if (m_bInfluxDebugActive) {
 				_log.Log(LOG_NORM, "InfluxLink: value %s", sziData.str().c_str());
 			}
-			sziData << " " << itt->stimestamp;
+			sziData << " " << item.stimestamp;
 			sSendData += sziData.str();
-			++itt;
 		}
 		std::vector<std::string> ExtraHeaders;
 		std::string sResult;
@@ -322,11 +318,9 @@ namespace http {
 				"SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_INFLUXDB);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["DeviceID"] = sd[1];
 					root["result"][ii]["Delimitedvalue"] = sd[2];
