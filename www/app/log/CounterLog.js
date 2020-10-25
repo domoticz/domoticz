@@ -3,7 +3,8 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         app.component('deviceCounterLog', {
             bindings: {
-                device: '<'
+                device: '<',
+                subtype: '<'
             },
             templateUrl: 'app/log/CounterLog.html',
             controllerAs: '$ctrl',
@@ -167,6 +168,7 @@ define(['app', 'lodash', 'RefreshingChart'],
             return [
                 counterEnergy('v', {
                     id: 'counterEnergyUsedOrGenerated',
+                    label: 'A',
                     series: {
                         type: 'spline',
                         name: deviceType === deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
@@ -186,6 +188,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                 counterEnergy('v', {
                     id: 'counterEnergyUsedOrGenerated',
                     valueDecimals: 3,
+                    label: 'B',
                     series: {
                         type: 'column',
                         name: deviceType === deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
@@ -205,6 +208,8 @@ define(['app', 'lodash', 'RefreshingChart'],
                 completeMonthOrYearSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotal',
                     dataItemKeys: ['v', 'v2'],
+                    convertZeroToNull: true,
+                    label: 'C',
                     series: {
                         type: 'column',
                         name: deviceType === deviceTypes.EnergyUsed ? $.t('Total Usage') : deviceType === deviceTypes.EnergyGenerated ? $.t('Total Generated') : $.t('Total Return'),
@@ -228,6 +233,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                             datapoints.push([trendline.x1, trendline.y1]);
                         }
                     },
+                    label: 'D',
                     series: {
                         name: $.t('Trendline') + ' ' + (deviceType === deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
                         zIndex: 1,
@@ -245,6 +251,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                     id: 'counterEnergyUsedOrGeneratedPrevious',
                     dataItemKeys: ['v', 'v2'],
                     useDataItemsFromPrevious: true,
+                    label: 'E',
                     series: {
                         name: $.t('Past') + ' ' + (deviceType === deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
                         tooltip: {
@@ -269,6 +276,7 @@ define(['app', 'lodash', 'RefreshingChart'],
             return [
                 instantAndCounterPowerAndEnergy('eu', {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
+                    label: 'F',
                     series: {
                         type: 'column',
                         pointRange: 3600 * 1000,
@@ -284,6 +292,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                 }),
                 instantAndCounterPowerAndEnergy('v', {
                     id: 'instantAndCounterPowerUsedOrGenerated',
+                    label: 'G',
                     series: {
                         name: deviceType === deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
                         zIndex: 10,
@@ -304,6 +313,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                 instantAndCounterPowerAndEnergy('eu', {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
                     valueDecimals: 3,
+                    label: 'H',
                     series: {
                         type: 'column',
                         pointRange: 3600 * 1000,
@@ -320,6 +330,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                 instantAndCounterPowerAndEnergy('v', {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     valueDecimals: 3,
+                    label: 'I',
                     series: {
                         name: deviceType === deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
                         zIndex: 10,
@@ -335,22 +346,29 @@ define(['app', 'lodash', 'RefreshingChart'],
             ];
         }
 
-        function p1PowerAndEnergyUsed(dataItemValueKey, seriesSupplier) {
+        function p1PowerAndEnergyShort(dataItemValueKey, seriesSupplier) {
             return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
                 return dataItemsKeys.includes('v') && dataItemsKeys.includes('eu') && dataItemsKeys.includes('v2');
             });
         }
 
-        function p1PowerAndEnergyGenerated(dataItemValueKey, seriesSupplier) {
+        function p1PowerAndEnergyLong(dataItemValueKey, seriesSupplier) {
             return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
                 return dataItemsKeys.includes(dataItemValueKey);
             });
         }
 
+        function p1UsageAndReturnLong(dataItemValueKey, seriesSupplier) {
+            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
+                return dataItemsKeys.includes('v') && dataItemsKeys.includes('r1');
+            });
+        }
+
         function p1ShortSeriesSuppliers(deviceType) {
             return [
-                p1PowerAndEnergyUsed('eu', {
+                p1PowerAndEnergyShort('eu', {
                     id: 'p1EnergyUsedArea',
+                    label: 'J',
                     series: {
                         type: 'area',
                         name: $.t('Energy Usage'),
@@ -363,8 +381,9 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                p1PowerAndEnergyGenerated('eg', {
+                p1PowerAndEnergyShort('eg', {
                     id: 'p1EnergyGeneratedArea',
+                    label: 'K',
                     series: {
                         type: 'area',
                         name: $.t('Energy Returned'),
@@ -377,8 +396,9 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                p1PowerAndEnergyUsed('v', {
+                p1PowerAndEnergyShort('v', {
                     id: 'p1PowerUsed',
+                    label: 'L',
                     series: {
                         name: $.t('Usage') + ' 1',
                         tooltip: {
@@ -389,8 +409,9 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 1
                     }
                 }),
-                p1PowerAndEnergyGenerated('v2', {
+                p1PowerAndEnergyShort('v2', {
                     id: 'p1PowerGenerated',
+                    label: 'M',
                     series: {
                         name: $.t('Usage') + ' 2',
                         tooltip: {
@@ -406,9 +427,10 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function p1LongSeriesSuppliers(deviceType) {
             return [
-                p1PowerAndEnergyUsed('eu', {
+                p1PowerAndEnergyLong('eu', {
                     id: 'p1EnergyUsedArea',
                     valueDecimals: 3,
+                    label: 'N',
                     series: {
                         type: 'area',
                         name: $.t('Energy Usage'),
@@ -421,9 +443,10 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                p1PowerAndEnergyGenerated('eg', {
+                p1PowerAndEnergyLong('eg', {
                     id: 'p1EnergyGeneratedArea',
                     valueDecimals: 3,
+                    label: 'O',
                     series: {
                         type: 'area',
                         name: $.t('Energy Returned'),
@@ -436,9 +459,11 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                p1PowerAndEnergyUsed('v', {
+                p1UsageAndReturnLong('v', {
                     id: 'p1EnergyUsed',
                     valueDecimals: 3,
+                    convertZeroToNull: true,
+                    label: 'P',
                     series: {
                         name: $.t('Usage') + ' 1',
                         tooltip: {
@@ -449,9 +474,11 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                p1PowerAndEnergyGenerated('v2', {
+                p1PowerAndEnergyLong('v2', {
                     id: 'p1EnergyGenerated',
                     valueDecimals: 3,
+                    convertZeroToNull: true,
+                    label: 'Q',
                     series: {
                         name: $.t('Usage') + ' 2',
                         tooltip: {
@@ -475,6 +502,7 @@ define(['app', 'lodash', 'RefreshingChart'],
             return [
                 powerReturned('r1', {
                     id: 'powerReturned1',
+                    label: 'R',
                     series: {
                         name: $.t('Return') + ' 1',
                         tooltip: {
@@ -487,6 +515,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                 }),
                 powerReturned('r2', {
                     id: 'powerReturned2',
+                    label: 'S',
                     series: {
                         name: $.t('Return') + ' 2',
                         tooltip: {
@@ -505,6 +534,8 @@ define(['app', 'lodash', 'RefreshingChart'],
                 powerReturned('r1', {
                     id: 'powerReturned1',
                     valueDecimals: 3,
+                    convertZeroToNull: true,
+                    label: 'T',
                     series: {
                         name: $.t('Return') + ' 1',
                         tooltip: {
@@ -518,6 +549,8 @@ define(['app', 'lodash', 'RefreshingChart'],
                 powerReturned('r2', {
                     id: 'powerReturned2',
                     valueDecimals: 3,
+                    convertZeroToNull: true,
+                    label: 'U',
                     series: {
                         name: $.t('Return') + ' 2',
                         tooltip: {
@@ -536,7 +569,10 @@ define(['app', 'lodash', 'RefreshingChart'],
                 completeMonthOrYearSeriesSupplier({
                     id: 'powerReturnedTotal',
                     dataItemKeys: ['r1', 'r2'],
+                    convertZeroToNull: true,
+                    label: 'V',
                     series: {
+                        type: 'column',
                         name: $.t('Total Return'),
                         zIndex: 1,
                         tooltip: {
@@ -558,6 +594,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                             datapoints.push([trendline.x1, trendline.y1]);
                         }
                     },
+                    label: 'W',
                     series: {
                         name: $.t('Trendline') + ' ' + $.t('Return'),
                         zIndex: 1,
@@ -575,6 +612,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                     id: 'powerReturnedTotalPrevious',
                     dataItemKeys: ['r1', 'r2'],
                     useDataItemsFromPrevious: true,
+                    label: 'X',
                     series: {
                         name: $.t('Past') + ' ' + $.t('Return'),
                         tooltip: {
@@ -679,125 +717,228 @@ define(['app', 'lodash', 'RefreshingChart'],
         }
 
         function chartParamsDay(domoticzGlobals, ctrl, dataSupplierTemplate, seriesSuppliers) {
-            return {
-                highchartTemplate: {
-                    chart: {
-                        alignTicks: false
-                    },
-                    tooltip: {
-                        shared: false
-                    },
-                    plotOptions: {
-                        series: {
-                            matchExtremes: true
+            return _.merge(
+                {
+                    highchartTemplate: {
+                        plotOptions: {
+                            series: {
+                                matchExtremes: true
+                            }
                         }
-                    }
+                    },
+                    range: ctrl.range,
+                    device: ctrl.device,
+                    sensorType: 'counter',
+                    chartName: ctrl.device.SwitchTypeVal === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
+                    autoRefreshIsEnabled: function () {
+                        return ctrl.logCtrl.autoRefresh;
+                    },
+                    dataSupplier:
+                        _.merge(
+                            {
+                                yAxes:
+                                    [
+                                        _.merge(
+                                            {
+                                                title: {
+                                                    text: $.t('Energy') + ' (Wh)'
+                                                }
+                                            },
+                                            seriesYaxisSubtype()
+                                        ),
+                                        _.merge(
+                                            {
+                                                title: {
+                                                    text: $.t('Power') + ' (Watt)'
+                                                },
+                                                opposite: true
+                                            },
+                                            seriesYaxisSubtype()
+                                        )
+                                    ],
+                                seriesSuppliers: seriesSuppliers
+                            },
+                            dataSupplierTemplate
+                        )
                 },
-                synchronizeYaxes: true,
-                range: ctrl.range,
-                device: ctrl.device,
-				sensorType: 'counter',
-                chartName: ctrl.device.SwitchTypeVal === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
-                autoRefreshIsEnabled: function() {
-                    return ctrl.logCtrl.autoRefresh;
-                },
-                dataSupplier:
-                    _.merge(
-                        {
-                            yAxes:
-                                [
-                                    {
-                                        title: {
-                                            text: $.t('Energy') + ' (Wh)'
-                                        }
-                                    },
-                                    {
-                                        title: {
-                                            text: $.t('Power') + ' (Watt)'
-                                        },
-                                        opposite: true
-                                    }
-                                ],
-                            seriesSuppliers: seriesSuppliers
+                chartParamsDaySubtype(ctrl.logCtrl.subtype)
+            );
+
+            function chartParamsDaySubtype(subtype) {
+                if (subtype === 'p1') {
+                    return {
+                        highchartTemplate: {
+                            chart: {
+                                alignTicks: true
+                            }
+                        }
+                    };
+                } else {
+                    return {
+                        highchartTemplate: {
+                            chart: {
+                                alignTicks: false
+                            },
+                            tooltip: {
+                                shared: false
+                            }
                         },
-                        dataSupplierTemplate
-                    )
-            };
+                        synchronizeYaxes: true
+                    };
+                }
+            }
         }
 
         function chartParamsWeek(domoticzGlobals, ctrl, dataSupplierTemplate, seriesSuppliers) {
-            return {
-                highchartTemplate: {
-                    chart: {
-                        type: 'column',
-                        marginRight:10
-                    },
-                    xAxis: {
-                        dateTimeLabelFormats: {
-                            day: '%a'
+            return _.merge(
+                {
+                    highchartTemplate: {
+                        chart: {
+                            type: 'column',
+                            marginRight: 10
                         },
-                        tickInterval: 24 * 3600 * 1000
+                        xAxis: {
+                            dateTimeLabelFormats: {
+                                day: '%a'
+                            },
+                            tickInterval: 24 * 3600 * 1000
+                        },
+                        tooltip: {
+                            shared: false,
+                            crosshairs: false
+                        }
                     },
-                    plotOptions: {
-                        column: {
-                            dataLabels: {
-                                enabled: true
+                    range: ctrl.range,
+                    device: ctrl.device,
+                    sensorType: 'counter',
+                    chartName: ctrl.device.SwitchTypeVal === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
+                    autoRefreshIsEnabled: function () {
+                        return ctrl.logCtrl.autoRefresh;
+                    },
+                    dataSupplier:
+                        _.merge(
+                            {
+                                yAxes:
+                                    [
+                                        _.merge(
+                                            {
+                                                maxPadding: 0.2,
+                                                title: {
+                                                    text: $.t('Energy') + ' (kWh)'
+                                                }
+                                            },
+                                            seriesYaxisSubtype()
+                                        )
+                                    ],
+                                seriesSuppliers: seriesSuppliers
+                            },
+                            dataSupplierTemplate
+                        )
+                },
+                chartParamsWeekSubtype(ctrl.logCtrl.subtype)
+            );
+
+            function chartParamsWeekSubtype(subtype) {
+                if (subtype === 'p1') {
+                    return {
+                        highchartTemplate: {
+                            plotOptions: {
+                                column: {
+                                    stacking: 'normal',
+                                    dataLabels: {
+                                        enabled: false
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                pointFormat: '{series.name}: <b>{point.y}</b> ( {point.percentage:.0f}% )<br>',
+                                footerFormat: 'Total: {point.total} {series.tooltipOptions.valueSuffix}'
                             }
                         }
-                    }
-                },
-                range: ctrl.range,
-                device: ctrl.device,
-				sensorType: 'counter',
-                chartName: ctrl.device.SwitchTypeVal === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
-                autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
-                dataSupplier:
-                    _.merge(
-                        {
-                            yAxes:
-                                [
-                                    {
-                                        maxPadding: 0.2,
-                                        title: {
-                                            text: $.t('Energy') + ' (kWh)'
-                                        }
+                    };
+                } else {
+                    return {
+                        highchartTemplate: {
+                            plotOptions: {
+                                column: {
+                                    dataLabels: {
+                                        enabled: true
                                     }
-                                ],
-                            seriesSuppliers: seriesSuppliers
-                        },
-                        dataSupplierTemplate
-                    )
-            };
+                                }
+                            }
+                        }
+                    };
+                }
+            }
         }
 
         function chartParamsMonthYear(domoticzGlobals, ctrl, dataSupplierTemplate, seriesSuppliers) {
-            return {
-                highchartTemplate: {
-                    chart: {
-                        marginRight:10
-                    }
-                },
-                range: ctrl.range,
-                device: ctrl.device,
-				sensorType: 'counter',
-                chartName: ctrl.device.SwitchTypeVal === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
-                autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
-                dataSupplier:
-                    _.merge(
-                        {
-                            yAxes:
-                                [
-                                    {
-                                        title: {
-                                            text: $.t('Energy') + ' (kWh)'
-                                        }
-                                    }
-                                ],
-                            seriesSuppliers: seriesSuppliers
+            return _.merge(
+                {
+                    highchartTemplate: {
+                        chart: {
+                            marginRight: 10
                         },
-                        dataSupplierTemplate
-                    )
-            };
+                        tooltip: {
+                            crosshairs: false
+                        }
+                    },
+                    range: ctrl.range,
+                    device: ctrl.device,
+                    sensorType: 'counter',
+                    chartName: ctrl.device.SwitchTypeVal === deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
+                    autoRefreshIsEnabled: function () {
+                        return ctrl.logCtrl.autoRefresh;
+                    },
+                    dataSupplier:
+                        _.merge(
+                            {
+                                yAxes:
+                                    [
+                                        _.merge(
+                                            {
+                                                title: {
+                                                    text: $.t('Energy') + ' (kWh)'
+                                                }
+                                            },
+                                            seriesYaxisSubtype()
+                                        )
+                                    ],
+                                seriesSuppliers: seriesSuppliers
+                            },
+                            dataSupplierTemplate
+                        )
+                },
+                chartParamsMonthYearSubtype(ctrl.logCtrl.subtype)
+            );
+
+            function chartParamsMonthYearSubtype(subtype) {
+                if (subtype === 'p1') {
+                    return {
+                        highchartTemplate: {
+                            tooltip: {
+                                shared: false
+                            }
+                        }
+                    };
+                } else {
+                    return {
+
+                    };
+                }
+            }
+        }
+
+        function seriesYaxisSubtype(subtype) {
+            if (subtype === 'p1') {
+                return {
+                    min: 0
+                };
+            } else {
+                return {
+
+                };
+            }
         }
 
         function baseParams(jquery) {

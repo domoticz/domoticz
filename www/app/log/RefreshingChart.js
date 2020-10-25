@@ -33,6 +33,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
         self.$scope.chartTitle = chartTitle();
 
         refreshChartData(initialZoom);
+        self.refreshTimestamp = new Date().getTime();
         configureZooming();
 
         self.$scope.$on('$routeChangeStart', function($event, next, current) {
@@ -478,6 +479,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                 .map(function (seriesSupplier) {
                     return _.merge({
                         useDataItemsFromPrevious: false,
+                        extendSeriesNameWithLabel: self.$location.search().serieslabels === 'true',
                         dataSupplier: dataSupplier,
                         dataItemKeys: [],
                         dataItemIsValid:

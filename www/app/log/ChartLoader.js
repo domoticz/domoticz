@@ -23,6 +23,9 @@ define(['lodash'], function (_) {
                                 },
                                 typeof seriesSupplier.template === 'function' ? seriesSupplier.template(seriesSupplier) : seriesSupplier.template
                             );
+                        if (seriesSupplier.extendSeriesNameWithLabel && seriesSupplier.label !== undefined) {
+                            series.name = '[' + seriesSupplier.label + '] ' + series.name;
+                        }
                         chart.addSeries(series, false);
                     } else {
                         chartSeries.setData(seriesSupplier.datapoints, false);

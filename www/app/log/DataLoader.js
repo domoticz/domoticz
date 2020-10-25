@@ -41,7 +41,7 @@ define(function () {
                     if (seriesSupplier.dataItemIsValid === undefined || seriesSupplier.dataItemIsValid(dataItem)) {
                         const datapoint = [seriesSupplier.timestampFromDataItem(dataItem)];
                         seriesSupplier.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
-                            datapoint.push(valueFromDataItem);
+                            datapoint.push(seriesSupplier.convertZeroToNull && valueFromDataItem === 0 ? null : valueFromDataItem);
                         });
                         seriesSupplier.datapoints.push(datapoint);
                     }
