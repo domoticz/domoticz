@@ -311,11 +311,7 @@ void CPinger::ReloadNodes()
 		m_HwdID);
 	if (!result.empty())
 	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
-		{
-			std::vector<std::string> sd = *itt;
-
+		for (const auto &sd : result) {
 			PingNode pnode;
 			pnode.ID = atoi(sd[0].c_str());
 			pnode.Name = sd[1];
@@ -364,23 +360,19 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 	}
 
 	//Find out node, and update it's status
-	std::vector<PingNode>::iterator itt;
-	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
-	{
-		if (itt->ID == Node.ID)
-		{
+	for (auto &m : m_nodes) {
+		if (m.ID == Node.ID) {
 			//Found it
 			time_t atime = mytime(nullptr);
 			if (bPingOK)
 			{
-				itt->LastOK = atime;
+				m.LastOK = atime;
 				SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
 			}
 			else
 			{
-				if (difftime(atime, itt->LastOK) >= Node.SensorTimeoutSec)
-				{
-					itt->LastOK = atime;
+				if (difftime(atime, m.LastOK) >= Node.SensorTimeoutSec) {
+					m.LastOK = atime;
 					SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
 				}
 			}
@@ -392,15 +384,13 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 void CPinger::DoPingHosts()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
-	std::vector<PingNode>::const_iterator itt;
-	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
-	{
+	for (const auto &m : m_nodes) {
 		if (IsStopRequested(0))
 			return;
 		if (m_iThreadsRunning < 1000)
 		{
 			//m_iThreadsRunning++;
-			boost::thread t(boost::bind(&CPinger::Do_Ping_Worker, this, *itt));
+			boost::thread t(boost::bind(&CPinger::Do_Ping_Worker, this, m));
 			SetThreadName(t.native_handle(), "PingerWorker");
 			t.join();
 		}
@@ -476,12 +466,8 @@ namespace http {
 				iHardwareID);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					std::vector<std::string> sd = *itt;
-
+				for (const auto &sd : result) {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = sd[2];

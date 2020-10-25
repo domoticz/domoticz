@@ -121,11 +121,9 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 
 _tRemoteShareUser* CTCPServerIntBase::FindUser(const std::string &username)
 {
-	std::vector<_tRemoteShareUser>::iterator itt;
 	int ii=0;
-	for (itt=m_users.begin(); itt!=m_users.end(); ++itt)
-	{
-		if (itt->Username==username)
+	for (const auto &m : m_users) {
+		if (m.Username == username)
 			return &m_users[ii];
 		ii++;
 	}
@@ -158,10 +156,8 @@ void CTCPServerIntBase::stopAllClients()
 	std::lock_guard<std::mutex> l(connectionMutex);
 	if (connections_.empty())
 		return;
-	std::set<CTCPClient_ptr>::const_iterator itt;
-	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
-	{
-		CTCPClientBase *pClient=itt->get();
+	for (const auto &c : connections_) {
+		CTCPClientBase *pClient = c.get();
 		if (pClient)
 			pClient->stop();
 	}
@@ -198,10 +194,8 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 		)
 		return;
 
-	std::set<CTCPClient_ptr>::const_iterator itt;
-	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
-	{
-		CTCPClientBase *pClient=itt->get();
+	for (const auto &c : connections_) {
+		CTCPClientBase *pClient = c.get();
 		if (pClient==pClient2Ignore)
 			continue;
 
@@ -215,11 +209,8 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 					bOk2Send=true;
 				else
 				{
-					int tdevices=pUser->Devices.size();
-					for (int ii=0; ii<tdevices; ii++)
-					{
-						if (pUser->Devices[ii]==DeviceRowID)
-						{
+					for (const auto &device : pUser->Devices) {
+						if (device == DeviceRowID) {
 							bOk2Send=true;
 							break;
 						}
@@ -323,9 +314,8 @@ bool CTCPServerProxied::OnIncomingData(const std::string &token, const unsigned 
 
 CSharedClient *CTCPServerProxied::FindClient(const std::string &token)
 {
-	std::set<CTCPClient_ptr>::const_iterator itt;
-	for (itt = connections_.begin(); itt != connections_.end(); ++itt) {
-		CSharedClient *pClient = dynamic_cast<CSharedClient *>(itt->get());
+	for (const auto &c : connections_) {
+		CSharedClient *pClient = dynamic_cast<CSharedClient *>(c.get());
 		if (pClient && pClient->CompareToken(token)) {
 			return pClient;
 		}

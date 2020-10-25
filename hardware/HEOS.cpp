@@ -66,15 +66,16 @@ void CHEOS::ParseLine()
 								if (root.isMember("payload"))
 								{
 									int key = 0;
-									for (Json::ValueIterator itr = root["payload"].begin(); itr != root["payload"].end(); itr++) {
+									for (const auto &r : root["payload"]) {
 
-										if (root["payload"][key].isMember("name") && root["payload"][key].isMember("pid"))
-										{
-											std::string pid = std::to_string(root["payload"][key]["pid"].asInt());
-											AddNode(root["payload"][key]["name"].asCString(), pid);
-										}
-										else
-										{
+										if (r[key].isMember("name") && r[key].isMember("pid")) {
+											std::string pid
+												= std::to_string(r[key]["pid"].asInt());
+											AddNode(r[key]["nam"
+												       "e"]
+													.asCString(),
+												pid);
+										} else {
 											_log.Debug(DEBUG_HARDWARE, "DENON by HEOS: No players found.");
 										}
 										key++;
@@ -526,10 +527,8 @@ void CHEOS::Do_Work()
 			}
 			if (sec_counter % 30 == 0 && m_lastUpdate >= 30)//updates every 30 seconds
 			{
-				std::vector<HEOSNode>::const_iterator itt;
-				for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
-				{
-					SendCommand("getPlayState", itt->DevID);
+				for (const auto &node : m_nodes) {
+					SendCommand("getPlayState", node.DevID);
 				}
 			}
 		}
@@ -752,34 +751,31 @@ bool CHEOS::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 		return false;
 
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
-	std::vector<HEOSNode>::const_iterator itt;
-	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
-	{
-		if (itt->DevID == DevID)
-		{
+	for (const auto &node : m_nodes) {
+		if (node.DevID == DevID) {
 			//int iParam = pSen->LIGHTING2.level;
 			std::string sParam;
 			switch (pSen->LIGHTING2.cmnd)
 			{
 			case light2_sOn:
-				SendCommand("setPlayStatePlay", itt->DevID);
+				SendCommand("setPlayStatePlay", node.DevID);
 				return true;
 			case light2_sGroupOn:
 			case light2_sOff:
-				SendCommand("setPlayStateStop", itt->DevID);
+				SendCommand("setPlayStateStop", node.DevID);
 				return true;
 			case light2_sGroupOff:
 			case gswitch_sPlay:
-				SendCommand("getNowPlaying", itt->DevID);
-				SendCommand("setPlayStatePlay", itt->DevID);
+				SendCommand("getNowPlaying", node.DevID);
+				SendCommand("setPlayStatePlay", node.DevID);
 				return true;
 			case gswitch_sPlayPlaylist:
 			case gswitch_sPlayFavorites:
 			case gswitch_sStop:
-				SendCommand("setPlayStateStop", itt->DevID);
+				SendCommand("setPlayStateStop", node.DevID);
 				return true;
 			case gswitch_sPause:
-				SendCommand("setPlayStatePause", itt->DevID);
+				SendCommand("setPlayStatePause", node.DevID);
 				return true;
 			case gswitch_sSetVolume:
 			default:
@@ -799,11 +795,7 @@ void CHEOS::ReloadNodes()
 	if (!result.empty())
 	{
 		_log.Log(LOG_STATUS, "DENON for HEOS: %d players found.", (int)result.size());
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
-		{
-			std::vector<std::string> sd = *itt;
-
+		for (const auto &sd : result) {
 			HEOSNode pnode;
 			pnode.ID = atoi(sd[0].c_str());
 			pnode.DevID = atoi(sd[1].c_str());

@@ -475,7 +475,7 @@ bool YeeLightGetTag(const std::string &InputString, const std::string &Tag, std:
 
 bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector<std::string> &receivedip)
 {
-	std::string receivedString(szData);
+	const std::string &receivedString(szData);
 	//_log.Log(LOG_STATUS, receivedString.c_str());
 #ifdef DEBUG_YeeLightW
 	SaveString2Disk(receivedString, "E:\\YeeLight_receive.txt");

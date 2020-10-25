@@ -550,10 +550,8 @@ void CSBFSpot::GetMeterDetails()
 	double Pac = 0;
 	int InvIdx = 0;
 
-	std::vector<std::string>::const_iterator itt;
-	for (itt = szLastLines.begin(); itt != szLastLines.end(); ++itt)
-	{
-		StringSplit(*itt, szSeperator, results);
+	for (const auto &line : szLastLines) {
+		StringSplit(line, szSeperator, results);
 
 		if (results[1].size() < 1)
 		{

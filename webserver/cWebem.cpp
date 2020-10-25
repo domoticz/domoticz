@@ -571,7 +571,7 @@ namespace http {
 				size_t q = 0;
 				size_t p = q;
 				int flag_done = 0;
-				std::string uri = params;
+				const std::string &uri = params;
 				while (!flag_done)
 				{
 					q = uri.find('=', p);
@@ -688,7 +688,7 @@ namespace http {
 						size_t q = 0;
 						size_t p = q;
 						int flag_done = 0;
-						std::string uri = params;
+						const std::string &uri = params;
 						while (!flag_done)
 						{
 							q = uri.find('=', p);
@@ -760,12 +760,9 @@ namespace http {
 					_log.Log(LOG_ERROR, "WebServer PO unknown exception occurred");
 				}
 				std::string attachment;
-				size_t num = rep.headers.size();
-				for (size_t h = 0; h < num; h++)
-				{
-					if (boost::iequals(rep.headers[h].name, "Content-Disposition"))
-					{
-						attachment = rep.headers[h].value.substr(rep.headers[h].value.find('=') + 1);
+				for (const auto &h : rep.headers) {
+					if (boost::iequals(h.name, "Content-Disposition")) {
+						attachment = h.value.substr(h.value.find('=') + 1);
 						std::size_t last_dot_pos = attachment.find_last_of('.');
 						if (last_dot_pos != std::string::npos)
 						{
@@ -1177,18 +1174,13 @@ namespace http {
 				std::unique_lock<std::mutex> lock(m_sessionsMutex);
 				time_t now = mytime(nullptr);
 				std::map<std::string, WebEmSession>::iterator itt;
-				for (itt = m_sessions.begin(); itt != m_sessions.end(); ++itt)
-				{
-					if (itt->second.timeout < now)
-					{
-						ssids.push_back(itt->second.id);
+				for (const auto &m : m_sessions) {
+					if (m.second.timeout < now) {
+						ssids.push_back(m.second.id);
 					}
 				}
 			}
-			std::vector<std::string>::iterator ssitt;
-			for (ssitt = ssids.begin(); ssitt != ssids.end(); ++ssitt)
-			{
-				std::string ssid = *ssitt;
+			for (const auto &ssid : ssids) {
 				RemoveSession(ssid);
 			}
 			int after = CountSessions();
@@ -1197,13 +1189,12 @@ namespace http {
 				std::unique_lock<std::mutex> lock(m_sessionsMutex);
 				std::map<std::string, WebEmSession>::iterator itt;
 				int i = 0;
-				for (itt = m_sessions.begin(); itt != m_sessions.end(); ++itt)
-				{
+				for (const auto &m : m_sessions) {
 					if (i > 0)
 					{
 						ss << ",";
 					}
-					ss << itt->second.id;
+					ss << m.second.id;
 					i += 1;
 				}
 			}
@@ -1318,19 +1309,15 @@ namespace http {
 						uname = base64_decode(uname);
 						upass = GenerateMD5Hash(base64_decode(upass));
 
-						std::vector<_tWebUserPassword>::iterator itt;
-						for (itt = myWebem->m_userpasswords.begin(); itt != myWebem->m_userpasswords.end(); ++itt)
-						{
-							if (itt->Username == uname)
-							{
-								if (itt->Password != upass)
-								{
+						for (const auto &my : myWebem->m_userpasswords) {
+							if (my.Username == uname) {
+								if (my.Password != upass) {
 									m_failcounter++;
 									return 0;
 								}
 								session.isnew = true;
-								session.username = itt->Username;
-								session.rights = itt->userrights;
+								session.username = my.Username;
+								session.rights = my.userrights;
 								session.rememberme = false;
 								m_failcounter = 0;
 								return 1;
@@ -1342,20 +1329,17 @@ namespace http {
 				return 0;
 			}
 
-			std::vector<_tWebUserPassword>::iterator itt;
-			for (itt = myWebem->m_userpasswords.begin(); itt != myWebem->m_userpasswords.end(); ++itt)
-			{
-				if (itt->Username == _ah.user)
-				{
-					int bOK = check_password(&_ah, itt->Password, myWebem->m_DigistRealm);
+			for (const auto &my : myWebem->m_userpasswords) {
+				if (my.Username == _ah.user) {
+					int bOK = check_password(&_ah, my.Password, myWebem->m_DigistRealm);
 					if (!bOK)
 					{
 						m_failcounter++;
 						return 0;
 					}
 					session.isnew = true;
-					session.username = itt->Username;
-					session.rights = itt->userrights;
+					session.username = my.Username;
+					session.rights = my.userrights;
 					session.rememberme = false;
 					m_failcounter = 0;
 					return 1;
@@ -1396,10 +1380,8 @@ namespace http {
 			if (sHost.size() < 3)
 				return false;
 
-			for (const auto& itt : myWebem->m_localnetworks)
-			{
-				if (IsIPInRange(sHost, itt))
-				{
+			for (const auto &my : myWebem->m_localnetworks) {
+				if (IsIPInRange(sHost, my)) {
 					return true;
 				}
 			}
@@ -1820,10 +1802,8 @@ namespace http {
 					if (myWebem->m_authmethod != AUTH_BASIC)
 					{
 						//Check if we need to bypass authentication (not when using basic-auth)
-						for (const auto& itt : myWebem->myWhitelistURLs)
-						{
-							if (req.uri.find(itt) == 0)
-							{
+						for (const auto &url : myWebem->myWhitelistURLs) {
+							if (req.uri.find(url) == 0) {
 								return true;
 							}
 						}
@@ -1831,9 +1811,8 @@ namespace http {
 						std::string cmdparam;
 						if (GetURICommandParameter(req.uri, cmdparam))
 						{
-							for (const auto& itt : myWebem->myWhitelistCommands)
-							{
-								if (cmdparam.find(itt) == 0)
+							for (const auto &cmd : myWebem->myWhitelistCommands) {
+								if (cmdparam.find(cmd) == 0)
 									return true;
 							}
 						}
@@ -1881,20 +1860,16 @@ namespace http {
 			}
 
 			//Check if we need to bypass authentication (not when using basic-auth)
-			for (const auto& itt : myWebem->myWhitelistURLs)
-			{
-				if (req.uri.find(itt) == 0)
-				{
+			for (const auto &url : myWebem->myWhitelistURLs) {
+				if (req.uri.find(url) == 0) {
 					return true;
 				}
 			}
 			std::string cmdparam;
 			if (GetURICommandParameter(req.uri, cmdparam))
 			{
-				for (const auto& itt : myWebem->myWhitelistCommands)
-				{
-					if (cmdparam.find(itt) == 0)
-					{
+				for (const auto &cmd : myWebem->myWhitelistCommands) {
+					if (cmdparam.find(cmd) == 0) {
 						return true;
 					}
 				}
@@ -1961,12 +1936,11 @@ namespace http {
 				session.username = storedSession.username;
 				session.expires = storedSession.expires;
 				std::vector<_tWebUserPassword>::iterator ittu;
-				for (ittu = myWebem->m_userpasswords.begin(); ittu != myWebem->m_userpasswords.end(); ++ittu)
-				{
-					if (ittu->Username == session.username) // the user still exists
+				for (const auto &my : myWebem->m_userpasswords) {
+					if (my.Username == session.username) // the user still exists
 					{
 						userExists = true;
-						session.rights = ittu->userrights;
+						session.rights = my.userrights;
 						break;
 					}
 				}

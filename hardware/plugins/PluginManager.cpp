@@ -201,16 +201,12 @@ namespace Plugins {
 	void CPluginSystem::LoadSettings()
 	{
 		//	Add command to message queue for every plugin
-		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); ++itt)
-		{
-			if (itt->second)
-			{
-				CPlugin*	pPlugin = reinterpret_cast<CPlugin*>(itt->second);
+		for (const auto &plugin : m_pPlugins) {
+			if (plugin.second) {
+				auto pPlugin = reinterpret_cast<CPlugin *>(plugin.second);
 				pPlugin->MessagePlugin(new SettingsDirective(pPlugin));
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "%s: NULL entry found in Plugins map for Hardware %d.", __func__, itt->first);
+			} else {
+				_log.Log(LOG_ERROR, "%s: NULL entry found in Plugins map for Hardware %d.", __func__, plugin.first);
 			}
 		}
 	}
@@ -237,24 +233,20 @@ namespace Plugins {
 		std::string plugin_Dir, plugin_File;
 
 		DirectoryListing(DirEntries, plugin_BaseDir, true, false);
-		for (itt_Dir = DirEntries.begin(); itt_Dir != DirEntries.end(); ++itt_Dir)
-		{
-			if (*itt_Dir != "examples")
-			{
+		for (const auto &dir : DirEntries) {
+			if (dir != "examples") {
 #ifdef WIN32
-				plugin_Dir = plugin_BaseDir + *itt_Dir + "\\";
+				plugin_Dir = plugin_BaseDir + dir + "\\";
 #else
-				plugin_Dir = plugin_BaseDir + *itt_Dir + "/";
+				plugin_Dir = plugin_BaseDir + dir + "/";
 #endif
 				DirectoryListing(FileEntries, plugin_Dir, false, true);
-				for (itt_File = FileEntries.begin(); itt_File != FileEntries.end(); ++itt_File)
-				{
-					if (*itt_File == "plugin.py")
-					{
+				for (const auto &file : FileEntries) {
+					if (file == "plugin.py") {
 						try
 						{
 							std::string sXML;
-							plugin_File = plugin_Dir + *itt_File;
+							plugin_File = plugin_Dir + file;
 							std::string line;
 							std::ifstream readFile(plugin_File.c_str());
 							bool bFound = false;
@@ -422,13 +414,16 @@ namespace http {
 			int		iPluginCnt = root.size();
 			Plugins::CPluginSystem Plugins;
 			std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
-			for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); ++it_type)
-			{
+			for (const auto &type : *PluginXml) {
 				TiXmlDocument	XmlDoc;
-				XmlDoc.Parse(it_type->second.c_str());
+				XmlDoc.Parse(type.second.c_str());
 				if (XmlDoc.Error())
 				{
-					_log.Log(LOG_ERROR, "%s: Parsing '%s', '%s' at line %d column %d in XML '%s'.", __func__, it_type->first.c_str(), XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
+					_log.Log(LOG_ERROR,
+						 "%s: Parsing '%s', '%s' at line %d column %d in "
+						 "XML '%s'.",
+						 __func__, type.first.c_str(), XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(),
+						 type.second.c_str());
 				}
 				else
 				{
@@ -527,15 +522,17 @@ namespace http {
 			{
 				std::string	sKey = "key=\"" + pPlugin->m_PluginKey + "\"";
 				std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
-				for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); ++it_type)
-				{
-					if (it_type->second.find(sKey) != std::string::npos)
-					{
+				for (const auto &type : *PluginXml) {
+					if (type.second.find(sKey) != std::string::npos) {
 						TiXmlDocument	XmlDoc;
-						XmlDoc.Parse(it_type->second.c_str());
+						XmlDoc.Parse(type.second.c_str());
 						if (XmlDoc.Error())
 						{
-							_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
+							_log.Log(LOG_ERROR,
+								 "%s: Error '%s' at line %d column "
+								 "%d in XML '%s'.",
+								 __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(),
+								 type.second.c_str());
 						}
 						else
 						{

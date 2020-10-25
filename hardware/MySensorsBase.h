@@ -255,7 +255,7 @@ public:
 			}
 			return ret;
 		}
-		bool GetValue(const _eSetType vType, int &intValue)
+		bool GetValue(const _eSetType vType, int &intValue) const
 		{
 			std::map<_eSetType, _tMySensorValue>::const_iterator itt;
 			itt = values.find(vType);

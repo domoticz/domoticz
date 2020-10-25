@@ -281,7 +281,6 @@ bool CAtagOne::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	if (tsize < 1)
 		return false;
 
-	Json::Value::const_iterator itt;
 	Json::ArrayIndex rsize = tempjson["result"].size();
 	if (rsize < 1)
 		return false;
@@ -324,10 +323,9 @@ static std::string GetHTMLPageValue(const std::string &hpage, const std::string 
 	//     <div class="col-xs-6">
 	//         <p class="form-control-static">CV-ketel</p>
 	//     </div>
-	for (const auto & itt : m_labels)
-	{
+	for (const auto &label : m_labels) {
 		std::string sresult = hpage;
-		std::string sstring = ">" + itt + "</label>";
+		std::string sstring = ">" + label + "</label>";
 		size_t tpos = sresult.find(sstring);
 		if (tpos==std::string::npos)
 			continue;

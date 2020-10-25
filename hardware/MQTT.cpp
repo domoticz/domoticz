@@ -749,10 +749,9 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 			root["meterType"] = Meter_Type_Desc((_eMeterType)switchType);
 		}
 		// Add device options
-		for (const auto& ittOptions : options)
-		{
-			std::string optionName = ittOptions.first;
-			std::string optionValue = ittOptions.second;
+		for (const auto &m : options) {
+			std::string optionName = m.first;
+			std::string optionValue = m.second;
 			root[optionName] = optionValue;
 		}
 
@@ -776,11 +775,10 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		StringSplit(svalue, ";", strarray);
 
 		int sIndex = 1;
-		for (const auto& itt : strarray)
-		{
+		for (const auto &str : strarray) {
 			std::stringstream szQuery;
 			szQuery << "svalue" << sIndex;
-			root[szQuery.str()] = itt;
+			root[szQuery.str()] = str;
 			sIndex++;
 		}
 		std::string message = root.toStyledString();
@@ -792,8 +790,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		if (m_publish_scheme & PT_floor_room)
 		{
 			result = m_sql.safe_query("SELECT F.Name, P.Name, M.DeviceRowID FROM Plans as P, Floorplans as F, DeviceToPlansMap as M WHERE P.FloorplanID=F.ID and M.PlanID=P.ID and M.DeviceRowID=='%" PRIu64 "'", DeviceRowIdx);
-			for (auto &i : result) {
-				sd = i;
+			for (const auto &sd : result) {
 				std::string floor = sd[0];
 				std::string room = sd[1];
 				std::stringstream topic;

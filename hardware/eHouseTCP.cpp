@@ -818,9 +818,8 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 		switch (code)
 		{
 		case VISUAL_PGM:
-			for (i = 0; i < (sizeof(m_eHEn[index]->Programs) / sizeof(m_eHEn[index]->Programs[0])); i++)
-			{
-				if ((strlen(m_eHEn[index]->Programs[i]) > 0) && (strstr(m_eHEn[index]->Programs[i], "@") == nullptr)) {
+			for (const auto &program : m_eHEn[index]->Programs) {
+				if ((strlen(program) > 0) && (strstr(program, "@") == nullptr)) {
 					Lev++;
 				}
 				if (Lev == lv)
@@ -834,10 +833,8 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 			}
 			break;
 		case VISUAL_APGM:
-			for (i = 0; i < (sizeof(m_eHEn[index]->ADCPrograms) / sizeof(m_eHEn[index]->ADCPrograms[0])); i++)
-			{
-				if ((strlen(m_eHEn[index]->ADCPrograms[i]) > 0)
-				    && (strstr(m_eHEn[index]->ADCPrograms[i], "@") == nullptr)) {
+			for (const auto &adc : m_eHEn[index]->ADCPrograms) {
+				if ((strlen(adc) > 0) && (strstr(adc, "@") == nullptr)) {
 					Lev++;
 				}
 				if (Lev == lv)
@@ -880,9 +877,8 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 		switch (code)
 		{
 		case VISUAL_PGM:
-			for (i = 0; i < (sizeof(m_eHn[index]->Programs) / sizeof(m_eHn[index]->Programs[0])); i++)
-			{
-				if ((strlen(m_eHn[index]->Programs[i]) > 0) && (strstr(m_eHn[index]->Programs[i], "@") == nullptr)) {
+			for (const auto &eHn : m_eHn[index]->Programs) {
+				if ((strlen(eHn) > 0) && (strstr(eHn, "@") == nullptr)) {
 					Lev++;
 				}
 				if (Lev == lv)

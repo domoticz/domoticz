@@ -468,9 +468,7 @@ void CEnOceanESP3::ReloadVLDNodes()
 	result = m_sql.safe_query("SELECT ID, DeviceID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		for (const auto & itt : result)
-		{
-			std::vector<std::string> sd = itt;
+		for (const auto &sd : result) {
 			_tVLDNode node;
 			node.idx = atoi(sd[0].c_str());
 			node.manufacturer = atoi(sd[2].c_str());

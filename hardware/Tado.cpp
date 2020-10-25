@@ -673,7 +673,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 	}
 
 	// Process each line.
-	for (auto _sLine : _sJavascriptDataLines) {
+	for (const auto &_sLine : _sJavascriptDataLines) {
 		Debug(DEBUG_HARDWARE, "MatchValueFromJSKey: Processing line: '%s'", _sLine.c_str());
 
 		std::string _sLineKey = "";
@@ -757,7 +757,7 @@ bool CTado::GetTadoApiEnvironment(std::string sUrl)
 	// The key values will be stored in a map, lets clean it out first.
 	m_TadoEnvironment.clear();
 
-	for (auto _sKeyName : _vKeysToFetch) {
+	for (const auto &_sKeyName : _vKeysToFetch) {
 		// Feed the function the javascript response, and have it attempt to grab the provided key's value from it.
 		// Value is stored in m_TadoEnvironment[keyName]
 		if (!MatchValueFromJSKey(_sKeyName, _sResponse, m_TadoEnvironment[_sKeyName])) {

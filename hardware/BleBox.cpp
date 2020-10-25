@@ -97,173 +97,154 @@ void BleBox::GetDevicesState()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
 
-	for (const auto& itt : m_devices)
-	{
+	for (const auto &m : m_devices) {
 		std::stringstream sstr;
-		sstr << "/api/" << DevicesType[itt.second].api_state << "/state";
+		sstr << "/api/" << DevicesType[m.second].api_state << "/state";
 		std::string command = sstr.str();
 
-		Json::Value root = SendCommand(itt.first, command, 2);
+		Json::Value root = SendCommand(m.first, command, 2);
 		if (root.empty())
 			continue;
 
-		int IP = IPToUInt(itt.first);
+		int IP = IPToUInt(m.first);
 		if (IP != 0)
 		{
-			switch (itt.second)
-			{
-			case 1:
-			{
-				if (DoesNodeExists(root, "shutter") == false)
-					break;
-
-				root = root["shutter"];
-
-				if (DoesNodeExists(root, "state") == false)
-					break;
-
-				const int state = root["state"].asInt();
-
-				if (DoesNodeExists(root, "currentPos", "position") == false)
-					break;
-
-				const int currentPos = root["currentPos"]["position"].asInt();
-				const int pos = currentPos;
-
-				bool opened = true;
-				if ((state == 2 && pos == 100) || (state == 3))
-					opened = false;
-
-				SendSwitch(IP, 0, 255, opened, 100 - pos, DevicesType[itt.second].name);
-				break;
-			}
-			case 2:
-			{
-				if (DoesNodeExists(root, "light", "currentColor") == false)
-					break;
-
-				const std::string currentColor = root["light"]["currentColor"].asString();
-				unsigned int hexNumber;
-				sscanf(currentColor.c_str(), "%x", &hexNumber);
-				int level = (int)(hexNumber / (255.0 / 100.0));
-
-				SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt.second].name);
-				break;
-			}
-			case 3:
-			{
-				if (DoesNodeExists(root, "rgbw", "currentColor") == false)
-					break;
-
-				const std::string currentColor = root["rgbw"]["currentColor"].asString();
-				unsigned int hexNumber;
-				sscanf(currentColor.c_str(), "%x", &hexNumber);
-
-				SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[itt.second].name);
-				break;
-			}
-			case 4:
-			{
-				if (DoesNodeExists(root, "currentPos") == false)
-					break;
-
-				const float level = root["currentPos"].asFloat();
-
-				SendPercentageSensor(IP, 1, 255, level, DevicesType[itt.second].name);
-				break;
-			}
-			case 5:
-			{
-				if (DoesNodeExists(root, "dimmer", "currentBrightness") == false)
-					break;
-
-				const int currentPos = root["dimmer"]["currentBrightness"].asInt();
-				int level = (int)(currentPos / (255.0 / 100.0));
-
-				SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt.second].name);
-				break;
-			}
-			case 0:
-			case 6:
-			{
-				if ((DoesNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
-					break;
-
-				Json::Value relays = root["relays"];
-				Json::ArrayIndex count = relays.size();
-				for (Json::ArrayIndex index = 0; index < count; index++)
-				{
-					Json::Value relay = relays[index];
-					if ((DoesNodeExists(relay, "relay") == false) || (DoesNodeExists(relay, "state") == false))
+			switch (m.second) {
+				case 1: {
+					if (DoesNodeExists(root, "shutter") == false)
 						break;
-					uint8_t relayNumber = (uint8_t)relay["relay"].asInt(); // 0 or 1
-					bool currentState = relay["state"].asBool(); // 0 or 1
-					//std::string name = DevicesType[itt.second].name + " " + relay["state"].asString();
-					SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[itt.second].name);
+
+					root = root["shutter"];
+
+					if (DoesNodeExists(root, "state") == false)
+						break;
+
+					const int state = root["state"].asInt();
+
+					if (DoesNodeExists(root, "currentPos", "position") == false)
+						break;
+
+					const int currentPos = root["currentPos"]["position"].asInt();
+					const int pos = currentPos;
+
+					bool opened = true;
+					if ((state == 2 && pos == 100) || (state == 3))
+						opened = false;
+
+					SendSwitch(IP, 0, 255, opened, 100 - pos, DevicesType[m.second].name);
+					break;
 				}
-
-				break;
-			}
-			case 7:
-			{
-				if (DoesNodeExists(root, "air") == false)
-					break;
-
-				root = root["air"];
-
-				if ((DoesNodeExists(root, "sensors") == false) || (!root["sensors"].isArray()))
-					break;
-
-				Json::Value sensors = root["sensors"];
-				Json::ArrayIndex count = sensors.size();
-				for (Json::ArrayIndex index = 0; index < count; index++)
-				{
-					Json::Value sensor = sensors[index];
-					if ((DoesNodeExists(sensor, "type") == false) || (DoesNodeExists(sensor, "value") == false))
+				case 2: {
+					if (DoesNodeExists(root, "light", "currentColor") == false)
 						break;
-					uint8_t value = (uint8_t)sensor["value"].asInt();
-					std::string type = sensor["type"].asString();
 
-					//TODO - how save IP address ??
-					SendAirQualitySensor(IP, index + 1, 255, value, type);
+					const std::string currentColor = root["light"]["currentColor"].asString();
+					unsigned int hexNumber;
+					sscanf(currentColor.c_str(), "%x", &hexNumber);
+					int level = (int)(hexNumber / (255.0 / 100.0));
+
+					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[m.second].name);
+					break;
 				}
-
-				break;
-			}
-			case 8:
-			{
-				if (DoesNodeExists(root, "tempSensor") == false)
-					break;
-
-				root = root["tempSensor"];
-
-				if ((DoesNodeExists(root, "sensors") == false) || (!root["sensors"].isArray()))
-					break;
-
-				Json::Value sensors = root["sensors"];
-				Json::ArrayIndex count = sensors.size();
-				for (Json::ArrayIndex index = 0; index < count; index++)
-				{
-					Json::Value sensor = sensors[index];
-
-					if ((DoesNodeExists(sensor, "value") == false) || (DoesNodeExists(sensor, "state") == false))
+				case 3: {
+					if (DoesNodeExists(root, "rgbw", "currentColor") == false)
 						break;
 
-					if (sensor["state"] != 2)
-					{
-						Log(LOG_ERROR, "temp sensor error!");
+					const std::string currentColor = root["rgbw"]["currentColor"].asString();
+					unsigned int hexNumber;
+					sscanf(currentColor.c_str(), "%x", &hexNumber);
+
+					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[m.second].name);
+					break;
+				}
+				case 4: {
+					if (DoesNodeExists(root, "currentPos") == false)
 						break;
+
+					const float level = root["currentPos"].asFloat();
+
+					SendPercentageSensor(IP, 1, 255, level, DevicesType[m.second].name);
+					break;
+				}
+				case 5: {
+					if (DoesNodeExists(root, "dimmer", "currentBrightness") == false)
+						break;
+
+					const int currentPos = root["dimmer"]["currentBrightness"].asInt();
+					int level = (int)(currentPos / (255.0 / 100.0));
+
+					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[m.second].name);
+					break;
+				}
+				case 0:
+				case 6: {
+					if ((DoesNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
+						break;
+
+					for (const auto &relay : root["relays"]) {
+						if ((DoesNodeExists(relay, "relay") == false) || (DoesNodeExists(relay, "state") == false))
+							break;
+						uint8_t relayNumber = (uint8_t)relay["relay"].asInt(); // 0 or 1
+						bool currentState = relay["state"].asBool();	       // 0 or 1
+						// std::string name = DevicesType[m.second].name + " " + relay["state"].asString();
+						SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[m.second].name);
 					}
 
-					std::string temperature = sensor["value"].asString(); // xxxx (xx.xx = temperature)
-					float ftemp = static_cast<float>(std::stoi(temperature.substr(0, 2)) + std::stoi(temperature.substr(2, 2)) / 100.0);
-
-					//TODO - how save IP address ??
-					SendTempSensor(IP, 255, ftemp, DevicesType[itt.second].name);
+					break;
 				}
+				case 7: {
+					if (DoesNodeExists(root, "air") == false)
+						break;
 
-				break;
-			}
+					root = root["air"];
+
+					if ((DoesNodeExists(root, "sensors") == false) || (!root["sensors"].isArray()))
+						break;
+
+					Json::Value sensors = root["sensors"];
+					Json::ArrayIndex count = sensors.size();
+					for (Json::ArrayIndex index = 0; index < count; index++) {
+						Json::Value sensor = sensors[index];
+						if ((DoesNodeExists(sensor, "type") == false) || (DoesNodeExists(sensor, "value") == false))
+							break;
+						uint8_t value = (uint8_t)sensor["value"].asInt();
+						std::string type = sensor["type"].asString();
+
+						// TODO - how save IP address ??
+						SendAirQualitySensor(IP, index + 1, 255, value, type);
+					}
+
+					break;
+				}
+				case 8: {
+					if (DoesNodeExists(root, "tempSensor") == false)
+						break;
+
+					root = root["tempSensor"];
+
+					if ((DoesNodeExists(root, "sensors") == false) || (!root["sensors"].isArray()))
+						break;
+
+					for (const auto &sensor : root["sensors"]) {
+						if ((DoesNodeExists(sensor, "value") == false)
+						    || (DoesNodeExists(sensor, "state") == false))
+							break;
+
+						if (sensor["state"] != 2) {
+							Log(LOG_ERROR, "temp sensor error!");
+							break;
+						}
+
+						std::string temperature = sensor["value"].asString(); // xxxx (xx.xx = temperature)
+						float ftemp = static_cast<float>(std::stoi(temperature.substr(0, 2))
+										 + std::stoi(temperature.substr(2, 2)) / 100.0);
+
+						// TODO - how save IP address ??
+						SendTempSensor(IP, 255, ftemp, DevicesType[m.second].name);
+					}
+
+					break;
+				}
 			}
 			SetHeartbeatReceived();
 		}
@@ -776,10 +757,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto& itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					BYTE id1, id2, id3, id4;
 					char ip[20];
 					sscanf(sd[2].c_str(), "%2hhx%2hhx%2hhx%2hhx", &id1, &id2, &id3, &id4);
@@ -1096,7 +1074,7 @@ std::string BleBox::GetUptime(const std::string & IPAddress)
 
 int BleBox::GetDeviceType(const std::string & IPAddress)
 {
-	std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
+	auto itt = m_devices.find(IPAddress);
 	if (itt == m_devices.end())
 	{
 		Log(LOG_ERROR, "unknown device (%s)", IPAddress.c_str());
@@ -1174,9 +1152,7 @@ bool BleBox::LoadNodes()
 	result = m_sql.safe_query("SELECT ID,DeviceID FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		for (const auto& itt : result)
-		{
-			const std::vector<std::string>& sd = itt;
+		for (const auto &sd : result) {
 			std::string addressIP = GetDeviceIP(sd[1]);
 
 			std::string deviceApiName = IdentifyDevice(addressIP);
@@ -1206,9 +1182,8 @@ void BleBox::ReloadNodes()
 
 void BleBox::UpdateFirmware()
 {
-	for (const auto& itt : m_devices)
-	{
-		Json::Value root = SendCommand(itt.first, "/api/ota/update", 2);
+	for (const auto &m : m_devices) {
+		Json::Value root = SendCommand(m.first, "/api/ota/update", 2);
 	}
 }
 

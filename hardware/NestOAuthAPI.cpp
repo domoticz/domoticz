@@ -462,7 +462,7 @@ void CNestOAuthAPI::GetMeterDetails()
 			if (devWhereName.empty())
 				continue;
 
-			std::string devName = devWhereName;
+			const std::string &devName = devWhereName;
 
 			// Default value is true, let's assume the worst.
 			bool bSmokeAlarm = true;

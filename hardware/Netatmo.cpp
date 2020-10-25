@@ -763,12 +763,9 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	{
 		//find roomid
 		std::string roomID;
-		std::map<int, std::string >::const_iterator ittTherm;
-		for (ittTherm = m_thermostatDeviceID.begin(); ittTherm != m_thermostatDeviceID.end(); ++ittTherm)
-		{
-			if (ittTherm->first == idx)
-			{
-				roomID = ittTherm->second;
+		for (const auto &therm : m_thermostatDeviceID) {
+			if (therm.first == idx) {
+				roomID = therm.second;
 				break;
 			}
 		}

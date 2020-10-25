@@ -2442,7 +2442,7 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 
 	std::vector<std::string> oSplitResults;
 	StringSplit(oAction_, " ", oSplitResults);
-	for (auto sToken : oSplitResults) {
+	for (const auto &sToken : oSplitResults) {
 		if (sToken == "FOR") {
 			iLastTokenType = 1;
 		} else if (sToken == "AFTER") {

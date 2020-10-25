@@ -4901,9 +4901,8 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const uint8_t node
 							m_pManager->GetValueListItems(ittValue, &strs);
 							root["result"][index]["config"][ivalue]["list_items"] = static_cast<int>(strs.size());
 							int vcounter = 0;
-							for (std::vector<std::string>::const_iterator it = strs.begin(); it != strs.end(); ++it)
-							{
-								root["result"][index]["config"][ivalue]["listitem"][vcounter++] = *it;
+							for (const auto &str : strs) {
+								root["result"][index]["config"][ivalue]["listitem"][vcounter++] = str;
 							}
 						}
 						uint16_t i_index = ittValue.GetIndex();
