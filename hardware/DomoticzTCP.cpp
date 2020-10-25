@@ -28,11 +28,11 @@ DomoticzTCP::~DomoticzTCP() = default;
 #ifndef NOCLOUD
 bool DomoticzTCP::IsValidAPIKey(const std::string &IPAddress)
 {
-	if (IPAddress.find(".") != std::string::npos) {
+	if (IPAddress.find('.') != std::string::npos) {
 		// we assume an IPv4 address or host name
 		return false;
 	}
-	if (IPAddress.find(":") != std::string::npos) {
+	if (IPAddress.find(':') != std::string::npos) {
 		// we assume an IPv6 address
 		return false;
 	}

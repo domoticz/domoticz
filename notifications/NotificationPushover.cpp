@@ -34,7 +34,7 @@ bool CNotificationPushover::SendMessageImplementation(
 	size_t posDevice = ExtraData.find("|Device=");
 	if (posDevice != std::string::npos) {
 		posDevice += 8;
-		std::string sDevice = ExtraData.substr(posDevice, ExtraData.find("|", posDevice) - posDevice);
+		std::string sDevice = ExtraData.substr(posDevice, ExtraData.find('|', posDevice) - posDevice);
 		if (sDevice != "") {
 			sPostData << "&device=" << sDevice;
 		}

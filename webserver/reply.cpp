@@ -332,7 +332,7 @@ bool reply::set_content_from_file(reply *rep, const std::string & file_path, con
 		return false;
 	reply::add_header_attachment(rep, attachment);
 	if (set_content_type == true) {
-		std::size_t last_dot_pos = attachment.find_last_of(".");
+		std::size_t last_dot_pos = attachment.find_last_of('.');
 		if (last_dot_pos != std::string::npos) {
 			std::string file_extension = attachment.substr(last_dot_pos + 1);
 			std::string mime_type = mime_types::extension_to_type(file_extension);

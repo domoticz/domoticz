@@ -119,11 +119,11 @@ bool CNotificationHTTP::SendMessageImplementation(
 		std::string scriptname = destURL.substr(9);
 		std::string scriptparams = "";
 #if !defined WIN32
-		if (scriptname.find("/") != 0)
+		if (scriptname.find('/') != 0)
 			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 		//Add parameters
-		uPos = scriptname.find(" ");
+		uPos = scriptname.find(' ');
 		if (uPos != std::string::npos)
 		{
 			scriptparams = scriptname.substr(uPos + 1);

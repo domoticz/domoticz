@@ -128,7 +128,7 @@ std::string GetFirstDeviceID(const std::string &shtml)
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(tpos + 2);
-	tpos = sResult.find("\"");
+	tpos = sResult.find('\"');
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(0, tpos);
@@ -169,7 +169,7 @@ std::string CAtagOne::GetRequestVerificationToken(const std::string &url)
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(tpos+7);
-	tpos = sResult.find("\"");
+	tpos = sResult.find('\"');
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(0,tpos);
@@ -336,11 +336,11 @@ static std::string GetHTMLPageValue(const std::string &hpage, const std::string 
 		if (tpos == std::string::npos)
 			continue;
 		sresult = sresult.substr(tpos+2);
-		tpos = sresult.find(">");
+		tpos = sresult.find('>');
 		if (tpos == std::string::npos)
 			continue;
 		sresult = sresult.substr(tpos + 1);
-		tpos = sresult.find("<");
+		tpos = sresult.find('<');
 		if (tpos == std::string::npos)
 			continue;
 		sresult = sresult.substr(0,tpos);

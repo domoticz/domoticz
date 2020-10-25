@@ -221,8 +221,8 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   request_path = myWebem->ExtractRequestPath(request_path);
 
   // Determine the file extension.
-  std::size_t last_slash_pos = request_path.find_last_of("/");
-  std::size_t last_dot_pos = request_path.find_last_of(".");
+  std::size_t last_slash_pos = request_path.find_last_of('/');
+  std::size_t last_dot_pos = request_path.find_last_of('.');
   std::string extension;
   if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
   {

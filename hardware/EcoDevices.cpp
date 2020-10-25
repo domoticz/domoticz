@@ -237,11 +237,11 @@ void CEcoDevices::GetMeterDetails()
 #endif
 
 	m_status.version = m_status.version + "..";
-	major = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
-	m_status.version.erase(0, m_status.version.find(".") + 1);
-	minor = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
-	m_status.version.erase(0, m_status.version.find(".") + 1);
-	release = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
+	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	m_status.version.erase(0, m_status.version.find('.') + 1);
+	minor = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	m_status.version.erase(0, m_status.version.find('.') + 1);
+	release = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/version/text()").c_str();
 
 	if ((major > min_major) || ((major == min_major) && (minor > min_minor)) || ((major == min_major) && (minor == min_minor) && (release >= min_release)))
@@ -435,11 +435,11 @@ void CEcoDevices::GetMeterRT2Details()
 #endif
 
 	m_status.version = m_status.version + "..";
-	major = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
-	m_status.version.erase(0, m_status.version.find(".") + 1);
-	minor = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
-	m_status.version.erase(0, m_status.version.find(".") + 1);
-	release = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
+	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	m_status.version.erase(0, m_status.version.find('.') + 1);
+	minor = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	m_status.version.erase(0, m_status.version.find('.') + 1);
+	release = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/version/text()").c_str();
 
 	if (!((major > min_major) || ((major == min_major) && (minor > min_minor)) || ((major == min_major) && (minor == min_minor) && (release >= min_release))))

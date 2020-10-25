@@ -2153,8 +2153,8 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			csubstr = tmpstr;
 			tmpstr.clear();
 		}
-		sPos = csubstr.find_first_of("[");
-		ePos = csubstr.find_first_of("]");
+		sPos = csubstr.find_first_of('[');
+		ePos = csubstr.find_first_of(']');
 
 		if ((sPos == std::string::npos) || (ePos == std::string::npos))
 		{
@@ -2162,7 +2162,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			break;
 		}
 
-		size_t eQPos = csubstr.find_first_of("=");
+		size_t eQPos = csubstr.find_first_of('=');
 		if (eQPos == std::string::npos) {
 			_log.Log(LOG_ERROR, "EventSystem: Malformed action sequence!");
 			break;
@@ -2367,7 +2367,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				sParam = ParseBlocklyString(sParam);
 			}
 #if !defined WIN32
-			if (sPath.find("/") != 0)
+			if (sPath.find('/') != 0)
 				sPath = szUserDataFolder + "scripts/" + sPath;
 #endif
 

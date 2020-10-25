@@ -1969,7 +1969,7 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 	if (vHeaderData.size() > 0)
 	{
 
-		size_t pos = vHeaderData[0].find(" ");
+		size_t pos = vHeaderData[0].find(' ');
 		if (pos != std::string::npos)
 		{
 			pos++;
@@ -2018,7 +2018,7 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 			if ((sz_response[0] == '[') || (sz_response[0] == '{'))
 			{
 				// append code to the json response so it will take preference over any existing (textual) message code
-				size_t pos = sz_response.find_last_of("}");
+				size_t pos = sz_response.find_last_of('}');
 				if (pos != std::string::npos)
 				{
 					sz_response.insert(pos, R"(,"code":"")");
