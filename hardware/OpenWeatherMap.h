@@ -9,8 +9,8 @@
 class COpenWeatherMap : public CDomoticzHardwareBase
 {
 public:
-	COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location, const int adddayforecast, const int addhourforecast);
-	~COpenWeatherMap(void);
+	COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location, const int adddayforecast, const int addhourforecast, const int intervaldelay);
+	~COpenWeatherMap();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	std::string GetForecastURL();
 private:
@@ -32,6 +32,8 @@ private:
 	bool m_itIsRaining = false;
 	bool m_add_dayforecast = false;
 	bool m_add_hourforecast = false;
+	uint8_t m_intervaldelay = 0;
+	uint16_t m_interval = 0;
 	double m_Lat = 0;
 	double m_Lon = 0;
 	std::shared_ptr<std::thread> m_thread;

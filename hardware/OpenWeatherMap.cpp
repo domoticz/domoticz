@@ -51,14 +51,18 @@ std::string ReadFile(std::string filename)
 #define OWM_icon_URL "https://openweathermap.org/img/wn/"	// for example 10d@4x.png
 #define OWM_forecast_URL "https://openweathermap.org/city/"
 
-COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location, const int adddayforecast, const int addhourforecast) :
+#define OWM_Poll_Interval 300
+
+COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location, const int adddayforecast, const int addhourforecast, const int intervaldelay) :
 	m_APIKey(APIKey),
 	m_Location(Location),
 	m_Language("en"),
 	m_add_dayforecast(adddayforecast),
-	m_add_hourforecast(addhourforecast)
+	m_add_hourforecast(addhourforecast),
+	m_intervaldelay(intervaldelay)
 {
 	m_HwdID=ID;
+	m_interval = OWM_Poll_Interval;
 
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("Language", sValue))
@@ -67,7 +71,7 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 	}
 }
 
-COpenWeatherMap::~COpenWeatherMap(void)
+COpenWeatherMap::~COpenWeatherMap()
 {
 }
 
@@ -136,7 +140,7 @@ bool COpenWeatherMap::StartHardware()
 	std::string sValue, sLatitude, sLongitude;
 	std::vector<std::string> strarray;
 	Debug(DEBUG_NORM, "Got location parameter %s", m_Location.c_str());
-	Debug(DEBUG_NORM, "Starting with setting %d, %d", m_add_dayforecast, m_add_hourforecast);
+	Debug(DEBUG_NORM, "Starting with setting %d, %d, %d", m_add_dayforecast, m_add_hourforecast, m_intervaldelay);
 
 	if (m_Location.empty())
 	{
@@ -253,6 +257,11 @@ bool COpenWeatherMap::StartHardware()
 		}
 	}
 
+	if (m_intervaldelay > 1)
+	{
+		m_interval = OWM_Poll_Interval * m_intervaldelay;
+	}
+
 	RequestStart();
 
 	m_thread = std::make_shared<std::thread>(&COpenWeatherMap::Do_Work, this);
@@ -275,18 +284,16 @@ bool COpenWeatherMap::StopHardware()
 	return true;
 }
 
-#define OpenWeatherMap_Poll_Interval 300
-
 void COpenWeatherMap::Do_Work()
 {
-	int sec_counter = OpenWeatherMap_Poll_Interval - 3;
+	uint64_t sec_counter = m_interval - 3;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
-		if (sec_counter % OpenWeatherMap_Poll_Interval == 0)
+		if (sec_counter % m_interval == 0)
 		{
 			try
 			{
@@ -315,7 +322,7 @@ std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, std::
 {
 	std::string sHour = "Unknown";
 
-	time_t t = (time_t) strtol(UTCtimestamp.c_str(),NULL,10);
+	time_t t = (time_t) strtol(UTCtimestamp.c_str(),nullptr,10);
 	std::string sDate = ctime(&t);
 
 	std::vector<std::string> strarray;
@@ -347,7 +354,7 @@ std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, std::st
 {
 	std::string sDay = "Unknown";
 
-	time_t t = (time_t) strtol(UTCtimestamp.c_str(),NULL,10);
+	time_t t = (time_t) strtol(UTCtimestamp.c_str(),nullptr,10);
 	std::string sDate = ctime(&t);
 
 	std::vector<std::string> strarray;
