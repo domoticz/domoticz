@@ -868,6 +868,7 @@ define(['app'], function (app) {
 				}
 				var adddayforecast = $("#hardwarecontent #divopenweathermap #adddayforecast").prop("checked") ? 1 : 0;
 				var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
+				var delayinterval = $("#hardwarecontent #divopenweathermap #delayinterval").prop("checked") ? 6 : 0;
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(apikey) +
@@ -876,7 +877,7 @@ define(['app'], function (app) {
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast + "&Mode3=" + delayinterval + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2191,11 +2192,12 @@ define(['app'], function (app) {
 			}
 			var adddayforecast = $("#hardwarecontent #divopenweathermap #adddayforecast").prop("checked") ? 1 : 0;
 			var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
+			var delayinterval = $("#hardwarecontent #divopenweathermap #delayinterval").prop("checked") ? 6 : 0;
 			$.ajax({
 				url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + 
 				"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + 
 				"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
-				"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast,
+				"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast + "&Mode3=" + delayinterval,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -3982,6 +3984,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsopenweathermap #location").val(data["Password"]);
 							$("#hardwarecontent #hardwareparamsopenweathermap #adddayforecast").prop("checked", data["Mode1"] == 1);
 							$("#hardwarecontent #hardwareparamsopenweathermap #addhourforecast").prop("checked", data["Mode2"] == 1);
+							$("#hardwarecontent #hardwareparamsopenweathermap #delayinterval").prop("checked", data["Mode3"] == 6);
 						}
 						else if (data["Type"].indexOf("Buienradar") >= 0) {
 							var timeframe = parseInt(data["Mode1"]);
