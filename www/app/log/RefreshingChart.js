@@ -221,6 +221,8 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                                 }
                             },
                             column: {
+                                pointPlacement: 'between',
+                                borderWidth: 0,
                                 minPointLength: 4,
                                 pointPadding: 0.1,
                                 groupPadding: 0,
