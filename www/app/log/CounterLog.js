@@ -44,10 +44,10 @@ define(['app', 'lodash', 'RefreshingChart'],
                                 }
                             },
                             []
-                                .concat(instantAndCounterShortSeriesSuppliers(self.device.SwitchTypeVal))
-                                .concat(counterShortSeriesSuppliers(self.device.SwitchTypeVal))
-                                .concat(p1ShortSeriesSuppliers(self.device.SwitchTypeVal))
-                                .concat(powerReturnedShortSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(instantAndCounterDaySeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(counterDaySeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(p1DaySeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(powerReturnedDaySeriesSuppliers(self.device.SwitchTypeVal))
                         )
                     );
                 }
@@ -80,10 +80,10 @@ define(['app', 'lodash', 'RefreshingChart'],
                                 }
                             },
                             []
-                                .concat(instantAndCounterLongSeriesSuppliers(self.device.SwitchTypeVal))
-                                .concat(counterLongSeriesSuppliers(self.device.SwitchTypeVal))
-                                .concat(p1LongSeriesSuppliers(self.device.SwitchTypeVal))
-                                .concat(powerReturnedLongSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(instantAndCounterWeekSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(counterWeekSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(p1WeekSeriesSuppliers(self.device.SwitchTypeVal))
+                                .concat(powerReturnedWeekSeriesSuppliers(self.device.SwitchTypeVal))
                         )
                     );
                 }
@@ -158,15 +158,49 @@ define(['app', 'lodash', 'RefreshingChart'],
             }
         });
 
-        function counterEnergy(dataItemValueKey, seriesSupplier) {
-            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
-                return dataItemsKeys.includes('v') && !dataItemsKeys.includes('eu') && !dataItemsKeys.includes('v2');
-            });
+        function ContainsEnergyAndPowerNormalAndLow() {
+
         }
 
-        function counterShortSeriesSuppliers(deviceType) {
+        ContainsEnergyAndPowerNormalAndLow.prototype.test = function (dataItemsKeys) {
+            return dataItemsKeys.includes('v') && dataItemsKeys.includes('eu') && dataItemsKeys.includes('v2');
+        }
+
+        function ContainsPowerNormalOnly() {
+
+        }
+
+        ContainsPowerNormalOnly.prototype.test = function (dataItemsKeys) {
+            return dataItemsKeys.includes('v') && !dataItemsKeys.includes('eu') && !dataItemsKeys.includes('v2');
+        }
+
+        function ContainsEnergyAndPowerNormalOnly() {
+
+        }
+
+        ContainsEnergyAndPowerNormalOnly.prototype.test = function (dataItemsKeys) {
+            return dataItemsKeys.includes('v') && dataItemsKeys.includes('eu') && !dataItemsKeys.includes('v2');
+        }
+
+        function ContainsPowerNormalAndReturnNormal() {
+
+        }
+
+        ContainsPowerNormalAndReturnNormal.prototype.test = function (dataItemsKeys) {
+            return dataItemsKeys.includes('v') && dataItemsKeys.includes('r1');
+        }
+
+        function ContainsDataItemValueKey(dataItemValueKey) {
+            this.dataItemValueKey = dataItemValueKey;
+        }
+
+        ContainsDataItemValueKey.prototype.test = function (dataItemsKeys) {
+            return dataItemsKeys.includes(this.dataItemValueKey);
+        }
+
+        function counterDaySeriesSuppliers(deviceType) {
             return [
-                counterEnergy('v', {
+                completeShortOrLongSeriesSupplier('v', new ContainsPowerNormalOnly(), {
                     id: 'counterEnergyUsedOrGenerated',
                     label: 'A',
                     series: {
@@ -183,9 +217,9 @@ define(['app', 'lodash', 'RefreshingChart'],
             ];
         }
 
-        function counterLongSeriesSuppliers(deviceType) {
+        function counterWeekSeriesSuppliers(deviceType) {
             return [
-                counterEnergy('v', {
+                completeShortOrLongSeriesSupplier('v', new ContainsPowerNormalOnly(), {
                     id: 'counterEnergyUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'B',
@@ -266,15 +300,9 @@ define(['app', 'lodash', 'RefreshingChart'],
             ];
         }
 
-        function instantAndCounterPowerAndEnergy(dataItemValueKey, seriesSupplier) {
-            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
-                return dataItemsKeys.includes('v') && dataItemsKeys.includes('eu') && !dataItemsKeys.includes('v2');
-            });
-        }
-
-        function instantAndCounterShortSeriesSuppliers(deviceType) {
+        function instantAndCounterDaySeriesSuppliers(deviceType) {
             return [
-                instantAndCounterPowerAndEnergy('eu', {
+                completeShortOrLongSeriesSupplier('eu', new ContainsEnergyAndPowerNormalOnly(), {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
                     label: 'F',
                     series: {
@@ -290,7 +318,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                instantAndCounterPowerAndEnergy('v', {
+                completeShortOrLongSeriesSupplier('v', new ContainsEnergyAndPowerNormalOnly(), {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     label: 'G',
                     series: {
@@ -308,9 +336,9 @@ define(['app', 'lodash', 'RefreshingChart'],
             ];
         }
 
-        function instantAndCounterLongSeriesSuppliers(deviceType) {
+        function instantAndCounterWeekSeriesSuppliers(deviceType) {
             return [
-                instantAndCounterPowerAndEnergy('eu', {
+                completeShortOrLongSeriesSupplier('eu', new ContainsEnergyAndPowerNormalOnly(), {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'H',
@@ -327,7 +355,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                instantAndCounterPowerAndEnergy('v', {
+                completeShortOrLongSeriesSupplier('v', new ContainsEnergyAndPowerNormalOnly(), {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'I',
@@ -346,27 +374,9 @@ define(['app', 'lodash', 'RefreshingChart'],
             ];
         }
 
-        function p1PowerAndEnergyShort(dataItemValueKey, seriesSupplier) {
-            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
-                return dataItemsKeys.includes('v') && dataItemsKeys.includes('eu') && dataItemsKeys.includes('v2');
-            });
-        }
-
-        function p1PowerAndEnergyLong(dataItemValueKey, seriesSupplier) {
-            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
-                return dataItemsKeys.includes(dataItemValueKey);
-            });
-        }
-
-        function p1UsageAndReturnLong(dataItemValueKey, seriesSupplier) {
-            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
-                return dataItemsKeys.includes('v') && dataItemsKeys.includes('r1');
-            });
-        }
-
-        function p1ShortSeriesSuppliers(deviceType) {
+        function p1DaySeriesSuppliers(deviceType) {
             return [
-                p1PowerAndEnergyShort('eu', {
+                completeShortOrLongSeriesSupplier('eu', new ContainsEnergyAndPowerNormalAndLow(), {
                     id: 'p1EnergyUsedArea',
                     label: 'J',
                     series: {
@@ -381,7 +391,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                p1PowerAndEnergyShort('eg', {
+                completeShortOrLongSeriesSupplier('eg', new ContainsEnergyAndPowerNormalAndLow(), {
                     id: 'p1EnergyGeneratedArea',
                     label: 'K',
                     series: {
@@ -396,7 +406,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                p1PowerAndEnergyShort('v', {
+                completeShortOrLongSeriesSupplier('v', new ContainsEnergyAndPowerNormalAndLow(), {
                     id: 'p1PowerUsed',
                     label: 'L',
                     series: {
@@ -409,7 +419,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 1
                     }
                 }),
-                p1PowerAndEnergyShort('v2', {
+                completeShortOrLongSeriesSupplier('v2', new ContainsEnergyAndPowerNormalAndLow(), {
                     id: 'p1PowerGenerated',
                     label: 'M',
                     series: {
@@ -425,9 +435,9 @@ define(['app', 'lodash', 'RefreshingChart'],
             ];
         }
 
-        function p1LongSeriesSuppliers(deviceType) {
+        function p1WeekSeriesSuppliers(deviceType) {
             return [
-                p1PowerAndEnergyLong('eu', {
+                completeShortOrLongSeriesSupplier('eu', new ContainsDataItemValueKey('eu'), {
                     id: 'p1EnergyUsedArea',
                     valueDecimals: 3,
                     label: 'N',
@@ -443,7 +453,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                p1PowerAndEnergyLong('eg', {
+                completeShortOrLongSeriesSupplier('eg', new ContainsDataItemValueKey('eg'), {
                     id: 'p1EnergyGeneratedArea',
                     valueDecimals: 3,
                     label: 'O',
@@ -459,7 +469,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                p1UsageAndReturnLong('v', {
+                completeShortOrLongSeriesSupplier('v', new ContainsPowerNormalAndReturnNormal(), {
                     id: 'p1EnergyUsed',
                     valueDecimals: 3,
                     convertZeroToNull: true,
@@ -474,7 +484,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                p1PowerAndEnergyLong('v2', {
+                completeShortOrLongSeriesSupplier('v2', new ContainsDataItemValueKey('v2'), {
                     id: 'p1EnergyGenerated',
                     valueDecimals: 3,
                     convertZeroToNull: true,
@@ -492,15 +502,9 @@ define(['app', 'lodash', 'RefreshingChart'],
             ];
         }
 
-        function powerReturned(dataItemValueKey, seriesSupplier) {
-            return completeShortOrLongSeriesSupplier(seriesSupplier, [dataItemValueKey], function (dataItemsKeys) {
-                return dataItemsKeys.includes(dataItemValueKey);
-            });
-        }
-
-        function powerReturnedShortSeriesSuppliers(deviceType) {
+        function powerReturnedDaySeriesSuppliers(deviceType) {
             return [
-                powerReturned('r1', {
+                completeShortOrLongSeriesSupplier('r1', new ContainsDataItemValueKey('r1'), {
                     id: 'powerReturned1',
                     label: 'R',
                     series: {
@@ -513,7 +517,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 1
                     }
                 }),
-                powerReturned('r2', {
+                completeShortOrLongSeriesSupplier('r2', new ContainsDataItemValueKey('r2'), {
                     id: 'powerReturned2',
                     label: 'S',
                     series: {
@@ -529,9 +533,9 @@ define(['app', 'lodash', 'RefreshingChart'],
             ];
         }
 
-        function powerReturnedLongSeriesSuppliers(deviceType) {
+        function powerReturnedWeekSeriesSuppliers(deviceType) {
             return [
-                powerReturned('r1', {
+                completeShortOrLongSeriesSupplier('r1', new ContainsDataItemValueKey('r1'), {
                     id: 'powerReturned1',
                     valueDecimals: 3,
                     convertZeroToNull: true,
@@ -546,7 +550,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                powerReturned('r2', {
+                completeShortOrLongSeriesSupplier('r2', new ContainsDataItemValueKey('r2'), {
                     id: 'powerReturned2',
                     valueDecimals: 3,
                     convertZeroToNull: true,
@@ -627,7 +631,7 @@ define(['app', 'lodash', 'RefreshingChart'],
             ];
         }
 
-        function completeShortOrLongSeriesSupplier(seriesSupplier, dataItemValueKeys, dataSeriesIsSupported) {
+        function completeShortOrLongSeriesSupplier(dataItemValueKey, dataSeriesItemsKeysPredicate, seriesSupplier) {
             return _.merge(
                 {
                     valueDecimals: 0,
@@ -648,24 +652,16 @@ define(['app', 'lodash', 'RefreshingChart'],
                         }
 
                         function valueDecimalsCalculate(dataItem) {
-                            if (self.valueDecimals === 0 && dataItemValueKeys.reduce(function (valueDecimals, dataItemValueKey) { return valueDecimals + dataItem[dataItemValueKey] % 1; }, 0) !== 0) {
+                            if (self.valueDecimals === 0 && dataItem[dataItemValueKey] % 1 !== 0) {
                                 self.valueDecimals = 1;
                             }
                         }
                     },
                     dataItemIsValid: function (dataItem) {
-                        return dataSeriesIsSupported(this.dataSeriesItemsKeys) && dataItemValueKeys.some(function (dataItemValueKey) { return dataItem[dataItemValueKey] !== undefined; });
+                        return dataSeriesItemsKeysPredicate.test(this.dataSeriesItemsKeys) && dataItem[dataItemValueKey] !== undefined;
                     },
                     valuesFromDataItem: function (dataItem) {
-                        return [dataItemValueKeys.reduce(sumDataItemValue, 0.0)];
-
-                        function sumDataItemValue(totalValue, key) {
-                            const value = dataItem[key];
-                            if (value === undefined) {
-                                return totalValue;
-                            }
-                            return totalValue + parseFloat(value);
-                        }
+                        return [parseFloat(dataItem[dataItemValueKey])];
                     },
                     template: function () {
                         return _.merge(
@@ -779,9 +775,6 @@ define(['app', 'lodash', 'RefreshingChart'],
                             chart: {
                                 alignTicks: false
                             },
-                            tooltip: {
-                                shared: false
-                            }
                         },
                         synchronizeYaxes: true
                     };
