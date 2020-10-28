@@ -142,6 +142,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                             );
                         }),
                         tooltip: {
+                            className: 'chart-tooltip-container',
                             followTouchMove: self.$location.search().followTouchMove !== 'false',
                             outside: true,
                             crosshairs: true,
