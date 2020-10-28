@@ -336,15 +336,26 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                 if (self.touchEndTimestamp === undefined || self.touchEndTimestamp + interTouchEndTouchStartPeriod < e.timeStamp) {
                     self.touchStartTimestamp = e.timeStamp;
                     self.touchEndTimestamp = undefined;
+                    self.consoledebug('Touch start at ' + dateToString(self.touchStartTimestamp));
                 }
             });
             self.chart.container.addEventListener('touchmove', function (e) {
-                if (self.touchStartTimestamp !== undefined && self.touchStartTimestamp + touchStartDelay < e.timeStamp) {
-                    self.chart.pointer.followTouchMove = false;
+                if (self.touchStartTimestamp !== undefined) {
+                    if (self.touchStartTimestamp + touchStartDelay < e.timeStamp) {
+                        self.chart.pointer.followTouchMove = false;
+                        self.consoledebug('Touch start panning');
+                    } else {
+                        self.consoledebug('Touch start tooltipping');
+                    }
+                    self.touchStartTimestamp = undefined;
                 }
-                self.touchStartTimestamp = undefined;
             });
             self.chart.container.addEventListener('touchend', function (e) {
+                if (!self.chart.pointer.followTouchMove) {
+                    self.consoledebug('Touch end panning');
+                } else {
+                    self.consoledebug('Touch end tooltipping');
+                }
                 self.touchEndTimestamp = e.timeStamp;
                 self.chart.pointer.followTouchMove = true;
                 self.touchStartTimestamp = undefined;
