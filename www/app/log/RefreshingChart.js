@@ -34,7 +34,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
 
         refreshChartData(initialZoom);
         self.refreshTimestamp = new Date().getTime();
-        configureZooming();
+        configureZoomingAndPanning();
 
         self.$scope.$on('$routeChangeStart', function($event, next, current) {
             self.chart.tooltip.hide();
@@ -326,14 +326,14 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
             }
         }
 
-        function configureZooming() {
-            const intermediateTouchEndDelay = intParam('endDelay', 500);
+        function configureZoomingAndPanning() {
+            const interTouchEndTouchStartPeriod = intParam('endDelay', 500);
             const touchStartDelay = intParam('startDelay', 400);
 
             self.isMouseDown = false;
 
             self.chart.container.addEventListener('touchstart', function (e) {
-                if (self.touchEndTimestamp === undefined || self.touchEndTimestamp + intermediateTouchEndDelay < e.timeStamp) {
+                if (self.touchEndTimestamp === undefined || self.touchEndTimestamp + interTouchEndTouchStartPeriod < e.timeStamp) {
                     self.touchStartTimestamp = e.timeStamp;
                     self.touchEndTimestamp = undefined;
                 }
