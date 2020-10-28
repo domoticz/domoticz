@@ -4391,16 +4391,15 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchType, const int nValue, const char* sValue, const std::string& devname, const unsigned char signallevel, const unsigned char batterylevel, const int used)
 {
 	//TODO: 'unsigned char unit' only allows 256 devices / plugin
-	//TODO: return -1 as error code does not make sense for a function returning an unsigned value
+	//DONE: return -1 as error code does not make sense for a function returning an unsigned value 
+	// -> better checking at receiving end needed (value becomes 0xFFFFFFFFFFFFFFFF)
 	std::vector<std::vector<std::string> > result;
 	uint64_t ulID = 0;
 	std::string name = devname;
 
 	if (!m_bAcceptNewHardware)
 	{
-#ifdef _DEBUG
-		_log.Log(LOG_STATUS, "Device creation failed, Domoticz settings prevent accepting new devices.");
-#endif
+		_log.Debug(DEBUG_NORM, "Device creation failed, Domoticz settings prevent accepting new devices.");
 		return -1; //We do not allow new devices
 	}
 
@@ -4459,8 +4458,10 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		//Insert
 		ulID = InsertDevice(HardwareID, ID, unit, devType, subType, 0, nValue, sValue, devname, signallevel, batterylevel);
 
-		if (ulID < 1)
+		if (ulID == (uint64_t)-1)
+		{
 			return -1;
+		}
 
 #ifdef ENABLE_PYTHON
 		//TODO: Plugins should perhaps be blocked from implicitly adding a device by update? It's most likely a bug due to updating a removed device..
