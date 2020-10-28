@@ -116,7 +116,11 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                                         self.isZoomed = true;
                                         self.consoledebug('Set zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
                                     }
-                                    synchronizeYaxes();
+                                    if (self.isMouseDown) {
+                                        self.isSynchronizeYaxesRequired = true;
+                                    } else {
+                                        synchronizeYaxes(true);
+                                    }
                                     self.$timeout(function () { self.$scope.zoomed = self.isZoomed; }, 0, true);
                                 }
                             }
@@ -282,7 +286,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
             }
         }
 
-        function synchronizeYaxes() {
+        function synchronizeYaxes(redraw=false) {
             if (self.synchronizeYaxes) {
                 const yAxes = self.chart.series.map(getYaxisForSeries).reduce(collectToSet, []);
                 yAxes.forEach(function (yAxis) {
@@ -298,7 +302,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                 self.consoledebug('Synchronizing yAxes to extremes (' + yAxisMinSynchronized + ', ' + yAxisMaxSynchronized + '):');
                 yAxes.forEach(function (yAxis) {
                     self.consoledebug('    yAxis:' + yAxisToString(yAxis));
-                    yAxis.setExtremes(yAxisMinSynchronized, yAxisMaxSynchronized, false);
+                    yAxis.setExtremes(yAxisMinSynchronized, yAxisMaxSynchronized, redraw);
                 });
             }
 
@@ -326,6 +330,8 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
             const intermediateTouchEndDelay = intParam('endDelay', 500);
             const touchStartDelay = intParam('startDelay', 400);
 
+            self.isMouseDown = false;
+
             self.chart.container.addEventListener('touchstart', function (e) {
                 if (self.touchEndTimestamp === undefined || self.touchEndTimestamp + intermediateTouchEndDelay < e.timeStamp) {
                     self.touchStartTimestamp = e.timeStamp;
@@ -347,11 +353,17 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                 self.consoledebug('Mousedown ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
                 self.wasCtrlMouseDown = e.ctrlKey;
                 self.mouseDownPosition = e.clientX;
+                self.isMouseDown = true;
             });
             self.chart.container.addEventListener('mouseup', function (e) {
                 self.consoledebug('Mouseup ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
                 self.wasCtrlMouseUp = e.ctrlKey;
                 self.mouseUpPosition = e.clientX;
+                self.isMouseDown = false;
+                if (self.isSynchronizeYaxesRequired) {
+                    synchronizeYaxes(true);
+                    self.isSynchronizeYaxesRequired = false;
+                }
             });
 
             self.$scope.zoomed = false;
