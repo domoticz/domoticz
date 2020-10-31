@@ -138,6 +138,10 @@ h2{
 	border-bottom-right-radius: 15px;
 }
 
+.chart h2 {
+    padding: 1px;
+}
+
 body table#itemtablesmall tbody tr,
 body table#itemtablesmalldoubleicon tbody tr,
 body table#itemtable tbody tr,
