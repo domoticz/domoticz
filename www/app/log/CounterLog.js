@@ -200,7 +200,7 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function counterDaySeriesSuppliers(deviceType) {
             return [
-                completeShortOrLongSeriesSupplier('v', new ContainsPowerNormalOnly(), {
+                dataItemsKeysPredicatedSeriesSupplier('v', new ContainsPowerNormalOnly(), {
                     id: 'counterEnergyUsedOrGenerated',
                     label: 'A',
                     series: {
@@ -219,7 +219,7 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function counterWeekSeriesSuppliers(deviceType) {
             return [
-                completeShortOrLongSeriesSupplier('v', new ContainsPowerNormalOnly(), {
+                dataItemsKeysPredicatedSeriesSupplier('v', new ContainsPowerNormalOnly(), {
                     id: 'counterEnergyUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'B',
@@ -239,7 +239,7 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function counterMonthYearSeriesSuppliers(deviceType) {
             return [
-                completeMonthOrYearSeriesSupplier({
+                summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotal',
                     dataItemKeys: ['v', 'v2'],
                     convertZeroToNull: true,
@@ -256,7 +256,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                completeMonthOrYearSeriesSupplier({
+                summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotalTrendline',
                     dataItemKeys: ['v', 'v2'],
                     aggregateDatapoints: function (datapoints) {
@@ -281,7 +281,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                completeMonthOrYearSeriesSupplier({
+                summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedPrevious',
                     dataItemKeys: ['v', 'v2'],
                     useDataItemsFromPrevious: true,
@@ -302,7 +302,7 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function instantAndCounterDaySeriesSuppliers(deviceType) {
             return [
-                completeShortOrLongSeriesSupplier('eu', new ContainsEnergyAndPowerNormalOnly(), {
+                dataItemsKeysPredicatedSeriesSupplier('eu', new ContainsEnergyAndPowerNormalOnly(), {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
                     label: 'F',
                     series: {
@@ -318,7 +318,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                completeShortOrLongSeriesSupplier('v', new ContainsEnergyAndPowerNormalOnly(), {
+                dataItemsKeysPredicatedSeriesSupplier('v', new ContainsEnergyAndPowerNormalOnly(), {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     label: 'G',
                     series: {
@@ -338,7 +338,7 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function instantAndCounterWeekSeriesSuppliers(deviceType) {
             return [
-                completeShortOrLongSeriesSupplier('eu', new ContainsEnergyAndPowerNormalOnly(), {
+                dataItemsKeysPredicatedSeriesSupplier('eu', new ContainsEnergyAndPowerNormalOnly(), {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'H',
@@ -355,7 +355,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                completeShortOrLongSeriesSupplier('v', new ContainsEnergyAndPowerNormalOnly(), {
+                dataItemsKeysPredicatedSeriesSupplier('v', new ContainsEnergyAndPowerNormalOnly(), {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'I',
@@ -376,7 +376,7 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function p1DaySeriesSuppliers(deviceType) {
             return [
-                completeShortOrLongSeriesSupplier('eu', new ContainsEnergyAndPowerNormalAndLow(), {
+                dataItemsKeysPredicatedSeriesSupplier('eu', new ContainsEnergyAndPowerNormalAndLow(), {
                     id: 'p1EnergyUsedArea',
                     label: 'J',
                     series: {
@@ -391,7 +391,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                completeShortOrLongSeriesSupplier('eg', new ContainsEnergyAndPowerNormalAndLow(), {
+                dataItemsKeysPredicatedSeriesSupplier('eg', new ContainsEnergyAndPowerNormalAndLow(), {
                     id: 'p1EnergyGeneratedArea',
                     label: 'K',
                     series: {
@@ -406,7 +406,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                completeShortOrLongSeriesSupplier('v', new ContainsEnergyAndPowerNormalAndLow(), {
+                dataItemsKeysPredicatedSeriesSupplier('v', new ContainsEnergyAndPowerNormalAndLow(), {
                     id: 'p1PowerUsed',
                     label: 'L',
                     series: {
@@ -419,7 +419,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 1
                     }
                 }),
-                completeShortOrLongSeriesSupplier('v2', new ContainsEnergyAndPowerNormalAndLow(), {
+                dataItemsKeysPredicatedSeriesSupplier('v2', new ContainsEnergyAndPowerNormalAndLow(), {
                     id: 'p1PowerGenerated',
                     label: 'M',
                     series: {
@@ -437,7 +437,7 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function p1WeekSeriesSuppliers(deviceType) {
             return [
-                completeShortOrLongSeriesSupplier('eu', new ContainsDataItemValueKey('eu'), {
+                dataItemsKeysPredicatedSeriesSupplier('eu', new ContainsDataItemValueKey('eu'), {
                     id: 'p1EnergyUsedArea',
                     valueDecimals: 3,
                     label: 'N',
@@ -453,7 +453,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                completeShortOrLongSeriesSupplier('eg', new ContainsDataItemValueKey('eg'), {
+                dataItemsKeysPredicatedSeriesSupplier('eg', new ContainsDataItemValueKey('eg'), {
                     id: 'p1EnergyGeneratedArea',
                     valueDecimals: 3,
                     label: 'O',
@@ -469,7 +469,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                completeShortOrLongSeriesSupplier('v', new ContainsPowerNormalAndReturnNormal(), {
+                dataItemsKeysPredicatedSeriesSupplier('v', new ContainsPowerNormalAndReturnNormal(), {
                     id: 'p1EnergyUsed',
                     valueDecimals: 3,
                     convertZeroToNull: true,
@@ -484,7 +484,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                completeShortOrLongSeriesSupplier('v2', new ContainsDataItemValueKey('v2'), {
+                dataItemsKeysPredicatedSeriesSupplier('v2', new ContainsDataItemValueKey('v2'), {
                     id: 'p1EnergyGenerated',
                     valueDecimals: 3,
                     convertZeroToNull: true,
@@ -504,7 +504,7 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function powerReturnedDaySeriesSuppliers(deviceType) {
             return [
-                completeShortOrLongSeriesSupplier('r1', new ContainsDataItemValueKey('r1'), {
+                dataItemsKeysPredicatedSeriesSupplier('r1', new ContainsDataItemValueKey('r1'), {
                     id: 'powerReturned1',
                     label: 'R',
                     series: {
@@ -517,7 +517,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 1
                     }
                 }),
-                completeShortOrLongSeriesSupplier('r2', new ContainsDataItemValueKey('r2'), {
+                dataItemsKeysPredicatedSeriesSupplier('r2', new ContainsDataItemValueKey('r2'), {
                     id: 'powerReturned2',
                     label: 'S',
                     series: {
@@ -535,7 +535,7 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function powerReturnedWeekSeriesSuppliers(deviceType) {
             return [
-                completeShortOrLongSeriesSupplier('r1', new ContainsDataItemValueKey('r1'), {
+                dataItemsKeysPredicatedSeriesSupplier('r1', new ContainsDataItemValueKey('r1'), {
                     id: 'powerReturned1',
                     valueDecimals: 3,
                     convertZeroToNull: true,
@@ -550,7 +550,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                completeShortOrLongSeriesSupplier('r2', new ContainsDataItemValueKey('r2'), {
+                dataItemsKeysPredicatedSeriesSupplier('r2', new ContainsDataItemValueKey('r2'), {
                     id: 'powerReturned2',
                     valueDecimals: 3,
                     convertZeroToNull: true,
@@ -570,7 +570,7 @@ define(['app', 'lodash', 'RefreshingChart'],
 
         function powerReturnedMonthYearSeriesSuppliers(deviceType) {
             return [
-                completeMonthOrYearSeriesSupplier({
+                summingSeriesSupplier({
                     id: 'powerReturnedTotal',
                     dataItemKeys: ['r1', 'r2'],
                     convertZeroToNull: true,
@@ -587,7 +587,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         yAxis: 0
                     }
                 }),
-                completeMonthOrYearSeriesSupplier({
+                summingSeriesSupplier({
                     id: 'powerReturnedTotalTrendline',
                     dataItemKeys: ['r1', 'r2'],
                     aggregateDatapoints: function (datapoints) {
@@ -612,7 +612,7 @@ define(['app', 'lodash', 'RefreshingChart'],
                         visible: false
                     }
                 }),
-                completeMonthOrYearSeriesSupplier({
+                summingSeriesSupplier({
                     id: 'powerReturnedTotalPrevious',
                     dataItemKeys: ['r1', 'r2'],
                     useDataItemsFromPrevious: true,
@@ -631,7 +631,7 @@ define(['app', 'lodash', 'RefreshingChart'],
             ];
         }
 
-        function completeShortOrLongSeriesSupplier(dataItemValueKey, dataSeriesItemsKeysPredicate, seriesSupplier) {
+        function dataItemsKeysPredicatedSeriesSupplier(dataItemValueKey, dataSeriesItemsKeysPredicate, seriesSupplier) {
             return _.merge(
                 {
                     valueDecimals: 0,
@@ -678,7 +678,7 @@ define(['app', 'lodash', 'RefreshingChart'],
             );
         }
 
-        function completeMonthOrYearSeriesSupplier(seriesSupplier) {
+        function summingSeriesSupplier(seriesSupplier) {
             return _.merge(
                 {
                     dataItemKeys: [],
@@ -687,9 +687,9 @@ define(['app', 'lodash', 'RefreshingChart'],
                             return this.dataItemKeys.length !== 0 && dataItem[this.dataItemKeys[0]] !== undefined;
                         },
                     valuesFromDataItem: function (dataItem) {
-                        return [this.dataItemKeys.reduce(sumDataItemValue, 0.0)];
+                        return [this.dataItemKeys.reduce(addDataItemValue, 0.0)];
 
-                        function sumDataItemValue(totalValue, key) {
+                        function addDataItemValue(totalValue, key) {
                             const value = dataItem[key];
                             if (value === undefined) {
                                 return totalValue;
