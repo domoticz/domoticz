@@ -1,40 +1,5 @@
 define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
-    const valueMultipliers = {
-        m1: 'm1',
-        m1000: 'm1000',
-        forRange: function (range) {
-            return range === 'day' ? this.m1
-                : range === 'week' ? this.m1000
-                    : null;
-        }
-    }
-
-    const valueUnits = {
-        Wh: 'Wh',
-        kWh: 'kWh',
-        W: 'Watt',
-        kW: 'kW',
-        energy: function (multiplier) {
-            if (multiplier === valueMultipliers.m1) {
-                return this.Wh;
-            }
-            if (multiplier === valueMultipliers.m1000) {
-                return this.kWh;
-            }
-            return '';
-        },
-        power: function (multiplier) {
-            if (multiplier === valueMultipliers.m1) {
-                return this.W;
-            }
-            if (multiplier === valueMultipliers.m1000) {
-                return this.kW;
-            }
-            return '';
-        }
-    }
-
     function ContainsEnergyUsedAndPowerNormalAndLow() {
 
     }
@@ -107,19 +72,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
         return dataItemsKeys.includes('r2');
     }
 
-    app.factory('counterLogSubtypeRegistry', function () {
-        return {
-            services: {},
-            register: function (name, counterLogService) {
-                this.services[name] = counterLogService;
-            },
-            get: function (name) {
-                return this.services[name];
-            }
-        };
-    });
-
-    app.factory('counterLogSeriesSuppliers', function (chart, counterLogSeriesSupplier) {
+    app.factory('counterLogEnergySeriesSuppliers', function (chart, counterLogSeriesSupplier) {
         return {
             counterDaySeriesSuppliers: counterDaySeriesSuppliers,
             counterWeekSeriesSuppliers: counterWeekSeriesSuppliers,
@@ -142,7 +95,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         type: 'spline',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1)
                         },
                         color: 'rgba(3,190,252,0.8)',
                         stack: 'susage',
@@ -162,7 +115,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         type: 'column',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(3,190,252,0.8)',
                         stack: 'susage',
@@ -184,7 +137,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Total Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Total Generated') : $.t('Total Return'),
                         zIndex: 2,
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
                             valueDecimals: 3
                         },
                         color: 'rgba(3,190,252,0.8)',
@@ -207,7 +160,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         name: $.t('Trendline') + ' ' + (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
                         zIndex: 1,
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
                             valueDecimals: 3
                         },
                         color: 'rgba(255,3,3,0.8)',
@@ -224,7 +177,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     series: {
                         name: $.t('Past') + ' ' + (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
                             valueDecimals: 3
                         },
                         color: 'rgba(190,3,252,0.8)',
@@ -247,7 +200,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         animation: false,
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1)
                         },
                         color: 'rgba(3,190,252,0.8)',
                         yAxis: 0
@@ -261,7 +214,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         zIndex: 10,
                         type: 'spline',
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.power(valueMultipliers.m1)
+                            valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
                         },
                         color: 'rgba(255,255,0,0.8)',
                         stack: 'susage',
@@ -284,7 +237,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         animation: false,
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(3,190,252,0.8)',
                         yAxis: 0
@@ -299,7 +252,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         zIndex: 10,
                         type: 'column',
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(3,190,252,0.8)',
                         stack: 'susage',
@@ -318,7 +271,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         type: 'area',
                         name: $.t('Energy Usage'),
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1)
                         },
                         color: 'rgba(120,150,220,0.9)',
                         fillOpacity: 0.2,
@@ -333,7 +286,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         type: 'area',
                         name: $.t('Energy Returned'),
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1)
                         },
                         color: 'rgba(120,220,150,0.9)',
                         fillOpacity: 0.2,
@@ -347,7 +300,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     series: {
                         name: $.t('Usage') + ' 1',
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.power(valueMultipliers.m1)
+                            valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
                         },
                         color: 'rgba(60,130,252,0.8)',
                         stack: 'susage',
@@ -360,7 +313,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     series: {
                         name: $.t('Usage') + ' 2',
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.power(valueMultipliers.m1)
+                            valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
                         },
                         color: 'rgba(3,190,252,0.8)',
                         stack: 'susage',
@@ -380,7 +333,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         type: 'area',
                         name: $.t('Energy Usage'),
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(120,150,220,0.9)',
                         fillOpacity: 0.2,
@@ -396,7 +349,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         type: 'area',
                         name: $.t('Energy Returned'),
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(120,220,150,0.9)',
                         fillOpacity: 0.2,
@@ -412,7 +365,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     series: {
                         name: $.t('Usage') + ' 1',
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(60,130,252,0.8)',
                         stack: 'susage',
@@ -427,7 +380,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     series: {
                         name: $.t('Usage') + ' 2',
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(3,190,252,0.8)',
                         stack: 'susage',
@@ -445,7 +398,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     series: {
                         name: $.t('Return') + ' 1',
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.power(valueMultipliers.m1)
+                            valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
                         },
                         color: 'rgba(30,242,110,0.8)',
                         stack: 'sreturn',
@@ -458,7 +411,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     series: {
                         name: $.t('Return') + ' 2',
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.power(valueMultipliers.m1)
+                            valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
                         },
                         color: 'rgba(3,252,190,0.8)',
                         stack: 'sreturn',
@@ -478,7 +431,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     series: {
                         name: $.t('Return') + ' 1',
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(30,242,110,0.8)',
                         stack: 'sreturn',
@@ -493,7 +446,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     series: {
                         name: $.t('Return') + ' 2',
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000)
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(3,252,190,0.8)',
                         stack: 'sreturn',
@@ -515,7 +468,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         name: $.t('Total Return'),
                         zIndex: 1,
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
                             valueDecimals: 3
                         },
                         color: 'rgba(3,252,190,0.8)',
@@ -538,7 +491,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         name: $.t('Trendline') + ' ' + $.t('Return'),
                         zIndex: 1,
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
                             valueDecimals: 3
                         },
                         color: 'rgba(255,127,39,0.8)',
@@ -555,7 +508,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     series: {
                         name: $.t('Past') + ' ' + $.t('Return'),
                         tooltip: {
-                            valueSuffix: ' ' + valueUnits.energy(valueMultipliers.m1000),
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
                             valueDecimals: 3
                         },
                         color: 'rgba(252,190,3,0.8)',

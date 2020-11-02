@@ -1,4 +1,4 @@
-define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogSeriesSuppliers'],
+define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams'],
     function (app, _, RefreshingChart) {
 
         app.component('deviceCounterLog', {
@@ -23,7 +23,7 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams',
             },
             templateUrl: 'app/log/chart-day.html',
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSeriesSuppliers, counterLogSubtypeRegistry) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSubtypeRegistry) {
                 const self = this;
                 self.range = 'day';
 
@@ -37,13 +37,11 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams',
                             subtype.chartParamsDayTemplate,
                             {
                                 isShortLogChart: true,
+                                yAxes: subtype.yAxesDay,
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                                 },
-                                extendDataRequest: function (dataRequest) {
-                                    dataRequest.method = 1;
-                                    return dataRequest;
-                                }
+                                extendDataRequest: subtype.extendDataRequestDay
                             },
                             subtype.daySeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -61,7 +59,7 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams',
             },
             templateUrl: 'app/log/chart-week.html',
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSeriesSuppliers, counterLogSubtypeRegistry) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSubtypeRegistry) {
                 const self = this;
                 self.range = 'week';
 
@@ -75,6 +73,7 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams',
                             subtype.chartParamsWeekTemplate,
                             {
                                 isShortLogChart: false,
+                                yAxes: subtype.yAxesWeek,
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 }
@@ -95,7 +94,7 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams',
             },
             templateUrl: 'app/log/chart-month.html',
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSeriesSuppliers, counterLogSubtypeRegistry) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSubtypeRegistry) {
                 const self = this;
                 self.range = 'month';
 
@@ -109,6 +108,7 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams',
                             subtype.chartParamsMonthYearTemplate,
                             {
                                 isShortLogChart: false,
+                                yAxes: subtype.yAxesMonthYear,
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 }
@@ -129,7 +129,7 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams',
             },
             templateUrl: 'app/log/chart-year.html',
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSeriesSuppliers, counterLogSubtypeRegistry) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSubtypeRegistry) {
                 const self = this;
                 self.range = 'year';
 
@@ -143,6 +143,7 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams',
                             subtype.chartParamsMonthYearTemplate,
                             {
                                 isShortLogChart: false,
+                                yAxes: subtype.yAxesMonthYear,
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 }

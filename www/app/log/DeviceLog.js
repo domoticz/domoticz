@@ -7,7 +7,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
         vm.isGraphLog = isGraphLog;
         vm.isTemperatureLog = isTemperatureLog;
         vm.isReportAvailable = isReportAvailable;
-        vm.isCounterLogSpline = isCounterLogSpline;
+        vm.isInstantAndCounterLog = isInstantAndCounterLog;
         vm.isP1EnergyLog = isP1EnergyLog;
 
         init();
@@ -99,7 +99,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             if (isP1EnergyLog()) {
                 return false;
             }
-            if (isCounterLogSpline()) {
+            if (isInstantAndCounterLog()) {
                 return false;
             }
 
@@ -108,7 +108,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 || (typeof vm.device.Counter != 'undefined' && !isCounterLogSpline());
         }
 
-        function isCounterLogSpline() {
+        function isInstantAndCounterLog() {
             if (!vm.device) {
                 return undefined;
             }
@@ -127,7 +127,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             }
 
             return isTemperatureLog()
-                || ((isCounterLogSpline() || isCounterLog() || isP1EnergyLog()) && [0, 1, 2, 3, 4].includes(vm.device.SwitchTypeVal));
+                || ((isInstantAndCounterLog() || isCounterLog() || isP1EnergyLog()) && [0, 1, 2, 3, 4].includes(vm.device.SwitchTypeVal));
         }
     });
 });

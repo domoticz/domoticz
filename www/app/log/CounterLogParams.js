@@ -1,20 +1,22 @@
 define(['app', 'log/Chart'], function (app) {
 
+    app.factory('counterLogSubtypeRegistry', function () {
+        return {
+            services: {},
+            register: function (name, counterLogService) {
+                this.services[name] = counterLogService;
+            },
+            get: function (name) {
+                return this.services[name];
+            }
+        };
+    });
+
     app.factory('counterLogParams', function (chart) {
         return {
             chartParamsDay: chartParamsDay,
             chartParamsWeek: chartParamsWeek,
             chartParamsMonthYear: chartParamsMonthYear
-        }
-
-        function seriesYaxisSubtype(subtype) {
-            if (subtype === 'p1') {
-                return {
-                    min: 0
-                };
-            } else {
-                return {};
-            }
         }
 
         function chartParamsDay(domoticzGlobals, ctrl, chartParamsTemplate, dataSupplierTemplate, seriesSuppliers) {
@@ -37,26 +39,6 @@ define(['app', 'log/Chart'], function (app) {
                     dataSupplier:
                         _.merge(
                             {
-                                yAxes:
-                                    [
-                                        _.merge(
-                                            {
-                                                title: {
-                                                    text: $.t('Energy') + ' (Wh)'
-                                                }
-                                            },
-                                            seriesYaxisSubtype()
-                                        ),
-                                        _.merge(
-                                            {
-                                                title: {
-                                                    text: $.t('Power') + ' (Watt)'
-                                                },
-                                                opposite: true
-                                            },
-                                            seriesYaxisSubtype()
-                                        )
-                                    ],
                                 seriesSuppliers: seriesSuppliers
                             },
                             dataSupplierTemplate
@@ -95,18 +77,6 @@ define(['app', 'log/Chart'], function (app) {
                     dataSupplier:
                         _.merge(
                             {
-                                yAxes:
-                                    [
-                                        _.merge(
-                                            {
-                                                maxPadding: 0.2,
-                                                title: {
-                                                    text: $.t('Energy') + ' (kWh)'
-                                                }
-                                            },
-                                            seriesYaxisSubtype()
-                                        )
-                                    ],
                                 seriesSuppliers: seriesSuppliers
                             },
                             dataSupplierTemplate
@@ -137,17 +107,6 @@ define(['app', 'log/Chart'], function (app) {
                     dataSupplier:
                         _.merge(
                             {
-                                yAxes:
-                                    [
-                                        _.merge(
-                                            {
-                                                title: {
-                                                    text: $.t('Energy') + ' (kWh)'
-                                                }
-                                            },
-                                            seriesYaxisSubtype()
-                                        )
-                                    ],
                                 seriesSuppliers: seriesSuppliers
                             },
                             dataSupplierTemplate

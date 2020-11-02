@@ -9,11 +9,61 @@ define(['app'], function (app) {
         Time: 5,
     };
 
+    const valueMultipliers = {
+        m1: 'm1',
+        m1000: 'm1000',
+        forRange: function (range) {
+            return range === 'day' ? this.m1
+                : range === 'week' ? this.m1000
+                    : null;
+        }
+    }
+
+    const valueUnits = {
+        Wh: 'Wh',
+        kWh: 'kWh',
+        W: 'Watt',
+        kW: 'kW',
+        m3: 'm³',
+        energy: function (multiplier) {
+            if (multiplier === valueMultipliers.m1) {
+                return this.Wh;
+            }
+            if (multiplier === valueMultipliers.m1000) {
+                return this.kWh;
+            }
+            return '';
+        },
+        power: function (multiplier) {
+            if (multiplier === valueMultipliers.m1) {
+                return this.W;
+            }
+            if (multiplier === valueMultipliers.m1000) {
+                return this.kW;
+            }
+            return '';
+        },
+        gas: function (multiplier) {
+            if (multiplier === valueMultipliers.m1) {
+                return this.m3;
+            }
+            return '';
+        },
+        water: function (multiplier) {
+            if (multiplier === valueMultipliers.m1) {
+                return this.m3;
+            }
+            return '';
+        }
+    }
+
     app.constant('chart', {
         baseParams: baseParams,
         angularParams: angularParams,
         domoticzParams: domoticzParams,
-        deviceTypes: deviceTypes
+        deviceTypes: deviceTypes,
+        valueMultipliers: valueMultipliers,
+        valueUnits: valueUnits
     });
 
     function baseParams(jquery) {
