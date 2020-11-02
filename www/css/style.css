@@ -1941,7 +1941,7 @@ tspan {
 .device-log-chart {
 	display: block;
 	height: 300px;
-	margin-bottom: 24px;
+	margin-bottom: 38px;
 }
 
 .device-log-chart_sm {
@@ -2174,4 +2174,82 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 .device-selector-group {
 	overflow-y: auto;
 	overflow-x: hidden;
+}
+
+.chart h2 {
+	margin-bottom: 7px;
+	font-size: 1.1em;
+	font-weight: bold;
+}
+.chart-title-center {
+	position: relative;
+	margin: auto;
+	width: 35%;
+}
+.chart-title-container {
+	position: absolute;
+	padding-top: 13px;
+	z-index: 1;
+	text-align: center;
+	width: 100%;
+}
+@media (max-width: 860px) {
+	.chart-title-container {
+		position: relative;
+	}
+	.chart-title-center {
+		width: 70%;
+	}
+}
+.chartarea {
+	position: relative;
+}
+.zoom-buttons-container {
+	position: absolute;
+	right: 50px;
+	padding-top: 11px;
+	z-index: 1;
+}
+.chartarea button {
+	float: right;
+	height: 21px;
+	border-radius: 2px;
+	border-width: 0px;
+}
+.zoom-button {
+	width: 24px;
+	background-color: transparent;
+	color: rgb(221, 221, 221);
+}
+.zoom-reset {
+	padding-left: 6px;
+	padding-right: 6px;
+	background-color: rgb(221, 221, 221);
+	color: rgb(50, 50, 50);
+}
+.chartarea button + button {
+	margin-right: 18px;
+}
+.chartarea .chartcontainer {
+	height: 300px;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+
+.chart-tooltip-container {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
 }

@@ -1,5 +1,5 @@
-define(['app', 'RefreshingChart', 'log/factories'],
-    function (app, RefreshingChart) {
+define(['app', 'lodash', 'RefreshingChart'],
+    function (app, _, RefreshingChart) {
 
         app.component('deviceGraphLog', {
             bindings: {
@@ -13,40 +13,38 @@ define(['app', 'RefreshingChart', 'log/factories'],
             }
         });
 
-        app.component('shortChart', {
+        app.component('deviceShortChart', {
             require: {
                 logCtrl: '^deviceGraphLog'
             },
             bindings: {
                 device: '<'
             },
-            template: '<div></div>',
+            templateUrl: 'app/log/chart-day.html',
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
                 self.range = 'day';
 
                 self.$onInit = function () {
                     new RefreshingChart(
                         baseParams($),
-                        angularParams($location, $route, $scope, $element),
+                        angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
                         chartParams(
                             domoticzGlobals,
                             self,
-                            domoticzGlobals.Get5MinuteHistoryDaysGraphTitle(),
-                            true,
-                            function (dataItem, yearOffset=0) {
+                            true, function (dataItem, yearOffset = 0) {
                                 return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                             },
                             [
                                 {
                                     id: 'power',
-                                    name: domoticzGlobals.sensorNameForDevice(self.device),
                                     valueKeySuffix: '',
+                                    colorIndex: 0,
                                     template: {
-                                        showInLegend: false,
-                                        colorIndex: 0
+                                        name: domoticzGlobals.sensorNameForDevice(self.device),
+                                        showInLegend: false
                                     }
                                 }
                             ]
@@ -56,56 +54,54 @@ define(['app', 'RefreshingChart', 'log/factories'],
             }
         });
 
-        app.component('longChart', {
+        app.component('deviceLongChart', {
             require: {
                 logCtrl: '^deviceGraphLog'
             },
             bindings: {
                 device: '<',
-                chartTitle: '@',
                 range: '@'
             },
-            template: '<div></div>',
+            templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
                 const self = this;
 
                 self.$onInit = function () {
                     new RefreshingChart(
                         baseParams($),
-                        angularParams($location, $route, $scope, $element),
+                        angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
                         chartParams(
                             domoticzGlobals,
                             self,
-                            $.t(self.chartTitle),
                             false,
-                            function (dataItem, yearOffset=0) {
+                            function (dataItem, yearOffset = 0) {
                                 return GetLocalDateFromString(dataItem.d, yearOffset);
                             },
                             [
                                 {
                                     id: 'min',
-                                    name: 'min',
                                     valueKeySuffix: '_min',
+                                    colorIndex: 3,
                                     template: {
-                                        colorIndex: 3
+                                        name: $.t('Minimum')
                                     }
                                 },
                                 {
                                     id: 'max',
-                                    name: 'max',
                                     valueKeySuffix: '_max',
+                                    colorIndex: 2,
                                     template: {
-                                        colorIndex: 2
+                                        name: $.t('Maximum')
                                     }
                                 },
                                 {
                                     id: 'avg',
-                                    name: 'avg',
                                     valueKeySuffix: '_avg',
+                                    colorIndex: 0,
                                     template: {
-                                        colorIndex: 0
+                                        name: $.t('Average')
                                     }
                                 }
                             ]
@@ -120,11 +116,12 @@ define(['app', 'RefreshingChart', 'log/factories'],
                 jquery: jquery
             };
         }
-        function angularParams(location, route, scope, element) {
+        function angularParams(location, route, scope, timeout, element) {
             return {
                 location: location,
                 route: route,
                 scope: scope,
+                timeout: timeout,
                 element: element
             };
         }
@@ -135,12 +132,11 @@ define(['app', 'RefreshingChart', 'log/factories'],
                 datapointApi: datapointApi
             };
         }
-        function chartParams(domoticzGlobals, ctrl, chartTitle, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
+        function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
             return {
                 range: ctrl.range,
                 device: ctrl.device,
 				sensorType: domoticzGlobals.sensorTypeForDevice(ctrl.device),
-                chartTitle: chartTitle,
                 autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
                 dataSupplier: {
                     yAxes: [
@@ -159,16 +155,12 @@ define(['app', 'RefreshingChart', 'log/factories'],
                     timestampFromDataItem: timestampFromDataItem,
                     isShortLogChart: isShortLogChart,
                     seriesSuppliers: seriesSuppliers.map(function (seriesSupplier) {
-                        const valueKey = domoticzGlobals.valueKeyForDevice(ctrl.device);
-                        seriesSupplier.dataItemIsValid = function (dataItem) {
-                            return dataItem[valueKey + seriesSupplier.valueKeySuffix] !== undefined;
-                        }
-                        seriesSupplier.valuesFromDataItem = [
-                            function (dataItem) {
-                                return dataItem[valueKey + seriesSupplier.valueKeySuffix];
-                            }
-                        ];
-                        return seriesSupplier;
+                        return _.merge(
+                            {
+                                dataItemKeys: [domoticzGlobals.valueKeyForDevice(ctrl.device) + seriesSupplier.valueKeySuffix]
+                            },
+                            seriesSupplier
+                        );
                     })
                 }
             };

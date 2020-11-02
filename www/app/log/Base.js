@@ -4,9 +4,13 @@ define(function() {
         this.debugIsEnabled = params.debugIsEnabled;
     }
 
-    Base.prototype.consoledebug = function(line) {
+    Base.prototype.consoledebug = function(lineOrLineFunction) {
         if (this.debugIsEnabled() && console) {
-            console.log(line);
+            if (typeof lineOrLineFunction === 'function') {
+                console.log(lineOrLineFunction());
+            } else {
+                console.log(lineOrLineFunction);
+            }
         }
     }
 

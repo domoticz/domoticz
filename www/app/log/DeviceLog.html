@@ -13,6 +13,8 @@
     <device-light-log ng-if="::vm.isLightLog()" device-idx="::vm.deviceIdx"></device-light-log>
     <device-temperature-log ng-if="::vm.isTemperatureLog()" device="::vm.device"></device-temperature-log>
     <device-graph-log ng-if="::vm.isGraphLog()" device="::vm.device"></device-graph-log>
+    <device-counter-log ng-if="::vm.isCounterLogSpline()" device="::vm.device" subtype="'counter'"></device-counter-log>
+    <device-counter-log ng-if="::vm.isP1Log()" device="::vm.device" subtype="'p1'"></device-counter-log>
 
     <div class="js-device-log-content"></div>
 </div>

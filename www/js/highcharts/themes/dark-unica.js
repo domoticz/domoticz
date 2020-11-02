@@ -1,5 +1,5 @@
 /*
- Highcharts JS v8.2.0 (2020-08-20)
+ Highcharts JS v8.2.2 (2020-10-22)
 
  (c) 2009-2019 Torstein Honsi
 

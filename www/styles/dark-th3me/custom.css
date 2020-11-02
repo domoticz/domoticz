@@ -112,6 +112,10 @@ h2 {
   font-size: 14px;
   text-transform: uppercase;
 }
+.chart h2 {
+  margin-top: 0px;
+  font-size: 1em;
+}
 body table#itemtablenostatus tbody tr {
   color: #eee;
   background-color: #353535;

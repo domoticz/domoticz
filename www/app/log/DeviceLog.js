@@ -1,5 +1,5 @@
-define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog'], function (app) {
-    app.controller('DeviceLogController', function ($routeParams, domoticzApi, deviceApi) {
+define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog'], function (app) {
+    app.controller('DeviceLogController', function ($location, $routeParams, domoticzApi, deviceApi) {
         var vm = this;
 
         vm.isTextLog = isTextLog;
@@ -7,6 +7,8 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
         vm.isGraphLog = isGraphLog;
         vm.isTemperatureLog = isTemperatureLog;
         vm.isReportAvailable = isReportAvailable;
+        vm.isCounterLogSpline = isCounterLogSpline;
+        vm.isP1Log = isP1Log;
 
         init();
 
@@ -17,10 +19,8 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 vm.device = device;
                 vm.pageName = device.Name;
 
-                if (isSmartLog()) {
+                if (false && isP1Log()) {
                     ShowSmartLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
-                } else if (isCounterLogSpline()) {
-                    ShowCounterLogSpline('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
                 } else if (isCounterLog()) {
                     ShowCounterLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
                 }
@@ -86,7 +86,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             ].includes(vm.device.SubType)
         }
 
-        function isSmartLog() {
+        function isP1Log() {
             if (!vm.device) {
                 return undefined;
             }
@@ -99,7 +99,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 return undefined;
             }
 
-            if (isCounterLogSpline() || isSmartLog()) {
+            if (isCounterLogSpline() || isP1Log()) {
                 return false;
             }
 
@@ -124,7 +124,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             }
 
             return isTemperatureLog()
-                || ((isCounterLogSpline() || isCounterLog() || isSmartLog()) && [0, 1, 2, 3, 4].includes(vm.device.SwitchTypeVal));
+                || ((isCounterLogSpline() || isCounterLog() || isP1Log()) && [0, 1, 2, 3, 4].includes(vm.device.SwitchTypeVal));
         }
     });
 });
