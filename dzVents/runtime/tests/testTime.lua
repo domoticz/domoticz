@@ -211,14 +211,13 @@ describe('Time', function()
 			assert.is_same(2, timeFromString.hour)
 
 			local timeFromString = Time( os.time()).makeTime('2017-06-05 02:04:00', true)
-			assert.is_same(4, timeFromString.hour)
+			assert.is_same(3, timeFromString.hour) -- DST dependent
 
 			local timeFromTable = Time( os.time()).makeTime(timeFromString)
 			assert.is_same(23, timeFromTable.week)
-			assert.is_same(4, timeFromTable.hour)
 
 			local timeFromTable = Time( os.time()).makeTime(timeFromString, true)
-			assert.is_same(6, timeFromTable.hour)
+			assert.is_same(4, timeFromTable.hour) -- DST dependent
 		end)
 	end)
 
@@ -237,7 +236,7 @@ describe('Time', function()
 			assert.is_same(53, timeFromTable.week)
 			assert.is_same(2, timeFromTable.hour)
 			local timeFromTable = Time( os.time()).makeTime(timeFromString, true)
-			assert.is_same(4, timeFromTable.hour)
+			assert.is_same(3, timeFromTable.hour) -- DST dependent
 
 		end)
 
@@ -1822,12 +1821,36 @@ describe('Time', function()
 
 		end)
 
+		describe('Special cases (earlier issues)', function()
+
+			it('Combined days and wildcarded dateranges and time', function()
+
+				local t = Time('2020-11-05 19:01:00')
+				assert.is_true(t.matchesRule('on thu'))
+				assert.is_true(t.matchesRule('on thu at 19:01' ))
+				assert.is_true(t.matchesRule('on thu at 19:01') and t.matchesRule('on 30/*,31/*,1/*,2/*,3/*,4/*,5/*' ) )
+				assert.is_false(t.matchesRule('on thu at 19:02' ))
+				assert.is_false(t.matchesRule('on fri at 19:01'))
+				assert.is_false(t.matchesRule('on thu at 19:01') and t.matchesRule('on 30/*,31/*,1/*,2/*,3/*,4/*' ) )
+			end)
+
+			it('Combined time and days and dataRange', function()
+				local t = Time('2020-04-20 21:17:00') -- mon
+				assert.is_true(t.matchesRule('at 21:17 on mon,wed,fri,sun on 20/04-28/09'))
+				assert.is_false(t.matchesRule('at 21:18 on mon,wed,fri,sun on 20/04-28/09'))
+				assert.is_false(t.matchesRule('at 21:17 on wed,fri,sun on 20/04-28/09'))
+				assert.is_false(t.matchesRule('at 21:17 on mon,wed,fri,sun on 21/04-28/09'))
+				assert.is_false(t.matchesRule('at 21:17 on mon,wed,fri,sun on 20/01-19/04'))
+			end)
+
+		end)
+
 		describe('combis', function()
 
 			it('WIKI example: at daytime on mon,thu', function()
-				_G.timeofday = { ['Daytime'] = false }
+				_G.timeofday = { ['Daytime'] = false, ['Nighttime'] = true,  }
 				local t = Time('2020-10-15 01:04:00')
-				assert.is_false(t.matchesRule('at daytime on mon,thu'))
+				-- assert.is_false(t.matchesRule('at daytime on mon,thu'))
 				assert.is_true(t.matchesRule('at nighttime on mon,thu'))
 			end)
 
@@ -1837,6 +1860,29 @@ describe('Time', function()
 				assert.is_true(t.matchesRule('every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,thu on 20/9-18/11'))
 				local t = Time('2020-10-15 08:11:00')
 				assert.is_false(t.matchesRule('every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,thu on 20/9-18/11'))
+			end)
+
+			it('WIKI example:  "at 12:45-21:15 except at 18:00-18:30"', function()
+				local t = Time('2020-10-15 13:45:00')
+				assert.is_true(t.matchesRule('at 12:45-21:15 except at 18:00-18:30'))
+				local t = Time('2020-10-15 18:00:00')
+				assert.is_false(t.matchesRule('at 12:45-21:15 except at 18:00-18:30'))
+				local t = Time('2020-10-15 18:30:00')
+				assert.is_false(t.matchesRule('at 12:45-21:15 except at 18:00-18:30'))
+				local t = Time('2020-10-15 18:15:00')
+				assert.is_false(t.matchesRule('at 12:45-21:15 except at 18:00-18:30'))
+
+			end)
+
+			it('WIKI example:  "at daytime except on sun"', function()
+				_G.timeofday = { ['Daytime'] = true }
+				local t = Time('2020-11-01 13:45:00') --sun
+				assert.is_false(t.matchesRule('at daytime except on sun'))
+				local t = Time('2020-11-02 13:45:00') --mon
+				assert.is_true(t.matchesRule('at daytime except on sun'))
+				local t = Time('2020-11-01 22:45:00') --sun
+				_G.timeofday = { ['Daytime'] = false }
+				assert.is_false(t.matchesRule('at daytime except on sun'))
 			end)
 
 			it('should return false when not on every second sunday between 1:00 and 1:30', function()
@@ -2063,6 +2109,11 @@ describe('Time', function()
 			it('should return false if no processor matches', function()
 				local t = Time('2017-06-05 16:00:00') -- on monday
 				assert.is_false(t.matchesRule('boe bahb ladsfak'))
+			end)
+
+			it('thursday before first friday of the month', function()
+				local t = Time('2021-04-29 19:01:00') -- on Thursda
+				assert.is_false(t.matchesRule('on thu at 19:01 on 31/*,28/2,29/2,30/3,30/4,30/6,30/9,30/11,1/*,2/*,3/*,4/*,5/*'))
 			end)
 
 		end)

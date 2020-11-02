@@ -1,5 +1,8 @@
 # [3.0]
 
+  [3.0.16]
+- Add except as keyword in timeRules
+
   [3.0.15]
 - Fixed bug in domoticz.time.matchesRule (daterange was ignored when "on mon, tue" was also part of the rule)
 - Add device adapter for Thermostat type 3 devices (Mertik)

@@ -21,7 +21,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: Websocket notification for secondary/sub devices
 - Implemented: ZWave, Legend and tooltips in Neighbor�s overview
 - Implemented: AirconWithMe wifi module
-- Updated: dzVents version 3.0.15 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
+- Updated: dzVents version 3.0.16 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
 - Updated: eVehicles, added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: MQTT, added publish schemes: device index, device name and implemented custom topics for in- and outbound messages
 - Updated: OpenZWave configuration files
