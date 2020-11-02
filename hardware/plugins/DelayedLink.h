@@ -14,6 +14,17 @@
 #include <frameobject.h>
 #include "../../main/Helper.h"
 
+#ifndef _Py_DEC_REFTOTAL
+  /* _Py_DEC_REFTOTAL macro has been removed from Python 3.9 by:
+    https://github.com/python/cpython/commit/49932fec62c616ec88da52642339d83ae719e924 */
+#  ifdef Py_REF_DEBUG
+#    define _Py_DEC_REFTOTAL _Py_RefTotal--
+#  else
+#    define _Py_DEC_REFTOTAL
+#    define _Py_Dealloc
+#  endif
+#endif
+
 #if PY_VERSION_HEX >= 0x030800f0
 static inline void
 py3__Py_DECREF(const char *filename, int lineno, PyObject *op)
