@@ -8,7 +8,7 @@ local self = {
 	LOG_INFO = 3,
 	LOG_WARNING = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.15',
+	DZVERSION = '3.0.16',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -616,7 +616,7 @@ function self.hsbToRGB(h, s, v)
 
 end
 
- function self.humidityStatus (temperature, humidity)
+function self.humidityStatus (temperature, humidity)
 	local constants = domoticz or require('constants')
 	local temperature = tonumber(temperature)
 	local humidity = tonumber(humidity)
@@ -628,7 +628,6 @@ end
 			temperature >= 22 and
 			temperature <= 26 then return constants.HUM_COMFORTABLE
 	else return constants.HUM_NORMAL end
-
 end
 
 return self
