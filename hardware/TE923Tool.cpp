@@ -44,17 +44,20 @@ struct usb_device *CTE923Tool::find_te923()
 			}
 		}
 	}
-	return nullptr;
+	return NULL;
 }
 
-CTE923Tool::CTE923Tool()
+CTE923Tool::CTE923Tool(void)
 {
-	m_device_handle = nullptr;
+	m_device_handle=NULL;
 	m_bUSBIsInit=false;
 	usb_init();
 }
 
-CTE923Tool::~CTE923Tool() { CloseDevice(); }
+CTE923Tool::~CTE923Tool(void)
+{
+	CloseDevice();
+}
 
 bool CTE923Tool::OpenDevice()
 {
@@ -62,13 +65,13 @@ bool CTE923Tool::OpenDevice()
 	struct usb_device *dev;
 
 	dev = find_te923();
-	if (dev == nullptr) {
+	if ( dev == NULL ) {
 		_log.Log(LOG_ERROR, "TE923: Weather station not found.");
 		return false;
 	}
 
 	m_device_handle = usb_open( dev );
-	if (m_device_handle == nullptr) {
+	if ( m_device_handle == NULL ) {
 		_log.Log(LOG_ERROR, "TE923: Error while opening USB port and getting a device handler." );
 		return false;
 	}
@@ -103,13 +106,14 @@ bool CTE923Tool::OpenDevice()
 
 void CTE923Tool::CloseDevice()
 {
-	if (m_device_handle != nullptr) {
+	if (m_device_handle!=NULL)
+	{
 #ifndef WIN32
 		usb_release_interface( m_device_handle, 0 );
 #endif
 		usb_close(m_device_handle);
 	}
-	m_device_handle = nullptr;
+	m_device_handle=NULL;
 }
 
 int bcd2int( char bcd ) {
@@ -330,7 +334,7 @@ int CTE923Tool::get_te923_lifedata( Te923DataSet_t *data )
 	if ( buf[0] != 0x5A )
 		return -1;
 	memmove( buf, buf + 1, BUFLEN - 1 );
-	data->timestamp = (unsigned long)time(nullptr);
+	data->timestamp = (unsigned long)time( NULL );
 	decode_te923_data( buf, data );
 	return 0;
 }
@@ -428,7 +432,7 @@ int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 	} else
 		adr = data->__src;
 
-	time_t now = mytime(nullptr);
+	time_t now = mytime( NULL );
 	struct tm timeinfo;
 	localtime_r(&now, &timeinfo);
 
@@ -567,7 +571,7 @@ void CTE923Tool::GetPrintData( Te923DataSet_t *data, char *szOutputBuffer)
 
 bool CTE923Tool::GetData(Te923DataSet_t *data, Te923DevSet_t *dev)
 {
-	if (m_device_handle == nullptr)
+	if (m_device_handle==NULL)
 		return false;
 
 	memset (data, 0, sizeof ( Te923DataSet_t ) );

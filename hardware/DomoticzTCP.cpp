@@ -23,16 +23,18 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsig
 #endif
 }
 
-DomoticzTCP::~DomoticzTCP() = default;
+DomoticzTCP::~DomoticzTCP(void)
+{
+}
 
 #ifndef NOCLOUD
 bool DomoticzTCP::IsValidAPIKey(const std::string &IPAddress)
 {
-	if (IPAddress.find('.') != std::string::npos) {
+	if (IPAddress.find(".") != std::string::npos) {
 		// we assume an IPv4 address or host name
 		return false;
 	}
-	if (IPAddress.find(':') != std::string::npos) {
+	if (IPAddress.find(":") != std::string::npos) {
 		// we assume an IPv6 address
 		return false;
 	}
@@ -95,7 +97,8 @@ void DomoticzTCP::OnDisconnect()
 
 void DomoticzTCP::OnData(const unsigned char *pData, size_t length)
 {
-	if (length == 6 && strstr(reinterpret_cast<const char *>(pData), "NOAUTH") != nullptr) {
+	if (length == 6 && strstr(reinterpret_cast<const char *>(pData), "NOAUTH") != 0)
+	{
 		Log(LOG_ERROR, "Authentication failed for user %s on %s:%d", m_username.c_str(), m_szIPAddress.c_str(), m_usIPPort);
 		return;
 	}

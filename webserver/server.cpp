@@ -99,12 +99,12 @@ void server_base::stop() {
 
 	// Wait for acceptor and connections to stop
 	int timeout = 15; // force stop after 15 seconds
-	time_t start = mytime(nullptr);
+	time_t start = mytime(NULL);
 	while(true) {
 		if (!is_running && is_stop_complete) {
 			break;
 		}
-		if ((mytime(nullptr) - start) > timeout) {
+		if ((mytime(NULL) - start) > timeout) {
 			// timeout occurred
 			break;
 		}

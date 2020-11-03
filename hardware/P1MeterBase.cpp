@@ -119,14 +119,15 @@ P1Match p1_matchlist[] = {
 	{_eP1MatchType::LINE18,		P1TYPE_GASUSAGE,		P1GUDSMR2,	"gasusage",			1,  9}
 }; // must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of p1_matchlist
 
-P1MeterBase::P1MeterBase()
+P1MeterBase::P1MeterBase(void)
 {
 	m_bDisableCRC = true;
 	m_ratelimit = 0;
 	Init();
 }
 
-P1MeterBase::~P1MeterBase()
+
+P1MeterBase::~P1MeterBase(void)
 {
 	if (m_pDecryptBuffer)
 		delete[] m_pDecryptBuffer;
@@ -294,7 +295,7 @@ bool P1MeterBase::MatchLine()
 				_log.Log(LOG_STATUS, "P1 Smart Meter: Meter is pre DSMR 4.0 - using DSMR 2.2 compatibility");
 				m_p1version = 2;
 			}
-			time_t atime = mytime(nullptr);
+			time_t atime = mytime(NULL);
 			if (difftime(atime, m_lastUpdateTime) >= m_ratelimit)
 			{
 				m_lastUpdateTime = atime;
@@ -645,7 +646,7 @@ bool P1MeterBase::CheckCRC()
 	char crc_str[5];
 	strncpy(crc_str, (const char*)&l_buffer + 1, 4);
 	crc_str[4] = 0;
-	uint16_t m_crc16 = (uint16_t)strtoul(crc_str, nullptr, 16);
+	uint16_t m_crc16 = (uint16_t)strtoul(crc_str, NULL, 16);
 
 	// calculate CRC
 	const unsigned char* c_buffer = m_buffer;
@@ -831,11 +832,10 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 					if (ctx == nullptr)
 						return;
-					EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), nullptr, nullptr, nullptr);
-					EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, iv.size(), nullptr);
+					EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), NULL, NULL, NULL);
+					EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, iv.size(), NULL);
 
-					EVP_DecryptInit_ex(ctx, nullptr, nullptr, (const unsigned char *)m_szHexKey.data(),
-							   (const unsigned char *)iv.c_str());
+					EVP_DecryptInit_ex(ctx, NULL, NULL, (const unsigned char*)m_szHexKey.data(), (const unsigned char*)iv.c_str());
 
 					int outlen = 0;
 					//std::vector<char> m_szDecodeAdd = HexToBytes(_szDecodeAdd);

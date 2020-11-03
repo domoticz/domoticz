@@ -81,7 +81,9 @@ m_UserName(Username)
 	Init();
 }
 
-CPhilipsHue::~CPhilipsHue() = default;
+CPhilipsHue::~CPhilipsHue(void)
+{
+}
 
 void CPhilipsHue::Init()
 {
@@ -129,7 +131,7 @@ void CPhilipsHue::Do_Work()
 			sec_counter++;
 			if (sec_counter % m_poll_interval == 0)
 			{
-				m_LastHeartbeat = mytime(nullptr);
+				m_LastHeartbeat = mytime(NULL);
 				GetStates();
 			}
 		}
@@ -300,18 +302,18 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	}
 	else if (LCmd == "Set Level")
 	{
-		sPostData << R"({"on": true, "bri": )" << svalue << " }";
+		sPostData << "{\"on\": true, \"bri\": " << svalue << " }";
 		setOn = true;
 		setLevel = true;
 	}
 	else if (LCmd == "Set White")
 	{
-		sPostData << R"({"on": true, "sat": 0 , "bri": 255, "hue": 0 })";
+		sPostData << "{\"on\": true, \"sat\": 0 , \"bri\": 255, \"hue\": 0 }";
 		// Do state update next time the light is polled
 	}
 	else if (LCmd == "Set Hue")
 	{
-		sPostData << R"({"on": true, "sat": )" << svalue3 << ", \"hue\": " << svalue2 << ", \"bri\": " << svalue << "  }";
+		sPostData << "{\"on\": true, \"sat\": " << svalue3 << ", \"hue\": " << svalue2 << ", \"bri\": " << svalue << "  }";
 		setOn = true;
 		setLevel = true;
 		setHueSat = true;
@@ -320,7 +322,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	}
 	else if (LCmd == "Set CT")
 	{
-		sPostData << R"({"on": true, "ct": )" << svalue2 << ", \"bri\": " << svalue << "  }";
+		sPostData << "{\"on\": true, \"ct\": " << svalue2 << ", \"bri\": " << svalue << "  }";
 		setOn = true;
 		setLevel = true;
 		setCt = true;
@@ -334,7 +336,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	}
 
 	// Update cached state
-	_tHueLightState *pState = nullptr;
+	_tHueLightState *pState = NULL;
 
 	if (nodeID < 1000)
 	{
@@ -396,7 +398,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 		}
 		sPostData.clear();
 		sPostData.str("");
-		sPostData << R"({"scene": ")" << result[0][0] << "\"}";
+		sPostData << "{\"scene\": \"" << result[0][0] << "\"}";
 		sstr2 << "http://" << m_IPAddress
 			<< ":" << m_Port
 			<< "/api/" << m_UserName
@@ -436,7 +438,7 @@ std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsign
 	std::string sPostData;
 
 	//Providing own username is not allowed, so don't use it and only provide devicetype
-	sPostData = R"({ "devicetype": "domoticz" })";
+	sPostData = "{ \"devicetype\": \"domoticz\" }";
 
 	std::stringstream sstr2;
 	sstr2 << "http://" << IPAddress

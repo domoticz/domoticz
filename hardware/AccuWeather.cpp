@@ -57,7 +57,9 @@ m_LocationKey("")
 	Init();
 }
 
-CAccuWeather::~CAccuWeather() = default;
+CAccuWeather::~CAccuWeather(void)
+{
+}
 
 void CAccuWeather::Init()
 {
@@ -96,7 +98,7 @@ void CAccuWeather::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter % 1800 == 0) //50 free calls a day.. thats not much guy's!
 		{

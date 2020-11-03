@@ -30,7 +30,9 @@ CVolcraftCO20::CVolcraftCO20(const int ID)
 	m_HwdID=ID;
 }
 
-CVolcraftCO20::~CVolcraftCO20() = default;
+CVolcraftCO20::~CVolcraftCO20(void)
+{
+}
 
 bool CVolcraftCO20::StartHardware()
 {
@@ -65,7 +67,7 @@ void CVolcraftCO20::Do_Work()
 		sec_counter++;
 		if (sec_counter%12==0)
 		{
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat=mytime(NULL);
 		}
 
 		if (sec_counter%VolcraftCO20_POLL_INTERVAL==0)

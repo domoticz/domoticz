@@ -13,7 +13,9 @@ CRFLinkTCP::CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_usIPPort = usIPPort;
 }
 
-CRFLinkTCP::~CRFLinkTCP() = default;
+CRFLinkTCP::~CRFLinkTCP(void)
+{
+}
 
 bool CRFLinkTCP::StartHardware()
 {
@@ -49,7 +51,7 @@ void CRFLinkTCP::OnConnect()
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
-	m_LastReceivedTime = mytime(nullptr);
+	m_LastReceivedTime = mytime(NULL);
 	sOnConnected(this);
 	write("10;PING;\n");
 	write("10;VERSION;\n");
@@ -71,13 +73,13 @@ void CRFLinkTCP::Do_Work()
 	{
 		sec_counter++;
 
-		time_t atime = mytime(nullptr);
+		time_t atime = mytime(NULL);
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if ((sec_counter % 20 == 0) && (isConnected()))
 		{
-			time_t atime = mytime(nullptr);
+			time_t atime = mytime(NULL);
 			//Send ping (keep alive)
 			if (atime - m_LastReceivedTime > 30)
 			{

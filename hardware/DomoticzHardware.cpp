@@ -18,7 +18,9 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	mytime(&m_LastHeartbeatReceive);
 };
 
-CDomoticzHardwareBase::~CDomoticzHardwareBase() = default;
+CDomoticzHardwareBase::~CDomoticzHardwareBase()
+{
+}
 
 bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::string& /*sCommand*/)
 {
@@ -1140,16 +1142,21 @@ int CDomoticzHardwareBase::MigrateSelectorSwitch(const int NodeID, const uint8_t
 	{
 		int i = 0;
 		std::stringstream ssoptions;
-		for (const auto &m : optionsMap) {
-			std::string optionName = m.first.c_str();
-			std::string optionValue = m.second.c_str();
-			if (strcmp(m.first.c_str(), "LevelActions") == 0) {
-				if (strcmp(m.second.c_str(), LevelActions.c_str()) != 0) {
+		for (const auto& itt : optionsMap)
+		{
+			std::string optionName = itt.first.c_str();
+			std::string optionValue = itt.second.c_str();
+			if(strcmp(itt.first.c_str(),"LevelActions") == 0)
+			{
+				if(strcmp(itt.second.c_str(), LevelActions.c_str()) !=  0 )
+				{
 					bUpdated = true;  // the list of actions is not what we expected. flag  that Migration is required
-					optionValue = LevelActions.c_str();
+					optionValue = LevelActions.c_str();			
 				}
-			} else if (strcmp(m.first.c_str(), "LevelNames") == 0) {
-				optionValue = LevelNames.c_str();
+			}
+			else if(strcmp(itt.first.c_str(),"LevelNames") == 0)
+			{
+					optionValue = LevelNames.c_str();	
 			}
 			ssoptions << optionName << ":" << optionValue;
 			if (i < count) {

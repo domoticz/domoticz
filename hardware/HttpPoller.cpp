@@ -42,7 +42,9 @@ m_refresh(refresh)
 	Init();
 }
 
-CHttpPoller::~CHttpPoller() = default;
+CHttpPoller::~CHttpPoller(void)
+{
+}
 
 void CHttpPoller::Init()
 {
@@ -86,7 +88,7 @@ void CHttpPoller::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter % m_refresh == 0) {
 			GetScript();
@@ -109,8 +111,9 @@ void CHttpPoller::GetScript()
 	{
 		std::vector<std::string> ExtraHeaders2;
 		StringSplit(m_headers, "\n", ExtraHeaders2);
-		for (auto &i : ExtraHeaders2) {
-			ExtraHeaders.push_back(i);
+		for (size_t i = 0; i < ExtraHeaders2.size(); i++)
+		{
+			ExtraHeaders.push_back(ExtraHeaders2[i]);
 		}
 	}
 

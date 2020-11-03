@@ -22,7 +22,9 @@ CPVOutputInput::CPVOutputInput(const int ID, const std::string& SID, const std::
 	Init();
 }
 
-CPVOutputInput::~CPVOutputInput() = default;
+CPVOutputInput::~CPVOutputInput(void)
+{
+}
 
 void CPVOutputInput::Init()
 {
@@ -62,7 +64,7 @@ void CPVOutputInput::Do_Work()
 	_log.Log(LOG_STATUS, "PVOutput (Input): Worker started...");
 	while (!IsStopRequested(1000))
 	{
-		time_t atime = mytime(nullptr);
+		time_t atime = mytime(NULL);
 		m_LastHeartbeat = atime;
 		struct tm ltime;
 		localtime_r(&atime, &ltime);

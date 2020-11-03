@@ -68,7 +68,7 @@ MySensorsMQTT::MySensorsMQTT(
 		// And remove it from the CAfilename string.
 		m_CAFilename.erase(nextPiece, m_CAFilename.length());
 
-	} while (false);
+	} while (0);
 
 	switch (PublishScheme) {
 		case 2:
@@ -91,7 +91,9 @@ MySensorsMQTT::MySensorsMQTT(
 
 }
 
-MySensorsMQTT::~MySensorsMQTT() = default;
+MySensorsMQTT::~MySensorsMQTT(void)
+{
+}
 
 bool MySensorsMQTT::StartHardware()
 {

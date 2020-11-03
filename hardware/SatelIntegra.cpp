@@ -182,7 +182,7 @@ void SatelIntegra::Do_Work()
 		heartbeatInterval += interval;
 
 		if (heartbeatInterval >= HEARTBEAT_INTERVAL_MS) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 			heartbeatInterval = 0;
 		}
 
@@ -251,10 +251,13 @@ bool SatelIntegra::CheckAddress()
 	else
 	{
 		hostent *he = gethostbyname(m_IPAddress.c_str());
-		if (he == nullptr) {
+		if (he == NULL)
+		{
 			_log.Log(LOG_ERROR, "Satel Integra: cannot resolve host name");
 			return false;
-		} else {
+		}
+		else
+		{
 			memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
 		}
 	}
@@ -415,7 +418,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 
 				if (firstTime)
 				{
-					m_LastHeartbeat = mytime(nullptr);
+					m_LastHeartbeat = mytime(NULL);
 
 					unsigned char buffer[21];
 #ifdef DEBUG_SatelIntegra
@@ -490,7 +493,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 				{
 					if (firstTime)
 					{
-						m_LastHeartbeat = mytime(nullptr);
+						m_LastHeartbeat = mytime(NULL);
 
 						unsigned char buffer[21];
 #ifdef DEBUG_SatelIntegra
@@ -940,11 +943,13 @@ std::string SatelIntegra::ISO2UTF8(const std::string &name)
 	char utf8[] = "\xC4\x85\xC4\x87\xC4\x99\xC5\x82\xC5\x84\xC3\xB3\xC5\x9B\xC5\xBA\xC5\xBC\xC4\x84\xC4\x86\xC4\x98\xC5\x81\xC5\x83\xC3\x93\xC5\x9A\xC5\xB9\xC5\xBB";
 
 	std::string UTF8Name;
-	for (char i : name) {
+	for (size_t i = 0; i < name.length(); ++i)
+	{
 		bool changed = false;
 		for (int j = 0; j < sizeof(cp1250); ++j)
 		{
-			if (i == cp1250[j]) {
+			if (name[i] == cp1250[j])
+			{
 				UTF8Name += utf8[j * 2];
 				UTF8Name += utf8[j * 2 + 1];
 				changed = true;
@@ -953,7 +958,7 @@ std::string SatelIntegra::ISO2UTF8(const std::string &name)
 		}
 		if (!changed)
 		{
-			UTF8Name += i;
+			UTF8Name += name[i];
 		}
 	}
 	return UTF8Name;
@@ -1138,7 +1143,8 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	struct timeval tv;
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
-	if (select(m_socket + 1, &rfds, nullptr, nullptr, &tv) < 0) {
+	if (select(m_socket + 1, &rfds, NULL, NULL, &tv) < 0)
+	{
 		_log.Log(LOG_ERROR, "Satel Integra: connection lost.");
 		DestroySocket();
 		return -1;
@@ -1278,5 +1284,5 @@ std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigne
 		pResult[index] = *it;
 	}
 
-	return {pResult, resultSize};
+	return std::pair<unsigned char*, unsigned int>(pResult, resultSize);
 }

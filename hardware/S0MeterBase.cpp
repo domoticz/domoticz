@@ -17,7 +17,8 @@
 
 #include <ctime>
 
-S0MeterBase::S0MeterBase()
+
+S0MeterBase::S0MeterBase(void)
 {
 	m_bufferpos = 0;
 	int ii;
@@ -78,7 +79,10 @@ void S0MeterBase::InitBase()
 	}
 }
 
-S0MeterBase::~S0MeterBase() = default;
+
+S0MeterBase::~S0MeterBase(void)
+{
+}
 
 void S0MeterBase::ReloadLastTotals()
 {

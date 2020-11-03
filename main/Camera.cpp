@@ -18,9 +18,14 @@
 
 extern std::string szUserDataFolder;
 
-CCameraHandler::CCameraHandler() { m_seconds_counter = 0; }
+CCameraHandler::CCameraHandler(void)
+{
+	m_seconds_counter = 0;
+}
 
-CCameraHandler::~CCameraHandler() = default;
+CCameraHandler::~CCameraHandler(void)
+{
+}
 
 void CCameraHandler::ReloadCameras()
 {
@@ -33,7 +38,10 @@ void CCameraHandler::ReloadCameras()
 	if (!result.empty())
 	{
 		_log.Log(LOG_STATUS, "Camera: settings (re)loaded");
-		for (const auto &sd : result) {
+		for (const auto & itt : result)
+		{
+			std::vector<std::string> sd = itt;
+
 			cameraDevice citem;
 			citem.ID = std::stoull(sd[0]);
 			citem.Name = sd[1];
@@ -48,23 +56,26 @@ void CCameraHandler::ReloadCameras()
 		}
 	}
 
-	for (const auto &camera : _AddedCameras) {
+	for (const auto & ittCam : _AddedCameras)
+	{
 		//Get Active Devices/Scenes
-		ReloadCameraActiveDevices(camera);
+		ReloadCameraActiveDevices(ittCam);
 	}
 }
 
 void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 {
 	cameraDevice *pCamera = GetCamera(CamID);
-	if (pCamera == nullptr)
+	if (pCamera == NULL)
 		return;
 	pCamera->mActiveDevices.clear();
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID", CamID.c_str());
 	if (!result.empty())
 	{
-		for (const auto &sd : result) {
+		for (const auto & itt : result)
+		{
+			std::vector<std::string> sd = itt;
 			cameraActiveDevice aDevice;
 			aDevice.ID = std::stoull(sd[0]);
 			aDevice.DevSceneType = (unsigned char)atoi(sd[1].c_str());
@@ -83,10 +94,15 @@ uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, co
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
 {
 	std::lock_guard<std::mutex> l(m_mutex);
-	for (const auto &sd : m_cameradevices) {
-		for (const auto &sd2 : sd.mActiveDevices) {
-			if ((sd2.DevSceneType == DevSceneType) && (sd2.DevSceneRowID == DevSceneID))
-				return sd.ID;
+	for (const auto & itt : m_cameradevices)
+	{
+		for (const auto & itt2 : itt.mActiveDevices)
+		{
+			if (
+				(itt2.DevSceneType == DevSceneType) &&
+				(itt2.DevSceneRowID == DevSceneID)
+				)
+				return itt.ID;
 		}
 	}
 	return 0;
@@ -95,7 +111,7 @@ uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, co
 std::string CCameraHandler::GetCameraURL(const std::string &CamID)
 {
 	cameraDevice* pCamera = GetCamera(CamID);
-	if (pCamera == nullptr)
+	if (pCamera == NULL)
 		return "";
 	return GetCameraURL(pCamera);
 }
@@ -103,7 +119,7 @@ std::string CCameraHandler::GetCameraURL(const std::string &CamID)
 std::string CCameraHandler::GetCameraURL(const uint64_t CamID)
 {
 	cameraDevice* pCamera = GetCamera(CamID);
-	if (pCamera == nullptr)
+	if (pCamera == NULL)
 		return "";
 	return GetCameraURL(pCamera);
 }
@@ -130,11 +146,12 @@ CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const std::string &CamID
 
 CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 {
-	for (auto &m : m_cameradevices) {
-		if (m.ID == CamID)
-			return &m;
+	for (auto & itt : m_cameradevices)
+	{
+		if (itt.ID == CamID)
+			return &itt;
 	}
-	return nullptr;
+	return NULL;
 }
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
@@ -232,7 +249,7 @@ bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned cha
 	std::lock_guard<std::mutex> l(m_mutex);
 
 	cameraDevice *pCamera = GetCamera(CamID);
-	if (pCamera == nullptr)
+	if (pCamera == NULL)
 		return false;
 
 	std::string szURL = GetCameraURL(pCamera);
@@ -371,7 +388,10 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto &sd : result) {
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
@@ -395,7 +415,10 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto &sd : result) {
+				for (const auto& itt : result)
+				{
+					std::vector<std::string> sd = itt;
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					ii++;

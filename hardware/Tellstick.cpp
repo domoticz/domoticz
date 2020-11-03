@@ -128,25 +128,25 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
 
     size_t prevPos = 0;
     std::string message = data;
-    size_t pos = message.find(';');
+    size_t pos = message.find(";");
 
     while(pos != std::string::npos) {
         std::string param = message.substr(prevPos, pos-prevPos);
         prevPos = pos+1;
-	size_t delim = param.find(':');
-	if (delim == std::string::npos) {
-		break;
-	}
-	if (param.substr(0, delim).compare("id") == 0) {
-		deviceId = param.substr(delim + 1, param.length() - delim);
-	} else if (param.substr(0, delim).compare("winddirection") == 0) {
-		winddirection = param.substr(delim + 1, param.length() - delim);
-	} else if (param.substr(0, delim).compare("windaverage") == 0) {
-		windaverage = param.substr(delim + 1, param.length() - delim);
-	} else if (param.substr(0, delim).compare("windgust") == 0) {
-		windgust = param.substr(delim + 1, param.length() - delim);
-	}
-	pos = message.find(';', pos + 1);
+        size_t delim = param.find(":");
+        if (delim == std::string::npos) {
+            break;
+        }
+        if (param.substr(0, delim).compare("id") == 0) {
+            deviceId = param.substr(delim+1, param.length()-delim);
+        } else if (param.substr(0, delim).compare("winddirection") == 0) {
+            winddirection = param.substr(delim+1, param.length()-delim);
+        } else if (param.substr(0, delim).compare("windaverage") == 0) {
+            windaverage = param.substr(delim+1, param.length()-delim);
+        } else if (param.substr(0, delim).compare("windgust") == 0) {
+            windgust = param.substr(delim+1, param.length()-delim);
+        }
+        pos = message.find(";", pos+1);
     }
     if (!deviceId.empty() && !winddirection.empty() && ! windaverage.empty() && ! windgust.empty()) {
         SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), static_cast<float>(atof(windaverage.c_str())), static_cast<float>(atof(windgust.c_str())), 0, 0, false, false, "Wind");
@@ -334,12 +334,12 @@ namespace http {
                              repeats, repeatInterval, hwID);
 
             CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(hwID);
-	    if (pBaseHardware == nullptr)
-		    return;
-	    if (pBaseHardware->HwdType != HTYPE_Tellstick)
-		    return;
-	    CTellstick *pTellstick = reinterpret_cast<CTellstick *>(pBaseHardware);
-	    pTellstick->SetSettings(repeats, repeatInterval);
-	}
+            if (pBaseHardware == NULL)
+                return;
+            if (pBaseHardware->HwdType != HTYPE_Tellstick)
+                return;
+            CTellstick *pTellstick = reinterpret_cast<CTellstick*>(pBaseHardware);
+            pTellstick->SetSettings(repeats, repeatInterval);
+        }
     }
 }

@@ -169,7 +169,9 @@ namespace Plugins {
 						{
 							PyType_Ready(&CImageType);
 							// Add image objects into the image dictionary with ID as the key
-							for (const auto &sd : result) {
+							for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+							{
+								std::vector<std::string> sd = *itt;
 								CImage* pImage = (CImage*)CImage_new(&CImageType, (PyObject*)NULL, (PyObject*)NULL);
 
 								PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
@@ -647,7 +649,9 @@ namespace Plugins {
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description, Color, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
 			if (!result.empty())
 			{
-				for (const auto &sd : result) {
+				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
 					self->Unit = atoi(sd[0].c_str());
 					self->ID = atoi(sd[1].c_str());
 					Py_XDECREF(self->Name);
@@ -676,9 +680,10 @@ namespace Plugins {
 						else
 						{
 							std::map<std::string, std::string> mpOptions = m_sql.BuildDeviceOptions(sd[14], true);
-							for (const auto &opt : mpOptions) {
-								PyObject *pKeyDict = PyUnicode_FromString(opt.first.c_str());
-								PyObject *pValueDict = PyUnicode_FromString(opt.second.c_str());
+							for (std::map<std::string, std::string>::const_iterator ittOpt = mpOptions.begin(); ittOpt != mpOptions.end(); ++ittOpt)
+							{
+								PyObject *pKeyDict = PyUnicode_FromString(ittOpt->first.c_str());
+								PyObject *pValueDict =  PyUnicode_FromString(ittOpt->second.c_str());
 								if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
 								{
 									_log.Log(LOG_ERROR, "(%s) Failed to refresh Options dictionary for Hardware/Unit combination (%d:%d).", self->pPlugin->m_Name.c_str(), self->HwdID, self->Unit);

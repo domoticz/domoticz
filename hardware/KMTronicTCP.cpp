@@ -43,7 +43,9 @@ m_Password(CURLEncode::URLEncode(password))
 	m_bIsTempDevice = false;
 }
 
-KMTronicTCP::~KMTronicTCP() = default;
+KMTronicTCP::~KMTronicTCP(void)
+{
+}
 
 void KMTronicTCP::Init()
 {
@@ -82,7 +84,7 @@ void KMTronicTCP::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat=mytime(NULL);
 		}
 
 		int iPollInterval = KMTRONIC_POLL_INTERVAL;

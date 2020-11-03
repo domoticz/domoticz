@@ -18,7 +18,10 @@ CDummy::CDummy(const int ID)
 	m_bSkipReceiveCheck = true;
 }
 
-CDummy::~CDummy() { m_bIsStarted = false; }
+CDummy::~CDummy(void)
+{
+	m_bIsStarted=false;
+}
 
 void CDummy::Init()
 {
@@ -132,10 +135,12 @@ namespace http {
 			unsigned int subType = 0;
 			uint64_t DeviceRowIdx = (uint64_t )-1;
 
-			for (auto i : mappedsensorname) {
-				if (i.mappedvalue == sensortype) {
-					type = i.type;
-					subType = i.subtype;
+			for (size_t i = 0; i < sizeof(mappedsensorname) / sizeof(mappedsensorname[0]); i++)
+			{
+				if (mappedsensorname[i].mappedvalue == sensortype)
+				{
+					type = mappedsensorname[i].type;
+					subType = mappedsensorname[i].subtype;
 
 					int HwdID = atoi(idx.c_str());
 

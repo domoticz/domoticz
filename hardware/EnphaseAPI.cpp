@@ -66,7 +66,9 @@ EnphaseAPI::EnphaseAPI(const int ID, const std::string &IPAddress, const unsigne
 	m_HwdID = ID;
 }
 
-EnphaseAPI::~EnphaseAPI() = default;
+EnphaseAPI::~EnphaseAPI(void)
+{
+}
 
 bool EnphaseAPI::StartHardware()
 {
@@ -102,7 +104,7 @@ void EnphaseAPI::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 
 		if (sec_counter % Enphase_request_INTERVAL == 0)
@@ -190,7 +192,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 
 void EnphaseAPI::parseProduction(const Json::Value& root)
 {
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 

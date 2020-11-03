@@ -27,8 +27,14 @@ const CNotificationSystem::_tNotificationStatusTable CNotificationSystem::status
 	{ Notification::STATUS_WARNING,        "warning"         }
 };
 
-CNotificationSystem::CNotificationSystem() = default;
-CNotificationSystem::~CNotificationSystem() { Stop(); }
+CNotificationSystem::CNotificationSystem(void)
+{
+}
+
+CNotificationSystem::~CNotificationSystem(void)
+{
+	Stop();
+}
 
 void CNotificationSystem::Start()
 {
@@ -52,7 +58,7 @@ void CNotificationSystem::UnlockNotificationQueueThread()
 {
 	// Push dummy message to unlock queue
 	_tNotificationQueue item;
-	item.trigger = nullptr;
+	item.trigger = NULL;
 	m_notificationqueue.push(item);
 }
 
@@ -83,8 +89,8 @@ void CNotificationSystem::QueueThread()
 			continue;
 
 		boost::unique_lock<boost::shared_mutex> lock(m_mutex);
-		for (auto &m_notifier : m_notifiers)
-			m_notifier->Update(item.type, item.status, item.eventdata);
+		for (size_t i = 0; i < m_notifiers.size(); i++)
+			m_notifiers[i]->Update(item.type, item.status, item.eventdata);
 	}
 
 	m_notificationqueue.clear();
@@ -104,19 +110,20 @@ bool CNotificationSystem::NotifyWait(const Notification::_eType type, const Noti
 {
 	bool response = false;
 	boost::unique_lock<boost::shared_mutex> lock(m_mutex);
-	for (auto &m_notifier : m_notifiers)
-		response |= m_notifier->Update(type, status);
+	for (size_t i = 0; i < m_notifiers.size(); i++)
+		response |= m_notifiers[i]->Update(type, status);
 	return response;
 }
 
 bool CNotificationSystem::Register(CNotificationObserver* pNotifier)
 {
-	if (pNotifier == nullptr)
+	if (pNotifier == NULL)
 		return false;
 
 	boost::unique_lock<boost::shared_mutex> lock(m_mutex);
-	for (auto &m_notifier : m_notifiers) {
-		if (m_notifier == pNotifier)
+	for (size_t i = 0; i < m_notifiers.size(); i++)
+	{
+		if (m_notifiers[i] == pNotifier)
 			return false;
 	}
 	m_notifiers.push_back(pNotifier);
@@ -125,7 +132,7 @@ bool CNotificationSystem::Register(CNotificationObserver* pNotifier)
 
 bool CNotificationSystem::Unregister(CNotificationObserver* pNotifier)
 {
-	if (pNotifier == nullptr)
+	if (pNotifier == NULL)
 		return false;
 
 	if (m_notifiers.size() > 0)

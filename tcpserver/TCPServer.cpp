@@ -21,7 +21,8 @@ CTCPServerIntBase::CTCPServerIntBase(CTCPServer *pRoot)
 	m_pRoot=pRoot;
 }
 
-CTCPServerIntBase::~CTCPServerIntBase()
+
+CTCPServerIntBase::~CTCPServerIntBase(void)
 {
 //	stopAllClients();
 }
@@ -57,7 +58,7 @@ bool CTCPServerInt::IsUserHereFirstTime(const std::string &ip_string)
 	//
 	//	Log same IP-address first time and then once per day
 	//
-	time_t now = mytime(nullptr);
+	time_t now = mytime(NULL);
 
 	std::vector<_tTCPLogInfo>::iterator itt = m_incoming_domoticz_history.begin();
 	while (itt!= m_incoming_domoticz_history.end())
@@ -121,19 +122,21 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 
 _tRemoteShareUser* CTCPServerIntBase::FindUser(const std::string &username)
 {
+	std::vector<_tRemoteShareUser>::iterator itt;
 	int ii=0;
-	for (const auto &m : m_users) {
-		if (m.Username == username)
+	for (itt=m_users.begin(); itt!=m_users.end(); ++itt)
+	{
+		if (itt->Username==username)
 			return &m_users[ii];
 		ii++;
 	}
-	return nullptr;
+	return NULL;
 }
 
 bool CTCPServerIntBase::HandleAuthentication(CTCPClient_ptr c, const std::string &username, const std::string &password)
 {
 	_tRemoteShareUser *pUser=FindUser(username);
-	if (pUser == nullptr)
+	if (pUser==NULL)
 		return false;
 
 	return ((pUser->Username==username)&&(pUser->Password==password));
@@ -156,8 +159,10 @@ void CTCPServerIntBase::stopAllClients()
 	std::lock_guard<std::mutex> l(connectionMutex);
 	if (connections_.empty())
 		return;
-	for (const auto &c : connections_) {
-		CTCPClientBase *pClient = c.get();
+	std::set<CTCPClient_ptr>::const_iterator itt;
+	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
+	{
+		CTCPClientBase *pClient=itt->get();
 		if (pClient)
 			pClient->stop();
 	}
@@ -178,7 +183,7 @@ void CTCPServerIntBase::SetRemoteUsers(const std::vector<_tRemoteShareUser> &use
 unsigned int CTCPServerIntBase::GetUserDevicesCount(const std::string &username)
 {
 	_tRemoteShareUser *pUser=FindUser(username);
-	if (pUser == nullptr)
+	if (pUser==NULL)
 		return 0;
 	return (unsigned int) pUser->Devices.size();
 }
@@ -194,23 +199,29 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 		)
 		return;
 
-	for (const auto &c : connections_) {
-		CTCPClientBase *pClient = c.get();
+	std::set<CTCPClient_ptr>::const_iterator itt;
+	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
+	{
+		CTCPClientBase *pClient=itt->get();
 		if (pClient==pClient2Ignore)
 			continue;
 
 		if (pClient)
 		{
 			_tRemoteShareUser *pUser=FindUser(pClient->m_username);
-			if (pUser != nullptr) {
+			if (pUser!=NULL)
+			{
 				//check if we are allowed to get this device
 				bool bOk2Send=false;
 				if (pUser->Devices.size()==0)
 					bOk2Send=true;
 				else
 				{
-					for (const auto &device : pUser->Devices) {
-						if (device == DeviceRowID) {
+					int tdevices=pUser->Devices.size();
+					for (int ii=0; ii<tdevices; ii++)
+					{
+						if (pUser->Devices[ii]==DeviceRowID)
+						{
 							bOk2Send=true;
 							break;
 						}
@@ -237,7 +248,7 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 	acceptor_.bind(endpoint);
 	acceptor_.listen();
 
-	new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
+	new_connection_ = std::shared_ptr<CTCPClient>(new CTCPClient(io_service_, this));
 
 	acceptor_.async_accept(
 		*(new_connection_->socket()),
@@ -245,7 +256,10 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 			boost::asio::placeholders::error));
 }
 
-CTCPServerInt::~CTCPServerInt() = default;
+CTCPServerInt::~CTCPServerInt(void)
+{
+
+}
 
 #ifndef NOCLOUD
 // our proxied server
@@ -254,7 +268,9 @@ CTCPServerProxied::CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClie
 	m_pProxyClient = proxy;
 }
 
-CTCPServerProxied::~CTCPServerProxied() = default;
+CTCPServerProxied::~CTCPServerProxied(void)
+{
+}
 
 void CTCPServerProxied::start()
 {
@@ -305,7 +321,7 @@ bool CTCPServerProxied::OnNewConnection(const std::string &token, const std::str
 bool CTCPServerProxied::OnIncomingData(const std::string &token, const unsigned char *data, size_t bytes_transferred)
 {
 	CSharedClient *client = FindClient(token);
-	if (client == nullptr) {
+	if (client == NULL) {
 		return false;
 	}
 	client->OnIncomingData(data, bytes_transferred);
@@ -314,30 +330,31 @@ bool CTCPServerProxied::OnIncomingData(const std::string &token, const unsigned 
 
 CSharedClient *CTCPServerProxied::FindClient(const std::string &token)
 {
-	for (const auto &c : connections_) {
-		CSharedClient *pClient = dynamic_cast<CSharedClient *>(c.get());
+	std::set<CTCPClient_ptr>::const_iterator itt;
+	for (itt = connections_.begin(); itt != connections_.end(); ++itt) {
+		CSharedClient *pClient = dynamic_cast<CSharedClient *>(itt->get());
 		if (pClient && pClient->CompareToken(token)) {
 			return pClient;
 		}
 	}
-	return nullptr;
+	return NULL;
 }
 #endif
 
 //Out main (wrapper) server
 CTCPServer::CTCPServer()
 {
-	m_pTCPServer = nullptr;
+	m_pTCPServer = NULL;
 #ifndef NOCLOUD
-	m_pProxyServer = nullptr;
+	m_pProxyServer = NULL;
 #endif
 }
 
 CTCPServer::CTCPServer(const int /*ID*/)
 {
-	m_pTCPServer = nullptr;
+	m_pTCPServer = NULL;
 #ifndef NOCLOUD
-	m_pProxyServer = nullptr;
+	m_pProxyServer = NULL;
 #endif
 }
 
@@ -345,10 +362,10 @@ CTCPServer::~CTCPServer()
 {
 	StopServer();
 #ifndef NOCLOUD
-	if (m_pProxyServer != nullptr) {
+	if (m_pProxyServer != NULL) {
 		m_pProxyServer->stop();
 		delete m_pProxyServer;
-		m_pProxyServer = nullptr;
+		m_pProxyServer = NULL;
 	}
 #endif
 }
@@ -364,7 +381,7 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 		{
 			exception = false;
 			StopServer();
-			if (m_pTCPServer != nullptr) {
+			if (m_pTCPServer != NULL) {
 				_log.Log(LOG_ERROR, "Stopping TCPServer should delete resources !");
 			}
 			m_pTCPServer = new CTCPServerInt(listen_address, port, this);
@@ -424,7 +441,7 @@ void CTCPServer::StopServer()
 	// This is the only time to delete it
 	if (m_pTCPServer) {
 		delete m_pTCPServer;
-		m_pTCPServer = nullptr;
+		m_pTCPServer = NULL;
 		_log.Log(LOG_STATUS, "TCPServer: shared server stopped");
 	}
 #ifndef NOCLOUD

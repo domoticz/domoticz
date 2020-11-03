@@ -40,7 +40,9 @@ CNestOAuthAPI::CNestOAuthAPI(const int ID, const std::string &apikey, const std:
 	Init();
 }
 
-CNestOAuthAPI::~CNestOAuthAPI() = default;
+CNestOAuthAPI::~CNestOAuthAPI(void)
+{
+}
 
 void CNestOAuthAPI::Init()
 {
@@ -83,7 +85,7 @@ void CNestOAuthAPI::Do_Work()
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 
 		if (sec_counter % NEST_POLL_INTERVAL == 0)
@@ -323,7 +325,7 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 			bNoChange = true;
 		if (bNoChange)
 		{
-			time_t now = time(nullptr);
+			time_t now = time(0);
 			struct tm ltime;
 			localtime_r(&now, &ltime);
 
@@ -455,14 +457,16 @@ void CNestOAuthAPI::GetMeterDetails()
 			return;
 		}
 		int SwitchIndex = 1;
-		for (auto device : deviceRoot["smoke_co_alarms"]) {
-			// std::string devstring = itDevice.key().asString();
+		for (Json::Value::iterator itDevice = deviceRoot["smoke_co_alarms"].begin(); itDevice != deviceRoot["smoke_co_alarms"].end(); ++itDevice)
+		{
+			Json::Value device = *itDevice;
+			//std::string devstring = itDevice.key().asString();
 			std::string devWhereName = device["where_name"].asString();
 
 			if (devWhereName.empty())
 				continue;
 
-			const std::string &devName = devWhereName;
+			std::string devName = devWhereName;
 
 			// Default value is true, let's assume the worst.
 			bool bSmokeAlarm = true;
@@ -513,10 +517,11 @@ void CNestOAuthAPI::GetMeterDetails()
 
 	size_t iThermostat = 0;
 	size_t iStructure = 0;
-	for (auto nstructure : structureRoot) {
+	for (Json::Value::iterator ittStructure = structureRoot.begin(); ittStructure != structureRoot.end(); ++ittStructure)
+	{
 		// Get general structure information
-		if (!nstructure.isObject())
-			continue;
+		Json::Value nstructure = *ittStructure;
+		if (!nstructure.isObject()) continue;
 
 		// Store the structure information in a map.
 		_tNestStructure nstruct;
@@ -532,8 +537,9 @@ void CNestOAuthAPI::GetMeterDetails()
 		}
 
 		// Find out which thermostats are available under this structure
-		for (auto &ittDevice : nstructure["thermostats"]) {
-			std::string devID = ittDevice.asString();
+		for (Json::Value::iterator ittDevice = nstructure["thermostats"].begin(); ittDevice != nstructure["thermostats"].end(); ++ittDevice)
+		{
+			std::string devID = (*ittDevice).asString();
 
 			// _log.Log(LOG_NORM, ("Nest: Found Thermostat " + devID + " in structure " + StructureName).c_str());
 

@@ -170,7 +170,9 @@ CLimitLess::CLimitLess(const int ID, const int LedType, const int BridgeType, co
 	Init();
 }
 
-CLimitLess::~CLimitLess() = default;
+CLimitLess::~CLimitLess(void)
+{
+}
 
 void CLimitLess::Init()
 {
@@ -213,7 +215,7 @@ bool CLimitLess::StartHardware()
 
 
 	struct hostent* he;
-	if ((he = gethostbyname(m_szIPAddress.c_str())) == nullptr) { // get the host info
+	if ((he = gethostbyname(m_szIPAddress.c_str())) == NULL) {  // get the host info
 		_log.Log(LOG_ERROR, "AppLamp: Error with IP address!...");
 		return false;
 	}
@@ -282,7 +284,7 @@ bool CLimitLess::IsDataAvailable(const SOCKET /*sock*/)
 	tv.tv_usec = 0;
 
 	// Wait until timeout or data received.
-	n = select(m_RemoteSocket + 1, &fds, nullptr, nullptr, &tv);
+	n = select(m_RemoteSocket + 1, &fds, NULL, NULL, &tv);
 	return (n > 0);
 }
 
@@ -453,7 +455,7 @@ void CLimitLess::Do_Work()
 		}
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	if (m_RemoteSocket != INVALID_SOCKET)
@@ -509,7 +511,7 @@ void CLimitLess::Send_V4V5_RGBW_On(const uint8_t dunit, const long delay)
 bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 {
 	const _tColorSwitch* pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
-	unsigned char *pCMD = nullptr;
+	unsigned char* pCMD = NULL;
 
 	if (m_BridgeType == LBTYPE_V6)
 	{
@@ -1015,7 +1017,8 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 					}
 				}
 		*/
-		if (pCMD != nullptr) {
+		if (pCMD != NULL)
+		{
 			SendV6Command(pCMD);
 			sleep_milliseconds(100);
 		}
@@ -1401,7 +1404,8 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 		}
 	}
 
-	if (pCMD != nullptr) {
+	if (pCMD != NULL)
+	{
 		sendto(m_RemoteSocket, (const char*)pCMD, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
 		sleep_milliseconds(100);
 	}

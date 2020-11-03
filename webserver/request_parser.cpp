@@ -299,11 +299,12 @@ boost::tribool request_parser::consume(request& req, const char* &pInput, const 
 		  {
 			  // this is a post request, so we need to read the content
 			  req.content_length = 0;
-			  for (auto &ph : req.headers) {
-				  std::string hname = ph.name;
+			  for( std::vector<header>::iterator ph = req.headers.begin();  ph != req.headers.end(); ++ph )
+			  {
+				  std::string hname = (*ph).name;
 				  std::transform(hname.begin(), hname.end(), hname.begin(), ::tolower);
 				  if( hname == "content-length" ) {
-					  req.content_length = atoi(ph.value.c_str());
+					  req.content_length = atoi( (*ph).value.c_str());
 					  break;
 				  }
 			  }

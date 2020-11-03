@@ -46,7 +46,7 @@
   * Initialize Client Socket To Set Free / Invalid at the start of program
   * Preconditions none, Perform once on start of application
   */
-void eHouseTCP::EhouseInitTcpClient()
+void eHouseTCP::EhouseInitTcpClient(void)
 {
 	unsigned char i = 0;
 	for (i = 0; i < MAX_CLIENT_SOCKETS; i++)

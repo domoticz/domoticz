@@ -78,7 +78,10 @@ CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned sh
 	mosqdz::lib_init();
 }
 
-CTTNMQTT::~CTTNMQTT() { mosqdz::lib_cleanup(); }
+CTTNMQTT::~CTTNMQTT(void)
+{
+	mosqdz::lib_cleanup();
+}
 
 bool CTTNMQTT::StartHardware()
 {
@@ -172,7 +175,7 @@ void CTTNMQTT::on_connect(int rc)
 			m_IsConnected = true;
 			sOnConnected(this);
 		}
-		subscribe(nullptr, m_TopicIn.c_str());
+		subscribe(NULL, m_TopicIn.c_str());
 	}
 	else {
 		Log(LOG_ERROR, "Connection failed!, restarting (rc=%d)", rc);
@@ -225,7 +228,7 @@ bool CTTNMQTT::ConnectIntEx()
 			Log(LOG_STATUS, "Enabled TLS mode");
 		}
 	}
-	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
+	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : NULL, (!m_Password.empty()) ? m_Password.c_str() : NULL);
 
 	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
 	if (rc != MOSQ_ERR_SUCCESS)
@@ -270,7 +273,7 @@ void CTTNMQTT::Do_Work()
 			sec_counter++;
 
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(nullptr);
+				m_LastHeartbeat = mytime(NULL);
 			}
 
 			if (bFirstTime)
@@ -313,7 +316,7 @@ void CTTNMQTT::SendMessage(const std::string &Topic, const std::string &Message)
 			Log(LOG_STATUS, "Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str());
+		publish(NULL, Topic.c_str(), Message.size(), Message.c_str());
 	}
 	catch (...)
 	{
@@ -333,24 +336,26 @@ void CTTNMQTT::WriteInt(const std::string &sendStr)
 Json::Value CTTNMQTT::GetSensorWithChannel(const Json::Value &root, const uint8_t sChannel)
 {
 	Json::Value ret;
-	for (const auto &itt : root) {
-		uint8_t channel = (uint8_t)itt["channel"].asInt();
+	for (auto itt = root.begin(); itt != root.end(); ++itt)
+	{
+		uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
 
-		if ((channel == sChannel) && !itt["used"])
-			return itt;
+		if ((channel == sChannel) && !(*itt)["used"])
+			return (*itt);
 	}
 	return ret;
 }
 
 void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const uint8_t sChannel)
 {
-	for (auto &itt : root) {
-		uint8_t channel = (uint8_t)itt["channel"].asInt();
-		std::string type = itt["type"].asString();
+	for (auto itt = root.begin(); itt != root.end(); ++itt)
+	{
+		uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
+		std::string type = (*itt)["type"].asString();
 
 		if ((type == stype) && (channel == sChannel))
 		{
-			itt["used"] = true;
+			(*itt)["used"] = true;
 			return;
 		}
 	}
@@ -358,7 +363,7 @@ void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &s
 
 void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string &varValue)
 {
-	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
 	int ID;
 
@@ -538,8 +543,8 @@ int CTTNMQTT::CalcDomoticsRssiFromLora(const int gwrssi, const float gwsnr)
 	// rssi between -150 and 0 dBm
 	// snr between -20 and +10 dB
 	// Domoticz expects something between 0 and 11 of what?
-	// But 0 feels weird as how could we measure 'no signal'
-	if (iCalc >= -30 || std::rint(gwsnr) > 7)
+	// But 0 feels weird as how could we measure 'no signal' 
+	if (iCalc >= -30 || rint(gwsnr) > 7)
 		iCalc = 9;
 	else if (iCalc > -40)
 		iCalc = 8;
@@ -703,7 +708,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 				UTCttntime = MetaData["time"].asString().c_str();
 				sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
-				constructTime(msgtime, t, y, M, d, h, m, (int)std::floor(s));
+				constructTime(msgtime, t, y, M, d, h, m, (int)floor(s));
 			}
 			if (!(MetaData["latitude"].empty() || MetaData["longitude"].empty()))
 			{
@@ -736,8 +741,10 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 						bool bPrevGwGeo = (!(gwlat == 0 || gwlon == 0));
 
 						// Is this gateway closer to the sensor than the previous one (or is this the first/only one)
-						if (lsnr > 0 && std::floor(lsnr) >= std::floor(gwsnr)) {
-							if (std::floor(lsnr) == std::floor(gwsnr)) {
+						if (lsnr > 0 && floor(lsnr) >= floor(gwsnr))
+						{
+							if (floor(lsnr) == floor(gwsnr))
+							{
 								if(!bGwGeo && bPrevGwGeo)
 								{
 									if (floor((lrssi/10)) > floor((gwrssi/10)))
@@ -757,11 +764,15 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 										bBetter = true;
 									}
 								}
-							} else {
+							}
+							else
+							{
 								// Postitive SNR is better by a full point at least
 								bBetter = true;
 							}
-						} else if (lsnr <= 0 && lrssi > gwrssi) {
+						}
+						else if (lsnr <= 0 && lrssi > gwrssi)
+						{
 							if(!bGwGeo && bPrevGwGeo)
 							{
 								// The previous found closest GW has Geo info and this one doesn't
@@ -810,17 +821,18 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 		// Walk over the payload to find all used channels. Each channel represents a single sensor.
 		uint8_t chanSensors [65] = {};	// CayenneLPP Data Channel ranges from 0 to 64
-		for (auto &itt : payload) {
-			std::string type = itt["type"].asString();
-			uint8_t channel = (uint8_t)itt["channel"].asInt();
+		for (auto itt = payload.begin(); itt != payload.end(); ++itt)
+		{
+			std::string type = (*itt)["type"].asString();
+			uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
 
 			// The following IS NOT part of the CayenneLPP specification
 			// But a 'hack'; when using the payload_fields (using the TTN external payload decoder)
 			// a 'batterylevel' field can be created (integer range between 0 and 100)
 			// Also, we do skip this reading for further processing
 			if (type == "batterylevel") {
-				if (itt["value"].isNumeric()) {
-					BatteryLevel = (int)itt["value"].asInt();
+				if ((*itt)["value"].isNumeric()) {
+					BatteryLevel = (int)(*itt)["value"].asInt();
 				}
 			}
 			else

@@ -30,7 +30,9 @@ CEcoCompteur::CEcoCompteur(const int ID, const std::string& url, const unsigned 
 	Init();
 }
 
-CEcoCompteur::~CEcoCompteur() = default;
+CEcoCompteur::~CEcoCompteur(void)
+{
+}
 
 void CEcoCompteur::Init()
 {
@@ -75,7 +77,7 @@ void CEcoCompteur::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter % m_refresh == 0) {
 			GetScript();

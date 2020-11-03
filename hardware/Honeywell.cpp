@@ -61,9 +61,14 @@ CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::str
 	Init();
 }
 
-CHoneywell::~CHoneywell() = default;
+CHoneywell::~CHoneywell(void)
+{
+}
 
-void CHoneywell::Init() { mTokenExpires = mytime(nullptr); }
+void CHoneywell::Init()
+{
+	mTokenExpires = mytime(NULL);
+}
 
 bool CHoneywell::StartHardware()
 {
@@ -106,7 +111,7 @@ void CHoneywell::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter % HONEYWELL_POLL_INTERVAL == 0)
 		{
@@ -158,7 +163,7 @@ bool CHoneywell::refreshToken()
 	if (mRefreshToken.empty())
 		return false;
 
-	if (mTokenExpires > mytime(nullptr))
+	if (mTokenExpires > mytime(NULL))
 		return true;
 
 	std::string sResult;
@@ -197,7 +202,7 @@ bool CHoneywell::refreshToken()
 	std::string ei = root["expires_in"].asString();
 	if (at.length() && rt.length() && ei.length()) {
 		int expires_in = std::stoi(ei);
-		mTokenExpires = mytime(nullptr) + (expires_in > 0 ? expires_in : 600) - HWAPITIMEOUT;
+		mTokenExpires = mytime(NULL) + (expires_in > 0 ? expires_in : 600) - HWAPITIMEOUT;
 		mAccessToken = at;
 		mRefreshToken = rt;
 		_log.Log(LOG_NORM, "Honeywell: Storing received access & refresh token. Token expires after %d seconds.",expires_in);
@@ -241,10 +246,14 @@ void CHoneywell::GetThermostatData()
 	int devNr = 0;
 	mDeviceList.clear();
 	mLocationList.clear();
-	for (auto location : root) {
+	for (int locCnt = 0; locCnt < (int)root.size(); locCnt++)
+	{
+		Json::Value location = root[locCnt];
 		Json::Value devices = location["devices"];
-		for (auto device : devices) {
-
+		for (int devCnt = 0; devCnt < (int)devices.size(); devCnt++)
+		{
+			
+			Json::Value device = devices[devCnt];
 			std::string deviceName = device["name"].asString();
 			mDeviceList[devNr] = device;
 			mLocationList[devNr] = location["locationID"].asString();
@@ -318,15 +327,17 @@ void CHoneywell::GetThermostatData()
 			SendSwitch(10 * devNr + 9, 1, 255, circulationFanRequest, 0, desc);
 
 			devNr++;
-		}
 
+			}
+		
 		bool geoFenceEnabled = location["geoFenceEnabled"].asBool();
 		if (geoFenceEnabled) {
 			
 			Json::Value geofences = location["geoFences"];
 			bool bAway = true;
-			for (auto &geofence : geofences) {
-				int withinFence = geofence["geoOccupancy"]["withinFence"].asInt();
+			for (int geofCnt = 0; geofCnt < (int)geofences.size(); geofCnt++)
+			{
+				int withinFence = geofences[geofCnt]["geoOccupancy"]["withinFence"].asInt();
 				if (withinFence > 0) {
 					bAway = false;
 					break;

@@ -31,7 +31,7 @@ void CKodiNode::CKodiStatus::Clear()
 	m_sPercent = "";
 	m_sYear = "";
 	m_sLive = "";
-	m_tLastOK = mytime(nullptr);
+	m_tLastOK = mytime(NULL);
 }
 
 std::string	CKodiNode::CKodiStatus::LogMessage()
@@ -94,14 +94,14 @@ std::string	CKodiNode::CKodiStatus::StatusMessage()
 	}
 	while (sStatus.length() > MAX_TITLE_LEN)
 	{
-		size_t begin = sStatus.find_first_of('(', 0);
-		size_t end = sStatus.find_first_of(')', begin);
+		size_t begin = sStatus.find_first_of("(",0);
+		size_t end = sStatus.find_first_of(")", begin);
 		if ((std::string::npos == begin) || (std::string::npos == end) || (begin >= end)) break;
 		sStatus.erase(begin, end - begin + 1);
 	}
 	while (sStatus.length() > MAX_TITLE_LEN)
 	{
-		size_t end = sStatus.find_last_of(',');
+		size_t end = sStatus.find_last_of(",");
 		if (std::string::npos == end) break;
 		sStatus = sStatus.substr(0, end);
 	}
@@ -161,7 +161,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 	m_iPollIntSec = PollIntervalsec;
 	m_iMissedPongs = 0;
 
-	m_Socket = nullptr;
+	m_Socket = NULL;
 
 	_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Created.", m_Name.c_str());
 
@@ -176,7 +176,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 	m_CurrentStatus = m_PreviousStatus;
 }
 
-CKodiNode::~CKodiNode()
+CKodiNode::~CKodiNode(void)
 {
 	handleDisconnect();
 	_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Destroyed.", m_Name.c_str());
@@ -203,9 +203,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 			{
 			case 2002: // attempt to start music playlist (error is because playlist does not exist, try video)
 				m_PlaylistType = "1";
-				ssMessage << R"({"jsonrpc":"2.0","method":"Playlist.Add","params":{"playlistid":)" << m_PlaylistType
-					  << R"(,"item":{"directory": "special://profile/playlists/video/)" << m_Playlist
-					  << R"(.xsp", "media":"video"}},"id":2003})";
+				ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Add\",\"params\":{\"playlistid\":" << m_PlaylistType << ",\"item\":{\"directory\": \"special://profile/playlists/video/" << m_Playlist << ".xsp\", \"media\":\"video\"}},\"id\":2003}";
 				handleWrite(ssMessage.str());
 				break;
 			case 2003: // error because video playlist does not exist, stop.
@@ -256,10 +254,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 
 								if (m_CurrentStatus.PlayerID() != "")  // if we now have a player id then request more details
 								{
-									sMessage
-										= R"({"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":)"
-										  + m_CurrentStatus.PlayerID()
-										  + R"(,"properties":["artist","album","year","channel","showtitle","season","episode","title"]}})";
+									sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"id\":1003,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"artist\",\"album\",\"year\",\"channel\",\"showtitle\",\"season\",\"episode\",\"title\"]}}";
 									handleWrite(sMessage);
 								}
 							}
@@ -271,13 +266,9 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							else if (root["method"] == "Player.OnSeek")
 							{
 								if (m_CurrentStatus.PlayerID() != "")
-									sMessage
-										= R"({"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":)"
-										  + m_CurrentStatus.PlayerID()
-										  + R"(,"properties":["live","percentage","speed"]}})";
+									sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetProperties\",\"id\":1002,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"live\",\"percentage\",\"speed\"]}}";
 								else
-									sMessage
-										= R"({"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1005})";
+									sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":1005}";
 								handleWrite(sMessage);
 							}
 							else if ((root["method"] == "System.OnQuit") || (root["method"] == "System.OnSleep") || (root["method"] == "System.OnRestart"))
@@ -343,10 +334,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (root["result"]["speed"].asInt() && m_CurrentStatus.Status() == MSTAT_PAUSED)
 							{
 								// Buffering when playing internet streams show 0 speed but don't trigger OnPause/OnPlay so force a refresh when speed is not 0 again
-								sMessage
-									= R"({"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":)"
-									  + m_CurrentStatus.PlayerID()
-									  + R"(,"properties":["artist","album","year","channel","showtitle","season","episode","title"]}})";
+								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"id\":1003,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"artist\",\"album\",\"year\",\"channel\",\"showtitle\",\"season\",\"episode\",\"title\"]}}";
 								handleWrite(sMessage);
 							}
 						}
@@ -393,10 +381,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (root["result"]["item"].isMember("label"))			m_CurrentStatus.Label(root["result"]["item"]["label"].asCString());
 							if ((m_CurrentStatus.PlayerID() != "") && (m_CurrentStatus.Type() != "picture")) // request final details
 							{
-								sMessage
-									= R"({"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":)"
-									  + m_CurrentStatus.PlayerID()
-									  + R"(,"properties":["live","percentage","speed"]}})";
+								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetProperties\",\"id\":1002,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"live\",\"percentage\",\"speed\"]}}";
 								handleWrite(sMessage);
 							}
 							UpdateStatus();
@@ -427,8 +412,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (sAction != "Nothing")
 							{
 								m_Stoppable = true;
-								sMessage = R"({"jsonrpc":"2.0","method":"System.)" + sAction
-									   + R"(","id":1008})";
+								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System." + sAction + "\",\"id\":1008}";
 								handleWrite(sMessage);
 							}
 						}
@@ -437,10 +421,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						if (root["result"][0].isMember("playerid"))
 						{
 							m_CurrentStatus.PlayerID(root["result"][0]["playerid"].asInt());
-							sMessage
-								= R"({"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":)"
-								  + m_CurrentStatus.PlayerID()
-								  + R"(,"properties":["artist","album","year","channel","showtitle","season","episode","title"]}})";
+							sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"id\":1003,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"artist\",\"album\",\"year\",\"channel\",\"showtitle\",\"season\",\"episode\",\"title\"]}}";
 							handleWrite(sMessage);
 						}
 						break;
@@ -449,8 +430,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							_log.Log(LOG_ERROR, "Kodi: (%s) Send Command Failed: '%s'", m_Name.c_str(), root["result"].asCString());
 						break;
 					case 1007:		//Can Shutdown response (after connect)
-						handleWrite(
-							std::string(R"({"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1005})"));
+						handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":1005}"));
 						if (root["result"].isMember("canshutdown"))
 						{
 							bCanShutdown = root["result"]["canshutdown"].asBool();
@@ -477,20 +457,15 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						break;
 					// 2000+ messages relate to playlist triggering functionality
 					case 2000: // clear video playlist response
-						handleWrite(
-							R"({"jsonrpc":"2.0","method":"Playlist.Clear","params":{"playlistid":1},"id":2001})");
+						handleWrite("{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":1},\"id\":2001}");
 						break;
 					case 2001: // clear music playlist response
-						ssMessage << R"({"jsonrpc":"2.0","method":"Playlist.Add","params":{"playlistid":)"
-							  << m_PlaylistType
-							  << R"(,"item":{"directory": "special://profile/playlists/music/)" << m_Playlist
-							  << R"(.xsp", "media":"music"}},"id":2002})";
+						ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Add\",\"params\":{\"playlistid\":" << m_PlaylistType << ",\"item\":{\"directory\": \"special://profile/playlists/music/" << m_Playlist << ".xsp\", \"media\":\"music\"}},\"id\":2002}";
 						handleWrite(ssMessage.str());
 						break;
 					case 2002: // attempt to add playlist response
 					case 2003:
-						ssMessage << R"({"jsonrpc":"2.0","method":"Player.Open","params":{"item":{"playlistid":)"
-							  << m_PlaylistType << ",\"position\":" << m_PlaylistPosition << "}},\"id\":2004}";
+						ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"playlistid\":" << m_PlaylistType << ",\"position\":" << m_PlaylistPosition << "}},\"id\":2004}";
 						handleWrite(ssMessage.str());
 						break;
 					case 2004: // signal outcome
@@ -514,9 +489,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 											if (sType == "media") {
 												std::string sPath = root["result"]["favourites"][i]["path"].asCString();
 												_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Favourites %d has path '%s' and will be played.", m_Name.c_str(), i, sPath.c_str());
-												ssMessage
-													<< R"({"jsonrpc":"2.0","method":"Player.Open","params":{"item":{"file":")"
-													<< sPath << R"("}},"id":2101})";
+												ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"file\":\"" << sPath << "\"}},\"id\":2101}";
 												handleWrite(ssMessage.str());
 												break;
 											}
@@ -553,7 +526,7 @@ void CKodiNode::UpdateStatus()
 	//This has to be rebuild! No direct poking in the database, please use CMainWorker::UpdateDevice
 
 	std::vector<std::vector<std::string> > result;
-	m_CurrentStatus.LastOK(mytime(nullptr));
+	m_CurrentStatus.LastOK(mytime(NULL));
 
 	// 1:	Update the DeviceStatus
 	if (m_CurrentStatus.UpdateRequired(m_PreviousStatus))
@@ -616,8 +589,7 @@ void CKodiNode::handleConnect()
 				}
 				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
 					boost::bind(&CKodiNode::handleRead, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-				handleWrite(std::string(
-					R"({"jsonrpc":"2.0","method":"System.GetProperties","params":{"properties":["canhibernate","cansuspend","canshutdown"]},"id":1007})"));
+				handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":1007}"));
 			}
 			else
 			{
@@ -633,7 +605,7 @@ void CKodiNode::handleConnect()
 					_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
 				}
 				delete m_Socket;
-				m_Socket = nullptr;
+				m_Socket = NULL;
 				m_CurrentStatus.Clear();
 				m_CurrentStatus.Status(MSTAT_OFF);
 				UpdateStatus();
@@ -721,7 +693,7 @@ void CKodiNode::handleDisconnect()
 		m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		m_Socket->close();
 		delete m_Socket;
-		m_Socket = nullptr;
+		m_Socket = NULL;
 	}
 }
 
@@ -748,15 +720,13 @@ void CKodiNode::Do_Work()
 				if (m_CurrentStatus.IsStreaming())
 				{	// Update percentage if playing media (required because Player.OnPropertyChanged never get received as of Kodi 'Helix')
 					if (m_CurrentStatus.PlayerID() != "")
-						sMessage
-							= R"({"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":)"
-							  + m_CurrentStatus.PlayerID() + R"(,"properties":["live","percentage","speed"]}})";
+						sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetProperties\",\"id\":1002,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"live\",\"percentage\",\"speed\"]}}";
 					else
-						sMessage = R"({"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1005})";
+						sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":1005}";
 				}
 				else
 				{
-					sMessage = R"({"jsonrpc":"2.0","method":"JSONRPC.Ping","id":1001})";
+					sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"JSONRPC.Ping\",\"id\":1001}";
 					if (m_iMissedPongs++ > m_iTimeoutCnt)
 					{
 						_log.Log(LOG_NORM, "Kodi: (%s) Missed %d pings, assumed off.", m_Name.c_str(), m_iTimeoutCnt);
@@ -776,7 +746,7 @@ void CKodiNode::Do_Work()
 	_log.Log(LOG_NORM, "Kodi: (%s) Exiting work loop.", m_Name.c_str());
 	m_Busy = false;
 	delete m_Socket;
-	m_Socket = nullptr;
+	m_Socket = NULL;
 }
 
 void CKodiNode::SendCommand(const std::string &command)
@@ -815,15 +785,17 @@ void CKodiNode::SendCommand(const std::string &command)
 	{
 		//		http://kodi.wiki/view/JSON-RPC_API/v6#Input.Action
 		//		{ "jsonrpc": "2.0", "method": "Input.ExecuteAction", "params": { "action": "stop" }, "id": 1006 }
-		std::string sMessage = R"({"jsonrpc":"2.0","method":")" + sKodiCall + R"(","params":{)";
-		if (sKodiParam.length())
-			sMessage += R"("action":")" + sKodiParam + "\"";
+		std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"" + sKodiCall + "\",\"params\":{";
+		if (sKodiParam.length()) sMessage += "\"action\":\"" + sKodiParam + "\"";
 		sMessage += "},\"id\":1006}";
 
-		if (m_Socket != nullptr) {
+		if (m_Socket != NULL)
+		{
 			handleWrite(sMessage);
 			_log.Log(LOG_NORM, "Kodi: (%s) Sent command: '%s %s'.", m_Name.c_str(), sKodiCall.c_str(), sKodiParam.c_str());
-		} else {
+		}
+		else
+		{
 			_log.Log(LOG_NORM, "Kodi: (%s) Command not sent, Kodi is not connected: '%s %s'.", m_Name.c_str(), sKodiCall.c_str(), sKodiParam.c_str());
 		}
 	}
@@ -841,7 +813,7 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 	if (command == "setvolume")
 	{
 		sKodiCall = "Set Volume";
-		ssMessage << R"({"jsonrpc":"2.0","method":"Application.SetVolume","params":{"volume":)" << iValue << "},\"id\":1009}";
+		ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Application.SetVolume\",\"params\":{\"volume\":" << iValue << "},\"id\":1009}";
 		sMessage = ssMessage.str();
 	}
 
@@ -849,7 +821,7 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 	{
 		// clear any current playlists starting with audio, state machine in handleMessage will take care of the rest
 		m_PlaylistPosition = iValue;
-		sMessage = R"({"jsonrpc":"2.0","method":"Playlist.Clear","params":{"playlistid":0},"id":2000})";
+		sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":0},\"id\":2000}";
 	}
 
 	if (command == "favorites")
@@ -857,25 +829,27 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 		// Favorites are effectively a playlist but rewuire different handling to start items playing
 		sKodiCall = "Favourites";
 		m_PlaylistPosition = iValue;
-		sMessage = R"({"jsonrpc":"2.0","method":"Favourites.GetFavourites","params":{"properties":["path"]},"id":2100})";
+		sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Favourites.GetFavourites\",\"params\":{\"properties\":[\"path\"]},\"id\":2100}";
 	}
 
 	if (command == "execute")
 	{
 		sKodiCall = "Execute Addon " + m_ExecuteCommand;
 		//		ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Addons.GetAddons\",\"id\":1010}";
-		ssMessage << R"({"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":")" << m_ExecuteCommand
-			  << R"("},"id":1010})";
+		ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Addons.ExecuteAddon\",\"params\":{\"addonid\":\"" << m_ExecuteCommand << "\"},\"id\":1010}";
 		sMessage = ssMessage.str();
 		m_ExecuteCommand = "";
 	}
 
 	if (sMessage.length())
 	{
-		if (m_Socket != nullptr) {
+		if (m_Socket != NULL)
+		{
 			handleWrite(sMessage);
 			_log.Log(LOG_NORM, "Kodi: (%s) Sent command: '%s'.", m_Name.c_str(), sKodiCall.c_str());
-		} else {
+		}
+		else
+		{
 			_log.Log(LOG_NORM, "Kodi: (%s) Command not sent, Kodi is not connected: '%s'.", m_Name.c_str(), sKodiCall.c_str());
 		}
 	}
@@ -887,8 +861,7 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 
 bool CKodiNode::SendShutdown()
 {
-	std::string sMessage
-		= R"({"jsonrpc":"2.0","method":"System.GetProperties","params":{"properties":["canhibernate","cansuspend","canshutdown"]},"id":1004})";
+	std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":1004}";
 	handleWrite(sMessage);
 
 	if (m_Stoppable) _log.Log(LOG_NORM, "Kodi: (%s) Shutdown requested and is supported.", m_Name.c_str());
@@ -928,7 +901,10 @@ CKodi::CKodi(const int ID)
 	SetSettings(10, 3000);
 }
 
-CKodi::~CKodi() { m_bIsStarted = false; }
+CKodi::~CKodi(void)
+{
+	m_bIsStarted = false;
+}
 
 bool CKodi::StartHardware()
 {
@@ -984,15 +960,17 @@ void CKodi::Do_Work()
 
 			scounter = 0;
 			bool bWorkToDo = false;
-			for (const auto &node : m_pNodes) {
-				if (!node->IsBusy()) {
-					_log.Log(LOG_NORM, "Kodi: (%s) - Restarting thread.", node->m_Name.c_str());
-					boost::thread *tAsync = new boost::thread(&CKodiNode::Do_Work, node);
+			std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
+			for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+			{
+				if (!(*itt)->IsBusy())
+				{
+					_log.Log(LOG_NORM, "Kodi: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
+					boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
 					SetThreadName(tAsync->native_handle(), "KodiNode");
 					m_ios.stop();
 				}
-				if (node->IsOn())
-					bWorkToDo = true;
+				if ((*itt)->IsOn()) bWorkToDo = true;
 			}
 
 			if (bWorkToDo && m_ios.stopped())  // make sure that there is a boost thread to service i/o operations
@@ -1034,41 +1012,45 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 
-	for (const auto &node : m_pNodes) {
-		if (node->m_DevID == DevID) {
-			if (node->IsOn()) {
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
+	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+	{
+		if ((*itt)->m_DevID == DevID)
+		{
+			if ((*itt)->IsOn()) {
 				int iParam = pSen->LIGHTING2.level;
 				switch (pSen->LIGHTING2.cmnd)
 				{
 				case light2_sOff:
 				case light2_sGroupOff:
-					return node->SendShutdown();
+					return (*itt)->SendShutdown();
 				case gswitch_sStop:
-					node->SendCommand("stop");
+					(*itt)->SendCommand("stop");
 					return true;
 				case gswitch_sPlay:
-					node->SendCommand("play");
+					(*itt)->SendCommand("play");
 					return true;
 				case gswitch_sPause:
-					node->SendCommand("pause");
+					(*itt)->SendCommand("pause");
 					return true;
 				case gswitch_sSetVolume:
-					node->SendCommand("setvolume", iParam);
+					(*itt)->SendCommand("setvolume", iParam);
 					return true;
 				case gswitch_sPlayPlaylist:
-					node->SendCommand("playlist", iParam);
+					(*itt)->SendCommand("playlist", iParam);
 					return true;
 				case gswitch_sPlayFavorites:
-					node->SendCommand("favorites", iParam);
+					(*itt)->SendCommand("favorites", iParam);
 					return true;
 				case gswitch_sExecute:
-					node->SendCommand("execute", iParam);
+					(*itt)->SendCommand("execute", iParam);
 					return true;
 				default:
 					return true;
 				}
-			} else
-				_log.Log(LOG_NORM, "Kodi: (%s) Command not sent, Device is 'Off'.", node->m_Name.c_str());
+			}
+			else
+				_log.Log(LOG_NORM, "Kodi: (%s) Command not sent, Device is 'Off'.", (*itt)->m_Name.c_str());
 		}
 	}
 
@@ -1157,15 +1139,17 @@ void CKodi::ReloadNodes()
 		std::lock_guard<std::mutex> l(m_mutex);
 
 		// create a vector to hold the nodes
-		for (auto sd : result) {
-			auto pNode = std::make_shared<CKodiNode>(&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2],
-								 sd[3]);
+		for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			std::shared_ptr<CKodiNode>	pNode = (std::shared_ptr<CKodiNode>) new CKodiNode(&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each kodi
-		for (auto &m_pNode : m_pNodes) {
-			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", m_pNode->m_Name.c_str());
-			auto tAsync = new boost::thread(&CKodiNode::Do_Work, m_pNode);
+		for (std::vector<std::shared_ptr<CKodiNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		{
+			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", (*itt)->m_Name.c_str());
+			boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
 			SetThreadName(tAsync->native_handle(), "KodiNode");
 		}
 		sleep_milliseconds(100);
@@ -1184,7 +1168,9 @@ void CKodi::UnloadNodes()
 
 	while (((!m_pNodes.empty()) || (!m_ios.stopped())))
 	{
-		for (auto itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt) {
+		std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
+		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		{
 			(*itt)->StopRequest();
 			if (!(*itt)->IsBusy())
 			{
@@ -1200,9 +1186,12 @@ void CKodi::UnloadNodes()
 
 void CKodi::SendCommand(const int ID, const std::string &command)
 {
-	for (const auto &node : m_pNodes) {
-		if (node->m_ID == ID) {
-			node->SendCommand(command);
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
+	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+	{
+		if ((*itt)->m_ID == ID)
+		{
+			(*itt)->SendCommand(command);
 			return;
 		}
 	}
@@ -1212,9 +1201,12 @@ void CKodi::SendCommand(const int ID, const std::string &command)
 
 bool CKodi::SetPlaylist(const int ID, const std::string &playlist)
 {
-	for (const auto &node : m_pNodes) {
-		if (node->m_ID == ID) {
-			node->SetPlaylist(playlist);
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
+	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+	{
+		if ((*itt)->m_ID == ID)
+		{
+			(*itt)->SetPlaylist(playlist);
 			return true;
 		}
 	}
@@ -1223,9 +1215,12 @@ bool CKodi::SetPlaylist(const int ID, const std::string &playlist)
 
 bool CKodi::SetExecuteCommand(const int ID, const std::string &command)
 {
-	for (const auto &node : m_pNodes) {
-		if (node->m_ID == ID) {
-			node->SetExecuteCommand(command);
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
+	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+	{
+		if ((*itt)->m_ID == ID)
+		{
+			(*itt)->SetExecuteCommand(command);
 			return true;
 		}
 	}
@@ -1247,7 +1242,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == nullptr)
+			if (pHardware == NULL)
 				return;
 			if (pHardware->HwdType != HTYPE_Kodi)
 				return;
@@ -1259,8 +1254,12 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
 			if (!result.empty())
 			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (const auto &sd : result) {
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = sd[2];
@@ -1288,7 +1287,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == nullptr)
+			if (pBaseHardware == NULL)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
@@ -1326,7 +1325,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == nullptr)
+			if (pBaseHardware == NULL)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
@@ -1360,7 +1359,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == nullptr)
+			if (pBaseHardware == NULL)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
@@ -1389,7 +1388,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == nullptr)
+			if (pBaseHardware == NULL)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
@@ -1414,7 +1413,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == nullptr)
+			if (pBaseHardware == NULL)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;

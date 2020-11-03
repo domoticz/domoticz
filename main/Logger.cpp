@@ -23,12 +23,12 @@ extern bool g_bUseSyslog;
 
 CLogger::_tLogLineStruct::_tLogLineStruct(const _eLogLevel nlevel, const std::string &nlogmessage)
 {
-	logtime = mytime(nullptr);
+	logtime = mytime(NULL);
 	level = nlevel;
 	logmessage = nlogmessage;
 }
 
-CLogger::CLogger()
+CLogger::CLogger(void)
 {
 	m_bInSequenceMode = false;
 	m_bEnableLogThreadIDs = false;
@@ -39,7 +39,7 @@ CLogger::CLogger()
 	m_debug_flags = DEBUG_NORM;
 }
 
-CLogger::~CLogger()
+CLogger::~CLogger(void)
 {
 	if (m_outputfile.is_open())
 		m_outputfile.close();
@@ -131,7 +131,7 @@ void CLogger::SetOutputFile(const char *OutputFile)
 	if (m_outputfile.is_open())
 		m_outputfile.close();
 
-	if (OutputFile == nullptr)
+	if (OutputFile == NULL)
 		return;
 	if (*OutputFile == 0)
 		return;
@@ -188,7 +188,7 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	std::stringstream sstr;
 
 	if (m_bEnableLogTimestamps)
-		sstr << TimeToString(nullptr, TF_DateTimeMs) << "  ";
+		sstr << TimeToString(NULL, TF_DateTimeMs) << "  ";
 
 	if ((m_log_flags & LOG_DEBUG_INT) && (m_debug_flags & DEBUG_THREADIDS))
 	{
@@ -219,7 +219,8 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 			if (m_notification_log.size() >= MAX_LOG_LINE_BUFFER)
 				m_notification_log.erase(m_notification_log.begin());
 			m_notification_log.push_back(_tLogLineStruct(level, szIntLog));
-			if ((m_notification_log.size() == 1) && (mytime(nullptr) - m_LastLogNotificationsSend >= 5)) {
+			if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationsSend >= 5))
+			{
 				m_mainworker.ForceLogNotificationCheck();
 			}
 		}
@@ -384,7 +385,7 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetNotificationLogs()
 		mlist.push_back(itt);
 	m_notification_log.clear();
 	if (!mlist.empty())
-		m_LastLogNotificationsSend = mytime(nullptr);
+		m_LastLogNotificationsSend = mytime(NULL);
 	return mlist;
 }
 

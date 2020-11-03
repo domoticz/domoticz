@@ -74,7 +74,9 @@ m_szSerialPort(devname)
 	Init();
 }
 
-USBtin::~USBtin() { StopHardware(); }
+USBtin::~USBtin(void){
+	StopHardware();
+}
 
 void USBtin::Init()
 {
@@ -119,7 +121,7 @@ void USBtin::Do_Work()
 			m_V8secCounterBase++;
 
 			if (m_V8secCounterBase % 12 == 0) {
-				m_LastHeartbeat = mytime(nullptr);
+				m_LastHeartbeat = mytime(NULL);
 			}
 
 			if (isOpen()) //Serial port open, we can initiate the Can BUS :

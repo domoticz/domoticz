@@ -77,7 +77,9 @@ CThermosmart::CThermosmart(const int ID, const std::string &Username, const std:
 	Init();
 }
 
-CThermosmart::~CThermosmart() = default;
+CThermosmart::~CThermosmart(void)
+{
+}
 
 void CThermosmart::SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
 {
@@ -127,7 +129,7 @@ void CThermosmart::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat=mytime(NULL);
 		}
 		if (sec_counter % THERMOSMART_POLL_INTERVAL == 0)
 		{

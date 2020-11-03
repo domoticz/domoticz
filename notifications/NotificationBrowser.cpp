@@ -7,7 +7,9 @@ CNotificationBrowser::CNotificationBrowser() : CNotificationBase(std::string("br
 {
 }
 
-CNotificationBrowser::~CNotificationBrowser() = default;
+CNotificationBrowser::~CNotificationBrowser()
+{
+}
 
 bool CNotificationBrowser::IsConfigured()
 {

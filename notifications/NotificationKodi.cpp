@@ -16,7 +16,9 @@ CNotificationKodi::CNotificationKodi() : CNotificationBase(std::string("kodi"), 
 	SetupConfig(std::string("KodiTimeToLive"), &_TTL);
 }
 
-CNotificationKodi::~CNotificationKodi() = default;
+CNotificationKodi::~CNotificationKodi()
+{
+}
 
 std::string CNotificationKodi::GetCustomIcon(std::string &szCustom)
 {
@@ -90,7 +92,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 #ifdef WIN32
 		szImageFile = szWWWFolder  + "\\images\\" + ExtraData.substr(posImage, ExtraData.find("|", posImage)-posImage) + ".png";
 #else
-		szImageFile = szWWWFolder + "/images/" + ExtraData.substr(posImage, ExtraData.find('|', posImage) - posImage) + ".png";
+		szImageFile = szWWWFolder  + "/images/" + ExtraData.substr(posImage, ExtraData.find("|", posImage)-posImage) + ".png";
 #endif
 		if (file_exist(szImageFile.c_str()))
 		{
@@ -104,14 +106,14 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 	if (posStatus >= 0)
 	{
 		posStatus+=8;
-		szStatus = ExtraData.substr(posStatus, ExtraData.find('|', posStatus) - posStatus);
+		szStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus)-posStatus);
 	}
 
 	// if a switch type was supplied try and work out the image
 	if (posType >= 0)
 	{
 		posType+=12;
-		std::string szType = ExtraData.substr(posType, ExtraData.find('|', posType) - posType);
+		std::string	szType = ExtraData.substr(posType, ExtraData.find("|", posType)-posType);
 		std::string	szTypeImage;
 		_eSwitchType switchtype=(_eSwitchType)atoi(szType.c_str());
 		switch (switchtype)
@@ -120,7 +122,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 				if (posCustom >= 0)
 				{
 					posCustom+=13;
-					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom)-posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
 				else szTypeImage = "Light48";
@@ -170,7 +172,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 				if (posCustom >= 0)
 				{
 					posCustom += 13;
-					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
 				else szTypeImage = "Media48";
@@ -262,7 +264,7 @@ bool CNotificationKodi::SendMessageImplementation(
 		if (posDevice != std::string::npos)
 		{
 			posDevice+=6;
-			sSubject = ExtraData.substr(posDevice, ExtraData.find('|', posDevice) - posDevice);
+			sSubject = ExtraData.substr(posDevice, ExtraData.find("|", posDevice)-posDevice);
 		}
 	}
 
@@ -271,17 +273,17 @@ bool CNotificationKodi::SendMessageImplementation(
 	// Loop through semi-colon separated IP Addresses
 	std::vector<std::string> results;
 	StringSplit(_IPAddress, ";", results);
-	for (auto &result : results) {
+	for (int i=0; i < (int)results.size(); i++)
+	{
 		std::stringstream logline;
-		logline << "Kodi Notification (" << result << ":" << _Port << ", TTL " << _TTL << "): " << sSubject << ", " << Text
-			<< ", Icon " << sIconFile;
+		logline << "Kodi Notification (" << results[i] << ":" << _Port << ", TTL " << _TTL << "): " << sSubject << ", " << Text << ", Icon " << sIconFile;
 		_log.Log(LOG_NORM, "%s", logline.str().c_str());
 
 		CAddress	_Address;
 		int			_Sock;
-		bool bMulticast = (result.substr(0, 4) >= "224.") && (result.substr(0, 4) <= "239.");
+		bool		bMulticast = (results[i].substr(0,4) >= "224.") && (results[i].substr(0,4) <= "239.");
 
-		CAddress my_addr(result.c_str(), _Port);
+		CAddress my_addr(results[i].c_str(), _Port);
 		_Address = my_addr;
 		_Sock = -1;
 		if (bMulticast) {
@@ -296,17 +298,17 @@ bool CNotificationKodi::SendMessageImplementation(
 		
 		if (_Sock < 0)
 		{
-			logline << "Error creating socket: " << result << ":" << _Port;
+			logline << "Error creating socket: " << results[i] << ":" << _Port;
 			_log.Log(LOG_ERROR, "%s", logline.str().c_str());
 			return false;
 		}
 
 		_Address.Bind(_Sock);
 
-		CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, (!sIconFile.empty()) ? sIconFile.c_str() : nullptr);
+		CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, (!sIconFile.empty())?sIconFile.c_str():NULL);
 		if (!packet.Send(_Sock, _Address)) {
 			std::stringstream logline;
-			logline << "Error sending notification: " << result << ":" << _Port;
+			logline << "Error sending notification: " << results[i] << ":" << _Port;
 			_log.Log(LOG_ERROR, "%s", logline.str().c_str());
 			return false;
 		}

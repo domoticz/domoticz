@@ -58,7 +58,9 @@ m_bFirstTime(true)
 	Init();
 }
 
-CWunderground::~CWunderground() = default;
+CWunderground::~CWunderground(void)
+{
+}
 
 void CWunderground::Init()
 {
@@ -104,7 +106,7 @@ void CWunderground::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 10 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat=mytime(NULL);
 		}
 #ifdef DEBUG_WUNDERGROUNDR
 		if (sec_counter % 10 == 0)
@@ -198,7 +200,8 @@ std::string CWunderground::GetWeatherStationFromGeo()
 
 void CWunderground::GetMeterDetails()
 {
-	if (m_Location.find(',') != std::string::npos) {
+	if (m_Location.find(",") != std::string::npos)
+	{
 		std::string newLocation = GetWeatherStationFromGeo();
 		if (newLocation.empty())
 			return;
@@ -255,7 +258,7 @@ void CWunderground::GetMeterDetails()
 
 	if (!m_bFirstTime)
 	{
-		time_t tlocal = time(nullptr);
+		time_t tlocal = time(NULL);
 		time_t tobserver = (time_t)root["epoch"].asInt();
 		if (difftime(tlocal, tobserver) >= 1800)
 		{

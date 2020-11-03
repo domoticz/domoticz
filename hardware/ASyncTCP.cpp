@@ -29,7 +29,7 @@ ASyncTCP::ASyncTCP(const bool secure)
 #endif
 }
 
-ASyncTCP::~ASyncTCP()
+ASyncTCP::~ASyncTCP(void)
 {
 	assert(mTcpthread == nullptr);
 	mIsTerminating = true;

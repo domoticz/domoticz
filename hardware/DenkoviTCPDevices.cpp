@@ -39,7 +39,10 @@ CDenkoviTCPDevices::CDenkoviTCPDevices(const int ID, const std::string &IPAddres
 	Init();
 }
 
-CDenkoviTCPDevices::~CDenkoviTCPDevices() = default;
+
+CDenkoviTCPDevices::~CDenkoviTCPDevices()
+{
+}
 
 void CDenkoviTCPDevices::Init()
 {
@@ -59,7 +62,7 @@ bool CDenkoviTCPDevices::StartHardware()
 	m_thread = std::make_shared<std::thread>(&CDenkoviTCPDevices::Do_Work, this);
 	m_bIsStarted = true;
 	Log(LOG_STATUS, "%s: Started.",szDenkoviHardwareNamesTCP[m_iModel]);
-	return (m_thread != nullptr);
+	return (m_thread != NULL);
 }
 
 void CDenkoviTCPDevices::ConvertResponse(const std::string pData, const size_t length)
@@ -181,7 +184,8 @@ void CDenkoviTCPDevices::OnError(const boost::system::error_code& /*error*/) {
 
 bool CDenkoviTCPDevices::StopHardware()
 {
-	if (m_thread != nullptr) {
+	if (m_thread != NULL)
+	{
 		RequestStop();
 		m_thread->join();
 		m_thread.reset();
@@ -200,7 +204,7 @@ void CDenkoviTCPDevices::Do_Work()
 		halfsec_counter++;
 
 		if (halfsec_counter % 24 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (halfsec_counter % poll_interval == 0) {
 			if (m_bReadingNow == false && m_bUpdateIo == false)

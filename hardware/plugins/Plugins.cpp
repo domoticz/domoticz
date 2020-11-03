@@ -857,7 +857,8 @@ namespace Plugins {
 	void CPlugin::RemoveConnection(CPluginTransport *pTransport)
 	{
 		std::lock_guard<std::mutex> l(m_TransportsMutex);
-		for (auto itt = m_Transports.begin(); itt != m_Transports.end(); itt++) {
+		for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+		{
 			CPluginTransport*	pPluginTransport = *itt;
 			if (pTransport == pPluginTransport)
 			{
@@ -935,7 +936,9 @@ namespace Plugins {
 					std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 					                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
 					std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
-					for (const auto &pPluginTransport : m_Transports) {
+					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+					{
+						CPluginTransport*	pPluginTransport = *itt;
 						// Tell transport to disconnect if required
 						if (pPluginTransport)
 						{
@@ -1004,8 +1007,10 @@ namespace Plugins {
 				std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
 				if (m_Transports.size())
 				{
-					for (const auto &pPluginTransport : m_Transports) {
+					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+					{
 						//std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
+						CPluginTransport*	pPluginTransport = *itt;
 						pPluginTransport->VerifyConnection();
 					}
 				}
@@ -1044,11 +1049,13 @@ namespace Plugins {
 			CPluginSystem Plugins;
 			std::map<std::string, std::string>*	mPluginXml = Plugins.GetManifest();
 			std::string		sPluginXML;
-			for (const auto &type : *mPluginXml) {
-				if (type.second.find(sFind) != std::string::npos) {
-					m_HomeFolder = type.first;
+			for (std::map<std::string, std::string>::iterator it_type = mPluginXml->begin(); it_type != mPluginXml->end(); it_type++)
+			{
+				if (it_type->second.find(sFind) != std::string::npos)
+				{
+					m_HomeFolder = it_type->first;
 					ssPath << m_HomeFolder.c_str();
-					sPluginXML = type.second;
+					sPluginXML = it_type->second;
 					break;
 				}
 			}
@@ -1244,7 +1251,10 @@ Error:
 			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID==%d)", m_HwdID);
 			if (!result.empty())
 			{
-				for (const auto &sd : result) {
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
 					const char*	pChar = sd[0].c_str();
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
@@ -1287,7 +1297,9 @@ Error:
 			{
 				PyType_Ready(&CDeviceType);
 				// Add device objects into the device dictionary with Unit as the key
-				for (const auto &sd : result) {
+				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
 					CDevice* pDevice = (CDevice*)CDevice_new(&CDeviceType, (PyObject*)NULL, (PyObject*)NULL);
 
 					PyObject*	pKey = PyLong_FromLong(atoi(sd[0].c_str()));
@@ -1319,7 +1331,9 @@ Error:
 			{
 				PyType_Ready(&CImageType);
 				// Add image objects into the image dictionary with ID as the key
-				for (const auto &sd : result) {
+				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
 					CImage* pImage = (CImage*)CImage_new(&CImageType, (PyObject*)NULL, (PyObject*)NULL);
 
 					PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
@@ -1823,7 +1837,10 @@ Error:
 		{
 			PyType_Ready(&CDeviceType);
 			// Add settings strings into the settings dictionary with Unit as the key
-			for (const auto &sd : result) {
+			for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+			{
+				std::vector<std::string> sd = *itt;
+
 				PyObject*	pKey = PyUnicode_FromString(sd[0].c_str());
 				PyObject*	pValue = NULL;
 				if (!sd[2].empty())

@@ -17,7 +17,7 @@ std::shared_ptr<CProxyPduBase> CProxyPduBase::FromString(const std::string &str)
 #include "proxydef.def"
 	default:
 		// pdu type not found
-		base = nullptr;
+		base = NULL;
 		break;
 	}
 	return base;

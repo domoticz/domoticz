@@ -60,7 +60,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_clientId("5588029e485a88af28f4a3c4"),
 	m_clientSecret("6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2")
 {
-	m_nextRefreshTs = mytime(nullptr);
+	m_nextRefreshTs = mytime(NULL);
 	m_isLogged = false;
 	m_NetatmoType = NETYPE_WEATHER_STATION;
 
@@ -72,11 +72,13 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_bPollWeatherData = true;
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
-	m_tSetpointUpdateTime = time(nullptr);
+	m_tSetpointUpdateTime = time(NULL);
 	Init();
 }
 
-CNetatmo::~CNetatmo() = default;
+CNetatmo::~CNetatmo(void)
+{
+}
 
 void CNetatmo::Init()
 {
@@ -133,7 +135,7 @@ void CNetatmo::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 
 		if (!m_isLogged)
@@ -166,7 +168,7 @@ void CNetatmo::Do_Work()
 					}
 					if (m_bForceSetpointUpdate)
 					{
-						time_t atime = time(nullptr);
+						time_t atime = time(NULL);
 						if (atime >= m_tSetpointUpdateTime)
 						{
 							m_bForceSetpointUpdate = false;
@@ -238,7 +240,7 @@ bool CNetatmo::Login()
 	//_log.Log(LOG_STATUS, "Access token: %s", m_accessToken.c_str());
 	//_log.Log(LOG_STATUS, "RefreshToken: %s", m_refreshToken.c_str());
 	int expires = root["expires_in"].asInt();
-	m_nextRefreshTs = mytime(nullptr) + expires;
+	m_nextRefreshTs = mytime(NULL) + expires;
 	StoreRefreshToken();
 	m_isLogged = true;
 	return true;
@@ -254,7 +256,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	{
 		if (!m_isLogged)
 			return false;
-		if ((mytime(nullptr) - 15) < m_nextRefreshTs)
+		if ((mytime(NULL) - 15) < m_nextRefreshTs)
 			return true; //no need to refresh the token yet
 	}
 
@@ -301,7 +303,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	m_accessToken = root["access_token"].asString();
 	m_refreshToken = root["refresh_token"].asString();
 	int expires = root["expires_in"].asInt();
-	m_nextRefreshTs = mytime(nullptr) + expires;
+	m_nextRefreshTs = mytime(NULL) + expires;
 	//StoreRefreshToken();
 	return true;
 }
@@ -388,7 +390,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	if (ModuleType != "NATherm1")
 	{
 		std::time_t tNetatmoLastUpdate = 0;
-		std::time_t tNow = time(nullptr);
+		std::time_t tNow = time(NULL);
 
 		// initialize the relevant device flag
 		if ( m_bNetatmoRefreshed.find(ID) == m_bNetatmoRefreshed.end() )
@@ -720,7 +722,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 		tempDest = static_cast<float>(ConvertToCelsius(tempDest));
 	}
 
-	time_t now = mytime(nullptr);
+	time_t now = mytime(NULL);
 	struct tm etime;
 	localtime_r(&now, &etime);
 	time_t end_time;
@@ -763,9 +765,12 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	{
 		//find roomid
 		std::string roomID;
-		for (const auto &therm : m_thermostatDeviceID) {
-			if (therm.first == idx) {
-				roomID = therm.second;
+		std::map<int, std::string >::const_iterator ittTherm;
+		for (ittTherm = m_thermostatDeviceID.begin(); ittTherm != m_thermostatDeviceID.end(); ++ittTherm)
+		{
+			if (ittTherm->first == idx)
+			{
+				roomID = ittTherm->second;
 				break;
 			}
 		}
@@ -788,7 +793,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	}
 
 	GetThermostatDetails();
-	m_tSetpointUpdateTime = time(nullptr) + 60;
+	m_tSetpointUpdateTime = time(NULL) + 60;
 	m_bForceSetpointUpdate = true;
 }
 
@@ -827,8 +832,11 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 	std::vector<_tNetatmoDevice> _netatmo_devices;
 
 	int iDevIndex = 0;
-	for (auto device : root["body"]["devices"]) {
-		if (!device["_id"].empty()) {
+	for (Json::Value::iterator itDevice = root["body"]["devices"].begin(); itDevice != root["body"]["devices"].end(); ++itDevice)
+	{
+		Json::Value device = *itDevice;
+		if (!device["_id"].empty())
+		{
 			std::string id = device["_id"].asString();
 			std::string type = device["type"].asString();
 			std::string name = device["module_name"].asString();
@@ -851,8 +859,11 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 				if (device["modules"].isArray())
 				{
 					//Add modules for this device
-					for (auto module : device["modules"]) {
-						if (module.isObject()) {
+					for (Json::Value::iterator itModule = device["modules"].begin(); itModule != device["modules"].end(); ++itModule)
+					{
+						Json::Value module = *itModule;
+						if (module.isObject())
+						{
 							//New Method (getstationsdata and getthermostatsdata)
 							if (module["_id"].empty())
 							{
@@ -908,7 +919,8 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 									}
 								}
 							}
-						} else
+						}
+						else
 							nDevice.ModulesIDs.push_back(module.asString());
 					}
 				}
@@ -951,7 +963,9 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 	}
 	mRoot = root["body"]["modules"];
 
-	for (auto module : mRoot) {
+	for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
+	{
+		Json::Value module = *itModule;
 		if (module["_id"].empty())
 			continue;
 		std::string id = module["_id"].asString();
@@ -1267,8 +1281,11 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 			if (root["body"]["homes"][m_ActHome]["modules"].empty())
 				return false;
 			Json::Value mRoot = root["body"]["homes"][m_ActHome]["modules"];
-			for (auto module : mRoot) {
-				if (!module["id"].empty()) {
+			for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
+			{
+				Json::Value module = *itModule;
+				if (!module["id"].empty())
+				{
 					std::string mID = module["id"].asString();
 					m_ModuleNames[mID] = module["name"].asString();
 					int crcId = Crc32(0, (const unsigned char *)mID.c_str(), mID.length());
@@ -1280,8 +1297,11 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 			if (root["body"]["homes"][m_ActHome]["rooms"].empty())
 				return false;
 			mRoot = root["body"]["homes"][m_ActHome]["rooms"];
-			for (auto room : mRoot) {
-				if (!room["id"].empty()) {
+			for (Json::Value::iterator itRoom = mRoot.begin(); itRoom != mRoot.end(); ++itRoom)
+			{
+				Json::Value room = *itRoom;
+				if (!room["id"].empty())
+				{
 					std::string rID = room["id"].asString();
 					m_RoomNames[rID] = room["name"].asString();
 					int crcId = Crc32(0, (const unsigned char *)rID.c_str(), rID.length());
@@ -1323,8 +1343,11 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 		Json::Value mRoot = root["body"]["home"]["modules"];
 
 		int iModuleIndex = 0;
-		for (auto module : mRoot) {
-			if (!module["id"].empty()) {
+		for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
+		{
+			Json::Value module = *itModule;
+			if (!module["id"].empty())
+			{
 				std::string id = module["id"].asString();
 
 				std::string moduleName = id;
@@ -1382,8 +1405,11 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 			return false;
 		Json::Value mRoot = root["body"]["home"]["rooms"];
 
-		for (auto room : mRoot) {
-			if (!room["id"].empty()) {
+		for (Json::Value::iterator itRoom = mRoot.begin(); itRoom != mRoot.end(); ++itRoom)
+		{
+			Json::Value room = *itRoom;
+			if (!room["id"].empty())
+			{
 				std::string id = room["id"].asString();
 
 				std::string roomName = id;

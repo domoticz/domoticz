@@ -24,7 +24,9 @@ CTE923::CTE923(const int ID)
 	Init();
 }
 
-CTE923::~CTE923() = default;
+CTE923::~CTE923(void)
+{
+}
 
 void CTE923::Init()
 {
@@ -186,7 +188,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.packetlength=sizeof(tsen.WIND)-1;
 		tsen.WIND.packettype=pTypeWIND;
 		tsen.WIND.subtype=sTypeWINDNoTemp;
-		dev.batteryWind = true;
+		dev.batteryWind = 1;
 		if (dev.batteryWind)
 			tsen.WIND.battery_level=9;
 		else

@@ -45,7 +45,10 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) :
 	SetSettings(10);
 }
 
-CLogitechMediaServer::~CLogitechMediaServer() { m_bIsStarted = false; }
+CLogitechMediaServer::~CLogitechMediaServer(void)
+{
+	m_bIsStarted = false;
+}
 
 Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort, const std::string &sPostdata)
 {
@@ -139,22 +142,26 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 	//This has to be rebuild! No direct poking in the database, please use CMainWorker::UpdateDevice
 
 	//Find out node, and update it's status
-	for (auto &node : m_nodes) {
-		if (node.ID == Node.ID) {
+	std::vector<LogitechMediaServerNode>::iterator itt;
+	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	{
+		if (itt->ID == Node.ID)
+		{
 			//Found it
 			//Retrieve devicename instead of playername in case it was renamed...
-			std::string sDevName = node.Name;
+			std::string sDevName = itt->Name;
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE DeviceID=='%q'", node.szDevID);
+			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE DeviceID=='%q'", itt->szDevID);
 			if (result.size() == 1) {
 				std::vector<std::string> sd = result[0];
 				sDevName = sd[0];
 			}
 			bool	bUseOnOff = false;
 			if (((nStatus == MSTAT_OFF) && bPingOK) || ((nStatus != MSTAT_OFF) && !bPingOK)) bUseOnOff = true;
-			time_t atime = mytime(nullptr);
-			node.LastOK = atime;
-			if ((node.nStatus != nStatus) || (node.sStatus != sStatus)) {
+			time_t atime = mytime(NULL);
+			itt->LastOK = atime;
+			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
+			{
 				// 1:	Update the DeviceStatus
 				if ((nStatus == MSTAT_PLAYING) || (nStatus == MSTAT_PAUSED) || (nStatus == MSTAT_STOPPED))
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
@@ -164,28 +171,23 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				localtime_r(&atime, &ltime);
 				char szLastUpdate[40];
 				sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-				result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', "
-							  "LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == "
-							  "'%q') AND (Unit == 1) AND (SwitchType == %d)",
-							  int(nStatus), sStatus.c_str(), szLastUpdate, m_HwdID, node.szDevID, STYPE_Media);
+				result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
+					int(nStatus), sStatus.c_str(), szLastUpdate, m_HwdID, itt->szDevID, STYPE_Media);
 
 				// 2:	Log the event if the actual status has changed
-				const std::string &sShortStatus = sStatus;
-				if ((node.nStatus != nStatus) || (node.sShortStatus != sShortStatus)) {
+				std::string sShortStatus = sStatus;
+				if ((itt->nStatus != nStatus) || (itt->sShortStatus != sShortStatus))
+				{
 					std::string sLongStatus = Media_Player_States(nStatus);
 					if ((nStatus == MSTAT_PLAYING) || (nStatus == MSTAT_PAUSED) || (nStatus == MSTAT_STOPPED))
 						if (sShortStatus.length()) sLongStatus += " - " + sShortStatus;
-					result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue, "
-								  "User) VALUES (%d, %d, '%q','%q')",
-								  node.ID, int(nStatus), sLongStatus.c_str(), "Logitech");
+					result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) VALUES (%d, %d, '%q','%q')", itt->ID, int(nStatus), sLongStatus.c_str(), "Logitech");
 				}
 
 				// 3:	Trigger On/Off actions
 				if (bUseOnOff)
 				{
-					result = m_sql.safe_query("SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE "
-								  "(HardwareID==%d) AND (ID = '%q') AND (Unit == 1)",
-								  m_HwdID, node.szDevID);
+					result = m_sql.safe_query("SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (ID = '%q') AND (Unit == 1)", m_HwdID, itt->szDevID);
 					if (!result.empty())
 					{
 						m_sql.HandleOnOffAction(bPingOK, result[0][0], result[0][1]);
@@ -193,16 +195,15 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				}
 
 				// 4:   Trigger Notifications & events on status change
-				if (node.nStatus != nStatus) {
-					m_notifications.CheckAndHandleNotification(node.ID, sDevName, NotificationType(nStatus),
-										   sStatus.c_str());
-					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, node.ID, 1, int(pTypeLighting2), int(sTypeAC), 12,
-										 100, int(nStatus), sStatus.c_str(), sDevName);
+				if (itt->nStatus != nStatus)
+				{
+					m_notifications.CheckAndHandleNotification(itt->ID, sDevName, NotificationType(nStatus), sStatus.c_str());
+					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, itt->ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(nStatus), sStatus.c_str(), sDevName);
 				}
 
-				node.nStatus = nStatus;
-				node.sStatus = sStatus;
-				node.sShortStatus = sShortStatus;
+				itt->nStatus = nStatus;
+				itt->sStatus = sStatus;
+				itt->sShortStatus = sShortStatus;
 			}
 			break;
 		}
@@ -219,8 +220,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 
 	try
 	{
-		std::string sPostdata
-			= R"({"id":1,"method":"slim.request","params":[")" + sPlayerId + R"(",["status","-",1,"tags:Aadly"]]})";
+		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:Aadly\"]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 		if (root.isNull())
@@ -329,13 +329,15 @@ void CLogitechMediaServer::Do_Work()
 
 				GetPlayerInfo();
 
-				for (const auto &node : m_nodes) {
+				std::vector<LogitechMediaServerNode>::const_iterator itt;
+				for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+				{
 					if (IsStopRequested(0))
 						return;
 					if (m_iThreadsRunning < 1000)
 					{
 						m_iThreadsRunning++;
-						boost::thread t(boost::bind(&CLogitechMediaServer::Do_Node_Work, this, node));
+						boost::thread t(boost::bind(&CLogitechMediaServer::Do_Node_Work, this, *itt));
 						SetThreadName(t.native_handle(), "LogitechNode");
 						t.join();
 					}
@@ -356,7 +358,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 {
 	try
 	{
-		std::string sPostdata = R"({"id":1,"method":"slim.request","params":["",["serverstatus",0,999]]})";
+		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"\",[\"serverstatus\",0,999]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 		if (root.isNull()) {
@@ -510,33 +512,36 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 		return false;
 
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
-	for (const auto &node : m_nodes) {
-		if (node.DevID == DevID) {
+	std::vector<LogitechMediaServerNode>::const_iterator itt;
+	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	{
+		if (itt->DevID == DevID)
+		{
 			int iParam = pSen->LIGHTING2.level;
 			std::string sParam;
 			switch (pSen->LIGHTING2.cmnd)
 			{
 			case light2_sOn:
 			case light2_sGroupOn:
-				return SendCommand(node.ID, "PowerOn");
+				return SendCommand(itt->ID, "PowerOn");
 			case light2_sOff:
 			case light2_sGroupOff:
-				return SendCommand(node.ID, "PowerOff");
+				return SendCommand(itt->ID, "PowerOff");
 			case gswitch_sPlay:
-				SendCommand(node.ID, "NowPlaying");
-				return SendCommand(node.ID, "Play");
+				SendCommand(itt->ID, "NowPlaying");
+				return SendCommand(itt->ID, "Play");
 			case gswitch_sPlayPlaylist:
 				sParam = GetPlaylistByRefID(iParam);
-				return SendCommand(node.ID, "PlayPlaylist", sParam);
+				return SendCommand(itt->ID, "PlayPlaylist", sParam);
 			case gswitch_sPlayFavorites:
-				return SendCommand(node.ID, "PlayFavorites");
+				return SendCommand(itt->ID, "PlayFavorites");
 			case gswitch_sStop:
-				return SendCommand(node.ID, "Stop");
+				return SendCommand(itt->ID, "Stop");
 			case gswitch_sPause:
-				return SendCommand(node.ID, "Pause");
+				return SendCommand(itt->ID, "Pause");
 			case gswitch_sSetVolume:
 				sParam = std::to_string(iParam);
-				return SendCommand(node.ID, "SetVolume", sParam);
+				return SendCommand(itt->ID, "SetVolume", sParam);
 			default:
 				return true;
 			}
@@ -554,7 +559,11 @@ void CLogitechMediaServer::ReloadNodes()
 	if (!result.empty())
 	{
 		_log.Log(LOG_STATUS, "Logitech Media Server: %d player-switch(es) found.", (int)result.size());
-		for (const auto &sd : result) {
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+
 			LogitechMediaServerNode pnode;
 			pnode.ID = 0;
 			pnode.DevID = atoi(sd[0].c_str());
@@ -563,7 +572,7 @@ void CLogitechMediaServer::ReloadNodes()
 			pnode.IP = sd[2];
 			pnode.nStatus = MSTAT_UNKNOWN;
 			pnode.sStatus = "";
-			pnode.LastOK = mytime(nullptr);
+			pnode.LastOK = mytime(NULL);
 
 			std::vector<std::vector<std::string> > result2;
 			result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, pnode.szDevID);
@@ -585,7 +594,7 @@ void CLogitechMediaServer::ReloadPlaylists()
 {
 	m_playlists.clear();
 
-	std::string sPostdata = R"({"id":1,"method":"slim.request","params":["",["playlists",0,999]]})";
+	std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"\",[\"playlists\",0,999]]}";
 	Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 	if (root.isNull()) {
@@ -613,9 +622,10 @@ void CLogitechMediaServer::ReloadPlaylists()
 
 std::string CLogitechMediaServer::GetPlaylistByRefID(const int ID)
 {
-	for (const auto &playlist : m_playlists) {
-		if (playlist.refID == ID)
-			return playlist.Name;
+	std::vector<CLogitechMediaServer::LMSPlaylistNode>::const_iterator itt;
+
+	for (itt = m_playlists.begin(); itt != m_playlists.end(); ++itt) {
+		if (itt->refID == ID) return itt->Name;
 	}
 
 	_log.Log(LOG_ERROR, "Logitech Media Server: Playlist ID %d not found.", ID);
@@ -633,7 +643,7 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 	if (result.size() == 1)
 	{
 		// Get connection details
-		long DeviceID = strtol(result[0][0].c_str(), nullptr, 16);
+		long	DeviceID = strtol(result[0][0].c_str(), NULL, 16);
 		result = m_sql.safe_query("SELECT Name, MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, DeviceID);
 		sPlayerId = result[0][1];
 	}
@@ -642,80 +652,80 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 	{
 		//std::string	sLMSCall;
 		if (command == "Left") {
-			sLMSCmnd = R"("button", "arrow_left")";
+			sLMSCmnd = "\"button\", \"arrow_left\"";
 		}
 		else if (command == "Right") {
-			sLMSCmnd = R"("button", "arrow_right")";
+			sLMSCmnd = "\"button\", \"arrow_right\"";
 		}
 		else if (command == "Up") {
-			sLMSCmnd = R"("button", "arrow_up")";
+			sLMSCmnd = "\"button\", \"arrow_up\"";
 		}
 		else if (command == "Down") {
-			sLMSCmnd = R"("button", "arrow_down")";
+			sLMSCmnd = "\"button\", \"arrow_down\"";
 		}
 		else if (command == "Favorites") {
-			sLMSCmnd = R"("button", "favorites")";
+			sLMSCmnd = "\"button\", \"favorites\"";
 		}
 		else if (command == "Browse") {
-			sLMSCmnd = R"("button", "browse")";
+			sLMSCmnd = "\"button\", \"browse\"";
 		}
 		else if (command == "NowPlaying") {
-			sLMSCmnd = R"("button", "playdisp_toggle")";
+			sLMSCmnd = "\"button\", \"playdisp_toggle\"";
 		}
 		else if (command == "Shuffle") {
-			sLMSCmnd = R"("button", "shuffle_toggle")";
+			sLMSCmnd = "\"button\", \"shuffle_toggle\"";
 		}
 		else if (command == "Repeat") {
-			sLMSCmnd = R"("button", "repeat_toggle")";
+			sLMSCmnd = "\"button\", \"repeat_toggle\"";
 		}
 		else if (command == "Stop") {
-			sLMSCmnd = R"("button", "stop")";
+			sLMSCmnd = "\"button\", \"stop\"";
 		}
 		else if (command == "VolumeUp") {
-			sLMSCmnd = R"("mixer", "volume", "+2")";
+			sLMSCmnd = "\"mixer\", \"volume\", \"+2\"";
 		}
 		else if (command == "Mute") {
-			sLMSCmnd = R"("mixer", "muting", "toggle")";
+			sLMSCmnd = "\"mixer\", \"muting\", \"toggle\"";
 		}
 		else if (command == "VolumeDown") {
-			sLMSCmnd = R"("mixer", "volume", "-2")";
+			sLMSCmnd = "\"mixer\", \"volume\", \"-2\"";
 		}
 		else if (command == "Rewind") {
-			sLMSCmnd = R"("button", "rew.single")";
+			sLMSCmnd = "\"button\", \"rew.single\"";
 		}
 		else if (command == "Play") {
-			sLMSCmnd = R"("button", "play.single")";
+			sLMSCmnd = "\"button\", \"play.single\"";
 		}
 		else if (command == "PlayPlaylist") {
 			if (param == "") return false;
-			sLMSCmnd = R"("playlist", "play", ")" + param + "\"";
+			sLMSCmnd = "\"playlist\", \"play\", \"" + param + "\"";
 		}
 		else if (command == "PlayFavorites") {
-			sLMSCmnd = R"("favorites", "playlist", "play")";
+			sLMSCmnd = "\"favorites\", \"playlist\", \"play\"";
 		}
 		else if (command == "Pause") {
-			sLMSCmnd = R"("button", "pause.single")";
+			sLMSCmnd = "\"button\", \"pause.single\"";
 		}
 		else if (command == "Forward") {
-			sLMSCmnd = R"("button", "fwd.single")";
+			sLMSCmnd = "\"button\", \"fwd.single\"";
 		}
 		else if (command == "PowerOn") {
-			sLMSCmnd = R"("power", "1")";
+			sLMSCmnd = "\"power\", \"1\"";
 		}
 		else if (command == "PowerOff") {
-			sLMSCmnd = R"("power", "0")";
+			sLMSCmnd = "\"power\", \"0\"";
 		}
 		else if (command == "SetVolume") {
 			if (param == "") return false;
-			sLMSCmnd = R"("mixer", "volume", ")" + param + "\"";
+			sLMSCmnd = "\"mixer\", \"volume\", \"" + param + "\"";
 		}
 
 		if (sLMSCmnd != "")
 		{
-			std::string sPostdata = R"({"id":1,"method":"slim.request","params":[")" + sPlayerId + "\",[" + sLMSCmnd + "]]}";
+			std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[" + sLMSCmnd + "]]}";
 			Json::Value root = Query(m_IP, m_Port, sPostdata);
 
-			sPostdata = R"({"id":1,"method":"slim.request","params":[")" + sPlayerId + R"(",["status","-",1,"tags:uB"]]})";
+			sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:uB\"]]}";
 			root = Query(m_IP, m_Port, sPostdata);
 
 			if (root["player_connected"].asString() == "1")
@@ -760,14 +770,12 @@ void CLogitechMediaServer::SendText(const std::string &playerIP, const std::stri
 {
 	if ((playerIP != "") && (text != "") && (duration > 0))
 	{
-		const std::string &sLine1 = subject;
-		const std::string &sLine2 = text;
+		std::string sLine1 = subject;
+		std::string sLine2 = text;
 		std::string sFont = ""; //"huge";
 		std::string sBrightness = "4";
 		std::string sDuration = std::to_string(duration);
-		std::string sPostdata = R"({"id":1,"method":"slim.request","params":[")" + playerIP + R"(",["show","line1:)" + sLine1
-					+ "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness
-					+ "\",\"font:" + sFont + "\"]]}";
+		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + playerIP + "\",[\"show\",\"line1:" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness + "\",\"font:" + sFont + "\"]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 	}
 }
@@ -779,9 +787,10 @@ std::vector<CLogitechMediaServer::LMSPlaylistNode> CLogitechMediaServer::GetPlay
 
 int CLogitechMediaServer::GetPlaylistRefID(const std::string &name)
 {
-	for (const auto &playlist : m_playlists) {
-		if (playlist.Name == name)
-			return playlist.refID;
+	std::vector<CLogitechMediaServer::LMSPlaylistNode>::const_iterator itt;
+
+	for (itt = m_playlists.begin(); itt != m_playlists.end(); ++itt) {
+		if (itt->Name == name) return itt->refID;
 	}
 
 	_log.Log(LOG_ERROR, "Logitech Media Server: Playlist '%s' not found.", name.c_str());
@@ -807,7 +816,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == nullptr)
+			if (pBaseHardware == NULL)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
@@ -835,7 +844,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == nullptr)
+			if (pBaseHardware == NULL)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
@@ -854,7 +863,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == nullptr)
+			if (pHardware == NULL)
 				return;
 			if (pHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
@@ -866,8 +875,12 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress,(CASE Timeout WHEN -1 THEN 'Unused' ELSE 'Active' END) as Status FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
 			if (!result.empty())
 			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (const auto &sd : result) {
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Mac"] = sd[2];
@@ -884,7 +897,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == nullptr)
+			if (pBaseHardware == NULL)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
@@ -896,10 +909,11 @@ namespace http {
 			std::vector<CLogitechMediaServer::LMSPlaylistNode> _nodes = pHardware->GetPlaylists();
 
 			int ii = 0;
-			for (const auto &node : _nodes) {
-				root["result"][ii]["id"] = node.ID;
-				root["result"][ii]["refid"] = node.refID;
-				root["result"][ii]["Name"] = node.Name;
+			for (const auto & itt : _nodes)
+			{
+				root["result"][ii]["id"] = itt.ID;
+				root["result"][ii]["refid"] = itt.refID;
+				root["result"][ii]["Name"] = itt.Name;
 				ii++;
 			}
 		}
