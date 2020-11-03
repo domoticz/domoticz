@@ -158,17 +158,14 @@ void CHttpPush::DoHttpPush()
 			gethostname(hostname, sizeof(hostname));
 
 			std::vector<std::string> strarray;
-			if (sendValue.find(";") != std::string::npos)
-			{
+			if (sendValue.find(';') != std::string::npos) {
 				StringSplit(sendValue, ";", strarray);
 				if (int(strarray.size()) >= delpos && delpos > 0)
 				{
 					std::string rawsendValue = strarray[delpos - 1].c_str();
 					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
 				}
-			}
-			else
-			{
+			} else {
 				sendValue = ProcessSendValue(sendValue, delpos, nValue, false, dType, dSubType, metertype);
 			}
 			ltargetDeviceId += "_";
@@ -232,9 +229,8 @@ void CHttpPush::DoHttpPush()
 						// Add additional headers
 						std::vector<std::string> ExtraHeaders2;
 						StringSplit(httpHeaders, "\r\n", ExtraHeaders2);
-						for (size_t i = 0; i < ExtraHeaders2.size(); i++)
-						{
-							ExtraHeaders.push_back(ExtraHeaders2[i]);
+						for (auto &i : ExtraHeaders2) {
+							ExtraHeaders.push_back(i);
 						}
 					}
 					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, true, true))

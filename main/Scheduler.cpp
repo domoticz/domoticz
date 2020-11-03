@@ -14,7 +14,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-CScheduler::CScheduler(void)
+CScheduler::CScheduler()
 {
 	m_tSunRise = 0;
 	m_tSunSet = 0;
@@ -25,12 +25,10 @@ CScheduler::CScheduler(void)
 	m_tNautTwEnd = 0;
 	m_tAstTwStart = 0;
 	m_tAstTwEnd = 0;
-	srand((int)mytime(NULL));
+	srand((int)mytime(nullptr));
 }
 
-CScheduler::~CScheduler(void)
-{
-}
+CScheduler::~CScheduler() = default;
 
 void CScheduler::StartScheduler()
 {
@@ -64,7 +62,7 @@ void CScheduler::ReloadSchedules()
 
 	std::vector<std::vector<std::string> > result;
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
@@ -357,7 +355,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		std::lock_guard<std::mutex> l(m_mutex);
 
 		time_t temptime;
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
 		struct tm tm1;
@@ -387,7 +385,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 
 bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 {
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	time_t rtime = atime;
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
@@ -701,7 +699,7 @@ void CScheduler::Do_Work()
 {
 	while (!IsStopRequested(1000))
 	{
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
 
@@ -723,7 +721,7 @@ void CScheduler::CheckSchedules()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
@@ -932,7 +930,7 @@ void CScheduler::DeleteExpiredTimers()
 {
 	char szDate[40];
 	char szTime[40];
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm tmnow;
 	localtime_r(&now, &tmnow);
 	sprintf(szDate, "%04d-%02d-%02d", tmnow.tm_year + 1900, tmnow.tm_mon + 1, tmnow.tm_mday);
@@ -1237,7 +1235,7 @@ namespace http {
 				return;
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -1342,7 +1340,7 @@ namespace http {
 				return;
 
 			unsigned char iTimerType = atoi(stimertype.c_str());
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -1573,7 +1571,7 @@ namespace http {
 				return;
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -1669,7 +1667,7 @@ namespace http {
 				return;
 
 			unsigned char iTimerType = atoi(stimertype.c_str());
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -1905,7 +1903,7 @@ namespace http {
 				return;
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -2008,7 +2006,7 @@ namespace http {
 
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;

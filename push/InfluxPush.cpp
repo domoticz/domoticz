@@ -38,7 +38,7 @@ bool CInfluxPush::Start()
 
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CInfluxPush::OnDeviceReceived, this, _1, _2, _3, _4));
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 void CInfluxPush::Stop()
@@ -112,7 +112,7 @@ void CInfluxPush::DoInfluxPush()
 		m_DeviceRowIdx);
 	if (!result.empty())
 	{
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		std::string sendValue;
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
@@ -132,15 +132,14 @@ void CInfluxPush::DoInfluxPush()
 			int metertype = atoi(sd[13].c_str());
 
 			std::vector<std::string> strarray;
-			if (sValue.find(";") != std::string::npos) {
+			if (sValue.find(';') != std::string::npos) {
 				StringSplit(sValue, ";", strarray);
 				if (int(strarray.size()) >= delpos)
 				{
 					std::string rawsendValue = strarray[delpos - 1].c_str();
 					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 				}
-			}
-			else
+			} else
 				sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 
 			if (sendValue != "") {

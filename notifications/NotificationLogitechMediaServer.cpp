@@ -13,9 +13,7 @@ CNotificationLogitechMediaServer::CNotificationLogitechMediaServer() : CNotifica
 	SetupConfig(std::string("LmsDuration"), &_Duration);
 }
 
-CNotificationLogitechMediaServer::~CNotificationLogitechMediaServer()
-{
-}
+CNotificationLogitechMediaServer::~CNotificationLogitechMediaServer() = default;
 
 bool CNotificationLogitechMediaServer::SendMessageImplementation(
 	const uint64_t Idx,
@@ -36,7 +34,7 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(
 	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
 	CLogitechMediaServer* pLMS = dynamic_cast<CLogitechMediaServer*>(pHardware);
 
-	if (pHardware == NULL) {
+	if (pHardware == nullptr) {
 		std::stringstream logline;
 		logline << "Error sending notification: 'Logitech Media Server' not found in Hardware-list";
 		_log.Log(LOG_ERROR, "%s", logline.str().c_str());
@@ -47,9 +45,7 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(
 	std::vector<std::string> results;
 	StringSplit(_PlayerMac, ";", results);
 
-	for (int i = 0; i < (int)results.size(); i++)
-	{
-		std::string sPlayerId = results[i];
+	for (const auto &sPlayerId : results) {
 		pLMS->SendText(sPlayerId, sSubject, Text, _Duration);
 	}
 	return true;

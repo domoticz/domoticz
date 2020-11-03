@@ -427,10 +427,7 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int t
 	//ParseData();
 }
 
-CEnOceanESP3::~CEnOceanESP3()
-{
-
-}
+CEnOceanESP3::~CEnOceanESP3() = default;
 
 bool CEnOceanESP3::StartHardware()
 {
@@ -471,9 +468,7 @@ void CEnOceanESP3::ReloadVLDNodes()
 	result = m_sql.safe_query("SELECT ID, DeviceID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		for (const auto & itt : result)
-		{
-			std::vector<std::string> sd = itt;
+		for (const auto &sd : result) {
 			_tVLDNode node;
 			node.idx = atoi(sd[0].c_str());
 			node.manufacturer = atoi(sd[2].c_str());
@@ -506,7 +501,7 @@ void CEnOceanESP3::Do_Work()
 			sec_counter++;
 			if (sec_counter % 12 == 0)
 			{
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 		}
 
@@ -597,11 +592,11 @@ bool CEnOceanESP3::OpenSerialDevice()
 	//Request BASE_ID
 	m_bBaseIDRequested=true;
 	buf[0] = CO_RD_IDBASE;
-	sendFrameQueue(PACKET_COMMON_COMMAND,buf,1,NULL,0);
+	sendFrameQueue(PACKET_COMMON_COMMAND, buf, 1, nullptr, 0);
 
 	//Request Version
 	buf[0] = CO_RD_VERSION;
-	sendFrameQueue(PACKET_COMMON_COMMAND,buf,1,NULL,0);
+	sendFrameQueue(PACKET_COMMON_COMMAND, buf, 1, nullptr, 0);
 
 	return true;
 }
@@ -794,7 +789,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 		//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6]);
 		//_log.Log(LOG_ERROR,buff);
 
-		sendFrameQueue(PACKET_RADIO,buf,7,NULL,0);
+		sendFrameQueue(PACKET_RADIO, buf, 7, nullptr, 0);
 
 		//Next command is send a bit later (button release)
 		buf[1] = 0;				// no button press
@@ -802,7 +797,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 		//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6]);
 		//_log.Log(LOG_ERROR,buff);
 
-		sendFrameQueue(PACKET_RADIO,buf,7,NULL,0);
+		sendFrameQueue(PACKET_RADIO, buf, 7, nullptr, 0);
 	}
 	else
 	{
@@ -830,7 +825,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 			buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
 			buf[9] = 0x30;
 
-			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+			sendFrameQueue(PACKET_RADIO, buf, 10, nullptr, 0);
 
 			//char buff[512];
 			//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],buf[8],buf[9]);
@@ -841,7 +836,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 			buf[9] = 0x20;
 			//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],buf[8],buf[9]);
 			//_log.Log(LOG_ERROR,buff);
-			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+			sendFrameQueue(PACKET_RADIO, buf, 10, nullptr, 0);
 		}
 		else
 		{
@@ -859,7 +854,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 			else
 				buf[4]=0x09;//Dim On
 
-			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+			sendFrameQueue(PACKET_RADIO, buf, 10, nullptr, 0);
 		}
 	}
 
@@ -906,7 +901,7 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char /*le
 		{
 			return;//double not supported yet!
 		}
-		sendFrame(PACKET_RADIO,buf,10,NULL,0);
+		sendFrame(PACKET_RADIO, buf, 10, nullptr, 0);
 	}
 }
 

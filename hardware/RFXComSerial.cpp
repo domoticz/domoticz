@@ -90,10 +90,7 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_serial.setTimeout(stimeout);
 }
 
-RFXComSerial::~RFXComSerial()
-{
-
-}
+RFXComSerial::~RFXComSerial() = default;
 
 bool RFXComSerial::StartHardware()
 {
@@ -136,7 +133,7 @@ void RFXComSerial::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (m_bStartFirmwareUpload)
@@ -312,14 +309,13 @@ bool RFXComSerial::UpgradeFirmware()
 
 	m_szUploadMessage = "Bootloader, Start programming...";
 	Log(LOG_STATUS, m_szUploadMessage);
-	for (const auto& itt : firmwareBuffer)
-	{
+	for (const auto &m : firmwareBuffer) {
 		icntr++;
 		if (icntr % 5 == 0)
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
-		unsigned long Address = itt.first;
+		unsigned long Address = m.first;
 		m_FirmwareUploadPercentage = (100.0f / float(firmwareBuffer.size()))*icntr;
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
@@ -341,8 +337,8 @@ bool RFXComSerial::UpgradeFirmware()
 			bcmd[2] = Address & 0xFF;
 			bcmd[3] = (Address & 0xFF00) >> 8;
 			bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
-			memcpy(bcmd + 5, itt.second.c_str(), itt.second.size());
-			bool ret = Write_TX_PKT(bcmd, 5 + itt.second.size(), 20);
+			memcpy(bcmd + 5, m.second.c_str(), m.second.size());
+			bool ret = Write_TX_PKT(bcmd, 5 + m.second.size(), 20);
 			if (!ret)
 			{
 				m_szUploadMessage = "Bootloader, unable to program firmware memory, please try again!!!";
@@ -884,20 +880,17 @@ namespace http {
 				return;
 			}
 
-			CDomoticzHardwareBase *pHardware = NULL;
+			CDomoticzHardwareBase *pHardware = nullptr;
 			if ((!hardwareid.empty()) && (hardwareid != "undefined"))
 			{
 				pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
 			}
-			if (pHardware == NULL)
-			{
+			if (pHardware == nullptr) {
 				//Direct Entry, try to find the RFXCom hardware
 				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
-				if (pHardware == NULL)
-				{
+				if (pHardware == nullptr) {
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
-					if (pHardware == NULL)
-					{
+					if (pHardware == nullptr) {
 						return;
 					}
 				}
@@ -1020,22 +1013,19 @@ namespace http {
 			root["title"] = "GetFirmwareUpgradePercentage";
 			std::string hardwareid = request::findValue(&req, "hardwareid");
 
-			CDomoticzHardwareBase *pHardware = NULL;
+			CDomoticzHardwareBase *pHardware = nullptr;
 			if ((!hardwareid.empty()) && (hardwareid != "undefined"))
 			{
 				pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
 			}
-			if (pHardware == NULL)
-			{
+			if (pHardware == nullptr) {
 				//Direct Entry, try to find the RFXCom hardware
 				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
-				if (pHardware == NULL)
-				{
+				if (pHardware == nullptr) {
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
 				}
 			}
-			if (pHardware != NULL)
-			{
+			if (pHardware != nullptr) {
 				if (
 					(pHardware->HwdType == HTYPE_RFXtrx315) ||
 					(pHardware->HwdType == HTYPE_RFXtrx433) ||
@@ -1047,8 +1037,7 @@ namespace http {
 					root["percentage"] = pRFXComSerial->GetUploadPercentage();
 					root["message"] = pRFXComSerial->GetUploadMessage();
 				}
-			}
-			else
+			} else
 				root["message"] = "Hardware not found, or not enabled!";
 		}
 	}

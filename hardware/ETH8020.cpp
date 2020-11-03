@@ -22,9 +22,7 @@ m_Password(CURLEncode::URLEncode(password))
 	Init();
 }
 
-CETH8020::~CETH8020(void)
-{
-}
+CETH8020::~CETH8020() = default;
 
 void CETH8020::Init()
 {
@@ -65,7 +63,7 @@ void CETH8020::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter % ETH8020_POLL_INTERVAL == 0)
@@ -220,12 +218,12 @@ void CETH8020::GetMeterDetails()
 		if (tmpstr.find("<relay") != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(strlen("<relay"));
-			pos1 = tmpstr.find(">");
+			pos1 = tmpstr.find('>');
 			if (pos1 != std::string::npos)
 			{
 				Idx = (uint8_t)atoi(tmpstr.substr(0, pos1).c_str());
 				tmpstr = tmpstr.substr(pos1+1);
-				pos1 = tmpstr.find("<");
+				pos1 = tmpstr.find('<');
 				if (pos1 != std::string::npos)
 				{
 					int lValue = atoi(tmpstr.substr(0, pos1).c_str());
@@ -238,12 +236,12 @@ void CETH8020::GetMeterDetails()
 		else if (tmpstr.find("<adc") != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(strlen("<adc"));
-			pos1 = tmpstr.find(">");
+			pos1 = tmpstr.find('>');
 			if (pos1 != std::string::npos)
 			{
 				Idx = (uint8_t)atoi(tmpstr.substr(0, pos1).c_str());
 				tmpstr = tmpstr.substr(pos1 + 1);
-				pos1 = tmpstr.find("<");
+				pos1 = tmpstr.find('<');
 				if (pos1 != std::string::npos)
 				{
 					int lValue = atoi(tmpstr.substr(0, pos1).c_str());

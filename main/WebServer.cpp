@@ -91,63 +91,31 @@ struct _tGuiLanguage {
 	const char* szLong;
 };
 
-static const _tGuiLanguage guiLanguage[] =
-{
-	{ "en", "English" },
-	{ "sq", "Albanian" },
-	{ "ar", "Arabic" },
-	{ "bs", "Bosnian" },
-	{ "bg", "Bulgarian" },
-	{ "ca", "Catalan" },
-	{ "zh", "Chinese" },
-	{ "cs", "Czech" },
-	{ "da", "Danish" },
-	{ "nl", "Dutch" },
-	{ "et", "Estonian" },
-	{ "de", "German" },
-	{ "el", "Greek" },
-	{ "fr", "French" },
-	{ "fi", "Finnish" },
-	{ "he", "Hebrew" },
-	{ "hu", "Hungarian" },
-	{ "is", "Icelandic" },
-	{ "it", "Italian" },
-	{ "lt", "Lithuanian" },
-	{ "lv", "Latvian" },
-	{ "mk", "Macedonian" },
-	{ "no", "Norwegian" },
-	{ "fa", "Persian" },
-	{ "pl", "Polish" },
-	{ "pt", "Portuguese" },
-	{ "ro", "Romanian" },
-	{ "ru", "Russian" },
-	{ "sr", "Serbian" },
-	{ "sk", "Slovak" },
-	{ "sl", "Slovenian" },
-	{ "es", "Spanish" },
-	{ "sv", "Swedish" },
-	{ "zh_TW", "Taiwanese" },
-	{ "tr", "Turkish" },
-	{ "uk", "Ukrainian" },
-	{ NULL, NULL }
-};
+static const _tGuiLanguage guiLanguage[]
+	= {{"en", "English"},	{"sq", "Albanian"},   {"ar", "Arabic"},	  {"bs", "Bosnian"},	  {"bg", "Bulgarian"}, {"ca", "Catalan"},
+	   {"zh", "Chinese"},	{"cs", "Czech"},      {"da", "Danish"},	  {"nl", "Dutch"},	  {"et", "Estonian"},  {"de", "German"},
+	   {"el", "Greek"},	{"fr", "French"},     {"fi", "Finnish"},  {"he", "Hebrew"},	  {"hu", "Hungarian"}, {"is", "Icelandic"},
+	   {"it", "Italian"},	{"lt", "Lithuanian"}, {"lv", "Latvian"},  {"mk", "Macedonian"},	  {"no", "Norwegian"}, {"fa", "Persian"},
+	   {"pl", "Polish"},	{"pt", "Portuguese"}, {"ro", "Romanian"}, {"ru", "Russian"},	  {"sr", "Serbian"},   {"sk", "Slovak"},
+	   {"sl", "Slovenian"}, {"es", "Spanish"},    {"sv", "Swedish"},  {"zh_TW", "Taiwanese"}, {"tr", "Turkish"},   {"uk", "Ukrainian"},
+	   {nullptr, nullptr}};
 
 extern http::server::CWebServerHelper m_webservers;
 
 namespace http {
 	namespace server {
 
-		CWebServer::CWebServer(void) : session_store()
+		CWebServer::CWebServer()
+			: session_store()
 		{
-			m_pWebEm = NULL;
+			m_pWebEm = nullptr;
 			m_bDoStop = false;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
 		}
 
-
-		CWebServer::~CWebServer(void)
+		CWebServer::~CWebServer()
 		{
 			// RK, we call StopServer() instead of just deleting m_pWebEm. The Do_Work thread might still be accessing that object
 			StopServer();
@@ -222,10 +190,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					int ID = atoi(sd[0].c_str());
 
 					_tCustomIcon cImage;
@@ -244,10 +209,9 @@ namespace http {
 					_dbImageFiles["IconOff"] = szWWWFolder + "/images/" + IconFile48Off;
 
 					//Check if files are on disk, else add them
-					for (const auto & iItt : _dbImageFiles)
-					{
-						std::string TableField = iItt.first;
-						std::string IconFile = iItt.second;
+					for (const auto &db : _dbImageFiles) {
+						std::string TableField = db.first;
+						std::string IconFile = db.second;
 
 						if (!file_exist(IconFile.c_str()))
 						{
@@ -327,8 +291,8 @@ namespace http {
 				{
 					std::vector<std::string> strarray;
 					StringSplit(WebLocalNetworks, ";", strarray);
-					for (const auto & itt : strarray)
-						m_pWebEm->AddLocalNetworks(itt);
+					for (const auto &str : strarray)
+						m_pWebEm->AddLocalNetworks(str);
 					//add local hostname
 					m_pWebEm->AddLocalNetworks("");
 				}
@@ -340,8 +304,8 @@ namespace http {
 			{
 				std::vector<std::string> strarray;
 				StringSplit(WebRemoteProxyIPs, ";", strarray);
-				for (const auto & itt : strarray)
-					m_pWebEm->AddRemoteProxyIPs(itt);
+				for (const auto &str : strarray)
+					m_pWebEm->AddRemoteProxyIPs(str);
 			}
 
 			//register callbacks
@@ -696,7 +660,7 @@ namespace http {
 			m_bDoStop = true;
 			try
 			{
-				if (m_pWebEm == NULL)
+				if (m_pWebEm == nullptr)
 					return;
 				m_pWebEm->Stop();
 				if (m_thread) {
@@ -704,7 +668,7 @@ namespace http {
 					m_thread.reset();
 				}
 				delete m_pWebEm;
-				m_pWebEm = NULL;
+				m_pWebEm = nullptr;
 			}
 			catch (...)
 			{
@@ -714,28 +678,28 @@ namespace http {
 
 		void CWebServer::SetWebCompressionMode(const _eWebCompressionMode gzmode)
 		{
-			if (m_pWebEm == NULL)
+			if (m_pWebEm == nullptr)
 				return;
 			m_pWebEm->SetWebCompressionMode(gzmode);
 		}
 
 		void CWebServer::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
-			if (m_pWebEm == NULL)
+			if (m_pWebEm == nullptr)
 				return;
 			m_pWebEm->SetAuthenticationMethod(amethod);
 		}
 
 		void CWebServer::SetWebTheme(const std::string &themename)
 		{
-			if (m_pWebEm == NULL)
+			if (m_pWebEm == nullptr)
 				return;
 			m_pWebEm->SetWebTheme(themename);
 		}
 
 		void CWebServer::SetWebRoot(const std::string &webRoot)
 		{
-			if (m_pWebEm == NULL)
+			if (m_pWebEm == nullptr)
 				return;
 			m_pWebEm->SetWebRoot(webRoot);
 		}
@@ -788,9 +752,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID FROM Floorplans ORDER BY [Order]");
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
+				for (const auto &sd : result) {
 					std::string ImageURL = "images/floorplans/plan?idx=" + sd[0];
 					_FloorplanFiles[ImageURL] = 1;
 				}
@@ -812,9 +774,8 @@ namespace http {
 						{
 							response += "#Theme=" + sWebTheme + '\n';
 							//Add all theme files
-							for (const auto & itt : _ThemeFiles)
-							{
-								std::string tfname = itt.first.substr(szWWWFolder.size() + 1);
+							for (const auto &file : _ThemeFiles) {
+								std::string tfname = file.first.substr(szWWWFolder.size() + 1);
 								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
 								response += tfname + '\n';
 							}
@@ -823,9 +784,8 @@ namespace http {
 						else if (sLine.find("#Floorplans") != std::string::npos)
 						{
 							//Add all floorplans
-							for (const auto & itt : _FloorplanFiles)
-							{
-								std::string tfname = itt.first;
+							for (const auto &file : _FloorplanFiles) {
+								std::string tfname = file.first;
 								response += tfname + '\n';
 							}
 							continue;
@@ -833,13 +793,11 @@ namespace http {
 						else if (sLine.find("#SwitchIcons") != std::string::npos)
 						{
 							//Add database switch icons
-							for (const auto & itt : m_custom_light_icons)
-							{
-								if (itt.idx >= 100)
-								{
-									std::string IconFile16 = itt.RootFile + ".png";
-									std::string IconFile48On = itt.RootFile + "48_On.png";
-									std::string IconFile48Off = itt.RootFile + "48_Off.png";
+							for (const auto &db : m_custom_light_icons) {
+								if (db.idx >= 100) {
+									std::string IconFile16 = db.RootFile + ".png";
+									std::string IconFile48On = db.RootFile + "48_On.png";
+									std::string IconFile48Off = db.RootFile + "48_Off.png";
 
 									response += "images/" + CURLEncode::URLEncode(IconFile16) + '\n';
 									response += "images/" + CURLEncode::URLEncode(IconFile48On) + '\n';
@@ -911,9 +869,8 @@ namespace http {
 			root["title"] = "GetThemes";
 			m_mainworker.GetAvailableWebThemes();
 			int ii = 0;
-			for (const auto & itt : m_mainworker.m_webthemes)
-			{
-				root["result"][ii]["theme"] = itt;
+			for (const auto &theme : m_mainworker.m_webthemes) {
+				root["result"][ii]["theme"] = theme;
 				ii++;
 			}
 		}
@@ -1052,10 +1009,9 @@ namespace http {
 
 			//return a sorted hardware list
 			int ii = 0;
-			for (const auto & itt : _htypes)
-			{
-				root["result"][ii]["idx"] = itt.second;
-				root["result"][ii]["name"] = itt.first;
+			for (const auto &type : _htypes) {
+				root["result"][ii]["idx"] = type.second;
+				root["result"][ii]["name"] = type.first;
 				ii++;
 			}
 
@@ -1895,14 +1851,11 @@ namespace http {
 			}
 			else {
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::string ddOption = itt;
+				for (const auto &ddOption : result) {
 					root["result"][ii]["Value"] = ii + 1;
 					root["result"][ii]["Wording"] = ddOption.c_str();
 					ii++;
 				}
-
 			}
 			root["status"] = "OK";
 			root["title"] = "GetDeviceValueOptions";
@@ -2094,9 +2047,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Name, ValueType, Value, LastUpdate FROM UserVariables");
 			int ii = 0;
-			for (const auto & itt : result)
-			{
-				std::vector<std::string> sd = itt;
+			for (const auto &sd : result) {
 				root["result"][ii]["idx"] = sd[0];
 				root["result"][ii]["Name"] = sd[1];
 				root["result"][ii]["Type"] = sd[2];
@@ -2119,9 +2070,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Name, ValueType, Value, LastUpdate FROM UserVariables WHERE (ID==%d)", iVarID);
 			int ii = 0;
-			for (const auto & itt : result)
-			{
-				std::vector<std::string> sd = itt;
+			for (const auto &sd : result) {
 				root["result"][ii]["idx"] = sd[0];
 				root["result"][ii]["Name"] = sd[1];
 				root["result"][ii]["Type"] = sd[2];
@@ -2165,7 +2114,7 @@ namespace http {
 			int hwID = atoi(idx.c_str());
 
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(hwID);
-			if ((pBaseHardware != NULL) && (pBaseHardware->HwdType == HTYPE_DomoticzInternal)) {
+			if ((pBaseHardware != nullptr) && (pBaseHardware->HwdType == HTYPE_DomoticzInternal)) {
 				// DomoticzInternal cannot be removed
 				return;
 			}
@@ -2199,15 +2148,13 @@ namespace http {
 
 			std::list<CLogger::_tLogLineStruct> logmessages = _log.GetLog(lLevel);
 			int ii = 0;
-			for (const auto & itt : logmessages)
-			{
-				if (itt.logtime > lastlogtime)
-				{
+			for (const auto &msg : logmessages) {
+				if (msg.logtime > lastlogtime) {
 					std::stringstream szLogTime;
-					szLogTime << itt.logtime;
+					szLogTime << msg.logtime;
 					root["LastLogTime"] = szLogTime.str();
-					root["result"][ii]["level"] = static_cast<int>(itt.level);
-					root["result"][ii]["message"] = itt.logmessage;
+					root["result"][ii]["level"] = static_cast<int>(msg.level);
+					root["result"][ii]["message"] = msg.logmessage;
 					ii++;
 				}
 			}
@@ -2318,10 +2265,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT T1.[ID], T1.[Name], T1.[Type], T1.[SubType], T2.[Name] AS HardwareName FROM DeviceStatus as T1, Hardware as T2 WHERE (T1.[Used]==1) AND (T2.[ID]==T1.[HardwareID]) ORDER BY T2.[Name], T1.[Name]");
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					bool bDoAdd = true;
 					if (iUnique)
 					{
@@ -2344,10 +2288,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					bool bDoAdd = true;
 					if (iUnique)
 					{
@@ -2418,10 +2359,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					std::string ID = sd[0];
 					int DevSceneType = atoi(sd[1].c_str());
 					std::string DevSceneRowID = sd[2];
@@ -2651,7 +2589,7 @@ namespace http {
 		void CWebServer::Cmd_GetUptime(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			//this is used in the about page, we are going to round the seconds a bit to display nicer
-			time_t atime = mytime(NULL);
+			time_t atime = mytime(nullptr);
 			time_t tuptime = atime - m_StartTime;
 			//round to 5 seconds (nicer in about page)
 			tuptime = ((tuptime / 5) * 5) + 5;
@@ -2725,7 +2663,9 @@ namespace http {
 					machine = "armv7l";
 				}
 
-				if (((machine != "armv6l") && (machine != "armv7l") && (systemname != "windows") && (machine != "x86_64") && (machine != "aarch64")) || (strstr(my_uname.release, "ARCH+") != NULL))
+				if (((machine != "armv6l") && (machine != "armv7l") && (systemname != "windows") && (machine != "x86_64")
+				     && (machine != "aarch64"))
+				    || (strstr(my_uname.release, "ARCH+") != nullptr))
 					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history";
 				else
 					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
@@ -2803,7 +2743,7 @@ namespace http {
 			root["TempSign"] = m_sql.m_tempsign;
 
 #ifndef NOCLOUD
-			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != NULL;
+			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != nullptr;
 #else
 			bool bEnableTabProxy = false;
 #endif
@@ -2866,10 +2806,8 @@ namespace http {
 				struct dirent *ent;
 				std::string templatesFolder = szWWWFolder + "/templates";
 				int iFile = 0;
-				if ((lDir = opendir(templatesFolder.c_str())) != NULL)
-				{
-					while ((ent = readdir(lDir)) != NULL)
-					{
+				if ((lDir = opendir(templatesFolder.c_str())) != nullptr) {
+					while ((ent = readdir(lDir)) != nullptr) {
 						std::string filename = ent->d_name;
 						size_t pos = filename.find(".htm");
 						if (pos != std::string::npos)
@@ -3534,10 +3472,7 @@ namespace http {
 
 					std::vector<std::string> arrayActivators;
 					StringSplit(result[0][0], ";", arrayActivators);
-					for (const auto & ittAct : arrayActivators)
-					{
-						std::string sCodeCmd = ittAct;
-
+					for (const auto &sCodeCmd : arrayActivators) {
 						std::vector<std::string> arrayCode;
 						StringSplit(sCodeCmd, ":", arrayCode);
 
@@ -3670,10 +3605,7 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
-					{
-						std::vector<std::string> sd = itt;
-
+					for (const auto &sd : result) {
 						root["result"][ii]["ID"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
 						ii++;
@@ -3699,10 +3631,7 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
-					{
-						std::vector<std::string> sd = itt;
-
+					for (const auto &sd : result) {
 						root["result"][ii]["ID"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
 						root["result"][ii]["DevID"] = sd[2];
@@ -3820,10 +3749,7 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
-					{
-						std::vector<std::string> sd = itt;
-
+					for (const auto &sd : result) {
 						int ID = atoi(sd[0].c_str());
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
@@ -3872,9 +3798,7 @@ namespace http {
 				}
 				else {
 					int ii = 0;
-					for (const auto & it : pins)
-					{
-						CGpioPin pin = it;
+					for (const auto &pin : pins) {
 						root["status"] = "OK";
 						root["result"][ii]["idx"] = pin.GetPin();
 						root["result"][ii]["Name"] = pin.ToString();
@@ -3922,10 +3846,7 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
-					{
-						std::vector<std::string> sd = itt;
-
+					for (const auto &sd : result) {
 						std::string ID = sd[0];
 						std::string Name = sd[1];
 						int Type = atoi(sd[2].c_str());
@@ -4052,10 +3973,7 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used FROM DeviceStatus ORDER BY Name");
 				if (!result.empty())
 				{
-					for (const auto & itt : result)
-					{
-						std::vector<std::string> sd = itt;
-
+					for (const auto &sd : result) {
 						std::string ID = sd[0];
 						std::string Name = sd[1];
 						int Type = atoi(sd[2].c_str());
@@ -4112,10 +4030,7 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
 				if (!result.empty())
 				{
-					for (const auto & itt : result)
-					{
-						std::vector<std::string> sd = itt;
-
+					for (const auto &sd : result) {
 						std::string ID = sd[0];
 						std::string Name = sd[1];
 
@@ -4139,10 +4054,7 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
-					{
-						std::vector<std::string> sd = itt;
-
+					for (const auto &sd : result) {
 						std::string ID = sd[0];
 						int DevSceneType = atoi(sd[1].c_str());
 						std::string DevSceneRowID = sd[2];
@@ -4331,7 +4243,7 @@ namespace http {
 						return;
 					sunitcode = sgroupcode;//Button A or B
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pBaseHardware == NULL)
+					if (pBaseHardware == nullptr)
 						return;
 					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3)
 						&& (pBaseHardware->HwdType != HTYPE_USBtinGateway) )
@@ -4909,8 +4821,7 @@ namespace http {
 				}
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
 				CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-				if (pBaseHardware != NULL)
-				{
+				if (pBaseHardware != nullptr) {
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
 						ConvertToGeneralSwitchType(devid, dtype, subtype);
 					}
@@ -5012,7 +4923,7 @@ namespace http {
 						return;
 					sunitcode = sgroupcode;//Button A/B
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pBaseHardware == NULL)
+					if (pBaseHardware == nullptr)
 						return;
 					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3)
 						&& (pBaseHardware->HwdType != HTYPE_USBtinGateway) )
@@ -5626,8 +5537,7 @@ namespace http {
 
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
 				CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
-				if (pBaseHardware != NULL)
-				{
+				if (pBaseHardware != nullptr) {
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
 						ConvertToGeneralSwitchType(devid, dtype, subtype);
 					}
@@ -5764,7 +5674,7 @@ namespace http {
 						{
 							std::string hdwid = result[0][0];
 							CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hdwid.c_str())));
-							if (pBaseHardware != NULL) {
+							if (pBaseHardware != nullptr) {
 								_eHardwareTypes type = pBaseHardware->HwdType;
 								root["result"][ii]["val"] = NTYPE_PAUSED;
 								root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
@@ -6254,8 +6164,8 @@ namespace http {
 				root["title"] = "UpdateNotification";
 
 				std::string recoverymsg;
-				if ((srecovery == "1") && (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(), NULL, 0), recoverymsg, true)))
-				{
+				if ((srecovery == "1")
+				    && (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(), nullptr, 0), recoverymsg, true))) {
 					scustommessage.append(";;");
 					scustommessage.append(recoverymsg);
 				}
@@ -7027,7 +6937,7 @@ namespace http {
 					if (strarray.size() == 10)
 					{
 						struct tm loctime;
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 
 						localtime_r(&now, &loctime);
 						//strftime(szTmp, 80, "%b %d %Y %X", &loctime);
@@ -7052,7 +6962,7 @@ namespace http {
 			else if (cparam == "getServerTime") {
 
 				struct tm loctime;
-				time_t now = mytime(NULL);
+				time_t now = mytime(nullptr);
 
 				localtime_r(&now, &loctime);
 				//strftime(szTmp, 80, "%b %d %Y %X", &loctime);
@@ -7676,10 +7586,7 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
-					{
-						std::vector<std::string> sd = itt;
-
+					for (const auto &sd : result) {
 						root["result"][ii]["idx"] = sd[0];
 						root["result"][ii]["name"] = sd[1];
 						root["result"][ii]["scalefactor"] = sd[2];
@@ -7801,10 +7708,7 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name");
 				if (!result.empty())
 				{
-					for (const auto & itt : result)
-					{
-						std::vector<std::string> sd = itt;
-
+					for (const auto &sd : result) {
 						root["result"][ii]["type"] = 0;
 						root["result"][ii]["idx"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
@@ -7824,10 +7728,7 @@ namespace http {
 					idx.c_str());
 				if (!result.empty())
 				{
-					for (const auto & itt : result)
-					{
-						std::vector<std::string> sd = itt;
-
+					for (const auto &sd : result) {
 						root["result"][ii]["idx"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
 						root["result"][ii]["Area"] = sd[2];
@@ -7919,9 +7820,8 @@ namespace http {
 				_switchtypes[Switch_Type_Desc((_eSwitchType)ii)] = ii;
 			}
 			//return a sorted list
-			for (const auto & itt : _switchtypes)
-			{
-				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", itt.second, itt.first.c_str());
+			for (const auto &type : _switchtypes) {
+				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", type.second, type.first.c_str());
 				content_part += szTmp;
 			}
 		}
@@ -7942,14 +7842,12 @@ namespace http {
 			std::map<std::string, std::string> _ltypes;
 			char szTmp[200];
 			int ii = 0;
-			while (guiLanguage[ii].szShort != NULL)
-			{
+			while (guiLanguage[ii].szShort != nullptr) {
 				_ltypes[guiLanguage[ii].szLong] = guiLanguage[ii].szShort;
 				ii++;
 			}
-			for (const auto & itt : _ltypes)
-			{
-				sprintf(szTmp, "<option value=\"%s\">%s</option>\n", itt.second.c_str(), itt.first.c_str());
+			for (const auto &type : _ltypes) {
+				sprintf(szTmp, "<option value=\"%s\">%s</option>\n", type.second.c_str(), type.first.c_str());
 				content_part += szTmp;
 			}
 		}
@@ -7983,10 +7881,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 								if (bIsActive)
 								{
@@ -8035,9 +7930,8 @@ namespace http {
 		int CWebServer::FindUser(const char* szUserName)
 		{
 			int iUser = 0;
-			for (const auto & itt : m_users)
-			{
-				if (itt.Username == szUserName)
+			for (const auto &m : m_users) {
+				if (m.Username == szUserName)
 					return iUser;
 				iUser++;
 			}
@@ -8046,12 +7940,8 @@ namespace http {
 
 		bool CWebServer::FindAdminUser()
 		{
-			for (const auto & itt : m_users)
-			{
-				if (itt.userrights == URIGHTS_ADMIN)
-					return true;
-			}
-			return false;
+			return std::any_of(m_users.begin(), m_users.end(),
+					   [](const _tWebUserPassword &user) { return user.userrights == URIGHTS_ADMIN; });
 		}
 
 		void CWebServer::PostSettings(WebEmSession& session, const request& req, reply& rep)
@@ -8164,16 +8054,16 @@ namespace http {
 			m_pWebEm->ClearLocalNetworks();
 			std::vector<std::string> strarray;
 			StringSplit(WebLocalNetworks, ";", strarray);
-			for (const auto & itt : strarray)
-				m_pWebEm->AddLocalNetworks(itt);
+			for (const auto &str : strarray)
+				m_pWebEm->AddLocalNetworks(str);
 			//add local hostname
 			m_pWebEm->AddLocalNetworks("");
 
 			m_pWebEm->ClearRemoteProxyIPs();
 			strarray.clear();
 			StringSplit(WebRemoteProxyIPs, ";", strarray);
-			for (const auto & itt : strarray)
-				m_pWebEm->AddRemoteProxyIPs(itt);
+			for (const auto &str : strarray)
+				m_pWebEm->AddRemoteProxyIPs(str);
 
 			if (session.username.empty())
 			{
@@ -8505,7 +8395,7 @@ namespace http {
 		{
 			std::vector<std::vector<std::string> > result;
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			struct tm tLastUpdate;
@@ -8521,9 +8411,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Mode1, Mode2 FROM Hardware");
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
+				for (const auto &sd : result) {
 					_tHardwareListInt tlist;
 					int ID = atoi(sd[0].c_str());
 					tlist.Name = sd[1];
@@ -8577,8 +8465,8 @@ namespace http {
 			std::string szQuery;
 			bool isAlpha = true;
 			const std::string orderBy = order.c_str();
-			for (size_t i = 0; i < orderBy.size(); i++) {
-				if (!isalpha(orderBy[i])) {
+			for (char i : orderBy) {
+				if (!isalpha(i)) {
 					isAlpha = false;
 				}
 			}
@@ -8661,10 +8549,7 @@ namespace http {
 
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							unsigned char favorite = atoi(sd[4].c_str());
 							//Check if we only want favorite devices
 							if ((bFetchFavorites) && (!favorite))
@@ -8812,10 +8697,8 @@ namespace http {
 								pID.c_str());
 							if (!result.empty())
 							{
-								std::vector<std::vector<std::string> >::const_iterator ittP;
-								for (ittP = result.begin(); ittP != result.end(); ++ittP)
-								{
-									_HiddenDevices.insert(ittP[0][0]);
+								for (const auto &r : result) {
+									_HiddenDevices.insert(r[0]);
 								}
 							}
 						}
@@ -8932,10 +8815,8 @@ namespace http {
 								pID.c_str());
 							if (!result.empty())
 							{
-								std::vector<std::vector<std::string> >::const_iterator ittP;
-								for (ittP = result.begin(); ittP != result.end(); ++ittP)
-								{
-									_HiddenDevices.insert(ittP[0][0]);
+								for (const auto &r : result) {
+									_HiddenDevices.insert(r[0]);
 								}
 							}
 						}
@@ -8972,10 +8853,7 @@ namespace http {
 
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					unsigned char favorite = atoi(sd[12].c_str());
 					if ((planID != "") && (planID != "0"))
 						favorite = 1;
@@ -9235,8 +9113,7 @@ namespace http {
 					root["result"][ii]["Protected"] = (iProtected != 0);
 
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
-					if (pHardware != NULL)
-					{
+					if (pHardware != nullptr) {
 						if (pHardware->HwdType == HTYPE_SolarEdgeAPI)
 						{
 							int seSensorTimeOut = 60 * 24 * 60;
@@ -9298,13 +9175,10 @@ namespace http {
 						}
 					}
 
-					if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_PythonPlugin))
-					{
+					if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_PythonPlugin)) {
 						// Device ID special formatting should not be applied to Python plugins
 						root["result"][ii]["ID"] = sd[1];
-					}
-					else
-					{
+					} else {
 						sprintf(szData, "%04X", (unsigned int)atoi(sd[1].c_str()));
 						if (
 							(dType == pTypeTEMP) ||
@@ -9604,7 +9478,7 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Media)
 						{
-							if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
+							if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
 								root["result"][ii]["TypeImg"] = "LogitechMediaServer";
 							else
 								root["result"][ii]["TypeImg"] = "Media";
@@ -10104,7 +9978,7 @@ namespace http {
 						if (strarray.size() == 2)
 						{
 							//get lowest value of today, and max rate
-							time_t now = mytime(NULL);
+							time_t now = mytime(nullptr);
 							struct tm ltime;
 							localtime_r(&now, &ltime);
 							char szDate[40];
@@ -10179,7 +10053,7 @@ namespace http {
 						}
 
 						//get value of today
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 						struct tm ltime;
 						localtime_r(&now, &ltime);
 						char szDate[40];
@@ -10287,7 +10161,7 @@ namespace http {
 						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						//get value of today
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 						struct tm ltime;
 						localtime_r(&now, &ltime);
 						char szDate[40];
@@ -10458,7 +10332,7 @@ namespace http {
 						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						//get value of today
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 						struct tm ltime;
 						localtime_r(&now, &ltime);
 						char szDate[40];
@@ -10650,7 +10524,7 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
 							//get value of today
-							time_t now = mytime(NULL);
+							time_t now = mytime(nullptr);
 							struct tm ltime;
 							localtime_r(&now, &ltime);
 							char szDate[40];
@@ -10693,7 +10567,7 @@ namespace http {
 						root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
 
 						//get lowest value of today
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 						struct tm ltime;
 						localtime_r(&now, &ltime);
 						char szDate[40];
@@ -10812,7 +10686,7 @@ namespace http {
 						{
 							double total = atof(strarray[1].c_str()) / 1000;
 
-							time_t now = mytime(NULL);
+							time_t now = mytime(nullptr);
 							struct tm ltime;
 							localtime_r(&now, &ltime);
 							char szDate[40];
@@ -11165,10 +11039,9 @@ namespace http {
 									std::vector<std::string> vmodes = pZWave->GetSupportedThermostatModes(ID);
 									int smode = 0;
 									char szTmp[200];
-									for (const auto & itt : vmodes)
-									{
+									for (const auto &mode : vmodes) {
 										//Value supported
-										sprintf(szTmp, "%d;%s;", smode, itt.c_str());
+										sprintf(szTmp, "%d;%s;", smode, mode.c_str());
 										modes += szTmp;
 										smode++;
 									}
@@ -11215,8 +11088,7 @@ namespace http {
 							if (!bAddedSupportedModes)
 							{
 								int smode = 0;
-								while (ZWave_Thermostat_Fan_Modes[smode] != NULL)
-								{
+								while (ZWave_Thermostat_Fan_Modes[smode] != nullptr) {
 									sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Fan_Modes[smode]);
 									modes += szTmp;
 									smode++;
@@ -11341,7 +11213,7 @@ namespace http {
 						case sTypeRego6XXCounter:
 						{
 							//get value of today
-							time_t now = mytime(NULL);
+							time_t now = mytime(nullptr);
 							struct tm ltime;
 							localtime_r(&now, &ltime);
 							char szDate[40];
@@ -11456,7 +11328,7 @@ namespace http {
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			Json::Value backupInfo;
 
 			backupInfo["type"] = "Web";
@@ -11479,7 +11351,7 @@ namespace http {
 					}
 				}
 				reply::set_download_file(&rep, backupInfo["location"].asString(), szAttachmentName);
-				backupInfo["duration"] = difftime(mytime(NULL),now);
+				backupInfo["duration"] = difftime(mytime(nullptr), now);
 				m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, Notification::STATUS_INFO, JSonToRawString(backupInfo));
 			}
 		}
@@ -11619,12 +11491,11 @@ namespace http {
 			//Sort by name
 			std::sort(temp_custom_light_icons.begin(), temp_custom_light_icons.end(), compareIconsByName);
 
-			for (const auto & itt : temp_custom_light_icons)
-			{
-				root["result"][ii]["idx"] = itt.idx;
-				root["result"][ii]["imageSrc"] = itt.RootFile;
-				root["result"][ii]["text"] = itt.Title;
-				root["result"][ii]["description"] = itt.Description;
+			for (const auto &icon : temp_custom_light_icons) {
+				root["result"][ii]["idx"] = icon.idx;
+				root["result"][ii]["imageSrc"] = icon.RootFile;
+				root["result"][ii]["text"] = icon.Title;
+				root["result"][ii]["description"] = icon.Description;
 				ii++;
 			}
 			root["status"] = "OK";
@@ -11643,10 +11514,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					std::string Name = sd[1];
 					bool bIsHidden = (Name[0] == '$');
 
@@ -11683,9 +11551,7 @@ namespace http {
 			if (result.empty())
 				return;
 
-			for (const auto & itt : result)
-			{
-				std::vector<std::string> sd = itt;
+			for (const auto &sd : result) {
 				std::string Key = sd[0];
 				int nValue = atoi(sd[1].c_str());
 				std::string sValue = sd[2];
@@ -11732,10 +11598,7 @@ namespace http {
 			if (!result2.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result2)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result2) {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					std::string ImageURL = "images/floorplans/plan?idx=" + sd[0];
@@ -11778,7 +11641,7 @@ namespace http {
 				sstr >> LastUpdate;
 			}
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			struct tm tLastUpdate;
@@ -11795,10 +11658,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					std::string sName = sd[1];
 					if ((bDisplayHidden == false) && (sName[0] == '$'))
 						continue;
@@ -11893,10 +11753,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
 						continue;
@@ -11931,8 +11788,7 @@ namespace http {
 
 					//Special case for openzwave (status for nodes queried)
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
-					if (pHardware != NULL)
-					{
+					if (pHardware != nullptr) {
 						if (
 							(pHardware->HwdType == HTYPE_RFXtrx315) ||
 							(pHardware->HwdType == HTYPE_RFXtrx433) ||
@@ -12037,10 +11893,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
 					root["result"][ii]["Username"] = base64_decode(sd[2]);
@@ -12074,10 +11927,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
 					root["result"][ii]["Name"] = sd[2];
@@ -12148,10 +11998,7 @@ namespace http {
 				//Get Activator device names
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
-				for (const auto & ittAct : arrayActivators)
-				{
-					std::string sCodeCmd = ittAct;
-
+				for (const auto &sCodeCmd : arrayActivators) {
 					std::vector<std::string> arrayCode;
 					StringSplit(sCodeCmd, ":", arrayCode);
 
@@ -12225,10 +12072,7 @@ namespace http {
 				//Get Activator device names
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
-				for (const auto & ittAct : arrayActivators)
-				{
-					std::string sCodeCmd = ittAct;
-
+				for (const auto &sCodeCmd : arrayActivators) {
 					std::vector<std::string> arrayCode;
 					StringSplit(sCodeCmd, ":", arrayCode);
 
@@ -12290,10 +12134,7 @@ namespace http {
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
 				std::string newActivation = "";
-				for (const auto & ittAct : arrayActivators)
-				{
-					std::string sCodeCmd = ittAct;
-
+				for (const auto &sCodeCmd : arrayActivators) {
 					std::vector<std::string> arrayCode;
 					StringSplit(sCodeCmd, ":", arrayCode);
 
@@ -12359,9 +12200,8 @@ namespace http {
 			bool bUseDirectPath = false;
 			std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
 			int ii = 0;
-			for (const auto & itt : serialports)
-			{
-				root["result"][ii]["name"] = itt;
+			for (const auto &port : serialports) {
+				root["result"][ii]["name"] = port;
 				root["result"][ii]["value"] = ii;
 				ii++;
 			}
@@ -12376,9 +12216,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
+				for (const auto &sd : result) {
 					root["result"][ii]["name"] = sd[1];
 					root["result"][ii]["value"] = sd[0];
 					ii++;
@@ -12426,17 +12264,15 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetCustomIconSet";
 			int ii = 0;
-			for (const auto & itt : m_custom_light_icons)
-			{
-				if (itt.idx >= 100)
-				{
-					std::string IconFile16 = "images/" + itt.RootFile + ".png";
-					std::string IconFile48On = "images/" + itt.RootFile + "48_On.png";
-					std::string IconFile48Off = "images/" + itt.RootFile + "48_Off.png";
+			for (const auto &m : m_custom_light_icons) {
+				if (m.idx >= 100) {
+					std::string IconFile16 = "images/" + m.RootFile + ".png";
+					std::string IconFile48On = "images/" + m.RootFile + "48_On.png";
+					std::string IconFile48Off = "images/" + m.RootFile + "48_Off.png";
 
-					root["result"][ii]["idx"] = itt.idx - 100;
-					root["result"][ii]["Title"] = itt.Title;
-					root["result"][ii]["Description"] = itt.Description;
+					root["result"][ii]["idx"] = m.idx - 100;
+					root["result"][ii]["Title"] = m.Title;
+					root["result"][ii]["Description"] = m.Description;
 					root["result"][ii]["IconFile16"] = IconFile16;
 					root["result"][ii]["IconFile48On"] = IconFile48On;
 					root["result"][ii]["IconFile48Off"] = IconFile48Off;
@@ -12463,13 +12299,11 @@ namespace http {
 			m_sql.safe_query("DELETE FROM CustomImages WHERE (ID == %d)", idx);
 
 			//Delete icons file from disk
-			for (const auto & itt : m_custom_light_icons)
-			{
-				if (itt.idx == idx + 100)
-				{
-					std::string IconFile16 = szWWWFolder + "/images/" + itt.RootFile + ".png";
-					std::string IconFile48On = szWWWFolder + "/images/" + itt.RootFile + "48_On.png";
-					std::string IconFile48Off = szWWWFolder + "/images/" + itt.RootFile + "48_Off.png";
+			for (const auto &m : m_custom_light_icons) {
+				if (m.idx == idx + 100) {
+					std::string IconFile16 = szWWWFolder + "/images/" + m.RootFile + ".png";
+					std::string IconFile48On = szWWWFolder + "/images/" + m.RootFile + "48_On.png";
+					std::string IconFile48Off = szWWWFolder + "/images/" + m.RootFile + "48_Off.png";
 					std::remove(IconFile16.c_str());
 					std::remove(IconFile48On.c_str());
 					std::remove(IconFile48Off.c_str());
@@ -12673,7 +12507,7 @@ namespace http {
 			else
 			{
 				//Update
-				time_t now = mytime(NULL);
+				time_t now = mytime(nullptr);
 				struct tm ltime;
 				localtime_r(&now, &ltime);
 				m_sql.safe_query("UPDATE MobileDevices SET Active=%d, SenderID='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (UUID == '%q')",
@@ -12778,10 +12612,7 @@ namespace http {
 				std::sort(std::begin(result), std::end(result), [](std::vector<std::string> a, std::vector<std::string> b) {return a[1] < b[1]; });
 
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					ii++;
@@ -12806,7 +12637,7 @@ namespace http {
 
 			//Check which device is newer
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			struct tm LastUpdateTime_A;
@@ -12857,10 +12688,9 @@ namespace http {
 			int ii = 0;
 
 			//Add known notification systems
-			for (const auto & ittNotifiers : m_notifications.m_notifiers)
-			{
-				root["notifiers"][ii]["name"] = ittNotifiers.first;
-				root["notifiers"][ii]["description"] = ittNotifiers.first;
+			for (const auto &m : m_notifications.m_notifiers) {
+				root["notifiers"][ii]["name"] = m.first;
+				root["notifiers"][ii]["description"] = m.first;
 				ii++;
 			}
 
@@ -12873,18 +12703,17 @@ namespace http {
 			if (notifications.size() > 0)
 			{
 				ii = 0;
-				for (const auto & itt : notifications)
-				{
-					root["result"][ii]["idx"] = itt.ID;
-					std::string sParams = itt.Params;
+				for (const auto &n : notifications) {
+					root["result"][ii]["idx"] = n.ID;
+					std::string sParams = n.Params;
 					if (sParams.empty()) {
 						sParams = "S";
 					}
 					root["result"][ii]["Params"] = sParams;
-					root["result"][ii]["Priority"] = itt.Priority;
-					root["result"][ii]["SendAlways"] = itt.SendAlways;
-					root["result"][ii]["CustomMessage"] = itt.CustomMessage;
-					root["result"][ii]["ActiveSystems"] = itt.ActiveSystems;
+					root["result"][ii]["Priority"] = n.Priority;
+					root["result"][ii]["SendAlways"] = n.SendAlways;
+					root["result"][ii]["CustomMessage"] = n.CustomMessage;
+					root["result"][ii]["ActiveSystems"] = n.ActiveSystems;
 					ii++;
 				}
 			}
@@ -12903,9 +12732,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
+				for (const auto &sd : result) {
 					root["result"][ii]["DeviceRowIdx"] = sd[0];
 					ii++;
 				}
@@ -13276,9 +13103,7 @@ namespace http {
 			root["cloudenabled"] = false;
 #endif
 
-			for (const auto & itt : result)
-			{
-				std::vector<std::string> sd = itt;
+			for (const auto &sd : result) {
 				std::string Key = sd[0];
 				int nValue = atoi(sd[1].c_str());
 				std::string sValue = sd[2];
@@ -13694,10 +13519,7 @@ namespace http {
 				}
 
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					std::string lidx = sd.at(0);
 					int nValue = atoi(sd.at(1).c_str());
 					std::string sValue = sd.at(2);
@@ -13811,10 +13633,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Data"] = sd[1];
 					root["result"][ii]["User"] = sd[2];
@@ -13840,10 +13659,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					root["result"][ii]["idx"] = sd[0];
 					int nValue = atoi(sd[1].c_str());
 					root["result"][ii]["Data"] = (nValue == 0) ? "Off" : "On";
@@ -13872,7 +13688,7 @@ namespace http {
 			if (srange == "")
 				return;
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 
@@ -13995,10 +13811,7 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[4].substr(0, 16);
 							if (
 								(dType == pTypeRego6XXTemp) ||
@@ -14078,10 +13891,7 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["v"] = sd[0];
 							ii++;
@@ -14096,10 +13906,7 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["v"] = sd[0];
 							ii++;
@@ -14133,10 +13940,7 @@ namespace http {
 
 							int lastDay = 0;
 
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								if (nMeterType == 0)
 								{
 									long long actUsage1 = std::strtoll(sd[0].c_str(), nullptr, 10);
@@ -14275,10 +14079,7 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["co2"] = sd[0];
 								ii++;
@@ -14294,10 +14095,7 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["v"] = sd[0];
 								ii++;
@@ -14328,10 +14126,7 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								float fValue = float(atof(sd[0].c_str())) / vdiv;
 								if (metertype == 1)
@@ -14361,10 +14156,7 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["v"] = sd[0];
 								ii++;
@@ -14380,10 +14172,7 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["lux"] = sd[0];
 								ii++;
@@ -14399,10 +14188,7 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f);
 								root["result"][ii]["v"] = szTmp;
@@ -14419,10 +14205,7 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["u"] = atof(sd[0].c_str()) / 10.0f;
 								ii++;
@@ -14449,10 +14232,7 @@ namespace http {
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
 								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
@@ -14523,10 +14303,7 @@ namespace http {
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
 								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
@@ -14627,8 +14404,7 @@ namespace http {
 						if (!result.empty())
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt!=result.end(); ++itt)
-							{
+							for (itt = result.begin(); itt != result.end(); ++itt) {
 								std::vector<std::string> sd = *itt;
 
 								//If method == 1, provide BOTH hourly and instant usage for combined graph
@@ -14760,10 +14536,7 @@ namespace http {
 
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								if (method == 0)
 								{
 									//bars / hour
@@ -14934,10 +14707,7 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["uvi"] = sd[0];
 							ii++;
@@ -14958,9 +14728,7 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
+						for (const auto &sd : result) {
 							float ActTotal = static_cast<float>(atof(sd[0].c_str()));
 							int Hour = atoi(sd[1].substr(11, 2).c_str());
 							if (Hour != LastHour)
@@ -15004,10 +14772,7 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[3].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
 
@@ -15053,9 +14818,8 @@ namespace http {
 							_directions[idir] = 0;
 						for (ii = 0; ii < 17; ii++)
 						{
-							for (int jj = 0; jj < 8; jj++)
-							{
-								wdirtabletemp[ii][jj] = 0;
+							for (int &jj : wdirtabletemp[ii]) {
+								jj = 0;
 							}
 						}
 
@@ -15120,10 +14884,7 @@ namespace http {
 							szLegendLabels[6] = "&gt; 10" + m_sql.m_windsign;
 						}
 
-
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
+						for (const auto &sd : result) {
 							float fdirection = static_cast<float>(atof(sd[0].c_str()));
 							if (fdirection >= 360)
 								fdirection = 0;
@@ -15263,10 +15024,7 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							double mmval = atof(sd[0].c_str());
 							mmval *= AddjMulti;
@@ -15336,9 +15094,7 @@ namespace http {
 						if (!result.empty())
 						{
 							bool bHaveDeliverd = false;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 								std::string szValueUsage1 = sd[0];
 								std::string szValueDeliv1 = sd[1];
@@ -15376,10 +15132,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								std::string szValue = sd[0];
 								switch (metertype)
@@ -15586,10 +15339,7 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[7].substr(0, 16);
 
 							if (
@@ -15762,10 +15512,7 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["resultprev"][iPrev]["d"] = sd[7].substr(0, 16);
 
 							if (
@@ -15854,10 +15601,7 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[3].substr(0, 16);
 							root["result"][ii]["v_min"] = sd[0];
 							root["result"][ii]["v_max"] = sd[1];
@@ -15888,10 +15632,7 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							root["result"][ii]["v_max"] = sd[1];
 							root["result"][ii]["v_min"] = sd[0];
@@ -15919,10 +15660,7 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["uvi"] = sd[0];
 							ii++;
@@ -15945,10 +15683,7 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 							root["resultprev"][iPrev]["uvi"] = sd[0];
 							iPrev++;
@@ -15963,10 +15698,7 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							double mmval = atof(sd[0].c_str());
 							mmval *= AddjMulti;
@@ -16017,10 +15749,7 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["resultprev"][iPrev]["d"] = sd[2].substr(0, 16);
 							double mmval = atof(sd[0].c_str());
 							mmval *= AddjMulti;
@@ -16062,10 +15791,7 @@ namespace http {
 						if (!result.empty())
 						{
 							bool bHaveDeliverd = false;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 
 								double counter_1 = std::stod(sd[5]);
@@ -16148,10 +15874,7 @@ namespace http {
 						{
 							bool bHaveDeliverd = false;
 							iPrev = 0;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["resultprev"][iPrev]["d"] = sd[4].substr(0, 16);
 
 								float fUsage_1 = std::stof(sd[0]);
@@ -16185,10 +15908,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 								root["result"][ii]["co2_min"] = sd[0];
 								root["result"][ii]["co2_max"] = sd[1];
@@ -16200,10 +15920,7 @@ namespace http {
 						if (!result.empty())
 						{
 							iPrev = 0;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 								root["resultprev"][iPrev]["co2_max"] = sd[0];
 								iPrev++;
@@ -16221,10 +15938,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								root["result"][ii]["v_min"] = sd[0];
 								root["result"][ii]["v_max"] = sd[1];
@@ -16257,10 +15971,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								float fValue1 = float(atof(sd[0].c_str())) / vdiv;
 								float fValue2 = float(atof(sd[1].c_str())) / vdiv;
 								float fValue3 = float(atof(sd[2].c_str())) / vdiv;
@@ -16320,10 +16031,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 								root["result"][ii]["lux_min"] = sd[0];
 								root["result"][ii]["lux_max"] = sd[1];
@@ -16341,10 +16049,7 @@ namespace http {
 							"SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f);
 								root["result"][ii]["v_min"] = szTmp;
@@ -16363,10 +16068,7 @@ namespace http {
 							"SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								root["result"][ii]["u_min"] = atof(sd[0].c_str()) / 10.0f;
 								root["result"][ii]["u_max"] = atof(sd[1].c_str()) / 10.0f;
@@ -16390,10 +16092,7 @@ namespace http {
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
 								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
@@ -16476,10 +16175,7 @@ namespace http {
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
 								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
@@ -16556,7 +16252,7 @@ namespace http {
 						}
 						else if (dType == pTypeENERGY)
 						{
-							size_t spos = sValue.find(";");
+							size_t spos = sValue.find(';');
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
@@ -16566,7 +16262,7 @@ namespace http {
 						}
 						else if ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
 						{
-							size_t spos = sValue.find(";");
+							size_t spos = sValue.find(';');
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
@@ -16637,10 +16333,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 
 								std::string szValue = sd[0];
@@ -16695,10 +16388,7 @@ namespace http {
 						if (!result.empty())
 						{
 							iPrev = 0;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 
 								std::string szValue = sd[0];
@@ -16731,7 +16421,7 @@ namespace http {
 					if ((sactmonth != "") || (sactyear != ""))
 					{
 						struct tm loctime;
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 						localtime_r(&now, &loctime);
 						if ((sactmonth != "") && (sactyear != ""))
 						{
@@ -17031,10 +16721,7 @@ namespace http {
 						dbasetable.c_str(), idx, szDateStart, szDateEnd);
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[5].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
 
@@ -17102,10 +16789,7 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["resultprev"][iPrev]["d"] = sd[5].substr(0, 16);
 							root["resultprev"][iPrev]["di"] = sd[0];
 
@@ -17210,10 +16894,7 @@ namespace http {
 						int ii = 0;
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[4];//.substr(0,16);
 								if (sendTemp)
 								{
@@ -17283,10 +16964,7 @@ namespace http {
 						int ii = 0;
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 								if (sendTemp)
 								{
@@ -17442,10 +17120,7 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["uvi"] = sd[0];
 							ii++;
@@ -17475,10 +17150,7 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							root["result"][ii]["mm"] = sd[0];
 							ii++;
@@ -17537,10 +17209,7 @@ namespace http {
 						if (!result.empty())
 						{
 							bool bHaveDeliverd = false;
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 
 								std::string szUsage1 = sd[0];
@@ -17570,10 +17239,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
-							{
-								std::vector<std::string> sd = itt;
-
+							for (const auto &sd : result) {
 								std::string szValue = sd[0];
 								switch (metertype)
 								{
@@ -17699,10 +17365,7 @@ namespace http {
 						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
-						{
-							std::vector<std::string> sd = itt;
-
+						for (const auto &sd : result) {
 							root["result"][ii]["d"] = sd[5].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
 

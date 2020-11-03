@@ -16,21 +16,16 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-
-KMTronicBase::KMTronicBase(void)
+KMTronicBase::KMTronicBase()
 {
 	m_bufferpos = 0;
 	m_TotRelais = 0;
-	for (int ii = 0; ii < Max_KMTronic_Relais; ii++)
-	{
-		m_bRelaisStatus[ii] = false;
+	for (bool &m_bRelaisStatu : m_bRelaisStatus) {
+		m_bRelaisStatu = false;
 	}
 }
 
-
-KMTronicBase::~KMTronicBase(void)
-{
-}
+KMTronicBase::~KMTronicBase() = default;
 
 void KMTronicBase::ParseData(const unsigned char *pData, int Len)
 {

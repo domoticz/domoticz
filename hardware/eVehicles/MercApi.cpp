@@ -89,14 +89,12 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	m_refreshtoken = result[0][1].c_str();
 }
 
-CMercApi::~CMercApi()
-{
-}
+CMercApi::~CMercApi() = default;
 
 bool CMercApi::Login()
 {
 	bool bSuccess = false;
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	if (m_refreshtoken == "" || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED)
 	{
@@ -129,7 +127,7 @@ bool CMercApi::Login()
 bool CMercApi::RefreshLogin()
 {
 	bool bSuccess = false;
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	_log.Debug(DEBUG_NORM, "MercApi: Refreshing login credentials.");
 	m_authenticating = true;
@@ -833,8 +831,8 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 0);
 
 		// Debug response
-		for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
-			_ssResponseHeaderString << _vResponseHeaders[i];
+		for (auto &_vResponseHeader : _vResponseHeaders)
+			_ssResponseHeaderString << _vResponseHeader;
 		_log.Debug(DEBUG_RECEIVED, "MercApi: Performed request to Api: (%d)\n%s\nResponse headers: %s", _iHttpCode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 
 		switch(_iHttpCode)

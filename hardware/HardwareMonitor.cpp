@@ -72,10 +72,7 @@ CHardwareMonitor::CHardwareMonitor(const int ID)
 #endif
 }
 
-CHardwareMonitor::~CHardwareMonitor(void)
-{
-	StopHardware();
-}
+CHardwareMonitor::~CHardwareMonitor() { StopHardware(); }
 
 bool CHardwareMonitor::StartHardware()
 {
@@ -149,7 +146,7 @@ void CHardwareMonitor::Do_Work()
 			msec_counter = 0;
 			sec_counter++;
 			if (sec_counter % 12 == 0)
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 
 			if (sec_counter % POLL_INTERVAL_TEMP == 0)
 			{
@@ -224,7 +221,7 @@ void CHardwareMonitor::GetInternalTemperature()
 	if (tmpline.find("temp=") == std::string::npos)
 		return;
 	tmpline = tmpline.substr(5);
-	size_t pos = tmpline.find("'");
+	size_t pos = tmpline.find('\'');
 	if (pos != std::string::npos)
 	{
 		tmpline = tmpline.substr(0, pos);
@@ -344,7 +341,7 @@ void CHardwareMonitor::GetInternalVoltage()
 	if (tmpline.find("volt=") == std::string::npos)
 		return;
 	tmpline = tmpline.substr(5);
-	size_t pos = tmpline.find("'");
+	size_t pos = tmpline.find('\'');
 	if (pos != std::string::npos)
 	{
 		tmpline = tmpline.substr(0, pos);
@@ -368,7 +365,7 @@ void CHardwareMonitor::GetInternalCurrent()
 	if (tmpline.find("curr=") == std::string::npos)
 		return;
 	tmpline = tmpline.substr(5);
-	size_t pos = tmpline.find("'");
+	size_t pos = tmpline.find('\'');
 	if (pos != std::string::npos)
 	{
 		tmpline = tmpline.substr(0, pos);
@@ -711,7 +708,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	double CHardwareMonitor::time_so_far()
 	{
 		struct timeval tp;
-		if (gettimeofday(&tp, (struct timezone *) NULL) == -1)
+		if (gettimeofday(&tp, (struct timezone *)nullptr) == -1)
 			return 0;
 		return ((double) (tp.tv_sec)) +
 			(((double) tp.tv_usec) * 0.000001 );
@@ -892,18 +889,16 @@ void CHardwareMonitor::FetchUnixCPU()
 #else	// Linux
 		FILE *fIn = fopen("/proc/stat", "r");
 #endif
-		if (fIn!=NULL)
-		{
+		if (fIn != nullptr) {
 			bool bFirstLine=true;
-			while( fgets(szTmp, sizeof(szTmp), fIn) != NULL )
-			{
+			while (fgets(szTmp, sizeof(szTmp), fIn) != nullptr) {
 				int ret=sscanf(szTmp, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
 				if ((bFirstLine)&&(ret==4)) {
 					bFirstLine=false;
 					m_lastloadcpu=actload1+actload2+actload3;
 				}
 				char *cPos=strstr(cname,"cpu");
-				if (cPos==NULL)
+				if (cPos == nullptr)
 					break;
 				totcpu++;
 			}
@@ -942,8 +937,7 @@ void CHardwareMonitor::FetchUnixCPU()
 #else	// Linux
 		FILE *fIn = fopen("/proc/stat", "r");
 #endif
-		if (fIn!=NULL)
-		{
+		if (fIn != nullptr) {
 			int ret=fscanf(fIn, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
 			fclose(fIn);
 			if (ret==4)
@@ -990,7 +984,7 @@ void CHardwareMonitor::FetchUnixDisk()
 					}
 				}
 #if defined(__linux__) || defined(__FreeBSD__) || defined (__OpenBSD__)
-				if (strstr(dname, "/dev") != NULL)
+				if (strstr(dname, "/dev") != nullptr)
 #elif defined(__CYGWIN32__)
 				if (strstr(smountpoint, "/cygdrive/") != NULL)
 #endif
@@ -1041,8 +1035,8 @@ bool CHardwareMonitor::IsWSL()
 	if (num_read > 0)
 	{
 		buf[num_read] = 0;
-		is_wsl |= (strstr(buf, "Microsoft") != NULL);
-		is_wsl |= (strstr(buf, "WSL") != NULL);
+		is_wsl |= (strstr(buf, "Microsoft") != nullptr);
+		is_wsl |= (strstr(buf, "WSL") != nullptr);
 	}
 
 	status_fd = open("/proc/version", O_RDONLY);
@@ -1054,8 +1048,8 @@ bool CHardwareMonitor::IsWSL()
 	if (num_read > 0)
 	{
 		buf[num_read] = 0;
-		is_wsl |= (strstr(buf, "Microsoft") != NULL);
-		is_wsl |= (strstr(buf, "WSL") != NULL);
+		is_wsl |= (strstr(buf, "Microsoft") != nullptr);
+		is_wsl |= (strstr(buf, "WSL") != nullptr);
 	}
 #endif
 
@@ -1151,39 +1145,43 @@ void CHardwareMonitor::CheckForOnboardSensors()
 		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
 		{
 			Log(LOG_STATUS, "System: Cubieboard/Cubietruck");
-			szInternalTemperatureCommand = "cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			szInternalTemperatureCommand
+				= R"(cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf ("temp=%0.2f\n",$1/1000); }')";
 			bHasInternalTemperature = true;
 		}
 		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
 		{
 			Log(LOG_STATUS,"System: ODroid");
-			szInternalTemperatureCommand = "cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ if ($1 < 100) printf(\"temp=%d\\n\",$1); else printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			szInternalTemperatureCommand
+				= R"(cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ if ($1 < 100) printf("temp=%d\n",$1); else printf ("temp=%0.2f\n",$1/1000); }')";
 			bHasInternalTemperature = true;
 		}
 	}
 	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
 	{
 		Debug(DEBUG_NORM, "Internal voltage sensor detected");
-		szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
+		szInternalVoltageCommand = R"(cat /sys/class/power_supply/ac/voltage_now | awk '{ printf ("volt=%0.2f\n",$1/1000000); }')";
 		bHasInternalVoltage = true;
 	}
 	if (file_exist("/sys/class/power_supply/ac/current_now"))
 	{
 		Debug(DEBUG_NORM, "Internal current sensor detected");
-		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
+		szInternalCurrentCommand = R"(cat /sys/class/power_supply/ac/current_now | awk '{ printf ("curr=%0.2f\n",$1/1000000); }')";
 		bHasInternalCurrent = true;
 	}
 	//New Armbian Kernal 4.14+
 	if (file_exist("/sys/class/power_supply/axp20x-ac/voltage_now"))
 	{
 		Debug(DEBUG_NORM, "Internal voltage sensor detected");
-		szInternalVoltageCommand = "cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
+		szInternalVoltageCommand
+			= R"(cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf ("volt=%0.2f\n",$1/1000000); }')";
 		bHasInternalVoltage = true;
 	}
 	if (file_exist("/sys/class/power_supply/axp20x-ac/current_now"))
 	{
 		Debug(DEBUG_NORM, "Internal current sensor detected");
-		szInternalCurrentCommand = "cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
+		szInternalCurrentCommand
+			= R"(cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf ("curr=%0.2f\n",$1/1000000); }')";
 		bHasInternalCurrent = true;
 	}
 #endif

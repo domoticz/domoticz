@@ -33,9 +33,7 @@ Arilux::Arilux(const int ID)
   m_color.ww = 0xff;
 }
 
-Arilux::~Arilux(void)
-{
-}
+Arilux::~Arilux() = default;
 
 bool Arilux::StartHardware()
 {
@@ -74,7 +72,7 @@ void Arilux::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped...");
@@ -104,7 +102,7 @@ void Arilux::InsertUpdateSwitch(const std::string lightName, const int subType, 
 		ycmd.dunit = 0;
 		ycmd.value = 0;
 		ycmd.command = Color_LedOff;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1);
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', switchType=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), STYPE_Dimmer, m_HwdID, szDeviceID);
 	}
 }

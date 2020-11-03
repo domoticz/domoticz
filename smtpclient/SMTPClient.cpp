@@ -40,10 +40,7 @@ SMTPClient::SMTPClient()
 	m_Port = 25;
 }
 
-SMTPClient::~SMTPClient()
-{
-
-}
+SMTPClient::~SMTPClient() = default;
 
 void SMTPClient::SetFrom(const std::string& From)
 {
@@ -118,8 +115,7 @@ bool SMTPClient::SendEmail()
 	smtp_upload_status smtp_ctx;
 	smtp_ctx.bytes_read = 0;
 
-	slist1 = NULL;
-
+	slist1 = nullptr;
 
 	std::vector<std::string>::const_iterator itt;
 	for (itt = m_Recipients.begin(); itt != m_Recipients.end(); ++itt)
@@ -166,8 +162,7 @@ bool SMTPClient::SendEmail()
 		curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, slist1);
 
 		smtp_ctx.pDataBytes = new char[rmessage.size()];
-		if (smtp_ctx.pDataBytes == NULL)
-		{
+		if (smtp_ctx.pDataBytes == nullptr) {
 			_log.Log(LOG_ERROR, "SMTP Mailer: Out of Memory!");
 
 			curl_easy_cleanup(curl);

@@ -126,9 +126,7 @@ m_Agreement(Agreement)
 	m_retry_counter = 0;
 }
 
-CToonThermostat::~CToonThermostat(void)
-{
-}
+CToonThermostat::~CToonThermostat() = default;
 
 void CToonThermostat::Init()
 {
@@ -661,7 +659,7 @@ bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
 	if (root["powerUsage"].empty())
 		return false;
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	unsigned long powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
 	unsigned long powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
@@ -744,7 +742,7 @@ bool CToonThermostat::ParseGasUsage(const Json::Value &root)
 {
 	if (root["gasUsage"].empty())
 		return false;
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	m_p1gas.gasusage = (unsigned long)(root["gasUsage"]["meterReading"].asFloat());
 

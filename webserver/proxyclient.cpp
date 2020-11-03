@@ -31,7 +31,7 @@ namespace http {
 
 		CProxyClient::CProxyClient() : ASyncTCP(PROXY_SECURE)
 		{
-			m_pDomServ = NULL;
+			m_pDomServ = nullptr;
 			/* use default value for tcp timeouts */
 			SetTimeout(PROXY_TIMEOUT);
 		}
@@ -108,8 +108,8 @@ namespace http {
 		{
 			// generate random websocket key
 			unsigned char random[16];
-			for (int i = 0; i < sizeof(random); i++) {
-				random[i] = rand();
+			for (unsigned char &i : random) {
+				i = rand();
 			}
 			websocket_key = base64_encode(random, sizeof(random));
 			std::string request = "GET /proxycereal HTTP/1.1\r\nHost: my.domoticz.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nOrigin: Domoticz\r\nSec-Websocket-Version: 13\r\nSec-Websocket-Protocol: MyDomoticz\r\nSec-Websocket-Key: " + websocket_key + "\r\n\r\n";
@@ -153,10 +153,10 @@ namespace http {
 		std::string CProxyClient::GetResponseHeaders(const http::server::reply &reply_)
 		{
 			std::string result = "";
-			for (std::size_t i = 0; i < reply_.headers.size(); ++i) {
-				result += reply_.headers[i].name;
+			for (const auto &header : reply_.headers) {
+				result += header.name;
 				result += ": ";
-				result += reply_.headers[i].value;
+				result += header.value;
 				result += "\r\n";
 			}
 			return result;
@@ -169,7 +169,7 @@ namespace http {
 				return;
 			}
 			// response variables
-			boost::asio::mutable_buffers_1 _buf(NULL, 0);
+			boost::asio::mutable_buffers_1 _buf(nullptr, 0);
 			/// The reply to be sent back to the client.
 			http::server::reply reply_;
 
@@ -452,9 +452,9 @@ namespace http {
 		{
 			_log.Log(LOG_NORM, "Proxy: disconnected");
 			// stop and destroy all open websocket handlers
-			for (std::map<unsigned long long, CWebsocketHandler *>::iterator it = websocket_handlers.begin(); it != websocket_handlers.end(); ++it) {
-				it->second->Stop();
-				delete it->second;
+			for (auto &websocket_handler : websocket_handlers) {
+				websocket_handler.second->Stop();
+				delete websocket_handler.second;
 			}
 			websocket_handlers.clear();
 		}
@@ -469,9 +469,7 @@ namespace http {
 			m_pDomServ = domserv;
 		}
 
-		CProxyClient::~CProxyClient()
-		{
-		}
+		CProxyClient::~CProxyClient() = default;
 
 		void CProxyClient::Connect(http::server::cWebem *webEm)
 		{
@@ -491,10 +489,7 @@ namespace http {
 			return (_apikey != "" && _password != "" && _allowed_subsystems != 0);
 		}
 
-
-		CProxyManager::CProxyManager()
-		{
-		}
+		CProxyManager::CProxyManager() = default;
 
 		CProxyManager::~CProxyManager()
 		{
@@ -594,8 +589,8 @@ namespace http {
 
 		void CProxySharedData::AddTCPClient(DomoticzTCP *client)
 		{
-			for (std::vector<DomoticzTCP *>::iterator it = TCPClients.begin(); it != TCPClients.end(); ++it) {
-				if ((*it) == client) {
+			for (auto &TCPClient : TCPClients) {
+				if (TCPClient == client) {
 					return;
 				}
 			}
@@ -620,37 +615,37 @@ namespace http {
 
 		DomoticzTCP *CProxySharedData::findSlaveConnection(const std::string &token)
 		{
-			for (unsigned int i = 0; i < TCPClients.size(); i++) {
-				if (TCPClients[i]->CompareToken(token)) {
-					return TCPClients[i];
+			for (auto &TCPClient : TCPClients) {
+				if (TCPClient->CompareToken(token)) {
+					return TCPClient;
 				}
 			}
-			return NULL;
+			return nullptr;
 		}
 
 		DomoticzTCP *CProxySharedData::findSlaveById(const std::string &instanceid)
 		{
-			for (unsigned int i = 0; i < TCPClients.size(); i++) {
-				if (TCPClients[i]->CompareId(instanceid)) {
-					return TCPClients[i];
+			for (auto &TCPClient : TCPClients) {
+				if (TCPClient->CompareId(instanceid)) {
+					return TCPClient;
 				}
 			}
-			return NULL;
+			return nullptr;
 		}
 
 		void CProxySharedData::RestartTCPClients()
 		{
-			for (unsigned int i = 0; i < TCPClients.size(); i++) {
-				if (!TCPClients[i]->isConnected()) {
-					TCPClients[i]->ConnectInternalProxy();
+			for (auto &TCPClient : TCPClients) {
+				if (!TCPClient->isConnected()) {
+					TCPClient->ConnectInternalProxy();
 				}
 			}
 		}
 
 		void CProxySharedData::StopTCPClients()
 		{
-			for (unsigned int i = 0; i < TCPClients.size(); i++) {
-				TCPClients[i]->DisconnectProxy();
+			for (auto &TCPClient : TCPClients) {
+				TCPClient->DisconnectProxy();
 			}
 		}
 

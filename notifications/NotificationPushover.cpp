@@ -11,9 +11,7 @@ CNotificationPushover::CNotificationPushover() : CNotificationBase(std::string("
 	SetupConfig(std::string("PushoverUser"), _apiuser);
 }
 
-CNotificationPushover::~CNotificationPushover()
-{
-}
+CNotificationPushover::~CNotificationPushover() = default;
 
 bool CNotificationPushover::SendMessageImplementation(
 	const uint64_t Idx,
@@ -36,7 +34,7 @@ bool CNotificationPushover::SendMessageImplementation(
 	size_t posDevice = ExtraData.find("|Device=");
 	if (posDevice != std::string::npos) {
 		posDevice += 8;
-		std::string sDevice = ExtraData.substr(posDevice, ExtraData.find("|", posDevice) - posDevice);
+		std::string sDevice = ExtraData.substr(posDevice, ExtraData.find('|', posDevice) - posDevice);
 		if (sDevice != "") {
 			sPostData << "&device=" << sDevice;
 		}
@@ -76,9 +74,8 @@ bool CNotificationPushover::SendMessageImplementation(
 		int iStatus = root["status"].asInt();
 		if (iStatus != 0)
 			return true;
-		for (const auto& itt : root["errors"])
-		{
-			_log.Log(LOG_ERROR, "Pushover: Error, %s", itt.asString().c_str());
+		for (const auto &error : root["errors"]) {
+			_log.Log(LOG_ERROR, "Pushover: Error, %s", error.asString().c_str());
 		}
 	}
 	_log.Log(LOG_ERROR, "Pushover: Invalid response received!");

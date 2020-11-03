@@ -51,9 +51,7 @@ std::string SolarMaxTCP::MakeRequestString()
 	return std::string(szSendRequest);
 }
 
-SolarMaxTCP::~SolarMaxTCP(void)
-{
-}
+SolarMaxTCP::~SolarMaxTCP() = default;
 
 bool SolarMaxTCP::StartHardware()
 {
@@ -77,12 +75,9 @@ bool SolarMaxTCP::StartHardware()
 	{
 		// change Hostname in serveraddr
 		hostent *he = gethostbyname(m_szIPAddress.c_str());
-		if (he == NULL)
-		{
+		if (he == nullptr) {
 			return false;
-		}
-		else
-		{
+		} else {
 			memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
 		}
 	}
@@ -168,7 +163,7 @@ void SolarMaxTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (m_socket == INVALID_SOCKET)
@@ -276,14 +271,14 @@ static unsigned long SolarMaxGetHexStringValue(const std::string &svalue)
 void SolarMaxTCP::ParseLine()
 {
 	std::string InputStr = std::string((const char*)&m_buffer);
-	size_t npos = InputStr.find("|");
+	size_t npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
 		_log.Log(LOG_ERROR, "SolarMax: Invalid data received!");
 		return;
 	}
 	InputStr = InputStr.substr(npos + 4);
-	npos = InputStr.find("|");
+	npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
 		_log.Log(LOG_ERROR, "SolarMax: Invalid data received!");

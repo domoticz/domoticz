@@ -36,10 +36,7 @@ MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname, const
 	m_HwdID = ID;
 }
 
-MySensorsSerial::~MySensorsSerial()
-{
-
-}
+MySensorsSerial::~MySensorsSerial() = default;
 
 bool MySensorsSerial::StartHardware()
 {

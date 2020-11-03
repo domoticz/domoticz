@@ -57,9 +57,7 @@ CTeslaApi::CTeslaApi(const std::string username, const std::string password, con
 	m_capabilities.sleep_interval = 20;
 }
 
-CTeslaApi::~CTeslaApi()
-{
-}
+CTeslaApi::~CTeslaApi() = default;
 
 bool CTeslaApi::Login()
 {
@@ -535,8 +533,8 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 		case Post:
 			if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
-				for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
-					_ssResponseHeaderString << _vResponseHeaders[i];
+				for (auto &_vResponseHeader : _vResponseHeaders)
+					_ssResponseHeaderString << _vResponseHeader;
 				_log.Debug(DEBUG_NORM, "TeslaApi: Failed to perform POST request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 				return false;
 			}
@@ -545,8 +543,8 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 		case Get:
 			if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
-				for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
-					_ssResponseHeaderString << _vResponseHeaders[i];
+				for (auto &_vResponseHeader : _vResponseHeaders)
+					_ssResponseHeaderString << _vResponseHeader;
 				_log.Debug(DEBUG_NORM, "TeslaApi: Failed to perform GET request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 				return false;
 			}

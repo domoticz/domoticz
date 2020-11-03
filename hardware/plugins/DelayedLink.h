@@ -392,18 +392,22 @@ namespace Plugins {
 					std::vector<std::string> entries;
 					std::vector<std::string>::const_iterator itt;
 					DirectoryListing(entries, sLibrary, true, false);
-					for (itt = entries.begin(); !shared_lib_ && itt != entries.end(); ++itt)
-					{
-						library = sLibrary + *itt + "/";
+					for (const auto &entry : entries) {
+						if (shared_lib_) {
+							break;
+						}
+
+						library = sLibrary + entry + "/";
 						FindLibrary(library, false);
 					}
 
-					std::string filename;
 					entries.clear();
 					DirectoryListing(entries, sLibrary, false, true);
-					for (itt = entries.begin(); !shared_lib_ && itt != entries.end(); ++itt)
-					{
-						filename = *itt;
+					for (const auto &filename : entries) {
+						if (shared_lib_) {
+							break;
+						}
+
 						if (filename.length() > 12 &&
 							filename.compare(0, 11, "libpython3.") == 0 &&
 							filename.compare(filename.length() - 3, 3, ".so") == 0 &&
@@ -412,7 +416,6 @@ namespace Plugins {
 							library = sLibrary + filename;
 							shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 						}
-
 					}
 				}
 			}

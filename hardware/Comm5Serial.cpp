@@ -126,7 +126,7 @@ void Comm5Serial::Do_Work()
 
 	while (!IsStopRequested(100))
 	{
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 		if (msec_counter++ >= 40) 
 		{
 			//every 4 seconds ?
@@ -298,8 +298,8 @@ bool Comm5Serial::writeFrame(const std::string & data)
 	mframe.push_back(0x00);
 	mframe.append(data);
 	uint16_t crc = 0;
-	for (size_t i = 0; i < mframe.size(); ++i)
-		crc = crc16_update(crc, mframe.at(i));
+	for (char i : mframe)
+		crc = crc16_update(crc, i);
 	crc = crc16_update(crc, 0);
 	crc = crc16_update(crc, 0);
 

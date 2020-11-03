@@ -9,9 +9,7 @@ CNotificationPushalot::CNotificationPushalot() : CNotificationBase(std::string("
 	SetupConfig(std::string("PushALotAPI"), _apikey);
 }
 
-CNotificationPushalot::~CNotificationPushalot()
-{
-}
+CNotificationPushalot::~CNotificationPushalot() = default;
 
 bool CNotificationPushalot::SendMessageImplementation(
 	const uint64_t Idx,

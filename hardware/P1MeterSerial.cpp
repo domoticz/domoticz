@@ -80,10 +80,7 @@ P1MeterSerial::P1MeterSerial(const std::string& devname,
 {
 }
 
-P1MeterSerial::~P1MeterSerial()
-{
-
-}
+P1MeterSerial::~P1MeterSerial() = default;
 
 #ifdef _DEBUG
 	//#define DEBUG_FROM_FILE
@@ -202,7 +199,7 @@ void P1MeterSerial::Do_Work()
 
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat=mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 		}
 	}

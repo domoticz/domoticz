@@ -30,10 +30,7 @@ KMTronicSerial::KMTronicSerial(const int ID, const std::string& devname)
 	m_bHaveReceived = false;
 }
 
-KMTronicSerial::~KMTronicSerial()
-{
-
-}
+KMTronicSerial::~KMTronicSerial() = default;
 
 bool KMTronicSerial::StartHardware()
 {
@@ -73,7 +70,7 @@ void KMTronicSerial::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (!isOpen())

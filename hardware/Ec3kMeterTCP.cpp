@@ -52,9 +52,7 @@ Ec3kMeterTCP::Ec3kMeterTCP(const int ID, const std::string &IPAddress, const uns
 	m_limiter = new(Ec3kLimiter);
 }
 
-Ec3kMeterTCP::~Ec3kMeterTCP(void)
-{
-}
+Ec3kMeterTCP::~Ec3kMeterTCP() = default;
 
 bool Ec3kMeterTCP::StartHardware()
 {
@@ -110,7 +108,7 @@ void Ec3kMeterTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
@@ -249,14 +247,7 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-Ec3kLimiter::Ec3kLimiter(void)
-{
-  no_meters = 0;
-}
-
-Ec3kLimiter::~Ec3kLimiter(void)
-{
-}
+Ec3kLimiter::Ec3kLimiter() { no_meters = 0; }
 
 bool Ec3kLimiter::update(int id)
 {
@@ -266,20 +257,17 @@ bool Ec3kLimiter::update(int id)
 		if (meters[i].id == id)
 		{
 			// Allow update after at least update interval  seconds
-			if ((time(NULL) - meters[i].last_update) >= EC3K_UPDATE_INTERVAL)
-			{
-				meters[i].last_update = time(NULL);
+			if ((time(nullptr) - meters[i].last_update) >= EC3K_UPDATE_INTERVAL) {
+				meters[i].last_update = time(nullptr);
 				return true;
-			}
-			else
-			{
+			} else {
 				return false;
 			}
 		}
 	}
 	// Store new meter and allow update
 	meters[no_meters].id = id;
-	meters[no_meters].last_update = time(NULL);
+	meters[no_meters].last_update = time(nullptr);
 	no_meters++;
 	return true;
 }

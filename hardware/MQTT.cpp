@@ -72,10 +72,7 @@ MQTT::MQTT(
 	threaded_set(true);
 }
 
-MQTT::~MQTT(void)
-{
-	mosqdz::lib_cleanup();
-}
+MQTT::~MQTT() { mosqdz::lib_cleanup(); }
 
 bool MQTT::StartHardware()
 {
@@ -161,7 +158,7 @@ void MQTT::on_connect(int rc)
 			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
 			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect(boost::bind(&MQTT::SendSceneInfo, this, _1, _2));
 		}
-		subscribe(NULL, m_TopicIn.c_str());
+		subscribe(nullptr, m_TopicIn.c_str());
 	}
 	else {
 		_log.Log(LOG_ERROR, "MQTT: Connection failed!, restarting (rc=%d)", rc);
@@ -510,7 +507,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 		else if (szCommand == "getdeviceinfo")
 		{
 			int HardwareID = atoi(result[0][0].c_str());
-			SendDeviceInfo(HardwareID, idx, "request device", NULL);
+			SendDeviceInfo(HardwareID, idx, "request device", nullptr);
 		}
 		else if (szCommand == "getsceneinfo")
 		{
@@ -566,7 +563,7 @@ bool MQTT::ConnectIntEx()
 	int keepalive = 40;
 
 	if (!m_CAFilename.empty()) {
-		rc = tls_opts_set(SSL_VERIFY_PEER, szTLSVersions[m_TLS_Version], NULL);
+		rc = tls_opts_set(SSL_VERIFY_PEER, szTLSVersions[m_TLS_Version], nullptr);
 		rc = tls_set(m_CAFilename.c_str());
 
 		if (rc != MOSQ_ERR_SUCCESS)
@@ -578,7 +575,7 @@ bool MQTT::ConnectIntEx()
 			_log.Log(LOG_STATUS, "MQTT: enabled TLS mode");
 		}
 	}
-	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : NULL, (!m_Password.empty()) ? m_Password.c_str() : NULL);
+	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
 	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
 	if (rc != MOSQ_ERR_SUCCESS)
@@ -636,7 +633,7 @@ void MQTT::Do_Work()
 			sec_counter++;
 
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 
 			if (bFirstTime)
@@ -684,7 +681,7 @@ void MQTT::SendMessage(const std::string& Topic, const std::string& Message)
 			_log.Log(LOG_STATUS, "MQTT: Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(NULL, Topic.c_str(), Message.size(), Message.c_str());
+		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str());
 	}
 	catch (...)
 	{
@@ -752,10 +749,9 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 			root["meterType"] = Meter_Type_Desc((_eMeterType)switchType);
 		}
 		// Add device options
-		for (const auto& ittOptions : options)
-		{
-			std::string optionName = ittOptions.first;
-			std::string optionValue = ittOptions.second;
+		for (const auto &m : options) {
+			std::string optionName = m.first;
+			std::string optionValue = m.second;
 			root[optionName] = optionValue;
 		}
 
@@ -779,11 +775,10 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		StringSplit(svalue, ";", strarray);
 
 		int sIndex = 1;
-		for (const auto& itt : strarray)
-		{
+		for (const auto &str : strarray) {
 			std::stringstream szQuery;
 			szQuery << "svalue" << sIndex;
-			root[szQuery.str()] = itt;
+			root[szQuery.str()] = str;
 			sIndex++;
 		}
 		std::string message = root.toStyledString();
@@ -795,9 +790,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		if (m_publish_scheme & PT_floor_room)
 		{
 			result = m_sql.safe_query("SELECT F.Name, P.Name, M.DeviceRowID FROM Plans as P, Floorplans as F, DeviceToPlansMap as M WHERE P.FloorplanID=F.ID and M.PlanID=P.ID and M.DeviceRowID=='%" PRIu64 "'", DeviceRowIdx);
-			for (size_t i = 0; i < result.size(); i++)
-			{
-				sd = result[i];
+			for (const auto &sd : result) {
 				std::string floor = sd[0];
 				std::string room = sd[1];
 				std::stringstream topic;

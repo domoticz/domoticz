@@ -84,16 +84,11 @@ m_szHarmonyAddress(IPAddress)
 	Init();
 }
 
-
-CHarmonyHub::~CHarmonyHub(void)
-{
-	StopHardware();
-}
-
+CHarmonyHub::~CHarmonyHub() { StopHardware(); }
 
 void CHarmonyHub::Init()
 {
-	m_connection=NULL;
+	m_connection = nullptr;
 	m_connectionstatus = DISCONNECTED;
 	m_bNeedMoreData = false;
 	m_bWantAnswer = false;
@@ -415,7 +410,7 @@ void CHarmonyHub::Do_Work()
 		{
 			// update heartbeat
 			hcounter = HEARTBEAT_SECONDS;
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	Logout();
@@ -535,7 +530,7 @@ void CHarmonyHub::ResetCommunicationSocket()
 {
 	if (m_connection)
 		delete m_connection;
-	m_connection = NULL;
+	m_connection = nullptr;
 	m_connectionstatus = DISCONNECTED;
 
 	m_bIsChangingActivity = false;
@@ -559,8 +554,7 @@ std::string CHarmonyHub::ReadFromSocket(csocket *connection)
 }
 std::string CHarmonyHub::ReadFromSocket(csocket *connection, float waitTime)
 {
-	if (connection == NULL)
-	{
+	if (connection == nullptr) {
 		return "</stream:stream>";
 	}
 
@@ -588,7 +582,7 @@ std::string CHarmonyHub::ReadFromSocket(csocket *connection, float waitTime)
 ************************************************************************/
 int CHarmonyHub::StartStream(csocket *connection)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
 	std::string szReq = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	return WriteToSocket(&szReq);
@@ -597,9 +591,9 @@ int CHarmonyHub::StartStream(csocket *connection)
 
 int CHarmonyHub::SendAuth(csocket *connection, const std::string &szUserName, const std::string &szPassword)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
-	std::string szAuth = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" mechanism=\"PLAIN\">";
+	std::string szAuth = R"(<auth xmlns="urn:ietf:params:xml:ns:xmpp-sasl" mechanism="PLAIN">)";
 	std::string szCred = "\0";
 	szCred.append(szUserName);
 	szCred.append("\0");
@@ -612,11 +606,11 @@ int CHarmonyHub::SendAuth(csocket *connection, const std::string &szUserName, co
 
 int CHarmonyHub::SendPairRequest(csocket *connection)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
-	std::string szReq = "<iq type=\"get\" id=\"";
+	std::string szReq = R"(<iq type="get" id=")";
 	szReq.append(CONNECTION_ID);
-	szReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.pair\">method=pair");
+	szReq.append(R"("><oa xmlns="connect.logitech.com" mime="vnd.logitech.connect/vnd.logitech.pair">method=pair)");
 	szReq.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
 	return WriteToSocket(&szReq);
 }
@@ -624,7 +618,7 @@ int CHarmonyHub::SendPairRequest(csocket *connection)
 
 int CHarmonyHub::CloseStream(csocket *connection)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
 	std::string szReq = "</stream:stream>";
 	return WriteToSocket(&szReq);
@@ -638,12 +632,12 @@ int CHarmonyHub::CloseStream(csocket *connection)
 ************************************************************************/
 int CHarmonyHub::SendPing()
 {
-	if (m_connection == NULL || m_szAuthorizationToken.length() == 0)
+	if (m_connection == nullptr || m_szAuthorizationToken.length() == 0)
 		return -1;
 
-	std::string szReq = "<iq type=\"get\" id=\"";
+	std::string szReq = R"(<iq type="get" id=")";
 	szReq.append(CONNECTION_ID);
-	szReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.ping\">token=");
+	szReq.append(R"("><oa xmlns="connect.logitech.com" mime="vnd.logitech.connect/vnd.logitech.ping">token=)");
 	szReq.append(m_szAuthorizationToken.c_str());
 	szReq.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
 
@@ -663,16 +657,14 @@ int CHarmonyHub::SubmitCommand(const std::string &szCommand)
 }
 int CHarmonyHub::SubmitCommand(const std::string &szCommand, const std::string &szActivityId)
 {
-	if (m_connection == NULL || m_szAuthorizationToken.empty())
-	{
+	if (m_connection == nullptr || m_szAuthorizationToken.empty()) {
 		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
 		return false;
-
 	}
 
-	std::string szReq = "<iq type=\"get\" id=\"";
+	std::string szReq = R"(<iq type="get" id=")";
 	szReq.append(CONNECTION_ID);
-	szReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.harmony/vnd.logitech.harmony.engine?");
+	szReq.append(R"("><oa xmlns="connect.logitech.com" mime="vnd.logitech.harmony/vnd.logitech.harmony.engine?)");
 
 	// Issue the provided command
 	if (szCommand == GET_CONFIG_COMMAND)
@@ -1027,7 +1019,7 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 			return;
 		}
 		m_szAuthorizationToken = szQueryResponse->substr(pos + 9);
-		pos = m_szAuthorizationToken.find(":");
+		pos = m_szAuthorizationToken.find(':');
 		if (pos == std::string::npos)
 		{
 #ifdef _DEBUG
@@ -1111,7 +1103,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			if (jpos != std::string::npos)
 			{
 				m_szHubSwVersion = szMessage.substr(jpos+15, 16); // limit string length for end delimiter search
-				jpos = m_szHubSwVersion.find("\"");
+				jpos = m_szHubSwVersion.find('\"');
 				if (jpos != std::string::npos)
 				{
 					if (m_szHubSwVersion.empty())
@@ -1128,7 +1120,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			if (jpos != std::string::npos)
 			{
 				activityId = szMessage.substr(jpos+22, 16); // limit string length for end delimiter search
-				jpos = activityId.find("\"");
+				jpos = activityId.find('\"');
 				if (jpos != std::string::npos)
 					activityId = activityId.substr(0, jpos);
 			}
@@ -1141,7 +1133,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			if (jpos != std::string::npos)
 			{
 				stateVersion = szMessage.substr(jpos+14, 16); // limit string length for end delimiter search
-				jpos = stateVersion.find(",");
+				jpos = stateVersion.find(',');
 				if (jpos != std::string::npos)
 					stateVersion = stateVersion.substr(0, jpos);
 			}
@@ -1163,9 +1155,9 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 		if (jpos != std::string::npos)
 		{
 			szActivityId = szMessage.substr(jpos+11, 16); // limit string length for end delimiter search
-			jpos = szActivityId.find(":");
+			jpos = szActivityId.find(':');
 			if (jpos == std::string::npos)
-				jpos = szActivityId.find("]");
+				jpos = szActivityId.find(']');
 			if (jpos != std::string::npos)
 				szActivityId = szActivityId.substr(0, jpos);
 		}

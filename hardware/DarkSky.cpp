@@ -55,9 +55,7 @@ m_Location(Location)
 	Init();
 }
 
-CDarkSky::~CDarkSky(void)
-{
-}
+CDarkSky::~CDarkSky() = default;
 
 void CDarkSky::Init()
 {
@@ -97,7 +95,7 @@ void CDarkSky::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 300 == 0)
 		{

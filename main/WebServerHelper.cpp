@@ -11,10 +11,7 @@ namespace http {
 		extern CProxySharedData sharedData;
 #endif
 
-		CWebServerHelper::CWebServerHelper()
-		{
-			m_pDomServ = NULL;
-		}
+		CWebServerHelper::CWebServerHelper() { m_pDomServ = nullptr; }
 
 		CWebServerHelper::~CWebServerHelper()
 		{
@@ -56,8 +53,8 @@ namespace http {
 
 		void CWebServerHelper::StopServers()
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->StopServer();
+			for (auto &it : serverCollection) {
+				it->StopServer();
 			}
 			serverCollection.clear();
 			plainServer_.reset();
@@ -76,11 +73,12 @@ namespace http {
 			proxymanager.Stop();
 			// restart
 #ifdef WWW_ENABLE_SSL
-			cWebem *my_pWebEm = (plainServer_ != NULL ? plainServer_->m_pWebEm : (secureServer_ != NULL ? secureServer_->m_pWebEm : NULL));
+			cWebem *my_pWebEm = (plainServer_ != nullptr ? plainServer_->m_pWebEm
+								     : (secureServer_ != nullptr ? secureServer_->m_pWebEm : nullptr));
 #else
 			cWebem* my_pWebEm = plainServer_ != NULL ? plainServer_->m_pWebEm : NULL;
 #endif
-			if (my_pWebEm == NULL) {
+			if (my_pWebEm == nullptr) {
 				_log.Log(LOG_ERROR, "No servers are configured. Hence mydomoticz will not be started either (if configured)");
 				return;
 			}
@@ -100,38 +98,38 @@ namespace http {
 
 		void CWebServerHelper::SetWebCompressionMode(const _eWebCompressionMode gzmode)
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->SetWebCompressionMode(gzmode);
-			 }
+			for (auto &it : serverCollection) {
+				it->SetWebCompressionMode(gzmode);
+			}
 		}
 
 		void CWebServerHelper::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->SetAuthenticationMethod(amethod);
-			 }
+			for (auto &it : serverCollection) {
+				it->SetAuthenticationMethod(amethod);
+			}
 		}
 
 		void CWebServerHelper::SetWebTheme(const std::string &themename)
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->SetWebTheme(themename);
-			 }
+			for (auto &it : serverCollection) {
+				it->SetWebTheme(themename);
+			}
 		}
 
 		void CWebServerHelper::SetWebRoot(const std::string &webRoot)
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->SetWebRoot(webRoot);
-			 }
+			for (auto &it : serverCollection) {
+				it->SetWebRoot(webRoot);
+			}
 			proxymanager.SetWebRoot(webRoot);
 		}
 
 		void CWebServerHelper::ClearUserPasswords()
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->ClearUserPasswords();
-			 }
+			for (auto &it : serverCollection) {
+				it->ClearUserPasswords();
+			}
 		}
 
 		//JSon
@@ -162,9 +160,9 @@ namespace http {
 
 		void CWebServerHelper::ReloadCustomSwitchIcons()
 		{
-			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->ReloadCustomSwitchIcons();
-			 }
+			for (auto &it : serverCollection) {
+				it->ReloadCustomSwitchIcons();
+			}
 		}
 	}
 

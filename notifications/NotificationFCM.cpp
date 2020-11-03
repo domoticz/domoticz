@@ -43,9 +43,7 @@ CNotificationFCM::CNotificationFCM() : CNotificationBase(std::string("fcm"), OPT
 	SetupConfig(std::string("FCMEnabled"), &m_IsEnabled);
 }
 
-CNotificationFCM::~CNotificationFCM()
-{
-}
+CNotificationFCM::~CNotificationFCM() = default;
 
 bool CNotificationFCM::IsConfigured()
 {
@@ -94,11 +92,10 @@ bool CNotificationFCM::SendMessageImplementation(
 		return true;
 
 	std::string sTo;
-	for (const auto& itt : result)
-	{
+	for (const auto &r : result) {
 		if (!sTo.empty())
 			sTo += ", ";
-		sTo += itt[0];
+		sTo += r[0];
 	}
 
 	//We need to distinguish between Android and iOS devices for the following JSon notification call
@@ -106,10 +103,7 @@ bool CNotificationFCM::SendMessageImplementation(
 	std::vector<std::string> androidDevices;
 	std::vector<std::string> iOSDevices;
 
-	std::vector<std::vector<std::string> >::const_iterator itt;
-	for (itt = result.begin(); itt != result.end(); ++itt)
-	{
-		std::vector<std::string> sd = *itt;
+	for (const auto &sd : result) {
 		std::string sSenderID = sd[0];
 		std::string sDeviceType = sd[1];
 
@@ -130,16 +124,16 @@ bool CNotificationFCM::SendMessageImplementation(
 
 		int ii = 0;
 
-		for (ittDevice = androidDevices.begin(); ittDevice != androidDevices.end(); ++ittDevice)
-		{
+		for (const auto &device : androidDevices) {
 			if (ii != 0)
 				sstr << ", ";
-			sstr << "\"" << *ittDevice << "\"";
+			sstr << "\"" << device << "\"";
 			ii++;
 		}
 
-		sstr << "], \"data\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", ";
-		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\" } }";
+		sstr << R"(], "data" : { "subject": ")" << Subject << R"(", "body": ")" << Text << R"(", "extradata": ")" << ExtraData
+		     << R"(", "priority": ")" << std::to_string(Priority) << "\", ";
+		sstr << R"("deviceid": ")" << std::to_string(Idx) << R"(", "message": ")" << Subject << "\" } }";
 		std::string szPostdata = sstr.str();
 
 		std::vector<std::string> ExtraHeaders;
@@ -173,16 +167,17 @@ bool CNotificationFCM::SendMessageImplementation(
 
 		int ii = 0;
 
-		for (ittDevice = iOSDevices.begin(); ittDevice != iOSDevices.end(); ++ittDevice)
-		{
+		for (const auto &device : iOSDevices) {
 			if (ii != 0)
 				sstr << ", ";
-			sstr << "\"" << *ittDevice << "\"";
+			sstr << "\"" << device << "\"";
 			ii++;
 		}
 
-		sstr << "], \"notification\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", \"sound\": \"default\", ";
-		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\", \"content_available\": true } }";
+		sstr << R"(], "notification" : { "subject": ")" << Subject << R"(", "body": ")" << Text << R"(", "extradata": ")"
+		     << ExtraData << R"(", "priority": ")" << std::to_string(Priority) << R"(", "sound": "default", )";
+		sstr << R"("deviceid": ")" << std::to_string(Idx) << R"(", "message": ")" << Subject
+		     << R"(", "content_available": true } })";
 		std::string szPostdata = sstr.str();
 
 		std::vector<std::string> ExtraHeaders;

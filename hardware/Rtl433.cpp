@@ -39,9 +39,7 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	*/
 }
 
-CRtl433::~CRtl433()
-{
-}
+CRtl433::~CRtl433() = default;
 
 bool CRtl433::StartHardware()
 {
@@ -296,7 +294,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "code"))
 	{
-		code = strtoul(data["code"].c_str(), NULL, 16);
+		code = strtoul(data["code"].c_str(), nullptr, 16);
 	}
 
 	std::string model = data["model"]; // new model format normalized from the 201 different devices presently supported by rtl_433
@@ -520,7 +518,8 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			bHandled = false;
 			break;
 		}
-		if (bHandled) SendSecurity1Sensor(strtoul(data["id"].c_str(), NULL, 16), x10_device, batterylevel, x10_status, model, snr);
+		if (bHandled)
+			SendSecurity1Sensor(strtoul(data["id"].c_str(), nullptr, 16), x10_device, batterylevel, x10_status, model, snr);
 	} // End of X10-Security section
 
 	return bHandled; //not handled (Yet!)

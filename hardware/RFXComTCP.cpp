@@ -16,9 +16,7 @@ RFXComTCP::RFXComTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_bReceiverStarted = false;
 }
 
-RFXComTCP::~RFXComTCP(void)
-{
-}
+RFXComTCP::~RFXComTCP() = default;
 
 bool RFXComTCP::StartHardware()
 {
@@ -70,7 +68,7 @@ void RFXComTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();

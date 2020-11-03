@@ -237,8 +237,8 @@ std::string MySensorsBase::GetMySensorsPresentationTypeStr(const enum _ePresenta
 	return "Unknown!";
 }
 
-MySensorsBase::MySensorsBase(void) :
-	m_GatewayVersion("?")
+MySensorsBase::MySensorsBase()
+	: m_GatewayVersion("?")
 {
 	m_bAckReceived = false;
 	m_AckNodeID = -1;
@@ -246,9 +246,7 @@ MySensorsBase::MySensorsBase(void) :
 	m_AckSetType = V_UNKNOWN;
 }
 
-MySensorsBase::~MySensorsBase(void)
-{
-}
+MySensorsBase::~MySensorsBase() = default;
 
 void MySensorsBase::LoadDevicesFromDatabase()
 {
@@ -258,10 +256,7 @@ void MySensorsBase::LoadDevicesFromDatabase()
 	result = m_sql.safe_query("SELECT ID, Name, SketchName, SketchVersion FROM MySensors WHERE (HardwareID=%d) ORDER BY ID ASC", m_HwdID);
 	if (!result.empty())
 	{
-		for (const auto & itt : result)
-		{
-			std::vector<std::string> sd = itt;
-
+		for (const auto &sd : result) {
 			int ID = atoi(sd[0].c_str());
 			std::string Name = sd[1];
 			std::string SkectName = sd[2];
@@ -278,16 +273,13 @@ void MySensorsBase::LoadDevicesFromDatabase()
 			if (!result2.empty())
 			{
 				int gID = 1;
-				for (const auto & itt2 : result2)
-				{
-					std::vector<std::string> sd2 = itt2;
+				for (const auto &sd2 : result2) {
 					_tMySensorChild mSensor;
 					mSensor.nodeID = ID;
 					mSensor.childID = atoi(sd2[0].c_str());
 					mSensor.presType = (_ePresentationType)atoi(sd2[1].c_str());
-					for (const auto & itt3 : mNode.m_childs)
-					{
-						if ((itt3.presType == mSensor.presType) && (itt3.groupID == gID))
+					for (const auto &child : mNode.m_childs) {
+						if ((child.presType == mSensor.presType) && (child.groupID == gID))
 							gID++;
 					}
 					mSensor.groupID = gID;
@@ -321,9 +313,8 @@ int MySensorsBase::FindNextNodeID()
 {
 	unsigned char _UsedValues[256];
 	memset(_UsedValues, 0, sizeof(_UsedValues));
-	for (const auto & itt : m_nodes)
-	{
-		int ID = itt.first;
+	for (const auto &node : m_nodes) {
+		int ID = node.first;
 		if (ID < 255)
 		{
 			_UsedValues[ID] = 1;
@@ -341,7 +332,7 @@ MySensorsBase::_tMySensorNode* MySensorsBase::FindNode(const uint8_t nodeID)
 {
 	std::map<int, _tMySensorNode>::iterator itt;
 	itt = m_nodes.find(nodeID);
-	return (itt == m_nodes.end()) ? NULL : &itt->second;
+	return (itt == m_nodes.end()) ? nullptr : &itt->second;
 }
 
 MySensorsBase::_tMySensorNode* MySensorsBase::InsertNode(const int nodeID)
@@ -405,14 +396,13 @@ MySensorsBase::_tMySensorChild* MySensorsBase::FindSensorWithPresentationType(co
 	std::map<int, _tMySensorNode>::iterator ittNode;
 	ittNode = m_nodes.find(nodeID);
 	if (ittNode == m_nodes.end())
-		return NULL;
+		return nullptr;
 	_tMySensorNode *pNode = &ittNode->second;
-	for (auto & itt : pNode->m_childs)
-	{
-		if (itt.presType == presType)
-			return &itt;
+	for (auto &child : pNode->m_childs) {
+		if (child.presType == presType)
+			return &child;
 	}
-	return NULL;
+	return nullptr;
 }
 
 //Find any sensor with value type
@@ -421,24 +411,21 @@ MySensorsBase::_tMySensorChild* MySensorsBase::FindChildWithValueType(const int 
 	std::map<int, _tMySensorNode>::iterator ittNode;
 	ittNode = m_nodes.find(nodeID);
 	if (ittNode == m_nodes.end())
-		return NULL;
+		return nullptr;
 	_tMySensorNode *pNode = &ittNode->second;
-	for (auto & itt : pNode->m_childs)
-	{
-		if ((itt.groupID == groupID) || (groupID == 0))
-		{
-			for (const auto & itt2 : itt.values)
-			{
+	for (auto &child : pNode->m_childs) {
+		if ((child.groupID == groupID) || (groupID == 0)) {
+			for (const auto &itt2 : child.values) {
 				if (itt2.first == valType)
 				{
 					if (!itt2.second.bValidValue)
-						return NULL;
-					return &itt;
+						return nullptr;
+					return &child;
 				}
 			}
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
@@ -447,10 +434,9 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 	if (ittNode == m_nodes.end())
 		return; //Not found
 	_tMySensorNode *pNode = &ittNode->second;
-	for (auto & itt : pNode->m_childs)
-	{
-		itt.hasBattery = true;
-		itt.batValue = Level;
+	for (auto &child : pNode->m_childs) {
+		child.hasBattery = true;
+		child.batValue = Level;
 
 		//Uncomment the below to for a sensor update
 /*
@@ -477,10 +463,8 @@ void MySensorsBase::UpdateNodeHeartbeat(const uint8_t nodeID)
 	mytime(&m_LastHeartbeatReceive);
 	_tMySensorNode *pNode = &ittNode->second;
 
-	for (auto & itt : pNode->m_childs)
-	{
-		for (const auto & itt2 : itt.values)
-		{
+	for (const auto &child : pNode->m_childs) {
+		for (const auto &itt2 : child.values) {
 			if (itt2.second.bValidValue)
 			{
 				_eSetType vType = itt2.first;
@@ -491,29 +475,28 @@ void MySensorsBase::UpdateNodeHeartbeat(const uint8_t nodeID)
 				case V_LOCK_STATUS:
 				case V_STATUS:
 				case V_PERCENTAGE:
-					UpdateSwitchLastUpdate(nodeID, itt.childID);
+					UpdateSwitchLastUpdate(nodeID, child.childID);
 					break;
 				case V_SCENE_ON:
 				case V_SCENE_OFF:
-					if (itt.GetValue(vType, intValue))
-						UpdateSwitchLastUpdate(nodeID, itt.childID + intValue);
+					if (child.GetValue(vType, intValue))
+						UpdateSwitchLastUpdate(nodeID, child.childID + intValue);
 					break;
 				case V_UP:
 				case V_DOWN:
 				case V_STOP:
-					if (itt.GetValue(vType, intValue))
-						UpdateBlindSensorLastUpdate(nodeID, itt.childID);
+					if (child.GetValue(vType, intValue))
+						UpdateBlindSensorLastUpdate(nodeID, child.childID);
 					break;
 				case V_RGB:
 				case V_RGBW:
-					if (itt.GetValue(vType, intValue))
-						UpdateRGBWSwitchLastUpdate(nodeID, itt.childID);
+					if (child.GetValue(vType, intValue))
+						UpdateRGBWSwitchLastUpdate(nodeID, child.childID);
 					break;
 				}
 			}
 		}
 	}
-
 }
 
 void MySensorsBase::MakeAndSendWindSensor(const int nodeID, const std::string &sname)
@@ -1086,7 +1069,7 @@ void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char NodeID, const int
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, ChildID, int(pTypeGeneralSwitch), int(sSwitchTypeAC));
 	if (result.empty())
 		return; //not found!
-	time_t now = time(0);
+	time_t now = time(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -1104,7 +1087,7 @@ void MySensorsBase::UpdateBlindSensorLastUpdate(const int NodeID, const int Chil
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
 	if (result.empty())
 		return;
-	time_t now = time(0);
+	time_t now = time(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -1125,7 +1108,7 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
 	if (result.empty())
 		return;
-	time_t now = time(0);
+	time_t now = time(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -1490,7 +1473,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 				return false;
 			}
 
-			bool bIsRGBW = (pNode->FindChildWithPresentationType(child_sensor_id, S_RGBW_LIGHT) != NULL);
+			bool bIsRGBW = (pNode->FindChildWithPresentationType(child_sensor_id, S_RGBW_LIGHT) != nullptr);
 			if (pLed->command == Color_SetColor)
 			{
 				std::stringstream sstr;
@@ -1868,17 +1851,15 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 		_eSetType vType = (_eSetType)sub_type;
 
 		_tMySensorNode *pNode = FindNode(node_id);
-		if (pNode == NULL)
-		{
+		if (pNode == nullptr) {
 			pNode = InsertNode(node_id);
-			if (pNode == NULL)
+			if (pNode == nullptr)
 				return;
 		}
-		pNode->lastreceived = mytime(NULL);
+		pNode->lastreceived = mytime(nullptr);
 
 		_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
-		if (pChild == NULL)
-		{
+		if (pChild == nullptr) {
 			//Unknown sensor, add it to the system
 			_tMySensorChild mSensor;
 			mSensor.nodeID = node_id;
@@ -1890,7 +1871,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			}
 			pNode->m_childs.push_back(mSensor);
 			pChild = pNode->FindChild(child_sensor_id);
-			if (pChild == NULL)
+			if (pChild == nullptr)
 				return;
 		}
 		pChild->lastreceived = pNode->lastreceived;
@@ -2198,30 +2179,28 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			break;
 		}
 		_tMySensorNode *pNode = FindNode(node_id);
-		if (pNode == NULL)
-		{
+		if (pNode == nullptr) {
 			pNode = InsertNode(node_id);
-			if (pNode == NULL)
+			if (pNode == nullptr)
 				return;
 		}
-		pNode->lastreceived = mytime(NULL);
+		pNode->lastreceived = mytime(nullptr);
 		_tMySensorChild *pSensor = pNode->FindChild(child_sensor_id);
-		if (pSensor == NULL)
-		{
+		if (pSensor == nullptr) {
 			//Unknown sensor, add it to the system
 			_tMySensorChild mSensor;
 			mSensor.nodeID = node_id;
 			mSensor.childID = child_sensor_id;
 			pNode->m_childs.push_back(mSensor);
 			pSensor = pNode->FindChild(child_sensor_id);
-			if (pSensor == NULL)
+			if (pSensor == nullptr)
 				return;
 		}
 		bool bDiffPresentation = (
 			(pSensor->presType != pType) ||
 			(pSensor->childName != payload)
 			);
-		pSensor->lastreceived = mytime(NULL);
+		pSensor->lastreceived = mytime(nullptr);
 		pSensor->presType = pType;
 		pSensor->childName = payload;
 
@@ -2341,7 +2320,7 @@ bool MySensorsBase::StartSendQueue()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MySensorsBase::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "MySensorsBase");
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 void MySensorsBase::StopSendQueue()
@@ -2392,7 +2371,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
+			if (pHardware == nullptr)
 				return;
 			if (
 				(pHardware->HwdType != HTYPE_MySensorsUSB) &&
@@ -2412,10 +2391,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-
+				for (const auto &sd : result) {
 					int NodeID = atoi(sd[0].c_str());
 
 					root["result"][ii]["idx"] = NodeID;
@@ -2425,8 +2401,7 @@ namespace http {
 
 					MySensorsBase::_tMySensorNode* pNode = pMySensorsHardware->FindNode(NodeID);
 
-					if (pNode != NULL)
-					{
+					if (pNode != nullptr) {
 						if (pNode->lastreceived != 0)
 						{
 							struct tm loctime;
@@ -2438,9 +2413,7 @@ namespace http {
 						{
 							root["result"][ii]["LastReceived"] = "-";
 						}
-					}
-					else
-					{
+					} else {
 						root["result"][ii]["LastReceived"] = "-";
 					}
 					result2 = m_sql.safe_query("SELECT COUNT(*) FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID == %d)", iHardwareID, NodeID);
@@ -2470,7 +2443,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
+			if (pHardware == nullptr)
 				return;
 			if (
 				(pHardware->HwdType != HTYPE_MySensorsUSB) &&
@@ -2487,9 +2460,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ChildID, [Type], Name, UseAck, AckTimeout FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID == %d) ORDER BY ChildID ASC", iHardwareID, NodeID);
 			int ii = 0;
-			for (const auto & itt2 : result)
-			{
-				std::vector<std::string> sd2 = itt2;
+			for (const auto &sd2 : result) {
 				int ChildID = atoi(sd2[0].c_str());
 				root["result"][ii]["child_id"] = ChildID;
 				root["result"][ii]["type"] = MySensorsBase::GetMySensorsPresentationTypeStr((MySensorsBase::_ePresentationType)atoi(sd2[1].c_str()));
@@ -2498,11 +2469,9 @@ namespace http {
 				root["result"][ii]["ack_timeout"] = atoi(sd2[4].c_str());
 				std::string szDate = "-";
 				std::string szValues = "";
-				if (pNode != NULL)
-				{
+				if (pNode != nullptr) {
 					MySensorsBase::_tMySensorChild*  pChild = pNode->FindChild(ChildID);
-					if (pChild != NULL)
-					{
+					if (pChild != nullptr) {
 						std::vector<MySensorsBase::_eSetType> ctypes = pChild->GetChildValueTypes();
 						std::vector<std::string> cvalues = pChild->GetChildValues();
 						size_t iVal;
@@ -2553,7 +2522,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
@@ -2584,7 +2553,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
@@ -2617,7 +2586,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
@@ -2655,7 +2624,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&

@@ -16,9 +16,7 @@ MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const uns
 	m_HwdID = ID;
 }
 
-MySensorsTCP::~MySensorsTCP(void)
-{
-}
+MySensorsTCP::~MySensorsTCP() = default;
 
 bool MySensorsTCP::StartHardware()
 {
@@ -80,7 +78,7 @@ void MySensorsTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (isConnected())

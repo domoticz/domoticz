@@ -14,7 +14,4 @@ DomoticzInternal::DomoticzInternal(const int ID) {
 	m_bIsStarted = false;
 }
 
-DomoticzInternal::~DomoticzInternal() {
-
-}
-
+DomoticzInternal::~DomoticzInternal() = default;

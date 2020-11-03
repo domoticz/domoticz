@@ -26,10 +26,7 @@ CurrentCostMeterSerial::CurrentCostMeterSerial(const int ID, const std::string& 
 	m_HwdID=ID;
 }
 
-CurrentCostMeterSerial::~CurrentCostMeterSerial()
-{
-
-}
+CurrentCostMeterSerial::~CurrentCostMeterSerial() = default;
 
 bool CurrentCostMeterSerial::StartHardware()
 {
@@ -113,7 +110,7 @@ void CurrentCostMeterSerial::Do_Work()
 
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat=mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 		}
 	}

@@ -49,12 +49,7 @@ CAirconWithMe::CAirconWithMe(const int id, const std::string& ipaddress, const u
     };
 }
 
-
-CAirconWithMe::~CAirconWithMe(void)
-{
-
-}
-
+CAirconWithMe::~CAirconWithMe() = default;
 
 bool CAirconWithMe::StartHardware()
 {
@@ -92,7 +87,7 @@ void CAirconWithMe::Do_Work()
 		countdown--;
 		if (countdown % 12 == 0) 
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (countdown == 0) 
 		{
@@ -155,7 +150,7 @@ bool CAirconWithMe::Login()
 	
 	Json::Value root;
 	std::string errorMessage;
-	std::string postdata = "{\"command\":\"login\",\"data\":{\"username\":\"" + mUsername + "\",\"password\":\"" + mPassword + "\"}}";
+	std::string postdata = R"({"command":"login","data":{"username":")" + mUsername + R"(","password":")" + mPassword + "\"}}";
 
 	if (!DoWebRequest(postdata, root, errorMessage, false))
 	{
@@ -178,7 +173,7 @@ bool CAirconWithMe::GetAvailableDataPoints()
 {
 	Json::Value root;
 	std::string errorMessage;
-	std::string postdata = "{\"command\":\"getavailabledatapoints\",\"data\":{\"sessionID\":\"%SESSION_ID%\"}}";
+	std::string postdata = R"({"command":"getavailabledatapoints","data":{"sessionID":"%SESSION_ID%"}})";
 	if (!DoWebRequest(postdata, root, errorMessage, true))
 	{
 		Log(LOG_ERROR, "GetAvailableDataPoints failed : " + errorMessage);
@@ -265,7 +260,7 @@ bool CAirconWithMe::GetValues()
 
 	Json::Value root;
 	std::string errorMessage;
-	std::string postdata = "{\"command\":\"getdatapointvalue\",\"data\":{\"sessionID\":\"%SESSION_ID%\",\"uid\":\"all\"}}";
+	std::string postdata = R"({"command":"getdatapointvalue","data":{"sessionID":"%SESSION_ID%","uid":"all"}})";
 
 	if (!DoWebRequest(postdata, root, errorMessage, true))
 	{
@@ -294,7 +289,7 @@ bool CAirconWithMe::GetInfo()
 {
 	Json::Value root;
 	std::string errorMessage;
-	std::string postdata = "{\"command\":\"getinfo\"}";
+	std::string postdata = R"({"command":"getinfo"})";
 
 	if (!DoWebRequest(postdata, root, errorMessage, false))
 	{
@@ -462,7 +457,8 @@ void CAirconWithMe::SendValueToAirco(const int32_t uid, const int32_t value)
 {
 	Json::Value root;
 	std::string errorMessage;
-	std::string postdata = "{\"command\":\"setdatapointvalue\",\"data\":{\"sessionID\":\"%SESSION_ID%\",\"uid\":" + std::to_string(uid) + ",\"value\":" + std::to_string(value) + "}}";
+	std::string postdata = R"({"command":"setdatapointvalue","data":{"sessionID":"%SESSION_ID%","uid":)" + std::to_string(uid)
+			       + ",\"value\":" + std::to_string(value) + "}}";
 
 	if (!DoWebRequest(postdata, root, errorMessage, true))
 	{

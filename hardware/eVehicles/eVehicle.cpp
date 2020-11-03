@@ -79,7 +79,7 @@ CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& 
 	m_allowwakeup = allowwakeup;
 }
 
-CeVehicle::~CeVehicle(void)
+CeVehicle::~CeVehicle()
 {
 	m_commands.clear();
 	delete m_api;
@@ -344,7 +344,7 @@ void CeVehicle::Do_Work()
 	{
 		interval = 1000;
 		sec_counter++;
-		time_t now = mytime(0);
+		time_t now = mytime(nullptr);
 		m_LastHeartbeat = now;
 
 		if (m_api == nullptr)

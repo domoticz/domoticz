@@ -18,7 +18,7 @@ class Ec3kLimiter
 {
 public:
   Ec3kLimiter();
-  ~Ec3kLimiter();
+  ~Ec3kLimiter() = default;
   bool update(int id);
 
 private:

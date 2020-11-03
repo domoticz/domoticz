@@ -13,9 +13,7 @@ CNotificationSMS::CNotificationSMS() : CNotificationBase(std::string("clickatell
 	SetupConfigBase64(std::string("ClickatellFrom"), _clickatellFrom);
 }
 
-CNotificationSMS::~CNotificationSMS()
-{
-}
+CNotificationSMS::~CNotificationSMS() = default;
 
 bool CNotificationSMS::SendMessageImplementation(
 	const uint64_t Idx,
@@ -45,23 +43,22 @@ bool CNotificationSMS::SendMessageImplementation(
 	stdreplace(thisFrom, " ", "");
 	thisFrom = stdstring_trim(thisFrom);
 
-	if (thisTo.find(";") != std::string::npos) {
+	if (thisTo.find(';') != std::string::npos) {
 		std::vector<std::string> recipients;
 		StringSplit(thisTo, ";", recipients);
 
 		thisTo = "";
-		for (size_t i = 0; i < recipients.size(); i++) {
-			thisTo = thisTo + "\"" + recipients.at(i) + "\"" + ",";
+		for (auto &recipient : recipients) {
+			thisTo = thisTo + "\"" + recipient + "\"" + ",";
 		}
 
 		if (!thisTo.empty()) {
 			thisTo.pop_back();
 		}
-	}
-	else {
+	} else {
 		thisTo = "\"" + thisTo + "\"";
 	}
-	
+
 	std::string sResult;
 	std::stringstream sJsonPostData;
 
@@ -75,10 +72,9 @@ bool CNotificationSMS::SendMessageImplementation(
 		sJsonPostData << "\"from\":" << "\"" << thisFrom << "\",";
 	}
 
-	sJsonPostData
-		<< "\"binary\": false,"
-		<< "\"charset\": \"UTF-8\""
-		<< "}";
+	sJsonPostData << "\"binary\": false,"
+		      << R"("charset": "UTF-8")"
+		      << "}";
 
 	_log.Log(LOG_NORM, "Clickatell SMS notification json: " + sJsonPostData.str());
 

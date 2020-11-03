@@ -29,10 +29,7 @@ CDenkoviUSBDevices::CDenkoviUSBDevices(const int ID, const std::string& comPort,
 	Init();
 }
 
-
-CDenkoviUSBDevices::~CDenkoviUSBDevices()
-{
-}
+CDenkoviUSBDevices::~CDenkoviUSBDevices() = default;
 
 void CDenkoviUSBDevices::Init()
 {
@@ -117,8 +114,7 @@ void CDenkoviUSBDevices::OnError(const std::exception e)
 
 bool CDenkoviUSBDevices::StopHardware()
 {
-	if (m_thread != NULL)
-	{
+	if (m_thread != nullptr) {
 		RequestStop();
 		m_thread->join();
 		m_thread.reset();
@@ -138,7 +134,7 @@ void CDenkoviUSBDevices::Do_Work()
 
 	while (!IsStopRequested(100))
 	{
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 		if (msec_counter++ >= 40) {
 			msec_counter = 0;
 			if (m_readingNow == false && m_updateIo == false)

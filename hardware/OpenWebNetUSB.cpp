@@ -36,11 +36,7 @@ COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigne
 	m_bEnableReceive = true;
 }
 
-
-COpenWebNetUSB::~COpenWebNetUSB()
-{
-}
-
+COpenWebNetUSB::~COpenWebNetUSB() = default;
 
 bool COpenWebNetUSB::StartHardware()
 {
@@ -70,7 +66,7 @@ void COpenWebNetUSB::Do_Work()
 {
 	while (!IsStopRequested(OPENWEBNET_HEARTBEAT_DELAY))
 	{
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 	}
 	terminate();
 
@@ -251,13 +247,10 @@ bool COpenWebNetUSB::FindDevice(int deviceID, int deviceUnit, int subType, int* 
 	char szIdx[10];
 	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
-	if (used != NULL)
-	{
+	if (used != nullptr) {
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d) and Used == %d",
 			m_HwdID, szIdx, deviceUnit, pTypeGeneralSwitch, subType, *used);
-	}
-	else
-	{
+	} else {
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
 			m_HwdID, szIdx, deviceUnit, pTypeGeneralSwitch, subType);
 	}

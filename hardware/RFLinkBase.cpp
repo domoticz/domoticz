@@ -211,10 +211,7 @@ CRFLinkBase::CRFLinkBase()
 	*/
 }
 
-CRFLinkBase::~CRFLinkBase()
-{
-}
-
+CRFLinkBase::~CRFLinkBase() = default;
 
 /*
 void CRFLinkBase::Add2SendQueue(const char* pData, const size_t length)
@@ -354,8 +351,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		sstr << '\n';
 		m_bTXokay = false; // clear OK flag
 		WriteInt(sstr.str());
-		time_t atime = mytime(NULL);
-		time_t btime = mytime(NULL);
+		time_t atime = mytime(nullptr);
+		time_t btime = mytime(nullptr);
 
 		// Wait for an OK response from RFLink to make sure the command was executed
 		while (m_bTXokay == false) {
@@ -363,7 +360,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 				_log.Log(LOG_ERROR, "RFLink: TX time out...");
 				return false;
 			}
-			btime = mytime(NULL);
+			btime = mytime(nullptr);
 		}
 		return true;
 	}
@@ -494,8 +491,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			sstr << '\n';
 			m_bTXokay = false; // clear OK flag
 			WriteInt(sstr.str());
-			time_t atime = mytime(NULL);
-			time_t btime = mytime(NULL);
+			time_t atime = mytime(nullptr);
+			time_t btime = mytime(nullptr);
 
 			// Wait for an OK response from RFLink to make sure the command was executed
 			while (m_bTXokay == false) {
@@ -503,7 +500,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 					_log.Log(LOG_ERROR, "RFLink: TX time out...");
 					return false;
 				}
-				btime = mytime(NULL);
+				btime = mytime(nullptr);
 			}
 		}
 		// ---
@@ -519,8 +516,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		sstr << '\n';
 		m_bTXokay = false; // clear OK flag
 		WriteInt(sstr.str());
-		time_t atime = mytime(NULL);
-		time_t btime = mytime(NULL);
+		time_t atime = mytime(nullptr);
+		time_t btime = mytime(nullptr);
 
 		// Wait for an OK response from RFLink to make sure the command was executed
 		while (m_bTXokay == false) {
@@ -529,7 +526,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 				_log.Log(LOG_ERROR, "RFLink: TX time out...");
 				return false;
 			}
-			btime = mytime(NULL);
+			btime = mytime(nullptr);
 		}
 
 		if (!switchcmnd2.empty())
@@ -544,8 +541,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			sstr << '\n';
 			m_bTXokay = false; // clear OK flag
 			WriteInt(sstr.str());
-			time_t atime = mytime(NULL);
-			time_t btime = mytime(NULL);
+			time_t atime = mytime(nullptr);
+			time_t btime = mytime(nullptr);
 
 			// Wait for an OK response from RFLink to make sure the command was executed
 			while (m_bTXokay == false) {
@@ -554,7 +551,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 					_log.Log(LOG_ERROR, "RFLink: TX time out...");
 					return false;
 				}
-				btime = mytime(NULL);
+				btime = mytime(nullptr);
 			}
 		}
 		return true;
@@ -605,7 +602,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 static std::string RFLinkGetStringValue(const std::string &svalue)
 {
 	std::string ret = "";
-	size_t pos = svalue.find("=");
+	size_t pos = svalue.find('=');
 	if (pos == std::string::npos)
 		return ret;
 	return svalue.substr(pos+1);
@@ -613,7 +610,7 @@ static std::string RFLinkGetStringValue(const std::string &svalue)
 static unsigned int RFLinkGetHexStringValue(const std::string &svalue)
 {
 	unsigned int ret = -1;
-	size_t pos = svalue.find("=");
+	size_t pos = svalue.find('=');
 	if (pos == std::string::npos)
 		return ret;
 	std::stringstream ss;
@@ -624,7 +621,7 @@ static unsigned int RFLinkGetHexStringValue(const std::string &svalue)
 static unsigned int RFLinkGetIntStringValue(const std::string &svalue)
 {
 	unsigned int ret = -1;
-	size_t pos = svalue.find("=");
+	size_t pos = svalue.find('=');
 	if (pos == std::string::npos)
 		return ret;
 	std::stringstream ss;
@@ -636,7 +633,7 @@ static unsigned int RFLinkGetIntStringValue(const std::string &svalue)
 static unsigned int RFLinkGetIntDecStringValue(const std::string &svalue)
 {
 	unsigned int ret = -1;
-	size_t pos = svalue.find(".");
+	size_t pos = svalue.find('.');
 	if (pos == std::string::npos)
 		return ret;
 	std::stringstream ss;
@@ -647,7 +644,7 @@ static unsigned int RFLinkGetIntDecStringValue(const std::string &svalue)
 
 bool CRFLinkBase::ParseLine(const std::string &sLine)
 {
-	m_LastReceivedTime = mytime(NULL);
+	m_LastReceivedTime = mytime(nullptr);
 
 	std::vector<std::string> results;
 	StringSplit(sLine, ";", results);
@@ -1169,7 +1166,7 @@ namespace http {
 
 			bool bCreated = false;						// flag to know if the command was a success
 			CRFLinkBase *pRFLINK = reinterpret_cast<CRFLinkBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
-			if (pRFLINK == NULL)
+			if (pRFLINK == nullptr)
 				return;
 
 			if (scommand.substr(0, 14).compare("10;rfdebug=on;") == 0) {
@@ -1199,8 +1196,8 @@ namespace http {
 			bCreated = true;
 			pRFLINK->m_bTXokay = false; // clear OK flag
 			pRFLINK->WriteInt(scommand.c_str());
-			time_t atime = mytime(NULL);
-			time_t btime = mytime(NULL);
+			time_t atime = mytime(nullptr);
+			time_t btime = mytime(nullptr);
 
 			// Wait for an OK response from RFLink to make sure the command was executed
 			while (pRFLINK->m_bTXokay == false) {
@@ -1209,7 +1206,7 @@ namespace http {
 					bCreated = false;
 					break;
 				}
-				btime = mytime(NULL);
+				btime = mytime(nullptr);
 			}
 
 			#ifdef _DEBUG
