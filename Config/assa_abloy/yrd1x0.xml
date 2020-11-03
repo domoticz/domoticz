@@ -1,0 +1,115 @@
+<Product Revision="14" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">YRD110/YRD120 Keyless Deadbolt</MetaDataItem>
+    <MetaDataItem name="Description">Yale Real Living® keyless deadbolt.  These push button and touchscreen deadbolts are designed to seamlessly integrate into your smart home to provide you and your family with security and convenience.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0129:0800:0004</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://us.yalehome.com/en/products/yale-assure-lock-and-levers/b1l-and-t1l-lock</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://support.shopyalehome.com/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/assa_abloy/yrd1x0.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://us.yalehome.com/Yale/Yale%20US/Support/B1L%20and%20T1L%20Locks/AYRD_110_INST_FUL%20Rev%20G%20WEB.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Method 1:
+Remove the battery cover
+Press zwave buttton (right side near top) and hold until beeps 2 times
+Release button and network joining automatically begins
+Replace battery cover
+Method 2:
+Enter the master Pin code followed by the gear key.
+Press the 7 key followed by the gear key
+Press the 1 key followed by the gear key</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Method 1:
+Remove the battery cover
+Press zwave buttton (right side near top) and hold until beeps 5 times
+Release button and network removal automatically begins
+Replace battery cover
+Method 2:
+Enter the master Pin code followed by the gear key.
+Press the 7 key followed by the gear key
+Press the 3 key followed by the gear key</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Remove the battery cover and batteries
+While pressing the reset button (left side near top) for a minimum of 3 seconds, reinstall batteries
+Release reset button.
+Replace battery cover
+Please use this procedure only when the network primary controller is missing or otherwise inoperable</MetaDataItem>
+    <MetaDataItem id="0800" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1039/</MetaDataItem>
+    <MetaDataItem id="0800" name="Identifier" type="0004">YRD110-ZW-US</MetaDataItem>
+    <MetaDataItem id="0800" name="FrequencyName" type="0004">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0000" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1040/</MetaDataItem>
+    <MetaDataItem id="0000" name="FrequencyName" type="0004">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0000" name="Identifier" type="0004">YRD120-ZW-US</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Keith Laidlaw - laidlaw1546@gmail.com" date="25 Sep 2020" revision="14">Split out from PushButtonDeadbolt.xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Audio Mode" size="1" type="list" value="3">
+      <Help>(On = default)</Help>
+      <Item label="Off" value="1"/>
+      <Item label="On" value="3"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Auto Relock" size="1" type="list" value="0">
+      <Help>(Off = default)</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Re-lock Time" max="180" min="5" size="1" type="byte" units="seconds" value="30">
+      <Help>after successful code entry and unit unlocks, it will automatically re-lock after specified number of seconds (30 = default)</Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Wrong Code Entry Limit" max="7" min="1" size="1" type="list" value="5">
+      <Help>
+			The number of invalid code entries lock will accept before sending TAMPER Alarm. 
+			When number of wrong code entries is exceeded, lock will disable keypad for the time specified by Shutdown Time parameter. (5 = default)
+			</Help>
+      <Item label="1" value="1"/>
+      <Item label="2" value="2"/>
+      <Item label="3" value="3"/>
+      <Item label="4" value="4"/>
+      <Item label="5" value="5"/>
+      <Item label="6" value="6"/>
+      <Item label="7" value="7"/>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Shutdown Time" max="255" min="1" size="1" type="byte" units="seconds" value="60">
+      <Help>number of seconds unit will be inoperable after number of wrong code entries is exceeded (60 = default)</Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Operating Mode" max="2" min="0" size="1" type="list" value="0">
+      <Help>Normal Mode: Master code and all user codes enabled (default).
+Vacation Mode: Master code enabled, all user codes disabled.
+Privacy Mode: Master code and all user codes disabled.</Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Vacation" value="1"/>
+      <Item label="Privacy" value="2"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="One Touch Locking" size="1" type="list" value="255">
+      <Help>(On = default)</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Privacy Button" size="1" type="list" value="0">
+      <Help>(Off = default)</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Lock Status LED" size="1" type="list" value="0">
+      <Help>(Off = default)</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+  </CommandClass>
+  <!-- Notification Command Class -->
+  <CommandClass id="113">
+    <!-- These Door Locks don't send a DoorLockReport when the
+		Lock Status is Changed, but instead send a Alarm Message -
+		So we trigger a Refresh of the DoorLock Command Class when
+		we recieve a Alarm Message Instead -->
+    <TriggerRefreshValue Genre="user" Index="512" Instance="1">
+      <RefreshClassValue CommandClass="98" Index="0" Instance="1" RequestFlags="0"/>
+      <RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
+    </TriggerRefreshValue>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

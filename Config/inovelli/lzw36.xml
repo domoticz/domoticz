@@ -1,4 +1,4 @@
-<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/031E:0001:000e</MetaDataItem>
     <MetaDataItem name="ProductPic">images/inovelli/lzw36.png</MetaDataItem>
@@ -21,6 +21,7 @@ Please Note: If this doesn't work, you can check to see if your switch is within
       <Entry author="Eric Maycock - ericm@inovelli.com" date="05 Jun 2020" revision="6">Adding Metadata</Entry>
       <Entry author="Eric Maycock - ericm@inovelli.com" date="23 Jul 2020" revision="7">Fix Config Parameters</Entry>
       <Entry author="Eric Maycock - ericm@inovelli.com" date="24 Jul 2020" revision="8">Adding additional metadata</Entry>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="27 Aug 2020" revision="9">Adding parameter 51 for firmware 1.36+</Entry>
     </ChangeLog>
   </MetaData>
  
@@ -307,6 +308,14 @@ Please Note: If this doesn't work, you can check to see if your switch is within
       <Item value="1" label="Light Button"/>
       <Item value="2" label="Fan Button"/>
       <Item value="3" label="Both Buttons"/>
+    </Value>
+
+    <Value genre="config" type="list" size="1" index="51" label="Instant On" min="0" max="1" value="1">
+       <Help>
+       Enables instant on (ie: disables the 700ms button delay). Note, if you disable the delay, it will also disable scene control except for the following: Light on/off pressed, held, released, Fan on/off  pressed, held, released &amp; light up/down fan up/down  pressed (firmware 1.36+).
+       </Help>
+       <Item value="0" label="Enabled (no delay)"/>
+       <Item value="1" label="Disabled (700ms delay)"/>
     </Value>
   </CommandClass>
 

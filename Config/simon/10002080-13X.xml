@@ -1,0 +1,96 @@
+<!--
+Simon S100 Socket iO
+https://products.z-wavealliance.org/products/2669
+-->
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="ProductPic">images/simon/10002080-13X.png</MetaDataItem>
+    <MetaDataItem id="0000" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/2669/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?filename=MarketCertificationFiles/2669/ROLLERBLIND_991025_990913.pdf</MetaDataItem>
+    <MetaDataItem name="Name">S100 Rocker iO for Roller Blind</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jordi Andújar - jordi.andujar@gmail.com" date="20 Ago 2020" revision="1">Added support for Simon S100 Rocker iO roller blind.</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="list" index="1" genre="config" label="Association LED" min="0" max="255" value="0" size="1">
+      <Help>
+        Used during Association process by Simon Shortcut Switch IO to turn ON the main LED of all devices already associated to this shortcut.
+      </Help>
+      <Item label="Turns the central LED OFF" value="0"/>
+      <Item label="Turns the central LED ON" value="255"/>
+    </Value>
+
+    <Value type="byte" index="4" genre="config" label="UP Time" units="seconds" min="0" max="127" value="0" size="1">
+      <Help>
+        This parameter allows to choose the roller blind UP time in seconds.
+        Value 0 - Instantly (default).
+        Values from 1 to 127 - 1 second to 127 seconds in 1 second resolution.
+      </Help>
+    </Value>
+
+    <Value type="byte" index="5" genre="config" label="DOWN Time" units="minutes" min="128" max="254" value="128" size="1">
+      <Help>
+        This parameter allows to choose the roller blind DOWN time in minutes.
+        Values from 1 to 127 - 1 minute to 127 minutes in 1 minute resolution.
+      </Help>
+    </Value>
+
+    <Value genre="config" index="12" label="Behavior of LED in Repose" max="255" min="0" size="1" type="list" value="0">
+      <Help>This parameter allows to choose behaviour of LED in repose</Help>
+      <Item label="LED OFF" value="0"/>
+      <Item label="LED ON at 20% of maximum level" value="255"/>
+    </Value>
+
+    <Value genre="config" index="13" label="Lock Input" max="255" min="0" size="1" type="list" value="0">
+      <Help>This parameter locks the direct control of load.</Help>
+      <Item label="Unlock the direct control of load" value="0"/>
+      <Item label="Lock the direct control of load" value="255"/>
+    </Value>
+
+    <Value genre="config" index="15" label="Reset Default" max="39015" min="39015" size="2" type="list" value="0" write_only="true">
+      <Help>Parameters, Groups, and Z-Wave status are restored to default (Only writable).</Help>
+      <Item label="Device performs a factory default Reset" value="39015"/>
+    </Value>
+
+    <Value genre="config" index="20" label="Identify (Write Only)" max="255" min="255" size="1" type="list" value="0">
+      <Help>Write only value that performs a fast blink on Central LED during 5 seconds in order to identify the device when it is installed in a multiple frame.</Help>
+      <Item label="The central LED flashes for 5 seconds at a frequency of 0,1s." value="255"/>
+    </Value>
+
+    <Value genre="config" index="21" label="Load State (Read Only)" max="65535" min="0" type="byte" size="1" value="0" read_only="true">
+      <Help>
+        Read only Configuration used to report the device state and last value. This value is represented in Hexadecimal.
+        Byte 0 informs about Load State (0 load is OFF and 1 load is ON).
+        Byte 1 informs about Load value (0x00 or 0xFF)
+      </Help>
+    </Value>
+
+    <Value genre="config" index="23" label="Calibration required (Read Only)" max="255" min="0" size="1" type="byte" value="0" read_only="true">
+      <Help>
+        Reports whether the roller blind needs calibration.
+        0x00 Calibration is not required.
+        0xFF It is necessary to calibrate the dimmer to work properly.
+      </Help>
+    </Value>
+
+    <Value genre="config" index="24" label="Operating Mode" max="255" min="0" size="1" type="list" value="255">
+      <Help>This parameter allows to choose the roller blind operating mode (window shutter or sundblinds).</Help>
+      <Item label="Window shutter" value="0"/>
+      <Item label="Sunblinds (default)" value="255"/>
+    </Value>
+
+    <Value genre="config" index="25" label="Lock long press" max="255" min="0" size="1" type="list" value="0">
+      <Help>This parameter allows to choose the long press behaviour.</Help>
+      <Item label="Long press works as described in the product manual." value="0"/>
+      <Item label="Long press between 2s to 10s: do not send the Node Info. Long press of more than 30s: parameters, except Lock long press are restored to default and device sends a Node Info " value="255"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="3"/>
+    </Associations>
+  </CommandClass>
+</Product>

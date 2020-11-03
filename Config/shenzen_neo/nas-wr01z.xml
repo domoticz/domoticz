@@ -1,4 +1,4 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0258:0087:0003</MetaDataItem>
     <MetaDataItem name="ProductPic">images/shenzen_neo/nas-wr01z.png</MetaDataItem>
@@ -35,6 +35,7 @@ Reset procedure will delete all information on the Z‐Wave network and Z‐Wave
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1670/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1783/xml</Entry>
+      <Entry author="Daniel Brunt - daniel@brunt.ca" date="15 Sep 2020" revision="6">Correction to Value genre="config" index="2" instance="1" label="Meter Report Interval" max="65536" should be "65535"</Entry>
     </ChangeLog>
     <MetaDataItem id="1087" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1783/</MetaDataItem>
     <MetaDataItem id="1087" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
@@ -51,7 +52,7 @@ Reset procedure will delete all information on the Z‐Wave network and Z‐Wave
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value genre="config" index="2" instance="1" label="Meter Report Interval" max="65536" min="1" size="2" type="short" units="second" value="300">
+    <Value genre="config" index="2" instance="1" label="Meter Report Interval" max="65535" min="1" size="2" type="short" units="second" value="300">
       <Help>This parameter defines interval time (in seconds) that Meter report data to main controller.</Help>
     </Value>
     <Value genre="config" index="3" instance="1" label="Configure maximum over-load current" max="16" min="1" size="1" type="byte" units="Ampere" value="13">

@@ -1,0 +1,58 @@
+<Product Revision="0" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">none</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/14280-plugin-dimmer.png</MetaDataItem>
+    <MetaDataItem id="3033" name="ZWProductPage" type="5044">https://products.z-wavealliance.org/products/2139/</MetaDataItem>
+    <MetaDataItem name="Name">Plug-in Smart Dimmer, Dual Plug With Simultaneous Control</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=%26filename=MarketCertificationFiles/2139/Binder1.pdf</MetaDataItem>
+    <MetaDataItem id="3033" name="FrequencyName" type="5044">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription"></MetaDataItem>
+    <MetaDataItem name="InclusionDescription"></MetaDataItem>
+    <MetaDataItem name="Description"></MetaDataItem>
+    <MetaDataItem id="3033" name="Identifier" type="5044">14280/ZW3107</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription"></MetaDataItem>
+    <ChangeLog>
+      <Entry author="Travis Geis - travis@travisgeis.com" date="27 August 2020" revision="0">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2139/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="0">
+      <Help>Sets when the LED on the switch is lit.</Help>
+      <Item label="LED on when light off" value="0"/>
+      <Item label="LED on when light on" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+    <!-- Both the number of steps (or levels) that the dimmer will change and the timing of the steps can be modified to suit personal preferences. The timing of the steps can be adjusted in 10 millisecond intervals. As an example, the default setting for parameter 8 is 3. This means that the lighting level will change every 30 milliseconds when the Dim Command is received. A value of 255 would mean that the level would change every 2.55 seconds. Combined, the two parameters allow dim rate adjustments from 10 milliseconds to 4.2 minutes to go from maximum-to-minimum or minimum-to-maximum brightness levels. -->
+    <Value genre="config" index="7" label="Z-Wave Command Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="8" label="Z-Wave Command Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="9" label="Local Control Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="10" label="Local Control Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="11" label="ALL ON/ALL OFF Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="12" label="ALL ON/ALL OFF Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="38">
+    <Compatibility>
+      <VerifyChanged index="0">true</VerifyChanged>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>
