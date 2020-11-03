@@ -1,14 +1,15 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/008B:5433:5452</MetaDataItem>
     <MetaDataItem name="ProductPic">images/trane/TZEMT400BB32MAA.png</MetaDataItem>
     <MetaDataItem id="5433" name="ZWProductPage" type="5452">https://products.z-wavealliance.org/products/107/</MetaDataItem>
     <MetaDataItem id="5433" name="FrequencyName" type="5452">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem name="Name">Trane T500A - Thermostat</MetaDataItem>
+    <MetaDataItem name="Name">Trane TZEMT400BB - Thermostat</MetaDataItem>
     <MetaDataItem name="Description">Z-Wave enabled programmable communicating thermostat.</MetaDataItem>
     <MetaDataItem id="5433" name="Identifier" type="5452">Trane T500A</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/107/xml</Entry>
+      <Entry author="Keith Laidlaw - laidlaw1546@gmail.com" date="28 Oct 2020" revision="4">Remove (non-existent) config param id 161 to 199</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Trane Thermostat Model TZEMT400BB32MAA -->
@@ -301,133 +302,6 @@
 	      the screen, use a lower number.
 	      Default:  10
 	    </Help>
-    </Value>
-    <Value genre="config" index="161" label="Unknown-161" max="" min="" type="byte" units="" value="1">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="162" label="Unknown-162" max="" min="" type="byte" units="" value="30">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="163" label="Unknown-163" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="166" label="Unknown-166" max="" min="" type="byte" units="" value="1">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="167" label="Unknown-167" max="" min="" type="byte" units="" value="1">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="162" label="Unknown-162" max="" min="" type="byte" units="" value="30">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="169" label="Unknown-169" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="170" label="Unknown-170" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="171" label="Unknown-171" max="" min="" type="byte" units="">
-      <Help>
-	      0x2c after reset
-	      0xf4 after reset
-	    </Help>
-    </Value>
-    <Value genre="config" index="172" label="Unknown-172" max="" min="" type="byte" units="">
-      <Help>
-	      0x2c after reset
-	      0xf4 after reset
-	    </Help>
-    </Value>
-    <Value genre="config" index="173" label="Unknown-173" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="174" label="Unknown-174" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="175" label="Unknown-175" max="" min="" type="byte" units="" value="1">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="176" label="Unknown-176" max="" min="" type="byte" units="" value="44">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="177" label="Unknown-177" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="178" label="Unknown-178" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="179" label="Unknown-179" max="" min="" type="byte" units="" value="1">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="180" label="Unknown-180" max="" min="" type="byte" units="" value="44">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="181" label="Unknown-181" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="182" label="Unknown-182" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="183" label="Unknown-183" max="" min="" type="byte" units="">
-      <Help>
-	      0xb8 after reset
-	      0xe4 after reset
-	    </Help>
-    </Value>
-    <Value genre="config" index="184" label="Unknown-184" max="" min="" type="byte" units="">
-      <Help>
-	      0xb8 after reset
-	      0xe4 after reset
-	    </Help>
-    </Value>
-    <Value genre="config" index="185" label="Schedule Enable" max="1" min="0" type="byte" units="" value="0">
-      <Help>
-	      When enabled (set to 1), the local thermostat's scheduler 
-	      function is enabled.
-	      Default:  0
-	    </Help>
-    </Value>
-    <Value genre="config" index="186" label="Unknown-186" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="187" label="Unknown-187" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="190" label="Unknown-190" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="191" label="Unknown-191" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="192" label="Unknown-192" max="" min="" type="byte" units="" value="0">
-      <Help>
-	      0xff after reset
-	    </Help>
-    </Value>
-    <Value genre="config" index="193" label="Unknown-193" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="194" label="Unknown-194" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="195" label="Unknown-195" max="" min="" type="byte" units="" value="0">
-      <Help>
-	      0xff after reset
-	    </Help>
-    </Value>
-    <Value genre="config" index="196" label="Unknown-196" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="197" label="Unknown-197" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
-    </Value>
-    <Value genre="config" index="198" label="Unknown-198" max="" min="" type="byte" units="" value="0">
-      <Help>
-	      0xff after reset
-	    </Help>
-    </Value>
-    <Value genre="config" index="199" label="Unknown-199" max="" min="" type="byte" units="" value="0">
-      <Help></Help>
     </Value>
     <Value genre="config" index="200" label="Unknown-200" max="" min="" type="byte" units="" value="0">
       <Help></Help>

@@ -1,4 +1,4 @@
-<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/5254:8170:0200</MetaDataItem>
     <MetaDataItem name="ProductPic">images/remotec/zts-500.png</MetaDataItem>
@@ -11,27 +11,31 @@ Press &lt; to cancel and back to the previous screen.
 Use the RESET procedure ONLY when the primary Controller is missing or inoperable.
 </MetaDataItem>
     <MetaDataItem id="8170" name="FrequencyName" type="0200">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem name="Description">ZTS-500 is a user-friendly Z-Wave programmable smart thermostat. The ZTS-500 is compatible with any Z-Wave certified controller or gateway and is designed to fit perfectly over most original thermostat installation marks without the need for a mounting board. The invisible 4-button back-illuminated interface combines a simple and intuitive interactive experience with a modern fashionable look. The flip-over terminal-board makes installation a breeze, The ZTS-500 allows utilization even in environments where a C wire is not available. With automatic power source detection (24Vac or Battery Power), it decide to maximizing battery life or acting as a range extender in the Z-Wave network, and all your connections will be safe and secure behind AES128 encryption. The ZTS-500’s available multi-color faceplates allow for seamless integration into a variety of interior designs.</MetaDataItem>
+    <MetaDataItem name="Description">ZTS-500 is a user-friendly Z-Wave programmable smart thermostat. The ZTS-500 is compatible with any Z-Wave certified controller or gateway and is designed to fit perfectly over most original thermostat installation marks without the need for a mounting board. The invisible 4-button back-illuminated interface combines a simple and intuitive interactive experience with a modern fashionable look. The flip-over terminal-board makes installation a breeze, The ZTS-500US allows utilization even in environments where a C wire is not available. With automatic power source detection (24Vac or Battery Power), it decide to maximizing battery life or acting as a range extender in the Z-Wave network, and all your connections will be safe and secure behind AES128 encryption. The ZTS-500’s available multi-color faceplates allow for seamless integration into a variety of interior designs.</MetaDataItem>
     <MetaDataItem name="InclusionDescription">From the Standby screen, press > or &lt; to navigate to the Z-Wave screen and the Z-Wave LED will continuously flash.
-Tap + to include the ZTS-500US into the network.
--	The “✔” symbol will be displayed on screen once the ZTS-500US is added into the network.
+Tap + to include the ZTS-500 into the network.
+-	The “✔” symbol will be displayed on screen once the ZTS-500 is added into the network.
 The Z-Wave disconnect icon will also be removed from the standby screen.
 
--	The “x” symbol will be displayed on screen if there is no action (time out) or unable to include the ZTS-500US into the network.
+-	The “x” symbol will be displayed on screen if there is no action (time out) or unable to include the ZTS-500 into the network.
 </MetaDataItem>
-    <MetaDataItem id="8170" name="Identifier" type="0200">ZTS-500US</MetaDataItem>
+    <MetaDataItem id="8170" name="Identifier" type="0200">ZTS-500</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Press and keep holding > or &lt; for 3 seconds to navigate to the System Main (SYS) screen. 
 On the Z-Wave (Z-w) screen.
-Tap + to exclude ZTS-500US from the network.
+Tap + to exclude ZTS-500 from the network.
 Press &lt; to cancel and back to the previous screen.
 </MetaDataItem>
     <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1767/F-BW8170US (ZTS-500US) User_Manual_V1.01_Z-Wave validation_20160510.pdf</MetaDataItem>
     <MetaDataItem name="Name">Z-WAVE SMART THERMOSTAT</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1767/xml</Entry>
+      <Entry author="James Dodds" date="04 October 2020" revision="5">Update to include AU version, which is idential to the US version but with a different type</Entry>
     </ChangeLog>
+    <MetaDataItem id="8170" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/1767/xml</MetaDataItem>
+    <MetaDataItem id="8170" name="Identifier" type="0202">ZTS-500</MetaDataItem>
+    <MetaDataItem id="8170" name="FrequencyName" type="0202">Australia / New Zealand</MetaDataItem>
   </MetaData>
-  <!-- Remotec ZTS-500 Thermostat
+  <!-- Remotec ZTS-500US Thermostat
      http://www.zwaveproducts.com/product-documentation/F-BW8170US%20(ZTS-500US)%20User_Manual_V1.01_Z-Wave%20validation_20160510.pdf
      http://products.z-wavealliance.org/products/1767/configs -->
 
