@@ -59,7 +59,9 @@ SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string& APIKey) :
 	m_totalEnergy = 0;
 }
 
-SolarEdgeAPI::~SolarEdgeAPI() = default;
+SolarEdgeAPI::~SolarEdgeAPI(void)
+{
+}
 
 bool SolarEdgeAPI::StartHardware()
 {
@@ -93,7 +95,7 @@ void SolarEdgeAPI::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter % 300 == 0)
 		{
@@ -269,7 +271,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 #ifdef DEBUG_SolarEdgeAPIR_DETAILS
 	sResult = ReadFile("E:\\SolarEdge.json");
 #else
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 	//atime = (atime / 300) * 300;
 	struct tm ltime;
 	localtime_r(&atime, &ltime);

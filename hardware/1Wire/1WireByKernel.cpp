@@ -83,9 +83,7 @@ void C1WireByKernel::ThreadFunction()
 		// Thread is stopped
 	}
 	m_PendingChanges.clear();
-	for (auto &m_Device : m_Devices) {
-		delete m_Device.second;
-	}
+	for (DeviceCollection::iterator it = m_Devices.begin(); it != m_Devices.end(); ++it) { delete (*it).second; }
 	m_Devices.clear();
 }
 
@@ -200,12 +198,10 @@ void C1WireByKernel::ThreadBuildDevicesList()
 {
 	DIR *dir;
 	struct dirent *ent;
-	if ((dir = opendir(Wire1_Base_Dir)) != nullptr) {
-		for (auto &m_Device : m_Devices) {
-			delete m_Device.second;
-		}
+	if ((dir = opendir (Wire1_Base_Dir)) != NULL) {
+		for (DeviceCollection::iterator it = m_Devices.begin(); it != m_Devices.end(); ++it) { delete (*it).second; }
 		m_Devices.clear();
-		while ((ent = readdir(dir)) != nullptr) {
+		while ((ent = readdir (dir)) != NULL) {
 			std::string directoryName=ent->d_name;
 			if(directoryName.find("w1_bus_master")==0)
 			{
@@ -250,7 +246,7 @@ void C1WireByKernel::ThreadBuildDevicesList()
 			}
 		}
 		closedir (dir);
-	}
+	}	
 }
 
 void C1WireByKernel::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const
@@ -267,7 +263,7 @@ const C1WireByKernel::DeviceState* C1WireByKernel::GetDevicePendingState(const s
 		if (it.GetDevice().devid == deviceId)
 			return &it;
 	}
-	return nullptr;
+	return NULL;
 }
 
 float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
@@ -532,8 +528,8 @@ void C1WireByKernel::ThreadWriteRawData8ChannelAddressableSwitch(const std::stri
 inline void std_to_upper(const std::string& str, std::string& converted)
 {
 	converted = "";
-	for (char i : str)
-		converted += (char)toupper(i);
+	for (size_t i = 0; i < str.size(); ++i)
+		converted += (char)toupper(str[i]);
 }
 
 void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const

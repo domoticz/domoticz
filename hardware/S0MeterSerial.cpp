@@ -36,7 +36,10 @@ S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const uns
 	InitBase();
 }
 
-S0MeterSerial::~S0MeterSerial() = default;
+S0MeterSerial::~S0MeterSerial()
+{
+
+}
 
 bool S0MeterSerial::StartHardware()
 {

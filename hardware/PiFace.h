@@ -24,7 +24,7 @@ class CIOCount
 
 public:
     CIOCount();
-    ~CIOCount() = default;
+    ~CIOCount();
 
     int Update(unsigned long Counts);
     unsigned long GetTotal(void) const {return Total;};
@@ -69,7 +69,7 @@ class CIOPinState
 
 public:
     CIOPinState();
-    ~CIOPinState() = default;
+    ~CIOPinState();
 
     int Update(bool New);
     int UpdateInterrupt(bool IntFlag,bool PinState);
@@ -97,7 +97,7 @@ class CIOPort
 
 public:
     CIOPort();
-    ~CIOPort() = default;
+    ~CIOPort();
     int Update(unsigned char New);
     int UpdateInterrupt(unsigned char IntFlag,unsigned char PinState);
     unsigned char GetCurrent(void) const { return Current;}
@@ -124,10 +124,10 @@ class CPiFace : public CDomoticzHardwareBase
 
 public:
     explicit CPiFace(const int ID);
-    ~CPiFace() = default;
-    bool WriteToHardware(const char *pdata, const unsigned char length) override;
+    ~CPiFace();
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 
-  private:
+private:
     bool StartHardware() override;
     bool StopHardware() override;
 

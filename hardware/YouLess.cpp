@@ -20,7 +20,9 @@ m_Password(CURLEncode::URLEncode(password))
 	Init();
 }
 
-CYouLess::~CYouLess() = default;
+CYouLess::~CYouLess(void)
+{
+}
 
 void CYouLess::Init()
 {
@@ -47,7 +49,7 @@ void CYouLess::Init()
 	m_bHaveP1OrS0 = false;
 	m_bCheckP1 = true;
 	m_lastgasusage = 0;
-	m_lastSharedSendGas = mytime(nullptr);
+	m_lastSharedSendGas = mytime(NULL);
 }
 
 bool CYouLess::StartHardware()
@@ -85,7 +87,7 @@ void CYouLess::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat=mytime(NULL);
 		}
 		if (sec_counter % YOULESS_POLL_INTERVAL == 0)
 		{
@@ -150,7 +152,7 @@ bool CYouLess::GetP1Details()
 		sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 
 		m_p1gas.gasusage = (unsigned long)(root["gas"].asDouble() * 1000);
-		time_t atime = mytime(nullptr);
+		time_t atime = mytime(NULL);
 		if (
 			(m_p1gas.gasusage != m_lastgasusage) ||
 			(difftime(atime, m_lastSharedSendGas) >= 300)
@@ -207,13 +209,13 @@ void CYouLess::GetMeterDetails()
 	}
 	int fpos;
 	std::string pusage=stdstring_trim(results[0]);
-	fpos = pusage.find_first_of(' ');
+	fpos=pusage.find_first_of(" ");
 	if (fpos!=std::string::npos)
 		pusage=pusage.substr(0,fpos);
 	stdreplace(pusage,",","");
 
 	std::string pcurrent=stdstring_trim(results[1]);
-	fpos = pcurrent.find_first_of(' ');
+	fpos=pcurrent.find_first_of(" ");
 	if (fpos!=std::string::npos)
 		pcurrent=pcurrent.substr(0,fpos);
 	stdreplace(pcurrent,",","");

@@ -100,7 +100,7 @@ static point get_closest_point_to_line(point A, point B, point P)
 	else if (t > 1.0)
 		t = 1.0;
 
-	return {A.x + AB.x * t, A.y + AB.y * t};
+	return point(A.x + AB.x * t, A.y + AB.y * t);
 }
 
 static double get_distance_between_two_points(point p1, point p2)
@@ -145,7 +145,7 @@ static point get_closest_point_to_point(point xy_point, const std::string &model
 	double cx = closest_point.x;
 	double cy = closest_point.y;
 
-	return {cx, cy};
+	return point(cx, cy);
 }
 
 void CPhilipsHue::RgbFromXY(const double x, const double y, const double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8)
@@ -265,8 +265,8 @@ bool CPhilipsHue::StatesSimilar(const _tHueLightState &s1, const _tHueLightState
 				  break;
 			}
 			case HLMODE_XY:
-				res = std::abs(s1.x - s2.x) < 0.01 && // 655 is 1% of 65535, the range of hue
-				      std::abs(s1.y - s2.y) < 0.01;   // 3 is 1% of 255, the range of sat
+				res = abs(s1.x - s2.x) < 0.01 && // 655 is 1% of 65535, the range of hue
+					  abs(s1.y - s2.y) < 0.01;   // 3 is 1% of 255, the range of sat
 				break;
 		}
 	}

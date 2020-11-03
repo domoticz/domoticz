@@ -88,13 +88,17 @@ COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const
 	m_ownSynch = ownSynch * 60;	// minutes to seconds..
 	
 	m_heartbeatcntr = OPENWEBNET_HEARTBEAT_DELAY;
-	m_pStatusSocket = nullptr;
+	m_pStatusSocket = NULL;
+
+	
 }
 
 /**
 	destroys hardware OpenWebNet instance
 **/
-COpenWebNetTCP::~COpenWebNetTCP() = default;
+COpenWebNetTCP::~COpenWebNetTCP(void)
+{
+}
 
 /**
 	Start Hardware OpneWebNet Monitor/Worker Service
@@ -112,12 +116,12 @@ bool COpenWebNetTCP::StartHardware()
 	SetThreadName(m_monitorThread->native_handle(), "OpenWebNetTCPMF");
 
 	//Start worker thread
-	if (m_monitorThread != nullptr) {
+	if (m_monitorThread != NULL) {
 		m_heartbeatThread = std::make_shared<std::thread>(&COpenWebNetTCP::Do_Work, this);
 		SetThreadName(m_heartbeatThread->native_handle(), "OpenWebNetTCPW");
 	}
 
-	return (m_monitorThread != nullptr && m_heartbeatThread != nullptr);
+	return (m_monitorThread != NULL && m_heartbeatThread != NULL);
 }
 
 /**
@@ -128,7 +132,8 @@ bool COpenWebNetTCP::StopHardware()
 	RequestStop();
 
 	//Force socket close to stop the blocking thread?
-	if (m_pStatusSocket != nullptr) {
+	if (m_pStatusSocket != NULL)
+	{
 		m_pStatusSocket->close();
 	}
 
@@ -165,11 +170,12 @@ bool COpenWebNetTCP::StopHardware()
 **/
 void COpenWebNetTCP::disconnect()
 {
-	if (m_pStatusSocket != nullptr) {
+	if (m_pStatusSocket != NULL)
+	{
 		_log.Log(LOG_STATUS, "COpenWebNetTCP: disconnect");
 		m_pStatusSocket->close();
 		delete m_pStatusSocket;
-		m_pStatusSocket = nullptr;
+		m_pStatusSocket = NULL;
 	}
 }
 
@@ -177,7 +183,11 @@ void COpenWebNetTCP::disconnect()
 /**
    Check socket connection
 **/
-bool COpenWebNetTCP::isStatusSocketConnected() { return m_pStatusSocket != nullptr && m_pStatusSocket->getState() == csocket::CONNECTED; };
+bool COpenWebNetTCP::isStatusSocketConnected()
+{
+	return m_pStatusSocket != NULL && m_pStatusSocket->getState() == csocket::CONNECTED;
+};
+
 
 /**
    write ...
@@ -380,14 +390,14 @@ const std::string COpenWebNetTCP::shaCalc(std::string paramString, int auth_type
 	if (auth_type == 0)
 	{
 		// Perform SHA1
-		digest = SHA1(strArray, paramString.length(), nullptr);
+		digest = SHA1(strArray, paramString.length(), 0);	
 		char arrayOfChar2[(SHA_DIGEST_LENGTH * 2) + 1];
 		return (byteToHexStrConvert(digest, SHA_DIGEST_LENGTH, arrayOfChar2));
 	}
 	else
 	{
 		// Perform SHA256
-		digest = SHA256(strArray, paramString.length(), nullptr);
+		digest = SHA256(strArray, paramString.length(), 0);
 		char arrayOfChar2[(SHA256_DIGEST_LENGTH * 2) + 1];
 		return (byteToHexStrConvert(digest, SHA256_DIGEST_LENGTH, arrayOfChar2));
 	}
@@ -410,7 +420,7 @@ bool COpenWebNetTCP::hmacAuthentication(csocket *connectionSocket, int auth_type
 	if (responseSrv.IsPwdFrame())
 	{
 		struct timeval tv;
-		gettimeofday(&tv, nullptr);
+		gettimeofday(&tv, NULL);
 
 		// receive Ra
 		const std::string strRcvSrv = responseSrv.Extract_who();							  // Ra from server in DEC-chars
@@ -552,7 +562,7 @@ csocket* COpenWebNetTCP::connectGwOwn(const char *connectionMode)
 	if (m_szIPAddress.size() == 0 || m_usIPPort == 0 || m_usIPPort > 65535)
 	{
 		_log.Log(LOG_ERROR, "COpenWebNetTCP: Cannot connect to gateway, empty  IP Address or Port");
-		return nullptr;
+		return NULL;
 	}
 
 	/* new socket for command and session connection */
@@ -563,7 +573,7 @@ csocket* COpenWebNetTCP::connectGwOwn(const char *connectionMode)
 	{
 		_log.Log(LOG_ERROR, "COpenWebNetTCP: Cannot connect to gateway, Unable to connect to specified IP Address on specified Port");
 		disconnect();  // disconnet socket if present
-		return nullptr;
+		return NULL;
 	}
 
 	char databuffer[OPENWEBNET_BUFFER_SIZE];
@@ -573,13 +583,12 @@ csocket* COpenWebNetTCP::connectGwOwn(const char *connectionMode)
 	{
 		_log.Log(LOG_ERROR, "COpenWebNetTCP: failed to begin session, (%s:%d)-> '%s'", m_szIPAddress.c_str(), m_usIPPort, databuffer);
 		disconnect();  // disconnet socket if present
-		return nullptr;
+		return NULL;
 	}
 
 	ownWrite(connectionSocket, connectionMode, strlen(connectionMode));
 
-	if (!ownAuthentication(connectionSocket))
-		return nullptr;
+	if (!ownAuthentication(connectionSocket)) return NULL;
 
 	return connectionSocket;
 }
@@ -594,7 +603,7 @@ void COpenWebNetTCP::MonitorFrames()
 		if (!isStatusSocketConnected())
 		{
 			disconnect();  // disconnet socket if present
-			time_t atime = time(nullptr);
+			time_t atime = time(NULL);
 			if ((atime%OPENWEBNET_RETRY_DELAY) == 0)
 			{
 				if ((m_pStatusSocket = connectGwOwn(OPENWEBNET_EVENT_SESSION)))
@@ -738,7 +747,7 @@ void COpenWebNetTCP::UpdatePower(const int who, const int where, double fval, co
 	double energy = 0.;
 
 	int NodeId = (iInterface << 8) | who;
-	GetValueMeter(NodeId, where, nullptr, &energy);
+	GetValueMeter(NodeId, where, NULL, &energy);
 	SendKwhMeter(NodeId, where, BatteryLevel, fval, (energy / 1000.), devname);
 }
 
@@ -755,7 +764,7 @@ void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, c
 
 	double usage = 0.;
 	int NodeId = (iInterface << 8) | who;
-	GetValueMeter(NodeId, where, &usage, nullptr);
+	GetValueMeter(NodeId, where, &usage, NULL);
 	SendKwhMeter(NodeId, where, BatteryLevel, usage, fval, devname);
 }
 
@@ -1542,7 +1551,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 
 				if (m_ownSynch)
 				{
-					now = mytime(nullptr);
+					now = mytime(NULL);
 					localtime_r(&now, &lnowtime);
 
 					ltime.tm_mon -= 1;		// months since January - [0, 11]
@@ -2213,7 +2222,7 @@ void COpenWebNetTCP::scan_device()
 		_log.Log(LOG_STATUS, "COpenWebNetTCP: scan device complete, wait all the update data..");
 
 		/* Update complete scan time*/
-		LastScanTime = mytime(nullptr);
+		LastScanTime = mytime(NULL);
 	}
 	else
 	{
@@ -2252,7 +2261,7 @@ void COpenWebNetTCP::Do_Work()
 	{
 		if (isStatusSocketConnected())
 		{
-			time_t tnow = mytime(nullptr);
+			time_t tnow = mytime(NULL);
 			if ((tnow - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
 			{
 				requestAutomaticUpdatePower(255); // automatic update for 255 minutes
@@ -2280,13 +2289,14 @@ void COpenWebNetTCP::Do_Work()
 		}
 
 		// every 5 minuts force scan ALL devices for refresh status
-		if (m_ownScanTime && ((mytime(nullptr) - LastScanTime) > m_ownScanTime)) {
+		if (m_ownScanTime && ((mytime(NULL) - LastScanTime) > m_ownScanTime))
+		{
 			if ((mask_request_status & 0x1) == 0)
 				_log.Log(LOG_STATUS, "COpenWebNetTCP: HEARTBEAT set scan devices ...");
 			mask_request_status = 0x1; // force scan devices
 		}
 
-		m_LastHeartbeat = mytime(nullptr);
+		m_LastHeartbeat = mytime(NULL);
 	}
 	_log.Log(LOG_STATUS, "COpenWebNetTCP: Heartbeat worker stopped...");
 }

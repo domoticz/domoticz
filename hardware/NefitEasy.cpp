@@ -121,7 +121,9 @@ m_szIPAddress(IPAddress)
 	Init();
 }
 
-CNefitEasy::~CNefitEasy() = default;
+CNefitEasy::~CNefitEasy(void)
+{
+}
 
 void CNefitEasy::Init()
 {
@@ -174,7 +176,7 @@ void CNefitEasy::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if ((sec_counter % fast_pollint == 0) || (bFirstTime))
 		{

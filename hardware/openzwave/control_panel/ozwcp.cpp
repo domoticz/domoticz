@@ -187,8 +187,9 @@ void MyNode::addValue(OpenZWave::ValueID id)
  */
 void MyNode::removeValue(OpenZWave::ValueID id)
 {
+	std::vector<MyValue*>::iterator it;
 	bool found = false;
-	for (auto it = values.begin(); it != values.end(); it++) {
+	for (it = values.begin(); it != values.end(); it++) {
 		if ((*it)->id == id) {
 			delete* it;
 			values.erase(it);
@@ -257,11 +258,11 @@ void MyNode::addGroup(uint8 node, uint8 g, uint8 n, uint8* v)
 #endif
 	if (groups.size() == 0)
 		newGroup(node);
-	for (const auto &group : groups)
-		if (group->groupid == g) {
-			group->grouplist.clear();
+	for (std::vector<MyGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+		if ((*it)->groupid == g) {
+			(*it)->grouplist.clear();
 			for (int i = 0; i < n; i++)
-				group->grouplist.push_back(v[i]);
+				(*it)->grouplist.push_back(v[i]);
 			setTime(time(NULL));
 			setChanged(true);
 			return;
@@ -277,9 +278,9 @@ void MyNode::addGroup(uint8 node, uint8 g, uint8 n, uint8* v)
  */
 MyGroup* MyNode::getGroup(uint8 i)
 {
-	for (const auto &group : groups)
-		if (group->groupid == i)
-			return group;
+	for (std::vector<MyGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+		if ((*it)->groupid == i)
+			return *it;
 	return NULL;
 }
 
@@ -290,6 +291,7 @@ MyGroup* MyNode::getGroup(uint8 i)
 void MyNode::updateGroup(uint8 node, uint8 grp, char* glist)
 {
 	char* p = glist;
+	std::vector<MyGroup*>::iterator it;
 	char* np;
 	uint8* v;
 	uint8 n;
@@ -297,13 +299,15 @@ void MyNode::updateGroup(uint8 node, uint8 grp, char* glist)
 #ifdef OZW_WRITE_LOG
 	Log::Write(LogLevel_Info, "updateGroup: node %d group %d\n", node, grp);
 #endif
-	auto it = std::find_if(groups.begin(), groups.end(), [=](MyGroup *group) { return group->groupid == grp; });
+	for (it = groups.begin(); it != groups.end(); ++it)
+		if ((*it)->groupid == grp)
+			break;
 	if (it == groups.end()) {
 #ifdef OZW_WRITE_LOG
 		Log::Write(LogLevel_Error, "updateGroup: node %d group %d not found\n", node, grp);
 #endif
 		return;
-	}
+}
 	v = new uint8[(*it)->max];
 	n = 0;
 	while (p != NULL && *p && n < (*it)->max) {
@@ -458,9 +462,9 @@ MyValue* MyNode::lookup(std::string data)
 	MyNode* n = nodes[node];
 	if (n == NULL)
 		return NULL;
-	for (const auto &value : n->values)
-		if (value->id == id)
-			return value;
+	for (std::vector<MyValue*>::iterator it = n->values.begin(); it != n->values.end(); it++)
+		if ((*it)->id == id)
+			return *it;
 	return NULL;
 }
 
@@ -1007,10 +1011,10 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement* ep)
 				std::string str;
 				OpenZWave::Manager::Get()->GetValueListSelection(id, &str);
 				valueElement->SetAttribute("current", str.c_str());
-				for (const auto &str : strs) {
+				for (std::vector<std::string>::iterator it = strs.begin(); it != strs.end(); it++) {
 					TiXmlElement* itemElement = new TiXmlElement("item");
 					valueElement->LinkEndChild(itemElement);
-					TiXmlText *textElement = new TiXmlText(str.c_str());
+					TiXmlText* textElement = new TiXmlText((*it).c_str());
 					itemElement->LinkEndChild(textElement);
 				}
 			}
@@ -1020,9 +1024,10 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement* ep)
 				if (OpenZWave::Manager::Get()->GetValueAsString(id, &str))
 				{
 					//make valid string
-					for (char &ii : str) {
-						if (ii < 0x20)
-							ii = ' ';
+					for (size_t ii = 0; ii < str.size(); ii++)
+					{
+						if (str[ii] < 0x20)
+							str[ii] = ' ';
 					}
 					textElement = new TiXmlText(str.c_str());
 				}

@@ -25,7 +25,7 @@ public:
 	};
 
 	CNotificationObserver();
-	~CNotificationObserver() = default;
+	~CNotificationObserver();
 	virtual bool Update(const _eType type, const _eStatus status, const std::string &eventdata = "") = 0;
 };
 

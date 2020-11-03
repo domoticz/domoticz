@@ -165,7 +165,9 @@ I2C::I2C(const int ID, const _eI2CType DevType, const std::string &Address, cons
 	}
 }
 
-I2C::~I2C() = default;
+I2C::~I2C()
+{
+}
 
 bool I2C::StartHardware()
 {
@@ -250,7 +252,7 @@ void I2C::Do_Work()
 			msec_counter = 0;
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(nullptr);
+				m_LastHeartbeat = mytime(NULL);
 			}
 			try
 			{
@@ -400,7 +402,9 @@ void I2C::MCP23017_Init()
 	results = m_sql.safe_query("SELECT Unit, nValue FROM DeviceStatus WHERE (HardwareID = %d) AND (DeviceID like '000%02X%%');", m_HwdID, m_i2c_addr);
 	if (!results.empty())
 	{
-		for (const auto &sd : results) {
+		for (const auto & itt : results)
+		{
+			std::vector<std::string> sd = itt;
 			unit = atoi(sd[0].c_str());
 			nvalue = atoi(sd[1].c_str());
 
@@ -460,7 +464,7 @@ void I2C::MCP23017_ReadChipDetails()
 		_log.Log(LOG_NORM, "I2C::MCP23017_ReadChipDetails. %s. Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
 		return; //read from i2c failed
 	}
-	if (data.word == 0xFFFF) { // if oidir port is 0xFFFF means the chip has been reset
+	if ((data.word == 0xFFFF)) {									// if oidir port is 0xFFFF means the chip has been reset
 		_log.Log(LOG_NORM, "I2C::MCP23017_ReadChipDetails, Cur_iodir: 0xFFFF, call MCP23017_Init");
 		MCP23017_Init();										// initialize gpio pins with switch status from db
 	}

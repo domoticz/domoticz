@@ -55,7 +55,9 @@ CMeteorologisk::CMeteorologisk(const int ID, const std::string &Location) :
 	Init();
 }
 
-CMeteorologisk::~CMeteorologisk() = default;
+CMeteorologisk::~CMeteorologisk(void)
+{
+}
 
 void CMeteorologisk::Init()
 {
@@ -95,7 +97,7 @@ void CMeteorologisk::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter % 300 == 0)
 		{
@@ -218,7 +220,7 @@ void CMeteorologisk::GetMeterDetails()
 	Json::Value timeseries = root["properties"]["timeseries"];
 
 	Json::Value selectedTimeserie = 0;
-	time_t now = time(nullptr);
+	time_t now = time(NULL);
 
 	for(int i = 0; i < (int)timeseries.size(); i++)
 	{

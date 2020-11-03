@@ -84,7 +84,9 @@ MochadTCP::MochadTCP(const int ID, const std::string &IPAddress, const unsigned 
 	currentUnit=0;
 }
 
-MochadTCP::~MochadTCP() = default;
+MochadTCP::~MochadTCP(void)
+{
+}
 
 bool MochadTCP::StartHardware()
 {
@@ -142,7 +144,7 @@ void MochadTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	terminate();
@@ -333,7 +335,8 @@ checkFunc:
 			// parse sensor conditions, e.g. "Contact_alert_min_DS10A" or "'Contact_normal_max_low_DS10A"
 			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
 			pchar = strtok(tempRFSECbuf, " _");
-			while (pchar != nullptr) {
+			while (pchar != NULL)
+			{
 				if (strcmp(pchar, "alert") == 0)
 					m_mochadsec.SECURITY1.status = sStatusAlarm;
 				else if (strcmp(pchar, "normal") == 0)
@@ -347,7 +350,7 @@ checkFunc:
 				}
 				else if (strcmp(pchar, "low") == 0)
 					m_mochadsec.SECURITY1.battery_level = 1;
-				pchar = strtok(nullptr, " _");
+				pchar = strtok(NULL, " _");
 			}
 			m_mochadsec.SECURITY1.rssi = 12; // signal strength ?? 12 = no signal strength
 		}
@@ -360,7 +363,8 @@ checkFunc:
 			// parse remote conditions, e.g. "Panic_KR10A" "Lights_On_KR10A" "Lights_Off_KR10A" "Disarm_KR10A" "Arm_KR10A"
 			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
 			pchar = strtok(tempRFSECbuf, " _");
-			while (pchar != nullptr) {
+			while (pchar != NULL)
+			{
 				if (strcmp(pchar, "Panic") == 0)
 					m_mochadsec.SECURITY1.status = sStatusPanic;
 				else if (strcmp(pchar, "Disarm") == 0)
@@ -371,7 +375,7 @@ checkFunc:
 					m_mochadsec.SECURITY1.status = sStatusLightOn;
 				else if (strcmp(pchar, "Off") == 0)
 					m_mochadsec.SECURITY1.status = sStatusLightOff;
-				pchar = strtok(nullptr, " _");
+				pchar = strtok(NULL, " _");
 			}
 			m_mochadsec.SECURITY1.rssi = 12;
 		}
@@ -384,14 +388,15 @@ checkFunc:
 			// parse remote conditions, "Motion_alert_MS10A" and "Motion_normal_MS10A"
 			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
 			pchar = strtok(tempRFSECbuf, " _");
-			while (pchar != nullptr) {
+			while (pchar != NULL)
+			{
 				if (strcmp(pchar, "alert") == 0)
 					m_mochadsec.SECURITY1.status = sStatusMotion;
 				else if (strcmp(pchar, "normal") == 0)
 					m_mochadsec.SECURITY1.status = sStatusNoMotion;
 				else if (strcmp(pchar, "low") == 0)
 					m_mochadsec.SECURITY1.battery_level = 1;
-				pchar = strtok(nullptr, " _");
+				pchar = strtok(NULL, " _");
 			}
 			m_mochadsec.SECURITY1.rssi = 12;
 		}

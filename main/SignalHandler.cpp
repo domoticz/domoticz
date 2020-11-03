@@ -84,7 +84,7 @@ static void printSingleThreadInfo(FILE* f, const char* pattern, bool& foundThrea
 */
 static void printSingleCallStack(FILE* f, const char* pattern, bool& foundThread, bool& gdbSuccess)
 {
-	char *line = nullptr;
+	char * line = NULL;
 	size_t len = 0;
 	ssize_t read;
 	rewind(f);
@@ -97,7 +97,8 @@ static void printSingleCallStack(FILE* f, const char* pattern, bool& foundThread
 		}
 		else
 		{
-			if (strstr(line, pattern) != nullptr) {
+			if (strstr(line, pattern) != NULL)
+			{
 				foundThread = true;
 				if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
 				_log.Log(LOG_ERROR, "%s", line);
@@ -110,7 +111,7 @@ static void printSingleCallStack(FILE* f, const char* pattern, bool& foundThread
 			}
 		}
 		free(line);
-		line = nullptr;
+		line = NULL;
 	}
 }
 
@@ -150,7 +151,7 @@ static bool dumpstack_gdb(bool printAllThreads) {
 	sigaddset(&signal_set, SIGHUP);
 
 	// Block signals to child processes
-	sigprocmask(SIG_BLOCK, &signal_set, nullptr);
+	sigprocmask(SIG_BLOCK, &signal_set, NULL);
 
 	// Spawn helper process which will keep running when gdb is attached to main Domoticz process
 	pid_t intermediate_pid = fork();
@@ -251,13 +252,13 @@ static bool dumpstack_gdb(bool printAllThreads) {
 		}
 		_Exit(result); // Or some more informative status
 	} else {
-		char *line = nullptr;
+		char * line = NULL;
 		size_t len = 0;
 		ssize_t read;
 		int status;
 
 		// Unblock signals to main process
-		sigprocmask(SIG_UNBLOCK, &signal_set, nullptr);
+		sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
 		pid_t res = 0;
 		res = waitpid(intermediate_pid, &status, 0);
 
@@ -283,7 +284,7 @@ static bool dumpstack_gdb(bool printAllThreads) {
 						if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
 						_log.Log(LOG_ERROR, "> %s", line);
 						free(line);
-						line = nullptr;
+						line = NULL;
 					}
 				}
 				fclose(f);
@@ -317,8 +318,9 @@ static void dumpstack_backtrace(void *info, void *ucontext) {
 	char** symbols = backtrace_symbols(addrs, count);
 
 	// skip first stack frame (points here)
-	for (int i = 0; i < count && symbols != nullptr; ++i) {
-		char *mangled_name = nullptr, *offset_begin = nullptr, *offset_end = nullptr;
+	for (int i = 0; i < count && symbols != NULL; ++i)
+	{
+		char *mangled_name = 0, *offset_begin = 0, *offset_end = 0;
 
 		// find parentheses and +address offset surrounding mangled name
 		for (char *p = symbols[i]; *p; ++p)
@@ -347,7 +349,7 @@ static void dumpstack_backtrace(void *info, void *ucontext) {
 			*offset_end++ = '\0';
 
 			int status;
-			char *real_name = abi::__cxa_demangle(mangled_name, nullptr, nullptr, &status);
+			char * real_name = abi::__cxa_demangle(mangled_name, 0, 0, &status);
 
 			// if demangling is successful, output the demangled function name
 			if (status == 0)

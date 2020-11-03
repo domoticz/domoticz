@@ -150,7 +150,7 @@ std::string szAppHash="???";
 std::string szAppDate="???";
 std::string szPyVersion="None";
 int ActYear;
-time_t m_StartTime = time(nullptr);
+time_t m_StartTime=time(NULL);
 std::string szRandomUUID = "???";
 
 MainWorker m_mainworker;
@@ -202,7 +202,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	sigaddset(&newSigSet, SIGTSTP);  /* ignore Tty stop signals */
 	sigaddset(&newSigSet, SIGTTOU);  /* ignore Tty background writes */
 	sigaddset(&newSigSet, SIGTTIN);  /* ignore Tty background reads */
-	sigprocmask(SIG_BLOCK, &newSigSet, nullptr); /* Block the above specified signals */
+	sigprocmask(SIG_BLOCK, &newSigSet, NULL);   /* Block the above specified signals */
 
 	/* Set up a signal handler */
 	newSigAction.sa_sigaction = signal_handler;
@@ -210,14 +210,14 @@ void daemonize(const char *rundir, const char *pidfile)
 	newSigAction.sa_flags = SA_SIGINFO;
 
 	/* Signals to handle */
-	sigaction(SIGTERM, &newSigAction, nullptr); // catch term signal
-	sigaction(SIGINT, &newSigAction, nullptr);  // catch interrupt signal
-	sigaction(SIGSEGV, &newSigAction, nullptr); // catch segmentation fault signal
-	sigaction(SIGABRT, &newSigAction, nullptr); // catch abnormal termination signal
-	sigaction(SIGILL, &newSigAction, nullptr);  // catch invalid program image
-	sigaction(SIGUSR1, &newSigAction, nullptr); // catch SIGUSR1 (used by watchdog)
+	sigaction(SIGTERM, &newSigAction, NULL);    // catch term signal
+	sigaction(SIGINT,  &newSigAction, NULL);    // catch interrupt signal
+	sigaction(SIGSEGV, &newSigAction, NULL);    // catch segmentation fault signal
+	sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
+	sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
+	sigaction(SIGUSR1, &newSigAction, NULL);    // catch SIGUSR1 (used by watchdog)
 #ifndef WIN32
-	sigaction(SIGHUP, &newSigAction, nullptr); // catch HUP, for log rotation
+	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for log rotation
 #endif
 	
 	/* Fork*/
@@ -1064,12 +1064,14 @@ int main(int argc, char**argv)
 	{
 		int logfacility = 0;
 
-		for (auto facilitie : facilities) {
-			if (strcmp(facilitie.facname, logfacname.c_str()) == 0) {
-				logfacility = facilitie.facvalue;
+		for ( size_t idx = 0; idx < sizeof(facilities)/sizeof(facilities[0]); idx++ ) 
+		{
+			if (strcmp(facilities[idx].facname, logfacname.c_str()) == 0) 
+			{
+				logfacility = facilities[idx].facvalue;
 				break;
 			}
-		}
+		} 
 		if ( logfacility == 0 ) 
 		{
 			_log.Log(LOG_ERROR, "%s is an unknown syslog facility", logfacname.c_str());
@@ -1105,13 +1107,13 @@ int main(int argc, char**argv)
 		newSigAction.sa_flags = SA_SIGINFO;
 
 		/* Signals to handle */
-		sigaction(SIGTERM, &newSigAction, nullptr); // catch term signal
-		sigaction(SIGINT, &newSigAction, nullptr);  // catch interrupt signal
-		sigaction(SIGSEGV, &newSigAction, nullptr); // catch segmentation fault signal
-		sigaction(SIGABRT, &newSigAction, nullptr); // catch abnormal termination signal
-		sigaction(SIGILL, &newSigAction, nullptr);  // catch invalid program image
-		sigaction(SIGFPE, &newSigAction, nullptr);  // catch floating point error
-		sigaction(SIGUSR1, &newSigAction, nullptr); // catch SIGUSR1 (used by watchdog)
+		sigaction(SIGTERM, &newSigAction, NULL);    // catch term signal
+		sigaction(SIGINT,  &newSigAction, NULL);    // catch interrupt signal
+		sigaction(SIGSEGV, &newSigAction, NULL);    // catch segmentation fault signal
+		sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
+		sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
+		sigaction(SIGFPE,  &newSigAction, NULL);    // catch floating point error
+		sigaction(SIGUSR1, &newSigAction, NULL);    // catch SIGUSR1 (used by watchdog)
 #else
 		signal(SIGINT, signal_handler);
 		signal(SIGTERM, signal_handler);
@@ -1119,7 +1121,7 @@ int main(int argc, char**argv)
 	}
 
 	// start Watchdog thread after daemonization
-	m_LastHeartbeat = mytime(nullptr);
+	m_LastHeartbeat = mytime(NULL);
 	std::thread thread_watchdog(Do_Watchdog_Work);
 	SetThreadName(thread_watchdog.native_handle(), "Watchdog");
 
@@ -1127,7 +1129,8 @@ int main(int argc, char**argv)
 	{
 		return 1;
 	}
-	m_StartTime = time(nullptr);
+	m_StartTime = time(NULL);
+
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32
@@ -1155,7 +1158,7 @@ int main(int argc, char**argv)
 	while ( !g_bStopApplication )
 	{
 		sleep_seconds(1);
-		m_LastHeartbeat = mytime(nullptr);
+		m_LastHeartbeat = mytime(NULL);
 	}
 #endif
 	_log.Log(LOG_STATUS, "Closing application!...");

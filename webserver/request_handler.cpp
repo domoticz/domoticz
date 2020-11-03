@@ -75,9 +75,9 @@ request_handler::request_handler(const std::string& doc_root, cWebem* webem)
 #endif
 }
 
-#ifndef WEBSERVER_DONT_USE_ZIP
 request_handler::~request_handler()
 {
+#ifndef WEBSERVER_DONT_USE_ZIP
 	if (m_uf!=NULL)
 	{
 		unzClose(m_uf);
@@ -86,10 +86,8 @@ request_handler::~request_handler()
 	if (m_pUnzipBuffer)
 		free(m_pUnzipBuffer);
 	m_pUnzipBuffer=NULL;
-}
-#else
-request_handler::~request_handler() = default;
 #endif
+}
 
 #ifndef WEBSERVER_DONT_USE_ZIP
 int request_handler::do_extract_currentfile(unzFile uf, const char* password, std::string &outputstr)
@@ -170,7 +168,7 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 	// propagate timestamp to browser
 	reply::add_header(&rep, "Last-Modified", convert_to_http_date(mInfo.last_written));
 	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
-	if (nullptr == if_modified) {
+	if (NULL == if_modified) {
 		// we have no if-modified header, continue to serve content
 		mInfo.is_modified = true;
 		//_log.Log(LOG_STATUS, "%s: No If-Modified-Since header", full_path.c_str());
@@ -221,8 +219,8 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   request_path = myWebem->ExtractRequestPath(request_path);
 
   // Determine the file extension.
-  std::size_t last_slash_pos = request_path.find_last_of('/');
-  std::size_t last_dot_pos = request_path.find_last_of('.');
+  std::size_t last_slash_pos = request_path.find_last_of("/");
+  std::size_t last_dot_pos = request_path.find_last_of(".");
   std::string extension;
   if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
   {
@@ -241,9 +239,10 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	  )
 	{
 		const char *encoding_header;
-		if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != nullptr) {
+		if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != NULL)
+		{
 			//see if we support gzip
-			bHaveGZipSupport = (strstr(encoding_header, "gzip") != nullptr);
+			bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
 		}
 	}
   }

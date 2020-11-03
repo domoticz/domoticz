@@ -36,7 +36,7 @@ bool CEvohomeSerial::StopHardware()
 	if(m_bDebug && m_pEvoLog)
 	{
 		delete m_pEvoLog;
-		m_pEvoLog = nullptr;
+		m_pEvoLog=NULL;
 	}
 	return true;
 }
@@ -101,7 +101,7 @@ void CEvohomeSerial::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat=mytime(NULL);
 		}
 
 		if (!isOpen())

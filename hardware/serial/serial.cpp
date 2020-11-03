@@ -42,11 +42,11 @@ public:
   ~ScopedReadLock() {
     this->pimpl_->readUnlock();
   }
-  // Disable copy constructors
-  ScopedReadLock(const ScopedReadLock &) = delete;
-  const ScopedReadLock &operator=(ScopedReadLock) = delete;
-
 private:
+  // Disable copy constructors
+  ScopedReadLock(const ScopedReadLock&);
+  const ScopedReadLock& operator=(ScopedReadLock);
+
   SerialImpl *pimpl_;
 };
 
@@ -58,11 +58,10 @@ public:
   ~ScopedWriteLock() {
     this->pimpl_->writeUnlock();
   }
-  // Disable copy constructors
-  ScopedWriteLock(const ScopedWriteLock &) = delete;
-  const ScopedWriteLock &operator=(ScopedWriteLock) = delete;
-
 private:
+  // Disable copy constructors
+  ScopedWriteLock(const ScopedWriteLock&);
+  const ScopedWriteLock& operator=(ScopedWriteLock);
   SerialImpl *pimpl_;
 };
 

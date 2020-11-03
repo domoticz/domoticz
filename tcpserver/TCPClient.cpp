@@ -11,11 +11,11 @@ namespace server {
 CTCPClientBase::CTCPClientBase(CTCPServerIntBase *pManager)
 	: pConnectionManager(pManager)
 {
-	socket_ = nullptr;
+	socket_ = NULL;
 	m_bIsLoggedIn = false;
 }
 
-CTCPClientBase::~CTCPClientBase()
+CTCPClientBase::~CTCPClientBase(void)
 {
 	if (socket_) delete socket_;
 }
@@ -26,7 +26,10 @@ CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase *pManager
 	socket_ = new boost::asio::ip::tcp::socket(ios);
 }
 
-CTCPClient::~CTCPClient() = default;
+
+CTCPClient::~CTCPClient(void)
+{
+}
 
 void CTCPClient::start()
 {
@@ -117,7 +120,9 @@ CSharedClient::CSharedClient(CTCPServerIntBase *pManager, http::server::CProxyCl
 	m_pProxyClient = proxy;
 }
 
-CSharedClient::~CSharedClient() = default;
+CSharedClient::~CSharedClient()
+{
+}
 
 void CSharedClient::start()
 {

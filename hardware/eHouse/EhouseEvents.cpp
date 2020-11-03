@@ -49,7 +49,7 @@ signed int eHouseTCP::GetIndexOfEvent(unsigned char *TempEvent)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void eHouseTCP::ExecQueuedEvents()
+void eHouseTCP::ExecQueuedEvents(void)
 {
 	unsigned int i;
 	unsigned char localy = 1;

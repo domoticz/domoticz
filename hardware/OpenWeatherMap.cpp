@@ -67,7 +67,9 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 	}
 }
 
-COpenWeatherMap::~COpenWeatherMap() = default;
+COpenWeatherMap::~COpenWeatherMap(void)
+{
+}
 
 bool COpenWeatherMap::ResolveLocation(const std::string& Location, double& latitude, double& longitude, const bool IsCityName)
 {
@@ -282,7 +284,7 @@ void COpenWeatherMap::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter % OpenWeatherMap_Poll_Interval == 0)
 		{
@@ -313,7 +315,7 @@ std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, std::
 {
 	std::string sHour = "Unknown";
 
-	time_t t = (time_t)strtol(UTCtimestamp.c_str(), nullptr, 10);
+	time_t t = (time_t) strtol(UTCtimestamp.c_str(),NULL,10);
 	std::string sDate = ctime(&t);
 
 	std::vector<std::string> strarray;
@@ -345,7 +347,7 @@ std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, std::st
 {
 	std::string sDay = "Unknown";
 
-	time_t t = (time_t)strtol(UTCtimestamp.c_str(), nullptr, 10);
+	time_t t = (time_t) strtol(UTCtimestamp.c_str(),NULL,10);
 	std::string sDate = ctime(&t);
 
 	std::vector<std::string> strarray;

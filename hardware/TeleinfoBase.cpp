@@ -42,7 +42,10 @@ CTeleinfoBase::CTeleinfoBase()
 	InitTeleinfo();
 }
 
-CTeleinfoBase::~CTeleinfoBase() = default;
+
+CTeleinfoBase::~CTeleinfoBase()
+{
+}
 
 void CTeleinfoBase::InitTeleinfo()
 {
@@ -92,7 +95,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	int alertI1, alertI2, alertI3, alertEJP, alertPPOT;
 	char szTmp[100];
 	std::string message;
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 
 	// We need to limit the number of Teleinfo devices per hardware because of the subID in sensors. i
 	if ((rank < 1) || (rank > 4))

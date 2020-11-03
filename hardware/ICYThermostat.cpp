@@ -33,7 +33,9 @@ m_Password(Password)
 	Init();
 }
 
-CICYThermostat::~CICYThermostat() = default;
+CICYThermostat::~CICYThermostat(void)
+{
+}
 
 void CICYThermostat::Init()
 {
@@ -77,7 +79,7 @@ void CICYThermostat::Do_Work()
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter % ICY_POLL_INTERVAL ==0)
 		{

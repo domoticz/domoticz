@@ -176,13 +176,18 @@ namespace tcp_proxy
 	{
 
 	}
-	acceptor::~acceptor() = default;
+	acceptor::~acceptor()
+	{
+
+	}
 
 	bool acceptor::accept_connections()
 	{
 		try
 		{
-			session_ = std::make_shared<bridge>(io_service_);
+			session_ = std::shared_ptr<bridge>(
+				new bridge(io_service_)
+			);
 			session_->sDownstreamData.connect( boost::bind( &acceptor::OnDownstreamData, this, _1, _2 ) );
 			session_->sUpstreamData.connect( boost::bind( &acceptor::OnUpstreamData, this, _1, _2 ) );
 

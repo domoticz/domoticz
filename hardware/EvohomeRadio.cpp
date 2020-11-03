@@ -72,8 +72,8 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	m_nDevID = 0;
 	m_nMyID = 0;
 	m_nBindID = 0;
-	for (bool &i : m_bStartup)
-		i = true;
+	for (int i = 0; i < 2; i++)
+		m_bStartup[i] = true;
 
 	m_nBufPtr = 0;
 	m_nSendFail = 0;
@@ -112,7 +112,12 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	RegisterDecoder(cmdSync, boost::bind(&CEvohomeRadio::DecodeSync, this, _1));
 }
 
-CEvohomeRadio::~CEvohomeRadio() { m_bIsStarted = false; }
+
+CEvohomeRadio::~CEvohomeRadio(void)
+{
+	m_bIsStarted = false;
+}
+
 
 void CEvohomeRadio::RegisterDecoder(unsigned int cmd, fnc_evohome_decode fndecoder)
 {
@@ -176,13 +181,10 @@ bool CEvohomeRadio::StartHardware()
 	//we'll put our custom relays in this range
 	result = m_sql.safe_query("SELECT  Unit,Name,DeviceID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=64) AND (Unit<96)", m_HwdID, (int)pTypeEvohomeRelay);
 	m_RelayCheck.clear();
-	for (auto &i : result) {
-		Log(true, LOG_STATUS, "evohome: Relay: devno=%d demmand=%d", atoi(i[0].c_str()), atoi(i[4].c_str()));
-		m_RelayCheck.insert(
-			tmap_relay_check_pair(static_cast<uint8_t>(atoi(i[0].c_str())),
-					      _tRelayCheck(boost::get_system_time() - boost::posix_time::minutes(19),
-							   static_cast<uint8_t>(atoi(i[4].c_str()))))); // allow 1 minute for startup before
-													// trying to restore demand
+	for (int i = 0; i < static_cast<int>(result.size()); i++)
+	{
+		Log(true, LOG_STATUS, "evohome: Relay: devno=%d demmand=%d", atoi(result[i][0].c_str()), atoi(result[i][4].c_str()));
+		m_RelayCheck.insert(tmap_relay_check_pair(static_cast<uint8_t>(atoi(result[i][0].c_str())), _tRelayCheck(boost::get_system_time() - boost::posix_time::minutes(19), static_cast<uint8_t>(atoi(result[i][4].c_str()))))); //allow 1 minute for startup before trying to restore demand
 	}
 
 	//Start worker thread
@@ -682,15 +684,19 @@ void CEvohomeRadio::ProcessMsg(const char* rawmsg)
 			{
 				if (msg.id[n].GetIDType() == CEvohomeID::devController)//id type 1 is for controllers
 				{
-					for (unsigned int &i : MultiControllerID) {
-						if (i == msg.GetID(n))
+					for (uint8_t i = 0; i < 5; i++)
+					{
+						if (MultiControllerID[i] == msg.GetID(n))
 							break;
-						else if (i == 0) {
-							i = msg.GetID(n);
-							_log.Log(LOG_STATUS, "evohome: controller detected, ID:0x%x", i);
+						else if (MultiControllerID[i] == 0)
+						{
+							MultiControllerID[i] = msg.GetID(n);
+							_log.Log(LOG_STATUS, "evohome: controller detected, ID:0x%x", MultiControllerID[i]);
 							break;
 						}
+
 					}
+
 				}
 			}
 		}
@@ -1940,8 +1946,8 @@ void CEvohomeRadio::Idle_Work()
 				if (GetControllerID() == 0xFFFFFF)  //Check whether multiple controllers have been detected
 				{
 					uint8_t MultiControllerCount = 0;
-					for (unsigned int i : MultiControllerID)
-						if (i != 0)
+					for (uint8_t i = 0; i < 5; i++)
+						if (MultiControllerID[i] != 0)
 							MultiControllerCount++;
 					if (MultiControllerCount > 1) // If multiple controllers detected then stop and user required to set controller ID on hardware settings page
 					{
@@ -2015,7 +2021,7 @@ namespace http {
 			std::string type = request::findValue(&req, "devtype");
 			int HwdID = atoi(idx.c_str());
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HwdID);
-			if (pHardware == nullptr)
+			if (pHardware == NULL)
 				return;
 			if (pHardware->HwdType != HTYPE_EVOHOME_SERIAL && pHardware->HwdType != HTYPE_EVOHOME_TCP)
 				return;

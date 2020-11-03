@@ -19,7 +19,9 @@ RAVEn::RAVEn(const int ID, const std::string& devname)
     m_HwdID = ID;
 }
 
-RAVEn::~RAVEn() = default;
+RAVEn::~RAVEn(void)
+{
+}
 
 bool RAVEn::StartHardware()
 {
@@ -117,16 +119,14 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     bool updated=false;
     if (pRoot)
     {
-	    m_currUsage = 1000 * double(strtoul(pRoot->FirstChildElement("Demand")->GetText(), nullptr, 16))
-			  / strtoul(pRoot->FirstChildElement("Divisor")->GetText(), nullptr, 16);
-	    updated = true;
+        m_currUsage = 1000*double(strtoul(pRoot->FirstChildElement("Demand")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
+        updated = true;
     }
     pRoot = doc.FirstChildElement("CurrentSummationDelivered");
     if(pRoot)
     {
-	    m_totalUsage = double(strtoul(pRoot->FirstChildElement("SummationDelivered")->GetText(), nullptr, 16))
-			   / strtoul(pRoot->FirstChildElement("Divisor")->GetText(), nullptr, 16);
-	    updated = true;
+        m_totalUsage = double(strtoul(pRoot->FirstChildElement("SummationDelivered")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
+        updated = true;
     }
 
     if(updated)

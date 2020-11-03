@@ -89,7 +89,9 @@ CDaikin::CDaikin(const int ID, const std::string& IPAddress, const unsigned shor
 	Init();
 }
 
-CDaikin::~CDaikin() = default;
+CDaikin::~CDaikin(void)
+{
+}
 
 void CDaikin::Init()
 {
@@ -134,7 +136,7 @@ void CDaikin::Do_Work()
 		m_sec_counter++;
 
 		if (m_sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 
 		if (m_sec_counter % Daikin_POLL_INTERVAL == 0)
@@ -142,7 +144,7 @@ void CDaikin::Do_Work()
 			GetMeterDetails();
 		}
 
-		current_time = mytime(nullptr);
+		current_time = mytime(NULL);
 
 		if (m_force_sci || ((current_time - m_last_setcontrolinfo > 2) && (last_sci_update < m_last_setcontrolinfo))) {
 			HTTPSetControlInfo(); // Fire HTTP request
@@ -305,7 +307,9 @@ void CDaikin::GetBasicInfo()
 		return;
 	}
 
-	for (const auto &sVar : results) {
+	for (const auto& itt : results)
+	{
+		std::string sVar = itt;
 		std::vector<std::string> results2;
 		StringSplit(sVar, "=", results2);
 		if (results2.size() != 2)
@@ -375,7 +379,9 @@ void CDaikin::GetControlInfo()
 		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
-	for (const auto &sVar : results) {
+	for (const auto& itt : results)
+	{
+		std::string sVar = itt;
 		std::vector<std::string> results2;
 		StringSplit(sVar, "=", results2);
 		if (results2.size() != 2)
@@ -537,7 +543,9 @@ void CDaikin::GetSensorInfo()
 	}
 	float htemp = -1;
 	int hhum = -1;
-	for (const auto &sVar : results) {
+	for (const auto& itt : results)
+	{
+		std::string sVar = itt;
 		std::vector<std::string> results2;
 		StringSplit(sVar, "=", results2);
 		if (results2.size() != 2)
@@ -699,7 +707,7 @@ bool CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 	// cible température
 	char szTmp[100];
 	sprintf(szTmp, "%.1f", temp);
-	AggregateSetControlInfo(szTmp, nullptr, nullptr, nullptr, nullptr, nullptr);
+	AggregateSetControlInfo(szTmp, NULL, NULL, NULL, NULL, NULL);
 
 	SendSetPointSensor(20, 1, 1, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface
 	return true;
@@ -714,7 +722,7 @@ bool CDaikin::SetGroupOnOFF(const bool OnOFF)
 		pow = "1";
 	else
 		pow = "0";
-	AggregateSetControlInfo(nullptr, pow.c_str(), nullptr, nullptr, nullptr, nullptr);
+	AggregateSetControlInfo(NULL, pow.c_str(), NULL, NULL, NULL, NULL);
 	return true;
 }
 
@@ -755,10 +763,7 @@ bool CDaikin::SetModeLevel(const int NewLevel)
 		stemp = m_dt[(NewLevel / 10)]; //szURL << "&stemp=" << m_dt[(NewLevel/10)];
 		shum = m_dh[(NewLevel / 10)]; //szURL << "&shum=" << m_dh[(NewLevel/10)];
 	}
-	AggregateSetControlInfo(
-		stemp.c_str(), nullptr, mode.c_str(), nullptr, nullptr,
-		shum.c_str()); // temp & hum are memorized value from the device itself, they can be modified by another command safely
-			       // (does not have to fire 2 different http request in case of instantly modification on temp or hum
+	AggregateSetControlInfo(stemp.c_str(), NULL, mode.c_str(), NULL, NULL, shum.c_str()); // temp & hum are memorized value from the device itself, they can be modified by another command safely (does not have to fire 2 different http request in case of instantly modification on temp or hum
 	return true;
 }
 
@@ -783,7 +788,7 @@ bool CDaikin::SetF_RateLevel(const int NewLevel)
 		f_rate = "7"; //szURL << "&f_rate=7";
 	else
 		return false;
-	AggregateSetControlInfo(nullptr, nullptr, nullptr, f_rate.c_str(), nullptr, nullptr);
+	AggregateSetControlInfo(NULL, NULL, NULL, f_rate.c_str(), NULL, NULL);
 	return true;
 }
 
@@ -802,26 +807,26 @@ bool CDaikin::SetF_DirLevel(const int NewLevel)
 		f_dir = "3"; //szURL << "&f_dir=3"; // vertical + horizontal wings motion
 	else
 		return false;
-	AggregateSetControlInfo(nullptr, nullptr, nullptr, nullptr, f_dir.c_str(), nullptr);
+	AggregateSetControlInfo(NULL, NULL, NULL, NULL, f_dir.c_str(), NULL);
 	return true;
 }
 
 void CDaikin::AggregateSetControlInfo(const char* Temp/* setpoint */, const char* OnOFF /* group on/off */, const char* ModeLevel, const char* FRateLevel, const char* FDirLevel, const char* Hum)
 {
-	time_t cmd_time = mytime(nullptr);
+	time_t cmd_time = mytime(NULL);
 	if (cmd_time - m_last_setcontrolinfo < 2) {
 		// another set request so keep old values, and update only the settled ones
-		if (Temp != nullptr)
+		if (Temp != NULL)
 			m_sci_Temp = Temp;
-		if (OnOFF != nullptr)
+		if (OnOFF != NULL)
 			m_sci_OnOFF = OnOFF;
-		if (ModeLevel != nullptr)
+		if (ModeLevel != NULL)
 			m_sci_ModeLevel = ModeLevel;
-		if (FRateLevel != nullptr)
+		if (FRateLevel != NULL)
 			m_sci_FRateLevel = FRateLevel;
-		if (FDirLevel != nullptr)
+		if (FDirLevel != NULL)
 			m_sci_FDirLevel = FDirLevel;
-		if (Hum != nullptr)
+		if (Hum != NULL)
 			m_sci_Hum = Hum;
 
 		m_last_setcontrolinfo = cmd_time;
@@ -832,27 +837,27 @@ void CDaikin::AggregateSetControlInfo(const char* Temp/* setpoint */, const char
 		}
 	}
 	else {
-		if (Temp != nullptr)
+		if (Temp != NULL)
 			m_sci_Temp = Temp;
 		else
 			m_sci_Temp = m_stemp;
-		if (OnOFF != nullptr)
+		if (OnOFF != NULL)
 			m_sci_OnOFF = OnOFF;
 		else
 			m_sci_OnOFF = m_pow;
-		if (ModeLevel != nullptr)
+		if (ModeLevel != NULL)
 			m_sci_ModeLevel = ModeLevel;
 		else
 			m_sci_ModeLevel = m_mode;
-		if (FRateLevel != nullptr)
+		if (FRateLevel != NULL)
 			m_sci_FRateLevel = FRateLevel;
 		else
 			m_sci_FRateLevel = m_f_rate;
-		if (FDirLevel != nullptr)
+		if (FDirLevel != NULL)
 			m_sci_FDirLevel = FDirLevel;
 		else
 			m_sci_FDirLevel = m_f_dir;
-		if (Hum != nullptr)
+		if (Hum != NULL)
 			m_sci_Hum = Hum;
 		else
 			m_sci_Hum = m_shum;

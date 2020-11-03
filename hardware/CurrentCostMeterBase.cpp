@@ -2,13 +2,16 @@
 #include "CurrentCostMeterBase.h"
 #include "hardwaretypes.h"
 
-CurrentCostMeterBase::CurrentCostMeterBase()
-	: m_tempuratureCounter(0)
+CurrentCostMeterBase::CurrentCostMeterBase(void) :
+	m_tempuratureCounter(0)
 {
 	Init();
 }
 
-CurrentCostMeterBase::~CurrentCostMeterBase() = default;
+
+CurrentCostMeterBase::~CurrentCostMeterBase(void)
+{
+}
 
 void CurrentCostMeterBase::Init()
 {

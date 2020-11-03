@@ -113,14 +113,15 @@ void CFibaroPush::DoFibaroPush()
 				}
 				else if (delpos > 0) {
 					std::vector<std::string> strarray;
-					if (sValue.find(';') != std::string::npos) {
+					if (sValue.find(";") != std::string::npos) {
 						StringSplit(sValue, ";", strarray);
 						if (int(strarray.size()) >= delpos)
 						{
 							std::string rawsendValue = strarray[delpos - 1].c_str();
 							sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 						}
-					} else
+					}
+					else
 						sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 				}
 			}
@@ -161,7 +162,7 @@ void CFibaroPush::DoFibaroPush()
 					if (bIsV4)
 						Url << "/" << targetVariable;
 
-					sPostData << R"({"name": ")" << targetVariable << R"(", "value": ")" << sendValue << "\"";
+					sPostData << "{\"name\": \"" << targetVariable << "\", \"value\": \"" << sendValue << "\"";
 
 					if (bIsV4)
 						sPostData << ", \"invokeScenes\": true";

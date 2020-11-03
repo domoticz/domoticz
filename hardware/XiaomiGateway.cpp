@@ -36,7 +36,7 @@ std::mutex gatewaylist_mutex;
 
 XiaomiGateway * XiaomiGateway::GatewayByIp(std::string ip)
 {
-	XiaomiGateway *ret = nullptr;
+	XiaomiGateway * ret = NULL;
 	{
 		std::unique_lock<std::mutex> lock(gatewaylist_mutex);
 		std::list<XiaomiGateway*>::iterator    it = gatewaylist.begin();
@@ -54,7 +54,7 @@ XiaomiGateway * XiaomiGateway::GatewayByIp(std::string ip)
 
 void XiaomiGateway::AddGatewayToList()
 {
-	XiaomiGateway *maingw = nullptr;
+	XiaomiGateway * maingw = NULL;
 	{
 		std::unique_lock<std::mutex> lock(gatewaylist_mutex);
 		std::list<XiaomiGateway*>::iterator    it = gatewaylist.begin();
@@ -87,7 +87,7 @@ void XiaomiGateway::AddGatewayToList()
 
 void XiaomiGateway::RemoveFromGatewayList()
 {
-	XiaomiGateway *maingw = nullptr;
+	XiaomiGateway * maingw = NULL;
 	{
 		std::unique_lock<std::mutex> lock(gatewaylist_mutex);
 		gatewaylist.remove(this);
@@ -129,8 +129,9 @@ int XiaomiGateway::get_local_ipaddr(std::vector<std::string>& ip_addrs)
 		return 0;
 	}
 
-	for (ifa = myaddrs; ifa != nullptr; ifa = ifa->ifa_next) {
-		if (ifa->ifa_addr == nullptr)
+	for (ifa = myaddrs; ifa != NULL; ifa = ifa->ifa_next)
+	{
+		if (ifa->ifa_addr == NULL)
 			continue;
 		if (!(ifa->ifa_flags & IFF_UP))
 			continue;
@@ -178,7 +179,9 @@ XiaomiGateway::XiaomiGateway(const int ID)
 	m_ListenPort9898 = false;
 }
 
-XiaomiGateway::~XiaomiGateway() = default;
+XiaomiGateway::~XiaomiGateway(void)
+{
+}
 
 bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char length)
 {
@@ -214,8 +217,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 
 		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 || 
 			xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1 || ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG))) {
-			message = R"({"cmd":"write","model":")" + cmddevice + R"(","sid":"158d00)" + sid + R"(","short_id":0,"data":"{\")"
-				  + cmdchannel + R"(\":\")" + cmdcommand + R"(\",\"key\":\"@gatewaykey\"}" })";
+			message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"158d00" + sid + "\",\"short_id\":0,\"data\":\"{\\\"" + cmdchannel + "\\\":\\\"" + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if ((xcmd->subtype == sSwitchTypeSelector) && (xcmd->unitcode >= XiaomiUnitCode::GATEWAY_SOUND_ALARM_RINGTONE && xcmd->unitcode <= XiaomiUnitCode::GATEWAY_SOUND_DOORBELL) || (xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_MP3)) {
 			std::stringstream ss;
@@ -247,23 +249,19 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			}
 			m_GatewayMusicId = ss.str();
 			//sid.insert(0, m_GatewayPrefix);
-			message = R"({"cmd":"write","model":"gateway","sid":")" + m_GatewaySID + R"(","short_id":0,"data":"{\"mid\":)"
-				  + m_GatewayMusicId.c_str() + R"(,\"vol\":)" + m_GatewayVolume.c_str() + R"(,\"key\":\"@gatewaykey\"}" })";
+			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"mid\\\":" + m_GatewayMusicId.c_str() + ",\\\"vol\\\":" + m_GatewayVolume.c_str() + ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if (xcmd->subtype == sSwitchGeneralSwitch && xcmd->unitcode == XiaomiUnitCode::GATEWAY_SOUND_VOLUME_CONTROL) {
 			m_GatewayVolume = std::to_string(xcmd->level);
 			//sid.insert(0, m_GatewayPrefix);
-			message = R"({"cmd":"write","model":"gateway","sid":")" + m_GatewaySID + R"(","short_id":0,"data":"{\"mid\":)"
-				  + m_GatewayMusicId.c_str() + R"(,\"vol\":)" + m_GatewayVolume.c_str() + R"(,\"key\":\"@gatewaykey\"}" })";
+			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"mid\\\":" + m_GatewayMusicId.c_str() + ",\\\"vol\\\":" + m_GatewayVolume.c_str() + ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if (xcmd->subtype == sSwitchBlindsT2) {
 			int level = xcmd->level;
 			if (xcmd->cmnd == 1) {
 				level = 100;
 			}
-			message = R"({"cmd":"write","model":"curtain","sid":"158d00)" + sid
-				  + R"(","short_id":9844,"data":"{\"curtain_level\":\")" + std::to_string(level)
-				  + R"(\",\"key\":\"@gatewaykey\"}" })";
+			message = "{\"cmd\":\"write\",\"model\":\"curtain\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"curtain_level\\\":\\\"" + std::to_string(level) + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 	}
 	else if (packettype == pTypeColorSwitch) {
@@ -272,13 +270,11 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 
 		if (xcmd->command == Color_LedOn) {
 			m_GatewayBrightnessInt = 100;
-			message = R"({"cmd":"write","model":"gateway","sid":")" + m_GatewaySID
-				  + R"(","short_id":0,"data":"{\"rgb\":4294967295,\"key\":\"@gatewaykey\"}" })";
+			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":4294967295,\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if (xcmd->command == Color_LedOff) {
 			m_GatewayBrightnessInt = 0;
-			message = R"({"cmd":"write","model":"gateway","sid":")" + m_GatewaySID
-				  + R"(","short_id":0,"data":"{\"rgb\":0,\"key\":\"@gatewaykey\"}" })";
+			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":0,\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if (xcmd->command == Color_SetColor) {
 			if (xcmd->color.mode == ColorModeRGB)
@@ -291,8 +287,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				uint32_t value = (m_GatewayBrightnessInt << 24) | (m_GatewayRgbR << 16) | (m_GatewayRgbG << 8) | (m_GatewayRgbB);
 
 				std::stringstream ss;
-				ss << R"({"cmd":"write","model":"gateway","sid":")" << m_GatewaySID << R"(","short_id":0,"data":"{\"rgb\":)"
-				   << value << R"(,\"key\":\"@gatewaykey\"}" })";
+				ss << "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" << m_GatewaySID << "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" << value << ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 				message = ss.str();
 			}
 			else
@@ -315,8 +310,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			uint32_t value = (m_GatewayBrightnessInt << 24) | (m_GatewayRgbR << 16) | (m_GatewayRgbG << 8) | (m_GatewayRgbB);
 
 			std::stringstream ss;
-			ss << R"({"cmd":"write","model":"gateway","sid":")" << m_GatewaySID << R"(","short_id":0,"data":"{\"rgb\":)"
-			   << value << R"(,\"key\":\"@gatewaykey\"}" })";
+			ss << "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" << m_GatewaySID << "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" << value << ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 			message = ss.str();
 		}
 		else if (xcmd->command == Color_SetColorToWhite) {
@@ -473,7 +467,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 		//ycmd.dunit = 0;
 		ycmd.value = brightness;
 		ycmd.command = cmd;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%s') AND (Type == %d)", Name.c_str(), (STYPE_Dimmer), brightness, m_HwdID, szDeviceID, pTypeColorSwitch);
 	}
 	else {
@@ -493,7 +487,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 			//ycmd.dunit = 0;
 			ycmd.value = brightness;
 			ycmd.command = cmd;
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1);
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
 		}
 	}
 }
@@ -555,7 +549,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	if (result.empty())
 	{
 		_log.Log(LOG_STATUS, "XiaomiGateway: New %s Found (%s)", Name.c_str(), nodeid.c_str());
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, nullptr, battery);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, battery);
 		if (customimage == 0) {
 			if (switchtype == STYPE_OnOff) {
 				customimage = 1; // Wall socket
@@ -626,7 +620,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		}
 		else {
 			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == NAME_SELECTOR_WIRED_WALL_DUAL) || (Name == NAME_SELECTOR_WIRED_WALL_SINGLE) || (Name == NAME_ACT_BLINDS_CURTAIN)) {
-				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, nullptr, BatteryLevel);
+				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, BatteryLevel);
 			}
 		}
 		if ((Name == NAME_ACT_ONOFF_PLUG) || (Name == NAME_ACT_ONOFF_PLUG_WALL)) {
@@ -718,7 +712,7 @@ bool XiaomiGateway::StartHardware()
 	}
 
 	// Start worker thread
-	m_thread = std::make_shared<std::thread>(&XiaomiGateway::Do_Work, this);
+	m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -803,7 +797,7 @@ void XiaomiGateway::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter % 60 == 0)
 		{
@@ -885,7 +879,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 				boost::asio::ip::udp::endpoint listen_endpoint(mcast_addr, 9898);
 
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
-				std::shared_ptr<std::string> message(new std::string(R"({"cmd":"whois"})"));
+				std::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
 				boost::asio::ip::udp::endpoint remote_endpoint;
 				remote_endpoint = boost::asio::ip::udp::endpoint(mcast_addr, 4321);
 				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
@@ -894,7 +888,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 			}
 			else {
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
-				std::shared_ptr<std::string> message(new std::string(R"({"cmd":"whois"})"));
+				std::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
 				boost::asio::ip::udp::endpoint remote_endpoint;
 				remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);
 				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
@@ -912,7 +906,9 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	}
 }
 
-XiaomiGateway::xiaomi_udp_server::~xiaomi_udp_server() = default;
+XiaomiGateway::xiaomi_udp_server::~xiaomi_udp_server()
+{
+}
 
 void XiaomiGateway::xiaomi_udp_server::start_receive()
 {
@@ -1250,7 +1246,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								std::string bright_hex = hexstring.substr(0, 2);
 								std::stringstream ss2;
 								ss2 << std::hex << bright_hex.c_str();
-								int brightness = strtoul(bright_hex.c_str(), nullptr, 16);
+								int brightness = strtoul(bright_hex.c_str(), NULL, 16);
 								bool on = false;
 								if (rgb != "0") {
 									on = true;
@@ -1287,9 +1283,9 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				ret = ParseJSon(data.c_str(), root2);
 				if ((ret) || (!root2.isObject()))
 				{
-					for (const auto &i : root2) {
-						std::string message = R"({"cmd" : "read","sid":")";
-						message.append(i.asString().c_str());
+					for (int i = 0; i < (int)root2.size(); i++) {
+						std::string message = "{\"cmd\" : \"read\",\"sid\":\"";
+						message.append(root2[i].asString().c_str());
 						message.append("\"}");
 						std::shared_ptr<std::string> message1(new std::string(message));
 						boost::asio::ip::udp::endpoint remote_endpoint;
@@ -1316,7 +1312,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						TrueGateway->InsertUpdateSwitch(sid.c_str(), NAME_GATEWAY_SOUND_VOLUME_CONTROL, false, STYPE_Dimmer, 7, 0, cmd, "", "", 255);
 
 						// Query for list of devices
-						std::string message = R"({"cmd" : "get_id_list"})";
+						std::string message = "{\"cmd\" : \"get_id_list\"}";
 						std::shared_ptr<std::string> message2(new std::string(message));
 						boost::asio::ip::udp::endpoint remote_endpoint;
 						remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(TrueGateway->GetGatewayIp().c_str()), 9898);
@@ -1351,10 +1347,10 @@ void XiaomiGateway::XiaomiGatewayTokenManager::UpdateTokenSID(const std::string 
 {
 	bool found = false;
 	std::unique_lock<std::mutex> lock(m_mutex);
-	for (auto &m_GatewayToken : m_GatewayTokens) {
-		if (boost::get<0>(m_GatewayToken) == ip) {
-			boost::get<1>(m_GatewayToken) = token;
-			boost::get<2>(m_GatewayToken) = sid;
+	for (unsigned i = 0; i < m_GatewayTokens.size(); i++) {
+		if (boost::get<0>(m_GatewayTokens[i]) == ip) {
+			boost::get<1>(m_GatewayTokens[i]) = token;
+			boost::get<2>(m_GatewayTokens[i]) = sid;
 			found = true;
 		}
 	}
@@ -1369,9 +1365,9 @@ std::string XiaomiGateway::XiaomiGatewayTokenManager::GetToken(const std::string
 	std::string token = "";
 	bool found = false;
 	std::unique_lock<std::mutex> lock(m_mutex);
-	for (auto &m_GatewayToken : m_GatewayTokens) {
-		if (boost::get<0>(m_GatewayToken) == ip) {
-			token = boost::get<1>(m_GatewayToken);
+	for (unsigned i = 0; i < m_GatewayTokens.size(); i++) {
+		if (boost::get<0>(m_GatewayTokens[i]) == ip) {
+			token = boost::get<1>(m_GatewayTokens[i]);
 		}
 	}
 	return token;
@@ -1382,9 +1378,9 @@ std::string XiaomiGateway::XiaomiGatewayTokenManager::GetSID(const std::string &
 	std::string sid = "";
 	bool found = false;
 	std::unique_lock<std::mutex> lock(m_mutex);
-	for (auto &m_GatewayToken : m_GatewayTokens) {
-		if (boost::get<0>(m_GatewayToken) == ip) {
-			sid = boost::get<2>(m_GatewayToken);
+	for (unsigned i = 0; i < m_GatewayTokens.size(); i++) {
+		if (boost::get<0>(m_GatewayTokens[i]) == ip) {
+			sid = boost::get<2>(m_GatewayTokens[i]);
 		}
 	}
 	return sid;

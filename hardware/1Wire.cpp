@@ -20,13 +20,13 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string &path)
-	: m_system(nullptr)
-	, m_sensorThreadPeriod(sensorThreadPeriod)
-	, m_switchThreadPeriod(switchThreadPeriod)
-	, m_path(path)
-	, m_bSensorFirstTime(true)
-	, m_bSwitchFirstTime(true)
+C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path) :
+	m_system(NULL),
+	m_sensorThreadPeriod(sensorThreadPeriod),
+	m_switchThreadPeriod(switchThreadPeriod),
+	m_path(path),
+	m_bSensorFirstTime(true),
+	m_bSwitchFirstTime(true)
 {
 	m_HwdID = ID;
 
@@ -40,7 +40,9 @@ C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThrea
 	DetectSystem();
 }
 
-C1Wire::~C1Wire() = default;
+C1Wire::~C1Wire()
+{
+}
 
 void C1Wire::DetectSystem()
 {
@@ -84,7 +86,7 @@ bool C1Wire::StartHardware()
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
-	return (m_threadSensors != nullptr && m_threadSwitches != nullptr);
+	return (m_threadSensors != NULL && m_threadSwitches != NULL);
 }
 
 bool C1Wire::StopHardware()
@@ -107,7 +109,7 @@ bool C1Wire::StopHardware()
 	if (m_system)
 	{
 		delete m_system;
-		m_system = nullptr;
+		m_system = NULL;
 	}
 	StopHeartbeatThread();
 	return true;
@@ -162,10 +164,10 @@ void C1Wire::SensorThread()
 		}
 
 		// Parse our devices
-		for (const auto &device : m_sensors) {
-			if (IsStopRequested(0)) {
-				break;
-			}
+		std::set<_t1WireDevice>::const_iterator itt;
+		for (itt = m_sensors.begin(); itt != m_sensors.end() && !IsStopRequested(0); ++itt)
+		{
+			const _t1WireDevice& device = *itt;
 
 			// Manage families specificities
 			switch (device.family)
@@ -310,7 +312,8 @@ void C1Wire::BuildSensorList() {
 	m_sensors.clear();
 	m_system->GetDevices(devices);
 
-	for (const auto &device : devices) {
+	for (const auto & device : devices)
+	{
 		switch (device.family)
 		{
 		case high_precision_digital_thermometer:
@@ -328,6 +331,7 @@ void C1Wire::BuildSensorList() {
 		default:
 			break;
 		}
+
 	}
 	devices.clear();
 }
@@ -343,7 +347,8 @@ void C1Wire::BuildSwitchList() {
 	m_switches.clear();
 	m_system->GetDevices(devices);
 
-	for (const auto &device : devices) {
+	for (const auto & device : devices)
+	{
 		switch (device.family)
 		{
 		case Addresable_Switch:
@@ -359,6 +364,7 @@ void C1Wire::BuildSwitchList() {
 		default:
 			break;
 		}
+
 	}
 	devices.clear();
 }
@@ -370,7 +376,10 @@ void C1Wire::PollSwitches()
 		return;
 
 	// Parse our devices (have to test if m_TaskSwitches.IsStopRequested because it can take some time in case of big networks)
-	for (const auto &device : m_switches) {
+	for (const auto & itt : m_switches)
+	{
+		const _t1WireDevice& device = itt;
+
 		// Manage families specificities
 		switch (device.family)
 		{

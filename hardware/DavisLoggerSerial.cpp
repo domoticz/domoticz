@@ -36,7 +36,10 @@ CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname,
 	m_state = DSTATE_WAKEUP;
 }
 
-CDavisLoggerSerial::~CDavisLoggerSerial() = default;
+CDavisLoggerSerial::~CDavisLoggerSerial(void)
+{
+
+}
 
 bool CDavisLoggerSerial::StartHardware()
 {

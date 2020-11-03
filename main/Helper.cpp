@@ -154,7 +154,7 @@ std::vector<char> HexToBytes(const std::string& hex) {
 
 	for (unsigned int i = 0; i < hex.length(); i += 2) {
 		std::string byteString = hex.substr(i, 2);
-		char byte = (char)strtol(byteString.c_str(), nullptr, 16);
+		char byte = (char)strtol(byteString.c_str(), NULL, 16);
 		bytes.push_back(byte);
 	}
 
@@ -176,8 +176,8 @@ void stdreplace(
 
 void stdupper(std::string &inoutstring)
 {
-	for (char &i : inoutstring)
-		i = toupper(i);
+	for (size_t i = 0; i < inoutstring.size(); ++i)
+		inoutstring[i] = toupper(inoutstring[i]);
 }
 
 void stdlower(std::string &inoutstring)
@@ -187,8 +187,8 @@ void stdlower(std::string &inoutstring)
 
 void stdupper(std::wstring& inoutstring)
 {
-	for (wchar_t &i : inoutstring)
-		i = towupper(i);
+	for (size_t i = 0; i < inoutstring.size(); ++i)
+		inoutstring[i] = towupper(inoutstring[i]);
 }
 
 void stdlower(std::wstring& inoutstring)
@@ -352,10 +352,11 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		}
 	}
 
-	DIR *d = nullptr;
+	DIR *d=NULL;
 	d=opendir("/dev");
-	if (d != nullptr) {
-		struct dirent *de = nullptr;
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
@@ -434,8 +435,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	}
 	//also scan in /dev/usb
 	d=opendir("/dev/usb");
-	if (d != nullptr) {
-		struct dirent *de = nullptr;
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
@@ -451,8 +453,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 
 #if defined(__linux__) || defined(__linux) || defined(linux)
 	d=opendir("/dev/serial/by-id");
-	if (d != nullptr) {
-		struct dirent *de = nullptr;
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
@@ -624,8 +627,8 @@ uint32_t IPToUInt(const std::string &ip)
 
 bool isInt(const std::string &s)
 {
-	for (char i : s) {
-		if (!isdigit(i))
+	for(size_t i = 0; i < s.length(); i++){
+		if(!isdigit(s[i]))
 			return false;
 	}
 	return true;
@@ -706,13 +709,14 @@ int RemoveDir(const std::string &dirnames, std::string &errorPath)
 			}
 		}
 #else
-		for (auto &splitresult : splitresults) {
-			if (!file_exist(splitresult.c_str()))
+		for (size_t i = 0; i < splitresults.size(); i++)
+		{
+			if (!file_exist(splitresults[i].c_str()))
 				continue;
-			ExecuteCommandAndReturn("rm -rf \"" + splitresult + "\"", returncode);
+			ExecuteCommandAndReturn("rm -rf \"" + splitresults[i] + "\"", returncode);
 			if (returncode)
 			{
-				errorPath = splitresult;
+				errorPath = splitresults[i];
 				break;
 			}
 		}
@@ -759,10 +763,12 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, i
 #else
 		fp = popen(szCommand.c_str(), "r");
 #endif
-		if (fp != nullptr) {
+		if (fp != NULL)
+		{
 			char path[1035];
 			/* Read the output a line at a time - output it. */
-			while (fgets(path, sizeof(path) - 1, fp) != nullptr) {
+			while (fgets(path, sizeof(path) - 1, fp) != NULL)
+			{
 				ret.push_back(path);
 			}
 			/* close */
@@ -785,7 +791,7 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 	struct tm timeinfo;
 	struct timeval tv;
 	std::stringstream sstr;
-	if (ltime == nullptr) // current time
+	if (ltime == NULL) // current time
 	{
 #ifdef CLOCK_REALTIME
 		struct timespec ts;
@@ -796,14 +802,15 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 		}
 		else
 #endif
-			gettimeofday(&tv, nullptr);
+			gettimeofday(&tv, NULL);
 #ifdef WIN32
 		time_t tv_sec = tv.tv_sec;
 		localtime_r(&tv_sec, &timeinfo);
 #else
 		localtime_r(&tv.tv_sec, &timeinfo);
 #endif
-	} else
+	}
+	else
 		localtime_r(ltime, &timeinfo);
 
 	if (format > TF_Time)
@@ -825,7 +832,7 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
 	}
 
-	if (format > TF_DateTime && ltime == nullptr)
+	if (format > TF_DateTime && ltime == NULL)
 		sstr << "." << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
 
 	return sstr.str();
@@ -902,7 +909,7 @@ void hsb2rgb(const float hue, const float saturation, const float vlue, int &out
 void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 {
 	float hue, saturation, brightness;
-	if (hsbvals == nullptr)
+	if (hsbvals == NULL)
 		return;
 	int cmax = (r > g) ? r : g;
 	if (b > cmax) cmax = b;
@@ -1064,10 +1071,11 @@ bool dirent_is_file(const std::string &dir, struct dirent *ent)
  */
 void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles)
 {
-	DIR *d = nullptr;
+	DIR *d = NULL;
 	struct dirent *ent;
-	if ((d = opendir(dir.c_str())) != nullptr) {
-		while ((ent = readdir(d)) != nullptr) {
+	if ((d = opendir(dir.c_str())) != NULL)
+	{
+		while ((ent = readdir(d)) != NULL) {
 			std::string name = ent->d_name;
 			if (bInclDirs && dirent_is_directory(dir, ent) && name != "." && name != "..") {
 				entries.push_back(name);
@@ -1146,7 +1154,7 @@ int getclock(struct timeval *tv) {
 			return 0;
 		}
 #endif
-		return gettimeofday(tv, nullptr);
+	return gettimeofday(tv, NULL);
 }
 int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y) {
 	/* Perform the carry for the later subtraction by updating y. */
@@ -1170,7 +1178,22 @@ int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval 
   return x->tv_sec < y->tv_sec;
 }
 
-const char *szInsecureArgumentOptions[] = {"import", "socket", "process", "os", "|", ";", "&", "$", "<", ">", "`", "\n", "\r", nullptr};
+const char *szInsecureArgumentOptions[] = {
+	"import",
+	"socket",
+	"process",
+	"os",
+	"|",
+	";",
+	"&",
+	"$",
+	"<",
+	">",
+	"`",
+	"\n",
+	"\r",
+	NULL
+};
 
 bool IsArgumentSecure(const std::string &arg)
 {
@@ -1178,7 +1201,8 @@ bool IsArgumentSecure(const std::string &arg)
 	std::transform(larg.begin(), larg.end(), larg.begin(), ::tolower);
 
 	int ii = 0;
-	while (szInsecureArgumentOptions[ii] != nullptr) {
+	while (szInsecureArgumentOptions[ii] != NULL)
+	{
 		if (larg.find(szInsecureArgumentOptions[ii]) != std::string::npos)
 			return false;
 		ii++;
@@ -1231,7 +1255,7 @@ int GenerateRandomNumber(const int range)
 		switch (entropy.which)
 		{
 			case 0:
-				entropy.t += time(nullptr);
+				entropy.t += time (NULL);
 				accSeed ^= entropy.t;
 				break;
 			case 1:
@@ -1253,9 +1277,11 @@ int GenerateRandomNumber(const int range)
 int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files)
 {
 	DIR* dir;
-	if ((dir = opendir(DirPath.c_str())) != nullptr) {
+	if ((dir = opendir(DirPath.c_str())) != NULL)
+	{
 		struct dirent *ent;
-		while ((ent = readdir(dir)) != nullptr) {
+		while ((ent = readdir(dir)) != NULL)
+		{
 			if (dirent_is_directory(DirPath, ent))
 			{
 				if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0) && (strcmp(ent->d_name, ".svn") != 0))
@@ -1342,7 +1368,7 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 #endif
 
 #if !defined(WIN32)
-bool IsDebuggerPresent()
+bool IsDebuggerPresent(void)
 {
 #if defined(__linux__)
 	// Linux implementation: Search for 'TracerPid:' in /proc/self/status

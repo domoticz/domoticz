@@ -90,12 +90,14 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 	}
 }
 
-CBuienRadar::~CBuienRadar() = default;
+CBuienRadar::~CBuienRadar(void)
+{
+}
 
 void CBuienRadar::Init()
 {
 	struct tm ltime;
-	time_t now = mytime(nullptr);
+	time_t now = mytime(0);
 	localtime_r(&now, &ltime);
 	m_itIsRaining = false;
 }
@@ -139,7 +141,7 @@ void CBuienRadar::Do_Work()
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
-		time_t now = mytime(nullptr);
+		time_t now = mytime(0);
 		m_LastHeartbeat = now;
 
 		if (sec_counter % 600 == 0)
@@ -262,12 +264,13 @@ bool CBuienRadar::GetStationDetails()
 		double shortest_station_lat = 0;
 		double shortest_station_lon = 0;
 
-		for (const auto &m : root["actual"]["stationmeasurements"]) {
-			if (m["temperature"].empty())
+		for (const auto& itt : root["actual"]["stationmeasurements"])
+		{
+			if (itt["temperature"].empty())
 				continue;
 
-			double lat = m["lat"].asDouble();
-			double lon = m["lon"].asDouble();
+			double lat = itt["lat"].asDouble();
+			double lon = itt["lon"].asDouble();
 
 			double distance_km = distanceEarth(
 				MyLatitude, MyLongitude,
@@ -278,9 +281,9 @@ bool CBuienRadar::GetStationDetails()
 				shortest_distance_km = distance_km;
 				shortest_station_lat = lat;
 				shortest_station_lon = lon;
-				m_iStationID = m["stationid"].asInt();
-				m_sStationName = m["stationname"].asString();
-				m_sStationRegion = m["regio"].asString();
+				m_iStationID = itt["stationid"].asInt();
+				m_sStationName = itt["stationname"].asString();
+				m_sStationRegion = itt["regio"].asString();
 			}
 		}
 		if (m_iStationID == 0)
@@ -293,19 +296,20 @@ bool CBuienRadar::GetStationDetails()
 	}
 
 	// StationID was provided, find it in the list
-	for (const auto &m : root["actual"]["stationmeasurements"]) {
-		if (m["temperature"].empty())
+	for (const auto& itt : root["actual"]["stationmeasurements"])
+	{
+		if (itt["temperature"].empty())
 			continue;
 
-		int StationID = m["stationid"].asInt();
+		int StationID = itt["stationid"].asInt();
 
 		if (StationID == m_iStationID)
 		{
 			// Station Found, set name and region
-			m_sStationName = m["stationname"].asString();
-			m_sStationRegion = m["regio"].asString();
-			m_szMyLatitude = std::to_string(m["lat"].asDouble());
-			m_szMyLongitude = std::to_string(m["lon"].asDouble());
+			m_sStationName = itt["stationname"].asString();
+			m_sStationRegion = itt["regio"].asString();
+			m_szMyLatitude = std::to_string(itt["lat"].asDouble());
+			m_szMyLongitude = std::to_string(itt["lon"].asDouble());
 			Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, std::stod(m_szMyLatitude), std::stod(m_szMyLongitude));
 			return true;
 		}
@@ -532,7 +536,7 @@ void CBuienRadar::GetRainPrediction()
 #endif
 #endif
 
-	time_t now = mytime(nullptr);
+	time_t now = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 

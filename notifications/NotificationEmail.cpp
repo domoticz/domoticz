@@ -59,7 +59,9 @@ CNotificationEmail::CNotificationEmail() : CNotificationBase(std::string("email"
 	SetupConfig(std::string("EmailAsAttachment"), &_EmailAsAttachment);
 }
 
-CNotificationEmail::~CNotificationEmail() = default;
+CNotificationEmail::~CNotificationEmail()
+{
+}
 
 bool CNotificationEmail::SendMessageImplementation(
 	const uint64_t Idx,
@@ -95,7 +97,7 @@ bool CNotificationEmail::SendMessageImplementation(
 		stdreplace(HtmlBody, "$DEVNAME", Name);
 		stdreplace(HtmlBody, "$MESSAGE", MessageText);
 
-		std::string szDate = TimeToString(nullptr, TF_DateTimeMs);
+		std::string szDate = TimeToString(NULL, TF_DateTimeMs);
 		stdreplace(HtmlBody, "$DATETIME", szDate);
 	}
 	else

@@ -30,7 +30,10 @@ KMTronic433::KMTronic433(const int ID, const std::string& devname)
 	m_retrycntr = RETRY_DELAY;
 }
 
-KMTronic433::~KMTronic433() = default;
+KMTronic433::~KMTronic433()
+{
+
+}
 
 bool KMTronic433::StartHardware()
 {
@@ -69,7 +72,7 @@ void KMTronic433::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
+			m_LastHeartbeat=mytime(NULL);
 		}
 
 		if (!isOpen())

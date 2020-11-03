@@ -57,8 +57,8 @@ CNotificationHelper::CNotificationHelper()
 
 CNotificationHelper::~CNotificationHelper()
 {
-	for (auto &m_notifier : m_notifiers) {
-		delete m_notifier.second;
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
+		delete iter->second;
 	}
 }
 
@@ -131,20 +131,20 @@ bool CNotificationHelper::SendMessageEx(
 		ActiveSystems[*itt] = 1;
 	}
 
-	for (auto &m_notifier : m_notifiers) {
-		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(m_notifier.first);
-		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && m_notifier.second->IsConfigured()) {
-			if ((m_notifier.second->m_IsEnabled) || bIsTestMessage) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter)
+	{
+		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
+		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && iter->second->IsConfigured())
+		{
+			if ((iter->second->m_IsEnabled) || bIsTestMessage)
+			{
 				if (bThread)
 				{
-					boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, m_notifier.second, Idx,
-										Name, Subject, Text, ExtraData, Priority, Sound,
-										bFromNotification));
+					boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
 					SetThreadName(SendMessageEx.native_handle(), "SendMessageEx");
 				}
 				else
-					bRet |= m_notifier.second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound,
-										 bFromNotification);
+					bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 			}
 		}
 	}
@@ -153,22 +153,22 @@ bool CNotificationHelper::SendMessageEx(
 
 void CNotificationHelper::SetConfigValue(const std::string &key, const std::string &value)
 {
-	for (auto &m_notifier : m_notifiers) {
-		m_notifier.second->SetConfigValue(key, value);
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
+		iter->second->SetConfigValue(key, value);
 	}
 }
 
 void CNotificationHelper::ConfigFromGetvars(const request& req, const bool save)
 {
-	for (auto &m_notifier : m_notifiers) {
-		m_notifier.second->ConfigFromGetvars(req, save);
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
+		iter->second->ConfigFromGetvars(req, save);
 	}
 }
 
 bool CNotificationHelper::IsInConfig(const std::string &Key)
 {
-	for (auto &m_notifier : m_notifiers) {
-		if (m_notifier.second->IsInConfig(Key)) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
+		if (iter->second->IsInConfig(Key)) {
 			return true;
 		}
 	}
@@ -180,15 +180,16 @@ void CNotificationHelper::LoadConfig()
 	int tot = 0, active = 0;
 	std::stringstream logline;
 	logline << "Active notification Subsystems:";
-	for (auto &m_notifier : m_notifiers) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
 		tot++;
-		m_notifier.second->LoadConfig();
-		if (m_notifier.second->IsConfigured()) {
-			if (m_notifier.second->m_IsEnabled) {
+		iter->second->LoadConfig();
+		if (iter->second->IsConfigured()) {
+			if (iter->second->m_IsEnabled)
+			{
 				if (active == 0)
-					logline << " " << m_notifier.first;
+					logline << " " << iter->first;
 				else
-					logline << ", " << m_notifier.first;
+					logline << ", " << iter->first;
 				active++;
 			}
 		}
@@ -459,9 +460,10 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 
 	std::string hName;
 	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
-	if (pHardware == nullptr) {
+	if (pHardware == NULL) {
 		hName = "";
-	} else {
+	}
+	else {
 		hName = pHardware->m_Name;
 	}
 
@@ -492,7 +494,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 
 	std::string szExtraData = "|Name=" + devicename + "|";
 
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 
 	//check if not sent 12 hours ago, and if applicable
 
@@ -618,7 +620,7 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 	std::string szExtraData = "|Name=" + devicename + "|Image=temp-0-5|";
 	std::string notValue;
 
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 
 	//check if not sent 12 hours ago, and if applicable
 
@@ -673,7 +675,7 @@ bool CNotificationHelper::CheckAndHandleValueNotification(
 	char szTmp[600];
 	std::string szExtraData = "|Name=" + DeviceName + "|";
 
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
@@ -731,7 +733,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 
 	std::string szExtraData = "|Name=" + devicename + "|Image=current48|";
 
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
@@ -838,7 +840,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
 	std::string notValue;
 
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
@@ -897,7 +899,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 		return false;
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|";
 
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
@@ -990,7 +992,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 
 	std::string ltype = Notification_Type_Desc(ntype, 1);
 
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 	atime -= m_NotificationSwitchInterval;
 
 	std::vector<_tNotification>::const_iterator itt;
@@ -1104,7 +1106,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 
 	std::string ltype = Notification_Type_Desc(ntype, 1);
 
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 	atime -= m_NotificationSwitchInterval;
 
 	std::vector<_tNotification>::const_iterator itt;
@@ -1194,7 +1196,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 
 	char szDateEnd[40];
 
-	time_t now = mytime(nullptr);
+	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now, &tm1);
 	struct tm ltime;
@@ -1239,7 +1241,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 	if (m_notifications.size() < 1)
 		return;
 
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 	atime -= m_NotificationSensorInterval;
 	std::map<uint64_t, std::vector<_tNotification> >::const_iterator itt;
 
@@ -1263,7 +1265,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 					if ((atime < itt2->LastSend) && (!itt2->SendAlways) && (!bRecoveryMessage))
 						continue;
 					extern time_t m_StartTime;
-					time_t btime = mytime(nullptr);
+					time_t btime = mytime(NULL);
 					std::string msg;
 					std::string szExtraData;
 					std::string custommsg;
@@ -1322,7 +1324,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 void CNotificationHelper::TouchNotification(const uint64_t ID)
 {
 	char szDate[50];
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 	sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
@@ -1351,7 +1353,7 @@ void CNotificationHelper::TouchNotification(const uint64_t ID)
 
 void CNotificationHelper::TouchLastUpdate(const uint64_t ID)
 {
-	time_t atime = mytime(nullptr);
+	time_t atime = mytime(NULL);
 	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::map<uint64_t, std::vector<_tNotification> >::iterator itt;
@@ -1423,7 +1425,8 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 					if (!splitresults[0].empty())
 						szTmp = splitresults[0];
 				}
-				if ((msg.find('!') != 0) && (msg.size() > 1)) {
+				if ((msg.find("!") != 0) && (msg.size() > 1))
+				{
 					szTmp.append(";;[Recovered] ");
 					szTmp.append(msg);
 				}
@@ -1529,7 +1532,7 @@ void CNotificationHelper::ReloadNotifications()
 	if (result.empty())
 		return;
 
-	time_t mtime = mytime(nullptr);
+	time_t mtime = mytime(NULL);
 	struct tm atime;
 	localtime_r(&mtime, &atime);
 	std::vector<std::string> splitresults;
