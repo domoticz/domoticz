@@ -464,7 +464,8 @@ void I2C::MCP23017_ReadChipDetails()
 		_log.Log(LOG_NORM, "I2C::MCP23017_ReadChipDetails. %s. Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
 		return; //read from i2c failed
 	}
-	if ((data.word == 0xFFFF)) {									// if oidir port is 0xFFFF means the chip has been reset
+	if (data.word == 0xFFFF)
+	{ // if oidir port is 0xFFFF means the chip has been reset
 		_log.Log(LOG_NORM, "I2C::MCP23017_ReadChipDetails, Cur_iodir: 0xFFFF, call MCP23017_Init");
 		MCP23017_Init();										// initialize gpio pins with switch status from db
 	}
