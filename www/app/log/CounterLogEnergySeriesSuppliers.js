@@ -86,7 +86,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     label: 'D',
                     series: {
                         name: $.t('Trendline') + ' ' + (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
-                        zIndex: 1,
+                        zIndex: 3,
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
                             valueDecimals: 3
@@ -103,6 +103,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     useDataItemsFromPrevious: true,
                     label: 'E',
                     series: {
+                        type: 'column',
                         name: $.t('Past') + ' ' + (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
@@ -435,7 +436,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     label: 'W',
                     series: {
                         name: $.t('Trendline') + ' ' + $.t('Return'),
-                        zIndex: 1,
+                        zIndex: 3,
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
                             valueDecimals: 3
@@ -455,6 +456,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     useDataItemsFromPrevious: true,
                     label: 'X',
                     series: {
+                        type: 'column',
                         name: $.t('Past') + ' ' + $.t('Return'),
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
