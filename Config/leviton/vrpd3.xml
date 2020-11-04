@@ -1,0 +1,37 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+ <MetaData>
+  <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001D:0334:1706</MetaDataItem>
+  <MetaDataItem name="ProductPic">images/leviton/vrpd3.png</MetaDataItem>
+  <MetaDataItem id="0334" name="Identifier" type="1706">VRPD3-1LW</MetaDataItem>
+  <MetaDataItem name="Description">The Vizia RF + Scene Capable Plug-in Lamp Dimming Module (VRPD3-1LW) is ideal for any residential setting where remote dimming of Incandescent loads up to 300 Watts CFL/LED loads up to 100W is needed. Typical applications include dimming of table and floor lamps. The Vizia RF + Scene Capable Plug-in Lamp Module also allows users to remotely control free-standing lamps individually or as part of a scene or zone grouping of lights through scene commands.</MetaDataItem>
+  <MetaDataItem name="InclusionDescription">1. Plug in Leviton VRPD3
+2. Place controller in inclusion mode
+3. Press button on front of VRPD3
+
+If successful, the VRPD3 LED will turn orange during inclusion and then green. The LED will flash red if it fails.
+    </MetaDataItem>
+  <MetaDataItem name="ExclusionDescription">1. Place controller in exclusion mode
+2. Press button on front of VRPD3
+
+If successful, the VRPD3 LED will turn orange during exclusion and then green. The LED will flash red if it fails.</MetaDataItem>
+  <MetaDataItem name="ResetDescription">1. Hold the control button for 5 seconds until the LED begins to flash amber
+2. Continue holding the control button until the LED turns red
+3. The plug-in dimmer module is reset</MetaDataItem>
+  <MetaDataItem name="Name">Scene Capable Plug-in Dimmer</MetaDataItem>
+  <MetaDataItem id="0334" name="FrequencyName" type="1706">U.S. / Canada / Mexico</MetaDataItem>
+  <ChangeLog>
+   <Entry author="Josh Palmer" date="27 July 2020" revision="1">Initial update based on vrpa1, Leviton documentation, and CD-Jackson's Z-Wave Database</Entry>
+  </ChangeLog>
+  <MetaDataItem id="0334" name="ZWProductPage" type="1706">https://products.z-wavealliance.org/products/1958</MetaDataItem>
+ </MetaData>
+ <!-- Configuration Parameters -->
+ <CommandClass id="112">
+  <!-- None -->
+ </CommandClass>
+ <!-- Association Groups -->
+ <CommandClass id="133">
+  <Associations num_groups="1">
+   <Group index="1" label="Lifeline" max_associations="5"/>
+  </Associations>
+ </CommandClass>
+</Product>

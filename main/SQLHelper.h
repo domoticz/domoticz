@@ -401,6 +401,7 @@ public:
 	bool AddUserVariable(const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
 	bool UpdateUserVariable(const std::string &idx, const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue, const bool eventtrigger, std::string &errorMessage);
 	void DeleteUserVariable(const std::string &idx);
+	bool GetUserVariable(const std::string& varname, const _eUsrVariableType eVartype, std::string& varvalue);
 	bool CheckUserVariable(const _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
 
 	uint64_t CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions);

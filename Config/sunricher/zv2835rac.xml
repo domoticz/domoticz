@@ -1,0 +1,161 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0330:D017:0200</MetaDataItem>
+    <MetaDataItem id="D017" name="FrequencyName" type="0200">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Set primary controller/gateway into inclusion mode (Please refer to your primary controller’s manual on how to turn your controller into inclusion)
+    
+2. Power on the knob dimmer and set it into inclusion mode. There are two methods to set the dimmer into inclusion mode:
+
+1) Repower on the dimmer, it will be set into inclusion mode automatically, and waiting to be included.
+2) Triple press reset button on the dimmer, it will set the dimmer into inclusion mode</MetaDataItem>
+    <MetaDataItem name="Name">Knob Smart Dimmer</MetaDataItem>
+    <MetaDataItem id="D017" name="Identifier" type="0200">ZV2835RAC</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down the action button for over 10 seconds, the dimmer will be reset to factory defaults.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">There are two exclusion methods:
+Method 1: Exclusion from the primary controller/gateway as follows:
+1. Set the primary controller/gateway into exclusion mode (Please refer to your primary controllers manual on how to set your controller into exclusion).
+2. Triple press reset button, the dimmer will be set to exclusion mode, and waiting to be excluded, then the dimmer will be excluded from the network.
+
+Method 2: Factory reset the dimmer will force it to be excluded from a network. (please refer to the part “Factory Reset” of this manual)
+
+Note: Factory reset is not recommended for exclusion, please use this procedure only if the primary controller/gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">The knob smart dimmer is a Z-Wave device designed to work with various types of light sources. It may be connected to two-wire or three-wire configuration so it can operate with or without neutral lead. The dimmer can switch or dim connected light source either through  Z-Wave devices or through the rotary knob directly. The smart dimmer is equipped with an algorithm of smart light source detection which makes configuration easier and ensures high compatibility of the device. It may be used as a switch with non-dimmable light sources (in 3-wire connection).</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sunricher/zv2835rac.png</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Fritiof Hedman - openzwave@fritiofhedman.se" date="11 Aug 2020" revision="1">Inital support based on the products manual.</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" instance="1" label="Saving state before power failure" size="1" type="list" value="2">
+      <Help>
+              Saving state before power failure. Default is saved.
+        </Help>
+      <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
+      <Item label="State NOT saved at power failure, all outputs are set to ON upon power restore" value="1"/>
+      <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="2"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Send the basic report" size="1" type="list" value="1">
+      <Help>Enable/disable to send the basic report to the Lifeline when the load state changed.
+              When value set as 1, re-power on the dimmer, it will send Basic report automatically.
+            Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Default fade time" max="127" min="0" type="byte" value="1">
+      <Help>Fade time in seconds. 0 is instantly, default is 1.</Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Setting minimum brightness value" max="50" min="0" type="byte" value="15">
+      <Help>Setting minimum brightness value.
+              Valid value: 0 - 50, the bigger the value is, the higher the loads minimum brightness is.
+        </Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Setting maximum brightness value" max="100" min="0" type="byte" value="100">
+      <Help>Setting maximum brightness value.
+              Valid value: 0 - 100.</Help>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Choose MOSFET driving type" size="1" type="list" value="1">
+      <Help>
+          Choose MOSFET driving type. Default trailing edge.
+        </Help>
+      <Item label="Trailing edge" value="0"/>
+      <Item label="Leading edge" value="1"/>
+    </Value>
+<Value genre="config" index="8" instance="1" label="Setting step of the knob" max="50" min="1" type="byte" value="5">
+      <Help>Corresponding dimming stepping level for each rotation of the knob (a full dimming stepping level is 99),Valid value: 1-50.</Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Added to and removed from a network through external switch" size="1" type="list" value="0">
+	    <Help>
+		    Added to and removed from a network through external switch (when enables this function, triple press the external switch within 1.5 seconds to be added to or removed from a network)
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Detect load after re-power on" size="1" type="list" value="0">
+	    <Help>
+		    Enable/disable to detect load after re-power on (detect load type, minimum brightness, maximum brightness)
+		    
+		    Note: When the device does not belong to any network, load detection will be enabled every time after re-power on. When the device has already been added to a network, load detection will be disabled
+        </Help>
+      <Item label="Enable" value="0"/>
+      <Item label="Disable" value="1"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Wiring type" size="1" type="list" value="0" read_only="true">
+	    <Help>
+		    Wiring type
+        </Help>
+      <Item label="Unknown" value="0"/>
+      <Item label="2 wire with no neutral" value="1"/>
+      <Item label="3 wire with neutral" value="2"/>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Load type" size="1" type="list" value="0" read_only="true">
+	    <Help>
+		    Load type
+        </Help>
+      <Item label="Unknown" value="0"/>
+      <Item label="Resistive" value="1"/>
+      <Item label="Inductive" value="2"/>
+      <Item label="Capacitive" value="3"/>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Enable over current protection" size="1" type="list" value="1">
+	    <Help>
+		    Enable/disable over current protection (over 3.2A for 20 seconds continuously).
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <!-- the allowed range is not given in the manual! -->
+    <Value genre="config" index="14" instance="1" label="Absolute automatic power report" max="65535" min="0" type="short" units="watts" value="10">
+	    <Help>
+	   Power automatic report absolute threshold, unit is WWhen power changes above the absolute threshold, immediately report current power value
+	    </Help>
+    </Value>
+    <!-- the allowed range is not given in the manual! -->
+    <Value genre="config" index="15" instance="1" label="Relative automatic power report" max="100" min="0" type="byte" units="%" value="20">
+	    <Help>
+Power automatic report percentage threshold, unit is %. When power changes above the percentage threshold, immediately report current power value.
+	    </Help>
+    </Value>
+    <Value genre="config" index="21" instance="1" label="Power metering automatic report time cycle" max="2678400" min="5" type="int" units="seconds" value="600">
+	    <Help>
+		    Power metering automatic report time cycle, unit is second. Valid time cycle value: 5~2678400. Default is 600 (10 minutes).
+	    </Help>
+    </Value>
+    <Value genre="config" index="22" instance="1" label="Energy metering automatic report time cycle" max="2678400" min="5" type="int" units="seconds" value="1800">
+	    <Help>
+		    Energy metering automatic report time cycle, unit is second. Valid time cycle value: 5~2678400. Default is 1800 (30 minutes).
+	    </Help>
+    </Value>
+    <Value genre="config" index="23" instance="1" label="Voltage metering automatic report time cycle" max="2678400" min="5" type="int" units="seconds" value="3600">
+	    <Help>
+		    Voltage metering automatic report time cycle, unit is second. Valid time cycle value: 5~2678400. Default is 3600 (60 minutes).
+	    </Help>
+    </Value>
+    <Value genre="config" index="24" instance="1" label="Current metering automatic report time cycle" max="2678400" min="5" type="int" units="seconds" value="3600">
+	    <Help>
+		    Current metering automatic report time cycle, unit is second. Valid time cycle value: 5~2678400. Default is 3600 (60 minutes).
+	    </Help>
+    </Value>
+    <Value genre="config" index="31" instance="1" label="Dimming curve" size="1" type="list" value="0">
+	    <Help>
+		    Setting dimming curve.
+        </Help>
+      <Item label="Linear dimming" value="0"/>
+      <Item label="Logarithmic dimming" value="1"/>
+    </Value>
+    <Value genre="config" index="32" instance="1" label="Startup brightness" max="99" min="0" type="byte" value="0">
+	    <Help>
+		    Setting startup brightness of the loadValid value: 0~99Note: every time when turn on the load from OFF status, if the target brightness is lower than the startup brightness, the brightness will first go to the startup brightness value then fall down to the target brightness.
+	    </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Launch 1" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

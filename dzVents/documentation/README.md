@@ -557,6 +557,7 @@ return {
 
 ## *timer* trigger rules
 There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm):
+Keywords recognized are "at, between, every, except, in, on " ( except supported from version )<sup>3.0.16</sup> onwards.
 
 ```Lua
 	on = {
@@ -601,20 +602,23 @@ There are several options for time triggers. It is important to know that Domoti
 			'at nighttime',				-- between sunset and sunrise
 			'at daytime',				-- between sunrise and sunset
 			'at daytime on mon,tue',	-- between sunrise and sunset only on Mondays and Tuesdays
-			'in week 12,44'				-- in week 12 or 44
+			'in week 1-7,44'			-- in week 1-7 or 44
 			'in week 20-25,33-47'		-- between week 20 and 25 or week 33 and 47
 			'in week -12, 33-'			-- week <= 12 or week >= 33
 			'every odd week',
 			'every even week',			-- odd or even numbered weeks
-			'on 23/11',					-- on 23rd of november (dd/mm)
+			'on 23/11',					-- on 23rd of November (dd/mm)
 			'on 23/11-25/12',			-- between 23/11 and 25/12
-			'on 2/3-8/3,7/8,6/10-14/10',-- between march 2 and 8, on august 7 and between october 6 and 14.
+			'on 2/3-8/3,7/8,6/10-14/10',-- between march 2 and 8, on august 7 and between October 6 and 14.
 			'on */2,15/*',				-- every day in February or
 										-- every 15th day of the month
 			'on -3/4,4/7-',				-- before 3/4 or after 4/7
 
+			'at 12:45-21:15 except at 18:00-18:30',	-- between 12:45 and 21:15 but not between 18:00 and 18:30 ( except supported from 3.0.16 onwards )
+			'at daytime except on sun',				-- between sunrise and sunset but not on Sundays 
+
 			-- or if you want to go really wild and combine them:
-				'at nighttime at 21:32-05:44 every 5 minutes on sat, sun',
+				'at nighttime at 21:32-05:44 every 5 minutes on sat, sun except at 04:00', -- except supported from 3.0.16 onwards
 				'every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,fri,tue on 20/5-18/8'
 
 			-- or just do it yourself:
@@ -876,14 +880,16 @@ The domoticz object has these constants available for use in your code e.g. `dom
  - **SOUND_ALIEN** , **SOUND_BIKE**, **SOUND_BUGLE**, **SOUND_CASH_REGISTER**, **SOUND_CLASSICAL**, **SOUND_CLIMB** , **SOUND_COSMIC**, **SOUND_DEFAULT** , **SOUND_ECHO**, **SOUND_FALLING**  , **SOUND_GAMELAN**, **SOUND_INCOMING**, **SOUND_INTERMISSION**, **SOUND_MAGIC** , **SOUND_MECHANICAL**, **SOUND_NONE**, **SOUND_PERSISTENT**, **SOUND_PIANOBAR** , **SOUND_SIREN** , **SOUND_SPACEALARM**, **SOUND_TUGBOAT**  , **SOUND_UPDOWN**: for notification sounds.
 
 ## Custom event API
-If you have a dzVents script that is triggered by a customEvent in Domoticz then the second parameter passed to the execute function will be a *notification* object. The object.type = customEvent (isCustomEvent: true) and object.data contains the passed data to this script. object.trigger is the name of the customEvent that triggered the script.## Device object API
+If you have a dzVents script that is triggered by a customEvent in Domoticz then the second parameter passed to the execute function will be a *notification* object. The object.type = customEvent (isCustomEvent: true) and object.data contains the passed data to this script. object.trigger is the name of the customEvent that triggered the script.
+
+## Device object API
 If you have a dzVents script that is triggered by switching a device in Domoticz then the second parameter passed to the execute function will be a *device* object. Also, each device in Domoticz can be found in the `domoticz.devices()` collection (see above). The device object has a set of fixed attributes like *name* and *idx*. Many devices, however, have different attributes and methods depending on their (hardware)type, subtype and other device specific identifiers. It is possible that you will get an error if you call a method on a device that doesn't support it, so please check the device properties for your specific hardware to see which are supported (can also be done in your script code!).
 
 dzVents recognizes most of the different device types in Domoticz and creates the proper attributes and methods. It is possible that your device type has attributes that are not recognized; if that's the case, please create a ticket in the Domoticz [issue tracker on GitHub](https://github.com/domoticz/domoticz/issues), and an adapter for that device will be added.
 
 If for some reason you miss a specific attribute or data for a device, then likely the `rawData` attribute will have that information.
 
-### Device attributes and methods for all devices
+## Device attributes and methods for all devices
  - **active**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'. Same as bState.
  - **batteryLevel**: *Number* If applicable for that device then it will be from 0-100.
  - **bState**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'. Better to use active.
@@ -2477,8 +2483,5 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 # History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
 
-## [3.0.15]
-- Fixed bug in domoticz.time.matchesRule (daterange was ignored when "on mon, tue" was also part of the rule)
-- Add device adapter for Thermostat type 3 devices (Mertik)
-- Add utils.humidityStatus
-- Add option to have dzVents compute humidity status
+## [3.0.16]
+- Add except as keyword in timeRules
