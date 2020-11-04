@@ -189,6 +189,7 @@ private:
 	void Cmd_GetNewHistory(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetConfig(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetLocation(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetForecastConfig(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_SendNotification(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_EmailCameraSnapshot(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root);

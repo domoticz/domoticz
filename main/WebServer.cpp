@@ -516,6 +516,7 @@ namespace http {
 
 			RegisterCommandCode("getconfig", boost::bind(&CWebServer::Cmd_GetConfig, this, _1, _2, _3), true);
 			RegisterCommandCode("getlocation", boost::bind(&CWebServer::Cmd_GetLocation, this, _1, _2, _3));
+			RegisterCommandCode("getforecastconfig", boost::bind(&CWebServer::Cmd_GetForecastConfig, this, _1, _2, _3));
 			RegisterCommandCode("sendnotification", boost::bind(&CWebServer::Cmd_SendNotification, this, _1, _2, _3));
 			RegisterCommandCode("emailcamerasnapshot", boost::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1, _2, _3));
 			RegisterCommandCode("udevice", boost::bind(&CWebServer::Cmd_UpdateDevice, this, _1, _2, _3));
@@ -2883,6 +2884,7 @@ namespace http {
 			}
 		}
 
+		// Could now be obsolete as only 1 usage was found in Forecast screen, which now uses other command
 		void CWebServer::Cmd_GetLocation(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights == -1)
@@ -2890,6 +2892,7 @@ namespace http {
 				session.reply_status = reply::forbidden;
 				return;//Only auth user allowed
 			}
+			root["title"] = "GetLocation";
 			std::string Latitude = "1";
 			std::string Longitude = "1";
 			std::string sValue;
@@ -2902,10 +2905,115 @@ namespace http {
 				{
 					Latitude = strarray[0];
 					Longitude = strarray[1];
+					root["status"] = "OK";
 				}
 			}
 			root["Latitude"] = Latitude;
 			root["Longitude"] = Longitude;
+		}
+
+		void CWebServer::Cmd_GetForecastConfig(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;//Only auth user allowed
+			}
+
+			std::string Latitude = "1";
+			std::string Longitude = "1";
+			std::string sValue, sFURL, forecast_url;
+			std::stringstream ss, sURL;
+			uint8_t iSucces = 0;
+			bool iFrame = true;
+
+			root["title"] = "GetForecastConfig";
+			root["status"] = "Error";
+
+			if (m_sql.GetPreferencesVar("Location", sValue))
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+
+				if (strarray.size() == 2)
+				{
+					Latitude = strarray[0];
+					Longitude = strarray[1];
+					iSucces++;
+				}
+				root["Latitude"] = Latitude;
+				root["Longitude"] = Longitude;
+				sValue = "";
+				sValue.clear();
+			}
+
+			root["Forecasthardware"] = "0";
+			if (m_sql.GetUserVariable("forecasthardware", USERVARTYPE_INTEGER, sValue))
+			{
+				root["Forecasthardware"] = sValue;
+				sValue = "";
+				sValue.clear();
+			}
+
+			if (root["Forecasthardware"] != "0")
+			{
+				int iHardwareID = atoi(root["Forecasthardware"].asString().c_str());
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
+				if (pHardware != NULL)
+				{
+					if (pHardware->HwdType == HTYPE_OpenWeatherMap)
+					{
+						root["Forecasthardwaretype"] = HTYPE_OpenWeatherMap;
+						COpenWeatherMap *pWHardware = reinterpret_cast<COpenWeatherMap*>(pHardware);
+						forecast_url = pWHardware->GetForecastURL();
+						if (forecast_url != "")
+						{
+							sFURL = forecast_url;
+							iFrame = false;
+						}
+						Json::Value forecast_data = pWHardware->GetForecastData();
+						if (!forecast_data.empty())
+						{
+							root["Forecastdata"] = forecast_data;
+						}
+					}
+					else if (pHardware->HwdType == HTYPE_BuienRadar)
+					{
+						root["Forecasthardwaretype"] = HTYPE_BuienRadar;
+						CBuienRadar *pWHardware = reinterpret_cast<CBuienRadar*>(pHardware);
+						forecast_url = pWHardware->GetForecastURL();
+						if (forecast_url != "")
+						{
+							sFURL = forecast_url;
+						}
+					}
+					else
+					{
+						root["Forecasthardware"] = "0";	// reset to 0
+					}
+				}
+				else
+				{
+					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
+					root["Forecasthardware"] = "0";	// reset to 0
+				}
+			}
+
+			if (root["Forecasthardware"] == "0" && iSucces == 1)
+			{
+				// No forecast device, but we have geo coords, so enough for fallback
+				iSucces++;
+			}
+			else if (!sFURL.empty())
+			{
+				root["Forecasturl"] = sFURL;
+				iSucces++;
+			}
+
+			if (iSucces == 2)
+			{
+				root["status"] = "OK";
+			}
 		}
 
 		void CWebServer::Cmd_SendNotification(WebEmSession & session, const request& req, Json::Value &root)

@@ -13,6 +13,7 @@ public:
 	~COpenWeatherMap(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	std::string GetForecastURL();
+	Json::Value GetForecastData();
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -23,7 +24,7 @@ private:
 	std::string GetHourFromUTCtimestamp(const uint8_t hournr, std::string UTCtimestamp);
 	bool ProcessForecast(Json::Value &forecast, const std::string period, const std::string periodname, const uint8_t count, const int startNodeID);
 
-	bool ResolveLocation(const std::string& Location, double& latitude, double& longitude, const bool IsCityName = true);
+	bool ResolveLocation(const std::string& Location, double& latitude, double& longitude, uint32_t& cityid, const bool IsCityName = true);
 
 	std::string m_APIKey;
 	std::string m_Location;
@@ -34,5 +35,6 @@ private:
 	bool m_add_hourforecast = false;
 	double m_Lat = 0;
 	double m_Lon = 0;
+	uint32_t m_CityID = 0;
 	std::shared_ptr<std::thread> m_thread;
 };

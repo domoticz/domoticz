@@ -5053,7 +5053,6 @@ bool CSQLHelper::GetPreferencesVar(const std::string& Key, std::string& sValue)
 	if (!m_dbase)
 		return false;
 
-
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT sValue FROM Preferences WHERE (Key='%q')",
 		Key.c_str());
@@ -5066,7 +5065,6 @@ bool CSQLHelper::GetPreferencesVar(const std::string& Key, std::string& sValue)
 
 bool CSQLHelper::GetPreferencesVar(const std::string& Key, double& Value)
 {
-
 	std::string sValue;
 	int nValue;
 	Value = 0;
@@ -5097,6 +5095,7 @@ bool CSQLHelper::GetPreferencesVar(const std::string& Key, int& nValue)
 	std::string sValue;
 	return GetPreferencesVar(Key, nValue, sValue);
 }
+
 void CSQLHelper::DeletePreferencesVar(const std::string& Key)
 {
 	std::string sValue;
@@ -8423,6 +8422,22 @@ void CSQLHelper::DeleteUserVariable(const std::string& idx)
 	}
 }
 
+bool CSQLHelper::GetUserVariable(const std::string& varname, const _eUsrVariableType eVartype, std::string& varvalue)
+{
+	std::string errorMessage;
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT ValueType, Value FROM UserVariables WHERE (Name=='%q')", varname.c_str());
+	if (!result.empty())
+	{
+		if(CheckUserVariable(eVartype, result[0][1], errorMessage))
+		{
+			varvalue = result[0][1];
+			return true;
+		}
+	}
+	return false;
+}
+
 bool CSQLHelper::AddUserVariable(const std::string& varname, const _eUsrVariableType eVartype, const std::string& varvalue, std::string& errorMessage)
 {
 	std::vector<std::vector<std::string> > result;
@@ -8472,7 +8487,6 @@ bool CSQLHelper::UpdateUserVariable(const std::string& idx, const std::string& v
 
 bool CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, const std::string& varvalue, std::string& errorMessage)
 {
-
 	if (varvalue.size() > 200) {
 		errorMessage = "String exceeds maximum size";
 		return false;
