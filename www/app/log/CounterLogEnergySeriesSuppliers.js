@@ -1,85 +1,5 @@
 define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
-    function ContainsEnergyUsedAndPowerNormalAndLow() {
-
-    }
-
-    ContainsEnergyUsedAndPowerNormalAndLow.prototype.test = function (dataItemsKeys) {
-        return dataItemsKeys.includes('v') && dataItemsKeys.includes('eu') && dataItemsKeys.includes('v2');
-    }
-
-    function ContainsPowerNormalOnly() {
-
-    }
-
-    ContainsPowerNormalOnly.prototype.test = function (dataItemsKeys) {
-        return dataItemsKeys.includes('v') && !dataItemsKeys.includes('eu') && !dataItemsKeys.includes('v2');
-    }
-
-    function ContainsEnergyUsedAndPowerNormalOnly() {
-
-    }
-
-    ContainsEnergyUsedAndPowerNormalOnly.prototype.test = function (dataItemsKeys) {
-        return dataItemsKeys.includes('v') && dataItemsKeys.includes('eu') && !dataItemsKeys.includes('v2');
-    }
-
-    function ContainsEnergyUsedAndPowerLow() {
-
-    }
-
-    ContainsEnergyUsedAndPowerLow.prototype.test = function (dataItemsKeys) {
-        return dataItemsKeys.includes('eu') && dataItemsKeys.includes('v2');
-    }
-
-    function ContainsEnergyUsed() {
-
-    }
-
-    ContainsEnergyUsed.prototype.test = function (dataItemsKeys) {
-        return dataItemsKeys.includes('eu');
-    }
-
-    function ContainsEnergyGenerated() {
-
-    }
-
-    ContainsEnergyGenerated.prototype.test = function (dataItemsKeys) {
-        return dataItemsKeys.includes('eg');
-    }
-
-    function ContainsPowerLow() {
-
-    }
-
-    ContainsPowerLow.prototype.test = function (dataItemsKeys) {
-        return dataItemsKeys.includes('v2');
-    }
-
-    function ContainsPowerNormalAndReturnNormal() {
-
-    }
-
-    ContainsPowerNormalAndReturnNormal.prototype.test = function (dataItemsKeys) {
-        return dataItemsKeys.includes('v') && dataItemsKeys.includes('r1');
-    }
-
-    function ContainsReturnNormal() {
-
-    }
-
-    ContainsReturnNormal.prototype.test = function (dataItemsKeys) {
-        return dataItemsKeys.includes('r1');
-    }
-
-    function ContainsReturnLow() {
-
-    }
-
-    ContainsReturnLow.prototype.test = function (dataItemsKeys) {
-        return dataItemsKeys.includes('r2');
-    }
-
     app.factory('counterLogEnergySeriesSuppliers', function (chart, counterLogSeriesSupplier) {
         return {
             counterDaySeriesSuppliers: counterDaySeriesSuppliers,
@@ -96,7 +16,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function counterDaySeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new ContainsPowerNormalOnly(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
                     id: 'counterEnergyUsedOrGenerated',
                     label: 'A',
                     series: {
@@ -115,7 +35,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function counterWeekSeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new ContainsPowerNormalOnly(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
                     id: 'counterEnergyUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'B',
@@ -171,7 +91,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
                             valueDecimals: 3
                         },
-                        color: 'rgba(255,3,3,0.8)',
+                        color: 'rgba(252,3,3,0.8)',
                         dashStyle: 'LongDash',
                         yAxis: 0,
                         visible: false
@@ -198,7 +118,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function instantAndCounterDaySeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new ContainsEnergyUsedAndPowerNormalOnly(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
                     label: 'F',
                     series: {
@@ -214,7 +134,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new ContainsEnergyUsedAndPowerNormalOnly(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     label: 'G',
                     series: {
@@ -234,7 +154,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function instantAndCounterWeekSeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new ContainsEnergyUsedAndPowerNormalOnly(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'H',
@@ -251,7 +171,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new ContainsEnergyUsedAndPowerNormalOnly(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'I',
@@ -272,7 +192,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function p1DaySeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new ContainsEnergyUsedAndPowerLow(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', {
                     id: 'p1EnergyUsedArea',
                     label: 'J',
                     series: {
@@ -287,7 +207,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         visible: false
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eg', new ContainsEnergyGenerated(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eg', {
                     id: 'p1EnergyGeneratedArea',
                     label: 'K',
                     series: {
@@ -302,7 +222,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         visible: false
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new ContainsEnergyUsedAndPowerNormalAndLow(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
                     id: 'p1PowerUsed',
                     label: 'L',
                     series: {
@@ -315,7 +235,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 1
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v2', new ContainsEnergyUsedAndPowerNormalAndLow(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v2', {
                     id: 'p1PowerGenerated',
                     label: 'M',
                     series: {
@@ -333,7 +253,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function p1WeekSeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new ContainsEnergyUsed(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', {
                     id: 'p1EnergyUsedArea',
                     valueDecimals: 3,
                     label: 'N',
@@ -349,7 +269,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         visible: false
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eg', new ContainsEnergyGenerated(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eg', {
                     id: 'p1EnergyGeneratedArea',
                     valueDecimals: 3,
                     label: 'O',
@@ -365,7 +285,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         visible: false
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new ContainsPowerNormalAndReturnNormal(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
                     id: 'p1EnergyUsed',
                     valueDecimals: 3,
                     convertZeroToNull: true,
@@ -380,7 +300,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v2', new ContainsPowerLow(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v2', {
                     id: 'p1EnergyGenerated',
                     valueDecimals: 3,
                     convertZeroToNull: true,
@@ -400,7 +320,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function powerReturnedDaySeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r1', new ContainsReturnNormal(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r1', {
                     id: 'powerReturned1',
                     dataIsValid: function (data) {
                         return data.delivered === true;
@@ -416,7 +336,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 1
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r2', new ContainsReturnLow(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r2', {
                     id: 'powerReturned2',
                     dataIsValid: function (data) {
                         return data.delivered === true;
@@ -437,7 +357,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function powerReturnedWeekSeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r1', new ContainsReturnNormal(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r1', {
                     id: 'powerReturned1',
                     dataIsValid: function (data) {
                         return data.delivered === true;
@@ -455,7 +375,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r2', new ContainsReturnLow(), {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r2', {
                     id: 'powerReturned2',
                     dataIsValid: function (data) {
                         return data.delivered === true;
