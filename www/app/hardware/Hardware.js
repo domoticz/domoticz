@@ -4378,11 +4378,11 @@ define(['app'], function (app) {
 								var PluginParams = '<table class="display plugin" id="' + item.key + '" border="0" cellpadding="0" cellspacing="20"><tr><td> </td></tr>';
 								if (item.wikiURL.length > 0) {
 									PluginParams += '<tr><td align="right" style="width:110px"><span data-i18n="Wiki URL">Wiki URL</span>:</td>' +
-										'<td><a href="' + item.wikiURL + '">' + item.wikiURL + '</a></td></tr>';
+										'<td><a href="' + item.wikiURL + '" target="_blank">' + item.wikiURL + '</a></td></tr>';
 								}
 								if (item.externalURL.length > 0) {
 									PluginParams += '<tr><td align="right" style="width:110px"><span data-i18n="Product URL">Product URL</span>:</td>' +
-										'<td><a href="' + item.externalURL + '">' + item.externalURL + '</a></td></tr>';
+										'<td><a href="' + item.externalURL + '" target="_blank">' + item.externalURL + '</a></td></tr>';
 								}
 								if (item.description.length > 0) {
 									PluginParams += '<tr><td></td><td>' + item.description + '</td></tr>';
