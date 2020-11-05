@@ -265,8 +265,8 @@ bool CPhilipsHue::StatesSimilar(const _tHueLightState &s1, const _tHueLightState
 				  break;
 			}
 			case HLMODE_XY:
-				res = abs(s1.x - s2.x) < 0.01 && // 655 is 1% of 65535, the range of hue
-					  abs(s1.y - s2.y) < 0.01;   // 3 is 1% of 255, the range of sat
+				res = std::abs(s1.x - s2.x) < 0.01 && // 655 is 1% of 65535, the range of hue
+					  std::abs(s1.y - s2.y) < 0.01;   // 3 is 1% of 255, the range of sat
 				break;
 		}
 	}
