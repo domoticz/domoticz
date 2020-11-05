@@ -6,7 +6,7 @@ define(['app'], function (app) {
             summingSeriesSupplier: summingSeriesSupplier
         };
 
-        function dataItemsKeysPredicatedSeriesSupplier(dataItemValueKey, seriesSupplier) {
+        function dataItemsKeysPredicatedSeriesSupplier(dataItemValueKey, dataSeriesItemsKeysPredicate, seriesSupplier) {
             return _.merge(
                 {
                     valueDecimals: 0,
@@ -33,7 +33,7 @@ define(['app'], function (app) {
                         }
                     },
                     dataItemIsValid: function (dataItem) {
-                        return this.dataSeriesItemsKeys.includes(dataItemValueKey) && dataItem[dataItemValueKey] !== undefined;
+                        return dataSeriesItemsKeysPredicate.test(this.dataSeriesItemsKeys) && dataItem[dataItemValueKey] !== undefined;
                     },
                     valuesFromDataItem: function (dataItem) {
                         return [parseFloat(dataItem[dataItemValueKey])];

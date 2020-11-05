@@ -1,5 +1,19 @@
 define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
+    function DoesContain(key) {
+        this.key = key;
+    }
+    DoesContain.prototype.test = function (dataSeriesItemsKeys) {
+        return dataSeriesItemsKeys.includes(this.key);
+    }
+
+    function DoesNotContain(key) {
+        this.key = key;
+    }
+    DoesNotContain.prototype.test = function (dataSeriesItemsKeys) {
+        return !dataSeriesItemsKeys.includes(this.key);
+    }
+
     app.factory('counterLogEnergySeriesSuppliers', function (chart, counterLogSeriesSupplier) {
         return {
             counterDaySeriesSuppliers: counterDaySeriesSuppliers,
@@ -16,7 +30,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function counterDaySeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new DoesNotContain('eu'), {
                     id: 'counterEnergyUsedOrGenerated',
                     label: 'A',
                     series: {
@@ -35,7 +49,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function counterWeekSeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new DoesNotContain('eu'), {
                     id: 'counterEnergyUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'B',
@@ -119,7 +133,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function instantAndCounterDaySeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new DoesContain('eu'), {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
                     label: 'F',
                     series: {
@@ -135,13 +149,13 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new DoesContain('eu'), {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     label: 'G',
                     series: {
+                        type: 'spline',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
                         zIndex: 10,
-                        type: 'spline',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
                         },
@@ -155,7 +169,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function instantAndCounterWeekSeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new DoesContain('eu'), {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'H',
@@ -172,14 +186,14 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0
                     }
                 }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new DoesContain('eu'), {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'I',
                     series: {
+                        type: 'column',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
                         zIndex: 10,
-                        type: 'column',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
@@ -193,10 +207,11 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
         function p1DaySeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', {
+                {
                     id: 'p1EnergyUsedArea',
+                    dataItemKeys: ['eu'],
                     label: 'J',
-                    series: {
+                    template: {
                         type: 'area',
                         name: $.t('Energy Usage'),
                         tooltip: {
@@ -207,11 +222,12 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0,
                         visible: false
                     }
-                }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eg', {
+                },
+                {
                     id: 'p1EnergyGeneratedArea',
+                    dataItemKeys: ['eg'],
                     label: 'K',
-                    series: {
+                    template: {
                         type: 'area',
                         name: $.t('Energy Returned'),
                         tooltip: {
@@ -222,11 +238,12 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0,
                         visible: false
                     }
-                }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
+                },
+                {
                     id: 'p1PowerUsed',
+                    dataItemKeys: ['v'],
                     label: 'L',
-                    series: {
+                    template: {
                         name: $.t('Usage') + ' 1',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
@@ -235,11 +252,12 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         stack: 'susage',
                         yAxis: 1
                     }
-                }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v2', {
+                },
+                {
                     id: 'p1PowerGenerated',
+                    dataItemKeys: ['v2'],
                     label: 'M',
-                    series: {
+                    template: {
                         name: $.t('Usage') + ' 2',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
@@ -248,17 +266,18 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         stack: 'susage',
                         yAxis: 1
                     }
-                })
+                }
             ];
         }
 
         function p1WeekSeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', {
+                {
                     id: 'p1EnergyUsedArea',
+                    dataItemKeys: ['eu'],
                     valueDecimals: 3,
                     label: 'N',
-                    series: {
+                    template: {
                         type: 'area',
                         name: $.t('Energy Usage'),
                         tooltip: {
@@ -269,12 +288,13 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0,
                         visible: false
                     }
-                }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eg', {
+                },
+                {
                     id: 'p1EnergyGeneratedArea',
+                    dataItemKeys: ['eg'],
                     valueDecimals: 3,
                     label: 'O',
-                    series: {
+                    template: {
                         type: 'area',
                         name: $.t('Energy Returned'),
                         tooltip: {
@@ -285,13 +305,14 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0,
                         visible: false
                     }
-                }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', {
+                },
+                {
                     id: 'p1EnergyUsed',
+                    dataItemKeys: ['v'],
                     valueDecimals: 3,
                     convertZeroToNull: true,
                     label: 'P',
-                    series: {
+                    template: {
                         name: $.t('Usage') + ' 1',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
@@ -300,13 +321,14 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         stack: 'susage',
                         yAxis: 0
                     }
-                }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v2', {
+                },
+                {
                     id: 'p1EnergyGenerated',
+                    dataItemKeys: ['v2'],
                     valueDecimals: 3,
                     convertZeroToNull: true,
                     label: 'Q',
-                    series: {
+                    template: {
                         name: $.t('Usage') + ' 2',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
@@ -315,19 +337,20 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         stack: 'susage',
                         yAxis: 0
                     }
-                })
+                }
             ];
         }
 
         function powerReturnedDaySeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r1', {
+                {
                     id: 'powerReturned1',
+                    dataItemKeys: ['r1'],
                     dataIsValid: function (data) {
                         return data.delivered === true;
                     },
                     label: 'R',
-                    series: {
+                    template: {
                         name: $.t('Return') + ' 1',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
@@ -336,14 +359,15 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         stack: 'sreturn',
                         yAxis: 1
                     }
-                }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r2', {
+                },
+                {
                     id: 'powerReturned2',
+                    dataItemKeys: ['r2'],
                     dataIsValid: function (data) {
                         return data.delivered === true;
                     },
                     label: 'S',
-                    series: {
+                    template: {
                         name: $.t('Return') + ' 2',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
@@ -352,21 +376,22 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         stack: 'sreturn',
                         yAxis: 1
                     }
-                })
+                }
             ];
         }
 
         function powerReturnedWeekSeriesSuppliers(deviceType) {
             return [
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r1', {
+                {
                     id: 'powerReturned1',
+                    dataItemKeys: ['r1'],
                     dataIsValid: function (data) {
                         return data.delivered === true;
                     },
                     valueDecimals: 3,
                     convertZeroToNull: true,
                     label: 'T',
-                    series: {
+                    template: {
                         name: $.t('Return') + ' 1',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
@@ -375,16 +400,17 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         stack: 'sreturn',
                         yAxis: 0
                     }
-                }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('r2', {
+                },
+                {
                     id: 'powerReturned2',
+                    dataItemKeys: ['r2'],
                     dataIsValid: function (data) {
                         return data.delivered === true;
                     },
                     valueDecimals: 3,
                     convertZeroToNull: true,
                     label: 'U',
-                    series: {
+                    template: {
                         name: $.t('Return') + ' 2',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
@@ -393,7 +419,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         stack: 'sreturn',
                         yAxis: 0
                     }
-                })
+                }
             ];
         }
 
