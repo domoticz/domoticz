@@ -1,4 +1,4 @@
-define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy'], function (app) {
+define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy'], function (app) {
     app.controller('DeviceLogController', function ($location, $routeParams, domoticzApi, deviceApi, counterLogSubtypeRegistry) {
         var vm = this;
 
@@ -9,6 +9,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
         vm.isReportAvailable = isReportAvailable;
         vm.isInstantAndCounterLog = isInstantAndCounterLog;
         vm.isP1EnergyLog = isP1EnergyLog;
+        vm.isCounterLog = isCounterLog;
 
         init();
 
@@ -19,7 +20,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 vm.device = device;
                 vm.pageName = device.Name;
 
-                if (isCounterLog()) {
+                if (false && isCounterLog()) {
                     ShowCounterLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
                 }
             });
@@ -105,7 +106,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
 
             return vm.device.Type === 'RFXMeter'
                 || (vm.device.Type == 'P1 Smart Meter' && vm.device.SubType == 'Gas')
-                || (typeof vm.device.Counter != 'undefined' && !isCounterLogSpline());
+                || (typeof vm.device.Counter != 'undefined');
         }
 
         function isInstantAndCounterLog() {

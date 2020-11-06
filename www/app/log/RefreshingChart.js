@@ -1,5 +1,4 @@
-define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
-    function (_, DomoticzBase, DataLoader, ChartLoader, ChartZoomer) {
+define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], function (_, DomoticzBase, DataLoader, ChartLoader, ChartZoomer) {
 
     function RefreshingChart(
             baseParams, angularParams, domoticzParams, params,
