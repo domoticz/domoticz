@@ -4,6 +4,16 @@ define(function () {
     }
 
     DataLoader.prototype.loadData = function (data, receiver) {
+        if (receiver.dataSupplier.dataPreprocessor !== undefined) {
+            receiver.dataSupplier.dataPreprocessor(data);
+        }
+        if (receiver.dataSupplier.dataItemsPreprocessor !== undefined) {
+            receiver.dataSupplier.dataItemsPreprocessor(data.result);
+            if (data.resultprev !== undefined) {
+                receiver.dataSupplier.dataItemsPreprocessor(data.resultprev);
+            }
+        }
+
         const seriesSuppliersOnData = receiver.seriesSuppliers.filter(function (seriesSupplier) {
             return seriesSupplier.dataIsValid === undefined || seriesSupplier.dataIsValid(data);
         });
@@ -44,7 +54,10 @@ define(function () {
                     if (seriesSupplier.dataItemIsValid === undefined || seriesSupplier.dataItemIsValid(dataItem)) {
                         const datapoint = [seriesSupplier.timestampFromDataItem(dataItem)];
                         seriesSupplier.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
-                            datapoint.push(seriesSupplier.convertZeroToNull && valueFromDataItem === 0 ? null : valueFromDataItem);
+                            const dataItemValue = seriesSupplier.postprocessDataItemValue === undefined
+                                ? valueFromDataItem
+                                : seriesSupplier.postprocessDataItemValue(valueFromDataItem);
+                            datapoint.push(seriesSupplier.convertZeroToNull && dataItemValue === 0 ? null : dataItemValue);
                         });
                         seriesSupplier.datapoints.push(datapoint);
                     }

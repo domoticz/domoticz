@@ -1,5 +1,5 @@
-define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy'], function (app) {
-    app.controller('DeviceLogController', function ($location, $routeParams, domoticzApi, deviceApi, counterLogSubtypeRegistry) {
+define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy'], function (app) {
+    app.controller('DeviceLogController', function ($location, $routeParams, domoticzApi, deviceApi, chart) {
         var vm = this;
 
         vm.isTextLog = isTextLog;
@@ -10,6 +10,9 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
         vm.isInstantAndCounterLog = isInstantAndCounterLog;
         vm.isP1EnergyLog = isP1EnergyLog;
         vm.isCounterLog = isCounterLog;
+        vm.isGasDevice = isGasDevice;
+        vm.isWaterDevice = isWaterDevice;
+        vm.isCounterDevice = isCounterDevice;
 
         init();
 
@@ -107,6 +110,18 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             return vm.device.Type === 'RFXMeter'
                 || (vm.device.Type == 'P1 Smart Meter' && vm.device.SubType == 'Gas')
                 || (typeof vm.device.Counter != 'undefined');
+        }
+
+        function isGasDevice() {
+            return vm.device.SwitchTypeVal === chart.deviceTypes.Gas;
+        }
+
+        function isWaterDevice() {
+            return vm.device.SwitchTypeVal === chart.deviceTypes.Water;
+        }
+
+        function isCounterDevice() {
+            return vm.device.SwitchTypeVal === chart.deviceTypes.Counter;
         }
 
         function isInstantAndCounterLog() {

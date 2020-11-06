@@ -32,38 +32,44 @@ define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], f
                     }
                 }
             },
-            yAxesDay: [
-                {
-                    title: {
-                        text: $.t('Energy') + ' (Wh)'
+            yAxesDay: function (deviceType) {
+                return [
+                    {
+                        title: {
+                            text: $.t('Energy') + ' (Wh)'
+                        },
+                        min: 0
                     },
-                    min: 0
-                },
-                {
-                    title: {
-                        text: $.t('Power') + ' (Watt)'
-                    },
-                    min: 0,
-                    opposite: true
-                }
-            ],
-            yAxesWeek: [
-                {
-                    maxPadding: 0.2,
-                    title: {
-                        text: $.t('Energy') + ' (kWh)'
-                    },
-                    min: 0
-                }
-            ],
-            yAxesMonthYear: [
-                {
-                    title: {
-                        text: $.t('Energy') + ' (kWh)'
-                    },
-                    min: 0
-                }
-            ],
+                    {
+                        title: {
+                            text: $.t('Power') + ' (Watt)'
+                        },
+                        min: 0,
+                        opposite: true
+                    }
+                ];
+            },
+            yAxesWeek: function (deviceType) {
+                return [
+                    {
+                        maxPadding: 0.2,
+                        title: {
+                            text: $.t('Energy') + ' (kWh)'
+                        },
+                        min: 0
+                    }
+                ];
+            },
+            yAxesMonthYear: function (deviceType) {
+                return [
+                    {
+                        title: {
+                            text: $.t('Energy') + ' (kWh)'
+                        },
+                        min: 0
+                    }
+                ];
+            },
             daySeriesSuppliers: function (deviceType) {
                 return []
                     .concat(counterLogEnergySeriesSuppliers.p1DaySeriesSuppliers(deviceType))

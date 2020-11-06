@@ -28,34 +28,40 @@ define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], f
                 dataRequest.method = 1;
                 return dataRequest;
             },
-            yAxesDay: [
-                {
-                    title: {
-                        text: $.t('Energy') + ' (Wh)'
-                    }
-                },
-                {
-                    title: {
-                        text: $.t('Power') + ' (Watt)'
+            yAxesDay: function (deviceType) {
+                return [
+                    {
+                        title: {
+                            text: $.t('Energy') + ' (Wh)'
+                        }
                     },
-                    opposite: true
-                }
-            ],
-            yAxesWeek: [
-                {
-                    maxPadding: 0.2,
-                    title: {
-                        text: $.t('Energy') + ' (kWh)'
+                    {
+                        title: {
+                            text: $.t('Power') + ' (Watt)'
+                        },
+                        opposite: true
                     }
-                }
-            ],
-            yAxesMonthYear: [
-                {
-                    title: {
-                        text: $.t('Energy') + ' (kWh)'
+                ];
+            },
+            yAxesWeek: function (deviceType) {
+                return [
+                    {
+                        maxPadding: 0.2,
+                        title: {
+                            text: $.t('Energy') + ' (kWh)'
+                        }
                     }
-                }
-            ],
+                ];
+            },
+            yAxesMonthYear: function (deviceType) {
+                return [
+                    {
+                        title: {
+                            text: $.t('Energy') + ' (kWh)'
+                        }
+                    }
+                ];
+            },
             daySeriesSuppliers: function (deviceType) {
                 return []
                     .concat(counterLogEnergySeriesSuppliers.instantAndCounterDaySeriesSuppliers(deviceType))

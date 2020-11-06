@@ -7,6 +7,33 @@ define(['app'], function (app) {
         Counter: 3,
         EnergyGenerated: 4,
         Time: 5,
+        fromIndex: function (switchTypeVal) {
+            if (switchTypeVal === this.EnergyUsed) {
+                return 'EnergyUsed';
+            } else if (switchTypeVal === this.Gas) {
+                return 'Gas';
+            } else if (switchTypeVal === this.Water) {
+                return 'Water';
+            } else if (switchTypeVal === this.Counter) {
+                return 'Counter';
+            } else if (switchTypeVal === this.EnergyGenerated) {
+                return 'EnergyGenerated';
+            } else if (switchTypeVal === this.Time) {
+                return 'Time';
+            }
+        }
+    };
+
+    const deviceCounterSubtype = {
+        Gas: 'gas',
+        Water: 'water',
+        Counter: 'counter'
+    };
+
+    const deviceCounterName = {
+        Gas: 'Gas',
+        Water: 'Water',
+        Counter: 'Counter'
     };
 
     const valueMultipliers = {
@@ -25,33 +52,34 @@ define(['app'], function (app) {
         W: 'Watt',
         kW: 'kW',
         m3: 'm³',
+        liter: 'liter',
         energy: function (multiplier) {
             if (multiplier === valueMultipliers.m1) {
-                return this.Wh;
+                return valueUnits.Wh;
             }
             if (multiplier === valueMultipliers.m1000) {
-                return this.kWh;
+                return valueUnits.kWh;
             }
             return '';
         },
         power: function (multiplier) {
             if (multiplier === valueMultipliers.m1) {
-                return this.W;
+                return valueUnits.W;
             }
             if (multiplier === valueMultipliers.m1000) {
-                return this.kW;
+                return valueUnits.kW;
             }
             return '';
         },
         gas: function (multiplier) {
             if (multiplier === valueMultipliers.m1) {
-                return this.m3;
+                return valueUnits.m3;
             }
             return '';
         },
         water: function (multiplier) {
             if (multiplier === valueMultipliers.m1) {
-                return this.m3;
+                return valueUnits.liter;
             }
             return '';
         }
@@ -62,6 +90,8 @@ define(['app'], function (app) {
         angularParams: angularParams,
         domoticzParams: domoticzParams,
         deviceTypes: deviceTypes,
+        deviceCounterSubtype: deviceCounterSubtype,
+        deviceCounterName: deviceCounterName,
         valueMultipliers: valueMultipliers,
         valueUnits: valueUnits,
         trendlineAggregator: trendlineAggregator

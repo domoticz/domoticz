@@ -37,11 +37,13 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                             subtype.chartParamsDayTemplate,
                             {
                                 isShortLogChart: true,
-                                yAxes: subtype.yAxesDay,
+                                yAxes: subtype.yAxesDay(self.device.SwitchTypeVal),
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                                 },
-                                extendDataRequest: subtype.extendDataRequestDay
+                                extendDataRequest: subtype.extendDataRequestDay,
+                                dataPreprocessor: subtype.dataPreprocessor,
+                                dataItemsPreprocessor: subtype.dataItemsPreprocessor
                             },
                             subtype.daySeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -73,10 +75,12 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                             subtype.chartParamsWeekTemplate,
                             {
                                 isShortLogChart: false,
-                                yAxes: subtype.yAxesWeek,
+                                yAxes: subtype.yAxesWeek(self.device.SwitchTypeVal),
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
-                                }
+                                },
+                                dataPreprocessor: subtype.dataPreprocessor,
+                                dataItemsPreprocessor: subtype.dataItemsPreprocessor
                             },
                             subtype.weekSeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -108,10 +112,12 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                             subtype.chartParamsMonthYearTemplate,
                             {
                                 isShortLogChart: false,
-                                yAxes: subtype.yAxesMonthYear,
+                                yAxes: subtype.yAxesMonthYear(self.device.SwitchTypeVal),
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
-                                }
+                                },
+                                dataPreprocessor: subtype.dataPreprocessor,
+                                dataItemsPreprocessor: subtype.dataItemsPreprocessor
                             },
                             subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -143,10 +149,12 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                             subtype.chartParamsMonthYearTemplate,
                             {
                                 isShortLogChart: false,
-                                yAxes: subtype.yAxesMonthYear,
+                                yAxes: subtype.yAxesMonthYear(self.device.SwitchTypeVal),
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
-                                }
+                                },
+                                dataPreprocessor: subtype.dataPreprocessor,
+                                dataItemsPreprocessor: subtype.dataItemsPreprocessor
                             },
                             subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal)
                         )

@@ -7,66 +7,117 @@ define(['app', 'log/Chart'], function (app) {
             counterPreviousSeriesSupplier: counterPreviousSeriesSupplier
         };
 
-        function counterSeriesSuppliers(deviceType) {
+        function deviceTypeCounterName(deviceTypeIndex) {
+            const deviceType = chart.deviceTypes.fromIndex(deviceTypeIndex);
+            if (deviceType !== undefined) {
+                return chart.deviceCounterName[deviceType];
+            }
+            return undefined;
+        }
+
+        function deviceTypeValueUnit(deviceTypeIndex) {
+            const deviceType = chart.deviceTypes.fromIndex(deviceTypeIndex);
+            if (deviceType !== undefined) {
+                const deviceTypeValueUnits = chart.valueUnits[chart.deviceCounterSubtype[deviceType]];
+                if (deviceTypeValueUnits !== undefined) {
+                    return deviceTypeValueUnits(chart.valueMultipliers.m1);
+                }
+            }
+            return undefined;
+        }
+
+        function counterSeriesSuppliers(deviceTypeIndex, postprocessDataItemValue, dataItemValueDecimals=3) {
             return [
                 {
-                    id: 'gas',
+                    id: 'counter',
                     dataItemKeys: ['v'],
                     convertZeroToNull: true,
+                    postprocessDataItemValue: postprocessDataItemValue,
+                    postprocessYaxis: function (yAxis) {
+                        if (this.dataSupplier.deviceCounterName !== undefined) {
+                            yAxis.options.title.text = this.dataSupplier.deviceCounterName;
+                        }
+                    },
                     label: 'A',
-                    template: {
-                        type: 'column',
-                        name: 'Gas',
-                        zIndex: 2,
-                        tooltip: {
-                            valueSuffix: ' ' + chart.valueUnits.gas(chart.valueMultipliers.m1),
-                            valueDecimals: 3
-                        },
-                        color: 'rgba(3,190,252,0.8)',
-                        yAxis: 0
+                    template: function (seriesSupplier) {
+                        return {
+                            type: 'column',
+                            name:
+                                seriesSupplier.dataSupplier.deviceCounterName !== undefined
+                                    ? seriesSupplier.dataSupplier.deviceCounterName
+                                    : deviceTypeCounterName(deviceTypeIndex),
+                            zIndex: 2,
+                            tooltip: {
+                                valueSuffix: ' '
+                                    + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
+                                        ? seriesSupplier.dataSupplier.deviceValueUnit
+                                        : deviceTypeValueUnit(deviceTypeIndex)),
+                                valueDecimals: dataItemValueDecimals
+                            },
+                            color: 'rgba(3,190,252,0.8)',
+                            yAxis: 0
+                        };
                     }
                 }
             ];
         }
 
-        function counterTrendlineSeriesSuppliers(deviceType) {
+        function counterTrendlineSeriesSuppliers(deviceTypeIndex, postprocessDataItemValue, dataItemValueDecimals=3) {
             return [
                 {
-                    id: 'usage_trendline',
+                    id: 'counterTrendline',
                     dataItemKeys: ['v'],
+                    postprocessDataItemValue: postprocessDataItemValue,
                     aggregateDatapoints: chart.trendlineAggregator,
                     label: 'B',
-                    template: {
-                        name: $.t('Trendline') + ' ' + $.t('Gas'),
-                        zIndex: 3,
-                        tooltip: {
-                            valueSuffix: ' ' + chart.valueUnits.gas(chart.valueMultipliers.m1),
-                            valueDecimals: 3
-                        },
-                        color: 'rgba(252,3,3,0.8)',
-                        dashStyle: 'LongDash',
-                        yAxis: 0,
-                        visible: false
+                    template: function (seriesSupplier) {
+                        return {
+                            name: $.t('Trendline') + ' '
+                                + (seriesSupplier.dataSupplier.deviceCounterName !== undefined
+                                    ? seriesSupplier.dataSupplier.deviceCounterName
+                                    : deviceTypeCounterName(deviceTypeIndex)),
+                            zIndex: 3,
+                            tooltip: {
+                                valueSuffix: ' '
+                                    + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
+                                        ? seriesSupplier.dataSupplier.deviceValueUnit
+                                        : deviceTypeValueUnit(deviceTypeIndex)),
+                                valueDecimals: dataItemValueDecimals
+                            },
+                            color: 'rgba(252,3,3,0.8)',
+                            dashStyle: 'LongDash',
+                            yAxis: 0,
+                            visible: false
+                        };
                     }
                 }
             ];
         }
 
-        function counterPreviousSeriesSupplier(deviceType) {
+        function counterPreviousSeriesSupplier(deviceTypeIndex, postprocessDataItemValue, dataItemValueDecimals=3) {
             return [
                 {
-                    id: 'gasprev',
+                    id: 'counterPrevious',
                     useDataItemsFromPrevious: true,
+                    postprocessDataItemValue: postprocessDataItemValue,
                     label: 'C',
-                    template: {
-                        name: $.t('Past') + ' ' + $.t('Gas'),
-                        tooltip: {
-                            valueSuffix: ' ' + chart.valueUnits.gas(chart.valueMultipliers.m1),
-                            valueDecimals: 3
-                        },
-                        color: 'rgba(190,3,252,0.8)',
-                        yAxis: 0,
-                        visible: false
+                    template: function (seriesSupplier) {
+                        return {
+                            name: $.t('Past') + ' '
+                                + (seriesSupplier.dataSupplier.deviceCounterName !== undefined
+                                    ? seriesSupplier.dataSupplier.deviceCounterName
+                                    : deviceTypeCounterName(deviceTypeIndex)),
+                            tooltip: {
+                                valueSuffix: ' '
+                                    + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
+                                        ? seriesSupplier.dataSupplier.deviceValueUnit
+                                        : deviceTypeValueUnit(deviceTypeIndex)),
+                                valueDecimals: dataItemValueDecimals
+                            },
+                            color: 'rgba(190,3,252,0.8)',
+                            yAxis: 0,
+                            visible: false
+                        };
                     }
                 }
             ];

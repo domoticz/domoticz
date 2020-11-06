@@ -8,6 +8,12 @@ define(['lodash'], function (_) {
         const seriesSuppliers = receiver.seriesSuppliers;
 
         loadDataInChart();
+        seriesSuppliers.forEach(function (seriesSupplier) {
+            if (seriesSupplier.postprocessYaxis !== undefined) {
+                const yAxis = chart.yAxis[seriesSupplier.yAxis];
+                seriesSupplier.postprocessYaxis(yAxis);
+            }
+        });
 
         function loadDataInChart() {
             seriesSuppliers.forEach(function (seriesSupplier) {
@@ -26,6 +32,7 @@ define(['lodash'], function (_) {
                         if (seriesSupplier.extendSeriesNameWithLabel && seriesSupplier.label !== undefined) {
                             series.name = '[' + seriesSupplier.label + '] ' + series.name;
                         }
+                        seriesSupplier.yAxis = series.yAxis;
                         chart.addSeries(series, false);
                     } else {
                         chartSeries.setData(seriesSupplier.datapoints, false);
