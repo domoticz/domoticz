@@ -193,12 +193,14 @@ namespace Plugins {
 			if (!shared_lib_) {
 #ifdef WIN32
 #	ifdef _DEBUG
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python39_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python38_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python37_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
 #	else
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python39.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python38.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python37.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
@@ -206,6 +208,7 @@ namespace Plugins {
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
 #	endif
 #else
+				if (!shared_lib_) FindLibrary("python3.9", true);
 				if (!shared_lib_) FindLibrary("python3.8", true);
 				if (!shared_lib_) FindLibrary("python3.7", true);
 				if (!shared_lib_) FindLibrary("python3.6", true);
