@@ -90,14 +90,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotalTrendline',
                     dataItemKeys: ['v', 'v2'],
-                    aggregateDatapoints: function (datapoints) {
-                        const trendline = CalculateTrendLine(datapoints);
-                        datapoints.length = 0;
-                        if (trendline !== undefined) {
-                            datapoints.push([trendline.x0, trendline.y0]);
-                            datapoints.push([trendline.x1, trendline.y1]);
-                        }
-                    },
+                    aggregateDatapoints: chart.trendlineAggregator,
                     label: 'D',
                     series: {
                         name: $.t('Trendline') + ' ' + (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
@@ -454,14 +447,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         return data.delivered === true;
                     },
                     dataItemKeys: ['r1', 'r2'],
-                    aggregateDatapoints: function (datapoints) {
-                        const trendline = CalculateTrendLine(datapoints);
-                        datapoints.length = 0;
-                        if (trendline !== undefined) {
-                            datapoints.push([trendline.x0, trendline.y0]);
-                            datapoints.push([trendline.x1, trendline.y1]);
-                        }
-                    },
+                    aggregateDatapoints: chart.trendlineAggregator,
                     label: 'W',
                     series: {
                         name: $.t('Trendline') + ' ' + $.t('Return'),

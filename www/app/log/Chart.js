@@ -63,7 +63,8 @@ define(['app'], function (app) {
         domoticzParams: domoticzParams,
         deviceTypes: deviceTypes,
         valueMultipliers: valueMultipliers,
-        valueUnits: valueUnits
+        valueUnits: valueUnits,
+        trendlineAggregator: trendlineAggregator
     });
 
     function baseParams(jquery) {
@@ -88,5 +89,14 @@ define(['app'], function (app) {
             api: api,
             datapointApi: datapointApi
         };
+    }
+
+    function trendlineAggregator(datapoints) {
+        const trendline = CalculateTrendLine(datapoints);
+        datapoints.length = 0;
+        if (trendline !== undefined) {
+            datapoints.push([trendline.x0, trendline.y0]);
+            datapoints.push([trendline.x1, trendline.y1]);
+        }
     }
 });
