@@ -2725,14 +2725,12 @@ void eHouseTCP::Do_Work()
 				}
 				//if( StatusDebug) printf("[UDP] Status: (%-3d,%-3d)  (%dB)\r\n", devaddrh, devaddrl, nbytes);
 				if (devaddrl > 199) i = EHOUSE1_RM_MAX + 3;
+				else if (devaddrh == 1) // HM index in status eH[0]
+					i = 0;
+				else if (devaddrh == 2) // EM index in status eH[0]
+					i = EHOUSE1_RM_MAX - 1;
 				else
-					if ((devaddrh == 1))							//HM index in status eH[0]
-						i = 0;
-					else
-						if ((devaddrh == 2))					//EM index in status eH[0]
-							i = EHOUSE1_RM_MAX - 1;
-						else
-							i = devaddrl;                //RM index in status the same as device address low - eH[devaddrl]
+					i = devaddrl; // RM index in status the same as device address low - eH[devaddrl]
 				if (udp_status[3] != 'l')
 				{
 					if (m_StatusDebug) _log.Log(LOG_STATUS, "[%s] St: (%-3d,%-3d) - OK (%dB)", LogPrefix, devaddrh, devaddrl, nbytes);
@@ -2925,7 +2923,7 @@ void eHouseTCP::Do_Work()
 							}
 							else
 							{
-								if ((devaddrh == 0x81))       //Aura Thermostats Via eHouse PRO
+								if (devaddrh == 0x81) // Aura Thermostats Via eHouse PRO
 								{
 									if (devaddrl >= MAX_AURA_DEVS) continue;
 									unsigned char aindex = 0;

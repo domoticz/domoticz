@@ -289,7 +289,8 @@ std::string getStatusString(const int status)
 	case STATUS_WAITING: return "Waiting for the Sun";
 	case STATUS_NORMAL: return "Normal/ Working";
 	case STATUS_OFFLINE: return "Offline";
-	default: return ("Unkown status value " + status);
+	default:
+		return "Unkown status value " + std::to_string(status);
 	}
 }
 

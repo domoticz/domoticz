@@ -991,7 +991,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 			UpdateSQLStatus(AddrH, AddrL, m_Dtype, VISUAL_MCP9700_PRESET, nr, 100, ttemp, tmp, 100);
 		}
 
-		if ((m_Dtype == EH_AURA))
+		if (m_Dtype == EH_AURA)
 		{
 			unsigned int adcvalue = (int)round(temp);
 			ev[3] = 0;	//nr ==0
