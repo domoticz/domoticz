@@ -32,9 +32,10 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new DoesNotContain('eu'), {
                     id: 'counterEnergyUsedOrGenerated',
+                    convertZeroToNull: true,
                     label: 'A',
                     series: {
-                        type: 'spline',
+                        type: 'column',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1)
@@ -115,6 +116,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'counterEnergyUsedOrGeneratedPrevious',
                     dataItemKeys: ['v', 'v2'],
                     useDataItemsFromPrevious: true,
+                    convertZeroToNull: true,
                     label: 'E',
                     series: {
                         type: 'column',
@@ -135,6 +137,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new DoesContain('eu'), {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
+                    convertZeroToNull: true,
                     label: 'F',
                     series: {
                         type: 'column',
@@ -191,7 +194,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     valueDecimals: 3,
                     label: 'I',
                     series: {
-                        type: 'column',
+                        type: 'spline',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
                         zIndex: 10,
                         tooltip: {
@@ -480,6 +483,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     },
                     dataItemKeys: ['r1', 'r2'],
                     useDataItemsFromPrevious: true,
+                    convertZeroToNull: true,
                     label: 'X',
                     series: {
                         type: 'column',
