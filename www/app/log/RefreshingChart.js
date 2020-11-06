@@ -93,6 +93,9 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'],
                         },
                         xAxis: {
                             type: 'datetime',
+                            gridLineColor: '#aaaaaa',
+                            gridLineDashStyle: 'dot',
+                            gridLineWidth: .5,
                             events: {
                                 setExtremes: function (e) {
                                     const xAxis = self.chart.xAxis[0];
