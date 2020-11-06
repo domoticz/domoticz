@@ -642,7 +642,8 @@ bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID,int OutputNumber,bo
 				//_log.Log(LOG_NORM,"MultiblocV8: Output 1 slevel : %d ",slevel);
 				//level check only if cde and states = 1
 				if( CdeReceive && (nvalue > 0) ){
-					if( (slevel == LevelReceive) ) returnvalue = false;
+					if (slevel == LevelReceive)
+						returnvalue = false;
 				}
 			}
 		}
