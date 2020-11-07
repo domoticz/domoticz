@@ -178,7 +178,7 @@ body table#itemtablenostatus tbody tr{
 	filter: none;
 }
 
-.btnstyle {
+.btnstyle, .btnstylerev {
 	margin-top: 10px;
 }
 
