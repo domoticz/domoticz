@@ -332,7 +332,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             dataItemIsValid: function (dataItem) {
                 return dataItem.te !== undefined && dataItem.ta !== undefined;
             },
-            aggregateDatapoints: function (datapoints) {
+            postprocessDatapoints: function (datapoints) {
                 const trendline = CalculateTrendLine(datapoints);
                 datapoints.length = 0;
                 if (trendline !== undefined) {

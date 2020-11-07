@@ -42,8 +42,8 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                                     return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                                 },
                                 extendDataRequest: subtype.extendDataRequestDay,
-                                dataPreprocessor: subtype.dataPreprocessor,
-                                dataItemsPreprocessor: subtype.dataItemsPreprocessor
+                                preprocessData: subtype.preprocessData,
+                                preprocessDataItems: subtype.preprocessDataItems
                             },
                             subtype.daySeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -79,8 +79,8 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 },
-                                dataPreprocessor: subtype.dataPreprocessor,
-                                dataItemsPreprocessor: subtype.dataItemsPreprocessor
+                                preprocessData: subtype.preprocessData,
+                                preprocessDataItems: subtype.preprocessDataItems
                             },
                             subtype.weekSeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -116,8 +116,8 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 },
-                                dataPreprocessor: subtype.dataPreprocessor,
-                                dataItemsPreprocessor: subtype.dataItemsPreprocessor
+                                preprocessData: subtype.preprocessData,
+                                preprocessDataItems: subtype.preprocessDataItems
                             },
                             subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -153,8 +153,8 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 },
-                                dataPreprocessor: subtype.dataPreprocessor,
-                                dataItemsPreprocessor: subtype.dataItemsPreprocessor
+                                preprocessData: subtype.preprocessData,
+                                preprocessDataItems: subtype.preprocessDataItems
                             },
                             subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal)
                         )

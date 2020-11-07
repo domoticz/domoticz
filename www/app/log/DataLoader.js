@@ -4,13 +4,13 @@ define(function () {
     }
 
     DataLoader.prototype.loadData = function (data, receiver) {
-        if (receiver.dataSupplier.dataPreprocessor !== undefined) {
-            receiver.dataSupplier.dataPreprocessor(data);
+        if (receiver.dataSupplier.preprocessData !== undefined) {
+            receiver.dataSupplier.preprocessData(data);
         }
-        if (receiver.dataSupplier.dataItemsPreprocessor !== undefined) {
-            receiver.dataSupplier.dataItemsPreprocessor(data.result);
+        if (receiver.dataSupplier.preprocessDataItems !== undefined) {
+            receiver.dataSupplier.preprocessDataItems(data.result);
             if (data.resultprev !== undefined) {
-                receiver.dataSupplier.dataItemsPreprocessor(data.resultprev);
+                receiver.dataSupplier.preprocessDataItems(data.resultprev);
             }
         }
 
@@ -66,8 +66,8 @@ define(function () {
                     seriesSupplier.datapoints = [];
                 },
                 function (seriesSupplier) {
-                    if (seriesSupplier.aggregateDatapoints !== undefined) {
-                        seriesSupplier.aggregateDatapoints(seriesSupplier.datapoints);
+                    if (seriesSupplier.postprocessDatapoints !== undefined) {
+                        seriesSupplier.postprocessDatapoints(seriesSupplier.datapoints);
                     }
                 }
             );

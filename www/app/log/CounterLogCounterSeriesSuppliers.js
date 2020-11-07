@@ -68,7 +68,7 @@ define(['app', 'log/Chart'], function (app) {
                     id: 'counterTrendline',
                     dataItemKeys: ['v'],
                     postprocessDataItemValue: postprocessDataItemValue,
-                    aggregateDatapoints: chart.trendlineAggregator,
+                    postprocessDatapoints: chart.trendlineAggregator,
                     label: 'B',
                     template: function (seriesSupplier) {
                         return {

@@ -126,7 +126,7 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCounterSeries
             }
         });
         counterLogSubtypeRegistry.register('counter', {
-            dataPreprocessor: function (data) {
+            preprocessData: function (data) {
                 this.deviceCounterName = data.ValueQuantity ? data.ValueQuantity : undefined;
                 this.deviceValueUnit = data.ValueUnits ? data.ValueUnits : undefined;
             },
