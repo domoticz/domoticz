@@ -293,21 +293,21 @@ public:
 			values[vType].intvalue = intValue;
 			values[vType].bValidValue = true;
 			values[vType].bIntValue = true;
-			values[vType].lastreceived = time(NULL);
+			values[vType].lastreceived = time(nullptr);
 		}
 		void SetValue(const _eSetType vType, const float floatValue)
 		{
 			values[vType].floatValue = floatValue;
 			values[vType].bValidValue = true;
 			values[vType].bFloatValue = true;
-			values[vType].lastreceived = time(NULL);
+			values[vType].lastreceived = time(nullptr);
 		}
 		void SetValue(const _eSetType vType, const std::string &stringValue)
 		{
 			values[vType].stringValue = stringValue;
 			values[vType].bValidValue = true;
 			values[vType].bStringValue = true;
-			values[vType].lastreceived = time(NULL);
+			values[vType].lastreceived = time(nullptr);
 		}
 	};
 
@@ -354,7 +354,7 @@ public:
 					return &itt;
 				}
 			}
-			return NULL;
+			return nullptr;
 		}
 		_tMySensorChild* FindChildWithPresentationType(const int ChildID, const _ePresentationType cType)
 		{
@@ -367,7 +367,7 @@ public:
 					return &itt;
 				}
 			}
-			return NULL;
+			return nullptr;
 		}
 		_tMySensorChild* FindChildWithValueType(const int ChildID, const _eSetType valType)
 		{
@@ -380,13 +380,13 @@ public:
 						if (itt2.first == valType)
 						{
 							if (!itt2.second.bValidValue)
-								return NULL;
+								return nullptr;
 							return &itt;
 						}
 					}
 				}
 			}
-			return NULL;
+			return nullptr;
 		}
 		_tMySensorChild* FindChildByValueType(const _eSetType valType)
 		{
@@ -397,12 +397,12 @@ public:
 					if (itt2.first == valType)
 					{
 						if (!itt2.second.bValidValue)
-							return NULL;
+							return nullptr;
 						return &itt;
 					}
 				}
 			}
-			return NULL;
+			return nullptr;
 		}
 		_tMySensorChild* FindChild(const int ChildID)
 		{
@@ -413,7 +413,7 @@ public:
 					return &itt;
 				}
 			}
-			return NULL;
+			return nullptr;
 		}
 	} MySensorNode;
 

@@ -53,7 +53,7 @@ py3__Py_DECREF(const char *filename, int lineno, PyObject *op)
 static inline void
 py3__Py_XDECREF(PyObject *op)
 {
-	if (op != NULL)
+	if (op != nullptr)
 	{
 		Py_DECREF(op);
 	}

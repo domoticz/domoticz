@@ -323,7 +323,7 @@ void CPinger::ReloadNodes()
 			pnode.ID = atoi(sd[0].c_str());
 			pnode.Name = sd[1];
 			pnode.IP = sd[2];
-			pnode.LastOK = mytime(NULL);
+			pnode.LastOK = mytime(nullptr);
 
 			int SensorTimeoutSec = atoi(sd[3].c_str());
 			pnode.SensorTimeoutSec = (SensorTimeoutSec > 0) ? SensorTimeoutSec : 5;
@@ -373,7 +373,7 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 		if (itt->ID == Node.ID)
 		{
 			//Found it
-			time_t atime = mytime(NULL);
+			time_t atime = mytime(nullptr);
 			if (bPingOK)
 			{
 				itt->LastOK = atime;
@@ -466,7 +466,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
+			if (pHardware == nullptr)
 				return;
 			if (pHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -512,7 +512,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -555,7 +555,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -589,7 +589,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -618,7 +618,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -643,7 +643,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;

@@ -25,51 +25,53 @@ namespace http {
 		extern time_t last_write_time(const std::string& path);
 
 		// this is the constructor for plain connections
-		connection::connection(boost::asio::io_service& io_service,
-			connection_manager& manager,
-			request_handler& handler,
-			int read_timeout) :
-			connection_manager_(manager),
-			request_handler_(handler),
-			read_timeout_(read_timeout),
-			read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-			websocket_parser(boost::bind(&connection::MyWrite, this, _1), handler.Get_myWebem(), boost::bind(&connection::WS_Write, this, _1)),
-			status_(INITIALIZING),
-			default_abandoned_timeout_(20 * 60), // 20mn before stopping abandoned connection
-			abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
-			default_max_requests_(20),
-			send_buffer_(NULL)
+		connection::connection(boost::asio::io_service &io_service, connection_manager &manager, request_handler &handler,
+				       int read_timeout)
+			: connection_manager_(manager)
+			, request_handler_(handler)
+			, read_timeout_(read_timeout)
+			, read_timer_(io_service, boost::posix_time::seconds(read_timeout))
+			, websocket_parser(boost::bind(&connection::MyWrite, this, _1), handler.Get_myWebem(),
+					   boost::bind(&connection::WS_Write, this, _1))
+			, status_(INITIALIZING)
+			, default_abandoned_timeout_(20 * 60)
+			, // 20mn before stopping abandoned connection
+			abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_))
+			, default_max_requests_(20)
+			, send_buffer_(nullptr)
 		{
 			secure_ = false;
 			keepalive_ = false;
 			write_in_progress = false;
 			connection_type = ConnectionType::connection_http;
 #ifdef WWW_ENABLE_SSL
-			sslsocket_ = NULL;
+			sslsocket_ = nullptr;
 #endif
 			socket_ = new boost::asio::ip::tcp::socket(io_service);
 		}
 
 #ifdef WWW_ENABLE_SSL
 		// this is the constructor for secure connections
-		connection::connection(boost::asio::io_service& io_service,
-			connection_manager& manager, request_handler& handler, int read_timeout, boost::asio::ssl::context& context) :
-			connection_manager_(manager),
-			request_handler_(handler),
-			read_timeout_(read_timeout),
-			read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-			websocket_parser(boost::bind(&connection::MyWrite, this, _1), handler.Get_myWebem(), boost::bind(&connection::WS_Write, this, _1)),
-			status_(INITIALIZING),
-			default_abandoned_timeout_(20 * 60), // 20mn before stopping abandoned connection
-			abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
-			default_max_requests_(20),
-			send_buffer_(NULL)
+		connection::connection(boost::asio::io_service &io_service, connection_manager &manager, request_handler &handler,
+				       int read_timeout, boost::asio::ssl::context &context)
+			: connection_manager_(manager)
+			, request_handler_(handler)
+			, read_timeout_(read_timeout)
+			, read_timer_(io_service, boost::posix_time::seconds(read_timeout))
+			, websocket_parser(boost::bind(&connection::MyWrite, this, _1), handler.Get_myWebem(),
+					   boost::bind(&connection::WS_Write, this, _1))
+			, status_(INITIALIZING)
+			, default_abandoned_timeout_(20 * 60)
+			, // 20mn before stopping abandoned connection
+			abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_))
+			, default_max_requests_(20)
+			, send_buffer_(nullptr)
 		{
 			secure_ = true;
 			keepalive_ = false;
 			write_in_progress = false;
 			connection_type = ConnectionType::connection_http;
-			socket_ = NULL;
+			socket_ = nullptr;
 			sslsocket_ = new ssl_socket(io_service, context);
 		}
 #endif
@@ -303,7 +305,7 @@ namespace http {
 				sendfile_.close();
 			if (send_buffer_)
 				delete[] send_buffer_;
-			send_buffer_ = NULL;
+			send_buffer_ = nullptr;
 			connection_manager_.stop(shared_from_this());
 			return;
 		}
@@ -329,7 +331,7 @@ namespace http {
 
 			reply::add_header(&rep, "Cache-Control", "max-age=0, private");
 			reply::add_header(&rep, "Accept-Ranges", "bytes");
-			reply::add_header(&rep, "Date", convert_to_http_date(time(NULL)));
+			reply::add_header(&rep, "Date", convert_to_http_date(time(nullptr)));
 			reply::add_header(&rep, "Last-Modified", convert_to_http_date(ftime));
 			reply::add_header(&rep, "Server", "Apache/2.2.22");
 
@@ -406,7 +408,7 @@ namespace http {
 						_buf.consume(sizeread);
 						reply_.reset();
 						const char* pConnection = request_.get_req_header(&request_, "Connection");
-						keepalive_ = pConnection != NULL && boost::iequals(pConnection, "Keep-Alive");
+						keepalive_ = pConnection != nullptr && boost::iequals(pConnection, "Keep-Alive");
 						request_.keep_alive = keepalive_;
 						request_.host_address = host_endpoint_address_;
 						request_.host_port = host_endpoint_port_;

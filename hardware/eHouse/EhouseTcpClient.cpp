@@ -171,7 +171,7 @@ void eHouseTCP::performTCPClientThreads()
 			{
 				EhouseTcpClientThread[i]->try_join_for()
 					join();
-				//EhouseTcpClientThread[i] = NULL;
+				//EhouseTcpClientThread[i] = nullptr;
 			}*/
 			m_TC[i].NotFinished = 0;
 			m_TC[i].Socket = -1;

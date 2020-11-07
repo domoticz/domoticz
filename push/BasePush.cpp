@@ -22,8 +22,7 @@ extern const char *findTableID1ID2(const _STR_TABLE_ID1_ID2 *t, const unsigned l
 
 const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType)
 {
-	static const STR_TABLE_ID1_ID2	Table[] =
-	{
+	static const STR_TABLE_ID1_ID2 Table[] = {
 		{ pTypeTEMP, sTypeTEMP1, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP2, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP3, "Temperature" },
@@ -55,7 +54,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeTEMP_HUM, sTypeTH13, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH14, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "Temperature,Humidity,Humidity Status" },
-
 
 		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
 		{ pTypeTEMP_HUM_BARO, sTypeTHB2, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
@@ -370,7 +368,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeNice, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Status" },
 
-		{ 0,0,NULL }
+		{ 0, 0, nullptr },
 	};
 	return findTableID1ID2(Table, dType, sType);
 }

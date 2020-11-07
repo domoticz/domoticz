@@ -239,7 +239,7 @@ void CTE923::GetSensorDetails()
 			tsen.WIND.chilll=(BYTE)(at10);
 		}
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, NULL, -1);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, -1);
 	}
 
 	//Rain
@@ -247,31 +247,31 @@ void CTE923::GetSensorDetails()
 	{
 		int BatLevel = (dev.batteryRain) ? 100 : 0;
 		SendRainSensor(1, BatLevel, float(data.RainCount) / 0.7f, "Rain");
-/*
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
-		tsen.RAIN.packettype=pTypeRAIN;
-		tsen.RAIN.subtype=sTypeRAIN3;
-		if (dev.batteryRain)
-			tsen.RAIN.battery_level=9;
-		else
-			tsen.RAIN.battery_level=0;
-		tsen.RAIN.rssi=12;
-		tsen.RAIN.id1=0;
-		tsen.RAIN.id2=1;
+		/*
+				RBUF tsen;
+				memset(&tsen,0,sizeof(RBUF));
+				tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
+				tsen.RAIN.packettype=pTypeRAIN;
+				tsen.RAIN.subtype=sTypeRAIN3;
+				if (dev.batteryRain)
+					tsen.RAIN.battery_level=9;
+				else
+					tsen.RAIN.battery_level=0;
+				tsen.RAIN.rssi=12;
+				tsen.RAIN.id1=0;
+				tsen.RAIN.id2=1;
 
-		tsen.RAIN.rainrateh=0;
-		tsen.RAIN.rainratel=0;
+				tsen.RAIN.rainrateh=0;
+				tsen.RAIN.rainratel=0;
 
-		int tr10=int((float(data.RainCount)*10.0f)*0.7f);
+				int tr10=int((float(data.RainCount)*10.0f)*0.7f);
 
-		tsen.RAIN.raintotal1=0;
-		tsen.RAIN.raintotal2=(BYTE)(tr10/256);
-		tr10-=(tsen.RAIN.raintotal2*256);
-		tsen.RAIN.raintotal3=(BYTE)(tr10);
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, -1);
-*/
+				tsen.RAIN.raintotal1=0;
+				tsen.RAIN.raintotal2=(BYTE)(tr10/256);
+				tr10-=(tsen.RAIN.raintotal2*256);
+				tsen.RAIN.raintotal3=(BYTE)(tr10);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, nullptr, -1);
+		*/
 	}
 	//UV
 	if (data._uv==0)

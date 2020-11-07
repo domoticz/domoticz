@@ -161,7 +161,7 @@ void MQTT::on_connect(int rc)
 			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
 			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect(boost::bind(&MQTT::SendSceneInfo, this, _1, _2));
 		}
-		subscribe(NULL, m_TopicIn.c_str());
+		subscribe(nullptr, m_TopicIn.c_str());
 	}
 	else {
 		_log.Log(LOG_ERROR, "MQTT: Connection failed!, restarting (rc=%d)", rc);
@@ -510,7 +510,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 		else if (szCommand == "getdeviceinfo")
 		{
 			int HardwareID = atoi(result[0][0].c_str());
-			SendDeviceInfo(HardwareID, idx, "request device", NULL);
+			SendDeviceInfo(HardwareID, idx, "request device", nullptr);
 		}
 		else if (szCommand == "getsceneinfo")
 		{
@@ -566,7 +566,7 @@ bool MQTT::ConnectIntEx()
 	int keepalive = 40;
 
 	if (!m_CAFilename.empty()) {
-		rc = tls_opts_set(SSL_VERIFY_PEER, szTLSVersions[m_TLS_Version], NULL);
+		rc = tls_opts_set(SSL_VERIFY_PEER, szTLSVersions[m_TLS_Version], nullptr);
 		rc = tls_set(m_CAFilename.c_str());
 
 		if (rc != MOSQ_ERR_SUCCESS)
@@ -578,7 +578,7 @@ bool MQTT::ConnectIntEx()
 			_log.Log(LOG_STATUS, "MQTT: enabled TLS mode");
 		}
 	}
-	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : NULL, (!m_Password.empty()) ? m_Password.c_str() : NULL);
+	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
 	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
 	if (rc != MOSQ_ERR_SUCCESS)
@@ -636,7 +636,7 @@ void MQTT::Do_Work()
 			sec_counter++;
 
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 
 			if (bFirstTime)
@@ -684,7 +684,7 @@ void MQTT::SendMessage(const std::string& Topic, const std::string& Message)
 			_log.Log(LOG_STATUS, "MQTT: Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(NULL, Topic.c_str(), Message.size(), Message.c_str());
+		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str());
 	}
 	catch (...)
 	{

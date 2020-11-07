@@ -46,7 +46,7 @@ public:
 	bool m_bEnableReceive = { false };
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel)> sDecodeRXMessage;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
-	void *m_pUserData = { NULL };
+	void *m_pUserData = { nullptr };
 	bool m_bOutputLog = { true };
 
 	int SetThreadNameInt(const std::thread::native_handle_type &thread);

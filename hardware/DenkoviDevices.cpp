@@ -126,12 +126,12 @@ bool CDenkoviDevices::StartHardware()
 	m_bIsStarted = true;
 	sOnConnected(this);
 	Log(LOG_STATUS, "%s: Started.",szDenkoviHardwareNames[m_iModel]);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CDenkoviDevices::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread != nullptr)
 	{
 		RequestStop();
 		m_thread->join();
@@ -151,7 +151,7 @@ void CDenkoviDevices::Do_Work()
 		poll_counter++;
 
 		if (poll_counter % 12 * 10 == 0) { //10 steps = 1 second (10 * 100)
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (poll_counter % poll_interval == 0)

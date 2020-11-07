@@ -253,18 +253,16 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
 void AsyncSerial::doWrite()
 {
     //If a write operation is already in progress, do nothing
-    if(pimpl->writeBuffer==0)
+    if (pimpl->writeBuffer == nullptr)
     {
-        std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
-        pimpl->writeBufferSize=pimpl->writeQueue.size();
-        pimpl->writeBuffer.reset(new char[pimpl->writeQueue.size()]);
+	    std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
+	    pimpl->writeBufferSize = pimpl->writeQueue.size();
+	    pimpl->writeBuffer.reset(new char[pimpl->writeQueue.size()]);
 
-        copy(pimpl->writeQueue.begin(),pimpl->writeQueue.end(),
-                pimpl->writeBuffer.get());
-        pimpl->writeQueue.clear();
-        async_write(pimpl->port,boost::asio::buffer(pimpl->writeBuffer.get(),
-                pimpl->writeBufferSize),
-                boost::bind(&AsyncSerial::writeEnd, this, boost::asio::placeholders::error));
+	    copy(pimpl->writeQueue.begin(), pimpl->writeQueue.end(), pimpl->writeBuffer.get());
+	    pimpl->writeQueue.clear();
+	    async_write(pimpl->port, boost::asio::buffer(pimpl->writeBuffer.get(), pimpl->writeBufferSize),
+			boost::bind(&AsyncSerial::writeEnd, this, boost::asio::placeholders::error));
     }
 }
 

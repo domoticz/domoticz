@@ -112,10 +112,10 @@ Serial::SerialImpl::SerialImpl (const string &port, unsigned long baudrate,
     baudrate_ (baudrate), parity_ (parity),
     bytesize_ (bytesize), stopbits_ (stopbits), flowcontrol_ (flowcontrol)
 {
-  pthread_mutex_init(&this->read_mutex, NULL);
-  pthread_mutex_init(&this->write_mutex, NULL);
-  if (port_.empty () == false)
-    open ();
+	pthread_mutex_init(&this->read_mutex, nullptr);
+	pthread_mutex_init(&this->write_mutex, nullptr);
+	if (port_.empty() == false)
+		open();
 }
 
 Serial::SerialImpl::~SerialImpl ()
@@ -495,7 +495,7 @@ Serial::SerialImpl::waitReadable (uint32_t timeout)
   FD_ZERO (&readfds);
   FD_SET (fd_, &readfds);
   timespec timeout_ts (timespec_from_ms (timeout));
-  int r = pselect (fd_ + 1, &readfds, NULL, NULL, &timeout_ts, NULL);
+  int r = pselect(fd_ + 1, &readfds, nullptr, nullptr, &timeout_ts, nullptr);
 
   if (r < 0) {
     // Select was interrupted
@@ -522,7 +522,7 @@ void
 Serial::SerialImpl::waitByteTimes (size_t count)
 {
   timespec wait_time = { 0, static_cast<long>(byte_time_ns_ * count)};
-  pselect (0, NULL, NULL, NULL, &wait_time, NULL);
+  pselect(0, nullptr, nullptr, nullptr, &wait_time, nullptr);
 }
 
 size_t
@@ -628,7 +628,7 @@ Serial::SerialImpl::write (const uint8_t *data, size_t length)
     FD_SET (fd_, &writefds);
 
     // Do the select
-    int r = pselect (fd_ + 1, NULL, &writefds, NULL, &timeout, NULL);
+    int r = pselect(fd_ + 1, nullptr, &writefds, nullptr, &timeout, nullptr);
 
     // Figure out what happened by looking at select's response 'r'
     /** Error **/

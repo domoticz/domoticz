@@ -460,10 +460,12 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 
 	std::string hName;
 	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
-	if (pHardware == NULL) {
+	if (pHardware == nullptr)
+	{
 		hName = "";
 	}
-	else {
+	else
+	{
 		hName = pHardware->m_Name;
 	}
 
@@ -494,7 +496,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 
 	std::string szExtraData = "|Name=" + devicename + "|";
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	//check if not sent 12 hours ago, and if applicable
 
@@ -620,7 +622,7 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 	std::string szExtraData = "|Name=" + devicename + "|Image=temp-0-5|";
 	std::string notValue;
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	//check if not sent 12 hours ago, and if applicable
 
@@ -675,7 +677,7 @@ bool CNotificationHelper::CheckAndHandleValueNotification(
 	char szTmp[600];
 	std::string szExtraData = "|Name=" + DeviceName + "|";
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
@@ -733,7 +735,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 
 	std::string szExtraData = "|Name=" + devicename + "|Image=current48|";
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
@@ -840,7 +842,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
 	std::string notValue;
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
@@ -899,7 +901,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 		return false;
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|";
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
@@ -992,7 +994,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 
 	std::string ltype = Notification_Type_Desc(ntype, 1);
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	atime -= m_NotificationSwitchInterval;
 
 	std::vector<_tNotification>::const_iterator itt;
@@ -1106,7 +1108,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 
 	std::string ltype = Notification_Type_Desc(ntype, 1);
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	atime -= m_NotificationSwitchInterval;
 
 	std::vector<_tNotification>::const_iterator itt;
@@ -1196,7 +1198,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 
 	char szDateEnd[40];
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm tm1;
 	localtime_r(&now, &tm1);
 	struct tm ltime;
@@ -1241,7 +1243,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 	if (m_notifications.size() < 1)
 		return;
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	atime -= m_NotificationSensorInterval;
 	std::map<uint64_t, std::vector<_tNotification> >::const_iterator itt;
 
@@ -1265,7 +1267,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 					if ((atime < itt2->LastSend) && (!itt2->SendAlways) && (!bRecoveryMessage))
 						continue;
 					extern time_t m_StartTime;
-					time_t btime = mytime(NULL);
+					time_t btime = mytime(nullptr);
 					std::string msg;
 					std::string szExtraData;
 					std::string custommsg;
@@ -1324,7 +1326,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 void CNotificationHelper::TouchNotification(const uint64_t ID)
 {
 	char szDate[50];
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 	sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
@@ -1353,7 +1355,7 @@ void CNotificationHelper::TouchNotification(const uint64_t ID)
 
 void CNotificationHelper::TouchLastUpdate(const uint64_t ID)
 {
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::map<uint64_t, std::vector<_tNotification> >::iterator itt;
@@ -1532,7 +1534,7 @@ void CNotificationHelper::ReloadNotifications()
 	if (result.empty())
 		return;
 
-	time_t mtime = mytime(NULL);
+	time_t mtime = mytime(nullptr);
 	struct tm atime;
 	localtime_r(&mtime, &atime);
 	std::vector<std::string> splitresults;

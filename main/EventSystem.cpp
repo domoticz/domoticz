@@ -68,58 +68,57 @@ const std::string CEventSystem::m_szSecStatus[] =
 // This table specifies which JSON fields are passed to the LUA scripts.
 // If new return fields are added in CWebServer::GetJSonDevices, they should
 // be added to this table.
-const CEventSystem::_tJsonMap CEventSystem::JsonMap[] =
-{
-	{ "Barometer",			"barometer",				JTYPE_FLOAT		},
-	{ "CameraIndx",			"cameraIdx", 				JTYPE_STRING	},
-	{ "Chill",				"chill", 					JTYPE_FLOAT		},
-	{ "Color",				"color", 					JTYPE_STRING	},
-	{ "Counter",			"counter", 					JTYPE_STRING	},
-	{ "CounterDeliv",		"counterDelivered", 		JTYPE_FLOAT		},
-	{ "CounterDelivToday",	"counterDeliveredToday",	JTYPE_STRING	},
-	{ "CounterToday",		"counterToday", 			JTYPE_STRING	},
-	{ "Current",			"current", 					JTYPE_FLOAT		},
-	{ "DewPoint",			"dewPoint", 				JTYPE_FLOAT		},
-	{ "Direction",			"direction",				JTYPE_FLOAT		},
-	{ "DirectionStr",		"directionString",			JTYPE_STRING	},
-	{ "Forecast",			"forecast", 				JTYPE_INT		},
-	{ "ForecastStr",		"forecastString",			JTYPE_STRING	},
-	{ "HardwareName",		"hardwareName",				JTYPE_STRING	},
-	{ "HardwareType",		"hardwareType",				JTYPE_STRING	},
-	{ "HardwareTypeVal",	"hardwareTypeValue",		JTYPE_INT		},
-	{ "Humidity",			"humidity",					JTYPE_INT		},
-	{ "HumidityStatus",		"humidityStatus",			JTYPE_STRING	},
-	{ "InternalState",		"internalState",			JTYPE_STRING	}, // door contact
-	{ "LevelActions",		"levelActions",				JTYPE_STRING	},
-	{ "LevelInt",			"levelVal",					JTYPE_INT		},
-	{ "LevelNames",			"levelNames",				JTYPE_STRING	},
-	{ "LevelOffHidden",		"levelOffHidden",			JTYPE_BOOL		},
-	{ "MaxDimLevel",		"maxDimLevel",				JTYPE_INT		},
-	{ "Mode",				"mode",						JTYPE_INT		}, // zwave thermostat
-	{ "Modes",				"modes",					JTYPE_STRING	},
-	{ "Moisture",			"moisture",					JTYPE_STRING	},
-	{ "Pressure",			"pressure",					JTYPE_FLOAT		},
-	{ "Protected",			"protected",				JTYPE_BOOL		},
-	{ "Quality",			"quality",					JTYPE_STRING	},
-	{ "Radiation",			"radiation",				JTYPE_FLOAT		},
-	{ "Rain",				"rain",						JTYPE_FLOAT		},
-	{ "RainRate",			"rainRate",					JTYPE_FLOAT		},
-	{ "SensorType",			"sensorType",				JTYPE_INT		},
-	{ "SensorUnit",			"sensorUnit",				JTYPE_STRING	},
-	{ "SetPoint",			"setPoint",					JTYPE_FLOAT		},
-	{ "Speed",				"speed",					JTYPE_FLOAT		},
-	{ "Temp",				"temperature",				JTYPE_FLOAT		},
-	{ "TypeImg",			"icon",						JTYPE_STRING	},
-	{ "Unit",				"unit",						JTYPE_INT		},
-	{ "Until",				"until",					JTYPE_STRING	}, // evohome zone/water
-	{ "Usage",				"usage",					JTYPE_STRING	},
-	{ "UsedByCamera",		"usedByCamera",				JTYPE_BOOL		},
-	{ "UsageDeliv",			"usageDelivered",			JTYPE_STRING	},
-	{ "ValueQuantity",		"valueQuantity",			JTYPE_STRING	},
-	{ "ValueUnits",			"valueUnits",				JTYPE_STRING	},
-	{ "Visibility",			"visibility",				JTYPE_FLOAT		},
-	{ "Voltage",			"voltage",					JTYPE_FLOAT		},
-	{ NULL,					NULL,						JTYPE_STRING	}
+const CEventSystem::_tJsonMap CEventSystem::JsonMap[] = {
+	{ "Barometer", "barometer", JTYPE_FLOAT },
+	{ "CameraIndx", "cameraIdx", JTYPE_STRING },
+	{ "Chill", "chill", JTYPE_FLOAT },
+	{ "Color", "color", JTYPE_STRING },
+	{ "Counter", "counter", JTYPE_STRING },
+	{ "CounterDeliv", "counterDelivered", JTYPE_FLOAT },
+	{ "CounterDelivToday", "counterDeliveredToday", JTYPE_STRING },
+	{ "CounterToday", "counterToday", JTYPE_STRING },
+	{ "Current", "current", JTYPE_FLOAT },
+	{ "DewPoint", "dewPoint", JTYPE_FLOAT },
+	{ "Direction", "direction", JTYPE_FLOAT },
+	{ "DirectionStr", "directionString", JTYPE_STRING },
+	{ "Forecast", "forecast", JTYPE_INT },
+	{ "ForecastStr", "forecastString", JTYPE_STRING },
+	{ "HardwareName", "hardwareName", JTYPE_STRING },
+	{ "HardwareType", "hardwareType", JTYPE_STRING },
+	{ "HardwareTypeVal", "hardwareTypeValue", JTYPE_INT },
+	{ "Humidity", "humidity", JTYPE_INT },
+	{ "HumidityStatus", "humidityStatus", JTYPE_STRING },
+	{ "InternalState", "internalState", JTYPE_STRING }, // door contact
+	{ "LevelActions", "levelActions", JTYPE_STRING },
+	{ "LevelInt", "levelVal", JTYPE_INT },
+	{ "LevelNames", "levelNames", JTYPE_STRING },
+	{ "LevelOffHidden", "levelOffHidden", JTYPE_BOOL },
+	{ "MaxDimLevel", "maxDimLevel", JTYPE_INT },
+	{ "Mode", "mode", JTYPE_INT }, // zwave thermostat
+	{ "Modes", "modes", JTYPE_STRING },
+	{ "Moisture", "moisture", JTYPE_STRING },
+	{ "Pressure", "pressure", JTYPE_FLOAT },
+	{ "Protected", "protected", JTYPE_BOOL },
+	{ "Quality", "quality", JTYPE_STRING },
+	{ "Radiation", "radiation", JTYPE_FLOAT },
+	{ "Rain", "rain", JTYPE_FLOAT },
+	{ "RainRate", "rainRate", JTYPE_FLOAT },
+	{ "SensorType", "sensorType", JTYPE_INT },
+	{ "SensorUnit", "sensorUnit", JTYPE_STRING },
+	{ "SetPoint", "setPoint", JTYPE_FLOAT },
+	{ "Speed", "speed", JTYPE_FLOAT },
+	{ "Temp", "temperature", JTYPE_FLOAT },
+	{ "TypeImg", "icon", JTYPE_STRING },
+	{ "Unit", "unit", JTYPE_INT },
+	{ "Until", "until", JTYPE_STRING }, // evohome zone/water
+	{ "Usage", "usage", JTYPE_STRING },
+	{ "UsedByCamera", "usedByCamera", JTYPE_BOOL },
+	{ "UsageDeliv", "usageDelivered", JTYPE_STRING },
+	{ "ValueQuantity", "valueQuantity", JTYPE_STRING },
+	{ "ValueUnits", "valueUnits", JTYPE_STRING },
+	{ "Visibility", "visibility", JTYPE_FLOAT },
+	{ "Voltage", "voltage", JTYPE_FLOAT },
+	{ nullptr, nullptr, JTYPE_STRING },
 };
 
 CEventSystem::CEventSystem(void)
@@ -308,7 +307,7 @@ void CEventSystem::Do_Work()
 	m_python_Dir = szUserDataFolder + "scripts/python/";
 #endif
 #endif
-	time_t lasttime = mytime(NULL);
+	time_t lasttime = mytime(nullptr);
 	struct tm tmptime;
 	struct tm ltime;
 
@@ -318,7 +317,7 @@ void CEventSystem::Do_Work()
 	_log.Log(LOG_STATUS, "EventSystem: Started");
 	while (!IsStopRequested(500))
 	{
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 
 		if (atime != lasttime)
 		{
@@ -400,7 +399,7 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 		std::string l_JsonValueString;
 		l_JsonValueString.reserve(50);
 
-		while (JsonMap[index].szOriginal != NULL)
+		while (JsonMap[index].szOriginal != nullptr)
 		{
 			if (tempjson["result"][0][JsonMap[index].szOriginal] != Json::Value::null)
 			{
@@ -481,7 +480,7 @@ void CEventSystem::GetCurrentStates()
 				total_max = std::stoull(result2[0][0]);
 
 				//get value of today
-				std::string szDate = TimeToString(NULL, TF_Date);
+				std::string szDate = TimeToString(nullptr, TF_Date);
 				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", sitem.ID, szDate.c_str());
 				if (!result2.empty())
 				{
@@ -906,7 +905,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					total_max = std::stoull(result2[0][0]);
 
 					//get value of today
-					std::string szDate = TimeToString(NULL, TF_Date);
+					std::string szDate = TimeToString(nullptr, TF_Date);
 					result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 						sitem.ID, szDate.c_str());
 					if (!result2.empty())
@@ -948,7 +947,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 				//Calculate the total rainfall of today
 
-				std::string szDate = TimeToString(NULL, TF_Date);
+				std::string szDate = TimeToString(nullptr, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 
 				if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINByRate)
@@ -985,7 +984,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		{
 			float GasDivider = 1000.0f;
 			//get lowest value of today
-			std::string szDate = TimeToString(NULL, TF_Date);
+			std::string szDate = TimeToString(nullptr, TF_Date);
 			std::vector<std::vector<std::string> > result2;
 			result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 				sitem.ID, szDate.c_str());
@@ -1011,7 +1010,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				float divider = m_sql.GetCounterDivider(int(metertype), int(sitem.devType), float(sitem.AddjValue2));
 
 				//get value of today
-				std::string szDate = TimeToString(NULL, TF_Date);
+				std::string szDate = TimeToString(nullptr, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 					sitem.ID, szDate.c_str());
@@ -1158,7 +1157,7 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
 	if (m_eventtrigger.size() > 0)
 	{
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end();)
 		{
 			if (itt->ID == ulDevID && itt->reason == reason)
@@ -1216,7 +1215,7 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
 	if (m_eventtrigger.size() > 0)
 	{
-		time_t atime = mytime(NULL) + static_cast<int>(fDelayTime);
+		time_t atime = mytime(nullptr) + static_cast<int>(fDelayTime);
 		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end();)
 		{
 			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later or equal queued items
@@ -1228,7 +1227,7 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	_tEventTrigger item;
 	item.ID = ulDevID;
 	item.reason = reason;
-	item.timestamp = mytime(NULL) + static_cast<int>(fDelayTime);
+	item.timestamp = mytime(nullptr) + static_cast<int>(fDelayTime);
 	m_eventtrigger.push_back(item);
 }
 
@@ -1662,24 +1661,19 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 lua_State *CEventSystem::CreateBlocklyLuaState()
 {
 	lua_State *lua_state = luaL_newstate();
-	if (lua_state == NULL)
-		return NULL;
+	if (lua_state == nullptr)
+		return nullptr;
 
 	// load Lua libraries
-	static const luaL_Reg lualibs[] =
-	{
-		{ "base", luaopen_base },
-		{ "io", luaopen_io },
-		{ "table", luaopen_table },
-		{ "string", luaopen_string },
-		{ "math", luaopen_math },
-		{ NULL, NULL }
+	static const luaL_Reg lualibs[] = {
+		{ "base", luaopen_base },     { "io", luaopen_io },	{ "table", luaopen_table },
+		{ "string", luaopen_string }, { "math", luaopen_math }, { nullptr, nullptr },
 	};
 
 	luaL_requiref(lua_state, "os", luaopen_os, 1);
 
 	const luaL_Reg *lib = lualibs;
-	for (; lib->func != NULL; lib++)
+	for (; lib->func != nullptr; lib++)
 	{
 		lib->func(lua_state);
 		lua_settop(lua_state, 0);
@@ -1867,11 +1861,11 @@ lua_State *CEventSystem::ParseBlocklyLua(lua_State *lua_state, const _tEventItem
 
 	std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
 
-	if (lua_state == NULL)
+	if (lua_state == nullptr)
 	{
 		lua_state = CreateBlocklyLuaState();
-		if (lua_state == NULL)
-			return NULL;
+		if (lua_state == nullptr)
+			return nullptr;
 	}
 
 	//_log.Log(LOG_STATUS,"EventSystem: ifc: %s",ifCondition.c_str());
@@ -1894,7 +1888,7 @@ lua_State *CEventSystem::ParseBlocklyLua(lua_State *lua_state, const _tEventItem
 
 void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 {
-	lua_State *lua_state = NULL;
+	lua_State *lua_state = nullptr;
 
 	boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	std::vector<_tEventItem>::const_iterator it;
@@ -1960,7 +1954,7 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 		_log.Log(LOG_ERROR, "EventSystem: Exception processing database scripts");
 	}
 
-	if (lua_state != NULL)
+	if (lua_state != nullptr)
 		lua_close(lua_state);
 }
 
@@ -3036,18 +3030,13 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_state = luaL_newstate();
 
 	// load Lua libraries
-	static const luaL_Reg lualibs[] =
-	{
-		{ "base", luaopen_base },
-		{ "io", luaopen_io },
-		{ "table", luaopen_table },
-		{ "string", luaopen_string },
-		{ "math", luaopen_math },
-		{ NULL, NULL }
+	static const luaL_Reg lualibs[] = {
+		{ "base", luaopen_base },     { "io", luaopen_io },	{ "table", luaopen_table },
+		{ "string", luaopen_string }, { "math", luaopen_math }, { nullptr, nullptr },
 	};
 
 	const luaL_Reg *lib = lualibs;
-	for (; lib->func != NULL; lib++)
+	for (; lib->func != nullptr; lib++)
 	{
 		lib->func(lua_state);
 		lua_settop(lua_state, 0);
@@ -3071,7 +3060,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	}
 
 	// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 	int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
@@ -3222,7 +3211,7 @@ void CEventSystem::luaStop(lua_State *L, lua_Debug *ar)
 	if (ar->event == LUA_HOOKCOUNT)
 	{
 		(void)ar;  /* unused arg. */
-		lua_sethook(L, NULL, 0, 0);
+		lua_sethook(L, nullptr, 0, 0);
 		luaL_error(L, "Lua script execution exceeds maximum number of lines");
 		lua_close(L);
 	}
@@ -3516,7 +3505,8 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 			//nValue devices
 			_log.Log(LOG_STATUS, "%d", m_devicestates[devIdx].nValue);
 		}
-		else {
+		else
+		{
 			_log.Log(LOG_STATUS, "%s", m_devicestates[devIdx].sValue.c_str());
 		}
 	}
@@ -3607,7 +3597,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		std::string	sParams = oParseResults.sCommand.substr(14);
 
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
-		if (pBaseHardware != NULL)
+		if (pBaseHardware != nullptr)
 		{
 			CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			std::string		sPlayList = sParams;
@@ -3620,14 +3610,15 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 			}
 			if (!pHardware->SetPlaylist(deviceID, sPlayList.c_str()))
 			{
-				pBaseHardware = NULL; // Kodi hardware exists, but the device for the event is not a Kodi
+				pBaseHardware = nullptr; // Kodi hardware exists, but the device for the event is not a Kodi
 			}
 		}
 
-		if (pBaseHardware == NULL)  // if not handled try Logitech
+		if (pBaseHardware == nullptr) // if not handled try Logitech
 		{
 			pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
-			if (pBaseHardware == NULL) return false;
+			if (pBaseHardware == nullptr)
+				return false;
 			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			int iPlaylistID = pHardware->GetPlaylistRefID(oParseResults.sCommand.substr(14).c_str());
@@ -3640,7 +3631,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	else if (oParseResults.sCommand.substr(0, 14) == "Play Favorites") {
 		std::string	sParams = oParseResults.sCommand.substr(15);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
-		if (pBaseHardware != NULL)
+		if (pBaseHardware != nullptr)
 		{
 			//CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			if (sParams.length() > 0)
@@ -3653,7 +3644,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	else if (oParseResults.sCommand.substr(0, 7) == "Execute") {
 		std::string	sParams = oParseResults.sCommand.substr(8);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
-		if (pBaseHardware != NULL)
+		if (pBaseHardware != nullptr)
 		{
 			CKodi	*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			pHardware->SetExecuteCommand(deviceID, sParams);

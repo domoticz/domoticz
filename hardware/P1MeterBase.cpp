@@ -295,7 +295,7 @@ bool P1MeterBase::MatchLine()
 				_log.Log(LOG_STATUS, "P1 Smart Meter: Meter is pre DSMR 4.0 - using DSMR 2.2 compatibility");
 				m_p1version = 2;
 			}
-			time_t atime = mytime(NULL);
+			time_t atime = mytime(nullptr);
 			if (difftime(atime, m_lastUpdateTime) >= m_ratelimit)
 			{
 				m_lastUpdateTime = atime;
@@ -646,7 +646,7 @@ bool P1MeterBase::CheckCRC()
 	char crc_str[5];
 	strncpy(crc_str, (const char*)&l_buffer + 1, 4);
 	crc_str[4] = 0;
-	uint16_t m_crc16 = (uint16_t)strtoul(crc_str, NULL, 16);
+	uint16_t m_crc16 = (uint16_t)strtoul(crc_str, nullptr, 16);
 
 	// calculate CRC
 	const unsigned char* c_buffer = m_buffer;
@@ -832,14 +832,16 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 					if (ctx == nullptr)
 						return;
-					EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), NULL, NULL, NULL);
-					EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, iv.size(), NULL);
+					EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), nullptr, nullptr, nullptr);
+					EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, iv.size(), nullptr);
 
-					EVP_DecryptInit_ex(ctx, NULL, NULL, (const unsigned char*)m_szHexKey.data(), (const unsigned char*)iv.c_str());
+					EVP_DecryptInit_ex(ctx, nullptr, nullptr, (const unsigned char *)m_szHexKey.data(),
+							   (const unsigned char *)iv.c_str());
 
 					int outlen = 0;
-					//std::vector<char> m_szDecodeAdd = HexToBytes(_szDecodeAdd);
-					//EVP_DecryptUpdate(ctx, NULL, &outlen, (const uint8_t*)m_szDecodeAdd.data(), m_szDecodeAdd.size());
+					// std::vector<char> m_szDecodeAdd = HexToBytes(_szDecodeAdd);
+					// EVP_DecryptUpdate(ctx, nullptr, &outlen, (const uint8_t*)m_szDecodeAdd.data(),
+					// m_szDecodeAdd.size());
 					EVP_DecryptUpdate(ctx, (uint8_t*)m_pDecryptBuffer, &outlen, (uint8_t*)cipherText.c_str(), cipherText.size());
 					EVP_CIPHER_CTX_free(ctx);
 					if (outlen <= 0)

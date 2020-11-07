@@ -151,7 +151,7 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 {
 	TiXmlDocument XMLdoc("Teleinfo.xml");
 
-	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	XMLdoc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
 		_log.Log(LOG_ERROR, "Error parsing XML for /protect/settings/teleinfo?.xml: %s", XMLdoc.ErrorDesc());
@@ -206,7 +206,7 @@ void CEcoDevices::GetMeterDetails()
 	std::string::size_type len, pos;
 	std::stringstream sstr;
 	TiXmlDocument XMLdoc("Teleinfo.xml");
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	int   major, minor, release;
 	int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
 
@@ -225,7 +225,7 @@ void CEcoDevices::GetMeterDetails()
 	}
 
 	// Process XML result
-	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	XMLdoc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
 		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /status.xml: %s", m_Name.c_str(), XMLdoc.ErrorDesc());
@@ -364,7 +364,7 @@ void CEcoDevices::GetMeterRT2Details()
 	std::stringstream sstr;
 	std::map<std::string, std::string> XMLmap;
 	TiXmlDocument XMLdoc("Teleinfo.xml");
-	//time_t atime = mytime(NULL);
+	// time_t atime = mytime(nullptr);
 	int   i, major, minor, release;
 	int min_major = MAJOR_RT2, min_minor = MINOR_RT2, min_release = RELEASE_RT2;
 
@@ -417,7 +417,7 @@ void CEcoDevices::GetMeterRT2Details()
 	}
 
 	// Process XML result
-	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	XMLdoc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
 		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /admin/status.xml: %s", m_Name.c_str(), XMLdoc.ErrorDesc());

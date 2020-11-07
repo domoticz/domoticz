@@ -36,7 +36,7 @@ std::mutex gatewaylist_mutex;
 
 XiaomiGateway * XiaomiGateway::GatewayByIp(std::string ip)
 {
-	XiaomiGateway * ret = NULL;
+	XiaomiGateway *ret = nullptr;
 	{
 		std::unique_lock<std::mutex> lock(gatewaylist_mutex);
 		std::list<XiaomiGateway*>::iterator    it = gatewaylist.begin();
@@ -54,7 +54,7 @@ XiaomiGateway * XiaomiGateway::GatewayByIp(std::string ip)
 
 void XiaomiGateway::AddGatewayToList()
 {
-	XiaomiGateway * maingw = NULL;
+	XiaomiGateway *maingw = nullptr;
 	{
 		std::unique_lock<std::mutex> lock(gatewaylist_mutex);
 		std::list<XiaomiGateway*>::iterator    it = gatewaylist.begin();
@@ -87,7 +87,7 @@ void XiaomiGateway::AddGatewayToList()
 
 void XiaomiGateway::RemoveFromGatewayList()
 {
-	XiaomiGateway * maingw = NULL;
+	XiaomiGateway *maingw = nullptr;
 	{
 		std::unique_lock<std::mutex> lock(gatewaylist_mutex);
 		gatewaylist.remove(this);
@@ -129,9 +129,9 @@ int XiaomiGateway::get_local_ipaddr(std::vector<std::string>& ip_addrs)
 		return 0;
 	}
 
-	for (ifa = myaddrs; ifa != NULL; ifa = ifa->ifa_next)
+	for (ifa = myaddrs; ifa != nullptr; ifa = ifa->ifa_next)
 	{
-		if (ifa->ifa_addr == NULL)
+		if (ifa->ifa_addr == nullptr)
 			continue;
 		if (!(ifa->ifa_flags & IFF_UP))
 			continue;
@@ -467,7 +467,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 		//ycmd.dunit = 0;
 		ycmd.value = brightness;
 		ycmd.command = cmd;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1);
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%s') AND (Type == %d)", Name.c_str(), (STYPE_Dimmer), brightness, m_HwdID, szDeviceID, pTypeColorSwitch);
 	}
 	else {
@@ -487,7 +487,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 			//ycmd.dunit = 0;
 			ycmd.value = brightness;
 			ycmd.command = cmd;
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1);
 		}
 	}
 }
@@ -549,7 +549,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	if (result.empty())
 	{
 		_log.Log(LOG_STATUS, "XiaomiGateway: New %s Found (%s)", Name.c_str(), nodeid.c_str());
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, battery);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, nullptr, battery);
 		if (customimage == 0) {
 			if (switchtype == STYPE_OnOff) {
 				customimage = 1; // Wall socket
@@ -620,7 +620,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		}
 		else {
 			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == NAME_SELECTOR_WIRED_WALL_DUAL) || (Name == NAME_SELECTOR_WIRED_WALL_SINGLE) || (Name == NAME_ACT_BLINDS_CURTAIN)) {
-				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, BatteryLevel);
+				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, nullptr, BatteryLevel);
 			}
 		}
 		if ((Name == NAME_ACT_ONOFF_PLUG) || (Name == NAME_ACT_ONOFF_PLUG_WALL)) {
@@ -797,7 +797,7 @@ void XiaomiGateway::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 60 == 0)
 		{
@@ -1246,7 +1246,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								std::string bright_hex = hexstring.substr(0, 2);
 								std::stringstream ss2;
 								ss2 << std::hex << bright_hex.c_str();
-								int brightness = strtoul(bright_hex.c_str(), NULL, 16);
+								int brightness = strtoul(bright_hex.c_str(), nullptr, 16);
 								bool on = false;
 								if (rgb != "0") {
 									on = true;

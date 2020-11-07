@@ -104,7 +104,7 @@ void EnphaseAPI::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter % Enphase_request_INTERVAL == 0)
@@ -192,7 +192,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 
 void EnphaseAPI::parseProduction(const Json::Value& root)
 {
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 

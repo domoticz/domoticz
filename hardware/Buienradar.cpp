@@ -97,7 +97,7 @@ CBuienRadar::~CBuienRadar(void)
 void CBuienRadar::Init()
 {
 	struct tm ltime;
-	time_t now = mytime(0);
+	time_t now = mytime(nullptr);
 	localtime_r(&now, &ltime);
 	m_itIsRaining = false;
 }
@@ -141,7 +141,7 @@ void CBuienRadar::Do_Work()
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
-		time_t now = mytime(0);
+		time_t now = mytime(nullptr);
 		m_LastHeartbeat = now;
 
 		if (sec_counter % 600 == 0)
@@ -536,7 +536,7 @@ void CBuienRadar::GetRainPrediction()
 #endif
 #endif
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 

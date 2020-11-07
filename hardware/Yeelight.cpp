@@ -105,7 +105,7 @@ void Yeelight::Do_Work()
 		{
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 			if (sec_counter % 60 == 0) //poll YeeLights every minute
 			{
@@ -163,7 +163,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		ycmd.value = value;
 		ycmd.command = cmd;
 		// TODO: Update color
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1);
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
 	}
 	else {
@@ -196,7 +196,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 			ycmd.value = value;
 			ycmd.command = cmd;
 			// TODO: Update color
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1);
 		}
 	}
 }

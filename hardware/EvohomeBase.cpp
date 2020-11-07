@@ -30,7 +30,7 @@
 
 extern std::string szUserDataFolder;
 
-std::ofstream *CEvohomeBase::m_pEvoLog=NULL;
+std::ofstream *CEvohomeBase::m_pEvoLog = nullptr;
 #ifdef _DEBUG
 bool CEvohomeBase::m_bDebug=true;
 #else
@@ -204,12 +204,12 @@ void CEvohomeBase::SetGatewayID(unsigned int nID)
 void CEvohomeBase::LogDate()
 {
         char szTmp[256];
-	time_t atime = mytime(NULL);
-        struct tm ltime;
-        localtime_r(&atime, &ltime);
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
 
-        strftime (szTmp,256,"%Y-%m-%d %H:%M:%S ",&ltime);
-        *m_pEvoLog << szTmp;
+	strftime(szTmp, 256, "%Y-%m-%d %H:%M:%S ", &ltime);
+	*m_pEvoLog << szTmp;
 }
 
 

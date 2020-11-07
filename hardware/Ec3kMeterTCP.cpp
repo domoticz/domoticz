@@ -110,7 +110,7 @@ void Ec3kMeterTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
@@ -266,9 +266,9 @@ bool Ec3kLimiter::update(int id)
 		if (meters[i].id == id)
 		{
 			// Allow update after at least update interval  seconds
-			if ((time(NULL) - meters[i].last_update) >= EC3K_UPDATE_INTERVAL)
+			if ((time(nullptr) - meters[i].last_update) >= EC3K_UPDATE_INTERVAL)
 			{
-				meters[i].last_update = time(NULL);
+				meters[i].last_update = time(nullptr);
 				return true;
 			}
 			else
@@ -279,7 +279,7 @@ bool Ec3kLimiter::update(int id)
 	}
 	// Store new meter and allow update
 	meters[no_meters].id = id;
-	meters[no_meters].last_update = time(NULL);
+	meters[no_meters].last_update = time(nullptr);
 	no_meters++;
 	return true;
 }

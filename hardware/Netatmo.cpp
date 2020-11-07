@@ -60,7 +60,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_clientId("5588029e485a88af28f4a3c4"),
 	m_clientSecret("6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2")
 {
-	m_nextRefreshTs = mytime(NULL);
+	m_nextRefreshTs = mytime(nullptr);
 	m_isLogged = false;
 	m_NetatmoType = NETYPE_WEATHER_STATION;
 
@@ -72,7 +72,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_bPollWeatherData = true;
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
-	m_tSetpointUpdateTime = time(NULL);
+	m_tSetpointUpdateTime = time(nullptr);
 	Init();
 }
 
@@ -135,7 +135,7 @@ void CNetatmo::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (!m_isLogged)
@@ -168,7 +168,7 @@ void CNetatmo::Do_Work()
 					}
 					if (m_bForceSetpointUpdate)
 					{
-						time_t atime = time(NULL);
+						time_t atime = time(nullptr);
 						if (atime >= m_tSetpointUpdateTime)
 						{
 							m_bForceSetpointUpdate = false;
@@ -240,7 +240,7 @@ bool CNetatmo::Login()
 	//_log.Log(LOG_STATUS, "Access token: %s", m_accessToken.c_str());
 	//_log.Log(LOG_STATUS, "RefreshToken: %s", m_refreshToken.c_str());
 	int expires = root["expires_in"].asInt();
-	m_nextRefreshTs = mytime(NULL) + expires;
+	m_nextRefreshTs = mytime(nullptr) + expires;
 	StoreRefreshToken();
 	m_isLogged = true;
 	return true;
@@ -256,7 +256,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	{
 		if (!m_isLogged)
 			return false;
-		if ((mytime(NULL) - 15) < m_nextRefreshTs)
+		if ((mytime(nullptr) - 15) < m_nextRefreshTs)
 			return true; //no need to refresh the token yet
 	}
 
@@ -303,7 +303,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	m_accessToken = root["access_token"].asString();
 	m_refreshToken = root["refresh_token"].asString();
 	int expires = root["expires_in"].asInt();
-	m_nextRefreshTs = mytime(NULL) + expires;
+	m_nextRefreshTs = mytime(nullptr) + expires;
 	//StoreRefreshToken();
 	return true;
 }
@@ -390,7 +390,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	if (ModuleType != "NATherm1")
 	{
 		std::time_t tNetatmoLastUpdate = 0;
-		std::time_t tNow = time(NULL);
+		std::time_t tNow = time(nullptr);
 
 		// initialize the relevant device flag
 		if ( m_bNetatmoRefreshed.find(ID) == m_bNetatmoRefreshed.end() )
@@ -722,7 +722,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 		tempDest = static_cast<float>(ConvertToCelsius(tempDest));
 	}
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm etime;
 	localtime_r(&now, &etime);
 	time_t end_time;
@@ -793,7 +793,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	}
 
 	GetThermostatDetails();
-	m_tSetpointUpdateTime = time(NULL) + 60;
+	m_tSetpointUpdateTime = time(nullptr) + 60;
 	m_bForceSetpointUpdate = true;
 }
 

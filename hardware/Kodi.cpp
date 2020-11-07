@@ -31,7 +31,7 @@ void CKodiNode::CKodiStatus::Clear()
 	m_sPercent = "";
 	m_sYear = "";
 	m_sLive = "";
-	m_tLastOK = mytime(NULL);
+	m_tLastOK = mytime(nullptr);
 }
 
 std::string	CKodiNode::CKodiStatus::LogMessage()
@@ -161,7 +161,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 	m_iPollIntSec = PollIntervalsec;
 	m_iMissedPongs = 0;
 
-	m_Socket = NULL;
+	m_Socket = nullptr;
 
 	_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Created.", m_Name.c_str());
 
@@ -526,7 +526,7 @@ void CKodiNode::UpdateStatus()
 	//This has to be rebuild! No direct poking in the database, please use CMainWorker::UpdateDevice
 
 	std::vector<std::vector<std::string> > result;
-	m_CurrentStatus.LastOK(mytime(NULL));
+	m_CurrentStatus.LastOK(mytime(nullptr));
 
 	// 1:	Update the DeviceStatus
 	if (m_CurrentStatus.UpdateRequired(m_PreviousStatus))
@@ -605,7 +605,7 @@ void CKodiNode::handleConnect()
 					_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
 				}
 				delete m_Socket;
-				m_Socket = NULL;
+				m_Socket = nullptr;
 				m_CurrentStatus.Clear();
 				m_CurrentStatus.Status(MSTAT_OFF);
 				UpdateStatus();
@@ -679,7 +679,7 @@ void CKodiNode::handleWrite(std::string pMessage)
 		}
 		else
     {
-      _log.Log(LOG_ERROR, "Kodi: (%s) Data not sent to NULL socket: '%s'", m_Name.c_str(), pMessage.c_str());
+	    _log.Log(LOG_ERROR, "Kodi: (%s) Data not sent to nullptr socket: '%s'", m_Name.c_str(), pMessage.c_str());
     }
   }
 }
@@ -693,7 +693,7 @@ void CKodiNode::handleDisconnect()
 		m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		m_Socket->close();
 		delete m_Socket;
-		m_Socket = NULL;
+		m_Socket = nullptr;
 	}
 }
 
@@ -746,7 +746,7 @@ void CKodiNode::Do_Work()
 	_log.Log(LOG_NORM, "Kodi: (%s) Exiting work loop.", m_Name.c_str());
 	m_Busy = false;
 	delete m_Socket;
-	m_Socket = NULL;
+	m_Socket = nullptr;
 }
 
 void CKodiNode::SendCommand(const std::string &command)
@@ -789,7 +789,7 @@ void CKodiNode::SendCommand(const std::string &command)
 		if (sKodiParam.length()) sMessage += "\"action\":\"" + sKodiParam + "\"";
 		sMessage += "},\"id\":1006}";
 
-		if (m_Socket != NULL)
+		if (m_Socket != nullptr)
 		{
 			handleWrite(sMessage);
 			_log.Log(LOG_NORM, "Kodi: (%s) Sent command: '%s %s'.", m_Name.c_str(), sKodiCall.c_str(), sKodiParam.c_str());
@@ -843,7 +843,7 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 
 	if (sMessage.length())
 	{
-		if (m_Socket != NULL)
+		if (m_Socket != nullptr)
 		{
 			handleWrite(sMessage);
 			_log.Log(LOG_NORM, "Kodi: (%s) Sent command: '%s'.", m_Name.c_str(), sKodiCall.c_str());
@@ -1242,7 +1242,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
+			if (pHardware == nullptr)
 				return;
 			if (pHardware->HwdType != HTYPE_Kodi)
 				return;
@@ -1287,7 +1287,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
@@ -1325,7 +1325,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
@@ -1359,7 +1359,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
@@ -1388,7 +1388,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
@@ -1413,7 +1413,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;

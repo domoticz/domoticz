@@ -252,7 +252,7 @@ void I2C::Do_Work()
 			msec_counter = 0;
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 			try
 			{
@@ -1288,7 +1288,7 @@ void I2C::bmp_Read_BMP_SensorDetails()
 	//any help would be welcome!
 
 	tsensor.forecast = CalculateForecast(((float)pressure) * 10.0f);
-	sDecodeRXMessage(this, (const unsigned char *)&tsensor, NULL, 255);
+	sDecodeRXMessage(this, (const unsigned char *)&tsensor, nullptr, 255);
 }
 
 bool I2C::readBME280ID(const int fd, int &ChipID, int &Version)

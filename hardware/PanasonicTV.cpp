@@ -175,7 +175,7 @@ void CPanasonicNode::CPanasonicStatus::Clear()
 {
 	m_nStatus = MSTAT_UNKNOWN;
 	m_sStatus = "";
-	m_tLastOK = mytime(NULL);
+	m_tLastOK = mytime(nullptr);
 	m_VolumeLevel = -1;
 	m_Muted = false;
 }
@@ -276,7 +276,7 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	//This has to be rebuild! No direct poking in the database, please use CMainWorker::UpdateDevice
 
 	std::vector<std::vector<std::string> > result;
-	m_CurrentStatus.LastOK(mytime(NULL));
+	m_CurrentStatus.LastOK(mytime(nullptr));
 
 	// 1:	Update the DeviceStatus
 
@@ -1059,7 +1059,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
+			if (pHardware == nullptr)
 				return;
 			if (pHardware->HwdType != HTYPE_PanasonicTV)
 				return;
@@ -1105,7 +1105,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
@@ -1144,7 +1144,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
@@ -1178,7 +1178,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
@@ -1207,7 +1207,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
@@ -1232,7 +1232,7 @@ namespace http {
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;

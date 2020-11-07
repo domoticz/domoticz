@@ -305,7 +305,7 @@ bool CNotificationKodi::SendMessageImplementation(
 
 		_Address.Bind(_Sock);
 
-		CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, (!sIconFile.empty())?sIconFile.c_str():NULL);
+		CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, (!sIconFile.empty()) ? sIconFile.c_str() : nullptr);
 		if (!packet.Send(_Sock, _Address)) {
 			std::stringstream logline;
 			logline << "Error sending notification: " << results[i] << ":" << _Port;

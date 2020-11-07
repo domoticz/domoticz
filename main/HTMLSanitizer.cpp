@@ -70,7 +70,7 @@ std::string HTMLSanitizer::Sanitize(const std::string& szText)
 
 		size_t ii = 0;
 		bool bHaveForbiddenTag = false;
-		while (szForbiddenContent[ii] != NULL)
+		while (szForbiddenContent[ii] != nullptr)
 		{
 			if (tag.find(szForbiddenContent[ii]) != std::string::npos)
 			{
@@ -119,7 +119,7 @@ std::wstring HTMLSanitizer::Sanitize(const std::wstring& szText)
 
 		size_t ii = 0;
 		bool bHaveForbiddenTag = false;
-		while (szForbiddenContent[ii] != NULL)
+		while (szForbiddenContent[ii] != nullptr)
 		{
 			std::string s(szForbiddenContent[ii]);
 			std::wstring wsTmp(s.begin(), s.end());
