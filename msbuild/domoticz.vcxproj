@@ -612,6 +612,7 @@
     <ClInclude Include="..\hardware\NestOAuthAPI.h" />
     <ClInclude Include="..\hardware\OctoPrintMQTT.h" />
     <ClInclude Include="..\hardware\Rtl433.h" />
+    <ClInclude Include="..\hardware\serial\impl\win.h" />
     <ClInclude Include="..\hardware\SysfsGpio.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
     <ClInclude Include="..\hardware\HEOS.h" />

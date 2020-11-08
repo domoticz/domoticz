@@ -1498,7 +1498,7 @@
     </ClInclude>
     <ClInclude Include="..\hardware\hardwaretypes.h">
       <Filter>Devices</Filter>
-    </ClInclude>  
+    </ClInclude>
     <ClInclude Include="..\hardware\AirconWithMe.h">
       <Filter>Devices\airconwithme</Filter>
     </ClInclude>
@@ -2206,6 +2206,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Meteorologisk.h">
       <Filter>Devices\Meteorologisk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\serial\impl\win.h">
+      <Filter>Devices\SerialTCP\Serial\impl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
