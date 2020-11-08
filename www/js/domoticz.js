@@ -1307,7 +1307,7 @@ function ShowCameraLiveStream(Name, camIdx) {
 
 	var windowWidth = $(window).width() - 20;
 	var windowHeight = $(window).height() - 150;
-	
+
 	var AspectSource = 4 / 3;
 
 	var height = windowHeight;
@@ -1316,7 +1316,7 @@ function ShowCameraLiveStream(Name, camIdx) {
 		width = windowWidth;
 		height = Math.round(width / AspectSource) & ~1;
 	}
-	
+
 	//Set inner Camera feed width/height
 	$("#dialog-camera-live #camfeed").width(width - 30);
 	$("#dialog-camera-live #camfeed").height(height - 16);
