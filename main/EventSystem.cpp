@@ -2124,7 +2124,7 @@ std::string CEventSystem::ParseBlocklyString(const std::string &oString)
 {
 	std::string retString = oString;
 
-	while (1)
+	while (true)
 	{
 		size_t pos1, pos2;
 		pos1 = retString.find("{{");

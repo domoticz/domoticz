@@ -1576,7 +1576,7 @@ void GetLightStatus(
 		case fs20_sDimlevel_14:
 		case fs20_sDimlevel_15:
 			lstatus = "Set Level";
-			bHaveDimmer = 1;
+			bHaveDimmer = true;
 			llevel = nValue - fs20_sDimlevel_1 + 1;
 			llevel = (int)float((100.0f / float(maxDimLevel)) * llevel);
 			break;
