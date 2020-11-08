@@ -76,10 +76,6 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	Init();
 }
 
-CNetatmo::~CNetatmo(void)
-{
-}
-
 void CNetatmo::Init()
 {
 	m_RainOffset.clear();

@@ -84,12 +84,10 @@ m_szHarmonyAddress(IPAddress)
 	Init();
 }
 
-
-CHarmonyHub::~CHarmonyHub(void)
+CHarmonyHub::~CHarmonyHub()
 {
 	StopHardware();
 }
-
 
 void CHarmonyHub::Init()
 {

@@ -89,10 +89,6 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	m_refreshtoken = result[0][1].c_str();
 }
 
-CMercApi::~CMercApi()
-{
-}
-
 bool CMercApi::Login()
 {
 	bool bSuccess = false;

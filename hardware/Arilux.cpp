@@ -33,10 +33,6 @@ Arilux::Arilux(const int ID)
   m_color.ww = 0xff;
 }
 
-Arilux::~Arilux(void)
-{
-}
-
 bool Arilux::StartHardware()
 {
 	RequestStart();

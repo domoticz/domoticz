@@ -39,11 +39,6 @@ CDenkoviTCPDevices::CDenkoviTCPDevices(const int ID, const std::string &IPAddres
 	Init();
 }
 
-
-CDenkoviTCPDevices::~CDenkoviTCPDevices()
-{
-}
-
 void CDenkoviTCPDevices::Init()
 {
 }

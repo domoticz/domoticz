@@ -13,14 +13,15 @@ public:
     * serial device
     */
 	CurrentCostMeterSerial(const int ID, const std::string& devname, unsigned int baudRate);
-    virtual ~CurrentCostMeterSerial();
+	~CurrentCostMeterSerial() override = default;
 
-	virtual bool WriteToHardware(const char *pdata, const unsigned char length) override;
-protected:
-	virtual bool StartHardware() override;
-	virtual bool StopHardware() override;
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 
-private:
+      protected:
+	bool StartHardware() override;
+	bool StopHardware() override;
+
+      private:
 	void Do_Work();
     /**
      * Read callback, stores data in the buffer

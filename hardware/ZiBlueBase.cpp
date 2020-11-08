@@ -128,10 +128,6 @@ CZiBlueBase::CZiBlueBase()
 	Init();
 }
 
-CZiBlueBase::~CZiBlueBase()
-{
-}
-
 void CZiBlueBase::Init()
 {
 	m_bRFLinkOn = false;

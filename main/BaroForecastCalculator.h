@@ -3,7 +3,7 @@ class CBaroForecastCalculator
 {
 public:
 	CBaroForecastCalculator();
-	~CBaroForecastCalculator();
+	~CBaroForecastCalculator() = default;
 	void Init();
 	int CalculateBaroForecast(const double pressure);
 	int CalculateBaroForecast(const float temp, const double pressure);

@@ -10,7 +10,7 @@ class RelayNet : public CDomoticzHardwareBase, ASyncTCP
 public:
 
 	RelayNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const bool pollInputs, const bool pollRelays, const int pollInterval, const int inputCount, const int relayCount);
-	~RelayNet(void);
+	~RelayNet() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:

@@ -7,8 +7,9 @@ class CZiBlueTCP: public CZiBlueBase, ASyncTCP
 {
 public:
 	CZiBlueTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~CZiBlueTCP(void);
-public:
+	~CZiBlueTCP() override = default;
+
+      public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
 private:

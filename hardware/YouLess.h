@@ -15,7 +15,7 @@ public:
 		unsigned long usagecurrent;
 	};
 	CYouLess(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password);
-	~CYouLess(void);
+	~CYouLess() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

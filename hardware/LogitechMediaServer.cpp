@@ -45,7 +45,7 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) :
 	SetSettings(10);
 }
 
-CLogitechMediaServer::~CLogitechMediaServer(void)
+CLogitechMediaServer::~CLogitechMediaServer()
 {
 	m_bIsStarted = false;
 }

@@ -30,10 +30,6 @@ CEcoCompteur::CEcoCompteur(const int ID, const std::string& url, const unsigned 
 	Init();
 }
 
-CEcoCompteur::~CEcoCompteur(void)
-{
-}
-
 void CEcoCompteur::Init()
 {
 }

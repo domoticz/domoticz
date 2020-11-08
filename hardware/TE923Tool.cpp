@@ -47,14 +47,14 @@ struct usb_device *CTE923Tool::find_te923()
 	return nullptr;
 }
 
-CTE923Tool::CTE923Tool(void)
+CTE923Tool::CTE923Tool()
 {
 	m_device_handle = nullptr;
 	m_bUSBIsInit=false;
 	usb_init();
 }
 
-CTE923Tool::~CTE923Tool(void)
+CTE923Tool::~CTE923Tool()
 {
 	CloseDevice();
 }

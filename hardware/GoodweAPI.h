@@ -11,7 +11,7 @@ class GoodweAPI : public CDomoticzHardwareBase
 {
 public:
 	GoodweAPI(const int ID, const std::string &userName, const int ServerLocation);
-	~GoodweAPI(void);
+	~GoodweAPI() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

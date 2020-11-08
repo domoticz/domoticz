@@ -417,8 +417,8 @@ public:
 		}
 	} MySensorNode;
 
-	MySensorsBase(void);
-	~MySensorsBase(void);
+	MySensorsBase();
+	~MySensorsBase() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	_tMySensorNode* FindNode(const uint8_t nodeID);
 	void UpdateNode(const int nodeID, const std::string &name);

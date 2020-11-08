@@ -6,7 +6,7 @@ class CPVOutputInput : public CDomoticzHardwareBase
 {
 public:
 	CPVOutputInput(const int ID, const std::string &SID, const std::string &Key);
-	~CPVOutputInput(void);
+	~CPVOutputInput() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

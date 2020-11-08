@@ -7,8 +7,9 @@ class KMTronicSerial: public AsyncSerial, public KMTronicBase
 {
 public:
 	KMTronicSerial(const int ID, const std::string& devname);
-    ~KMTronicSerial();
-private:
+	~KMTronicSerial() override = default;
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 

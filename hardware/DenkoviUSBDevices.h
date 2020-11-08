@@ -20,7 +20,7 @@ class CDenkoviUSBDevices : public CDomoticzHardwareBase, AsyncSerial
 	};
 public:
 	CDenkoviUSBDevices(const int ID, const std::string& comPort, const int model);
-	~CDenkoviUSBDevices(void);
+	~CDenkoviUSBDevices() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

@@ -87,6 +87,7 @@ public:
 		tCustomData custom;
 	};
 
+	virtual ~CVehicleApi() = default;
 	virtual bool Login() = 0;
 	virtual bool RefreshLogin() = 0;
 	virtual bool SendCommand(eCommandType command, std::string parameter = "") = 0;

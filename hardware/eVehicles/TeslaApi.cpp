@@ -57,10 +57,6 @@ CTeslaApi::CTeslaApi(const std::string username, const std::string password, con
 	m_capabilities.sleep_interval = 20;
 }
 
-CTeslaApi::~CTeslaApi()
-{
-}
-
 bool CTeslaApi::Login()
 {
 	_log.Log(LOG_NORM, "TeslaApi: Attempting login.");

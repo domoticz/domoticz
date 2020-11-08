@@ -165,10 +165,6 @@ I2C::I2C(const int ID, const _eI2CType DevType, const std::string &Address, cons
 	}
 }
 
-I2C::~I2C()
-{
-}
-
 bool I2C::StartHardware()
 {
 	RequestStart();

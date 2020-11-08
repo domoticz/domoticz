@@ -90,11 +90,6 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_serial.setTimeout(stimeout);
 }
 
-RFXComSerial::~RFXComSerial()
-{
-
-}
-
 bool RFXComSerial::StartHardware()
 {
 	RequestStart();

@@ -44,10 +44,6 @@ BleBox::BleBox(const int id, const int pollIntervalsec)
 	SetSettings(pollIntervalsec);
 }
 
-BleBox::~BleBox()
-{
-}
-
 bool BleBox::StartHardware()
 {
 	RequestStart();

@@ -6,7 +6,7 @@ class CAccuWeather : public CDomoticzHardwareBase
 {
 public:
 	CAccuWeather(const int ID, const std::string &APIKey, const std::string &Location);
-	~CAccuWeather(void);
+	~CAccuWeather() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	std::string GetForecastURL();
 private:

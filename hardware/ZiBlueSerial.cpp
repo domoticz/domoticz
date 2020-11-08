@@ -17,11 +17,6 @@ m_szSerialPort(devname)
 	m_retrycntr = ZiBlue_RETRY_DELAY * 5;
 }
 
-CZiBlueSerial::~CZiBlueSerial()
-{
-
-}
-
 bool CZiBlueSerial::StartHardware()
 {
 	RequestStart();

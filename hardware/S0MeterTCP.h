@@ -7,7 +7,7 @@ class S0MeterTCP: public S0MeterBase, ASyncTCP
 {
 public:
 	S0MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~S0MeterTCP(void);
+	~S0MeterTCP() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:

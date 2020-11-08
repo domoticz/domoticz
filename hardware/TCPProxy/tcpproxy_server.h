@@ -38,7 +38,7 @@ namespace tcp_proxy
 		acceptor(
 			const std::string& local_host, unsigned short local_port,
 			const std::string& upstream_host, const std::string& upstream_port);
-		~acceptor();
+		~acceptor() = default;
 		bool accept_connections();
 		bool start();
 		bool stop();

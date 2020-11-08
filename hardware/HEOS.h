@@ -19,7 +19,7 @@ class CHEOS : public CDomoticzHardwareBase, ASyncTCP
 
 public:
 	CHEOS(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms);
-	~CHEOS(void);
+	~CHEOS() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()> sDisconnected;
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);

@@ -25,8 +25,9 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 {
 public:
 	CTeleinfoBase();
-	~CTeleinfoBase();
-protected:
+	~CTeleinfoBase() override = default;
+
+      protected:
 	typedef struct _tTeleinfo
 	{
 		std::string ADCO;

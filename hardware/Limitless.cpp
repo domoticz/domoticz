@@ -170,10 +170,6 @@ CLimitLess::CLimitLess(const int ID, const int LedType, const int BridgeType, co
 	Init();
 }
 
-CLimitLess::~CLimitLess(void)
-{
-}
-
 void CLimitLess::Init()
 {
 	m_CommandCntr = 1;

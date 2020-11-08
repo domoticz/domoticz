@@ -121,12 +121,12 @@ const CEventSystem::_tJsonMap CEventSystem::JsonMap[] = {
 	{ nullptr, nullptr, JTYPE_STRING },
 };
 
-CEventSystem::CEventSystem(void)
+CEventSystem::CEventSystem()
 {
 	m_bEnabled = false;
 }
 
-CEventSystem::~CEventSystem(void)
+CEventSystem::~CEventSystem()
 {
 	StopEventSystem();
 }

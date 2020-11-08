@@ -13,8 +13,9 @@ public:
 		const int PublishScheme,
 		const bool PreventLoop
 	);
-	~MySensorsMQTT(void);
-public:
+	~MySensorsMQTT() override = default;
+
+      public:
 	void on_message(const struct mosquitto_message* message) override;
 	void on_connect(int rc) override;
 private:

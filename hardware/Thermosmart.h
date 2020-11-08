@@ -7,7 +7,7 @@ class CThermosmart : public CDomoticzHardwareBase
 {
 public:
 	CThermosmart(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
-	~CThermosmart(void);
+	~CThermosmart() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SetSetpoint(const int idx, const float temp);
 private:

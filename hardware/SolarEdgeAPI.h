@@ -14,7 +14,7 @@ class SolarEdgeAPI : public CDomoticzHardwareBase
 	};
 public:
 	SolarEdgeAPI(const int ID, const std::string &APIKey);
-	~SolarEdgeAPI(void);
+	~SolarEdgeAPI() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool StartHardware() override;

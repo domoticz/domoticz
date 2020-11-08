@@ -30,11 +30,6 @@ KMTronicSerial::KMTronicSerial(const int ID, const std::string& devname)
 	m_bHaveReceived = false;
 }
 
-KMTronicSerial::~KMTronicSerial()
-{
-
-}
-
 bool KMTronicSerial::StartHardware()
 {
 	RequestStart();

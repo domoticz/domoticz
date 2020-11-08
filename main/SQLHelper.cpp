@@ -583,7 +583,7 @@ const char* sqlCreateMobileDevices =
 
 extern std::string szUserDataFolder;
 
-CSQLHelper::CSQLHelper(void)
+CSQLHelper::CSQLHelper()
 {
 	m_LastSwitchRowID = 0;
 	m_dbase = nullptr;
@@ -607,7 +607,7 @@ CSQLHelper::CSQLHelper(void)
 	SetDatabaseName("domoticz.db");
 }
 
-CSQLHelper::~CSQLHelper(void)
+CSQLHelper::~CSQLHelper()
 {
 	StopThread();
 	CloseDatabase();

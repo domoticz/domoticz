@@ -17,7 +17,7 @@ class CMercApi: public CVehicleApi
 {
 public:
 	CMercApi(const std::string username, const std::string password, const std::string vin);
-	~CMercApi();
+	~CMercApi() override = default;
 
 	bool Login() override;
 	bool RefreshLogin() override;

@@ -126,10 +126,6 @@ m_Agreement(Agreement)
 	m_retry_counter = 0;
 }
 
-CToonThermostat::~CToonThermostat(void)
-{
-}
-
 void CToonThermostat::Init()
 {
 	m_ClientID = "";

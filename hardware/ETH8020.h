@@ -6,7 +6,7 @@ class CETH8020 : public CDomoticzHardwareBase
 {
 public:
 	CETH8020(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
-	~CETH8020(void);
+	~CETH8020() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

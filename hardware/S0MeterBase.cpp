@@ -17,8 +17,7 @@
 
 #include <ctime>
 
-
-S0MeterBase::S0MeterBase(void)
+S0MeterBase::S0MeterBase()
 {
 	m_bufferpos = 0;
 	int ii;
@@ -77,11 +76,6 @@ void S0MeterBase::InitBase()
 		m_meters[4].m_type = atoi(splitresults[8].c_str());
 		m_meters[4].m_pulse_per_unit = atof(splitresults[9].c_str());
 	}
-}
-
-
-S0MeterBase::~S0MeterBase(void)
-{
 }
 
 void S0MeterBase::ReloadLastTotals()

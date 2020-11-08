@@ -7,8 +7,9 @@ class CRFLinkSerial: public AsyncSerial, public CRFLinkBase
 {
 public:
 	CRFLinkSerial(const int ID, const std::string& devname);
-    ~CRFLinkSerial();
-private:
+	~CRFLinkSerial() override = default;
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;

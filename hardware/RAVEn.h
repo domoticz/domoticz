@@ -30,7 +30,7 @@ class RAVEn : public CDomoticzHardwareBase,
 {
 public:
 	explicit RAVEn(const int ID, const std::string& devname);
-	~RAVEn(void);
+	~RAVEn() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool StartHardware() override;

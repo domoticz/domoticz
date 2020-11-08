@@ -17,25 +17,27 @@
 class DomoticzInternal: public CDomoticzHardwareBase {
 public:
 	explicit DomoticzInternal(const int ID);
-	~DomoticzInternal();
+	~DomoticzInternal() override = default;
 
-	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) {
+	bool WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/) override
+	{
 		// nothing to do yet
 		return false;
 	};
 
 private:
-	bool StartHardware() {
-		// nothing to do yet
-		m_bIsStarted = true;
-		return true;
-	};
-	bool StopHardware() {
-		// nothing to do yet
-		m_bIsStarted = false;
-		return true;
-	};
-
+  bool StartHardware() override
+  {
+	  // nothing to do yet
+	  m_bIsStarted = true;
+	  return true;
+  };
+  bool StopHardware() override
+  {
+	  // nothing to do yet
+	  m_bIsStarted = false;
+	  return true;
+  };
 };
 
 #endif /* HARDWARE_DOMOTICZINTERNAL_H_ */

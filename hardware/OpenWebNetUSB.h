@@ -22,7 +22,7 @@ class COpenWebNetUSB : public AsyncSerial, public CDomoticzHardwareBase
 {
 public:
 	COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate);
-	~COpenWebNetUSB(void);
+	~COpenWebNetUSB() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Do_Work();

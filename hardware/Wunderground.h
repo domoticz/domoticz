@@ -6,7 +6,7 @@ class CWunderground : public CDomoticzHardwareBase
 {
 public:
 	CWunderground(const int ID, const std::string &APIKey, const std::string &Location);
-	~CWunderground(void);
+	~CWunderground() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	std::string GetForecastURL();
 private:

@@ -14,7 +14,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-CScheduler::CScheduler(void)
+CScheduler::CScheduler()
 {
 	m_tSunRise = 0;
 	m_tSunSet = 0;
@@ -28,9 +28,7 @@ CScheduler::CScheduler(void)
 	srand((int)mytime(nullptr));
 }
 
-CScheduler::~CScheduler(void)
-{
-}
+CScheduler::~CScheduler() = default;
 
 void CScheduler::StartScheduler()
 {

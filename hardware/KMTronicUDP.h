@@ -6,7 +6,7 @@ class KMTronicUDP : public KMTronicBase
 {
 public:
 	KMTronicUDP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~KMTronicUDP(void);
+	~KMTronicUDP() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:

@@ -163,7 +163,7 @@ CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutm
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CPinger::~CPinger(void)
+CPinger::~CPinger()
 {
 	m_bIsStarted = false;
 }

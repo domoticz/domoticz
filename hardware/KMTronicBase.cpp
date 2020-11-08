@@ -16,8 +16,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-
-KMTronicBase::KMTronicBase(void)
+KMTronicBase::KMTronicBase()
 {
 	m_bufferpos = 0;
 	m_TotRelais = 0;
@@ -25,11 +24,6 @@ KMTronicBase::KMTronicBase(void)
 	{
 		m_bRelaisStatus[ii] = false;
 	}
-}
-
-
-KMTronicBase::~KMTronicBase(void)
-{
 }
 
 void KMTronicBase::ParseData(const unsigned char *pData, int Len)

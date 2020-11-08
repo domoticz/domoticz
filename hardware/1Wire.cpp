@@ -40,10 +40,6 @@ C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThrea
 	DetectSystem();
 }
 
-C1Wire::~C1Wire()
-{
-}
-
 void C1Wire::DetectSystem()
 {
 	// Using the both systems at same time results in conflicts,

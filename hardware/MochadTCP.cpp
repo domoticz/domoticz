@@ -84,10 +84,6 @@ MochadTCP::MochadTCP(const int ID, const std::string &IPAddress, const unsigned 
 	currentUnit=0;
 }
 
-MochadTCP::~MochadTCP(void)
-{
-}
-
 bool MochadTCP::StartHardware()
 {
 	RequestStart();

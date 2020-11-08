@@ -26,7 +26,7 @@ public:
 	};
 
 	CeVehicle(const int ID, const eVehicleType vehicletype, const std::string& username, const std::string& password, int defaultinterval, int activeinterval, bool allowwakeup, const std::string& carid);
-	~CeVehicle(void);
+	~CeVehicle() override;
 	bool WriteToHardware(const char* pdata, const unsigned char length) override;
 private:
 	enum eApiCommandType {

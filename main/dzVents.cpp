@@ -24,15 +24,13 @@ extern http::server::CWebServerHelper m_webservers;
 
 CdzVents CdzVents::m_dzvents;
 
-CdzVents::CdzVents(void) :
-	m_version("3.0.16")
+CdzVents::CdzVents()
+	: m_version("3.0.16")
 {
 	m_bdzVentsExist = false;
 }
 
-CdzVents::~CdzVents(void)
-{
-}
+CdzVents::~CdzVents() = default;
 
 const std::string CdzVents::GetVersion()
 {

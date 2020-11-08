@@ -12,7 +12,7 @@ public:
 		LBTYPE_V6
 	};
 	CLimitLess(const int ID, const int LedType, const int BridgeType, const std::string &IPAddress, const unsigned short usIPPort);
-	~CLimitLess(void);
+	~CLimitLess() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool AddSwitchIfNotExits(const unsigned char Unit, const std::string& devname);

@@ -119,7 +119,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 	};
 public:
 	ZWaveBase();
-	~ZWaveBase(void);
+	~ZWaveBase() override = default;
 
 	virtual bool GetInitialDevices()=0;
 	virtual bool GetUpdates()=0;

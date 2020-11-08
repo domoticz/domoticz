@@ -65,10 +65,6 @@ CWinddelen::CWinddelen(const int ID, const std::string &IPAddress, const unsigne
 	m_winddelen_per_mill[191] = 3000.0;
 }
 
-CWinddelen::~CWinddelen(void)
-{
-}
-
 void CWinddelen::Init()
 {
 }

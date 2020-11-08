@@ -44,11 +44,6 @@ Meteostick::Meteostick(const int ID, const std::string& devname, const unsigned 
 	}
 }
 
-Meteostick::~Meteostick()
-{
-
-}
-
 bool Meteostick::StartHardware()
 {
 	RequestStart();

@@ -11,7 +11,7 @@ class CEcoCompteur : public CDomoticzHardwareBase
 {
 public:
 	CEcoCompteur(const int ID, const std::string& url, const unsigned short port);
-	~CEcoCompteur(void);
+	~CEcoCompteur() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

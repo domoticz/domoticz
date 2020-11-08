@@ -80,11 +80,6 @@ P1MeterSerial::P1MeterSerial(const std::string& devname,
 {
 }
 
-P1MeterSerial::~P1MeterSerial()
-{
-
-}
-
 #ifdef _DEBUG
 	//#define DEBUG_FROM_FILE
 #endif

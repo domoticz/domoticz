@@ -11,7 +11,7 @@ class XiaomiGateway : public CDomoticzHardwareBase
 {
 public:
 	explicit XiaomiGateway(const int ID);
-	~XiaomiGateway(void);
+	~XiaomiGateway() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 
 	int GetGatewayHardwareID(){ return m_HwdID; };
@@ -75,9 +75,9 @@ private:
 	{
 	public:
 		xiaomi_udp_server(boost::asio::io_service & io_service, int m_HwdID, const std::string &gatewayIp, const std::string &localIp, const bool listenPort9898, const bool outputMessage, const bool includeVolage, XiaomiGateway *parent);
-		~xiaomi_udp_server();
+		~xiaomi_udp_server() = default;
 
-	private:
+	      private:
 		void start_receive();
 		void handle_receive(const boost::system::error_code& error, std::size_t /*bytes_transferred*/);
 

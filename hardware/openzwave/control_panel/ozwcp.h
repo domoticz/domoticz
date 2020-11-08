@@ -113,7 +113,7 @@ class COpenZWaveControlPanel
 {
 public:
 	COpenZWaveControlPanel();
-	~COpenZWaveControlPanel();
+	~COpenZWaveControlPanel() = default;
 	void OnCPNotification(OpenZWave::Notification const* _notification);
 	std::string SendPollResponse();
 	std::string SendNodeConfResponse(int node_id);

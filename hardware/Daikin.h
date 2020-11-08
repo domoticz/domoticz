@@ -6,7 +6,7 @@ class CDaikin : public CDomoticzHardwareBase
 {
 public:
 	CDaikin(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
-	~CDaikin(void);
+	~CDaikin() override = default;
 
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:

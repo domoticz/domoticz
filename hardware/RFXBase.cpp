@@ -11,10 +11,6 @@ CRFXBase::CRFXBase()
 	m_AsyncType = ATYPE_DISABLED;
 }
 
-CRFXBase::~CRFXBase()
-{
-}
-
 bool CRFXBase::onInternalMessage(const unsigned char *pBuffer, const size_t Len, const bool checkValid/* = true*/)
 {
 	if (!m_bEnableReceive)

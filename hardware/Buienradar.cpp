@@ -90,10 +90,6 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 	}
 }
 
-CBuienRadar::~CBuienRadar(void)
-{
-}
-
 void CBuienRadar::Init()
 {
 	struct tm ltime;

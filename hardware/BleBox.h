@@ -16,7 +16,7 @@ class BleBox : public CDomoticzHardwareBase
 {
 public:
 	BleBox(const int id, const int pollIntervalsec);
-	virtual ~BleBox();
+	~BleBox() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	int GetDeviceType(const std::string &IPAddress);
 	void AddNode(const std::string &name, const std::string &IPAddress, bool reloadNodes);

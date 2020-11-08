@@ -6,7 +6,7 @@ class CSterbox : public CDomoticzHardwareBase
 {
 public:
 	CSterbox(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
-	~CSterbox(void);
+	~CSterbox() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

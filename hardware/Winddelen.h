@@ -6,7 +6,7 @@ class CWinddelen : public CDomoticzHardwareBase
 {
 public:
 	CWinddelen(const int ID, const std::string &IPAddress, const unsigned short usTotParts, const unsigned short usMillID);
-	~CWinddelen(void);
+	~CWinddelen() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

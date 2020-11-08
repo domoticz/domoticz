@@ -24,20 +24,20 @@ public:
 		ATYPE_TELEINFO_19200,
 	};
 	CRFXBase();
-    ~CRFXBase();
+	~CRFXBase() override = default;
 	std::string m_Version;
 	_eRFXAsyncType m_AsyncType;
 	int m_NoiseLevel;
 	bool SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6);
 	void SendResetCommand();
-	virtual bool WriteToHardware(const char *pdata, const unsigned char length) = 0;
+	bool WriteToHardware(const char *pdata, const unsigned char length) override = 0;
 	void SetAsyncType(_eRFXAsyncType const AsyncType);
 protected:
 	void Set_Async_Parameters(const _eRFXAsyncType AsyncType);
 	void Parse_Async_Data(const uint8_t *pData, const int Len);
 	bool onInternalMessage(const unsigned char *pBuffer, const size_t Len, const bool checkValid = true);
-	virtual bool StartHardware() = 0;
-	virtual bool StopHardware() = 0;
+	bool StartHardware() override = 0;
+	bool StopHardware() override = 0;
 
 	time_t m_LastP1Received = 0;
 

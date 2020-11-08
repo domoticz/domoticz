@@ -33,10 +33,6 @@ m_Password(Password)
 	Init();
 }
 
-CICYThermostat::~CICYThermostat(void)
-{
-}
-
 void CICYThermostat::Init()
 {
 	m_SerialNumber="";

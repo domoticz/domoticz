@@ -952,10 +952,6 @@ namespace Plugins {
 		m_Port = Port;
 	}
 
-	CPluginTransportSerial::~CPluginTransportSerial(void)
-	{
-	}
-
 	bool CPluginTransportSerial::handleConnect()
 	{
 		try

@@ -121,10 +121,6 @@ m_szIPAddress(IPAddress)
 	Init();
 }
 
-CNefitEasy::~CNefitEasy(void)
-{
-}
-
 void CNefitEasy::Init()
 {
 	m_lastgasusage = 0;

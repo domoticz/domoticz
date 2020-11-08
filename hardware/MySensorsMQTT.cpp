@@ -91,10 +91,6 @@ MySensorsMQTT::MySensorsMQTT(
 
 }
 
-MySensorsMQTT::~MySensorsMQTT(void)
-{
-}
-
 bool MySensorsMQTT::StartHardware()
 {
 	RequestStart();

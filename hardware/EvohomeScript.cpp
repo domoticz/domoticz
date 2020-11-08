@@ -39,12 +39,10 @@ CEvohomeScript::CEvohomeScript(const int ID)
 	m_bSkipReceiveCheck = true;
 }
 
-
-CEvohomeScript::~CEvohomeScript(void)
+CEvohomeScript::~CEvohomeScript()
 {
 	m_bIsStarted = false;
 }
-
 
 void CEvohomeScript::Init()
 {

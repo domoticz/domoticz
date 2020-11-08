@@ -28,7 +28,7 @@ class CNestOAuthAPI : public CDomoticzHardwareBase
 	};
 public:
 	CNestOAuthAPI(const int ID, const std::string &apikey, const std::string &extradata);
-	~CNestOAuthAPI(void);
+	~CNestOAuthAPI() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SetSetpoint(const int idx, const float temp);
 	bool SetManualEcoMode(const unsigned char node_id, const bool bIsOn);
