@@ -644,11 +644,11 @@ public:
   bool
   getCD ();
 
-private:
   // Disable copy constructors
-  Serial(const Serial&);
-  Serial& operator=(const Serial&);
+  Serial(const Serial &) = delete;
+  Serial &operator=(const Serial &) = delete;
 
+private:
   // Pimpl idiom, d_pointer
   class SerialImpl;
   SerialImpl *pimpl_;
@@ -668,10 +668,11 @@ private:
 
 class SerialException : public std::exception
 {
-  // Disable copy constructors
-  SerialException& operator=(const SerialException&);
   std::string e_what_;
 public:
+  // Disable copy constructors
+  SerialException &operator=(const SerialException &) = delete;
+
   explicit SerialException (const char *description) {
       std::stringstream ss;
       ss << "SerialException " << description << " failed.";
@@ -686,13 +687,14 @@ public:
 
 class IOException : public std::exception
 {
-  // Disable copy constructors
-  IOException& operator=(const IOException&);
   std::string file_;
   int line_;
   std::string e_what_;
   int errno_;
 public:
+  // Disable copy constructors
+  IOException &operator=(const IOException &) = delete;
+
   explicit IOException (std::string file, int line, int errnum)
     : file_(file), line_(line), errno_(errnum) {
       std::stringstream ss;
@@ -725,10 +727,11 @@ public:
 
 class PortNotOpenedException : public std::exception
 {
-  // Disable copy constructors
-  const PortNotOpenedException& operator=(PortNotOpenedException);
   std::string e_what_;
 public:
+  // Disable copy constructors
+  const PortNotOpenedException &operator=(PortNotOpenedException) = delete;
+
   explicit PortNotOpenedException (const char * description)  {
       std::stringstream ss;
       ss << "PortNotOpenedException " << description << " failed.";

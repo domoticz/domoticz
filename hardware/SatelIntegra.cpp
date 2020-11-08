@@ -1284,5 +1284,5 @@ std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigne
 		pResult[index] = *it;
 	}
 
-	return std::pair<unsigned char*, unsigned int>(pResult, resultSize);
+	return { pResult, resultSize };
 }
