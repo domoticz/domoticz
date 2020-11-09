@@ -86,7 +86,7 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	}
 
 	m_uservar_refreshtoken_idx = atoi(result[0][0].c_str());
-	m_refreshtoken = result[0][1].c_str();
+	m_refreshtoken = result[0][1];
 }
 
 bool CMercApi::Login()
@@ -806,7 +806,8 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		case Post:
 			if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
-				_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 9999);
+				_iHttpCode =
+					(!_vResponseHeaders[0].empty() ? (uint16_t)std::stoi(_vResponseHeaders[0].substr(9, 3)) : 9999);
 				_log.Log(LOG_ERROR, "Failed to perform POST request (%d)!", _iHttpCode);
 			}
 			break;
@@ -814,7 +815,8 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		case Get:
 			if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, true))
 			{
-				_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 9999);
+				_iHttpCode =
+					(!_vResponseHeaders[0].empty() ? (uint16_t)std::stoi(_vResponseHeaders[0].substr(9, 3)) : 9999);
 				_log.Log(LOG_ERROR, "Failed to perform GET request (%d)!", _iHttpCode);
 			}
 			break;
@@ -826,7 +828,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			}
 		}
 
-		_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 0);
+		_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t)std::stoi(_vResponseHeaders[0].substr(9, 3)) : 0);
 
 		// Debug response
 		for (auto &_vResponseHeader : _vResponseHeaders)

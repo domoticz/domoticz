@@ -1092,7 +1092,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 		return false;
 	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
-	std::string sOptions = result[0][2].c_str();
+	std::string sOptions = result[0][2];
 
 	std::string msg = "";
 

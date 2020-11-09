@@ -120,7 +120,7 @@ void CInfluxPush::DoInfluxPush()
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
 			int nValue = atoi(sd[5].c_str());
-			std::string sValue = sd[6].c_str();
+			std::string sValue = sd[6];
 			int targetType = atoi(sd[7].c_str());
 			//std::string targetVariable = sd[8].c_str();
 			//int targetDeviceID = atoi(sd[9].c_str());
@@ -134,7 +134,7 @@ void CInfluxPush::DoInfluxPush()
 				StringSplit(sValue, ";", strarray);
 				if (int(strarray.size()) >= delpos)
 				{
-					std::string rawsendValue = strarray[delpos - 1].c_str();
+					std::string rawsendValue = strarray[delpos - 1];
 					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 				}
 			}
@@ -240,11 +240,11 @@ namespace http {
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
 			m_sql.UpdatePreferencesVar("InfluxActive", ilinkactive);
-			m_sql.UpdatePreferencesVar("InfluxIP", remote.c_str());
+			m_sql.UpdatePreferencesVar("InfluxIP", remote);
 			m_sql.UpdatePreferencesVar("InfluxPort", atoi(port.c_str()));
-			m_sql.UpdatePreferencesVar("InfluxPath", path.c_str());
-			m_sql.UpdatePreferencesVar("InfluxDatabase", database.c_str());
-			m_sql.UpdatePreferencesVar("InfluxUsername", username.c_str());
+			m_sql.UpdatePreferencesVar("InfluxPath", path);
+			m_sql.UpdatePreferencesVar("InfluxDatabase", database);
+			m_sql.UpdatePreferencesVar("InfluxUsername", username);
 			m_sql.UpdatePreferencesVar("InfluxPassword", base64_encode(password));
 			m_sql.UpdatePreferencesVar("InfluxDebug", idebugenabled);
 			m_influxpush.UpdateSettings();

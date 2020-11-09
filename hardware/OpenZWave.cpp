@@ -849,7 +849,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 					// If this happens, some weird error, which should never happen.
 					_log.Log(LOG_ERROR, "OpenZWave: Has Node Failed Command on Node %d failed (%s)", m_HasNodeFailedIdx, _notification->GetAsString().c_str());
 					m_bHasNodeFailedDone=true;
-					m_sHasNodeFailedResult=_notification->GetAsString().c_str();
+					m_sHasNodeFailedResult = _notification->GetAsString();
 				} else {
 					// All other notifications from Has Node Failed Node Command
 					// _log.Log(LOG_STATUS, "OpenZWave: Has Node Failed command Controller Comand (%s)", _notification->GetAsString().c_str());
@@ -1013,7 +1013,7 @@ bool COpenZWave::OpenSerialConnector()
 			return false;
 		}
 #else
-		if (!m_pManager->AddDriver(m_szSerialPort.c_str()))
+		if (!m_pManager->AddDriver(m_szSerialPort))
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Unable to start with on port: %s", m_szSerialPort.c_str());
 			return false;
@@ -5024,7 +5024,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const uint8_t nodeID
 						}
 						if (old_networkkey != networkkey)
 						{
-							m_sql.UpdatePreferencesVar("ZWaveNetworkKey", networkkey.c_str());
+							m_sql.UpdatePreferencesVar("ZWaveNetworkKey", networkkey);
 							bRestartOpenZWave = true;
 						}
 					}
@@ -6002,7 +6002,7 @@ namespace http {
 						COpenZWave::NodeInfo* pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
 						if (pNode == nullptr)
 							continue;
-						std::string nodeName = sd[3].c_str();
+						std::string nodeName = sd[3];
 						int numGroups = pOZWHardware->ListGroupsForNode(nodeID);
 						root["result"]["nodes"][ii]["nodeID"] = nodeID;
 						root["result"]["nodes"][ii]["nodeName"] = (nodeName != "Unknown") ? nodeName : (pNode->Manufacturer_name + std::string(" ") + pNode->Product_name);

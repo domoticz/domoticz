@@ -311,7 +311,7 @@ void eHouseTCP::UpdatePGM(int /*adrh*/, int /*adrl*/, int /*devtype*/, const cha
 	std::string Names = ISO2UTF8
 	(std::string(names));
 	//_log.Log(LOG_ERROR, "PGM: %s", Names.c_str());
-	m_sql.SetDeviceOptions(idx, m_sql.BuildDeviceOptions(Names.c_str(), false));
+	m_sql.SetDeviceOptions(idx, m_sql.BuildDeviceOptions(Names, false));
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Add Controllers To 'Plans' DB

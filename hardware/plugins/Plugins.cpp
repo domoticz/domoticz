@@ -1466,14 +1466,16 @@ Error:
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
+			pConnection->pTransport =
+				(CPluginTransport *)new CPluginTransportUDP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "ICMP/IP")
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportICMP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
+			pConnection->pTransport =
+				(CPluginTransport *)new CPluginTransportICMP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
 		}
 		else
 		{

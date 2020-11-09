@@ -668,7 +668,8 @@ void CAnnaThermostat::GetMeterDetails()
 				else strncpy(sPreset, "50", sizeof(sPreset));
 
 				std::string PresetName = "Anna Preset";
-				SendSelectorSwitch(sAnnaPresets,  1, sPreset , PresetName.c_str(), 16, false, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS, true);
+				SendSelectorSwitch(sAnnaPresets, 1, sPreset, PresetName, 16, false, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS,
+						   true);
 			}
 		}
 		pAppliance = pAppliance->NextSiblingElement("appliance");

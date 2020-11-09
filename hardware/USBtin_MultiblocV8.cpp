@@ -440,16 +440,16 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 
 						//Créates 3 switch for Learning, Learning Exit and Clearing switches store into blocs
 
-						std::string defaultname = NomRefBloc[RefBloc].c_str();
+						std::string defaultname = NomRefBloc[RefBloc];
 						std::string defaultnamenormal = defaultname + " LEARN EXIT";
 						std::string defaultnamelearn = defaultname + " LEARN ENTRY";
 						std::string defaultnameclear = defaultname + " CLEAR ALL";
 						std::string defaultnamenextlearning = defaultname + " NEXT LEARNING OUTPUT";
 
 						unsigned long sID_CommandBase = sID + (type_COMMANDE_ETAT_BLOC<<SHIFT_TYPE_TRAME);
-						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING_STOP, defaultnamenormal.c_str() );
-						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING, defaultnamelearn.c_str() );
-						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_CLEARING, defaultnameclear.c_str() );
+						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING_STOP, defaultnamenormal);
+						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING, defaultnamelearn);
+						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_CLEARING, defaultnameclear);
 
 						//not necessary : because the CommandBase LEARN ENTRY handles both the entry in Learn Mode
 						//and after that, the jump from first to seconde output to learn, etc... and Go out automatically at end
@@ -687,7 +687,7 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,bool
 	lcmd.LIGHTING2.filler = 2;
 	lcmd.LIGHTING2.rssi = 12;
 	//default name creation :
-	std::string defaultname=NomRefBloc[RefBloc].c_str();
+	std::string defaultname = NomRefBloc[RefBloc];
 	defaultname += " output S";
 	std::ostringstream convert;   // stream used for the conversion
 	convert << OutputNumber;

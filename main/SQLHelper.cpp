@@ -3478,10 +3478,10 @@ void CSQLHelper::Do_Work()
 								GetPreferencesVar("EmailPort", EmailPort);
 
 								SMTPClient sclient;
-								sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
-								sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+								sclient.SetFrom(CURLEncode::URLDecode(EmailFrom));
+								sclient.SetTo(CURLEncode::URLDecode(EmailTo));
 								sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
-								sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
+								sclient.SetServer(CURLEncode::URLDecode(EmailServer), EmailPort);
 								sclient.SetSubject(CURLEncode::URLDecode(itt->_ID));
 								sclient.SetHTMLBody(itt->_sValue);
 								bool bRet = sclient.SendEmail();
@@ -3501,12 +3501,12 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
 			{
-				SwitchLightFromTasker(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Color, itt->_sUser);
+				SwitchLightFromTasker(itt->_idx, itt->_command, itt->_level, itt->_Color, itt->_sUser);
 			}
 
 			else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)
 			{
-				m_mainworker.SwitchScene(itt->_idx, itt->_command.c_str(), itt->_sUser);
+				m_mainworker.SwitchScene(itt->_idx, itt->_command, itt->_sUser);
 			}
 			else if (itt->_ItemType == TITEM_SET_VARIABLE)
 			{
@@ -4427,7 +4427,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
 
 			interval = difftime(now, lutime);
-			StringSplit(result[0][5].c_str(), ";", parts);
+			StringSplit(result[0][5], ";", parts);
 			nEnergy = static_cast<float>(strtof(parts[0].c_str(), nullptr) * interval / 3600
 						     + strtof(parts[1].c_str(), nullptr)); // Rob: whats happening here... strtof ?
 			StringSplit(sValue, ";", parts);
@@ -4469,7 +4469,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				StringSplit(sValue, ";", parts);
 				if (parts.size() == 11) {
 					// is last part date only, or date with hour with space?
-					StringSplit(parts[10].c_str(), " ", parts2);
+					StringSplit(parts[10], " ", parts2);
 					bool shortLog = false;
 					if (parts2.size() > 1) {
 						shortLog = true;
@@ -4497,7 +4497,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				}
 				else if (parts.size() == 7) {
 					// is last part date only, or date with hour with space?
-					StringSplit(parts[6].c_str(), " ", parts2);
+					StringSplit(parts[6], " ", parts2);
 					bool shortLog = false;
 					if (parts2.size() > 1) {
 						shortLog = true;
@@ -4519,7 +4519,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					return ulID;
 				}
 				else if (parts.size() == 3) {
-					StringSplit(parts[2].c_str(), " ", parts2);
+					StringSplit(parts[2], " ", parts2);
 					// second part is date only, or date with hour with space
 					bool shortLog = false;
 					if (parts2.size() > 1) {
@@ -8340,7 +8340,7 @@ bool CSQLHelper::AddUserVariable(const std::string& varname, const _eUsrVariable
 	if (!CheckUserVariable(eVartype, varvalue, errorMessage))
 		return false;
 
-	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
+	std::string szVarValue = CURLEncode::URLDecode(varvalue);
 	safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q','%d','%q')", varname.c_str(), eVartype, szVarValue.c_str());
 
 	if (m_bEnableEventSystem)
@@ -8355,7 +8355,7 @@ bool CSQLHelper::UpdateUserVariable(const std::string& idx, const std::string& v
 		return false;
 
 	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
-	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
+	std::string szVarValue = CURLEncode::URLDecode(varvalue);
 	safe_query(
 		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%q' WHERE (ID == '%q')",
 		varname.c_str(),
@@ -8829,7 +8829,7 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 	result = safe_query("SELECT Options FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulID);
 	if (!result.empty()) {
 		std::vector<std::string> sd = result[0];
-		optionsMap = BuildDeviceOptions(sd[0].c_str());
+		optionsMap = BuildDeviceOptions(sd[0]);
 	}
 	return optionsMap;
 }
@@ -8845,7 +8845,7 @@ std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::str
 		{
 			i++;
 			//_log.Log(LOG_STATUS, "DEBUG : Reading device option ['%s', '%s']", sd.first.c_str(), sd.second.c_str());
-			std::string optionName = sd.first.c_str();
+			std::string optionName = sd.first;
 			std::string optionValue = base64_encode(sd.second);
 			ssoptions << optionName << ":" << optionValue;
 			if (i < count) {

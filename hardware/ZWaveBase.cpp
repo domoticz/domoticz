@@ -572,7 +572,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 				devName = pDevice->label + std::string("/") + pHumDevice->label;
 			}
 
-			SendTempHumSensor(NodeID, BatLevel, pDevice->floatValue, pHumDevice->intvalue, devName.c_str());
+			SendTempHumSensor(NodeID, BatLevel, pDevice->floatValue, pHumDevice->intvalue, devName);
 		}
 		else
 		{
@@ -603,7 +603,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 				devName = pTempDevice->label + std::string("/") + pDevice->label;
 			}
 
-			SendTempHumSensor(NodeID, BatLevel, pTempDevice->floatValue, pDevice->intvalue, devName.c_str());
+			SendTempHumSensor(NodeID, BatLevel, pTempDevice->floatValue, pDevice->intvalue, devName);
 		}
 		else
 		{

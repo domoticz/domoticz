@@ -1411,10 +1411,10 @@ std::string COpenZWaveControlPanel::DoNodeChange(const std::string& fun, const i
 	try
 	{
 		if (fun == "nam") { /* Node naming */
-			OpenZWave::Manager::Get()->SetNodeName(homeId, node_id, svalue.c_str());
+			OpenZWave::Manager::Get()->SetNodeName(homeId, node_id, svalue);
 		}
 		else if (fun == "loc") { /* Node location */
-			OpenZWave::Manager::Get()->SetNodeLocation(homeId, node_id, svalue.c_str());
+			OpenZWave::Manager::Get()->SetNodeLocation(homeId, node_id, svalue);
 		}
 		else if (fun == "pol") { /* Node polling */
 		}

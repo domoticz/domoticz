@@ -878,7 +878,8 @@ namespace http {
 				{
 					switch (hType) {
 					case HTYPE_HEOS:
-						CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3].c_str(), HTYPE_HEOS);
+						CDomoticzHardwareBase *pBaseHardware =
+							m_mainworker.GetHardwareByIDType(result[0][3], HTYPE_HEOS);
 						if (pBaseHardware == nullptr)
 							return;
 						CHEOS *pHEOS = reinterpret_cast<CHEOS*>(pBaseHardware);

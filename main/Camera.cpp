@@ -317,10 +317,10 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 		"<body>\r\n";
 
 	SMTPClient sclient;
-	sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
-	sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+	sclient.SetFrom(CURLEncode::URLDecode(EmailFrom));
+	sclient.SetTo(CURLEncode::URLDecode(EmailTo));
 	sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
-	sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
+	sclient.SetServer(CURLEncode::URLDecode(EmailServer), EmailPort);
 	sclient.SetSubject(CURLEncode::URLDecode(subject));
 
 	for (const auto & camIt : splitresults)

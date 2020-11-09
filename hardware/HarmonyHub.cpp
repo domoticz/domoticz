@@ -641,7 +641,7 @@ int CHarmonyHub::SendPing()
 	std::string szReq = "<iq type=\"get\" id=\"";
 	szReq.append(CONNECTION_ID);
 	szReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.ping\">token=");
-	szReq.append(m_szAuthorizationToken.c_str());
+	szReq.append(m_szAuthorizationToken);
 	szReq.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
 
 	m_bNeedEcho = true;
@@ -678,7 +678,7 @@ int CHarmonyHub::SubmitCommand(const std::string &szCommand, const std::string &
 	else if (szCommand == START_ACTIVITY_COMMAND)
 	{
 		szReq.append("startactivity\">activityId=");
-		szReq.append(szActivityId.c_str());
+		szReq.append(szActivityId);
 		szReq.append(":timestamp=0</oa></iq>");
 	}
 	else
@@ -962,7 +962,7 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 		std::string szJsonString = szQueryResponse->substr(pos + 8);
 		Json::Value j_result;
 
-		bool ret = ParseJSon(szJsonString.c_str(), j_result);
+		bool ret = ParseJSon(szJsonString, j_result);
 		if ((!ret) || (!j_result.isObject()))
 		{
 			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");
