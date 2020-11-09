@@ -5287,11 +5287,12 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() >= 2)
 				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
-					setpoint = static_cast<float>((splitresults[1] == "On") ? 60 : 0);
-					//FIXME hack setpoint just on or off...may throw graph out so maybe pick sensible on off values?
-					//(if the actual hw set point was retrievable should use that otherwise some config option)
-					//actually if we plot the average it should give us an idea of how often hw has been switched on
-					//more meaningful if it was plotted against the zone valve & boiler relay i guess (actual time hw heated)
+					if (splitresults[1] == "On")
+						setpoint = 60;
+					else if (splitresults[1] == "Off")
+						setpoint = 0;
+					else 
+						setpoint = static_cast<float>(atof(splitresults[1].c_str()));
 				}
 				break;
 			case pTypeEvohomeZone:

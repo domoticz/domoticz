@@ -9834,14 +9834,14 @@ namespace http {
 							double temp = ConvertTemperature(tempCelcius, tempsign);
 							double tempSetPoint;
 							root["result"][ii]["Temp"] = temp;
-							if (dType == pTypeEvohomeZone)
+							if (dType == pTypeEvohomeWater && (strarray[i] == "Off" || strarray[i] == "On"))
 							{
+								root["result"][ii]["State"] = strarray[i++];
+							} else {
 								tempCelcius = atof(strarray[i++].c_str());
 								tempSetPoint = ConvertTemperature(tempCelcius, tempsign);
 								root["result"][ii]["SetPoint"] = tempSetPoint;
 							}
-							else
-								root["result"][ii]["State"] = strarray[i++];
 
 							std::string strstatus = strarray[i++];
 							root["result"][ii]["Status"] = strstatus;
