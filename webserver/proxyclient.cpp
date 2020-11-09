@@ -43,7 +43,8 @@ namespace http {
 			m_sql.GetPreferencesVar("MyDomoticzUserId", _apikey);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", _password);
 			m_sql.GetPreferencesVar("MyDomoticzSubsystems", _allowed_subsystems);
-			if (_password != "") {
+			if (!_password.empty())
+			{
 				_password = base64_decode(_password);
 			}
 			readbuf.clear();
@@ -177,7 +178,8 @@ namespace http {
 			if (pdu->m_subsystem == SUBSYSTEM_HTTP) {
 				// "normal web request", get parameters
 
-				if (pdu->m_requestbody.size() > 0) {
+				if (!pdu->m_requestbody.empty())
+				{
 					request = "POST ";
 				}
 				else {
@@ -486,7 +488,7 @@ namespace http {
 		bool CProxyClient::Enabled()
 		{
 			Reset();
-			return (_apikey != "" && _password != "" && _allowed_subsystems != 0);
+			return (!_apikey.empty() && !_password.empty() && _allowed_subsystems != 0);
 		}
 
 		CProxyManager::CProxyManager() = default;

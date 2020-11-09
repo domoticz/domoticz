@@ -108,7 +108,7 @@ bool COpenWeatherMap::ResolveLocation(const std::string& Location, double& latit
 		Log(LOG_ERROR, "Invalid data received (not JSON)!");
 		return false;
 	}
-	if (root.size() < 1)
+	if (root.empty())
 	{
 		Log(LOG_ERROR, "No data, empty response received!");
 		return false;
@@ -635,7 +635,7 @@ void COpenWeatherMap::GetMeterDetails()
 		Log(LOG_ERROR,"Invalid data received (not JSON)!");
 		return;
 	}
-	if (root.size() < 1)
+	if (root.empty())
 	{
 		Log(LOG_ERROR, "No data, empty response received!");
 		return;

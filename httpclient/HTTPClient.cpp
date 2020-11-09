@@ -245,7 +245,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
 		struct curl_slist *headers = nullptr;
-		if (ExtraHeaders.size() > 0)
+		if (!ExtraHeaders.empty())
 		{
 			for (const auto &header : ExtraHeaders)
 			{
@@ -324,7 +324,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		curl_easy_setopt(curl, CURLOPT_POST, 1);
 
 		struct curl_slist *headers = nullptr;
-		if (ExtraHeaders.size() > 0)
+		if (!ExtraHeaders.empty())
 		{
 			for (const auto &header : ExtraHeaders)
 			{
@@ -393,7 +393,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 
 		struct curl_slist *headers = nullptr;
-		if (ExtraHeaders.size() > 0)
+		if (!ExtraHeaders.empty())
 		{
 			for (const auto &header : ExtraHeaders)
 			{
@@ -462,7 +462,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
 
 		struct curl_slist *headers = nullptr;
-		if (ExtraHeaders.size() > 0)
+		if (!ExtraHeaders.empty())
 		{
 			for (const auto &header : ExtraHeaders)
 			{
@@ -538,7 +538,7 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 		}
 
 		struct curl_slist *headers = nullptr;
-		if (ExtraHeaders.size() > 0)
+		if (!ExtraHeaders.empty())
 		{
 			for (const auto &header : ExtraHeaders)
 			{

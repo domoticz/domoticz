@@ -168,7 +168,7 @@ namespace http {
 				while (!infile.eof())
 				{
 					getline(infile, sLine);
-					if (sLine.size() != 0)
+					if (!sLine.empty())
 					{
 						std::vector<std::string> results;
 						StringSplit(sLine, ";", results);
@@ -855,7 +855,8 @@ namespace http {
 			}
 		exitjson:
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0) {
+			if (jcallback.empty())
+			{
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
@@ -904,7 +905,8 @@ namespace http {
 			Cmd_LoginCheck(session, req, root);
 
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0) {
+			if (jcallback.empty())
+			{
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
@@ -1245,10 +1247,7 @@ namespace http {
 					return;
 			}
 			else if (htype == HTYPE_Nest_OAuthAPI) {
-				if (
-					(username == "") &&
-					(extra == "||")
-					)
+				if ((username.empty()) && (extra == "||"))
 					return;
 			}
 			else if (htype == HTYPE_SBFSpot) {
@@ -1647,10 +1646,7 @@ namespace http {
 					return;
 			}
 			else if (htype == HTYPE_Nest_OAuthAPI) {
-				if (
-					(username == "") &&
-					(extra == "||")
-					)
+				if ((username.empty()) && (extra == "||"))
 					return;
 			}
 			else if (htype == HTYPE_HARMONY_HUB) {
@@ -2149,7 +2145,7 @@ namespace http {
 
 			time_t lastlogtime = 0;
 			std::string slastlogtime = request::findValue(&req, "lastlogtime");
-			if (slastlogtime != "")
+			if (!slastlogtime.empty())
 			{
 				std::stringstream s_str(slastlogtime);
 				s_str >> lastlogtime;
@@ -2290,7 +2286,7 @@ namespace http {
 					{
 						result2 = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=='%q') AND (DevSceneType==0)",
 							sd[0].c_str());
-						bDoAdd = (result2.size() == 0);
+						bDoAdd = (result2.empty());
 					}
 					if (bDoAdd)
 					{
@@ -2314,7 +2310,7 @@ namespace http {
 					{
 						result2 = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=='%q') AND (DevSceneType==1)",
 							sd[0].c_str());
-						bDoAdd = (result2.size() == 0);
+						bDoAdd = (result2.empty());
 					}
 					if (bDoAdd)
 					{
@@ -2406,7 +2402,7 @@ namespace http {
 							Name = "[Scene] " + result2[0][0];
 						}
 					}
-					if (Name != "")
+					if (!Name.empty())
 					{
 						root["result"][ii]["idx"] = ID;
 						root["result"][ii]["devidx"] = DevSceneRowID;
@@ -2716,7 +2712,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetConfig";
 
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			//int urights = 3;
 			unsigned long UserID = 0;
 			if (bHaveUser)
@@ -2926,7 +2922,7 @@ namespace http {
 						root["Forecasthardwaretype"] = HTYPE_OpenWeatherMap;
 						COpenWeatherMap *pWHardware = reinterpret_cast<COpenWeatherMap*>(pHardware);
 						forecast_url = pWHardware->GetForecastURL();
-						if (forecast_url != "")
+						if (!forecast_url.empty())
 						{
 							sFURL = forecast_url;
 							iFrame = false;
@@ -2942,7 +2938,7 @@ namespace http {
 						root["Forecasthardwaretype"] = HTYPE_BuienRadar;
 						CBuienRadar *pWHardware = reinterpret_cast<CBuienRadar*>(pHardware);
 						forecast_url = pWHardware->GetForecastURL();
-						if (forecast_url != "")
+						if (!forecast_url.empty())
 						{
 							sFURL = forecast_url;
 						}
@@ -3084,12 +3080,12 @@ namespace http {
 			int invalue = atoi(nvalue.c_str());
 
 			std::string sSignalLevel = request::findValue(&req, "rssi");
-			if (sSignalLevel != "")
+			if (!sSignalLevel.empty())
 			{
 				signallevel = atoi(sSignalLevel.c_str());
 			}
 			std::string sBatteryLevel = request::findValue(&req, "battery");
-			if (sBatteryLevel != "")
+			if (!sBatteryLevel.empty())
 			{
 				batterylevel = atoi(sBatteryLevel.c_str());
 			}
@@ -3168,7 +3164,7 @@ namespace http {
 			int iState = atoi(sstate.c_str());
 
 			int urights = 3;
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			if (bHaveUser)
 			{
 				int iUser = FindUser(session.username.c_str());
@@ -3252,7 +3248,7 @@ namespace http {
 			std::string strparm = szUserDataFolder;
 			if (!script_params.empty())
 			{
-				if (strparm.size() > 0)
+				if (!strparm.empty())
 					strparm += " " + script_params;
 				else
 					strparm = script_params;
@@ -3387,7 +3383,7 @@ namespace http {
 
 		void CWebServer::Cmd_CheckForUpdate(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			int urights = 3;
 			if (bHaveUser)
 			{
@@ -3488,14 +3484,14 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			char szTmp[300];
 
-			bool bHaveUser = (session.username != "");
-/*
-			int iUser = -1;
-			if (bHaveUser)
-			{
-				iUser = FindUser(session.username.c_str());
-			}
-*/
+			bool bHaveUser = (!session.username.empty());
+			/*
+						int iUser = -1;
+						if (bHaveUser)
+						{
+							iUser = FindUser(session.username.c_str());
+						}
+			*/
 			if (cparam == "deleteallsubdevices")
 			{
 				if (session.rights < 2)
@@ -4026,7 +4022,7 @@ namespace http {
 								std::vector<std::vector<std::string> > resultSD;
 								resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')",
 									sd[0].c_str());
-								if (resultSD.size() > 0)
+								if (!resultSD.empty())
 									bdoAdd = true;
 							}
 							if ((Type == pTypeRadiator1) && (SubType != sTypeSmartwaresSwitchRadiator))
@@ -4221,7 +4217,7 @@ namespace http {
 								Name = "[Scene] " + result2[0][0];
 							}
 						}
-						if (Name != "")
+						if (!Name.empty())
 						{
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["type"] = DevSceneType;
@@ -5718,7 +5714,7 @@ namespace http {
 				//Set device options
 				m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
 
-				if (maindeviceidx != "")
+				if (!maindeviceidx.empty())
 				{
 					if (maindeviceidx != ID)
 					{
@@ -6762,7 +6758,7 @@ namespace http {
 				unsigned char cntr = 0;
 				while ((!bReceivedSwitch) && (cntr < 50))	//wait for max. 5 seconds
 				{
-					if (m_sql.m_LastSwitchID != "")
+					if (!m_sql.m_LastSwitchID.empty())
 					{
 						bReceivedSwitch = true;
 						break;
@@ -6912,7 +6908,7 @@ namespace http {
 					return;
 
 				std::string passcode = request::findValue(&req, "passcode");
-				if (passcode.size() > 0)
+				if (!passcode.empty())
 				{
 					//Check if passcode is correct
 					passcode = GenerateMD5Hash(passcode);
@@ -8020,7 +8016,7 @@ namespace http {
 			{
 				if (m_sql.GetPreferencesVar("WebPassword", nValue, WebPassword))
 				{
-					if ((WebUserName != "") && (WebPassword != ""))
+					if ((!WebUserName.empty()) && (!WebPassword.empty()))
 					{
 						WebUserName = base64_decode(WebUserName);
 						//WebPassword = WebPassword;
@@ -8105,7 +8101,7 @@ namespace http {
 
 			std::string Latitude = request::findValue(&req, "Latitude");
 			std::string Longitude = request::findValue(&req, "Longitude");
-			if ((Latitude != "") && (Longitude != ""))
+			if ((!Latitude.empty()) && (!Longitude.empty()))
 			{
 				std::string LatLong = Latitude + ";" + Longitude;
 				m_sql.UpdatePreferencesVar("Location", LatLong.c_str());
@@ -8314,14 +8310,14 @@ namespace http {
 				m_notifications.ReloadNotifications();
 			}
 			std::string RaspCamParams = request::findValue(&req, "RaspCamParams");
-			if (RaspCamParams != "")
+			if (!RaspCamParams.empty())
 			{
 				if (IsArgumentSecure(RaspCamParams))
 					m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
 			}
 
 			std::string UVCParams = request::findValue(&req, "UVCParams");
-			if (UVCParams != "")
+			if (!UVCParams.empty())
 			{
 				if (IsArgumentSecure(UVCParams))
 					m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
@@ -8492,7 +8488,8 @@ namespace http {
 			root["title"] = "StoreSettings";
 
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0) {
+			if (jcallback.empty())
+			{
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
@@ -8636,7 +8633,7 @@ namespace http {
 			int iUser = -1;
 			unsigned int totUserDevices = 0;
 			bool bShowScenes = true;
-			bHaveUser = (username != "");
+			bHaveUser = (!username.empty());
 			if (bHaveUser)
 			{
 				iUser = FindUser(username.c_str());
@@ -8667,7 +8664,7 @@ namespace http {
 					)
 				{
 					//add scenes
-					if (rowid != "")
+					if (!rowid.empty())
 						result = m_sql.safe_query(
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
@@ -8675,14 +8672,14 @@ namespace http {
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
 							" WHERE (A.ID=='%q')",
 							rowid.c_str());
-					else if ((planID != "") && (planID != "0"))
+					else if ((!planID.empty()) && (planID != "0"))
 						result = m_sql.safe_query(
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
 							" FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID=='%q')"
 							" AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]",
 							planID.c_str());
-					else if ((floorID != "") && (floorID != "0"))
+					else if ((!floorID.empty()) && (floorID != "0"))
 						result = m_sql.safe_query(
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
@@ -8793,7 +8790,7 @@ namespace http {
 			if (totUserDevices == 0)
 			{
 				//All
-				if (rowid != "")
+				if (!rowid.empty())
 				{
 					//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 					result = m_sql.safe_query(
@@ -8808,7 +8805,7 @@ namespace http {
 						"WHERE (A.ID=='%q')",
 						rowid.c_str());
 				}
-				else if ((planID != "") && (planID != "0"))
+				else if ((!planID.empty()) && (planID != "0"))
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -8823,7 +8820,7 @@ namespace http {
 						"WHERE (B.PlanID=='%q') AND (B.DeviceRowID==a.ID)"
 						" AND (B.DevSceneType==0) ORDER BY B.[Order]",
 						planID.c_str());
-				else if ((floorID != "") && (floorID != "0"))
+				else if ((!floorID.empty()) && (floorID != "0"))
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -8868,7 +8865,8 @@ namespace http {
 						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
 					}
 					//_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
-					if (hardwareid != "") {
+					if (!hardwareid.empty())
+					{
 						szQuery = (
 							"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
 							" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
@@ -8907,7 +8905,7 @@ namespace http {
 					return;
 				}
 				//Specific devices
-				if (rowid != "")
+				if (!rowid.empty())
 				{
 					//_log.Log(LOG_STATUS, "Getting device with id: %s for user %lu", rowid.c_str(), m_users[iUser].ID);
 					result = m_sql.safe_query(
@@ -8925,7 +8923,7 @@ namespace http {
 						" AND (B.SharedUserID==%lu) AND (A.ID=='%q')",
 						m_users[iUser].ID, rowid.c_str());
 				}
-				else if ((planID != "") && (planID != "0"))
+				else if ((!planID.empty()) && (planID != "0"))
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -8942,7 +8940,7 @@ namespace http {
 						" AND (B.DeviceRowID==a.ID) "
 						"AND (B.SharedUserID==%lu) ORDER BY C.[Order]",
 						planID.c_str(), m_users[iUser].ID);
-				else if ((floorID != "") && (floorID != "0"))
+				else if ((!floorID.empty()) && (floorID != "0"))
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -9013,7 +9011,7 @@ namespace http {
 				for (const auto &sd : result)
 				{
 					unsigned char favorite = atoi(sd[12].c_str());
-					if ((planID != "") && (planID != "0"))
+					if ((!planID.empty()) && (planID != "0"))
 						favorite = 1;
 
 					//Check if we only want favorite devices
@@ -9030,7 +9028,7 @@ namespace http {
 						{
 							if (bAllowDeviceToBeHidden)
 								continue;
-							if (planID.size() > 0)
+							if (!planID.empty())
 								sDeviceName = sDeviceName.substr(1);
 						}
 					}
@@ -9093,7 +9091,7 @@ namespace http {
 						(used)
 						)
 						continue;
-					if (rfilter != "")
+					if (!rfilter.empty())
 					{
 						if (rfilter == "light")
 						{
@@ -9282,7 +9280,7 @@ namespace http {
 						{
 							CWunderground *pWHardware = reinterpret_cast<CWunderground *>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
-							if (forecast_url != "")
+							if (!forecast_url.empty())
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
@@ -9291,7 +9289,7 @@ namespace http {
 						{
 							CDarkSky *pWHardware = reinterpret_cast<CDarkSky*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
-							if (forecast_url != "")
+							if (!forecast_url.empty())
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
@@ -9300,7 +9298,7 @@ namespace http {
 						{
 							CAccuWeather *pWHardware = reinterpret_cast<CAccuWeather*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
-							if (forecast_url != "")
+							if (!forecast_url.empty())
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
@@ -9309,7 +9307,7 @@ namespace http {
 						{
 							COpenWeatherMap *pWHardware = reinterpret_cast<COpenWeatherMap*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
-							if (forecast_url != "")
+							if (!forecast_url.empty())
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
@@ -9318,7 +9316,7 @@ namespace http {
 						{
 							CBuienRadar* pWHardware = reinterpret_cast<CBuienRadar*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
-							if (forecast_url != "")
+							if (!forecast_url.empty())
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
@@ -9327,7 +9325,7 @@ namespace http {
 						{
 							CMeteorologisk* pWHardware = reinterpret_cast<CMeteorologisk*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
-							if (forecast_url != "")
+							if (!forecast_url.empty())
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
@@ -9534,7 +9532,7 @@ namespace http {
 						std::vector<std::vector<std::string> > resultSD;
 						resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')",
 							sd[0].c_str());
-						bIsSubDevice = (resultSD.size() > 0);
+						bIsSubDevice = (!resultSD.empty());
 
 						root["result"][ii]["IsSubDevice"] = bIsSubDevice;
 
@@ -11458,7 +11456,8 @@ namespace http {
 		void CWebServer::GetFloorplanImage(WebEmSession & session, const request& req, reply & rep)
 		{
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -11802,7 +11801,7 @@ namespace http {
 			std::string rid = request::findValue(&req, "rid");
 
 			time_t LastUpdate = 0;
-			if (sLastUpdate != "")
+			if (!sLastUpdate.empty())
 			{
 				std::stringstream sstr;
 				sstr << sLastUpdate;
@@ -12030,7 +12029,7 @@ namespace http {
 			std::string hwidx = request::findValue(&req, "hwidx"); // OTO
 
 			time_t LastUpdate = 0;
-			if (sLastUpdate != "")
+			if (!sLastUpdate.empty())
 			{
 				std::stringstream sstr;
 				sstr << sLastUpdate;
@@ -12045,7 +12044,7 @@ namespace http {
 
 		void CWebServer::RType_Users(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			int urights = 3;
 			if (bHaveUser)
 			{
@@ -12080,7 +12079,7 @@ namespace http {
 
 		void CWebServer::RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			int urights = 3;
 			if (bHaveUser)
 			{
@@ -12114,7 +12113,7 @@ namespace http {
 
 		void CWebServer::Cmd_SetSetpoint(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			int iUser = -1;
 			int urights = 3;
 			if (bHaveUser)
@@ -12415,7 +12414,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string zipfile = request::findValue(&req, "file");
-			if (zipfile != "")
+			if (!zipfile.empty())
 			{
 				std::string ErrorMessage;
 				bool bOK = m_sql.InsertCustomIconFromZip(zipfile, ErrorMessage);
@@ -12430,7 +12429,8 @@ namespace http {
 				}
 			}
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0) {
+			if (jcallback.empty())
+			{
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
@@ -12763,7 +12763,7 @@ namespace http {
 			root["title"] = "GetTransfers";
 
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -12879,12 +12879,12 @@ namespace http {
 			}
 
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
-			if (notifications.size() > 0)
+			if (!notifications.empty())
 			{
 				ii = 0;
 				for (const auto &n : notifications)
@@ -12988,7 +12988,7 @@ namespace http {
 
 			char szTmp[200];
 
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			//int iUser = -1;
 			if (bHaveUser)
 			{
@@ -12996,17 +12996,17 @@ namespace http {
 			}
 
 			int switchtype = -1;
-			if (sswitchtype != "")
+			if (!sswitchtype.empty())
 				switchtype = atoi(sswitchtype.c_str());
 
 			if ((idx.empty()) || (sused.empty()))
 				return;
 			int used = (sused == "true") ? 1 : 0;
-			if (maindeviceidx != "")
+			if (!maindeviceidx.empty())
 				used = 0;
 
 			int CustomImage = 0;
-			if (sCustomImage != "")
+			if (!sCustomImage.empty())
 				CustomImage = atoi(sCustomImage.c_str());
 
 			//Strip trailing spaces in 'name'
@@ -13027,7 +13027,7 @@ namespace http {
 			int HwdID = atoi(sd[2].c_str());
 			std::string sHwdID = sd[2];
 
-			if (setPoint != "" || state != "")
+			if (!setPoint.empty() || !state.empty())
 			{
 				double tempcelcius = atof(setPoint.c_str());
 				if (m_sql.m_tempunit == TEMPUNIT_F)
@@ -13233,7 +13233,7 @@ namespace http {
 				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
 			}
 
-			if (maindeviceidx != "")
+			if (!maindeviceidx.empty())
 			{
 				if (maindeviceidx != idx)
 				{
@@ -13648,7 +13648,7 @@ namespace http {
 		void CWebServer::RType_LightLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -13807,7 +13807,7 @@ namespace http {
 		void CWebServer::RType_TextLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -13835,7 +13835,7 @@ namespace http {
 		void CWebServer::RType_SceneLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -13863,7 +13863,7 @@ namespace http {
 		void CWebServer::RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -13872,10 +13872,10 @@ namespace http {
 			char szTmp[300];
 
 			std::string sensor = request::findValue(&req, "sensor");
-			if (sensor == "")
+			if (sensor.empty())
 				return;
 			std::string srange = request::findValue(&req, "range");
-			if (srange == "")
+			if (srange.empty())
 				return;
 
 			time_t now = mytime(nullptr);
@@ -14582,7 +14582,7 @@ namespace http {
 
 						int method = 0;
 						std::string sMethod = request::findValue(&req, "method");
-						if (sMethod.size() > 0)
+						if (!sMethod.empty())
 							method = atoi(sMethod.c_str());
 						if (bHaveUsage == false)
 							method = 0;
@@ -14734,7 +14734,7 @@ namespace http {
 
 						int method = 0;
 						std::string sMethod = request::findValue(&req, "method");
-						if (sMethod.size() > 0)
+						if (!sMethod.empty())
 							method = atoi(sMethod.c_str());
 
 						if (!result.empty())
@@ -15487,7 +15487,7 @@ namespace http {
 				int actMonth = atoi(sactmonth.c_str());
 				int actYear = atoi(sactyear.c_str());
 
-				if ((sactmonth != "") && (sactyear != ""))
+				if ((!sactmonth.empty()) && (!sactyear.empty()))
 				{
 					sprintf(szDateStart, "%04d-%02d-%02d", actYear, actMonth, 1);
 					sprintf(szDateStartPrev, "%04d-%02d-%02d", actYear - 1, actMonth, 1);
@@ -15500,7 +15500,7 @@ namespace http {
 					sprintf(szDateEnd, "%04d-%02d-%02d", actYear, actMonth, 1);
 					sprintf(szDateEndPrev, "%04d-%02d-%02d", actYear - 1, actMonth, 1);
 				}
-				else if (sactyear != "")
+				else if (!sactyear.empty())
 				{
 					sprintf(szDateStart, "%04d-%02d-%02d", actYear, 1, 1);
 					sprintf(szDateStartPrev, "%04d-%02d-%02d", actYear - 1, 1, 1);
@@ -16646,12 +16646,12 @@ namespace http {
 					}
 					//add today (have to calculate it)
 
-					if ((sactmonth != "") || (sactyear != ""))
+					if ((!sactmonth.empty()) || (!sactyear.empty()))
 					{
 						struct tm loctime;
 						time_t now = mytime(nullptr);
 						localtime_r(&now, &loctime);
-						if ((sactmonth != "") && (sactyear != ""))
+						if ((!sactmonth.empty()) && (!sactyear.empty()))
 						{
 							bool bIsThisMonth = (atoi(sactyear.c_str()) == loctime.tm_year + 1900) && (atoi(sactmonth.c_str()) == loctime.tm_mon + 1);
 							if (bIsThisMonth)
@@ -16659,7 +16659,7 @@ namespace http {
 								sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
 							}
 						}
-						else if (sactyear != "")
+						else if (!sactyear.empty())
 						{
 							bool bIsThisYear = (atoi(sactyear.c_str()) == loctime.tm_year + 1900);
 							if (bIsThisYear)

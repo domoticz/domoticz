@@ -105,7 +105,8 @@ bool CNotificationEmail::SendMessageImplementation(
 
 	sclient.SetFrom(_EmailFrom.c_str());
 	sclient.SetTo(_EmailTo.c_str());
-	if (_EmailUsername != "" && _EmailPassword != "") {
+	if (!_EmailUsername.empty() && !_EmailPassword.empty())
+	{
 		sclient.SetCredentials(_EmailUsername.c_str(), _EmailPassword.c_str());
 	}
 	sclient.SetServer(_EmailServer.c_str(), _EmailPort);
@@ -120,5 +121,5 @@ bool CNotificationEmail::SendMessageImplementation(
 
 bool CNotificationEmail::IsConfigured()
 {
-	return (_EmailFrom != "" && _EmailTo != "" && _EmailServer != "" && _EmailPort != 0);
+	return (!_EmailFrom.empty() && !_EmailTo.empty() && !_EmailServer.empty() && _EmailPort != 0);
 }

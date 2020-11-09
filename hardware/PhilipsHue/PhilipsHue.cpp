@@ -1243,10 +1243,7 @@ namespace http {
 			std::string sipaddress = request::findValue(&req, "ipaddress");
 			std::string sport = request::findValue(&req, "port");
 			std::string susername = request::findValue(&req, "username");
-			if (
-				(sipaddress == "") ||
-				(sport == "")
-				)
+			if ((sipaddress.empty()) || (sport.empty()))
 				return;
 
 			std::string sresult = CPhilipsHue::RegisterUser(sipaddress, (unsigned short)atoi(sport.c_str()), susername);

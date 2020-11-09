@@ -150,7 +150,7 @@ void CWinddelen::GetMeterDetails()
 			return;
 		}
 
-		if (root.size() < 1)
+		if (root.empty())
 		{
 			_log.Log(LOG_ERROR, "Winddelen: Invalid data received!");
 			return;

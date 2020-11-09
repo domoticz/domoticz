@@ -81,7 +81,7 @@ namespace Plugins {
 
 	void CPluginProtocol::Flush(CPlugin* pPlugin, PyObject* pConnection)
 	{
-		if (m_sRetainedData.size())
+		if (!m_sRetainedData.empty())
 		{
 			// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
 			pPlugin->MessagePlugin(new onMessageCallback(pPlugin, pConnection, m_sRetainedData));
@@ -497,7 +497,7 @@ namespace Plugins {
 
 	void CPluginProtocolHTTP::Flush(CPlugin* pPlugin, PyObject* pConnection)
 	{
-		if (m_sRetainedData.size())
+		if (!m_sRetainedData.empty())
 		{
 			// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
 			ProcessInbound(new ReadEvent(pPlugin, pConnection, 0, nullptr));
@@ -508,7 +508,7 @@ namespace Plugins {
 	void CPluginProtocolHTTP::ProcessInbound(const ReadEvent* Message)
 	{
 		// There won't be a buffer if the connection closed
-		if (Message->m_Buffer.size())
+		if (!Message->m_Buffer.empty())
 		{
 			m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 		}
@@ -576,7 +576,7 @@ namespace Plugins {
 				if (!m_Chunked)
 				{
 					// If full message then return it
-					if ((m_ContentLength == sData.length()) || (!Message->m_Buffer.size()))
+					if ((m_ContentLength == sData.length()) || (Message->m_Buffer.empty()))
 					{
 						PyObject* pDataDict = PyDict_New();
 						PyObject* pObj = Py_BuildValue("s", m_Status.c_str());
@@ -688,7 +688,7 @@ namespace Plugins {
 			{
 				std::string		sPayload = sData.substr(2);
 				// No payload || we have the payload || the connection has closed
-				if ((m_ContentLength == -1) || (m_ContentLength == sPayload.length()) || !Message->m_Buffer.size())
+				if ((m_ContentLength == -1) || (m_ContentLength == sPayload.length()) || Message->m_Buffer.empty())
 				{
 					PyObject* DataDict = PyDict_New();
 					std::string		sVerb = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
@@ -1046,7 +1046,7 @@ namespace Plugins {
 		int			iDataOffset = 0;
 
 		// Handle response
-		if (Message->m_Buffer.size())
+		if (!Message->m_Buffer.empty())
 		{
 			PyObject* pIPv4Dict = PyDict_New();
 			if (pDataDict && pIPv4Dict)
@@ -1507,7 +1507,7 @@ namespace Plugins {
 			if (!m_bErrored) Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMqttDict));
 
 			m_sRetainedData.erase(m_sRetainedData.begin(), pktend);
-		} while (!m_bErrored && m_sRetainedData.size() > 0);
+		} while (!m_bErrored && !m_sRetainedData.empty());
 
 		if (m_bErrored)
 		{
@@ -1871,7 +1871,7 @@ namespace Plugins {
 
 	bool CPluginProtocolWS::ProcessWholeMessage(std::vector<byte>& vMessage, const ReadEvent* Message)
 	{
-		while (vMessage.size())
+		while (!vMessage.empty())
 		{
 			// Look for a complete message
 			std::vector<byte>	vPayload;
@@ -2002,7 +2002,7 @@ namespace Plugins {
 			}
 
 			// If there is a payload but not handled then map it as binary
-			if (vPayload.size() && !pPayload)
+			if (!vPayload.empty() && !pPayload)
 			{
 				pPayload = Py_BuildValue("y#", &vPayload[0], vPayload.size());
 			}

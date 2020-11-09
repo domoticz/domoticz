@@ -94,7 +94,7 @@ void CHEOS::ParseLine()
 								{
 									std::vector<std::string> SplitMessage;
 									StringSplit(root["heos"]["message"].asString(), "&", SplitMessage);
-									if (SplitMessage.size() > 0)
+									if (!SplitMessage.empty())
 									{
 										std::vector<std::string> SplitMessagePlayer;
 										StringSplit(SplitMessage[0], "=", SplitMessagePlayer);
@@ -134,7 +134,7 @@ void CHEOS::ParseLine()
 								{
 									std::vector<std::string> SplitMessage;
 									StringSplit(root["heos"]["message"].asString(), "=", SplitMessage);
-									if (SplitMessage.size() > 0)
+									if (!SplitMessage.empty())
 									{
 										std::string sLabel = "";
 										std::string	sStatus = "";
@@ -153,7 +153,7 @@ void CHEOS::ParseLine()
 											sArtist = root["payload"]["artist"].asString();
 											sStation = root["payload"]["station"].asString();
 
-											if (sStation != "")
+											if (!sStation.empty())
 											{
 												sLabel = sArtist + " - " + sTitle + " - " + sStation;
 											}
@@ -196,7 +196,7 @@ void CHEOS::ParseLine()
 							{
 								std::vector<std::string> SplitMessage;
 								StringSplit(root["heos"]["message"].asString(), "&", SplitMessage);
-								if (SplitMessage.size() > 0)
+								if (!SplitMessage.empty())
 								{
 									std::vector<std::string> SplitMessagePlayer;
 									StringSplit(SplitMessage[0], "=", SplitMessagePlayer);
@@ -242,7 +242,7 @@ void CHEOS::ParseLine()
 						{
 							std::vector<std::string> SplitMessage;
 							StringSplit(root["heos"]["message"].asString(), "=", SplitMessage);
-							if (SplitMessage.size() > 0)
+							if (!SplitMessage.empty())
 							{
 								std::string pid = SplitMessage[1];
 								int PlayerID = atoi(pid.c_str());
@@ -833,11 +833,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
-			if (
-				(hwid == "") ||
-				(mode1 == "") ||
-				(mode2 == "")
-				)
+			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);

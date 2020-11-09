@@ -179,7 +179,7 @@ void CLuaTable::PushRow(std::vector<_tEntry>::iterator itt)
 
 void CLuaTable::Publish()
 {
-	if ((m_subtable_level == 0) && (m_luatable.size() > 0))
+	if ((m_subtable_level == 0) && (!m_luatable.empty()))
 	{
 		for (auto itt = m_luatable.begin(); itt != m_luatable.end(); itt++)
 		{

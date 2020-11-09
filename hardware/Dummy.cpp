@@ -127,7 +127,7 @@ namespace http {
 			std::string ssensortype = request::findValue(&req, "sensortype");
 			std::string soptions = request::findValue(&req, "sensoroptions");
 
-			if ((idx == "") || (ssensortype.empty()) || (ssensorname.empty()))
+			if ((idx.empty()) || (ssensortype.empty()) || (ssensorname.empty()))
 				return;
 
 			int sensortype = atoi(ssensortype.c_str());
@@ -192,7 +192,7 @@ namespace http {
 			std::string devicetype = request::findValue(&req, "devicetype");
 			std::string devicesubtype = request::findValue(&req, "devicesubtype");
 
-			if ((idx == "") || (ssensorname.empty()))
+			if ((idx.empty()) || (ssensorname.empty()))
 				return;
 
 			unsigned int type;

@@ -74,5 +74,5 @@ bool CNotificationTelegram::SendMessageImplementation(
 
 bool CNotificationTelegram::IsConfigured()
 {
-	return (_apikey != "" && _chatid != "");
+	return (!_apikey.empty() && !_chatid.empty());
 }

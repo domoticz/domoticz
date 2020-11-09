@@ -141,7 +141,8 @@ void CInfluxPush::DoInfluxPush()
 			else
 				sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 
-			if (sendValue != "") {
+			if (!sendValue.empty())
+			{
 				std::string szKey;
 				std::string vType = CBasePush::DropdownOptionsValue(std::stoi(sd[0]), delpos);
 				stdreplace(vType, " ", "-");
@@ -234,13 +235,7 @@ namespace http {
 			std::string username = request::findValue(&req, "username");
 			std::string password = request::findValue(&req, "password");
 			std::string debugenabled = request::findValue(&req, "debugenabled");
-			if (
-				(linkactive == "") ||
-				(remote == "") ||
-				(port == "") ||
-				(database == "") ||
-				(debugenabled == "")
-				)
+			if ((linkactive.empty()) || (remote.empty()) || (port.empty()) || (database.empty()) || (debugenabled.empty()))
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
@@ -389,7 +384,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
 			root["status"] = "OK";

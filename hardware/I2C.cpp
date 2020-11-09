@@ -156,7 +156,8 @@ I2C::I2C(const int ID, const _eI2CType DevType, const std::string &Address, cons
 {
 	_log.Log(LOG_STATUS, "I2C  Start HW witf ID: %d Name: %s Address: %d Port: %s Invert:%d ", ID, szI2CTypeNames[m_dev_type], m_i2c_addr, m_ActI2CBus.c_str(), m_invert_data);
 	m_HwdID = ID;
-	if (m_ActI2CBus == "") { // if empty option then autodetect i2c bus
+	if (m_ActI2CBus.empty())
+	{ // if empty option then autodetect i2c bus
 		m_ActI2CBus = "/dev/i2c-1";
 		if (!i2c_test(m_ActI2CBus.c_str()))
 		{

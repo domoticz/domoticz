@@ -1312,7 +1312,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	stdreplace(revfile, "\r\n", "\n");
 	std::vector<std::string> strarray;
 	StringSplit(revfile, "\n", strarray);
-	if (strarray.size() < 1)
+	if (strarray.empty())
 		return false;
 	StringSplit(strarray[0], " ", strarray);
 	if (strarray.size() != 3)
@@ -1637,7 +1637,7 @@ void MainWorker::Do_Work()
 				m_notificationsystem.Notify(Notification::DZ_START, Notification::STATUS_INFO);
 			}
 		}
-		if (m_devicestorestart.size() > 0)
+		if (!m_devicestorestart.empty())
 		{
 			for (const auto &hwid : m_devicestorestart)
 			{
@@ -1931,7 +1931,7 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const uint8_t* pRXComma
 		return -1;
 	}
 
-	if (ID != "")
+	if (!ID.empty())
 	{
 		// find our original hardware
 		// if it is not a domoticz type, perform the actual command
@@ -6747,7 +6747,7 @@ void MainWorker::decode_evohome2(const CDomoticzHardwareBase* pHardware, const t
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x') AND (Type==%d)",
 			pHardware->m_HwdID, (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3), (int)pEvo->type);
 	}
-	if (result.size() < 1 && !pEvo->zone)
+	if (result.empty() && !pEvo->zone)
 		return;
 
 	CEvohomeBase* pEvoHW = (CEvohomeBase*)pHardware;
@@ -12425,7 +12425,7 @@ bool MainWorker::SwitchLight(const std::string& idx, const std::string& switchcm
 {
 	uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 	int ilevel = -1;
-	if (level != "")
+	if (!level.empty())
 		ilevel = atoi(level.c_str());
 
 	return SwitchLight(ID, switchcmd, ilevel, _tColor(color), atoi(ooc.c_str()) != 0, ExtraDelay, User);
@@ -13063,7 +13063,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 	int n2Value;
 	if (m_sql.GetPreferencesVar("EmailServer", n2Value, emailserver))
 	{
-		if (emailserver != "")
+		if (!emailserver.empty())
 		{
 			result = m_sql.safe_query(
 				"SELECT CameraRowID, DevSceneDelay FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID==%" PRIu64 ") AND (DevSceneWhen==%d)",

@@ -126,7 +126,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 		for (const auto &sd : result)
 		{
 			m_sql.GetPreferencesVar("GooglePubSubData", googlePubSubData);
-			if (googlePubSubData == "")
+			if (googlePubSubData.empty())
 				return;
 
 			std::string sdeviceId = sd[0].c_str();
@@ -226,7 +226,8 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			replaceAll(googlePubSubData, "%h", std::string(hostname));
 			replaceAll(googlePubSubData, "%idx", sdeviceId);
 
-			if (sendValue != "") {
+			if (!sendValue.empty())
+			{
 				std::stringstream python_DirT;
 
 #ifdef ENABLE_PYTHON_DECAP
@@ -311,11 +312,7 @@ namespace http {
 			std::string data = request::findValue(&req, "data");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string debugenabled = request::findValue(&req, "debugenabled");
-			if (
-				(data == "") ||
-				(linkactive == "") ||
-				(debugenabled == "")
-				)
+			if ((data.empty()) || (linkactive.empty()) || (debugenabled.empty()))
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
@@ -406,11 +403,11 @@ namespace http {
 			std::string targetproperty = request::findValue(&req, "targetproperty");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string includeunit = request::findValue(&req, "includeunit");
-			if ((targettypei == 0) && (targetvariable == ""))
+			if ((targettypei == 0) && (targetvariable.empty()))
 				return;
-			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
+			if ((targettypei == 1) && ((targetdeviceid.empty()) || (targetproperty.empty())))
 				return;
-			if ((targettypei == 2) && (targetdeviceid == ""))
+			if ((targettypei == 2) && (targetdeviceid.empty()))
 				return;
 			if (idx == "0") {
 				m_sql.safe_query(
@@ -453,7 +450,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
 			root["status"] = "OK";

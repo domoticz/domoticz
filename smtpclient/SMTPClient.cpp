@@ -97,11 +97,11 @@ void SMTPClient::SetHTMLBody(const std::string& body)
 
 bool SMTPClient::SendEmail()
 {
-	if (m_From.size() == 0)
+	if (m_From.empty())
 		return false;
 	if (m_Recipients.empty())
 		return false;
-	if (m_Server.size() == 0)
+	if (m_Server.empty())
 		return false;
 
 	const std::string rmessage = MakeMessage();
@@ -138,7 +138,7 @@ bool SMTPClient::SendEmail()
 		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)177);
 		curl_easy_setopt(curl, CURLOPT_URL, szURL.c_str());
 		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-		if (m_Username != "")
+		if (!m_Username.empty())
 		{
 			//std::string szUserPassword=MailUsername+":"+MailPassword;
 			//curl_easy_setopt(curl, CURLOPT_USERPWD, szUserPassword.c_str());

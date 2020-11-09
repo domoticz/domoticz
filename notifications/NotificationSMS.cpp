@@ -98,5 +98,5 @@ bool CNotificationSMS::SendMessageImplementation(
 
 bool CNotificationSMS::IsConfigured()
 {
-	return (_clickatellApi != "" && _clickatellTo != "");
+	return (!_clickatellApi.empty() && !_clickatellTo.empty());
 }

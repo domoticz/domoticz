@@ -258,7 +258,7 @@ void S0MeterBase::ParseLine()
 
 	std::vector<std::string> results;
 	StringSplit(sLine,":",results);
-	if (results.size()<1)
+	if (results.empty())
 		return; //invalid data
 
 	if (results[0][0]=='/') {
@@ -392,7 +392,8 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 

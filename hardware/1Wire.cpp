@@ -138,7 +138,8 @@ void C1Wire::SensorThread()
 	BuildSensorList();
 	m_bSensorFirstTime = true;
 
-	if (m_sensors.size() == 0) return;  // quit if no sensors
+	if (m_sensors.empty())
+		return; // quit if no sensors
 
 	pollPeriod = m_sensorThreadPeriod / m_sensors.size();
 

@@ -347,7 +347,7 @@ return std::string(buf.data(), buf.size());
 
 void CEventSystem::StripQuotes(std::string &sString)
 {
-	if (sString.size() < 1)
+	if (sString.empty())
 		return;
 
 	size_t tpos = sString.find('"');
@@ -1139,7 +1139,7 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger)
 {
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
-	if (m_eventtrigger.size() > 0)
+	if (!m_eventtrigger.empty())
 	{
 		time_t atime = mytime(nullptr);
 		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end();)
@@ -1197,7 +1197,7 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 		return;
 
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
-	if (m_eventtrigger.size() > 0)
+	if (!m_eventtrigger.empty())
 	{
 		time_t atime = mytime(nullptr) + static_cast<int>(fDelayTime);
 		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end();)
@@ -1404,7 +1404,7 @@ void CEventSystem::EventQueueThread()
 			}
 		}
 		items.push_back(item);
-		if (m_eventqueue.size() > 0)
+		if (!m_eventqueue.empty())
 			continue;
 
 		EvaluateEvent(items);
@@ -1700,13 +1700,15 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	std::lock_guard<std::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 	GetCurrentMeasurementStates();
 
-	if (m_tempValuesByID.size() > 0) {
+	if (!m_tempValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "temperaturedevice", (int)m_tempValuesByID.size(), 0);
 		for (const auto &temp : m_tempValuesByID)
 			luaTable.AddNumber(temp.first, temp.second);
 		luaTable.Publish();
 	}
-	if (m_dewValuesByID.size() > 0) {
+	if (!m_dewValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "dewpointdevice", (int)m_dewValuesByID.size(), 0);
 		for (const auto &dew : m_dewValuesByID)
 		{
@@ -1714,7 +1716,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_humValuesByID.size() > 0) {
+	if (!m_humValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "humiditydevice", (int)m_humValuesByID.size(), 0);
 		for (const auto &hum : m_humValuesByID)
 		{
@@ -1722,7 +1725,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_baroValuesByID.size() > 0) {
+	if (!m_baroValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "barometerdevice", (int)m_baroValuesByID.size(), 0);
 		for (const auto &baro : m_baroValuesByID)
 		{
@@ -1730,7 +1734,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_utilityValuesByID.size() > 0) {
+	if (!m_utilityValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "utilitydevice", (int)m_utilityValuesByID.size(), 0);
 		for (const auto &utility : m_utilityValuesByID)
 		{
@@ -1738,7 +1743,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_weatherValuesByID.size() > 0) {
+	if (!m_weatherValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "weatherdevice", (int)m_weatherValuesByID.size(), 0);
 		for (const auto &weather : m_weatherValuesByID)
 		{
@@ -1746,7 +1752,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_rainValuesByID.size() > 0) {
+	if (!m_rainValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "raindevice", (int)m_rainValuesByID.size(), 0);
 		for (const auto &rain : m_rainValuesByID)
 		{
@@ -1754,7 +1761,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_rainLastHourValuesByID.size() > 0) {
+	if (!m_rainLastHourValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "rainlasthourdevice", (int)m_rainLastHourValuesByID.size(), 0);
 		for (const auto &rainlh : m_rainLastHourValuesByID)
 		{
@@ -1762,7 +1770,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_uvValuesByID.size() > 0) {
+	if (!m_uvValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "uvdevice", (int)m_uvValuesByID.size(), 0);
 		for (const auto &uv : m_uvValuesByID)
 		{
@@ -1770,7 +1779,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_winddirValuesByID.size() > 0) {
+	if (!m_winddirValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "winddirdevice", (int)m_winddirValuesByID.size(), 0);
 		for (const auto &winddir : m_winddirValuesByID)
 		{
@@ -1778,7 +1788,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_windspeedValuesByID.size() > 0) {
+	if (!m_windspeedValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "windspeeddevice", (int)m_windspeedValuesByID.size(), 0);
 		for (const auto &windspeed : m_windspeedValuesByID)
 		{
@@ -1786,7 +1797,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_windgustValuesByID.size() > 0) {
+	if (!m_windgustValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "windgustdevice", (int)m_windgustValuesByID.size(), 0);
 		for (const auto &windgust : m_windgustValuesByID)
 		{
@@ -1794,7 +1806,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (m_zwaveAlarmValuesByID.size() > 0) {
+	if (!m_zwaveAlarmValuesByID.empty())
+	{
 		luaTable.InitTable(lua_state, "zwavealarms", (int)m_zwaveAlarmValuesByID.size(), 0);
 		for (const auto &alarm : m_zwaveAlarmValuesByID)
 		{
@@ -2659,7 +2672,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		float thisDeviceWeather = 0;
 		int thisZwaveAlarm = 0;
 
-		if (m_tempValuesByName.size() > 0)
+		if (!m_tempValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_temperature", (int)m_tempValuesByName.size(), 0);
 			for (const auto &temp : m_tempValuesByName)
@@ -2672,7 +2685,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_dewValuesByName.size() > 0)
+		if (!m_dewValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_dewpoint", (int)m_dewValuesByName.size(), 0);
 			for (const auto &dew : m_dewValuesByName)
@@ -2685,7 +2698,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_humValuesByName.size() > 0)
+		if (!m_humValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_humidity", (int)m_humValuesByName.size(), 0);
 			for (const auto &hum : m_humValuesByName)
@@ -2698,7 +2711,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_baroValuesByName.size() > 0)
+		if (!m_baroValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_barometer", (int)m_baroValuesByName.size(), 0);
 			for (const auto &baro : m_baroValuesByName)
@@ -2711,7 +2724,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_utilityValuesByName.size() > 0)
+		if (!m_utilityValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_utility", (int)m_utilityValuesByName.size(), 0);
 			for (const auto &utility : m_utilityValuesByName)
@@ -2724,7 +2737,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_rainValuesByName.size() > 0)
+		if (!m_rainValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_rain", (int)m_rainValuesByName.size(), 0);
 			for (const auto &rain : m_rainValuesByName)
@@ -2737,7 +2750,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_rainLastHourValuesByName.size() > 0)
+		if (!m_rainLastHourValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_rain_lasthour", (int)m_rainLastHourValuesByName.size(), 0);
 			for (const auto &rainlh : m_rainLastHourValuesByName)
@@ -2750,7 +2763,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_uvValuesByName.size() > 0)
+		if (!m_uvValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_uv", (int)m_uvValuesByName.size(), 0);
 			for (const auto &uv : m_uvValuesByName)
@@ -2763,7 +2776,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_winddirValuesByName.size() > 0)
+		if (!m_winddirValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_winddir", (int)m_winddirValuesByName.size(), 0);
 			for (const auto &winddir : m_winddirValuesByName)
@@ -2775,7 +2788,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_windspeedValuesByName.size() > 0)
+		if (!m_windspeedValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_windspeed", (int)m_windspeedValuesByName.size(), 0);
 			for (const auto &windspeed : m_windspeedValuesByName)
@@ -2787,7 +2800,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_windgustValuesByName.size() > 0)
+		if (!m_windgustValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_windgust", (int)m_windgustValuesByName.size(), 0);
 			for (const auto &windgust : m_windgustValuesByName)
@@ -2799,7 +2812,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_weatherValuesByName.size() > 0)
+		if (!m_weatherValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_weather", (int)m_weatherValuesByName.size(), 0);
 			for (const auto &weather : m_weatherValuesByName)
@@ -2812,7 +2825,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (m_zwaveAlarmValuesByName.size() > 0)
+		if (!m_zwaveAlarmValuesByName.empty())
 		{
 			CLuaTable luaTable(lua_state, "otherdevices_zwavealarms", (int)m_zwaveAlarmValuesByName.size(), 0);
 			for (const auto &alarm : m_zwaveAlarmValuesByName)
@@ -3849,11 +3862,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	{
 		lstatus = Media_Player_States((const _eMediaStatus)nValue);
 	}
-	else if (lstatus == "")
+	else if (lstatus.empty())
 	{
 		lstatus = sValue;
 		//OJO if lstatus  is still empty we use nValue for lstatus. ss for conversion
-		if (lstatus == "")
+		if (lstatus.empty())
 		{
 			lstatus = std::to_string(nValue);
 		}
@@ -3928,7 +3941,7 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 
 int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)
 {
-	if (m_mainworker.m_SunRiseSetMins.size() > 0)
+	if (!m_mainworker.m_SunRiseSetMins.empty())
 	{
 		int ordinalNum = 1; // Defaults to Sunset to keep compatibility with previous code
 		if (what == "Sunrise") ordinalNum = 0;
@@ -4032,29 +4045,29 @@ namespace http {
 			}
 
 			std::string eventname = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
-			if (eventname == "")
+			if (eventname.empty())
 				return;
 
 			std::string interpreter = CURLEncode::URLDecode(request::findValue(&req, "interpreter"));
-			if (interpreter == "")
+			if (interpreter.empty())
 				return;
 
 			std::string eventtype = CURLEncode::URLDecode(request::findValue(&req, "eventtype"));
-			if (eventtype == "")
+			if (eventtype.empty())
 				return;
 
 			std::string eventxml = CURLEncode::URLDecode(request::findValue(&req, "xml"));
-			if (eventxml == "")
+			if (eventxml.empty())
 				return;
 
 			std::string eventactive = CURLEncode::URLDecode(request::findValue(&req, "eventstatus"));
-			if (eventactive == "")
+			if (eventactive.empty())
 				return;
 
 			std::string eventid = CURLEncode::URLDecode(request::findValue(&req, "eventid"));
 
 			std::string eventlogic = CURLEncode::URLDecode(request::findValue(&req, "logicarray"));
-			if ((interpreter == "Blockly") && (eventlogic == ""))
+			if ((interpreter == "Blockly") && (eventlogic.empty()))
 				return;
 
 			int eventStatus = atoi(eventactive.c_str());
@@ -4070,7 +4083,8 @@ namespace http {
 				_log.Log(LOG_ERROR, "Webserver event parser: Invalid data received!");
 			}
 			else {
-				if (eventid == "") {
+				if (eventid.empty())
+				{
 					std::vector<std::vector<std::string> > result;
 					m_sql.safe_query("INSERT INTO EventMaster (Name, Interpreter, Type, XMLStatement, Status) VALUES ('%q','%q','%q','%q','%d')",
 						eventname.c_str(), interpreter.c_str(), eventtype.c_str(), eventxml.c_str(), eventStatus);
@@ -4089,7 +4103,7 @@ namespace http {
 						eventid.c_str());
 				}
 
-				if (eventid == "")
+				if (eventid.empty())
 				{
 					//eventid should now never be empty!
 					_log.Log(LOG_ERROR, "Error writing event actions to database!");
@@ -4138,10 +4152,10 @@ namespace http {
 			root["title"] = "Events";
 
 			std::string cparam = request::findValue(&req, "param");
-			if (cparam == "")
+			if (cparam.empty())
 			{
 				cparam = request::findValue(&req, "dparam");
-				if (cparam == "")
+				if (cparam.empty())
 				{
 					return;
 				}
@@ -4196,11 +4210,11 @@ namespace http {
 				root["title"] = "NewEvent";
 
 				std::string interpreter = request::findValue(&req, "interpreter");
-				if (interpreter == "")
+				if (interpreter.empty())
 					return;
 
 				std::string eventType = request::findValue(&req, "eventtype");
-				if (eventType == "")
+				if (eventType.empty())
 					return;
 
 				std::stringstream template_file;
@@ -4225,7 +4239,7 @@ namespace http {
 				root["title"] = "LoadEvent";
 
 				std::string idx = request::findValue(&req, "event");
-				if (idx == "")
+				if (idx.empty())
 					return;
 
 				int ii = 0;
@@ -4260,11 +4274,11 @@ namespace http {
 			else if (cparam == "updatestatus")
 			{
 				std::string eventactive = request::findValue(&req, "eventstatus");
-				if (eventactive == "")
+				if (eventactive.empty())
 					return;
 
 				std::string eventid = request::findValue(&req, "eventid");
-				if (eventid == "")
+				if (eventid.empty())
 					return;
 
 				m_sql.safe_query("UPDATE EventMaster SET Status ='%d' WHERE (ID == '%q')", atoi(eventactive.c_str()), eventid.c_str());
@@ -4278,29 +4292,29 @@ namespace http {
 				root["title"] = "AddEvent";
 
 				std::string eventname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
-				if (eventname == "")
+				if (eventname.empty())
 					return;
 
 				std::string interpreter = request::findValue(&req, "interpreter");
-				if (interpreter == "")
+				if (interpreter.empty())
 					return;
 
 				std::string eventtype = request::findValue(&req, "eventtype");
-				if (eventtype == "")
+				if (eventtype.empty())
 					return;
 
 				std::string eventxml = request::findValue(&req, "xml");
-				if (eventxml == "")
+				if (eventxml.empty())
 					return;
 
 				std::string eventactive = request::findValue(&req, "eventstatus");
-				if (eventactive == "")
+				if (eventactive.empty())
 					return;
 
 				std::string eventid = request::findValue(&req, "eventid");
 
 				std::string eventlogic = request::findValue(&req, "logicarray");
-				if ((interpreter == "Blockly") && (eventlogic == ""))
+				if ((interpreter == "Blockly") && (eventlogic.empty()))
 					return;
 
 				int eventStatus = atoi(eventactive.c_str());
@@ -4316,7 +4330,8 @@ namespace http {
 					_log.Log(LOG_ERROR, "Webserver event parser: Invalid data received!");
 				}
 				else {
-					if (eventid == "") {
+					if (eventid.empty())
+					{
 						m_sql.safe_query("INSERT INTO EventMaster (Name, Interpreter, Type, XMLStatement, Status) VALUES ('%q','%q','%q','%q','%d')",
 							eventname.c_str(), interpreter.c_str(), eventtype.c_str(), eventxml.c_str(), eventStatus);
 						result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE (Name == '%q')",
@@ -4334,7 +4349,7 @@ namespace http {
 							eventid.c_str());
 					}
 
-					if (eventid == "")
+					if (eventid.empty())
 					{
 						//eventid should now never be empty!
 						_log.Log(LOG_ERROR, "Error writing event actions to database!");
@@ -4379,7 +4394,7 @@ namespace http {
 			{
 				root["title"] = "DeleteEvent";
 				std::string idx = request::findValue(&req, "event");
-				if (idx == "")
+				if (idx.empty())
 					return;
 				m_sql.DeleteEvent(idx);
 				m_mainworker.m_eventsystem.LoadEvents();
@@ -4389,7 +4404,7 @@ namespace http {
 			{
 				std::vector<CEventSystem::_tDeviceStatus> devStates;
 				m_mainworker.m_eventsystem.WWWGetItemStates(devStates);
-				if (devStates.size() == 0)
+				if (devStates.empty())
 					return;
 
 				int ii = 0;

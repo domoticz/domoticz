@@ -923,7 +923,7 @@ namespace Plugins {
 			if (m_bIsStarted)
 			{
 				// If we have connections queue disconnects
-				if (m_Transports.size())
+				if (!m_Transports.empty())
 				{
 					std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 					                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
@@ -996,7 +996,7 @@ namespace Plugins {
 				std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 				                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
 				std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
-				if (m_Transports.size())
+				if (!m_Transports.empty())
 				{
 					for (const auto &pPluginTransport : m_Transports)
 					{
@@ -1600,7 +1600,7 @@ Error:
 				pConnection->pTransport = nullptr;
 
 				// Plugin exiting and all connections have disconnect messages queued
-				if (IsStopRequested(0) && !m_Transports.size())
+				if (IsStopRequested(0) && m_Transports.empty())
 				{
 					MessagePlugin(new onStopCallback(this));
 				}
@@ -1720,7 +1720,7 @@ Error:
 			}
 
 			// Plugin exiting and all connections have disconnect messages queued
-			if (IsStopRequested(0) && !m_Transports.size())
+			if (IsStopRequested(0) && m_Transports.empty())
 			{
 				MessagePlugin(new onStopCallback(this));
 			}
@@ -1958,7 +1958,7 @@ Error:
 				while (!infile.eof())
 				{
 					getline(infile, sLine);
-					if ((sLine.size() != 0) && (index++ == iIconLine))
+					if ((!sLine.empty()) && (index++ == iIconLine))
 					{
 						std::vector<std::string> results;
 						StringSplit(sLine, ";", results);

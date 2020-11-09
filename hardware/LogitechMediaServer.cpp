@@ -58,7 +58,7 @@ Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort,
 	std::stringstream sURL;
 	std::stringstream sPostData;
 
-	if ((m_User != "") && (m_Pwd != ""))
+	if ((!m_User.empty()) && (!m_Pwd.empty()))
 		sURL << "http://" << m_User << ":" << m_Pwd << "@" << sIP << ":" << iPort << "/jsonrpc.js";
 	else
 		sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
@@ -268,7 +268,8 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 					std::string	sDuration = "";
 					std::string sLabel = "";
 
-					if (root["playlist_loop"].size()) {
+					if (!root["playlist_loop"].empty())
+					{
 						sTitle = root["playlist_loop"][0]["title"].asString();
 						sAlbum = root["playlist_loop"][0]["album"].asString();
 						sArtist = root["playlist_loop"][0]["artist"].asString();
@@ -277,13 +278,12 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 						sYear = root["playlist_loop"][0]["year"].asString();
 						sDuration = root["playlist_loop"][0]["duration"].asString();
 
-						if (sTrackArtist != "")
+						if (!sTrackArtist.empty())
 							sArtist = sTrackArtist;
-						else
-							if (sAlbumArtist != "")
-								sArtist = sAlbumArtist;
+						else if (!sAlbumArtist.empty())
+							sArtist = sAlbumArtist;
 						if (sYear == "0") sYear = "";
-						if (sYear != "")
+						if (!sYear.empty())
 							sYear = " (" + sYear + ")";
 
 						sLabel = sArtist + " - " + sTitle + sYear;
@@ -697,7 +697,8 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 			sLMSCmnd = "\"button\", \"play.single\"";
 		}
 		else if (command == "PlayPlaylist") {
-			if (param == "") return false;
+			if (param.empty())
+				return false;
 			sLMSCmnd = "\"playlist\", \"play\", \"" + param + "\"";
 		}
 		else if (command == "PlayFavorites") {
@@ -716,11 +717,12 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 			sLMSCmnd = "\"power\", \"0\"";
 		}
 		else if (command == "SetVolume") {
-			if (param == "") return false;
+			if (param.empty())
+				return false;
 			sLMSCmnd = "\"mixer\", \"volume\", \"" + param + "\"";
 		}
 
-		if (sLMSCmnd != "")
+		if (!sLMSCmnd.empty())
 		{
 			std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[" + sLMSCmnd + "]]}";
 			Json::Value root = Query(m_IP, m_Port, sPostdata);
@@ -768,7 +770,7 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 
 void CLogitechMediaServer::SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration)
 {
-	if ((playerIP != "") && (text != "") && (duration > 0))
+	if ((!playerIP.empty()) && (!text.empty()) && (duration > 0))
 	{
 		const std::string &sLine1 = subject;
 		const std::string &sLine2 = text;
@@ -807,10 +809,7 @@ namespace http {
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
-			if (
-				(hwid == "") ||
-				(mode1 == "")
-				)
+			if ((hwid.empty()) || (mode1.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -838,7 +837,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -857,7 +856,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
@@ -888,7 +887,7 @@ namespace http {
 		void CWebServer::Cmd_LMSGetPlaylists(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);

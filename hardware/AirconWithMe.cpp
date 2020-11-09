@@ -250,7 +250,7 @@ void CAirconWithMe::ComputerSwitchLevelValues()
 
 bool CAirconWithMe::GetValues()
 {
-	if (mDeviceInfo.size() == 0)
+	if (mDeviceInfo.empty())
 	{
 		if (false == GetAvailableDataPoints())
 			return false;

@@ -253,9 +253,9 @@ void CNest::Logout()
 
 bool CNest::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return false;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return false;
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
@@ -364,9 +364,9 @@ void CNest::GetMeterDetails()
 #ifdef DEBUG_NextThermostatR
 	sResult = ReadFile("E:\\nest.json");
 #else
-	if (m_UserName.size()==0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size()==0)
+	if (m_Password.empty())
 		return;
 	if (m_bDoLogin)
 	{
@@ -415,14 +415,14 @@ void CNest::GetMeterDetails()
 	//Protect
 	if (bHaveTopaz)
 	{
-		if (root["topaz"].size() < 1)
+		if (root["topaz"].empty())
 		{
 			_log.Log(LOG_ERROR, "Nest: request not successful, restarting..!");
 			m_bDoLogin = true;
 			return;
 		}
 		Json::Value::Members members = root["topaz"].getMemberNames();
-		if (members.size() < 1)
+		if (members.empty())
 		{
 			_log.Log(LOG_ERROR, "Nest: request not successful, restarting..!");
 			m_bDoLogin = true;
@@ -533,7 +533,7 @@ void CNest::GetMeterDetails()
 	//Thermostat
 	if (!bHaveShared)
 		return;
-	if (root["shared"].size()<1)
+	if (root["shared"].empty())
 	{
 		if (bHaveTopaz)
 			return;
@@ -649,9 +649,9 @@ void CNest::GetMeterDetails()
 
 void CNest::SetSetpoint(const int idx, const float temp)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return;
 
 	if (m_bDoLogin == true)
@@ -694,9 +694,9 @@ void CNest::SetSetpoint(const int idx, const float temp)
 
 bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return false;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return false;
 
 	if (m_bDoLogin == true)
@@ -734,9 +734,9 @@ bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 
 bool CNest::SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMode)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return false;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return false;
 
 	if (m_bDoLogin == true)
@@ -779,9 +779,9 @@ bool CNest::SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMod
 
 void CNest::SetProgramState(const int /*newState*/)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return;
 
 	if (m_bDoLogin)

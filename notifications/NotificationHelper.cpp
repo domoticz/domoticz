@@ -483,7 +483,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 	const bool bHaveHumidity)
 {
 	std::vector<_tNotification> notifications = GetNotifications(Idx);
-	if (notifications.size() == 0)
+	if (notifications.empty())
 		return false;
 
 	char szTmp[600];
@@ -609,7 +609,7 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 	const float dewpoint)
 {
 	std::vector<_tNotification> notifications = GetNotifications(Idx);
-	if (notifications.size() == 0)
+	if (notifications.empty())
 		return false;
 
 	char szTmp[600];
@@ -634,7 +634,7 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(n.Params, ";", splitresults);
-			if (splitresults.size() < 1)
+			if (splitresults.empty())
 				continue; //impossible
 			std::string ntype = splitresults[0];
 
@@ -665,7 +665,7 @@ bool CNotificationHelper::CheckAndHandleValueNotification(
 	const int value)
 {
 	std::vector<_tNotification> notifications = GetNotifications(Idx);
-	if (notifications.size() == 0)
+	if (notifications.empty())
 		return false;
 
 	char szTmp[600];
@@ -722,7 +722,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 	const float Ampere3)
 {
 	std::vector<_tNotification> notifications = GetNotifications(Idx);
-	if (notifications.size() == 0)
+	if (notifications.empty())
 		return false;
 
 	char szTmp[600];
@@ -824,7 +824,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	const std::string &message)
 {
 	std::vector<_tNotification> notifications = GetNotifications(Idx);
-	if (notifications.size() == 0)
+	if (notifications.empty())
 		return false;
 
 	std::vector<std::vector<std::string> > result;
@@ -847,7 +847,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 			TouchLastUpdate(n.ID);
 		std::vector<std::string> splitresults;
 		StringSplit(n.Params, ";", splitresults);
-		if (splitresults.size() < 1)
+		if (splitresults.empty())
 			continue; //impossible
 		std::string atype = splitresults[0];
 		if (atype == ltype)
@@ -874,7 +874,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	const float mvalue)
 {
 	std::vector<_tNotification> notifications = GetNotifications(Idx);
-	if (notifications.size() == 0)
+	if (notifications.empty())
 		return false;
 
 	char szTmp[600];
@@ -969,7 +969,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 	const _eNotificationTypes ntype)
 {
 	std::vector<_tNotification> notifications = GetNotifications(Idx);
-	if (notifications.size() == 0)
+	if (notifications.empty())
 		return false;
 
 	std::vector<std::vector<std::string> > result;
@@ -994,7 +994,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(n.Params, ";", splitresults);
-			if (splitresults.size() < 1)
+			if (splitresults.empty())
 				continue; //impossible
 			std::string atype = splitresults[0];
 
@@ -1082,7 +1082,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 	const int llevel)
 {
 	std::vector<_tNotification> notifications = GetNotifications(Idx);
-	if (notifications.size() == 0)
+	if (notifications.empty())
 		return false;
 	std::vector<std::vector<std::string> > result;
 
@@ -1107,7 +1107,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(n.Params, ";", splitresults);
-			if (splitresults.size() < 1)
+			if (splitresults.empty())
 				continue; //impossible
 			std::string atype = splitresults[0];
 
@@ -1229,7 +1229,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 
 void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 {
-	if (m_notifications.size() < 1)
+	if (m_notifications.empty())
 		return;
 
 	time_t atime = mytime(nullptr);
@@ -1382,7 +1382,7 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 				StringSplit(n.CustomMessage, ";;", splitresults);
 				if (msg.empty())
 				{
-					if (splitresults.size() > 0)
+					if (!splitresults.empty())
 					{
 						if (!splitresults[0].empty() && !isRecovery)
 						{
@@ -1405,7 +1405,7 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 				if (!isRecovery)
 					return false;
 
-				if (splitresults.size() > 0)
+				if (!splitresults.empty())
 				{
 					if (!splitresults[0].empty())
 						szTmp = splitresults[0];

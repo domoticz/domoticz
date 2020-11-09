@@ -86,7 +86,7 @@ void CHttpPush::DoHttpPush()
 			m_sql.GetPreferencesVar("HttpUrl", httpUrl);
 			m_sql.GetPreferencesVar("HttpData", httpData);
 			m_sql.GetPreferencesVar("HttpHeaders", httpHeaders);
-			if (httpUrl == "")
+			if (httpUrl.empty())
 				return;
 
 			//unsigned int deviceId = atoi(sd[0].c_str());
@@ -202,7 +202,8 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpData, "%h", std::string(hostname));
 			replaceAll(httpData, "%idx", sdeviceId);
 
-			if (sendValue != "") {
+			if (!sendValue.empty())
+			{
 				std::string sResult;
 				std::vector<std::string> ExtraHeaders;
 				if (httpAuthInt == 1) {			// BASIC authentication
@@ -225,7 +226,7 @@ void CHttpPush::DoHttpPush()
 					}
 				}
 				else if (httpMethodInt == 1) {		// POST
-					if (httpHeaders.size() > 0)
+					if (!httpHeaders.empty())
 					{
 						// Add additional headers
 						std::vector<std::string> ExtraHeaders2;
@@ -273,12 +274,7 @@ namespace http {
 			std::string auth = request::findValue(&req, "auth");
 			std::string authbasiclogin = request::findValue(&req, "authbasiclogin");
 			std::string authbasicpassword = request::findValue(&req, "authbasicpassword");
-			if (
-				(url == "") ||
-				(method == "") ||
-				(linkactive == "") ||
-				(debugenabled == "")
-				)
+			if ((url.empty()) || (method.empty()) || (linkactive.empty()) || (debugenabled.empty()))
 				return;
 			if ((method != "0") && (data.empty())) //PUT/POST should have data
 				return;
@@ -407,11 +403,11 @@ namespace http {
 			std::string targetproperty = request::findValue(&req, "targetproperty");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string includeunit = request::findValue(&req, "includeunit");
-			if ((targettypei == 0) && (targetvariable == ""))
+			if ((targettypei == 0) && (targetvariable.empty()))
 				return;
-			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
+			if ((targettypei == 1) && ((targetdeviceid.empty()) || (targetproperty.empty())))
 				return;
-			if ((targettypei == 2) && (targetdeviceid == ""))
+			if ((targettypei == 2) && (targetdeviceid.empty()))
 				return;
 			if (idx == "0") {
 				m_sql.safe_query(
@@ -454,7 +450,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
 			root["status"] = "OK";

@@ -38,5 +38,5 @@ bool CNotificationProwl::SendMessageImplementation(
 
 bool CNotificationProwl::IsConfigured()
 {
-	return _apikey != "";
+	return !_apikey.empty();
 }

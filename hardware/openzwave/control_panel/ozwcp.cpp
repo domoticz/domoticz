@@ -250,7 +250,7 @@ void MyNode::addGroup(uint8 node, uint8 g, uint8 n, uint8* v)
 #ifdef OZW_WRITE_LOG
 	Log::Write(LogLevel_Info, "addGroup: node %d group %d n %d\n", node, g, n);
 #endif
-	if (groups.size() == 0)
+	if (groups.empty())
 		newGroup(node);
 	for (const auto &group : groups)
 		if (group->groupid == g)
@@ -506,7 +506,8 @@ void MyNode::setAllChanged(bool ch)
 
 uint8 MyNode::getRemoved()
 {
-	if (removed.size() > 0) {
+	if (!removed.empty())
+	{
 		uint8 node = removed.front();
 		removed.pop_front();
 		return node;
@@ -1219,7 +1220,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 		std::ifstream testFile(fntemp, std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 			std::istreambuf_iterator<char>());
-		if (fileContents.size() > 0)
+		if (!fileContents.empty())
 		{
 			retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
 		}
@@ -1464,7 +1465,7 @@ std::string COpenZWaveControlPanel::DoTestNetwork(const int node_id, const int c
 		std::ifstream testFile(fntemp, std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 			std::istreambuf_iterator<char>());
-		if (fileContents.size() > 0)
+		if (!fileContents.empty())
 		{
 			retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
 		}
@@ -1502,7 +1503,7 @@ std::string COpenZWaveControlPanel::HealNetworkNode(const int node_id, const boo
 		std::ifstream testFile(fntemp, std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 			std::istreambuf_iterator<char>());
-		if (fileContents.size() > 0)
+		if (!fileContents.empty())
 		{
 			retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
 		}
@@ -1567,7 +1568,7 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 		std::ifstream testFile(fntemp, std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 			std::istreambuf_iterator<char>());
-		if (fileContents.size() > 0)
+		if (!fileContents.empty())
 		{
 			retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
 		}
@@ -1700,7 +1701,7 @@ std::string COpenZWaveControlPanel::GetCPStats()
 		std::ifstream testFile(fntemp, std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 			std::istreambuf_iterator<char>());
-		if (fileContents.size() > 0)
+		if (!fileContents.empty())
 		{
 			retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
 		}

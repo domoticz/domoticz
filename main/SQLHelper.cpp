@@ -632,7 +632,7 @@ bool CSQLHelper::OpenDatabase()
 #endif
 	sqlite3_exec(m_dbase, "PRAGMA foreign_keys = ON;", nullptr, nullptr, nullptr);
 	std::vector<std::vector<std::string> > result = query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
-	bool bNewInstall = (result.size() == 0);
+	bool bNewInstall = (result.empty());
 	int dbversion = 0;
 	if (!bNewInstall)
 	{
@@ -3289,7 +3289,7 @@ void CSQLHelper::Do_Work()
 
 		{ // additional scope for lock (accessing size should be within lock too)
 			std::lock_guard<std::mutex> l(m_background_task_mutex);
-			if (m_background_task_queue.size() > 0)
+			if (!m_background_task_queue.empty())
 			{
 				_items2do.clear();
 
@@ -3322,7 +3322,8 @@ void CSQLHelper::Do_Work()
 			}
 		}
 
-		if (_items2do.size() < 1) {
+		if (_items2do.empty())
+		{
 			continue;
 		}
 
@@ -3454,7 +3455,7 @@ void CSQLHelper::Do_Work()
 						std::string sValue;
 						if (GetPreferencesVar("EmailServer", sValue))
 						{
-							if (sValue != "")
+							if (!sValue.empty())
 							{
 								std::string EmailFrom;
 								std::string EmailTo;
@@ -3566,7 +3567,7 @@ void CSQLHelper::Do_Work()
 				if (!splitresults.empty())
 				{
 					std::string sValue1, sValue2, sValue3;
-					if (splitresults.size() > 0)
+					if (!splitresults.empty())
 						sValue1 = splitresults[0];
 					if (splitresults.size() > 1)
 						sValue2 = splitresults[1];
@@ -3714,7 +3715,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 					else
 						values.push_back(value);
 				}
-				if (values.size() > 0)
+				if (!values.empty())
 					results.push_back(values);
 			}
 			else
@@ -3782,7 +3783,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string& 
 					else
 						values.push_back(std::string(value, value + blobSize));
 				}
-				if (values.size() > 0)
+				if (!values.empty())
 					results.push_back(values);
 			}
 			else
@@ -4327,7 +4328,7 @@ uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const un
 		return -1; //We do not allow new devices
 	}
 
-	if (devname == "")
+	if (devname.empty())
 	{
 		name = "Unknown";
 	}
@@ -4687,7 +4688,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			int n2Value;
 			if (GetPreferencesVar("EmailServer", n2Value, emailserver))
 			{
-				if (emailserver != "")
+				if (!emailserver.empty())
 				{
 					result = safe_query(
 						"SELECT CameraRowID, DevSceneDelay FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID==%" PRIu64 ") AND (DevSceneWhen==%d)",
@@ -4721,7 +4722,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					//Add parameters
 					std::stringstream s_scriptparams;
 					std::string nszUserDataFolder = szUserDataFolder;
-					if (nszUserDataFolder == "")
+					if (nszUserDataFolder.empty())
 						nszUserDataFolder = ".";
 					s_scriptparams << nszUserDataFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn ? "On" : "Off") << " \"" << lstatus << "\"" << " \"" << devname << "\"";
 					//add script to background worker
@@ -4876,7 +4877,7 @@ bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const 
 		"SELECT nValue,sValue,LastUpdate FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d) order by LastUpdate desc limit 1",
 		HardwareID, DeviceID, unit, devType, subType);
 
-	if (sqlresult.size() != 0)
+	if (!sqlresult.empty())
 	{
 		nValue = (int)atoi(sqlresult[0][0].c_str());
 		sValue = sqlresult[0][1];
@@ -5260,7 +5261,7 @@ void CSQLHelper::UpdateTemperatureLog()
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
-			if (splitresults.size() < 1)
+			if (splitresults.empty())
 				continue; //impossible
 
 			float temp = 0;
@@ -5547,7 +5548,7 @@ void CSQLHelper::UpdateUVLog()
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
-			if (splitresults.size() < 1)
+			if (splitresults.empty())
 				continue; //impossible
 
 			float level = static_cast<float>(atof(splitresults[0].c_str()));
@@ -6158,7 +6159,7 @@ void CSQLHelper::UpdatePercentageLog()
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
-			if (splitresults.size() < 1)
+			if (splitresults.empty())
 				continue; //impossible
 
 			float percentage = static_cast<float>(atof(sValue.c_str()));
@@ -6211,7 +6212,7 @@ void CSQLHelper::UpdateFanLog()
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
-			if (splitresults.size() < 1)
+			if (splitresults.empty())
 				continue; //impossible
 
 			int speed = (int)atoi(sValue.c_str());
@@ -6233,7 +6234,7 @@ void CSQLHelper::AddCalendarTemperature()
 	//Get All temperature devices in the Temperature Table
 	std::vector<std::vector<std::string> > resultdevices;
 	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Temperature ORDER BY DeviceRowID");
-	if (resultdevices.size() < 1)
+	if (resultdevices.empty())
 		return; //nothing to do
 
 	char szDateStart[40];
@@ -6301,7 +6302,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 	//Get All UV devices
 	std::vector<std::vector<std::string> > resultdevices;
 	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Rain ORDER BY DeviceRowID");
-	if (resultdevices.size() < 1)
+	if (resultdevices.empty())
 		return; //nothing to do
 
 	char szDateStart[40];
@@ -6405,7 +6406,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	//Get All Meter devices
 	std::vector<std::vector<std::string> > resultdevices;
 	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Meter ORDER BY DeviceRowID");
-	if (resultdevices.size() < 1)
+	if (resultdevices.empty())
 		return; //nothing to do
 
 	char szDateStart[40];
@@ -6607,7 +6608,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	//Get All meter devices
 	std::vector<std::vector<std::string> > resultdevices;
 	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM MultiMeter ORDER BY DeviceRowID");
-	if (resultdevices.size() < 1)
+	if (resultdevices.empty())
 		return; //nothing to do
 
 	char szDateStart[40];
@@ -6738,7 +6739,7 @@ void CSQLHelper::AddCalendarUpdateWind()
 	//Get All Wind devices
 	std::vector<std::vector<std::string> > resultdevices;
 	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Wind ORDER BY DeviceRowID");
-	if (resultdevices.size() < 1)
+	if (resultdevices.empty())
 		return; //nothing to do
 
 	char szDateStart[40];
@@ -6795,7 +6796,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 	//Get All UV devices
 	std::vector<std::vector<std::string> > resultdevices;
 	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM UV ORDER BY DeviceRowID");
-	if (resultdevices.size() < 1)
+	if (resultdevices.empty())
 		return; //nothing to do
 
 	char szDateStart[40];
@@ -6844,7 +6845,7 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 	//Get All Percentage devices in the Percentage Table
 	std::vector<std::vector<std::string> > resultdevices;
 	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Percentage ORDER BY DeviceRowID");
-	if (resultdevices.size() < 1)
+	if (resultdevices.empty())
 		return; //nothing to do
 
 	char szDateStart[40];
@@ -6897,7 +6898,7 @@ void CSQLHelper::AddCalendarUpdateFan()
 	//Get All FAN devices in the Fan Table
 	std::vector<std::vector<std::string> > resultdevices;
 	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Fan ORDER BY DeviceRowID");
-	if (resultdevices.size() < 1)
+	if (resultdevices.empty())
 		return; //nothing to do
 
 	char szDateStart[40];
@@ -7356,7 +7357,7 @@ bool CSQLHelper::DoesSceneByNameExits(const std::string& SceneName)
 
 	//Get All ID's where Order=0
 	result = safe_query("SELECT ID FROM Scenes WHERE (Name=='%q')", SceneName.c_str());
-	return (result.size() > 0);
+	return (!result.empty());
 }
 
 void CSQLHelper::CheckSceneStatusWithDevice(const std::string& DevIdx)
@@ -8642,7 +8643,7 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 					//Check if this Icon(Name) does not exist in the database already
 					std::vector<std::vector<std::string> > result;
 					result = safe_query("SELECT ID FROM CustomImages WHERE Base='%q'", IconBase.c_str());
-					bool bIsDuplicate = (result.size() > 0);
+					bool bIsDuplicate = (!result.empty());
 					int RowID = 0;
 					if (bIsDuplicate)
 					{

@@ -121,5 +121,5 @@ bool CNotificationPushsafer::SendMessageImplementation(
 
 bool CNotificationPushsafer::IsConfigured()
 {
-	return _apikey != "";
+	return !_apikey.empty();
 }

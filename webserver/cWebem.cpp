@@ -294,7 +294,7 @@ namespace http {
 			std::string myline;
 			if (getline(is, myline))
 			{
-				if (myline.size() && myline[myline.size() - 1] == '\r')
+				if (!myline.empty() && myline[myline.size() - 1] == '\r')
 				{
 					line = myline.substr(0, myline.size() - 1);
 				}
@@ -836,7 +836,7 @@ namespace http {
 		void cWebem::SetWebRoot(const std::string &webRoot)
 		{
 			// remove trailing slash if required
-			if (webRoot.size() > 0 && webRoot[webRoot.size() - 1] == '/')
+			if (!webRoot.empty() && webRoot[webRoot.size() - 1] == '/')
 			{
 				m_webRoot = webRoot.substr(0, webRoot.size() - 1);
 			}
@@ -845,7 +845,7 @@ namespace http {
 				m_webRoot = webRoot;
 			}
 			// put slash at the front if required
-			if (m_webRoot.size() > 0 && m_webRoot[0] != '/')
+			if (!m_webRoot.empty() && m_webRoot[0] != '/')
 			{
 				m_webRoot = "/" + webRoot;
 			}
@@ -871,7 +871,7 @@ namespace http {
 				request_path += "index.html";
 			}
 
-			if (m_webRoot.size() > 0)
+			if (!m_webRoot.empty())
 			{
 				// remove web root if present otherwise
 				// create invalid request
@@ -908,7 +908,7 @@ namespace http {
 			}
 
 			// if we have a web root set the request must start with it
-			if (m_webRoot.size() > 0)
+			if (!m_webRoot.empty())
 			{
 				if (request_path.find(m_webRoot) != 0)
 				{
@@ -1120,7 +1120,7 @@ namespace http {
 		// Check the user's password, return 1 if OK
 		static int check_password(struct ah *ah, const std::string &ha1, const std::string &realm)
 		{
-			if ((ah->nonce.size() == 0) && (ah->response.size() != 0))
+			if ((ah->nonce.empty()) && (!ah->response.empty()))
 				return (ha1 == GenerateMD5Hash(ah->response));
 
 			return 0;
@@ -1700,7 +1700,7 @@ namespace http {
 			session.rights = -1; // no rights
 			session.id = "";
 
-			if (myWebem->m_userpasswords.size() == 0)
+			if (myWebem->m_userpasswords.empty())
 			{
 				session.rights = 2;
 			}
@@ -2002,7 +2002,7 @@ namespace http {
 			WebEmSession session;
 			session.remote_host = req.host_address;
 
-			if (myWebem->myRemoteProxyIPs.size() > 0)
+			if (!myWebem->myRemoteProxyIPs.empty())
 			{
 				for (auto &myRemoteProxyIP : myWebem->myRemoteProxyIPs)
 				{
@@ -2322,7 +2322,7 @@ namespace http {
 				}
 
 			}
-			else if (session.id.size() > 0)
+			else if (!session.id.empty())
 			{
 				// Renew session expiration and authentication token
 				WebEmSession* memSession = myWebem->GetSession(session.id);

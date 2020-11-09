@@ -314,7 +314,8 @@ void ASyncTCP::do_write_start()
 {
 	if (mIsTerminating) return;
 	if (!mIsConnected) return;
-	if (mWriteQ.size() == 0) return;
+	if (mWriteQ.empty())
+		return;
 
 	timeout_start_timer();
 #ifdef WWW_ENABLE_SSL

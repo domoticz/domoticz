@@ -182,7 +182,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 				_log.Log(LOG_ERROR, "WUnderground: Problem getting location/near result.Invalid data received, or no data returned!");
 				return "";
 			}
-			if (root["location"]["stationId"].size() > 0)
+			if (!root["location"]["stationId"].empty())
 			{
 				std::string szFirstStation = root["location"]["stationId"][0].asString();
 				return szFirstStation;

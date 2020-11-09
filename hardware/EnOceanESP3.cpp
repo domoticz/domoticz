@@ -518,7 +518,7 @@ void CEnOceanESP3::Do_Work()
 				OpenSerialDevice();
 			}
 		}
-		if (m_sendqueue.size()>0)
+		if (!m_sendqueue.empty())
 		{
 			std::lock_guard<std::mutex> l(m_sendMutex);
 
@@ -706,7 +706,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 	char szDeviceID[20];
 	sprintf(szDeviceID,"%08X",(unsigned int)sID);
 	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szDeviceID, int(tsen->LIGHTING2.unitcode));
-	if (result.size()>0)
+	if (!result.empty())
 	{
 		_eSwitchType switchtype=(_eSwitchType)atoi(result[0][0].c_str());
 		if (switchtype==STYPE_Dimmer)
@@ -1231,7 +1231,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					// Search the sensor in database
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
-					if (result.size()<1)
+					if (result.empty())
 					{
 						// If not found, add it to the database
 						m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, szDeviceID, manufacturer, profile, ttype);
@@ -1246,7 +1246,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					//Following sensors need to have had a teach-in
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
-					if (result.size()<1)
+					if (result.empty())
 					{
 						_log.Log(LOG_NORM, "EnOcean: Need Teach-In for %s", szDeviceID);
 						return;
@@ -1908,7 +1908,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							std::vector<std::vector<std::string> > result;
 							sprintf(szDeviceID,"%08X",(unsigned int)id);
 							result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
-							if (result.size()<1)
+							if (result.empty())
 							{
 								// If not found, add it to the database
 								m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, szDeviceID, manID, func, type);
@@ -2026,7 +2026,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						sprintf(szDeviceID, "%08X", (unsigned int)id);
 
 						result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
-						if (result.size() < 1)
+						if (result.empty())
 						{
 							_log.Log(LOG_NORM, "EnOcean: Need Teach-In for %s", szDeviceID);
 							return;

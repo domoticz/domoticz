@@ -84,7 +84,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	errorCodes[18] = "can not arm";
 
 	// decode user code from string to BCD
-	if (userCode.size() == 0)
+	if (userCode.empty())
 	{
 		_log.Log(LOG_STATUS, "Satel Integra: no user code was entered (arm/disarm/switching will not work)");
 	}
@@ -232,7 +232,7 @@ void SatelIntegra::Do_Work()
 
 bool SatelIntegra::CheckAddress()
 {
-	if (m_IPAddress.size() == 0 || m_IPPort < 1 || m_IPPort > 65535)
+	if (m_IPAddress.empty() || m_IPPort < 1 || m_IPPort > 65535)
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: Empty IP Address or bad Port");
 		return false;

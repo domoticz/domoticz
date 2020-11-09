@@ -271,7 +271,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 						}
 						else if (ii == 2)
 						{
-							if (csubstr.size() == 0)
+							if (csubstr.empty())
 							{
 								ii++;
 								//2 empty lines, rest is data
