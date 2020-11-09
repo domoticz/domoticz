@@ -121,7 +121,7 @@ void CGpio::InterruptHandler()
 	GetSchedPriority(&sched, &priority);
 	SetSchedPriority(SCHED_RR, (sched == SCHED_RR ? priority : 1), (sched == SCHED_RR));
 
-	for (const auto &pin : pins)
+	for (auto &pin : pins)
 		if (pin.GetPin() == pinPass)
 		{
 			if ((fd = pin.GetReadValueFd()) == -1)
@@ -227,7 +227,7 @@ void CGpio::UpdateSwitch(const int pin, const bool value)
 
 	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, nullptr, 255);
 
-	for (const auto &p : pins)
+	for (auto &p : pins)
 	{
 		if (p.GetPin() == pin)
 		{
@@ -302,7 +302,7 @@ bool CGpio::StopHardware()
 
 
 	std::unique_lock<std::mutex> lock(m_pins_mutex);
-	for (const auto &p : pins)
+	for (auto &p : pins)
 	{
 		if (m_thread_interrupt[p.GetPin()] != nullptr)
 		{
@@ -311,7 +311,7 @@ bool CGpio::StopHardware()
 		}
 	}
 
-	for (const auto &p : pins)
+	for (auto &p : pins)
 		if (p.GetReadValueFd() != -1)
 			close(p.GetReadValueFd());
 
@@ -326,7 +326,7 @@ bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 	int pin = pSen->LIGHTING1.unitcode;
-	for (const auto &p : pins)
+	for (auto &p : pins)
 	{
 		if (p.GetPin() == pin && !p.GetIsInput())
 		{
@@ -432,7 +432,7 @@ std::vector<CGpioPin> CGpio::GetPinList()
 /* static */
 CGpioPin* CGpio::GetPPinById(int id)
 {
-	for (const auto &p : pins)
+	for (auto &p : pins)
 		if (p.GetPin() == id)
 			return &p;
 	return nullptr;
@@ -441,7 +441,7 @@ CGpioPin* CGpio::GetPPinById(int id)
 void CGpio::UpdateDeviceStates(bool forceUpdate)
 {
 	std::unique_lock<std::mutex> lock(m_pins_mutex);
-	for (const auto &p : pins)
+	for (auto &p : pins)
 	{
 		if (p.GetIsInput())
 		{
