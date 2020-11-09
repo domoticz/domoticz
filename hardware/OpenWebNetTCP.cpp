@@ -445,7 +445,7 @@ bool COpenWebNetTCP::hmacAuthentication(csocket *connectionSocket, int auth_type
 			const std::string strRcvSrv2 = decToHexStrConvert(responseSrv2.Extract_who());
 			const std::string strHMAC2 = shaCalc(strRa + strRb + strKab, auth_type);
 
-			if (strHMAC2.compare(strRcvSrv2) == 0)
+			if (strHMAC2 == strRcvSrv2)
 			{
 				ownWrite(connectionSocket, OPENWEBNET_MSG_OPEN_OK, strlen(OPENWEBNET_MSG_OPEN_OK)); // Write ACK
 				return (true); // HMAC authentication OK
@@ -519,12 +519,12 @@ bool COpenWebNetTCP::ownAuthentication(csocket *connectionSocket)
 		// TODO: only alphanumeric password....
 
 		const std::string strFrame = responseNonce.Extract_frame();
-		if (strFrame.compare(OPENWEBNET_AUTH_REQ_SHA1) == 0) 	// *98*1##
+		if (strFrame == OPENWEBNET_AUTH_REQ_SHA1) // *98*1##
 		{
 			// HMAC authentication with SHA-1
 			return (hmacAuthentication(connectionSocket, 0));
 		}
-		else if	(strFrame.compare(OPENWEBNET_AUTH_REQ_SHA2) == 0)		// *98*2##
+		else if (strFrame == OPENWEBNET_AUTH_REQ_SHA2) // *98*2##
 		{
 			// HMAC authentication with SHA-256
 			return (hmacAuthentication(connectionSocket, 1));

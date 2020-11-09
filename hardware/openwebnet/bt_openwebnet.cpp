@@ -28,14 +28,14 @@ void bt_openwebnet::IsCorrect()
   std::string field;
 
   // if frame ACK -->
-  if (m_frameOpen.compare(OPENWEBNET_MSG_OPEN_OK) == 0)
+  if (m_frameOpen == OPENWEBNET_MSG_OPEN_OK)
   {
     m_frameType = OK_FRAME;
     return;
   }
 
   // if frame NACK -->
-  if (m_frameOpen.compare(OPENWEBNET_MSG_OPEN_KO) == 0)
+  if (m_frameOpen == OPENWEBNET_MSG_OPEN_KO)
   {
 	  m_frameType = KO_FRAME;
     return;
@@ -896,16 +896,16 @@ bool bt_openwebnet::IsEqual(const bt_openwebnet& msg_to_compare)
 
   if(!m_extended)
   {
-	  return (msg_to_compare.Extract_who().compare(m_who) == 0) && (msg_to_compare.Extract_what().compare(m_what) == 0) &&
-		 (msg_to_compare.Extract_where().compare(m_where) == 0) && (msg_to_compare.Extract_when().compare(m_when) == 0) &&
-		 (msg_to_compare.Extract_dimension().compare(m_dimension) == 0);
+	  return (msg_to_compare.Extract_who() == m_who) && (msg_to_compare.Extract_what() == m_what) &&
+		 (msg_to_compare.Extract_where() == m_where) && (msg_to_compare.Extract_when() == m_when) &&
+		 (msg_to_compare.Extract_dimension() == m_dimension);
   }
   else
   {
-	  return (msg_to_compare.Extract_who().compare(m_who) == 0) && (msg_to_compare.Extract_what().compare(m_what) == 0) &&
-		 (msg_to_compare.Extract_where().compare(m_where) == 0) && (msg_to_compare.Extract_level().compare(m_level) == 0) &&
-		 (msg_to_compare.Extract_interface().compare(m_sInterface) == 0) && (msg_to_compare.Extract_when().compare(m_when) == 0) &&
-		 (msg_to_compare.Extract_dimension().compare(m_dimension) == 0);
+	  return (msg_to_compare.Extract_who() == m_who) && (msg_to_compare.Extract_what() == m_what) &&
+		 (msg_to_compare.Extract_where() == m_where) && (msg_to_compare.Extract_level() == m_level) &&
+		 (msg_to_compare.Extract_interface() == m_sInterface) && (msg_to_compare.Extract_when() == m_when) &&
+		 (msg_to_compare.Extract_dimension() == m_dimension);
   }
 }
 

@@ -130,12 +130,9 @@ int CPiFace::LocateValueInParameterArray(std::string Parametername,const std::st
     int Parameter_Index;
 
     for (Parameter_Index=0;(Parameter_Index < Items) && (NameFound==-1);Parameter_Index++)
-    {
-        if (Parametername.compare(ParameterArray[Parameter_Index])==0)
-        {
-            NameFound=Parameter_Index;
-        }
-    }
+	    if (Parametername == ParameterArray[Parameter_Index])
+		    NameFound = Parameter_Index;
+
     return (NameFound);
 }
 
@@ -219,7 +216,7 @@ int CPiFace::LoadConfig()
 			    EndPos = GetParameterString(Line, ".", 0, Parameter);
 			    if (EndPos >= 0)
 			    {
-				    if (Parameter.compare("piface") == 0)
+				    if (Parameter == "piface")
 				    {
 					    StartPos = EndPos;
 				    }
@@ -242,12 +239,12 @@ int CPiFace::LoadConfig()
 			    EndPos = GetParameterString(Line, ".", StartPos, Parameter);
 			    if (EndPos >= 0)
 			    {
-				    if (Parameter.compare("input") == 0)
+				    if (Parameter == "input")
 				    {
 					    // we have an input
 					    PortType = 'I';
 				    }
-				    else if (Parameter.compare("output") == 0)
+				    else if (Parameter == "output")
 				    {
 					    // we have an output
 					    PortType = 'O';

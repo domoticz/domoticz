@@ -721,7 +721,7 @@ bool CHarmonyHub::CheckForHarmonyData()
 			ParseHarmonyTransmission(&m_szHarmonyData);
 	}
 
-	else if (m_szHarmonyData.compare("<iq/>") == 0)
+	else if (m_szHarmonyData == "<iq/>")
 	{
 		// Hub just acknowledges receiving our query
 #ifdef _DEBUG
