@@ -3923,7 +3923,7 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 
 	iStates.clear();
 	std::transform(m_devicestates.begin(), m_devicestates.end(), std::back_inserter(iStates),
-		       [](const std::pair<const unsigned long, CEventSystem::_tDeviceStatus> &m) { return m.second; });
+		       [](const std::pair<const uint64_t, CEventSystem::_tDeviceStatus> &m) { return m.second; });
 }
 
 int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)
