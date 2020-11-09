@@ -122,7 +122,7 @@ void Comm5TCP::processSensorData(const std::string& line)
 
 	unsigned int sensorbitfield = ::strtol(tokens[1].c_str(), nullptr, 16);
 	for (int i = 0; i < 16; ++i) {
-		bool on = (sensorbitfield & (1 << i)) != 0 ? true : false;
+		bool on = (sensorbitfield & (1 << i)) != 0;
 		if (((lastKnownSensorState & (1 << i)) ^ (sensorbitfield & (1 << i))) || initSensorData) {
 			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + std::to_string(i + 1));
 		}
@@ -147,7 +147,7 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 
 			unsigned int relaybitfield = ::strtol(tokens[1].c_str(), nullptr, 16);
 			for (int i = 0; i < 16; ++i) {
-				bool on = (relaybitfield & (1 << i)) != 0 ? true : false;
+				bool on = (relaybitfield & (1 << i)) != 0;
 				SendSwitch(i + 1, 1, 255, on, 0, "Relay " + std::to_string(i + 1));
 			}
 		}

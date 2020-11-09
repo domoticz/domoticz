@@ -169,7 +169,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 			}
 
 			bool bValid = true;
-			if (root["location"].empty() == true)
+			if (root["location"].empty())
 			{
 				bValid = false;
 			}
@@ -232,7 +232,7 @@ void CWunderground::GetMeterDetails()
 	}
 
 	bool bValid = true;
-	if (root["observations"].empty() == true)
+	if (root["observations"].empty())
 	{
 		bValid = false;
 	}
@@ -273,11 +273,11 @@ void CWunderground::GetMeterDetails()
 
 	temp=root["metric_si"]["temp"].asFloat();
 
-	if (root["humidity"].empty()==false)
+	if (!root["humidity"].empty())
 	{
 		humidity = root["humidity"].asInt();
 	}
-	if (root["metric_si"]["pressure"].empty()==false)
+	if (!root["metric_si"]["pressure"].empty())
 	{
 		barometric=atoi(root["metric_si"]["pressure"].asString().c_str());
 		if (barometric<1000)
@@ -315,25 +315,25 @@ void CWunderground::GetMeterDetails()
 	int windgust=1;
 	float windchill=-1;
 
-	if (root["winddir"].empty()==false)
+	if (!root["winddir"].empty())
 	{
 		wind_degrees=atoi(root["winddir"].asString().c_str());
 	}
-	if (root["metric_si"]["windSpeed"].empty()==false)
+	if (!root["metric_si"]["windSpeed"].empty())
 	{
 		if ((root["metric_si"]["windSpeed"] != "N/A") && (root["metric_si"]["windSpeed"] != "--"))
 		{
 			windspeed_ms = static_cast<float>(atof(root["metric_si"]["windSpeed"].asString().c_str()));
 		}
 	}
-	if (root["metric_si"]["windGust"].empty()==false)
+	if (!root["metric_si"]["windGust"].empty())
 	{
 		if ((root["metric_si"]["windGust"] != "N/A") && (root["metric_si"]["windGust"] != "--"))
 		{
 			windgust_ms = static_cast<float>(atof(root["metric_si"]["windGust"].asString().c_str()));
 		}
 	}
-	if (root["metric_si"]["windChill"].empty()==false)
+	if (!root["metric_si"]["windChill"].empty())
 	{
 		if ((root["metric_si"]["windChill"] != "N/A") && (root["metric_si"]["windChill"] != "--"))
 		{
@@ -394,7 +394,7 @@ void CWunderground::GetMeterDetails()
 	}
 
 	//UV
-	if (root["uv"].empty() == false)
+	if (!root["uv"].empty())
 	{
 		if ((root["uv"] != "N/A") && (root["uv"] != "--"))
 		{
@@ -407,7 +407,7 @@ void CWunderground::GetMeterDetails()
 	}
 
 	//Rain
-	if (root["metric_si"]["precipTotal"].empty() == false)
+	if (!root["metric_si"]["precipTotal"].empty())
 	{
 		if ((root["metric_si"]["precipTotal"] != "N/A") && (root["metric_si"]["precipTotal"] != "--"))
 		{
@@ -427,7 +427,7 @@ void CWunderground::GetMeterDetails()
 				tsen.RAIN.rainrateh = 0;
 				tsen.RAIN.rainratel = 0;
 
-				if (root["metric_si"]["precipRate"].empty() == false)
+				if (!root["metric_si"]["precipRate"].empty())
 				{
 					if ((root["metric_si"]["precipRate"] != "N/A") && (root["metric_si"]["precipRate"] != "--"))
 					{
@@ -454,7 +454,7 @@ void CWunderground::GetMeterDetails()
 	}
 
 	//Visibility (seems not to exist anymore!?)
-	if (root["visibility"].empty() == false)
+	if (!root["visibility"].empty())
 	{
 		if ((root["visibility"] != "N/A") && (root["visibility"] != "--"))
 		{
@@ -470,7 +470,7 @@ void CWunderground::GetMeterDetails()
 	}
 
 	//Solar Radiation
-	if (root["solarRadiation"].empty() == false)
+	if (!root["solarRadiation"].empty())
 	{
 		float radiation = static_cast<float>(atof(root["solarRadiation"].asString().c_str()));
 		if (radiation >= 0.0f)

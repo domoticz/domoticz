@@ -654,7 +654,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 	if (m_Password.empty())
 		return;
 
-	if (m_bDoLogin == true)
+	if (m_bDoLogin)
 	{
 		if (!Login())
 			return;
@@ -699,7 +699,7 @@ bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 	if (m_Password.empty())
 		return false;
 
-	if (m_bDoLogin == true)
+	if (m_bDoLogin)
 	{
 		if (!Login())
 			return false;
@@ -739,7 +739,7 @@ bool CNest::SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMod
 	if (m_Password.empty())
 		return false;
 
-	if (m_bDoLogin == true)
+	if (m_bDoLogin)
 	{
 		if (!Login())
 			return false;

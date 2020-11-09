@@ -458,9 +458,7 @@ bool CHardwareMonitor::GetOSType(nOSType &OStype)
 	OStype = OStype_Apple;
 #endif
 
-	if (OStype == OStype_Unknown)
-		return false;
-	return true;
+	return OStype != OStype_Unknown;
 }
 
 std::string CHardwareMonitor::TranslateOSTypeToString(nOSType OSType)

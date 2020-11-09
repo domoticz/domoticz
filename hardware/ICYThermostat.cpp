@@ -178,13 +178,13 @@ bool CICYThermostat::GetSerialAndToken()
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received, or invalid username/password!");
 		return false;
 	}
-	if (root["serialthermostat1"].empty() == true)
+	if (root["serialthermostat1"].empty())
 	{
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received, or invalid username/password!");
 		return false;
 	}
 	m_SerialNumber = root["serialthermostat1"].asString();
-	if (root["token"].empty() == true)
+	if (root["token"].empty())
 	{
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received, or invalid username/password!");
 		return false;
@@ -243,13 +243,13 @@ void CICYThermostat::GetMeterDetails()
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received!");
 		return;
 	}
-	if (root["temperature1"].empty() == true)
+	if (root["temperature1"].empty())
 	{
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received!");
 		return;
 	}
 	SendSetPointSensor(1, root["temperature1"].asFloat(), "Room Setpoint");
-	if (root["temperature2"].empty() == true)
+	if (root["temperature2"].empty())
 	{
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received!");
 		return;

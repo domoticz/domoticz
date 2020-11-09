@@ -244,7 +244,7 @@ namespace http {
 
 		bool CWebServer::StartServer(server_settings & settings, const std::string & serverpath, const bool bIgnoreUsernamePassword)
 		{
-			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
+			m_server_alias = (settings.is_secure()) ? "SSL" : "HTTP";
 
 			if (!settings.is_enabled())
 				return true;
@@ -1452,7 +1452,9 @@ namespace http {
 
 				root["idx"] = sd[0].c_str(); // OTO output the created ID for easier management on the caller side (if automated)
 
-				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
+				m_mainworker.AddHardwareFromParams(ID, name, senabled == "true", htype, address, port, sport, username,
+								   password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout,
+								   true);
 			}
 		}
 
@@ -1491,7 +1493,7 @@ namespace http {
 			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
 			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
 
-			bool bEnabled = (senabled == "true") ? true : false;
+			bool bEnabled = senabled == "true";
 
 			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
 			int iDataTimeout = atoi(sdatatimeout.c_str());
@@ -1744,11 +1746,7 @@ namespace http {
 			if ((bIsSerial) && (!bEnabled) && (sport.empty()))
 			{
 				//just disable the device
-				m_sql.safe_query(
-					"UPDATE Hardware SET Enabled=%d WHERE (ID == '%q')",
-					(bEnabled == true) ? 1 : 0,
-					idx.c_str()
-				);
+				m_sql.safe_query("UPDATE Hardware SET Enabled=%d WHERE (ID == '%q')", (bEnabled) ? 1 : 0, idx.c_str());
 			}
 			else
 			{
@@ -1798,41 +1796,24 @@ namespace http {
 					)
 				{
 					//No Extra field here, handled in CWebServer::SetRFXCOMMode
-					m_sql.safe_query(
-						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
-						name.c_str(),
-						(bEnabled == true) ? 1 : 0,
-						htype,
-						address.c_str(),
-						port,
-						sport.c_str(),
-						username.c_str(),
-						password.c_str(),
-						mode1, mode2, mode3, mode4, mode5, mode6,
-						iDataTimeout,
-						idx.c_str()
-					);
+					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, "
+							 "SerialPort='%q', Username='%q', Password='%q', Mode1=%d, Mode2=%d, Mode3=%d, "
+							 "Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+							 name.c_str(), (bEnabled) ? 1 : 0, htype, address.c_str(), port, sport.c_str(),
+							 username.c_str(), password.c_str(), mode1, mode2, mode3, mode4, mode5, mode6,
+							 iDataTimeout, idx.c_str());
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE ID=%q", idx.c_str());
 					if (!result.empty())
 						extra = result[0][0];
 				}
 				else {
-					m_sql.safe_query(
-						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
-						name.c_str(),
-						(bEnabled == true) ? 1 : 0,
-						htype,
-						address.c_str(),
-						port,
-						sport.c_str(),
-						username.c_str(),
-						password.c_str(),
-						extra.c_str(),
-						mode1, mode2, mode3, mode4, mode5, mode6,
-						iDataTimeout,
-						idx.c_str()
-					);
+					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, "
+							 "SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1=%d, Mode2=%d, "
+							 "Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+							 name.c_str(), (bEnabled) ? 1 : 0, htype, address.c_str(), port, sport.c_str(),
+							 username.c_str(), password.c_str(), extra.c_str(), mode1, mode2, mode3, mode4,
+							 mode5, mode6, iDataTimeout, idx.c_str());
 				}
 			}
 
@@ -3436,7 +3417,7 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "DownloadReady";
-			root["downloadok"] = (m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull) ? true : false;
+			root["downloadok"] = (m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull);
 		}
 
 		void CWebServer::Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root)
@@ -6268,7 +6249,8 @@ namespace http {
 					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
+				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority,
+									   ssendalways == "true");
 				if (bOK) {
 					root["status"] = "OK";
 					root["title"] = "AddNotification";
@@ -6344,7 +6326,8 @@ namespace http {
 					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
+				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority,
+								ssendalways == "true");
 			}
 			else if (cparam == "deletenotification")
 			{
@@ -6924,7 +6907,9 @@ namespace http {
 					}
 				}
 
-				if (m_mainworker.SwitchModal(idx, switchcmd, action, onlyonchange, until) == true)//FIXME we need to return a status of already set / no update if ooc=="1" and no status update was performed
+				if (m_mainworker.SwitchModal(idx, switchcmd, action, onlyonchange,
+							     until)) // FIXME we need to return a status of already set / no update if
+								     // ooc=="1" and no status update was performed
 				{
 					root["status"] = "OK";
 					root["title"] = "Modal";
@@ -7001,7 +6986,7 @@ namespace http {
 				_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", Username.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
 
 				root["title"] = "SwitchLight";
-				if (m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0, Username) == true)
+				if (m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0, Username))
 				{
 					root["status"] = "OK";
 				}
@@ -7062,7 +7047,7 @@ namespace http {
 				}
 				_log.Log(LOG_STATUS, "User: %s initiated a scene/group command", Username.c_str());
 
-				if (m_mainworker.SwitchScene(idx, switchcmd, Username) == true)
+				if (m_mainworker.SwitchScene(idx, switchcmd, Username))
 				{
 					root["status"] = "OK";
 					root["title"] = "SwitchScene";
@@ -8356,7 +8341,7 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 			std::string EnableEventSystemFullURLLog = request::findValue(&req, "EventSystemLogFullURL");
-			m_sql.m_bEnableEventSystemFullURLLog = EnableEventSystemFullURLLog == "on" ? true : false;
+			m_sql.m_bEnableEventSystemFullURLLog = EnableEventSystemFullURLLog == "on";
 			m_sql.UpdatePreferencesVar("EventSystemLogFullURL", (int)m_sql.m_bEnableEventSystemFullURLLog);
 
 			rnOldvalue = 0;
@@ -8773,7 +8758,7 @@ namespace http {
 								root["result"][ii]["Status"] = "Mixed";
 							root["result"][ii]["Data"] = root["result"][ii]["Status"];
 							uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
-							root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
+							root["result"][ii]["UsedByCamera"] = camIDX != 0;
 							if (camIDX != 0) {
 								std::stringstream scidx;
 								scidx << camIDX;
@@ -9400,7 +9385,7 @@ namespace http {
 					s_data << int(nValue) << ", " << sValue;
 					root["result"][ii]["Data"] = s_data.str();
 
-					root["result"][ii]["Notifications"] = (m_notifications.HasNotifications(sd[0]) == true) ? "true" : "false";
+					root["result"][ii]["Notifications"] = (m_notifications.HasNotifications(sd[0])) ? "true" : "false";
 					root["result"][ii]["ShowNotifications"] = true;
 
 					bool bHasTimers = false;
@@ -9522,7 +9507,7 @@ namespace http {
 						root["result"][ii]["SwitchType"] = Switch_Type_Desc(switchtype);
 						root["result"][ii]["SwitchTypeVal"] = switchtype;
 						uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
-						root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
+						root["result"][ii]["UsedByCamera"] = camIDX != 0;
 						if (camIDX != 0) {
 							std::stringstream scidx;
 							scidx << camIDX;
@@ -9550,7 +9535,7 @@ namespace http {
 							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
-							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
+							root["result"][ii]["InternalState"] = (bIsOn) ? "Open" : "Closed";
 							if (bIsOn) {
 								lstatus = "Open";
 							}
@@ -9567,7 +9552,7 @@ namespace http {
 							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
-							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Locked" : "Unlocked";
+							root["result"][ii]["InternalState"] = (bIsOn) ? "Locked" : "Unlocked";
 							if (bIsOn) {
 								lstatus = "Locked";
 							}
@@ -9584,7 +9569,7 @@ namespace http {
 							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
-							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Unlocked" : "Locked";
+							root["result"][ii]["InternalState"] = (bIsOn) ? "Unlocked" : "Locked";
 							if (bIsOn) {
 								lstatus = "Unlocked";
 							}
@@ -9601,7 +9586,7 @@ namespace http {
 							}
 							root["result"][ii]["TypeImg"] = "push";
 							root["result"][ii]["Status"] = "";
-							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
+							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus)) ? "On" : "Off";
 						}
 						else if (switchtype == STYPE_PushOff)
 						{
@@ -11362,7 +11347,7 @@ namespace http {
 								root["result"][ii]["Image"] = "Light";
 
 							uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
-							root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
+							root["result"][ii]["UsedByCamera"] = camIDX != 0;
 							if (camIDX != 0) {
 								std::stringstream scidx;
 								scidx << camIDX;
@@ -11417,7 +11402,7 @@ namespace http {
 						}
 					}
 #endif
-					root["result"][ii]["Timers"] = (bHasTimers == true) ? "true" : "false";
+					root["result"][ii]["Timers"] = (bHasTimers) ? "true" : "false";
 					ii++;
 				}
 			}
@@ -11561,7 +11546,7 @@ namespace http {
 				root["message"] = "No Scene Type specified!";
 				return;
 			}
-			if (m_sql.DoesSceneByNameExits(name) == true)
+			if (m_sql.DoesSceneByNameExits(name))
 			{
 				root["status"] = "ERR";
 				root["message"] = "A Scene with this Name already Exits!";
@@ -11829,7 +11814,7 @@ namespace http {
 				for (const auto &sd : result)
 				{
 					std::string sName = sd[1];
-					if ((bDisplayHidden == false) && (sName[0] == '$'))
+					if ((!bDisplayHidden) && (sName[0] == '$'))
 						continue;
 
 					std::string sLastUpdate = sd[6];
@@ -11873,9 +11858,9 @@ namespace http {
 						root["result"][ii]["Status"] = "On";
 					else
 						root["result"][ii]["Status"] = "Mixed";
-					root["result"][ii]["Timers"] = (m_sql.HasSceneTimers(sd[0]) == true) ? "true" : "false";
+					root["result"][ii]["Timers"] = (m_sql.HasSceneTimers(sd[0])) ? "true" : "false";
 					uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
-					root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
+					root["result"][ii]["UsedByCamera"] = camIDX != 0;
 					if (camIDX != 0) {
 						std::stringstream scidx;
 						scidx << camIDX;
@@ -14585,7 +14570,7 @@ namespace http {
 						std::string sMethod = request::findValue(&req, "method");
 						if (!sMethod.empty())
 							method = atoi(sMethod.c_str());
-						if (bHaveUsage == false)
+						if (!bHaveUsage)
 							method = 0;
 
 						if ((dType == pTypeYouLess) && ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED)))

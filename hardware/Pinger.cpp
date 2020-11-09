@@ -337,7 +337,7 @@ void CPinger::Do_Ping_Worker(const PingNode &Node)
 	{
 		pinger p(io_service, Node.IP.c_str(), m_iPingTimeoutms);
 		io_service.run();
-		if (p.m_PingState == true)
+		if (p.m_PingState)
 		{
 			bPingOK = true;
 		}

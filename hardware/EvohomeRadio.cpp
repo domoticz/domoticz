@@ -2013,7 +2013,7 @@ void CEvohomeRadio::Idle_Work()
 				RequestDHWTemp();  // Request DHW temp from controller as workaround for being unable to identify DeviceID
  			        RequestDHWSettings();
  			}
-			if (AllSensors == false) // Check whether individual zone sensors has been activated
+			if (!AllSensors) // Check whether individual zone sensors has been activated
 			{
 				std::vector<std::vector<std::string> > result;
 

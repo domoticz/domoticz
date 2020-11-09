@@ -593,7 +593,7 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 bool CNetatmo::SetAway(const int idx, const bool bIsAway)
 {
-	return SetProgramState(idx, (bIsAway == true) ? 1 : 0);
+	return SetProgramState(idx, (bIsAway) ? 1 : 0);
 }
 
 bool CNetatmo::SetProgramState(const int idx, const int newState)
@@ -608,7 +608,7 @@ bool CNetatmo::SetProgramState(const int idx, const int newState)
 			return false;
 		}
 	}
-	if (!m_isLogged == true)
+	if (!m_isLogged)
 	{
 		if (!Login())
 			return false;
@@ -703,7 +703,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 			return;
 		}
 	}
-	if (!m_isLogged == true)
+	if (!m_isLogged)
 	{
 		if (!Login())
 			return;
@@ -982,7 +982,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 					break;
 				}
 			}
-			if (bHaveFoundND == true)
+			if (bHaveFoundND)
 				break;
 		}
 
@@ -1358,7 +1358,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				{
 					std::string aName = "Status";
 					bool bIsActive = (module["boiler_status"].asString() == "true");
-					SendSwitch(moduleID & 0x00FFFFFF | 0x10000000, 1, 255, (bIsActive == true), 0, aName);
+					SendSwitch(moduleID & 0x00FFFFFF | 0x10000000, 1, 255, (bIsActive), 0, aName);
 				}
 				if (!module["battery_level"].empty())
 				{

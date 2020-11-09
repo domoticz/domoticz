@@ -896,27 +896,16 @@ bool bt_openwebnet::IsEqual(const bt_openwebnet& msg_to_compare)
 
   if(!m_extended)
   {
-    if ((msg_to_compare.Extract_who().compare(m_who) == 0) &&
-        (msg_to_compare.Extract_what().compare(m_what) == 0) &&
-        (msg_to_compare.Extract_where().compare(m_where) == 0) &&
-        (msg_to_compare.Extract_when().compare(m_when) == 0) &&
-        (msg_to_compare.Extract_dimension().compare(m_dimension) == 0))
-      return true;
-    else
-      return false;
+	  return (msg_to_compare.Extract_who().compare(m_who) == 0) && (msg_to_compare.Extract_what().compare(m_what) == 0) &&
+		 (msg_to_compare.Extract_where().compare(m_where) == 0) && (msg_to_compare.Extract_when().compare(m_when) == 0) &&
+		 (msg_to_compare.Extract_dimension().compare(m_dimension) == 0);
   }
   else
   {
-    if ((msg_to_compare.Extract_who().compare(m_who) == 0) &&
-        (msg_to_compare.Extract_what().compare(m_what) == 0) &&
-        (msg_to_compare.Extract_where().compare(m_where) == 0) &&
-        (msg_to_compare.Extract_level().compare(m_level) == 0) &&
-        (msg_to_compare.Extract_interface().compare(m_sInterface) == 0) &&
-        (msg_to_compare.Extract_when().compare(m_when) == 0) &&
-        (msg_to_compare.Extract_dimension().compare(m_dimension) == 0))
-      return true;
-    else
-      return false;
+	  return (msg_to_compare.Extract_who().compare(m_who) == 0) && (msg_to_compare.Extract_what().compare(m_what) == 0) &&
+		 (msg_to_compare.Extract_where().compare(m_where) == 0) && (msg_to_compare.Extract_level().compare(m_level) == 0) &&
+		 (msg_to_compare.Extract_interface().compare(m_sInterface) == 0) && (msg_to_compare.Extract_when().compare(m_when) == 0) &&
+		 (msg_to_compare.Extract_dimension().compare(m_dimension) == 0);
   }
 }
 

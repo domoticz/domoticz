@@ -304,7 +304,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	if (!message.empty()) {
 		_log.Debug(DEBUG_HARDWARE, "XiaomiGateway: message: '%s'", message.c_str());
 		result = SendMessageToGateway(message);
-		if (result == false) {
+		if (!result)
+		{
 			// Retry, send the message again
 			_log.Log(LOG_STATUS, "XiaomiGateway: SendMessageToGateway failed on first attempt, will try again");
 			sleep_milliseconds(100);
@@ -601,7 +602,9 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			}
 		}
 		else {
-			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == NAME_SELECTOR_WIRED_WALL_DUAL) || (Name == NAME_SELECTOR_WIRED_WALL_SINGLE) || (Name == NAME_ACT_BLINDS_CURTAIN)) {
+			if ((!bIsOn && nvalue >= 1) || (bIsOn) || (Name == NAME_SELECTOR_WIRED_WALL_DUAL) ||
+			    (Name == NAME_SELECTOR_WIRED_WALL_SINGLE) || (Name == NAME_ACT_BLINDS_CURTAIN))
+			{
 				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, nullptr, BatteryLevel);
 			}
 		}

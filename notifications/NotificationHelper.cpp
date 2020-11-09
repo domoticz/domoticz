@@ -1448,7 +1448,7 @@ bool CNotificationHelper::AddNotification(
 	if (!result.empty())
 		return false;//already there!
 
-	int iSendAlways = (SendAlways == true) ? 1 : 0;
+	int iSendAlways = (SendAlways) ? 1 : 0;
 	m_sql.safe_query("INSERT INTO Notifications (DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, SendAlways) VALUES ('%q','%q','%q','%q',%d,%d)",
 		DevIdx.c_str(), Param.c_str(), CustomMessage.c_str(), ActiveSystems.c_str(), Priority, iSendAlways);
 	ReloadNotifications();

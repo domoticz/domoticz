@@ -202,7 +202,7 @@ void CMeteorologisk::GetMeterDetails()
 		Log(LOG_ERROR,"Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
 		return;
 	}
-	if (root["properties"].empty()==true || root["properties"]["timeseries"].empty()==true)
+	if (root["properties"].empty() || root["properties"]["timeseries"].empty())
 	{
 		Log(LOG_ERROR,"Invalid data received, or unknown location!");
 		return;
@@ -248,11 +248,11 @@ void CMeteorologisk::GetMeterDetails()
 	//The api already provides the temperature in celcius.
 	temperature=instantData["air_temperature"].asFloat();
 
-	if (instantData["relative_humidity"].empty()==false)
+	if (!instantData["relative_humidity"].empty())
 	{
 		humidity=round(instantData["relative_humidity"].asFloat());
 	}
-	if (instantData["air_pressure_at_sea_level"].empty()==false)
+	if (!instantData["air_pressure_at_sea_level"].empty())
 	{
 		barometric = instantData["air_pressure_at_sea_level"].asFloat();
 		if (barometric<1000)
@@ -320,7 +320,7 @@ void CMeteorologisk::GetMeterDetails()
 	}
 
 	//UV
-	if (instantData["ultraviolet_index_clear_sky"].empty() == false)
+	if (!instantData["ultraviolet_index_clear_sky"].empty())
 	{
 		float UV = instantData["ultraviolet_index_clear_sky"].asFloat();
 		if ((UV < 16) && (UV >= 0))
@@ -330,7 +330,7 @@ void CMeteorologisk::GetMeterDetails()
 	}
 
 	//Cloud Cover
-	if (instantData["cloud_area_fraction"].empty() == false)
+	if (!instantData["cloud_area_fraction"].empty())
 	{
 		float cloudcover = instantData["cloud_area_fraction"].asFloat();
 		if (cloudcover >= 0.0f)

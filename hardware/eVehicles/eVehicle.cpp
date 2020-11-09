@@ -355,7 +355,7 @@ void CeVehicle::Do_Work()
 		}
 
 		// Only login if we should
-		if ((m_loggedin == false && bIsAborted == false) || (sec_counter % 68400 == 0))
+		if ((!m_loggedin && !bIsAborted) || (sec_counter % 68400 == 0))
 		{
 			Login();
 			if(!m_loggedin)

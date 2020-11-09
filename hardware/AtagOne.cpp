@@ -393,7 +393,7 @@ void CAtagOne::GetMeterDetails()
 	root["burningHours"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Branduren", "Burning hours", true).c_str()));
 	root["boilerHeatingFor"] = GetHTMLPageValue(sResult, "Ketel in bedrijf voor", "Boiler heating for", false);
 	sret= GetHTMLPageValue(sResult, "Brander status", "Flame status", false);
-	root["flameStatus"] = ((sret == "Aan") || (sret == "On")) ? true : false;
+	root["flameStatus"] = (sret == "Aan") || (sret == "On");
 	root["outsideTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Buitentemperatuur", "Outside temperature", true).c_str()));
 	root["dhwSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint warmwater", "DHW setpoint", true).c_str()));
 	root["dhwWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Warmwatertemperatuur", "DHW water temperature", true).c_str()));

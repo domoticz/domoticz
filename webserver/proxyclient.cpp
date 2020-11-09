@@ -395,10 +395,7 @@ namespace http {
 			// sec-websocket-protocol: domoproxy
 			// Sec-Websocket-Accept: compute_accept_header(websocket_key)
 			std::string response = std::string(data, len);
-			if (response.find("\r\n\r\n") == std::string::npos) {
-				return false;
-			}
-			return true;
+			return response.find("\r\n\r\n") != std::string::npos;
 		}
 
 		void CProxyClient::OnData(const unsigned char *pData, size_t length)

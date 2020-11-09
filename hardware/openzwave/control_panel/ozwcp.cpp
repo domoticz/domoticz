@@ -351,7 +351,7 @@ void MyNode::updatePoll(char* ilist, char* plist)
 		while (p != nullptr && *p)
 		{
 			np = strsep(&p, ",");
-			polls.push_back(*np == '1' ? true : false);
+			polls.push_back(*np == '1');
 		}
 		if (ids.size() != polls.size()) {
 #ifdef OZW_WRITE_LOG

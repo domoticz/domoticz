@@ -964,16 +964,15 @@ bool COpenZWave::OpenSerialConnector()
 
 	nValue = 0; //default true
 	m_sql.GetPreferencesVar("ZWaveAssumeAwake", nValue);
-	OpenZWave::Options::Get()->AddOptionBool("AssumeAwake", (nValue == 1) ? true : false);
+	OpenZWave::Options::Get()->AddOptionBool("AssumeAwake", nValue == 1);
 
 	nValue = 1; //default true
 	m_sql.GetPreferencesVar("ZWavePerformReturnRoutes", nValue);
-	OpenZWave::Options::Get()->AddOptionBool("PerformReturnRoutes", (nValue == 1) ? true : false);
+	OpenZWave::Options::Get()->AddOptionBool("PerformReturnRoutes", nValue == 1);
 
 	nValue = 1; //default true
 	m_sql.GetPreferencesVar("ZWaveAutoUpdateConfigFile", nValue);
-	OpenZWave::Options::Get()->AddOptionBool("AutoUpdateConfigFile", (nValue == 1) ? true : false);
-	
+	OpenZWave::Options::Get()->AddOptionBool("AutoUpdateConfigFile", nValue == 1);
 
 	try
 	{
@@ -1094,7 +1093,7 @@ bool COpenZWave::GetValueByCommandClass(const uint8_t nodeID, const uint8_t inst
 		if (cmdClass == commandClass)
 		{
 			std::string sLabel = m_pManager->GetValueLabel(value);
-			if (m_pManager->IsValueReadOnly(value) == true)
+			if (m_pManager->IsValueReadOnly(value))
 				continue;
 			OpenZWave::ValueID::ValueGenre vGenre = value.GetGenre();
 			if (vGenre != OpenZWave::ValueID::ValueGenre_User)
@@ -1118,7 +1117,7 @@ bool COpenZWave::GetValueByCommandClassIndex(const uint8_t nodeID, const uint8_t
 		uint8_t cmdClass = value.GetCommandClassId();
 		if (cmdClass == commandClass)
 		{
-			if (m_pManager->IsValueReadOnly(value) == true)
+			if (m_pManager->IsValueReadOnly(value))
 				continue;
 			if (vGenre != OpenZWave::ValueID::ValueGenre_User)
 				continue;
@@ -1257,13 +1256,14 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 		if ((pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL) || (bHandleAsBinary))
 		{
 			//On/Off device
-			bool bFound = (GetValueByCommandClass(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true);
+			bool bFound = (GetValueByCommandClass(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SWITCH_BINARY, vID));
 			if (!bFound)
-				bFound = (GetValueByCommandClass(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_DOOR_LOCK, vID) == true);
+				bFound = (GetValueByCommandClass(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_DOOR_LOCK, vID));
 			if (!bFound)
-				bFound = (GetValueByCommandClassIndex(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, ValueID_Index_SwitchMultiLevel::Level, vID) == true);
+				bFound = (GetValueByCommandClassIndex(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL,
+								      ValueID_Index_SwitchMultiLevel::Level, vID));
 			if (!bFound)
-				bFound = (GetValueByCommandClass(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SOUND_SWITCH, vID) == true);
+				bFound = (GetValueByCommandClass(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SOUND_SWITCH, vID));
 			if (bFound)
 			{
 				OpenZWave::ValueID::ValueType vType = vID.GetType();
@@ -1341,7 +1341,8 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 			//dimmable/color light  device
 			if ((svalue > 99) && (svalue != 255))
 				svalue = 99;
-			if (GetValueByCommandClassIndex(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, ValueID_Index_SwitchMultiLevel::Level, vID) == true)
+			if (GetValueByCommandClassIndex(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL,
+							ValueID_Index_SwitchMultiLevel::Level, vID))
 			{
 				std::string vLabel = m_pManager->GetValueLabel(vID);
 
@@ -1378,7 +1379,8 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 				}
 
 			}
-			else if (GetValueByCommandClassIndex(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_PROPRIETARY, ValueID_Index_SwitchMultiLevel::Level, vID) == true)
+			else if (GetValueByCommandClassIndex(pDevice->nodeID, (uint8_t)instanceID, COMMAND_CLASS_PROPRIETARY,
+							     ValueID_Index_SwitchMultiLevel::Level, vID))
 			{
 				if (
 					(pNode->Manufacturer_id == 0x010F)
@@ -1470,7 +1472,7 @@ bool COpenZWave::SwitchColor(const uint8_t nodeID, const uint8_t instanceID, con
 		}
 
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
-		if (GetValueByCommandClassIndex(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, ValueID_Index_Color::Color, vID) == true)
+		if (GetValueByCommandClassIndex(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, ValueID_Index_Color::Color, vID))
 		{
 			std::string OutColorStr = ColorStr;
 			if (pNode->Manufacturer_id == 0x0131)
@@ -1562,7 +1564,7 @@ void COpenZWave::SetThermostatSetPoint(const uint8_t nodeID, const uint8_t insta
 	if (m_pManager == nullptr)
 		return;
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
-	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_SETPOINT, vID) == true)
+	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_SETPOINT, vID))
 	{
 		std::string vUnits = m_pManager->GetValueUnits(vID);
 		float temp = value;
@@ -1665,7 +1667,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			if (vType == OpenZWave::ValueID::ValueType_String)
 			{
 				std::string strValue;
-				if (m_pManager->GetValueAsString(vID, &strValue) == true)
+				if (m_pManager->GetValueAsString(vID, &strValue))
 				{
 					pNode->Application_version = (int)(atof(strValue.c_str()) * 100);
 				}
@@ -1721,9 +1723,9 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		_device.devType = ZDTYPE_SWITCH_NORMAL;
 		if (vType == OpenZWave::ValueID::ValueType_Bool)
 		{
-			if (m_pManager->GetValueAsBool(vID, &bValue) == true)
+			if (m_pManager->GetValueAsBool(vID, &bValue))
 			{
-				if (bValue == true)
+				if (bValue)
 					_device.intvalue = 255;
 				else
 					_device.intvalue = 0;
@@ -1749,7 +1751,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Byte)
 			{
-				if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
+				if (m_pManager->GetValueAsByte(vID, &byteValue))
 				{
 					_device.devType = ZDTYPE_SWITCH_DIMMER;
 					_device.intvalue = byteValue;
@@ -1795,7 +1797,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		if (vType == OpenZWave::ValueID::ValueType_String)
 		{
 			std::string strValue;
-			if (m_pManager->GetValueAsString(vID, &strValue) == true)
+			if (m_pManager->GetValueAsString(vID, &strValue))
 			{
 			}
 		}
@@ -1829,7 +1831,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		{
 			//could be a location or a user code that was entered, we do not use this for now
 			std::string strValue;
-			if (m_pManager->GetValueAsString(vID, &strValue) == true)
+			if (m_pManager->GetValueAsString(vID, &strValue))
 			{
 			}
 			return;
@@ -1838,13 +1840,13 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		if (vType == OpenZWave::ValueID::ValueType_List)
 		{
 			int32 listValue = 0;
-			if (m_pManager->GetValueListSelection(vID, &listValue) == false)
+			if (!m_pManager->GetValueListSelection(vID, &listValue))
 				return;
 			alarm_value = listValue;
 		}
 		else if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
-			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+			if (!m_pManager->GetValueAsByte(vID, &byteValue))
 				return;
 			alarm_value = 0; //we assume a previous event cleared message was received
 		}
@@ -1871,7 +1873,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d, NodeID: %d (0x%02x)", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, NodeID, NodeID);
 			return;
 		}
-		if (m_pManager->GetValueAsFloat(vID, &fValue) == false)
+		if (!m_pManager->GetValueAsFloat(vID, &fValue))
 		{
 			return;
 		}
@@ -1955,7 +1957,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d, NodeID: %d (0x%02x)", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, NodeID, NodeID);
 			return;
 		}
-		if (m_pManager->GetValueAsFloat(vID, &fValue) == false)
+		if (!m_pManager->GetValueAsFloat(vID, &fValue))
 			return;
 
 		if (
@@ -2127,7 +2129,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	{
 		if (vType == OpenZWave::ValueID::ValueType_Decimal)
 		{
-			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+			if (m_pManager->GetValueAsFloat(vID, &fValue))
 			{
 				if (vUnits == "F")
 				{
@@ -2221,7 +2223,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			if (vType == OpenZWave::ValueID::ValueType_String)
 			{
 				std::string strValue;
-				if (m_pManager->GetValueAsString(vID, &strValue) == true)
+				if (m_pManager->GetValueAsString(vID, &strValue))
 				{
 					if (strValue == "Running")
 					{
@@ -2245,7 +2247,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			if (vType == OpenZWave::ValueID::ValueType_String)
 			{
 				std::string strValue;
-				if (m_pManager->GetValueAsString(vID, &strValue) == true)
+				if (m_pManager->GetValueAsString(vID, &strValue))
 				{
 					if (strValue == "Cooling")
 					{
@@ -2291,7 +2293,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		}
 		else if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
-			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+			if (!m_pManager->GetValueAsByte(vID, &byteValue))
 				return;
 			if (vOrgIndex == ValueID_Index_Clock::Hour)
 			{
@@ -2331,7 +2333,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Int)
 			{
-				if (m_pManager->GetValueAsInt(vID, &iValue) == true)
+				if (m_pManager->GetValueAsInt(vID, &iValue))
 				{
 					while (1 == 0);
 				}
@@ -2347,7 +2349,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			int32 lValue = 0;
 			if (vType == OpenZWave::ValueID::ValueType_List)
 			{
-				if (m_pManager->GetValueListSelection(vID, &lValue) == false)
+				if (!m_pManager->GetValueListSelection(vID, &lValue))
 					return;
 			}
 			if ((lValue == 0) || (lValue == 2)) // CentralSceneMask_KeyReleased
@@ -2371,9 +2373,9 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			_device.devType = ZDTYPE_SWITCH_NORMAL;
 			if (vType == OpenZWave::ValueID::ValueType_Bool)
 			{
-				if (m_pManager->GetValueAsBool(vID, &bValue) == true)
+				if (m_pManager->GetValueAsBool(vID, &bValue))
 				{
-					if (bValue == true)
+					if (bValue)
 						_device.intvalue = 255;
 					else
 						_device.intvalue = 0;
@@ -2384,7 +2386,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			{
 				return; //Not in use at the moment
 				int32 lValue = 0;
-				if (m_pManager->GetValueListSelection(vID, &lValue) == false)
+				if (!m_pManager->GetValueListSelection(vID, &lValue))
 					return;
 				if (
 					(lValue == 0)
@@ -2414,7 +2416,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			return;
 		if (vType != OpenZWave::ValueID::ValueType_Int)
 			return; //not interested in you
-		if (m_pManager->GetValueAsInt(vID, &intValue) == false)
+		if (!m_pManager->GetValueAsInt(vID, &intValue))
 			return;
 		_device.instanceID = instance;
 		_device.devType = ZDTYPE_CENTRAL_SCENE;
@@ -2426,15 +2428,15 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		//Ignored
 		if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
-			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+			if (!m_pManager->GetValueAsByte(vID, &byteValue))
 				return;
 		}
 		else if (vType == OpenZWave::ValueID::ValueType_List)
 		{
 			std::vector<std::string > vStringList;
-			if (m_pManager->GetValueListItems(vID, &vStringList) == false)
+			if (!m_pManager->GetValueListItems(vID, &vStringList))
 				return;
-			if (m_pManager->GetValueListSelection(vID, &intValue) == false)
+			if (!m_pManager->GetValueListSelection(vID, &intValue))
 				return;
 		}
 		else
@@ -2451,7 +2453,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			return; //not interested in you
 
 		std::vector<std::string > vStringList;
-		if (m_pManager->GetValueListItems(vID, &vStringList) == false)
+		if (!m_pManager->GetValueListItems(vID, &vStringList))
 			return;
 		_device.instanceID = instance;
 		_device.devType = ZDTYPE_SWITCH_NORMAL;
@@ -2471,7 +2473,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			//Slat/Tilt position
 			if (vType == OpenZWave::ValueID::ValueType_Byte)
 			{
-				if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
+				if (m_pManager->GetValueAsByte(vID, &byteValue))
 				{
 					_device.instanceID = (uint8_t)vOrgIndex;
 					_device.devType = ZDTYPE_SWITCH_DIMMER;
@@ -2619,37 +2621,37 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 
 	if (vType == OpenZWave::ValueID::ValueType_Decimal)
 	{
-		if (m_pManager->GetValueAsFloat(vID, &fValue) == false)
+		if (!m_pManager->GetValueAsFloat(vID, &fValue))
 			return;
 	}
 	else if (vType == OpenZWave::ValueID::ValueType_Bool)
 	{
-		if (m_pManager->GetValueAsBool(vID, &bValue) == false)
+		if (!m_pManager->GetValueAsBool(vID, &bValue))
 			return;
 	}
 	else if (vType == OpenZWave::ValueID::ValueType_Byte)
 	{
-		if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+		if (!m_pManager->GetValueAsByte(vID, &byteValue))
 			return;
 	}
 	else if (vType == OpenZWave::ValueID::ValueType_Int)
 	{
-		if (m_pManager->GetValueAsInt(vID, &intValue) == false)
+		if (!m_pManager->GetValueAsInt(vID, &intValue))
 			return;
 	}
 	else if (vType == OpenZWave::ValueID::ValueType_Short)
 	{
-		if (m_pManager->GetValueAsShort(vID, &shortValue) == false)
+		if (!m_pManager->GetValueAsShort(vID, &shortValue))
 			return;
 	}
 	else if ((vType == OpenZWave::ValueID::ValueType_Raw) || (vType == OpenZWave::ValueID::ValueType_String))
 	{
-		if (m_pManager->GetValueAsString(vID, &strValue) == false)
+		if (!m_pManager->GetValueAsString(vID, &strValue))
 			return;
 	}
 	else if (vType == OpenZWave::ValueID::ValueType_List)
 	{
-		if (m_pManager->GetValueListSelection(vID, &lValue) == false)
+		if (!m_pManager->GetValueListSelection(vID, &lValue))
 			return;
 	}
 	else
@@ -2717,9 +2719,9 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		if (vType == OpenZWave::ValueID::ValueType_List)
 		{
 			std::vector<std::string > vStringList;
-			if (m_pManager->GetValueListItems(vID, &vStringList) == false)
+			if (!m_pManager->GetValueListItems(vID, &vStringList))
 				return;
-			if (m_pManager->GetValueListSelection(vID, &intValue) == false)
+			if (!m_pManager->GetValueListSelection(vID, &intValue))
 				return;
 		}
 		return; //not used right now
@@ -2812,7 +2814,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 
 					if (vType == OpenZWave::ValueID::ValueType_String)
 					{
-						if (m_pManager->GetValueAsString(vID, &strValue) == true)
+						if (m_pManager->GetValueAsString(vID, &strValue))
 						{
 						}
 					}
@@ -2856,7 +2858,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		}
 		else if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
-			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+			if (!m_pManager->GetValueAsByte(vID, &byteValue))
 				return;
 			if (vOrgIndex == ValueID_Index_Clock::Hour)
 			{
@@ -3014,7 +3016,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 					char szDeviceName[50];
 					sprintf(szDeviceName, "Alarm Type: 0x%02X", m_LastAlarmTypeReceived);
 					std::string tmpstr = szDeviceName;
-					SendSwitch(NodeID, (uint8_t)m_LastAlarmTypeReceived, pDevice->batValue, (intValue != 0) ? true : false, 0, tmpstr);
+					SendSwitch(NodeID, (uint8_t)m_LastAlarmTypeReceived, pDevice->batValue, intValue != 0, 0, tmpstr);
 					m_LastAlarmTypeReceived = -1;
 				}
 			}
@@ -3200,9 +3202,9 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			{
 				if (vType == OpenZWave::ValueID::ValueType_Bool)
 				{
-					if (m_pManager->GetValueAsBool(vID, &bValue) == true)
+					if (m_pManager->GetValueAsBool(vID, &bValue))
 					{
-						if (bValue == true)
+						if (bValue)
 							pDevice->intvalue = 255;
 						else
 							pDevice->intvalue = 0;
@@ -3211,7 +3213,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 				else if (vType == OpenZWave::ValueID::ValueType_List)
 				{
 					return; //Not in use at the moment
-					if (m_pManager->GetValueListSelection(vID, &lValue) == false)
+					if (!m_pManager->GetValueListSelection(vID, &lValue))
 						return;
 					if (
 						(lValue == 0)
@@ -3240,7 +3242,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 				return;
 			if (vOrgIndex == ValueID_Index_ThermostatFanMode::FanMode)
 			{
-				if (m_pManager->GetValueAsString(vID, &strValue) == true)
+				if (m_pManager->GetValueAsString(vID, &strValue))
 				{
 					if (strValue == "Running")
 					{
@@ -3283,7 +3285,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Bool)
 			{
-				if (bValue == true)
+				if (bValue)
 					intValue = 255;
 				else
 					intValue = 0;
@@ -3531,7 +3533,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			return;
 		if (vOrgIndex == ValueID_Index_ThermostatFanMode::FanMode)
 		{
-			if (m_pManager->GetValueAsString(vID, &strValue) == true)
+			if (m_pManager->GetValueAsString(vID, &strValue))
 			{
 				if (strValue == "Cooling")
 				{
@@ -3555,7 +3557,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 				return;
 			if (vType != OpenZWave::ValueID::ValueType_Int)
 				return; //not interested in you
-			if (m_pManager->GetValueAsInt(vID, &intValue) == false)
+			if (!m_pManager->GetValueAsInt(vID, &intValue))
 				return;
 			if (intValue == 0)
 				return; //invalid SceneID (should we ignore it)
@@ -3651,7 +3653,7 @@ bool COpenZWave::IsNodeReplaced()
 
 bool COpenZWave::IsNodeIncluded()
 {
-	return ((m_LastIncludedNode != 0) && (m_bHaveLastIncludedNodeInfo == true));
+	return ((m_LastIncludedNode != 0) && (m_bHaveLastIncludedNodeInfo));
 }
 
 bool COpenZWave::IsNodeExcluded()
@@ -3997,7 +3999,7 @@ bool COpenZWave::TransferPrimaryRole()
 
 bool COpenZWave::CancelControllerCommand(const bool bForce)
 {
-	if ((m_bControllerCommandInProgress == false) && (!bForce))
+	if ((!m_bControllerCommandInProgress) && (!bForce))
 		return false;
 	if (m_pManager == nullptr)
 		return false;
@@ -4376,12 +4378,11 @@ void COpenZWave::SetClock(const uint8_t nodeID, const uint8_t /*instanceID*/, co
 	OpenZWave::ValueID vHour(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	OpenZWave::ValueID vMinute(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 
-
-	if (GetValueByCommandClassIndex(nodeID, 1, COMMAND_CLASS_CLOCK, ValueID_Index_Clock::Day, vDay) == false)
+	if (!GetValueByCommandClassIndex(nodeID, 1, COMMAND_CLASS_CLOCK, ValueID_Index_Clock::Day, vDay))
 		return;
-	if (GetValueByCommandClassIndex(nodeID, 1, COMMAND_CLASS_CLOCK, ValueID_Index_Clock::Hour, vHour) == false)
+	if (!GetValueByCommandClassIndex(nodeID, 1, COMMAND_CLASS_CLOCK, ValueID_Index_Clock::Hour, vHour))
 		return;
-	if (GetValueByCommandClassIndex(nodeID, 1, COMMAND_CLASS_CLOCK, ValueID_Index_Clock::Minute, vMinute) == false)
+	if (!GetValueByCommandClassIndex(nodeID, 1, COMMAND_CLASS_CLOCK, ValueID_Index_Clock::Minute, vMinute))
 		return;
 
 	try
@@ -4406,7 +4407,7 @@ void COpenZWave::SetThermostatMode(const uint8_t nodeID, const uint8_t instanceI
 	try
 	{
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
-		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, vID) == true)
+		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, vID))
 		{
 			unsigned int homeID = vID.GetHomeId();
 			uint8_t vnodeID = vID.GetNodeId();
@@ -4437,7 +4438,7 @@ void COpenZWave::SetThermostatFanMode(const uint8_t nodeID, const uint8_t instan
 	try
 	{
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
-		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, vID) == true)
+		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, vID))
 		{
 			m_pManager->SetValueListSelection(vID, ZWave_Thermostat_Fan_Modes[fMode]);
 		}
@@ -4468,7 +4469,7 @@ std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned 
 	if (pDevice)
 	{
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
-		if (GetValueByCommandClass((uint8_t)nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, vID) == true)
+		if (GetValueByCommandClass((uint8_t)nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, vID))
 		{
 			unsigned int homeID = vID.GetHomeId();
 			uint8_t vnodeID = vID.GetNodeId();
@@ -4499,7 +4500,7 @@ std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 	if (pDevice)
 	{
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
-		if (GetValueByCommandClass((uint8_t)nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, vID) == true)
+		if (GetValueByCommandClass((uint8_t)nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, vID))
 		{
 			unsigned int homeID = vID.GetHomeId();
 			uint8_t vnodeID = vID.GetNodeId();
@@ -4836,7 +4837,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const uint8_t node
 					uint8_t commandclass = ittValue.GetCommandClassId();
 					if ((commandclass == COMMAND_CLASS_CONFIGURATION) || (commandclass == COMMAND_CLASS_PROTECTION))
 					{
-						if (m_pManager->IsValueReadOnly(ittValue) == true)
+						if (m_pManager->IsValueReadOnly(ittValue))
 							continue;
 
 						OpenZWave::ValueID::ValueType vType = ittValue.GetType();
@@ -4882,7 +4883,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const uint8_t node
 							continue;
 						}
 
-						if (m_pManager->GetValueAsString(ittValue, &szValue) == false)
+						if (!m_pManager->GetValueAsString(ittValue, &szValue))
 						{
 							continue;
 						}
@@ -4920,7 +4921,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const uint8_t node
 						{
 							if ((m_pManager->GetValueLabel(ittValue) == "Wake-up Interval") && (ittValue.GetType() == OpenZWave::ValueID::ValueType_Int))
 							{
-								if (m_pManager->GetValueAsString(ittValue, &szValue) == false)
+								if (!m_pManager->GetValueAsString(ittValue, &szValue))
 								{
 									continue;
 								}

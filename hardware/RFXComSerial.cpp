@@ -126,7 +126,7 @@ void RFXComSerial::Do_Work()
 
 	Log(LOG_STATUS, "Worker started...");
 
-	while (IsStopRequested(1000) == false)
+	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
@@ -835,7 +835,7 @@ void RFXComSerial::readCallback(const char *data, size_t len)
 		if (!m_bInBootloaderMode)
 		{
 			bool bRet = onInternalMessage((const unsigned char *)data, len);
-			if (bRet == false)
+			if (!bRet)
 			{
 				//close serial connection, and restart
 				terminate();

@@ -1031,14 +1031,11 @@ void CPanasonic::SendCommand(const int ID, const std::string &command)
 bool CPanasonic::SetExecuteCommand(const int ID, const std::string &command)
 {
 	for (const auto &pnode : m_pNodes)
-	{
 		if (pnode->m_ID == ID)
-		{
 			pnode->SetExecuteCommand(command);
-			return true;
-		}
-	}
-	return false;
+
+	return std::any_of(m_pNodes.begin(), m_pNodes.end(),
+			   [=](const std::shared_ptr<CPanasonicNode> &pnode) { return pnode->m_ID == ID; });
 }
 
 //Webserver helpers

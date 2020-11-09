@@ -94,10 +94,12 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 			}
 			for (uint8_t ii = 1; ii < 9; ii++) {
 				//z = (firstEight >> (8 - ii)) & 0x01;
-				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (8 - ii)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, ((firstEight >> (8 - ii)) & 0x01) != 0, 0,
+					   "Relay " + std::to_string(ii));
 			}
 			for (uint8_t ii = 1; ii < 9; ii++)
-				SendSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, ((secondEight >> (8 - ii) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8+ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, (secondEight >> (8 - ii) & 0x01) != 0, 0,
+					   "Relay " + std::to_string(8 + ii));
 		} 
 		break;
 	}
@@ -136,7 +138,7 @@ void CDenkoviUSBDevices::Do_Work()
 		m_LastHeartbeat = mytime(nullptr);
 		if (msec_counter++ >= 40) {
 			msec_counter = 0;
-			if (m_readingNow == false && m_updateIo == false)
+			if (!m_readingNow && !m_updateIo)
 			{
 				//Every 4 seconds
 				GetMeterDetails();
@@ -156,7 +158,7 @@ bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char 
 	int io = pSen->LIGHTING2.unitcode;
 	uint8_t command = pSen->LIGHTING2.cmnd;
 
-	if (m_bIsStarted == false)
+	if (!m_bIsStarted)
 		return false;
 
 	switch (m_iModel) {

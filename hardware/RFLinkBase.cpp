@@ -353,7 +353,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		time_t btime = mytime(nullptr);
 
 		// Wait for an OK response from RFLink to make sure the command was executed
-		while (m_bTXokay == false) {
+		while (!m_bTXokay)
+		{
 			if (difftime(btime,atime) > 4) {
 				_log.Log(LOG_ERROR, "RFLink: TX time out...");
 				return false;
@@ -480,7 +481,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 
 		// --- Sending first an "ON command" needed
-		if (bSendOn == true) {
+		if (bSendOn)
+		{
 			std::string tswitchcmnd = "ON";
 			//Build send string
 			std::stringstream sstr;
@@ -493,7 +495,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			time_t btime = mytime(nullptr);
 
 			// Wait for an OK response from RFLink to make sure the command was executed
-			while (m_bTXokay == false) {
+			while (!m_bTXokay)
+			{
 				if (difftime(btime,atime) > 4) {
 					_log.Log(LOG_ERROR, "RFLink: TX time out...");
 					return false;
@@ -518,7 +521,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		time_t btime = mytime(nullptr);
 
 		// Wait for an OK response from RFLink to make sure the command was executed
-		while (m_bTXokay == false) {
+		while (!m_bTXokay)
+		{
 			sleep_milliseconds(10);
 			if (difftime(btime,atime) > 4) {
 				_log.Log(LOG_ERROR, "RFLink: TX time out...");
@@ -543,7 +547,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			time_t btime = mytime(nullptr);
 
 			// Wait for an OK response from RFLink to make sure the command was executed
-			while (m_bTXokay == false) {
+			while (!m_bTXokay)
+			{
 				sleep_milliseconds(10);
 				if (difftime(btime,atime) > 4) {
 					_log.Log(LOG_ERROR, "RFLink: TX time out...");
@@ -664,7 +669,8 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	if (!bHideDebugLog)
 		_log.Log(LOG_NORM, "RFLink: %s", sLine.c_str());
 #endif
-   if (m_bRFDebug == true) _log.Log(LOG_NORM, "RFLink: %s", sLine.c_str());
+	if (m_bRFDebug)
+		_log.Log(LOG_NORM, "RFLink: %s", sLine.c_str());
 
 	//std::string Sensor_ID = results[1];
 	if (results.size() >2)
@@ -1200,7 +1206,8 @@ namespace http {
 			time_t btime = mytime(nullptr);
 
 			// Wait for an OK response from RFLink to make sure the command was executed
-			while (pRFLINK->m_bTXokay == false) {
+			while (!pRFLINK->m_bTXokay)
+			{
 				if (difftime(btime,atime) > 4) {
 					_log.Log(LOG_ERROR, "RFLink: TX time out...");
 					bCreated = false;
@@ -1209,7 +1216,7 @@ namespace http {
 				btime = mytime(nullptr);
 			}
 
-			#ifdef _DEBUG
+#ifdef _DEBUG
 			_log.Log(LOG_STATUS, "RFLink custom command done");
 			#endif
 

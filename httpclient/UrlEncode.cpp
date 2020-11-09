@@ -59,50 +59,22 @@ std::string CURLEncode::decToHex(char num, int radix)
 // TRUE = UNSAFE, FALSE = SAFE
 bool CURLEncode::isUnsafe(char compareChar)
 {
-	bool bcharfound = false;
-	int m_strLen = 0;
-
-	m_strLen = csUnsafeString.size();
-	for(int ichar_pos = 0; ichar_pos < m_strLen ;ichar_pos++)
-	{
-		char tmpsafeChar = csUnsafeString[ichar_pos]; 
-		if(tmpsafeChar == compareChar)
-		{ 
-			bcharfound = true;
-			break;
-		} 
-	}
+	bool bcharfound =
+		std::any_of(csUnsafeString.begin(), csUnsafeString.end(), [=](char tmpsafeChar) { return tmpsafeChar == compareChar; });
 	int char_ascii_value = 0;
 	//char_ascii_value = __toascii(compareChar);
 	char_ascii_value = (int) compareChar;
 
-	if(bcharfound == false &&  char_ascii_value > 32 && char_ascii_value < 123)
-	{
-		return false;
-	}
-	// found no unsafe chars, return false		
-	else
-	{
-		return true;
-	}
-
-	return true;
+	return !(!bcharfound && char_ascii_value > 32 && char_ascii_value < 123);
 }
 // PURPOSE OF THIS FUNCTION IS TO CONVERT A STRING 
 // TO URL ENCODE FORM.
 std::string CURLEncode::URLEncode(const std::string &pcsEncode)
-{	
-	int ichar_pos;
-	std::string csEncode;
-	std::string csEncoded;	
-	int m_length;
+{
+	std::string csEncoded;
 
-	csEncode = pcsEncode;
-	m_length = csEncode.size();
-
-	for(ichar_pos = 0; ichar_pos < m_length; ichar_pos++)
+	for (const auto &ch : pcsEncode)
 	{
-		char ch = csEncode[ichar_pos];
 		//if (ch < ' ') 
 		//{
 		//	ch = ch;

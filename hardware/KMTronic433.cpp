@@ -162,7 +162,7 @@ bool KMTronic433::WriteInt(const unsigned char *data, const size_t len, const bo
 	if (!bWaitForReturn)
 		return true;
 	sleep_milliseconds(100);
-	return (m_bHaveReceived == true);
+	return (m_bHaveReceived);
 }
 
 void KMTronic433::GetRelayStates()

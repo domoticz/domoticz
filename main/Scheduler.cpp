@@ -77,7 +77,7 @@ void CScheduler::ReloadSchedules()
 		{
 			bool bDUsed = (atoi(sd[7].c_str()) != 0);
 
-			if (bDUsed == true)
+			if (bDUsed)
 			{
 				tScheduleItem titem;
 
@@ -148,7 +148,7 @@ void CScheduler::ReloadSchedules()
 				}
 				titem.Days = atoi(sd[5].c_str());
 				titem.DeviceName = sd[6];
-				if (AdjustScheduleItem(&titem, false) == true)
+				if (AdjustScheduleItem(&titem, false))
 					m_scheduleitems.push_back(titem);
 			}
 			else
@@ -245,7 +245,7 @@ void CScheduler::ReloadSchedules()
 			}
 			titem.Days = atoi(sd[5].c_str());
 			titem.DeviceName = sd[6];
-			if (AdjustScheduleItem(&titem, false) == true)
+			if (AdjustScheduleItem(&titem, false))
 				m_scheduleitems.push_back(titem);
 		}
 	}
@@ -332,7 +332,7 @@ void CScheduler::ReloadSchedules()
 			titem.bUseRandomness = false;
 			titem.Days = atoi(sd[4].c_str());
 			titem.DeviceName = sd[5];
-			if (AdjustScheduleItem(&titem, false) == true)
+			if (AdjustScheduleItem(&titem, false))
 				m_scheduleitems.push_back(titem);
 		}
 	}
@@ -796,10 +796,10 @@ void CScheduler::CheckSchedules()
 				char ltimeBuf[30];
 				strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &ltime);
 
-				if (item.bIsScene == true)
+				if (item.bIsScene)
 					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, SceneID: %" PRIu64 ", Time: %s",
 						 item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
-				else if (item.bIsThermostat == true)
+				else if (item.bIsThermostat)
 					_log.Log(LOG_STATUS,
 						 "Schedule item started! Name: %s, Type: %s, ThermostatID: %" PRIu64 ", Time: %s",
 						 item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
@@ -817,7 +817,7 @@ void CScheduler::CheckSchedules()
 				}
 				else
 				{
-					if (item.bIsScene == true)
+					if (item.bIsScene)
 					{
 						/*
 												if (
@@ -835,7 +835,7 @@ void CScheduler::CheckSchedules()
 								 item.RowID, ltimeBuf);
 						}
 					}
-					else if (item.bIsThermostat == true)
+					else if (item.bIsThermostat)
 					{
 						std::stringstream sstr;
 						sstr << item.RowID;

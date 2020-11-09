@@ -155,7 +155,7 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Data is not json formatted.");
 		return;
 	}
-	if (root["nodenr"].empty() == true)
+	if (root["nodenr"].empty())
 	{
 		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Nodenr not found.");
 		return;

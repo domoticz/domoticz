@@ -114,7 +114,7 @@ Serial::SerialImpl::SerialImpl (const string &port, unsigned long baudrate,
 {
 	pthread_mutex_init(&this->read_mutex, nullptr);
 	pthread_mutex_init(&this->write_mutex, nullptr);
-	if (port_.empty() == false)
+	if (!port_.empty())
 		open();
 }
 
@@ -131,8 +131,9 @@ Serial::SerialImpl::open ()
   if (port_.empty ()) {
     throw invalid_argument ("Empty port is invalid.");
   }
-  if (is_open_ == true) {
-    throw SerialException ("Serial port already open.");
+  if (is_open_)
+  {
+	  throw SerialException("Serial port already open.");
   }
 
   fd_ = ::open (port_.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -331,7 +332,8 @@ Serial::SerialImpl::reconfigurePort ()
     throw invalid_argument ("OS does not currently support custom bauds");
 #endif
   }
-  if (custom_baud == false) {
+  if (!custom_baud)
+  {
 #ifdef _BSD_SOURCE
     ::cfsetspeed(&options, baud);
 #else
@@ -453,18 +455,23 @@ Serial::SerialImpl::reconfigurePort ()
 void
 Serial::SerialImpl::close ()
 {
-  if (is_open_ == true) {
-    if (fd_ != -1) {
-      int ret;
-      ret = ::close (fd_);
-      if (ret == 0) {
-        fd_ = -1;
-      } else {
-        THROW (IOException, errno);
-      }
-    }
-    is_open_ = false;
-  }
+	if (is_open_)
+	{
+		if (fd_ != -1)
+		{
+			int ret;
+			ret = ::close(fd_);
+			if (ret == 0)
+			{
+				fd_ = -1;
+			}
+			else
+			{
+				THROW(IOException, errno);
+			}
+		}
+		is_open_ = false;
+	}
 }
 
 bool
@@ -605,9 +612,10 @@ Serial::SerialImpl::read (uint8_t *buf, size_t size)
 size_t
 Serial::SerialImpl::write (const uint8_t *data, size_t length)
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::write");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::write");
+	}
   fd_set writefds;
   size_t bytes_written = 0;
 
@@ -782,45 +790,50 @@ Serial::SerialImpl::getFlowcontrol () const
 void
 Serial::SerialImpl::flush ()
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::flush");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::flush");
+	}
   tcdrain (fd_);
 }
 
 void
 Serial::SerialImpl::flushInput ()
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::flushInput");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::flushInput");
+	}
   tcflush (fd_, TCIFLUSH);
 }
 
 void
 Serial::SerialImpl::flushOutput ()
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::flushOutput");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::flushOutput");
+	}
   tcflush (fd_, TCOFLUSH);
 }
 
 void
 Serial::SerialImpl::sendBreak (int duration)
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::sendBreak");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::sendBreak");
+	}
   tcsendbreak (fd_, static_cast<int> (duration / 4));
 }
 
 void
 Serial::SerialImpl::setBreak (bool level)
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::setBreak");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::setBreak");
+	}
 
   if (level) {
     if (-1 == ioctl (fd_, TIOCSBRK))
@@ -842,9 +855,10 @@ Serial::SerialImpl::setBreak (bool level)
 void
 Serial::SerialImpl::setRTS (bool level)
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::setRTS");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::setRTS");
+	}
 
   int command = TIOCM_RTS;
 
@@ -868,9 +882,10 @@ Serial::SerialImpl::setRTS (bool level)
 void
 Serial::SerialImpl::setDTR (bool level)
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::setDTR");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::setDTR");
+	}
 
   int command = TIOCM_DTR;
 
@@ -937,9 +952,10 @@ while (is_open_ == true) {
 bool
 Serial::SerialImpl::getCTS ()
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::getCTS");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::getCTS");
+	}
 
   int status;
 
@@ -958,9 +974,10 @@ Serial::SerialImpl::getCTS ()
 bool
 Serial::SerialImpl::getDSR ()
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::getDSR");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::getDSR");
+	}
 
   int status;
 
@@ -979,9 +996,10 @@ Serial::SerialImpl::getDSR ()
 bool
 Serial::SerialImpl::getRI ()
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::getRI");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::getRI");
+	}
 
   int status;
 
@@ -1000,9 +1018,10 @@ Serial::SerialImpl::getRI ()
 bool
 Serial::SerialImpl::getCD ()
 {
-  if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::getCD");
-  }
+	if (!is_open_)
+	{
+		throw PortNotOpenedException("Serial::getCD");
+	}
 
   int status;
 

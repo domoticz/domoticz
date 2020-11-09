@@ -183,7 +183,7 @@ void CNefitEasy::Do_Work()
 					ret = GetFlowTemp();
 				if (ret)
 					ret = GetDisplayCode();
-				fast_pollint = (ret == true) ? NEFIT_FAST_POLL_INTERVAL : NEFIT_FAST_POLL_INTERVAL * 3;
+				fast_pollint = (ret) ? NEFIT_FAST_POLL_INTERVAL : NEFIT_FAST_POLL_INTERVAL * 3;
 			}
 			catch (...)
 			{
@@ -197,7 +197,7 @@ void CNefitEasy::Do_Work()
 				ret = GetPressure();
 				if (ret)
 					ret = GetOutdoorTemp();
-				slow_pollint = (ret == true) ? NEFIT_SLOW_INTERVAL : NEFIT_SLOW_INTERVAL * 2;
+				slow_pollint = (ret) ? NEFIT_SLOW_INTERVAL : NEFIT_SLOW_INTERVAL * 2;
 			}
 			catch (...)
 			{
@@ -247,7 +247,7 @@ bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char /*length
 void CNefitEasy::SetUserMode(bool bSetUserModeClock)
 {
 	Json::Value root;
-	root["value"] = (bSetUserModeClock == true) ? "clock" : "manual";
+	root["value"] = (bSetUserModeClock) ? "clock" : "manual";
 
 	std::stringstream szURL;
 	std::string sResult;
@@ -276,7 +276,7 @@ void CNefitEasy::SetUserMode(bool bSetUserModeClock)
 void CNefitEasy::SetHotWaterMode(bool bTurnOn)
 {
 	Json::Value root;
-	root["value"] = (bTurnOn == true) ? "on" : "off";
+	root["value"] = (bTurnOn) ? "on" : "off";
 
 	std::stringstream szURL;
 	std::string sResult;
@@ -495,7 +495,7 @@ bool CNefitEasy::GetOutdoorTemp()
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received! (ODT)");
 		return false;
 	}
-	if (root["value"].empty() == true)
+	if (root["value"].empty())
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (ODT)");
 		return false;
@@ -547,7 +547,7 @@ bool CNefitEasy::GetFlowTemp()
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received (FT)");
 		return false;
 	}
-	if (root["value"].empty() == true)
+	if (root["value"].empty())
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (FT)");
 		return false;
@@ -649,7 +649,7 @@ bool CNefitEasy::GetDisplayCode()
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received! (DP)");
 		return false;
 	}
-	if (root["value"].empty() == true)
+	if (root["value"].empty())
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (DP)");
 		return false;

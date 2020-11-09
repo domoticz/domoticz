@@ -212,19 +212,16 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 		uint8_t pin_number = pCmd->LIGHTING2.unitcode; // in DB column "Unit" is used for identify pin number
 		uint8_t  value = pCmd->LIGHTING2.cmnd;
 		//#ifdef INVERT_PCF8574_MCP23017
-		if (m_invert_data == true) {
+		if (m_invert_data)
+		{
 			value = ~value & 0x01; // Invert Status
 		}
 		//#endif
 		if (m_dev_type == I2CTYPE_PCF8574) {
-			if (PCF8574_WritePin(pin_number, value) < 0)
-				return false;
-			return true;
+			return PCF8574_WritePin(pin_number, value) >= 0;
 		}
 		else if (m_dev_type == I2CTYPE_MCP23017) {
-			if (MCP23017_WritePin(pin_number, value) < 0)
-				return false;
-			return true;
+			return MCP23017_WritePin(pin_number, value) >= 0;
 		}
 	}
 	return false;
@@ -339,7 +336,8 @@ void I2C::PCF8574_ReadChipDetails()
 	if (fd < 0) return; // Error opening i2c device!
 	if (readByteI2C(fd, &buf, m_i2c_addr) < 0) return; //read from i2c
 //#ifdef INVERT_PCF8574_MCP23017
-	if (m_invert_data == true) {
+	if (m_invert_data)
+	{
 		buf = ~buf; // Invert Status
 	}
 	//#endif
@@ -404,7 +402,8 @@ void I2C::MCP23017_Init()
 			unit = atoi(sd[0].c_str());
 			nvalue = atoi(sd[1].c_str());
 
-			if (m_invert_data == true) {
+			if (m_invert_data)
+			{
 				nvalue ^= 1;
 			}
 			//prepare new value by combinating current value, mask and new value

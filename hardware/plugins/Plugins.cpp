@@ -1242,7 +1242,6 @@ Error:
 			{
 				for (const auto &sd : result)
 				{
-					const char*	pChar = sd[0].c_str();
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "UserDataFolder", szUserDataFolder);

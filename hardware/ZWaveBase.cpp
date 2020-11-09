@@ -103,7 +103,7 @@ void ZWaveBase::Do_Work()
 		else
 		{
 			GetUpdates();
-			if (m_bControllerCommandInProgress == true)
+			if (m_bControllerCommandInProgress)
 			{
 				time_t atime = mytime(nullptr);
 				double tdiff = difftime(atime, m_ControllerCommandStartTime);
@@ -1043,9 +1043,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 				if (!SwitchLight(pDevice, instanceID, 0))
 					return false;
 				instanceID = 6;//white
-				if (!SwitchLight(pDevice, instanceID, 100))
-					return false;
-				return true;
+				return SwitchLight(pDevice, instanceID, 100);
 			}
 			else if (pLed->command == Color_SetColor)
 			{
@@ -1106,9 +1104,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 					return false;
 				}
 				instanceID = 2;//brightness
-				if (!SwitchLight(pDevice, instanceID, ivalue))
-					return false;
-				return true;
+				return SwitchLight(pDevice, instanceID, ivalue);
 			}
 		}
 		else

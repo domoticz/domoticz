@@ -256,12 +256,7 @@ bool COpenWebNetUSB::FindDevice(int deviceID, int deviceUnit, int subType, int* 
 			m_HwdID, szIdx, deviceUnit, pTypeGeneralSwitch, subType);
 	}
 
-	if (!result.empty())
-	{
-		return true;
-	}
-
-	return false;
+	return !result.empty();
 }
 
 bool COpenWebNetUSB::writeRead(const char* command, unsigned int commandSize, bool silent)

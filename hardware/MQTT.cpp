@@ -308,7 +308,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 			//Prevent MQTT update being send to client after next update
 			m_LastUpdatedDeviceRowIdx = idx;
 
-			if (!m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, false, 0, "MQTT") == true)
+			if (!m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, false, 0, "MQTT"))
 			{
 				_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 			}
@@ -431,7 +431,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 			//Prevent MQTT update being send to client after next update
 			m_LastUpdatedDeviceRowIdx = idx;
 
-			if (!m_mainworker.SwitchLight(idx, "Set Color", ival, color, false, 0, "MQTT") == true)
+			if (!m_mainworker.SwitchLight(idx, "Set Color", ival, color, false, 0, "MQTT"))
 			{
 				_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 			}
@@ -445,7 +445,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 			//Prevent MQTT update being send to client after next update
 			m_LastUpdatedSceneRowIdx = idx;
 
-			if (!m_mainworker.SwitchScene(idx, switchcmd, "MQTT") == true)
+			if (!m_mainworker.SwitchScene(idx, switchcmd, "MQTT"))
 			{
 				_log.Log(LOG_ERROR, "MQTT: Error sending scene command!");
 			}
@@ -745,7 +745,8 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		root["dtype"] = RFX_Type_Desc((uint8_t)dType, 1);
 		root["stype"] = RFX_Type_SubType_Desc((uint8_t)dType, (uint8_t)dSubType);
 
-		if (IsLightOrSwitch(dType, dSubType) == true) {
+		if (IsLightOrSwitch(dType, dSubType))
+		{
 			root["switchType"] = Switch_Type_Desc(switchType);
 		}
 		else if ((dType == pTypeRFXMeter) || (dType == pTypeRFXSensor)) {
@@ -873,7 +874,7 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string&/*SceneName*
 		root["Status"] = "On";
 	else
 		root["Status"] = "Mixed";
-	root["Timers"] = (m_sql.HasSceneTimers(sd[0]) == true) ? "true" : "false";
+	root["Timers"] = (m_sql.HasSceneTimers(sd[0])) ? "true" : "false";
 	/*
 		uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
 		//root["UsedByCamera"] = (camIDX != 0) ? true : false;

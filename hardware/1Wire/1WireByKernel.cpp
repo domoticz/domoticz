@@ -118,8 +118,8 @@ void C1WireByKernel::ReadStates()
 				if (!GetDevicePendingState(device->GetDevice().devid))
 				{
 					// Caution : 0 means 'transistor active', we have to invert
-					device->m_DigitalIo[0] = (answer & 0x01) ? false : true;
-					device->m_DigitalIo[1] = (answer & 0x04) ? false : true;
+					device->m_DigitalIo[0] = (answer & 0x01) == 0;
+					device->m_DigitalIo[1] = (answer & 0x04) == 0;
 				}
 				break;
 			}
@@ -133,7 +133,7 @@ void C1WireByKernel::ReadStates()
 					for (unsigned int idxBit = 0, mask = 0x01; mask != 0x100; mask <<= 1)
 					{
 						// Caution : 0 means 'transistor active', we have to invert
-						device->m_DigitalIo[idxBit++] = (answer&mask) ? false : true;
+						device->m_DigitalIo[idxBit++] = (answer & mask) == 0;
 					}
 				}
 				break;

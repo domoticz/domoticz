@@ -152,7 +152,7 @@ void CDarkSky::GetMeterDetails()
 		Log(LOG_ERROR,"Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
 		return;
 	}
-	if (root["currently"].empty()==true)
+	if (root["currently"].empty())
 	{
 		Log(LOG_ERROR,"Invalid data received, or unknown location!");
 		return;
@@ -173,11 +173,11 @@ void CDarkSky::GetMeterDetails()
 	//Convert to celcius
 	temp=float((temp-32)*(5.0/9.0));
 
-	if (root["currently"]["humidity"].empty()==false)
+	if (!root["currently"]["humidity"].empty())
 	{
 		humidity=round(root["currently"]["humidity"].asFloat()*100.0f);
 	}
-	if (root["currently"]["pressure"].empty()==false)
+	if (!root["currently"]["pressure"].empty())
 	{
 		barometric=atoi(root["currently"]["pressure"].asString().c_str());
 		if (barometric<1000)
@@ -189,7 +189,7 @@ void CDarkSky::GetMeterDetails()
 		else
 			barometric_forcast=baroForecastSunny;
 
-		if (root["currently"]["icon"].empty()==false)
+		if (!root["currently"]["icon"].empty())
 		{
 			std::string forcasticon=root["currently"]["icon"].asString();
 			if ((forcasticon=="partly-cloudy-day")||(forcasticon=="partly-cloudy-night"))
@@ -236,11 +236,11 @@ void CDarkSky::GetMeterDetails()
 	//int windgust=1;
 	//float windchill=-1;
 
-	if (root["currently"]["windBearing"].empty()==false)
+	if (!root["currently"]["windBearing"].empty())
 	{
 		wind_degrees=atoi(root["currently"]["windBearing"].asString().c_str());
 	}
-	if (root["currently"]["windSpeed"].empty()==false)
+	if (!root["currently"]["windSpeed"].empty())
 	{
 		if ((root["currently"]["windSpeed"] != "N/A") && (root["currently"]["windSpeed"] != "--"))
 		{
@@ -252,7 +252,7 @@ void CDarkSky::GetMeterDetails()
 			}
 		}
 	}
-	if (root["currently"]["windGust"].empty()==false)
+	if (!root["currently"]["windGust"].empty())
 	{
 		if ((root["currently"]["windGust"] != "N/A") && (root["currently"]["windGust"] != "--"))
 		{
@@ -264,7 +264,7 @@ void CDarkSky::GetMeterDetails()
 			}
 		}
 	}
-	if (root["currently"]["apparentTemperature"].empty()==false)
+	if (!root["currently"]["apparentTemperature"].empty())
 	{
 		if ((root["currently"]["apparentTemperature"] != "N/A") && (root["currently"]["apparentTemperature"] != "--"))
 		{
@@ -327,7 +327,7 @@ void CDarkSky::GetMeterDetails()
 	}
 
 	//UV
-	if (root["currently"]["uvIndex"].empty() == false)
+	if (!root["currently"]["uvIndex"].empty())
 	{
 		if ((root["currently"]["uvIndex"] != "N/A") && (root["currently"]["uvIndex"] != "--"))
 		{
@@ -340,7 +340,7 @@ void CDarkSky::GetMeterDetails()
 	}
 
 	//Rain
-	if (root["currently"]["precipIntensity"].empty()==false)
+	if (!root["currently"]["precipIntensity"].empty())
 	{
 		if ((root["currently"]["precipIntensity"] != "N/A") && (root["currently"]["precipIntensity"] != "--"))
 		{
@@ -353,7 +353,7 @@ void CDarkSky::GetMeterDetails()
 	}
 
 	//Visibility
-	if (root["currently"]["visibility"].empty()==false)
+	if (!root["currently"]["visibility"].empty())
 	{
 		if ((root["currently"]["visibility"] != "N/A") && (root["currently"]["visibility"] != "--"))
 		{
@@ -368,7 +368,7 @@ void CDarkSky::GetMeterDetails()
 		}
 	}
 	//Solar Radiation
-	if (root["currently"]["ozone"].empty()==false)
+	if (!root["currently"]["ozone"].empty())
 	{
 		if ((root["currently"]["ozone"] != "N/A") && (root["currently"]["ozone"] != "--"))
 		{
@@ -380,7 +380,7 @@ void CDarkSky::GetMeterDetails()
 		}
 	}
 	//Cloud Cover
-	if (root["currently"]["cloudCover"].empty() == false)
+	if (!root["currently"]["cloudCover"].empty())
 	{
 		if ((root["currently"]["cloudCover"] != "N/A") && (root["currently"]["cloudCover"] != "--"))
 		{

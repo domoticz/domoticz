@@ -69,8 +69,7 @@ m_szSerialPort(devname)
 	m_HwdID = ID;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5;
 	Bus_CANType = BusCanType;
-	if( DebugMode == 0 )m_BOOL_USBtinDebug = false;
-	else m_BOOL_USBtinDebug = true;
+	m_BOOL_USBtinDebug = DebugMode != 0;
 	Init();
 }
 
@@ -320,11 +319,13 @@ void USBtin::ParseData(const char *pData, int Len)
 				if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){ //multibloc V8 Management !
 					Traitement_MultiblocV8(IDhexNumber,DLChexNumber,Buffer_Octets);
 					//So in debug mode we can check good reception after treatment :
-					if( m_BOOL_USBtinDebug == true) _log.Log(LOG_NORM,"USBtin: Traitement trame multiblocV8 : #%s#",m_USBtinBuffer);
+					if (m_BOOL_USBtinDebug)
+						_log.Log(LOG_NORM, "USBtin: Traitement trame multiblocV8 : #%s#", m_USBtinBuffer);
 				}
 
 				if( Bus_CANType == 0 ){ //No management !
-					if( m_BOOL_USBtinDebug == true) _log.Log(LOG_NORM,"USBtin: Frame receive not managed: #%s#",m_USBtinBuffer);
+					if (m_BOOL_USBtinDebug)
+						_log.Log(LOG_NORM, "USBtin: Frame receive not managed: #%s#", m_USBtinBuffer);
 				}
 
 			}
@@ -333,11 +334,14 @@ void USBtin::ParseData(const char *pData, int Len)
 			}
 			else if( m_USBtinBuffer[0] == USBTIN_GOODSENDING_NOR_TRAME || m_USBtinBuffer[0] == USBTIN_GOODSENDING_EXT_TRAME ){
 				//The Gateway answers USBTIN_GOODSENDING_NOR_TRAME or USBTIN_GOODSENDING_EXT_TRAME each times a frame is sent correctly
-				if( m_BOOL_USBtinDebug == true) _log.Log(LOG_NORM,"USBtin: Frame Send OK !"); //So in debug mode we CAN check it, convenient way to check
-				//if the CAN communication is in good life ;-)
+				if (m_BOOL_USBtinDebug)
+					_log.Log(LOG_NORM,
+						 "USBtin: Frame Send OK !"); // So in debug mode we CAN check it, convenient way to check
+									     // if the CAN communication is in good life ;-)
 			}
 			else{ //over things here...
-				if( m_BOOL_USBtinDebug == true) _log.Log(LOG_ERROR,"USBtin: receive command not supported : #%s#", m_USBtinBuffer);
+				if (m_BOOL_USBtinDebug)
+					_log.Log(LOG_ERROR, "USBtin: receive command not supported : #%s#", m_USBtinBuffer);
 			}
 			//rreset of the pointer here
 			m_USBtinBufferpos = 0;
@@ -352,11 +356,11 @@ void USBtin::ParseData(const char *pData, int Len)
 
 bool USBtin::writeFrame(const std::string & data)
 {
-	char length = (uint8_t)data.size();
 	if (!isOpen()){
 		return false;
 	}
-	if( m_BOOL_USBtinDebug == true) _log.Log(LOG_NORM,"USBtin: write frame to Can Gateway: #%s# ",data.c_str());
+	if (m_BOOL_USBtinDebug)
+		_log.Log(LOG_NORM, "USBtin: write frame to Can Gateway: #%s# ", data.c_str());
 	std::string frame;
 	frame.append(data);
 	frame.append("\x0D"); //add the "carry return" at end

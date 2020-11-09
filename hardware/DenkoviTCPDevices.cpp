@@ -110,10 +110,12 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 			uint8_t z = 0;
 			for (uint8_t ii = 1; ii < 9; ii++) {
 				z = (firstEight >> (8 - ii)) & 0x01;
-				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (8 - ii)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, ((firstEight >> (8 - ii)) & 0x01) != 0, 0,
+					   "Relay " + std::to_string(ii));
 			}
 			for (uint8_t ii = 1; ii < 9; ii++)
-				SendSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, ((secondEight >> (8 - ii) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8 + ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, (secondEight >> (8 - ii) & 0x01) != 0, 0,
+					   "Relay " + std::to_string(8 + ii));
 		}
 		break;
 	}
@@ -138,10 +140,12 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 			firstEight = (uint8_t)m_pResp.data[0];
 			secondEight = (uint8_t)m_pResp.data[1];
 			for (uint8_t ii = 1; ii < 9; ii++) {
-				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (ii - 1)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, ((firstEight >> (ii - 1)) & 0x01) != 0, 0,
+					   "Relay " + std::to_string(ii));
 			}
 			for (uint8_t ii = 1; ii < 9; ii++) {
-				SendSwitch(DAE_IO_TYPE_RELAY, 8 + ii, 255, (((secondEight >> (ii - 1)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8 + ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, 8 + ii, 255, ((secondEight >> (ii - 1)) & 0x01) != 0, 0,
+					   "Relay " + std::to_string(8 + ii));
 			}
 		}
 		else if (m_Cmd == _eDaeTcpState::DAE_WRITE_COIL_CMD && m_uiReceivedDataLength >= WRITE_SINGLE_COIL_CMD_LENGTH) {
@@ -202,7 +206,7 @@ void CDenkoviTCPDevices::Do_Work()
 			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (halfsec_counter % poll_interval == 0) {
-			if (m_bReadingNow == false && m_bUpdateIo == false)
+			if (!m_bReadingNow && !m_bUpdateIo)
 				GetMeterDetails();
 		}
 	}
@@ -219,7 +223,7 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 	int io = pSen->LIGHTING2.unitcode;
 	uint8_t command = pSen->LIGHTING2.cmnd;
 
-	if (m_bIsStarted == false)
+	if (!m_bIsStarted)
 		return false;
 
 	switch (m_iModel) {

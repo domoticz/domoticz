@@ -275,7 +275,7 @@ void MainWorker::AddAllDomoticzHardware()
 			int ID = atoi(sd[0].c_str());
 			std::string Name = sd[1];
 			std::string sEnabled = sd[2];
-			bool Enabled = (sEnabled == "1") ? true : false;
+			bool Enabled = sEnabled == "1";
 			_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[3].c_str());
 			std::string Address = sd[4];
 			uint16_t Port = (uint16_t)atoi(sd[5].c_str());
@@ -633,7 +633,8 @@ bool MainWorker::RestartHardware(const std::string& idx)
 	int Mode5 = atoi(sd[13].c_str());
 	int Mode6 = atoi(sd[14].c_str());
 	int DataTimeout = atoi(sd[15].c_str());
-	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
+	return AddHardwareFromParams(atoi(idx.c_str()), Name, senabled == "true", htype, address, port, serialport, username, password,
+				     extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
 }
 
 bool MainWorker::AddHardwareFromParams(
@@ -11382,7 +11383,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 		//Flip the status
-		switchcmd = (IsLightSwitchOn(lstatus) == true) ? "Off" : "On";
+		switchcmd = (IsLightSwitchOn(lstatus)) ? "Off" : "On";
 	}
 
 	// If dimlevel is 0 or no dimlevel, turn switch off
@@ -13252,7 +13253,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, c
 					int maxDimLevel = 0;
 
 					GetLightStatus(dType, dSubType, STYPE_OnOff, rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-					std::string switchcmd = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
+					std::string switchcmd = (IsLightSwitchOn(lstatus)) ? "On" : "Off";
 
 					m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(0.2f, ID, switchcmd, "SceneTrigger", User));
 				}

@@ -318,13 +318,9 @@ bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
 		GetMeterDetails();
 
 	if (m_Password.empty())
-	{
 		szURL << "http://" << m_IPAddress << ":" << m_IPPort;
-	}
 	else
-	{
 		szURL << "http://" << m_UserName << ":" << m_Password << "@" << m_IPAddress << ":" << m_IPPort;
-	}
 	szURL << ANNA_GET_STATUS;
 	szURL << ";id=";
 	szURL << m_ProximityID;
@@ -335,14 +331,10 @@ bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
 	std::string sResult;
 
 	char szTemp[10];
-	if (bToggle == true)
-	{
+	if (bToggle)
 		strcpy(szTemp, "on");
-	}
 	else
-	{
 		strcpy(szTemp, "off");
-	}
 	sPostData << "<toggle>";
 	sPostData << "<state>";
 	sPostData << szTemp;
@@ -418,13 +410,9 @@ void CAnnaThermostat::GetMeterDetails()
 	std::stringstream szURL;
 
 	if (m_Password.empty())
-	{
 		szURL << "http://" << m_IPAddress << ":" << m_IPPort;
-	}
 	else
-	{
 		szURL << "http://" << m_UserName << ":" << m_Password << "@" << m_IPAddress << ":" << m_IPPort;
-	}
 	szURL << ANNA_GET_STATUS;
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
@@ -476,9 +464,7 @@ void CAnnaThermostat::GetMeterDetails()
 			{
 				std::string aName = pAttribute->Name();
 				if (aName == "id")
-				{
 					m_ThermostatID = pAttribute->Value();
-				}
 			}
 		}
 
@@ -619,14 +605,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					if (strcmp(tmpstr.c_str(), "on") == 0)
-					{
-						bSwitch = true;
-					}
-					else
-					{
-						bSwitch = false;
-					}
+					bSwitch = strcmp(tmpstr.c_str(), "on") == 0;
 					SendSwitch(sAnnaProximity, 1, 255, bSwitch, 0, sname);
 				}
 			}

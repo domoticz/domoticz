@@ -196,7 +196,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 		{
 			_log.Log(LOG_ERROR, "Kodi: (%s) PARSE ERROR: '%s'", m_Name.c_str(), pMessage.c_str());
 		}
-		else if (root["error"].empty() != true)
+		else if (!root["error"].empty())
 		{
 			int		iMessageID = root["id"].asInt();
 			switch (iMessageID)
@@ -348,7 +348,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (m_CurrentStatus.Type() == "song")
 							{
 								m_CurrentStatus.Status(MSTAT_AUDIO);
-								if (root["result"]["item"]["artist"][0].empty() != true)
+								if (!root["result"]["item"]["artist"][0].empty())
 								{
 									m_CurrentStatus.Artist(root["result"]["item"]["artist"][0].asCString());
 								}
@@ -1203,27 +1203,19 @@ void CKodi::SendCommand(const int ID, const std::string &command)
 bool CKodi::SetPlaylist(const int ID, const std::string &playlist)
 {
 	for (const auto &node : m_pNodes)
-	{
 		if (node->m_ID == ID)
-		{
 			node->SetPlaylist(playlist);
-			return true;
-		}
-	}
-	return false;
+
+	return std::any_of(m_pNodes.begin(), m_pNodes.end(), [=](const std::shared_ptr<CKodiNode> &node) { return node->m_ID == ID; });
 }
 
 bool CKodi::SetExecuteCommand(const int ID, const std::string &command)
 {
 	for (const auto &node : m_pNodes)
-	{
 		if (node->m_ID == ID)
-		{
 			node->SetExecuteCommand(command);
-			return true;
-		}
-	}
-	return false;
+
+	return std::any_of(m_pNodes.begin(), m_pNodes.end(), [=](const std::shared_ptr<CKodiNode> &node) { return node->m_ID == ID; });
 }
 
 //Webserver helpers

@@ -764,32 +764,24 @@ bool CHEOS::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 			{
 			case light2_sOn:
 				SendCommand("setPlayStatePlay", node.DevID);
-				return true;
 			case light2_sGroupOn:
 			case light2_sOff:
 				SendCommand("setPlayStateStop", node.DevID);
-				return true;
 			case light2_sGroupOff:
 			case gswitch_sPlay:
 				SendCommand("getNowPlaying", node.DevID);
 				SendCommand("setPlayStatePlay", node.DevID);
-				return true;
 			case gswitch_sPlayPlaylist:
 			case gswitch_sPlayFavorites:
 			case gswitch_sStop:
 				SendCommand("setPlayStateStop", node.DevID);
-				return true;
 			case gswitch_sPause:
 				SendCommand("setPlayStatePause", node.DevID);
-				return true;
-			case gswitch_sSetVolume:
-			default:
-				return true;
 			}
 		}
 	}
 
-	return false;
+	return std::any_of(m_nodes.begin(), m_nodes.end(), [=](const HEOSNode &node) { return node.DevID == DevID; });
 }
 
 void CHEOS::ReloadNodes()

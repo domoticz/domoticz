@@ -216,7 +216,7 @@ void USBtin_MultiblocV8::StopThread()
 
 void USBtin_MultiblocV8::ManageThreadV8(bool States)
 {
-	if( States == true)
+	if (States)
 		StartThread();
 	else
 		StopThread();
@@ -401,7 +401,8 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 		}
 	}
 	//if the blocs allready exist :
-	if( BIT_FIND_BLOC == true ){
+	if (BIT_FIND_BLOC)
+	{
 		//on le met à jours :
 		m_BlocList_CAN[IndexBLoc].VersionH = bufferdata[0];
 		m_BlocList_CAN[IndexBLoc].VersionM = bufferdata[1];
@@ -515,11 +516,13 @@ void  USBtin_MultiblocV8::BlocList_CheckBloc(){
 				switch(RefBlocAlive){
 					case BLOC_SFSP_M :
 					case BLOC_SFSP_E :
-						if( m_BOOL_TaskAGo == true ){
+						if (m_BOOL_TaskAGo)
+						{
 							Rqid= (type_E_ANA_1_TO_4<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
 							SendRequest(Rqid);
 						}
-						if( m_BOOL_TaskRqStorGo == true ){
+						if (m_BOOL_TaskRqStorGo)
+						{
 							m_BlocList_CAN[i].ForceUpdateSTOR[0] = true;
 							m_BlocList_CAN[i].ForceUpdateSTOR[1] = true;
 							m_BlocList_CAN[i].ForceUpdateSTOR[2] = true;
@@ -679,7 +682,8 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,bool
 	lcmd.LIGHTING2.id3 = (sID>>8)&0xff;
 	lcmd.LIGHTING2.id4 = sID&0xff;
 
-	if ( Comandeonoff == true ) lcmd.LIGHTING2.cmnd = light2_sOn;
+	if (Comandeonoff)
+		lcmd.LIGHTING2.cmnd = light2_sOn;
 	else lcmd.LIGHTING2.cmnd = light2_sOff;
 
 	lcmd.LIGHTING2.unitcode = OutputNumber & 0xff; //SubUnit;	//output number
@@ -710,100 +714,94 @@ void USBtin_MultiblocV8::Traitement_Etat_S_TOR_Recu(const unsigned int FrameType
 
 	switch(FrameType){
 		case type_STATE_S_TOR_1_TO_2:
-			if(bufferdata[2] & 0x01) OutputCde = true;
-			else OutputCde = false;
+			OutputCde = (bufferdata[2] & 0x01) != 0;
 
 			//if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
 			//else OutputPWM = false;
 			level_value = bufferdata[0];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,1,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+			if (CheckOutputChange(sID, 1, OutputCde, level_value))
+			{ // on met à jours si nécessaire !
 				OutputNewStates( sID, 1,OutputCde,level_value );
 			}
 
-			if(bufferdata[2] & 0x02) IsBlink = true;
-			else IsBlink = false;
+			IsBlink = (bufferdata[2] & 0x02) != 0;
 			//SetOutputBlinkInDomoticz( sID,1,IsBlink);
 
-			if(bufferdata[6] & 0x01) OutputCde = true;
-			else OutputCde = false;
+			OutputCde = (bufferdata[6] & 0x01) != 0;
 
 			//if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
 			//else OutputPWM = false;
 			level_value = bufferdata[4];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,2,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+			if (CheckOutputChange(sID, 2, OutputCde, level_value))
+			{ // on met à jours si nécessaire !
 				OutputNewStates( sID, 2,OutputCde,level_value );
 			}
 
-			if(bufferdata[6] & 0x02) IsBlink = true;
-			else IsBlink = false;
+			IsBlink = (bufferdata[6] & 0x02) != 0;
 			//SetOutputBlinkInDomoticz( sID,2,IsBlink);
 			break;
 
 		case type_STATE_S_TOR_3_TO_4:
-			if(bufferdata[2] & 0x01) OutputCde = true;
-			else OutputCde = false;
+			OutputCde = (bufferdata[2] & 0x01) != 0;
 			//if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
 			//else OutputPWM = false;
 			level_value = bufferdata[0];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,3,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+			if (CheckOutputChange(sID, 3, OutputCde, level_value))
+			{ // on met à jours si nécessaire !
 				OutputNewStates( sID, 3,OutputCde,level_value );
 			}
 
-			if(bufferdata[2] & 0x02) IsBlink = true;
-			else IsBlink = false;
+			IsBlink = (bufferdata[2] & 0x02) != 0;
 			//SetOutputBlinkInDomoticz( sID,3,IsBlink);
 
-			if(bufferdata[6] & 0x01) OutputCde = true;
-			else OutputCde = false;
+			OutputCde = (bufferdata[6] & 0x01) != 0;
 			//if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
 			//else OutputPWM = false;
 			level_value = bufferdata[4];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,4,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+			if (CheckOutputChange(sID, 4, OutputCde, level_value))
+			{ // on met à jours si nécessaire !
 				OutputNewStates( sID, 4,OutputCde,level_value );
 			}
 
-			if(bufferdata[6] & 0x02) IsBlink = true;
-			else IsBlink = false;
+			IsBlink = (bufferdata[6] & 0x02) != 0;
 			//SetOutputBlinkInDomoticz( sID,4,IsBlink);
 			break;
 
 		case type_STATE_S_TOR_5_TO_6:
-			if(bufferdata[2] & 0x01) OutputCde = true;
-			else OutputCde = false;
+			OutputCde = (bufferdata[2] & 0x01) != 0;
 			//if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
 			//else OutputPWM = false;
 			level_value = bufferdata[0];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,5,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+			if (CheckOutputChange(sID, 5, OutputCde, level_value))
+			{ // on met à jours si nécessaire !
 				OutputNewStates( sID, 5,OutputCde,level_value );
 			}
 
-			if(bufferdata[2] & 0x02) IsBlink = true;
-			else IsBlink = false;
+			IsBlink = (bufferdata[2] & 0x02) != 0;
 			//SetOutputBlinkInDomoticz( sID,5,IsBlink);
 
-			if(bufferdata[6] & 0x01) OutputCde = true;
-			else OutputCde = false;
+			OutputCde = (bufferdata[6] & 0x01) != 0;
 			//if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
 			//else OutputPWM = false;
 			level_value = bufferdata[4];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,6,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+			if (CheckOutputChange(sID, 6, OutputCde, level_value))
+			{ // on met à jours si nécessaire !
 				OutputNewStates( sID, 6,OutputCde,level_value );
 			}
 
-			if(bufferdata[6] & 0x02) IsBlink = true;
-			else IsBlink = false;
+			IsBlink = (bufferdata[6] & 0x02) != 0;
 			//SetOutputBlinkInDomoticz( sID,6,IsBlink);
 			break;
 	}
@@ -834,7 +832,8 @@ void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType,cons
 {
 	unsigned long sID = (RefBloc<<SHIFT_INDEX_MODULE)+(Codage<<SHIFT_CODAGE_MODULE)+Ssreseau;
 
-	if( m_BOOL_DebugInMultiblocV8 == true ) _log.Log(LOG_NORM,"MultiblocV8: receive ANA (alimentation) sfsp: D0: %d D1: %d# ", bufferdata[0], bufferdata[1]);
+	if (m_BOOL_DebugInMultiblocV8)
+		_log.Log(LOG_NORM, "MultiblocV8: receive ANA (alimentation) sfsp: D0: %d D1: %d# ", bufferdata[0], bufferdata[1]);
 	int VoltageLevel = bufferdata[0];
 	VoltageLevel <<= 8;
 	VoltageLevel += bufferdata[1];
@@ -908,7 +907,8 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 				szTrameToSend += szDeviceID;
 				szTrameToSend += "4";
 				szTrameToSend += DataToSend;
-				if( m_BOOL_DebugInMultiblocV8 == true ) _log.Log(LOG_NORM,"MultiblocV8: Sending Frame: %s ",szTrameToSend.c_str() );
+				if (m_BOOL_DebugInMultiblocV8)
+					_log.Log(LOG_NORM, "MultiblocV8: Sending Frame: %s ", szTrameToSend.c_str());
 				writeFrame(szTrameToSend);
 				return true;
 			}

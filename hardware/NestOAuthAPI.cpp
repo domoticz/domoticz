@@ -715,7 +715,7 @@ bool CNestOAuthAPI::PushToNestApi(const std::string & /*sMethod*/, const std::st
 		return false;
 	}
 
-	if (m_bDoLogin == true)
+	if (m_bDoLogin)
 	{
 		if (!Login())
 			return false;

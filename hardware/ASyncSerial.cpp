@@ -223,12 +223,11 @@ void AsyncSerial::writeString(const std::string& s)
 
 void AsyncSerial::doRead()
 {
-	if(isOpen()==false) return;
-    pimpl->port.async_read_some(boost::asio::buffer(pimpl->readBuffer,sizeof(pimpl->readBuffer)),
-            boost::bind(&AsyncSerial::readEnd,
-            this,
-            boost::asio::placeholders::error,
-            boost::asio::placeholders::bytes_transferred));
+	if (!isOpen())
+		return;
+	pimpl->port.async_read_some(
+		boost::asio::buffer(pimpl->readBuffer, sizeof(pimpl->readBuffer)),
+		boost::bind(&AsyncSerial::readEnd, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 }
 
 void AsyncSerial::readEnd(const boost::system::error_code& error,
@@ -339,9 +338,8 @@ void AsyncSerial::terminate(bool silent/*=true*/) {
 			doClose();
 			setErrorStatus(true);
 		} catch(...) {
-			if (silent == false) {
+			if (!silent)
 				throw;
-			}
 		}
 	}
 }

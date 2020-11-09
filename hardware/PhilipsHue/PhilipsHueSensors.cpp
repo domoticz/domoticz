@@ -58,7 +58,7 @@ void CPHSensorState::ExtractButtonInfo(const Json::Value& state, const Json::Val
 
 int32_t CPHSensorState::GetSelectorLevel(const CPHSensorState& previous_state)
 {
-	if (m_button_valid == false)
+	if (!m_button_valid)
 		return -1;
 
 	if (SensorZLLSwitchEventInitialPress == m_button_eventtype)

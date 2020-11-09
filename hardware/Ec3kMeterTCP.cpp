@@ -144,11 +144,7 @@ void Ec3kMeterTCP::OnError(const boost::system::error_code& error)
 
 bool Ec3kMeterTCP::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
-	if (!isConnected())
-	{
-		return false;
-	}
-	return true;
+	return isConnected();
 }
 
 
@@ -167,45 +163,45 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 		_log.Log(LOG_ERROR, "Ec3kMeter: invalid data received!");
 		return;
 	}
-	if (root[SENSOR_ID].empty() == true)
+	if (root[SENSOR_ID].empty())
 	{
 		_log.Log(LOG_ERROR, "Ec3kMeter: id not found in telegram");
 		return;
 	}
-	if (root[DATA].empty() == true)
+	if (root[DATA].empty())
 	{
 		_log.Log(LOG_ERROR, "Ec3kMeter: data not found in telegram");
 		return;
 	}
 
 	Json::Value data = root["data"];
-	if (data[WS].empty() == true)
+	if (data[WS].empty())
 	{
 		_log.Log(LOG_ERROR, "Ec3kMeter: energy (ws) not found in telegram");
 		return;
 	}
 
-	if (data[W_CURRENT].empty() == true)
+	if (data[W_CURRENT].empty())
 	{
 		_log.Log(LOG_ERROR, "Ec3kMeter: current consumption not found in telegram");
 		return;
 	}
-	if (data[W_MAX].empty() == true)
+	if (data[W_MAX].empty())
 	{
 		_log.Log(LOG_ERROR, "Ec3kMeter: maximum consumption not found in telegram");
 		return;
 	}
-	if (data[TIME_ON].empty() == true)
+	if (data[TIME_ON].empty())
 	{
 		_log.Log(LOG_ERROR, "Ec3kMeter: time on not found in telegram");
 		return;
 	}
-	if (data[TIME_TOTAL].empty() == true)
+	if (data[TIME_TOTAL].empty())
 	{
 		_log.Log(LOG_ERROR, "Ec3kMeter: total time not found in telegram");
 		return;
 	}
-	if (data[RESET_COUNT].empty() == true)
+	if (data[RESET_COUNT].empty())
 	{
 		_log.Log(LOG_ERROR, "Ec3kMeter: reset count not found in telegram");
 		return;

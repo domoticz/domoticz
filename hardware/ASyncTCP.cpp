@@ -215,10 +215,8 @@ void ASyncTCP::disconnect(const bool silent)
 	}
 	catch (...)
 	{
-		if (silent == false)
-		{
+		if (!silent)
 			throw;
-		}
 	}
 }
 
@@ -243,9 +241,7 @@ void ASyncTCP::do_close()
 #endif
 	{
 		if (mSocket.is_open())
-		{
 			mSocket.close(ec);
-		}
 	}
 }
 
@@ -285,9 +281,7 @@ void ASyncTCP::cb_read_done(const boost::system::error_code& error, size_t bytes
 		do_read_start();
 	}
 	else
-	{
 		process_error(error);
-	}
 }
 
 void ASyncTCP::write(const uint8_t* pData, size_t length)

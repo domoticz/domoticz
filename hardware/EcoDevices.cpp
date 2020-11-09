@@ -380,7 +380,7 @@ void CEcoDevices::GetMeterRT2Details()
 		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", m_Name.c_str());
 		return;
 	}
-	if (root["confighostname"].empty() == true)
+	if (root["confighostname"].empty())
 	{
 		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json, hostname missing", m_Name.c_str());
 	}

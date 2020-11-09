@@ -3658,7 +3658,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 
 		bool bIsOn = IsLightSwitchOn(oParseResults.sCommand);
 		if (switchtype == STYPE_Selector) {
-			bIsOn = (level > 0) ? true : false;
+			bIsOn = level > 0;
 		}
 		iDeviceDelay = bIsOn ? iOnDelay : 0;
 	}

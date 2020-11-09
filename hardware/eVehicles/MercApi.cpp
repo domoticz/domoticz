@@ -407,7 +407,7 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 					if(!iter2["value"].empty())
 					{
 						_log.Debug(DEBUG_NORM, "MercApi: DoorLockStatusVehicle has value %s", iter2["value"].asString().c_str());
-						data.car_open = (iter2["value"].asString() == "1" || iter2["value"].asString() == "2" ? false : true);
+						data.car_open = (!(iter2["value"].asString() == "1" || iter2["value"].asString() == "2"));
 						if(iter2["value"].asString() == "3")
 						{
 							data.car_open_message = "Your Mercedes is partly unlocked";

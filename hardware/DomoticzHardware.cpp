@@ -729,7 +729,7 @@ void CDomoticzHardwareBase::SendBlindSensor(const uint8_t NodeID, const uint8_t 
 void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const int Level, const bool bIsRGBW, const std::string& defaultname)
 {
 	int level = int(Level);
-	uint8_t subType = (bIsRGBW == true) ? sTypeColor_RGB_W : sTypeColor_RGB;
+	uint8_t subType = (bIsRGBW) ? sTypeColor_RGB_W : sTypeColor_RGB;
 	if (defaultname == "LIVCOL")
 		subType = sTypeColor_LivCol;
 	//Send as ColorSwitch

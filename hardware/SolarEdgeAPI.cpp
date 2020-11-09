@@ -164,12 +164,12 @@ bool SolarEdgeAPI::GetSite()
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");
 		return false;
 	}
-	if (root["sites"].empty() == true)
+	if (root["sites"].empty())
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
 		return false;
 	}
-	if (root["sites"]["count"].empty() == true)
+	if (root["sites"]["count"].empty())
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
 		return false;
@@ -179,7 +179,7 @@ bool SolarEdgeAPI::GetSite()
 		return false;
 	Json::Value reading = root["sites"]["site"][0];
 
-	if (reading["id"].empty() == true)
+	if (reading["id"].empty())
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
 		return false;
@@ -214,12 +214,12 @@ void SolarEdgeAPI::GetInverters()
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");
 		return;
 	}
-	if (root["reporters"].empty() == true)
+	if (root["reporters"].empty())
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
 		return;
 	}
-	if (root["reporters"]["count"].empty() == true)
+	if (root["reporters"]["count"].empty())
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
 		return;
@@ -232,7 +232,7 @@ void SolarEdgeAPI::GetInverters()
 	{
 		Json::Value reading = root["reporters"]["list"][iInverter];
 
-		if (reading["name"].empty() == true)
+		if (reading["name"].empty())
 			return;
 		_tInverterSettings iSettings;
 		iSettings.name = reading["name"].asString();
@@ -311,12 +311,12 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");
 		return;
 	}
-	if (root["data"].empty() == true)
+	if (root["data"].empty())
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
 		return;
 	}
-	if (root["data"]["count"].empty() == true)
+	if (root["data"]["count"].empty())
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
 		return;
@@ -324,7 +324,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 	int tot_results = root["data"]["count"].asInt();
 	if (tot_results < 1)
 		return;
-	if (root["data"]["telemetries"].empty() == true)
+	if (root["data"]["telemetries"].empty())
 	{
 		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
 		return;

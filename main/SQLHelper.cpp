@@ -3214,9 +3214,7 @@ bool CSQLHelper::OpenDatabase()
 	}
 
 	//Start background thread
-	if (!StartThread())
-		return false;
-	return true;
+	return StartThread();
 }
 
 void CSQLHelper::CloseDatabase()
@@ -3279,7 +3277,7 @@ void CSQLHelper::Do_Work()
 			{
 				m_bAcceptHardwareTimerActive = false;
 				m_bAcceptNewHardware = m_bPreviousAcceptNewHardware;
-				UpdatePreferencesVar("AcceptNewHardware", (m_bAcceptNewHardware == true) ? 1 : 0);
+				UpdatePreferencesVar("AcceptNewHardware", (m_bAcceptNewHardware) ? 1 : 0);
 				if (!m_bAcceptNewHardware)
 				{
 					_log.Log(LOG_STATUS, "Receiving of new sensors disabled!...");
@@ -3520,7 +3518,8 @@ void CSQLHelper::Do_Work()
 					s_str.str("");
 					s_str << itt->_idx;
 					std::string errorMessage;
-					if (!UpdateUserVariable(s_str.str(), sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()), itt->_sValue, (itt->_nValue == 0) ? false : true, errorMessage))
+					if (!UpdateUserVariable(s_str.str(), sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()),
+								itt->_sValue, itt->_nValue != 0, errorMessage))
 					{
 						_log.Log(LOG_ERROR, "Error updating variable %s: %s", sd[0].c_str(), errorMessage.c_str());
 					}
@@ -3578,7 +3577,8 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_UPDATEDEVICE)
 			{
-				m_mainworker.UpdateDevice(static_cast<int>(itt->_idx), itt->_nValue, itt->_sValue, 12, 255, (itt->_switchtype ? true : false));
+				m_mainworker.UpdateDevice(static_cast<int>(itt->_idx), itt->_nValue, itt->_sValue, 12, 255,
+							  (itt->_switchtype != 0));
 			}
 			else if (itt->_ItemType == TITEM_CUSTOM_COMMAND)
 			{
@@ -4666,7 +4666,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 
 				}
 				else if (switchtype == STYPE_Selector) {
-					bIsLightSwitchOn = (llevel > 0) ? true : false;
+					bIsLightSwitchOn = llevel > 0;
 					OnAction = GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), llevel);
 					OffAction = GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), 0);
 				}
@@ -4690,11 +4690,9 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			{
 				if (!emailserver.empty())
 				{
-					result = safe_query(
-						"SELECT CameraRowID, DevSceneDelay FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID==%" PRIu64 ") AND (DevSceneWhen==%d)",
-						ulID,
-						(bIsLightSwitchOn == true) ? 0 : 1
-					);
+					result = safe_query("SELECT CameraRowID, DevSceneDelay FROM CamerasActiveDevices WHERE "
+							    "(DevSceneType==0) AND (DevSceneRowID==%" PRIu64 ") AND (DevSceneWhen==%d)",
+							    ulID, (bIsLightSwitchOn) ? 0 : 1);
 					if (!result.empty())
 					{
 						for (const auto &sd : result)
@@ -4826,7 +4824,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 										bAdd2DelayQueue=true;
 									}
 					*/
-					if (bAdd2DelayQueue == true)
+					if (bAdd2DelayQueue)
 					{
 						std::lock_guard<std::mutex> l(m_background_task_mutex);
 						_tTaskItem tItem = _tTaskItem::SwitchLight(AddjValue, ulID, HardwareID, ID, unit, devType, subType, switchtype, signallevel, batterylevel, cmd, sValue);
@@ -5028,7 +5026,7 @@ void CSQLHelper::DeletePreferencesVar(const std::string& Key)
 		return;
 
 	//if found, delete
-	if (GetPreferencesVar(Key, sValue) == true)
+	if (GetPreferencesVar(Key, sValue))
 	{
 		safe_query("DELETE FROM Preferences WHERE (Key='%q')", Key.c_str());
 	}
@@ -7428,7 +7426,7 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 
 	for (const auto &r : _DeviceStatusResults)
 	{
-		if (r == true)
+		if (r)
 			totOn++;
 		else
 			totOff++;
@@ -8528,7 +8526,7 @@ bool CSQLHelper::CheckTime(const std::string& sTime)
 void CSQLHelper::AllowNewHardwareTimer(const int iTotMinutes)
 {
 	m_iAcceptHardwareTimerCounter = iTotMinutes * 60.0f;
-	if (m_bAcceptHardwareTimerActive == false)
+	if (!m_bAcceptHardwareTimerActive)
 	{
 		m_bPreviousAcceptNewHardware = m_bAcceptNewHardware;
 	}

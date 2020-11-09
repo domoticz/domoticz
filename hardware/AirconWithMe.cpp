@@ -250,11 +250,8 @@ void CAirconWithMe::ComputerSwitchLevelValues()
 
 bool CAirconWithMe::GetValues()
 {
-	if (mDeviceInfo.empty())
-	{
-		if (false == GetAvailableDataPoints())
-			return false;
-	}
+	if (mDeviceInfo.empty() && !GetAvailableDataPoints())
+		return false;
 
 	Json::Value root;
 	std::string errorMessage;

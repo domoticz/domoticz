@@ -311,9 +311,7 @@ namespace http {
 			// look for cWebem form action request
 			std::string uri = req.uri;
 			size_t q = uri.find(".webem");
-			if (q == std::string::npos)
-				return false;
-			return true;
+			return q != std::string::npos;
 		}
 
 		/**
@@ -548,9 +546,7 @@ namespace http {
 			//check wchar_t
 			std::map < std::string, webem_page_function >::iterator
 				pfunW = myPages_w.find(request_path);
-			if (pfunW != myPages_w.end())
-				return true;
-			return false;
+			return pfunW != myPages_w.end();
 		}
 
 		bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& rep)
@@ -2252,11 +2248,8 @@ namespace http {
 			// Set timeout to make session in use
 			session.timeout = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
 
-			if ((session.isnew == true) &&
-				(session.rights == 2) &&
-				(req.uri.find("json.htm") != std::string::npos) &&
-				(req.uri.find("logincheck") == std::string::npos)
-				)
+			if ((session.isnew) && (session.rights == 2) && (req.uri.find("json.htm") != std::string::npos) &&
+			    (req.uri.find("logincheck") == std::string::npos))
 			{
 				// client is possibly a script that does not send cookies - see if we have the IP address registered as a session ID
 				WebEmSession* memSession = myWebem->GetSession(session.remote_host);
@@ -2283,7 +2276,7 @@ namespace http {
 					}
 				}
 
-				if (session.isnew == true)
+				if (session.isnew)
 				{
 					// register a 'fake' IP based session so we can reference that if the client returns here
 					session.id = session.remote_host;
@@ -2294,7 +2287,7 @@ namespace http {
 				}
 			}
 
-			if (session.isnew == true)
+			if (session.isnew)
 			{
 				_log.Log(LOG_STATUS, "Incoming connection from: %s", session.remote_host.c_str());
 				// Create a new session ID
@@ -2310,7 +2303,7 @@ namespace http {
 				myWebem->AddSession(session);
 				send_cookie(rep, session);
 			}
-			else if (session.forcelogin == true)
+			else if (session.forcelogin)
 			{
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), session.id.c_str());
 

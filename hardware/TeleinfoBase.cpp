@@ -107,7 +107,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		teleinfo.triphase = true;
 
 	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
-	if (teleinfo.withPAPP == false)
+	if (!teleinfo.withPAPP)
 		teleinfo.PAPP = (teleinfo.triphase ? (teleinfo.IINST1 + teleinfo.IINST2 + teleinfo.IINST3) : (teleinfo.IINST)) * 230;
 
 	if (teleinfo.PTEC.substr(0, 2) == "TH")
@@ -277,7 +277,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 					teleinfo.pAlertDemain = demain_alert;
 				}
 			}
-			if (teleinfo.triphase == false)
+			if (!teleinfo.triphase)
 			{
 				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
 				SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST * 100) / float(teleinfo.ISOUSC), name + " Pourcentage de Charge");
@@ -304,7 +304,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			SendAlertSensor(32 * rank + 1, 255, rate_alert, teleinfo.rate, name + " Tarif en cours");
 			teleinfo.pAlertRate = rate_alert;
 		}
-		if (teleinfo.triphase == false)
+		if (!teleinfo.triphase)
 		{
 			alertI1 = AlertLevel(teleinfo.IINST, teleinfo.ISOUSC, szTmp);
 			if (alertI1 != teleinfo.pAlertI1)
@@ -410,7 +410,7 @@ bool CTeleinfoBase::isCheckSumOk(const std::string &sLine, int &isMode1)
 	else if (mode2 == checksum)
 	{
 		line_ok = true;
-		if (isMode1 != false)	 // if this is first run, will still be at 255
+		if (static_cast<bool>(isMode1)) // if this is first run, will still be at 255
 		{
 			isMode1 = false;
 			_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", m_Name.c_str());

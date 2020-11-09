@@ -376,7 +376,9 @@ void MySensorsBase::UpdateChild(const int nodeID, const int childID, const bool 
 {
 	if (_tMySensorNode *pNode = FindNode(nodeID))
 	{
-		m_sql.safe_query("UPDATE MySensorsChilds SET [UseAck]='%d', [AckTimeout]='%d' WHERE (HardwareID==%d) AND (NodeID=='%d') AND (ChildID=='%d')", (UseAck == true) ? 1 : 0, AckTimeout, m_HwdID, nodeID, childID);
+		m_sql.safe_query("UPDATE MySensorsChilds SET [UseAck]='%d', [AckTimeout]='%d' WHERE (HardwareID==%d) AND (NodeID=='%d') "
+				 "AND (ChildID=='%d')",
+				 (UseAck) ? 1 : 0, AckTimeout, m_HwdID, nodeID, childID);
 		_tMySensorChild *pChild = pNode->FindChild(childID);
 		if (pChild)
 		{
@@ -1236,7 +1238,7 @@ bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, cons
 	auto itt = m_node_sleep_states.find(NodeID);
 	if (itt != m_node_sleep_states.end())
 	{
-		bIsAsleep = (itt->second == true);
+		bIsAsleep = (itt->second);
 	}
 	if (bIsAsleep)
 	{
@@ -1302,7 +1304,7 @@ void MySensorsBase::SendNodeCommand(const int NodeID, const int ChildID, const _
 void MySensorsBase::SendCommandInt(const int NodeID, const int ChildID, const _eMessageType messageType, const bool UseAck, const int SubType, const std::string &Payload)
 {
 	std::stringstream sstr;
-	std::string szAck = (UseAck == true) ? "1" : "0";
+	std::string szAck = (UseAck) ? "1" : "0";
 	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";" << szAck << ";" << SubType << ";" << Payload << '\n';
 	m_sendQueue.push(sstr.str());
 }
@@ -1510,7 +1512,8 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 					_log.Log(LOG_STATUS, "MySensors: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
 					return false;
 				}
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW) ? V_RGBW : V_RGB, sstr.str(),
+							  pChild->useAck, pChild->ackTimeout);
 			}
 			else if (pLed->command == Color_SetColorToWhite)
 			{
@@ -1528,7 +1531,8 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 					sstr << "#000000"
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
 				}
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW) ? V_RGBW : V_RGB, sstr.str(),
+							  pChild->useAck, pChild->ackTimeout);
 			}
 			else if (pLed->command == Color_SetBrightnessLevel)
 			{
@@ -1650,7 +1654,7 @@ void MySensorsBase::UpdateChildDBInfo(const int NodeID, const int ChildID, const
 	if (result.empty())
 	{
 		//Insert
-		bool bUseAck = (ChildID == 255) ? false : true;
+		bool bUseAck = ChildID != 255;
 		m_sql.safe_query("INSERT INTO MySensorsChilds (HardwareID, NodeID, ChildID, [Type], [Name], UseAck) VALUES (%d, %d, %d, %d, '%q', %d)", m_HwdID, NodeID, ChildID, pType, Name.c_str(), (bUseAck) ? 1 : 0);
 	}
 	else
@@ -1810,7 +1814,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			break;
 		case I_INCLUSION_MODE:
 			_log.Log(LOG_NORM, "MySensors: Inclusion mode=%s", payload.c_str());
-			m_sql.m_bAcceptNewHardware = atoi(payload.c_str()) ? true : false;
+			m_sql.m_bAcceptNewHardware = atoi(payload.c_str()) != 0;
 			break;
 		case I_PRE_SLEEP_NOTIFICATION:
 			//Node goes to sleep (we will buffer it's messages until it's awake again)
@@ -2639,7 +2643,7 @@ namespace http {
 			int ChildID = atoi(childid.c_str());
 			root["status"] = "OK";
 			root["title"] = "MySensorsUpdateChild";
-			bool bUseAck = (useack == "true") ? true : false;
+			bool bUseAck = useack == "true";
 			int iAckTimeout = atoi(ackTimeout.c_str());
 			if (iAckTimeout < 100)
 				iAckTimeout = 100;

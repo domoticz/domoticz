@@ -200,12 +200,12 @@ bool CBuienRadar::GetStationDetails()
 		return false;
 	}
 
-	if (root["actual"].empty() == true)
+	if (root["actual"].empty())
 	{
 		Log(LOG_ERROR, "Invalid data received (actual empty), or no data returned!");
 		return false;
 	}
-	if (root["actual"]["stationmeasurements"].empty() == true)
+	if (root["actual"]["stationmeasurements"].empty())
 	{
 		Log(LOG_ERROR, "Invalid data received (station measurement empty), or no data returned!");
 		return false;
@@ -347,12 +347,12 @@ void CBuienRadar::GetMeterDetails()
 		return;
 	}
 
-	if (root["timestamp"].empty() == true || (root["stationid"].empty() == true && root["stationId"].empty() == true))
+	if (root["timestamp"].empty() || (root["stationid"].empty() && root["stationId"].empty()))
 	{
 		Log(LOG_ERROR, "Invalid data received (timestamp or staionid missing) or no data returned!");
 		return;
 	}
-	if (root["temperature"].empty() == true)
+	if (root["temperature"].empty())
 	{
 		Log(LOG_ERROR, "Invalid data received (temperature missing) or no data returned!");
 		return;

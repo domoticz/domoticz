@@ -313,7 +313,7 @@ void CDaikin::GetBasicInfo()
 		{
 			if (m_led != results2[1]) { // update only if device led state was changed from other source than domoticz : direct http command for example
 				m_led = results2[1];
-				UpdateSwitchNew(2, -1, (m_led[0] == '0') ? true : false, 100, "Led indicator");
+				UpdateSwitchNew(2, -1, m_led[0] == '0', 100, "Led indicator");
 			}
 
 		}
@@ -408,7 +408,7 @@ void CDaikin::GetControlInfo()
 			if (m_pow != results2[1])// update only if device led state was changed from other source than domoticz : direct http command or daikin remote IR/wifi controller
 			{
 				m_pow = results2[1];
-				UpdateSwitchNew(1, -1, (results2[1][0] == '1') ? false : true, 100, "Power");
+				UpdateSwitchNew(1, -1, results2[1][0] != '1', 100, "Power");
 			}
 		}
 		else if (results2[0] == "otemp")

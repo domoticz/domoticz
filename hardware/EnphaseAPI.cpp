@@ -209,7 +209,7 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 			return;
 	}
 
-	if (root["production"].empty() == true)
+	if (root["production"].empty())
 	{
 		//No production details available
 		return;
@@ -255,11 +255,11 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 
 void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 {
-	if (root["consumption"].empty() == true)
+	if (root["consumption"].empty())
 	{
 		return;
 	}
-	if (root["consumption"][1].empty() == true)
+	if (root["consumption"][1].empty())
 	{
 		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
 		return;

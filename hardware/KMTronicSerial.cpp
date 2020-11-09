@@ -163,7 +163,7 @@ bool KMTronicSerial::WriteInt(const unsigned char *data, const size_t len, const
 	if (!bWaitForReturn)
 		return true;
 	sleep_milliseconds(100);
-	return (m_bHaveReceived == true);
+	return (m_bHaveReceived);
 }
 
 void KMTronicSerial::GetRelayStates()

@@ -586,7 +586,7 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 
 							if ((buffer[3] == 105) || (buffer[3] == 106)) // roller blind up and down
 							{
-								if (findBlindOutput == false)
+								if (!findBlindOutput)
 								{
 									ReportOutputState(index + 1 + 1024, outputState);
 									UpdateOutputName(index + 1 + 1024, &buffer[4], STYPE_Blinds);
@@ -920,7 +920,7 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 			{
 				if (general->id <= 1024)
 				{
-					m_outputsLastState[id - 1] = cmnd == gswitch_sOn ? true : false;
+					m_outputsLastState[id - 1] = cmnd == gswitch_sOn;
 				}
 				_log.Log(LOG_STATUS, "Satel Integra: switched output %d to %s", id, cmnd == gswitch_sOn ? "on" : "off");
 				return true;

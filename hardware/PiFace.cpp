@@ -197,212 +197,207 @@ int CPiFace::LoadConfig()
 
     if (ConfigFile.is_open())
     {
-        while (ConfigFile.good()==true)
-        {
-            do
-            {
-                StartPos=-1;
-                EndPos=-1;
-                getline(ConfigFile,input,'\n');    //get line from config file
-                Line=preprocess(input);
+	    while (ConfigFile.good())
+	    {
+		    do
+		    {
+			    StartPos = -1;
+			    EndPos = -1;
+			    getline(ConfigFile, input, '\n'); // get line from config file
+			    Line = preprocess(input);
 
-                //find any comments
-                StartPos=Line.find("//",0);
-                if (StartPos>=0)
-                {
-                    //comment found, remove it
-                    Line=Line.substr(0,StartPos);
-                    StartPos=-1; // reset marker
-                }
+			    // find any comments
+			    StartPos = Line.find("//", 0);
+			    if (StartPos >= 0)
+			    {
+				    // comment found, remove it
+				    Line = Line.substr(0, StartPos);
+				    StartPos = -1; // reset marker
+			    }
 
-                //find linesync
-                EndPos=GetParameterString(Line,".",0,Parameter);
-                if (EndPos>=0)
-                {
-                    if (Parameter.compare("piface")==0)
-                    {
-                        StartPos=EndPos;
-                    }
-                }
-            }
-            while ((StartPos<0) && (ConfigFile.good()==true));
+			    // find linesync
+			    EndPos = GetParameterString(Line, ".", 0, Parameter);
+			    if (EndPos >= 0)
+			    {
+				    if (Parameter.compare("piface") == 0)
+				    {
+					    StartPos = EndPos;
+				    }
+			    }
+		    } while ((StartPos < 0) && (ConfigFile.good()));
 
-            if (StartPos > 0)
-            {
-                //first lets get PiFace Address
-                EndPos=GetParameterString(Line,".",StartPos,Parameter);
-                if (EndPos>=0)
-                {
-			Address = (unsigned char)(strtol(Parameter.c_str(), nullptr, 0)
-						  & 0xFF); // data can be restricted further but as we check later on keep it wide for
-							   // future use.
-			StartPos = EndPos;
-		}
+		    if (StartPos > 0)
+		    {
+			    // first lets get PiFace Address
+			    EndPos = GetParameterString(Line, ".", StartPos, Parameter);
+			    if (EndPos >= 0)
+			    {
+				    Address = (unsigned char)(strtol(Parameter.c_str(), nullptr, 0) &
+							      0xFF); // data can be restricted further but as we check later on keep it wide
+								     // for future use.
+				    StartPos = EndPos;
+			    }
 
-		// Now lets get Port Type
-		EndPos = GetParameterString(Line, ".", StartPos, Parameter);
-		if (EndPos >= 0)
-		{
-			if (Parameter.compare("input") == 0)
-			{
-				// we have an input
-				PortType = 'I';
-			}
-			else if (Parameter.compare("output") == 0)
-			{
-				// we have an output
-				PortType = 'O';
-			}
+			    // Now lets get Port Type
+			    EndPos = GetParameterString(Line, ".", StartPos, Parameter);
+			    if (EndPos >= 0)
+			    {
+				    if (Parameter.compare("input") == 0)
+				    {
+					    // we have an input
+					    PortType = 'I';
+				    }
+				    else if (Parameter.compare("output") == 0)
+				    {
+					    // we have an output
+					    PortType = 'O';
+				    }
 
-			StartPos = EndPos;
-		}
+				    StartPos = EndPos;
+			    }
 
-		// Now lets get Pinnumber
-		EndPos = GetParameterString(Line, ".", StartPos, Parameter);
-		if (EndPos >= 0)
-		{
-			PinNumber = (unsigned char)(strtol(Parameter.c_str(), nullptr, 0)
-						    & 0xFF); // data can be restricted further but as we check later on keep it wide for
-							     // future use.
-			StartPos = EndPos;
-		}
+			    // Now lets get Pinnumber
+			    EndPos = GetParameterString(Line, ".", StartPos, Parameter);
+			    if (EndPos >= 0)
+			    {
+				    PinNumber = (unsigned char)(strtol(Parameter.c_str(), nullptr, 0) &
+								0xFF); // data can be restricted further but as we check later on keep it
+								       // wide for future use.
+				    StartPos = EndPos;
+			    }
 
-		// Now lets get parameter name
-		EndPos = GetParameterString(Line, "=", StartPos, Parameter);
-		if (EndPos >= 0)
-		{
-			Parametername = Parameter;
-			StartPos = EndPos;
-		}
+			    // Now lets get parameter name
+			    EndPos = GetParameterString(Line, "=", StartPos, Parameter);
+			    if (EndPos >= 0)
+			    {
+				    Parametername = Parameter;
+				    StartPos = EndPos;
+			    }
 
-		// finaly lets get parameter value
-		Parametervalue = Line.substr(StartPos, Line.length() - StartPos);
-		Parametervalue = preprocess(Parametervalue);
+			    // finaly lets get parameter value
+			    Parametervalue = Line.substr(StartPos, Line.length() - StartPos);
+			    Parametervalue = preprocess(Parametervalue);
 
-		if ((Address <= 3) && (PinNumber <= 7) && ((PortType == 'I') || (PortType == 'O')) && (Parametername.length() > 0)
-		    && (Parametervalue.length() > 0))
-		{
-			_log.Log(LOG_STATUS, "PiFace: config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s",
-				 Address, PinNumber, PortType, Parametername.c_str(), Parametervalue.c_str());
-			NameFound = LocateValueInParameterArray(Parametername, ParameterNames, CONFIG_NR_OF_PARAMETER_TYPES);
+			    if ((Address <= 3) && (PinNumber <= 7) && ((PortType == 'I') || (PortType == 'O')) &&
+				(Parametername.length() > 0) && (Parametervalue.length() > 0))
+			    {
+				    _log.Log(LOG_STATUS,
+					     "PiFace: config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s",
+					     Address, PinNumber, PortType, Parametername.c_str(), Parametervalue.c_str());
+				    NameFound = LocateValueInParameterArray(Parametername, ParameterNames, CONFIG_NR_OF_PARAMETER_TYPES);
 
-			if (PortType == 'I')
-			{
-				IOport = &m_Inputs[Address];
-				m_Inputs[Address].Pin[PinNumber].Direction = 'I';
-			}
-			else
-			{
-				IOport = &m_Outputs[Address];
-				m_Outputs[Address].Pin[PinNumber].Direction = 'O';
-			}
+				    if (PortType == 'I')
+				    {
+					    IOport = &m_Inputs[Address];
+					    m_Inputs[Address].Pin[PinNumber].Direction = 'I';
+				    }
+				    else
+				    {
+					    IOport = &m_Outputs[Address];
+					    m_Outputs[Address].Pin[PinNumber].Direction = 'O';
+				    }
 
-			result = 0;
+				    result = 0;
 
-			switch (NameFound)
-			{
-				default:
-					_log.Log(LOG_ERROR, "PiFace: Error config file: unknown parameter %s found", Parametername.c_str());
-					break;
-				case 0:
-				case 1:
-					// found enable(d)
-					ValueFound = LocateValueInParameterArray(Parametervalue, ParameterBooleanValueNames,
-										 CONFIG_NR_OF_PARAMETER_BOOL_TYPES);
-					if (ValueFound >= 0)
-					{
-						if ((ValueFound == 0) || (ValueFound == 1))
-						{
-							IOport->Pin[PinNumber].Enabled = false;
-						}
-						else
-						{
-							IOport->Pin[PinNumber].Enabled = true;
-						}
-						result++;
-					}
-					else
-						_log.Log(LOG_ERROR, "PiFace: Error config file: unknown value %s found",
-							 Parametervalue.c_str());
-					break;
+				    switch (NameFound)
+				    {
+					    default:
+						    _log.Log(LOG_ERROR, "PiFace: Error config file: unknown parameter %s found",
+							     Parametername.c_str());
+						    break;
+					    case 0:
+					    case 1:
+						    // found enable(d)
+						    ValueFound = LocateValueInParameterArray(Parametervalue, ParameterBooleanValueNames,
+											     CONFIG_NR_OF_PARAMETER_BOOL_TYPES);
+						    if (ValueFound >= 0)
+						    {
+							    IOport->Pin[PinNumber].Enabled = !((ValueFound == 0) || (ValueFound == 1));
+							    result++;
+						    }
+						    else
+							    _log.Log(LOG_ERROR, "PiFace: Error config file: unknown value %s found",
+								     Parametervalue.c_str());
+						    break;
 
-				case 2:
-					// found pintype
-					ValueFound = LocateValueInParameterArray(Parametervalue, ParameterPinTypeValueNames,
-										 CONFIG_NR_OF_PARAMETER_PIN_TYPES);
-					switch (ValueFound)
-					{
-						default:
-							_log.Log(LOG_ERROR,
-								 "PiFace: Error config file: unknown value %s found =>setting default "
-								 "level %d",
-								 Parametervalue.c_str(), ValueFound);
-							IOport->Pin[PinNumber].Type = LEVEL;
-							break;
+					    case 2:
+						    // found pintype
+						    ValueFound = LocateValueInParameterArray(Parametervalue, ParameterPinTypeValueNames,
+											     CONFIG_NR_OF_PARAMETER_PIN_TYPES);
+						    switch (ValueFound)
+						    {
+							    default:
+								    _log.Log(LOG_ERROR,
+									     "PiFace: Error config file: unknown value %s found =>setting "
+									     "default "
+									     "level %d",
+									     Parametervalue.c_str(), ValueFound);
+								    IOport->Pin[PinNumber].Type = LEVEL;
+								    break;
 
-						case 0:
-							IOport->Pin[PinNumber].Type = LEVEL;
-							break;
-						case 1:
-							IOport->Pin[PinNumber].Type = INV_LEVEL;
-							break;
-						case 2:
-							IOport->Pin[PinNumber].Type = TOGGLE_RISING;
-							break;
-						case 3:
-							IOport->Pin[PinNumber].Type = TOGGLE_FALLING;
-							break;
-					}
-					result++;
-					break;
+							    case 0:
+								    IOport->Pin[PinNumber].Type = LEVEL;
+								    break;
+							    case 1:
+								    IOport->Pin[PinNumber].Type = INV_LEVEL;
+								    break;
+							    case 2:
+								    IOport->Pin[PinNumber].Type = TOGGLE_RISING;
+								    break;
+							    case 3:
+								    IOport->Pin[PinNumber].Type = TOGGLE_FALLING;
+								    break;
+						    }
+						    result++;
+						    break;
 
-				case 3:
-				case 4:
-					// found count_enable(d)
-					ValueFound = LocateValueInParameterArray(Parametervalue, ParameterBooleanValueNames,
-										 CONFIG_NR_OF_PARAMETER_BOOL_TYPES);
+					    case 3:
+					    case 4:
+						    // found count_enable(d)
+						    ValueFound = LocateValueInParameterArray(Parametervalue, ParameterBooleanValueNames,
+											     CONFIG_NR_OF_PARAMETER_BOOL_TYPES);
 
-					if (ValueFound >= 0)
-					{
-						if ((ValueFound == 0) || (ValueFound == 1))
-						{
-							IOport->ConfigureCounter(PinNumber, false);
-						}
-						else
-						{
-							IOport->ConfigureCounter(PinNumber, true);
-						}
-						result++;
-					}
-					else
-						_log.Log(LOG_ERROR, "PiFace: Error config file: unknown value %s found",
-							 Parametervalue.c_str());
-					break;
+						    if (ValueFound >= 0)
+						    {
+							    if ((ValueFound == 0) || (ValueFound == 1))
+							    {
+								    IOport->ConfigureCounter(PinNumber, false);
+							    }
+							    else
+							    {
+								    IOport->ConfigureCounter(PinNumber, true);
+							    }
+							    result++;
+						    }
+						    else
+							    _log.Log(LOG_ERROR, "PiFace: Error config file: unknown value %s found",
+								     Parametervalue.c_str());
+						    break;
 
-				case 5:
-				case 6:
-				case 7:
-					// count_update_interval(_s)(ec)
-					unsigned long UpdateInterval;
+					    case 5:
+					    case 6:
+					    case 7:
+						    // count_update_interval(_s)(ec)
+						    unsigned long UpdateInterval;
 
-					UpdateInterval = strtol(Parametervalue.c_str(), nullptr, 0);
-					IOport->Pin[PinNumber].Count.SetUpdateInterval(UpdateInterval * 1000);
-					result++;
-					break;
+						    UpdateInterval = strtol(Parametervalue.c_str(), nullptr, 0);
+						    IOport->Pin[PinNumber].Count.SetUpdateInterval(UpdateInterval * 1000);
+						    result++;
+						    break;
 
-				case 8:
-					// count_update_interval_diff_perc
-					unsigned long UpdateIntervalPerc;
+					    case 8:
+						    // count_update_interval_diff_perc
+						    unsigned long UpdateIntervalPerc;
 
-					UpdateIntervalPerc = strtol(Parametervalue.c_str(), nullptr, 0);
-					if (UpdateIntervalPerc < 1 || UpdateIntervalPerc > 1000)
-					{
-						_log.Log(LOG_ERROR, "PiFace: Error config file: invalid value %s found",
-							 Parametervalue.c_str());
-						break;
-					}
-					IOport->Pin[PinNumber].Count.SetUpdateIntervalPerc(UpdateIntervalPerc);
-					result++;
+						    UpdateIntervalPerc = strtol(Parametervalue.c_str(), nullptr, 0);
+						    if (UpdateIntervalPerc < 1 || UpdateIntervalPerc > 1000)
+						    {
+							    _log.Log(LOG_ERROR, "PiFace: Error config file: invalid value %s found",
+								     Parametervalue.c_str());
+							    break;
+						    }
+						    IOport->Pin[PinNumber].Count.SetUpdateIntervalPerc(UpdateIntervalPerc);
+						    result++;
 
 #ifndef DISABLE_NEW_FUNCTIONS
                             /*  disabled until code part is completed and tested */
@@ -454,12 +449,12 @@ int CPiFace::LoadConfig()
 				IOport->Pin[PinNumber].Count.SetDivider(strtol(Parametervalue.c_str(), nullptr, 0));
 				result++;
 				break;
-			}
-		}
+				    }
+			    }
 		else
 			_log.Log(LOG_ERROR, "PiFace: Error config file: misformed config line %s found", Line.c_str());
+		    }
 	    }
-	}
 	ConfigFile.close();
 #ifndef DISABLE_NEW_FUNCTIONS
         if (Regenerate_Config)
@@ -750,7 +745,7 @@ bool CPiFace::StartHardware()
 			//we have hardware, so lets use it
 			for (int devId = 0; devId < 4; devId++)
 			{
-				if (m_DetectedHardware[devId] == true)
+				if (m_DetectedHardware[devId])
 					Init_Hardware(devId);
 			}
 #ifdef DISABLE_NEW_FUNCTIONS
@@ -759,7 +754,7 @@ bool CPiFace::StartHardware()
 
 			for (int devId = 0; devId < 4; devId++)
 			{
-				if (m_DetectedHardware[devId] == true)
+				if (m_DetectedHardware[devId])
 					GetAndSetInitialDeviceState(devId);
 			}
 
@@ -1005,9 +1000,9 @@ int CPiFace::Detect_PiFace_Hardware()
         _log.Log(LOG_STATUS,"PiFace: Found the following PiFaces:");
         for (devId=0; devId<4; devId++)
         {
-            if (m_DetectedHardware[devId]==true)
-                _log.Log(LOG_STATUS,"PiFace: %d",devId);
-        }
+		if (m_DetectedHardware[devId])
+			_log.Log(LOG_STATUS, "PiFace: %d", devId);
+	}
     }
     else _log.Log(LOG_STATUS,"PiFace: Sorry, no PiFaces were found");
     return NrOfFoundBoards;
@@ -1236,53 +1231,49 @@ int CIOPinState::Update(bool New)
         {
             default:
             case LEVEL:
-                if ((Last ^ Current) == true)
-                {
-                    if (Current)
-                        StateChange=1;
-                    else
-                        StateChange=0;
-                }
-                break;
-            case INV_LEVEL:    //inverted input
-                if ((Last ^ Current) == true)
-                {
-                    if (Current)
-                        StateChange=0;
-                    else
-                        StateChange=1;
-                }
-                break;
-            case TOGGLE_RISING:
-                if (((Last ^ Current) == true) && (Current == true))
-                {
-                    if (Toggle)
-                        StateChange=1;
-                    else
-                        StateChange=0;
-                    Toggle=!Toggle;
-                }
-                break;
-            case TOGGLE_FALLING:
-                if (((Last ^ Current) == true) && (Current == false))
-                {
-                    if (Toggle)
-                        StateChange=1;
-                    else
-                        StateChange=0;
-                    Toggle=!Toggle;
-                }
-                break;
-        }
+		    if (bool(Last ^ Current))
+		    {
+			    if (Current)
+				    StateChange = 1;
+			    else
+				    StateChange = 0;
+		    }
+		    break;
+	    case INV_LEVEL: // inverted input
+		    if (bool(Last ^ Current))
+		    {
+			    if (Current)
+				    StateChange = 0;
+			    else
+				    StateChange = 1;
+		    }
+		    break;
+	    case TOGGLE_RISING:
+		    if (bool(Last ^ Current) && Current)
+		    {
+			    if (Toggle)
+				    StateChange = 1;
+			    else
+				    StateChange = 0;
+			    Toggle = !Toggle;
+		    }
+		    break;
+	    case TOGGLE_FALLING:
+		    if (bool(Last ^ Current) && !Current)
+		    {
+			    if (Toggle)
+				    StateChange = 1;
+			    else
+				    StateChange = 0;
+			    Toggle = !Toggle;
+		    }
+		    break;
+	}
     }
 
     if (Direction == 'O')
-    {
-        if (((Last ^ Current) == true) && (Current == true))
-        {
-            Count.Update(1);
-        }
-    }
+	    if (bool(Last ^ Current) && Current)
+		    Count.Update(1);
 
     return StateChange;
 }

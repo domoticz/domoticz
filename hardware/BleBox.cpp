@@ -112,17 +112,17 @@ void BleBox::GetDevicesState()
 			{
 				case 1:
 				{
-					if (DoesNodeExists(root, "shutter") == false)
+					if (!DoesNodeExists(root, "shutter"))
 						break;
 
 					root = root["shutter"];
 
-					if (DoesNodeExists(root, "state") == false)
+					if (!DoesNodeExists(root, "state"))
 						break;
 
 					const int state = root["state"].asInt();
 
-					if (DoesNodeExists(root, "currentPos", "position") == false)
+					if (!DoesNodeExists(root, "currentPos", "position"))
 						break;
 
 					const int currentPos = root["currentPos"]["position"].asInt();
@@ -137,7 +137,7 @@ void BleBox::GetDevicesState()
 				}
 				case 2:
 				{
-					if (DoesNodeExists(root, "light", "currentColor") == false)
+					if (!DoesNodeExists(root, "light", "currentColor"))
 						break;
 
 					const std::string currentColor = root["light"]["currentColor"].asString();
@@ -150,7 +150,7 @@ void BleBox::GetDevicesState()
 				}
 				case 3:
 				{
-					if (DoesNodeExists(root, "rgbw", "currentColor") == false)
+					if (!DoesNodeExists(root, "rgbw", "currentColor"))
 						break;
 
 					const std::string currentColor = root["rgbw"]["currentColor"].asString();
@@ -162,7 +162,7 @@ void BleBox::GetDevicesState()
 				}
 				case 4:
 				{
-					if (DoesNodeExists(root, "currentPos") == false)
+					if (!DoesNodeExists(root, "currentPos"))
 						break;
 
 					const float level = root["currentPos"].asFloat();
@@ -172,7 +172,7 @@ void BleBox::GetDevicesState()
 				}
 				case 5:
 				{
-					if (DoesNodeExists(root, "dimmer", "currentBrightness") == false)
+					if (!DoesNodeExists(root, "dimmer", "currentBrightness"))
 						break;
 
 					const int currentPos = root["dimmer"]["currentBrightness"].asInt();
@@ -184,12 +184,12 @@ void BleBox::GetDevicesState()
 				case 0:
 				case 6:
 				{
-					if ((DoesNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
+					if ((!DoesNodeExists(root, "relays")) || (!root["relays"].isArray()))
 						break;
 
 					for (const auto &relay : root["relays"])
 					{
-						if ((DoesNodeExists(relay, "relay") == false) || (DoesNodeExists(relay, "state") == false))
+						if ((!DoesNodeExists(relay, "relay")) || (!DoesNodeExists(relay, "state")))
 							break;
 						uint8_t relayNumber = (uint8_t)relay["relay"].asInt(); // 0 or 1
 						bool currentState = relay["state"].asBool();	       // 0 or 1
@@ -201,12 +201,12 @@ void BleBox::GetDevicesState()
 				}
 				case 7:
 				{
-					if (DoesNodeExists(root, "air") == false)
+					if (!DoesNodeExists(root, "air"))
 						break;
 
 					root = root["air"];
 
-					if ((DoesNodeExists(root, "sensors") == false) || (!root["sensors"].isArray()))
+					if ((!DoesNodeExists(root, "sensors")) || (!root["sensors"].isArray()))
 						break;
 
 					Json::Value sensors = root["sensors"];
@@ -214,7 +214,7 @@ void BleBox::GetDevicesState()
 					for (Json::ArrayIndex index = 0; index < count; index++)
 					{
 						Json::Value sensor = sensors[index];
-						if ((DoesNodeExists(sensor, "type") == false) || (DoesNodeExists(sensor, "value") == false))
+						if ((!DoesNodeExists(sensor, "type")) || (!DoesNodeExists(sensor, "value")))
 							break;
 						uint8_t value = (uint8_t)sensor["value"].asInt();
 						std::string type = sensor["type"].asString();
@@ -227,18 +227,17 @@ void BleBox::GetDevicesState()
 				}
 				case 8:
 				{
-					if (DoesNodeExists(root, "tempSensor") == false)
+					if (!DoesNodeExists(root, "tempSensor"))
 						break;
 
 					root = root["tempSensor"];
 
-					if ((DoesNodeExists(root, "sensors") == false) || (!root["sensors"].isArray()))
+					if ((!DoesNodeExists(root, "sensors")) || (!root["sensors"].isArray()))
 						break;
 
 					for (const auto &sensor : root["sensors"])
 					{
-						if ((DoesNodeExists(sensor, "value") == false)
-						    || (DoesNodeExists(sensor, "state") == false))
+						if ((!DoesNodeExists(sensor, "value")) || (!DoesNodeExists(sensor, "state")))
 							break;
 
 						if (sensor["state"] != 2)
@@ -355,12 +354,12 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 				if (root.empty())
 					return false;
 
-				if (DoesNodeExists(root, "shutter") == false)
+				if (!DoesNodeExists(root, "shutter"))
 					return false;
 
 				root = root["shutter"];
 
-				if (DoesNodeExists(root, "desiredPos", "position") == false)
+				if (!DoesNodeExists(root, "desiredPos", "position"))
 					return false;
 
 				if (root["desiredPos"]["position"].asInt() != percentage)
@@ -394,7 +393,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 				if (root.empty())
 					return false;
 
-				if (DoesNodeExists(root, "light", "desiredColor") == false)
+				if (!DoesNodeExists(root, "light", "desiredColor"))
 					return false;
 
 				if (root["light"]["desiredColor"].asString() != level)
@@ -431,7 +430,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 				if (root.empty())
 					return false;
 
-				if (DoesNodeExists(root, "dimmer", "desiredBrightness") == false)
+				if (!DoesNodeExists(root, "dimmer", "desiredBrightness"))
 					return false;
 
 				std::stringstream ss;
@@ -476,7 +475,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 				if (root.empty())
 					return false;
 
-				if ((DoesNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
+				if ((!DoesNodeExists(root, "relays")) || (!root["relays"].isArray()))
 					return false;
 
 				bool success = false;
@@ -485,7 +484,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 				for (Json::ArrayIndex index = 0; index < count; index++)
 				{
 					Json::Value relay = relays[index];
-					if ((DoesNodeExists(relay, "relay") == false) || (DoesNodeExists(relay, "state") == false))
+					if ((!DoesNodeExists(relay, "relay")) || (!DoesNodeExists(relay, "state")))
 						continue;
 					int relayNumber2 = relay["relay"].asInt(); // 0 or 1
 					std::string currentState = relay["state"].asString(); // 0 or 1
@@ -532,7 +531,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 			if (root.empty())
 				return false;
 
-			if (DoesNodeExists(root, "gate") == false)
+			if (!DoesNodeExists(root, "gate"))
 				return false;
 
 			break;
@@ -639,7 +638,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 		if (root.empty())
 			return false;
 
-		if (DoesNodeExists(root, "rgbw", "desiredColor") == false)
+		if (!DoesNodeExists(root, "rgbw", "desiredColor"))
 			return false;
 
 		if (root["rgbw"]["desiredColor"].asString() != state)
@@ -655,7 +654,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 
 bool BleBox::DoesNodeExists(const Json::Value & root, const std::string & node)
 {
-	if (root[node].empty() == true)
+	if (root[node].empty())
 	{
 		Log(LOG_ERROR, "node '%s' missing!", node.c_str());
 		return false;
@@ -665,10 +664,10 @@ bool BleBox::DoesNodeExists(const Json::Value & root, const std::string & node)
 
 bool BleBox::DoesNodeExists(const Json::Value & root, const std::string & node, const std::string & value)
 {
-	if (DoesNodeExists(root, node) == false)
+	if (!DoesNodeExists(root, node))
 		return false;
 
-	if (root[node][value].empty() == true)
+	if (root[node][value].empty())
 	{
 		Log(LOG_ERROR, "value '%s' missing!", value.c_str());
 		return false;
@@ -991,16 +990,16 @@ std::string BleBox::IdentifyDevice(const std::string & IPAddress)
 
 	std::string result;
 
-	if (root["device"].empty() == true)
+	if (root["device"].empty())
 	{
-		if (DoesNodeExists(root, "type") == false)
+		if (!DoesNodeExists(root, "type"))
 			return "";
 		else
 			result = root["type"].asString();
 	}
 	else
 	{
-		if (root["device"]["type"].empty() == true)
+		if (root["device"]["type"].empty())
 		{
 			Log(LOG_ERROR, "Invalid device type received!");
 			return "";
@@ -1018,7 +1017,7 @@ Json::Value BleBox::GetApiDeviceState(const std::string & IPAddress)
 	if (!root.isObject())
 		return empty;
 
-	if (root["device"].empty() == true)
+	if (root["device"].empty())
 	{
 		return root;
 	}
@@ -1036,23 +1035,23 @@ std::string BleBox::GetUptime(const std::string & IPAddress)
 		root = SendCommand(IPAddress, "/api/device/runtime", 2);
 		if (root.empty())
 			return "unknown";
-		if (DoesNodeExists(root, "runtime") == false)
+		if (!DoesNodeExists(root, "runtime"))
 			return "unknown";
 		root = root["runtime"];
 	}
 
 	uint64_t total_minutes = 0;
-	if (root["uptime"].empty() == false)
+	if (!root["uptime"].empty())
 	{
 		uint64_t msec = root["uptime"].asUInt64();
 		total_minutes = msec / (1000 * 60);
 	}
-	else if (root["uptimeS"].empty() == false)
+	else if (!root["uptimeS"].empty())
 	{
 		uint64_t sec = root["uptimeS"].asUInt64();
 		total_minutes = sec / 60;
 	}
-	else if (root["timeH"].empty() == false)
+	else if (!root["timeH"].empty())
 	{
 		uint64_t h = root["timeH"].asUInt64();
 		total_minutes = h * 60;

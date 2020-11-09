@@ -262,7 +262,7 @@ void CSterbox::GetMeterDetails()
 					}
 					std::stringstream sstr;
 					sstr << "Relay " << jj;
-					UpdateSwitch(1, jj, (lValue == 1) ? true : false, 100, sstr.str());
+					UpdateSwitch(1, jj, lValue == 1, 100, sstr.str());
 					}
 				}
 			}
@@ -298,7 +298,7 @@ void CSterbox::GetMeterDetails()
 					}
 					std::stringstream sstr;
 					sstr << "Relay " << jj;
-					UpdateSwitch(1, jj, (lValue == 1) ? true : false, 100, sstr.str());
+					UpdateSwitch(1, jj, lValue == 1, 100, sstr.str());
 					}
 				}
 			}
