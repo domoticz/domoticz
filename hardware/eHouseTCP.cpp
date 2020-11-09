@@ -876,7 +876,7 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 	uint8_t devh = ID >> 24;
 	uint8_t devl = (ID >> 16) & 0xff;
 	uint8_t code = (ID >> 8) & 0xff;
-	int i;
+	int i = 0;
 	int lv = level / 10;
 	lv += 1;
 	int Lev = 0;
@@ -909,6 +909,7 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 					AddToLocalEvent(ev, 0);
 					return i;
 				}
+				i++;
 			}
 			break;
 			/*case VISUAL_APGM:
