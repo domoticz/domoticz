@@ -3932,7 +3932,7 @@ namespace http {
 				}
 				else {
 					int ii = 0;
-					for (const auto &pin : pins)
+					for (auto &pin : pins)
 					{
 						root["status"] = "OK";
 						root["result"][ii]["idx"] = pin.GetPin();
