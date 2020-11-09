@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/signals2.hpp>
 
 namespace tcp_proxy

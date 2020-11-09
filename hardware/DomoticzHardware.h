@@ -1,6 +1,8 @@
 #pragma once
 
+#define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/signals2.hpp>
+
 #include "../main/RFXNames.h"
 #include "../main/StoppableTask.h"
 // type support

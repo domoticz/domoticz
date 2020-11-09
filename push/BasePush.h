@@ -1,5 +1,6 @@
 #pragma once
 
+#define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/signals2.hpp>
 #include "../main/StoppableTask.h"
 
