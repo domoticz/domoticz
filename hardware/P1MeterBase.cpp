@@ -128,8 +128,7 @@ P1MeterBase::P1MeterBase()
 
 P1MeterBase::~P1MeterBase()
 {
-	if (m_pDecryptBuffer)
-		delete[] m_pDecryptBuffer;
+	delete[] m_pDecryptBuffer;
 }
 
 void P1MeterBase::Init()
@@ -818,8 +817,7 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					size_t neededDecryptBufferSize = std::min(1000, static_cast<int>(cipherText.size() + 16));
 					if (neededDecryptBufferSize > m_DecryptBufferSize)
 					{
-						if (m_pDecryptBuffer)
-							delete[] m_pDecryptBuffer;
+						delete[] m_pDecryptBuffer;
 
 						m_DecryptBufferSize = neededDecryptBufferSize;
 						m_pDecryptBuffer = new uint8_t[m_DecryptBufferSize];

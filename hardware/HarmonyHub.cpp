@@ -531,8 +531,7 @@ bool CHarmonyHub::SetupCommunicationSocket()
 
 void CHarmonyHub::ResetCommunicationSocket()
 {
-	if (m_connection)
-		delete m_connection;
+	delete m_connection;
 	m_connection = nullptr;
 	m_connectionstatus = DISCONNECTED;
 
