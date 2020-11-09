@@ -81,8 +81,7 @@ void CHttpPush::DoHttpPush()
 	if (!result.empty())
 	{
 		std::string sendValue;
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto &sd : result)
 		{
 			m_sql.GetPreferencesVar("HttpUrl", httpUrl);
 			m_sql.GetPreferencesVar("HttpData", httpData);
@@ -90,7 +89,6 @@ void CHttpPush::DoHttpPush()
 			if (httpUrl == "")
 				return;
 
-			std::vector<std::string> sd = *itt;
 			//unsigned int deviceId = atoi(sd[0].c_str());
 			std::string sdeviceId = sd[0].c_str();
 			std::string ldelpos = sd[1].c_str();
@@ -232,10 +230,7 @@ void CHttpPush::DoHttpPush()
 						// Add additional headers
 						std::vector<std::string> ExtraHeaders2;
 						StringSplit(httpHeaders, "\r\n", ExtraHeaders2);
-						for (size_t i = 0; i < ExtraHeaders2.size(); i++)
-						{
-							ExtraHeaders.push_back(ExtraHeaders2[i]);
-						}
+						std::copy(ExtraHeaders2.begin(), ExtraHeaders2.end(), std::back_inserter(ExtraHeaders));
 					}
 					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, true, true))
 					{
@@ -374,11 +369,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_HTTP);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["DeviceID"] = sd[1];
 					root["result"][ii]["Delimitedvalue"] = sd[2];

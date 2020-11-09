@@ -826,9 +826,10 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 		switch (code)
 		{
 		case VISUAL_PGM:
-			for (i = 0; i < (sizeof(m_eHEn[index]->Programs) / sizeof(m_eHEn[index]->Programs[0])); i++)
+			i = 0;
+			for (const auto &program : m_eHEn[index]->Programs)
 			{
-				if ((strlen(m_eHEn[index]->Programs[i]) > 0) && (strstr(m_eHEn[index]->Programs[i], "@") == nullptr))
+				if ((strlen(program) > 0) && (strstr(program, "@") == nullptr))
 				{
 					Lev++;
 				}
@@ -840,12 +841,14 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 					AddToLocalEvent(ev, 0);
 					return i;
 				}
+				++i;
 			}
 			break;
 		case VISUAL_APGM:
-			for (i = 0; i < (sizeof(m_eHEn[index]->ADCPrograms) / sizeof(m_eHEn[index]->ADCPrograms[0])); i++)
+			i = 0;
+			for (const auto &adc : m_eHEn[index]->ADCPrograms)
 			{
-				if ((strlen(m_eHEn[index]->ADCPrograms[i]) > 0) && (strstr(m_eHEn[index]->ADCPrograms[i], "@") == nullptr))
+				if ((strlen(adc) > 0) && (strstr(adc, "@") == nullptr))
 				{
 					Lev++;
 				}
@@ -857,6 +860,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 					AddToLocalEvent(ev, 0);
 					return i;
 				}
+				++i;
 			}
 
 			break;
@@ -889,9 +893,9 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 		switch (code)
 		{
 		case VISUAL_PGM:
-			for (i = 0; i < (sizeof(m_eHn[index]->Programs) / sizeof(m_eHn[index]->Programs[0])); i++)
+			for (const auto &eHn : m_eHn[index]->Programs)
 			{
-				if ((strlen(m_eHn[index]->Programs[i]) > 0) && (strstr(m_eHn[index]->Programs[i], "@") == nullptr))
+				if ((strlen(eHn) > 0) && (strstr(eHn, "@") == nullptr))
 				{
 					Lev++;
 				}
@@ -1242,12 +1246,12 @@ std::string eHouseTCP::ISO2UTF8(const std::string &name)
 	char utf8[] = "\xC4\x85\xC4\x87\xC4\x99\xC5\x82\xC5\x84\xC3\xB3\xC5\x9B\xC5\xBA\xC5\xBC\xC4\x84\xC4\x86\xC4\x98\xC5\x81\xC5\x83\xC3\x93\xC5\x9A\xC5\xB9\xC5\xBB";
 
 	std::string UTF8Name;
-	for (size_t i = 0; i < name.length(); ++i)
+	for (char i : name)
 	{
 		bool changed = false;
 		for (int j = 0; j < sizeof(cp1250); ++j)
 		{
-			if (name[i] == cp1250[j])
+			if (i == cp1250[j])
 			{
 				UTF8Name += utf8[j * 2];
 				UTF8Name += utf8[j * 2 + 1];
@@ -1257,7 +1261,7 @@ std::string eHouseTCP::ISO2UTF8(const std::string &name)
 		}
 		if (!changed)
 		{
-			UTF8Name += name[i];
+			UTF8Name += i;
 		}
 	}
 	return UTF8Name;

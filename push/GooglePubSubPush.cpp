@@ -95,11 +95,9 @@ static PyMethodDef DomoticzMethods[] = {
 
 template <class K, class V>
 boost::python::dict toPythonDict(std::map<K, V> map) {
-	typename std::map<K, V>::iterator iter;
 	boost::python::dict dictionary;
-	for (iter = map.begin(); iter != map.end(); ++iter) {
-		dictionary[iter->first] = iter->second;
-	}
+	for (const auto &m : map)
+		dictionary[m.first] = m.second;
 	return dictionary;
 }
 #endif
@@ -125,14 +123,12 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 	if (!result.empty())
 	{
 		std::string sendValue;
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto &sd : result)
 		{
 			m_sql.GetPreferencesVar("GooglePubSubData", googlePubSubData);
 			if (googlePubSubData == "")
 				return;
 
-			std::vector<std::string> sd = *itt;
 			std::string sdeviceId = sd[0].c_str();
 			std::string ldelpos = sd[1].c_str();
 			int delpos = atoi(sd[1].c_str());
@@ -372,11 +368,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["DeviceID"] = sd[1];
 					root["result"][ii]["Delimitedvalue"] = sd[2];

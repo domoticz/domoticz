@@ -20,10 +20,7 @@ KMTronicBase::KMTronicBase()
 {
 	m_bufferpos = 0;
 	m_TotRelais = 0;
-	for (int ii = 0; ii < Max_KMTronic_Relais; ii++)
-	{
-		m_bRelaisStatus[ii] = false;
-	}
+	std::fill(std::begin(m_bRelaisStatus), std::end(m_bRelaisStatus), false);
 }
 
 void KMTronicBase::ParseData(const unsigned char *pData, int Len)

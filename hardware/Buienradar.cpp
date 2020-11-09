@@ -260,13 +260,13 @@ bool CBuienRadar::GetStationDetails()
 		double shortest_station_lat = 0;
 		double shortest_station_lon = 0;
 
-		for (const auto& itt : root["actual"]["stationmeasurements"])
+		for (const auto &measurement : root["actual"]["stationmeasurements"])
 		{
-			if (itt["temperature"].empty())
+			if (measurement["temperature"].empty())
 				continue;
 
-			double lat = itt["lat"].asDouble();
-			double lon = itt["lon"].asDouble();
+			double lat = measurement["lat"].asDouble();
+			double lon = measurement["lon"].asDouble();
 
 			double distance_km = distanceEarth(
 				MyLatitude, MyLongitude,
@@ -277,9 +277,9 @@ bool CBuienRadar::GetStationDetails()
 				shortest_distance_km = distance_km;
 				shortest_station_lat = lat;
 				shortest_station_lon = lon;
-				m_iStationID = itt["stationid"].asInt();
-				m_sStationName = itt["stationname"].asString();
-				m_sStationRegion = itt["regio"].asString();
+				m_iStationID = measurement["stationid"].asInt();
+				m_sStationName = measurement["stationname"].asString();
+				m_sStationRegion = measurement["regio"].asString();
 			}
 		}
 		if (m_iStationID == 0)
@@ -292,20 +292,20 @@ bool CBuienRadar::GetStationDetails()
 	}
 
 	// StationID was provided, find it in the list
-	for (const auto& itt : root["actual"]["stationmeasurements"])
+	for (const auto &measurement : root["actual"]["stationmeasurements"])
 	{
-		if (itt["temperature"].empty())
+		if (measurement["temperature"].empty())
 			continue;
 
-		int StationID = itt["stationid"].asInt();
+		int StationID = measurement["stationid"].asInt();
 
 		if (StationID == m_iStationID)
 		{
 			// Station Found, set name and region
-			m_sStationName = itt["stationname"].asString();
-			m_sStationRegion = itt["regio"].asString();
-			m_szMyLatitude = std::to_string(itt["lat"].asDouble());
-			m_szMyLongitude = std::to_string(itt["lon"].asDouble());
+			m_sStationName = measurement["stationname"].asString();
+			m_sStationRegion = measurement["regio"].asString();
+			m_szMyLatitude = std::to_string(measurement["lat"].asDouble());
+			m_szMyLongitude = std::to_string(measurement["lon"].asDouble());
 			Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, std::stod(m_szMyLatitude), std::stod(m_szMyLongitude));
 			return true;
 		}

@@ -303,9 +303,8 @@ void CDaikin::GetBasicInfo()
 		return;
 	}
 
-	for (const auto& itt : results)
+	for (const auto &sVar : results)
 	{
-		std::string sVar = itt;
 		std::vector<std::string> results2;
 		StringSplit(sVar, "=", results2);
 		if (results2.size() != 2)
@@ -375,9 +374,8 @@ void CDaikin::GetControlInfo()
 		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
-	for (const auto& itt : results)
+	for (const auto &sVar : results)
 	{
-		std::string sVar = itt;
 		std::vector<std::string> results2;
 		StringSplit(sVar, "=", results2);
 		if (results2.size() != 2)
@@ -539,9 +537,8 @@ void CDaikin::GetSensorInfo()
 	}
 	float htemp = -1;
 	int hhum = -1;
-	for (const auto& itt : results)
+	for (const auto &sVar : results)
 	{
-		std::string sVar = itt;
 		std::vector<std::string> results2;
 		StringSplit(sVar, "=", results2);
 		if (results2.size() != 2)

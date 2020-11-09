@@ -292,15 +292,13 @@ void SolarMaxTCP::ParseLine()
 	if (results.size() < 2)
 		return; //invalid data
 
-	std::vector<std::string>::const_iterator itt;
-
 	double kwhCounter = 0;
 	double ActUsage = 0;
 
-	for (itt = results.begin(); itt != results.end(); ++itt)
+	for (const auto &sd : results)
 	{
 		std::vector<std::string> varresults;
-		StringSplit(*itt, "=", varresults);
+		StringSplit(sd, "=", varresults);
 		if (varresults.size() !=2)
 			continue;
 

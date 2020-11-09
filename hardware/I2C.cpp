@@ -398,9 +398,8 @@ void I2C::MCP23017_Init()
 	results = m_sql.safe_query("SELECT Unit, nValue FROM DeviceStatus WHERE (HardwareID = %d) AND (DeviceID like '000%02X%%');", m_HwdID, m_i2c_addr);
 	if (!results.empty())
 	{
-		for (const auto & itt : results)
+		for (const auto &sd : results)
 		{
-			std::vector<std::string> sd = itt;
 			unit = atoi(sd[0].c_str());
 			nvalue = atoi(sd[1].c_str());
 

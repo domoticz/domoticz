@@ -1016,9 +1016,9 @@ const char *ZWave_Thermostat_Fan_Modes[]
 int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string>& Modes, const std::string& sMode)
 {
 	int ii = 0;
-	for (const auto& itt : Modes)
+	for (const auto &mode : Modes)
 	{
-		if (itt == sMode)
+		if (mode == sMode)
 			return ii;
 		ii++;
 	}
@@ -2314,13 +2314,12 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string>& options
 		StringSplit(sOptions, "|", strarray);
 		int i = 0;
 		std::stringstream ss;
-		for (const auto& itt : strarray)
+		for (const auto &levelName : strarray)
 		{
 			ss.clear();
 			ss.str("");
 			ss << i;
 			std::string level(ss.str());
-			std::string levelName = itt;
 			//_log.Log(LOG_STATUS, "DEBUG : Get selector status '%s' for level %s", levelName.c_str(), level.c_str());
 			statuses.insert(std::pair<std::string, std::string>(level.c_str(), levelName.c_str()));
 			i += 10;
@@ -2340,9 +2339,9 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string>& options, co
 		std::vector<std::string> strarray;
 		StringSplit(sOptions, "|", strarray);
 		int i = 0;
-		for (const auto& itt : strarray)
+		for (const auto &str : strarray)
 		{
-			if (itt == levelName)
+			if (str == levelName)
 			{
 				level = i;
 				break;
@@ -2364,11 +2363,11 @@ std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string
 		std::vector<std::string> strarray;
 		StringSplit(sOptions, "|", strarray);
 		int i = 0;
-		for (const auto& itt : strarray)
+		for (const auto &str : strarray)
 		{
 			if (i == level)
 			{
-				return itt;
+				return str;
 			}
 			i += 10;
 		}

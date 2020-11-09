@@ -314,11 +314,8 @@ void CPinger::ReloadNodes()
 		m_HwdID);
 	if (!result.empty())
 	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = *itt;
-
 			PingNode pnode;
 			pnode.ID = atoi(sd[0].c_str());
 			pnode.Name = sd[1];
@@ -367,23 +364,22 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 	}
 
 	//Find out node, and update it's status
-	std::vector<PingNode>::iterator itt;
-	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	for (auto &node : m_nodes)
 	{
-		if (itt->ID == Node.ID)
+		if (node.ID == Node.ID)
 		{
 			//Found it
 			time_t atime = mytime(nullptr);
 			if (bPingOK)
 			{
-				itt->LastOK = atime;
+				node.LastOK = atime;
 				SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
 			}
 			else
 			{
-				if (difftime(atime, itt->LastOK) >= Node.SensorTimeoutSec)
+				if (difftime(atime, node.LastOK) >= Node.SensorTimeoutSec)
 				{
-					itt->LastOK = atime;
+					node.LastOK = atime;
 					SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
 				}
 			}
@@ -395,15 +391,14 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 void CPinger::DoPingHosts()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
-	std::vector<PingNode>::const_iterator itt;
-	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	for (const auto &node : m_nodes)
 	{
 		if (IsStopRequested(0))
 			return;
 		if (m_iThreadsRunning < 1000)
 		{
 			//m_iThreadsRunning++;
-			boost::thread t(boost::bind(&CPinger::Do_Ping_Worker, this, *itt));
+			boost::thread t(boost::bind(&CPinger::Do_Ping_Worker, this, node));
 			SetThreadName(t.native_handle(), "PingerWorker");
 			t.join();
 		}
@@ -479,12 +474,9 @@ namespace http {
 				iHardwareID);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = sd[2];

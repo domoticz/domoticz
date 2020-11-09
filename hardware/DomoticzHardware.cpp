@@ -1140,21 +1140,21 @@ int CDomoticzHardwareBase::MigrateSelectorSwitch(const int NodeID, const uint8_t
 	{
 		int i = 0;
 		std::stringstream ssoptions;
-		for (const auto& itt : optionsMap)
+		for (const auto &option : optionsMap)
 		{
-			std::string optionName = itt.first.c_str();
-			std::string optionValue = itt.second.c_str();
-			if(strcmp(itt.first.c_str(),"LevelActions") == 0)
+			std::string optionName = option.first.c_str();
+			std::string optionValue = option.second.c_str();
+			if (strcmp(option.first.c_str(), "LevelActions") == 0)
 			{
-				if(strcmp(itt.second.c_str(), LevelActions.c_str()) !=  0 )
+				if (strcmp(option.second.c_str(), LevelActions.c_str()) != 0)
 				{
 					bUpdated = true;  // the list of actions is not what we expected. flag  that Migration is required
-					optionValue = LevelActions.c_str();			
+					optionValue = LevelActions.c_str();
 				}
 			}
-			else if(strcmp(itt.first.c_str(),"LevelNames") == 0)
+			else if (strcmp(option.first.c_str(), "LevelNames") == 0)
 			{
-					optionValue = LevelNames.c_str();	
+				optionValue = LevelNames.c_str();
 			}
 			ssoptions << optionName << ":" << optionValue;
 			if (i < count) {

@@ -316,13 +316,9 @@ COpenZWave::~COpenZWave()
 //-----------------------------------------------------------------------------
 COpenZWave::NodeInfo* COpenZWave::GetNodeInfo(const unsigned int homeID, const uint8_t nodeID)
 {
-	for (auto& itt : m_nodes)
-	{
-		if ((itt.homeId == homeID) && (itt.nodeId == nodeID))
-		{
-			return &itt;
-		}
-	}
+	for (auto &node : m_nodes)
+		if ((node.homeId == homeID) && (node.nodeId == nodeID))
+			return &node;
 
 	return nullptr;
 }
@@ -534,7 +530,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		//A node has been removed from OpenZWave's list.  This may be due to a device being removed from the Z-Wave network, or because the application is closing
 		_log.Log(LOG_STATUS, "OpenZWave: Node Removed. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		// Remove the node from our list
-		for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
+		for (auto it = m_nodes.begin(); it != m_nodes.end(); ++it)
 		{
 			if ((it->homeId == _homeID) && (it->nodeId == _nodeID))
 			{
@@ -593,7 +589,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			// Remove the value from out list
-			for (std::list<OpenZWave::ValueID>::iterator it = nodeInfo->Instances[instance][commandClass].Values.begin(); it != nodeInfo->Instances[instance][commandClass].Values.end(); ++it)
+			for (auto it = nodeInfo->Instances[instance][commandClass].Values.begin();
+			     it != nodeInfo->Instances[instance][commandClass].Values.end(); ++it)
 			{
 				if ((*it) == vID)
 				{
@@ -1091,18 +1088,18 @@ bool COpenZWave::GetValueByCommandClass(const uint8_t nodeID, const uint8_t inst
 	if (!pNode)
 		return false;
 
-	for (const auto ittValue : pNode->Instances[instanceID][commandClass].Values)
+	for (auto &value : pNode->Instances[instanceID][commandClass].Values)
 	{
-		uint8_t cmdClass = ittValue.GetCommandClassId();
+		uint8_t cmdClass = value.GetCommandClassId();
 		if (cmdClass == commandClass)
 		{
-			std::string sLabel = m_pManager->GetValueLabel(ittValue);
-			if (m_pManager->IsValueReadOnly(ittValue) == true)
+			std::string sLabel = m_pManager->GetValueLabel(value);
+			if (m_pManager->IsValueReadOnly(value) == true)
 				continue;
-			OpenZWave::ValueID::ValueGenre vGenre = ittValue.GetGenre();
+			OpenZWave::ValueID::ValueGenre vGenre = value.GetGenre();
 			if (vGenre != OpenZWave::ValueID::ValueGenre_User)
 				continue;
-			nValue = ittValue;
+			nValue = value;
 			return true;
 		}
 	}
@@ -1115,21 +1112,21 @@ bool COpenZWave::GetValueByCommandClassIndex(const uint8_t nodeID, const uint8_t
 	if (!pNode)
 		return false;
 
-	for (auto& ittValue : pNode->Instances[instanceID][commandClass].Values)
+	for (auto &value : pNode->Instances[instanceID][commandClass].Values)
 	{
-		OpenZWave::ValueID::ValueGenre vGenre = ittValue.GetGenre();
-		uint8_t cmdClass = ittValue.GetCommandClassId();
+		OpenZWave::ValueID::ValueGenre vGenre = value.GetGenre();
+		uint8_t cmdClass = value.GetCommandClassId();
 		if (cmdClass == commandClass)
 		{
-			if (m_pManager->IsValueReadOnly(ittValue) == true)
+			if (m_pManager->IsValueReadOnly(value) == true)
 				continue;
 			if (vGenre != OpenZWave::ValueID::ValueGenre_User)
 				continue;
 			try
 			{
-				if (ittValue.GetIndex() == vIndex)
+				if (value.GetIndex() == vIndex)
 				{
-					nValue = ittValue;
+					nValue = value;
 					return true;
 				}
 			}
@@ -1147,21 +1144,21 @@ bool COpenZWave::GetValueByCommandClassIndex(const uint8_t nodeID, const uint8_t
 
 bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo* pNode, const int index, OpenZWave::ValueID& nValue)
 {
-	for (const auto ittInstance : pNode->Instances)
+	for (const auto &ittInstance : pNode->Instances)
 	{
-		for (const auto ittCmds : ittInstance.second)
+		for (const auto &ittCmds : ittInstance.second)
 		{
-			for (const auto ittValue : ittCmds.second.Values)
+			for (const auto &value : ittCmds.second.Values)
 			{
-				uint16_t vindex = ittValue.GetIndex();
-				int vinstance = ittValue.GetInstance();
-				uint8_t commandclass = ittValue.GetCommandClassId();
+				uint16_t vindex = value.GetIndex();
+				int vinstance = value.GetInstance();
+				uint8_t commandclass = value.GetCommandClassId();
 				if (
 					(commandclass == COMMAND_CLASS_CONFIGURATION) &&
 					(vindex == index)
 					)
 				{
-					nValue = ittValue;
+					nValue = value;
 					return true;
 				}
 				else if (
@@ -1169,7 +1166,7 @@ bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo* pNode, const int inde
 					(vindex == index - 2000) //spacial case
 					)
 				{
-					nValue = ittValue;
+					nValue = value;
 					return true;
 				}
 				else if (
@@ -1177,7 +1174,7 @@ bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo* pNode, const int inde
 					(vinstance == index - 3000) //spacial case
 					)
 				{
-					nValue = ittValue;
+					nValue = value;
 					return true;
 				}
 			}
@@ -2887,18 +2884,18 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	}
 
 	_tZWaveDevice *pDevice = nullptr;
-	for (auto& itt : m_devices)
+	for (auto &m : m_devices)
 	{
-		std::string dstring = itt.second.string_id;
+		std::string dstring = m.second.string_id;
 		if (dstring == path) {
-			pDevice = &itt.second;
+			pDevice = &m.second;
 			break;
 		}
 		else {
 			size_t loc = dstring.find(path_plus);
 			if (loc != std::string::npos)
 			{
-				pDevice = &itt.second;
+				pDevice = &m.second;
 				break;
 			}
 		}
@@ -2907,18 +2904,18 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	{
 		//New device, let's add it
 		AddValue(pNode, vID);
-		for (auto& itt : m_devices)
+		for (auto &device : m_devices)
 		{
-			std::string dstring = itt.second.string_id;
+			std::string dstring = device.second.string_id;
 			if (dstring == path) {
-				pDevice = &itt.second;
+				pDevice = &device.second;
 				break;
 			}
 			else {
 				size_t loc = dstring.find(path_plus);
 				if (loc != std::string::npos)
 				{
-					pDevice = &itt.second;
+					pDevice = &device.second;
 					break;
 				}
 			}
@@ -3759,10 +3756,8 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > >& 
 		return false;
 	}
 	int rowCnt = 0;
-	std::vector<std::vector<std::string> >::const_iterator itt;
-	for (itt = result.begin(); itt != result.end(); ++itt)
+	for (const auto &sd : result)
 	{
-		std::vector<std::string> sd = *itt;
 		unsigned int _homeID = static_cast<unsigned int>(std::stoul(sd[0]));
 		uint8_t _nodeID = (uint8_t)atoi(sd[1].c_str());
 		if (COpenZWave::NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
@@ -4126,11 +4121,11 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const uint8_t nodeID,
 			bSingleIndexPoll = true;
 		}
 
-		for (const auto ittInstance : pNode->Instances)
+		for (const auto &ittInstance : pNode->Instances)
 		{
-			for (const auto ittCmds : ittInstance.second)
+			for (const auto &ittCmds : ittInstance.second)
 			{
-				for (const auto ittValue : ittCmds.second.Values)
+				for (const auto &ittValue : ittCmds.second.Values)
 				{
 					uint8_t commandclass = ittValue.GetCommandClassId();
 					OpenZWave::ValueID::ValueGenre vGenre = ittValue.GetGenre();
@@ -4242,11 +4237,11 @@ void COpenZWave::DisableNodePoll(const unsigned int homeID, const uint8_t nodeID
 		if (pNode == nullptr)
 			return; //Not found
 
-		for (const auto ittInstance : pNode->Instances)
+		for (const auto &ittInstance : pNode->Instances)
 		{
-			for (const auto ittCmds : ittInstance.second)
+			for (const auto &ittCmds : ittInstance.second)
 			{
-				for (const auto ittValue : ittCmds.second.Values)
+				for (const auto &ittValue : ittCmds.second.Values)
 				{
 					if (m_pManager->isPolled(ittValue))
 						m_pManager->DisablePoll(ittValue);
@@ -4901,10 +4896,8 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const uint8_t node
 							m_pManager->GetValueListItems(ittValue, &strs);
 							root["result"][index]["config"][ivalue]["list_items"] = static_cast<int>(strs.size());
 							int vcounter = 0;
-							for (std::vector<std::string>::const_iterator it = strs.begin(); it != strs.end(); ++it)
-							{
-								root["result"][index]["config"][ivalue]["listitem"][vcounter++] = *it;
-							}
+							for (const auto &str : strs)
+								root["result"][index]["config"][ivalue]["listitem"][vcounter++] = str;
 						}
 						uint16_t i_index = ittValue.GetIndex();
 						if (commandclass == COMMAND_CLASS_PROTECTION)
@@ -5231,7 +5224,7 @@ bool COpenZWave::GetNodeUserCodes(const unsigned int homeID, const uint8_t nodeI
 		if (pNode->Instances.find(1) == pNode->Instances.end())
 			return false; //no codes added yet, wake your tag reader
 
-		for (const auto valueNode : pNode->Instances[1][COMMAND_CLASS_USER_CODE].Values)
+		for (const auto &valueNode : pNode->Instances[1][COMMAND_CLASS_USER_CODE].Values)
 		{
 			int vNodeIndex = valueNode.GetIndex();
 			if ((valueNode.GetGenre() == OpenZWave::ValueID::ValueGenre_User) && (valueNode.GetInstance() == 1) && (valueNode.GetType() == OpenZWave::ValueID::ValueType_String))
@@ -5275,12 +5268,10 @@ bool COpenZWave::RemoveUserCode(const unsigned int homeID, const uint8_t nodeID,
 	if (pNode->Instances.find(1) == pNode->Instances.end())
 		return false; //no codes added yet, wake your tag reader
 
-	for (auto itt : pNode->Instances[1][COMMAND_CLASS_USER_CODE].Values)
+	for (const auto &value : pNode->Instances[1][COMMAND_CLASS_USER_CODE].Values)
 	{
-		if (itt.GetIndex() == ValueID_Index_UserCode::RemoveCode)
-		{
-			m_pManager->SetValue(itt, (uint16_t)codeIndex);
-		}
+		if (value.GetIndex() == ValueID_Index_UserCode::RemoveCode)
+			m_pManager->SetValue(value, (uint16_t)codeIndex);
 		/*
 				if ((vNodeValue.GetGenre() == OpenZWave::ValueID::ValueGenre_User) && (vNodeValue.GetInstance() == 1) && (vNodeValue.GetType() == OpenZWave::ValueID::ValueType_String))
 				{
@@ -5312,17 +5303,11 @@ void COpenZWave::UpdateDeviceBatteryStatus(const uint8_t nodeID, const int value
 {
 	COpenZWave::NodeInfo* pNode = GetNodeInfo(m_controllerID, nodeID);
 	if (pNode)
-	{
 		pNode->batValue = value;
-	}
 
-	for (auto& itt : m_devices)
-	{
-		if (itt.second.nodeID == nodeID)
-		{
-			itt.second.batValue = value;
-		}
-	}
+	for (auto &device : m_devices)
+		if (device.second.nodeID == nodeID)
+			device.second.batValue = value;
 	/*
 		time_t now = time(0);
 		struct tm ltime;
@@ -5331,9 +5316,9 @@ void COpenZWave::UpdateDeviceBatteryStatus(const uint8_t nodeID, const int value
 	//Update all devices in the database
 	std::vector<std::vector<std::string> > results;
 	results = m_sql.safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
-	for (auto itt : results)
+	for (const auto &r : results)
 	{
-		std::string DeviceID = itt[1];
+		std::string DeviceID = r[1];
 		std::string rdID;
 
 		if (DeviceID.size() != 8)
@@ -5362,14 +5347,11 @@ void COpenZWave::UpdateDeviceBatteryStatus(const uint8_t nodeID, const int value
 		if (dev_nodeID == nodeID)
 		{
 			/*
-						m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID==%s)",
-							value,
-							ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
-							itt[0].c_str());
+						m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d, LastUpdate='%04d-%02d-%02d
+			   %02d:%02d:%02d' WHERE (ID==%s)", value, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour,
+			   ltime.tm_min, ltime.tm_sec, r[0].c_str());
 			*/
-			m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%s)",
-				value,
-				itt[0].c_str());
+			m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%s)", value, r[0].c_str());
 		}
 	}
 }
@@ -5383,21 +5365,20 @@ bool COpenZWave::GetBatteryLevels(Json::Value& root)
 	result = m_sql.safe_query("SELECT NodeID,Name FROM ZWaveNodes WHERE (HardwareID==%d)", m_HwdID);
 
 	std::map<uint16_t, std::string> _NodeNames;
-	for (const auto itt : result)
+	for (const auto &r : result)
 	{
-		uint16_t nodeID = (uint16_t)atoi(itt[0].c_str());
-		_NodeNames[nodeID] = itt[1];
+		uint16_t nodeID = (uint16_t)atoi(r[0].c_str());
+		_NodeNames[nodeID] = r[1];
 	}
 
-
-	for (auto itt : m_nodes)
+	for (const auto &node : m_nodes)
 	{
-		root["result"][ii]["nodeID"] = itt.nodeId;
+		root["result"][ii]["nodeID"] = node.nodeId;
 		std::string nodeName;
-		if (_NodeNames.find(itt.nodeId) != _NodeNames.end())
-			nodeName = _NodeNames[itt.nodeId];
+		if (_NodeNames.find(node.nodeId) != _NodeNames.end())
+			nodeName = _NodeNames[node.nodeId];
 		root["result"][ii]["nodeName"] = nodeName;
-		root["result"][ii]["battery"] = itt.batValue;
+		root["result"][ii]["battery"] = node.batValue;
 		ii++;
 	}
 	return true;
@@ -5431,13 +5412,13 @@ bool COpenZWave::IsNodeRGBW(const unsigned int homeID, const int nodeID)
 
 void COpenZWave::ForceUpdateForNodeDevices(const unsigned int homeID, const int nodeID)
 {
-	for (auto& itt : m_devices)
+	for (auto &device : m_devices)
 	{
-		if (itt.second.nodeID == nodeID)
+		if (device.second.nodeID == nodeID)
 		{
-			itt.second.lastreceived = mytime(nullptr) - 1;
+			device.second.lastreceived = mytime(nullptr) - 1;
 
-			_tZWaveDevice zdevice = itt.second;
+			_tZWaveDevice zdevice = device.second;
 
 			SendDevice2Domoticz(&zdevice);
 
@@ -5492,12 +5473,9 @@ namespace http {
 				iHardwareID);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
-
 					unsigned int homeID = static_cast<unsigned int>(std::stoul(sd[1]));
 					uint8 nodeID = (uint8)atoi(sd[2].c_str());
 					//if (nodeID>1) //Don't include the controller
@@ -5896,19 +5874,19 @@ namespace http {
 					std::vector<int> allnodes;
 					int rowCount = 0;
 					std::stringstream allnodeslist;
-					for (const auto row_iterator : nodevectors)
+					for (const auto &row : nodevectors)
 					{
 						int colCount = 0;
 						int nodeID = -1;
 						std::vector<int> rest;
 
-						for (const auto col_iterator : row_iterator)
+						for (const auto &column : row)
 						{
 							if (colCount == 0) {
-								nodeID = col_iterator;
+								nodeID = column;
 							}
 							else {
-								rest.push_back(col_iterator);
+								rest.push_back(column);
 							}
 							colCount++;
 						}
@@ -5918,10 +5896,10 @@ namespace http {
 							root["result"]["mesh"][rowCount]["nodeID"] = nodeID;
 
 							std::stringstream list;
-							for (auto ittRest : rest)
+							for (const auto &r : rest)
 							{
 								if (!list.str().empty()) list << ",";
-								list << std::to_string(ittRest);
+								list << std::to_string(r);
 							}
 							root["result"]["mesh"][rowCount]["seesNodes"] = list.str();
 							rowCount++;
@@ -6021,12 +5999,10 @@ namespace http {
 				if (!result.empty())
 				{
 					int MaxNoOfGroups = 0;
-					std::vector<std::vector<std::string> >::const_iterator itt;
 					int ii = 0;
 
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = *itt;
 						unsigned int homeID = static_cast<unsigned int>(std::stoul(sd[1]));
 						uint8_t nodeID = (uint8_t)atoi(sd[2].c_str());
 						COpenZWave::NodeInfo* pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);

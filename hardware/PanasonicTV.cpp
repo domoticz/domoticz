@@ -809,15 +809,15 @@ void CPanasonic::Do_Work()
 
 			scounter = 0;
 			bool bWorkToDo = false;
-			std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
-			for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+			for (const auto &pnode : m_pNodes)
 			{
-				if (!(*itt)->IsBusy())
+				if (!pnode->IsBusy())
 				{
-					_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
-					(*itt)->StartThread();
+					_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) - Restarting thread.", pnode->m_Name.c_str());
+					pnode->StartThread();
 				}
-				if ((*itt)->IsOn()) bWorkToDo = true;
+				if (pnode->IsOn())
+					bWorkToDo = true;
 			}
 		}
 	}
@@ -848,39 +848,38 @@ bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char /*length
 
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 
-	std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
-	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+	for (const auto &pnode : m_pNodes)
 	{
-		if ((*itt)->m_DevID == DevID)
+		if (pnode->m_DevID == DevID)
 		{
 			int iParam = pSen->LIGHTING2.level;
 			switch (pSen->LIGHTING2.cmnd)
 			{
 			case light2_sOn:
-				(*itt)->SendCommand("On");
+				pnode->SendCommand("On");
 				return true;
 			case light2_sOff:
-				(*itt)->SendCommand("Off");
+				pnode->SendCommand("Off");
 				return true;
 			case light2_sGroupOff:
-				return (*itt)->SendShutdown();
+				return pnode->SendShutdown();
 			case gswitch_sStop:
-				(*itt)->SendCommand("Stop");
+				pnode->SendCommand("Stop");
 				return true;
 			case gswitch_sPlay:
-				(*itt)->SendCommand("PlayPause");
+				pnode->SendCommand("PlayPause");
 				return true;
 			case gswitch_sPause:
-				(*itt)->SendCommand("PlayPause");
+				pnode->SendCommand("PlayPause");
 				return true;
 			case gswitch_sSetVolume:
-				(*itt)->SendCommand("setvolume", iParam);
+				pnode->SendCommand("setvolume", iParam);
 				return true;
-				//case gswitch_sPlayPlaylist:
-				//	(*itt)->SendCommand("playlist", iParam);
+				// case gswitch_sPlayPlaylist:
+				//	pnode->SendCommand("playlist", iParam);
 				//	return true;
-				//case gswitch_sExecute:
-				//	(*itt)->SendCommand("execute", iParam);
+				// case gswitch_sExecute:
+				//	pnode->SendCommand("execute", iParam);
 				//	return true;
 			default:
 				return true;
@@ -973,17 +972,17 @@ void CPanasonic::ReloadNodes()
 		std::lock_guard<std::mutex> l(m_mutex);
 
 		// create a vector to hold the nodes
-		for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+		for (auto sd : result)
 		{
-			std::vector<std::string> sd = *itt;
-			std::shared_ptr<CPanasonicNode>	pNode = (std::shared_ptr<CPanasonicNode>) new CPanasonicNode(m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+			std::shared_ptr<CPanasonicNode> pNode = (std::shared_ptr<CPanasonicNode>)new CPanasonicNode(
+				m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each Panasonic TV
-		for (std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		for (auto &m_pNode : m_pNodes)
 		{
-			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Starting thread.", (*itt)->m_Name.c_str());
-			(*itt)->StartThread();
+			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Starting thread.", m_pNode->m_Name.c_str());
+			m_pNode->StartThread();
 		}
 		sleep_milliseconds(100);
 	}
@@ -998,8 +997,7 @@ void CPanasonic::UnloadNodes()
 
 	while (((!m_pNodes.empty()) || (!m_ios.stopped())))
 	{
-		std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
-		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		for (auto itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			(*itt)->StopThread();
 			if (!(*itt)->IsBusy())
@@ -1016,12 +1014,11 @@ void CPanasonic::UnloadNodes()
 
 void CPanasonic::SendCommand(const int ID, const std::string &command)
 {
-	std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
-	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+	for (const auto &pnode : m_pNodes)
 	{
-		if ((*itt)->m_ID == ID)
+		if (pnode->m_ID == ID)
 		{
-			(*itt)->SendCommand(command);
+			pnode->SendCommand(command);
 			return;
 		}
 	}
@@ -1032,12 +1029,11 @@ void CPanasonic::SendCommand(const int ID, const std::string &command)
 
 bool CPanasonic::SetExecuteCommand(const int ID, const std::string &command)
 {
-	std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
-	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+	for (const auto &pnode : m_pNodes)
 	{
-		if ((*itt)->m_ID == ID)
+		if (pnode->m_ID == ID)
 		{
-			(*itt)->SetExecuteCommand(command);
+			pnode->SetExecuteCommand(command);
 			return true;
 		}
 	}
@@ -1071,12 +1067,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = sd[2];

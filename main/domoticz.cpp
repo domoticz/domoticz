@@ -1064,14 +1064,14 @@ int main(int argc, char**argv)
 	{
 		int logfacility = 0;
 
-		for ( size_t idx = 0; idx < sizeof(facilities)/sizeof(facilities[0]); idx++ ) 
+		for (auto facilitie : facilities)
 		{
-			if (strcmp(facilities[idx].facname, logfacname.c_str()) == 0) 
+			if (strcmp(facilitie.facname, logfacname.c_str()) == 0)
 			{
-				logfacility = facilities[idx].facvalue;
+				logfacility = facilitie.facvalue;
 				break;
 			}
-		} 
+		}
 		if ( logfacility == 0 ) 
 		{
 			_log.Log(LOG_ERROR, "%s is an unknown syslog facility", logfacname.c_str());

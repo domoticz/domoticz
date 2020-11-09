@@ -18,10 +18,7 @@ void CBaroForecastCalculator::Init()
 	mytime(&m_BaroCalcLastTime);
 	for (int ii = 0; ii < 9; ii++)
 	{
-		for (int jj = 0; jj < 6; jj++)
-		{
-			m_pressureSamples[ii][jj] = 0;
-		}
+		std::fill(std::begin(m_pressureSamples[ii]), std::end(m_pressureSamples[ii]), 0);
 		m_pressureAvg[ii] = 0;
 	}
 }

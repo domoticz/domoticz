@@ -48,8 +48,9 @@ bool CNotificationSMS::SendMessageImplementation(
 		StringSplit(thisTo, ";", recipients);
 
 		thisTo = "";
-		for (size_t i = 0; i < recipients.size(); i++) {
-			thisTo = thisTo + "\"" + recipients.at(i) + "\"" + ",";
+		for (auto &recipient : recipients)
+		{
+			thisTo = thisTo + "\"" + recipient + "\"" + ",";
 		}
 
 		if (!thisTo.empty()) {

@@ -64,9 +64,10 @@ namespace http {
 			if (domasking) {
 				// masking key
 				uint8_t masking_key[4];
-				for (uint8_t i = 0; i < 4; i++) {
-					masking_key[i] = rand();
-					res += masking_key[i];
+				for (unsigned char &i : masking_key)
+				{
+					i = rand();
+					res += i;
 				}
 				res += unmask(masking_key, (const uint8_t *)payload.c_str(), (size_t)payloadlen);
 			}
@@ -120,8 +121,9 @@ namespace http {
 				if (remaining < 4) {
 					return false;
 				}
-				for (uint8_t i = 0; i < 4; i++) {
-					masking_key[i] = bytes[ptr++];
+				for (unsigned char &i : masking_key)
+				{
+					i = bytes[ptr++];
 					remaining--;
 				}
 			}
@@ -229,7 +231,7 @@ namespace http {
 		{
 			// we assume we received a gzipped json request
 			// todo: unzip the data
-			std::string the_data = packet_data;
+			const std::string &the_data = packet_data;
 			OnReceiveText(the_data);
 		}
 

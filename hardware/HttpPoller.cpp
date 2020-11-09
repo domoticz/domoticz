@@ -107,10 +107,7 @@ void CHttpPoller::GetScript()
 	{
 		std::vector<std::string> ExtraHeaders2;
 		StringSplit(m_headers, "\n", ExtraHeaders2);
-		for (size_t i = 0; i < ExtraHeaders2.size(); i++)
-		{
-			ExtraHeaders.push_back(ExtraHeaders2[i]);
-		}
+		std::copy(ExtraHeaders2.begin(), ExtraHeaders2.end(), std::back_inserter(ExtraHeaders));
 	}
 
 	std::string auth;

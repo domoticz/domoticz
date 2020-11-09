@@ -53,9 +53,8 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 
 	uint32_t iFlags = 0;
 
-	for (const auto & itt : flags)
+	for (auto &wflag : flags)
 	{
-		std::string wflag = itt;
 		stdstring_trim(wflag);
 		if (wflag.empty())
 			continue;
@@ -90,9 +89,8 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 
 	uint32_t iFlags = 0;
 
-	for (const auto & itt : flags)
+	for (auto &wflag : flags)
 	{
-		std::string wflag = itt;
 		stdstring_trim(wflag);
 		if (wflag.empty())
 			continue;
@@ -245,9 +243,7 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 			m_outputfile.flush();
 		}
 
-		std::map<_eLogLevel, std::deque<_tLogLineStruct> >::iterator itt;
-
-		itt = m_lastlog.find(level);
+		auto itt = m_lastlog.find(level);
 		if (itt != m_lastlog.end())
 		{
 			if (m_lastlog[level].size() >= MAX_LOG_LINE_BUFFER)
@@ -347,25 +343,14 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, cons
 		if (m_lastlog.find(level) == m_lastlog.end())
 			return mlist;
 
-		for (const auto & itt : m_lastlog[level])
-		{
-			if (itt.logtime > lastlogtime) {
-				mlist.push_back(itt);
-			}
-		};
+		std::copy_if(std::begin(m_lastlog[level]), std::end(m_lastlog[level]), std::back_inserter(mlist),
+			     [=](const _tLogLineStruct &l) { return l.logtime > lastlogtime; });
 	}
 	else
-	{
-		for (const auto & itt : m_lastlog)
-		{
-			for (const auto & itt2 : itt.second)
-			{
-				if (itt2.logtime > lastlogtime) {
-					mlist.push_back(itt2);
-				}
-			};
-		}
-	}
+		for (const auto &l : m_lastlog)
+			std::copy_if(l.second.begin(), l.second.end(), std::back_inserter(mlist),
+				     [=](const _tLogLineStruct &l2) { return l2.logtime > lastlogtime; });
+
 	//Sort by time
 	mlist.sort(compareLogByTime);
 	return mlist;
@@ -381,8 +366,7 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetNotificationLogs()
 {
 	std::unique_lock<std::mutex> lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
-	for (const auto & itt : m_notification_log)
-		mlist.push_back(itt);
+	std::copy(m_notification_log.begin(), m_notification_log.end(), std::back_inserter(mlist));
 	m_notification_log.clear();
 	if (!mlist.empty())
 		m_LastLogNotificationsSend = mytime(nullptr);

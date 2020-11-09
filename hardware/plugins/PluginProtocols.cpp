@@ -167,36 +167,35 @@ namespace Plugins {
 		{
 			pRetVal = PyList_New(pJSON->size());
 			Py_ssize_t	Index = 0;
-			for (Json::ValueIterator it = pJSON->begin(); it != pJSON->end(); ++it)
+			for (auto &pRef : *pJSON)
 			{
-				Json::ValueIterator::reference	pRef = *it;
-				if (it->isArray() || it->isObject())
+				if (pRef.isArray() || pRef.isObject())
 				{
 					PyObject* pObj = JSONtoPython(&pRef);
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
 						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for object.", __func__, Index - 1);
 				}
-				else if (it->isUInt())
+				else if (pRef.isUInt())
 				{
-					PyObject* pObj = Py_BuildValue("I", it->asUInt());
+					PyObject *pObj = Py_BuildValue("I", pRef.asUInt());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
 						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for unsigned integer.", __func__, Index - 1);
 				}
-				else if (it->isInt())
+				else if (pRef.isInt())
 				{
-					PyObject* pObj = Py_BuildValue("i", it->asInt());
+					PyObject *pObj = Py_BuildValue("i", pRef.asInt());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
 						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for integer.", __func__, Index - 1);
 				}
-				else if (it->isDouble())
+				else if (pRef.isDouble())
 				{
-					PyObject* pObj = Py_BuildValue("d", it->asDouble());
+					PyObject *pObj = Py_BuildValue("d", pRef.asDouble());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
 						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for double.", __func__, Index - 1);
 				}
-				else if (it->isConvertibleTo(Json::stringValue))
+				else if (pRef.isConvertibleTo(Json::stringValue))
 				{
-					std::string	sString = it->asString();
+					std::string sString = pRef.asString();
 					PyObject* pObj = Py_BuildValue("s#", sString.c_str(), sString.length());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
 						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for string.", __func__, Index - 1);
@@ -210,19 +209,24 @@ namespace Plugins {
 			pRetVal = PyDict_New();
 			for (Json::ValueIterator it = pJSON->begin(); it != pJSON->end(); ++it)
 			{
-				std::string						KeyName = it.name();
-				Json::ValueIterator::reference	pRef = *it;
-				if (it->isArray() || it->isObject())
+				std::string KeyName = it.name();
+				Json::ValueIterator::reference pRef = *it;
+				if (pRef.isArray() || pRef.isObject())
 				{
 					PyObject* pObj = JSONtoPython(&pRef);
 					if (!pObj || (PyDict_SetItemString(pRetVal, KeyName.c_str(), pObj) == -1))
 						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', to dictionary for object.", __func__, KeyName.c_str());
 				}
-				else if (it->isUInt()) AddUIntToDict(pRetVal, KeyName.c_str(), it->asUInt());
-				else if (it->isInt()) AddIntToDict(pRetVal, KeyName.c_str(), it->asInt());
-				else if (it->isBool()) AddBoolToDict(pRetVal, KeyName.c_str(), it->asInt());
-				else if (it->isDouble()) AddDoubleToDict(pRetVal, KeyName.c_str(), it->asDouble());
-				else if (it->isConvertibleTo(Json::stringValue)) AddStringToDict(pRetVal, KeyName.c_str(), it->asString());
+				else if (pRef.isUInt())
+					AddUIntToDict(pRetVal, KeyName.c_str(), pRef.asUInt());
+				else if (pRef.isInt())
+					AddIntToDict(pRetVal, KeyName.c_str(), pRef.asInt());
+				else if (pRef.isBool())
+					AddBoolToDict(pRetVal, KeyName.c_str(), pRef.asInt());
+				else if (pRef.isDouble())
+					AddDoubleToDict(pRetVal, KeyName.c_str(), pRef.asDouble());
+				else if (pRef.isConvertibleTo(Json::stringValue))
+					AddStringToDict(pRetVal, KeyName.c_str(), pRef.asString());
 				else _log.Log(LOG_ERROR, "(%s) failed to process entry for '%s'.", __func__, KeyName.c_str());
 			}
 		}

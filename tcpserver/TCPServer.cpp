@@ -59,13 +59,11 @@ bool CTCPServerInt::IsUserHereFirstTime(const std::string &ip_string)
 	//
 	time_t now = mytime(nullptr);
 
-	std::vector<_tTCPLogInfo>::iterator itt = m_incoming_domoticz_history.begin();
-	while (itt!= m_incoming_domoticz_history.end())
+	auto itt = m_incoming_domoticz_history.begin();
+	while (itt != m_incoming_domoticz_history.end())
 	{
 		if (difftime(now,itt->time) > SECONDS_PER_DAY)
-		{
 			itt = m_incoming_domoticz_history.erase(itt);
-		}
 		else
 		{
 			if (ip_string.compare(itt->string) == 0)
@@ -121,11 +119,10 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 
 _tRemoteShareUser* CTCPServerIntBase::FindUser(const std::string &username)
 {
-	std::vector<_tRemoteShareUser>::iterator itt;
 	int ii=0;
-	for (itt=m_users.begin(); itt!=m_users.end(); ++itt)
+	for (const auto &user : m_users)
 	{
-		if (itt->Username==username)
+		if (user.Username == username)
 			return &m_users[ii];
 		ii++;
 	}
@@ -158,10 +155,9 @@ void CTCPServerIntBase::stopAllClients()
 	std::lock_guard<std::mutex> l(connectionMutex);
 	if (connections_.empty())
 		return;
-	std::set<CTCPClient_ptr>::const_iterator itt;
-	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
+	for (const auto &c : connections_)
 	{
-		CTCPClientBase *pClient=itt->get();
+		CTCPClientBase *pClient = c.get();
 		if (pClient)
 			pClient->stop();
 	}
@@ -198,10 +194,9 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 		)
 		return;
 
-	std::set<CTCPClient_ptr>::const_iterator itt;
-	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
+	for (const auto &c : connections_)
 	{
-		CTCPClientBase *pClient=itt->get();
+		CTCPClientBase *pClient = c.get();
 		if (pClient==pClient2Ignore)
 			continue;
 
@@ -215,17 +210,9 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 				if (pUser->Devices.size()==0)
 					bOk2Send=true;
 				else
-				{
-					int tdevices=pUser->Devices.size();
-					for (int ii=0; ii<tdevices; ii++)
-					{
-						if (pUser->Devices[ii]==DeviceRowID)
-						{
-							bOk2Send=true;
-							break;
-						}
-					}
-				}
+					bOk2Send = std::any_of(pUser->Devices.begin(), pUser->Devices.end(),
+							       [=](uint64_t d) { return d == DeviceRowID; });
+
 				if (bOk2Send)
 					pClient->write(pData,Length);
 			}
@@ -285,8 +272,8 @@ void CTCPServerProxied::stopClient(CTCPClient_ptr c)
 
 bool CTCPServerProxied::OnDisconnect(const std::string &token)
 {
-	std::set<CTCPClient_ptr>::const_iterator itt;
-	for (itt = connections_.begin(); itt != connections_.end(); ++itt) {
+	for (auto itt = connections_.begin(); itt != connections_.end(); ++itt)
+	{
 		CSharedClient *pClient = dynamic_cast<CSharedClient *>(itt->get());
 		if (pClient && pClient->CompareToken(token)) {
 			pClient->stop();
@@ -325,9 +312,9 @@ bool CTCPServerProxied::OnIncomingData(const std::string &token, const unsigned 
 
 CSharedClient *CTCPServerProxied::FindClient(const std::string &token)
 {
-	std::set<CTCPClient_ptr>::const_iterator itt;
-	for (itt = connections_.begin(); itt != connections_.end(); ++itt) {
-		CSharedClient *pClient = dynamic_cast<CSharedClient *>(itt->get());
+	for (const auto &c : connections_)
+	{
+		CSharedClient *pClient = dynamic_cast<CSharedClient *>(c.get());
 		if (pClient && pClient->CompareToken(token)) {
 			return pClient;
 		}
