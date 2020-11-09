@@ -30,8 +30,8 @@ MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::s
 	 **/
 
 	size_t nextPiece = std::string::npos;
-	std::string CustomTopicIn = "";
-	std::string CustomTopicOut = "";
+	std::string CustomTopicIn;
+	std::string CustomTopicOut;
 
 	do {
 		// Locate the last delimiter in the CAfilename string.

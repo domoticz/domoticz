@@ -235,8 +235,8 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 		boost::asio::connect(sendSocket, iterator);
 
-		std::string message = "";
-		std::string message2 = "";
+		std::string message;
+		std::string message2;
 		char request[1024];
 		size_t request_length;
 		std::stringstream ss;
@@ -512,7 +512,7 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 	if (!YeeLightGetTag(szData, "model: ", yeelightModel))
 		return false;
 
-	std::string yeelightSupport = "";
+	std::string yeelightSupport;
 	if (!YeeLightGetTag(szData, "support: ", yeelightSupport))
 		return false;
 
@@ -569,7 +569,7 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 		sType = sTypeColor_RGB_CW_WW;
 	}
 
-	std::string yeelightName = "";
+	std::string yeelightName;
 	if (yeelightModel == "mono") {
 		yeelightName = "YeeLight LED (Mono)";
 	}

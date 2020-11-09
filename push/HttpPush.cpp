@@ -54,13 +54,13 @@ void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx,
 
 void CHttpPush::DoHttpPush()
 {
-	std::string httpUrl = "";
-	std::string httpData = "";
-	std::string httpHeaders = "";
+	std::string httpUrl;
+	std::string httpData;
+	std::string httpHeaders;
 	int httpMethodInt = 0;
 	int httpAuthInt = 0;
-	std::string httpAuthBasicLogin = "";
-	std::string httpAuthBasicPassword = "";
+	std::string httpAuthBasicLogin;
+	std::string httpAuthBasicPassword;
 	m_sql.GetPreferencesVar("HttpMethod", httpMethodInt);
 	m_sql.GetPreferencesVar("HttpAuth", httpAuthInt);
 	m_sql.GetPreferencesVar("HttpAuthBasicLogin", httpAuthBasicLogin);

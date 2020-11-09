@@ -36,7 +36,7 @@ void CKodiNode::CKodiStatus::Clear()
 
 std::string	CKodiNode::CKodiStatus::LogMessage()
 {
-	std::string	sLogText = "";
+	std::string sLogText;
 	if (!m_sType.empty())
 	{
 		if (m_sType == "episode")
@@ -755,7 +755,7 @@ void CKodiNode::Do_Work()
 void CKodiNode::SendCommand(const std::string &command)
 {
 	std::string	sKodiCall;
-	std::string	sKodiParam = "";
+	std::string sKodiParam;
 	if (command == "Home")
 	{
 		sKodiCall = "Input.Home";

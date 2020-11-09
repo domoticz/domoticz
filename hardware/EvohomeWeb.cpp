@@ -331,7 +331,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 		for (auto &i : m_tcs->zones)
 		{
 			zone *hz = &i;
-			std::string zonemode = "";
+			std::string zonemode;
 			if (hz->status == nullptr) // don't touch invalid zone - it should already show as 'Offline'
 				continue;
 			if (hz->status->isMember("heatSetpointStatus"))
@@ -340,7 +340,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				continue;
 
 			std::string sztemperature, szsetpoint;
-			std::string szuntil = "";
+			std::string szuntil;
 			double setpoint = 0;
 
 			/*  there is no strict definition for modes Away, DayOff and Custom so we'll have to wait
@@ -413,7 +413,7 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 			return false;
 
 		std::string szsetpoint;
-		std::string szuntil = "";
+		std::string szuntil;
 		if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 		{
 			szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
@@ -539,7 +539,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	// only for mainworker to reassemble it.
 
 	std::string szId, sztemperature, szsetpoint, szmode;
-	std::string szuntil= "";
+	std::string szuntil;
 	std::stringstream ssUpdateStat;
 
 	szId = (*hz->installationInfo)["zoneId"].asString();
@@ -660,7 +660,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		return;
 
 	std::string szId, szmode;
-	std::string szuntil = "";
+	std::string szuntil;
 	std::stringstream ssUpdateStat;
 
 	szId = (*tcs->status)["dhw"]["dhwId"].asString();

@@ -1280,8 +1280,8 @@ namespace http {
 		{
 			struct ah _ah;
 
-			std::string uname = "";
-			std::string upass = "";
+			std::string uname;
+			std::string upass;
 
 			if (!parse_auth_header(req, &_ah))
 			{

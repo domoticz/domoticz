@@ -467,7 +467,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 	int addrh = 0;
 
 	fileBuffer.clear();
-	std::string dstring = "";
+	std::string dstring;
 	bool bHaveEOF = false;
 
 	while (!infile.eof())

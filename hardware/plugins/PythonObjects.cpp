@@ -597,7 +597,7 @@ namespace Plugins {
 					self->DeviceID = PyUnicode_FromString(szID);
 				}
 				if (TypeName) {
-					std::string sValue = "";
+					std::string sValue;
 					maptypename(std::string(TypeName), self->Type, self->SubType, self->SwitchType, sValue, Options, self->Options);
 					Py_DECREF(self->sValue);
 					self->sValue = PyUnicode_FromString(sValue.c_str());
@@ -893,7 +893,7 @@ namespace Plugins {
 
 			// TypeName change - actually derives new Type, SubType and SwitchType values
 			if (TypeName) {
-				std::string stdsValue = "";
+				std::string stdsValue;
 				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
 
 				// Reset nValue and sValue when changing device types
@@ -958,7 +958,7 @@ namespace Plugins {
 				}
 				else
 				{
-					std::string sOptionValue = "";
+					std::string sOptionValue;
 					PyObject *pValue = PyDict_GetItemString(pOptionsDict, "Custom");
 					if (pValue)
 					{

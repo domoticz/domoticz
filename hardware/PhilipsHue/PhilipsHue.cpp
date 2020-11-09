@@ -144,7 +144,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 	int svalue = 0;
 	int svalue2 = 0;
 	int svalue3 = 0;
-	std::string LCmd = "";
+	std::string LCmd;
 	int nodeID = 0;
 
 	if (packettype == pTypeGeneralSwitch)

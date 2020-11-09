@@ -1848,7 +1848,7 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			
 			std::string sWhere = getWhereForWrite(where);
 
-			std::string when = "";
+			std::string when;
 			bt_openwebnet request(sWho, sWhat, sWhere, when);
 			if (sendCommand(request, responses))
 			{
@@ -1876,8 +1876,8 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 		interfaceStr << iInterface;
 		std::string sInterface = interfaceStr.str();
 
-		std::string lev = "";
-		std::string when = "";
+		std::string lev;
+		std::string when;
 		request.CreateMsgOpen(sWho, sWhat, sWhere, lev, sInterface, when);
 		if (sendCommand(request, responses))
 		{
@@ -1926,7 +1926,7 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 		interfaceStr << iInterface;
 		std::string sInterface = interfaceStr.str();
 
-		std::string sLev = "";
+		std::string sLev;
 		request.CreateWrDimensionMsgOpen(sWho, sWhere, sLev, sInterface, sDimension, sValue);
 		if (sendCommand(request, responses))
 		{

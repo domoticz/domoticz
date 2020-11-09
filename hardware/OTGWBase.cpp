@@ -195,7 +195,7 @@ bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 	if (packettype == pTypeLighting2)
 	{
-		std::string LCmd = "";
+		std::string LCmd;
 		int nodeID = 0;
 		int svalue = 0;
 		//light command

@@ -104,7 +104,7 @@ boost::python::dict toPythonDict(std::map<K, V> map) {
 
 void CGooglePubSubPush::DoGooglePubSubPush()
 {
-	std::string googlePubSubData = "";
+	std::string googlePubSubData;
 #ifdef ENABLE_PYTHON_DECAP
 	bool googlePubSubDebugActive = false;
 

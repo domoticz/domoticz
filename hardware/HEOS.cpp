@@ -114,7 +114,7 @@ void CHEOS::ParseLine()
 										else
 											nStatus = MSTAT_ON;
 
-										std::string	sStatus = "";
+										std::string sStatus;
 
 										UpdateNodeStatus(pid, nStatus, sStatus);
 
@@ -136,17 +136,17 @@ void CHEOS::ParseLine()
 									StringSplit(root["heos"]["message"].asString(), "=", SplitMessage);
 									if (!SplitMessage.empty())
 									{
-										std::string sLabel = "";
-										std::string	sStatus = "";
+										std::string sLabel;
+										std::string sStatus;
 										std::string pid = SplitMessage[1];
 
 										if (root.isMember("payload"))
 										{
 
-											std::string	sTitle = "";
-											std::string	sAlbum = "";
-											std::string	sArtist = "";
-											std::string	sStation = "";
+											std::string sTitle;
+											std::string sAlbum;
+											std::string sArtist;
+											std::string sStation;
 
 											sTitle = root["payload"]["song"].asString();
 											sAlbum = root["payload"]["album"].asString();
@@ -216,7 +216,7 @@ void CHEOS::ParseLine()
 									else
 										nStatus = MSTAT_ON;
 
-									std::string	sStatus = "";
+									std::string sStatus;
 
 									UpdateNodeStatus(pid, nStatus, sStatus);
 

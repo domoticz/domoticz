@@ -952,7 +952,7 @@ void COpenZWaveControlPanel::web_get_groups(int n, TiXmlElement* ep)
 		groupElement->SetAttribute("ind", i);
 		groupElement->SetAttribute("max", p->max);
 		groupElement->SetAttribute("label", p->label.c_str());
-		std::string str = "";
+		std::string str;
 		for (unsigned int j = 0; j < p->grouplist.size(); j++) {
 			char s[12];
 			snprintf(s, sizeof(s), "%d", p->grouplist[j]);
@@ -1215,7 +1215,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 		sprintf(fntemp, "%sozwcp.poll.XXXXXX.xml", szUserDataFolder.c_str());
 		doc.SaveFile(fntemp);
 
-		std::string retstring = "";
+		std::string retstring;
 		std::ifstream testFile(fntemp, std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 			std::istreambuf_iterator<char>());
@@ -1460,7 +1460,7 @@ std::string COpenZWaveControlPanel::DoTestNetwork(const int node_id, const int c
 		sprintf(fntemp, "%sozwcp.testheal.XXXXXX", szUserDataFolder.c_str());
 		doc.SaveFile(fntemp);
 
-		std::string retstring = "";
+		std::string retstring;
 		std::ifstream testFile(fntemp, std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 			std::istreambuf_iterator<char>());
@@ -1498,7 +1498,7 @@ std::string COpenZWaveControlPanel::HealNetworkNode(const int node_id, const boo
 		sprintf(fntemp, "%sozwcp.testheal.XXXXXX", szUserDataFolder.c_str());
 		doc.SaveFile(fntemp);
 
-		std::string retstring = "";
+		std::string retstring;
 		std::ifstream testFile(fntemp, std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 			std::istreambuf_iterator<char>());
@@ -1542,7 +1542,7 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 					TiXmlElement* nodeElement = new TiXmlElement("node");
 					snprintf(str, sizeof(str), "%d", i);
 					nodeElement->SetAttribute("id", str);
-					std::string list = "";
+					std::string list;
 					for (k = 0; k < len; k++) {
 						snprintf(str, sizeof(str), "%d", neighbors[k]);
 						list += str;
@@ -1563,7 +1563,7 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 		sprintf(fntemp, "%sozwcp.topo.XXXXXX", szUserDataFolder.c_str());
 		doc.SaveFile(fntemp);
 
-		std::string retstring = "";
+		std::string retstring;
 		std::ifstream testFile(fntemp, std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 			std::istreambuf_iterator<char>());
@@ -1696,7 +1696,7 @@ std::string COpenZWaveControlPanel::GetCPStats()
 		sprintf(fntemp, "%sozwcp.stat.XXXXXX", szUserDataFolder.c_str());
 		doc.SaveFile(fntemp);
 
-		std::string retstring = "";
+		std::string retstring;
 		std::ifstream testFile(fntemp, std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 			std::istreambuf_iterator<char>());

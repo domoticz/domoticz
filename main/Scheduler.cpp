@@ -806,7 +806,7 @@ void CScheduler::CheckSchedules()
 				else
 					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, DevID: %" PRIu64 ", Time: %s",
 						 item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
-				std::string switchcmd = "";
+				std::string switchcmd;
 				if (item.timerCmd == TCMD_ON)
 					switchcmd = "On";
 				else if (item.timerCmd == TCMD_OFF)
@@ -860,7 +860,7 @@ void CScheduler::CheckSchedules()
 							unsigned char dType = atoi(sd[0].c_str());
 							unsigned char dSubType = atoi(sd[1].c_str());
 							_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
-							std::string lstatus = "";
+							std::string lstatus;
 							int llevel = 0;
 							bool bHaveDimmer = false;
 							bool bHaveGroupCmd = false;

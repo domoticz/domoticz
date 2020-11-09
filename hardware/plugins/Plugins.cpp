@@ -791,7 +791,7 @@ namespace Plugins {
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
 				PyCodeObject*	pCode = frame->f_code;
-				std::string		FileName = "";
+				std::string FileName;
 				if (pCode->co_filename)
 				{
 					PyBytesObject*	pFileBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_filename);
@@ -1949,7 +1949,7 @@ Error:
 		std::string szRetVal = "Light48";
 		if (iIconLine < 100)  // default set of custom icons
 		{
-			std::string sLine = "";
+			std::string sLine;
 			std::ifstream infile;
 			std::string switchlightsfile = szWWWFolder + "/switch_icons.txt";
 			infile.open(switchlightsfile.c_str());

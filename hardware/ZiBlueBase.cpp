@@ -463,7 +463,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				INCOMING_RF_INFOS_TYPE0 *pSen = (INCOMING_RF_INFOS_TYPE0*)(data + 8);
 				uint8_t houseCode = (pSen->id & 0xF0) >> 4;;
 				uint8_t dev = pSen->id & 0x0F;
-				std::string switchCmd = "";
+				std::string switchCmd;
 				switch (pSen->subtype)
 				{
 				case SEND_ACTION_OFF:
@@ -501,7 +501,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 			{
 				INCOMING_RF_INFOS_TYPE1 *pSen = (INCOMING_RF_INFOS_TYPE1*)(data + 8);
 				int DevID = (pSen->idMsb << 16) + pSen->idLsb;
-				std::string switchCmd = "";
+				std::string switchCmd;
 				switch (pSen->subtype)
 				{
 				case SEND_ACTION_OFF:

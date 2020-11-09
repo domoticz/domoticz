@@ -112,7 +112,7 @@ bool CICYThermostat::GetSerialAndToken()
 	std::string szPostdata=sstr.str();
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
-	std::string sURL = "";
+	std::string sURL;
 
 	if ((m_companymode == CMODE_UNKNOWN) || (m_companymode == CMODE_PORTAL))
 		sURL = ICY_LOGIN_URL;
@@ -220,7 +220,7 @@ void CICYThermostat::GetMeterDetails()
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Session-token:"+m_Token);
 
-	std::string sURL = "";
+	std::string sURL;
 
 	if (m_companymode == CMODE_PORTAL)
 		sURL = ICY_DATA_URL;
@@ -275,7 +275,7 @@ void CICYThermostat::SetSetpoint(const int idx, const float temp)
 		ExtraHeaders.push_back("Session-token:"+m_Token);
 		std::string sResult;
 
-		std::string sURL = "";
+		std::string sURL;
 		if (m_companymode == CMODE_PORTAL)
 			sURL = ICY_DATA_URL;
 		else if (m_companymode == CMODE_ENI)

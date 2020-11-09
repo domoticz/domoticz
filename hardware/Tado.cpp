@@ -677,8 +677,8 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 	{
 		Debug(DEBUG_HARDWARE, "MatchValueFromJSKey: Processing line: '%s'", _sLine.c_str());
 
-		std::string _sLineKey = "";
-		std::string _sLineValue = "";
+		std::string _sLineKey;
+		std::string _sLineValue;
 
 		// Let's split each line on a colon.
 		std::vector<std::string> _sLineParts = StringSplitEx(_sLine, ": ", 2);

@@ -2351,7 +2351,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				break;
 			}
 			std::string sPath = doWhat;
-			std::string sParam = "";
+			std::string sParam;
 			size_t tpos = sPath.find('$');
 			if (tpos != std::string::npos)
 			{
@@ -3742,7 +3742,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options)
 {
 
-	std::string lstatus = "";
+	std::string lstatus;
 	int llevel = 0;
 	bool bHaveDimmer = false;
 	bool bHaveGroupCmd = false;
@@ -3986,7 +3986,7 @@ int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		unsigned char dType = atoi(sd[0].c_str());
 		unsigned char dSubType = atoi(sd[1].c_str());
 		_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
-		std::string lstatus = "";
+		std::string lstatus;
 		int llevel = 0;
 		bool bHaveDimmer = false;
 		bool bHaveGroupCmd = false;

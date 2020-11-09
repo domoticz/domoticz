@@ -258,7 +258,7 @@ bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned cha
 std::string WrapBase64(const std::string &szSource, const size_t lsize = 72)
 {
 	std::string cstring = szSource;
-	std::string ret = "";
+	std::string ret;
 	while (cstring.size() > lsize)
 	{
 		std::string pstring = cstring.substr(0, lsize);

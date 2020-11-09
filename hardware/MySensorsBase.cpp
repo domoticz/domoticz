@@ -1692,7 +1692,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 	_eMessageType message_type = (_eMessageType)atoi(results[2].c_str());
 	int ack = atoi(results[3].c_str());
 	int sub_type = atoi(results[4].c_str());
-	std::string payload = "";
+	std::string payload;
 	if (results.size() >= 6)
 	{
 		for (size_t ip = 0; ip < results.size() - 5; ip++)
@@ -2479,7 +2479,7 @@ namespace http {
 				root["result"][ii]["use_ack"] = (sd2[3] != "0") ? "true" : "false";
 				root["result"][ii]["ack_timeout"] = atoi(sd2[4].c_str());
 				std::string szDate = "-";
-				std::string szValues = "";
+				std::string szValues;
 				if (pNode != nullptr)
 				{
 					MySensorsBase::_tMySensorChild*  pChild = pNode->FindChild(ChildID);
