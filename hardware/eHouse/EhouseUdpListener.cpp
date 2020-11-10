@@ -1219,7 +1219,7 @@ float eHouseTCP::getAdcVolt2(int index)
 	return m_VccRef;
 }
 ///////////////////////////////////////////////////////////////////////////////
-void eHouseTCP::CalculateAdc2(char index)
+void eHouseTCP::CalculateAdc2(unsigned char index)
 {
 	double temp;
 	int   temmp;
@@ -1320,7 +1320,7 @@ void eHouseTCP::CalculateAdc2(char index)
 	}
 }
 ///////////////////////////////////////////////////////////////////////////////
-void eHouseTCP::CalculateAdcWiFi(char index)
+void eHouseTCP::CalculateAdcWiFi(unsigned char index)
 {
 	double temp;
 	int   temmp;
@@ -1428,7 +1428,7 @@ void eHouseTCP::CalculateAdcWiFi(char index)
 }
 ///////////////////////////////////////////////////////////////////////////////
 
-void eHouseTCP::CalculateAdcEH1(char index)
+void eHouseTCP::CalculateAdcEH1(unsigned char index)
 {
 	double temp;
 	int   temmp;
