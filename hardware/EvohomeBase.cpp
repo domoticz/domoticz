@@ -332,7 +332,5 @@ namespace http {
 				root["title"] = "CreateEvohomeSensor";
 			}
 		}
-	}
-}
-
-
+	} // namespace server
+} // namespace http

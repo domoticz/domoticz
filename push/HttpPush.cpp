@@ -460,5 +460,5 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "DeleteHttpLink";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

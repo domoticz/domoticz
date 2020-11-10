@@ -1028,5 +1028,5 @@ namespace Plugins {
 		}
 		return true;
 	}
-}
+} // namespace Plugins
 #endif

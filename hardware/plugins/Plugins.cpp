@@ -2175,5 +2175,5 @@ Error:
 
 		return true;
 	}
-}
+} // namespace Plugins
 #endif

@@ -135,5 +135,5 @@
 	  return m;
       }
     #endif
-    }
+    } // namespace Plugins
 #endif

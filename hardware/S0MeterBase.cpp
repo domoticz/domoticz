@@ -419,5 +419,5 @@ namespace http {
 			m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID='%q')", szExtra.str().c_str(), idx.c_str());
 			m_mainworker.RestartHardware(idx);
 		}
-	}
-}
+	} // namespace server
+} // namespace http

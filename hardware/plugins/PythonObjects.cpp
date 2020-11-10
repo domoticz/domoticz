@@ -1482,5 +1482,5 @@ namespace Plugins {
 		}
 	}
 
-}
+} // namespace Plugins
 #endif

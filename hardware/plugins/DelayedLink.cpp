@@ -10,5 +10,5 @@
 
 namespace Plugins {
     SharedLibraryProxy* pythonLib = new SharedLibraryProxy();
-}
+} // namespace Plugins
 #endif

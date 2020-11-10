@@ -1266,5 +1266,5 @@ namespace http {
 			}
 		}
 
-	}
-}
+	} // namespace server
+} // namespace http

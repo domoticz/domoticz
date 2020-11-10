@@ -348,5 +348,5 @@ namespace http {
 	    CTellstick *pTellstick = reinterpret_cast<CTellstick *>(pBaseHardware);
 	    pTellstick->SetSettings(repeats, repeatInterval);
 	}
-    }
-}
+    } // namespace server
+} // namespace http

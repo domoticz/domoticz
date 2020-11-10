@@ -175,6 +175,6 @@ namespace http {
 				it->ReloadCustomSwitchIcons();
 			}
 		}
-	}
+	} // namespace server
 
-}
+} // namespace http

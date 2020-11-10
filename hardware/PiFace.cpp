@@ -1579,9 +1579,7 @@ namespace http {
                 return;
             }
 
-            m_mainworker.RestartHardware(idx);
-        }
-    }
-}
-
-
+	    m_mainworker.RestartHardware(idx);
+	}
+    } // namespace server
+} // namespace http
