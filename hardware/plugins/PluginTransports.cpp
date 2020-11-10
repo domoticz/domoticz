@@ -527,7 +527,7 @@ namespace Plugins {
 
 				m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
 				m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
-				if ((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.") || (m_IP.substr(0, 4) == "255."))
+				if (((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.")) || (m_IP.substr(0, 4) == "255."))
 				{
 					m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
 					m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
@@ -632,7 +632,7 @@ namespace Plugins {
 			}
 
 			// Different handling for multi casting
-			if ((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.") || (m_IP.substr(0, 4) == "255."))
+			if (((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.")) || (m_IP.substr(0, 4) == "255."))
 			{
 				m_Socket->set_option(boost::asio::socket_base::broadcast(true));
 				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address_v4::broadcast(), atoi(m_Port.c_str()));
