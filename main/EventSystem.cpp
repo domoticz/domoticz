@@ -1854,7 +1854,6 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 	lua_State *lua_state = nullptr;
 
 	boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
-	std::vector<_tEventItem>::const_iterator it;
 	try
 	{
 		for (const auto &event : m_events)
@@ -1895,7 +1894,7 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 					}
 
 					if (found != std::string::npos)
-						lua_state = ParseBlocklyLua(lua_state, *it);
+						lua_state = ParseBlocklyLua(lua_state, event);
 				}
 				else if (event.Interpreter == "Lua")
 					EvaluateLua(item, event.Name, event.Actions);
