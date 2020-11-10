@@ -211,6 +211,7 @@ public:
 	/**
 	 * Set relevant values
 	 */
+	using http::server::server_settings::set;
 	virtual void set(const ssl_server_settings & ssl_settings) {
 		server_settings::set(ssl_settings);
 
