@@ -229,7 +229,7 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 	acceptor_.bind(endpoint);
 	acceptor_.listen();
 
-	new_connection_ = std::shared_ptr<CTCPClient>(new CTCPClient(io_service_, this));
+	new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
 
 	acceptor_.async_accept(
 		*(new_connection_->socket()),
