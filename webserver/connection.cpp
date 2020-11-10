@@ -306,7 +306,6 @@ namespace http {
 			delete[] send_buffer_;
 			send_buffer_ = nullptr;
 			connection_manager_.stop(shared_from_this());
-			return;
 		}
 
 		bool connection::send_file(const std::string& filename, std::string& attachment_name, reply& rep)

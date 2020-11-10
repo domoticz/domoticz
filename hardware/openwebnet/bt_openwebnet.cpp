@@ -147,7 +147,6 @@ void bt_openwebnet::IsCorrect()
 
   //error frame !!!
   m_frameType = ERROR_FRAME;
-  return;
 }
 
 // assigns who where dimension required for the request dimension frame
@@ -197,8 +196,6 @@ void bt_openwebnet::Set_who_where_dimension()
   }
 
   Set_whereParameters(); 
-  
-  return;
 }
 
 // assigns who and where required for the request dimension frame
@@ -224,8 +221,6 @@ void bt_openwebnet::Set_who_where()
   }
 
   Set_whereParameters(); 
-  
-  return;
 }
 
 // assigns who what where and when for the normal frames
@@ -324,8 +319,6 @@ void bt_openwebnet::Set_who_where_dimension_values()
   }
 
   Set_whereParameters();
-
-  return;
 }
 
 // assigns who for the frame processing password
@@ -346,8 +339,6 @@ void bt_openwebnet::Set_who()
 	if (sup.at(1) != '#') {
 		m_frameType = ERROR_FRAME;
 	}
-
-  return;
 }
 
 //assign level interface for extended frame
@@ -385,8 +376,6 @@ void bt_openwebnet::Set_level_interface()
       //frame_type = ERROR_FRAME;
       m_level = sup;
   }
-
-  return;
 }
 
 // assign address
@@ -447,8 +436,6 @@ void bt_openwebnet::Set_address()
 			m_frameType = ERROR_FRAME;
 		}
   }
-
-  return;
 }
 
 //extracts tokens into a vector

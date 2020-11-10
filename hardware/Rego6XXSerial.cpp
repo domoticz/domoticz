@@ -200,83 +200,77 @@ void CRego6XXSerial::Do_Work()
 			m_pollDelaycntr = 0;
 			m_readBufferHead = 0;
 			m_readBufferTail = 0;
-            m_errorcntr = 0;
+			m_errorcntr = 0;
 
-		    OpenSerialDevice();
-        }
-        else
+			OpenSerialDevice();
+	}
+	else
+	{
+		m_pollDelaycntr++;
+
+		if (m_pollDelaycntr >= Rego6XX_COMMAND_DELAY)
 		{
-			m_pollDelaycntr++;
+			// Before issueing a new command, the recieve buffer must be empty.
+			// It seems that there are errors sometimes and this will take care
+			// of any problems even if it bypasses the circular buffer concept.
+			// There should not be any data left to recieve anyway since commands
+			// are sent with 5 seconds in between.
+			m_readBufferHead = 0;
+			m_readBufferTail = 0;
 
-			if (m_pollDelaycntr>=Rego6XX_COMMAND_DELAY)
+			m_pollDelaycntr = 0;
+			if (g_allRegisters[m_pollcntr].type != REGO_TYPE_NONE)
 			{
-                // Before issueing a new command, the recieve buffer must be empty.
-                // It seems that there are errors sometimes and this will take care
-                // of any problems even if it bypasses the circular buffer concept.
-                // There should not be any data left to recieve anyway since commands
-                // are sent with 5 seconds in between.
-				m_readBufferHead = 0;
-				m_readBufferTail = 0;
-
-   				m_pollDelaycntr = 0;
-				if(g_allRegisters[m_pollcntr].type != REGO_TYPE_NONE)
+				RegoCommand cmd;
+				cmd.data.address = 0x81;
+				cmd.data.command = 0x02;
+				switch (m_regoType)
 				{
-					RegoCommand cmd;
-					cmd.data.address = 0x81;
-					cmd.data.command = 0x02;
-                    switch(m_regoType)
-                    {
-                    case 0:
-                        cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type1 & 0xC000) >> 14 ;
-					    cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type1 & 0x3F80) >> 7 ;
-					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type1 & 0x007F;
-                        break;
-                    case 1:
-                        cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type2 & 0xC000) >> 14 ;
-					    cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type2 & 0x3F80) >> 7 ;
-					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type2 & 0x007F;
-                        break;
-                    case 2:
-                        cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type3 & 0xC000) >> 14 ;
-					    cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type3 & 0x3F80) >> 7 ;
-					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type3 & 0x007F;
-                        break;
-                    default:
-		                _log.Log(LOG_ERROR,"Rego6XX: Unknown type!");
-                        break;
-                    }
-					cmd.data.value[0] = 0;
-					cmd.data.value[1] = 0;
-					cmd.data.value[2] = 0;
-					cmd.data.crc = 0;
-
-					for ( int i = 2; i < 8; i++ )
-						cmd.data.crc ^= cmd.raw[ i ];
-
-					WriteToHardware((char*)cmd.raw, sizeof(cmd.raw));
+					case 0:
+						cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type1 & 0xC000) >> 14;
+						cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type1 & 0x3F80) >> 7;
+						cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type1 & 0x007F;
+						break;
+					case 1:
+						cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type2 & 0xC000) >> 14;
+						cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type2 & 0x3F80) >> 7;
+						cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type2 & 0x007F;
+						break;
+					case 2:
+						cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type3 & 0xC000) >> 14;
+						cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type3 & 0x3F80) >> 7;
+						cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type3 & 0x007F;
+						break;
+					default:
+						_log.Log(LOG_ERROR, "Rego6XX: Unknown type!");
+						break;
 				}
-				else
-				{
-					m_pollcntr = 0;
-				}
+				cmd.data.value[0] = 0;
+				cmd.data.value[1] = 0;
+				cmd.data.value[2] = 0;
+				cmd.data.crc = 0;
+
+				for (int i = 2; i < 8; i++)
+					cmd.data.crc ^= cmd.raw[i];
+
+				WriteToHardware((char *)cmd.raw, sizeof(cmd.raw));
 			}
 			else
-			{
-				// Try to parse data
-				if(ParseData())
-                {
-                    // Get the next message
-       				m_pollcntr++;
-
-                    m_errorcntr = 0;
-                }
-                else
-                {
-                    m_errorcntr++;
-                }
-
-			}
+				m_pollcntr = 0;
 		}
+		else
+		{
+			// Try to parse data
+			if (ParseData())
+			{
+				// Get the next message
+				m_pollcntr++;
+				m_errorcntr = 0;
+			}
+			else
+				m_errorcntr++;
+		}
+	}
 	}
 	terminate();
 

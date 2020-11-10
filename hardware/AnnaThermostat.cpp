@@ -653,7 +653,6 @@ void CAnnaThermostat::GetMeterDetails()
 		}
 		pAppliance = pAppliance->NextSiblingElement("appliance");
 	}
-	return;
 }
 
 // Checks if the Username and password are filled in
