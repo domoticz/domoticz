@@ -304,8 +304,8 @@ public:
   {
     m_Payload.clear();
 
-    for (unsigned int i = 0; i < m_DeviceName.size(); i++)
-      m_Payload.push_back(m_DeviceName[i]);
+    for (char name : m_DeviceName)
+	    m_Payload.push_back(name);
 
     m_Payload.push_back('\0');
 
@@ -385,13 +385,13 @@ public:
   {
     m_Payload.clear();
 
-    for (unsigned int i = 0; i < m_Title.size(); i++)
-      m_Payload.push_back(m_Title[i]);
+    for (char t : m_Title)
+	    m_Payload.push_back(t);
 
     m_Payload.push_back('\0');
 
-    for (unsigned int i = 0; i < m_Message.size(); i++)
-      m_Payload.push_back(m_Message[i]);
+    for (char msg : m_Message)
+	    m_Payload.push_back(msg);
 
     m_Payload.push_back('\0');
 
@@ -516,14 +516,13 @@ public:
     m_Payload.push_back(((m_Amount & 0xff00) >> 8) );
     m_Payload.push_back( (m_Amount & 0x00ff));
 
-
-    for (unsigned int i = 0; i < m_DeviceMap.size(); i++)
-      m_Payload.push_back(m_DeviceMap[i]);
+    for (char dev : m_DeviceMap)
+	    m_Payload.push_back(dev);
 
     m_Payload.push_back('\0');
 
-    for (unsigned int i = 0; i < m_Button.size(); i++)
-      m_Payload.push_back(m_Button[i]);
+    for (char b : m_Button)
+	    m_Payload.push_back(b);
 
     m_Payload.push_back('\0');
   }
@@ -682,8 +681,8 @@ public:
       char* str=&m_Message[0];
       printf("%s\n", str);
     }
-    for (unsigned int i = 0; i < m_Message.size(); i++)
-      m_Payload.push_back(m_Message[i]);
+    for (char msg : m_Message)
+	    m_Payload.push_back(msg);
 
     m_Payload.push_back('\0');
   }
@@ -717,8 +716,8 @@ public:
     m_Payload.clear();
 
     m_Payload.push_back(m_ActionType);
-    for (unsigned int i = 0; i < m_Action.size(); i++)
-      m_Payload.push_back(m_Action[i]);
+    for (char a : m_Action)
+	    m_Payload.push_back(a);
 
     m_Payload.push_back('\0');
   }
