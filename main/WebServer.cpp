@@ -108,7 +108,6 @@ namespace http {
 	namespace server {
 
 		CWebServer::CWebServer()
-			: session_store()
 		{
 			m_pWebEm = nullptr;
 			m_bDoStop = false;

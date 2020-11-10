@@ -50,8 +50,14 @@ class AsyncSerialImpl
 	: private domoticz::noncopyable
 {
 public:
-    AsyncSerialImpl(): io(), port(io), backgroundThread(), open(false),
-		error(false), writeBufferSize(0) {}
+  AsyncSerialImpl()
+	  : io()
+	  , port(io)
+	  , open(false)
+	  , error(false)
+	  , writeBufferSize(0)
+  {
+  }
 
     boost::asio::io_service io; ///< Io service object
     boost::asio::serial_port port; ///< Serial port object
