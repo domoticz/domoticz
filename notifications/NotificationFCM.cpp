@@ -115,8 +115,6 @@ bool CNotificationFCM::SendMessageImplementation(
 			iOSDevices.push_back(sSenderID);
 	}
 
-	std::vector<std::string>::const_iterator ittDevice;
-
 	//Android Devices
 	if (!androidDevices.empty())
 	{

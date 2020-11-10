@@ -229,7 +229,6 @@ namespace Plugins {
 		}
 
 		std::vector<std::string> DirEntries, FileEntries;
-		std::vector<std::string>::const_iterator itt_Dir, itt_File;
 		std::string plugin_Dir, plugin_File;
 
 		DirectoryListing(DirEntries, plugin_BaseDir, true, false);
