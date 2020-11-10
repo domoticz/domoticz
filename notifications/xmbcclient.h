@@ -321,7 +321,7 @@ public:
       m_Payload.push_back(m_IconData[ico]);
   }
 
-  CPacketHELO(const char *DevName, unsigned short IconType, const char *IconFile = NULL) : CPacket()
+  CPacketHELO(const char *DevName, unsigned short IconType, const char *IconFile = nullptr)
   {
     m_PacketType = PT_HELO;
 
@@ -404,7 +404,7 @@ public:
       m_Payload.push_back(m_IconData[ico]);
   }
 
-  CPacketNOTIFICATION(const char *Title, const char *Message, unsigned short IconType, const char *IconFile = NULL) : CPacket()
+  CPacketNOTIFICATION(const char *Title, const char *Message, unsigned short IconType, const char *IconFile = nullptr)
   {
     m_PacketType = PT_NOTIFICATION;
     m_IconData = NULL;
@@ -528,7 +528,7 @@ public:
     m_Payload.push_back('\0');
   }
 
-  CPacketBUTTON(const char *Button, const char *DeviceMap, unsigned short Flags, unsigned short Amount = 0) : CPacket()
+  CPacketBUTTON(const char *Button, const char *DeviceMap, unsigned short Flags, unsigned short Amount = 0)
   {
     m_PacketType = PT_BUTTON;
     m_Flags      = Flags;
@@ -544,7 +544,7 @@ public:
       m_Button.push_back(Button[i]);
   }
 
-  CPacketBUTTON(unsigned short ButtonCode, const char *DeviceMap, unsigned short Flags, unsigned short Amount = 0) : CPacket()
+  CPacketBUTTON(unsigned short ButtonCode, const char *DeviceMap, unsigned short Flags, unsigned short Amount = 0)
   {
     m_PacketType = PT_BUTTON;
     m_Flags      = Flags;
@@ -556,7 +556,7 @@ public:
       m_DeviceMap.push_back(DeviceMap[i]);
   }
 
-  CPacketBUTTON(unsigned short ButtonCode, unsigned short Flags, unsigned short Amount = 0) : CPacket()
+  CPacketBUTTON(unsigned short ButtonCode, unsigned short Flags, unsigned short Amount = 0)
   {
     m_PacketType = PT_BUTTON;
     m_Flags      = Flags;
@@ -565,7 +565,7 @@ public:
   }
 
   // Used to send a release event
-  CPacketBUTTON() : CPacket()
+  CPacketBUTTON()
   {
     m_PacketType = PT_BUTTON;
     m_Flags = BTN_UP;
@@ -589,7 +589,7 @@ class CPacketPING : public CPacket
     /* no payload                                                           */
     /************************************************************************/
 public:
-  CPacketPING() : CPacket()
+  CPacketPING()
   {
     m_PacketType = PT_PING;
   }
@@ -602,7 +602,7 @@ class CPacketBYE : public CPacket
     /* no payload                                                           */
     /************************************************************************/
 public:
-  CPacketBYE() : CPacket()
+  CPacketBYE()
   {
     m_PacketType = PT_BYE;
   }

@@ -59,7 +59,6 @@ namespace clx {
 
 		basic_unzip_iterator()
 			: cur_()
-			, handler_(nullptr)
 			, pass_()
 		{
 		}

@@ -403,12 +403,6 @@ public:
 
 	CEvohomeMsg() = default;
 	CEvohomeMsg(const char *rawmsg)
-		: flags(0)
-		, timestamp(0)
-		, command(0)
-		, payloadsize(0)
-		, readofs(0)
-		, enccount(0)
 	{
 		DecodePacket(rawmsg);
 	}
