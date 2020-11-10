@@ -243,7 +243,7 @@ void CHardwareMonitor::GetInternalTemperature()
 void CHardwareMonitor::GetInternalARMClockSpeed()
 {
 	Debug(DEBUG_NORM,"Getting ARM Clock speed");
-	float ArmClockSpeed;
+	float ArmClockSpeed = 0.0;
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalARMSpeedCommand, returncode);
 	if (ret.empty())
@@ -274,7 +274,7 @@ void CHardwareMonitor::GetInternalARMClockSpeed()
 void CHardwareMonitor::GetInternalV3DClockSpeed()
 {
 	Debug(DEBUG_NORM,"Getting V3D Clock speed");
-	float V3DClockSpeed;
+	float V3DClockSpeed = 0.0;
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalV3DSpeedCommand, returncode);
 	if (ret.empty())
@@ -305,7 +305,7 @@ void CHardwareMonitor::GetInternalV3DClockSpeed()
 void CHardwareMonitor::GetInternalCoreClockSpeed()
 {
 	Debug(DEBUG_NORM,"Getting Core Clock speed");
-	float CoreClockSpeed;
+	float CoreClockSpeed = 0.0;
 	int returncode = 0;
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCoreSpeedCommand, returncode);
 	if (ret.empty())
