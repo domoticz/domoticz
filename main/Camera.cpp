@@ -554,5 +554,5 @@ namespace http {
 			m_sql.DeleteCamera(idx);
 			m_mainworker.m_cameras.ReloadCameras();
 		}
-	}
-}
+	} // namespace server
+} // namespace http

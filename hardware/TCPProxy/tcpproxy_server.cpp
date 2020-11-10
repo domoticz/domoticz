@@ -252,4 +252,4 @@ namespace tcp_proxy
 		sOnUpstreamData(pData,Len);
 	}
 
-} //end namespace
+} // namespace tcp_proxy

@@ -1228,5 +1228,5 @@ namespace http {
 				root["title"] = "CreateRFLinkDevice";
 			}
 		}
-	}
-}
+	} // namespace server
+} // namespace http

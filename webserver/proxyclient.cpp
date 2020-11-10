@@ -644,6 +644,6 @@ namespace http {
 		PDUFUNCTION(NONE) {}
 		PDUFUNCTION(RESPONSE) {}
 		PDUFUNCTION(WS_SEND) {}
-	}
-}
+	} // namespace server
+} // namespace http
 #endif

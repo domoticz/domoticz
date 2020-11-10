@@ -2339,5 +2339,5 @@ namespace http {
 			}
 		}
 
-	} //namespace server {
-} //namespace http {
+	} // namespace server
+} // namespace http

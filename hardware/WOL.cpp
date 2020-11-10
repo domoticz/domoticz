@@ -13,7 +13,7 @@
 namespace Json
 {
 	class Value;
-};
+} // namespace Json
 
 CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned short Port) :
 	m_broadcast_address(BroadcastAddress)
@@ -383,5 +383,5 @@ namespace http {
 			root["title"] = "WOLClearNodes";
 			pHardware->RemoveAllNodes();
 		}
-	}
-}
+	} // namespace server
+} // namespace http

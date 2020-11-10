@@ -1047,5 +1047,5 @@ namespace http {
 			else
 				root["message"] = "Hardware not found, or not enabled!";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

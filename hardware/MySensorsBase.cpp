@@ -2649,5 +2649,5 @@ namespace http {
 				iAckTimeout = 100;
 			pMySensorsHardware->UpdateChild(NodeID, ChildID, bUseAck, iAckTimeout);
 		}
-	}
-}
+	} // namespace server
+} // namespace http

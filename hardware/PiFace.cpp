@@ -1580,7 +1580,5 @@ namespace http {
 
 	    m_mainworker.RestartHardware(idx);
 	}
-    }
-}
-
-
+    } // namespace server
+} // namespace http

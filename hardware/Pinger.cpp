@@ -631,5 +631,5 @@ namespace http {
 			root["title"] = "PingerClearNodes";
 			pHardware->RemoveAllNodes();
 		}
-	}
-}
+	} // namespace server
+} // namespace http

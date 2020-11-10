@@ -391,5 +391,5 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "DeleteFibaroLink";
 		}
-	}
+	} // namespace server
 } // namespace http

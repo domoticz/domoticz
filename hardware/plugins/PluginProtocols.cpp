@@ -2244,5 +2244,5 @@ namespace Plugins {
 
 		return retVal;
 	}
-}
+} // namespace Plugins
 #endif

@@ -408,7 +408,7 @@ namespace Plugins {
 		Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
 		pPlugin->DeviceModified(atoi(Unit.c_str()));
 	}
-}
+} // namespace Plugins
 
 //Webserver helpers
 namespace http {
@@ -583,6 +583,6 @@ namespace http {
 				}
 			}
 		}
-	}
-}
+	} // namespace server
+} // namespace http
 #endif

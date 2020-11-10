@@ -2179,5 +2179,5 @@ namespace http {
 			root["title"] = "BindEvohome";
 			root["Used"] = false;
 		}
-	}
-}
+	} // namespace server
+} // namespace http

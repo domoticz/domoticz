@@ -456,5 +456,5 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "DeleteGooglePubSubLink";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

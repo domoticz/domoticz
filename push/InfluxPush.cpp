@@ -390,5 +390,5 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "DeleteInfluxLink";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

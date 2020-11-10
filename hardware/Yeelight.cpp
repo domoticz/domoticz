@@ -617,5 +617,5 @@ namespace http {
 			//TODO: Add support for other bulb types to WebUI (WW, RGB, RGBWW)
 			yeelight.InsertUpdateSwitch("123", sname, (stype == "0") ? sTypeColor_White : sTypeColor_RGB_W, sipaddress, false, "0", "0", "", "", "", "");
 		}
-	}
-}
+	} // namespace server
+} // namespace http

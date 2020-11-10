@@ -562,5 +562,5 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "SendOpenThermCommand";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

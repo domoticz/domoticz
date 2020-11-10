@@ -944,8 +944,8 @@ namespace http {
 			pHardware->UpdateFirmware();
 		}
 
-	}
-}
+	} // namespace server
+} // namespace http
 
 Json::Value BleBox::SendCommand(const std::string & IPAddress, const std::string & command, const int timeOut)
 {

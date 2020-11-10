@@ -277,5 +277,5 @@ namespace http {
 			return &handler;
 		}
 
-	}
-}
+	} // namespace server
+} // namespace http

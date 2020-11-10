@@ -4428,5 +4428,5 @@ namespace http {
 				root["status"] = "OK";
 			}
 		}
-	}
-}
+	} // namespace server
+} // namespace http

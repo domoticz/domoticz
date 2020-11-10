@@ -17749,5 +17749,5 @@ namespace http {
 			m_sql.safe_query("DELETE FROM UserSessions WHERE (Username=='%q') and (SessionID!='%q')", username.c_str(), exceptSession.id.c_str());
 		}
 
-	} //server
-}//http
+	} // namespace server
+} // namespace http

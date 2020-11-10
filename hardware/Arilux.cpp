@@ -230,5 +230,5 @@ namespace http {
 			Arilux Arilux(HwdID);
 			Arilux.InsertUpdateSwitch(sname, (stype == "0") ? sTypeColor_RGB : sTypeColor_RGB_W_Z, sipaddress);
 		}
-	}
-}
+	} // namespace server
+} // namespace http

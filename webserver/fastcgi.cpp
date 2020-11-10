@@ -428,6 +428,5 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 	return true;
 }
 
-}
-}
-
+	} // namespace server
+} // namespace http

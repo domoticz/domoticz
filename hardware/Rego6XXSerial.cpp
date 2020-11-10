@@ -459,5 +459,5 @@ namespace http {
 				m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0, 0);
 			}
 		}
-	}
-}
+	} // namespace server
+} // namespace http
