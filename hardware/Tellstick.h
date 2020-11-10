@@ -17,17 +17,19 @@ private:
 
     struct Command
     {
-        Command()
-            : repeat(0),
-              repeatTimePoint(std::chrono::system_clock::now()) {}
-        Command(_tGeneralSwitch genSwitch)
-            : genSwitch(genSwitch),
-              repeat(0),
-              repeatTimePoint(std::chrono::system_clock::now()) {}
+	    Command()
+		    : repeatTimePoint(std::chrono::system_clock::now())
+	    {
+	    }
+	    Command(_tGeneralSwitch genSwitch)
+		    : genSwitch(genSwitch)
+		    , repeatTimePoint(std::chrono::system_clock::now())
+	    {
+	    }
 
-        _tGeneralSwitch genSwitch;
-        int repeat;
-        std::chrono::system_clock::time_point repeatTimePoint;
+	    _tGeneralSwitch genSwitch;
+	    int repeat{ 0 };
+	    std::chrono::system_clock::time_point repeatTimePoint;
     };
 
     void deviceEvent(int deviceId, int method, const char *data);

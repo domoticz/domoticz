@@ -8,10 +8,10 @@ namespace Plugins {
 	{
 	protected:
 		std::vector<byte>	m_sRetainedData;
-		bool				m_Secure;
+		bool m_Secure{ false };
 
-	public:
-		CPluginProtocol() : m_Secure(false) {};
+	      public:
+		CPluginProtocol() = default;
 		virtual void				ProcessInbound(const ReadEvent* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
 		virtual void				Flush(CPlugin* pPlugin, PyObject* pConnection);

@@ -73,8 +73,11 @@ class CEvohomeTemp : public CEvohomeDataType
 	friend class CEvohomeWeb;
 
 public:
-	CEvohomeTemp() :m_nTemp(0) {}
-	CEvohomeTemp(int16_t nTemp) :m_nTemp(nTemp) {}
+  CEvohomeTemp() = default;
+  CEvohomeTemp(int16_t nTemp)
+	  : m_nTemp(nTemp)
+  {
+  }
 	CEvohomeTemp(const unsigned char* msg, unsigned char nOfs) :m_nTemp(0) { Decode(msg, nOfs); }
 	~CEvohomeTemp() = default;
 
@@ -104,7 +107,7 @@ public:
 	double GetTemp() { return m_nTemp / 100.0; }
 	bool IsValid() { return m_nTemp != 0x7FFF; }
 
-	int16_t m_nTemp;//all except DHW set point which is unsigned
+	int16_t m_nTemp{ 0 }; // all except DHW set point which is unsigned
 };
 
 
@@ -128,7 +131,7 @@ public:
 		devRemote = 30,
 	};
 
-	CEvohomeID() :m_nID(0) {}
+	CEvohomeID() = default;
 	CEvohomeID(unsigned int nID) { SetID(nID); }
 	CEvohomeID(unsigned char idType, unsigned int idAddr) { SetID(idType, idAddr); }
 	CEvohomeID(const std::string &szID) { SetID(szID); }
@@ -197,7 +200,7 @@ public:
 	void SetID(unsigned char idType, unsigned int idAddr) { SetID(GetID(idType, idAddr)); }
 	void SetID(const std::string &szID) { SetID(GetID(szID)); }
 
-	unsigned int m_nID;
+	unsigned int m_nID{ 0 };
 };
 
 
@@ -211,8 +214,11 @@ class CEvohomeDateTime : public CEvohomeDataType
 	friend class CEvohomeWeb;
 
 public:
-	CEvohomeDateTime() :mins(0xFF), hrs(0xFF), day(0xFF), month(0xFF), year(0xFFFF) {}
-	template <class T> CEvohomeDateTime(const T &in) { *this = in; }
+  CEvohomeDateTime() = default;
+  template <class T> CEvohomeDateTime(const T &in)
+  {
+	  *this = in;
+  }
 	CEvohomeDateTime(const unsigned char* msg, unsigned char nOfs) { Decode(msg, nOfs); }
 	~CEvohomeDateTime() = default;
 
@@ -294,11 +300,11 @@ public:
 		return nOfs;
 	}
 
-	uint8_t mins;
-	uint8_t hrs;
-	uint8_t day;
-	uint8_t month;
-	uint16_t year;
+	uint8_t mins{ 0xFF };
+	uint8_t hrs{ 0xFF };
+	uint8_t day{ 0xFF };
+	uint8_t month{ 0xFF };
+	uint16_t year{ 0xFFFF };
 };
 
 
@@ -395,8 +401,17 @@ public:
 		pktwrt,
 	};
 
-	CEvohomeMsg() :flags(0), type(pktunk), timestamp(0), command(0), payloadsize(0), readofs(0), enccount(0) {}
-	CEvohomeMsg(const char * rawmsg) :flags(0), type(pktunk), timestamp(0), command(0), payloadsize(0), readofs(0), enccount(0) { DecodePacket(rawmsg); }
+	CEvohomeMsg() = default;
+	CEvohomeMsg(const char *rawmsg)
+		: flags(0)
+		, timestamp(0)
+		, command(0)
+		, payloadsize(0)
+		, readofs(0)
+		, enccount(0)
+	{
+		DecodePacket(rawmsg);
+	}
 	CEvohomeMsg(packettype nType, int nAddr, int nCommand) :flags(0), type(nType), timestamp(0), command(nCommand), payloadsize(0), readofs(0), enccount(0) { SetID(1, nAddr); SetFlag(flgpkt | flgcmd); }
 	CEvohomeMsg(packettype nType, int nAddr1, int nAddr2, int nCommand) :flags(0), type(nType), timestamp(0), command(nCommand), payloadsize(0), readofs(0), enccount(0) { SetID(1, nAddr1); SetID(2, nAddr2); SetFlag(flgpkt | flgcmd); }
 	CEvohomeMsg(const CEvohomeMsg& src) :readofs(0), enccount(0) { *this = src; }
@@ -488,16 +503,16 @@ public:
 
 	static char const szPacketType[5][8];
 
-	unsigned char flags;
-	packettype type;
+	unsigned char flags{ 0 };
+	packettype type{ pktunk };
 	CEvohomeID id[3];
-	unsigned char timestamp;
-	unsigned int command;
-	unsigned char payloadsize;
-	unsigned char readofs;
+	unsigned char timestamp{ 0 };
+	unsigned int command{ 0 };
+	unsigned char payloadsize{ 0 };
+	unsigned char readofs{ 0 };
 	static int const m_nBufSize = 256;
 	unsigned char payload[m_nBufSize];
-	unsigned int enccount;
+	unsigned int enccount{ 0 };
 };
 
 

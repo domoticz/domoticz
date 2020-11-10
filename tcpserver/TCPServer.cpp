@@ -21,11 +21,6 @@ CTCPServerIntBase::CTCPServerIntBase(CTCPServer *pRoot)
 	m_pRoot=pRoot;
 }
 
-CTCPServerIntBase::~CTCPServerIntBase()
-{
-//	stopAllClients();
-}
-
 void CTCPServerInt::start()
 {
 	// The io_service::run() call will block until all asynchronous operations

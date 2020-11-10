@@ -16,6 +16,6 @@ private:
 	void ExtractReadings();
 	bool ExtractNumberBetweenStrings(const char *startString, const char *endString, float *pResult);
 	std::string m_buffer;
-	unsigned int m_tempuratureCounter;
+	unsigned int m_tempuratureCounter{ 0 };
 };
 

@@ -18,16 +18,14 @@ namespace server {
 
 struct server_settings {
 public:
-	server_settings() :
-		is_secure_(false) {}
-	server_settings(const server_settings &s)
-
-		= default;
-	virtual ~server_settings() = default;
-	server_settings &operator=(const server_settings &s) = default;
-	bool is_secure() const {
-		return is_secure_;
-	}
+  server_settings() = default;
+  server_settings(const server_settings &s) = default;
+  virtual ~server_settings() = default;
+  server_settings &operator=(const server_settings &s) = default;
+  bool is_secure() const
+  {
+	  return is_secure_;
+  }
 	bool is_enabled() const {
 		return ((listening_port != "0") && (listening_port != ""));
 	}
@@ -75,7 +73,7 @@ public:
 	//feature
 	//std::string fastcgi_php_server; (like nginx)
 private:
-	bool is_secure_;
+  bool is_secure_{ false };
 };
 
 #ifdef WWW_ENABLE_SSL
@@ -93,14 +91,14 @@ public:
 	std::string ssl_options;
 	std::string tmp_dh_file_path;
 
-	bool verify_peer;
-	bool verify_fail_if_no_peer_cert;
+	bool verify_peer{ false };
+	bool verify_fail_if_no_peer_cert{ false };
 	std::string verify_file_path;
 
-	ssl_server_settings() :
-			server_settings(true),
-			verify_peer(false),
-			verify_fail_if_no_peer_cert(false) {}
+	ssl_server_settings()
+		: server_settings(true)
+	{
+	}
 	ssl_server_settings(const ssl_server_settings &s) = default;
 	~ssl_server_settings() override = default;
 	ssl_server_settings &operator=(const ssl_server_settings &s) = default;

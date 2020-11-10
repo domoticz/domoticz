@@ -17,9 +17,7 @@
 
 using namespace boost::placeholders;
 
-CInfluxPush::CInfluxPush() :
-	m_InfluxPort(8086),
-	m_bInfluxDebugActive(false)
+CInfluxPush::CInfluxPush()
 {
 	m_PushType = PushType::PUSHTYPE_INFLUXDB;
 	m_bLinkActive = false;

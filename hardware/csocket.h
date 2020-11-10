@@ -50,9 +50,9 @@ private:
     struct sockaddr_in  m_localSocketAddr;
     struct sockaddr_in  m_remoteSocketAddr;
 
-    SocketState         m_socketState;
+    SocketState m_socketState{ CLOSED };
     std::string         m_strRemoteHost;
-    unsigned int        m_remotePort;
+    unsigned int m_remotePort{ 0 };
 };
 
 #endif // CSOCKET_H

@@ -32,7 +32,7 @@ class CTCPServerIntBase
 {
 public:
 	explicit CTCPServerIntBase(CTCPServer *pRoot);
-	~CTCPServerIntBase(void);
+	~CTCPServerIntBase() = default;
 
 	virtual void start() = 0;
 	virtual void stop() = 0;

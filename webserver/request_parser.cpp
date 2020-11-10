@@ -15,11 +15,6 @@
 namespace http {
 namespace server {
 
-request_parser::request_parser()
-  : state_(method_start)
-{
-}
-
 void request_parser::reset()
 {
   state_ = method_start;
