@@ -521,8 +521,8 @@ bool CHoneywell::GetSwitchValue(const int NodeID)
 	{
 		int nvalue = atoi(result[0][1].c_str());
 		return (nvalue != light2_sOff);
-	}else{
-		return false;
-		_log.Log(LOG_ERROR, "Honeywell: Error reading switch data!");
 	}
+
+	_log.Log(LOG_ERROR, "Honeywell: Error reading switch data!");
+	return false;
 }
