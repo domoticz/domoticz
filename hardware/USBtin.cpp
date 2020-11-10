@@ -299,14 +299,12 @@ void USBtin::ParseData(const char *pData, int Len)
 				memset(&value[0], 0, sizeof(value));
 
 				unsigned int Buffer_Octets[8]; //buffer of 8 bytes(max in the frame)
-				char i=0;
-				for(i=0;i<8;i++){ //Reset of 8 bytes
-					Buffer_Octets[i]=0;
-				}
-				unsigned int ValData;
+				std::fill(std::begin(Buffer_Octets), std::end(Buffer_Octets), 0);
 
+				unsigned int ValData;
 				if( DLChexNumber > 0 ){ //bytes presents
-					for(i=0;i<=DLChexNumber;i++){
+					for (unsigned char i = 0; i <= DLChexNumber; i++)
+					{
 						ValData = 0;
 
 						strncpy(value, (char*)&(m_USBtinBuffer[10+(2*i)]), 2); //to fill the Buffer of 8 bytes
