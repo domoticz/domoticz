@@ -7,7 +7,7 @@ class OnkyoAVTCP : public CDomoticzHardwareBase, ASyncTCP
 {
 public:
 	OnkyoAVTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~OnkyoAVTCP(void);
+	~OnkyoAVTCP() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 	bool SendPacket(const char *pdata);

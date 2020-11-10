@@ -125,7 +125,9 @@ public:
 		verify_peer(s.verify_peer),
 		verify_fail_if_no_peer_cert(s.verify_fail_if_no_peer_cert),
 		verify_file_path(s.verify_file_path) {}
-	virtual ~ssl_server_settings() {}
+	~ssl_server_settings() override
+	{
+	}
 	ssl_server_settings & operator=(const ssl_server_settings & s) {
 		server_settings::operator=(s);
 		ssl_method = s.ssl_method;
@@ -277,7 +279,8 @@ public:
 		verify_file_path = server_settings::get_valid_value(verify_file_path, ssl_settings.verify_file_path);
 	}
 
-	virtual std::string to_string() const  override {
+	std::string to_string() const override
+	{
 		return std::string("ssl_server_settings[") + server_settings::to_string() +
 				", ssl_method='" + ssl_method + "'" +
 				", certificate_chain_file_path='" + certificate_chain_file_path + "'" +

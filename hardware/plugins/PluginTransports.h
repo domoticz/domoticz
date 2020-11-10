@@ -56,7 +56,10 @@ namespace Plugins {
 		std::string			m_IP;
 	public:
 		CPluginTransportIP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransport(HwdID, pConnection), m_IP(Address) { m_Port = Port; };
-		virtual bool		AsyncDisconnect() { return IsConnected() || IsConnecting(); };
+		bool AsyncDisconnect() override
+		{
+			return IsConnected() || IsConnecting();
+		};
 	};
 
 	class CPluginTransportTCP : public CPluginTransportIP, std::enable_shared_from_this<CPluginTransportTCP>

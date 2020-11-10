@@ -30,7 +30,7 @@ class CSysfsGpio : public CDomoticzHardwareBase
 public:
 
 	CSysfsGpio(const int ID, const int ManualDevices, const int Debounce);
-	~CSysfsGpio();
+	~CSysfsGpio() override;
 
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	static std::vector<int> GetGpioIds();

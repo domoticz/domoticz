@@ -25,7 +25,7 @@ namespace http {
 		class CProxyClient : ASyncTCP {
 		public:
 			CProxyClient();
-			~CProxyClient();
+			~CProxyClient() override;
 			void Reset();
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);

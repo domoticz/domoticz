@@ -10,7 +10,7 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 {
 public:
 	USBtin_MultiblocV8();
-	~USBtin_MultiblocV8();
+	~USBtin_MultiblocV8() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 protected:
 	void ManageThreadV8(bool States);

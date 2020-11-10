@@ -121,25 +121,26 @@ namespace http {
 				{}
 
 			/// Handle a request and produce a reply.
-			virtual void handle_request(const request& req, reply& rep) override;
-		private:
-			char *strftime_t(const char *format, const time_t rawtime);
-			bool CompressWebOutput(const request& req, reply& rep);
-			/// Websocket methods
-			bool is_upgrade_request(WebEmSession & session, const request& req, reply& rep);
-			std::string compute_accept_header(const std::string &websocket_key);
-			bool CheckAuthentication(WebEmSession & session, const request& req, reply& rep);
-			void send_authorization_request(reply& rep);
-			void send_remove_cookie(reply& rep);
-			std::string generateSessionID();
-			void send_cookie(reply& rep, const WebEmSession & session);
-			bool AreWeInLocalNetwork(const std::string &sHost, const request& req);
-			int authorize(WebEmSession & session, const request& req, reply& rep);
-			void Logout();
-			int parse_auth_header(const request& req, struct ah *ah);
-			std::string generateAuthToken(const WebEmSession & session, const request & req);
-			bool checkAuthToken(WebEmSession & session);
-			void removeAuthToken(const std::string & sessionId);
+				void handle_request(const request &req, reply &rep) override;
+
+			      private:
+				char *strftime_t(const char *format, const time_t rawtime);
+				bool CompressWebOutput(const request &req, reply &rep);
+				/// Websocket methods
+				bool is_upgrade_request(WebEmSession &session, const request &req, reply &rep);
+				std::string compute_accept_header(const std::string &websocket_key);
+				bool CheckAuthentication(WebEmSession &session, const request &req, reply &rep);
+				void send_authorization_request(reply &rep);
+				void send_remove_cookie(reply &rep);
+				std::string generateSessionID();
+				void send_cookie(reply &rep, const WebEmSession &session);
+				bool AreWeInLocalNetwork(const std::string &sHost, const request &req);
+				int authorize(WebEmSession &session, const request &req, reply &rep);
+				void Logout();
+				int parse_auth_header(const request &req, struct ah *ah);
+				std::string generateAuthToken(const WebEmSession &session, const request &req);
+				bool checkAuthToken(WebEmSession &session);
+				void removeAuthToken(const std::string &sessionId);
 	};
 		// forward declaration for friend declaration
 		class CProxyClient;

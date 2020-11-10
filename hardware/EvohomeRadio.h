@@ -33,7 +33,7 @@ class CEvohomeRadio : public CEvohomeBase
 	typedef std::map < uint8_t, _tRelayCheck > tmap_relay_check;
 public:
 	CEvohomeRadio(const int ID, const std::string &UserContID);
-	~CEvohomeRadio(void);
+	~CEvohomeRadio(void) override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	int Bind(uint8_t nDevNo, unsigned char nDevType);//use CEvohomeID::devType atm but there could be additional specialisations
 	void SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);

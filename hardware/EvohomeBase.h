@@ -86,9 +86,19 @@ public:
 		return szTmp;
 	}
 
-	virtual unsigned char Decode(const unsigned char* msg, unsigned char nOfs) { return DecodeTemp(m_nTemp, msg, nOfs); }
-	virtual std::string Encode() const { return GetHexTemp(m_nTemp); }
-	virtual unsigned char Encode(unsigned char* msg, unsigned char nOfs) const { Add(m_nTemp, msg, nOfs); return nOfs; }
+	unsigned char Decode(const unsigned char *msg, unsigned char nOfs) override
+	{
+		return DecodeTemp(m_nTemp, msg, nOfs);
+	}
+	std::string Encode() const override
+	{
+		return GetHexTemp(m_nTemp);
+	}
+	unsigned char Encode(unsigned char *msg, unsigned char nOfs) const override
+	{
+		Add(m_nTemp, msg, nOfs);
+		return nOfs;
+	}
 
 	operator int16_t() const { return m_nTemp; }
 	double GetTemp() { return m_nTemp / 100.0; }
@@ -133,7 +143,10 @@ public:
 		return nOfs;
 	}
 
-	virtual unsigned char Decode(const unsigned char* msg, unsigned char nOfs) { return DecodeID(m_nID, msg, nOfs); }
+	unsigned char Decode(const unsigned char *msg, unsigned char nOfs) override
+	{
+		return DecodeID(m_nID, msg, nOfs);
+	}
 
 	static unsigned char GetIDType(unsigned int nID) { return ((nID >> 18) & 0x3F); }
 	static unsigned int GetIDAddr(unsigned int nID) { return (nID & 0x3FFFF); }
@@ -168,8 +181,17 @@ public:
 	std::string GetStrID() const { return GetStrID(GetID()); }
 	operator unsigned int() const { return GetID(); }
 
-	virtual std::string Encode() const { return GetHexID(GetID()); }
-	virtual unsigned char Encode(unsigned char* msg, unsigned char nOfs) const { msg[nOfs++] = (GetID() >> 16) & 0xFF; msg[nOfs++] = (GetID() >> 8) & 0xFF; msg[nOfs++] = GetID() & 0xFF; return nOfs; }
+	std::string Encode() const override
+	{
+		return GetHexID(GetID());
+	}
+	unsigned char Encode(unsigned char *msg, unsigned char nOfs) const override
+	{
+		msg[nOfs++] = (GetID() >> 16) & 0xFF;
+		msg[nOfs++] = (GetID() >> 8) & 0xFF;
+		msg[nOfs++] = GetID() & 0xFF;
+		return nOfs;
+	}
 
 	void SetID(unsigned int nID) { m_nID = nID; }
 	void SetID(unsigned char idType, unsigned int idAddr) { SetID(GetID(idType, idAddr)); }
@@ -249,17 +271,28 @@ public:
 
 	unsigned char DecodeTime(const unsigned char* msg, unsigned char nOfs) { return DecodeTime(*this, msg, nOfs); }
 	unsigned char DecodeDate(const unsigned char* msg, unsigned char nOfs) { return DecodeDate(*this, msg, nOfs); }
-	virtual unsigned char Decode(const unsigned char* msg, unsigned char nOfs) { return DecodeDateTime(*this, msg, nOfs); }
+	unsigned char Decode(const unsigned char *msg, unsigned char nOfs) override
+	{
+		return DecodeDateTime(*this, msg, nOfs);
+	}
 
 	std::string GetStrDate() const { return GetStrDate(*this); }
 
-	virtual std::string Encode() const
+	std::string Encode() const override
 	{
 		char szTmp[256];
 		sprintf(szTmp, "%02hhx%02hhx%02hhx%02hhx%04hx", mins, hrs, day, month, year);
 		return szTmp;
 	}
-	virtual unsigned char Encode(unsigned char* msg, unsigned char nOfs) const { Add(mins, msg, nOfs); Add(hrs, msg, nOfs); Add(day, msg, nOfs); Add(month, msg, nOfs); Add(year, msg, nOfs); return nOfs; }
+	unsigned char Encode(unsigned char *msg, unsigned char nOfs) const override
+	{
+		Add(mins, msg, nOfs);
+		Add(hrs, msg, nOfs);
+		Add(day, msg, nOfs);
+		Add(month, msg, nOfs);
+		Add(year, msg, nOfs);
+		return nOfs;
+	}
 
 	uint8_t mins;
 	uint8_t hrs;
@@ -283,14 +316,23 @@ public:
 	CEvohomeDate(const unsigned char* msg, unsigned char nOfs) { Decode(msg, nOfs); }
 	~CEvohomeDate() {}
 
-	virtual unsigned char Decode(const unsigned char* msg, unsigned char nOfs) { return DecodeDate(*this, msg, nOfs); }
-	virtual std::string Encode() const
+	unsigned char Decode(const unsigned char *msg, unsigned char nOfs) override
+	{
+		return DecodeDate(*this, msg, nOfs);
+	}
+	std::string Encode() const override
 	{
 		char szTmp[256];
 		sprintf(szTmp, "%02hhx%02hhx%04hx", day, month, year);
 		return szTmp;
 	}
-	virtual unsigned char Encode(unsigned char* msg, unsigned char nOfs) const { Add(day, msg, nOfs); Add(month, msg, nOfs); Add(year, msg, nOfs); return nOfs; }
+	unsigned char Encode(unsigned char *msg, unsigned char nOfs) const override
+	{
+		Add(day, msg, nOfs);
+		Add(month, msg, nOfs);
+		Add(year, msg, nOfs);
+		return nOfs;
+	}
 };
 
 
@@ -465,62 +507,65 @@ class CEvohomeBase : public CDomoticzHardwareBase
 	friend class CEvohomeWeb;
 
 public:
-	CEvohomeBase(void);
-	~CEvohomeBase(void);
+  CEvohomeBase();
+  ~CEvohomeBase() override;
 
+  enum zoneModeType
+  {
+	  zmAuto = 0,
+	  zmPerm,
+	  zmTmp,
+	  zmWind,  // window func
+	  zmLocal, // set locally
+	  zmRem,   // if set by an remote device
+	  zmNotSp, // not specified if we just get the set point temp on its own
+  };
 
-	enum zoneModeType {
-		zmAuto = 0,
-		zmPerm,
-		zmTmp,
-		zmWind,//window func
-		zmLocal,//set locally
-		zmRem,//if set by an remote device
-		zmNotSp,//not specified if we just get the set point temp on its own
-	};
+  // Basic evohome controller modes
+  enum controllerMode
+  {
+	  cmEvoAuto = 0,    // 0x00
+	  cmEvoAutoWithEco, //  0x01
+	  cmEvoAway,	//  0x02
+	  cmEvoDayOff,      //  0x03
+	  cmEvoCustom,      //  0x04
+	  cmEvoHeatingOff,  //  0x05
+  };
 
-	//Basic evohome controller modes
-	enum controllerMode {
-		cmEvoAuto = 0,// 0x00
-		cmEvoAutoWithEco,//  0x01
-		cmEvoAway,//  0x02
-		cmEvoDayOff,//  0x03
-		cmEvoCustom,//  0x04
-		cmEvoHeatingOff,//  0x05
-	};
+  enum controllerModeType
+  {
+	  cmPerm = 0,
+	  cmTmp
+  };
 
-	enum controllerModeType {
-		cmPerm = 0,
-		cmTmp
-	};
+  enum msgUpdate
+  {
+	  updTemp = 0,
+	  updSetPoint,
+	  updOverride,
+	  updBattery,
+	  updDemand,
+  };
 
-	enum msgUpdate {
-		updTemp = 0,
-		updSetPoint,
-		updOverride,
-		updBattery,
-		updDemand,
-	};
+  static const uint8_t m_nMaxZones = 12;
 
-	static const uint8_t m_nMaxZones = 12;
+  unsigned int GetControllerID();
+  unsigned int GetGatewayID();
+  uint8_t GetZoneCount();
+  uint8_t GetControllerMode();
+  std::string GetControllerName();
+  std::string GetZoneName(uint8_t nZone);
 
-	unsigned int GetControllerID();
-	unsigned int GetGatewayID();
-	uint8_t GetZoneCount();
-	uint8_t GetControllerMode();
-	std::string GetControllerName();
-	std::string GetZoneName(uint8_t nZone);
+  static const char *GetControllerModeName(uint8_t nControllerMode);
+  static const char *GetWebAPIModeName(uint8_t nControllerMode);
+  static const char *GetZoneModeName(uint8_t nZoneMode);
 
-	static const char* GetControllerModeName(uint8_t nControllerMode);
-	static const char* GetWebAPIModeName(uint8_t nControllerMode);
-	static const char* GetZoneModeName(uint8_t nZoneMode);
-
-	static void LogDate();
-	static void Log(bool bDebug, int nLogLevel, const char* format, ...)
+  static void LogDate();
+  static void Log(bool bDebug, int nLogLevel, const char *format, ...)
 #ifdef __GNUC__
-		__attribute__((format(printf, 3, 4)))
+	  __attribute__((format(printf, 3, 4)))
 #endif
-		;
+	  ;
 	static void Log(const char *szMsg, CEvohomeMsg &msg);
 
 private:

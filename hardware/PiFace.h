@@ -124,7 +124,7 @@ class CPiFace : public CDomoticzHardwareBase
 
 public:
     explicit CPiFace(const int ID);
-    ~CPiFace() = default;
+    ~CPiFace() override = default;
     bool WriteToHardware(const char *pdata, const unsigned char length) override;
 
   private:

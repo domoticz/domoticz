@@ -61,7 +61,7 @@ class CEvohomeWeb : public CEvohomeBase
 
 public:
 	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const int UseFlags, const unsigned int installation);
-	~CEvohomeWeb(void);
+	~CEvohomeWeb() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	// base functions

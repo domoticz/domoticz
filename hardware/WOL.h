@@ -6,7 +6,7 @@ class CWOL : public CDomoticzHardwareBase
 {
 public:
 	CWOL(const int ID, const std::string &BoradcastAddress, const unsigned short Port);
-	~CWOL(void);
+	~CWOL() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void AddNode(const std::string &Name, const std::string &MACAddress);
 	bool UpdateNode(const int ID, const std::string &Name, const std::string &MACAddress);

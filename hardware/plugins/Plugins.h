@@ -59,7 +59,7 @@ namespace Plugins {
 
 	public:
 		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
-		~CPlugin(void);
+		~CPlugin() override;
 
 		int		PollInterval(int Interval = -1);
 		void*	PythonModule() { return m_PyModule; };
@@ -114,20 +114,13 @@ namespace Plugins {
 		CPlugin*	m_pPlugin;
 	public:
 		CPluginNotifier(CPlugin* pPlugin, const std::string & );
-		~CPluginNotifier();
-		virtual bool IsConfigured();
+		~CPluginNotifier() override;
+		bool IsConfigured() override;
 		std::string	 GetIconFile(const std::string &ExtraData);
 		std::string GetCustomIcon(std::string & szCustom);
 	protected:
-		virtual bool SendMessageImplementation(
-			const uint64_t Idx,
-			const std::string &Name,
-			const std::string &Subject,
-			const std::string &Text,
-			const std::string &ExtraData,
-			const int Priority,
-			const std::string &Sound,
-			const bool bFromNotification);
+	  bool SendMessageImplementation(const uint64_t Idx, const std::string &Name, const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority,
+					 const std::string &Sound, const bool bFromNotification) override;
 	};
 
 	//

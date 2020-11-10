@@ -70,12 +70,12 @@ class CTCPServerInt : public CTCPServerIntBase {
 public:
 	CTCPServerInt(const std::string& address, const std::string& port, CTCPServer *pRoot);
 	~CTCPServerInt(void);
-	virtual void start() override;
-	virtual void stop() override;
+	void start() override;
+	void stop() override;
 	/// Stop the specified connection.
-	virtual void stopClient(CTCPClient_ptr c) override;
-private:
+	void stopClient(CTCPClient_ptr c) override;
 
+      private:
 	void handleAccept(const boost::system::error_code& error);
 
 	/// Handle a request to stop the server.
@@ -97,10 +97,10 @@ class CTCPServerProxied : public CTCPServerIntBase {
 public:
 	CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy);
 	~CTCPServerProxied(void);
-	virtual void start() override;
-	virtual void stop() override;
+	void start() override;
+	void stop() override;
 	/// Stop the specified connection.
-	virtual void stopClient(CTCPClient_ptr c) override;
+	void stopClient(CTCPClient_ptr c) override;
 
 	bool OnNewConnection(const std::string &token, const std::string &username, const std::string &password);
 	bool OnDisconnect(const std::string &token);
@@ -116,7 +116,7 @@ class CTCPServer : public CDomoticzHardwareBase
 public:
 	CTCPServer();
 	explicit CTCPServer(const int ID);
-	~CTCPServer(void);
+	~CTCPServer() override;
 
 	bool StartServer(const std::string &address, const std::string &port);
 #ifndef NOCLOUD
@@ -128,7 +128,10 @@ public:
 	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel)> sDecodeRXMessage;
-	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) { return true; };
+	bool WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/) override
+	{
+		return true;
+	};
 	void DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand);
 #ifndef NOCLOUD
 	CTCPServerProxied *GetProxiedServer();
@@ -141,8 +144,14 @@ private:
 #endif
 
 	std::shared_ptr<std::thread> m_thread;
-	bool StartHardware() { return false; };
-	bool StopHardware() { return false; };
+	bool StartHardware() override
+	{
+		return false;
+	};
+	bool StopHardware() override
+	{
+		return false;
+	};
 
 	void Do_Work();
 };

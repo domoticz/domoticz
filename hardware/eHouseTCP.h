@@ -16,7 +16,7 @@ class eHouseTCP : public  CDomoticzHardwareBase
 {
 public:
 	eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval, const unsigned char AutoDiscovery, const unsigned char EnableAlarms, const unsigned char EnablePro, const int opta, const int optb);
-	~eHouseTCP();
+	~eHouseTCP() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	int ConnectTCP(unsigned int ip);

@@ -13,12 +13,12 @@ public:
 		const int PublishScheme, const std::string& MQTTClientID,
 		const bool PreventLoop
 	);
-	~MQTT(void);
+	~MQTT() override;
 	bool isConnected() { return m_IsConnected; };
 
-	virtual void on_connect(int rc) override;
+	void on_connect(int rc) override;
 	void on_disconnect(int rc) override;
-	virtual void on_message(const struct mosquitto_message* message) override;
+	void on_message(const struct mosquitto_message *message) override;
 	void on_subscribe(int mid, int qos_count, const int* granted_qos) override;
 
 	void on_log(int level, const char* str) override;
@@ -32,24 +32,26 @@ public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
 protected:
-	virtual bool StartHardware() override;
-	virtual bool StopHardware() override;
-	enum _ePublishTopics {
-		PT_none = 0x00,
-		PT_out = 0x01, 	// publish on domoticz/out
-		PT_floor_room = 0x02, 	// publish on domoticz/<floor>/<room>
-		PT_floor_room_and_out = PT_out | PT_floor_room,
-		PT_device_idx = 0x04, //publish on domoticz/out/idx
-		PT_device_name = 0x08, //publish on domoticz/out/name
-	};
-	std::string m_szIPAddress;
-	unsigned short m_usIPPort;
-	std::string m_UserName;
-	std::string m_Password;
-	std::string m_CAFilename;
-	int m_TLS_Version;
-	std::string m_TopicIn;
-	std::string m_TopicOut;
+  bool StartHardware() override;
+  bool StopHardware() override;
+  enum _ePublishTopics
+  {
+	  PT_none = 0x00,
+	  PT_out = 0x01,	// publish on domoticz/out
+	  PT_floor_room = 0x02, // publish on domoticz/<floor>/<room>
+	  PT_floor_room_and_out = PT_out | PT_floor_room,
+	  PT_device_idx = 0x04,  // publish on domoticz/out/idx
+	  PT_device_name = 0x08, // publish on domoticz/out/name
+  };
+  std::string m_szIPAddress;
+  unsigned short m_usIPPort;
+  std::string m_UserName;
+  std::string m_Password;
+  std::string m_CAFilename;
+  int m_TLS_Version;
+  std::string m_TopicIn;
+  std::string m_TopicOut;
+
 private:
 	bool ConnectInt();
 	bool ConnectIntEx();

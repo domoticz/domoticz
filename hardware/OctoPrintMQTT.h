@@ -13,12 +13,12 @@ class COctoPrintMQTT : public MySensorsBase, mosqdz::mosquittodz
 {
 public:
 	COctoPrintMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAFile);
-	~COctoPrintMQTT(void);
+	~COctoPrintMQTT() override;
 	bool isConnected(){ return m_IsConnected; };
 
-	virtual void on_connect(int rc) override;
+	void on_connect(int rc) override;
 	void on_disconnect(int rc) override;
-	virtual void on_message(const struct mosquitto_message *message) override;
+	void on_message(const struct mosquitto_message *message) override;
 	void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
 
 	void SendMessage(const std::string &Topic, const std::string &Message);
@@ -36,8 +36,8 @@ protected:
 	std::string m_Password;
 	std::string m_CAFilename;
 	std::string m_TopicIn;
-	virtual bool StartHardware() override;
-	virtual bool StopHardware() override;
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void StopMQTT();
 	void Do_Work();
 	virtual void SendHeartbeat();

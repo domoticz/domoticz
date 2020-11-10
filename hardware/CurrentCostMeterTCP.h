@@ -8,13 +8,13 @@ public:
 	CurrentCostMeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~CurrentCostMeterTCP() override = default;
 
-	virtual bool WriteToHardware(const char *pdata, const unsigned char length) override;
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 
-protected:
-	virtual bool StartHardware() override;
-	virtual bool StopHardware() override;
+      protected:
+	bool StartHardware() override;
+	bool StopHardware() override;
 
-private:
+      private:
 	void write(const char *data, size_t size);
 	bool isConnected();
 	void disconnect();

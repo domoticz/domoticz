@@ -122,7 +122,7 @@ class CKodi : public CDomoticzHardwareBase
 public:
 	CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms);
 	explicit CKodi(const int ID);
-	~CKodi(void);
+	~CKodi(void) override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void AddNode(const std::string &Name, const std::string &IPAddress, const int Port);
 	bool UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Port);

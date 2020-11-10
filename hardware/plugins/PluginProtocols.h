@@ -23,7 +23,7 @@ namespace Plugins {
 
 	class CPluginProtocolLine : CPluginProtocol
 	{
-		virtual void	ProcessInbound(const ReadEvent* Message);
+		void ProcessInbound(const ReadEvent *Message) override;
 	};
 
 	class CPluginProtocolXML : CPluginProtocol
@@ -31,7 +31,7 @@ namespace Plugins {
 	private:
 		std::string		m_Tag;
 	public:
-		virtual void	ProcessInbound(const ReadEvent* Message);
+	  void ProcessInbound(const ReadEvent *Message) override;
 	};
 
 	class CPluginProtocolJSON : CPluginProtocol
@@ -41,7 +41,7 @@ namespace Plugins {
 	public:
 		PyObject * JSONtoPython(std::string sJSON);
 		std::string PythontoJSON(PyObject * pDict);
-		virtual void	ProcessInbound(const ReadEvent* Message);
+		void ProcessInbound(const ReadEvent *Message) override;
 	};
 
 	class CPluginProtocolHTTP : public CPluginProtocol
@@ -54,11 +54,19 @@ namespace Plugins {
 		size_t			m_RemainingChunk;
 	protected:
 		void			ExtractHeaders(std::string*	pData);
-		void			Flush(CPlugin* pPlugin, PyObject* pConnection);
-	public:
-		CPluginProtocolHTTP(bool Secure) : m_ContentLength(0), m_Headers(NULL), m_Chunked(false), m_RemainingChunk(0) { m_Secure = Secure; };
-		virtual void				ProcessInbound(const ReadEvent* Message);
-		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
+		void Flush(CPlugin *pPlugin, PyObject *pConnection) override;
+
+	      public:
+		CPluginProtocolHTTP(bool Secure)
+			: m_ContentLength(0)
+			, m_Headers(nullptr)
+			, m_Chunked(false)
+			, m_RemainingChunk(0)
+		{
+			m_Secure = Secure;
+		};
+		void ProcessInbound(const ReadEvent *Message) override;
+		std::vector<byte> ProcessOutbound(const WriteDirective *WriteMessage) override;
 	};
 
 	class CPluginProtocolWS : public CPluginProtocolHTTP
@@ -67,13 +75,13 @@ namespace Plugins {
 		bool	ProcessWholeMessage(std::vector<byte> &vMessage, const ReadEvent * Message);
 	public:
 		CPluginProtocolWS(bool Secure) : CPluginProtocolHTTP(Secure) {};
-		virtual void				ProcessInbound(const ReadEvent* Message);
-		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
+		void ProcessInbound(const ReadEvent *Message) override;
+		std::vector<byte> ProcessOutbound(const WriteDirective *WriteMessage) override;
 	};
 
 	class CPluginProtocolICMP : CPluginProtocol
 	{
-		virtual void	ProcessInbound(const ReadEvent* Message);
+		void ProcessInbound(const ReadEvent *Message) override;
 	};
 
 	class CPluginProtocolMQTT : CPluginProtocol
@@ -83,7 +91,7 @@ namespace Plugins {
 		bool			m_bErrored;
 	public:
 		CPluginProtocolMQTT(bool Secure) : m_PacketID(1), m_bErrored(false) { m_Secure = Secure; };
-		virtual void				ProcessInbound(const ReadEvent* Message);
-		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
+		void ProcessInbound(const ReadEvent *Message) override;
+		std::vector<byte> ProcessOutbound(const WriteDirective *WriteMessage) override;
 	};
 }
