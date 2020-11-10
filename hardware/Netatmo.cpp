@@ -54,11 +54,11 @@ struct _tNetatmoDevice
 	//Json::Value Modules;
 };
 
-CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string& password) :
-	m_username(CURLEncode::URLEncode(username)),
-	m_password(CURLEncode::URLEncode(password)),
-	m_clientId("5588029e485a88af28f4a3c4"),
-	m_clientSecret("6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2")
+CNetatmo::CNetatmo(const int ID, const std::string &username, const std::string &password)
+	: m_clientId("5588029e485a88af28f4a3c4")
+	, m_clientSecret("6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2")
+	, m_username(CURLEncode::URLEncode(username))
+	, m_password(CURLEncode::URLEncode(password))
 {
 	m_nextRefreshTs = mytime(nullptr);
 	m_isLogged = false;

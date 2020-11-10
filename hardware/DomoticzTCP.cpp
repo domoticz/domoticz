@@ -11,8 +11,10 @@
 
 extern http::server::CWebServerHelper m_webservers;
 
-DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
-	m_username(username), m_password(password), m_szIPAddress(IPAddress)
+DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password)
+	: m_szIPAddress(IPAddress)
+	, m_username(username)
+	, m_password(password)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;

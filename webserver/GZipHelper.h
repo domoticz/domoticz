@@ -215,10 +215,15 @@ class CGZIP2AT
   public:
    char *psz;
    int  Length;
-   CGZIP2AT(LPGZIP pgzip,int len):m_gzip(pgzip),m_gziplen(len),psz(0),Length(0),m_pos(0)
-  {
-    Init(); 
-  }
+   CGZIP2AT(LPGZIP pgzip, int len)
+	   : psz(0)
+	   , Length(0)
+	   , m_pos(0)
+	   , m_gzip(pgzip)
+	   , m_gziplen(len)
+   {
+	   Init();
+   }
   ~CGZIP2AT()
   {
     if(psz!=m_buffer) TRYFREE(psz);  

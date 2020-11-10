@@ -27,18 +27,13 @@ const char* szTLSVersions[3] =
 	"tlsv1.2"
 };
 
-MQTT::MQTT(
-	const int ID,
-	const std::string& IPAddress, const unsigned short usIPPort,
-	const std::string& Username, const std::string& Password,
-	const std::string& CAfilenameExtra, const int TLS_Version,
-	const int PublishScheme, const std::string& MQTTClientID,
-	const bool PreventLoop) :
-	m_szIPAddress(IPAddress),
-	m_UserName(Username),
-	m_Password(Password),
-	m_CAFilename(CAfilenameExtra),
-	mosqdz::mosquittodz(MQTTClientID.c_str())
+MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilenameExtra,
+	   const int TLS_Version, const int PublishScheme, const std::string &MQTTClientID, const bool PreventLoop)
+	: mosqdz::mosquittodz(MQTTClientID.c_str())
+	, m_szIPAddress(IPAddress)
+	, m_UserName(Username)
+	, m_Password(Password)
+	, m_CAFilename(CAfilenameExtra)
 {
 	m_HwdID = ID;
 	m_IsConnected = false;

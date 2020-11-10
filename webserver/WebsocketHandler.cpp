@@ -12,13 +12,11 @@
 namespace http {
 	namespace server {
 
-		CWebsocketHandler::CWebsocketHandler(cWebem *pWebem, boost::function<void(const std::string &packet_data)> _MyWrite) : 
-			m_Push(this),
-			sessionid(""),
-			MyWrite(_MyWrite),
-			myWebem(pWebem)
+		CWebsocketHandler::CWebsocketHandler(cWebem *pWebem, boost::function<void(const std::string &packet_data)> _MyWrite)
+			: MyWrite(_MyWrite)
+			, myWebem(pWebem)
+			, m_Push(this)
 		{
-			
 		}
 
 		CWebsocketHandler::~CWebsocketHandler()
@@ -253,4 +251,4 @@ namespace http {
 		}
 
 	}
-}
+} // namespace http

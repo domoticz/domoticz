@@ -603,15 +603,15 @@ namespace Plugins {
 	}
 
 	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey)
-		: m_PluginKey(sPluginKey)
-		, m_iPollInterval(10)
-		, m_Notifier(nullptr)
-		, m_bDebug(PDM_NONE)
+		: m_iPollInterval(10)
 		, m_PyInterpreter(nullptr)
 		, m_PyModule(nullptr)
+		, m_Notifier(nullptr)
+		, m_PluginKey(sPluginKey)
 		, m_DeviceDict(nullptr)
 		, m_ImageDict(nullptr)
 		, m_SettingsDict(nullptr)
+		, m_bDebug(PDM_NONE)
 	{
 		m_HwdID = HwdID;
 		m_Name = sName;

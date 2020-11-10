@@ -48,11 +48,11 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location) :
-m_APIKey(APIKey),
-m_Location(Location),
-m_bForceSingleStation(false),
-m_bFirstTime(true)
+CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location)
+	: m_bForceSingleStation(false)
+	, m_bFirstTime(true)
+	, m_APIKey(APIKey)
+	, m_Location(Location)
 {
 	m_HwdID = ID;
 	Init();

@@ -31,18 +31,22 @@ class pinger
 	: private domoticz::noncopyable
 {
 public:
-	pinger(boost::asio::io_service& io_service, const char* destination, const int iPingTimeoutms)
-		: resolver_(io_service), socket_(io_service, boost::asio::ip::icmp::v4()),
-		timer_(io_service), sequence_number_(0), m_PingState(false), num_replies_(0)
-	{
-		boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), destination, "");
-		destination_ = *resolver_.resolve(query);
+  pinger(boost::asio::io_service &io_service, const char *destination, const int iPingTimeoutms)
+	  : num_replies_(0)
+	  , m_PingState(false)
+	  , resolver_(io_service)
+	  , socket_(io_service, boost::asio::ip::icmp::v4())
+	  , timer_(io_service)
+	  , sequence_number_(0)
+  {
+	  boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), destination, "");
+	  destination_ = *resolver_.resolve(query);
 
-		num_tries_ = 1;
-		PingTimeoutms_ = iPingTimeoutms;
-		start_send();
-		start_receive();
-	}
+	  num_tries_ = 1;
+	  PingTimeoutms_ = iPingTimeoutms;
+	  start_send();
+	  start_receive();
+  }
 	int num_replies_;
 	int num_tries_;
 	int PingTimeoutms_;

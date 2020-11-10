@@ -8,10 +8,10 @@
 
 #define RETRY_DELAY 30
 
-MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-	m_szIPAddress(IPAddress),
-	m_usIPPort(usIPPort),
-	m_retrycntr(RETRY_DELAY)
+MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
+	: m_retrycntr(RETRY_DELAY)
+	, m_szIPAddress(IPAddress)
+	, m_usIPPort(usIPPort)
 {
 	m_HwdID = ID;
 }
