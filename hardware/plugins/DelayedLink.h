@@ -322,7 +322,8 @@ namespace Plugins {
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
 		};
-		~SharedLibraryProxy() {};
+		~SharedLibraryProxy() = default;
+		;
 
 		bool Py_LoadLibrary() { return (shared_lib_ != 0); };
 

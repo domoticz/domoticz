@@ -14,14 +14,15 @@ namespace Plugins {
 	class CPluginMessageBase
 	{
 	public:
-		virtual ~CPluginMessageBase(void) {};
+	  virtual ~CPluginMessageBase(void) = default;
+	  ;
 
-		CPlugin*	m_pPlugin;
-		std::string	m_Name;
-		int			m_HwdID;
-		int			m_Unit;
-		bool		m_Delay;
-		time_t		m_When;
+	  CPlugin *m_pPlugin;
+	  std::string m_Name;
+	  int m_HwdID;
+	  int m_Unit;
+	  bool m_Delay;
+	  time_t m_When;
 
 	protected:
 		CPluginMessageBase(CPlugin* pPlugin) : m_pPlugin(pPlugin), m_HwdID(pPlugin->m_HwdID), m_Unit(-1), m_Delay(false)

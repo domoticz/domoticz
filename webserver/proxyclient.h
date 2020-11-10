@@ -92,17 +92,19 @@ namespace http {
 
 		class CProxySharedData {
 		public:
-			CProxySharedData() {};
-			void SetInstanceId(const std::string &instanceid);
-			std::string GetInstanceId();
-			bool AddConnectedIp(std::string ip);
-			bool AddConnectedServer(std::string ip);
-			void AddTCPClient(DomoticzTCP *master);
-			void RemoveTCPClient(DomoticzTCP *master);
-			void RestartTCPClients();
-			void StopTCPClients();
-			DomoticzTCP *findSlaveConnection(const std::string &token);
-			DomoticzTCP *findSlaveById(const std::string &instanceid);
+		  CProxySharedData() = default;
+		  ;
+		  void SetInstanceId(const std::string &instanceid);
+		  std::string GetInstanceId();
+		  bool AddConnectedIp(std::string ip);
+		  bool AddConnectedServer(std::string ip);
+		  void AddTCPClient(DomoticzTCP *master);
+		  void RemoveTCPClient(DomoticzTCP *master);
+		  void RestartTCPClients();
+		  void StopTCPClients();
+		  DomoticzTCP *findSlaveConnection(const std::string &token);
+		  DomoticzTCP *findSlaveById(const std::string &instanceid);
+
 		private:
 			std::string _instanceid;
 			std::set<std::string> connectedips_;

@@ -139,8 +139,8 @@ public:
 class XBMCClientUtils
 {
 public:
-  XBMCClientUtils() {}
-  ~XBMCClientUtils() {}
+  XBMCClientUtils() = default;
+  ~XBMCClientUtils() = default;
   static unsigned int GetUniqueIdentifier()
   {
     static time_t id = time(NULL);
@@ -195,8 +195,7 @@ public:
   {
     m_PacketType = 0;
   }
-  virtual ~CPacket()
-  { }
+  virtual ~CPacket() = default;
 
   bool Send(int Socket, CAddress &Addr, unsigned int UID = XBMCClientUtils::GetUniqueIdentifier())
   {
@@ -594,8 +593,7 @@ public:
   {
     m_PacketType = PT_PING;
   }
-  ~CPacketPING() override
-  { }
+  ~CPacketPING() override = default;
 };
 
 class CPacketBYE : public CPacket
@@ -608,8 +606,7 @@ public:
   {
     m_PacketType = PT_BYE;
   }
-  ~CPacketBYE() override
-  { }
+  ~CPacketBYE() override = default;
 };
 
 class CPacketMOUSE : public CPacket
@@ -647,8 +644,7 @@ public:
     m_Payload.push_back( (m_Y & 0x00ff));
   }
 
-  ~CPacketMOUSE() override
-  { }
+  ~CPacketMOUSE() override = default;
 };
 
 class CPacketLOG : public CPacket
@@ -692,8 +688,7 @@ public:
     m_Payload.push_back('\0');
   }
 
-  ~CPacketLOG() override
-  { }
+  ~CPacketLOG() override = default;
 };
 
 class CPacketACTION : public CPacket
@@ -728,8 +723,7 @@ public:
     m_Payload.push_back('\0');
   }
 
-  ~CPacketACTION() override
-  { }
+  ~CPacketACTION() override = default;
 };
 
 class CXBMCClient

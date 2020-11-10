@@ -100,9 +100,7 @@ CGpio::CGpio(const int ID, const int debounce, const int period, const int polli
 	IOPinStatusPacket.LIGHTING1.seqnbr = 0;
 }
 
-CGpio::~CGpio(void)
-{
-}
+CGpio::~CGpio(void) = default;
 
 /*
  * interrupt handlers:

@@ -76,7 +76,7 @@ public:
 	CEvohomeTemp() :m_nTemp(0) {}
 	CEvohomeTemp(int16_t nTemp) :m_nTemp(nTemp) {}
 	CEvohomeTemp(const unsigned char* msg, unsigned char nOfs) :m_nTemp(0) { Decode(msg, nOfs); }
-	~CEvohomeTemp() {}
+	~CEvohomeTemp() = default;
 
 	static unsigned char DecodeTemp(int16_t &out, const unsigned char* msg, unsigned char nOfs) { Get(out, msg, nOfs); return nOfs; }
 	static std::string GetHexTemp(int16_t nTemp)
@@ -133,7 +133,7 @@ public:
 	CEvohomeID(unsigned char idType, unsigned int idAddr) { SetID(idType, idAddr); }
 	CEvohomeID(const std::string &szID) { SetID(szID); }
 	CEvohomeID(const unsigned char* msg, unsigned char nOfs) { Decode(msg, nOfs); }
-	~CEvohomeID() {}
+	~CEvohomeID() = default;
 
 	static unsigned char DecodeID(unsigned int &out, const unsigned char* msg, unsigned char nOfs)
 	{
@@ -214,7 +214,7 @@ public:
 	CEvohomeDateTime() :mins(0xFF), hrs(0xFF), day(0xFF), month(0xFF), year(0xFFFF) {}
 	template <class T> CEvohomeDateTime(const T &in) { *this = in; }
 	CEvohomeDateTime(const unsigned char* msg, unsigned char nOfs) { Decode(msg, nOfs); }
-	~CEvohomeDateTime() {}
+	~CEvohomeDateTime() = default;
 
 	template <class T> CEvohomeDateTime& operator = (const T &in) { year = in->year; month = in->month; day = in->day; hrs = in->hrs; mins = in->mins; return *this; }
 
@@ -312,14 +312,17 @@ class CEvohomeDate : public CEvohomeDateTime
 	friend class CEvohomeWeb;
 
 public:
-	CEvohomeDate() {}
-	CEvohomeDate(const unsigned char* msg, unsigned char nOfs) { Decode(msg, nOfs); }
-	~CEvohomeDate() {}
+  CEvohomeDate() = default;
+  CEvohomeDate(const unsigned char *msg, unsigned char nOfs)
+  {
+	  Decode(msg, nOfs);
+  }
+  ~CEvohomeDate() = default;
 
-	unsigned char Decode(const unsigned char *msg, unsigned char nOfs) override
-	{
-		return DecodeDate(*this, msg, nOfs);
-	}
+  unsigned char Decode(const unsigned char *msg, unsigned char nOfs) override
+  {
+	  return DecodeDate(*this, msg, nOfs);
+  }
 	std::string Encode() const override
 	{
 		char szTmp[256];
@@ -397,7 +400,7 @@ public:
 	CEvohomeMsg(packettype nType, int nAddr, int nCommand) :flags(0), type(nType), timestamp(0), command(nCommand), payloadsize(0), readofs(0), enccount(0) { SetID(1, nAddr); SetFlag(flgpkt | flgcmd); }
 	CEvohomeMsg(packettype nType, int nAddr1, int nAddr2, int nCommand) :flags(0), type(nType), timestamp(0), command(nCommand), payloadsize(0), readofs(0), enccount(0) { SetID(1, nAddr1); SetID(2, nAddr2); SetFlag(flgpkt | flgcmd); }
 	CEvohomeMsg(const CEvohomeMsg& src) :readofs(0), enccount(0) { *this = src; }
-	~CEvohomeMsg() {}
+	~CEvohomeMsg() = default;
 
 	CEvohomeMsg& operator = (const CEvohomeMsg& src)
 	{

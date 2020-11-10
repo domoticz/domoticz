@@ -16,9 +16,7 @@ private:
 
 public:
    explicit C1WireByOWFS(const std::string& path);
-   ~C1WireByOWFS() override
-   {
-   }
+   ~C1WireByOWFS() override = default;
 
    // I_1WireSystem implementation
    void GetDevices(/*out*/ std::vector<_t1WireDevice> &devices) const override;

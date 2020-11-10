@@ -65,9 +65,7 @@ namespace clx {
 			this->setg(&buffer_.at(0), &buffer_.at(npback), &buffer_.at(npback));
 		}
 
-		~basic_unzip_streambuf() noexcept override
-		{
-		}
+		~basic_unzip_streambuf() noexcept override = default;
 
 	      protected:
 		int_type underflow() override

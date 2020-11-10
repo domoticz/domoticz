@@ -69,7 +69,7 @@ private:
    {
    public:
 	   explicit Locker(const std::mutex& mutex):std::lock_guard<std::mutex>(*(const_cast<std::mutex*>(&mutex))){}
-      virtual ~Locker(){}
+	   virtual ~Locker() = default;
    };
    typedef std::map<std::string,DeviceState*> DeviceCollection;
    DeviceCollection m_Devices;
@@ -93,9 +93,7 @@ class OneWireReadErrorException : public std::exception
 {
 public:
 	explicit OneWireReadErrorException(const std::string& deviceFileName) : m_Message("1-Wire system : error reading value from ") {m_Message.append(deviceFileName);}
-	~OneWireReadErrorException() noexcept override
-	{
-	}
+	~OneWireReadErrorException() noexcept override = default;
 	const char *what() const noexcept override
 	{
 		return m_Message.c_str();
@@ -109,9 +107,7 @@ class OneWireWriteErrorException : public std::exception
 {
 public:
 	explicit  OneWireWriteErrorException(const std::string& deviceFileName) : m_Message("1-Wire system : error writing value from ") {m_Message.append(deviceFileName);}
-	~OneWireWriteErrorException() noexcept override
-	{
-	}
+	~OneWireWriteErrorException() noexcept override = default;
 	const char *what() const noexcept override
 	{
 		return m_Message.c_str();

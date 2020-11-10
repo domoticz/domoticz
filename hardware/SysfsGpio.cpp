@@ -171,9 +171,7 @@ CSysfsGpio::CSysfsGpio(const int ID, const int AutoConfigureDevices, const int D
 	m_maxfd = 0;
 }
 
-CSysfsGpio::~CSysfsGpio(void)
-{
-}
+CSysfsGpio::~CSysfsGpio(void) = default;
 
 bool CSysfsGpio::StartHardware()
 {

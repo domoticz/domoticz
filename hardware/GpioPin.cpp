@@ -42,10 +42,7 @@ m_label(label)
 	m_db_state = db_state;		// Database Value
 }
 
-CGpioPin::~CGpioPin()
-{
-}
-
+CGpioPin::~CGpioPin() = default;
 
 int CGpioPin::GetPin()
 {
