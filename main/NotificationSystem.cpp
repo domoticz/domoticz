@@ -135,14 +135,10 @@ bool CNotificationSystem::Unregister(CNotificationObserver* pNotifier)
 	if (!m_notifiers.empty())
 	{
 		boost::unique_lock<boost::shared_mutex> lock(m_mutex);
-		for (size_t i = 0; i < m_notifiers.size(); i++)
-		{
-			if (m_notifiers[i] == pNotifier)
-			{
-				m_notifiers.erase(m_notifiers.begin() + i);
-				return true;
-			}
-		}
+		m_notifiers.erase(std::remove_if(m_notifiers.begin(), m_notifiers.end(),
+						 [=](CNotificationObserver *notifier) { return notifier == pNotifier; }),
+				  m_notifiers.end());
 	}
-	return false;
+
+	return std::any_of(m_notifiers.begin(), m_notifiers.end(), [=](CNotificationObserver *notifier) { return notifier == pNotifier; });
 }
