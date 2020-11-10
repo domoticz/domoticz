@@ -58,8 +58,8 @@ const char* CEvohomeBase::GetZoneModeName(uint8_t nZoneMode)
 }
 
 CEvohomeBase::CEvohomeBase()
-	: m_ZoneNames(m_nMaxZones)
-	, m_ZoneOverrideLocal(m_nMaxZones)
+	: m_ZoneOverrideLocal(m_nMaxZones)
+	, m_ZoneNames(m_nMaxZones)
 {
 	m_HwdID=0;
 	m_nDevID=0;

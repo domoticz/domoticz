@@ -42,15 +42,15 @@ namespace http {
 		@param[in] doc_root path to folder containing html e.g. "./"
 		*/
 		cWebem::cWebem(const server_settings &settings, const std::string &doc_root)
-			: m_io_service()
-			, m_settings(settings)
+			: m_DigistRealm("Domoticz.com")
 			, m_authmethod(AUTH_LOGIN)
+			, m_settings(settings)
 			, mySessionStore(nullptr)
 			, myRequestHandler(doc_root, this)
-			, m_DigistRealm("Domoticz.com")
-			, m_session_clean_timer(m_io_service, boost::posix_time::minutes(1))
 			// Rene, make sure we initialize m_sessions first, before starting a server
 			, myServer(server_factory::create(settings, myRequestHandler))
+			, m_io_service()
+			, m_session_clean_timer(m_io_service, boost::posix_time::minutes(1))
 		{
 			// associate handler to timer and schedule the first iteration
 			m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));

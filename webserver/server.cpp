@@ -16,19 +16,22 @@ using namespace boost::placeholders;
 namespace http {
 namespace server {
 
-server_base::server_base(const server_settings & settings, request_handler & user_request_handler) :
-		io_service_(),
-		acceptor_(io_service_),
-		settings_(settings),
-		request_handler_(user_request_handler),
-		timeout_(20), // default read timeout in seconds
-		is_running(false),
-		is_stop_complete(false),
-		m_heartbeat_timer(io_service_) {
-	if (!settings.is_enabled()) {
-		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
+	server_base::server_base(const server_settings &settings, request_handler &user_request_handler)
+		: io_service_()
+		, acceptor_(io_service_)
+		, request_handler_(user_request_handler)
+		, settings_(settings)
+		, timeout_(20)
+		, // default read timeout in seconds
+		is_running(false)
+		, is_stop_complete(false)
+		, m_heartbeat_timer(io_service_)
+	{
+		if (!settings.is_enabled())
+		{
+			throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
+		}
 	}
-}
 
 void server_base::init(init_connectionhandler_func init_connection_handler, accept_handler_func accept_handler) {
 

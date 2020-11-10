@@ -27,18 +27,18 @@ namespace http {
 		// this is the constructor for plain connections
 		connection::connection(boost::asio::io_service &io_service, connection_manager &manager, request_handler &handler,
 				       int read_timeout)
-			: connection_manager_(manager)
-			, request_handler_(handler)
+			: send_buffer_(nullptr)
 			, read_timeout_(read_timeout)
 			, read_timer_(io_service, boost::posix_time::seconds(read_timeout))
+			, default_abandoned_timeout_(20 * 60)
+			// 20mn before stopping abandoned connection
+			, abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_))
+			, connection_manager_(manager)
+			, request_handler_(handler)
+			, status_(INITIALIZING)
+			, default_max_requests_(20)
 			, websocket_parser(boost::bind(&connection::MyWrite, this, _1), handler.Get_myWebem(),
 					   boost::bind(&connection::WS_Write, this, _1))
-			, status_(INITIALIZING)
-			, default_abandoned_timeout_(20 * 60)
-			, // 20mn before stopping abandoned connection
-			abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_))
-			, default_max_requests_(20)
-			, send_buffer_(nullptr)
 		{
 			secure_ = false;
 			keepalive_ = false;
@@ -54,18 +54,18 @@ namespace http {
 		// this is the constructor for secure connections
 		connection::connection(boost::asio::io_service &io_service, connection_manager &manager, request_handler &handler,
 				       int read_timeout, boost::asio::ssl::context &context)
-			: connection_manager_(manager)
-			, request_handler_(handler)
+			: send_buffer_(nullptr)
 			, read_timeout_(read_timeout)
 			, read_timer_(io_service, boost::posix_time::seconds(read_timeout))
+			, default_abandoned_timeout_(20 * 60)
+			// 20mn before stopping abandoned connection
+			, abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_))
+			, connection_manager_(manager)
+			, request_handler_(handler)
+			, status_(INITIALIZING)
+			, default_max_requests_(20)
 			, websocket_parser(boost::bind(&connection::MyWrite, this, _1), handler.Get_myWebem(),
 					   boost::bind(&connection::WS_Write, this, _1))
-			, status_(INITIALIZING)
-			, default_abandoned_timeout_(20 * 60)
-			, // 20mn before stopping abandoned connection
-			abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_))
-			, default_max_requests_(20)
-			, send_buffer_(nullptr)
 		{
 			secure_ = true;
 			keepalive_ = false;

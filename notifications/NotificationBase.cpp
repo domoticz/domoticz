@@ -11,10 +11,10 @@ typedef std::map<std::string, int* >::iterator it_conf_type_int;
 
 using namespace http::server;
 
-CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options):
-_subsystemid(subsystemid),
-_options(options),
-m_IsEnabled(1)
+CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options)
+	: m_IsEnabled(1)
+	, _subsystemid(subsystemid)
+	, _options(options)
 {
 }
 

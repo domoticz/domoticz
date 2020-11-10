@@ -23,9 +23,9 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-ZWaveBase::ZWaveBase() :
-	m_updateTime(0),
-	m_ControllerCommandStartTime(0)
+ZWaveBase::ZWaveBase()
+	: m_ControllerCommandStartTime(0)
+	, m_updateTime(0)
 {
 	m_bNodeReplaced=true;
 	m_NodeToBeReplaced=0;
