@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="129" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="132" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -611,6 +611,8 @@
     <Product config="fakro/zws12.xml" id="0001" name="ZWS12 Chain actuator 12VDC" type="0003"/>
     <Product config="fakro/zws230.xml" id="0002" name="ZWS230 Chain actuator 230VAC" type="0003"/>
     <Product config="fakro/zwrs.xml" id="0001" name="ZWRS Roller Shutter FLiRS module" type="0016"/>
+    <Product config="fakro/arzsolar.xml" id="0012" name="ARZ SOLAR Roof Window Roller Shutter" type="0003"/>
+    <Product config="fakro/zrh12.xml" id="0004" name="ZRH12 Portable Remote Controller" type="0001"/>
   </Manufacturer>
   <Manufacturer id="016a" name="Fantem (Oomi)">
     <!-- EU-market products seems to start with type prefix "00" -->
@@ -1280,6 +1282,10 @@
   <Manufacturer id="0143" name="myStrom"></Manufacturer>
   <Manufacturer id="0438" name="Namron">
     <Product config="namron/1402756.xml" id="0002" type="0202" name="LED Dimmer Z-Wave 200W"/>
+    <Product config="namron/4512710.xml" id="d005" type="0200" name="Z-Wave Dimmer 400W"/>
+    <Product config="namron/4512715.xml" id="d006" type="0200" name="Z-Wave Switch 400W"/>
+    <Product config="namron/4512724.xml" id="d00c" type="0200" name="Z-Wave Dimmer 2 400W"/>
+    
   </Manufacturer>
   <Manufacturer id="016E" name="Nanjing Easthouse Electrical Co"></Manufacturer>
   <Manufacturer id="0121" name="Napco Security Technologies, Inc.">
@@ -1431,7 +1437,9 @@
     <Product config="q-light/q-light_zerodim_2pol.xml" id="000E" name="Q-Light Zerodim 2pol" type="0003"/>
     <Product config="q-light/q-light_puck.xml" id="0005" name="Q-Light puck" type="0003"/>
   </Manufacturer>
-  <Manufacturer id="012A" name="Qolsys"></Manufacturer>
+  <Manufacturer id="012A" name="Qolsys">
+    <Product config="qolsys/qz2140-840.xml" id="3032" name="QZ2140-840 Plug-In Dimmer" type="4744"/>
+  </Manufacturer>
   <Manufacturer id="0159" name="Qubino (Goap)">
     <Product config="qubino/ZMNHDA2.xml" id="0001" name="ZMNHDA2 Flush Dimmer" type="0001"/>
     <Product config="qubino/ZMNHDDx.xml" id="0051" name="ZMNHDD1 Flush Dimmer" type="0001"/>
@@ -1721,6 +1729,7 @@
     <Product config="thermofloor/heatit-zdim.xml" id="2200" name="Heatit ZDim" type="0003"/>
     <Product config="thermofloor/heatitz8.xml" id="0xa305" name="Heatit Z-Push Button 8" type="0x0300"/>
     <Product config="thermofloor/heatit20a.xml" id="020a" name="Heatit Z-Water TF 20a" type="0003"/>
+    <Product config="thermofloor/heatitz4.xml" id="a306" name="Heatit Z-Push Button 4" type="0300"/>
   </Manufacturer>
   <Manufacturer id="0317" name="Think Simple srl"></Manufacturer>
   <Manufacturer id="022A" name="TIMEVALVE"></Manufacturer>

@@ -1,6 +1,7 @@
 <!-- GE(Jasco) 26932 Z-Wave Plus Smart Motion Dimmer. Identical to GE 26933 Z-Wave Plus Smart Motion Dimmer -->
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3033:494d</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/26933-motion-dimmer.png</MetaDataItem>
     <MetaDataItem id="3033" name="ZWProductPage" type="494D">https://products.z-wavealliance.org/products/2093/</MetaDataItem>
     <MetaDataItem id="3033" name="Identifier" type="494D">26932</MetaDataItem>
@@ -31,6 +32,7 @@ network.</MetaDataItem>
     <MetaDataItem name="Name">In-Wall Smart Motion Dimmer</MetaDataItem>
     <ChangeLog>
 	    <Entry author="Tao Gong - gongtao0607@gmail.com" date="02 Nov 2020" revision="1">Initial Metadata Import from ge/26933-motion-dimmer.xml and https://products.z-wavealliance.org/products/2093/xml</Entry>
+	    <Entry author="Tao Gong - gongtao0607@gmail.com" date="05 Nov 2020" revision="2">Update VerifyChanged flag</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters - per http://products.z-wavealliance.org/products/2093 -->
@@ -113,6 +115,11 @@ network.</MetaDataItem>
       <Item label="Press any button" value="0"/>
       <Item label="Press X then press ON" value="1"/>
     </Value>
+  </CommandClass>
+  <CommandClass id="38">
+    <Compatibility>
+      <VerifyChanged index="0">true</VerifyChanged>
+    </Compatibility>
   </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">

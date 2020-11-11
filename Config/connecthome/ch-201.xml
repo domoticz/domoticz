@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="Name">CH-201 Thermostat</MetaDataItem>
     <MetaDataItem name="Description">CH-201 thermostat is a Z-Wave device designed to maintain the set temperature. The thermostat can control the heating element directly (electric floor heating, electric heater, etc.) or with additional equipment (thermoelectric drive, etc.) The thermostat is equipped with a digital temperature sensor, but can work with any other temperature sensor if necessary Your Z-Wave network.</MetaDataItem>
@@ -15,6 +15,7 @@ Please note that after excluding the device from the Z-Wave network, all setting
     <MetaDataItem name="ResetDescription">To perform factory reset exclude the device form Z-Wave network and include it again.</MetaDataItem>
     <ChangeLog>
       <Entry author="Kostiantyn Khodykin - kostiantyn.khodykin@outlook.com" date="28 June 2020" revision="1">Initial configuration definition of CH-201</Entry>
+      <Entry author="Bogdan Pankiv - bogdan.pankiv@gmail.com" date="08 November 2020" revision="2">Setpoint feature fixed for CH-201</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->
@@ -111,6 +112,14 @@ Set point mode.
       <Item value="9" label=" t -4°С" />
       <Item value="10" label=" t -5°С;" />
     </Value>
+  </CommandClass>
+
+  <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+  <CommandClass id="67">
+    <Compatibility>
+      <OverridePrecision>2</OverridePrecision>
+      <Base>0</Base>
+    </Compatibility>
   </CommandClass>
 
   <!-- Association Groups -->
