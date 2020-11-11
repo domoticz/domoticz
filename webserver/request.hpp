@@ -135,7 +135,8 @@ public:
 				flag_done = 1;
 			}
 			// the browser sends blanks as +
-			while (1) {
+			while (true)
+			{
 				size_t p2 = value.find("+");
 				if (p2 == std::string::npos) {
 					break;
