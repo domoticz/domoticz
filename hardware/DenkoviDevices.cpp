@@ -680,8 +680,8 @@ void CDenkoviDevices::SendDenkoviTextSensor(const int NodeID, const int ChildID,
 {
 	//check if we have a change, if not do not update it
 	bool bExists;
-	std::string oldvalue = GetTextSensorText(NodeID, ChildID, bExists); 	
-	if (oldvalue.compare(textMessage)!=0)
+	std::string oldvalue = GetTextSensorText(NodeID, ChildID, bExists);
+	if (oldvalue != textMessage)
 		SendTextSensor(NodeID, ChildID, BatteryLevel, textMessage, defaultname);
 }
 

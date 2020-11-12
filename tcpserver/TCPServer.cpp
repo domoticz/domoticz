@@ -66,7 +66,7 @@ bool CTCPServerInt::IsUserHereFirstTime(const std::string &ip_string)
 			itt = m_incoming_domoticz_history.erase(itt);
 		else
 		{
-			if (ip_string.compare(itt->string) == 0)
+			if (ip_string == itt->string)
 			{
 				//already logged this
 				return false;
