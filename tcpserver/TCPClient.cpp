@@ -17,7 +17,7 @@ CTCPClientBase::CTCPClientBase(CTCPServerIntBase *pManager)
 
 CTCPClientBase::~CTCPClientBase()
 {
-	if (socket_) delete socket_;
+	delete socket_;
 }
 
 CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase *pManager)

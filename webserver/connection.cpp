@@ -303,8 +303,8 @@ namespace http {
 
 			if (sendfile_.is_open())
 				sendfile_.close();
-			if (send_buffer_)
-				delete[] send_buffer_;
+
+			delete[] send_buffer_;
 			send_buffer_ = nullptr;
 			connection_manager_.stop(shared_from_this());
 			return;
@@ -563,11 +563,11 @@ This does not seem to print the correct request
 		connection::~connection()
 		{
 			// free up resources, delete the socket pointers
-			if (socket_) delete socket_;
+			delete socket_;
 #ifdef WWW_ENABLE_SSL
-			if (sslsocket_) delete sslsocket_;
+			delete sslsocket_;
 #endif
-			if (send_buffer_) delete[] send_buffer_;
+			delete[] send_buffer_;
 		}
 
 		// schedule read timeout timer
