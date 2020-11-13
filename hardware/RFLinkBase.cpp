@@ -1167,7 +1167,8 @@ namespace http {
 			if (pRFLINK == nullptr)
 				return;
 
-			if (scommand.substr(0, 14).compare("10;rfdebug=on;") == 0) {
+			if (scommand.substr(0, 14) == "10;rfdebug=on;")
+			{
 				pRFLINK->m_bRFDebug = true; // enable debug
 				_log.Log(LOG_STATUS, "User: %s initiated RFLink Enable Debug mode with command: %s", session.username.c_str(), scommand.c_str());
 				pRFLINK->WriteInt("10;RFDEBUG=ON;\n");
@@ -1175,7 +1176,8 @@ namespace http {
 				root["title"] = "DebugON";
 				return;
 			}
-			if (scommand.substr(0, 15).compare("10;rfdebug=off;") == 0) {
+			if (scommand.substr(0, 15) == "10;rfdebug=off;")
+			{
 				pRFLINK->m_bRFDebug = false; // disable debug
 				_log.Log(LOG_STATUS, "User: %s initiated RFLink Disable Debug mode with command: %s", session.username.c_str(), scommand.c_str());
 				pRFLINK->WriteInt("10;RFDEBUG=OFF;\n");

@@ -24,7 +24,7 @@ private:
 	signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);  //Add binary coded event from buffer
 	struct CtrlADCT     *(m_adcs[MAX_AURA_DEVS]);
 	signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
-	void CalculateAdcWiFi(char index);
+	void CalculateAdcWiFi(unsigned char index);
 	char eH1(unsigned char addrh, unsigned char addrl);
 	void InitStructs(void);
 
@@ -66,8 +66,8 @@ private:
 	void TerminateUDP(void);
 	void IntToHex(unsigned char *buf, const unsigned char *inbuf, int received);
 	float getAdcVolt2(int index);
-	void CalculateAdc2(char index);
-	void CalculateAdcEH1(char index);
+	void CalculateAdc2(unsigned char index);
+	void CalculateAdcEH1(unsigned char index);
 	void deb(char *prefix, unsigned char *dta, int size);
 	void GetStr(unsigned char *GetNamesDta);
 	void GetUDPNamesRS485(unsigned char *data, int nbytes);

@@ -137,16 +137,23 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
         if (delim == std::string::npos) {
             break;
         }
-        if (param.substr(0, delim).compare("id") == 0) {
-            deviceId = param.substr(delim+1, param.length()-delim);
-        } else if (param.substr(0, delim).compare("winddirection") == 0) {
-            winddirection = param.substr(delim+1, param.length()-delim);
-        } else if (param.substr(0, delim).compare("windaverage") == 0) {
-            windaverage = param.substr(delim+1, param.length()-delim);
-        } else if (param.substr(0, delim).compare("windgust") == 0) {
-            windgust = param.substr(delim+1, param.length()-delim);
-        }
-        pos = message.find(";", pos+1);
+	if (param.substr(0, delim) == "id")
+	{
+		deviceId = param.substr(delim + 1, param.length() - delim);
+	}
+	else if (param.substr(0, delim) == "winddirection")
+	{
+		winddirection = param.substr(delim + 1, param.length() - delim);
+	}
+	else if (param.substr(0, delim) == "windaverage")
+	{
+		windaverage = param.substr(delim + 1, param.length() - delim);
+	}
+	else if (param.substr(0, delim) == "windgust")
+	{
+		windgust = param.substr(delim + 1, param.length() - delim);
+	}
+	pos = message.find(";", pos + 1);
     }
     if (!deviceId.empty() && !winddirection.empty() && ! windaverage.empty() && ! windgust.empty()) {
         SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), static_cast<float>(atof(windaverage.c_str())), static_cast<float>(atof(windgust.c_str())), 0, 0, false, false, "Wind");

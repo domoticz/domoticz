@@ -737,7 +737,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 
 		Json::Value root;
 
-		root["idx"] = DeviceRowIdx;
+		root["idx"] = Json::Value::UInt64(DeviceRowIdx);
 		root["hwid"] = hwid;
 		root["id"] = did;
 		root["unit"] = dunit;

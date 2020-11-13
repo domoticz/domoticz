@@ -6784,7 +6784,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "LearnSW";
 						root["ID"] = m_sql.m_LastSwitchID;
-						root["idx"] = m_sql.m_LastSwitchRowID;
+						root["idx"] = Json::Value::UInt64(m_sql.m_LastSwitchRowID);
 						root["Name"] = result[0][0];
 						root["Used"] = atoi(result[0][1].c_str());
 						root["Cmd"] = atoi(result[0][2].c_str());
@@ -12203,7 +12203,7 @@ namespace http {
 							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						}
 						uint64_t dID = std::strtoull(sID.c_str(), nullptr, 10);
-						root["result"][ii]["idx"] = dID;
+						root["result"][ii]["idx"] = Json::Value::UInt64(dID);
 						root["result"][ii]["name"] = sd[0];
 						root["result"][ii]["code"] = sCode;
 						root["result"][ii]["codestr"] = lstatus;
@@ -12889,7 +12889,7 @@ namespace http {
 				ii = 0;
 				for (const auto &n : notifications)
 				{
-					root["result"][ii]["idx"] = n.ID;
+					root["result"][ii]["idx"] = Json::Value::UInt64(n.ID);
 					std::string sParams = n.Params;
 					if (sParams.empty()) {
 						sParams = "S";

@@ -531,8 +531,7 @@ bool CHarmonyHub::SetupCommunicationSocket()
 
 void CHarmonyHub::ResetCommunicationSocket()
 {
-	if (m_connection)
-		delete m_connection;
+	delete m_connection;
 	m_connection = nullptr;
 	m_connectionstatus = DISCONNECTED;
 
@@ -722,7 +721,7 @@ bool CHarmonyHub::CheckForHarmonyData()
 			ParseHarmonyTransmission(&m_szHarmonyData);
 	}
 
-	else if (m_szHarmonyData.compare("<iq/>") == 0)
+	else if (m_szHarmonyData == "<iq/>")
 	{
 		// Hub just acknowledges receiving our query
 #ifdef _DEBUG

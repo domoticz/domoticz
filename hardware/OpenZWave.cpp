@@ -2300,11 +2300,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			else if (vOrgIndex == ValueID_Index_Clock::Minute)
 			{
 				pNode->tClockMinute = byteValue;
-				if (
-					(pNode->tClockDay != -1) &&
-					(pNode->tClockHour != -1) &&
-					(pNode->tClockMinute != -1)
-					)
+				if ((pNode->tClockDay != UINT8_MAX) && (pNode->tClockHour != UINT8_MAX) && (pNode->tClockMinute != UINT8_MAX))
 				{
 					_log.Log(LOG_NORM, "OpenZWave: NodeID: %d (0x%02x), Thermostat Clock: %s %02d:%02d", NodeID, NodeID, ZWave_Clock_Days(pNode->tClockDay), pNode->tClockHour, pNode->tClockMinute);
 					_device.intvalue = (pNode->tClockDay * (24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
@@ -2866,11 +2862,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			else if (vOrgIndex == ValueID_Index_Clock::Minute)
 			{
 				pNode->tClockMinute = byteValue;
-				if (
-					(pNode->tClockDay != -1) &&
-					(pNode->tClockHour != -1) &&
-					(pNode->tClockMinute != -1)
-					)
+				if ((pNode->tClockDay != UINT8_MAX) && (pNode->tClockHour != UINT8_MAX) && (pNode->tClockMinute != UINT8_MAX))
 				{
 					_log.Log(LOG_NORM, "OpenZWave: NodeID: %d (0x%02x), Thermostat Clock: %s %02d:%02d", NodeID, NodeID, ZWave_Clock_Days(pNode->tClockDay), pNode->tClockHour, pNode->tClockMinute);
 				}
