@@ -10747,7 +10747,14 @@ namespace http {
 							std::vector<std::string> sd2 = result2[0];
 
 							uint64_t total_min_gas = std::stoull(sd2[0]);
-							uint64_t gasactual = std::stoull(sValue);
+							uint64_t gasactual;
+							try {
+								 gasactual = std::stoull(sValue);
+							}
+							catch( std::invalid_argument e ) {
+								_log.Log(LOG_ERROR, "Gas - invalid value: '%s'", sValue.c_str());
+								continue;
+							}
 							uint64_t total_real_gas = gasactual - total_min_gas;
 
 							double musage = double(gasactual) / divider;
