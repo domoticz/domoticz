@@ -104,13 +104,13 @@ public:
     m_Addr.sin_port = htons(Port);
     
     struct hostent *h;
-    if (Address == NULL || (h=gethostbyname(Address)) == NULL)
+    if (Address == nullptr || (h = gethostbyname(Address)) == nullptr)
     {
-        if (Address != NULL)
-			printf("Error: Get host by name\n");
+	    if (Address != nullptr)
+		    printf("Error: Get host by name\n");
 
-        m_Addr.sin_addr.s_addr  = INADDR_ANY;
-        m_Addr.sin_family       = AF_INET;
+	    m_Addr.sin_addr.s_addr = INADDR_ANY;
+	    m_Addr.sin_family = AF_INET;
     }
     else
     {
@@ -143,8 +143,8 @@ public:
   ~XBMCClientUtils() = default;
   static unsigned int GetUniqueIdentifier()
   {
-    static time_t id = time(NULL);
-	return (unsigned int)id;
+	  static time_t id = time(nullptr);
+	  return (unsigned int)id;
   }
 
   static void Clean()
@@ -304,8 +304,7 @@ public:
   {
     m_Payload.clear();
 
-    for (char name : m_DeviceName)
-	    m_Payload.push_back(name);
+    std::copy(m_DeviceName.begin(), m_DeviceName.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
 
@@ -331,11 +330,11 @@ public:
 
     m_IconType = IconType;
 
-    if (IconType == ICON_NONE || IconFile == NULL)
+    if (IconType == ICON_NONE || IconFile == nullptr)
     {
-      m_IconData = NULL;
-      m_IconSize = 0;
-      return;
+	    m_IconData = nullptr;
+	    m_IconSize = 0;
+	    return;
     }
 
     std::ifstream::pos_type size;
@@ -385,13 +384,11 @@ public:
   {
     m_Payload.clear();
 
-    for (char t : m_Title)
-	    m_Payload.push_back(t);
+    std::copy(m_Title.begin(), m_Title.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
 
-    for (char msg : m_Message)
-	    m_Payload.push_back(msg);
+    std::copy(m_Message.begin(), m_Message.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
 
@@ -407,17 +404,17 @@ public:
   CPacketNOTIFICATION(const char *Title, const char *Message, unsigned short IconType, const char *IconFile = nullptr)
   {
     m_PacketType = PT_NOTIFICATION;
-    m_IconData = NULL;
+    m_IconData = nullptr;
     m_IconSize = 0;
     unsigned int len = 0;
-    if (Title != NULL)
+    if (Title != nullptr)
     {
       len = strlen(Title);
       for (unsigned int i = 0; i < len; i++)
         m_Title.push_back(Title[i]);
     }
 
-    if (Message != NULL)
+    if (Message != nullptr)
     {
       len = strlen(Message);
       for (unsigned int i = 0; i < len; i++)
@@ -425,8 +422,8 @@ public:
     }
     m_IconType = IconType;
 
-    if (IconType == ICON_NONE || IconFile == NULL)
-      return;
+    if (IconType == ICON_NONE || IconFile == nullptr)
+	    return;
 
     std::ifstream::pos_type size;
 
@@ -516,13 +513,11 @@ public:
     m_Payload.push_back(((m_Amount & 0xff00) >> 8) );
     m_Payload.push_back( (m_Amount & 0x00ff));
 
-    for (char dev : m_DeviceMap)
-	    m_Payload.push_back(dev);
+    std::copy(m_DeviceMap.begin(), m_DeviceMap.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
 
-    for (char b : m_Button)
-	    m_Payload.push_back(b);
+    std::copy(m_Button.begin(), m_Button.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
   }
@@ -681,8 +676,7 @@ public:
       char* str=&m_Message[0];
       printf("%s\n", str);
     }
-    for (char msg : m_Message)
-	    m_Payload.push_back(msg);
+    std::copy(m_Message.begin(), m_Message.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
   }
@@ -716,8 +710,7 @@ public:
     m_Payload.clear();
 
     m_Payload.push_back(m_ActionType);
-    for (char a : m_Action)
-	    m_Payload.push_back(a);
+    std::copy(m_Action.begin(), m_Action.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
   }
@@ -746,7 +739,7 @@ public:
       m_UID = XBMCClientUtils::GetUniqueIdentifier();
   }
 
-  void SendNOTIFICATION(const char *Title, const char *Message, unsigned short IconType, const char *IconFile = NULL)
+  void SendNOTIFICATION(const char *Title, const char *Message, unsigned short IconType, const char *IconFile = nullptr)
   {
     if (m_Socket < 0)
       return;
@@ -755,7 +748,7 @@ public:
     notification.Send(m_Socket, m_Addr, m_UID);
   }
 
-  void SendHELO(const char *DevName, unsigned short IconType, const char *IconFile = NULL)
+  void SendHELO(const char *DevName, unsigned short IconType, const char *IconFile = nullptr)
   {
     if (m_Socket < 0)
       return;

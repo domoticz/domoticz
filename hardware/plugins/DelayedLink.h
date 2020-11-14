@@ -188,7 +188,7 @@ namespace Plugins {
 		PyObject		_Py_NoneStruct;
 
 		SharedLibraryProxy() {
-			shared_lib_ = 0;
+			shared_lib_ = nullptr;
 			_Py_RefTotal = 0;
 			if (!shared_lib_) {
 #ifdef WIN32
@@ -325,7 +325,10 @@ namespace Plugins {
 		~SharedLibraryProxy() = default;
 		;
 
-		bool Py_LoadLibrary() { return (shared_lib_ != 0); };
+		bool Py_LoadLibrary()
+		{
+			return (shared_lib_ != nullptr);
+		};
 
 #ifndef WIN32
 		private:

@@ -75,8 +75,8 @@ namespace Plugins {
 	  CPluginTransportTCP(int HwdID, PyObject *pConnection, const std::string &Address, const std::string &Port)
 		  : CPluginTransportIP(HwdID, pConnection, Address, Port)
 		  , m_Resolver(ios)
-		  , m_Acceptor(NULL)
-		  , m_Socket(NULL){};
+		  , m_Acceptor(nullptr)
+		  , m_Socket(nullptr){};
 	  bool handleConnect() override;
 	  bool handleListen() override;
 	  virtual void handleAsyncResolve(const boost::system::error_code &err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
@@ -101,18 +101,20 @@ namespace Plugins {
 	class CPluginTransportTCPSecure : public CPluginTransportTCP
 	{
 	public:
-		CPluginTransportTCPSecure(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportTCP(HwdID, pConnection, Address, Port), m_Context(NULL), m_TLSSock(NULL) { };
-		void handleAsyncConnect(const boost::system::error_code &err,
-					boost::asio::ip::tcp::resolver::iterator endpoint_iterator) override;
-		void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;
-		void handleWrite(const std::vector<byte> &pMessage) override;
-		~CPluginTransportTCPSecure() override;
+	  CPluginTransportTCPSecure(int HwdID, PyObject *pConnection, const std::string &Address, const std::string &Port)
+		  : CPluginTransportTCP(HwdID, pConnection, Address, Port)
+		  , m_Context(nullptr)
+		  , m_TLSSock(nullptr){};
+	  void handleAsyncConnect(const boost::system::error_code &err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator) override;
+	  void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;
+	  void handleWrite(const std::vector<byte> &pMessage) override;
+	  ~CPluginTransportTCPSecure() override;
 
-	      protected:
-		bool VerifyCertificate(bool preverified, boost::asio::ssl::verify_context& ctx);
+	protected:
+	  bool VerifyCertificate(bool preverified, boost::asio::ssl::verify_context &ctx);
 
-		boost::asio::ssl::context*									m_Context;
-		boost::asio::ssl::stream<boost::asio::ip::tcp::socket&>*	m_TLSSock;
+	  boost::asio::ssl::context *m_Context;
+	  boost::asio::ssl::stream<boost::asio::ip::tcp::socket &> *m_TLSSock;
 	};
 
 	class CPluginTransportUDP : CPluginTransportIP
@@ -121,7 +123,7 @@ namespace Plugins {
 	  CPluginTransportUDP(int HwdID, PyObject *pConnection, const std::string &Address, const std::string &Port)
 		  : CPluginTransportIP(HwdID, pConnection, Address, Port)
 		  , m_Resolver(ios)
-		  , m_Socket(NULL){};
+		  , m_Socket(nullptr){};
 	  bool handleListen() override;
 	  void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;
 	  void handleWrite(const std::vector<byte> &) override;
@@ -140,8 +142,8 @@ namespace Plugins {
 	  CPluginTransportICMP(int HwdID, PyObject *pConnection, const std::string &Address, const std::string &Port)
 		  : CPluginTransportIP(HwdID, pConnection, Address, Port)
 		  , m_Resolver(ios)
-		  , m_Socket(NULL)
-		  , m_Timer(NULL)
+		  , m_Socket(nullptr)
+		  , m_Timer(nullptr)
 		  , m_SequenceNo(-1){};
 	  void handleAsyncResolve(const boost::system::error_code &err, boost::asio::ip::icmp::resolver::iterator endpoint_iterator);
 	  bool handleListen() override;

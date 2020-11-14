@@ -28,7 +28,7 @@ namespace Plugins {
 		CPluginMessageBase(CPlugin* pPlugin) : m_pPlugin(pPlugin), m_HwdID(pPlugin->m_HwdID), m_Unit(-1), m_Delay(false)
 		{
 			m_Name = __func__;
-			m_When = time(0);
+			m_When = time(nullptr);
 		};
 		virtual void ProcessLocked() = 0;
 	public:
@@ -271,17 +271,23 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onMessageCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
-		onMessageCallback(CPlugin* pPlugin, PyObject* Connection, const std::string& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
-		{
-			m_Name = __func__;
-			m_Buffer.reserve(Buffer.length());
-			m_Buffer.assign((const byte*)Buffer.c_str(), (const byte*)Buffer.c_str()+Buffer.length());
-		};
-		onMessageCallback(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
-		{
-			m_Name = __func__;
-			m_Buffer = Buffer;
-		};
+	  onMessageCallback(CPlugin *pPlugin, PyObject *Connection, const std::string &Buffer)
+		  : CCallbackBase(pPlugin, "onMessage")
+		  , CHasConnection(Connection)
+		  , m_Data(nullptr)
+	  {
+		  m_Name = __func__;
+		  m_Buffer.reserve(Buffer.length());
+		  m_Buffer.assign((const byte *)Buffer.c_str(), (const byte *)Buffer.c_str() + Buffer.length());
+	  };
+	  onMessageCallback(CPlugin *pPlugin, PyObject *Connection, const std::vector<byte> &Buffer)
+		  : CCallbackBase(pPlugin, "onMessage")
+		  , CHasConnection(Connection)
+		  , m_Data(nullptr)
+	  {
+		  m_Name = __func__;
+		  m_Buffer = Buffer;
+	  };
 		onMessageCallback(CPlugin* pPlugin, PyObject* Connection, PyObject*	pData) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
 		{
 			m_Name = __func__;

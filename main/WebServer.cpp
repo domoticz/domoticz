@@ -4426,7 +4426,8 @@ namespace http {
 						return;
 					}
 					CGpio *pGpio = reinterpret_cast<CGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pGpio == NULL) {
+					if (pGpio == nullptr)
+					{
 						root["status"] = "ERROR";
 						root["message"] = "Could not retrieve GPIO hardware pointer";
 						return;
@@ -4437,7 +4438,8 @@ namespace http {
 						return;
 					}
 					CGpioPin *pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
-					if (pPin == NULL) {
+					if (pPin == nullptr)
+					{
 						root["status"] = "ERROR";
 						root["message"] = "Given pin does not exist on this GPIO hardware";
 						return;
@@ -4480,7 +4482,8 @@ namespace http {
 
 					CSysfsGpio *pSysfsGpio = reinterpret_cast<CSysfsGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 
-					if (pSysfsGpio == NULL) {
+					if (pSysfsGpio == nullptr)
+					{
 						root["status"] = "ERROR";
 						root["message"] = "Could not retrieve SysfsGpio hardware pointer";
 						return;
@@ -5113,16 +5116,18 @@ namespace http {
 						return;
 					}
 					CGpio *pGpio = reinterpret_cast<CGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pGpio == NULL) {
+					if (pGpio == nullptr)
+					{
 						return;
 					}
 					if (pGpio->HwdType != HTYPE_RaspberryGPIO) {
 						return;
 					}
 					CGpioPin *pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
-					if (pPin == NULL) {
+					if (pPin == nullptr)
+					{
 						return;
-			}
+					}
 #else
 					return;
 #endif
@@ -5148,7 +5153,7 @@ namespace http {
 
 					CSysfsGpio *pSysfsGpio = reinterpret_cast<CSysfsGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 
-					if ((pSysfsGpio == NULL) || (pSysfsGpio->HwdType != HTYPE_SysfsGpio))
+					if ((pSysfsGpio == nullptr) || (pSysfsGpio->HwdType != HTYPE_SysfsGpio))
 					{
 						return;
 					}

@@ -63,7 +63,7 @@ public:
 	explicit cUTF( const char * s );
 	// copy constructor
 	cUTF() {
-		myString8 = NULL;
+		myString8 = nullptr;
 	}
 	/// get UTF8 version
 	const char * get8() {

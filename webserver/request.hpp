@@ -57,7 +57,7 @@ public:
 			if (!mg_strcasecmp(name, header.name.c_str()))
 				return header.value.c_str();
 
-		return NULL;
+		return nullptr;
 	}
 
 	/** Find the value of a name set by a form submit action */
