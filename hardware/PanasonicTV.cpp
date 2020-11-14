@@ -510,8 +510,8 @@ std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
 	std::string head, body;
 	int size;
 
-	body = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
-	body += "<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">";
+	body = R"(<?xml version="1.0" encoding="utf-8"?>)";
+	body += R"(<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">)";
 	body += "<s:Body>";
 	body += "<u:X_SendKey xmlns:u=\"urn:panasonic-com:service:p00NetworkControl:1\">";
 	body += "<X_KeyEvent>NRC_" + command + "</X_KeyEvent>";

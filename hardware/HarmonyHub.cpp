@@ -596,7 +596,7 @@ int CHarmonyHub::SendAuth(csocket *connection, const std::string &szUserName, co
 {
 	if (connection == nullptr)
 		return -1;
-	std::string szAuth = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" mechanism=\"PLAIN\">";
+	std::string szAuth = R"(<auth xmlns="urn:ietf:params:xml:ns:xmpp-sasl" mechanism="PLAIN">)";
 	std::string szCred = "\0";
 	szCred.append(szUserName);
 	szCred.append("\0");
@@ -611,9 +611,9 @@ int CHarmonyHub::SendPairRequest(csocket *connection)
 {
 	if (connection == nullptr)
 		return -1;
-	std::string szReq = "<iq type=\"get\" id=\"";
+	std::string szReq = R"(<iq type="get" id=")";
 	szReq.append(CONNECTION_ID);
-	szReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.pair\">method=pair");
+	szReq.append(R"("><oa xmlns="connect.logitech.com" mime="vnd.logitech.connect/vnd.logitech.pair">method=pair)");
 	szReq.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
 	return WriteToSocket(&szReq);
 }
@@ -638,9 +638,9 @@ int CHarmonyHub::SendPing()
 	if (m_connection == nullptr || m_szAuthorizationToken.length() == 0)
 		return -1;
 
-	std::string szReq = "<iq type=\"get\" id=\"";
+	std::string szReq = R"(<iq type="get" id=")";
 	szReq.append(CONNECTION_ID);
-	szReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.ping\">token=");
+	szReq.append(R"("><oa xmlns="connect.logitech.com" mime="vnd.logitech.connect/vnd.logitech.ping">token=)");
 	szReq.append(m_szAuthorizationToken.c_str());
 	szReq.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
 
@@ -666,9 +666,9 @@ int CHarmonyHub::SubmitCommand(const std::string &szCommand, const std::string &
 		return false;
 	}
 
-	std::string szReq = "<iq type=\"get\" id=\"";
+	std::string szReq = R"(<iq type="get" id=")";
 	szReq.append(CONNECTION_ID);
-	szReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.harmony/vnd.logitech.harmony.engine?");
+	szReq.append(R"("><oa xmlns="connect.logitech.com" mime="vnd.logitech.harmony/vnd.logitech.harmony.engine?)");
 
 	// Issue the provided command
 	if (szCommand == GET_CONFIG_COMMAND)

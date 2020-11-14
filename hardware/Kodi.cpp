@@ -203,7 +203,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 			{
 			case 2002: // attempt to start music playlist (error is because playlist does not exist, try video)
 				m_PlaylistType = "1";
-				ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Add\",\"params\":{\"playlistid\":" << m_PlaylistType << ",\"item\":{\"directory\": \"special://profile/playlists/video/" << m_Playlist << ".xsp\", \"media\":\"video\"}},\"id\":2003}";
+				ssMessage << R"({"jsonrpc":"2.0","method":"Playlist.Add","params":{"playlistid":)" << m_PlaylistType << R"(,"item":{"directory": "special://profile/playlists/video/)"
+					  << m_Playlist << R"(.xsp", "media":"video"}},"id":2003})";
 				handleWrite(ssMessage.str());
 				break;
 			case 2003: // error because video playlist does not exist, stop.
@@ -254,7 +255,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 
 								if (m_CurrentStatus.PlayerID() != "")  // if we now have a player id then request more details
 								{
-									sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"id\":1003,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"artist\",\"album\",\"year\",\"channel\",\"showtitle\",\"season\",\"episode\",\"title\"]}}";
+									sMessage = R"({"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":)" + m_CurrentStatus.PlayerID() +
+										   R"(,"properties":["artist","album","year","channel","showtitle","season","episode","title"]}})";
 									handleWrite(sMessage);
 								}
 							}
@@ -266,9 +268,10 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							else if (root["method"] == "Player.OnSeek")
 							{
 								if (m_CurrentStatus.PlayerID() != "")
-									sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetProperties\",\"id\":1002,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"live\",\"percentage\",\"speed\"]}}";
+									sMessage = R"({"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":)" + m_CurrentStatus.PlayerID() +
+										   R"(,"properties":["live","percentage","speed"]}})";
 								else
-									sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":1005}";
+									sMessage = R"({"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1005})";
 								handleWrite(sMessage);
 							}
 							else if ((root["method"] == "System.OnQuit") || (root["method"] == "System.OnSleep") || (root["method"] == "System.OnRestart"))
@@ -334,7 +337,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (root["result"]["speed"].asInt() && m_CurrentStatus.Status() == MSTAT_PAUSED)
 							{
 								// Buffering when playing internet streams show 0 speed but don't trigger OnPause/OnPlay so force a refresh when speed is not 0 again
-								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"id\":1003,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"artist\",\"album\",\"year\",\"channel\",\"showtitle\",\"season\",\"episode\",\"title\"]}}";
+								sMessage = R"({"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":)" + m_CurrentStatus.PlayerID() +
+									   R"(,"properties":["artist","album","year","channel","showtitle","season","episode","title"]}})";
 								handleWrite(sMessage);
 							}
 						}
@@ -381,7 +385,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (root["result"]["item"].isMember("label"))			m_CurrentStatus.Label(root["result"]["item"]["label"].asCString());
 							if ((m_CurrentStatus.PlayerID() != "") && (m_CurrentStatus.Type() != "picture")) // request final details
 							{
-								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetProperties\",\"id\":1002,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"live\",\"percentage\",\"speed\"]}}";
+								sMessage = R"({"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":)" + m_CurrentStatus.PlayerID() +
+									   R"(,"properties":["live","percentage","speed"]}})";
 								handleWrite(sMessage);
 							}
 							UpdateStatus();
@@ -412,7 +417,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (sAction != "Nothing")
 							{
 								m_Stoppable = true;
-								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System." + sAction + "\",\"id\":1008}";
+								sMessage = R"({"jsonrpc":"2.0","method":"System.)" + sAction + R"(","id":1008})";
 								handleWrite(sMessage);
 							}
 						}
@@ -421,7 +426,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						if (root["result"][0].isMember("playerid"))
 						{
 							m_CurrentStatus.PlayerID(root["result"][0]["playerid"].asInt());
-							sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"id\":1003,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"artist\",\"album\",\"year\",\"channel\",\"showtitle\",\"season\",\"episode\",\"title\"]}}";
+							sMessage = R"({"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":)" + m_CurrentStatus.PlayerID() +
+								   R"(,"properties":["artist","album","year","channel","showtitle","season","episode","title"]}})";
 							handleWrite(sMessage);
 						}
 						break;
@@ -430,7 +436,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							_log.Log(LOG_ERROR, "Kodi: (%s) Send Command Failed: '%s'", m_Name.c_str(), root["result"].asCString());
 						break;
 					case 1007:		//Can Shutdown response (after connect)
-						handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":1005}"));
+						handleWrite(std::string(R"({"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1005})"));
 						if (root["result"].isMember("canshutdown"))
 						{
 							bCanShutdown = root["result"]["canshutdown"].asBool();
@@ -457,15 +463,17 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						break;
 					// 2000+ messages relate to playlist triggering functionality
 					case 2000: // clear video playlist response
-						handleWrite("{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":1},\"id\":2001}");
+						handleWrite(R"({"jsonrpc":"2.0","method":"Playlist.Clear","params":{"playlistid":1},"id":2001})");
 						break;
 					case 2001: // clear music playlist response
-						ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Add\",\"params\":{\"playlistid\":" << m_PlaylistType << ",\"item\":{\"directory\": \"special://profile/playlists/music/" << m_Playlist << ".xsp\", \"media\":\"music\"}},\"id\":2002}";
+						ssMessage << R"({"jsonrpc":"2.0","method":"Playlist.Add","params":{"playlistid":)" << m_PlaylistType
+							  << R"(,"item":{"directory": "special://profile/playlists/music/)" << m_Playlist << R"(.xsp", "media":"music"}},"id":2002})";
 						handleWrite(ssMessage.str());
 						break;
 					case 2002: // attempt to add playlist response
 					case 2003:
-						ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"playlistid\":" << m_PlaylistType << ",\"position\":" << m_PlaylistPosition << "}},\"id\":2004}";
+						ssMessage << R"({"jsonrpc":"2.0","method":"Player.Open","params":{"item":{"playlistid":)" << m_PlaylistType << ",\"position\":" << m_PlaylistPosition
+							  << "}},\"id\":2004}";
 						handleWrite(ssMessage.str());
 						break;
 					case 2004: // signal outcome
@@ -489,7 +497,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 											if (sType == "media") {
 												std::string sPath = root["result"]["favourites"][i]["path"].asCString();
 												_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Favourites %d has path '%s' and will be played.", m_Name.c_str(), i, sPath.c_str());
-												ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"file\":\"" << sPath << "\"}},\"id\":2101}";
+												ssMessage << R"({"jsonrpc":"2.0","method":"Player.Open","params":{"item":{"file":")" << sPath
+													  << R"("}},"id":2101})";
 												handleWrite(ssMessage.str());
 												break;
 											}
@@ -589,7 +598,7 @@ void CKodiNode::handleConnect()
 				}
 				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
 					boost::bind(&CKodiNode::handleRead, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-				handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":1007}"));
+				handleWrite(std::string(R"({"jsonrpc":"2.0","method":"System.GetProperties","params":{"properties":["canhibernate","cansuspend","canshutdown"]},"id":1007})"));
 			}
 			else
 			{
@@ -720,13 +729,14 @@ void CKodiNode::Do_Work()
 				if (m_CurrentStatus.IsStreaming())
 				{	// Update percentage if playing media (required because Player.OnPropertyChanged never get received as of Kodi 'Helix')
 					if (m_CurrentStatus.PlayerID() != "")
-						sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetProperties\",\"id\":1002,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"live\",\"percentage\",\"speed\"]}}";
+						sMessage = R"({"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":)" + m_CurrentStatus.PlayerID() +
+							   R"(,"properties":["live","percentage","speed"]}})";
 					else
-						sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":1005}";
+						sMessage = R"({"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1005})";
 				}
 				else
 				{
-					sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"JSONRPC.Ping\",\"id\":1001}";
+					sMessage = R"({"jsonrpc":"2.0","method":"JSONRPC.Ping","id":1001})";
 					if (m_iMissedPongs++ > m_iTimeoutCnt)
 					{
 						_log.Log(LOG_NORM, "Kodi: (%s) Missed %d pings, assumed off.", m_Name.c_str(), m_iTimeoutCnt);
@@ -785,8 +795,9 @@ void CKodiNode::SendCommand(const std::string &command)
 	{
 		//		http://kodi.wiki/view/JSON-RPC_API/v6#Input.Action
 		//		{ "jsonrpc": "2.0", "method": "Input.ExecuteAction", "params": { "action": "stop" }, "id": 1006 }
-		std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"" + sKodiCall + "\",\"params\":{";
-		if (sKodiParam.length()) sMessage += "\"action\":\"" + sKodiParam + "\"";
+		std::string sMessage = R"({"jsonrpc":"2.0","method":")" + sKodiCall + R"(","params":{)";
+		if (sKodiParam.length())
+			sMessage += R"("action":")" + sKodiParam + "\"";
 		sMessage += "},\"id\":1006}";
 
 		if (m_Socket != nullptr)
@@ -813,7 +824,7 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 	if (command == "setvolume")
 	{
 		sKodiCall = "Set Volume";
-		ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Application.SetVolume\",\"params\":{\"volume\":" << iValue << "},\"id\":1009}";
+		ssMessage << R"({"jsonrpc":"2.0","method":"Application.SetVolume","params":{"volume":)" << iValue << "},\"id\":1009}";
 		sMessage = ssMessage.str();
 	}
 
@@ -821,7 +832,7 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 	{
 		// clear any current playlists starting with audio, state machine in handleMessage will take care of the rest
 		m_PlaylistPosition = iValue;
-		sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":0},\"id\":2000}";
+		sMessage = R"({"jsonrpc":"2.0","method":"Playlist.Clear","params":{"playlistid":0},"id":2000})";
 	}
 
 	if (command == "favorites")
@@ -829,14 +840,14 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 		// Favorites are effectively a playlist but rewuire different handling to start items playing
 		sKodiCall = "Favourites";
 		m_PlaylistPosition = iValue;
-		sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Favourites.GetFavourites\",\"params\":{\"properties\":[\"path\"]},\"id\":2100}";
+		sMessage = R"({"jsonrpc":"2.0","method":"Favourites.GetFavourites","params":{"properties":["path"]},"id":2100})";
 	}
 
 	if (command == "execute")
 	{
 		sKodiCall = "Execute Addon " + m_ExecuteCommand;
 		//		ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Addons.GetAddons\",\"id\":1010}";
-		ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Addons.ExecuteAddon\",\"params\":{\"addonid\":\"" << m_ExecuteCommand << "\"},\"id\":1010}";
+		ssMessage << R"({"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":")" << m_ExecuteCommand << R"("},"id":1010})";
 		sMessage = ssMessage.str();
 		m_ExecuteCommand = "";
 	}
@@ -861,7 +872,7 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 
 bool CKodiNode::SendShutdown()
 {
-	std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":1004}";
+	std::string sMessage = R"({"jsonrpc":"2.0","method":"System.GetProperties","params":{"properties":["canhibernate","cansuspend","canshutdown"]},"id":1004})";
 	handleWrite(sMessage);
 
 	if (m_Stoppable) _log.Log(LOG_NORM, "Kodi: (%s) Shutdown requested and is supported.", m_Name.c_str());
