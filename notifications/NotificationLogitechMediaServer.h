@@ -4,7 +4,7 @@
 class CNotificationLogitechMediaServer : public CNotificationBase {
 public:
 	CNotificationLogitechMediaServer();
-	~CNotificationLogitechMediaServer() override;
+	~CNotificationLogitechMediaServer() override = default;
 	bool IsConfigured() override;
 
       protected:

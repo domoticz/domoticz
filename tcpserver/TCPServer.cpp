@@ -237,16 +237,12 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 			boost::asio::placeholders::error));
 }
 
-CTCPServerInt::~CTCPServerInt() = default;
-
 #ifndef NOCLOUD
 // our proxied server
 CTCPServerProxied::CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy) : CTCPServerIntBase(pRoot)
 {
 	m_pProxyClient = proxy;
 }
-
-CTCPServerProxied::~CTCPServerProxied() = default;
 
 void CTCPServerProxied::start()
 {

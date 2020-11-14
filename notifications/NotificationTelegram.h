@@ -4,7 +4,7 @@
 class CNotificationTelegram : public CNotificationBase {
 public:
 	CNotificationTelegram();
-	~CNotificationTelegram() override;
+	~CNotificationTelegram() override = default;
 	bool IsConfigured() override;
 
       protected:

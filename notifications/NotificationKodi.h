@@ -4,7 +4,7 @@
 class CNotificationKodi : public CNotificationBase {
 public:
 	CNotificationKodi();
-	~CNotificationKodi() override;
+	~CNotificationKodi() override = default;
 	bool IsConfigured() override;
 	std::string	 GetIconFile(const std::string &ExtraData);
 protected:

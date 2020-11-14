@@ -13,8 +13,6 @@ CNotificationTelegram::CNotificationTelegram() : CNotificationBase(std::string("
 	SetupConfig(std::string("TelegramChat"), _chatid);
 }
 
-CNotificationTelegram::~CNotificationTelegram() = default;
-
 bool CNotificationTelegram::SendMessageImplementation(
 	const uint64_t Idx,
 	const std::string &Name,

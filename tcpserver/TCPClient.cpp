@@ -26,8 +26,6 @@ CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase *pManager
 	socket_ = new boost::asio::ip::tcp::socket(ios);
 }
 
-CTCPClient::~CTCPClient() = default;
-
 void CTCPClient::start()
 {
 	socket_->async_read_some(boost::asio::buffer(buffer_),
@@ -116,8 +114,6 @@ CSharedClient::CSharedClient(CTCPServerIntBase *pManager, http::server::CProxyCl
 	m_username = username;
 	m_pProxyClient = proxy;
 }
-
-CSharedClient::~CSharedClient() = default;
 
 void CSharedClient::start()
 {

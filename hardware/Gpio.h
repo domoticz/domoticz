@@ -34,7 +34,7 @@ class CGpio : public CDomoticzHardwareBase
 {
 public:
 	explicit CGpio(const int ID, const int debounce, const int period, const int pollinterval);
-	~CGpio() override;
+	~CGpio() override = default;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	static CGpioPin* GetPPinById(int id);
 	static std::vector<CGpioPin> GetPinList();

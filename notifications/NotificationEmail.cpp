@@ -59,8 +59,6 @@ CNotificationEmail::CNotificationEmail() : CNotificationBase(std::string("email"
 	SetupConfig(std::string("EmailAsAttachment"), &_EmailAsAttachment);
 }
 
-CNotificationEmail::~CNotificationEmail() = default;
-
 bool CNotificationEmail::SendMessageImplementation(
 	const uint64_t Idx,
 	const std::string &Name,

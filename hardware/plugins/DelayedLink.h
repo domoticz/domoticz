@@ -98,7 +98,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PySys_SetPath, const wchar_t*);
 		DECLARE_PYTHON_SYMBOL(void, Py_SetProgramName, wchar_t*);
 		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetProgramFullPath, );
-		DECLARE_PYTHON_SYMBOL(int, PyImport_AppendInittab, const char* COMMA PyObject* (*initfunc)(void));
+		DECLARE_PYTHON_SYMBOL(int, PyImport_AppendInittab, const char *COMMA PyObject *(*initfunc)());
 		DECLARE_PYTHON_SYMBOL(int, PyType_Ready, PyTypeObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyCallable_Check, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetAttrString, PyObject* pObj COMMA const char*);

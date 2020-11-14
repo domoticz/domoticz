@@ -13,8 +13,6 @@ CNotificationSMS::CNotificationSMS() : CNotificationBase(std::string("clickatell
 	SetupConfigBase64(std::string("ClickatellFrom"), _clickatellFrom);
 }
 
-CNotificationSMS::~CNotificationSMS() = default;
-
 bool CNotificationSMS::SendMessageImplementation(
 	const uint64_t Idx,
 	const std::string& Name,

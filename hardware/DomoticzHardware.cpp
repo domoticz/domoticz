@@ -18,8 +18,6 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	mytime(&m_LastHeartbeatReceive);
 };
 
-CDomoticzHardwareBase::~CDomoticzHardwareBase() = default;
-
 bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::string& /*sCommand*/)
 {
 	return false;

@@ -14,7 +14,7 @@ namespace Plugins {
 	class CPluginMessageBase
 	{
 	public:
-	  virtual ~CPluginMessageBase(void) = default;
+	  virtual ~CPluginMessageBase() = default;
 	  ;
 
 	  CPlugin *m_pPlugin;

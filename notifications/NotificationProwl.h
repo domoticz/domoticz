@@ -4,7 +4,7 @@
 class CNotificationProwl : public CNotificationBase {
 public:
 	CNotificationProwl();
-	~CNotificationProwl() override;
+	~CNotificationProwl() override = default;
 	bool IsConfigured() override;
 
       protected:

@@ -4,7 +4,7 @@
 class CNotificationPushalot : public CNotificationBase {
 public:
 	CNotificationPushalot();
-	~CNotificationPushalot() override;
+	~CNotificationPushalot() override = default;
 	bool IsConfigured() override;
 
       protected:

@@ -4,7 +4,7 @@
 class CNotificationFCM : public CNotificationBase {
 public:
 	CNotificationFCM();
-	~CNotificationFCM() override;
+	~CNotificationFCM() override = default;
 	bool IsConfigured() override;
 
       protected:

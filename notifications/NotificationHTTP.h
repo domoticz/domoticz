@@ -4,7 +4,7 @@
 class CNotificationHTTP : public CNotificationBase {
 public:
 	CNotificationHTTP();
-	~CNotificationHTTP() override;
+	~CNotificationHTTP() override = default;
 	bool IsConfigured() override;
 
       protected:

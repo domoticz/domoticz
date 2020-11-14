@@ -69,7 +69,7 @@ protected:
 class CTCPServerInt : public CTCPServerIntBase {
 public:
 	CTCPServerInt(const std::string& address, const std::string& port, CTCPServer *pRoot);
-	~CTCPServerInt(void);
+	~CTCPServerInt() = default;
 	void start() override;
 	void stop() override;
 	/// Stop the specified connection.
@@ -96,7 +96,7 @@ public:
 class CTCPServerProxied : public CTCPServerIntBase {
 public:
 	CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy);
-	~CTCPServerProxied(void);
+	~CTCPServerProxied() = default;
 	void start() override;
 	void stop() override;
 	/// Stop the specified connection.

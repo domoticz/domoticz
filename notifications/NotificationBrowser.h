@@ -4,7 +4,7 @@
 class CNotificationBrowser : public CNotificationBase {
 public:
 	CNotificationBrowser();
-	~CNotificationBrowser() override;
+	~CNotificationBrowser() override = default;
 	bool IsConfigured() override;
 
       protected:

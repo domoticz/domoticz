@@ -36,7 +36,7 @@ public:
     int             canRead( bool* readyToRead, float waitTime = INFINITY );
     virtual int     read( char* pDataBuffer, unsigned int numBytesToRead, bool bReadAll );
     virtual int     write( const char* pDataBuffer, unsigned int numBytesToWrite );
-    SocketState     getState( void ) const;
+    SocketState getState() const;
     void            close();
 private:
 

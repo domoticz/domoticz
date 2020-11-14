@@ -4,7 +4,7 @@
 class CNotificationPushsafer : public CNotificationBase {
 public:
 	CNotificationPushsafer();
-	~CNotificationPushsafer() override;
+	~CNotificationPushsafer() override = default;
 	bool IsConfigured() override;
 
       protected:

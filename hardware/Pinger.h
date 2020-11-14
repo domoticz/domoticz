@@ -16,7 +16,7 @@ class CPinger : public CDomoticzHardwareBase
 	};
 public:
 	CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms);
-	~CPinger(void) override;
+	~CPinger() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void AddNode(const std::string &Name, const std::string &IPAddress, const int Timeout);
 	bool UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Timeout);

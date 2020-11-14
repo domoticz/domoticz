@@ -30,11 +30,11 @@ public:
 	// sub tables
 	void OpenSubTableEntry(long long Index, int NrCols, int NrRows);
 	void OpenSubTableEntry(std::string Name, int NrCols, int NrRows);
-	void CloseSubTableEntry(void);
+	void CloseSubTableEntry();
 
-	~CLuaTable();
+	~CLuaTable() = default;
 
-private:
+      private:
 	enum _eValueType
 	{
 		TYPE_STRING,

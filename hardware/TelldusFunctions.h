@@ -16,12 +16,12 @@ typedef void (WINAPI *TDSensorEvent)(const char *protocol, const char *model, in
 extern "C" {
 #endif
 struct TelldusFunctions {
-    void (WINAPI *Init)(void);
+	void(WINAPI *Init)();
 	int (WINAPI *RegisterDeviceEvent)(TDDeviceEvent eventFunction, void *context);
 	int (WINAPI *RegisterRawDeviceEvent)(TDRawDeviceEvent eventFunction, void *context);
 	int (WINAPI *RegisterSensorEvent)(TDSensorEvent eventFunction, void *context);
 	int (WINAPI *UnregisterCallback)(int callbackId);
-	void (WINAPI *Close)(void);
+	void(WINAPI *Close)();
 	void (WINAPI *ReleaseString)(char *thestring);
 
 	int (WINAPI *TurnOn)(int intDeviceId);

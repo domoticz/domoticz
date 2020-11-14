@@ -18,8 +18,6 @@ CLuaTable::CLuaTable(lua_State *lua_state, std::string Name, int NrCols, int NrR
 	InitTable(lua_state, Name, NrCols, NrRows);
 }
 
-CLuaTable::~CLuaTable() = default;
-
 void CLuaTable::InitTable(lua_State* lua_state, std::string Name, int NrCols, int NrRows)
 {
 	m_lua_state = lua_state;

@@ -18,8 +18,6 @@ CNotificationBase::CNotificationBase(const std::string &subsystemid, const int o
 {
 }
 
-CNotificationBase::~CNotificationBase() = default;
-
 void CNotificationBase::SetupConfig(const std::string &Key, std::string& Value)
 {
 	_configValues[Key] = &Value;

@@ -27,23 +27,42 @@ public:
     ~CIOCount() = default;
 
     int Update(unsigned long Counts);
-    unsigned long GetTotal(void) const {return Total;};
-    unsigned long GetLastTotal(void) const { return LastTotal; };
-    unsigned long GetRateLimit(void) const { return Minimum_Pulse_Period_ms; };
-    unsigned long GetDivider(void) const { return Divider; };
+    unsigned long GetTotal() const
+    {
+	    return Total;
+    };
+    unsigned long GetLastTotal() const
+    {
+	    return LastTotal;
+    };
+    unsigned long GetRateLimit() const
+    {
+	    return Minimum_Pulse_Period_ms;
+    };
+    unsigned long GetDivider() const
+    {
+	    return Divider;
+    };
     void SetTotal(unsigned long NewTotalValue) { Total = NewTotalValue; };
     void SetLastTotal(unsigned long NewTotalValue) { LastTotal = NewTotalValue; };
     void SetRateLimit(unsigned long NewRateLimit) { Minimum_Pulse_Period_ms = NewRateLimit; };
-    void ResetTotal(void) {
-        Total = 0;
-        LastTotal = 0;
+    void ResetTotal()
+    {
+	    Total = 0;
+	    LastTotal = 0;
     };
     bool ProcessUpdateInterval(unsigned long PassedTime_ms);
     void SetUpdateInterval(unsigned long NewValue_ms);
     void SetUpdateIntervalPerc(unsigned long NewValue) { UpdateIntervalPerc = NewValue; };
     void SetDivider(unsigned long NewValue) { Divider = NewValue; };
-    unsigned long GetUpdateInterval(void) {return UpdateInterval_ms;};
-    unsigned long GetUpdateIntervalPerc(void) {return UpdateIntervalPerc;};
+    unsigned long GetUpdateInterval()
+    {
+	    return UpdateInterval_ms;
+    };
+    unsigned long GetUpdateIntervalPerc()
+    {
+	    return UpdateIntervalPerc;
+    };
     bool Enabled;
     bool InitialStateSent;
     int Type;
@@ -73,8 +92,11 @@ public:
 
     int Update(bool New);
     int UpdateInterrupt(bool IntFlag,bool PinState);
-    int GetInitialState(void);
-    bool GetCurrent(void) const { return Current;}
+    int GetInitialState();
+    bool GetCurrent() const
+    {
+	    return Current;
+    }
     bool Enabled;
     int Id;
     int Type;
@@ -100,9 +122,18 @@ public:
     ~CIOPort() = default;
     int Update(unsigned char New);
     int UpdateInterrupt(unsigned char IntFlag,unsigned char PinState);
-    unsigned char GetCurrent(void) const { return Current;}
-    int GetDevId(void) const { return devId;}
-    bool IsDevicePresent(void) const { return Present;}
+    unsigned char GetCurrent() const
+    {
+	    return Current;
+    }
+    int GetDevId() const
+    {
+	    return devId;
+    }
+    bool IsDevicePresent() const
+    {
+	    return Present;
+    }
     void Init(bool Available, int hwdId, int devId, unsigned char housecode, unsigned char initial_state);
     void SetID(int devID) { devId= devID;}
     void ConfigureCounter(unsigned char Pin,bool Enable);
@@ -147,24 +178,25 @@ public:
     void Sample_and_Process_Input_Interrupts(unsigned char devId);
     void GetAndSetInitialDeviceState(int devId);
 
-    int Detect_PiFace_Hardware(void);
+    int Detect_PiFace_Hardware();
 
-	std::string & preprocess(std::string &s);
-	std::string & trim(std::string &s);
-	std::string & ltrim(std::string &s);
-	std::string & rtrim(std::string &s);
-	int LocateValueInParameterArray(std::string Parametername, const std::string *ParameterArray, int Items);
-	int GetParameterString(std::string TargetString, const char * SearchStr, int StartPos, std::string &Parameter);
-	int LoadConfig(void);
-	void LoadDefaultConfig(void);
-	void AutoCreate_piface_config(void);
-private:
-	std::shared_ptr<std::thread> m_thread;
-	std::shared_ptr<std::thread> m_queue_thread;
-	StoppableTask m_TaskQueue;
+    std::string &preprocess(std::string &s);
+    std::string &trim(std::string &s);
+    std::string &ltrim(std::string &s);
+    std::string &rtrim(std::string &s);
+    int LocateValueInParameterArray(std::string Parametername, const std::string *ParameterArray, int Items);
+    int GetParameterString(std::string TargetString, const char *SearchStr, int StartPos, std::string &Parameter);
+    int LoadConfig();
+    void LoadDefaultConfig();
+    void AutoCreate_piface_config();
 
-	int m_InputSample_waitcntr;
-	int m_CounterEdgeSample_waitcntr;
+  private:
+    std::shared_ptr<std::thread> m_thread;
+    std::shared_ptr<std::thread> m_queue_thread;
+    StoppableTask m_TaskQueue;
+
+    int m_InputSample_waitcntr;
+    int m_CounterEdgeSample_waitcntr;
 
     int m_fd;
 

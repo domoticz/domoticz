@@ -16,8 +16,6 @@ CNotificationKodi::CNotificationKodi() : CNotificationBase(std::string("kodi"), 
 	SetupConfig(std::string("KodiTimeToLive"), &_TTL);
 }
 
-CNotificationKodi::~CNotificationKodi() = default;
-
 std::string CNotificationKodi::GetCustomIcon(std::string &szCustom)
 {
 	int	iIconLine = atoi(szCustom.c_str());

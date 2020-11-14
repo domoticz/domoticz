@@ -27,8 +27,6 @@ const CNotificationSystem::_tNotificationStatusTable CNotificationSystem::status
 	{ Notification::STATUS_WARNING,        "warning"         }
 };
 
-CNotificationSystem::CNotificationSystem() = default;
-
 CNotificationSystem::~CNotificationSystem()
 {
 	Stop();

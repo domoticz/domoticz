@@ -4,7 +4,7 @@
 class CNotificationSMS : public CNotificationBase {
 public:
 	CNotificationSMS();
-	~CNotificationSMS() override;
+	~CNotificationSMS() override = default;
 	bool IsConfigured() override;
 
       protected:

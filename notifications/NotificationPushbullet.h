@@ -4,7 +4,7 @@
 class CNotificationPushbullet : public CNotificationBase {
 public:
 	CNotificationPushbullet();
-	~CNotificationPushbullet() override;
+	~CNotificationPushbullet() override = default;
 	bool IsConfigured() override;
 
       protected:

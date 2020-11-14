@@ -13,7 +13,7 @@ class CNotificationBase {
 	friend class CNotificationHelper;
 protected:
 	CNotificationBase(const std::string &subsystemid, const int options = OPTIONS_NONE);
-	virtual ~CNotificationBase();
+	virtual ~CNotificationBase() = default;
 	bool SendMessage(
 		const uint64_t Idx,
 		const std::string &Name,

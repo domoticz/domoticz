@@ -25,7 +25,7 @@ namespace http {
 		class CProxyClient : ASyncTCP {
 		public:
 			CProxyClient();
-			~CProxyClient() override;
+			~CProxyClient() override = default;
 			void Reset();
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);
@@ -78,12 +78,13 @@ namespace http {
 
 		class CProxyManager {
 		public:
-			CProxyManager();
-			~CProxyManager();
-			bool Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
-			void Stop();
-			void SetWebRoot(const std::string& doc_root);
-			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
+		  CProxyManager() = default;
+		  ~CProxyManager();
+		  bool Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
+		  void Stop();
+		  void SetWebRoot(const std::string &doc_root);
+		  CProxyClient *GetProxyForMaster(DomoticzTCP *master);
+
 		private:
 			CProxyClient proxyclient;
 			std::string m_pDocRoot;

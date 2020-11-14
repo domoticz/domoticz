@@ -4,7 +4,7 @@
 class CNotificationPushover : public CNotificationBase {
 public:
 	CNotificationPushover();
-	~CNotificationPushover() override;
+	~CNotificationPushover() override = default;
 	bool IsConfigured() override;
 
       protected:

@@ -64,7 +64,7 @@ class CKodiNode : public std::enable_shared_from_this<CKodiNode>, StoppableTask
 
 public:
 	CKodiNode(boost::asio::io_service*, const int, const int, const int, const std::string&, const std::string&, const std::string&, const std::string&);
-	~CKodiNode(void);
+	~CKodiNode();
 	void			Do_Work();
 	void			SendCommand(const std::string&);
 	void			SendCommand(const std::string&, const int iValue);
@@ -122,7 +122,7 @@ class CKodi : public CDomoticzHardwareBase
 public:
 	CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms);
 	explicit CKodi(const int ID);
-	~CKodi(void) override;
+	~CKodi() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void AddNode(const std::string &Name, const std::string &IPAddress, const int Port);
 	bool UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Port);

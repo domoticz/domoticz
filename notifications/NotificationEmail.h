@@ -4,7 +4,7 @@
 class CNotificationEmail : public CNotificationBase {
 public:
 	CNotificationEmail();
-	~CNotificationEmail() override;
+	~CNotificationEmail() override = default;
 	bool IsConfigured() override;
 
       protected:
