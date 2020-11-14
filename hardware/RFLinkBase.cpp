@@ -600,7 +600,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 static std::string RFLinkGetStringValue(const std::string &svalue)
 {
 	std::string ret = "";
-	size_t pos = svalue.find("=");
+	size_t pos = svalue.find('=');
 	if (pos == std::string::npos)
 		return ret;
 	return svalue.substr(pos+1);
@@ -608,7 +608,7 @@ static std::string RFLinkGetStringValue(const std::string &svalue)
 static unsigned int RFLinkGetHexStringValue(const std::string &svalue)
 {
 	unsigned int ret = -1;
-	size_t pos = svalue.find("=");
+	size_t pos = svalue.find('=');
 	if (pos == std::string::npos)
 		return ret;
 	std::stringstream ss;
@@ -619,7 +619,7 @@ static unsigned int RFLinkGetHexStringValue(const std::string &svalue)
 static unsigned int RFLinkGetIntStringValue(const std::string &svalue)
 {
 	unsigned int ret = -1;
-	size_t pos = svalue.find("=");
+	size_t pos = svalue.find('=');
 	if (pos == std::string::npos)
 		return ret;
 	std::stringstream ss;
@@ -631,7 +631,7 @@ static unsigned int RFLinkGetIntStringValue(const std::string &svalue)
 static unsigned int RFLinkGetIntDecStringValue(const std::string &svalue)
 {
 	unsigned int ret = -1;
-	size_t pos = svalue.find(".");
+	size_t pos = svalue.find('.');
 	if (pos == std::string::npos)
 		return ret;
 	std::stringstream ss;

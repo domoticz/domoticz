@@ -272,14 +272,14 @@ static unsigned long SolarMaxGetHexStringValue(const std::string &svalue)
 void SolarMaxTCP::ParseLine()
 {
 	std::string InputStr = std::string((const char*)&m_buffer);
-	size_t npos = InputStr.find("|");
+	size_t npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
 		_log.Log(LOG_ERROR, "SolarMax: Invalid data received!");
 		return;
 	}
 	InputStr = InputStr.substr(npos + 4);
-	npos = InputStr.find("|");
+	npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
 		_log.Log(LOG_ERROR, "SolarMax: Invalid data received!");

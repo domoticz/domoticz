@@ -194,14 +194,14 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 		int flag_done = 0;
 		const std::string &uri = params;
 		while (!flag_done) {
-			q = uri.find("=", p);
+			q = uri.find('=', p);
 			if (q == std::string::npos)
 			{
 				break;
 			}
 			name = uri.substr(p, q - p);
 			p = q + 1;
-			q = uri.find("&", p);
+			q = uri.find('&', p);
 			if (q != std::string::npos)
 				value = uri.substr(p, q - p);
 			else {
@@ -211,7 +211,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 			// the browser sends blanks as +
 			while (true)
 			{
-				size_t p = value.find("+");
+				size_t p = value.find('+');
 				if (p == std::string::npos)
 					break;
 				value.replace(p, 1, " ");
@@ -259,7 +259,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 									return false;
 								}
 								vName = csubstr.substr(npos + 6);
-								npos = vName.find("\"");
+								npos = vName.find('"');
 								if (npos == std::string::npos)
 								{
 									rep = reply::stock_reply(reply::bad_request);

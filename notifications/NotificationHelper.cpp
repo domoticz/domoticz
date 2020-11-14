@@ -1410,7 +1410,7 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 					if (!splitresults[0].empty())
 						szTmp = splitresults[0];
 				}
-				if ((msg.find("!") != 0) && (msg.size() > 1))
+				if ((msg.find('!') != 0) && (msg.size() > 1))
 				{
 					szTmp.append(";;[Recovered] ");
 					szTmp.append(msg);

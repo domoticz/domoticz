@@ -128,7 +128,8 @@ void CInfluxPush::DoInfluxPush()
 			int metertype = atoi(sd[13].c_str());
 
 			std::vector<std::string> strarray;
-			if (sValue.find(";") != std::string::npos) {
+			if (sValue.find(';') != std::string::npos)
+			{
 				StringSplit(sValue, ";", strarray);
 				if (int(strarray.size()) >= delpos)
 				{

@@ -1023,7 +1023,7 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 			return;
 		}
 		m_szAuthorizationToken = szQueryResponse->substr(pos + 9);
-		pos = m_szAuthorizationToken.find(":");
+		pos = m_szAuthorizationToken.find(':');
 		if (pos == std::string::npos)
 		{
 #ifdef _DEBUG
@@ -1059,7 +1059,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 		return;
 	}
 	pos += 16;
-	size_t valueEnd = szMessageBlock->find("\"", pos);
+	size_t valueEnd = szMessageBlock->find('"', pos);
 	int msglen = atoi(szMessageBlock->substr(pos, valueEnd - pos).c_str());
 	msgStart = valueEnd + 4;
 	if (szMessageBlock->compare(msgStart, 8, "<message") != 0)
@@ -1107,7 +1107,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			if (jpos != std::string::npos)
 			{
 				m_szHubSwVersion = szMessage.substr(jpos+15, 16); // limit string length for end delimiter search
-				jpos = m_szHubSwVersion.find("\"");
+				jpos = m_szHubSwVersion.find('"');
 				if (jpos != std::string::npos)
 				{
 					if (m_szHubSwVersion.empty())
@@ -1124,7 +1124,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			if (jpos != std::string::npos)
 			{
 				activityId = szMessage.substr(jpos+22, 16); // limit string length for end delimiter search
-				jpos = activityId.find("\"");
+				jpos = activityId.find('"');
 				if (jpos != std::string::npos)
 					activityId = activityId.substr(0, jpos);
 			}
@@ -1137,7 +1137,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			if (jpos != std::string::npos)
 			{
 				stateVersion = szMessage.substr(jpos+14, 16); // limit string length for end delimiter search
-				jpos = stateVersion.find(",");
+				jpos = stateVersion.find(',');
 				if (jpos != std::string::npos)
 					stateVersion = stateVersion.substr(0, jpos);
 			}
@@ -1159,9 +1159,9 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 		if (jpos != std::string::npos)
 		{
 			szActivityId = szMessage.substr(jpos+11, 16); // limit string length for end delimiter search
-			jpos = szActivityId.find(":");
+			jpos = szActivityId.find(':');
 			if (jpos == std::string::npos)
-				jpos = szActivityId.find("]");
+				jpos = szActivityId.find(']');
 			if (jpos != std::string::npos)
 				szActivityId = szActivityId.substr(0, jpos);
 		}

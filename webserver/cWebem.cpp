@@ -374,7 +374,7 @@ namespace http {
 							if (pos == std::string::npos)
 								return false;
 							szVariable = szVariable.substr(pos + 6);
-							pos = szVariable.find("\"");
+							pos = szVariable.find('"');
 							if (pos == std::string::npos)
 								return false;
 							szVariable = szVariable.substr(0, pos);
@@ -473,12 +473,12 @@ namespace http {
 			int flag_done = 0;
 			while (!flag_done)
 			{
-				q = uri.find("=", p);
+				q = uri.find('=', p);
 				if (q == std::string::npos)
 					return false;
 				name = uri.substr(p, q - p);
 				p = q + 1;
-				q = uri.find("&", p);
+				q = uri.find('&', p);
 				if (q != std::string::npos)
 					value = uri.substr(p, q - p);
 				else
@@ -489,7 +489,7 @@ namespace http {
 				// the browser sends blanks as +
 				while (true)
 				{
-					size_t p = value.find("+");
+					size_t p = value.find('+');
 					if (p == std::string::npos)
 						break;
 					value.replace(p, 1, " ");
@@ -580,14 +580,14 @@ namespace http {
 				const std::string &uri = params;
 				while (!flag_done)
 				{
-					q = uri.find("=", p);
+					q = uri.find('=', p);
 					if (q == std::string::npos)
 					{
 						break;
 					}
 					name = uri.substr(p, q - p);
 					p = q + 1;
-					q = uri.find("&", p);
+					q = uri.find('&', p);
 					if (q != std::string::npos)
 						value = uri.substr(p, q - p);
 					else
@@ -598,7 +598,7 @@ namespace http {
 					// the browser sends blanks as +
 					while (true)
 					{
-						size_t p = value.find("+");
+						size_t p = value.find('+');
 						if (p == std::string::npos)
 							break;
 						value.replace(p, 1, " ");
@@ -643,7 +643,7 @@ namespace http {
 							if (pos == std::string::npos)
 								return true;
 							szVariable = szVariable.substr(pos + 6);
-							pos = szVariable.find("\"");
+							pos = szVariable.find('"');
 							if (pos == std::string::npos)
 								return true;
 							szVariable = szVariable.substr(0, pos);
@@ -700,14 +700,14 @@ namespace http {
 						const std::string &uri = params;
 						while (!flag_done)
 						{
-							q = uri.find("=", p);
+							q = uri.find('=', p);
 							if (q == std::string::npos)
 							{
 								break;
 							}
 							name = uri.substr(p, q - p);
 							p = q + 1;
-							q = uri.find("&", p);
+							q = uri.find('&', p);
 							if (q != std::string::npos)
 								value = uri.substr(p, q - p);
 							else
@@ -718,7 +718,7 @@ namespace http {
 							// the browser sends blanks as +
 							while (true)
 							{
-								size_t p = value.find("+");
+								size_t p = value.find('+');
 								if (p == std::string::npos)
 									break;
 								value.replace(p, 1, " ");
@@ -742,8 +742,8 @@ namespace http {
 			}
 			else
 			{
-				std::size_t last_slash_pos = request_path.find_last_of("/");
-				std::size_t last_dot_pos = request_path.find_last_of(".");
+				std::size_t last_slash_pos = request_path.find_last_of('/');
+				std::size_t last_dot_pos = request_path.find_last_of('.');
 				if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
 				{
 					extension = request_path.substr(last_dot_pos + 1);
@@ -774,8 +774,8 @@ namespace http {
 				{
 					if (boost::iequals(header.name, "Content-Disposition"))
 					{
-						attachment = header.value.substr(header.value.find("=") + 1);
-						std::size_t last_dot_pos = attachment.find_last_of(".");
+						attachment = header.value.substr(header.value.find('=') + 1);
+						std::size_t last_dot_pos = attachment.find_last_of('.');
 						if (last_dot_pos != std::string::npos)
 						{
 							extension = attachment.substr(last_dot_pos + 1);
@@ -1010,7 +1010,7 @@ namespace http {
 			}
 			else
 			{
-				size_t pos = network.find_first_of("/");
+				size_t pos = network.find_first_of('/');
 				if (pos != std::string::npos)
 				{
 					std::string szNetwork = network.substr(0, pos);
@@ -1229,7 +1229,7 @@ namespace http {
 				size_t spos, epos;
 
 				spos = dn.find("/CN=");
-				epos = dn.find("/", spos + 1);
+				epos = dn.find('/', spos + 1);
 				if (spos != std::string::npos)
 				{
 					if (epos == std::string::npos)
@@ -1240,7 +1240,7 @@ namespace http {
 				}
 
 				spos = dn.find("/emailAddress=");
-				epos = dn.find("/", spos + 1);
+				epos = dn.find('/', spos + 1);
 				if (spos != std::string::npos)
 				{
 					if (epos == std::string::npos)
@@ -1295,8 +1295,8 @@ namespace http {
 				}
 				uPos += 9; //strlen("username=")
 				pPos += 9; //strlen("password=")
-				size_t uEnd = req.uri.find("&", uPos);
-				size_t pEnd = req.uri.find("&", pPos);
+				size_t uEnd = req.uri.find('&', uPos);
+				size_t pEnd = req.uri.find('&', pPos);
 				std::string tmpuname;
 				std::string tmpupass;
 				if (uEnd == std::string::npos)
@@ -1686,7 +1686,7 @@ namespace http {
 					ppos = ppos2;
 			}
 			cmdparam = uri.substr(ppos + 7);
-			ppos = cmdparam.find("&");
+			ppos = cmdparam.find('&');
 			if (ppos != std::string::npos)
 			{
 				cmdparam = cmdparam.substr(0, ppos);
@@ -1731,8 +1731,8 @@ namespace http {
 						scookie = scookie.substr(0, epos);
 					}
 				}
-				size_t upos = scookie.find("_", fpos);
-				size_t ppos = scookie.find(".", upos);
+				size_t upos = scookie.find('_', fpos);
+				size_t ppos = scookie.find('.', upos);
 				time_t now = mytime(nullptr);
 				if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 				{
@@ -2066,7 +2066,7 @@ namespace http {
 				{
 					std::string scookie = cookie;
 					size_t fpos = scookie.find("DMZSID=");
-					size_t upos = scookie.find("_", fpos);
+					size_t upos = scookie.find('_', fpos);
 					if ((fpos != std::string::npos) && (upos != std::string::npos))
 					{
 						std::string sSID = scookie.substr(fpos + 7, upos - fpos - 7);

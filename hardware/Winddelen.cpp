@@ -264,13 +264,13 @@ void CWinddelen::GetMeterDetails()
 
 	int fpos;
 	std::string pusage = stdstring_trim(results[7]);
-	fpos = pusage.find_first_of(" ");
+	fpos = pusage.find_first_of(' ');
 	if (fpos != std::string::npos)
 		pusage = pusage.substr(0, fpos);
 	stdreplace(pusage, ",", "");
 
 	std::string pcurrent = stdstring_trim(results[2]);
-	fpos = pcurrent.find_first_of(" ");
+	fpos = pcurrent.find_first_of(' ');
 	if (fpos != std::string::npos)
 		pcurrent = pcurrent.substr(0, fpos);
 	stdreplace(pcurrent, ",", "");

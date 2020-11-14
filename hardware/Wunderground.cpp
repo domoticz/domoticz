@@ -196,7 +196,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 
 void CWunderground::GetMeterDetails()
 {
-	if (m_Location.find(",") != std::string::npos)
+	if (m_Location.find(',') != std::string::npos)
 	{
 		std::string newLocation = GetWeatherStationFromGeo();
 		if (newLocation.empty())

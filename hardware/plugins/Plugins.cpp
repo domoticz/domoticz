@@ -1999,7 +1999,7 @@ Error:
 		if (posStatus >= 0)
 		{
 			posStatus += 8;
-			szStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus) - posStatus);
+			szStatus = ExtraData.substr(posStatus, ExtraData.find('|', posStatus) - posStatus);
 			if (szStatus != "Off") szStatus = "On";
 		}
 
@@ -2008,7 +2008,7 @@ Error:
 		if (posImage >= 0)
 		{
 			posImage += 7;
-			szImageFile = szImageFolder + ExtraData.substr(posImage, ExtraData.find("|", posImage) - posImage) + ".png";
+			szImageFile = szImageFolder + ExtraData.substr(posImage, ExtraData.find('|', posImage) - posImage) + ".png";
 			if (file_exist(szImageFile.c_str()))
 			{
 				return szImageFile;
@@ -2020,7 +2020,7 @@ Error:
 		if (posCustom >= 0)
 		{
 			posCustom += 13;
-			std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+			std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
 			int iCustom = atoi(szCustom.c_str());
 			if (iCustom)
 			{
@@ -2047,7 +2047,7 @@ Error:
 		if (posType >= 0)
 		{
 			posType += 12;
-			std::string	szType = ExtraData.substr(posType, ExtraData.find("|", posType) - posType);
+			std::string szType = ExtraData.substr(posType, ExtraData.find('|', posType) - posType);
 			std::string	szTypeImage;
 			_eSwitchType switchtype = (_eSwitchType)atoi(szType.c_str());
 			switch (switchtype)
@@ -2055,7 +2055,7 @@ Error:
 			case STYPE_OnOff:
 				if (posCustom >= 0)
 				{
-					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
 				else 
@@ -2105,7 +2105,7 @@ Error:
 			case STYPE_Media:
 				if (posCustom >= 0)
 				{
-					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
 				else
@@ -2159,7 +2159,7 @@ Error:
 		if (posName >= 0)
 		{
 			posName += 6;
-			sName = ExtraData.substr(posName, ExtraData.find("|", posName) - posName);
+			sName = ExtraData.substr(posName, ExtraData.find('|', posName) - posName);
 		}
 
 		std::string	sStatus = "Unknown";
@@ -2167,7 +2167,7 @@ Error:
 		if (posStatus >= 0)
 		{
 			posStatus += 8;
-			sStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus) - posStatus);
+			sStatus = ExtraData.substr(posStatus, ExtraData.find('|', posStatus) - posStatus);
 		}
 
 		//	Add command to message queue for every plugin

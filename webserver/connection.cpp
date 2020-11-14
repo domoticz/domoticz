@@ -331,7 +331,7 @@ namespace http {
 			reply::add_header(&rep, "Last-Modified", convert_to_http_date(ftime));
 			reply::add_header(&rep, "Server", "Apache/2.2.22");
 
-			std::size_t last_dot_pos = filename.find_last_of(".");
+			std::size_t last_dot_pos = filename.find_last_of('.');
 			if (last_dot_pos != std::string::npos) {
 				std::string file_extension = filename.substr(last_dot_pos + 1);
 				std::string mime_type = mime_types::extension_to_type(file_extension);

@@ -224,7 +224,7 @@ void CHardwareMonitor::GetInternalTemperature()
 	if (tmpline.find("temp=") == std::string::npos)
 		return;
 	tmpline = tmpline.substr(5);
-	size_t pos = tmpline.find("'");
+	size_t pos = tmpline.find('\'');
 	if (pos != std::string::npos)
 	{
 		tmpline = tmpline.substr(0, pos);
@@ -344,7 +344,7 @@ void CHardwareMonitor::GetInternalVoltage()
 	if (tmpline.find("volt=") == std::string::npos)
 		return;
 	tmpline = tmpline.substr(5);
-	size_t pos = tmpline.find("'");
+	size_t pos = tmpline.find('\'');
 	if (pos != std::string::npos)
 	{
 		tmpline = tmpline.substr(0, pos);
@@ -368,7 +368,7 @@ void CHardwareMonitor::GetInternalCurrent()
 	if (tmpline.find("curr=") == std::string::npos)
 		return;
 	tmpline = tmpline.substr(5);
-	size_t pos = tmpline.find("'");
+	size_t pos = tmpline.find('\'');
 	if (pos != std::string::npos)
 	{
 		tmpline = tmpline.substr(0, pos);

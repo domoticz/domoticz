@@ -121,13 +121,13 @@ public:
 		size_t p = q;
 		int flag_done = 0;
 		while (!flag_done) {
-			q = uri.find("=", p);
+			q = uri.find('=', p);
 			if (q == std::string::npos) {
 				return;
 			}
 			name = uri.substr(p, q - p);
 			p = q + 1;
-			q = uri.find("&", p);
+			q = uri.find('&', p);
 			if (q != std::string::npos) {
 				value = uri.substr(p, q - p);
 			} else {
@@ -137,7 +137,7 @@ public:
 			// the browser sends blanks as +
 			while (true)
 			{
-				size_t p2 = value.find("+");
+				size_t p2 = value.find('+');
 				if (p2 == std::string::npos) {
 					break;
 				}

@@ -192,7 +192,8 @@ public:
 				if (error_message.empty()) {
 					error_message.append("unknown SSL option(s) : ");
 				}
-				if (error_message.find("'") != std::string::npos) {
+				if (error_message.find('\'') != std::string::npos)
+				{
 					error_message.append(", ");
 				}
 				error_message.append("'").append(option).append("'");

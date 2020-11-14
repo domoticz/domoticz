@@ -163,7 +163,7 @@ void bt_openwebnet::Set_who_where_dimension()
   }
   // WHERE
   sup = m_frameOpen.substr(2 + m_who.length() + 1);
-  if(sup.find("*") == std::string::npos)
+  if (sup.find('*') == std::string::npos)
 	  m_where = sup.substr(0, sup.length() - 2);
   else
   {
@@ -171,8 +171,8 @@ void bt_openwebnet::Set_who_where_dimension()
 		m_where = FirstToken(sup, "*");
     // DIMENSION
     sup = m_frameOpen.substr(2 + m_who.length() + 1 + m_where.length() + 1);
-    if(sup.find("*") == std::string::npos)
-		m_dimension = sup.substr(0, sup.length() - 2);
+    if (sup.find('*') == std::string::npos)
+	    m_dimension = sup.substr(0, sup.length() - 2);
     else
     {
 		if (sup.at(0) != '*') {
@@ -181,7 +181,7 @@ void bt_openwebnet::Set_who_where_dimension()
       // VALUES **##
       sup = m_frameOpen.substr(2 + m_who.length() + 1 + m_where.length() + 1 + m_dimension.length() + 1);
       size_t len = 2 + m_who.length() + 1 + m_where.length() + 1 + m_dimension.length() + 1;
-      while ((sup.find("*") != std::string::npos) && (sup.at(0) != '*'))
+      while ((sup.find('*') != std::string::npos) && (sup.at(0) != '*'))
       {
 		std::string strValue = FirstToken(sup, "*");
 		m_values.push_back(strValue);
@@ -214,7 +214,8 @@ void bt_openwebnet::Set_who_where()
   }
   // WHERE
   sup = m_frameOpen.substr(2 + m_who.length() + 1);
-  if (sup.find("*") == std::string::npos) {
+  if (sup.find('*') == std::string::npos)
+  {
 	  m_where = sup.substr(0, sup.length() - 2);
   }
   else {
@@ -241,7 +242,8 @@ void bt_openwebnet::Set_who_what_where_when()
 	}
 	// what
 	sup = m_frameOpen.substr(1 + m_who.length() + 1);
-	if (sup.find("*") == std::string::npos) {
+	if (sup.find('*') == std::string::npos)
+	{
 		m_what = sup.substr(0, sup.length() - 2);
 	}
 	else {
@@ -249,7 +251,8 @@ void bt_openwebnet::Set_who_what_where_when()
 			m_what = FirstToken(sup, "*");
 		// where
 		sup = m_frameOpen.substr(1 + m_who.length() + 1 + m_what.length() + 1);
-		if (sup.find("*") == std::string::npos) {
+		if (sup.find('*') == std::string::npos)
+		{
 			m_where = sup.substr(0, sup.length() - 2);
 		}
 		else
@@ -259,7 +262,8 @@ void bt_openwebnet::Set_who_what_where_when()
 
 			// when
 			sup = m_frameOpen.substr(1 + m_who.length() + 1 + m_what.length() + 1 + m_where.length() + 1);
-			if (sup.find("*") == std::string::npos) {
+			if (sup.find('*') == std::string::npos)
+			{
 				m_when = sup.substr(0, sup.length() - 2);
 			}
 			else
@@ -400,7 +404,7 @@ void bt_openwebnet::Set_address()
 	sup = m_who;
 	orig = m_who;
 
-	if (sup.find("#") != std::string::npos)
+	if (sup.find('#') != std::string::npos)
 	{
 		m_who = FirstToken(sup, "#");
 		// ADDRESS

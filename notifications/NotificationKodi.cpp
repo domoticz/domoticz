@@ -88,7 +88,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 #ifdef WIN32
 		szImageFile = szWWWFolder  + "\\images\\" + ExtraData.substr(posImage, ExtraData.find("|", posImage)-posImage) + ".png";
 #else
-		szImageFile = szWWWFolder  + "/images/" + ExtraData.substr(posImage, ExtraData.find("|", posImage)-posImage) + ".png";
+		szImageFile = szWWWFolder + "/images/" + ExtraData.substr(posImage, ExtraData.find('|', posImage) - posImage) + ".png";
 #endif
 		if (file_exist(szImageFile.c_str()))
 		{
@@ -102,14 +102,14 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 	if (posStatus >= 0)
 	{
 		posStatus+=8;
-		szStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus)-posStatus);
+		szStatus = ExtraData.substr(posStatus, ExtraData.find('|', posStatus) - posStatus);
 	}
 
 	// if a switch type was supplied try and work out the image
 	if (posType >= 0)
 	{
 		posType+=12;
-		std::string	szType = ExtraData.substr(posType, ExtraData.find("|", posType)-posType);
+		std::string szType = ExtraData.substr(posType, ExtraData.find('|', posType) - posType);
 		std::string	szTypeImage;
 		_eSwitchType switchtype=(_eSwitchType)atoi(szType.c_str());
 		switch (switchtype)
@@ -118,7 +118,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 				if (posCustom >= 0)
 				{
 					posCustom+=13;
-					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom)-posCustom);
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
 				else szTypeImage = "Light48";
@@ -168,7 +168,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 				if (posCustom >= 0)
 				{
 					posCustom += 13;
-					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
 				else szTypeImage = "Media48";
@@ -260,7 +260,7 @@ bool CNotificationKodi::SendMessageImplementation(
 		if (posDevice != std::string::npos)
 		{
 			posDevice+=6;
-			sSubject = ExtraData.substr(posDevice, ExtraData.find("|", posDevice)-posDevice);
+			sSubject = ExtraData.substr(posDevice, ExtraData.find('|', posDevice) - posDevice);
 		}
 	}
 

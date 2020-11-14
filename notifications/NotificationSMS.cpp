@@ -41,7 +41,8 @@ bool CNotificationSMS::SendMessageImplementation(
 	stdreplace(thisFrom, " ", "");
 	thisFrom = stdstring_trim(thisFrom);
 
-	if (thisTo.find(";") != std::string::npos) {
+	if (thisTo.find(';') != std::string::npos)
+	{
 		std::vector<std::string> recipients;
 		StringSplit(thisTo, ";", recipients);
 

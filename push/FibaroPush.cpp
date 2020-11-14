@@ -111,7 +111,8 @@ void CFibaroPush::DoFibaroPush()
 				}
 				else if (delpos > 0) {
 					std::vector<std::string> strarray;
-					if (sValue.find(";") != std::string::npos) {
+					if (sValue.find(';') != std::string::npos)
+					{
 						StringSplit(sValue, ";", strarray);
 						if (int(strarray.size()) >= delpos)
 						{

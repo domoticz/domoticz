@@ -141,7 +141,7 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 			//Execute possible script
 			std::string scriptname = OnAction.substr(9);
 #if !defined WIN32
-			if (scriptname.find("/") != 0)
+			if (scriptname.find('/') != 0)
 				scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 			std::string scriptparams = "";

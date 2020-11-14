@@ -195,7 +195,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			gethostname(hostname, sizeof(hostname));
 
 			std::vector<std::string> strarray;
-			if (sendValue.find(";") != std::string::npos)
+			if (sendValue.find(';') != std::string::npos)
 			{
 				StringSplit(sendValue, ";", strarray);
 				if (int(strarray.size()) >= delpos)
