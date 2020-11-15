@@ -9,7 +9,7 @@ class Arilux : public CDomoticzHardwareBase
 	explicit Arilux(int ID);
 	~Arilux() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
-	void InsertUpdateSwitch(std::string name, int switchType, std::string location);
+	void InsertUpdateSwitch(const std::string &name, int switchType, const std::string &location);
 
       private:
 	bool SendTCPCommand(uint32_t ip, std::vector<unsigned char> &command);

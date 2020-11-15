@@ -43,5 +43,5 @@ class CDenkoviUSBDevices : public CDomoticzHardwareBase, AsyncSerial
 	bool m_updateIo = false;
 
       protected:
-	void OnError(std::exception e);
+	void OnError(const std::exception &e);
 };

@@ -2528,7 +2528,8 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 #ifdef ENABLE_PYTHON
 
 // Python EventModule helper functions
-bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
+bool CEventSystem::PythonScheduleEvent(const std::string &ID, const std::string &Action, const std::string &eventName)
+{
 	if (ID.find("Variable:") == 0) {
 		std::string variableName = ID.substr(9);
 
@@ -3424,7 +3425,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	return scriptTrue;
 }
 
-void CEventSystem::report_errors(lua_State *L, int status, std::string filename)
+void CEventSystem::report_errors(lua_State *L, int status, const std::string &filename)
 {
 	if (status != 0) {
 		_log.Log(LOG_ERROR, "EventSystem: in %s: %s", filename.c_str(), lua_tostring(L, -1));

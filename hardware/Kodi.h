@@ -184,7 +184,7 @@ class CKodiNode : public std::enable_shared_from_this<CKodiNode>, StoppableTask
       private:
 	void handleConnect();
 	void handleRead(const boost::system::error_code &, std::size_t);
-	void handleWrite(std::string);
+	void handleWrite(const std::string &);
 	void handleDisconnect();
 	void handleMessage(std::string &);
 

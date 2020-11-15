@@ -102,7 +102,7 @@ void CInComfort::SetSetpoint(const int /*idx*/, const float temp)
 		ParseAndUpdateDevices(jsonData);
 }
 
-std::string CInComfort::GetHTTPData(std::string sURL)
+std::string CInComfort::GetHTTPData(const std::string &sURL)
 {
 	// Get Data
 	std::vector<std::string> ExtraHeaders;
@@ -146,7 +146,7 @@ void CInComfort::SetProgramState(const int /*newState*/)
 {
 }
 
-void CInComfort::ParseAndUpdateDevices(std::string jsonData)
+void CInComfort::ParseAndUpdateDevices(const std::string &jsonData)
 {
 	Json::Value root;
 	bool bRet = ParseJSon(jsonData, root);

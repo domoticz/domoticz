@@ -82,7 +82,7 @@ class XiaomiGateway : public CDomoticzHardwareBase
 	std::string m_GatewayVolume;
 	std::mutex m_mutex;
 
-	XiaomiGateway *GatewayByIp(std::string ip);
+	XiaomiGateway *GatewayByIp(const std::string &ip);
 	void AddGatewayToList();
 	void RemoveFromGatewayList();
 

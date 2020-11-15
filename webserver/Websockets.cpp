@@ -2,6 +2,8 @@
 #include "Websockets.hpp"
 #include <json/json.h>
 
+#include <utility>
+
 #define FIN_MASK 0x80
 #define RSVI1_MASK 0x40
 #define RSVI2_MASK 0x20
@@ -158,10 +160,10 @@ namespace http {
 
 		CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, cWebem *_webEm, boost::function<void(const std::string &packet_data)> _WSWrite)
 			: OUR_PING_ID("fd")
-			, handler(_webEm, _WSWrite)
+			, handler(_webEm, std::move(_WSWrite))
 		{
 			start_new_packet = true;
-			MyWrite = _MyWrite;
+			MyWrite = std::move(_MyWrite);
 		}
 
 		boost::tribool CWebsocket::parse(const uint8_t *begin, size_t size, size_t &bytes_consumed, bool &keep_alive)

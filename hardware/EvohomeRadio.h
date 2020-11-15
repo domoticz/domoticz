@@ -84,7 +84,7 @@ class CEvohomeRadio : public CEvohomeBase
 	void ProcessMsg(const char *rawmsg);
 	bool DecodePayload(CEvohomeMsg &msg);
 
-	void RegisterDecoder(unsigned int cmd, fnc_evohome_decode fndecoder);
+	void RegisterDecoder(unsigned int cmd, const fnc_evohome_decode &fndecoder);
 	bool DecodeSetpoint(CEvohomeMsg &msg);
 	bool DecodeSetpointOverride(CEvohomeMsg &msg);
 	bool DecodeZoneTemp(CEvohomeMsg &msg);

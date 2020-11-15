@@ -600,14 +600,16 @@ float CDenkoviDevices::DenkoviGetFloatParameter(std::string tmpstr, const std::s
 	return value;
 }
 
-std::string CDenkoviDevices::DAEnetIP3GetIo(std::string tmpstr, const std::string &tmpParameter) {
+std::string CDenkoviDevices::DAEnetIP3GetIo(const std::string &tmpstr, const std::string &tmpParameter)
+{
 	std::string parameter = tmpParameter + "=";
 	size_t pos1 = tmpstr.find(parameter);
 	size_t pos2 = tmpstr.find(';', pos1);
 	return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str())));
 }
 
-std::string CDenkoviDevices::DAEnetIP3GetAi(std::string tmpstr, const std::string &tmpParameter, const int &ciType) {
+std::string CDenkoviDevices::DAEnetIP3GetAi(const std::string &tmpstr, const std::string &tmpParameter, const int &ciType)
+{
 	std::string parameter = tmpParameter + "=";
 	size_t pos1 = tmpstr.find(parameter);
 	size_t pos2;
@@ -624,7 +626,8 @@ std::string CDenkoviDevices::DAEnetIP3GetAi(std::string tmpstr, const std::strin
 	return "";// tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str()))).c_str();
 }
 
-uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(std::string tmpstr, const int &port) {
+uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(const std::string &tmpstr, const int &port)
+{
 	std::stringstream ss;
 	size_t pos1, pos2;
 	int b;
@@ -646,7 +649,8 @@ uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(std::string tmpstr, const int &port)
 	return 0;
 }
 
-std::string CDenkoviDevices::DAEnetIP2GetName(std::string tmpstr, const int &nmr) {//nmr should be from 1 to 24
+std::string CDenkoviDevices::DAEnetIP2GetName(const std::string &tmpstr, const int &nmr)
+{ // nmr should be from 1 to 24
 	size_t pos1 = 0, pos2 = 0;
 	for (uint8_t ii = 0; ii < (((nmr - 1) * 2) + 1); ii++) {
 		pos1 = tmpstr.find('"', pos1 + 1);
@@ -655,7 +659,8 @@ std::string CDenkoviDevices::DAEnetIP2GetName(std::string tmpstr, const int &nmr
 	return tmpstr.substr(pos1 + 1, pos2 - (pos1 + 1));
 }
 
-uint16_t CDenkoviDevices::DAEnetIP2GetAiValue(std::string tmpstr, const int &aiNmr) {
+uint16_t CDenkoviDevices::DAEnetIP2GetAiValue(const std::string &tmpstr, const int &aiNmr)
+{
 	size_t pos1 = 0, pos2 = 0;
 	std::stringstream ss;
 	int b = 0;

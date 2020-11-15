@@ -60,7 +60,7 @@ bool CDenkoviTCPDevices::StartHardware()
 	return (m_thread != nullptr);
 }
 
-void CDenkoviTCPDevices::ConvertResponse(const std::string pData, const size_t length)
+void CDenkoviTCPDevices::ConvertResponse(const std::string &pData, const size_t length)
 {
 	m_pResp.trId[0] = pData[0];
 	m_pResp.trId[1] = pData[1];

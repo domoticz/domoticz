@@ -16,7 +16,7 @@
 
 namespace Plugins {
 
-	CPluginProtocol* CPluginProtocol::Create(std::string sProtocol)
+	CPluginProtocol *CPluginProtocol::Create(const std::string &sProtocol)
 	{
 		if (sProtocol == "Line") return (CPluginProtocol*) new CPluginProtocolLine();
 		if (sProtocol == "XML")
@@ -236,7 +236,7 @@ namespace Plugins {
 		return pRetVal;
 	}
 
-	PyObject* CPluginProtocolJSON::JSONtoPython(std::string	sData)
+	PyObject *CPluginProtocolJSON::JSONtoPython(const std::string &sData)
 	{
 		Json::Value		root;
 		PyObject* pRetVal = Py_None;

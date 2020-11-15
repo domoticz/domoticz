@@ -68,7 +68,7 @@ private:
 	void InsertUpdateLamp(int NodeID, _eHueLightType LType, _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string &modelid, bool AddMissingDevice);
 	bool InsertUpdateSelectorSwitch(int NodeID, uint8_t Unitcode, uint8_t selectorLevel, const std::string &Name, uint8_t BatteryLevel);
 	void InsertUpdateSwitch(int NodeID, uint8_t Unitcode, _eSwitchType SType, bool bIsOn, const std::string &Name, uint8_t BatteryLevel);
-	void SetSwitchOptions(int NodeID, uint8_t Unitcode, std::map<std::string, std::string> options);
+	void SetSwitchOptions(int NodeID, uint8_t Unitcode, const std::map<std::string, std::string> &options);
 	bool SwitchLight(int nodeID, const std::string &LCmd, int svalue, int svalue2 = 0, int svalue3 = 0);
 	static void LightStateFromJSON(const Json::Value &lightstate, _tHueLightState &tlight, _eHueLightType &LType);
 	static void RgbFromXY(double x, double y, double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8);

@@ -34,7 +34,7 @@ Domoticz need to be in the same network/subnet with multicast working
 std::list<XiaomiGateway*> gatewaylist;
 std::mutex gatewaylist_mutex;
 
-XiaomiGateway * XiaomiGateway::GatewayByIp(std::string ip)
+XiaomiGateway *XiaomiGateway::GatewayByIp(const std::string &ip)
 {
 	std::unique_lock<std::mutex> lock(gatewaylist_mutex);
 	for (const auto &gateway : gatewaylist)

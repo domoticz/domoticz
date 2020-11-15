@@ -53,7 +53,7 @@ protected:
 
 	_tRemoteShareUser* FindUser(const std::string &username);
 
-	bool HandleAuthentication(CTCPClient_ptr c, const std::string &username, const std::string &password);
+	bool HandleAuthentication(const CTCPClient_ptr &c, const std::string &username, const std::string &password);
 	void DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand);
 
 	std::vector<_tRemoteShareUser> m_users;

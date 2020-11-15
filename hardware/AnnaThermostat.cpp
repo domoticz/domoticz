@@ -79,7 +79,7 @@ CAnnaThermostat::CAnnaThermostat(const int ID, const std::string& IPAddress, con
 	Init();
 }
 
-void CAnnaThermostat::OnError(const std::exception e)
+void CAnnaThermostat::OnError(const std::exception &e)
 {
 	_log.Log(LOG_ERROR, "AnnaTherm: Error: %s", e.what());
 }

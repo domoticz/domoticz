@@ -280,7 +280,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem CustomEvent(const float DelayTime, const std::string& namestr, const std::string parameterstr)
+	static _tTaskItem CustomEvent(const float DelayTime, const std::string &namestr, const std::string &parameterstr)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_CUSTOM_EVENT;

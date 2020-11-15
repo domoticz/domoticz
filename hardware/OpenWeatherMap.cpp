@@ -357,7 +357,7 @@ Json::Value COpenWeatherMap::GetForecastData()
 	return root;
 }
 
-std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, std::string UTCtimestamp)
+std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, const std::string &UTCtimestamp)
 {
 	std::string sHour = "Unknown";
 
@@ -389,7 +389,7 @@ std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, std::
 	return sHour;
 }
 
-std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, std::string UTCtimestamp)
+std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, const std::string &UTCtimestamp)
 {
 	std::string sDay = "Unknown";
 
@@ -427,7 +427,7 @@ std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, std::st
 	return sDay;
 }
 
-bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string period, const std::string periodname, const uint8_t count, const int startNodeID)
+bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &period, const std::string &periodname, const uint8_t count, const int startNodeID)
 {
 	bool bResult = false;
 

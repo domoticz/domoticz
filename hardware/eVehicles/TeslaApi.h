@@ -18,7 +18,7 @@ License: Public domain
 class CTeslaApi: public CVehicleApi
 {
 public:
-  CTeslaApi(std::string username, std::string password, std::string vin);
+  CTeslaApi(const std::string &username, const std::string &password, const std::string &vin);
   ~CTeslaApi() override = default;
 
   bool Login() override;
@@ -37,15 +37,15 @@ private:
 		Post,
 		Get
 	};
-	bool GetData(std::string datatype, Json::Value& reply);
-	bool SendCommand(std::string command, Json::Value& reply, std::string parameters = "");
+	bool GetData(const std::string &datatype, Json::Value &reply);
+	bool SendCommand(const std::string &command, Json::Value &reply, const std::string &parameters = "");
 	bool FindCarInAccount();
 	void GetLocationData(Json::Value& jsondata, tLocationData& data);
 	void GetChargeData(Json::Value& jsondata, tChargeData& data);
 	void GetClimateData(Json::Value& jsondata, tClimateData& data);
 	void GetVehicleData(Json::Value& jsondata, tVehicleData& data);
 	void GetUnitData(Json::Value& jsondata, tConfigData& data);
-	bool GetAuthToken(std::string username, std::string password, bool refreshUsingToken = false);
+	bool GetAuthToken(const std::string &username, const std::string &password, bool refreshUsingToken = false);
 	bool SendToApi(eApiMethod eMethod, const std::string &sUrl, const std::string &sPostData, std::string &sResponse, const std::vector<std::string> &vExtraHeaders, Json::Value &jsDecodedResponse,
 		       bool bSendAuthHeaders = true, int timeout = 0);
 

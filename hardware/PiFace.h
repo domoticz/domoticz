@@ -200,8 +200,8 @@ class CPiFace : public CDomoticzHardwareBase
 	std::string &trim(std::string &s);
 	std::string &ltrim(std::string &s);
 	std::string &rtrim(std::string &s);
-	int LocateValueInParameterArray(std::string Parametername, const std::string *ParameterArray, int Items);
-	int GetParameterString(std::string TargetString, const char *SearchStr, int StartPos, std::string &Parameter);
+	int LocateValueInParameterArray(const std::string &Parametername, const std::string *ParameterArray, int Items);
+	int GetParameterString(const std::string &TargetString, const char *SearchStr, int StartPos, std::string &Parameter);
 	int LoadConfig();
 	void LoadDefaultConfig();
 	void AutoCreate_piface_config();

@@ -729,7 +729,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 }
 
 // Grabs the web app environment file
-bool CTado::GetTadoApiEnvironment(std::string sUrl)
+bool CTado::GetTadoApiEnvironment(const std::string &sUrl)
 {
 	Debug(DEBUG_HARDWARE, "GetTadoApiEnvironment called with sUrl=%s", sUrl.c_str());
 

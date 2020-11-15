@@ -124,7 +124,7 @@ _tRemoteShareUser* CTCPServerIntBase::FindUser(const std::string &username)
 	return nullptr;
 }
 
-bool CTCPServerIntBase::HandleAuthentication(CTCPClient_ptr c, const std::string &username, const std::string &password)
+bool CTCPServerIntBase::HandleAuthentication(const CTCPClient_ptr &c, const std::string &username, const std::string &password)
 {
 	_tRemoteShareUser *pUser=FindUser(username);
 	if (pUser == nullptr)

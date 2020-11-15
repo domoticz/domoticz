@@ -490,7 +490,7 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 	std::size_t pos1 = receivedString.substr(pos).find(endString);
 	std::string dataString = receivedString.substr(pos, pos1);
 
-	std::string yeelightLocation = dataString;
+	const std::string &yeelightLocation = dataString;
 	// check if we have received this ip already
 	for (const auto &ip : receivedip)
 	{

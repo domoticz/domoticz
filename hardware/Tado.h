@@ -61,7 +61,7 @@ class CTado : public CDomoticzHardwareBase
 		Delete
 	};
 
-	bool GetTadoApiEnvironment(std::string url);
+	bool GetTadoApiEnvironment(const std::string &url);
 	bool Login();
 	bool GetHomes();
 	bool GetZones(_tTadoHome &TadoHome);

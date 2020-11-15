@@ -828,7 +828,7 @@ namespace Plugins {
 		return m_iPollInterval;
 	}
 
-	void CPlugin::Notifier(std::string Notifier)
+	void CPlugin::Notifier(const std::string &Notifier)
 	{
 		delete m_Notifier;
 		m_Notifier = nullptr;
@@ -1734,7 +1734,7 @@ Error:
 			PyEval_SaveThread();
 	}
 
-	void CPlugin::Callback(std::string sHandler, void * pParams)
+	void CPlugin::Callback(const std::string &sHandler, void *pParams)
 	{
 		try
 		{

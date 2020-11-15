@@ -42,6 +42,8 @@
 #include <sstream>
 #include <exception>
 #include <stdexcept>
+#include <utility>
+#include <utility>
 #include "v8stdint.h"
 
 #define THROW(exceptionClass, message) throw exceptionClass(__FILE__, \
@@ -317,8 +319,7 @@ public:
    * \throw serial::PortNotOpenedException
    * \throw serial::SerialException
    */
-  size_t
-  readline (std::string &buffer, size_t size = 65536, std::string eol = "\n");
+  size_t readline(std::string &buffer, size_t size = 65536, const std::string &eol = "\n");
 
   /*! Reads in a line or until a given delimiter has been processed.
    *
@@ -332,8 +333,7 @@ public:
    * \throw serial::PortNotOpenedException
    * \throw serial::SerialException
    */
-  std::string
-  readline (size_t size = 65536, std::string eol = "\n");
+  std::string readline(size_t size = 65536, const std::string &eol = "\n");
 
   /*! Reads in multiple lines until the serial port times out.
    *
@@ -349,8 +349,7 @@ public:
    * \throw serial::PortNotOpenedException
    * \throw serial::SerialException
    */
-  std::vector<std::string>
-  readlines (size_t size = 65536, std::string eol = "\n");
+  std::vector<std::string> readlines(size_t size = 65536, const std::string &eol = "\n");
 
   /*! Write a string to the serial port.
    *
@@ -696,9 +695,12 @@ public:
   // Disable copy constructors
   IOException &operator=(const IOException &) = delete;
 
-  explicit IOException (std::string file, int line, int errnum)
-    : file_(file), line_(line), errno_(errnum) {
-      std::stringstream ss;
+  explicit IOException(std::string file, int line, int errnum)
+	  : file_(std::move(std::move(file)))
+	  , line_(line)
+	  , errno_(errnum)
+  {
+	  std::stringstream ss;
 #if defined(_WIN32) && !defined(__MINGW32__)
       char error_str [1024];
       strerror_s(error_str, 1024, errnum);
@@ -709,12 +711,15 @@ public:
       ss << ", file " << file_ << ", line " << line_ << ".";
       e_what_ = ss.str();
   }
-  explicit IOException (std::string file, int line, const char * description)
-    : file_(file), line_(line), errno_(0) {
-      std::stringstream ss;
-      ss << "IO Exception: " << description;
-      ss << ", file " << file_ << ", line " << line_ << ".";
-      e_what_ = ss.str();
+  explicit IOException(std::string file, int line, const char *description)
+	  : file_(std::move(std::move(file)))
+	  , line_(line)
+	  , errno_(0)
+  {
+	  std::stringstream ss;
+	  ss << "IO Exception: " << description;
+	  ss << ", file " << file_ << ", line " << line_ << ".";
+	  e_what_ = ss.str();
   }
   ~IOException() noexcept override = default;
   IOException (const IOException& other) : line_(other.line_), e_what_(other.e_what_), errno_(other.errno_) {}

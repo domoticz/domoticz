@@ -6,19 +6,21 @@ extern "C" {
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+
+#include <utility>
 }
 
-CLuaTable::CLuaTable(lua_State *lua_state, std::string Name)
+CLuaTable::CLuaTable(lua_State *lua_state, const std::string &Name)
 {
 	InitTable(lua_state, Name, 0, 0);
 }
 
-CLuaTable::CLuaTable(lua_State *lua_state, std::string Name, int NrCols, int NrRows)
+CLuaTable::CLuaTable(lua_State *lua_state, const std::string &Name, int NrCols, int NrRows)
 {
 	InitTable(lua_state, Name, NrCols, NrRows);
 }
 
-void CLuaTable::InitTable(lua_State* lua_state, std::string Name, int NrCols, int NrRows)
+void CLuaTable::InitTable(lua_State *lua_state, const std::string &Name, int NrCols, int NrRows)
 {
 	m_lua_state = lua_state;
 	m_name = Name;
@@ -38,8 +40,8 @@ void CLuaTable::AddString(std::string Label, std::string Value)
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_LABEL;
 	tableEntry.value_type = TYPE_STRING;
-	tableEntry.label = Label;
-	tableEntry.sValue = Value;
+	tableEntry.label = std::move(Label);
+	tableEntry.sValue = std::move(Value);
 	m_luatable.push_back(tableEntry);
 }
 
@@ -48,7 +50,7 @@ void CLuaTable::AddBool(std::string Label, bool Value)
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_LABEL;
 	tableEntry.value_type = TYPE_BOOL;
-	tableEntry.label = Label;
+	tableEntry.label = std::move(Label);
 	tableEntry.bValue = Value;
 	m_luatable.push_back(tableEntry);
 }
@@ -58,7 +60,7 @@ void CLuaTable::AddNumber(std::string Label, long double Value)
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_LABEL;
 	tableEntry.value_type = TYPE_NUMBER;
-	tableEntry.label = Label;
+	tableEntry.label = std::move(Label);
 	tableEntry.dValue = Value;
 	m_luatable.push_back(tableEntry);
 }
@@ -68,7 +70,7 @@ void CLuaTable::AddInteger(std::string Label, long long Value)
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_LABEL;
 	tableEntry.value_type = TYPE_INTEGER;
-	tableEntry.label = Label;
+	tableEntry.label = std::move(Label);
 	tableEntry.iValue = Value;
 	m_luatable.push_back(tableEntry);
 }
@@ -91,7 +93,7 @@ void CLuaTable::AddString(long long Index, std::string Value)
 	tableEntry.value_type = TYPE_STRING;
 	//tableEntry.label = std::to_string(Index);
 	tableEntry.index = Index;
-	tableEntry.sValue = Value;
+	tableEntry.sValue = std::move(Value);
 	m_luatable.push_back(tableEntry);
 }
 
@@ -133,7 +135,7 @@ void CLuaTable::OpenSubTableEntry(std::string Name, int NrCols, int NrRows)
 {
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_SUBTABLE_OPEN_LABEL;
-	tableEntry.label = Name;
+	tableEntry.label = std::move(Name);
 	tableEntry.nrCols = NrCols;
 	tableEntry.nrRows = NrRows;
 	m_luatable.push_back(tableEntry);

@@ -62,7 +62,7 @@ class CDenkoviTCPDevices : public CDomoticzHardwareBase, ASyncTCP
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-	void ConvertResponse(std::string pData, size_t length);
+	void ConvertResponse(const std::string &pData, size_t length);
 	void CreateRequest(uint8_t *pData, size_t length);
 
       private:

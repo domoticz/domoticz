@@ -320,7 +320,7 @@ uint32_t COpenWebNetTCP::ownCalcPass(const std::string &password, const std::str
 /**
 	Perform conversion 80/128 DEC-chars to 40/64 HEX-chars
 **/
-std::string COpenWebNetTCP::decToHexStrConvert(std::string paramString)
+std::string COpenWebNetTCP::decToHexStrConvert(const std::string &paramString)
 {
 	char retStr[256];
 	size_t idxb, idxh;
@@ -335,7 +335,7 @@ std::string COpenWebNetTCP::decToHexStrConvert(std::string paramString)
 /**
 	Perform conversion HEX-40/64 chars to 80/128 DEC-chars
 **/
-std::string COpenWebNetTCP::hexToDecStrConvert(std::string paramString)
+std::string COpenWebNetTCP::hexToDecStrConvert(const std::string &paramString)
 {
 	uint32_t bval;
 	size_t idxb, idxh;
@@ -371,7 +371,7 @@ std::string COpenWebNetTCP::byteToHexStrConvert(uint8_t *digest, size_t digestLe
 /**
 	Perform SHA1/SHA256 and convert into HEX-chars
 **/
-std::string COpenWebNetTCP::shaCalc(std::string paramString, int auth_type)
+std::string COpenWebNetTCP::shaCalc(const std::string &paramString, int auth_type)
 {
 	uint8_t *digest;
 	uint8_t strArray[OPENWEBNET_BUFFER_SIZE];
@@ -456,7 +456,7 @@ bool COpenWebNetTCP::hmacAuthentication(csocket *connectionSocket, int auth_type
 /**
 	Perform nonce-hash authentication
 **/
-bool COpenWebNetTCP::nonceHashAuthentication(csocket *connectionSocket, std::string nonce)
+bool COpenWebNetTCP::nonceHashAuthentication(csocket *connectionSocket, const std::string &nonce)
 {
 	std::stringstream frame;
 	/** calculate nonce-hash **/
@@ -991,7 +991,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 /**
 	Decode where and get tipe of command with details..
 **/
-void COpenWebNetTCP::decodeWhereAndFill(const int who, std::string where, std::vector<std::string> whereParam, std::string *devname, int *iWhere)
+void COpenWebNetTCP::decodeWhereAndFill(const int who, const std::string &where, std::vector<std::string> whereParam, std::string *devname, int *iWhere)
 {
 	int wlen = where.length();	
 	int iArea = -1;

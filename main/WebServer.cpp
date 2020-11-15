@@ -708,7 +708,7 @@ namespace http {
 			m_pWebEm->SetWebRoot(webRoot);
 		}
 
-		void CWebServer::RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication)
+		void CWebServer::RegisterCommandCode(const char *idname, const webserver_response_function &ResponseFunction, bool bypassAuthentication)
 		{
 			m_webcommands.insert(std::pair<std::string, webserver_response_function >(std::string(idname), ResponseFunction));
 			if (bypassAuthentication)
@@ -717,7 +717,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RegisterRType(const char* idname, webserver_response_function ResponseFunction)
+		void CWebServer::RegisterRType(const char *idname, const webserver_response_function &ResponseFunction)
 		{
 			m_webrtypes.insert(std::pair<std::string, webserver_response_function >(std::string(idname), ResponseFunction));
 		}

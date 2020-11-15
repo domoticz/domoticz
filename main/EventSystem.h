@@ -128,7 +128,7 @@ public:
 	void GetCurrentUserVariables();
 	bool UpdateSceneGroup(uint64_t ulDevID, int nValue, const std::string &lastUpdate);
 	void UpdateUserVariable(uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate);
-	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
+	bool PythonScheduleEvent(const std::string &ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(uint64_t ulDevID, _eReason reason, bool bEventTrigger);
 	void SetEventTrigger(uint64_t ulDevID, _eReason reason, float fDelayTime);
 	bool CustomCommand(uint64_t idx, const std::string &sCommand);
@@ -271,7 +271,7 @@ private:
 	bool isEventscheduled(const std::string &eventName);
 	bool iterateLuaTable(lua_State *lua_state, int tIndex, const std::string &filename);
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename);
-	void report_errors(lua_State *L, int status, std::string filename);
+	void report_errors(lua_State *L, int status, const std::string &filename);
 	int calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);
 	std::string SpaceToUnderscore(std::string sResult);

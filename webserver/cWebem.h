@@ -160,30 +160,16 @@ namespace http {
 			void Run();
 			void Stop();
 
-			void RegisterIncludeCode(
-				const char* idname,
-				webem_include_function fun );
+			void RegisterIncludeCode(const char *idname, const webem_include_function &fun);
 
-			void RegisterIncludeCodeW(
-				const char* idname,
-				webem_include_function_w fun );
+			void RegisterIncludeCodeW(const char *idname, const webem_include_function_w &fun);
 
-			void RegisterPageCode(
-				const char* pageurl,
-				webem_page_function fun,
-				bool bypassAuthentication = false
-			);
-			void RegisterPageCodeW(
-				const char* pageurl,
-				webem_page_function fun,
-				bool bypassAuthentication = false
-			);
+			void RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication = false);
+			void RegisterPageCodeW(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication = false);
 
 			bool Include( std::string& reply );
 
-			void RegisterActionCode(
-				const char* idname,
-				webem_action_function fun );
+			void RegisterActionCode(const char *idname, const webem_action_function &fun);
 
 			void RegisterWhitelistURLString(const char* idname);
 			void RegisterWhitelistCommandsString(const char* idname);

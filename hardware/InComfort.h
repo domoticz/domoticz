@@ -28,8 +28,8 @@ class CInComfort : public CDomoticzHardwareBase
 	bool StopHardware() override;
 	void Do_Work();
 	void GetHeaterDetails();
-	std::string GetHTTPData(std::string sURL);
-	void ParseAndUpdateDevices(std::string jsonData);
+	std::string GetHTTPData(const std::string &sURL);
+	void ParseAndUpdateDevices(const std::string &jsonData);
 	std::string SetRoom1SetTemperature(float tempSetpoint);
 
       private:

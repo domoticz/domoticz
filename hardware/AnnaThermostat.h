@@ -24,7 +24,7 @@ class CAnnaThermostat : public CDomoticzHardwareBase
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	void OnError(std::exception e);
+	void OnError(const std::exception &e);
 	bool CheckLoginData();
 	void GetMeterDetails();
 	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);

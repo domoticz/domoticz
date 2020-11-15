@@ -38,7 +38,7 @@ class Comm5Serial : public CDomoticzHardwareBase, AsyncSerial
 	uint16_t crc16_update(uint16_t crc, uint8_t data);
 
       protected:
-	void OnError(std::exception e);
+	void OnError(const std::exception &e);
 
 	void Do_Work();
 	void ParseData(const unsigned char *data, size_t len);

@@ -1370,7 +1370,7 @@ namespace domoticztypes
 	};
 
 	/* deserializes a std::string to a struct */
-	template <typename StructType> StructType Deserialize(std::string str)
+	template <typename StructType> StructType Deserialize(const std::string &str)
 	{
 		std::stringstream stream(str);
 		cereal::PortableBinaryInputArchive iarchive(stream);

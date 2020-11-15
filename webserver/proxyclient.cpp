@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #ifndef NOCLOUD
 #include "proxyclient.h"
+
+#include <utility>
 #include "../hardware/DomoticzTCP.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -527,9 +529,9 @@ namespace http {
 		void CProxyClient::ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *master, int protocol_version)
 		{
 			ProxyPdu_SERV_CONNECT response;
-			response.m_ipparam = instancekey;
-			response.m_usernameparam = username;
-			response.m_passwordparam = password;
+			response.m_ipparam = std::move(instancekey);
+			response.m_usernameparam = std::move(username);
+			response.m_passwordparam = std::move(password);
 			response.m_protocol_version = protocol_version;
 			MyWrite(response.ToBinary());
 		}
@@ -561,7 +563,7 @@ namespace http {
 			return _instanceid;
 		}
 
-		bool CProxySharedData::AddConnectedIp(std::string ip)
+		bool CProxySharedData::AddConnectedIp(const std::string &ip)
 		{
 			if (connectedips_.find(ip) == connectedips_.end())
 			{
@@ -573,7 +575,7 @@ namespace http {
 			return false;
 		}
 
-		bool CProxySharedData::AddConnectedServer(std::string ip)
+		bool CProxySharedData::AddConnectedServer(const std::string &ip)
 		{
 			if (connectedservers_.find(ip) == connectedservers_.end())
 			{

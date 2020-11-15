@@ -76,8 +76,7 @@ void Arilux::Do_Work()
 	Log(LOG_STATUS, "Worker stopped...");
 }
 
-
-void Arilux::InsertUpdateSwitch(const std::string lightName, const int subType, const std::string location)
+void Arilux::InsertUpdateSwitch(const std::string &lightName, const int subType, const std::string &location)
 {
 	uint32_t sID;
 	try {

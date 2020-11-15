@@ -32,8 +32,8 @@ public:
 	~CWebServer() override;
 	bool StartServer(server_settings &settings, const std::string &serverpath, bool bIgnoreUsernamePassword);
 	void StopServer();
-	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication=false);
-	void RegisterRType(const char* idname, webserver_response_function ResponseFunction);
+	void RegisterCommandCode(const char *idname, const webserver_response_function &ResponseFunction, bool bypassAuthentication = false);
+	void RegisterRType(const char *idname, const webserver_response_function &ResponseFunction);
 
 	void DisplaySwitchTypesCombo(std::string & content_part);
 	void DisplayMeterTypesCombo(std::string & content_part);

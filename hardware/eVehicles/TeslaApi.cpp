@@ -32,7 +32,7 @@ License: Public domain
 
 #define TLAPITIMEOUT (25)
 
-CTeslaApi::CTeslaApi(const std::string username, const std::string password, const std::string vinnr)
+CTeslaApi::CTeslaApi(const std::string &username, const std::string &password, const std::string &vinnr)
 {
 	m_username = username;
 	m_password = password;
@@ -251,7 +251,7 @@ void CTeslaApi::GetUnitData(Json::Value& jsondata, tConfigData &config)
 	_log.Debug(DEBUG_NORM, "TeslaApi: unit found %s, report in miles = %s.", sUnit.c_str(), config.unit_miles ? "true":"false");
 }
 
-bool CTeslaApi::GetData(std::string datatype, Json::Value& reply)
+bool CTeslaApi::GetData(const std::string &datatype, Json::Value &reply)
 {
 	std::stringstream ss;
 	if(datatype == "vehicle_data")
@@ -391,7 +391,7 @@ bool CTeslaApi::SendCommand(eCommandType command, std::string parameter)
 	return false;
 }
 
-bool CTeslaApi::SendCommand(std::string command, Json::Value& reply, std::string parameters)
+bool CTeslaApi::SendCommand(const std::string &command, Json::Value &reply, const std::string &parameters)
 {
 	std::stringstream ss;
 	if (command == "wake_up")
@@ -419,7 +419,7 @@ bool CTeslaApi::SendCommand(std::string command, Json::Value& reply, std::string
 }
 
 // Requests an authentication token from the Tesla OAuth Api.
-bool CTeslaApi::GetAuthToken(const std::string username, const std::string password, const bool refreshUsingToken)
+bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &password, const bool refreshUsingToken)
 {
 	if (username.empty() && !refreshUsingToken)
 	{

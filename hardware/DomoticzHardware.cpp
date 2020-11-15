@@ -1059,7 +1059,8 @@ void CDomoticzHardwareBase::SendSecurity1Sensor(const int NodeID, const int Devi
  * @param  {std::string} LevelActions : String with numbers, one for eacht Action, seperated with |.  Example: "00|10,|20|30"  - Off is 00
  * @param  {bool} bHideOff            : Boolean: true will hide the off level, false will enable it.
   */
-void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t ChildID, const std::string sValue, const std::string& defaultname, const int customImage , const bool bDropdown, const std::string& LevelNames,const std::string& LevelActions, const bool bHideOff )
+void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t ChildID, const std::string &sValue, const std::string &defaultname, const int customImage, const bool bDropdown,
+					       const std::string &LevelNames, const std::string &LevelActions, const bool bHideOff)
 {
 	if (std::size_t index = LevelActions.find(sValue) == std::string::npos)
 	{ 

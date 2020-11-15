@@ -16,7 +16,7 @@ License: Public domain
 class CMercApi: public CVehicleApi
 {
 public:
-  CMercApi(std::string username, std::string password, std::string vin);
+  CMercApi(const std::string &username, const std::string &password, const std::string &vin);
   ~CMercApi() override = default;
 
   bool Login() override;
@@ -35,15 +35,15 @@ private:
 		Post,
 		Get
 	};
-	bool GetData(std::string datatype, Json::Value& reply);
-	bool GetResourceData(std::string datatype, Json::Value& reply);
+	bool GetData(const std::string &datatype, Json::Value &reply);
+	bool GetResourceData(const std::string &datatype, Json::Value &reply);
 	bool ProcessAvailableResources(Json::Value& jsondata);
-	bool SendCommand(std::string command, Json::Value& reply, std::string parameters = "");
+	bool SendCommand(const std::string &command, Json::Value &reply, const std::string &parameters = "");
 	void GetLocationData(Json::Value& jsondata, tLocationData& data);
 	void GetChargeData(Json::Value& jsondata, tChargeData& data);
 	void GetClimateData(Json::Value& jsondata, tClimateData& data);
 	void GetVehicleData(Json::Value& jsondata, tVehicleData& data);
-	bool GetAuthToken(std::string username, std::string password, bool refreshUsingToken = false);
+	bool GetAuthToken(const std::string &username, const std::string &password, bool refreshUsingToken = false);
 	bool SendToApi(eApiMethod eMethod, const std::string &sUrl, const std::string &sPostData, std::string &sResponse, const std::vector<std::string> &vExtraHeaders, Json::Value &jsDecodedResponse,
 		       bool bSendAuthHeaders = true, int timeout = 0);
 

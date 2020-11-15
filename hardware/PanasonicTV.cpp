@@ -136,41 +136,42 @@ protected:
 	bool			m_Stoppable;
 
 private:
-	bool			handleConnect(boost::asio::ip::tcp::socket&, boost::asio::ip::tcp::endpoint, boost::system::error_code&);
-	std::string		handleWriteAndRead(std::string);
-	int				handleMessage(std::string);
-	std::string		buildXMLStringRendCtl(const std::string &, const std::string &);
-	std::string		buildXMLStringRendCtl(const std::string &, const std::string &, const std::string &);
-	std::string		buildXMLStringNetCtl(const std::string &);
+  bool handleConnect(boost::asio::ip::tcp::socket &, const boost::asio::ip::tcp::endpoint &, boost::system::error_code &);
+  std::string handleWriteAndRead(const std::string &);
+  int handleMessage(const std::string &);
+  std::string buildXMLStringRendCtl(const std::string &, const std::string &);
+  std::string buildXMLStringRendCtl(const std::string &, const std::string &, const std::string &);
+  std::string buildXMLStringNetCtl(const std::string &);
 
-	int				m_HwdID;
-	char			m_szDevID[40];
-	std::string		m_IP;
-	std::string		m_Port;
-	bool			m_PowerOnSupported;
+  int m_HwdID;
+  char m_szDevID[40];
+  std::string m_IP;
+  std::string m_Port;
+  bool m_PowerOnSupported;
 
-	CPanasonicStatus		m_PreviousStatus;
-	CPanasonicStatus		m_CurrentStatus;
-	//void			UpdateStatus();
-	void			UpdateStatus(bool force = false);
+  CPanasonicStatus m_PreviousStatus;
+  CPanasonicStatus m_CurrentStatus;
+  // void			UpdateStatus();
+  void UpdateStatus(bool force = false);
 
-	std::string		m_ExecuteCommand;
+  std::string m_ExecuteCommand;
 
-	std::string		m_RetainedData;
+  std::string m_RetainedData;
 
-	int				m_iTimeoutCnt;
-	int				m_iPollIntSec;
-	int				m_iMissedPongs;
-	std::string		m_sLastMessage;
-	inline bool isInteger(const std::string & s)
-	{
-		if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
+  int m_iTimeoutCnt;
+  int m_iPollIntSec;
+  int m_iMissedPongs;
+  std::string m_sLastMessage;
+  inline bool isInteger(const std::string &s)
+  {
+	  if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+')))
+		  return false;
 
-		char * p;
-		strtol(s.c_str(), &p, 10);
+	  char *p;
+	  strtol(s.c_str(), &p, 10);
 
-		return (*p == 0);
-	}
+	  return (*p == 0);
+  }
 };
 
 
@@ -320,7 +321,7 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	m_PreviousStatus = m_CurrentStatus;
 }
 
-bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::asio::ip::tcp::endpoint endpoint, boost::system::error_code& ec)
+bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket &socket, const boost::asio::ip::tcp::endpoint &endpoint, boost::system::error_code &ec)
 {
 	try
 	{
@@ -351,8 +352,7 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 
 }
 
-
-std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
+std::string CPanasonicNode::handleWriteAndRead(const std::string &pMessageToSend)
 {
 
 	_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Handling message: '%s'.", m_Name.c_str(), pMessageToSend.c_str());
@@ -406,7 +406,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	}
 }
 
-int CPanasonicNode::handleMessage(std::string pMessage)
+int CPanasonicNode::handleMessage(const std::string &pMessage)
 {
 	int iPosBegin = 0;
 	int iPosEnd = 0;

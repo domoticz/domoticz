@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "WebsocketHandler.h"
+
+#include <utility>
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/Helper.h"
@@ -13,7 +15,7 @@ namespace http {
 	namespace server {
 
 		CWebsocketHandler::CWebsocketHandler(cWebem *pWebem, boost::function<void(const std::string &packet_data)> _MyWrite)
-			: MyWrite(_MyWrite)
+			: MyWrite(std::move(_MyWrite))
 			, myWebem(pWebem)
 			, m_Push(this)
 		{

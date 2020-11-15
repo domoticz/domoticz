@@ -39,11 +39,11 @@ class CDenkoviDevices : public CDomoticzHardwareBase
 	std::string DenkoviGetStrParameter(std::string tmpstr, const std::string &tmpParameter);
 	float DenkoviGetFloatParameter(std::string tmpstr, const std::string &tmpParameter);
 	int DenkoviCheckForIO(std::string tmpstr, const std::string &tmpIoType);
-	std::string DAEnetIP3GetIo(std::string tmpstr, const std::string &tmpParameter);
-	std::string DAEnetIP3GetAi(std::string tmpstr, const std::string &tmpParameter, const int &ciType);
-	uint8_t DAEnetIP2GetIoPort(std::string tmpstr, const int &port);
-	std::string DAEnetIP2GetName(std::string tmpstr, const int &nmr);
-	uint16_t DAEnetIP2GetAiValue(std::string tmpstr, const int &aiNmr);
+	std::string DAEnetIP3GetIo(const std::string &tmpstr, const std::string &tmpParameter);
+	std::string DAEnetIP3GetAi(const std::string &tmpstr, const std::string &tmpParameter, const int &ciType);
+	uint8_t DAEnetIP2GetIoPort(const std::string &tmpstr, const int &port);
+	std::string DAEnetIP2GetName(const std::string &tmpstr, const int &nmr);
+	uint16_t DAEnetIP2GetAiValue(const std::string &tmpstr, const int &aiNmr);
 	float DAEnetIP2CalculateAi(int adc, const int &valType);
 	void SendDenkoviTextSensor(int NodeID, int ChildID, int BatteryLevel, const std::string &textMessage, const std::string &defaultname);
 

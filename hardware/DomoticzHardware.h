@@ -130,7 +130,7 @@ class CDomoticzHardwareBase : public StoppableTask
 	void SendZWaveAlarmSensor(int NodeID, uint8_t InstanceID, int BatteryLevel, uint8_t aType, int aValue, const std::string &alarmLabel, const std::string &defaultname);
 	void SendFanSensor(int Idx, int BatteryLevel, int FanSpeed, const std::string &defaultname);
 	void SendSecurity1Sensor(int NodeID, int DeviceSubType, int BatteryLevel, int Status, const std::string &defaultname, int RssiLevel = 12);
-	void SendSelectorSwitch(int NodeID, uint8_t ChildID, std::string sValue, const std::string &defaultname, int customImage, bool nDropdown, const std::string &LevelNames,
+	void SendSelectorSwitch(int NodeID, uint8_t ChildID, const std::string &sValue, const std::string &defaultname, int customImage, bool nDropdown, const std::string &LevelNames,
 				const std::string &LevelActions, bool bHideOff);
 	int MigrateSelectorSwitch(int NodeID, uint8_t ChildID, const std::string &LevelNames, const std::string &LevelActions, bool bMigrate);
 	int m_iHBCounter = { 0 };

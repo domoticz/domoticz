@@ -50,11 +50,11 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	void MonitorFrames();
 	uint32_t ownCalcPass(const std::string &password, const std::string &nonce);
 	bool ownAuthentication(csocket *connectionSocket);
-	bool nonceHashAuthentication(csocket *connectionSocket, std::string nonce);
-	std::string decToHexStrConvert(std::string paramString);
-	std::string hexToDecStrConvert(std::string paramString);
+	bool nonceHashAuthentication(csocket *connectionSocket, const std::string &nonce);
+	std::string decToHexStrConvert(const std::string &paramString);
+	std::string hexToDecStrConvert(const std::string &paramString);
 	std::string byteToHexStrConvert(uint8_t *digest, size_t digestLen, char *pArray);
-	std::string shaCalc(std::string paramString, int auth_type);
+	std::string shaCalc(const std::string &paramString, int auth_type);
 	bool hmacAuthentication(csocket *connectionSocket, int auth_type);
 	csocket *connectGwOwn(const char *connectionMode);
 	void disconnect();
@@ -73,7 +73,7 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	void UpdateEnergy(int who, int where, double fval, int iInterface, int BatteryLevel, const char *devname);
 	void UpdateSoundDiffusion(int who, int where, int what, int iInterface, int BatteryLevel, const char *devname);
 	bool GetValueMeter(int NodeID, int ChildID, double *usage, double *energy);
-	void decodeWhereAndFill(int who, std::string where, std::vector<std::string> whereParam, std::string *devname, int *iWhere);
+	void decodeWhereAndFill(int who, const std::string &where, std::vector<std::string> whereParam, std::string *devname, int *iWhere);
 	void UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter);
 	void scan_automation_lighting(int cen_area);
 	void scan_sound_diffusion();

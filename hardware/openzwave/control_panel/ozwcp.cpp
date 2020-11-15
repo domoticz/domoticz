@@ -409,7 +409,7 @@ void MyNode::updatePoll(char* ilist, char* plist)
  * 2-SWITCH MULTILEVEL-user-byte-1-0
  * node-class-genre-type-instance-index
  */
-MyValue* MyNode::lookup(std::string data)
+MyValue *MyNode::lookup(const std::string &data)
 {
 	uint8 node = 0;
 	uint8 cls;

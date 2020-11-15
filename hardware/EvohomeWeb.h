@@ -125,9 +125,9 @@ class CEvohomeWeb : public CEvohomeBase
 	void get_v1_temps();
 
 	// HTTP helpers
-	std::string send_receive_data(std::string url, std::vector<std::string> &headers);
-	std::string send_receive_data(std::string url, std::string postdata, std::vector<std::string> &headers);
-	std::string put_receive_data(std::string url, std::string putdata, std::vector<std::string> &headers);
+	std::string send_receive_data(const std::string &url, std::vector<std::string> &headers);
+	std::string send_receive_data(const std::string &url, const std::string &postdata, std::vector<std::string> &headers);
+	std::string put_receive_data(const std::string &url, const std::string &putdata, std::vector<std::string> &headers);
 	std::string process_response(std::vector<unsigned char> vHTTPResponse, std::vector<std::string> vHeaderData, bool httpOK);
 
       private:

@@ -139,7 +139,7 @@ namespace http {
 
 		*/
 
-		void cWebem::RegisterIncludeCode(const char* idname, webem_include_function fun)
+		void cWebem::RegisterIncludeCode(const char *idname, const webem_include_function &fun)
 		{
 			myIncludes.insert(std::pair<std::string, webem_include_function >(std::string(idname), fun));
 		}
@@ -155,13 +155,12 @@ namespace http {
 
 		*/
 
-		void cWebem::RegisterIncludeCodeW(const char* idname, webem_include_function_w fun)
+		void cWebem::RegisterIncludeCodeW(const char *idname, const webem_include_function_w &fun)
 		{
 			myIncludes_w.insert(std::pair<std::string, webem_include_function_w >(std::string(idname), fun));
 		}
 
-
-		void cWebem::RegisterPageCode(const char* pageurl, webem_page_function fun, bool bypassAuthentication)
+		void cWebem::RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication)
 		{
 			myPages.insert(std::pair<std::string, webem_page_function >(std::string(pageurl), fun));
 			if (bypassAuthentication)
@@ -169,7 +168,7 @@ namespace http {
 				RegisterWhitelistURLString(pageurl);
 			}
 		}
-		void cWebem::RegisterPageCodeW(const char* pageurl, webem_page_function fun, bool bypassAuthentication)
+		void cWebem::RegisterPageCodeW(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication)
 		{
 			myPages_w.insert(std::pair<std::string, webem_page_function >(std::string(pageurl), fun));
 			if (bypassAuthentication)
@@ -187,7 +186,7 @@ namespace http {
 		@param[in] fun fpointer to function
 
 		*/
-		void cWebem::RegisterActionCode(const char* idname, webem_action_function fun)
+		void cWebem::RegisterActionCode(const char *idname, const webem_action_function &fun)
 		{
 			myActions.insert(std::pair<std::string, webem_action_function >(std::string(idname), fun));
 		}

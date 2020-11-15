@@ -1940,7 +1940,7 @@ void CEvohomeWeb::get_v1_temps()
  *									*
  ************************************************************************/
 
-std::string CEvohomeWeb::send_receive_data(std::string url, std::vector<std::string> &headers)
+std::string CEvohomeWeb::send_receive_data(const std::string &url, std::vector<std::string> &headers)
 {
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> vHeaderData;
@@ -1950,8 +1950,7 @@ std::string CEvohomeWeb::send_receive_data(std::string url, std::vector<std::str
 	return process_response(vHTTPResponse, vHeaderData, httpOK);
 }
 
-
-std::string CEvohomeWeb::send_receive_data(std::string url, std::string postdata, std::vector<std::string> &headers)
+std::string CEvohomeWeb::send_receive_data(const std::string &url, const std::string &postdata, std::vector<std::string> &headers)
 {
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> vHeaderData;
@@ -1961,8 +1960,7 @@ std::string CEvohomeWeb::send_receive_data(std::string url, std::string postdata
 	return process_response(vHTTPResponse, vHeaderData, httpOK);
 }
 
-
-std::string CEvohomeWeb::put_receive_data(std::string url, std::string putdata, std::vector<std::string> &headers)
+std::string CEvohomeWeb::put_receive_data(const std::string &url, const std::string &putdata, std::vector<std::string> &headers)
 {
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> vHeaderData;

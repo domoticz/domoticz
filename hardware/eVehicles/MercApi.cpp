@@ -41,7 +41,7 @@ License: Public domain
 #define MERC_REFRESHTOKEN_CLEARED "Refreshtoken cleared because it was invalid!"
 #define MERC_REFRESHTOKEN_USERVAR "mercedesme_refreshtoken"
 
-CMercApi::CMercApi(const std::string username, const std::string password, const std::string vinnr)
+CMercApi::CMercApi(const std::string &username, const std::string &password, const std::string &vinnr)
 {
 	m_username = username;
 	m_password = base64_encode(username);
@@ -434,7 +434,7 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 	} while (!jsondata[cnt].empty());
 }
 
-bool CMercApi::GetData(std::string datatype, Json::Value& reply)
+bool CMercApi::GetData(const std::string &datatype, Json::Value &reply)
 {
 	std::stringstream ss;
 	ss << MERC_URL << MERC_API << "/" << m_VIN << "/containers/" << datatype;
@@ -452,7 +452,7 @@ bool CMercApi::GetData(std::string datatype, Json::Value& reply)
 	return true;
 }
 
-bool CMercApi::GetResourceData(std::string datatype, Json::Value& reply)
+bool CMercApi::GetResourceData(const std::string &datatype, Json::Value &reply)
 {
 	std::stringstream ss;
 	ss << MERC_URL << MERC_API << "/" << m_VIN << "/resources/" << datatype;
@@ -644,7 +644,7 @@ bool CMercApi::SendCommand(eCommandType command, std::string parameter)
 	*/
 }
 
-bool CMercApi::SendCommand(std::string command, Json::Value& reply, std::string parameters)
+bool CMercApi::SendCommand(const std::string &command, Json::Value &reply, const std::string &parameters)
 {
 	/*
 	std::stringstream ss;
@@ -673,7 +673,7 @@ bool CMercApi::SendCommand(std::string command, Json::Value& reply, std::string 
 }
 
 // Requests an access token from the MB OAuth Api.
-bool CMercApi::GetAuthToken(const std::string username, const std::string password, const bool refreshUsingToken)
+bool CMercApi::GetAuthToken(const std::string &username, const std::string &password, const bool refreshUsingToken)
 {
 	if (!refreshUsingToken && username.empty())
 	{

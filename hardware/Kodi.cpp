@@ -677,7 +677,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 	}
 }
 
-void CKodiNode::handleWrite(std::string pMessage)
+void CKodiNode::handleWrite(const std::string &pMessage)
 {
 	if (!IsStopRequested(0)) {
 		if (m_Socket)

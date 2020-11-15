@@ -66,49 +66,49 @@ namespace Plugins {
 	  {
 		  return m_PyModule;
 	  };
-		void	Notifier(std::string Notifier = "");
-		void	AddConnection(CPluginTransport*);
-		void	RemoveConnection(CPluginTransport*);
+	  void Notifier(const std::string &Notifier = "");
+	  void AddConnection(CPluginTransport *);
+	  void RemoveConnection(CPluginTransport *);
 
-		bool	Initialise();
-		bool	LoadSettings();
-		bool	Start();
-		void	ConnectionProtocol(CDirectiveBase*);
-		void	ConnectionConnect(CDirectiveBase*);
-		void	ConnectionListen(CDirectiveBase*);
-		void	ConnectionRead(CPluginMessageBase*);
-		void	ConnectionWrite(CDirectiveBase*);
-		void	ConnectionDisconnect(CDirectiveBase*);
-		void	DisconnectEvent(CEventBase*);
-		void	Callback(std::string sHandler, void* pParams);
-		void	RestoreThread();
-		void	ReleaseThread();
-		void	Stop();
+	  bool Initialise();
+	  bool LoadSettings();
+	  bool Start();
+	  void ConnectionProtocol(CDirectiveBase *);
+	  void ConnectionConnect(CDirectiveBase *);
+	  void ConnectionListen(CDirectiveBase *);
+	  void ConnectionRead(CPluginMessageBase *);
+	  void ConnectionWrite(CDirectiveBase *);
+	  void ConnectionDisconnect(CDirectiveBase *);
+	  void DisconnectEvent(CEventBase *);
+	  void Callback(const std::string &sHandler, void *pParams);
+	  void RestoreThread();
+	  void ReleaseThread();
+	  void Stop();
 
-		void	WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
+	  void WriteDebugBuffer(const std::vector<byte> &Buffer, bool Incoming);
 
-		bool WriteToHardware(const char *pdata, unsigned char length) override;
-		void SendCommand(int Unit, const std::string &command, int level, _tColor color);
-		void SendCommand(int Unit, const std::string &command, float level);
+	  bool WriteToHardware(const char *pdata, unsigned char length) override;
+	  void SendCommand(int Unit, const std::string &command, int level, _tColor color);
+	  void SendCommand(int Unit, const std::string &command, float level);
 
-		void	onDeviceAdded(int Unit);
-		void	onDeviceModified(int Unit);
-		void	onDeviceRemoved(int Unit);
-		void	MessagePlugin(CPluginMessageBase *pMessage);
-		void	DeviceAdded(int Unit);
-		void	DeviceModified(int Unit);
-		void	DeviceRemoved(int Unit);
+	  void onDeviceAdded(int Unit);
+	  void onDeviceModified(int Unit);
+	  void onDeviceRemoved(int Unit);
+	  void MessagePlugin(CPluginMessageBase *pMessage);
+	  void DeviceAdded(int Unit);
+	  void DeviceModified(int Unit);
+	  void DeviceRemoved(int Unit);
 
-		bool HasNodeFailed(int Unit);
+	  bool HasNodeFailed(int Unit);
 
-		std::string			m_PluginKey;
-		void*				m_DeviceDict;
-		void*				m_ImageDict;
-		void*				m_SettingsDict;
-		std::string			m_HomeFolder;
-		PluginDebugMask		m_bDebug;
-		bool				m_bIsStarting;
-		bool				m_bTracing;
+	  std::string m_PluginKey;
+	  void *m_DeviceDict;
+	  void *m_ImageDict;
+	  void *m_SettingsDict;
+	  std::string m_HomeFolder;
+	  PluginDebugMask m_bDebug;
+	  bool m_bIsStarting;
+	  bool m_bTracing;
 	};
 
 	class CPluginNotifier : public CNotificationBase
