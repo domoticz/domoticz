@@ -234,7 +234,7 @@ bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char /*length
 			SetUserMode(bIsOn);
 			return true;
 		}
-		else if (node_id == 2)
+		if (node_id == 2)
 		{
 			//Hot Water Switch
 			SetHotWaterMode(bIsOn);

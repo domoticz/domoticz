@@ -185,14 +185,11 @@ namespace Plugins {
 									_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", self->pPlugin->m_PluginKey.c_str(), sd[0].c_str());
 									break;
 								}
-								else
-								{
-									pImage->ImageID = atoi(sd[0].c_str()) + 100;
-									pImage->Base = PyUnicode_FromString(sd[1].c_str());
-									pImage->Name = PyUnicode_FromString(sd[2].c_str());
-									pImage->Description = PyUnicode_FromString(sd[3].c_str());
-									Py_DECREF(pImage);
-								}
+								pImage->ImageID = atoi(sd[0].c_str()) + 100;
+								pImage->Base = PyUnicode_FromString(sd[1].c_str());
+								pImage->Name = PyUnicode_FromString(sd[2].c_str());
+								pImage->Description = PyUnicode_FromString(sd[3].c_str());
+								Py_DECREF(pImage);
 							}
 						}
 					}
@@ -1478,12 +1475,9 @@ namespace Plugins {
 				(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"), date, sParent.c_str());
 			return pRetVal;
 		}
-		else
-		{
-			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Connected: False, Parent: '%s'",
-				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud, sParent.c_str());
-			return pRetVal;
-		}
+		PyObject *pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Connected: False, Parent: '%s'", self->Name,
+							 self->Transport, self->Protocol, self->Address, self->Port, self->Baud, sParent.c_str());
+		return pRetVal;
 	}
 
 } // namespace Plugins

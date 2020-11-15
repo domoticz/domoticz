@@ -12461,7 +12461,8 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 		if ((switchtype == STYPE_Selector) && (nValue == nNewVal) && (level == atoi(sValue.c_str()))) {
 			return true;
 		}
-		else if (nValue == nNewVal) {
+		if (nValue == nNewVal)
+		{
 			return true;//FIXME no return code for already set
 		}
 	}
@@ -12475,8 +12476,7 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(static_cast<float>(iOnDelay + ExtraDelay), idx, switchcmd, level, color, "Switch with Delay", User));
 		return true;
 	}
-	else
-		return SwitchLightInt(sd, switchcmd, level, color, false, User);
+	return SwitchLightInt(sd, switchcmd, level, color, false, User);
 }
 
 bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue, const std::string& newMode, const std::string& until)
@@ -12920,38 +12920,38 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 		//pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_NEST)
+	if (pHardware->HwdType == HTYPE_NEST)
 	{
 		CNest* pGateway = reinterpret_cast<CNest*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
+	if (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
 	{
 		CNestOAuthAPI* pGateway = reinterpret_cast<CNestOAuthAPI*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
+	if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
 	{
 		CAnnaThermostat* pGateway = reinterpret_cast<CAnnaThermostat*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_THERMOSMART)
+	if (pHardware->HwdType == HTYPE_THERMOSMART)
 	{
 		//CThermosmart *pGateway = reinterpret_cast<CThermosmart *>(pHardware);
 		//pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_Netatmo)
+	if (pHardware->HwdType == HTYPE_Netatmo)
 	{
 		CNetatmo* pGateway = reinterpret_cast<CNetatmo*>(pHardware);
 		int tIndex = atoi(idx.c_str());
 		pGateway->SetProgramState(tIndex, newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+	if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 	{
 		CInComfort* pGateway = reinterpret_cast<CInComfort*>(pHardware);
 		pGateway->SetProgramState(newState);

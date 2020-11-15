@@ -1214,7 +1214,7 @@ bool MySensorsBase::GetSwitchValue(const int Idx, const int SubUnit, const int s
 		sSwitchValue = (nvalue == light2_sOn) ? "1" : "0";
 		return true;
 	}
-	else if ((sub_type == V_RGB) || (sub_type == V_RGBW))
+	if ((sub_type == V_RGB) || (sub_type == V_RGBW))
 	{
 		sSwitchValue = (nvalue == Color_LedOn) ? "1" : "0";
 		return true;
@@ -1348,18 +1348,15 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 					//Door lock/contact
 					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 				}
-				else if (pChild->presType == S_SCENE_CONTROLLER)
+				if (pChild->presType == S_SCENE_CONTROLLER)
 				{
 					//Scene Controller
 					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
 				}
-				else
-				{
-					//normal
-					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
-				}
+				// normal
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 			}
-			else if (light_command == light2_sSetLevel)
+			if (light_command == light2_sSetLevel)
 			{
 				float fvalue = (100.0f / 15.0f)*float(pCmd->LIGHTING2.level);
 				if (fvalue > 100.0f)
@@ -1416,18 +1413,15 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 						//Door lock/contact
 						return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 					}
-					else if (pChild->presType == S_SCENE_CONTROLLER)
+					if (pChild->presType == S_SCENE_CONTROLLER)
 					{
 						//Scene Controller
 						return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (cmnd == gswitch_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
 					}
-					else
-					{
-						//normal
-						return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
-					}
+					// normal
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 				}
-				else if (cmnd == gswitch_sSetLevel)
+				if (cmnd == gswitch_sSetLevel)
 				{
 					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(level), pChild->useAck, pChild->ackTimeout);
 				}
@@ -1512,7 +1506,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 				}
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
-			else if (pLed->command == Color_SetColorToWhite)
+			if (pLed->command == Color_SetColorToWhite)
 			{
 				std::stringstream sstr;
 				int Brightness = 100;
@@ -1530,14 +1524,14 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 				}
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
-			else if (pLed->command == Color_SetBrightnessLevel)
+			if (pLed->command == Color_SetBrightnessLevel)
 			{
 				int svalue = pLed->value;
 				if (svalue > 100)
 					svalue = 100;
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(svalue), pChild->useAck, pChild->ackTimeout);
 			}
-			else if ((pLed->command == Color_LedOff) || (pLed->command == Color_LedOn))
+			if ((pLed->command == Color_LedOff) || (pLed->command == Color_LedOn))
 			{
 				std::string lState = (pLed->command == Color_LedOn) ? "1" : "0";
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
@@ -1567,11 +1561,11 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			{
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_UP, "", pChild->useAck, pChild->ackTimeout);
 			}
-			else if (pCmd->BLINDS1.cmnd == blinds_sClose)
+			if (pCmd->BLINDS1.cmnd == blinds_sClose)
 			{
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_DOWN, "", pChild->useAck, pChild->ackTimeout);
 			}
-			else if (pCmd->BLINDS1.cmnd == blinds_sStop)
+			if (pCmd->BLINDS1.cmnd == blinds_sStop)
 			{
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STOP, "", pChild->useAck, pChild->ackTimeout);
 			}
@@ -1603,10 +1597,8 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			sprintf(szTmp, "%.1f", pMeter->temp);
 			return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, vtype_id, szTmp, pChild->useAck, pChild->ackTimeout);
 		}
-		else {
-			_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
-			return false;
-		}
+		_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
+		return false;
 	}
 	else
 	{

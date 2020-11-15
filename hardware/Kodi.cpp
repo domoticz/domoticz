@@ -502,10 +502,10 @@ void CKodiNode::handleMessage(std::string& pMessage)
 												handleWrite(ssMessage.str());
 												break;
 											}
-											else {
-												_log.Log(LOG_NORM, "Kodi: (%s) Requested Favourite ('%s') is not playable, next playable item will be selected.", m_Name.c_str(), root["result"]["favourites"][i]["title"].asCString());
-												m_PlaylistPosition++;
-											}
+											_log.Log(LOG_NORM,
+												 "Kodi: (%s) Requested Favourite ('%s') is not playable, next playable item will be selected.",
+												 m_Name.c_str(), root["result"]["favourites"][i]["title"].asCString());
+											m_PlaylistPosition++;
 										}
 									}
 								else

@@ -583,21 +583,16 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 
 				if ((int)databuffer[4] * 256 + (int)databuffer[5] == (unsigned char)(answerLength + 2))
 				{
-					if (write)
-					{
-						if (cmd[8] == databuffer[8] && cmd[9] == databuffer[9] && cmd[10] == databuffer[10] && cmd[11] == databuffer[11])
-						{
-							return answerLength;
-						}
-						else
-						{
-							_log.Log(LOG_ERROR, "MultiFun: bad response after write");
-						}
-					}
-					else
+					if (!write)
 					{
 						return answerLength;
 					}
+
+					if (cmd[8] == databuffer[8] && cmd[9] == databuffer[9] && cmd[10] == databuffer[10] && cmd[11] == databuffer[11])
+					{
+						return answerLength;
+					}
+					_log.Log(LOG_ERROR, "MultiFun: bad response after write");
 				}
 				else
 				{

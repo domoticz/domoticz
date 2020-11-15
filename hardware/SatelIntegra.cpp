@@ -256,10 +256,7 @@ bool SatelIntegra::CheckAddress()
 			_log.Log(LOG_ERROR, "Satel Integra: cannot resolve host name");
 			return false;
 		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
-		}
+		memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
 	}
 	return true;
 }
@@ -314,11 +311,8 @@ bool SatelIntegra::ReadNewData()
 	{
 		return true;
 	}
-	else
-	{
-		_log.Log(LOG_ERROR, "Satel Integra: Get info about new data is failed");
-	}
 
+	_log.Log(LOG_ERROR, "Satel Integra: Get info about new data is failed");
 	return false;
 }
 
@@ -359,10 +353,7 @@ bool SatelIntegra::GetInfo()
 						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10], buffer[11], m_data32 ? "true" : "false");
 					return true;
 				}
-				else
-				{
-					_log.Log(LOG_ERROR, "Satel Integra: unknown version of ETHM-1");
-				}
+				_log.Log(LOG_ERROR, "Satel Integra: unknown version of ETHM-1");
 			}
 			else
 			{
@@ -874,12 +865,9 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 			{
 				return ArmPartitions(general->id);
 			}
-			else
-			{
-				return DisarmPartitions(general->id);
-			}
+			return DisarmPartitions(general->id);
 		}
-		else if (general->unitcode == 1) // outputs
+		if (general->unitcode == 1) // outputs
 		{
 			unsigned char buffer[2];
 			unsigned char cmd[41] = { 0 };
@@ -925,12 +913,8 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 				_log.Log(LOG_STATUS, "Satel Integra: switched output %d to %s", id, cmnd == gswitch_sOn ? "on" : "off");
 				return true;
 			}
-			else
-			{
-				_log.Log(LOG_ERROR, "Satel Integra: Switch output %d failed", id);
-				return false;
-			}
-
+			_log.Log(LOG_ERROR, "Satel Integra: Switch output %d failed", id);
+			return false;
 		}
 	}
 
@@ -1204,52 +1188,32 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 					{
 						return 0;
 					}
-					else
-					{
-						const char* error = "other errors";
+					const char *error = "other errors";
 
-						std::map<unsigned int, const char*>::iterator it;
-						it = errorCodes.find(buffer[3]);
-						if (it != errorCodes.end())
-						{
-							error = it->second;
-						}
-						_log.Log(LOG_ERROR, "Satel Integra: receive error: %s", error);
-						return -1;
+					auto it = errorCodes.find(buffer[3]);
+					if (it != errorCodes.end())
+					{
+						error = it->second;
 					}
+					_log.Log(LOG_ERROR, "Satel Integra: receive error: %s", error);
+					return -1;
 				}
-				else
-				{
-					return answerLength;
-				}
+				return answerLength;
 			}
-			else
-			{
-				_log.Log(LOG_ERROR, "Satel Integra: receive bad CRC");
-				return -1;
-			}
+			_log.Log(LOG_ERROR, "Satel Integra: receive bad CRC");
+			return -1;
 		}
-		else
+		if (buffer[0] == 16)
 		{
-			if (buffer[0] == 16)
-			{
-				_log.Log(LOG_ERROR, "Satel Integra: busy");
-				return -1;
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "Satel Integra: received bad frame (prefix or sufix)");
-				return -1;
-			}
+			_log.Log(LOG_ERROR, "Satel Integra: busy");
+			return -1;
 		}
-	}
-	else
-	{
-		_log.Log(LOG_ERROR, "Satel Integra: received frame is too short.");
-		DestroySocket();
+		_log.Log(LOG_ERROR, "Satel Integra: received bad frame (prefix or sufix)");
 		return -1;
 	}
-
+	_log.Log(LOG_ERROR, "Satel Integra: received frame is too short.");
+	DestroySocket();
+	return -1;
 }
 
 std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigned char* pCmd, const unsigned int cmdLength)

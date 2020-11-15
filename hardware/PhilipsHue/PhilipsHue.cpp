@@ -186,14 +186,14 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			SwitchLight(nodeID, LCmd, svalue);
 			return true;
 		}
-		else if (pLed->command == Color_LedOn)
+		if (pLed->command == Color_LedOn)
 		{
 			LCmd = "On";
 			svalue = 254;
 			SwitchLight(nodeID, LCmd, svalue);
 			return true;
 		}
-		else if (pLed->command == Color_SetBrightnessLevel)
+		if (pLed->command == Color_SetBrightnessLevel)
 		{
 			if (pLed->value == 0)
 			{
@@ -215,13 +215,13 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			}
 			return true;
 		}
-		else if (pLed->command == Color_SetColorToWhite)
+		if (pLed->command == Color_SetColorToWhite)
 		{
 			LCmd = "Set White";
 			SwitchLight(nodeID, LCmd, 0);
 			return true;
 		}
-		else if (pLed->command == Color_SetColor)
+		if (pLed->command == Color_SetColor)
 		{
 			// From Philips Hue API documentation:
 			// bri: Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.

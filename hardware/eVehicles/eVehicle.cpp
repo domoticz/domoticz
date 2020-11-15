@@ -217,7 +217,7 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 		SendAlert();
 		return true;
 	}
-	else if(m_command_nr_tries > VEHICLE_MAXTRIES)
+	if (m_command_nr_tries > VEHICLE_MAXTRIES)
 	{
 		Init();
 		SendSwitch(VEHICLE_SWITCH_CHARGE, m_car.charging);
@@ -230,18 +230,15 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 		SendAlert();
 		return false;
 	}
-	else
+	if (command == Wake_Up)
 	{
-		if (command == Wake_Up)
-		{
-			Log(LOG_ERROR, "Car not yet awake. Will retry.");
-			SendAlert();
-		}
-		else
-			Log(LOG_ERROR, "Timeout requesting %s. Will retry.", GetCommandString(command).c_str());
-		m_command_nr_tries++;
+		Log(LOG_ERROR, "Car not yet awake. Will retry.");
+		SendAlert();
 	}
+	else
+		Log(LOG_ERROR, "Timeout requesting %s. Will retry.", GetCommandString(command).c_str());
 
+	m_command_nr_tries++;
 	return true;
 }
 
@@ -377,7 +374,7 @@ void CeVehicle::Do_Work()
 			}
 			continue;
 		}
-		else if (bIsAborted)
+		if (bIsAborted)
 		{
 			if (sec_counter % 7200 == 0)
 			{

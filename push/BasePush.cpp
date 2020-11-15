@@ -716,10 +716,8 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 		}
 		return sendValue;
 	}
-	else {
-		_log.Log(LOG_ERROR, "BasePush: Could not determine data push value");
-		return "";
-	}
+	_log.Log(LOG_ERROR, "BasePush: Could not determine data push value");
+	return "";
 }
 
 std::string CBasePush::getUnit(const int delpos, const int metertypein)

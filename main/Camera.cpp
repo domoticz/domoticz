@@ -246,7 +246,7 @@ bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned cha
 
 	if (pCamera->ImageURL == "raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);
-	else if (pCamera->ImageURL == "uvccapture.cgi")
+	if (pCamera->ImageURL == "uvccapture.cgi")
 		return TakeUVCSnapshot(pCamera->Username, camimage);
 
 	std::vector<std::string> ExtraHeaders;

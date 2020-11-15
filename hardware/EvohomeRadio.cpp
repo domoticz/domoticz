@@ -698,7 +698,7 @@ void CEvohomeRadio::ProcessMsg(const char* rawmsg)
 					{
 						if (i == msg.GetID(n))
 							break;
-						else if (i == 0)
+						if (i == 0)
 						{
 							i = msg.GetID(n);
 							_log.Log(LOG_STATUS, "evohome: controller detected, ID:0x%x", i);
@@ -785,7 +785,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 
 		return m_nBindID;
 	}
-	else if (nDevType == CEvohomeID::devSensor)//Binding the HGI80 to the evohome controller as an outdoor sensor (there are other sensors)
+	if (nDevType == CEvohomeID::devSensor) // Binding the HGI80 to the evohome controller as an outdoor sensor (there are other sensors)
 	{
 		std::unique_lock<std::mutex> lock(m_mtxBindNotify);
 		m_nBindID = 0;
@@ -801,7 +801,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, m_nBindID, cmdBinding).Add((uint8_t)0).Add((uint16_t)0xFFFF).Add(CEvohomeID(nGatewayID)));
 		return m_nBindID;
 	}
-	else if (nDevType == CEvohomeID::devZone)//Binding the HGI80 to the evohome controller as a zone temperature sensor
+	if (nDevType == CEvohomeID::devZone) // Binding the HGI80 to the evohome controller as a zone temperature sensor
 	{
 		// Check that the max Device ID includes the zone temperature sensors
 		std::vector<std::vector<std::string> > result;
@@ -1910,18 +1910,17 @@ bool CEvohomeRadio::DecodeSync(CEvohomeMsg& msg) //0x1F09
 		Log(false, LOG_ERROR, "evohome: %s: unexpected payload size: %d", tag, msg.payloadsize);
 		return false;
 	}
+
+	if (msg.payloadsize == 1)
+	{
+		Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x", tag, msg.payload[0]);
+	}
 	else
 	{
-		if (msg.payloadsize == 1)
-		{
-			Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x", tag, msg.payload[0]);
-		}
-		else
-		{
-			Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x (%d)", tag, msg.payload[0], msg.payload[1] << 8 | msg.payload[2]);
-		}
-		return true;
+		Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x (%d)", tag, msg.payload[0], msg.payload[1] << 8 | msg.payload[2]);
 	}
+
+	return true;
 }
 
 void CEvohomeRadio::AddSendQueue(const CEvohomeMsg& msg)

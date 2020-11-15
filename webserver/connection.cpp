@@ -79,9 +79,7 @@ namespace http {
 			if (secure_) {
 				return sslsocket_->lowest_layer();
 			}
-			else {
-				return socket_->lowest_layer();
-			}
+			return socket_->lowest_layer();
 		}
 #else
 		// alternative: get the attached client socket of this connection if ssl is not compiled in

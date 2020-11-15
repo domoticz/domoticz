@@ -258,10 +258,9 @@ bool CNestOAuthAPI::Login()
 		m_bDoLogin = false;
 		return true;
 	}
-	else {
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Login failed: token did not validate.");
-		return false;
-	}
+
+	_log.Log(LOG_ERROR, "NestOAuthAPI: Login failed: token did not validate.");
+	return false;
 }
 
 void CNestOAuthAPI::Logout()

@@ -615,7 +615,8 @@ std::string CDenkoviDevices::DAEnetIP3GetAi(std::string tmpstr, const std::strin
 		pos2 = tmpstr.find('[', pos1);
 		return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str())));
 	}
-	else if (ciType == DAENETIP3_AI_DIMENSION) {
+	if (ciType == DAENETIP3_AI_DIMENSION)
+	{
 		pos1 = tmpstr.find('[', pos1);
 		pos2 = tmpstr.find(']', pos1);
 		return tmpstr.substr(pos1 + 1, pos2 - (pos1 + 1));
@@ -634,7 +635,8 @@ uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(std::string tmpstr, const int &port)
 		ss >> b;
 		return (uint8_t)b;
 	}
-	else if (port == DAENETIP2_PORT_5_VAL) {
+	if (port == DAENETIP2_PORT_5_VAL)
+	{
 		pos1 = tmpstr.find(",0x");
 		pos2 = tmpstr.find(',', pos1 + 3);
 		ss << std::hex << tmpstr.substr(pos1 + 3, pos2 - (pos1 + 3)).c_str();
@@ -670,7 +672,8 @@ float CDenkoviDevices::DAEnetIP2CalculateAi(int adc, const int &valType) {
 	if (valType == DAENETIP2_AI_TEMPERATURE) {
 		return static_cast<float>(10000 * ((1.2*204.8)*adc / (120 * 1024) + 0) / 100);
 	}
-	else if (valType == DAENETIP2_AI_VOLTAGE) {
+	if (valType == DAENETIP2_AI_VOLTAGE)
+	{
 		return static_cast<float>(10000 * ((1.2*0.377)*adc / (4.7 * 1024) + 0) / 100);
 	}
 	return 0.0f;
@@ -742,15 +745,18 @@ void CDenkoviDevices::GetMeterDetails()
 		Log(LOG_ERROR, "%s: Error connecting to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 		 
 		return;
 	}
-	else if (m_iModel == DDEV_DAEnet_IP3 && (strlen(sResult.c_str()) < MIN_DAENETIP3_RESPOND_LENGTH)) {
+	if (m_iModel == DDEV_DAEnet_IP3 && (strlen(sResult.c_str()) < MIN_DAENETIP3_RESPOND_LENGTH))
+	{
 		Log(LOG_ERROR, "%s: Error connecting to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}
-	else if (m_iModel == DDEV_DAEnet_IP2 && sResult.find("var IO=new Array") == std::string::npos) {
+	if (m_iModel == DDEV_DAEnet_IP2 && sResult.find("var IO=new Array") == std::string::npos)
+	{
 		Log(LOG_ERROR, "%s: Error getting status from: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}
-	else if (m_iModel == DDEV_DAEnet_IP2_8_RELAYS && sResult.find("var IO=new Array") == std::string::npos) {
+	if (m_iModel == DDEV_DAEnet_IP2_8_RELAYS && sResult.find("var IO=new Array") == std::string::npos)
+	{
 		Log(LOG_ERROR, "%s: Error getting status from: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}
@@ -760,7 +766,8 @@ void CDenkoviDevices::GetMeterDetails()
 		Log(LOG_ERROR, "%s: Error getting status from: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}
-	else if (m_iModel == DDEV_DAEnet_IP3 && ((sResult.find(DAENETIP3_PORTA_MDO_DEF) == std::string::npos) || (sResult2.find(DAENETIP3_PORTB_SNAME_DEF) == std::string::npos))) {
+	if (m_iModel == DDEV_DAEnet_IP3 && ((sResult.find(DAENETIP3_PORTA_MDO_DEF) == std::string::npos) || (sResult2.find(DAENETIP3_PORTB_SNAME_DEF) == std::string::npos)))
+	{
 		Log(LOG_ERROR, "%s: Error getting status from: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}

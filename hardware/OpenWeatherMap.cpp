@@ -810,17 +810,14 @@ void COpenWeatherMap::GetMeterDetails()
 				Log(LOG_STATUS, "Processing daily forecast failed (unexpected structure)!");
 				break;
 			}
-			else
+			std::string sDay = GetDayFromUTCtimestamp(iDay, dailyfc[iDay]["dt"].asString());
+			Debug(DEBUG_NORM, "Processing daily forecast for %s (%s)", dailyfc[iDay]["dt"].asString().c_str(), sDay.c_str());
+
+			Json::Value curday = dailyfc[iDay];
+
+			if (!ProcessForecast(curday, "Day", sDay, iDay, 17))
 			{
-				std::string sDay = GetDayFromUTCtimestamp(iDay, dailyfc[iDay]["dt"].asString());
-				Debug(DEBUG_NORM, "Processing daily forecast for %s (%s)",dailyfc[iDay]["dt"].asString().c_str() ,sDay.c_str());
-
-				Json::Value curday = dailyfc[iDay];
-
-				if (!ProcessForecast(curday, "Day", sDay, iDay, 17))
-				{
-					Log(LOG_STATUS, "Processing daily forecast for day %d failed!",iDay);
-				}
+				Log(LOG_STATUS, "Processing daily forecast for day %d failed!", iDay);
 			}
 			iDay++;
 		}
@@ -847,17 +844,14 @@ void COpenWeatherMap::GetMeterDetails()
 				Log(LOG_STATUS, "Processing hourly forecast failed (unexpected structure)!");
 				break;
 			}
-			else
+			std::string sHour = GetHourFromUTCtimestamp(iHour, hourlyfc[iHour]["dt"].asString());
+			Debug(DEBUG_NORM, "Processing hourly forecast for %s (%s)", hourlyfc[iHour]["dt"].asString().c_str(), sHour.c_str());
+
+			Json::Value curhour = hourlyfc[iHour];
+
+			if (!ProcessForecast(curhour, "Hour", sHour, iHour, 257))
 			{
-				std::string sHour = GetHourFromUTCtimestamp(iHour, hourlyfc[iHour]["dt"].asString());
-				Debug(DEBUG_NORM, "Processing hourly forecast for %s (%s)",hourlyfc[iHour]["dt"].asString().c_str() ,sHour.c_str());
-
-				Json::Value curhour = hourlyfc[iHour];
-
-				if (!ProcessForecast(curhour, "Hour", sHour, iHour, 257))
-				{
-					Log(LOG_STATUS, "Processing hourly forecast for hour %d failed!",iHour);
-				}
+				Log(LOG_STATUS, "Processing hourly forecast for hour %d failed!", iHour);
 			}
 			iHour++;
 		}

@@ -332,20 +332,12 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 				_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Connected to '%s:%s'.", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()));
 				return true;
 			}
-			else
+			if (((ec.value() != 113) && (ec.value() != 111) && (ec.value() != 10060) && (ec.value() != 10061) && (ec.value() != 10064)))
+			// && (ec.value() != 10061)
+			// Connection failed due to no response, no route or active refusal
 			{
-				if ((
-					(ec.value() != 113) &&
-					(ec.value() != 111) &&
-					(ec.value() != 10060) &&
-					(ec.value() != 10061) &&
-					(ec.value() != 10064) //&&
-					//(ec.value() != 10061)
-					)
-					) // Connection failed due to no response, no route or active refusal
-				{
-					_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
-				}
+				_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(),
+					   (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
 			}
 		}
 	}
@@ -383,8 +375,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 			_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Connected.", m_Name.c_str());
 			break;
 		}
-		else
-			iter++;
+		iter++;
 	}
 	if (error)
 	{
@@ -736,8 +727,7 @@ bool CPanasonicNode::SendShutdown()
 		_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Sent command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 		return true;
 	}
-	else
-		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
+	_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 	return false;
 }
 

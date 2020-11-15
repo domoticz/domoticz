@@ -737,35 +737,26 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 
 				if (command == "Stop")
 					return sMode == "stop";
-				else if (command == "Pause")
+				if (command == "Pause")
 					return sMode == "pause";
-				else if (command == "Play")
+				if (command == "Play")
 					return sMode == "play";
-				else if (command == "PlayPlaylist")
+				if (command == "PlayPlaylist")
 					return sMode == "play";
-				else if (command == "PlayFavorites")
+				if (command == "PlayFavorites")
 					return sMode == "play";
-				else if (command == "PowerOn")
+				if (command == "PowerOn")
 					return sPower == "1";
-				else if (command == "PowerOff")
+				if (command == "PowerOff")
 					return sPower == "0";
-				else
-					return false;
 			}
-			else
-				return false;
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "Logitech Media Server: (%s) Command: '%s'. Unknown command.", result[0][0].c_str(), command.c_str());
 			return false;
 		}
-	}
-	else
-	{
-		_log.Log(LOG_ERROR, "Logitech Media Server: (%d) Command: '%s'. Device not found.", ID, command.c_str());
+		_log.Log(LOG_ERROR, "Logitech Media Server: (%s) Command: '%s'. Unknown command.", result[0][0].c_str(), command.c_str());
 		return false;
 	}
+	_log.Log(LOG_ERROR, "Logitech Media Server: (%d) Command: '%s'. Device not found.", ID, command.c_str());
+	return false;
 }
 
 void CLogitechMediaServer::SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration)

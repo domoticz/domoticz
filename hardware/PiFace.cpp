@@ -958,7 +958,7 @@ int CPiFace::Init_SPI_Device(int Init)
 #endif
         return -1;
     }
-    else return m_fd;
+    return m_fd;
 }
 
 int CPiFace::Detect_PiFace_Hardware()

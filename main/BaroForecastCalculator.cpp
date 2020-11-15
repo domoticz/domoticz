@@ -149,25 +149,22 @@ int CBaroForecastCalculator::CalculateBaroForecast(const double pressure)
 
 	if (m_baro_minuteCount < 36) //if time is less than 35 min
 		return wsbaroforecast_unknown; // Unknown, more time needed
-	else if (m_dP_dt < (-0.25))
+	if (m_dP_dt < (-0.25))
 		return wsbaroforecast_heavy_rain; // Quickly falling LP, Thunderstorm, not stable
-	else if (m_dP_dt > 0.25)
+	if (m_dP_dt > 0.25)
 		return wsbaroforecast_unstable; // Quickly rising HP, not stable weather
-	else if ((m_dP_dt > (-0.25)) && (m_dP_dt < (-0.05)))
+	if ((m_dP_dt > (-0.25)) && (m_dP_dt < (-0.05)))
 		return wsbaroforecast_rain; // Slowly falling Low Pressure System, stable rainy weather
-	else if ((m_dP_dt > 0.05) && (m_dP_dt < 0.25))
+	if ((m_dP_dt > 0.05) && (m_dP_dt < 0.25))
 		return wsbaroforecast_sunny; // Slowly rising HP stable good weather
-	else if ((m_dP_dt > (-0.05)) && (m_dP_dt < 0.05))
+	if ((m_dP_dt > (-0.05)) && (m_dP_dt < 0.05))
 		return wsbaroforecast_stable; // Stable weather
-	else
-	{
-		if (pressure <= 980)
-			return  wsbaroforecast_heavy_rain;
-		else if (pressure <= 995)
-			return wsbaroforecast_rain;
-		else if (pressure >= 1029)
-			return wsbaroforecast_sunny;
-	}
+	if (pressure <= 980)
+		return wsbaroforecast_heavy_rain;
+	if (pressure <= 995)
+		return wsbaroforecast_rain;
+	if (pressure >= 1029)
+		return wsbaroforecast_sunny;
 	return wsbaroforecast_unknown;
 }
 

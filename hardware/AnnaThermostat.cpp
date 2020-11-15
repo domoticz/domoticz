@@ -173,7 +173,7 @@ bool CAnnaThermostat::WriteToHardware(const char* pdata, const unsigned char /*l
 		{
 			return false; // just return Error as these are not supposed to be switches
 		}
-		else if (node_id == sAnnaProximity)
+		if (node_id == sAnnaProximity)
 		{
 			return AnnaToggleProximity(bIsOn);
 		}

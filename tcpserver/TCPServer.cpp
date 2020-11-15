@@ -463,7 +463,8 @@ unsigned int CTCPServer::GetUserDevicesCount(const std::string &username)
 		return m_pTCPServer->GetUserDevicesCount(username);
 	}
 #ifndef NOCLOUD
-	else if (m_pProxyServer) {
+	if (m_pProxyServer)
+	{
 		return m_pProxyServer->GetUserDevicesCount(username);
 	}
 #endif

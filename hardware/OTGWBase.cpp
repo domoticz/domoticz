@@ -417,77 +417,70 @@ void OTGWBase::ParseLine()
 		_status.DHW_burner_operation_hours=atol(results[idx++].c_str());
 		return;
 	}
-	else
+
+	if (sLine == "SE")
 	{
-		if (sLine=="SE")
+		_log.Log(LOG_ERROR, "OTGW: Error received!");
+	}
+	else if (sLine.find("PR: G") != std::string::npos)
+	{
+		_tOTGWGPIO _GPIO;
+		_GPIO.A = static_cast<int>(sLine[6] - '0');
+		//		if (_GPIO.A==0 || _GPIO.A==1)
+		//		{
+		UpdateSwitch(96, (_GPIO.A == 1), "GPIOAPulledToGround");
+		//		}
+		//		else
+		//		{
+		// Remove device (how?)
+		//		}
+		_GPIO.B = static_cast<int>(sLine[7] - '0');
+		//		if (_GPIO.B==0 || _GPIO.B==1)
+		//		{
+		UpdateSwitch(97, (_GPIO.B == 1), "GPIOBPulledToGround");
+		//		}
+		//		else
+		//		{
+		// Remove device (how?)
+		//		}
+	}
+	else if (sLine.find("PR: I") != std::string::npos)
+	{
+		_tOTGWGPIO _GPIO;
+		_GPIO.A = static_cast<int>(sLine[6] - '0');
+		UpdateSwitch(98, (_GPIO.A == 1), "GPIOAStatusIsHigh");
+		_GPIO.B = static_cast<int>(sLine[7] - '0');
+		UpdateSwitch(99, (_GPIO.B == 1), "GPIOBStatusIsHigh");
+	}
+	else if (sLine.find("PR: O") != std::string::npos)
+	{
+		// Check if setpoint is overriden
+		m_OverrideTemperature = 0.0f;
+		char status = sLine[6];
+		if (status == 'c' || status == 't')
 		{
-			_log.Log(LOG_ERROR,"OTGW: Error received!");
-		}
-		else if (sLine.find("PR: G")!=std::string::npos)
-		{
-			_tOTGWGPIO _GPIO;
-			_GPIO.A=static_cast<int>(sLine[6]- '0');
-//			if (_GPIO.A==0 || _GPIO.A==1)
-//			{
-				UpdateSwitch(96,(_GPIO.A==1),"GPIOAPulledToGround");
-//			}
-//			else
-//			{
-				// Remove device (how?)
-//			}
-			_GPIO.B=static_cast<int>(sLine[7]- '0');
-//			if (_GPIO.B==0 || _GPIO.B==1)
-//			{
-				UpdateSwitch(97,(_GPIO.B==1),"GPIOBPulledToGround");
-//			}
-//			else
-//			{
-				// Remove device (how?)
-//			}
-		}
-		else if (sLine.find("PR: I")!=std::string::npos)
-		{
-			_tOTGWGPIO _GPIO;
-			_GPIO.A=static_cast<int>(sLine[6]- '0');
-			UpdateSwitch(98,(_GPIO.A==1),"GPIOAStatusIsHigh");
-			_GPIO.B=static_cast<int>(sLine[7]- '0');
-			UpdateSwitch(99,(_GPIO.B==1),"GPIOBStatusIsHigh");
-		}
-		else if (sLine.find("PR: O")!=std::string::npos)
-		{
-			// Check if setpoint is overriden
- 			m_OverrideTemperature=0.0f;
-			char status=sLine[6];
-			if (status == 'c' || status == 't')
-			{
-				// Get override setpoint value
-				m_OverrideTemperature=static_cast<float>(atof(sLine.substr(7).c_str()));
-			}
-		}
-		else if (sLine.find("PR: A") != std::string::npos)
-		{
-			//Gateway Version
-			std::string tmpstr = sLine.substr(6);
-			size_t tpos = tmpstr.find(' ');
-			if (tpos != std::string::npos)
-			{
-				m_Version = tmpstr.substr(tpos + 9);
-			}
-		}
-		else
-		{
-			if (
-				(sLine.find("OT") == std::string::npos)&&
-				(sLine.find("PS") == std::string::npos)&&
-				(sLine.find("SC") == std::string::npos)
-				)
-			{
-				//Dont report OT/PS/SC feedback
-				_log.Log(LOG_STATUS,"OTGW: %s",sLine.c_str());
-			}
+			// Get override setpoint value
+			m_OverrideTemperature = static_cast<float>(atof(sLine.substr(7).c_str()));
 		}
 	}
-
+	else if (sLine.find("PR: A") != std::string::npos)
+	{
+		// Gateway Version
+		std::string tmpstr = sLine.substr(6);
+		size_t tpos = tmpstr.find(' ');
+		if (tpos != std::string::npos)
+		{
+			m_Version = tmpstr.substr(tpos + 9);
+		}
+	}
+	else
+	{
+		if ((sLine.find("OT") == std::string::npos) && (sLine.find("PS") == std::string::npos) && (sLine.find("SC") == std::string::npos))
+		{
+			// Dont report OT/PS/SC feedback
+			_log.Log(LOG_STATUS, "OTGW: %s", sLine.c_str());
+		}
+	}
 }
 
 //Webserver helpers

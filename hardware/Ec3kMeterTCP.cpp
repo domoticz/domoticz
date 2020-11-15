@@ -263,10 +263,8 @@ bool Ec3kLimiter::update(int id)
 				meters[i].last_update = time(nullptr);
 				return true;
 			}
-			else
-			{
-				return false;
-			}
+
+			return false;
 		}
 	}
 	// Store new meter and allow update

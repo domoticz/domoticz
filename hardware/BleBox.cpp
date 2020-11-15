@@ -993,10 +993,10 @@ std::string BleBox::IdentifyDevice(const std::string & IPAddress)
 
 	if (root["device"].empty() == true)
 	{
-		if (DoesNodeExists(root, "type") == false)
+		if (!DoesNodeExists(root, "type"))
 			return "";
-		else
-			result = root["type"].asString();
+
+		result = root["type"].asString();
 	}
 	else
 	{
@@ -1022,10 +1022,8 @@ Json::Value BleBox::GetApiDeviceState(const std::string & IPAddress)
 	{
 		return root;
 	}
-	else
-	{
-		return root["device"];
-	}
+
+	return root["device"];
 }
 
 std::string BleBox::GetUptime(const std::string & IPAddress)
@@ -1078,10 +1076,8 @@ int BleBox::GetDeviceType(const std::string & IPAddress)
 		Log(LOG_ERROR, "unknown device (%s)", IPAddress.c_str());
 		return -1;
 	}
-	else
-	{
-		return itt->second;
-	}
+
+	return itt->second;
 }
 
 void BleBox::AddNode(const std::string & name, const std::string & IPAddress, bool reloadNodes)
@@ -1166,11 +1162,9 @@ bool BleBox::LoadNodes()
 		}
 		return true;
 	}
-	else
-	{
-		Log(LOG_ERROR, "Cannot find any devices...");
-		return false;
-	}
+
+	Log(LOG_ERROR, "Cannot find any devices...");
+	return false;
 }
 
 void BleBox::ReloadNodes()

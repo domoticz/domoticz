@@ -41,8 +41,7 @@ class CKodiNode : public std::enable_shared_from_this<CKodiNode>, StoppableTask
 		{
 			if (m_iPlayerID >= 0)
 				return std::to_string(m_iPlayerID);
-			else
-				return "";
+			return "";
 		};
 		void Type(const char *pType)
 		{

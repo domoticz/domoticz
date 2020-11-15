@@ -285,8 +285,8 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
          int iValue=atoi(readValue.c_str())==2;
          if (iValue!=1 && iValue!=2)
             return false;
-         else
-            return (iValue==2);
+
+	 return (iValue == 2);
       }
    }
    return false;

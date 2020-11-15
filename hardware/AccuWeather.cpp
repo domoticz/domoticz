@@ -171,11 +171,9 @@ std::string CAccuWeather::GetLocationKey()
 			}
 			return root["Key"].asString();
 		}
-		else
-		{
-			Log(LOG_ERROR, "Invalid data received, unknown location or API key!");
-			return "";
-		}
+
+		Log(LOG_ERROR, "Invalid data received, unknown location or API key!");
+		return "";
 	}
 	catch (...)
 	{

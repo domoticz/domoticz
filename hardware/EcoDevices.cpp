@@ -508,12 +508,12 @@ void CEcoDevices::GetMeterRT2Details()
 		StringSplit(value, ",", splitresults);
 		if (splitresults[0].empty())
 			break;
-		else
-		{
-			fvalue1 = (float)atof(splitresults[0].c_str());
-			if (fvalue1 > 0) SendMeterSensor(m_HwdID, i, 255, fvalue1 / 1000, m_status.hostname + " " + label);
-			fvalue2 = (float)atof(splitresults[1].c_str());
-			if (fvalue2 > 0) SendWaterflowSensor(m_HwdID, (uint8_t)i, 255, fvalue2, m_status.hostname + " " + label);
-		}
+
+		fvalue1 = (float)atof(splitresults[0].c_str());
+		if (fvalue1 > 0)
+			SendMeterSensor(m_HwdID, i, 255, fvalue1 / 1000, m_status.hostname + " " + label);
+		fvalue2 = (float)atof(splitresults[1].c_str());
+		if (fvalue2 > 0)
+			SendWaterflowSensor(m_HwdID, (uint8_t)i, 255, fvalue2, m_status.hostname + " " + label);
 	}
 }

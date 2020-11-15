@@ -511,14 +511,11 @@ namespace Plugins {
 					_log.Log(LOG_ERROR, "CPlugin:%s, Function expects no parameter or a Dictionary.", __func__);
 					return pConfig;
 				}
-				else
-				{
-					//  Convert to JSON and store
-					sConfig = pProtocol->PythontoJSON(pNewConfig);
+				//  Convert to JSON and store
+				sConfig = pProtocol->PythontoJSON(pNewConfig);
 
-					// Update database
-					m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
-				}
+				// Update database
+				m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
 			}
 			PyErr_Clear();
 
@@ -1242,7 +1239,6 @@ Error:
 			{
 				for (const auto &sd : result)
 				{
-					const char*	pChar = sd[0].c_str();
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "UserDataFolder", szUserDataFolder);

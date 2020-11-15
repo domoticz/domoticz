@@ -752,7 +752,7 @@ bool RFXComSerial::Read_TX_PKT()
 					m_bHaveRX = true;
 					return true;
 				}
-				else if (tByte == PKT_DLE)
+				if (tByte == PKT_DLE)
 				{
 					bHadDLE = true;
 				}

@@ -69,15 +69,12 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct sockaddr_in
 		memcpy(&sa, saddr, sizeof(sockaddr_in));
 		return SUCCESS;
 	}
-	else
-	{
-		sa.sin_family = AF_INET;
-		if (inet_pton(sa.sin_family, szRemoteHostName.c_str(), &sa.sin_addr) == 1)
-			return SUCCESS;
-		sa.sin_family = AF_INET6;
-		if (inet_pton(sa.sin_family, szRemoteHostName.c_str(), &sa.sin_addr) == 1)
-			return SUCCESS;
-	}
+	sa.sin_family = AF_INET;
+	if (inet_pton(sa.sin_family, szRemoteHostName.c_str(), &sa.sin_addr) == 1)
+		return SUCCESS;
+	sa.sin_family = AF_INET6;
+	if (inet_pton(sa.sin_family, szRemoteHostName.c_str(), &sa.sin_addr) == 1)
+		return SUCCESS;
 
 	return FAILURE;
 }

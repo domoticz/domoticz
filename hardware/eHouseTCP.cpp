@@ -767,17 +767,14 @@ bool eHouseTCP::CheckAddress()
 			LOG(LOG_ERROR, "eHouse: cannot resolve host name");
 			return false;
 		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
-			m_SrvAddrU = ip & 0xff;
-			m_SrvAddrM = (ip >> 8) & 0xff;
-			m_SrvAddrL = ip >> 24;
-			m_SrvAddrH = (ip >> 16) & 0xff;
-			LOG(LOG_STATUS, "[eHouse PRO] %s =>IP Address: %d.%d.%d.%d\r\n", m_IPAddress.c_str(), m_SrvAddrU, m_SrvAddrM, m_SrvAddrH, m_SrvAddrL);
-			if ((m_SrvAddrU != 192) || (m_SrvAddrM != 168))
-				m_ViaTCP = 1;
-		}
+		memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
+		m_SrvAddrU = ip & 0xff;
+		m_SrvAddrM = (ip >> 8) & 0xff;
+		m_SrvAddrL = ip >> 24;
+		m_SrvAddrH = (ip >> 16) & 0xff;
+		LOG(LOG_STATUS, "[eHouse PRO] %s =>IP Address: %d.%d.%d.%d\r\n", m_IPAddress.c_str(), m_SrvAddrU, m_SrvAddrM, m_SrvAddrH, m_SrvAddrL);
+		if ((m_SrvAddrU != 192) || (m_SrvAddrM != 168))
+			m_ViaTCP = 1;
 	}
 	if (m_ViaTCP)
 		m_TCPSocket = ConnectTCP(m_addr.sin_addr.s_addr);

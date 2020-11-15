@@ -979,7 +979,7 @@ bool CEnOceanESP3::ParseData()
 		}
 		return true;
 	}
-	else if (m_ReceivedPacketType==PACKET_RADIO)
+	if (m_ReceivedPacketType == PACKET_RADIO)
 		ParseRadioDatagram();
 	else
 	{

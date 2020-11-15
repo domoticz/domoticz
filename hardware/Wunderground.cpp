@@ -187,8 +187,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 				std::string szFirstStation = root["location"]["stationId"][0].asString();
 				return szFirstStation;
 			}
-			else
-				_log.Log(LOG_ERROR, "WUnderground: Problem getting location/near result. No stations returned!");
+			_log.Log(LOG_ERROR, "WUnderground: Problem getting location/near result. No stations returned!");
 		}
 	}
 	return "";

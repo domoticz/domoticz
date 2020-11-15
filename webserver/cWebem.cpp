@@ -440,9 +440,8 @@ namespace http {
 						}
 						return true;
 					}
-					else if ((strstr(pContent_Type, "text/plain") != nullptr)
-						 || (strstr(pContent_Type, "application/json") != nullptr)
-						 || (strstr(pContent_Type, "application/xml") != nullptr))
+					if ((strstr(pContent_Type, "text/plain") != nullptr) || (strstr(pContent_Type, "application/json") != nullptr) ||
+					    (strstr(pContent_Type, "application/xml") != nullptr))
 					{
 						//Raw data
 						req.parameters.insert(std::pair< std::string, std::string >("data", req.content));
@@ -1257,7 +1256,7 @@ namespace http {
 				return 1;
 			}
 			// Basic Auth header
-			else if (boost::icontains(auth_header, "Basic "))
+			if (boost::icontains(auth_header, "Basic "))
 			{
 				std::string decoded = base64_decode(auth_header + 6);
 				size_t npos = decoded.find(':');
@@ -1813,26 +1812,23 @@ namespace http {
 					return false;
 
 				}
-				else
+				// invalid cookie
+				if (myWebem->m_authmethod != AUTH_BASIC)
 				{
-					// invalid cookie
-					if (myWebem->m_authmethod != AUTH_BASIC)
-					{
-						//Check if we need to bypass authentication (not when using basic-auth)
-						for (const auto &url : myWebem->myWhitelistURLs)
-							if (req.uri.find(url) == 0)
+					// Check if we need to bypass authentication (not when using basic-auth)
+					for (const auto &url : myWebem->myWhitelistURLs)
+						if (req.uri.find(url) == 0)
+							return true;
+
+					std::string cmdparam;
+					if (GetURICommandParameter(req.uri, cmdparam))
+						for (const auto &cmd : myWebem->myWhitelistCommands)
+							if (cmdparam.find(cmd) == 0)
 								return true;
 
-						std::string cmdparam;
-						if (GetURICommandParameter(req.uri, cmdparam))
-							for (const auto &cmd : myWebem->myWhitelistCommands)
-								if (cmdparam.find(cmd) == 0)
-									return true;
-
-						// Force login form
-						send_authorization_request(rep);
-						return false;
-					}
+					// Force login form
+					send_authorization_request(rep);
+					return false;
 				}
 			}
 
@@ -1929,12 +1925,9 @@ namespace http {
 					removeAuthToken(session.id);
 					return false;
 				}
-				else
-				{
-					session.timeout = now + SHORT_SESSION_TIMEOUT;
-					myWebem->AddSession(session);
-					return true;
-				}
+				session.timeout = now + SHORT_SESSION_TIMEOUT;
+				myWebem->AddSession(session);
+				return true;
 			}
 
 			if (session.username.empty())

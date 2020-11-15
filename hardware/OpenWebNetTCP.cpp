@@ -385,15 +385,10 @@ const std::string COpenWebNetTCP::shaCalc(std::string paramString, int auth_type
 		char arrayOfChar2[(SHA_DIGEST_LENGTH * 2) + 1];
 		return (byteToHexStrConvert(digest, SHA_DIGEST_LENGTH, arrayOfChar2));
 	}
-	else
-	{
-		// Perform SHA256
-		digest = SHA256(strArray, paramString.length(), nullptr);
-		char arrayOfChar2[(SHA256_DIGEST_LENGTH * 2) + 1];
-		return (byteToHexStrConvert(digest, SHA256_DIGEST_LENGTH, arrayOfChar2));
-	}
-
-	return(std::string(""));
+	// Perform SHA256
+	digest = SHA256(strArray, paramString.length(), nullptr);
+	char arrayOfChar2[(SHA256_DIGEST_LENGTH * 2) + 1];
+	return (byteToHexStrConvert(digest, SHA256_DIGEST_LENGTH, arrayOfChar2));
 }
 
 /**
@@ -450,11 +445,8 @@ bool COpenWebNetTCP::hmacAuthentication(csocket *connectionSocket, int auth_type
 				ownWrite(connectionSocket, OPENWEBNET_MSG_OPEN_OK, strlen(OPENWEBNET_MSG_OPEN_OK)); // Write ACK
 				return (true); // HMAC authentication OK
 			}
-			else
-			{
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: HMAC(Ra,Rb,Kab) received: '%s'", strRcvSrv2.c_str());
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: not match with: '%s'", strHMAC2.c_str());
-			}
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: HMAC(Ra,Rb,Kab) received: '%s'", strRcvSrv2.c_str());
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: not match with: '%s'", strHMAC2.c_str());
 		}
 	}
 	_log.Log(LOG_ERROR, "COpenWebNetTCP: HMAC authentication ERROR!");
@@ -508,7 +500,7 @@ bool COpenWebNetTCP::ownAuthentication(csocket *connectionSocket)
 		// Hash authentication for unofficial gateway
 		return(nonceHashAuthentication(connectionSocket, responseNonce.Extract_who()));
 	}
-	else if (responseNonce.IsNormalFrame())
+	if (responseNonce.IsNormalFrame())
 	{
 		if (!m_ownPassword.length())
 		{
@@ -524,18 +516,15 @@ bool COpenWebNetTCP::ownAuthentication(csocket *connectionSocket)
 			// HMAC authentication with SHA-1
 			return (hmacAuthentication(connectionSocket, 0));
 		}
-		else if (strFrame == OPENWEBNET_AUTH_REQ_SHA2) // *98*2##
+		if (strFrame == OPENWEBNET_AUTH_REQ_SHA2) // *98*2##
 		{
 			// HMAC authentication with SHA-256
 			return (hmacAuthentication(connectionSocket, 1));
 		}
-		else
-		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: frame request error:'%s'", strFrame.c_str());
-			return false;
-		}
+		_log.Log(LOG_ERROR, "COpenWebNetTCP: frame request error:'%s'", strFrame.c_str());
+		return false;
 	}
-	else if (responseNonce.IsOKFrame())
+	if (responseNonce.IsOKFrame())
 	{
 		// no authentication required..ok!
 		//_log.Log(LOG_STATUS, "COpenWebNetTCP: authentication OK, no password!");

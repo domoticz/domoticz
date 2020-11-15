@@ -224,9 +224,7 @@ bool CTTNMQTT::ConnectIntEx()
 			Log(LOG_ERROR, "Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
 			return false;
 		}
-		else {
-			Log(LOG_STATUS, "Enabled TLS mode");
-		}
+		Log(LOG_STATUS, "Enabled TLS mode");
 	}
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 

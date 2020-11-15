@@ -912,7 +912,8 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 				writeFrame(szTrameToSend);
 				return true;
 			}
-			else if( FrameType == type_SFSP_SWITCH ){
+			if (FrameType == type_SFSP_SWITCH)
+			{
 				//Pas d'envoi des switch créé sur réception de trames, ce sont des switch réel
 				//no sending frame for switch created by the CAN, they are real switch not virtual ! it's like enocean
 
@@ -928,7 +929,8 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 						m_BOOL_SendPushOffSwitch = true; //Auto push off switch because it works like EnOcean (Press and Released info on one switch).
 						return true;
 					}
-					else if( pSen->LIGHTING2.cmnd == light2_sSetLevel ){
+					if (pSen->LIGHTING2.cmnd == light2_sSetLevel)
+					{
 						//to do : if user set the level we must send the command By Outpu direct command and not by SFSP Frame
 						_log.Log(LOG_ERROR,"MultiblocV8: Dimmer level not yet supported !");
 						return false;
@@ -954,10 +956,8 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 					} */
 					return true;
 				}
-				else{
-					_log.Log(LOG_ERROR,"MultiblocV8: Error Command BLoc not allowed !");
-					return false;
-				}
+				_log.Log(LOG_ERROR, "MultiblocV8: Error Command BLoc not allowed !");
+				return false;
 			}
 			else if( FrameType == type_SFSP_LearnCommand ){ //specific command for sfsp to jump from one output to the next
 				if( ReferenceBloc == BLOC_SFSP_M || ReferenceBloc == BLOC_SFSP_E ){
@@ -965,10 +965,8 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 					USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(sID_EnBase,Commande); //
 					return true;
 				}
-				else{
-					_log.Log(LOG_ERROR,"MultiblocV8: Error Command SFSP Learn not allowed !");
-					return false;
-				}
+				_log.Log(LOG_ERROR, "MultiblocV8: Error Command SFSP Learn not allowed !");
+				return false;
 			}
 		}
 		else{

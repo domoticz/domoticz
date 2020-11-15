@@ -433,7 +433,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		pItem->startTime = rtime;
 		return true;
 	}
-	else if (pItem->timerType == TTYPE_FIXEDDATETIME)
+	if (pItem->timerType == TTYPE_FIXEDDATETIME)
 	{
 		constructTime(rtime,tm1,pItem->startYear,pItem->startMonth,pItem->startDay,pItem->startHour,pItem->startMin,roffset*60,isdst);
 		if (rtime < atime)
@@ -441,7 +441,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		pItem->startTime = rtime;
 		return true;
 	}
-	else if (pItem->timerType == TTYPE_BEFORESUNSET)
+	if (pItem->timerType == TTYPE_BEFORESUNSET)
 	{
 		if (m_tSunSet == 0)
 			return false;

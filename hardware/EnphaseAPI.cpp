@@ -142,9 +142,8 @@ int EnphaseAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 		if (bGetSunRise) {
 			return sunRiseInMinutes;
 		}
-		else {
-			return sunSetInMinutes;
-		}
+
+		return sunSetInMinutes;
 	}
 	return 0;
 }

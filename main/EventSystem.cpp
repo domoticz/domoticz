@@ -2199,7 +2199,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			}
 			continue;
 		}
-		else if (deviceName.find("Variable:") == 0)
+		if (deviceName.find("Variable:") == 0)
 		{
 			std::string variableNo = deviceName.substr(9);
 			_tActionParseResults parseResult;
@@ -2228,7 +2228,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			actionsDone = true;
 			continue;
 		}
-		else if (deviceName.find("Text:") == 0)
+		if (deviceName.find("Text:") == 0)
 		{
 			std::string variableName = deviceName.substr(5);
 			_tActionParseResults parseResult;
@@ -2552,7 +2552,8 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 
 		return true;
 	}
-	else if (ID.find("SetSetpoint:") == 0) {
+	if (ID.find("SetSetpoint:") == 0)
+	{
 		int idx = atoi(ID.substr(12).c_str());
 		std::string doWhat = std::string(Action);
 		std::string temp, mode, until;
@@ -2576,7 +2577,8 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 
 		return true;
 	}
-	else if (ID.find("CustomCommand:") == 0) {
+	if (ID.find("CustomCommand:") == 0)
+	{
 		int idx = atoi(ID.substr(14).c_str());
 		std::string doWhat = std::string(Action);
 		_tActionParseResults parseResult;

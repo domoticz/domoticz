@@ -1375,8 +1375,7 @@ bool IsDebuggerPresent()
 	{
 		if (::isspace(*characterPtr))
 			continue;
-		else
-			return ::isdigit(*characterPtr) != 0 && *characterPtr != '0';
+		return ::isdigit(*characterPtr) != 0 && *characterPtr != '0';
 	}
 
 	return false;

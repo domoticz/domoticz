@@ -519,10 +519,7 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 		_log.Debug(DEBUG_NORM, "CRC32 of content is the same.. skipping processing");
 		return true;
 	}
-	else
-	{
-		_log.Debug(DEBUG_NORM, "CRC32 of content is the not the same (%d).. start processing", crc);
-	}
+	_log.Debug(DEBUG_NORM, "CRC32 of content is the not the same (%d).. start processing", crc);
 
 	try
 	{
@@ -747,11 +744,7 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 		_log.Log(LOG_ERROR, "MercApi: Received refresh token is zero length.");
 		return false;
 	}
-	else
-	{
-		_log.Log(LOG_STATUS, "MercApi: Received new refresh token %s .", m_refreshtoken.c_str());
-	}
-
+	_log.Log(LOG_STATUS, "MercApi: Received new refresh token %s .", m_refreshtoken.c_str());
 	_log.Debug(DEBUG_NORM, "MercApi: Received access token from API.");
 
 	return true;

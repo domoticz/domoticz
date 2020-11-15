@@ -3710,7 +3710,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 					char* value = (char*)sqlite3_column_text(statement, col);
 					if ((value == nullptr) && (col == 0))
 						break;
-					else if (value == nullptr)
+					if (value == nullptr)
 						values.push_back(std::string("")); //insert empty string
 					else
 						values.push_back(value);
@@ -3778,7 +3778,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string& 
 					char* value = (char*)sqlite3_column_blob(statement, col);
 					if ((blobSize == 0) && (col == 0))
 						break;
-					else if (value == nullptr)
+					if (value == nullptr)
 						values.push_back(std::string("")); //insert empty string
 					else
 						values.push_back(std::string(value, value + blobSize));
@@ -4496,7 +4496,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					);
 					return ulID;
 				}
-				else if (parts.size() == 7) {
+				if (parts.size() == 7)
+				{
 					// is last part date only, or date with hour with space?
 					StringSplit(parts[6], " ", parts2);
 					bool shortLog = false;
@@ -4519,7 +4520,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					);
 					return ulID;
 				}
-				else if (parts.size() == 3) {
+				if (parts.size() == 3)
+				{
 					StringSplit(parts[2], " ", parts2);
 					// second part is date only, or date with hour with space
 					bool shortLog = false;
@@ -8413,7 +8415,8 @@ bool CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, const std::
 		}
 		return true;
 	}
-	else if (eVartype == USERVARTYPE_FLOAT) {
+	if (eVartype == USERVARTYPE_FLOAT)
+	{
 		//float (1)
 		std::istringstream iss(varvalue);
 		float f;
@@ -8425,11 +8428,13 @@ bool CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, const std::
 		}
 		return true;
 	}
-	else if (eVartype == USERVARTYPE_STRING) {
+	if (eVartype == USERVARTYPE_STRING)
+	{
 		//string (2)
 		return true;
 	}
-	else if (eVartype == USERVARTYPE_DATE) {
+	if (eVartype == USERVARTYPE_DATE)
+	{
 		//date (3)
 		int d, m, y;
 		if (!CheckDate(varvalue, d, m, y))
@@ -8439,7 +8444,8 @@ bool CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, const std::
 		}
 		return true;
 	}
-	else if (eVartype == USERVARTYPE_TIME) {
+	if (eVartype == USERVARTYPE_TIME)
+	{
 		//time (4)
 		if (!CheckTime(varvalue))
 		{
@@ -8777,18 +8783,16 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 							}
 							return false;
 						}
-						else {
-							rc = sqlite3_step(stmt);
-							if (rc != SQLITE_DONE)
+						rc = sqlite3_step(stmt);
+						if (rc != SQLITE_DONE)
+						{
+							free(pFBuf);
+							ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
+							if (iTotalAdded > 0)
 							{
-								free(pFBuf);
-								ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
-								if (iTotalAdded > 0)
-								{
-									m_webservers.ReloadCustomSwitchIcons();
-								}
-								return false;
+								m_webservers.ReloadCustomSwitchIcons();
 							}
+							return false;
 						}
 						sqlite3_finalize(stmt);
 						free(pFBuf);

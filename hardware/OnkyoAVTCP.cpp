@@ -585,7 +585,9 @@ void OnkyoAVTCP::ReceiveMessage(const char *pData, int Len)
 	  if (!memcmp(pData, switch_types[i].iscpCmd, 3)) {
 		  ReceiveSwitchMsg(pData, Len, false, i);
 		  return;
-	  } else if (switch_types[i].iscpMute && !memcmp(pData, switch_types[i].iscpMute, 3)) {
+	  }
+	  if (switch_types[i].iscpMute && !memcmp(pData, switch_types[i].iscpMute, 3))
+	  {
 		  ReceiveSwitchMsg(pData, Len, true, i);
 		  return;
 	  }

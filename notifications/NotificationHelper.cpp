@@ -205,11 +205,11 @@ bool CNotificationHelper::ApplyRule(const std::string &rule, const bool equal, c
 {
 	if (((rule == ">") || (rule == ">=")) && (!less) && (!equal))
 		return true;
-	else if (((rule == "<") || (rule == "<=")) && (less))
+	if (((rule == "<") || (rule == "<=")) && (less))
 		return true;
-	else if (((rule == "=") || (rule == ">=") || (rule == "<=")) && (equal))
+	if (((rule == "=") || (rule == ">=") || (rule == "<=")) && (equal))
 		return true;
-	else if ((rule == "!=") && (!equal))
+	if ((rule == "!=") && (!equal))
 		return true;
 	return false;
 }

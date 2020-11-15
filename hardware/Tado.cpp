@@ -565,10 +565,8 @@ void CTado::Do_Work()
 					continue;
 				}
 				// Else move on to getting zones for each of the homes.
-				else {
-					m_bDoGetZones = true;
-					m_bDoGetHomes = false;
-				}
+				m_bDoGetZones = true;
+				m_bDoGetHomes = false;
 			}
 
 			// Check if we should be collecting zones for each of the homes.

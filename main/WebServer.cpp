@@ -6769,12 +6769,9 @@ namespace http {
 						bReceivedSwitch = true;
 						break;
 					}
-					else
-					{
-						//sleep 100ms
-						sleep_milliseconds(100);
-						cntr++;
-					}
+					// sleep 100ms
+					sleep_milliseconds(100);
+					cntr++;
 				}
 				if (bReceivedSwitch)
 				{
