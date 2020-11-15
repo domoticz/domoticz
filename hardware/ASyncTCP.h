@@ -22,7 +22,7 @@ class ASyncTCP
 {
 protected:
 	ASyncTCP(const bool secure = false);
-	virtual ~ASyncTCP(void);
+	virtual ~ASyncTCP();
 
 	void connect(const std::string &hostname, uint16_t port);
 	void disconnect(const bool silent = true);

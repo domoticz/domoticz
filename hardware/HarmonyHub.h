@@ -84,7 +84,7 @@ class CHarmonyHub : public CDomoticzHardwareBase
 	};
 public:
 	CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port);
-	~CHarmonyHub(void);
+	~CHarmonyHub() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool StartHardware() override;

@@ -33,7 +33,7 @@ class CGpioPin
 public:
 	//CGpioPin(const int id, const std::string &label, const bool isInput, const bool isOutput, const bool isExported);
 	CGpioPin(const int pin_number, const std::string &label, const int value, const bool direction, const int edge, const int active_low, const int read_value_fd, const bool db_state);
-	~CGpioPin();
+	~CGpioPin() = default;
 
 	int GetPin();
 	std::string GetLabel();

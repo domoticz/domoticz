@@ -13,8 +13,6 @@ CNotificationSMS::CNotificationSMS() : CNotificationBase(std::string("clickatell
 	SetupConfigBase64(std::string("ClickatellFrom"), _clickatellFrom);
 }
 
-CNotificationSMS::~CNotificationSMS() = default;
-
 bool CNotificationSMS::SendMessageImplementation(
 	const uint64_t Idx,
 	const std::string& Name,
@@ -43,7 +41,8 @@ bool CNotificationSMS::SendMessageImplementation(
 	stdreplace(thisFrom, " ", "");
 	thisFrom = stdstring_trim(thisFrom);
 
-	if (thisTo.find(";") != std::string::npos) {
+	if (thisTo.find(';') != std::string::npos)
+	{
 		std::vector<std::string> recipients;
 		StringSplit(thisTo, ";", recipients);
 
@@ -74,10 +73,9 @@ bool CNotificationSMS::SendMessageImplementation(
 		sJsonPostData << "\"from\":" << "\"" << thisFrom << "\",";
 	}
 
-	sJsonPostData
-		<< "\"binary\": false,"
-		<< "\"charset\": \"UTF-8\""
-		<< "}";
+	sJsonPostData << "\"binary\": false,"
+		      << R"("charset": "UTF-8")"
+		      << "}";
 
 	_log.Log(LOG_NORM, "Clickatell SMS notification json: " + sJsonPostData.str());
 

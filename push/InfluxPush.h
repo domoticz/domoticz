@@ -26,11 +26,11 @@ private:
 	std::vector<_tPushItem> m_background_task_queue;
 	std::string m_szURL;
 	std::string m_InfluxIP;
-	int m_InfluxPort;
+	int m_InfluxPort{ 8086 };
 	std::string m_InfluxPath;
 	std::string m_InfluxDatabase;
 	std::string m_InfluxUsername;
 	std::string m_InfluxPassword;
-	bool m_bInfluxDebugActive;
+	bool m_bInfluxDebugActive{ false };
 };
 extern CInfluxPush m_influxpush;

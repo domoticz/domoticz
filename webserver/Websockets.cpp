@@ -22,8 +22,6 @@ namespace http {
 			bytes_consumed = 0;
 		};
 
-		CWebsocketFrame::~CWebsocketFrame() = default;
-
 		std::string CWebsocketFrame::unmask(const uint8_t *mask, const uint8_t *bytes, size_t payloadlen) {
 			std::string result;
 			result.resize(payloadlen);
@@ -158,15 +156,13 @@ namespace http {
 			return opcode;
 		};
 
-		CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, cWebem *_webEm, boost::function<void(const std::string &packet_data)> _WSWrite) :
-			handler(_webEm, _WSWrite),
-			OUR_PING_ID("fd")
+		CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, cWebem *_webEm, boost::function<void(const std::string &packet_data)> _WSWrite)
+			: OUR_PING_ID("fd")
+			, handler(_webEm, _WSWrite)
 		{
 			start_new_packet = true;
 			MyWrite = _MyWrite;
 		}
-
-		CWebsocket::~CWebsocket() = default;
 
 		boost::tribool CWebsocket::parse(const uint8_t *begin, size_t size, size_t &bytes_consumed, bool &keep_alive)
 		{
@@ -276,5 +272,5 @@ namespace http {
 			return &handler;
 		}
 
-	}
-}
+	} // namespace server
+} // namespace http

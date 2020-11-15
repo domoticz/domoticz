@@ -18,27 +18,14 @@ namespace server {
 
 struct server_settings {
 public:
-	server_settings() :
-		is_secure_(false) {}
-	server_settings(const server_settings & s) :
-		www_root(s.www_root),
-		listening_address(s.listening_address),
-		listening_port(s.listening_port),
-		php_cgi_path(s.php_cgi_path),
-		is_secure_(s.is_secure_)
-		{}
-	virtual ~server_settings() {}
-	server_settings & operator=(const server_settings & s) {
-		www_root = s.www_root;
-		listening_address = s.listening_address;
-		listening_port = s.listening_port;
-		php_cgi_path = s.php_cgi_path;
-		is_secure_ = s.is_secure_;
-		return *this;
-	}
-	bool is_secure() const {
-		return is_secure_;
-	}
+  server_settings() = default;
+  server_settings(const server_settings &s) = default;
+  virtual ~server_settings() = default;
+  server_settings &operator=(const server_settings &s) = default;
+  bool is_secure() const
+  {
+	  return is_secure_;
+  }
 	bool is_enabled() const {
 		return ((listening_port != "0") && (listening_port != ""));
 	}
@@ -86,7 +73,7 @@ public:
 	//feature
 	//std::string fastcgi_php_server; (like nginx)
 private:
-	bool is_secure_;
+  bool is_secure_{ false };
 };
 
 #ifdef WWW_ENABLE_SSL
@@ -104,43 +91,17 @@ public:
 	std::string ssl_options;
 	std::string tmp_dh_file_path;
 
-	bool verify_peer;
-	bool verify_fail_if_no_peer_cert;
+	bool verify_peer{ false };
+	bool verify_fail_if_no_peer_cert{ false };
 	std::string verify_file_path;
 
-	ssl_server_settings() :
-			server_settings(true),
-			verify_peer(false),
-			verify_fail_if_no_peer_cert(false) {}
-	ssl_server_settings(const ssl_server_settings & s) :
-		server_settings::server_settings(s),
-		ssl_method(s.ssl_method),
-		certificate_chain_file_path(s.certificate_chain_file_path),
-		ca_cert_file_path(s.ca_cert_file_path),
-		cert_file_path(s.cert_file_path),
-		private_key_file_path(s.private_key_file_path),
-		private_key_pass_phrase(s.private_key_pass_phrase),
-		ssl_options(s.ssl_options),
-		tmp_dh_file_path(s.tmp_dh_file_path),
-		verify_peer(s.verify_peer),
-		verify_fail_if_no_peer_cert(s.verify_fail_if_no_peer_cert),
-		verify_file_path(s.verify_file_path) {}
-	virtual ~ssl_server_settings() {}
-	ssl_server_settings & operator=(const ssl_server_settings & s) {
-		server_settings::operator=(s);
-		ssl_method = s.ssl_method;
-		certificate_chain_file_path = s.certificate_chain_file_path;
-		ca_cert_file_path = s.ca_cert_file_path;
-		cert_file_path = s.cert_file_path;
-		private_key_file_path = s.private_key_file_path;
-		private_key_pass_phrase = s.private_key_pass_phrase;
-		ssl_options = s.ssl_options;
-		tmp_dh_file_path = s.tmp_dh_file_path;
-		verify_peer = s.verify_peer;
-		verify_fail_if_no_peer_cert = s.verify_fail_if_no_peer_cert;
-		verify_file_path = s.verify_file_path;
-		return *this;
+	ssl_server_settings()
+		: server_settings(true)
+	{
 	}
+	ssl_server_settings(const ssl_server_settings &s) = default;
+	~ssl_server_settings() override = default;
+	ssl_server_settings &operator=(const ssl_server_settings &s) = default;
 
 	boost::asio::ssl::context::method get_ssl_method() const {
 		boost::asio::ssl::context::method method;
@@ -231,7 +192,8 @@ public:
 				if (error_message.empty()) {
 					error_message.append("unknown SSL option(s) : ");
 				}
-				if (error_message.find("'") != std::string::npos) {
+				if (error_message.find('\'') != std::string::npos)
+				{
 					error_message.append(", ");
 				}
 				error_message.append("'").append(option).append("'");
@@ -277,7 +239,8 @@ public:
 		verify_file_path = server_settings::get_valid_value(verify_file_path, ssl_settings.verify_file_path);
 	}
 
-	virtual std::string to_string() const  override {
+	std::string to_string() const override
+	{
 		return std::string("ssl_server_settings[") + server_settings::to_string() +
 				", ssl_method='" + ssl_method + "'" +
 				", certificate_chain_file_path='" + certificate_chain_file_path + "'" +

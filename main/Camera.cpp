@@ -23,8 +23,6 @@ CCameraHandler::CCameraHandler()
 	m_seconds_counter = 0;
 }
 
-CCameraHandler::~CCameraHandler() = default;
-
 void CCameraHandler::ReloadCameras()
 {
 	std::vector<std::string> _AddedCameras;
@@ -562,5 +560,5 @@ namespace http {
 			m_sql.DeleteCamera(idx);
 			m_mainworker.m_cameras.ReloadCameras();
 		}
-	}
-}
+	} // namespace server
+} // namespace http

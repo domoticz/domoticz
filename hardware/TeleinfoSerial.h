@@ -34,7 +34,7 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 public:
 	CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate,
 		const bool disable_crc, const int ratelimit);
-	~CTeleinfoSerial();
+	~CTeleinfoSerial() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool StartHardware() override;

@@ -102,7 +102,7 @@ int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> 
 int SetThreadName(const std::thread::native_handle_type &thread, const char *name);
 
 #if !defined(WIN32)
-	bool IsDebuggerPresent(void);
+bool IsDebuggerPresent();
 #endif
 
 std::string GenerateUUID();

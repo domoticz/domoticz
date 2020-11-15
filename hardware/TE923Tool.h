@@ -49,20 +49,21 @@ typedef struct {
 class CTE923Tool
 {
 public:
-	CTE923Tool(void);
-	~CTE923Tool(void);
+  CTE923Tool();
+  ~CTE923Tool();
 
-	bool OpenDevice();
-	void CloseDevice();
-	bool GetData(Te923DataSet_t *data, Te923DevSet_t *dev);
-	void GetPrintData( Te923DataSet_t *data, char *szOutputBuffer);
+  bool OpenDevice();
+  void CloseDevice();
+  bool GetData(Te923DataSet_t *data, Te923DevSet_t *dev);
+  void GetPrintData(Te923DataSet_t *data, char *szOutputBuffer);
 
-	bool m_bUSBIsInit;
+  bool m_bUSBIsInit;
 
-	struct usb_device *find_te923();
-	struct usb_dev_handle *te923_handle();
-	void te923_close( usb_dev_handle *devh );
-	struct usb_dev_handle *m_device_handle; 
+  struct usb_device *find_te923();
+  struct usb_dev_handle *te923_handle();
+  void te923_close(usb_dev_handle *devh);
+  struct usb_dev_handle *m_device_handle;
+
 private:
 	int get_te923_lifedata( Te923DataSet_t *data );
 	int get_te923_devstate( Te923DevSet_t *dev );

@@ -24,7 +24,7 @@ class USBtin : public USBtin_MultiblocV8,AsyncSerial
 {
 public:
 	USBtin(const int ID, const std::string& devname,unsigned int BusCanType,unsigned int DebugMode/*,unsigned int baud_rate = USBTIN_BAUD_RATE*/);
-	~USBtin();
+	~USBtin() override;
 	std::string m_szSerialPort;
 	unsigned int Bus_CANType;
 	unsigned long switch_id_base;

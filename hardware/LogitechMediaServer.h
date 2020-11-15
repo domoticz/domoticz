@@ -32,7 +32,7 @@ public:
 	};
 	CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec);
 	explicit CLogitechMediaServer(const int ID);
-	~CLogitechMediaServer(void);
+	~CLogitechMediaServer() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void AddNode(const std::string &Name, const std::string &IPAddress, const int Port);
 	bool UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Port);

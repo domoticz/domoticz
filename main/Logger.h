@@ -38,8 +38,8 @@ public:
 		_tLogLineStruct(const _eLogLevel nlevel, const std::string &nlogmessage);
 	};
 
-	CLogger(void);
-	~CLogger(void);
+	CLogger();
+	~CLogger();
 
 	bool SetLogFlags(const std::string &sFlags);
 	void SetLogFlags(const uint32_t iFlags) {

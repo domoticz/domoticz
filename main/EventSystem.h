@@ -107,8 +107,8 @@ public:
 		bool Enabled;
 	} tHardwareList;
 
-	CEventSystem(void);
-	~CEventSystem(void);
+	CEventSystem();
+	~CEventSystem();
 
 	void StartEventSystem();
 	void StopEventSystem();

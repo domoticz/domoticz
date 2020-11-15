@@ -156,7 +156,7 @@ void CHttpPush::DoHttpPush()
 			gethostname(hostname, sizeof(hostname));
 
 			std::vector<std::string> strarray;
-			if (sendValue.find(";") != std::string::npos)
+			if (sendValue.find(';') != std::string::npos)
 			{
 				StringSplit(sendValue, ";", strarray);
 				if (int(strarray.size()) >= delpos && delpos > 0)
@@ -460,5 +460,5 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "DeleteHttpLink";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

@@ -16,7 +16,7 @@ class eHouseTCP : public  CDomoticzHardwareBase
 {
 public:
 	eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval, const unsigned char AutoDiscovery, const unsigned char EnableAlarms, const unsigned char EnablePro, const int opta, const int optb);
-	~eHouseTCP();
+	~eHouseTCP() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	int ConnectTCP(unsigned int ip);
@@ -26,7 +26,7 @@ private:
 	signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
 	void CalculateAdcWiFi(unsigned char index);
 	char eH1(unsigned char addrh, unsigned char addrl);
-	void InitStructs(void);
+	void InitStructs();
 
 	union ERMFullStatT             *(m_eHERMs[ETHERNET_EHOUSE_RM_MAX + 1]);  		//full ERM status decoded
 	union ERMFullStatT             *(m_eHERMPrev[ETHERNET_EHOUSE_RM_MAX + 1]);  	//full ERM status decoded previous for detecting changes
@@ -63,7 +63,7 @@ private:
 	void UpdatePROToSQL(unsigned char AddrH, unsigned char AddrL);
 	void UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
 	void UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	void TerminateUDP(void);
+	void TerminateUDP();
 	void IntToHex(unsigned char *buf, const unsigned char *inbuf, int received);
 	float getAdcVolt2(int index);
 	void CalculateAdc2(unsigned char index);
@@ -82,14 +82,14 @@ private:
 	void UpdatePGM(int adrh, int adrl, int devtype, const char *names, int idx);
 	signed int IndexOfEthDev(unsigned char AddrH, unsigned char AddrL);
 	//	signed int GetIndexOfWiFiDev(unsigned char AddrH, unsigned char AddrL);
-	void EhouseInitTcpClient(void);
+	void EhouseInitTcpClient();
 	char SendTCPEvent(const unsigned char *Events, unsigned char EventCount, unsigned char AddrH, unsigned char AddrL, const unsigned char *EventsToRun);
 	void performTCPClientThreads();
 	int  getrealERMpgm(int32_t ID, int level);
 	int  getrealRMpgm(int32_t ID, int level);
 	void ExecEvent(unsigned int i);
 	signed int GetIndexOfEvent(unsigned char *TempEvent);
-	void ExecQueuedEvents(void);
+	void ExecQueuedEvents();
 	signed int hex2bin(const unsigned char *st, int offset);
 	char SubmitEvent(const unsigned char *Events, unsigned char EventCount);
 	void EhouseSubmitData(int SocketIndex);

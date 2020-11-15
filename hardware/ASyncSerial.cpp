@@ -50,20 +50,23 @@ class AsyncSerialImpl
 	: private domoticz::noncopyable
 {
 public:
-    AsyncSerialImpl(): io(), port(io), backgroundThread(), open(false),
-		error(false), writeBufferSize(0) {}
+  AsyncSerialImpl()
+	  : io()
+	  , port(io)
+  {
+  }
 
     boost::asio::io_service io; ///< Io service object
     boost::asio::serial_port port; ///< Serial port object
     boost::thread backgroundThread; ///< Thread that runs read/write operations
-    bool open; ///< True if port open
-    bool error; ///< Error flag
+    bool open{ false };		    ///< True if port open
+    bool error{ false };	    ///< Error flag
     mutable std::mutex errorMutex; ///< Mutex for access to error
 
     /// Data are queued here before they go in writeBuffer
     std::vector<char> writeQueue;
     boost::shared_array<char> writeBuffer; ///< Data being written
-    size_t writeBufferSize; ///< Size of writeBuffer
+    size_t writeBufferSize{ 0 };	   ///< Size of writeBuffer
     std::mutex writeQueueMutex; ///< Mutex for access to writeQueue
     char readBuffer[BUFFER_SIZE]; ///< data being read
 

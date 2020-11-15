@@ -40,8 +40,6 @@ SMTPClient::SMTPClient()
 	m_Port = 25;
 }
 
-SMTPClient::~SMTPClient() = default;
-
 void SMTPClient::SetFrom(const std::string& From)
 {
 	m_From = "<" + From + ">";

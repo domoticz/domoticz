@@ -19,10 +19,11 @@ class S0MeterBase : public CDomoticzHardwareBase
 		bool m_firstTime;
 	};
 public:
-	S0MeterBase(void);
-	~S0MeterBase() override = default;
-	std::string m_szSerialPort;
-	unsigned int m_iBaudRate;
+  S0MeterBase();
+  ~S0MeterBase() override = default;
+  std::string m_szSerialPort;
+  unsigned int m_iBaudRate;
+
 protected:
 	void InitBase();
 	void ParseData(const unsigned char *pData, int Len);

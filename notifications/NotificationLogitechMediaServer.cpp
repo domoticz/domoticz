@@ -13,8 +13,6 @@ CNotificationLogitechMediaServer::CNotificationLogitechMediaServer() : CNotifica
 	SetupConfig(std::string("LmsDuration"), &_Duration);
 }
 
-CNotificationLogitechMediaServer::~CNotificationLogitechMediaServer() = default;
-
 bool CNotificationLogitechMediaServer::SendMessageImplementation(
 	const uint64_t Idx,
 	const std::string &Name,

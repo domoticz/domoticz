@@ -3,7 +3,6 @@
 #include "hardwaretypes.h"
 
 CurrentCostMeterBase::CurrentCostMeterBase()
-	: m_tempuratureCounter(0)
 {
 	Init();
 }

@@ -1441,5 +1441,5 @@ namespace http {
 
 			return;
 		}
-	}
-}
+	} // namespace server
+} // namespace http

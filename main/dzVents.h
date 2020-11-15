@@ -5,9 +5,12 @@
 class CdzVents
 {
 public:
-	CdzVents(void);
-	~CdzVents(void);
-	static CdzVents* GetInstance() { return &m_dzvents; }
+  CdzVents();
+  ~CdzVents() = default;
+  static CdzVents *GetInstance()
+  {
+	  return &m_dzvents;
+  }
 	const std::string GetVersion();
 	void LoadEvents();
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);

@@ -28,8 +28,6 @@ CScheduler::CScheduler()
 	srand((int)mytime(nullptr));
 }
 
-CScheduler::~CScheduler() = default;
-
 void CScheduler::StartScheduler()
 {
 	m_thread = std::make_shared<std::thread>(&CScheduler::Do_Work, this);
@@ -2344,5 +2342,5 @@ namespace http {
 			}
 		}
 
-	}
-}
+	} // namespace server
+} // namespace http

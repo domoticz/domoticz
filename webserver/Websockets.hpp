@@ -27,7 +27,7 @@ namespace http {
 		class CWebsocketFrame {
 		public:
 			CWebsocketFrame();
-			~CWebsocketFrame();
+			~CWebsocketFrame() = default;
 			bool Parse(const uint8_t *bytes, size_t size);
 			std::string Payload();
 			bool isFinal();
@@ -49,7 +49,7 @@ namespace http {
 		class CWebsocket {
 		public:
 			CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, cWebem *_webEm, boost::function<void(const std::string &packet_data)> _WSWrite);
-			~CWebsocket();
+			~CWebsocket() = default;
 			virtual boost::tribool parse(const uint8_t *begin, size_t size, size_t &bytes_consumed, bool &keep_alive);
 			virtual void SendClose(const std::string &packet_data);
 			virtual void SendPing();

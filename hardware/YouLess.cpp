@@ -205,13 +205,13 @@ void CYouLess::GetMeterDetails()
 	}
 	int fpos;
 	std::string pusage=stdstring_trim(results[0]);
-	fpos=pusage.find_first_of(" ");
+	fpos = pusage.find_first_of(' ');
 	if (fpos!=std::string::npos)
 		pusage=pusage.substr(0,fpos);
 	stdreplace(pusage,",","");
 
 	std::string pcurrent=stdstring_trim(results[1]);
-	fpos=pcurrent.find_first_of(" ");
+	fpos = pcurrent.find_first_of(' ');
 	if (fpos!=std::string::npos)
 		pcurrent=pcurrent.substr(0,fpos);
 	stdreplace(pcurrent,",","");

@@ -510,8 +510,8 @@ std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
 	std::string head, body;
 	int size;
 
-	body = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
-	body += "<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">";
+	body = R"(<?xml version="1.0" encoding="utf-8"?>)";
+	body += R"(<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">)";
 	body += "<s:Body>";
 	body += "<u:X_SendKey xmlns:u=\"urn:panasonic-com:service:p00NetworkControl:1\">";
 	body += "<X_KeyEvent>NRC_" + command + "</X_KeyEvent>";
@@ -972,14 +972,13 @@ void CPanasonic::ReloadNodes()
 		std::lock_guard<std::mutex> l(m_mutex);
 
 		// create a vector to hold the nodes
-		for (auto sd : result)
+		for (const auto &sd : result)
 		{
-			std::shared_ptr<CPanasonicNode> pNode = (std::shared_ptr<CPanasonicNode>)new CPanasonicNode(
-				m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+			auto pNode = std::make_shared<CPanasonicNode>(m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each Panasonic TV
-		for (auto &m_pNode : m_pNodes)
+		for (const auto &m_pNode : m_pNodes)
 		{
 			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Starting thread.", m_pNode->m_Name.c_str());
 			m_pNode->StartThread();
@@ -1267,5 +1266,5 @@ namespace http {
 			}
 		}
 
-	}
-}
+	} // namespace server
+} // namespace http

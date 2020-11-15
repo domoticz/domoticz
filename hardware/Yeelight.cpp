@@ -283,7 +283,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Color_SetBrightnessLevel:
 			sendOnFirst = true;
-			ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[" << int(pLed->value) << ", \"smooth\", 500]}\r\n";
+			ss << R"({"id":1,"method":"set_bright","params":[)" << int(pLed->value) << ", \"smooth\", 500]}\r\n";
 			message = ss.str();
 			break;
 		case Color_SetColor: {
@@ -293,7 +293,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 				if (pLed->subtype == sTypeColor_RGB || pLed->subtype == sTypeColor_RGB_W || pLed->subtype == sTypeColor_RGB_CW_WW) {
 					int w = 255; // Full white, scaled by separate brightness command
 					int rgb = (w << 16) + (w << 8) + pLed->color.b;
-					ss << "{\"id\":1,\"method\":\"set_rgb\",\"params\":[" << rgb << ", \"smooth\", 500]}\r\n";
+					ss << R"({"id":1,"method":"set_rgb","params":[)" << rgb << ", \"smooth\", 500]}\r\n";
 					message = ss.str();
 				}
 				// For other bulb type, just send brightness
@@ -302,13 +302,13 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 				// Convert temperature to Kelvin 1700..6500
 				int kelvin = (int(float((255 - pLed->color.t))*(6500.0f - 1700.0f) / 255.0f)) + 1700;
-				ss << "{\"id\":1,\"method\":\"set_ct_abx\",\"params\":[" << kelvin << ", \"smooth\", 2000]}\r\n";
+				ss << R"({"id":1,"method":"set_ct_abx","params":[)" << kelvin << ", \"smooth\", 2000]}\r\n";
 				message = ss.str();
 			}
 			else if (pLed->color.mode == ColorModeRGB)
 			{
 				int rgb = ((pLed->color.r) << 16) + ((pLed->color.g) << 8) + pLed->color.b;
-				ss << "{\"id\":1,\"method\":\"set_rgb\",\"params\":[" << rgb << ", \"smooth\", 2000]}\r\n";
+				ss << R"({"id":1,"method":"set_rgb","params":[)" << rgb << ", \"smooth\", 2000]}\r\n";
 				message = ss.str();
 			}
 			else
@@ -317,7 +317,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 			}
 			// Send brigthness command
 			ss.str("");
-			ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[" << pLed->value << ", \"smooth\", 500]}\r\n";
+			ss << R"({"id":1,"method":"set_bright","params":[)" << pLed->value << ", \"smooth\", 500]}\r\n";
 			message2 = ss.str();
 		}
 							 break;
@@ -353,7 +353,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 			sendOnFirst = true;
 			// simulate strobe effect - at time of writing, minimum timing allowed by Yeelight is 50ms
 			_log.Log(LOG_STATUS, "Yeelight: Disco Mode - simulate strobe effect, if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", szTmp);
-			message = "{\"id\":1,\"method\":\"start_cf\",\"params\":[ 50, 0, \"";
+			message = R"({"id":1,"method":"start_cf","params":[ 50, 0, ")";
 			message += "50, 2, 5000, 100, ";
 			message += "50, 2, 5000, 1\"]}\r\n";
 			break;
@@ -617,5 +617,5 @@ namespace http {
 			//TODO: Add support for other bulb types to WebUI (WW, RGB, RGBWW)
 			yeelight.InsertUpdateSwitch("123", sname, (stype == "0") ? sTypeColor_White : sTypeColor_RGB_W, sipaddress, false, "0", "0", "", "", "", "");
 		}
-	}
-}
+	} // namespace server
+} // namespace http

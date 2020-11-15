@@ -61,20 +61,20 @@ public:
 	bool WriteToHardware(const char* pdata, const unsigned char length) override;
 
 protected:
-	virtual bool StartHardware() override;
-	virtual bool StopHardware() override;
-	void Do_Work();
+  bool StartHardware() override;
+  bool StopHardware() override;
+  void Do_Work();
 
-	bool DoWebRequest(const std::string& postdata, Json::Value& root, std::string& errorMessage, bool loginWhenFailed);
-	bool Login();
-	bool GetAvailableDataPoints();
-	void ComputerSwitchLevelValues();
-	bool GetValues();
-	bool GetInfo();
-	void UpdateDomoticzWithValue(int32_t uid, int32_t value);
-	void UpdateSelectorSwitch(const int32_t uid, const int32_t value, const UIDinfo& valueInfo);
+  bool DoWebRequest(const std::string &postdata, Json::Value &root, std::string &errorMessage, bool loginWhenFailed);
+  bool Login();
+  bool GetAvailableDataPoints();
+  void ComputerSwitchLevelValues();
+  bool GetValues();
+  bool GetInfo();
+  void UpdateDomoticzWithValue(int32_t uid, int32_t value);
+  void UpdateSelectorSwitch(const int32_t uid, const int32_t value, const UIDinfo &valueInfo);
 
-	void SendValueToAirco(const int32_t uid, const int32_t value);
+  void SendValueToAirco(const int32_t uid, const int32_t value);
 
 private:
     

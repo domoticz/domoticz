@@ -26,7 +26,7 @@ public:
 	/// Construct the server to listen on the specified TCP address and port, and
 	/// serve up files from the given directory.
 	explicit server_base(const server_settings & settings, request_handler & user_request_handler);
-	virtual ~server_base() {}
+	virtual ~server_base() = default;
 
 	/// Run the server's io_service loop.
 	void run();
@@ -79,12 +79,14 @@ public:
 	/// Construct the HTTP server to listen on the specified TCP address and port, and
 	/// serve up files from the given directory.
 	server(const server_settings & settings, request_handler & user_request_handler);
-	virtual ~server() {}
+	~server() override = default;
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const override {
+	std::string to_string() const override
+	{
 		return "'server[" + settings_.to_string() + "]'";
 	}
+
 protected:
 	/// Initialize acceptor
 	void init_connection();
@@ -101,10 +103,11 @@ public:
 	/// serve up files from the given directory.
 	ssl_server(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
 	ssl_server(const server_settings & settings, request_handler & user_request_handler);
-	virtual ~ssl_server() {}
+	~ssl_server() override = default;
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const override {
+	std::string to_string() const override
+	{
 		return "'ssl_server[" + settings_.to_string() + "]'";
 	}
 

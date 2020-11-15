@@ -471,5 +471,5 @@
 			_log.Log(LOG_ERROR, "EventSystem: Python not initalized");
 		}
 	}
-    }
+    } // namespace Plugins
 #endif

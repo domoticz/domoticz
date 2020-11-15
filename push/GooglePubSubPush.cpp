@@ -195,7 +195,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			gethostname(hostname, sizeof(hostname));
 
 			std::vector<std::string> strarray;
-			if (sendValue.find(";") != std::string::npos)
+			if (sendValue.find(';') != std::string::npos)
 			{
 				StringSplit(sendValue, ";", strarray);
 				if (int(strarray.size()) >= delpos)
@@ -459,5 +459,5 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "DeleteGooglePubSubLink";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

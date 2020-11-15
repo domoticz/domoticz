@@ -17,9 +17,7 @@
 
 using namespace boost::placeholders;
 
-CInfluxPush::CInfluxPush() :
-	m_InfluxPort(8086),
-	m_bInfluxDebugActive(false)
+CInfluxPush::CInfluxPush()
 {
 	m_PushType = PushType::PUSHTYPE_INFLUXDB;
 	m_bLinkActive = false;
@@ -130,7 +128,8 @@ void CInfluxPush::DoInfluxPush()
 			int metertype = atoi(sd[13].c_str());
 
 			std::vector<std::string> strarray;
-			if (sValue.find(";") != std::string::npos) {
+			if (sValue.find(';') != std::string::npos)
+			{
 				StringSplit(sValue, ";", strarray);
 				if (int(strarray.size()) >= delpos)
 				{
@@ -395,5 +394,5 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "DeleteInfluxLink";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

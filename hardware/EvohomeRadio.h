@@ -24,16 +24,19 @@ class CEvohomeRadio : public CEvohomeBase
 {
 	struct _tRelayCheck
 	{
-		_tRelayCheck() :m_stLastCheck(boost::posix_time::min_date_time), m_nDemand(0) {}
+		_tRelayCheck()
+			: m_stLastCheck(boost::posix_time::min_date_time)
+		{
+		}
 		_tRelayCheck(uint8_t demand) :m_stLastCheck(boost::posix_time::min_date_time), m_nDemand(demand) {}
 		_tRelayCheck(boost::system_time st, uint8_t demand) :m_stLastCheck(st), m_nDemand(demand) {}
 		boost::system_time m_stLastCheck;
-		uint8_t m_nDemand;
+		uint8_t m_nDemand{ 0 };
 	};
 	typedef std::map < uint8_t, _tRelayCheck > tmap_relay_check;
 public:
 	CEvohomeRadio(const int ID, const std::string &UserContID);
-	~CEvohomeRadio(void);
+	~CEvohomeRadio() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	int Bind(uint8_t nDevNo, unsigned char nDevType);//use CEvohomeID::devType atm but there could be additional specialisations
 	void SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);

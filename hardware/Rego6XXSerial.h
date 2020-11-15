@@ -28,7 +28,7 @@ class CRego6XXSerial: public AsyncSerial, public CDomoticzHardwareBase
 {
 public:
 	CRego6XXSerial(const int ID, const std::string& devname, const int type);
-    ~CRego6XXSerial();
+	~CRego6XXSerial() override;
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();

@@ -86,14 +86,13 @@ class ZWaveBase : public CDomoticzHardwareBase
 		std::string label;
 		std::string custom_label;
 
-		time_t lastreceived;
+		time_t lastreceived{ 0 };
 		unsigned char sequence_number;
 
 		int Alarm_Type;
 
-		_tZWaveDevice() :
-			label("Unknown"),
-			lastreceived(0)
+		_tZWaveDevice()
+			: label("Unknown")
 		{
 			sequence_number=1;
 			nodeID=(uint8_t)-1;
@@ -170,8 +169,8 @@ private:
 
 	bool m_bControllerCommandInProgress;
 	bool m_bControllerCommandCanceled;
-	time_t m_ControllerCommandStartTime;
-	time_t m_updateTime;
+	time_t m_ControllerCommandStartTime{ 0 };
+	time_t m_updateTime{ 0 };
 	bool m_bInitState;
 	std::map<std::string,_tZWaveDevice> m_devices;
 	std::shared_ptr<std::thread> m_thread;

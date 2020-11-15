@@ -20,7 +20,7 @@ class CDomoticzHardwareBase : public StoppableTask
 	friend class MainWorker;
 public:
 	CDomoticzHardwareBase();
-	virtual ~CDomoticzHardwareBase();
+	virtual ~CDomoticzHardwareBase() = default;
 
 	bool Start();
 	bool Stop();

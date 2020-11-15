@@ -9,11 +9,12 @@ class P1MeterBase : public CDomoticzHardwareBase
 	friend class P1MeterTCP;
 	friend class CRFXBase;
 public:
-	P1MeterBase(void);
-	~P1MeterBase(void);
+  P1MeterBase();
+  ~P1MeterBase() override;
 
-	P1Power	m_power;
-	P1Gas	m_gas;
+  P1Power m_power;
+  P1Gas m_gas;
+
 private:
 	void Init();
 	bool MatchLine();

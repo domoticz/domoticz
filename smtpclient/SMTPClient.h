@@ -5,7 +5,7 @@ class SMTPClient
 {
 public:
 	SMTPClient();
-	~SMTPClient();
+	~SMTPClient() = default;
 
 	void SetFrom(const std::string &From);
 	void SetTo(const std::string &To);

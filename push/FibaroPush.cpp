@@ -111,7 +111,8 @@ void CFibaroPush::DoFibaroPush()
 				}
 				else if (delpos > 0) {
 					std::vector<std::string> strarray;
-					if (sValue.find(";") != std::string::npos) {
+					if (sValue.find(';') != std::string::npos)
+					{
 						StringSplit(sValue, ";", strarray);
 						if (int(strarray.size()) >= delpos)
 						{
@@ -160,7 +161,7 @@ void CFibaroPush::DoFibaroPush()
 					if (bIsV4)
 						Url << "/" << targetVariable;
 
-					sPostData << "{\"name\": \"" << targetVariable << "\", \"value\": \"" << sendValue << "\"";
+					sPostData << R"({"name": ")" << targetVariable << R"(", "value": ")" << sendValue << "\"";
 
 					if (bIsV4)
 						sPostData << ", \"invokeScenes\": true";
@@ -400,5 +401,5 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "DeleteFibaroLink";
 		}
-	}
+	} // namespace server
 } // namespace http

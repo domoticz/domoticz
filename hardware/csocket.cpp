@@ -29,9 +29,7 @@
 #define SUCCESS	 0
 #define FAILURE	 1
 
-
-csocket::csocket() : m_socketState(CLOSED),
-					 m_remotePort(0)
+csocket::csocket()
 {
 	m_socket = 0;
 }

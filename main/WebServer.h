@@ -28,8 +28,8 @@ public:
 		std::string Title;
 		std::string Description;
 	};
-	CWebServer(void);
-	~CWebServer(void);
+	CWebServer();
+	~CWebServer() override;
 	bool StartServer(server_settings & settings, const std::string &serverpath, const bool bIgnoreUsernamePassword);
 	void StopServer();
 	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication=false);

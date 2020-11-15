@@ -21,11 +21,6 @@ CTCPServerIntBase::CTCPServerIntBase(CTCPServer *pRoot)
 	m_pRoot=pRoot;
 }
 
-CTCPServerIntBase::~CTCPServerIntBase()
-{
-//	stopAllClients();
-}
-
 void CTCPServerInt::start()
 {
 	// The io_service::run() call will block until all asynchronous operations
@@ -234,7 +229,7 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 	acceptor_.bind(endpoint);
 	acceptor_.listen();
 
-	new_connection_ = std::shared_ptr<CTCPClient>(new CTCPClient(io_service_, this));
+	new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
 
 	acceptor_.async_accept(
 		*(new_connection_->socket()),
@@ -242,16 +237,12 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 			boost::asio::placeholders::error));
 }
 
-CTCPServerInt::~CTCPServerInt() = default;
-
 #ifndef NOCLOUD
 // our proxied server
 CTCPServerProxied::CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy) : CTCPServerIntBase(pRoot)
 {
 	m_pProxyClient = proxy;
 }
-
-CTCPServerProxied::~CTCPServerProxied() = default;
 
 void CTCPServerProxied::start()
 {
