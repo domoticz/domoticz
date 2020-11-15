@@ -43,7 +43,7 @@ namespace Plugins {
 		sizeof(CImage),					    /* tp_basicsize */
 		0,						    /* tp_itemsize */
 		(destructor)CImage_dealloc,			    /* tp_dealloc */
-		nullptr,					    /* tp_print */
+		0,						    /* tp_print */
 		nullptr,					    /* tp_getattr */
 		nullptr,					    /* tp_setattr */
 		nullptr,					    /* tp_reserved */
@@ -151,7 +151,7 @@ namespace Plugins {
 		sizeof(CDevice),				     /* tp_basicsize */
 		0,						     /* tp_itemsize */
 		(destructor)CDevice_dealloc,			     /* tp_dealloc */
-		nullptr,					     /* tp_print */
+		0,						     /* tp_print */
 		nullptr,					     /* tp_getattr */
 		nullptr,					     /* tp_setattr */
 		nullptr,					     /* tp_reserved */
@@ -243,7 +243,7 @@ namespace Plugins {
 		sizeof(CConnection),					 /* tp_basicsize */
 		0,							 /* tp_itemsize */
 		(destructor)CConnection_dealloc,			 /* tp_dealloc */
-		nullptr,						 /* tp_print */
+		0,							 /* tp_print */
 		nullptr,						 /* tp_getattr */
 		nullptr,						 /* tp_setattr */
 		nullptr,						 /* tp_reserved */
