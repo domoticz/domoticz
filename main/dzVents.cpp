@@ -297,14 +297,14 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 		{
 			int tIndex = itt->tIndex;
 			itt++;
-			for (const auto &item : vLuaTable)
+			for (auto itt2 = itt; itt2 != vLuaTable.end(); ++itt2)
 			{
-				if (item.tIndex != tIndex)
+				if (itt2->tIndex != tIndex)
 				{
 					itt--;
 					break;
 				}
-				extraHeaders += "!#" + item.name + ": " + item.sValue;
+				extraHeaders += "!#" + itt2->name + ": " + itt2->sValue;
 				if (itt != vLuaTable.end() - 1)
 					itt++;
 			}
@@ -322,7 +322,7 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 		}
 		else if ((itt->type == TYPE_INTEGER) && (itt->name == "_random"))
 			delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
-		else if (( itt->type == TYPE_FLOAT) && (itt->name == "_after"))
+		else if ((itt->type == TYPE_FLOAT) && (itt->name == "_after"))
 			delayTime = itt->fValue;
 	}
 
@@ -333,12 +333,12 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 	}
 
 	// Handle situation where WebLocalNetworks is not open without password for dzVents
-	if ( URL.find("127.0.0") != std::string::npos || URL.find("::") != std::string::npos || URL.find("localhost") != std::string::npos )
+	if (URL.find("127.0.0") != std::string::npos || URL.find("::") != std::string::npos || URL.find("localhost") != std::string::npos)
 	{
 		std::string allowedNetworks;
 		int rnvalue = 0;
-		m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
-		if ( ( allowedNetworks.find("127.0.0.") == std::string::npos ) && ( allowedNetworks.find("::") == std::string::npos ) )
+		m_sql.GetPreferencesVar("WebLocalNetworks", rnvalue, allowedNetworks);
+		if ((allowedNetworks.find("127.0.0.") == std::string::npos) && (allowedNetworks.find("::") == std::string::npos))
 		{
 			_log.Log(LOG_ERROR, "dzVents: local netWork not open for dzVents openURL call !");
 			_log.Log(LOG_ERROR, "dzVents: check dzVents wiki (look for 'Using dzVents with Domoticz')");
