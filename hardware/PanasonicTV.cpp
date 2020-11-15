@@ -588,7 +588,7 @@ void CPanasonicNode::Do_Work()
 
 void CPanasonicNode::SendCommand(const std::string &command)
 {
-	std::string	sPanasonicCall = "";
+	std::string sPanasonicCall;
 
 	if (m_CurrentStatus.Status() == MSTAT_OFF && !m_PowerOnSupported)
 	{

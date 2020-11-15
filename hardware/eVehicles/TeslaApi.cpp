@@ -334,7 +334,7 @@ bool CTeslaApi::SendCommand(eCommandType command, std::string parameter)
 {
 	std::string command_string;
 	Json::Value reply;
-	std::string parameters = "";
+	std::string parameters;
 
 	switch (command)
 	{

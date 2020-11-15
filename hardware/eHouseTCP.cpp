@@ -248,7 +248,7 @@ int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const u
 	sprintf(IDX, "%02X%02X%02X%02X", devh, devl, code, nr);  //index calculated adrh,adrl,signalcode,i/o nr
 	if ((type == pTypeLighting2)) // || (type==pTypeTEMP))
 		sprintf(IDX, "%X%02X%02X%02X", devh, devl, code, nr);    //exception bug in Domoticz??
-	std::string devname = "";
+	std::string devname;
 	std::vector<std::vector<std::string> > result;
 	//if name contains '@' - ignore i/o - do not add to DB (unused)
 	if ((strstr(Name, "@") == nullptr) && (strlen(Name) > 0))
@@ -318,7 +318,7 @@ void eHouseTCP::UpdatePGM(int /*adrh*/, int /*adrl*/, int /*devtype*/, const cha
 int eHouseTCP::UpdateSQLPlan(int /*devh*/, int /*devl*/, int /*devtype*/, const char * Name)
 {
 	int i = 0;
-	std::string devname = "";
+	std::string devname;
 	std::vector<std::vector<std::string> > result;
 	devname.append(Name, strlen(Name));
 	devname = ISO2UTF8(devname);

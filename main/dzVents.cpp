@@ -198,7 +198,7 @@ void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSys
 {
 	int index = 1;
 	int secstatus = 0;
-	std::string secstatusw = "";
+	std::string secstatusw;
 
 	CLuaTable luaTable(lua_state, "securityupdates");
 

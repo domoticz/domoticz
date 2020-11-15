@@ -150,7 +150,7 @@ namespace http {
 
 		std::string CProxyClient::GetResponseHeaders(const http::server::reply &reply_)
 		{
-			std::string result = "";
+			std::string result;
 			for (const auto &header : reply_.headers)
 			{
 				result += header.name;
@@ -269,7 +269,7 @@ namespace http {
 				return;
 			}
 			long authenticated;
-			std::string reason = "";
+			std::string reason;
 
 			sharedData.AddConnectedServer(pdu->m_ipparam);
 			if (pdu->m_protocol_version > 4) {

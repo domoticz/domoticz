@@ -22,7 +22,7 @@ std::string CNotificationKodi::GetCustomIcon(std::string &szCustom)
 	std::string szRetVal = "Light48";
 	if (iIconLine < 100)  // default set of custom icons
 	{
-		std::string sLine = "";
+		std::string sLine;
 		std::ifstream infile;
 		std::string switchlightsfile = szWWWFolder + "/switch_icons.txt";
 		infile.open(switchlightsfile.c_str());

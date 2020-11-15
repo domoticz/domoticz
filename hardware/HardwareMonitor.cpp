@@ -464,7 +464,7 @@ bool CHardwareMonitor::GetOSType(nOSType &OStype)
 
 std::string CHardwareMonitor::TranslateOSTypeToString(nOSType OSType)
 {
-	std::string sOSType = "";
+	std::string sOSType;
 
 	switch (OSType)
 	{
@@ -1089,7 +1089,7 @@ void CHardwareMonitor::CheckForOnboardSensors()
 #if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
 
 	//Check if we are running on a RaspberryPi
-	std::string sLine = "";
+	std::string sLine;
 	std::ifstream infile;
 	bool bPi = false;
 

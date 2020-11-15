@@ -1590,7 +1590,7 @@ namespace Plugins {
 						bControlFlags |= (bRetain & 1) << 5; // Set retain flag
 					}
 
-					std::string sPayload = "";
+					std::string sPayload;
 					PyObject* pPayload = PyDict_GetItemString(WriteMessage->m_Object, "WillPayload");
 					// Support both string and bytes
 					//if (pPayload && PyByteArray_Check(pPayload)) // Gives linker error, why?
@@ -1775,7 +1775,7 @@ namespace Plugins {
 				}
 
 				// Payload
-				std::string sPayload = "";
+				std::string sPayload;
 				PyObject* pPayload = PyDict_GetItemString(WriteMessage->m_Object, "Payload");
 				// Support both string and bytes
 				//if (pPayload && PyByteArray_Check(pPayload)) // Gives linker error, why?

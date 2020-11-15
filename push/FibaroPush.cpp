@@ -52,9 +52,9 @@ void CFibaroPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowId
 
 void CFibaroPush::DoFibaroPush()
 {
-	std::string fibaroIP = "";
-	std::string fibaroUsername = "";
-	std::string fibaroPassword = "";
+	std::string fibaroIP;
+	std::string fibaroUsername;
+	std::string fibaroPassword;
 	int iIsVersion4 = 0;
 	m_sql.GetPreferencesVar("FibaroIP", fibaroIP);
 	m_sql.GetPreferencesVar("FibaroUsername", fibaroUsername);
@@ -98,7 +98,7 @@ void CFibaroPush::DoFibaroPush()
 			std::string targetProperty = sd[10].c_str();
 			int includeUnit = atoi(sd[11].c_str());
 			int metertype = atoi(sd[12].c_str());
-			std::string lstatus = "";
+			std::string lstatus;
 
 			if ((targetType == 0) || (targetType == 1)) {
 				if (delpos == 0) {

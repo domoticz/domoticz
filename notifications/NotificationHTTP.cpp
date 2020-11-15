@@ -116,7 +116,7 @@ bool CNotificationHTTP::SendMessageImplementation(
 		stdreplace(destURL, "#MESSAGE", Text);
 
 		std::string scriptname = destURL.substr(9);
-		std::string scriptparams = "";
+		std::string scriptparams;
 #if !defined WIN32
 		if (scriptname.find('/') != 0)
 			scriptname = szUserDataFolder + "scripts/" + scriptname;

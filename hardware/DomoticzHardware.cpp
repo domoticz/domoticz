@@ -347,7 +347,7 @@ void CDomoticzHardwareBase::SendTextSensor(const int NodeID, const int ChildID, 
 std::string CDomoticzHardwareBase::GetTextSensorText(const int NodeID, const int ChildID, bool& bExists)
 {
 	bExists = false;
-	std::string ret = "";
+	std::string ret;
 
 	std::vector<std::vector<std::string> > result;
 

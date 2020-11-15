@@ -155,7 +155,7 @@ namespace http {
 		{
 			m_custom_light_icons.clear();
 			m_custom_light_icons_lookup.clear();
-			std::string sLine = "";
+			std::string sLine;
 
 			//First get them from the switch_icons.txt file
 			std::ifstream infile;
@@ -733,7 +733,7 @@ namespace http {
 
 		void CWebServer::GetAppCache(WebEmSession & session, const request& req, reply & rep)
 		{
-			std::string response = "";
+			std::string response;
 			if (g_bDontCacheWWW)
 			{
 				return;
@@ -2384,7 +2384,7 @@ namespace http {
 					int DevSceneType = atoi(sd[1].c_str());
 					std::string DevSceneRowID = sd[2];
 
-					std::string Name = "";
+					std::string Name;
 					if (DevSceneType == 0)
 					{
 						std::vector<std::vector<std::string> > result2;
@@ -3607,7 +3607,7 @@ namespace http {
 						StringSplit(sCodeCmd, ":", arrayCode);
 
 						std::string sID = arrayCode[0];
-						std::string sCode = "";
+						std::string sCode;
 						if (arrayCode.size() == 2)
 						{
 							sCode = arrayCode[1];
@@ -3787,7 +3787,7 @@ namespace http {
 						int command = atoi(sd[7].c_str());
 						int level = atoi(sd[8].c_str());
 
-						std::string lstatus = "";
+						std::string lstatus;
 						int llevel = 0;
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
@@ -4070,8 +4070,8 @@ namespace http {
 									else
 									{
 										int nValue = 0;
-										std::string sValue = "";
-										std::string lstatus = "";
+										std::string sValue;
+										std::string lstatus;
 										int llevel = 0;
 										bool bHaveDimmer = false;
 										int maxDimLevel = 0;
@@ -4199,7 +4199,7 @@ namespace http {
 						int DevSceneWhen = atoi(sd[3].c_str());
 						int DevSceneDelay = atoi(sd[4].c_str());
 
-						std::string Name = "";
+						std::string Name;
 						if (DevSceneType == 0)
 						{
 							std::vector<std::vector<std::string> > result2;
@@ -9456,7 +9456,7 @@ namespace http {
 #endif
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
-						std::string lstatus = "";
+						std::string lstatus;
 						int llevel = 0;
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
@@ -9729,7 +9729,7 @@ namespace http {
 					}
 					else if (dType == pTypeSecurity1)
 					{
-						std::string lstatus = "";
+						std::string lstatus;
 						int llevel = 0;
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
@@ -9765,7 +9765,7 @@ namespace http {
 					}
 					else if (dType == pTypeSecurity2)
 					{
-						std::string lstatus = "";
+						std::string lstatus;
 						int llevel = 0;
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
@@ -9789,7 +9789,7 @@ namespace http {
 					}
 					else if (dType == pTypeEvohome || dType == pTypeEvohomeRelay)
 					{
-						std::string lstatus = "";
+						std::string lstatus;
 						int llevel = 0;
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
@@ -11068,7 +11068,7 @@ namespace http {
 						}
 						else if (dSubType == sTypeCustom)
 						{
-							std::string szAxesLabel = "";
+							std::string szAxesLabel;
 							int SensorType = 1;
 							std::vector<std::string> sResults;
 							StringSplit(sOptions, ";", sResults);
@@ -11199,7 +11199,7 @@ namespace http {
 							root["result"][ii]["Mode"] = nValue;
 							root["result"][ii]["TypeImg"] = "mode";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							std::string modes = "";
+							std::string modes;
 							//Add supported modes
 #ifdef WITH_OPENZWAVE
 							if (pHardware)
@@ -11244,7 +11244,7 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							//Add supported modes (add all for now)
 							bool bAddedSupportedModes = false;
-							std::string modes = "";
+							std::string modes;
 							//Add supported modes
 #ifdef WITH_OPENZWAVE
 							if (pHardware)
@@ -12208,7 +12208,7 @@ namespace http {
 							unsigned char subType = (unsigned char)atoi(sd[2].c_str());
 							_eSwitchType switchtype = (_eSwitchType)atoi(sd[3].c_str());
 							int nValue = sCode;
-							std::string sValue = "";
+							std::string sValue;
 							int llevel = 0;
 							bool bHaveDimmer = false;
 							bool bHaveGroupCmd = false;
@@ -12265,7 +12265,7 @@ namespace http {
 					StringSplit(sCodeCmd, ":", arrayCode);
 
 					std::string sID = arrayCode[0];
-					std::string sCode = "";
+					std::string sCode;
 					if (arrayCode.size() == 2)
 					{
 						sCode = arrayCode[1];
@@ -12321,14 +12321,14 @@ namespace http {
 				//Get Activator device names
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
-				std::string newActivation = "";
+				std::string newActivation;
 				for (const auto &sCodeCmd : arrayActivators)
 				{
 					std::vector<std::string> arrayCode;
 					StringSplit(sCodeCmd, ":", arrayCode);
 
 					std::string sID = arrayCode[0];
-					std::string sCode = "";
+					std::string sCode;
 					if (arrayCode.size() == 2)
 					{
 						sCode = arrayCode[1];
@@ -13929,7 +13929,7 @@ namespace http {
 
 			float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
-			std::string dbasetable = "";
+			std::string dbasetable;
 			if (srange == "day") {
 				if (sensor == "temp")
 					dbasetable = "Temperature";
@@ -14616,7 +14616,7 @@ namespace http {
 						long long ulFirstRealValue = 0;
 						long long ulFirstValue = 0;
 						long long ulLastValue = 0;
-						std::string LastDateTime = "";
+						std::string LastDateTime;
 
 						if (!result.empty())
 						{
@@ -14734,7 +14734,7 @@ namespace http {
 						unsigned long long ulFirstValue = 0;
 						unsigned long long ulLastValue = 0;
 
-						std::string LastDateTime = "";
+						std::string LastDateTime;
 						time_t lastTime = 0;
 
 						if (bIsManagedCounter) {
@@ -14941,7 +14941,7 @@ namespace http {
 					float LastTotalPreviousHour = -1;
 
 					float LastValue = -1;
-					std::string LastDate = "";
+					std::string LastDate;
 
 					result = m_sql.safe_query("SELECT Total, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					if (!result.empty())
@@ -16005,7 +16005,7 @@ namespace http {
 					root["ValueUnits"] = options["ValueUnits"];
 
 					//int nValue = 0;
-					std::string sValue = "";
+					std::string sValue;
 
 					result = m_sql.safe_query("SELECT nValue, sValue FROM DeviceStatus WHERE (ID==%" PRIu64 ")",
 						idx);

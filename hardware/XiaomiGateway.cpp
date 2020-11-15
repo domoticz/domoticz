@@ -165,7 +165,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
 	bool result = true;
-	std::string message = "";
+	std::string message;
 
 	if (m_GatewaySID == "") {
 		m_GatewaySID = XiaomiGatewayTokenManager::GetInstance().GetSID(m_GatewayIp);
@@ -181,9 +181,9 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		s_strid2 << std::hex << ID;
 		std::string sid = s_strid2.str();
 		std::transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
-		std::string cmdchannel = "";
-		std::string cmdcommand = "";
-		std::string cmddevice = "";
+		std::string cmdchannel;
+		std::string cmdcommand;
+		std::string cmddevice;
 		std::string sidtemp = sid;
 		sidtemp.insert(0, "158d00");
 
@@ -1367,7 +1367,7 @@ std::string XiaomiGateway::XiaomiGatewayTokenManager::GetSID(const std::string &
 
 std::string XiaomiGateway::DetermineChannel(int32_t unitcode)
 {
-	std::string cmdchannel = "";
+	std::string cmdchannel;
 	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG ||
 		unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0) {
 		cmdchannel = NAME_CHANNEL_0;
@@ -1380,7 +1380,7 @@ std::string XiaomiGateway::DetermineChannel(int32_t unitcode)
 
 std::string XiaomiGateway::DetermineDevice(int32_t unitcode)
 {
-	std::string cmddevice = "";
+	std::string cmddevice;
 	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE) {
 		cmddevice = "ctrl_neutral1";
 	}
@@ -1395,7 +1395,7 @@ std::string XiaomiGateway::DetermineDevice(int32_t unitcode)
 
 std::string XiaomiGateway::DetermineCommand(uint8_t commandcode)
 {
-	std::string command = "";
+	std::string command;
 	switch (commandcode) {
 		case gswitch_sOff:
 			command = STATE_OFF;

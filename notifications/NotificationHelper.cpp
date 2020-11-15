@@ -497,7 +497,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 
 	atime -= m_NotificationSensorInterval;
 
-	std::string msg = "";
+	std::string msg;
 
 	std::string label = Notification_Type_Label(NTYPE_TEMPERATURE);
 	std::string signtemp = Notification_Type_Desc(NTYPE_TEMPERATURE, 1);
@@ -622,7 +622,7 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 
 	atime -= m_NotificationSensorInterval;
 
-	std::string msg = "";
+	std::string msg;
 
 	std::string signdewpoint = Notification_Type_Desc(NTYPE_DEWPOINT, 1);
 
@@ -676,7 +676,7 @@ bool CNotificationHelper::CheckAndHandleValueNotification(
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
 
-	std::string msg = "";
+	std::string msg;
 	std::string notValue;
 
 	std::string signvalue = Notification_Type_Desc(NTYPE_VALUE, 1);
@@ -734,7 +734,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
 
-	std::string msg = "";
+	std::string msg;
 
 	std::string notValue;
 
@@ -898,7 +898,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	//check if not sent 12 hours ago, and if applicable
 	atime -= m_NotificationSensorInterval;
 
-	std::string msg = "";
+	std::string msg;
 
 	std::string ltype = Notification_Type_Desc(ntype, 0);
 	std::string nsign = Notification_Type_Desc(ntype, 1);
@@ -981,7 +981,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
 
-	std::string msg = "";
+	std::string msg;
 
 	std::string ltype = Notification_Type_Desc(ntype, 1);
 
@@ -1094,7 +1094,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
 	std::string sOptions = result[0][2].c_str();
 
-	std::string msg = "";
+	std::string msg;
 
 	std::string ltype = Notification_Type_Desc(ntype, 1);
 

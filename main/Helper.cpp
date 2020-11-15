@@ -339,7 +339,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	//also scan /dev/serial/by-id/* on Linux
 
 	bool bHaveTtyAMAfree=false;
-	std::string sLine = "";
+	std::string sLine;
 	std::ifstream infile;
 
 	infile.open("/boot/cmdline.txt");

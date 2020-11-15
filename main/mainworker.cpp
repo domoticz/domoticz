@@ -1813,7 +1813,7 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const uint8_t* pRXComma
 	*pOriginalHardware = nullptr;
 	uint8_t devType = pRXCommand[1];
 	uint8_t subType = pRXCommand[2];
-	std::string ID = "";
+	std::string ID;
 	uint8_t Unit = 0;
 	const tRBUF* pResponse = reinterpret_cast<const tRBUF*>(pRXCommand);
 	char szTmp[300];
@@ -2181,7 +2181,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 	const_cast<CDomoticzHardwareBase*>(pHardware)->SetHeartbeatReceived();
 
 	uint64_t DeviceRowIdx = (uint64_t)-1;
-	std::string DeviceName = "";
+	std::string DeviceName;
 	tcp::server::CTCPClient *pClient2Ignore = nullptr;
 
 	if (pHardware->HwdType == HTYPE_Domoticz)
@@ -11371,7 +11371,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	//when asking for Toggle, just switch to the opposite value
 	if (switchcmd == "Toggle") {
 		//Request current state of switch
-		std::string lstatus = "";
+		std::string lstatus;
 		int llevel = 0;
 		bool bHaveDimmer = false;
 		bool bHaveGroupCmd = false;
@@ -12982,7 +12982,7 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 				StringSplit(sCodeCmd, ":", arrayCode);
 
 				std::string sID = arrayCode[0];
-				std::string sCode = "";
+				std::string sCode;
 				if (arrayCode.size() == 2)
 				{
 					sCode = arrayCode[1];
@@ -13017,9 +13017,9 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 
 	std::string Name = "Unknown?";
 	_eSceneGroupType scenetype = SGTYPE_SCENE;
-	std::string onaction = "";
-	std::string offaction = "";
-	std::string status = "";
+	std::string onaction;
+	std::string offaction;
+	std::string status;
 
 	//Get Scene details
 	result = m_sql.safe_query("SELECT Name, SceneType, OnAction, OffAction, nValue FROM Scenes WHERE (ID == %" PRIu64 ")", idx);
@@ -13223,7 +13223,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, c
 				StringSplit(sCodeCmd, ":", arrayCode);
 
 				std::string sID = arrayCode[0];
-				std::string sCode = "";
+				std::string sCode;
 				if (arrayCode.size() == 2)
 				{
 					sCode = arrayCode[1];
@@ -13245,7 +13245,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, c
 						rnValue = 1; //A Scene can only be activated (On)
 					}
 
-					std::string lstatus = "";
+					std::string lstatus;
 					int llevel = 0;
 					bool bHaveDimmer = false;
 					bool bHaveGroupCmd = false;
@@ -13483,7 +13483,7 @@ void MainWorker::HeartbeatCheck()
 				}
 				if (bHaveDataTimeout)
 				{
-					std::string sDataTimeout = "";
+					std::string sDataTimeout;
 					int totNum = 0;
 					if (pHardware->m_DataTimeout < 60) {
 						totNum = pHardware->m_DataTimeout;

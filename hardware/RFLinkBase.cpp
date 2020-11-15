@@ -377,7 +377,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		const int m_LEDType = pLed->type;
 		std::string switchtype = GetGeneralRFLinkFromInt(rfswitches, (pSwitch->subtype == sTypeColor_LivCol) ? sSwitchTypeLivcol : sSwitchMiLightv1);
 		std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pLed->command);
-		std::string switchcmnd2 = "";
+		std::string switchcmnd2;
 		unsigned int colorbright = 0;
 
 		switch (pLed->command){
@@ -599,7 +599,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 
 static std::string RFLinkGetStringValue(const std::string &svalue)
 {
-	std::string ret = "";
+	std::string ret;
 	size_t pos = svalue.find('=');
 	if (pos == std::string::npos)
 		return ret;
@@ -787,7 +787,9 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	bool bHaveWeight = false; float weight = 0;
 	bool bHaveImpedance = false; float impedance = 0;
 	bool bHaveSwitch = false; int switchunit = 0;
-	bool bHaveSwitchCmd = false; std::string switchcmd = ""; int switchlevel = 0;
+	bool bHaveSwitchCmd = false;
+	std::string switchcmd;
+	int switchlevel = 0;
 
 	int BatteryLevel = 255;
 	std::string tmpstr;

@@ -277,7 +277,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 	}
 
 	std::string tmpString;
-	std::string szSeperator = "";
+	std::string szSeperator;
 	std::vector<std::string> results;
 	std::string sLine;
 	bool bHaveVersion = false;
@@ -472,7 +472,7 @@ void CSBFSpot::GetMeterDetails()
 	bool bHaveVersion = false;
 	std::string tmpString;
 	std::ifstream infile;
-	std::string szLastDate = "";
+	std::string szLastDate;
 	std::vector<std::string> szLastLines;
 	std::vector<std::string> results;
 	std::string sLine;

@@ -223,7 +223,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 	_eMediaStatus nStatus = MSTAT_UNKNOWN;
 	_eMediaStatus nOldStatus = Node.nStatus;
 	std::string	sPlayerId = Node.IP;
-	std::string	sStatus = "";
+	std::string sStatus;
 
 	try
 	{
@@ -259,14 +259,14 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 							nStatus = MSTAT_STOPPED;
 					else
 						nStatus = MSTAT_ON;
-					std::string	sTitle = "";
-					std::string	sAlbum = "";
-					std::string	sArtist = "";
-					std::string	sAlbumArtist = "";
-					std::string	sTrackArtist = "";
-					std::string	sYear = "";
-					std::string	sDuration = "";
-					std::string sLabel = "";
+					std::string sTitle;
+					std::string sAlbum;
+					std::string sArtist;
+					std::string sAlbumArtist;
+					std::string sTrackArtist;
+					std::string sYear;
+					std::string sDuration;
+					std::string sLabel;
 
 					if (root["playlist_loop"].size()) {
 						sTitle = root["playlist_loop"][0]["title"].asString();
@@ -635,8 +635,8 @@ std::string CLogitechMediaServer::GetPlaylistByRefID(const int ID)
 bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command, const std::string &param)
 {
 	std::vector<std::vector<std::string> > result;
-	std::string sPlayerId = "";
-	std::string sLMSCmnd = "";
+	std::string sPlayerId;
+	std::string sLMSCmnd;
 
 	// Get device details
 	result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (ID==%d)", ID);
@@ -772,7 +772,7 @@ void CLogitechMediaServer::SendText(const std::string &playerIP, const std::stri
 	{
 		const std::string &sLine1 = subject;
 		const std::string &sLine2 = text;
-		std::string sFont = ""; //"huge";
+		std::string sFont; //"huge";
 		std::string sBrightness = "4";
 		std::string sDuration = std::to_string(duration);
 		std::string sPostdata = R"({"id":1,"method":"slim.request","params":[")" + playerIP + R"(",["show","line1:)" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration +

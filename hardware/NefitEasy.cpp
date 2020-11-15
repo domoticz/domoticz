@@ -421,7 +421,7 @@ bool CNefitEasy::GetStatusDetails()
 		tmpstr = root2["BAI"].asString();
 		if (tmpstr != "null")
 		{
-			std::string bstatus = "";
+			std::string bstatus;
 			if (tmpstr == "CH")
 				bstatus = "central heating";
 			else if (tmpstr == "HW")

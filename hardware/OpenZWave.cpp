@@ -2524,7 +2524,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 
 	if ((commandclass == COMMAND_CLASS_ALARM) || (commandclass == COMMAND_CLASS_SENSOR_ALARM))
 	{
-		std::string vLabel = "";
+		std::string vLabel;
 		if (commandclass != 0)
 		{
 			vLabel = m_pManager->GetValueLabel(vID);
@@ -2610,7 +2610,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	uint8_t byteValue = 0;
 	int16 shortValue = 0;
 	int32 intValue = 0;
-	std::string strValue = "";
+	std::string strValue;
 	int32 lValue = 0;
 
 	if (vType == OpenZWave::ValueID::ValueType_Decimal)
@@ -4011,7 +4011,7 @@ bool COpenZWave::CancelControllerCommand(const bool bForce)
 
 void COpenZWave::GetConfigFile(std::string& filePath, std::string& fileContent)
 {
-	std::string retstring = "";
+	std::string retstring;
 	if (m_pManager == nullptr)
 		return;
 
@@ -4480,7 +4480,7 @@ std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned 
 std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 {
 	std::lock_guard<std::mutex> l(m_NotificationMutex);
-	std::string retstr = "";
+	std::string retstr;
 	uint8_t ID1 = (uint8_t)((ID & 0xFF000000) >> 24);
 	uint8_t ID2 = (uint8_t)((ID & 0x00FF0000) >> 16);
 	uint8_t ID3 = (uint8_t)((ID & 0x0000FF00) >> 8);
@@ -4503,7 +4503,7 @@ std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 			{
 				int smode = 0;
 				char szTmp[200];
-				std::string modes = "";
+				std::string modes;
 				while (ZWave_Thermostat_Fan_Modes[smode] != nullptr)
 				{
 					if (std::find(pNode->tFanModes.begin(), pNode->tFanModes.end(), ZWave_Thermostat_Fan_Modes[smode]) != pNode->tFanModes.end())
@@ -5007,7 +5007,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const uint8_t nodeID
 				{
 					//Security Key
 					std::string networkkey = ValueVal;
-					std::string old_networkkey = "";
+					std::string old_networkkey;
 					m_sql.GetPreferencesVar("ZWaveNetworkKey", old_networkkey);
 					if (old_networkkey != networkkey)
 					{
@@ -6269,7 +6269,7 @@ namespace http {
 				if (pHardware->HwdType != HTYPE_OpenZWave)
 					return;
 				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				std::string configFilePath = "";
+				std::string configFilePath;
 				pOZWHardware->GetConfigFile(configFilePath, rep.content);
 				if (!configFilePath.empty() && !rep.content.empty()) {
 					std::string filename;

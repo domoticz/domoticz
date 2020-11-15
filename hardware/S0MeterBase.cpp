@@ -53,7 +53,7 @@ void S0MeterBase::InitBase()
 	m_meters[4].m_pulse_per_unit = 1000.0;
 
 	//Get settings from the database
-	std::string Settings("");
+	std::string Settings;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE (ID==%d)", m_HwdID);
 	if (!result.empty())

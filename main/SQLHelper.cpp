@@ -1476,7 +1476,7 @@ bool CSQLHelper::OpenDatabase()
 			{
 				for (const auto &sd : result)
 				{
-					std::string Activator("");
+					std::string Activator;
 					result2 = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%q) AND (DeviceID=='%q') AND (Unit==%q) AND ([Type]==%q) AND (SubType==%q)",
 						sd[1].c_str(), sd[2].c_str(), sd[3].c_str(), sd[4].c_str(), sd[5].c_str());
 					if (!result2.empty())
@@ -3335,7 +3335,7 @@ void CSQLHelper::Do_Work()
 			{
 				if (itt->_switchtype == STYPE_Motion)
 				{
-					std::string devname = "";
+					std::string devname;
 					switch (itt->_devType)
 					{
 					case pTypeLighting1:
@@ -3376,7 +3376,7 @@ void CSQLHelper::Do_Work()
 					if (itt->_devType == pTypeLighting4)
 					{
 						//only update internally
-						std::string devname = "";
+						std::string devname;
 						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
 					}
 					else
@@ -4611,7 +4611,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		}
 		if (!bDeviceUsed)
 			return ulID;	//don't process further as the device is not used
-		std::string lstatus = "";
+		std::string lstatus;
 
 		result = safe_query(
 			"SELECT Name,SwitchType,AddjValue,StrParam1,StrParam2,Options,LastLevel FROM DeviceStatus WHERE (ID = %" PRIu64 ")",
@@ -7048,7 +7048,7 @@ void CSQLHelper::DeleteHardware(const std::string& idx)
 	result = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID == '%q')", idx.c_str());
 	if (!result.empty())
 	{
-		std::string devs2delete = "";
+		std::string devs2delete;
 		for (const auto &sd : result)
 		{
 			if (!devs2delete.empty())
@@ -7432,7 +7432,7 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 		unsigned char dSubType = atoi(sd[4].c_str());
 		_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 
-		std::string lstatus = "";
+		std::string lstatus;
 		int llevel = 0;
 		bool bHaveDimmer = false;
 		bool bHaveGroupCmd = false;
@@ -7893,7 +7893,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string& OnAction
 			if (scriptname.find('/') != 0)
 				scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
-			std::string scriptparams = "";
+			std::string scriptparams;
 			//Add parameters
 			size_t pindex = scriptname.find(' ');
 			if (pindex != std::string::npos)
@@ -7933,7 +7933,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string& OnAction
 		if (scriptname.find('/') != 0)
 			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
-		std::string scriptparams = "";
+		std::string scriptparams;
 		size_t pindex = scriptname.find(' ');
 		if (pindex != std::string::npos)
 		{

@@ -248,7 +248,7 @@ bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char /*length
 	}
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
-	std::string message = "";
+	std::string message;
 
 	if (packettype == pTypeGeneralSwitch) {
 		const _tGeneralSwitch *xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);

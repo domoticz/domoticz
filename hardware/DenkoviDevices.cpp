@@ -571,7 +571,7 @@ int CDenkoviDevices::DenkoviGetIntParameter(std::string tmpstr, const std::strin
 }
 
 std::string CDenkoviDevices::DenkoviGetStrParameter(std::string tmpstr, const std::string &tmpParameter) {
-	std::string sMeasure = "";
+	std::string sMeasure;
 	std::string parameter = "<" + tmpParameter + ">";
 
 	size_t pos1 = tmpstr.find(parameter);
@@ -880,7 +880,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 			if (bHaveMCD && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_STATE_DEF)) != -1))
 			{
-				std::string tmpN = "";
+				std::string tmpN;
 				tmpN = "MCD (" + name + ")";
 				if (tmpValue == 1 || tmpValue == 3)
 					tmpValue = blinds_sOpen;
