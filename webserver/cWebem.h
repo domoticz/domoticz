@@ -220,8 +220,8 @@ namespace http {
 			session_store_impl_ptr GetSessionStore();
 
 			std::string m_zippassword;
-			const std::string GetPort();
-			const std::string GetWebRoot();
+			std::string GetPort();
+			std::string GetWebRoot();
 			WebEmSession * GetSession(const std::string & ssid);
 			void AddSession(const WebEmSession & session);
 			void RemoveSession(const WebEmSession & session);

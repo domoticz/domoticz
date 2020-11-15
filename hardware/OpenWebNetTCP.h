@@ -51,10 +51,10 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	uint32_t ownCalcPass(const std::string &password, const std::string &nonce);
 	bool ownAuthentication(csocket *connectionSocket);
 	bool nonceHashAuthentication(csocket *connectionSocket, std::string nonce);
-	const std::string decToHexStrConvert(std::string paramString);
-	const std::string hexToDecStrConvert(std::string paramString);
-	const std::string byteToHexStrConvert(uint8_t *digest, size_t digestLen, char *pArray);
-	const std::string shaCalc(std::string paramString, int auth_type);
+	std::string decToHexStrConvert(std::string paramString);
+	std::string hexToDecStrConvert(std::string paramString);
+	std::string byteToHexStrConvert(uint8_t *digest, size_t digestLen, char *pArray);
+	std::string shaCalc(std::string paramString, int auth_type);
 	bool hmacAuthentication(csocket *connectionSocket, int auth_type);
 	csocket *connectGwOwn(const char *connectionMode);
 	void disconnect();

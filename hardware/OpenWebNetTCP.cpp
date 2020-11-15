@@ -320,7 +320,7 @@ uint32_t COpenWebNetTCP::ownCalcPass(const std::string &password, const std::str
 /**
 	Perform conversion 80/128 DEC-chars to 40/64 HEX-chars
 **/
-const std::string COpenWebNetTCP::decToHexStrConvert(std::string paramString)
+std::string COpenWebNetTCP::decToHexStrConvert(std::string paramString)
 {
 	char retStr[256];
 	size_t idxb, idxh;
@@ -335,7 +335,7 @@ const std::string COpenWebNetTCP::decToHexStrConvert(std::string paramString)
 /**
 	Perform conversion HEX-40/64 chars to 80/128 DEC-chars
 **/
-const std::string COpenWebNetTCP::hexToDecStrConvert(std::string paramString)
+std::string COpenWebNetTCP::hexToDecStrConvert(std::string paramString)
 {
 	uint32_t bval;
 	size_t idxb, idxh;
@@ -354,7 +354,7 @@ const std::string COpenWebNetTCP::hexToDecStrConvert(std::string paramString)
 /**
 	Perform conversion byte to HEX-chars
 **/
-const std::string COpenWebNetTCP::byteToHexStrConvert(uint8_t *digest, size_t digestLen, char *pArray)
+std::string COpenWebNetTCP::byteToHexStrConvert(uint8_t *digest, size_t digestLen, char *pArray)
 {
 	size_t idxb, idxh;
 	char arrayOfChar1[] = "0123456789abcdef";
@@ -371,7 +371,7 @@ const std::string COpenWebNetTCP::byteToHexStrConvert(uint8_t *digest, size_t di
 /**
 	Perform SHA1/SHA256 and convert into HEX-chars
 **/
-const std::string COpenWebNetTCP::shaCalc(std::string paramString, int auth_type)
+std::string COpenWebNetTCP::shaCalc(std::string paramString, int auth_type)
 {
 	uint8_t *digest;
 	uint8_t strArray[OPENWEBNET_BUFFER_SIZE];

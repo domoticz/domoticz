@@ -58,14 +58,14 @@ void CNotificationSystem::UnlockNotificationQueueThread()
 	m_notificationqueue.push(item);
 }
 
-std::string const CNotificationSystem::GetTypeString(const int type)
+std::string CNotificationSystem::GetTypeString(const int type)
 {
 	if (type < sizeof(typeTable) / sizeof(typeTable[0]))
 		return typeTable[type].name;
 	return "unknown";
 }
 
-std::string const CNotificationSystem::GetStatusString(const int status)
+std::string CNotificationSystem::GetStatusString(const int status)
 {
 	if (status < sizeof(statusTable) / sizeof(statusTable[0]))
 		return statusTable[status].name;

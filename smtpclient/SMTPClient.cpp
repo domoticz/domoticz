@@ -213,7 +213,7 @@ void MakeBoundry(char* pszBoundry)
 	}
 }
 
-const std::string SMTPClient::MakeMessage()
+std::string SMTPClient::MakeMessage()
 {
 	std::string ret;
 

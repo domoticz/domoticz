@@ -86,7 +86,7 @@ public:
 			    const std::string &hardwareid = ""); // OTO
 
 	// SessionStore interface
-	const WebEmStoredSession GetSession(const std::string & sessionId) override;
+	WebEmStoredSession GetSession(const std::string &sessionId) override;
 	void StoreSession(const WebEmStoredSession & session) override;
 	void RemoveSession(const std::string & sessionId) override;
 	void CleanSessions() override;

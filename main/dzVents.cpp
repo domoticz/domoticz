@@ -30,7 +30,7 @@ CdzVents::CdzVents()
 	m_bdzVentsExist = false;
 }
 
-const std::string CdzVents::GetVersion()
+std::string CdzVents::GetVersion()
 {
 	return m_version;
 }

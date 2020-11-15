@@ -11,13 +11,13 @@ public:
   {
 	  return &m_dzvents;
   }
-	const std::string GetVersion();
-	void LoadEvents();
-	bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
-	void EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, const int secStatus);
+  std::string GetVersion();
+  void LoadEvents();
+  bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
+  void EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, const int secStatus);
 
-	std::string m_scriptsDir, m_runtimeDir;
-	bool m_bdzVentsExist;
+  std::string m_scriptsDir, m_runtimeDir;
+  bool m_bdzVentsExist;
 
 private:
 

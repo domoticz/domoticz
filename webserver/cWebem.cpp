@@ -1124,12 +1124,12 @@ namespace http {
 			return 0;
 		}
 
-		const std::string cWebem::GetPort()
+		std::string cWebem::GetPort()
 		{
 			return m_settings.listening_port;
 		}
 
-		const std::string cWebem::GetWebRoot()
+		std::string cWebem::GetWebRoot()
 		{
 			return m_webRoot;
 		}

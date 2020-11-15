@@ -16,8 +16,8 @@ public:
   bool NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata = "");
   bool Register(CNotificationObserver *pNotifier);
   bool Unregister(CNotificationObserver *pNotifier);
-  std::string const GetTypeString(const int type);
-  std::string const GetStatusString(const int status);
+  std::string GetTypeString(const int type);
+  std::string GetStatusString(const int status);
   void Start();
   void Stop();
 
