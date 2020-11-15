@@ -209,7 +209,7 @@ local function Domoticz(settings)
 			local url = options.url
 			local method = string.upper(options.method or 'GET')
 			local callback = options.callback
-			local postData
+			local postData, headers
 
 			-- process body data
 			if (method ~= 'GET') then
@@ -227,10 +227,18 @@ local function Domoticz(settings)
 				end
 			end
 
+			-- process headers
+			if options.headers then
+				headers = ''
+				for key, value in pairs(options.headers) do
+					headers = headers .. '!#' .. key .. ': ' .. value
+				end
+			end
+
 			local request = {
 				URL = url,
 				method = method,
-				headers = options.headers,
+				headers = headers,
 				postdata = postData,
 				_trigger = callback,
 			}

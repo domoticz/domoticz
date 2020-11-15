@@ -310,7 +310,7 @@ describe('Domoticz', function()
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'POST',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers =  '!#Content-Type: application/json',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}'
 					}
@@ -332,7 +332,7 @@ describe('Domoticz', function()
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'PUT',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers = '!#Content-Type: application/json',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}'
 					}
@@ -354,7 +354,7 @@ describe('Domoticz', function()
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'DEL',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers = '!#Content-Type: application/json',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}'
 					}
@@ -368,6 +368,9 @@ describe('Domoticz', function()
 				url = 'some url',
 				method = 'POST',
 				callback = 'trigger1',
+				headers = {
+					['X-Apikey'] = '12345ABC_',
+				},
 				postData = {
 					a = 1, b = 2
 				}
@@ -377,21 +380,32 @@ describe('Domoticz', function()
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'POST',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers = '!#X-Apikey: 12345ABC_',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}'
 					}
 				}
 			}, domoticz.commandArray)
 
-			cmd = cmd.afterMin(1)
+			domoticz.commandArray = {}
+			local cmd = domoticz.openURL({
+				url = 'some url',
+				method = 'POST',
+				callback = 'trigger1',
+				headers = {
+					['X-Apikey'] = '12345ABC_',
+				},
+				postData = {
+					a = 1, b = 2
+				}
+			}).afterMin(1)
 
 			assert.is_same({
 				{
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'POST',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers = '!#X-Apikey: 12345ABC_',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}',
 						_after = 60
@@ -399,16 +413,27 @@ describe('Domoticz', function()
 				}
 			}, domoticz.commandArray)
 
-			cmd.silent()
+			domoticz.commandArray = {}
+			local cmd = domoticz.openURL({
+				url = 'some url',
+				method = 'POST',
+				callback = 'trigger1',
+				headers = {
+					['X-Apikey'] = '12345ABC_',
+				},
+				postData = {
+					a = 1, b = 2
+				}
+			})
 
 			assert.is_same({
 				{
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'POST',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers = '!#X-Apikey: 12345ABC_',
+						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}',
-						_after = 60
 					}
 				}
 			}, domoticz.commandArray)

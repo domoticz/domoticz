@@ -198,7 +198,7 @@ void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSys
 {
 	int index = 1;
 	int secstatus = 0;
-	std::string secstatusw = "";
+	std::string secstatusw;
 
 	CLuaTable luaTable(lua_state, "securityupdates");
 
@@ -291,23 +291,7 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 
 	for (auto itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
 	{
-		if (itt->isTable && itt->sValue == "headers" && itt != vLuaTable.end() - 1)
-		{
-			int tIndex = itt->tIndex;
-			itt++;
-			for (auto itt2 = itt; itt2 != vLuaTable.end(); ++itt2)
-			{
-				if (itt2->tIndex != tIndex)
-				{
-					itt--;
-					break;
-				}
-				extraHeaders += "!#" + itt2->name + ": " + itt2->sValue;
-				if (itt != vLuaTable.end() - 1)
-					itt++;
-			}
-		}
-		else if (itt->type == TYPE_STRING)
+		if (itt->type == TYPE_STRING)
 		{
 			if (itt->name == "URL")
 				URL = itt->sValue;
@@ -317,6 +301,8 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 				postData = itt->sValue;
 			else if (itt->name == "_trigger")
 				trigger = itt->sValue;
+			else if (itt->name == "headers")
+				extraHeaders = itt->sValue;
 		}
 		else if ((itt->type == TYPE_INTEGER) && (itt->name == "_random"))
 			delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
@@ -367,6 +353,7 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 		_log.Log(LOG_ERROR, "dzVents: You cannot use postdata with method GET.");
 		return false;
 	}
+
 
 	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, extraHeaders, eMethod, postData, trigger));
 	return true;
