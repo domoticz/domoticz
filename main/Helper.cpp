@@ -1087,7 +1087,6 @@ void DirectoryListing(std::vector<std::string>& entries, const std::string &dir,
 		}
 		closedir(d);
 	}
-	return;
 }
 
 std::string GenerateUserAgent()

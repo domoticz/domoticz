@@ -390,6 +390,5 @@ void eHouseTCP::KillSocket(int SocketIndex)
 
 
 	if (m_DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[!!!!!!!!! TCP Cli ||||| %d] End TCP Client NOT EXITED", SocketIndex);
-	return;
 }
 

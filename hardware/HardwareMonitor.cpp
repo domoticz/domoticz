@@ -424,7 +424,6 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 		float usage = static_cast<float>(atof(devValue.c_str()));
 		SendCustomSensor(0, doffset + dindex, 255, usage, devName, "MB");
 	}
-	return;
 }
 
 bool CHardwareMonitor::GetOSType(nOSType &OStype)

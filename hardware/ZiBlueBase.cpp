@@ -400,7 +400,6 @@ void CZiBlueBase::ParseData(const char *data, size_t len)
 			break;
 		}
 		ii++;
-		continue;
 	}
 }
 
