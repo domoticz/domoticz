@@ -202,8 +202,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				// 4:   Trigger Notifications & events on status change
 				if (node.nStatus != nStatus)
 				{
-					m_notifications.CheckAndHandleNotification(node.ID, sDevName, NotificationType(nStatus),
-										   sStatus.c_str());
+					m_notifications.CheckAndHandleNotification(node.ID, sDevName, NotificationType(nStatus), sStatus);
 					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, node.ID, 1, int(pTypeLighting2), int(sTypeAC), 12,
 										 100, int(nStatus), sStatus.c_str(), sDevName);
 				}
@@ -446,7 +445,8 @@ void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::stri
 	//1) Check on MacAddress (default)
 	result = m_sql.safe_query("SELECT Name FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, MacAddress.c_str());
 	if (!result.empty()) {
-		if (result[0][0].c_str() != Name) { //Update Name in case it has been changed
+		if (result[0][0] != Name)
+		{ // Update Name in case it has been changed
 			m_sql.safe_query("UPDATE WOLNodes SET Name='%q', Timeout=0 WHERE (HardwareID==%d) AND (MacAddress=='%q')", Name.c_str(), m_HwdID, MacAddress.c_str());
 			_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' renamed to '%s'", result[0][0].c_str(), Name.c_str());
 		}

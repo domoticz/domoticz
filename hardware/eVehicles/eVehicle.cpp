@@ -200,13 +200,13 @@ void CeVehicle::SendCounter(int countType, float value)
 void CeVehicle::SendCustom(int countType, int ChildId, float value, std::string label)
 {
 	if ((countType == VEHICLE_CUSTOM) && m_api->m_capabilities.has_custom_data)
-		SendCustomSensor(VEHICLE_CUSTOM, ChildId, 255, value, m_Name + " " + label.c_str(), "");
+		SendCustomSensor(VEHICLE_CUSTOM, ChildId, 255, value, m_Name + " " + label, "");
 }
 
 void CeVehicle::SendText(int countType, int ChildId, std::string value, std::string label)
 {
 	if ((countType == VEHICLE_CUSTOM) && m_api->m_capabilities.has_custom_data)
-		SendTextSensor(VEHICLE_CUSTOM, ChildId, 255, value.c_str(), m_Name + " " + label.c_str());
+		SendTextSensor(VEHICLE_CUSTOM, ChildId, 255, value, m_Name + " " + label);
 }
 
 bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)

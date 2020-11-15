@@ -129,23 +129,23 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			if (googlePubSubData == "")
 				return;
 
-			std::string sdeviceId = sd[0].c_str();
-			std::string ldelpos = sd[1].c_str();
+			std::string sdeviceId = sd[0];
+			std::string ldelpos = sd[1];
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
 			int nValue = atoi(sd[5].c_str());
-			std::string sValue = sd[6].c_str();
+			std::string sValue = sd[6];
 			//int targetType = atoi(sd[7].c_str());
-			std::string targetVariable = sd[8].c_str();
+			std::string targetVariable = sd[8];
 			//int targetDeviceID = atoi(sd[9].c_str());
-			std::string targetProperty = sd[10].c_str();
+			std::string targetProperty = sd[10];
 			int includeUnit = atoi(sd[11].c_str());
 			int metertype = atoi(sd[12].c_str());
 			int lastUpdate = atoi(sd[13].c_str());
-			std::string ltargetVariable = sd[8].c_str();
-			std::string ltargetDeviceId = sd[9].c_str();
-			std::string lname = sd[14].c_str();
+			std::string ltargetVariable = sd[8];
+			std::string ltargetDeviceId = sd[9];
+			std::string lname = sd[14];
 			sendValue = sValue;
 
 			unsigned long tzoffset = get_tzoffset();
@@ -200,7 +200,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 				StringSplit(sendValue, ";", strarray);
 				if (int(strarray.size()) >= delpos)
 				{
-					std::string rawsendValue = strarray[delpos - 1].c_str();
+					std::string rawsendValue = strarray[delpos - 1];
 					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
 				}
 			}
@@ -319,7 +319,7 @@ namespace http {
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
-			m_sql.UpdatePreferencesVar("GooglePubSubData", data.c_str());
+			m_sql.UpdatePreferencesVar("GooglePubSubData", data);
 			m_sql.UpdatePreferencesVar("GooglePubSubActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("GooglePubSubDebug", idebugenabled);
 

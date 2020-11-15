@@ -674,7 +674,7 @@ namespace http {
 				// We allow raw EISCP commands to be sent on *any* of the logical devices
 				// associated with the hardware.
 				case HTYPE_OnkyoAVTCP:
-					CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3].c_str(), HTYPE_OnkyoAVTCP);
+					CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3], HTYPE_OnkyoAVTCP);
 					if (pBaseHardware == nullptr)
 						return;
 					OnkyoAVTCP *pOnkyoAVTCP = reinterpret_cast<OnkyoAVTCP*>(pBaseHardware);

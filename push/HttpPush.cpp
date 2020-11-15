@@ -90,23 +90,23 @@ void CHttpPush::DoHttpPush()
 				return;
 
 			//unsigned int deviceId = atoi(sd[0].c_str());
-			std::string sdeviceId = sd[0].c_str();
-			std::string ldelpos = sd[1].c_str();
+			std::string sdeviceId = sd[0];
+			std::string ldelpos = sd[1];
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
 			int nValue = atoi(sd[5].c_str());
-			std::string sValue = sd[6].c_str();
+			std::string sValue = sd[6];
 			//int targetType = atoi(sd[7].c_str());
-			std::string targetVariable = sd[8].c_str();
+			std::string targetVariable = sd[8];
 			//int targetDeviceID = atoi(sd[9].c_str());
 			//std::string targetProperty = sd[10].c_str();
 			int includeUnit = atoi(sd[11].c_str());
 			int metertype = atoi(sd[12].c_str());
 			int lastUpdate = atoi(sd[13].c_str());
-			std::string ltargetVariable = sd[8].c_str();
-			std::string ltargetDeviceId = sd[9].c_str();
-			std::string lname = sd[14].c_str();
+			std::string ltargetVariable = sd[8];
+			std::string ltargetDeviceId = sd[9];
+			std::string lname = sd[14];
 			sendValue = sValue;
 
 			unsigned long tzoffset = get_tzoffset();
@@ -161,7 +161,7 @@ void CHttpPush::DoHttpPush()
 				StringSplit(sendValue, ";", strarray);
 				if (int(strarray.size()) >= delpos && delpos > 0)
 				{
-					std::string rawsendValue = strarray[delpos - 1].c_str();
+					std::string rawsendValue = strarray[delpos - 1];
 					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
 				}
 			}
@@ -284,15 +284,15 @@ namespace http {
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
-			m_sql.UpdatePreferencesVar("HttpUrl", url.c_str());
+			m_sql.UpdatePreferencesVar("HttpUrl", url);
 			m_sql.UpdatePreferencesVar("HttpMethod", atoi(method.c_str()));
-			m_sql.UpdatePreferencesVar("HttpData", data.c_str());
-			m_sql.UpdatePreferencesVar("HttpHeaders", headers.c_str());
+			m_sql.UpdatePreferencesVar("HttpData", data);
+			m_sql.UpdatePreferencesVar("HttpHeaders", headers);
 			m_sql.UpdatePreferencesVar("HttpActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("HttpDebug", idebugenabled);
 			m_sql.UpdatePreferencesVar("HttpAuth", atoi(auth.c_str()));
-			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin.c_str());
-			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword.c_str());
+			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin);
+			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword);
 
 			m_httppush.UpdateActive();
 			root["status"] = "OK";

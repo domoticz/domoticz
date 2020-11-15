@@ -271,7 +271,7 @@ void CEventSystem::LoadEvents()
 			// Write active dzVents scripts to disk.
 			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
 			{
-				s = dzv_Dir + eitem.Name.c_str() + ".lua";
+				s = dzv_Dir + eitem.Name + ".lua";
 				_log.Log(LOG_STATUS, "dzVents: Write file: %s", s.c_str());
 				FILE *fOut = fopen(s.c_str(), "wb+");
 				if (fOut)
@@ -487,7 +487,7 @@ void CEventSystem::GetCurrentStates()
 
 			sitem.switchtype = atoi(sd[7].c_str());
 			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
-			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
+			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
 			sitem.lastLevel = atoi(sd[9].c_str());
@@ -1477,7 +1477,7 @@ void CEventSystem::ProcessDevice(
 		item.devname = devname;
 		item.nValue = nValue;
 		item.sValue = osValue;
-		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, "", 255, batterylevel, options);
+		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, "", 255, batterylevel, options);
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		auto itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
@@ -1499,7 +1499,7 @@ void CEventSystem::ProcessDevice(
 		m_eventqueue.push(item);
 	}
 	else
-		UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, lastUpdate, lastLevel, batterylevel, options);
+		UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, lastUpdate, lastLevel, batterylevel, options);
 }
 
 void CEventSystem::ProcessMinute()
@@ -1691,7 +1691,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		else {
 			//String,Date,Time
-			luaTable.AddString(uvitem.ID, uvitem.variableValue.c_str());
+			luaTable.AddString(uvitem.ID, uvitem.variableValue);
 		}
 	}
 	luaTable.Publish();
@@ -2224,9 +2224,9 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			StripQuotes(parseResult.sCommand);
 
 			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
-				m_mainworker.UpdateDevice(std::stoi(variableName.c_str()), 0, parseResult.sCommand, 12, 255, false);
+				m_mainworker.UpdateDevice(std::stoi(variableName), 0, parseResult.sCommand, 12, 255, false);
 			else
-				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(parseResult.fAfterSec, std::stoull(variableName.c_str()), 0, parseResult.sCommand, false, false));
+				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(parseResult.fAfterSec, std::stoull(variableName), 0, parseResult.sCommand, false, false));
 
 			actionsDone = true;
 		}
@@ -3575,7 +3575,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 				sPlayList = sParams.substr(0, iLastSpace);
 				level = atoi(sParams.substr(iLastSpace).c_str());
 			}
-			if (!pHardware->SetPlaylist(deviceID, sPlayList.c_str()))
+			if (!pHardware->SetPlaylist(deviceID, sPlayList))
 			{
 				pBaseHardware = nullptr; // Kodi hardware exists, but the device for the event is not a Kodi
 			}
@@ -3588,7 +3588,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 				return false;
 			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
 
-			int iPlaylistID = pHardware->GetPlaylistRefID(oParseResults.sCommand.substr(14).c_str());
+			int iPlaylistID = pHardware->GetPlaylistRefID(oParseResults.sCommand.substr(14));
 			if (iPlaylistID == 0) return false;
 
 			level = iPlaylistID;

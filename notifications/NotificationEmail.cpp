@@ -101,14 +101,14 @@ bool CNotificationEmail::SendMessageImplementation(
 		HtmlBody = std::string("<html>\n<body>\n<b>") + MessageText + std::string("</body>\n</html>\n");
 	}
 
-	sclient.SetFrom(_EmailFrom.c_str());
-	sclient.SetTo(_EmailTo.c_str());
+	sclient.SetFrom(_EmailFrom);
+	sclient.SetTo(_EmailTo);
 	if (_EmailUsername != "" && _EmailPassword != "") {
-		sclient.SetCredentials(_EmailUsername.c_str(), _EmailPassword.c_str());
+		sclient.SetCredentials(_EmailUsername, _EmailPassword);
 	}
-	sclient.SetServer(_EmailServer.c_str(), _EmailPort);
-	sclient.SetSubject(Subject.c_str());
-	sclient.SetHTMLBody(HtmlBody.c_str());
+	sclient.SetServer(_EmailServer, _EmailPort);
+	sclient.SetSubject(Subject);
+	sclient.SetHTMLBody(HtmlBody);
 	bool bRet=sclient.SendEmail();
 	if (!bRet) {
 		_log.Log(LOG_ERROR, "Failed to send Email notification!");

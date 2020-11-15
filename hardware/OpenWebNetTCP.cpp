@@ -707,7 +707,7 @@ bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *
 		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeKwh));
 	if (result.size() >= 1)
 	{
-		std::string sup, sValue = result[0][0].c_str();
+		std::string sup, sValue = result[0][0];
 
 		if (usage)
 			*usage = (float)atof(sValue.c_str());
@@ -1355,7 +1355,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			iAppValue = atoi(whatParam[0].c_str());
 			_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Short pressure %d Button %d", iWhere, iAppValue);
 			devname = OPENWEBNET_CENPLUS;
-			devname += " " + where + " Short Press Button " + whatParam[0].c_str();
+			devname += " " + where + " Short Press Button " + whatParam[0];
 			UpdateCenPlus(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, atoi(what.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 
@@ -1373,7 +1373,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 
 			_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Long pressure %d Button %d", iWhere, iAppValue);
 			devname = OPENWEBNET_CENPLUS;
-			devname += " " + where + " Long Press Button " + whatParam[0].c_str();
+			devname += " " + where + " Long Press Button " + whatParam[0];
 			UpdateCenPlus(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, atoi(what.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 

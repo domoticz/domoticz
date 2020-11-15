@@ -604,7 +604,7 @@ std::string CDenkoviDevices::DAEnetIP3GetIo(std::string tmpstr, const std::strin
 	std::string parameter = tmpParameter + "=";
 	size_t pos1 = tmpstr.find(parameter);
 	size_t pos2 = tmpstr.find(';', pos1);
-	return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str()))).c_str();
+	return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str())));
 }
 
 std::string CDenkoviDevices::DAEnetIP3GetAi(std::string tmpstr, const std::string &tmpParameter, const int &ciType) {
@@ -613,12 +613,12 @@ std::string CDenkoviDevices::DAEnetIP3GetAi(std::string tmpstr, const std::strin
 	size_t pos2;
 	if (ciType == DAENETIP3_AI_VALUE) {
 		pos2 = tmpstr.find('[', pos1);
-		return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str()))).c_str();
+		return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str())));
 	}
 	else if (ciType == DAENETIP3_AI_DIMENSION) {
 		pos1 = tmpstr.find('[', pos1);
 		pos2 = tmpstr.find(']', pos1);
-		return tmpstr.substr(pos1 + 1, pos2 - (pos1 + 1)).c_str();
+		return tmpstr.substr(pos1 + 1, pos2 - (pos1 + 1));
 	}
 	return "";// tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str()))).c_str();
 }
@@ -650,7 +650,7 @@ std::string CDenkoviDevices::DAEnetIP2GetName(std::string tmpstr, const int &nmr
 		pos1 = tmpstr.find('"', pos1 + 1);
 	}
 	pos2 = tmpstr.find('"', pos1 + 1);
-	return tmpstr.substr(pos1 + 1, pos2 - (pos1 + 1)).c_str();
+	return tmpstr.substr(pos1 + 1, pos2 - (pos1 + 1));
 }
 
 uint16_t CDenkoviDevices::DAEnetIP2GetAiValue(std::string tmpstr, const int &aiNmr) {

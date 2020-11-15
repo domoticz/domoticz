@@ -832,7 +832,7 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string&/*SceneName*
 	std::vector<std::string> sd = result[0];
 
 	std::string sName = sd[1];
-	std::string sLastUpdate = sd[6].c_str();
+	std::string sLastUpdate = sd[6];
 
 	unsigned char nValue = (uint8_t)atoi(sd[4].c_str());
 	unsigned char scenetype = (uint8_t)atoi(sd[5].c_str());

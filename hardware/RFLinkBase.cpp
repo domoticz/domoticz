@@ -1197,7 +1197,7 @@ namespace http {
 
 			bCreated = true;
 			pRFLINK->m_bTXokay = false; // clear OK flag
-			pRFLINK->WriteInt(scommand.c_str());
+			pRFLINK->WriteInt(scommand);
 			time_t atime = mytime(nullptr);
 			time_t btime = mytime(nullptr);
 

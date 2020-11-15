@@ -772,7 +772,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode2, Mode1, (std::string("Domoticz") + szRandomUUID).c_str(), Mode3 != 0);
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode2, Mode1, std::string("Domoticz") + szRandomUUID, Mode3 != 0);
 		break;
 	case HTYPE_eHouseTCP:
 		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway
@@ -11366,7 +11366,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	uint8_t dType = atoi(sd[3].c_str());
 	uint8_t dSubType = atoi(sd[4].c_str());
 	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
-	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
+	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
 	//when asking for Toggle, just switch to the opposite value
 	if (switchcmd == "Toggle") {
@@ -12450,8 +12450,8 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 	int iOnDelay = atoi(sd[6].c_str());
 	int nValue = atoi(sd[7].c_str());
-	std::string sValue = sd[8].c_str();
-	std::string devName = sd[9].c_str();
+	std::string sValue = sd[8];
+	std::string devName = sd[9];
 	//std::string sOptions = sd[10].c_str();
 
 	bool bIsOn = IsLightSwitchOn(switchcmd);
@@ -13547,7 +13547,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID,
 {
 	// Prevent hazardous modification of DB from JSON calls
 	std::string devname = "Unknown";
-	uint64_t devidx = m_sql.GetDeviceIndex(HardwareID, DeviceID.c_str(), unit, devType, subType, devname);
+	uint64_t devidx = m_sql.GetDeviceIndex(HardwareID, DeviceID, unit, devType, subType, devname);
 	if (devidx == (uint64_t)-1)
 		return false;
 	std::stringstream sidx;

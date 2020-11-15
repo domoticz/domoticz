@@ -1270,7 +1270,7 @@ int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> 
 				if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0) && (strcmp(ent->d_name, ".svn") != 0))
 				{
 					std::string nextdir = DirPath + ent->d_name + "/";
-					if (GetDirFilesRecursive(nextdir.c_str(), _Files))
+					if (GetDirFilesRecursive(nextdir, _Files))
 					{
 						closedir(dir);
 						return 1;

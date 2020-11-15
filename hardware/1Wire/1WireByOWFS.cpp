@@ -437,7 +437,7 @@ std::string C1WireByOWFS::nameHelper(const std::string& dirname, const _e1WireFa
 	std::string name;
 	DIR *d = nullptr;
 
-	d=opendir(std::string(std::string(m_path) + "/" + dirname.c_str()).c_str());
+	d = opendir(std::string(std::string(m_path) + "/" + dirname).c_str());
 	if (d != nullptr)
 	{
 		struct dirent *de = nullptr;

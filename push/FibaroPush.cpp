@@ -91,11 +91,11 @@ void CFibaroPush::DoFibaroPush()
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
 			int nValue = atoi(sd[5].c_str());
-			std::string sValue = sd[6].c_str();
+			std::string sValue = sd[6];
 			int targetType = atoi(sd[7].c_str());
-			std::string targetVariable = sd[8].c_str();
+			std::string targetVariable = sd[8];
 			int targetDeviceID = atoi(sd[9].c_str());
-			std::string targetProperty = sd[10].c_str();
+			std::string targetProperty = sd[10];
 			int includeUnit = atoi(sd[11].c_str());
 			int metertype = atoi(sd[12].c_str());
 			std::string lstatus;
@@ -116,7 +116,7 @@ void CFibaroPush::DoFibaroPush()
 						StringSplit(sValue, ";", strarray);
 						if (int(strarray.size()) >= delpos)
 						{
-							std::string rawsendValue = strarray[delpos - 1].c_str();
+							std::string rawsendValue = strarray[delpos - 1];
 							sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 						}
 					}
@@ -245,9 +245,9 @@ namespace http {
 			int ilinkactive = atoi(linkactive.c_str());
 			int iisversion4 = atoi(isversion4.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
-			m_sql.UpdatePreferencesVar("FibaroIP", remote.c_str());
-			m_sql.UpdatePreferencesVar("FibaroUsername", username.c_str());
-			m_sql.UpdatePreferencesVar("FibaroPassword", password.c_str());
+			m_sql.UpdatePreferencesVar("FibaroIP", remote);
+			m_sql.UpdatePreferencesVar("FibaroUsername", username);
+			m_sql.UpdatePreferencesVar("FibaroPassword", password);
 			m_sql.UpdatePreferencesVar("FibaroActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("FibaroVersion4", iisversion4);
 			m_sql.UpdatePreferencesVar("FibaroDebug", idebugenabled);

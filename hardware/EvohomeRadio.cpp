@@ -510,7 +510,7 @@ void CEvohomeRadio::SendZoneSensor()
 		{
 			//std::vector<std::string> sd = result[0];
 			std::stringstream s_strid;
-			std::string SensorName = result[0][1].c_str();
+			std::string SensorName = result[0][1];
 			//s_strid << std::hex << sd[0].c_str();
 			s_strid << std::hex << result[0][0].c_str();
 			s_strid >> ID;

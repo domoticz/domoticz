@@ -257,7 +257,7 @@ namespace http {
 			do {
 				try {
 					exception = false;
-					m_pWebEm = new http::server::cWebem(settings, serverpath.c_str());
+					m_pWebEm = new http::server::cWebem(settings, serverpath);
 				}
 				catch (std::exception& e) {
 					exception = true;
@@ -3589,7 +3589,7 @@ namespace http {
 					int dType = atoi(result[0][3].c_str());
 					int sType = atoi(result[0][4].c_str());
 					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
-					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6].c_str());
+					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6]);
 					GetLightCommand(dType, sType, switchtype, scommand, command, options);
 				}
 
@@ -3691,7 +3691,7 @@ namespace http {
 					int dType = atoi(result[0][3].c_str());
 					int sType = atoi(result[0][4].c_str());
 					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
-					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6].c_str());
+					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6]);
 					GetLightCommand(dType, sType, switchtype, scommand, command, options);
 				}
 				int level = -1;
@@ -8112,7 +8112,7 @@ namespace http {
 			if ((Latitude != "") && (Longitude != ""))
 			{
 				std::string LatLong = Latitude + ";" + Longitude;
-				m_sql.UpdatePreferencesVar("Location", LatLong.c_str());
+				m_sql.UpdatePreferencesVar("Location", LatLong);
 				m_mainworker.GetSunSettings();
 			}
 			m_notifications.ConfigFromGetvars(req, true);
@@ -8196,14 +8196,14 @@ namespace http {
 			if (bHaveAdminUserPasswordChange)
 			{
 				RemoveUsersSessions(sOldWebLogin, session);
-				m_sql.UpdatePreferencesVar("WebUserName", WebUserName.c_str());
-				m_sql.UpdatePreferencesVar("WebPassword", WebPassword.c_str());
+				m_sql.UpdatePreferencesVar("WebUserName", WebUserName);
+				m_sql.UpdatePreferencesVar("WebPassword", WebPassword);
 			}
 
 			std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 			std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
-			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks.c_str());
-			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs.c_str());
+			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
 
 			LoadUsers();
 			m_pWebEm->ClearLocalNetworks();
@@ -8232,7 +8232,7 @@ namespace http {
 			{
 				SecPassword = GenerateMD5Hash(SecPassword);
 			}
-			m_sql.UpdatePreferencesVar("SecPassword", SecPassword.c_str());
+			m_sql.UpdatePreferencesVar("SecPassword", SecPassword);
 
 			std::string ProtectionPassword = request::findValue(&req, "ProtectionPassword");
 			ProtectionPassword = CURLEncode::URLDecode(ProtectionPassword);
@@ -8240,7 +8240,7 @@ namespace http {
 			{
 				ProtectionPassword = GenerateMD5Hash(ProtectionPassword);
 			}
-			m_sql.UpdatePreferencesVar("ProtectionPassword", ProtectionPassword.c_str());
+			m_sql.UpdatePreferencesVar("ProtectionPassword", ProtectionPassword);
 
 			int EnergyDivider = atoi(request::findValue(&req, "EnergyDivider").c_str());
 			int GasDivider = atoi(request::findValue(&req, "GasDivider").c_str());
@@ -8321,14 +8321,14 @@ namespace http {
 			if (RaspCamParams != "")
 			{
 				if (IsArgumentSecure(RaspCamParams))
-					m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
+					m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams);
 			}
 
 			std::string UVCParams = request::findValue(&req, "UVCParams");
 			if (UVCParams != "")
 			{
 				if (IsArgumentSecure(UVCParams))
-					m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
+					m_sql.UpdatePreferencesVar("UVCParams", UVCParams);
 			}
 
 			std::string EnableNewHardware = request::findValue(&req, "AcceptNewHardware");
@@ -8409,11 +8409,11 @@ namespace http {
 				}
 			}
 
-			m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language").c_str());
+			m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language"));
 			std::string SelectedTheme = request::findValue(&req, "Themes");
-			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
+			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme);
 			m_pWebEm->SetWebTheme(SelectedTheme);
-			std::string Title = request::findValue(&req, "Title").c_str();
+			std::string Title = request::findValue(&req, "Title");
 			m_sql.UpdatePreferencesVar("Title", (Title.empty()) ? "Domoticz" : Title);
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
@@ -8452,7 +8452,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues", (FloorplanShowSwitchValues == "on" ? 1 : 0));
 			std::string FloorplanShowSceneNames = request::findValue(&req, "FloorplanShowSceneNames");
 			m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (FloorplanShowSceneNames == "on" ? 1 : 0));
-			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour").c_str()).c_str());
+			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour")));
 			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str()));
 			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(request::findValue(&req, "FloorplanInactiveOpacity").c_str()));
 
@@ -8620,7 +8620,7 @@ namespace http {
 			char szOrderBy[50];
 			std::string szQuery;
 			bool isAlpha = true;
-			const std::string orderBy = order.c_str();
+			const std::string orderBy = order;
 			for (char i : orderBy)
 			{
 				if (!isalpha(i))
@@ -11845,7 +11845,7 @@ namespace http {
 					if ((bDisplayHidden == false) && (sName[0] == '$'))
 						continue;
 
-					std::string sLastUpdate = sd[6].c_str();
+					std::string sLastUpdate = sd[6];
 					if (LastUpdate != 0)
 					{
 						time_t cLastUpdate;
@@ -13675,7 +13675,7 @@ namespace http {
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eSwitchType switchtype = (_eSwitchType)atoi(result[0][2].c_str());
-			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3].c_str());
+			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3]);
 
 			if (
 				(dType != pTypeLighting1) &&
@@ -13924,7 +13924,7 @@ namespace http {
 			double AddjValue = atof(result[0][3].c_str());
 			double AddjMulti = atof(result[0][4].c_str());
 			double AddjValue2 = atof(result[0][5].c_str());
-			std::string sOptions = result[0][6].c_str();
+			std::string sOptions = result[0][6];
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 
 			float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
@@ -17722,9 +17722,9 @@ namespace http {
 				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'",
 					sessionId.c_str());
 				if (!result.empty()) {
-					session.id = result[0][0].c_str();
+					session.id = result[0][0];
 					session.username = base64_decode(result[0][1]);
-					session.auth_token = result[0][2].c_str();
+					session.auth_token = result[0][2];
 
 					std::string sExpirationDate = result[0][3];
 					//time_t now = mytime(NULL);

@@ -495,7 +495,7 @@ void CEcoDevices::GetMeterRT2Details()
 	_log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
 	_log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
 #endif
-	ProcessTeleinfo(m_status.hostname.c_str(), 1, m_teleinfo1);
+	ProcessTeleinfo(m_status.hostname, 1, m_teleinfo1);
 
 	// 8 internal counters (postes) processing
 	for (i = 0; i < 8; i++)

@@ -512,7 +512,7 @@ bool CTTNMQTT::ConvertFields2Payload(const Json::Value &fields, Json::Value &pay
 		Debug(DEBUG_NORM, "Processing fields payload for %d fields!", fields.size());
 		for (const auto &id : fields.getMemberNames())
 		{
-			if(!(fields[id].isNull()) && ConvertField2Payload(id.c_str(), fields[id].asString().c_str(), index + 1, index, payload))
+			if (!(fields[id].isNull()) && ConvertField2Payload(id, fields[id].asString(), index + 1, index, payload))
 			{
 				Debug(DEBUG_NORM, "Converted field %s !", id.c_str());
 				index++;
@@ -670,7 +670,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			return;
 		}
 
-		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName.c_str(), DeviceSerial.c_str());
+		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName, DeviceSerial);
 		if (DeviceID == 0) // Unable to find the Device and/or Add the new Device
 		{
 			return;
