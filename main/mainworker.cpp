@@ -362,6 +362,7 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase* pHardware)
 		std::lock_guard<std::mutex> l(m_devicemutex);
 		for (auto itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 		{
+			pOrgHardware = *itt;
 			if (pOrgHardware == pHardware) {
 				m_hardwaredevices.erase(itt);
 				break;
