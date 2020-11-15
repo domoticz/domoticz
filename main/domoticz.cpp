@@ -216,10 +216,8 @@ void daemonize(const char *rundir, const char *pidfile)
 	sigaction(SIGABRT, &newSigAction, nullptr); // catch abnormal termination signal
 	sigaction(SIGILL, &newSigAction, nullptr);  // catch invalid program image
 	sigaction(SIGUSR1, &newSigAction, nullptr); // catch SIGUSR1 (used by watchdog)
-#ifndef WIN32
 	sigaction(SIGHUP, &newSigAction, nullptr); // catch HUP, for log rotation
-#endif
-	
+
 	/* Fork*/
 	pid = fork();
 
