@@ -34,7 +34,7 @@ using namespace boost::placeholders;
 #define round(a) ( int ) ( a + .5 )
 
 extern const char* Get_EnoceanManufacturer(unsigned long ID);
-extern const char* Get_Enocean4BSType(const int Org, const int Func, const int Type);
+extern const char *Get_Enocean4BSType(int Org, int Func, int Type);
 
 // the following lines are taken from EO300I API header file
 

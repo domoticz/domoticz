@@ -111,16 +111,19 @@ class CPanasonicNode : public StoppableTask
 	};
 
 public:
-	CPanasonicNode(const int, const int, const int, const std::string&, const std::string&, const std::string&, const std::string&);
-	~CPanasonicNode();
-	void			Do_Work();
-	void			SendCommand(const std::string &command);
-	void			SendCommand(const std::string &command, const int iValue);
-	void			SetExecuteCommand(const std::string &command);
-	bool			SendShutdown();
-	void			StopThread();
-	bool			StartThread();
-	bool			IsBusy() { return m_Busy; };
+  CPanasonicNode(int, int, int, const std::string &, const std::string &, const std::string &, const std::string &);
+  ~CPanasonicNode();
+  void Do_Work();
+  void SendCommand(const std::string &command);
+  void SendCommand(const std::string &command, int iValue);
+  void SetExecuteCommand(const std::string &command);
+  bool SendShutdown();
+  void StopThread();
+  bool StartThread();
+  bool IsBusy()
+  {
+	  return m_Busy;
+  };
 	bool			IsOn() { return (m_CurrentStatus.Status() == MSTAT_ON); };
 
 	int				m_ID;

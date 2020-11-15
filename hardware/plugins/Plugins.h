@@ -58,11 +58,14 @@ namespace Plugins {
 		void LogPythonException(const std::string &);
 
 	public:
-		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
-		~CPlugin() override;
+	  CPlugin(int HwdID, const std::string &Name, const std::string &PluginKey);
+	  ~CPlugin() override;
 
-		int		PollInterval(int Interval = -1);
-		void*	PythonModule() { return m_PyModule; };
+	  int PollInterval(int Interval = -1);
+	  void *PythonModule()
+	  {
+		  return m_PyModule;
+	  };
 		void	Notifier(std::string Notifier = "");
 		void	AddConnection(CPluginTransport*);
 		void	RemoveConnection(CPluginTransport*);
@@ -84,9 +87,9 @@ namespace Plugins {
 
 		void	WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
 
-		bool	WriteToHardware(const char *pdata, const unsigned char length) override;
-		void	SendCommand(const int Unit, const std::string &command, const int level, const _tColor color);
-		void	SendCommand(const int Unit, const std::string &command, const float level);
+		bool WriteToHardware(const char *pdata, unsigned char length) override;
+		void SendCommand(int Unit, const std::string &command, int level, _tColor color);
+		void SendCommand(int Unit, const std::string &command, float level);
 
 		void	onDeviceAdded(int Unit);
 		void	onDeviceModified(int Unit);
@@ -96,7 +99,7 @@ namespace Plugins {
 		void	DeviceModified(int Unit);
 		void	DeviceRemoved(int Unit);
 
-		bool	HasNodeFailed(const int Unit);
+		bool HasNodeFailed(int Unit);
 
 		std::string			m_PluginKey;
 		void*				m_DeviceDict;
@@ -119,8 +122,8 @@ namespace Plugins {
 		std::string	 GetIconFile(const std::string &ExtraData);
 		std::string GetCustomIcon(std::string & szCustom);
 	protected:
-	  bool SendMessageImplementation(const uint64_t Idx, const std::string &Name, const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority,
-					 const std::string &Sound, const bool bFromNotification) override;
+	  bool SendMessageImplementation(uint64_t Idx, const std::string &Name, const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority,
+					 const std::string &Sound, bool bFromNotification) override;
 	};
 
 	//

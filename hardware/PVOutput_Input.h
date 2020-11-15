@@ -4,20 +4,21 @@
 
 class CPVOutputInput : public CDomoticzHardwareBase
 {
-public:
-	CPVOutputInput(const int ID, const std::string &SID, const std::string &Key);
+      public:
+	CPVOutputInput(int ID, const std::string &SID, const std::string &Key);
 	~CPVOutputInput() override = default;
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-private:
+
+      private:
 	std::string m_SID;
 	std::string m_KEY;
 	std::shared_ptr<std::thread> m_thread;
 	bool m_bHadConsumption = false;
 };
-

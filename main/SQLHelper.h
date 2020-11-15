@@ -314,56 +314,55 @@ public:
   bool RestoreDatabase(const std::string &dbase);
 
   // Returns DeviceRowID
-  uint64_t UpdateValue(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel,
-		       const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction = true);
-  uint64_t UpdateValue(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel,
-		       const unsigned char batterylevel, const char *sValue, std::string &devname, const bool bUseOnOffAction = true);
-  uint64_t UpdateValue(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel,
-		       const unsigned char batterylevel, const int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction = true);
-  uint64_t UpdateValueLighting2GroupCmd(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel,
-					const unsigned char batterylevel, const int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction = true);
-  uint64_t UpdateValueHomeConfortGroupCmd(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel,
-					  const unsigned char batterylevel, const int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction = true);
+  uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+		       std::string &devname, bool bUseOnOffAction = true);
+  uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, const char *sValue,
+		       std::string &devname, bool bUseOnOffAction = true);
+  uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+		       const char *sValue, std::string &devname, bool bUseOnOffAction = true);
+  uint64_t UpdateValueLighting2GroupCmd(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
+					int nValue, const char *sValue, std::string &devname, bool bUseOnOffAction = true);
+  uint64_t UpdateValueHomeConfortGroupCmd(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
+					  int nValue, const char *sValue, std::string &devname, bool bUseOnOffAction = true);
 
-  uint64_t GetDeviceIndex(const int HardwareID, const std::string &ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, std::string &devname);
+  uint64_t GetDeviceIndex(int HardwareID, const std::string &ID, unsigned char unit, unsigned char devType, unsigned char subType, std::string &devname);
 
-  uint64_t InsertDevice(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchType, const int nValue,
-			const char *sValue, const std::string &devname, const unsigned char signallevel = 12, const unsigned char batterylevel = 255, const int used = 0);
+  uint64_t InsertDevice(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, int switchType, int nValue, const char *sValue, const std::string &devname,
+			unsigned char signallevel = 12, unsigned char batterylevel = 255, int used = 0);
 
-  bool GetLastValue(const int HardwareID, const char *DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &nvalue, std::string &sValue,
-		    struct tm &LastUpdateTime);
+  bool GetLastValue(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, int &nvalue, std::string &sValue, struct tm &LastUpdateTime);
 
-  void Lighting2GroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd);
-  void HomeConfortGroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd);
-  void GeneralSwitchGroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd);
+  void Lighting2GroupCmd(const std::string &ID, unsigned char subType, unsigned char GroupCmd);
+  void HomeConfortGroupCmd(const std::string &ID, unsigned char subType, unsigned char GroupCmd);
+  void GeneralSwitchGroupCmd(const std::string &ID, unsigned char subType, unsigned char GroupCmd);
 
-  void GetAddjustment(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float &AddjValue, float &AddjMulti);
-  void GetAddjustment2(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float &AddjValue, float &AddjMulti);
+  void GetAddjustment(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, float &AddjValue, float &AddjMulti);
+  void GetAddjustment2(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, float &AddjValue, float &AddjMulti);
 
-  void GetMeterType(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &meterType);
+  void GetMeterType(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, int &meterType);
 
   void DeleteDataPoint(const char *ID, const std::string &Date);
 
-  void UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg1, const int msg2, const int msg3, const int msg4, const int msg5, const int msg6);
+  void UpdateRFXCOMHardwareDetails(int HardwareID, int msg1, int msg2, int msg3, int msg4, int msg5, int msg6);
 
   void UpdatePreferencesVar(const std::string &Key, const std::string &sValue);
-  void UpdatePreferencesVar(const std::string &Key, const int nValue);
-  void UpdatePreferencesVar(const std::string &Key, const int nValue, const std::string &sValue);
+  void UpdatePreferencesVar(const std::string &Key, int nValue);
+  void UpdatePreferencesVar(const std::string &Key, int nValue, const std::string &sValue);
   bool GetPreferencesVar(const std::string &Key, int &nValue, std::string &sValue);
   bool GetPreferencesVar(const std::string &Key, int &nValue);
   bool GetPreferencesVar(const std::string &Key, std::string &sValue);
 
   int GetLastBackupNo(const char *Key, int &nValue);
-  void SetLastBackupNo(const char *Key, const int nValue);
+  void SetLastBackupNo(const char *Key, int nValue);
 
-  bool HasTimers(const uint64_t Idx);
+  bool HasTimers(uint64_t Idx);
   bool HasTimers(const std::string &Idx);
-  bool HasSceneTimers(const uint64_t Idx);
+  bool HasSceneTimers(uint64_t Idx);
   bool HasSceneTimers(const std::string &Idx);
 
-  void CheckSceneStatus(const uint64_t Idx);
+  void CheckSceneStatus(uint64_t Idx);
   void CheckSceneStatus(const std::string &Idx);
-  void CheckSceneStatusWithDevice(const uint64_t DevIdx);
+  void CheckSceneStatusWithDevice(uint64_t DevIdx);
   void CheckSceneStatusWithDevice(const std::string &DevIdx);
 
   void ScheduleShortlog();
@@ -388,7 +387,7 @@ public:
 
   bool DoesSceneByNameExits(const std::string &SceneName);
 
-  void AddTaskItem(const _tTaskItem &tItem, const bool cancelItem = false);
+  void AddTaskItem(const _tTaskItem &tItem, bool cancelItem = false);
 
   void EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks);
 
@@ -397,7 +396,7 @@ public:
   void CheckDeviceTimeout();
   void CheckBatteryLow();
 
-  bool HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction);
+  bool HandleOnOffAction(bool bIsOn, const std::string &OnAction, const std::string &OffAction);
 
   std::vector<std::vector<std::string>> safe_query(const char *fmt, ...);
   std::vector<std::vector<std::string>> safe_queryBlob(const char *fmt, ...);
@@ -405,33 +404,33 @@ public:
   bool safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData);
   bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 
-  bool AddUserVariable(const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
-  bool UpdateUserVariable(const std::string &idx, const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue, const bool eventtrigger, std::string &errorMessage);
+  bool AddUserVariable(const std::string &varname, _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
+  bool UpdateUserVariable(const std::string &idx, const std::string &varname, _eUsrVariableType eVartype, const std::string &varvalue, bool eventtrigger, std::string &errorMessage);
   void DeleteUserVariable(const std::string &idx);
-  bool GetUserVariable(const std::string &varname, const _eUsrVariableType eVartype, std::string &varvalue);
-  bool CheckUserVariable(const _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
+  bool GetUserVariable(const std::string &varname, _eUsrVariableType eVartype, std::string &varvalue);
+  bool CheckUserVariable(_eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
 
-  uint64_t CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions);
+  uint64_t CreateDevice(int HardwareID, int SensorType, int SensorSubType, std::string &devname, unsigned long nid, const std::string &soptions);
 
   void UpdateDeviceValue(const char *FieldName, const std::string &Value, const std::string &Idx);
-  void UpdateDeviceValue(const char *FieldName, const int Value, const std::string &Idx);
-  void UpdateDeviceValue(const char *FieldName, const float Value, const std::string &Idx);
+  void UpdateDeviceValue(const char *FieldName, int Value, const std::string &Idx);
+  void UpdateDeviceValue(const char *FieldName, float Value, const std::string &Idx);
   void UpdateDeviceName(const std::string &Idx, const std::string &Name);
 
   bool GetPreferencesVar(const std::string &Key, double &Value);
-  void UpdatePreferencesVar(const std::string &Key, const double Value);
+  void UpdatePreferencesVar(const std::string &Key, double Value);
   void DeletePreferencesVar(const std::string &Key);
-  void AllowNewHardwareTimer(const int iTotMinutes);
+  void AllowNewHardwareTimer(int iTotMinutes);
 
   bool InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage);
   bool InsertCustomIconFromZipFile(const std::string &szZipFile, std::string &ErrorMessage);
 
-  std::map<std::string, std::string> BuildDeviceOptions(const std::string &options, const bool decode = true);
+  std::map<std::string, std::string> BuildDeviceOptions(const std::string &options, bool decode = true);
   std::map<std::string, std::string> GetDeviceOptions(const std::string &idx);
   std::string FormatDeviceOptions(const std::map<std::string, std::string> &optionsMap);
-  bool SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> &options);
+  bool SetDeviceOptions(uint64_t idx, const std::map<std::string, std::string> &options);
 
-  float GetCounterDivider(const int metertype, const int dType, const float DefaultValue);
+  float GetCounterDivider(int metertype, int dType, float DefaultValue);
 
 public:
 	std::string m_LastSwitchID;	//for learning command
@@ -478,27 +477,12 @@ private:
 	void FixDaylightSaving();
 
 	//Returns DeviceRowID
-	uint64_t UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction);
+	uint64_t UpdateValueInt(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+				const char *sValue, std::string &devname, bool bUseOnOffAction);
 
-	bool UpdateCalendarMeter(
-		const int HardwareID,
-		const char* DeviceID,
-		const unsigned char unit,
-		const unsigned char devType,
-		const unsigned char subType,
-		const bool shortLog,
-		const bool multiMeter,
-		const char* date,
-		const long long value1 = 0,
-		const long long value2 = 0,
-		const long long value3 = 0,
-		const long long value4 = 0,
-		const long long value5 = 0,
-		const long long value6 = 0,
-		const long long counter1 = 0,
-		const long long counter2 = 0,
-		const long long counter3 = 0,
-		const long long counter4 = 0);
+	bool UpdateCalendarMeter(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, bool shortLog, bool multiMeter, const char *date,
+				 long long value1 = 0, long long value2 = 0, long long value3 = 0, long long value4 = 0, long long value5 = 0, long long value6 = 0, long long counter1 = 0,
+				 long long counter2 = 0, long long counter3 = 0, long long counter4 = 0);
 
 	void CheckAndUpdateDeviceOrder();
 	void CheckAndUpdateSceneDeviceOrder();

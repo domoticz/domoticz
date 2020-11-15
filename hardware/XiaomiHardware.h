@@ -1,17 +1,18 @@
 #pragma once
 
 // Unitcode ('Unit' in 'Devices' overview)
-typedef enum {
-    ACT_ONOFF_PLUG = 1,                 //  1, TODO: also used for channel 0?
-    ACT_ONOFF_WIRED_WALL,               //  2, TODO: what is this? single or dual channel wired wall switch?
-    GATEWAY_SOUND_ALARM_RINGTONE,       //  3, Xiaomi Gateway Alarm Ringtone
-    GATEWAY_SOUND_ALARM_CLOCK,          //  4, Xiaomi Gateway Alarm Clock
-    GATEWAY_SOUND_DOORBELL,             //  5, Xiaomi Gateway Doorbell
-    GATEWAY_SOUND_MP3,                  //  6, Xiaomi Gateway MP3
-    GATEWAY_SOUND_VOLUME_CONTROL,       //  7, Xiaomi Gateway Volume
-    SELECTOR_WIRED_WALL_SINGLE,         //  8, Xiaomi Wired Single Wall Switch
-    SELECTOR_WIRED_WALL_DUAL_CHANNEL_0, //  9, Xiaomi Wired Dual Wall Switch Channel 0
-    SELECTOR_WIRED_WALL_DUAL_CHANNEL_1  // 10, Xiaomi Wired Dual Wall Switch Channel 1
+typedef enum
+{
+	ACT_ONOFF_PLUG = 1,		    //  1, TODO: also used for channel 0?
+	ACT_ONOFF_WIRED_WALL,		    //  2, TODO: what is this? single or dual channel wired wall switch?
+	GATEWAY_SOUND_ALARM_RINGTONE,	    //  3, Xiaomi Gateway Alarm Ringtone
+	GATEWAY_SOUND_ALARM_CLOCK,	    //  4, Xiaomi Gateway Alarm Clock
+	GATEWAY_SOUND_DOORBELL,		    //  5, Xiaomi Gateway Doorbell
+	GATEWAY_SOUND_MP3,		    //  6, Xiaomi Gateway MP3
+	GATEWAY_SOUND_VOLUME_CONTROL,	    //  7, Xiaomi Gateway Volume
+	SELECTOR_WIRED_WALL_SINGLE,	    //  8, Xiaomi Wired Single Wall Switch
+	SELECTOR_WIRED_WALL_DUAL_CHANNEL_0, //  9, Xiaomi Wired Dual Wall Switch Channel 0
+	SELECTOR_WIRED_WALL_DUAL_CHANNEL_1  // 10, Xiaomi Wired Dual Wall Switch Channel 1
 } XiaomiUnitCode;
 
 /****************************************************************************
@@ -61,7 +62,7 @@ typedef enum {
 // Xiaomi Cube
 #define MODEL_SELECTOR_CUBE_V1 "cube"
 #define NAME_SELECTOR_CUBE_V1 "Xiaomi Cube"
-#define MODEL_SELECTOR_CUBE_AQARA "sensor_cube.aqgl01" 
+#define MODEL_SELECTOR_CUBE_AQARA "sensor_cube.aqgl01"
 #define NAME_SELECTOR_CUBE_AQARA "Aqara Cube"
 
 /****************************************************************************
@@ -110,7 +111,7 @@ typedef enum {
  ****************************************************************************/
 
 // Xiaomi Smart Plug (plug.v1) | ZNCZ02LM
-#define MODEL_ACT_ONOFF_PLUG "plug" 
+#define MODEL_ACT_ONOFF_PLUG "plug"
 #define NAME_ACT_ONOFF_PLUG "Xiaomi Smart Plug"
 
 // Xiaomi Smart Wall Plug
@@ -130,15 +131,14 @@ typedef enum {
 #define MODEL_ACT_RELAIS "relay.c2acn01"
 #define NAME_ACT_RELAIS "Aqara Wireless Relay Controller"
 
-
 /****************************************************************************
  ********************************* GATEWAY **********************************
  ****************************************************************************/
 
- // Xiaomi Gateway
+// Xiaomi Gateway
 #define MODEL_GATEWAY_1 "gateway"
-#define MODEL_GATEWAY_2 "gateway.v3" // Mi Control Hub Gateway 
-#define MODEL_GATEWAY_3 "acpartner.v3" 
+#define MODEL_GATEWAY_2 "gateway.v3" // Mi Control Hub Gateway
+#define MODEL_GATEWAY_3 "acpartner.v3"
 #define NAME_GATEWAY "Xiaomi RGB Gateway"
 #define NAME_GATEWAY_LUX "Xiaomi Gateway Lux"
 #define NAME_GATEWAY_SOUND_MP3 "Xiaomi Gateway MP3"
@@ -146,7 +146,6 @@ typedef enum {
 #define NAME_GATEWAY_SOUND_ALARM_CLOCK "Xiaomi Gateway Alarm Clock"
 #define NAME_GATEWAY_SOUND_ALARM_RINGTONE "Xiaomi Gateway Alarm Ringtone"
 #define NAME_GATEWAY_SOUND_VOLUME_CONTROL "Xiaomi Gateway Volume"
-
 
 /****************************************************************************
  ********************************* STATES ***********************************

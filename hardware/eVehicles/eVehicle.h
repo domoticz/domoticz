@@ -25,10 +25,11 @@ public:
 		Mercedes
 	};
 
-	CeVehicle(const int ID, const eVehicleType vehicletype, const std::string& username, const std::string& password, int defaultinterval, int activeinterval, bool allowwakeup, const std::string& carid);
+	CeVehicle(int ID, eVehicleType vehicletype, const std::string &username, const std::string &password, int defaultinterval, int activeinterval, bool allowwakeup, const std::string &carid);
 	~CeVehicle() override;
-	bool WriteToHardware(const char* pdata, const unsigned char length) override;
-private:
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	enum eApiCommandType {
 		Send_Climate_Off,
 		Send_Climate_On,
@@ -103,8 +104,8 @@ private:
 
 	void AddCommand(eApiCommandType command_type, std::string command_parameter = "");
 	bool DoNextCommand();
-	std::string GetCommandString(const eApiCommandType command);
-	
+	std::string GetCommandString(eApiCommandType command);
+
 	void SendAlert();
 	void SendAlert(int alertType, int value, std::string title);
 	void SendSwitch(int switchType, bool value);

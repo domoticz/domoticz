@@ -12,7 +12,7 @@ public:
 
    // I_1WireSystem implementation
    void GetDevices(/*out*/ std::vector<_t1WireDevice> &devices) const override;
-   void SetLightState(const std::string &sId, int unit, bool value, const unsigned int level) override;
+   void SetLightState(const std::string &sId, int unit, bool value, unsigned int level) override;
    float GetTemperature(const _t1WireDevice &device) const override;
    float GetHumidity(const _t1WireDevice &device) const override;
    float GetPressure(const _t1WireDevice &device) const override;
@@ -31,7 +31,7 @@ public:
 protected:
    void GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const;
 
-   bool sendAndReceiveByRwFile(std::string path,const unsigned char * const cmd,size_t cmdSize,unsigned char * const answer,size_t answerSize) const;
+   bool sendAndReceiveByRwFile(std::string path, const unsigned char *cmd, size_t cmdSize, unsigned char *answer, size_t answerSize) const;
    void ReadStates();
 
    // Thread management

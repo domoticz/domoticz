@@ -124,7 +124,7 @@ namespace http {
 				void handle_request(const request &req, reply &rep) override;
 
 			      private:
-				char *strftime_t(const char *format, const time_t rawtime);
+				char *strftime_t(const char *format, time_t rawtime);
 				bool CompressWebOutput(const request &req, reply &rep);
 				/// Websocket methods
 				bool is_upgrade_request(WebEmSession &session, const request &req, reply &rep);
@@ -194,10 +194,10 @@ namespace http {
 			bool IsPageOverride(const request& req, reply& rep);
 			bool CheckForPageOverride(WebEmSession & session, request& req, reply& rep);
 
-			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
+			void SetAuthenticationMethod(_eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
-			void AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs);
+			void AddUserPassword(unsigned long ID, const std::string &username, const std::string &password, _eUserRights userrights, int activetabs);
 			std::string ExtractRequestPath(const std::string& original_request_path);
 			bool IsBadRequestPath(const std::string& original_request_path);
 
@@ -236,7 +236,7 @@ namespace http {
 			// actual theme selected
 			std::string m_actTheme;
 
-			void SetWebCompressionMode(const _eWebCompressionMode gzmode);
+			void SetWebCompressionMode(_eWebCompressionMode gzmode);
 			_eWebCompressionMode m_gzipmode;
 		private:
 			/// store map between include codes and application functions

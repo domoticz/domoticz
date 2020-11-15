@@ -2,13 +2,13 @@
 
 #include "CurrentCostMeterBase.h"
 
-class CurrentCostMeterTCP: public CurrentCostMeterBase
+class CurrentCostMeterTCP : public CurrentCostMeterBase
 {
-public:
-	CurrentCostMeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
+      public:
+	CurrentCostMeterTCP(int ID, const std::string &IPAddress, unsigned short usIPPort);
 	~CurrentCostMeterTCP() override = default;
 
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
 
       protected:
 	bool StartHardware() override;
@@ -25,7 +25,6 @@ public:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::shared_ptr<std::thread> m_thread;
-		sockaddr_in m_addr;
+	sockaddr_in m_addr;
 	int m_socket;
 };
-

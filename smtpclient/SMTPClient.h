@@ -10,7 +10,7 @@ public:
 	void SetFrom(const std::string &From);
 	void SetTo(const std::string &To);
 	void SetSubject(const std::string &Subject);
-	void SetServer(const std::string &Server, const int Port);
+	void SetServer(const std::string &Server, int Port);
 	void SetCredentials(const std::string &Username, const std::string &Password);
 	void AddAttachment(const std::string &Base64EncodedData, const std::string &FileName); //should already be base64 encoded
 	void SetPlainBody(const std::string &body);

@@ -25,7 +25,7 @@ typedef struct _STR_TABLE_SINGLE {
 	const char   *str2;
 } STR_TABLE_SINGLE;
 
-extern const char *findTableIDSingle1(const STR_TABLE_SINGLE *t, const unsigned long id);
+extern const char *findTableIDSingle1(const STR_TABLE_SINGLE *t, unsigned long id);
 
 const char *szZiBlueProtocolRFLink(const unsigned char id)
 {
