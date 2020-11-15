@@ -2376,7 +2376,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
@@ -2449,10 +2449,7 @@ namespace http {
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
@@ -2530,11 +2527,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(name == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()) || (name.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -2562,10 +2555,7 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -2594,11 +2584,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			std::string childid = request::findValue(&req, "childid");
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(childid == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()) || (childid.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);

@@ -329,7 +329,7 @@ void GoodweAPI::GetMeterDetails()
 		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received!");
 		return;
 	}
-	if (root.size() < 1)
+	if (root.empty())
 	{
 		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received, or invalid username");
 		return;
@@ -383,7 +383,7 @@ void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string
 
 	Json::Value result;
 	result = root[DEVICE_RESULT];
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		_log.Log(LOG_STATUS, "GoodweAPI: devicelist result is empty!");
 		return;

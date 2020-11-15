@@ -199,42 +199,42 @@ public:
 
   bool Send(int Socket, CAddress &Addr, unsigned int UID = XBMCClientUtils::GetUniqueIdentifier())
   {
-    if (m_Payload.size() == 0)
-      ConstructPayload();
-    bool SendSuccessfull = true;
-    int NbrOfPackages = (m_Payload.size() / MAX_PAYLOAD_SIZE) + 1;
-    int Send = 0;
-    int Sent = 0;
-    int Left = m_Payload.size();
-    for (int Package = 1; Package <= NbrOfPackages; Package++)
-    {
-      if (Left > MAX_PAYLOAD_SIZE)
-      {
-        Send = MAX_PAYLOAD_SIZE;
-        Left -= Send;
-      }
-      else
-      {
-        Send = Left;
-        Left = 0;
-      }
+	  if (m_Payload.empty())
+		  ConstructPayload();
+	  bool SendSuccessfull = true;
+	  int NbrOfPackages = (m_Payload.size() / MAX_PAYLOAD_SIZE) + 1;
+	  int Send = 0;
+	  int Sent = 0;
+	  int Left = m_Payload.size();
+	  for (int Package = 1; Package <= NbrOfPackages; Package++)
+	  {
+		  if (Left > MAX_PAYLOAD_SIZE)
+		  {
+			  Send = MAX_PAYLOAD_SIZE;
+			  Left -= Send;
+		  }
+		  else
+		  {
+			  Send = Left;
+			  Left = 0;
+		  }
 
-      ConstructHeader(m_PacketType, NbrOfPackages, Package, Send, UID, m_Header);
-      char t[MAX_PACKET_SIZE];
-      int i, j;
-      for (i = 0; i < 32; i++)
-        t[i] = m_Header[i];
+		  ConstructHeader(m_PacketType, NbrOfPackages, Package, Send, UID, m_Header);
+		  char t[MAX_PACKET_SIZE];
+		  int i, j;
+		  for (i = 0; i < 32; i++)
+			  t[i] = m_Header[i];
 
-      for (j = 0; j < Send; j++)
-        t[(32 + j)] = m_Payload[j + Sent];
+		  for (j = 0; j < Send; j++)
+			  t[(32 + j)] = m_Payload[j + Sent];
 
-      int rtn = sendto(Socket, t, (32 + Send), 0, Addr.GetAddress(), sizeof(struct sockaddr));
+		  int rtn = sendto(Socket, t, (32 + Send), 0, Addr.GetAddress(), sizeof(struct sockaddr));
 
-      if (rtn != (32 + Send))
-        SendSuccessfull = false;
+		  if (rtn != (32 + Send))
+			  SendSuccessfull = false;
 
-      Sent += Send;
-    }
+		  Sent += Send;
+	  }
     return SendSuccessfull;
   }
 protected:
@@ -487,7 +487,7 @@ public:
   {
     m_Payload.clear();
 
-    if (m_Button.size() != 0)
+    if (!m_Button.empty())
     {
       if (!(m_Flags & BTN_USE_NAME)) // If the BTN_USE_NAME isn't flagged for some reason
         m_Flags |= BTN_USE_NAME;

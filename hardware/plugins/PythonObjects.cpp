@@ -779,7 +779,7 @@ namespace Plugins {
 						}
 
 						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
-						if (result.size())
+						if (!result.empty())
 						{
 							self->ID = atoi(result[0][0].c_str());
 

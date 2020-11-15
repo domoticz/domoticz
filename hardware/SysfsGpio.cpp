@@ -525,7 +525,7 @@ void CSysfsGpio::FindGpioExports()
 
 void CSysfsGpio::PollGpioInputs(bool PollOnce)
 {
-	if (m_saved_state.size())
+	if (!m_saved_state.empty())
 	{
 		for (int i = 0; i < m_saved_state.size(); i++)
 		{
@@ -695,7 +695,7 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 				bool	log_db_change = false;
 				std::vector<std::vector<std::string>> result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, s.pin_number);
 
-				if ((!result.empty()) && (result.size() > 0))
+				if ((!result.empty()) && (!result.empty()))
 				{
 					std::vector<std::string> sd = result[0];
 
@@ -776,7 +776,7 @@ void CSysfsGpio::UpdateDeviceID(int pin)
 				m_HwdID,
 				pin);
 
-			if ((!result.empty() && (result.size() > 0)))
+			if ((!result.empty() && (!result.empty())))
 			{
 				/* use database device id */
 				std::vector<std::string> sd = result[0];
@@ -815,7 +815,7 @@ void CSysfsGpio::UpdateGpioOutputs()
 		{
 			std::vector<std::vector<std::string>> result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, s.pin_number);
 
-			if ((!result.empty()) && (result.size() > 0))
+			if ((!result.empty()) && (!result.empty()))
 			{
 				std::vector<std::string> sd = result[0];
 				s.db_state = atoi(sd[0].c_str());

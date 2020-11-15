@@ -1575,9 +1575,10 @@ namespace http {
 			}
 
             std::string idx = request::findValue(&req, "idx");
-            if (idx == "") {
-                return;
-            }
+	    if (idx.empty())
+	    {
+		    return;
+	    }
 
 	    m_mainworker.RestartHardware(idx);
 	}

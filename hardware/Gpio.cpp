@@ -460,7 +460,7 @@ void CGpio::UpdateDeviceStates(bool forceUpdate)
 							  "(HardwareID==%d) AND (Unit==%d)",
 							  m_HwdID, p.GetPin());
 
-				if ((!result.empty()) && (result.size() > 0))
+				if ((!result.empty()) && (!result.empty()))
 				{
 					std::vector<std::string> sd = result[0];
 
@@ -524,7 +524,7 @@ bool CGpio::InitPins()
 			}
 		}
 	}
-	return (pins.size() > 0);
+	return (!pins.empty());
 }
 
 int CGpio::GetReadResult(int bytecount, char *value_str)

@@ -302,7 +302,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		  PyObject *pParams = nullptr;
 
 		  // Data is stored in a single vector of bytes
-		  if (m_Buffer.size())
+		  if (!m_Buffer.empty())
 		  {
 			  pParams = Py_BuildValue("Oy#", m_pConnection, &m_Buffer[0], m_Buffer.size());
 			  Callback(pParams);

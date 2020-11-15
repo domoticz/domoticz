@@ -121,7 +121,7 @@ bool CYouLess::GetP1Details()
 	{
 		return false;
 	}
-	if (root.size() < 1)
+	if (root.empty())
 		return false;
 	root = root[0];
 

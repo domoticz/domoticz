@@ -932,7 +932,8 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -996,7 +997,7 @@ namespace http {
 					if (pBase->m_Version.find("Pro XL") != std::string::npos)
 					{
 						std::string AsyncMode = request::findValue(&req, "combo_rfx_xl_async_type");
-						if (AsyncMode == "")
+						if (AsyncMode.empty())
 							AsyncMode = "0";
 						result = m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID='%q')", AsyncMode.c_str(), idx.c_str());
 						pBase->SetAsyncType((CRFXBase::_eRFXAsyncType)atoi(AsyncMode.c_str()));

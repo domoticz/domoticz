@@ -202,7 +202,7 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 			{
 				//check if we are allowed to get this device
 				bool bOk2Send=false;
-				if (pUser->Devices.size()==0)
+				if (pUser->Devices.empty())
 					bOk2Send=true;
 				else
 					bOk2Send = std::any_of(pUser->Devices.begin(), pUser->Devices.end(),

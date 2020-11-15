@@ -507,7 +507,7 @@ bool CTTNMQTT::ConvertFields2Payload(const Json::Value &fields, Json::Value &pay
 	bool ret = false;
 	uint8_t index = 0;
 
-    if( fields.size() > 0 )
+	if (!fields.empty())
 	{
 		Debug(DEBUG_NORM, "Processing fields payload for %d fields!", fields.size());
 		for (const auto &id : fields.getMemberNames())

@@ -130,7 +130,7 @@ bool CNotificationSystem::Unregister(CNotificationObserver* pNotifier)
 	if (pNotifier == nullptr)
 		return false;
 
-	if (m_notifiers.size() > 0)
+	if (!m_notifiers.empty())
 	{
 		boost::unique_lock<boost::shared_mutex> lock(m_mutex);
 		for (size_t i = 0; i < m_notifiers.size(); i++)

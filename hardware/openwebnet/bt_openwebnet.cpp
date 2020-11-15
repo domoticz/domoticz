@@ -1638,7 +1638,8 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 		// "Scenario Scheduler Switch";
 		std::stringstream sstr;
 
-		if (whatParameters.size() >= 1) {
+		if (!whatParameters.empty())
+		{
 			if (whatParameters[0] == "0") {
 				return "release after short pressure of";
 			}
@@ -1903,14 +1904,16 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 
 		if (what == "1") {
 			sstr << "profile id ";
-			if (whatParameters.size() >= 1) {
+			if (!whatParameters.empty())
+			{
 				int profileID = atoi(whatParameters[0].c_str());
 				sstr << profileID;
 			}
 		}
 		else if (what == "2") {
 			sstr << "slave offset ";
-			if (whatParameters.size() >= 1) {
+			if (!whatParameters.empty())
+			{
 				if (whatParameters[0] == "0") {
 					return "enable";
 				}
@@ -1944,7 +1947,8 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 			sstr << "contact OFF or IR end of detection";
 		}
 
-		if (whatParameters.size() >= 1) {
+		if (!whatParameters.empty())
+		{
 			if (whatParameters[0] == "0") {
 				sstr << " (request)";
 			}
@@ -2170,7 +2174,8 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 
 	if (translateAmbPL) {
 		if (atoi(where.c_str()) == 0) {
-			if (whereParameters.size()>0) {
+			if (!whereParameters.empty())
+			{
 				//group from 1 to 255
 				return "Group " + whereParameters[0];
 			}

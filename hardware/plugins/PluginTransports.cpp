@@ -1009,7 +1009,7 @@ namespace Plugins {
 
 	void CPluginTransportSerial::handleWrite(const std::vector<byte>& data)
 	{
-		if (data.size())
+		if (!data.empty())
 		{
 			write((const char *)&data[0], data.size());
 		}

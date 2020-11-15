@@ -82,7 +82,7 @@ void CEcoDevices::Init()
 
 	// Is the device we poll password protected?
 	m_ssURL.str("");
-	if ((m_username.size() > 0) && (m_password.size() > 0))
+	if ((!m_username.empty()) && (!m_password.empty()))
 		m_ssURL << "http://" << m_username << ":" << m_password << "@";
 	else
 		m_ssURL << "http://";
@@ -190,7 +190,7 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 
 void CEcoDevices::GetMeterDetails()
 {
-	if (m_szIPAddress.size() == 0)
+	if (m_szIPAddress.empty())
 		return;
 	// From http://xx.xx.xx.xx/status.xml we get the pulse counters indexes and current flow
 	// From http://xx.xx.xx.xx/protect/settings/teleinfoX.xml we get a complete feed of Teleinfo data
@@ -346,7 +346,7 @@ void CEcoDevices::GetMeterDetails()
 
 void CEcoDevices::GetMeterRT2Details()
 {
-	if (m_szIPAddress.size() == 0)
+	if (m_szIPAddress.empty())
 		return;
 
 	// From http://xx.xx.xx.xx/admin/status.xml we get the Teleinfo data
@@ -460,7 +460,8 @@ void CEcoDevices::GetMeterRT2Details()
 		label = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
 		sprintf(XMLLabel, "/response/etiquetteEC%i/text()", i);
 		value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
-		if (label == "") break;
+		if (label.empty())
+			break;
 		XMLmap[label] = value;
 	}
 	m_teleinfo1.OPTARIF = XMLmap["OPTARIF"];
@@ -505,7 +506,7 @@ void CEcoDevices::GetMeterRT2Details()
 		sprintf(XMLLabel, "/response/info%i/text()", i);
 		value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
 		StringSplit(value, ",", splitresults);
-		if (splitresults[0] == "")
+		if (splitresults[0].empty())
 			break;
 		else
 		{

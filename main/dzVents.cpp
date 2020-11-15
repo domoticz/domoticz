@@ -555,7 +555,7 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
 	std::vector<_tLuaTableValues> vLuaTable;
 	IterateTable(lua_state, tIndex, vLuaTable);
-	if (vLuaTable.size() > 0)
+	if (!vLuaTable.empty())
 	{
 		if (lCommand == "OpenURL")
 			scriptTrue = OpenURL(lua_state, vLuaTable);
@@ -786,13 +786,13 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 				sitem.sValue = item.sValue;
 				sitem.nValueWording = item.nValueWording;
 				sitem.nValue = item.nValue;
-				if (item.JsonMapString.size() > 0)
+				if (!item.JsonMapString.empty())
 					sitem.JsonMapString = item.JsonMapString;
-				if (item.JsonMapFloat.size() > 0)
+				if (!item.JsonMapFloat.empty())
 					sitem.JsonMapFloat = item.JsonMapFloat;
-				if (item.JsonMapInt.size() > 0)
+				if (!item.JsonMapInt.empty())
 					sitem.JsonMapInt = item.JsonMapInt;
-				if (item.JsonMapBool.size() > 0)
+				if (!item.JsonMapBool.empty())
 					sitem.JsonMapBool = item.JsonMapBool;
 			}
 		}
@@ -840,7 +840,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			if (sitem.devType == pTypeLux && sitem.subType == sTypeLux)
 			{
 				int lux = 0;
-				if (strarray.size() > 0)
+				if (!strarray.empty())
 					lux = atoi(strarray[0].c_str());
 				luaTable.AddNumber("lux", lux);
 			}
@@ -852,13 +852,13 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 					value = atof(strarray[1].c_str());
 				luaTable.AddNumber("whTotal", value);
 				value = 0.0f;
-				if (strarray.size() > 0)
+				if (!strarray.empty())
 					value = atof(strarray[0].c_str());
 				luaTable.AddNumber("whActual", value);
 			}
 
 			// Now see if we have additional fields from the JSON data
-			if (sitem.JsonMapString.size() > 0)
+			if (!sitem.JsonMapString.empty())
 			{
 				for (const auto &item : sitem.JsonMapString)
 				{
@@ -871,19 +871,19 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 				}
 			}
 
-			if (sitem.JsonMapFloat.size() > 0)
+			if (!sitem.JsonMapFloat.empty())
 			{
 				for (const auto &item : sitem.JsonMapFloat)
 					luaTable.AddNumber(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
 			}
 
-			if (sitem.JsonMapInt.size() > 0)
+			if (!sitem.JsonMapInt.empty())
 			{
 				for (const auto &item : sitem.JsonMapInt)
 					luaTable.AddInteger(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
 			}
 
-			if (sitem.JsonMapBool.size() > 0)
+			if (!sitem.JsonMapBool.empty())
 			{
 				for (const auto &item : sitem.JsonMapBool)
 					luaTable.AddBool(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
@@ -940,7 +940,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		luaTable.CloseSubTableEntry();
 
 		luaTable.OpenSubTableEntry("deviceIDs", 0, 0);
-		if (sgitem.memberID.size() > 0)
+		if (!sgitem.memberID.empty())
 		{
 			int index = 1;
 			for (const auto &id : sgitem.memberID)

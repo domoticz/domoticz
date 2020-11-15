@@ -33,7 +33,8 @@ bool CNotificationPushover::SendMessageImplementation(
 	if (posDevice != std::string::npos) {
 		posDevice += 8;
 		std::string sDevice = ExtraData.substr(posDevice, ExtraData.find('|', posDevice) - posDevice);
-		if (sDevice != "") {
+		if (!sDevice.empty())
+		{
 			sPostData << "&device=" << sDevice;
 		}
 	}
@@ -83,5 +84,5 @@ bool CNotificationPushover::SendMessageImplementation(
 
 bool CNotificationPushover::IsConfigured()
 {
-	return _apikey != "" && _apiuser != "";
+	return !_apikey.empty() && !_apiuser.empty();
 }

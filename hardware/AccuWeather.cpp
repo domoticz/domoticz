@@ -221,7 +221,7 @@ void CAccuWeather::GetMeterDetails()
 			return;
 		}
 
-		if (root.size() < 1)
+		if (root.empty())
 		{
 			Log(LOG_ERROR, "Invalid data received!");
 			return;

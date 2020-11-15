@@ -694,7 +694,8 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-approot", 0, "");
-			if (szroot.size() != 0) {
+			if (!szroot.empty())
+			{
 				szStartupFolder = szroot;
 				FixFolderEnding(szStartupFolder);
 			}
@@ -769,7 +770,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-userdata", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 			{
 				szUserDataFolder = szroot;
 				FixFolderEnding(szUserDataFolder);
@@ -828,7 +829,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 				szWWWFolder = szroot;
 		}
 	}
@@ -998,7 +999,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-webroot", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 				szWebRoot = szroot;
 		}
 		if (cmdLine.HasSwitch("-noupdates"))

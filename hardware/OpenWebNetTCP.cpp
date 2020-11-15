@@ -550,7 +550,7 @@ bool COpenWebNetTCP::ownAuthentication(csocket *connectionSocket)
 **/
 csocket* COpenWebNetTCP::connectGwOwn(const char *connectionMode)
 {
-	if (m_szIPAddress.size() == 0 || m_usIPPort == 0 || m_usIPPort > 65535)
+	if (m_szIPAddress.empty() || m_usIPPort == 0 || m_usIPPort > 65535)
 	{
 		_log.Log(LOG_ERROR, "COpenWebNetTCP: Cannot connect to gateway, empty  IP Address or Port");
 		return nullptr;
@@ -705,7 +705,7 @@ bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeKwh));
-	if (result.size() >= 1)
+	if (!result.empty())
 	{
 		std::string sup, sValue = result[0][0];
 
@@ -1475,7 +1475,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			}
 			break;
 		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DEVICE_TYPE:			// 15,		/* Read		  */
-			if (valueParam.size() >= 1)
+			if (!valueParam.empty())
 			{
 				model = atoi(valueParam[0].c_str());
 				switch (model)
@@ -1831,7 +1831,8 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			request.CreateWrDimensionMsgOpen2(sWho, sWhere, sDimension, value);
 			if (sendCommand(request, responses))
 			{
-				if (responses.size() > 0) return responses.at(0).IsOKFrame();
+				if (!responses.empty())
+					return responses.at(0).IsOKFrame();
 			}
 		}
 		else {
@@ -1851,7 +1852,8 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			bt_openwebnet request(sWho, sWhat, sWhere, when);
 			if (sendCommand(request, responses))
 			{
-				if (responses.size() > 0) return responses.at(0).IsOKFrame();
+				if (!responses.empty())
+					return responses.at(0).IsOKFrame();
 			}
 		}
 	}
@@ -1879,7 +1881,8 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 		request.CreateMsgOpen(sWho, sWhat, sWhere, lev, sInterface, when);
 		if (sendCommand(request, responses))
 		{
-			if (responses.size() > 0) return responses.at(0).IsOKFrame();
+			if (!responses.empty())
+				return responses.at(0).IsOKFrame();
 		}
 	}
 
@@ -1927,7 +1930,8 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 		request.CreateWrDimensionMsgOpen(sWho, sWhere, sLev, sInterface, sDimension, sValue);
 		if (sendCommand(request, responses))
 		{
-			if (responses.size() > 0) return responses.at(0).IsOKFrame();
+			if (!responses.empty())
+				return responses.at(0).IsOKFrame();
 		}
 	}
 	else
@@ -1936,7 +1940,7 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 		request.CreateWrDimensionMsgOpen(sWho, sWhere, sDimension, sValue); // (const std::string& who, const std::string& where, const std::string& dimension, const std::vector<std::string>& value)
 		if (sendCommand(request, responses, 1, false))
 		{
-			if (responses.size() > 0)
+			if (!responses.empty())
 			{
 				return responses.at(0).IsOKFrame();
 			}

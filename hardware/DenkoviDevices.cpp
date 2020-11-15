@@ -821,7 +821,8 @@ void CDenkoviDevices::GetMeterDetails()
 				}
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
@@ -835,7 +836,7 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if (bHaveAnalogInput && (Idx != -1) && ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_SCAL_VALUE_DEF)) != ""))
+			if (bHaveAnalogInput && (Idx != -1) && (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_SCAL_VALUE_DEF)).empty()))
 			{
 				std::vector<std::string> vMeasure;
 				StringSplit(tmpMeasure, " ", vMeasure); 
@@ -854,7 +855,7 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if (bHaveTemperatureInput && (Idx != -1) && ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)) != ""))
+			if (bHaveTemperatureInput && (Idx != -1) && (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)).empty()))
 			{
 				name = "Temperature Input (" + name + ")";
 				std::vector<std::string> vMeasure;
@@ -1001,7 +1002,8 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
@@ -1030,7 +1032,8 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
@@ -1075,7 +1078,8 @@ void CDenkoviDevices::GetMeterDetails()
 				}
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
@@ -1101,7 +1105,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 				//Check if there is sclaed value
 				tmpstr = stdstring_trim(results[ii + 1]);
-				if ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)) != "")
+				if (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)).empty())
 				{
 					std::vector<std::string> vMeasure;
 					StringSplit(tmpMeasure, " ", vMeasure);
@@ -1115,7 +1119,7 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if (bHaveTemperatureInput && (Idx != -1) && ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)) != ""))
+			if (bHaveTemperatureInput && (Idx != -1) && (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)).empty()))
 			{ 
 				name = "Temperature Input " + std::to_string(Idx) + " (" + name + ")";				 
 				std::vector<std::string> vMeasure;
@@ -1167,7 +1171,8 @@ void CDenkoviDevices::GetMeterDetails()
 				}
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
@@ -1193,7 +1198,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 				//Check if there is sclaed value
 				tmpstr = stdstring_trim(results[ii + 1]);
-				if ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)) != "")
+				if (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)).empty())
 				{
 					std::vector<std::string> vMeasure;
 					StringSplit(tmpMeasure, " ", vMeasure);
@@ -1206,7 +1211,7 @@ void CDenkoviDevices::GetMeterDetails()
 				bHaveAnalogInput = false;
 				continue;
 			}
-			if (bHaveTemperatureInput && (Idx != -1) && ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)) != ""))
+			if (bHaveTemperatureInput && (Idx != -1) && (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)).empty()))
 			{
 				name = "Temperature Input " + std::to_string(Idx) + " (" + name + ")";
 				std::vector<std::string> vMeasure;
@@ -1266,7 +1271,8 @@ void CDenkoviDevices::GetMeterDetails()
 				}
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
@@ -1282,9 +1288,8 @@ void CDenkoviDevices::GetMeterDetails()
 				bHaveDigitalInput = false;
 				continue;
 			}
- 
-			
-			if (bHaveAnalogInput && (Idx != -1) && ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)) != ""))
+
+			if (bHaveAnalogInput && (Idx != -1) && (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)).empty()))
 			{
 				std::vector<std::string> vMeasure;
 				StringSplit(tmpMeasure, " ", vMeasure);
@@ -1369,12 +1374,12 @@ void CDenkoviDevices::GetMeterDetails()
 				}
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
 
-			 
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")");
@@ -1396,7 +1401,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 				//Check if there is sclaed value
 				tmpstr = stdstring_trim(results[ii + 1]);
-				if ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)) != "")
+				if (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)).empty())
 				{
 					std::vector<std::string> vMeasure;
 					StringSplit(tmpMeasure, " ", vMeasure);

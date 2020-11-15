@@ -752,7 +752,7 @@ void CEnOceanESP2::Do_Work()
 				OpenSerialDevice();
 			}
 		}
-		if (m_sendqueue.size() > 0)
+		if (!m_sendqueue.empty())
 		{
 			std::lock_guard<std::mutex> l(m_sendMutex);
 

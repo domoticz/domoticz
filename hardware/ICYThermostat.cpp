@@ -207,9 +207,9 @@ bool CICYThermostat::GetSerialAndToken()
 
 void CICYThermostat::GetMeterDetails()
 {
-	if (m_UserName.size()==0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size()==0)
+	if (m_Password.empty())
 		return;
 	if (!GetSerialAndToken())
 		return;

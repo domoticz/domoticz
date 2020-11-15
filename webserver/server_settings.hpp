@@ -27,7 +27,7 @@ public:
 	  return is_secure_;
   }
 	bool is_enabled() const {
-		return ((listening_port != "0") && (listening_port != ""));
+		return ((listening_port != "0") && (!listening_port.empty()));
 	}
 	bool is_php_enabled() const {
 		return !php_cgi_path.empty();

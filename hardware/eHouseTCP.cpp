@@ -738,7 +738,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 //////////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::CheckAddress()
 {
-	if (m_IPAddress.size() == 0 || m_IPPort < 1 || m_IPPort > 65535)
+	if (m_IPAddress.empty() || m_IPPort < 1 || m_IPPort > 65535)
 	{
 		LOG(LOG_ERROR, "eHouse: Empty IP Address or bad Port");
 		return false;

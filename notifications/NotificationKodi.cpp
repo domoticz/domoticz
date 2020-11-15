@@ -32,7 +32,7 @@ std::string CNotificationKodi::GetCustomIcon(std::string &szCustom)
 			while (!infile.eof())
 			{
 				getline(infile, sLine);
-				if ((sLine.size() != 0) && (index++ == iIconLine))
+				if ((!sLine.empty()) && (index++ == iIconLine))
 				{
 					std::vector<std::string> results;
 					StringSplit(sLine, ";", results);

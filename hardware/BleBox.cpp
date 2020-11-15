@@ -820,11 +820,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
-			if (
-				(hwid == "") ||
-				(mode1 == "") ||
-				(mode2 == "")
-				)
+			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
@@ -854,11 +850,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
-			if (
-				(hwid == "") ||
-				(name == "") ||
-				(ip == "")
-				)
+			if ((hwid.empty()) || (name.empty()) || (ip.empty()))
 				return;
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
@@ -880,10 +872,7 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()))
 				return;
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
@@ -925,10 +914,7 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string ipmask = request::findValue(&req, "ipmask");
-			if (
-				(hwid == "") ||
-				(ipmask == "")
-				)
+			if ((hwid.empty()) || (ipmask.empty()))
 				return;
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
@@ -985,7 +971,7 @@ Json::Value BleBox::SendCommand(const std::string & IPAddress, const std::string
 		return root;
 	}
 
-	if (root.size() == 0)
+	if (root.empty())
 	{
 		Log(LOG_ERROR, "Json is empty!");
 		return root;

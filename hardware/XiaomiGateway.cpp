@@ -167,7 +167,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	bool result = true;
 	std::string message;
 
-	if (m_GatewaySID == "") {
+	if (m_GatewaySID.empty())
+	{
 		m_GatewaySID = XiaomiGatewayTokenManager::GetInstance().GetSID(m_GatewayIp);
 	}
 
@@ -345,7 +346,8 @@ bool XiaomiGateway::SendMessageToGateway(const std::string &controlmessage) {
 			if ((ret) && (root2.isObject()))
 			{
 				std::string error = root2["error"].asString();
-				if (error != "") {
+				if (!error.empty())
+				{
 					_log.Log(LOG_ERROR, "XiaomiGateway: unable to write command - %s", error.c_str());
 					result = false;
 				}
@@ -606,7 +608,8 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			}
 		}
 		if ((Name == NAME_ACT_ONOFF_PLUG) || (Name == NAME_ACT_ONOFF_PLUG_WALL)) {
-			if (load_power != "" && power_consumed != "") {
+			if (!load_power.empty() && !power_consumed.empty())
+			{
 				int power = atoi(load_power.c_str());
 				int consumed = atoi(power_consumed.c_str()) / 1000;
 				SendKwhMeter(sID, 1, 255, power, consumed, "Xiaomi Smart Plug Usage");
@@ -737,7 +740,8 @@ void XiaomiGateway::Do_Work()
 	}
 
 	// Try finding local ip using ifaddrs when Boost.Asio fails
-	if (m_LocalIp == "") {
+	if (m_LocalIp.empty())
+	{
 		try {
 			// Get first 2 octets of Xiaomi gateway ip to search for similar ip address
 			std::string compareIp = m_GatewayIp.substr(0, (m_GatewayIp.length() - 3));
@@ -854,7 +858,8 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	if (listenPort9898) {
 		try {
 			socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
-			if (m_localip != "") {
+			if (!m_localip.empty())
+			{
 				boost::system::error_code ec;
 				boost::asio::ip::address listen_addr = boost::asio::ip::address::from_string(m_localip, ec);
 				boost::asio::ip::address mcast_addr = boost::asio::ip::address::from_string("224.0.0.50", ec);
@@ -1021,7 +1026,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 
 					std::string voltage = root2["voltage"].asString();
 					int battery = 255;
-					if (voltage != "" && voltage != "3600") {
+					if (!voltage.empty() && voltage != "3600")
+					{
 						battery = ((atoi(voltage.c_str()) - 2200) / 10);
 					}
 					if (type != STYPE_END)
@@ -1059,14 +1065,16 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							else if ((alarm == "0") || (status == STATE_WATER_LEAK_NO) || (status == "iam")) {
 								level = 0;
 							}
-							if (density != "")
+							if (!density.empty())
 								level = atoi(density.c_str());
 						}
-						if ((status == STATE_MOTION_YES) || (status == STATE_OPEN) || (status == "no_close") || (status == STATE_ON) || (no_close != "")) {
+						if ((status == STATE_MOTION_YES) || (status == STATE_OPEN) || (status == "no_close") || (status == STATE_ON) || (!no_close.empty()))
+						{
 							level = 0;
 							on = true;
 						}
-						else if ((status == STATE_MOTION_NO) || (status == STATE_CLOSE) || (status == STATE_OFF) || (no_motion != "")) {
+						else if ((status == STATE_MOTION_NO) || (status == STATE_CLOSE) || (status == STATE_OFF) || (!no_motion.empty()))
+						{
 							level = 0;
 							on = false;
 						}
@@ -1110,7 +1118,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							on = true;
 						}
 						std::string rotate = root2["rotate"].asString();
-						if (rotate != "") {
+						if (!rotate.empty())
+						{
 							int amount = atoi(rotate.c_str());
 							if (amount > 0) {
 								level = 90;
@@ -1127,7 +1136,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								sleep_milliseconds(100); // Need to sleep here as the gateway will send 2 update messages, and need time for the database to update the state so that the event is not triggered twice
 								TrueGateway->InsertUpdateSwitch(sid, name, on, type, unitcode, level, cmd, load_power, power_consumed, battery);
 							}
-							else if ((model == MODEL_ACT_BLINDS_CURTAIN) && (curtain != "")) {
+							else if ((model == MODEL_ACT_BLINDS_CURTAIN) && (!curtain.empty()))
+							{
 								level = atoi(curtain.c_str());
 								TrueGateway->InsertUpdateSwitch(sid, name, on, type, unitcode, level, cmd, "", "", battery);
 							}
@@ -1135,10 +1145,12 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								if (level > -1) { // This should stop false updates when empty 'data' is received
 									TrueGateway->InsertUpdateSwitch(sid, name, on, type, unitcode, level, cmd, "", "", battery);
 								}
-								if (lux != "") {
+								if (!lux.empty())
+								{
 									TrueGateway->InsertUpdateLux(sid, name, atoi(lux.c_str()), battery);
 								}
-								if (voltage != "" && m_IncludeVoltage) {
+								if (!voltage.empty() && m_IncludeVoltage)
+								{
 									TrueGateway->InsertUpdateVoltage(sid, name, atoi(voltage.c_str()));
 								}
 							}
@@ -1160,10 +1172,12 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							unitcode = XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0;
 							name = NAME_SELECTOR_WIRED_WALL_DUAL_CHANNEL_0;
 						}
-						if (aqara_wired1 != "") {
+						if (!aqara_wired1.empty())
+						{
 							TrueGateway->InsertUpdateSwitch(sid, name, state, type, unitcode, 0, cmd, "", "", battery);
 						}
-						else if (aqara_wired2 != "") {
+						else if (!aqara_wired2.empty())
+						{
 							unitcode = XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1;
 							name = NAME_SELECTOR_WIRED_WALL_DUAL_CHANNEL_1;
 							TrueGateway->InsertUpdateSwitch(sid, name, state, type, unitcode, 0, cmd, "", "", battery);
@@ -1194,13 +1208,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							int hum = static_cast<int>((std::stof(humidity) / 100));
 							TrueGateway->InsertUpdateTempHum(sid, "Xiaomi TempHum", temp, hum, battery);
 						}
-						else if (temperature != "") {
+						else if (!temperature.empty())
+						{
 							float temp = std::stof(temperature) / 100.0f;
 							if (temp < 99) {
 								TrueGateway->InsertUpdateTemperature(sid, "Xiaomi Temperature", temp, battery);
 							}
 						}
-						else if (humidity != "") {
+						else if (!humidity.empty())
+						{
 							int hum = static_cast<int>((std::stof(humidity) / 100));
 							if (hum > 1) {
 								TrueGateway->InsertUpdateHumidity(sid, "Xiaomi Humidity", hum, battery);
@@ -1211,7 +1227,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					{
 						std::string rgb = root2["rgb"].asString();
 						std::string illumination = root2["illumination"].asString();
-						if (rgb != "") {
+						if (!rgb.empty())
+						{
 							// Only add in the gateway that matches the SID for this hardware.
 							if (TrueGateway->GetGatewaySid() == sid)
 							{
@@ -1243,7 +1260,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							std::string token = root["token"].asString();
 							std::string ip = root2["ip"].asString();
 
-							if ((token != "") && (ip != "")) {
+							if ((!token.empty()) && (!ip.empty()))
+							{
 								XiaomiGatewayTokenManager::GetInstance().UpdateTokenSID(ip, token, sid);
 								showmessage = false;
 							}

@@ -261,7 +261,7 @@ namespace http {
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string ssensortype = request::findValue(&req, "sensortype");
-			if ((idx == "") || (ssensortype == ""))
+			if ((idx.empty()) || (ssensortype.empty()))
 				return;
 
 			bool bCreated = false;

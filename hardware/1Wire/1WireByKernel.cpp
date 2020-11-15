@@ -226,7 +226,7 @@ void C1WireByKernel::ThreadBuildDevicesList()
 				while (!infile.eof())
 				{
 					getline(infile, sLine);
-					if (sLine.size() != 0)
+					if (!sLine.empty())
 					{
 						// Get the device from it's name
 						_t1WireDevice device;

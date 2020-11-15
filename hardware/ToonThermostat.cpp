@@ -286,7 +286,7 @@ std::string CToonThermostat::GetRandom()
 
 bool CToonThermostat::Login()
 {
-	if (m_ClientID != "")
+	if (!m_ClientID.empty())
 	{
 		Logout();
 	}
@@ -527,9 +527,9 @@ bool CToonThermostat::SwitchAll(const int SwitchState)
 
 bool CToonThermostat::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return false;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return false;
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
@@ -568,9 +568,9 @@ double CToonThermostat::GetElectricOffset(const int idx, const double currentKwh
 
 void CToonThermostat::GetMeterDetails()
 {
-	if (m_UserName.size()==0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size()==0)
+	if (m_Password.empty())
 		return;
 	std::string sResult;
 	if (m_bDoLogin)
@@ -867,9 +867,9 @@ bool CToonThermostat::ParseThermostatData(const Json::Value &root)
 
 void CToonThermostat::SetSetpoint(const int idx, const float temp)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return;
 
 	if (m_bDoLogin == true)
@@ -932,9 +932,9 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 
 void CToonThermostat::SetProgramState(const int newState)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return;
 
 	std::string sResult;
