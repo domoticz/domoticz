@@ -14,11 +14,7 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
-
 #include <ctime>
-
-using namespace boost::placeholders;
 
 #ifdef _DEBUG
 //#define DEBUG_P1_R
@@ -148,7 +144,7 @@ bool P1MeterSerial::StartHardware()
 	m_thread = std::make_shared<std::thread>(&P1MeterSerial::Do_Work, this);
 	SetThreadNameInt(m_thread->native_handle());
 
-	setReadCallback(boost::bind(&P1MeterSerial::readCallback, this, _1, _2));
+	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
 	sOnConnected(this);
 
 #ifdef DEBUG_P1_R

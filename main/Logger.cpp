@@ -343,13 +343,11 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, cons
 		if (m_lastlog.find(level) == m_lastlog.end())
 			return mlist;
 
-		std::copy_if(std::begin(m_lastlog[level]), std::end(m_lastlog[level]), std::back_inserter(mlist),
-			     [=](const _tLogLineStruct &l) { return l.logtime > lastlogtime; });
+		std::copy_if(std::begin(m_lastlog[level]), std::end(m_lastlog[level]), std::back_inserter(mlist), [lastlogtime](const _tLogLineStruct &l) { return l.logtime > lastlogtime; });
 	}
 	else
 		for (const auto &l : m_lastlog)
-			std::copy_if(l.second.begin(), l.second.end(), std::back_inserter(mlist),
-				     [=](const _tLogLineStruct &l2) { return l2.logtime > lastlogtime; });
+			std::copy_if(l.second.begin(), l.second.end(), std::back_inserter(mlist), [lastlogtime](const _tLogLineStruct &l2) { return l2.logtime > lastlogtime; });
 
 	//Sort by time
 	mlist.sort(compareLogByTime);

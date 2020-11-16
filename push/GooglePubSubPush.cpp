@@ -21,8 +21,6 @@ extern "C" {
 #include <boost/python.hpp>
 #endif
 
-using namespace boost::placeholders;
-
 extern std::string szUserDataFolder;
 
 // this should be filled in by the preprocessor
@@ -41,7 +39,7 @@ CGooglePubSubPush::CGooglePubSubPush()
 void CGooglePubSubPush::Start()
 {
 	UpdateActive();
-	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CGooglePubSubPush::OnDeviceReceived, this, _1, _2, _3, _4));
+	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](int id, uint64_t idx, const std::string &name, const unsigned char *rx) { OnDeviceReceived(id, idx, name, rx); });
 }
 
 void CGooglePubSubPush::Stop()

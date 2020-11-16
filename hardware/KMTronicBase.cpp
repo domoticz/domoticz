@@ -10,8 +10,6 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
-
 #include <ctime>
 
 #define round(a) ( int ) ( a + .5 )

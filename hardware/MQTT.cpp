@@ -11,8 +11,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-using namespace boost::placeholders;
-
 #define RETRY_DELAY 30
 
 #define CLIENTID	"Domoticz"
@@ -153,8 +151,9 @@ void MQTT::on_connect(int rc)
 			_log.Log(LOG_STATUS, "MQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			m_IsConnected = true;
 			sOnConnected(this);
-			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
-			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect(boost::bind(&MQTT::SendSceneInfo, this, _1, _2));
+			m_sDeviceReceivedConnection =
+				m_mainworker.sOnDeviceReceived.connect([this](int id, uint64_t idx, const std::string &name, const unsigned char *command) { SendDeviceInfo(id, idx, name, command); });
+			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect([this](uint64_t scene, const std::string &name) { SendSceneInfo(scene, name); });
 		}
 		subscribe(nullptr, m_TopicIn.c_str());
 	}
