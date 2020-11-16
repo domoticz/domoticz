@@ -224,7 +224,7 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 
 	m_p1power.powerusage1 = mtotal;
 	m_p1power.powerusage2 = 0;
-	m_p1power.usagecurrent = musage;
+	m_p1power.usagecurrent = std::max(musage,0);
 	sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Enphase Production kWh Total", 255);
 }
 
