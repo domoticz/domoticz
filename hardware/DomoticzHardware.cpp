@@ -534,6 +534,7 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 	{
 		Log(LOG_ERROR, "Power usage to high! Usage: %g Watt. Max Usage configured: %g. (NodeID: 0x%04X, ChildID: 0x%04X, SID: %s)", musage, m_sql.m_max_kwh_usage, NodeID, ChildID,
 		    defaultname.c_str());
+		return;
 	}
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeKwh;
