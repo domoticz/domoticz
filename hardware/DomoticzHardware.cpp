@@ -504,6 +504,12 @@ bool CDomoticzHardwareBase::GetWindSensorValue(const int NodeID, int& WindDir, f
 
 void CDomoticzHardwareBase::SendWattMeter(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float musage, const std::string& defaultname, const int RssiLevel /* =12 */)
 {
+	if (musage > m_sql.m_max_kwh_usage)
+	{
+		Log(LOG_ERROR, "Power usage to high! Usage: %g Watt. Max Usage configured: %g. (NodeID: 0x%04X, ChildID: 0x%04X, SID: %s)", musage, m_sql.m_max_kwh_usage, NodeID, ChildID,
+		    defaultname.c_str());
+		return;
+	}
 	_tUsageMeter umeter;
 	umeter.id1 = 0;
 	umeter.id2 = 0;
@@ -524,6 +530,11 @@ void CDomoticzHardwareBase::SendKwhMeterOldWay(const int NodeID, const int Child
 
 void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string& defaultname, const int RssiLevel /* =12 */)
 {
+	if (musage > m_sql.m_max_kwh_usage)
+	{
+		Log(LOG_ERROR, "Power usage to high! Usage: %g Watt. Max Usage configured: %g. (NodeID: 0x%04X, ChildID: 0x%04X, SID: %s)", musage, m_sql.m_max_kwh_usage, NodeID, ChildID,
+		    defaultname.c_str());
+	}
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeKwh;
 	gdevice.intval1 = (NodeID << 8) | ChildID;

@@ -424,6 +424,9 @@ define(['app'], function (app) {
 					if (typeof data.EnergyDivider != 'undefined') {
 						$("#rfxmetertable #EnergyDivider").val(data.EnergyDivider);
 					}
+					if (typeof data.MaxElectricPower != 'undefined') {
+						$("#rfxmetertable #MaxElectricPower").val(data.MaxElectricPower);
+					}
 					if (typeof data.CostEnergy != 'undefined') {
 						$("#rfxmetertable #CostEnergy").val(data.CostEnergy);
 					}

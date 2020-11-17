@@ -3212,6 +3212,14 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("EmailEnabled", 1);
 	}
+	nValue = 4000;
+	if (!GetPreferencesVar("MaxElectricPower", nValue))
+	{
+		UpdatePreferencesVar("MaxElectricPower", nValue);
+	}
+	if (nValue < 1)
+		nValue = 4000;
+	m_max_kwh_usage = nValue;
 
 	//Start background thread
 	if (!StartThread())

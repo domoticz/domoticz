@@ -8255,6 +8255,10 @@ namespace http {
 			m_sql.UpdatePreferencesVar("MeterDividerGas", GasDivider);
 			m_sql.UpdatePreferencesVar("MeterDividerWater", WaterDivider);
 
+			int EnergyMaxPower = atoi(request::findValue(&req, "MaxElectricPower").c_str());
+			m_sql.UpdatePreferencesVar("MaxElectricPower", EnergyMaxPower);
+
+
 			std::string scheckforupdates = request::findValue(&req, "checkforupdates");
 			m_sql.UpdatePreferencesVar("UseAutoUpdate", (scheckforupdates == "on" ? 1 : 0));
 
@@ -13391,6 +13395,10 @@ namespace http {
 				else if (Key == "ElectricVoltage")
 				{
 					root["ElectricVoltage"] = nValue;
+				}
+				else if (Key == "MaxElectricPower")
+				{
+					root["MaxElectricPower"] = nValue;
 				}
 				else if (Key == "CM113DisplayType")
 				{

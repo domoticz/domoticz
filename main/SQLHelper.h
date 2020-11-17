@@ -453,6 +453,8 @@ public:
 	int			m_ShortLogInterval;
 	bool		m_bLogEventScriptTrigger;
 	bool		m_bDisableDzVentsSystem;
+	double		m_max_kwh_usage;
+
 private:
 	std::mutex		m_sqlQueryMutex;
 	sqlite3			*m_dbase;
