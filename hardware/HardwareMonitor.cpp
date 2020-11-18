@@ -424,7 +424,6 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 		float usage = static_cast<float>(atof(devValue.c_str()));
 		SendCustomSensor(0, doffset + dindex, 255, usage, devName, "MB");
 	}
-	return;
 }
 
 bool CHardwareMonitor::GetOSType(nOSType &OStype)
@@ -465,7 +464,7 @@ bool CHardwareMonitor::GetOSType(nOSType &OStype)
 
 std::string CHardwareMonitor::TranslateOSTypeToString(nOSType OSType)
 {
-	std::string sOSType = "";
+	std::string sOSType;
 
 	switch (OSType)
 	{
@@ -1090,7 +1089,7 @@ void CHardwareMonitor::CheckForOnboardSensors()
 #if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
 
 	//Check if we are running on a RaspberryPi
-	std::string sLine = "";
+	std::string sLine;
 	std::ifstream infile;
 	bool bPi = false;
 

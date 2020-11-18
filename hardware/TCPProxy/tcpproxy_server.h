@@ -49,8 +49,8 @@ namespace tcp_proxy
 		void handle_accept(const boost::system::error_code& error);
 		void handle_stop();
 
-		void OnUpstreamData(const unsigned char *pData, const size_t Len);
-		void OnDownstreamData(const unsigned char *pData, const size_t Len);
+		void OnUpstreamData(const unsigned char *pData, size_t Len);
+		void OnDownstreamData(const unsigned char *pData, size_t Len);
 
 		/// The io_service used to perform asynchronous operations.
 		boost::asio::io_service io_service_;

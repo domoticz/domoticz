@@ -77,10 +77,7 @@ bool SolarMaxTCP::StartHardware()
 		{
 			return false;
 		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
-		}
+		memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
 	}
 
 	char szIP[20];
@@ -201,10 +198,7 @@ void SolarMaxTCP::Do_Work()
 					m_retrycntr = 0;
 					continue;
 				}
-				else
-				{
-					ParseData((const unsigned char *)&buf, bread);
-				}
+				ParseData((const unsigned char *)&buf, bread);
 			}
 		}
 

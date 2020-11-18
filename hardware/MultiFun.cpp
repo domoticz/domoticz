@@ -433,11 +433,11 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if ((device.first & value) && !(device.first & m_LastDevices))
 						{
-							SendGeneralSwitch(2, device.first, 255, true, 0, device.second.c_str());
+							SendGeneralSwitch(2, device.first, 255, true, 0, device.second);
 						}
 						else if (!(device.first & value) && (device.first & m_LastDevices))
 						{
-							SendGeneralSwitch(2, device.first, 255, false, 0, device.second.c_str());
+							SendGeneralSwitch(2, device.first, 255, false, 0, device.second);
 						}
 					}
 					m_LastDevices = value;
@@ -512,11 +512,11 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if ((access.first & value) && !(access.first & m_LastQuickAccess))
 						{
-							SendGeneralSwitch(0x21, access.first, 255, true, 0, access.second.c_str());
+							SendGeneralSwitch(0x21, access.first, 255, true, 0, access.second);
 						}
 						else if ((!(access.first & value) && (access.first & m_LastQuickAccess)) || firstTime)
 						{
-							SendGeneralSwitch(0x21, access.first, 255, false, 0, access.second.c_str());
+							SendGeneralSwitch(0x21, access.first, 255, false, 0, access.second);
 						}
 					}
 					m_LastQuickAccess = value;
@@ -583,21 +583,16 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 
 				if ((int)databuffer[4] * 256 + (int)databuffer[5] == (unsigned char)(answerLength + 2))
 				{
-					if (write)
-					{
-						if (cmd[8] == databuffer[8] && cmd[9] == databuffer[9] && cmd[10] == databuffer[10] && cmd[11] == databuffer[11])
-						{
-							return answerLength;
-						}
-						else
-						{
-							_log.Log(LOG_ERROR, "MultiFun: bad response after write");
-						}
-					}
-					else
+					if (!write)
 					{
 						return answerLength;
 					}
+
+					if (cmd[8] == databuffer[8] && cmd[9] == databuffer[9] && cmd[10] == databuffer[10] && cmd[11] == databuffer[11])
+					{
+						return answerLength;
+					}
+					_log.Log(LOG_ERROR, "MultiFun: bad response after write");
 				}
 				else
 				{

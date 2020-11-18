@@ -16,28 +16,31 @@
 
 namespace Plugins {
 
-	CPluginProtocol* CPluginProtocol::Create(std::string sProtocol)
+	CPluginProtocol *CPluginProtocol::Create(const std::string &sProtocol)
 	{
 		if (sProtocol == "Line") return (CPluginProtocol*) new CPluginProtocolLine();
-		else if (sProtocol == "XML") return (CPluginProtocol*) new CPluginProtocolXML();
-		else if (sProtocol == "JSON") return (CPluginProtocol*) new CPluginProtocolJSON();
-		else if ((sProtocol == "HTTP") || (sProtocol == "HTTPS"))
+		if (sProtocol == "XML")
+			return (CPluginProtocol *)new CPluginProtocolXML();
+		if (sProtocol == "JSON")
+			return (CPluginProtocol *)new CPluginProtocolJSON();
+		if ((sProtocol == "HTTP") || (sProtocol == "HTTPS"))
 		{
 			CPluginProtocolHTTP* pProtocol = new CPluginProtocolHTTP(sProtocol == "HTTPS");
 			return (CPluginProtocol*)pProtocol;
 		}
-		else if (sProtocol == "ICMP") return (CPluginProtocol*) new CPluginProtocolICMP();
-		else if ((sProtocol == "MQTT") || (sProtocol == "MQTTS"))
+		if (sProtocol == "ICMP")
+			return (CPluginProtocol *)new CPluginProtocolICMP();
+		if ((sProtocol == "MQTT") || (sProtocol == "MQTTS"))
 		{
 			CPluginProtocolMQTT* pProtocol = new CPluginProtocolMQTT(sProtocol == "MQTTS");
 			return (CPluginProtocol*)pProtocol;
 		}
-		else if ((sProtocol == "WS") || (sProtocol == "WSS"))
+		if ((sProtocol == "WS") || (sProtocol == "WSS"))
 		{
 			CPluginProtocolWS* pProtocol = new CPluginProtocolWS(sProtocol == "WSS");
 			return (CPluginProtocol*)pProtocol;
 		}
-		else return new CPluginProtocol();
+		return new CPluginProtocol();
 	}
 
 	void CPluginProtocol::ProcessInbound(const ReadEvent* Message)
@@ -81,7 +84,7 @@ namespace Plugins {
 
 	void CPluginProtocol::Flush(CPlugin* pPlugin, PyObject* pConnection)
 	{
-		if (m_sRetainedData.size())
+		if (!m_sRetainedData.empty())
 		{
 			// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
 			pPlugin->MessagePlugin(new onMessageCallback(pPlugin, pConnection, m_sRetainedData));
@@ -233,7 +236,7 @@ namespace Plugins {
 		return pRetVal;
 	}
 
-	PyObject* CPluginProtocolJSON::JSONtoPython(std::string	sData)
+	PyObject *CPluginProtocolJSON::JSONtoPython(const std::string &sData)
 	{
 		Json::Value		root;
 		PyObject* pRetVal = Py_None;
@@ -497,7 +500,7 @@ namespace Plugins {
 
 	void CPluginProtocolHTTP::Flush(CPlugin* pPlugin, PyObject* pConnection)
 	{
-		if (m_sRetainedData.size())
+		if (!m_sRetainedData.empty())
 		{
 			// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
 			ProcessInbound(new ReadEvent(pPlugin, pConnection, 0, nullptr));
@@ -508,7 +511,7 @@ namespace Plugins {
 	void CPluginProtocolHTTP::ProcessInbound(const ReadEvent* Message)
 	{
 		// There won't be a buffer if the connection closed
-		if (Message->m_Buffer.size())
+		if (!Message->m_Buffer.empty())
 		{
 			m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 		}
@@ -576,7 +579,7 @@ namespace Plugins {
 				if (!m_Chunked)
 				{
 					// If full message then return it
-					if ((m_ContentLength == sData.length()) || (!Message->m_Buffer.size()))
+					if ((m_ContentLength == sData.length()) || (Message->m_Buffer.empty()))
 					{
 						PyObject* pDataDict = PyDict_New();
 						PyObject* pObj = Py_BuildValue("s", m_Status.c_str());
@@ -688,7 +691,7 @@ namespace Plugins {
 			{
 				std::string		sPayload = sData.substr(2);
 				// No payload || we have the payload || the connection has closed
-				if ((m_ContentLength == -1) || (m_ContentLength == sPayload.length()) || !Message->m_Buffer.size())
+				if ((m_ContentLength == -1) || (m_ContentLength == sPayload.length()) || Message->m_Buffer.empty())
 				{
 					PyObject* DataDict = PyDict_New();
 					std::string		sVerb = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
@@ -1046,7 +1049,7 @@ namespace Plugins {
 		int			iDataOffset = 0;
 
 		// Handle response
-		if (Message->m_Buffer.size())
+		if (!Message->m_Buffer.empty())
 		{
 			PyObject* pIPv4Dict = PyDict_New();
 			if (pDataDict && pIPv4Dict)
@@ -1507,7 +1510,7 @@ namespace Plugins {
 			if (!m_bErrored) Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMqttDict));
 
 			m_sRetainedData.erase(m_sRetainedData.begin(), pktend);
-		} while (!m_bErrored && m_sRetainedData.size() > 0);
+		} while (!m_bErrored && !m_sRetainedData.empty());
 
 		if (m_bErrored)
 		{
@@ -1590,7 +1593,7 @@ namespace Plugins {
 						bControlFlags |= (bRetain & 1) << 5; // Set retain flag
 					}
 
-					std::string sPayload = "";
+					std::string sPayload;
 					PyObject* pPayload = PyDict_GetItemString(WriteMessage->m_Object, "WillPayload");
 					// Support both string and bytes
 					//if (pPayload && PyByteArray_Check(pPayload)) // Gives linker error, why?
@@ -1775,7 +1778,7 @@ namespace Plugins {
 				}
 
 				// Payload
-				std::string sPayload = "";
+				std::string sPayload;
 				PyObject* pPayload = PyDict_GetItemString(WriteMessage->m_Object, "Payload");
 				// Support both string and bytes
 				//if (pPayload && PyByteArray_Check(pPayload)) // Gives linker error, why?
@@ -1871,7 +1874,7 @@ namespace Plugins {
 
 	bool CPluginProtocolWS::ProcessWholeMessage(std::vector<byte>& vMessage, const ReadEvent* Message)
 	{
-		while (vMessage.size())
+		while (!vMessage.empty())
 		{
 			// Look for a complete message
 			std::vector<byte>	vPayload;
@@ -2002,7 +2005,7 @@ namespace Plugins {
 			}
 
 			// If there is a payload but not handled then map it as binary
-			if (vPayload.size() && !pPayload)
+			if (!vPayload.empty() && !pPayload)
 			{
 				pPayload = Py_BuildValue("y#", &vPayload[0], vPayload.size());
 			}
@@ -2111,134 +2114,133 @@ namespace Plugins {
 				// Use parent HTTP protocol object to do the actual formatting
 				return CPluginProtocolHTTP::ProcessOutbound(WriteMessage);
 			}
-			else
+			int iOpCode = 0;
+			long lMaskingKey = 0;
+			long lPayloadLength = 0;
+			byte bMaskBit = 0x00;
+
+			PyObject *pOperation = PyDict_GetItemString(WriteMessage->m_Object, "Operation");
+			PyObject *pPayload = PyDict_GetItemString(WriteMessage->m_Object, "Payload");
+			PyObject *pMask = PyDict_GetItemString(WriteMessage->m_Object, "Mask");
+
+			if (pOperation)
 			{
-				int			iOpCode = 0;
-				long		lMaskingKey = 0;
-				long		lPayloadLength = 0;
-				byte		bMaskBit = 0x00;
-
-				PyObject* pOperation = PyDict_GetItemString(WriteMessage->m_Object, "Operation");
-				PyObject* pPayload = PyDict_GetItemString(WriteMessage->m_Object, "Payload");
-				PyObject* pMask = PyDict_GetItemString(WriteMessage->m_Object, "Mask");
-
-				if (pOperation)
+				if (!PyUnicode_Check(pOperation))
 				{
-					if (!PyUnicode_Check(pOperation))
-					{
-						_log.Log(LOG_ERROR, "(%s) Expected dictionary 'Operation' key to have a string value.", __func__);
-						return retVal;
-					}
-
-					std::string	sOperation = PyUnicode_AsUTF8(pOperation);
-					if (sOperation == "Ping")
-					{
-						iOpCode = 0x09;
-					}
-					else if (sOperation == "Pong")
-					{
-						iOpCode = 0x0A;
-					}
-					else if (sOperation == "Close")
-					{
-						iOpCode = 0x08;
-					}
+					_log.Log(LOG_ERROR, "(%s) Expected dictionary 'Operation' key to have a string value.", __func__);
+					return retVal;
 				}
 
-				// If there is no specific OpCode then set it from the payload datatype
-				if (pPayload)
+				std::string sOperation = PyUnicode_AsUTF8(pOperation);
+				if (sOperation == "Ping")
 				{
-					if (PyUnicode_Check(pPayload))
-					{
-						lPayloadLength = PyUnicode_GetLength(pPayload);
-						if (!iOpCode) iOpCode = 0x01;				// Text message
-					}
-					else if (PyBytes_Check(pPayload))
-					{
-						lPayloadLength = PyBytes_Size(pPayload);
-						if (!iOpCode) iOpCode = 0x02;				// Binary message
-					}
-					else if (pPayload->ob_type->tp_name == std::string("bytearray"))
-					{
-						lPayloadLength = PyByteArray_Size(pPayload);
-						if (!iOpCode) iOpCode = 0x02;				// Binary message
-					}
+					iOpCode = 0x09;
 				}
-
-				if (pMask)
+				else if (sOperation == "Pong")
 				{
-					if (PyLong_Check(pMask))
-					{
-						lMaskingKey = PyLong_AsLong(pMask);
-						bMaskBit = 0x80;							// Set mask bit in header
-					}
-					else if (PyUnicode_Check(pMask))
-					{
-						std::string	sMask = PyUnicode_AsUTF8(pMask);
-						lMaskingKey = atoi(sMask.c_str());
-						bMaskBit = 0x80;							// Set mask bit in header
-					}
-					else
-					{
-						_log.Log(LOG_ERROR, "(%s) Invalid mask, expected number (integer or string).", __func__);
-						return retVal;
-					}
+					iOpCode = 0x0A;
 				}
-
-				// Assemble the actual message
-				retVal.reserve(lPayloadLength + 16);		// Masking relies on vector not reallocating during message assembly
-				retVal.push_back(0x80 | iOpCode);
-				if (lPayloadLength < 126)
+				else if (sOperation == "Close")
 				{
-					retVal.push_back((bMaskBit | lPayloadLength) & 0xFF);	// Short length
+					iOpCode = 0x08;
+				}
+			}
+
+			// If there is no specific OpCode then set it from the payload datatype
+			if (pPayload)
+			{
+				if (PyUnicode_Check(pPayload))
+				{
+					lPayloadLength = PyUnicode_GetLength(pPayload);
+					if (!iOpCode)
+						iOpCode = 0x01; // Text message
+				}
+				else if (PyBytes_Check(pPayload))
+				{
+					lPayloadLength = PyBytes_Size(pPayload);
+					if (!iOpCode)
+						iOpCode = 0x02; // Binary message
+				}
+				else if (pPayload->ob_type->tp_name == std::string("bytearray"))
+				{
+					lPayloadLength = PyByteArray_Size(pPayload);
+					if (!iOpCode)
+						iOpCode = 0x02; // Binary message
+				}
+			}
+
+			if (pMask)
+			{
+				if (PyLong_Check(pMask))
+				{
+					lMaskingKey = PyLong_AsLong(pMask);
+					bMaskBit = 0x80; // Set mask bit in header
+				}
+				else if (PyUnicode_Check(pMask))
+				{
+					std::string sMask = PyUnicode_AsUTF8(pMask);
+					lMaskingKey = atoi(sMask.c_str());
+					bMaskBit = 0x80; // Set mask bit in header
 				}
 				else
 				{
-					retVal.push_back(bMaskBit | 126);
-					retVal.push_back(lPayloadLength >> 24);
-					retVal.push_back((lPayloadLength >> 16) & 0xFF);
-					retVal.push_back((lPayloadLength >> 8) & 0xFF);
-					retVal.push_back(lPayloadLength & 0xFF);				// Longer length
+					_log.Log(LOG_ERROR, "(%s) Invalid mask, expected number (integer or string).", __func__);
+					return retVal;
 				}
+			}
 
-				byte *pbMask = nullptr;
-				if (bMaskBit)
+			// Assemble the actual message
+			retVal.reserve(lPayloadLength + 16); // Masking relies on vector not reallocating during message assembly
+			retVal.push_back(0x80 | iOpCode);
+			if (lPayloadLength < 126)
+			{
+				retVal.push_back((bMaskBit | lPayloadLength) & 0xFF); // Short length
+			}
+			else
+			{
+				retVal.push_back(bMaskBit | 126);
+				retVal.push_back(lPayloadLength >> 24);
+				retVal.push_back((lPayloadLength >> 16) & 0xFF);
+				retVal.push_back((lPayloadLength >> 8) & 0xFF);
+				retVal.push_back(lPayloadLength & 0xFF); // Longer length
+			}
+
+			byte *pbMask = nullptr;
+			if (bMaskBit)
+			{
+				retVal.push_back(lMaskingKey >> 24);
+				pbMask = &retVal[retVal.size() - 1];
+				retVal.push_back((lMaskingKey >> 16) & 0xFF);
+				retVal.push_back((lMaskingKey >> 8) & 0xFF);
+				retVal.push_back(lMaskingKey & 0xFF); // Encode mask
+			}
+
+			if (pPayload)
+			{
+				if (PyUnicode_Check(pPayload))
 				{
-					retVal.push_back(lMaskingKey >> 24);
-					pbMask = &retVal[retVal.size() - 1];
-					retVal.push_back((lMaskingKey >> 16) & 0xFF);
-					retVal.push_back((lMaskingKey >> 8) & 0xFF);
-					retVal.push_back(lMaskingKey & 0xFF);					// Encode mask
+					std::string sPayload = PyUnicode_AsUTF8(pPayload);
+					for (int i = 0; i < lPayloadLength; i++)
+					{
+						retVal.push_back(sPayload[i] ^ pbMask[i % 4]);
+					}
 				}
-
-				if (pPayload)
+				else if (PyBytes_Check(pPayload))
 				{
-					if (PyUnicode_Check(pPayload))
+					byte *pByte = (byte *)PyBytes_AsString(pPayload);
+					for (int i = 0; i < lPayloadLength; i++)
 					{
-						std::string	sPayload = PyUnicode_AsUTF8(pPayload);
-						for (int i = 0; i < lPayloadLength; i++)
-						{
-							retVal.push_back(sPayload[i] ^ pbMask[i % 4]);
-						}
-					}
-					else if (PyBytes_Check(pPayload))
-					{
-						byte* pByte = (byte*)PyBytes_AsString(pPayload);
-						for (int i = 0; i < lPayloadLength; i++)
-						{
-							retVal.push_back(pByte[i] ^ pbMask[i % 4]);
-						}
-					}
-					else if (pPayload->ob_type->tp_name == std::string("bytearray"))
-					{
-						byte* pByte = (byte*)PyByteArray_AsString(pPayload);
-						for (int i = 0; i < lPayloadLength; i++)
-						{
-							retVal.push_back(pByte[i] ^ pbMask[i % 4]);
-						}
+						retVal.push_back(pByte[i] ^ pbMask[i % 4]);
 					}
 				}
-
+				else if (pPayload->ob_type->tp_name == std::string("bytearray"))
+				{
+					byte *pByte = (byte *)PyByteArray_AsString(pPayload);
+					for (int i = 0; i < lPayloadLength; i++)
+					{
+						retVal.push_back(pByte[i] ^ pbMask[i % 4]);
+					}
+				}
 			}
 		}
 

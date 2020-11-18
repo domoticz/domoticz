@@ -124,7 +124,7 @@ _tRemoteShareUser* CTCPServerIntBase::FindUser(const std::string &username)
 	return nullptr;
 }
 
-bool CTCPServerIntBase::HandleAuthentication(CTCPClient_ptr c, const std::string &username, const std::string &password)
+bool CTCPServerIntBase::HandleAuthentication(const CTCPClient_ptr &c, const std::string &username, const std::string &password)
 {
 	_tRemoteShareUser *pUser=FindUser(username);
 	if (pUser == nullptr)
@@ -202,7 +202,7 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 			{
 				//check if we are allowed to get this device
 				bool bOk2Send=false;
-				if (pUser->Devices.size()==0)
+				if (pUser->Devices.empty())
 					bOk2Send=true;
 				else
 					bOk2Send = std::any_of(pUser->Devices.begin(), pUser->Devices.end(),
@@ -463,7 +463,8 @@ unsigned int CTCPServer::GetUserDevicesCount(const std::string &username)
 		return m_pTCPServer->GetUserDevicesCount(username);
 	}
 #ifndef NOCLOUD
-	else if (m_pProxyServer) {
+	if (m_pProxyServer)
+	{
 		return m_pProxyServer->GetUserDevicesCount(username);
 	}
 #endif

@@ -216,10 +216,8 @@ void daemonize(const char *rundir, const char *pidfile)
 	sigaction(SIGABRT, &newSigAction, nullptr); // catch abnormal termination signal
 	sigaction(SIGILL, &newSigAction, nullptr);  // catch invalid program image
 	sigaction(SIGUSR1, &newSigAction, nullptr); // catch SIGUSR1 (used by watchdog)
-#ifndef WIN32
 	sigaction(SIGHUP, &newSigAction, nullptr); // catch HUP, for log rotation
-#endif
-	
+
 	/* Fork*/
 	pid = fork();
 
@@ -694,7 +692,8 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-approot", 0, "");
-			if (szroot.size() != 0) {
+			if (!szroot.empty())
+			{
 				szStartupFolder = szroot;
 				FixFolderEnding(szStartupFolder);
 			}
@@ -769,7 +768,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-userdata", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 			{
 				szUserDataFolder = szroot;
 				FixFolderEnding(szUserDataFolder);
@@ -828,7 +827,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 				szWWWFolder = szroot;
 		}
 	}
@@ -998,7 +997,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-webroot", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 				szWebRoot = szroot;
 		}
 		if (cmdLine.HasSwitch("-noupdates"))

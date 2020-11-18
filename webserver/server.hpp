@@ -39,32 +39,32 @@ public:
 		return "'server_base[" + settings_.to_string() + "]'";
 	}
 protected:
-	void init(init_connectionhandler_func init_connection_handler, accept_handler_func accept_handler);
+  void init(const init_connectionhandler_func &init_connection_handler, accept_handler_func accept_handler);
 
-	/// The io_service used to perform asynchronous operations.
-	boost::asio::io_service io_service_;
+  /// The io_service used to perform asynchronous operations.
+  boost::asio::io_service io_service_;
 
-	/// Acceptor used to listen for incoming connections.
-	boost::asio::ip::tcp::acceptor acceptor_;
+  /// Acceptor used to listen for incoming connections.
+  boost::asio::ip::tcp::acceptor acceptor_;
 
-	/// The handler for all incoming requests.
-	request_handler& request_handler_;
+  /// The handler for all incoming requests.
+  request_handler &request_handler_;
 
-	/// The next connection to be accepted.
-	connection_ptr new_connection_;
+  /// The next connection to be accepted.
+  connection_ptr new_connection_;
 
-	connection_manager connection_manager_;
-	/// server settings
-	server_settings settings_;
+  connection_manager connection_manager_;
+  /// server settings
+  server_settings settings_;
 
-	/// read timeout in seconds
-	int timeout_;
+  /// read timeout in seconds
+  int timeout_;
 
-	/// indicate if the server is running
-	bool is_running;
+  /// indicate if the server is running
+  bool is_running;
 
-	/// indicate if the server is stopped (acceptor and connections)
-	bool is_stop_complete;
+  /// indicate if the server is stopped (acceptor and connections)
+  bool is_stop_complete;
 
 private:
 	/// Handle a request to stop the server.

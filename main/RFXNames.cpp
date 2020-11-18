@@ -366,8 +366,7 @@ const char* Notification_Type_Desc(const int nType, const unsigned char snum)
 	};
 	if (snum == 0)
 		return findTableIDSingle1(Table, nType);
-	else
-		return findTableIDSingle2(Table, nType);
+	return findTableIDSingle2(Table, nType);
 }
 
 const char* Notification_Type_Label(const int nType)
@@ -2419,7 +2418,7 @@ bool GetLightCommand(
 				cmd = light1_sAllOn;
 				return true;
 			}
-			else if ((switchcmd == "Off") || (switchcmd == "All Off"))
+			if ((switchcmd == "Off") || (switchcmd == "All Off"))
 			{
 				cmd = light1_sAllOff;
 				return true;
@@ -2431,33 +2430,37 @@ bool GetLightCommand(
 			cmd = light1_sOff;
 			return true;
 		}
-		else if (switchcmd == "On") {
+		if (switchcmd == "On")
+		{
 			cmd = light1_sOn;
 			return true;
 		}
-		else if (switchcmd == "Dim") {
+		if (switchcmd == "Dim")
+		{
 			cmd = light1_sDim;
 			return true;
 		}
-		else if (switchcmd == "Bright") {
+		if (switchcmd == "Bright")
+		{
 			cmd = light1_sBright;
 			return true;
 		}
-		else if (switchcmd == "All On") {
+		if (switchcmd == "All On")
+		{
 			cmd = light1_sAllOn;
 			return true;
 		}
-		else if (switchcmd == "All Off") {
+		if (switchcmd == "All Off")
+		{
 			cmd = light1_sAllOff;
 			return true;
 		}
-		else if (switchcmd == "Chime") {
+		if (switchcmd == "Chime")
+		{
 			cmd = light1_sChime;
 			return true;
 		}
-		else
-			return false;
-		break;
+		return false;
 	case pTypeLighting2:
 		if (switchtype == STYPE_Doorbell)
 		{
@@ -2476,7 +2479,7 @@ bool GetLightCommand(
 				cmd = light2_sGroupOn;
 				return true;
 			}
-			else if ((switchcmd == "Off") || (switchcmd == "Group Off"))
+			if ((switchcmd == "Off") || (switchcmd == "Group Off"))
 			{
 				cmd = light2_sGroupOff;
 				return true;
@@ -2488,69 +2491,67 @@ bool GetLightCommand(
 			cmd = light2_sOff;
 			return true;
 		}
-		else if (switchcmd == "On")
+		if (switchcmd == "On")
 		{
 			cmd = light2_sOn;
 			return true;
 		}
-		else if (switchcmd == "Set Level")
+		if (switchcmd == "Set Level")
 		{
 			cmd = light2_sSetLevel;
 			return true;
 		}
-		else if (switchcmd == "Group Off")
+		if (switchcmd == "Group Off")
 		{
 			cmd = light2_sGroupOff;
 			return true;
 		}
-		else if (switchcmd == "Group On")
+		if (switchcmd == "Group On")
 		{
 			cmd = light2_sGroupOn;
 			return true;
 		}
-		else if (switchcmd == "Set Group Level")
+		if (switchcmd == "Set Group Level")
 		{
 			cmd = light2_sSetGroupLevel;
 			return true;
 		}
-		else if (switchcmd == "Stop")
+		if (switchcmd == "Stop")
 		{
 			cmd = gswitch_sStop;
 			return true;
 		}
-		else if ((switchcmd == "Paused") || (switchcmd == "Pause"))
+		if ((switchcmd == "Paused") || (switchcmd == "Pause"))
 		{
 			cmd = gswitch_sPause;
 			return true;
 		}
-		else if ((switchcmd == "Playing") || (switchcmd == "Play"))
+		if ((switchcmd == "Playing") || (switchcmd == "Play"))
 		{
 			cmd = gswitch_sPlay;
 			return true;
 		}
-		else if (switchcmd == "Play Playlist")
+		if (switchcmd == "Play Playlist")
 		{
 			cmd = gswitch_sPlayPlaylist;
 			return true;
 		}
-		else if (switchcmd == "Play Favorites")
+		if (switchcmd == "Play Favorites")
 		{
 			cmd = gswitch_sPlayFavorites;
 			return true;
 		}
-		else if (switchcmd == "Set Volume")
+		if (switchcmd == "Set Volume")
 		{
 			cmd = gswitch_sSetVolume;
 			return true;
 		}
-		else if (switchcmd == "Execute")
+		if (switchcmd == "Execute")
 		{
 			cmd = gswitch_sExecute;
 			return true;
 		}
-		else
-			return false;
-		break;
+		return false;
 	case pTypeLighting4:
 		cmd = light2_sOn;
 		return true;
@@ -2563,7 +2564,7 @@ bool GetLightCommand(
 				return true;
 			}
 		}
-		else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
+		if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
 		{
 			if (switchcmd == "Set Color")
 			{
@@ -2571,7 +2572,7 @@ bool GetLightCommand(
 				return true;
 			}
 		}
-		else if ((dSubType != sTypeLightwaveRF) && (dSubType != sTypeIT))
+		if ((dSubType != sTypeLightwaveRF) && (dSubType != sTypeIT))
 		{
 			//Only LightwaveRF/IT devices have a set-level
 			if (switchcmd == "Set Level")
@@ -2598,14 +2599,14 @@ bool GetLightCommand(
 			//no other combinations for the door switch
 			return false;
 		}
-		else if (switchtype == STYPE_X10Siren)
+		if (switchtype == STYPE_X10Siren)
 		{
 			if ((switchcmd == "On") || (switchcmd == "Group On"))
 			{
 				cmd = light5_sGroupOn;
 				return true;
 			}
-			else if ((switchcmd == "Off") || (switchcmd == "Group Off"))
+			if ((switchcmd == "Off") || (switchcmd == "Group Off"))
 			{
 				cmd = light5_sGroupOff;
 				return true;
@@ -2617,93 +2618,89 @@ bool GetLightCommand(
 			cmd = light5_sOff;
 			return true;
 		}
-		else if (switchcmd == "On")
+		if (switchcmd == "On")
 		{
 			cmd = light5_sOn;
 			return true;
 		}
-		else if (switchcmd == "Set Level")
+		if (switchcmd == "Set Level")
 		{
 			cmd = light5_sSetLevel;
 			return true;
 		}
-		else if (switchcmd == "Group Off")
+		if (switchcmd == "Group Off")
 		{
 			cmd = light5_sGroupOff;
 			return true;
 		}
-		else if (switchcmd == "Group On")
+		if (switchcmd == "Group On")
 		{
 			cmd = light5_sGroupOn;
 			return true;
 		}
-		else if (switchcmd == "Close inline relay")
+		if (switchcmd == "Close inline relay")
 		{
 			cmd = light5_sClose;
 			return true;
 		}
-		else if (switchcmd == "Stop inline relay")
+		if (switchcmd == "Stop inline relay")
 		{
 			cmd = light5_sStop;
 			return true;
 		}
-		else if (switchcmd == "Open inline relay")
+		if (switchcmd == "Open inline relay")
 		{
 			cmd = light5_sOpen;
 			return true;
 		}
-		else if (switchcmd == "Group Mood 1")
+		if (switchcmd == "Group Mood 1")
 		{
 			cmd = light5_sMood1;
 			return true;
 		}
-		else if (switchcmd == "Group Mood 2")
+		if (switchcmd == "Group Mood 2")
 		{
 			cmd = light5_sMood2;
 			return true;
 		}
-		else if (switchcmd == "Group Mood 3")
+		if (switchcmd == "Group Mood 3")
 		{
 			cmd = light5_sMood3;
 			return true;
 		}
-		else if (switchcmd == "Group Mood 4")
+		if (switchcmd == "Group Mood 4")
 		{
 			cmd = light5_sMood4;
 			return true;
 		}
-		else if (switchcmd == "Group Mood 5")
+		if (switchcmd == "Group Mood 5")
 		{
 			cmd = light5_sMood5;
 			return true;
 		}
-		else
-			return false;
-		break;
+		return false;
 	case pTypeLighting6:
 		if (switchcmd == "Off")
 		{
 			cmd = light6_sOff;
 			return true;
 		}
-		else if (switchcmd == "On")
+		if (switchcmd == "On")
 		{
 			cmd = light6_sOn;
 			return true;
 		}
-		else if (switchcmd == "Group Off")
+		if (switchcmd == "Group Off")
 		{
 			cmd = light6_sGroupOff;
 			return true;
 		}
-		else if (switchcmd == "Group On")
+		if (switchcmd == "Group On")
 		{
 			cmd = light6_sGroupOn;
 			return true;
 		}
-		else
-			return false;
-		break;
+		return false;
 	case pTypeHomeConfort:
 		if (switchtype == STYPE_Doorbell)
 		{
@@ -2720,24 +2717,22 @@ bool GetLightCommand(
 			cmd = HomeConfort_sOff;
 			return true;
 		}
-		else if (switchcmd == "On")
+		if (switchcmd == "On")
 		{
 			cmd = HomeConfort_sOn;
 			return true;
 		}
-		else if (switchcmd == "Group Off")
+		if (switchcmd == "Group Off")
 		{
 			cmd = HomeConfort_sGroupOff;
 			return true;
 		}
-		else if (switchcmd == "Group On")
+		if (switchcmd == "Group On")
 		{
 			cmd = HomeConfort_sGroupOn;
 			return true;
 		}
-		else
-			return false;
-		break;
+		return false;
 	case pTypeFS20:
 		if (switchcmd == "Off")
 		{
@@ -2870,7 +2865,6 @@ bool GetLightCommand(
 			return true;
 		}
 		return false;
-		break;
 	case pTypeGeneralSwitch:
 		if (switchtype == STYPE_Doorbell)
 		{
@@ -2882,21 +2876,22 @@ bool GetLightCommand(
 			//no other combinations for the door switch
 			return false;
 		}
-		else if (switchtype == STYPE_X10Siren)
+		if (switchtype == STYPE_X10Siren)
 		{
 			if ((switchcmd == "On") || (switchcmd == "Group On"))
 			{
 				cmd = gswitch_sGroupOn;
 				return true;
 			}
-			else if ((switchcmd == "Off") || (switchcmd == "Group Off"))
+			if ((switchcmd == "Off") || (switchcmd == "Group Off"))
 			{
 				cmd = gswitch_sGroupOff;
 				return true;
 			}
 			return false;
 		}
-		else if (switchtype == STYPE_Selector) {
+		if (switchtype == STYPE_Selector)
+		{
 			if ((switchcmd == "Paused") ||
 				(switchcmd == "Pause") ||
 				(switchcmd == "Playing") ||
@@ -3016,147 +3011,142 @@ bool GetLightCommand(
 			cmd = Color_LedOff;
 			return true;
 		}
-		else if (switchcmd == "On")
+		if (switchcmd == "On")
 		{
 			cmd = Color_LedOn;
 			return true;
 		}
-		else if (switchcmd == "Set Color")
+		if (switchcmd == "Set Color")
 		{
 			cmd = Color_SetColor;
 			return true;
 		}
-		else if (
-			(switchcmd == "Set Brightness") ||
-			(switchcmd == "Set Level")
-			)
+		if ((switchcmd == "Set Brightness") || (switchcmd == "Set Level"))
 		{
 			cmd = Color_SetBrightnessLevel;
 			return true;
 		}
-		else if (switchcmd == "Set White")
+		if (switchcmd == "Set White")
 		{
 			cmd = Color_SetColorToWhite;
 			return true;
 		}
-		else if (switchcmd == "Set Full")
+		if (switchcmd == "Set Full")
 		{
 			cmd = Color_SetColorToWhite;
 			return true;
 		}
-		else if (switchcmd == "Set Night")
+		if (switchcmd == "Set Night")
 		{
 			cmd = Color_NightMode;
 			return true;
 		}
-		else if (switchcmd == "Bright Up")
+		if (switchcmd == "Bright Up")
 		{
 			cmd = Color_SetBrightUp;
 			return true;
 		}
-		else if (switchcmd == "Bright Down")
+		if (switchcmd == "Bright Down")
 		{
 			cmd = Color_SetBrightDown;
 			return true;
 		}
-		else if (switchcmd == "Disco Mode")
+		if (switchcmd == "Disco Mode")
 		{
 			cmd = Color_DiscoMode;
 			return true;
 		}
-		else if (switchcmd == "Disco Mode 1")
+		if (switchcmd == "Disco Mode 1")
 		{
 			cmd = Color_DiscoMode_1;
 			return true;
 		}
-		else if (switchcmd == "Disco Mode 2")
+		if (switchcmd == "Disco Mode 2")
 		{
 			cmd = Color_DiscoMode_2;
 			return true;
 		}
-		else if (switchcmd == "Disco Mode 3")
+		if (switchcmd == "Disco Mode 3")
 		{
 			cmd = Color_DiscoMode_3;
 			return true;
 		}
-		else if (switchcmd == "Disco Mode 4")
+		if (switchcmd == "Disco Mode 4")
 		{
 			cmd = Color_DiscoMode_4;
 			return true;
 		}
-		else if (switchcmd == "Disco Mode 5")
+		if (switchcmd == "Disco Mode 5")
 		{
 			cmd = Color_DiscoMode_5;
 			return true;
 		}
-		else if (switchcmd == "Disco Mode 6")
+		if (switchcmd == "Disco Mode 6")
 		{
 			cmd = Color_DiscoMode_6;
 			return true;
 		}
-		else if (switchcmd == "Disco Mode 7")
+		if (switchcmd == "Disco Mode 7")
 		{
 			cmd = Color_DiscoMode_7;
 			return true;
 		}
-		else if (switchcmd == "Disco Mode 8")
+		if (switchcmd == "Disco Mode 8")
 		{
 			cmd = Color_DiscoMode_8;
 			return true;
 		}
-		else if (switchcmd == "Disco Mode 9")
+		if (switchcmd == "Disco Mode 9")
 		{
 			cmd = Color_DiscoMode_9;
 			return true;
 		}
-		else if (switchcmd == "Disco Up")
+		if (switchcmd == "Disco Up")
 		{
 			cmd = Color_RGBDiscoNext;
 			return true;
 		}
-		else if (switchcmd == "Disco Down")
+		if (switchcmd == "Disco Down")
 		{
 			cmd = Color_RGBDiscoPrevious;
 			return true;
 		}
-		else if (switchcmd == "Speed Up")
+		if (switchcmd == "Speed Up")
 		{
 			cmd = Color_DiscoSpeedFaster;
 			return true;
 		}
-		else if (switchcmd == "Speed Up Long")
+		if (switchcmd == "Speed Up Long")
 		{
 			cmd = Color_DiscoSpeedFasterLong;
 			return true;
 		}
-		else if (switchcmd == "Speed Down")
+		if (switchcmd == "Speed Down")
 		{
 			cmd = Color_DiscoSpeedSlower;
 			return true;
 		}
-		else if (switchcmd == "Speed Minimal")
+		if (switchcmd == "Speed Minimal")
 		{
 			cmd = Color_DiscoSpeedMinimal;
 			return true;
 		}
-		else if (switchcmd == "Speed Maximal")
+		if (switchcmd == "Speed Maximal")
 		{
 			cmd = Color_DiscoSpeedMaximal;
 			return true;
 		}
-		else if (switchcmd == "Warmer")
+		if (switchcmd == "Warmer")
 		{
 			cmd = Color_WarmWhiteIncrease;
 			return true;
 		}
-		else if (switchcmd == "Cooler")
+		if (switchcmd == "Cooler")
 		{
 			cmd = Color_CoolWhiteIncrease;
 			return true;
 		}
-		else
-			return false;
-		break;
+		return false;
 	case pTypeSecurity1:
 		if (
 			(dSubType == sTypeKD101) ||
@@ -3169,126 +3159,126 @@ bool GetLightCommand(
 				cmd = sStatusPanic;
 				return true;
 			}
-			else if (switchcmd == "Off")
+			if (switchcmd == "Off")
 			{
 				cmd = sStatusNormal;
 				return true;
 			}
 		}
-		else if (dSubType == sTypeSecX10M)
+		if (dSubType == sTypeSecX10M)
 		{
 			if (switchcmd == "Motion")
 			{
 				cmd = sStatusMotion;
 				return true;
 			}
-			else if (switchcmd == "No Motion")
+			if (switchcmd == "No Motion")
 			{
 				cmd = sStatusNoMotion;
 				return true;
 			}
 		}
-		else if ((dSubType == sTypeSecX10R) || (dSubType == sTypeMeiantech))
+		if ((dSubType == sTypeSecX10R) || (dSubType == sTypeMeiantech))
 		{
 			if (switchcmd == "On")
 			{
 				cmd = sStatusArmAway;
 				return true;
 			}
-			else if (switchcmd == "Off")
+			if (switchcmd == "Off")
 			{
 				cmd = sStatusDisarm;
 				return true;
 			}
-			else if (switchcmd == "Arm Home")
+			if (switchcmd == "Arm Home")
 			{
 				cmd = sStatusArmHome;
 				return true;
 			}
-			else if (switchcmd == "Arm Away")
+			if (switchcmd == "Arm Away")
 			{
 				cmd = sStatusArmAway;
 				return true;
 			}
-			else if (switchcmd == "Panic")
+			if (switchcmd == "Panic")
 			{
 				cmd = sStatusPanic;
 				return true;
 			}
-			else if (switchcmd == "Disarm")
+			if (switchcmd == "Disarm")
 			{
 				cmd = sStatusDisarm;
 				return true;
 			}
 		}
-		else if (dSubType == sTypeSecX10)
+		if (dSubType == sTypeSecX10)
 		{
 			if (switchcmd == "Normal")
 			{
 				cmd = sStatusNormal;
 				return true;
 			}
-			else if (switchcmd == "Alarm")
+			if (switchcmd == "Alarm")
 			{
 				cmd = sStatusAlarm;
 				return true;
 			}
-			else if (switchcmd == "Normal Delayed")
+			if (switchcmd == "Normal Delayed")
 			{
 				cmd = sStatusNormalDelayed;
 				return true;
 			}
-			else if (switchcmd == "Alarm Delayed")
+			if (switchcmd == "Alarm Delayed")
 			{
 				cmd = sStatusAlarmDelayed;
 				return true;
 			}
-			else if (switchcmd == "Arm Home")
+			if (switchcmd == "Arm Home")
 			{
 				cmd = sStatusArmHome;
 				return true;
 			}
-			else if (switchcmd == "Arm Home Delayed")
+			if (switchcmd == "Arm Home Delayed")
 			{
 				cmd = sStatusArmHomeDelayed;
 				return true;
 			}
-			else if (switchcmd == "Arm Away")
+			if (switchcmd == "Arm Away")
 			{
 				cmd = sStatusArmAway;
 				return true;
 			}
-			else if (switchcmd == "Arm Away Delayed")
+			if (switchcmd == "Arm Away Delayed")
 			{
 				cmd = sStatusArmAwayDelayed;
 				return true;
 			}
-			else if (switchcmd == "Panic")
+			if (switchcmd == "Panic")
 			{
 				cmd = sStatusPanic;
 				return true;
 			}
-			else if (switchcmd == "Disarm")
+			if (switchcmd == "Disarm")
 			{
 				cmd = sStatusDisarm;
 				return true;
 			}
-			else if (switchcmd == "Light On")
+			if (switchcmd == "Light On")
 			{
 				cmd = sStatusLightOn;
 				return true;
 			}
-			else if (switchcmd == "Light Off")
+			if (switchcmd == "Light Off")
 			{
 				cmd = sStatusLightOff;
 				return true;
 			}
-			else if (switchcmd == "Light 2 On")
+			if (switchcmd == "Light 2 On")
 			{
 				cmd = sStatusLight2On;
 				return true;
 			}
-			else if (switchcmd == "Light 2 Off")
+			if (switchcmd == "Light 2 Off")
 			{
 				cmd = sStatusLight2Off;
 				return true;
@@ -3298,7 +3288,6 @@ bool GetLightCommand(
 	case pTypeSecurity2:
 		cmd = 0;
 		return true;
-		break;
 	case pTypeCurtain:
 	{
 		if (switchcmd == "On")
@@ -3867,30 +3856,28 @@ const char* Get_Moisture_Desc(const int moisture)
 {
 	if (moisture < 10)
 		return "saturated";
-	else if (moisture < 20)
+	if (moisture < 20)
 		return "adequately wet";
-	else if (moisture < 60)
+	if (moisture < 60)
 		return "irrigation advise";
-	else if (moisture < 100)
+	if (moisture < 100)
 		return "irrigation";
-	else
-		return "dangerously dry";
+	return "dangerously dry";
 }
 
 const char* Get_Alert_Desc(const int level)
 {
 	if (level == 0)
 		return "undefined";
-	else if (level == 1)
+	if (level == 1)
 		return "normal";
-	else if (level == 2)
+	if (level == 2)
 		return "warning";
-	else if (level == 3)
+	if (level == 3)
 		return "alert";
-	else if (level == 4)
+	if (level == 4)
 		return "alarm";
-	else
-		return "unknown level";
+	return "unknown level";
 }
 
 bool IsSerialDevice(const _eHardwareTypes htype)

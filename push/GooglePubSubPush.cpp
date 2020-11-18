@@ -104,7 +104,7 @@ boost::python::dict toPythonDict(std::map<K, V> map) {
 
 void CGooglePubSubPush::DoGooglePubSubPush()
 {
-	std::string googlePubSubData = "";
+	std::string googlePubSubData;
 #ifdef ENABLE_PYTHON_DECAP
 	bool googlePubSubDebugActive = false;
 
@@ -126,26 +126,26 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 		for (const auto &sd : result)
 		{
 			m_sql.GetPreferencesVar("GooglePubSubData", googlePubSubData);
-			if (googlePubSubData == "")
+			if (googlePubSubData.empty())
 				return;
 
-			std::string sdeviceId = sd[0].c_str();
-			std::string ldelpos = sd[1].c_str();
+			std::string sdeviceId = sd[0];
+			std::string ldelpos = sd[1];
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
 			int nValue = atoi(sd[5].c_str());
-			std::string sValue = sd[6].c_str();
+			std::string sValue = sd[6];
 			//int targetType = atoi(sd[7].c_str());
-			std::string targetVariable = sd[8].c_str();
+			std::string targetVariable = sd[8];
 			//int targetDeviceID = atoi(sd[9].c_str());
-			std::string targetProperty = sd[10].c_str();
+			std::string targetProperty = sd[10];
 			int includeUnit = atoi(sd[11].c_str());
 			int metertype = atoi(sd[12].c_str());
 			int lastUpdate = atoi(sd[13].c_str());
-			std::string ltargetVariable = sd[8].c_str();
-			std::string ltargetDeviceId = sd[9].c_str();
-			std::string lname = sd[14].c_str();
+			std::string ltargetVariable = sd[8];
+			std::string ltargetDeviceId = sd[9];
+			std::string lname = sd[14];
 			sendValue = sValue;
 
 			unsigned long tzoffset = get_tzoffset();
@@ -200,7 +200,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 				StringSplit(sendValue, ";", strarray);
 				if (int(strarray.size()) >= delpos)
 				{
-					std::string rawsendValue = strarray[delpos - 1].c_str();
+					std::string rawsendValue = strarray[delpos - 1];
 					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
 				}
 			}
@@ -226,7 +226,8 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			replaceAll(googlePubSubData, "%h", std::string(hostname));
 			replaceAll(googlePubSubData, "%idx", sdeviceId);
 
-			if (sendValue != "") {
+			if (!sendValue.empty())
+			{
 				std::stringstream python_DirT;
 
 #ifdef ENABLE_PYTHON_DECAP
@@ -311,15 +312,11 @@ namespace http {
 			std::string data = request::findValue(&req, "data");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string debugenabled = request::findValue(&req, "debugenabled");
-			if (
-				(data == "") ||
-				(linkactive == "") ||
-				(debugenabled == "")
-				)
+			if ((data.empty()) || (linkactive.empty()) || (debugenabled.empty()))
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
-			m_sql.UpdatePreferencesVar("GooglePubSubData", data.c_str());
+			m_sql.UpdatePreferencesVar("GooglePubSubData", data);
 			m_sql.UpdatePreferencesVar("GooglePubSubActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("GooglePubSubDebug", idebugenabled);
 
@@ -406,11 +403,11 @@ namespace http {
 			std::string targetproperty = request::findValue(&req, "targetproperty");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string includeunit = request::findValue(&req, "includeunit");
-			if ((targettypei == 0) && (targetvariable == ""))
+			if ((targettypei == 0) && (targetvariable.empty()))
 				return;
-			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
+			if ((targettypei == 1) && ((targetdeviceid.empty()) || (targetproperty.empty())))
 				return;
-			if ((targettypei == 2) && (targetdeviceid == ""))
+			if ((targettypei == 2) && (targetdeviceid.empty()))
 				return;
 			if (idx == "0") {
 				m_sql.safe_query(
@@ -453,7 +450,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
 			root["status"] = "OK";

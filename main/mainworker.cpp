@@ -772,7 +772,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode2, Mode1, (std::string("Domoticz") + szRandomUUID).c_str(), Mode3 != 0);
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode2, Mode1, std::string("Domoticz") + szRandomUUID, Mode3 != 0);
 		break;
 	case HTYPE_eHouseTCP:
 		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway
@@ -1313,7 +1313,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	stdreplace(revfile, "\r\n", "\n");
 	std::vector<std::string> strarray;
 	StringSplit(revfile, "\n", strarray);
-	if (strarray.size() < 1)
+	if (strarray.empty())
 		return false;
 	StringSplit(strarray[0], " ", strarray);
 	if (strarray.size() != 3)
@@ -1638,7 +1638,7 @@ void MainWorker::Do_Work()
 				m_notificationsystem.Notify(Notification::DZ_START, Notification::STATUS_INFO);
 			}
 		}
-		if (m_devicestorestart.size() > 0)
+		if (!m_devicestorestart.empty())
 		{
 			for (const auto &hwid : m_devicestorestart)
 			{
@@ -1813,7 +1813,7 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const uint8_t* pRXComma
 	*pOriginalHardware = nullptr;
 	uint8_t devType = pRXCommand[1];
 	uint8_t subType = pRXCommand[2];
-	std::string ID = "";
+	std::string ID;
 	uint8_t Unit = 0;
 	const tRBUF* pResponse = reinterpret_cast<const tRBUF*>(pRXCommand);
 	char szTmp[300];
@@ -1932,7 +1932,7 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const uint8_t* pRXComma
 		return -1;
 	}
 
-	if (ID != "")
+	if (!ID.empty())
 	{
 		// find our original hardware
 		// if it is not a domoticz type, perform the actual command
@@ -2181,7 +2181,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 	const_cast<CDomoticzHardwareBase*>(pHardware)->SetHeartbeatReceived();
 
 	uint64_t DeviceRowIdx = (uint64_t)-1;
-	std::string DeviceName = "";
+	std::string DeviceName;
 	tcp::server::CTCPClient *pClient2Ignore = nullptr;
 
 	if (pHardware->HwdType == HTYPE_Domoticz)
@@ -6748,7 +6748,7 @@ void MainWorker::decode_evohome2(const CDomoticzHardwareBase* pHardware, const t
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x') AND (Type==%d)",
 			pHardware->m_HwdID, (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3), (int)pEvo->type);
 	}
-	if (result.size() < 1 && !pEvo->zone)
+	if (result.empty() && !pEvo->zone)
 		return;
 
 	CEvohomeBase* pEvoHW = (CEvohomeBase*)pHardware;
@@ -11366,12 +11366,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	uint8_t dType = atoi(sd[3].c_str());
 	uint8_t dSubType = atoi(sd[4].c_str());
 	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
-	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
+	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
 	//when asking for Toggle, just switch to the opposite value
 	if (switchcmd == "Toggle") {
 		//Request current state of switch
-		std::string lstatus = "";
+		std::string lstatus;
 		int llevel = 0;
 		bool bHaveDimmer = false;
 		bool bHaveGroupCmd = false;
@@ -12426,7 +12426,7 @@ bool MainWorker::SwitchLight(const std::string& idx, const std::string& switchcm
 {
 	uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 	int ilevel = -1;
-	if (level != "")
+	if (!level.empty())
 		ilevel = atoi(level.c_str());
 
 	return SwitchLight(ID, switchcmd, ilevel, _tColor(color), atoi(ooc.c_str()) != 0, ExtraDelay, User);
@@ -12450,8 +12450,8 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 	int iOnDelay = atoi(sd[6].c_str());
 	int nValue = atoi(sd[7].c_str());
-	std::string sValue = sd[8].c_str();
-	std::string devName = sd[9].c_str();
+	std::string sValue = sd[8];
+	std::string devName = sd[9];
 	//std::string sOptions = sd[10].c_str();
 
 	bool bIsOn = IsLightSwitchOn(switchcmd);
@@ -12461,7 +12461,8 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 		if ((switchtype == STYPE_Selector) && (nValue == nNewVal) && (level == atoi(sValue.c_str()))) {
 			return true;
 		}
-		else if (nValue == nNewVal) {
+		if (nValue == nNewVal)
+		{
 			return true;//FIXME no return code for already set
 		}
 	}
@@ -12475,8 +12476,7 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(static_cast<float>(iOnDelay + ExtraDelay), idx, switchcmd, level, color, "Switch with Delay", User));
 		return true;
 	}
-	else
-		return SwitchLightInt(sd, switchcmd, level, color, false, User);
+	return SwitchLightInt(sd, switchcmd, level, color, false, User);
 }
 
 bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue, const std::string& newMode, const std::string& until)
@@ -12920,38 +12920,38 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 		//pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_NEST)
+	if (pHardware->HwdType == HTYPE_NEST)
 	{
 		CNest* pGateway = reinterpret_cast<CNest*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
+	if (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
 	{
 		CNestOAuthAPI* pGateway = reinterpret_cast<CNestOAuthAPI*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
+	if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
 	{
 		CAnnaThermostat* pGateway = reinterpret_cast<CAnnaThermostat*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_THERMOSMART)
+	if (pHardware->HwdType == HTYPE_THERMOSMART)
 	{
 		//CThermosmart *pGateway = reinterpret_cast<CThermosmart *>(pHardware);
 		//pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_Netatmo)
+	if (pHardware->HwdType == HTYPE_Netatmo)
 	{
 		CNetatmo* pGateway = reinterpret_cast<CNetatmo*>(pHardware);
 		int tIndex = atoi(idx.c_str());
 		pGateway->SetProgramState(tIndex, newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+	if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 	{
 		CInComfort* pGateway = reinterpret_cast<CInComfort*>(pHardware);
 		pGateway->SetProgramState(newState);
@@ -12982,7 +12982,7 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 				StringSplit(sCodeCmd, ":", arrayCode);
 
 				std::string sID = arrayCode[0];
-				std::string sCode = "";
+				std::string sCode;
 				if (arrayCode.size() == 2)
 				{
 					sCode = arrayCode[1];
@@ -13017,9 +13017,9 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 
 	std::string Name = "Unknown?";
 	_eSceneGroupType scenetype = SGTYPE_SCENE;
-	std::string onaction = "";
-	std::string offaction = "";
-	std::string status = "";
+	std::string onaction;
+	std::string offaction;
+	std::string status;
 
 	//Get Scene details
 	result = m_sql.safe_query("SELECT Name, SceneType, OnAction, OffAction, nValue FROM Scenes WHERE (ID == %" PRIu64 ")", idx);
@@ -13064,7 +13064,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 	int n2Value;
 	if (m_sql.GetPreferencesVar("EmailServer", n2Value, emailserver))
 	{
-		if (emailserver != "")
+		if (!emailserver.empty())
 		{
 			result = m_sql.safe_query(
 				"SELECT CameraRowID, DevSceneDelay FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID==%" PRIu64 ") AND (DevSceneWhen==%d)",
@@ -13223,7 +13223,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, c
 				StringSplit(sCodeCmd, ":", arrayCode);
 
 				std::string sID = arrayCode[0];
-				std::string sCode = "";
+				std::string sCode;
 				if (arrayCode.size() == 2)
 				{
 					sCode = arrayCode[1];
@@ -13245,7 +13245,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, c
 						rnValue = 1; //A Scene can only be activated (On)
 					}
 
-					std::string lstatus = "";
+					std::string lstatus;
 					int llevel = 0;
 					bool bHaveDimmer = false;
 					bool bHaveGroupCmd = false;
@@ -13483,7 +13483,7 @@ void MainWorker::HeartbeatCheck()
 				}
 				if (bHaveDataTimeout)
 				{
-					std::string sDataTimeout = "";
+					std::string sDataTimeout;
 					int totNum = 0;
 					if (pHardware->m_DataTimeout < 60) {
 						totNum = pHardware->m_DataTimeout;
@@ -13547,7 +13547,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID,
 {
 	// Prevent hazardous modification of DB from JSON calls
 	std::string devname = "Unknown";
-	uint64_t devidx = m_sql.GetDeviceIndex(HardwareID, DeviceID.c_str(), unit, devType, subType, devname);
+	uint64_t devidx = m_sql.GetDeviceIndex(HardwareID, DeviceID, unit, devType, subType, devname);
 	if (devidx == (uint64_t)-1)
 		return false;
 	std::stringstream sidx;

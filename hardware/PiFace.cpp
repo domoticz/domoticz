@@ -124,7 +124,7 @@ std::string & CPiFace::preprocess(std::string &s)
     return s;
 }
 
-int CPiFace::LocateValueInParameterArray(std::string Parametername,const std::string *ParameterArray,int Items)
+int CPiFace::LocateValueInParameterArray(const std::string &Parametername, const std::string *ParameterArray, int Items)
 {
     int NameFound=-1; //assume not found
     int Parameter_Index;
@@ -139,7 +139,7 @@ int CPiFace::LocateValueInParameterArray(std::string Parametername,const std::st
     return (NameFound);
 }
 
-int CPiFace::GetParameterString(std::string TargetString,const char * SearchStr, int StartPos,  std::string &Parameter)
+int CPiFace::GetParameterString(const std::string &TargetString, const char *SearchStr, int StartPos, std::string &Parameter)
 {
     int EndPos=-1;
     std::string Substring;
@@ -958,7 +958,7 @@ int CPiFace::Init_SPI_Device(int Init)
 #endif
         return -1;
     }
-    else return m_fd;
+    return m_fd;
 }
 
 int CPiFace::Detect_PiFace_Hardware()
@@ -1575,9 +1575,10 @@ namespace http {
 			}
 
             std::string idx = request::findValue(&req, "idx");
-            if (idx == "") {
-                return;
-            }
+	    if (idx.empty())
+	    {
+		    return;
+	    }
 
 	    m_mainworker.RestartHardware(idx);
 	}

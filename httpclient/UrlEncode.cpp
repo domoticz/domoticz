@@ -76,17 +76,8 @@ bool CURLEncode::isUnsafe(char compareChar)
 	//char_ascii_value = __toascii(compareChar);
 	char_ascii_value = (int) compareChar;
 
-	if(bcharfound == false &&  char_ascii_value > 32 && char_ascii_value < 123)
-	{
-		return false;
-	}
-	// found no unsafe chars, return false		
-	else
-	{
-		return true;
-	}
-
-	return true;
+	// found no unsafe chars, return false
+	return !(bcharfound == false && char_ascii_value > 32 && char_ascii_value < 123);
 }
 // PURPOSE OF THIS FUNCTION IS TO CONVERT A STRING 
 // TO URL ENCODE FORM.

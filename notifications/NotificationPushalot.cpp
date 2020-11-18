@@ -57,5 +57,5 @@ bool CNotificationPushalot::SendMessageImplementation(
 
 bool CNotificationPushalot::IsConfigured()
 {
-	return _apikey != "";
+	return !_apikey.empty();
 }

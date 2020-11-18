@@ -18,7 +18,7 @@ typedef struct _STR_TABLE_ID1_ID2 {
 	const char   *str1;
 } STR_TABLE_ID1_ID2;
 
-extern const char *findTableID1ID2(const _STR_TABLE_ID1_ID2 *t, const unsigned long id1, const unsigned long id2);
+extern const char *findTableID1ID2(const _STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2);
 
 const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType)
 {
@@ -716,10 +716,8 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 		}
 		return sendValue;
 	}
-	else {
-		_log.Log(LOG_ERROR, "BasePush: Could not determine data push value");
-		return "";
-	}
+	_log.Log(LOG_ERROR, "BasePush: Could not determine data push value");
+	return "";
 }
 
 std::string CBasePush::getUnit(const int delpos, const int metertypein)

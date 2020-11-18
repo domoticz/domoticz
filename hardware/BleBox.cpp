@@ -820,11 +820,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
-			if (
-				(hwid == "") ||
-				(mode1 == "") ||
-				(mode2 == "")
-				)
+			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
@@ -854,11 +850,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
-			if (
-				(hwid == "") ||
-				(name == "") ||
-				(ip == "")
-				)
+			if ((hwid.empty()) || (name.empty()) || (ip.empty()))
 				return;
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
@@ -880,10 +872,7 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()))
 				return;
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
@@ -925,10 +914,7 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string ipmask = request::findValue(&req, "ipmask");
-			if (
-				(hwid == "") ||
-				(ipmask == "")
-				)
+			if ((hwid.empty()) || (ipmask.empty()))
 				return;
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
@@ -985,7 +971,7 @@ Json::Value BleBox::SendCommand(const std::string & IPAddress, const std::string
 		return root;
 	}
 
-	if (root.size() == 0)
+	if (root.empty())
 	{
 		Log(LOG_ERROR, "Json is empty!");
 		return root;
@@ -1007,10 +993,10 @@ std::string BleBox::IdentifyDevice(const std::string & IPAddress)
 
 	if (root["device"].empty() == true)
 	{
-		if (DoesNodeExists(root, "type") == false)
+		if (!DoesNodeExists(root, "type"))
 			return "";
-		else
-			result = root["type"].asString();
+
+		result = root["type"].asString();
 	}
 	else
 	{
@@ -1036,10 +1022,8 @@ Json::Value BleBox::GetApiDeviceState(const std::string & IPAddress)
 	{
 		return root;
 	}
-	else
-	{
-		return root["device"];
-	}
+
+	return root["device"];
 }
 
 std::string BleBox::GetUptime(const std::string & IPAddress)
@@ -1092,10 +1076,8 @@ int BleBox::GetDeviceType(const std::string & IPAddress)
 		Log(LOG_ERROR, "unknown device (%s)", IPAddress.c_str());
 		return -1;
 	}
-	else
-	{
-		return itt->second;
-	}
+
+	return itt->second;
 }
 
 void BleBox::AddNode(const std::string & name, const std::string & IPAddress, bool reloadNodes)
@@ -1180,11 +1162,9 @@ bool BleBox::LoadNodes()
 		}
 		return true;
 	}
-	else
-	{
-		Log(LOG_ERROR, "Cannot find any devices...");
-		return false;
-	}
+
+	Log(LOG_ERROR, "Cannot find any devices...");
+	return false;
 }
 
 void BleBox::ReloadNodes()

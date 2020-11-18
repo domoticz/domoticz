@@ -284,7 +284,7 @@ void Meteostick::ParseLine()
 
 	std::vector<std::string> results;
 	StringSplit(sLine, " ", results);
-	if (results.size() < 1)
+	if (results.empty())
 		return; //invalid data
 
 	switch (m_state)

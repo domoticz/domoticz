@@ -19,11 +19,7 @@
  *   for more informations visit http://te923.fukz.org                     *
  ***************************************************************************/
 
-#ifdef WIN32
-	#include "libusbwinusbbridge.h"
-#else
-	#include <usb.h>
-#endif
+#include <usb.h>
 
 #define TE923_VENDOR    0x1130
 #define TE923_PRODUCT   0x6801
@@ -77,7 +73,7 @@ bool CTE923Tool::OpenDevice()
 		_log.Log(LOG_ERROR, "TE923: Error while opening USB port and getting a device handler." );
 		return false;
 	}
-#if !defined(WIN32) && !defined(__NetBSD__)
+#ifndef __NetBSD__
 	char driver_name[30];
 	ret = usb_get_driver_np(m_device_handle, 0, driver_name, 30);
 	if ( ret == 0 ) {
@@ -95,14 +91,12 @@ bool CTE923Tool::OpenDevice()
 		_log.Log(LOG_ERROR, "TE923: Error while claiming device interface (%d)." , ret );
 		return false;
 	}
-#ifndef WIN32
 	ret = usb_set_altinterface( m_device_handle, 0 );
 	if ( ret != 0 ) {
 		_log.Log(LOG_ERROR, "TE923: Error while setting alternative device interface (%d)." , ret );
 		return false;
 	}
 	usleep(500000);
-#endif
 	return true;
 }
 
@@ -110,9 +104,7 @@ void CTE923Tool::CloseDevice()
 {
 	if (m_device_handle != nullptr)
 	{
-#ifndef WIN32
 		usb_release_interface( m_device_handle, 0 );
-#endif
 		usb_close(m_device_handle);
 	}
 	m_device_handle = nullptr;
@@ -298,14 +290,10 @@ int CTE923Tool::read_from_te923( int adr, unsigned char *rbuf )
 	ret = usb_control_msg( m_device_handle, 0x21, 0x09, 0x0200, 0x0000, (char*)&buf, 0x08, timeout );
 	if ( ret < 0 )
 		return -1;
-#ifndef WIN32
 	usleep(300000);
-#endif
 	while ( usb_interrupt_read( m_device_handle, 0x01, (char*)&buf, 0x8, timeout ) > 0 ) 
 	{
-#ifndef WIN32
 		usleep(150000);
-#endif
 		int bytes = ( int )buf[0];
 		if (( count + bytes ) < BUFLEN )
 			memcpy( rbuf + count, buf + 1, bytes );

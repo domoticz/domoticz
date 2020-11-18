@@ -87,7 +87,7 @@ std::string CGpioPin::ToString()
 {
 	if (m_direction == 0)
 		return m_label + " (INPUT)";
-	else if (m_direction == 1)
+	if (m_direction == 1)
 		return m_label + " (OUTPUT)";
 	return m_label + " Unknown!?";
 }

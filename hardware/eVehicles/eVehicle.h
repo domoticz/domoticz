@@ -25,10 +25,11 @@ public:
 		Mercedes
 	};
 
-	CeVehicle(const int ID, const eVehicleType vehicletype, const std::string& username, const std::string& password, int defaultinterval, int activeinterval, bool allowwakeup, const std::string& carid);
+	CeVehicle(int ID, eVehicleType vehicletype, const std::string &username, const std::string &password, int defaultinterval, int activeinterval, bool allowwakeup, const std::string &carid);
 	~CeVehicle() override;
-	bool WriteToHardware(const char* pdata, const unsigned char length) override;
-private:
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	enum eApiCommandType {
 		Send_Climate_Off,
 		Send_Climate_On,
@@ -99,21 +100,21 @@ private:
 	void UpdateClimateData(CVehicleApi::tClimateData& data);
 	void UpdateVehicleData(CVehicleApi::tVehicleData& data);
 	void UpdateCustomVehicleData(CVehicleApi::tCustomData& data);
-	bool DoSetCommand(tApiCommand command);
+	bool DoSetCommand(const tApiCommand &command);
 
 	void AddCommand(eApiCommandType command_type, std::string command_parameter = "");
 	bool DoNextCommand();
-	std::string GetCommandString(const eApiCommandType command);
-	
+	std::string GetCommandString(eApiCommandType command);
+
 	void SendAlert();
-	void SendAlert(int alertType, int value, std::string title);
+	void SendAlert(int alertType, int value, const std::string &title);
 	void SendSwitch(int switchType, bool value);
 	void SendValueSwitch(int switchType, int value);
 	void SendTemperature(int tempType, float value);
 	void SendPercentage(int percType, float value);
 	void SendCounter(int countType, float value);
-	void SendCustom(int countType, int ChildId, float value, std::string label);
-	void SendText(int countType, int ChildId, std::string value, std::string label);
+	void SendCustom(int countType, int ChildId, float value, const std::string &label);
+	void SendText(int countType, int ChildId, const std::string &value, const std::string &label);
 
 	bool StartHardware() override;
 	bool StopHardware() override;

@@ -145,7 +145,7 @@ namespace Plugins {
 		  , m_Socket(nullptr)
 		  , m_Timer(nullptr)
 		  , m_SequenceNo(-1){};
-	  void handleAsyncResolve(const boost::system::error_code &err, boost::asio::ip::icmp::resolver::iterator endpoint_iterator);
+	  void handleAsyncResolve(const boost::system::error_code &err, const boost::asio::ip::icmp::resolver::iterator &endpoint_iterator);
 	  bool handleListen() override;
 	  void handleTimeout(const boost::system::error_code &);
 	  void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;

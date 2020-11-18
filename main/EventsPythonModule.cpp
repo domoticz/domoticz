@@ -164,8 +164,7 @@
 			_log.Log(LOG_STATUS, "EventSystem - Python stopped...");
 			return true;
 		}
-		else
-			return false;
+		return false;
 	}
 
 	PyObject *PythonEventsGetModule()
@@ -177,22 +176,16 @@
 			// _log.Log(LOG_STATUS, "Python Event System: Module found");
 			return pModule;
 		}
-		else
-		{
-			Plugins::PyRun_SimpleStringFlags("import DomoticzEvents", nullptr);
-			pModule = PyState_FindModule(&DomoticzEventsModuleDef);
+		Plugins::PyRun_SimpleStringFlags("import DomoticzEvents", nullptr);
+		pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 
-			if (pModule)
-			{
-				return pModule;
-			}
-			else
-			{
-				// Py_INCREF(Py_None);
-				// return Py_None;
-				return nullptr;
-			}
+		if (pModule)
+		{
+			return pModule;
 		}
+		// Py_INCREF(Py_None);
+		// return Py_None;
+		return nullptr;
 	}
 
 	// main_namespace["otherdevices_temperature"] = toPythonDict(m_tempValuesByName);

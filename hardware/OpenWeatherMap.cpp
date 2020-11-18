@@ -108,7 +108,7 @@ bool COpenWeatherMap::ResolveLocation(const std::string& Location, double& latit
 		Log(LOG_ERROR, "Invalid data received (not JSON)!");
 		return false;
 	}
-	if (root.size() < 1)
+	if (root.empty())
 	{
 		Log(LOG_ERROR, "No data, empty response received!");
 		return false;
@@ -357,7 +357,7 @@ Json::Value COpenWeatherMap::GetForecastData()
 	return root;
 }
 
-std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, std::string UTCtimestamp)
+std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, const std::string &UTCtimestamp)
 {
 	std::string sHour = "Unknown";
 
@@ -389,7 +389,7 @@ std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, std::
 	return sHour;
 }
 
-std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, std::string UTCtimestamp)
+std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, const std::string &UTCtimestamp)
 {
 	std::string sDay = "Unknown";
 
@@ -427,7 +427,7 @@ std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, std::st
 	return sDay;
 }
 
-bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string period, const std::string periodname, const uint8_t count, const int startNodeID)
+bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &period, const std::string &periodname, const uint8_t count, const int startNodeID)
 {
 	bool bResult = false;
 
@@ -495,21 +495,21 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string p
 			std::stringstream sName;
 
 			sName << "TempHumBaro " << period << " " << (count + 0);
-			SendTempHumBaroSensorFloat(NodeID, 255, maxtemp, humidity, barometric, barometric_forecast, sName.str().c_str());
+			SendTempHumBaroSensorFloat(NodeID, 255, maxtemp, humidity, barometric, barometric_forecast, sName.str());
 
 			NodeID++;;
 			sName.str("");
 			sName.clear();
 			sName << "Weather Description " << period << " " << (count + 0);
-			SendTextSensor(NodeID, 1, 255, wdesc, sName.str().c_str());
+			SendTextSensor(NodeID, 1, 255, wdesc, sName.str());
 			sName.str("");
 			sName.clear();
 			sName << "Weather Description " << period << " " << (count + 0) << " Icon";
-			SendTextSensor(NodeID, 2, 255, wicon, sName.str().c_str());
+			SendTextSensor(NodeID, 2, 255, wicon, sName.str());
 			sName.str("");
 			sName.clear();
 			sName << "Weather Description " << period << " " << (count + 0) << " Name";
-			SendTextSensor(NodeID, 3, 255, periodname.c_str(), sName.str().c_str());
+			SendTextSensor(NodeID, 3, 255, periodname, sName.str());
 
 			NodeID++;;
 			sName.str("");
@@ -517,14 +517,14 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string p
 			sName << "Minumum Temperature " << period << " " << (count + 0);
 			if (mintemp != -999.9f)
 			{
-				SendTempSensor(NodeID, 255, mintemp, sName.str().c_str());
+				SendTempSensor(NodeID, 255, mintemp, sName.str());
 			}
 
 			NodeID++;;
 			sName.str("");
 			sName.clear();
 			sName << "Wind " << period << " " << (count + 0);
-			SendWind(NodeID, 255, wind_degrees, windspeed_ms, 0, 0, 0, false, false, sName.str().c_str());
+			SendWind(NodeID, 255, wind_degrees, windspeed_ms, 0, 0, 0, false, false, sName.str());
 
 			NodeID++;;
 			sName.str("");
@@ -532,7 +532,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string p
 			sName << "UV Index " << period << " " << (count + 0);
 			if (uvi != -999.9f)
 			{
-				SendUVSensor(NodeID, 1, 255, uvi, sName.str().c_str());
+				SendUVSensor(NodeID, 1, 255, uvi, sName.str());
 			}
 
 			NodeID++;
@@ -542,7 +542,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string p
 			sName.str("");
 			sName.clear();
 			sName << "Clouds % " << period << " " << (count + 0);
-			SendPercentageSensor(NodeID, 1, 255, clouds, sName.str().c_str());
+			SendPercentageSensor(NodeID, 1, 255, clouds, sName.str());
 
 			NodeID++;;
 			if ((rainmm != 9999.00f) && (rainmm >= 0.00f))
@@ -550,14 +550,14 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string p
 				sName.str("");
 				sName.clear();
 				sName << "Rain(Snow) " << period << " " << (count + 0);
-				SendRainRateSensor(NodeID, 255, rainmm, sName.str().c_str());
+				SendRainRateSensor(NodeID, 255, rainmm, sName.str());
 			}
 
 			NodeID++;;
 			sName.str("");
 			sName.clear();
 			sName << "Precipitation " << period << " " << (count + 0);
-			SendPercentageSensor(NodeID, 1, 255, (pop * 100), sName.str().c_str());
+			SendPercentageSensor(NodeID, 1, 255, (pop * 100), sName.str());
 
 			bResult = true;
 			Debug(DEBUG_NORM, "Processed forecast for period %d: %s - %f - %f - %f",count, wdesc.c_str(), maxtemp, mintemp, pop);
@@ -635,7 +635,7 @@ void COpenWeatherMap::GetMeterDetails()
 		Log(LOG_ERROR,"Invalid data received (not JSON)!");
 		return;
 	}
-	if (root.size() < 1)
+	if (root.empty())
 	{
 		Log(LOG_ERROR, "No data, empty response received!");
 		return;
@@ -810,17 +810,14 @@ void COpenWeatherMap::GetMeterDetails()
 				Log(LOG_STATUS, "Processing daily forecast failed (unexpected structure)!");
 				break;
 			}
-			else
+			std::string sDay = GetDayFromUTCtimestamp(iDay, dailyfc[iDay]["dt"].asString());
+			Debug(DEBUG_NORM, "Processing daily forecast for %s (%s)", dailyfc[iDay]["dt"].asString().c_str(), sDay.c_str());
+
+			Json::Value curday = dailyfc[iDay];
+
+			if (!ProcessForecast(curday, "Day", sDay, iDay, 17))
 			{
-				std::string sDay = GetDayFromUTCtimestamp(iDay, dailyfc[iDay]["dt"].asString());
-				Debug(DEBUG_NORM, "Processing daily forecast for %s (%s)",dailyfc[iDay]["dt"].asString().c_str() ,sDay.c_str());
-
-				Json::Value curday = dailyfc[iDay];
-
-				if (!ProcessForecast(curday, "Day", sDay, iDay, 17))
-				{
-					Log(LOG_STATUS, "Processing daily forecast for day %d failed!",iDay);
-				}
+				Log(LOG_STATUS, "Processing daily forecast for day %d failed!", iDay);
 			}
 			iDay++;
 		}
@@ -847,17 +844,14 @@ void COpenWeatherMap::GetMeterDetails()
 				Log(LOG_STATUS, "Processing hourly forecast failed (unexpected structure)!");
 				break;
 			}
-			else
+			std::string sHour = GetHourFromUTCtimestamp(iHour, hourlyfc[iHour]["dt"].asString());
+			Debug(DEBUG_NORM, "Processing hourly forecast for %s (%s)", hourlyfc[iHour]["dt"].asString().c_str(), sHour.c_str());
+
+			Json::Value curhour = hourlyfc[iHour];
+
+			if (!ProcessForecast(curhour, "Hour", sHour, iHour, 257))
 			{
-				std::string sHour = GetHourFromUTCtimestamp(iHour, hourlyfc[iHour]["dt"].asString());
-				Debug(DEBUG_NORM, "Processing hourly forecast for %s (%s)",hourlyfc[iHour]["dt"].asString().c_str() ,sHour.c_str());
-
-				Json::Value curhour = hourlyfc[iHour];
-
-				if (!ProcessForecast(curhour, "Hour", sHour, iHour, 257))
-				{
-					Log(LOG_STATUS, "Processing hourly forecast for hour %d failed!",iHour);
-				}
+				Log(LOG_STATUS, "Processing hourly forecast for hour %d failed!", iHour);
 			}
 			iHour++;
 		}

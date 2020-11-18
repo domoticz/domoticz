@@ -111,16 +111,19 @@ class CPanasonicNode : public StoppableTask
 	};
 
 public:
-	CPanasonicNode(const int, const int, const int, const std::string&, const std::string&, const std::string&, const std::string&);
-	~CPanasonicNode();
-	void			Do_Work();
-	void			SendCommand(const std::string &command);
-	void			SendCommand(const std::string &command, const int iValue);
-	void			SetExecuteCommand(const std::string &command);
-	bool			SendShutdown();
-	void			StopThread();
-	bool			StartThread();
-	bool			IsBusy() { return m_Busy; };
+  CPanasonicNode(int, int, int, const std::string &, const std::string &, const std::string &, const std::string &);
+  ~CPanasonicNode();
+  void Do_Work();
+  void SendCommand(const std::string &command);
+  void SendCommand(const std::string &command, int iValue);
+  void SetExecuteCommand(const std::string &command);
+  bool SendShutdown();
+  void StopThread();
+  bool StartThread();
+  bool IsBusy()
+  {
+	  return m_Busy;
+  };
 	bool			IsOn() { return (m_CurrentStatus.Status() == MSTAT_ON); };
 
 	int				m_ID;
@@ -133,41 +136,42 @@ protected:
 	bool			m_Stoppable;
 
 private:
-	bool			handleConnect(boost::asio::ip::tcp::socket&, boost::asio::ip::tcp::endpoint, boost::system::error_code&);
-	std::string		handleWriteAndRead(std::string);
-	int				handleMessage(std::string);
-	std::string		buildXMLStringRendCtl(const std::string &, const std::string &);
-	std::string		buildXMLStringRendCtl(const std::string &, const std::string &, const std::string &);
-	std::string		buildXMLStringNetCtl(const std::string &);
+  bool handleConnect(boost::asio::ip::tcp::socket &, const boost::asio::ip::tcp::endpoint &, boost::system::error_code &);
+  std::string handleWriteAndRead(const std::string &);
+  int handleMessage(const std::string &);
+  std::string buildXMLStringRendCtl(const std::string &, const std::string &);
+  std::string buildXMLStringRendCtl(const std::string &, const std::string &, const std::string &);
+  std::string buildXMLStringNetCtl(const std::string &);
 
-	int				m_HwdID;
-	char			m_szDevID[40];
-	std::string		m_IP;
-	std::string		m_Port;
-	bool			m_PowerOnSupported;
+  int m_HwdID;
+  char m_szDevID[40];
+  std::string m_IP;
+  std::string m_Port;
+  bool m_PowerOnSupported;
 
-	CPanasonicStatus		m_PreviousStatus;
-	CPanasonicStatus		m_CurrentStatus;
-	//void			UpdateStatus();
-	void			UpdateStatus(bool force = false);
+  CPanasonicStatus m_PreviousStatus;
+  CPanasonicStatus m_CurrentStatus;
+  // void			UpdateStatus();
+  void UpdateStatus(bool force = false);
 
-	std::string		m_ExecuteCommand;
+  std::string m_ExecuteCommand;
 
-	std::string		m_RetainedData;
+  std::string m_RetainedData;
 
-	int				m_iTimeoutCnt;
-	int				m_iPollIntSec;
-	int				m_iMissedPongs;
-	std::string		m_sLastMessage;
-	inline bool isInteger(const std::string & s)
-	{
-		if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
+  int m_iTimeoutCnt;
+  int m_iPollIntSec;
+  int m_iMissedPongs;
+  std::string m_sLastMessage;
+  inline bool isInteger(const std::string &s)
+  {
+	  if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+')))
+		  return false;
 
-		char * p;
-		strtol(s.c_str(), &p, 10);
+	  char *p;
+	  strtol(s.c_str(), &p, 10);
 
-		return (*p == 0);
-	}
+	  return (*p == 0);
+  }
 };
 
 
@@ -311,13 +315,13 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	if (m_CurrentStatus.Status() != m_PreviousStatus.Status() || forceupdate)
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
-		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str());
+		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name);
 	}
 
 	m_PreviousStatus = m_CurrentStatus;
 }
 
-bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::asio::ip::tcp::endpoint endpoint, boost::system::error_code& ec)
+bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket &socket, const boost::asio::ip::tcp::endpoint &endpoint, boost::system::error_code &ec)
 {
 	try
 	{
@@ -329,20 +333,12 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 				_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Connected to '%s:%s'.", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()));
 				return true;
 			}
-			else
+			if (((ec.value() != 113) && (ec.value() != 111) && (ec.value() != 10060) && (ec.value() != 10061) && (ec.value() != 10064)))
+			// && (ec.value() != 10061)
+			// Connection failed due to no response, no route or active refusal
 			{
-				if ((
-					(ec.value() != 113) &&
-					(ec.value() != 111) &&
-					(ec.value() != 10060) &&
-					(ec.value() != 10061) &&
-					(ec.value() != 10064) //&&
-					//(ec.value() != 10061)
-					)
-					) // Connection failed due to no response, no route or active refusal
-				{
-					_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
-				}
+				_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(),
+					   (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
 			}
 		}
 	}
@@ -356,8 +352,7 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 
 }
 
-
-std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
+std::string CPanasonicNode::handleWriteAndRead(const std::string &pMessageToSend)
 {
 
 	_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Handling message: '%s'.", m_Name.c_str(), pMessageToSend.c_str());
@@ -380,8 +375,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 			_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Connected.", m_Name.c_str());
 			break;
 		}
-		else
-			iter++;
+		iter++;
 	}
 	if (error)
 	{
@@ -412,7 +406,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	}
 }
 
-int CPanasonicNode::handleMessage(std::string pMessage)
+int CPanasonicNode::handleMessage(const std::string &pMessage)
 {
 	int iPosBegin = 0;
 	int iPosEnd = 0;
@@ -421,7 +415,7 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	std::string ResponseOK("HTTP/1.1 200");
 	std::string ResponseOff("HTTP/1.1 400");
 
-	if (pMessage == "ERROR" || pMessage == "")
+	if (pMessage == "ERROR" || pMessage.empty())
 	{
 		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) handleMessage passed error or empty string!", m_Name.c_str());
 		return -1;
@@ -588,7 +582,7 @@ void CPanasonicNode::Do_Work()
 
 void CPanasonicNode::SendCommand(const std::string &command)
 {
-	std::string	sPanasonicCall = "";
+	std::string sPanasonicCall;
 
 	if (m_CurrentStatus.Status() == MSTAT_OFF && !m_PowerOnSupported)
 	{
@@ -733,8 +727,7 @@ bool CPanasonicNode::SendShutdown()
 		_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Sent command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 		return true;
 	}
-	else
-		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
+	_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 	return false;
 }
 
@@ -1050,7 +1043,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
@@ -1089,11 +1082,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
-			if (
-				(hwid == "") ||
-				(mode1 == "") ||
-				(mode2 == "")
-				)
+			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -1127,12 +1116,7 @@ namespace http {
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Port = atoi(request::findValue(&req, "port").c_str());
-			if (
-				(hwid == "") ||
-				(name == "") ||
-				(ip == "") ||
-				(Port == 0)
-				)
+			if ((hwid.empty()) || (name.empty()) || (ip.empty()) || (Port == 0))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -1160,13 +1144,7 @@ namespace http {
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Port = atoi(request::findValue(&req, "port").c_str());
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(name == "") ||
-				(ip == "") ||
-				(Port == 0)
-				)
+			if ((hwid.empty()) || (nodeid.empty()) || (name.empty()) || (ip.empty()) || (Port == 0))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -1192,10 +1170,7 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -1220,7 +1195,7 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);

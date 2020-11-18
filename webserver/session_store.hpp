@@ -30,7 +30,7 @@ public:
   /**
    * Retrieve user session from store
    */
-  virtual const WebEmStoredSession GetSession(const std::string &sessionId) = 0;
+  virtual WebEmStoredSession GetSession(const std::string &sessionId) = 0;
 
   /**
    * Save user session into store

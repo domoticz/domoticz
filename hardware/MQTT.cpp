@@ -286,7 +286,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 			}
 			return;
 		}
-		else if (szCommand == "switchlight")
+		if (szCommand == "switchlight")
 		{
 			std::string switchcmd = root["switchcmd"].asString();
 			//if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle") && (switchcmd != "Set Level") && (switchcmd != "Stop"))
@@ -569,9 +569,7 @@ bool MQTT::ConnectIntEx()
 			_log.Log(LOG_ERROR, "MQTT: Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
 			return false;
 		}
-		else {
-			_log.Log(LOG_STATUS, "MQTT: enabled TLS mode");
-		}
+		_log.Log(LOG_STATUS, "MQTT: enabled TLS mode");
 	}
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
@@ -832,7 +830,7 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string&/*SceneName*
 	std::vector<std::string> sd = result[0];
 
 	std::string sName = sd[1];
-	std::string sLastUpdate = sd[6].c_str();
+	std::string sLastUpdate = sd[6];
 
 	unsigned char nValue = (uint8_t)atoi(sd[4].c_str());
 	unsigned char scenetype = (uint8_t)atoi(sd[5].c_str());

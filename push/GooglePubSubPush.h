@@ -11,9 +11,8 @@ public:
 	void UpdateActive();
 
 private:
-
-	void OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
-	void DoGooglePubSubPush();
+  void OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
+  void DoGooglePubSubPush();
 };
 extern CGooglePubSubPush m_googlepubsubpush;
 

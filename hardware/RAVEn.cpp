@@ -100,14 +100,11 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
 #endif
         return;
     }
-    else
-    {
 #ifdef _DEBUG
-        _log.Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - m_buffer, m_wptr - endPtr, endPtr);
+    _log.Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - m_buffer, m_wptr - endPtr, endPtr);
 #endif
-        memmove(m_buffer, endPtr, m_wptr - endPtr);
-        m_wptr = m_buffer + (m_wptr - endPtr);
-    }
+    memmove(m_buffer, endPtr, m_wptr - endPtr);
+    m_wptr = m_buffer + (m_wptr - endPtr);
 
     TiXmlElement *pRoot;
 

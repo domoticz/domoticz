@@ -482,9 +482,8 @@ Serial::SerialImpl::available ()
   int count = 0;
   if (-1 == ioctl (fd_, TIOCINQ, &count)) {
       THROW (IOException, errno);
-  } else {
-      return static_cast<size_t> (count);
   }
+  return static_cast<size_t>(count);
 }
 
 bool
@@ -949,10 +948,7 @@ Serial::SerialImpl::getCTS ()
     ss << "getCTS failed on a call to ioctl(TIOCMGET): " << errno << " " << strerror(errno);
     throw(SerialException(ss.str().c_str()));
   }
-  else
-  {
-    return 0 != (status & TIOCM_CTS);
-  }
+  return 0 != (status & TIOCM_CTS);
 }
 
 bool
@@ -970,10 +966,7 @@ Serial::SerialImpl::getDSR ()
       ss << "getDSR failed on a call to ioctl(TIOCMGET): " << errno << " " << strerror(errno);
       throw(SerialException(ss.str().c_str()));
   }
-  else
-  {
-      return 0 != (status & TIOCM_DSR);
-  }
+  return 0 != (status & TIOCM_DSR);
 }
 
 bool
@@ -991,10 +984,7 @@ Serial::SerialImpl::getRI ()
     ss << "getRI failed on a call to ioctl(TIOCMGET): " << errno << " " << strerror(errno);
     throw(SerialException(ss.str().c_str()));
   }
-  else
-  {
-    return 0 != (status & TIOCM_RI);
-  }
+  return 0 != (status & TIOCM_RI);
 }
 
 bool
@@ -1012,10 +1002,7 @@ Serial::SerialImpl::getCD ()
     ss << "getCD failed on a call to ioctl(TIOCMGET): " << errno << " " << strerror(errno);
     throw(SerialException(ss.str().c_str()));
   }
-  else
-  {
-    return 0 != (status & TIOCM_CD);
-  }
+  return 0 != (status & TIOCM_CD);
 }
 
 void

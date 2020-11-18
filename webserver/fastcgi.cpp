@@ -234,7 +234,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 					std::istringstream ss(req.content);
 					std::string csubstr;
 					int ii = 0;
-					std::string vName = "";
+					std::string vName;
 					while (!ss.eof())
 					{
 						safeGetline(ss, csubstr);
@@ -271,7 +271,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 						}
 						else if (ii == 2)
 						{
-							if (csubstr.size() == 0)
+							if (csubstr.empty())
 							{
 								ii++;
 								//2 empty lines, rest is data

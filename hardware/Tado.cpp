@@ -79,7 +79,7 @@ bool CTado::StopHardware()
 
 bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 {
-	if (m_TadoAuthToken.size() == 0)
+	if (m_TadoAuthToken.empty())
 		return false;
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
@@ -133,7 +133,7 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 	int ServiceIdx = (idx % 1000) % 100;
 
 	// Check if the zone actually exists.
-	if (m_TadoHomes.size() == 0 || m_TadoHomes[HomeIdx].Zones.size() == 0)
+	if (m_TadoHomes.empty() || m_TadoHomes[HomeIdx].Zones.empty())
 	{
 		Log(LOG_ERROR, "No such home/zone combo found: %d/%d", HomeIdx, ZoneIdx);
 		return false;
@@ -202,12 +202,12 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 {
 	try
 	{
-		if (m_TadoUsername.size() == 0 && !refreshUsingToken)
+		if (m_TadoUsername.empty() && !refreshUsingToken)
 		{
 			Log(LOG_ERROR, "No username specified.");
 			return false;
 		}
-		if (m_TadoPassword.size() == 0 && !refreshUsingToken)
+		if (m_TadoPassword.empty() && !refreshUsingToken)
 		{
 			Log(LOG_ERROR, "No password specified.");
 			return false;
@@ -257,14 +257,14 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 		}
 
 		authtoken = _jsRoot["access_token"].asString();
-		if (authtoken.size() == 0)
+		if (authtoken.empty())
 		{
 			Log(LOG_ERROR, "Received token is zero length.");
 			return false;
 		}
 
 		refreshtoken = _jsRoot["refresh_token"].asString();
-		if (refreshtoken.size() == 0)
+		if (refreshtoken.empty())
 		{
 			Log(LOG_ERROR, "Received refresh token is zero length.");
 			return false;
@@ -493,7 +493,7 @@ bool CTado::CancelOverlay(const int Idx)
 	//int ServiceIdx = (Idx % 1000) % 100;
 
 	// Check if the home and zone actually exist.
-	if (m_TadoHomes.size() == 0 || m_TadoHomes[HomeIdx].Zones.size() == 0)
+	if (m_TadoHomes.empty() || m_TadoHomes[HomeIdx].Zones.empty())
 	{
 		Log(LOG_ERROR, "No such home/zone combo found: %d/%d", HomeIdx, ZoneIdx);
 		return false;
@@ -565,10 +565,8 @@ void CTado::Do_Work()
 					continue;
 				}
 				// Else move on to getting zones for each of the homes.
-				else {
-					m_bDoGetZones = true;
-					m_bDoGetHomes = false;
-				}
+				m_bDoGetZones = true;
+				m_bDoGetHomes = false;
 			}
 
 			// Check if we should be collecting zones for each of the homes.
@@ -666,7 +664,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 
 	Debug(DEBUG_HARDWARE, "MatchValueFromJSKey: Got %zu lines from javascript data.", _sJavascriptDataLines.size());
 
-	if (_sJavascriptDataLines.size() <= 0)
+	if (_sJavascriptDataLines.empty())
 	{
 		Log(LOG_ERROR, "Failed to get any lines from javascript environment file.");
 		return false;
@@ -677,8 +675,8 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 	{
 		Debug(DEBUG_HARDWARE, "MatchValueFromJSKey: Processing line: '%s'", _sLine.c_str());
 
-		std::string _sLineKey = "";
-		std::string _sLineValue = "";
+		std::string _sLineKey;
+		std::string _sLineValue;
 
 		// Let's split each line on a colon.
 		std::vector<std::string> _sLineParts = StringSplitEx(_sLine, ": ", 2);
@@ -697,7 +695,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 
 			// Check if a Key is already set for the key-value pair. If we don't have a key yet
 			// assume that this first entry in the line is the key.
-			if (_sLineKey == "")
+			if (_sLineKey.empty())
 			{
 				_sLineKey = _sLinePart;
 			}
@@ -722,7 +720,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 	}
 
 	sValue = _mEnvironmentKeys[sKeyName];
-	if (sValue.size() == 0)
+	if (sValue.empty())
 	{
 		Log(LOG_ERROR, "Value for key %s is zero length.", sKeyName.c_str());
 		return false;
@@ -731,7 +729,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 }
 
 // Grabs the web app environment file
-bool CTado::GetTadoApiEnvironment(std::string sUrl)
+bool CTado::GetTadoApiEnvironment(const std::string &sUrl)
 {
 	Debug(DEBUG_HARDWARE, "GetTadoApiEnvironment called with sUrl=%s", sUrl.c_str());
 
@@ -902,7 +900,8 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 	try {
 		// If there is no token stored then there is no point in doing a request. Unless we specifically
 		// decide not to do authentication.
-		if (m_TadoAuthToken.size() == 0 && bSendAuthHeaders) {
+		if (m_TadoAuthToken.empty() && bSendAuthHeaders)
+		{
 			Log(LOG_ERROR, "No access token available.");
 			return false;
 		}
@@ -911,7 +910,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 		std::vector<std::string> _vExtraHeaders = vExtraHeaders;
 
 		// If the supplied postdata validates as json, add an appropriate content type header
-		if (sPostData.size() > 0)
+		if (!sPostData.empty())
 		{
 			if (ParseJSon(sPostData, *(new Json::Value))) {
 				_vExtraHeaders.push_back("Content-Type: application/json");
@@ -970,7 +969,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 				}
 		}
 
-		if (sResponse.size() == 0)
+		if (sResponse.empty())
 		{
 			if (!bIgnoreEmptyResponse) {
 				Log(LOG_ERROR, "Received an empty response from Api.");

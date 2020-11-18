@@ -58,14 +58,14 @@ void CNotificationSystem::UnlockNotificationQueueThread()
 	m_notificationqueue.push(item);
 }
 
-std::string const CNotificationSystem::GetTypeString(const int type)
+std::string CNotificationSystem::GetTypeString(const int type)
 {
 	if (type < sizeof(typeTable) / sizeof(typeTable[0]))
 		return typeTable[type].name;
 	return "unknown";
 }
 
-std::string const CNotificationSystem::GetStatusString(const int status)
+std::string CNotificationSystem::GetStatusString(const int status)
 {
 	if (status < sizeof(statusTable) / sizeof(statusTable[0]))
 		return statusTable[status].name;
@@ -130,7 +130,7 @@ bool CNotificationSystem::Unregister(CNotificationObserver* pNotifier)
 	if (pNotifier == nullptr)
 		return false;
 
-	if (m_notifiers.size() > 0)
+	if (!m_notifiers.empty())
 	{
 		boost::unique_lock<boost::shared_mutex> lock(m_mutex);
 		for (size_t i = 0; i < m_notifiers.size(); i++)

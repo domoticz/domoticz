@@ -139,7 +139,7 @@ namespace http {
 
 		*/
 
-		void cWebem::RegisterIncludeCode(const char* idname, webem_include_function fun)
+		void cWebem::RegisterIncludeCode(const char *idname, const webem_include_function &fun)
 		{
 			myIncludes.insert(std::pair<std::string, webem_include_function >(std::string(idname), fun));
 		}
@@ -155,13 +155,12 @@ namespace http {
 
 		*/
 
-		void cWebem::RegisterIncludeCodeW(const char* idname, webem_include_function_w fun)
+		void cWebem::RegisterIncludeCodeW(const char *idname, const webem_include_function_w &fun)
 		{
 			myIncludes_w.insert(std::pair<std::string, webem_include_function_w >(std::string(idname), fun));
 		}
 
-
-		void cWebem::RegisterPageCode(const char* pageurl, webem_page_function fun, bool bypassAuthentication)
+		void cWebem::RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication)
 		{
 			myPages.insert(std::pair<std::string, webem_page_function >(std::string(pageurl), fun));
 			if (bypassAuthentication)
@@ -169,7 +168,7 @@ namespace http {
 				RegisterWhitelistURLString(pageurl);
 			}
 		}
-		void cWebem::RegisterPageCodeW(const char* pageurl, webem_page_function fun, bool bypassAuthentication)
+		void cWebem::RegisterPageCodeW(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication)
 		{
 			myPages_w.insert(std::pair<std::string, webem_page_function >(std::string(pageurl), fun));
 			if (bypassAuthentication)
@@ -187,7 +186,7 @@ namespace http {
 		@param[in] fun fpointer to function
 
 		*/
-		void cWebem::RegisterActionCode(const char* idname, webem_action_function fun)
+		void cWebem::RegisterActionCode(const char *idname, const webem_action_function &fun)
 		{
 			myActions.insert(std::pair<std::string, webem_action_function >(std::string(idname), fun));
 		}
@@ -293,7 +292,7 @@ namespace http {
 			std::string myline;
 			if (getline(is, myline))
 			{
-				if (myline.size() && myline[myline.size() - 1] == '\r')
+				if (!myline.empty() && myline[myline.size() - 1] == '\r')
 				{
 					line = myline.substr(0, myline.size() - 1);
 				}
@@ -440,9 +439,8 @@ namespace http {
 						}
 						return true;
 					}
-					else if ((strstr(pContent_Type, "text/plain") != nullptr)
-						 || (strstr(pContent_Type, "application/json") != nullptr)
-						 || (strstr(pContent_Type, "application/xml") != nullptr))
+					if ((strstr(pContent_Type, "text/plain") != nullptr) || (strstr(pContent_Type, "application/json") != nullptr) ||
+					    (strstr(pContent_Type, "application/xml") != nullptr))
 					{
 						//Raw data
 						req.parameters.insert(std::pair< std::string, std::string >("data", req.content));
@@ -835,7 +833,7 @@ namespace http {
 		void cWebem::SetWebRoot(const std::string &webRoot)
 		{
 			// remove trailing slash if required
-			if (webRoot.size() > 0 && webRoot[webRoot.size() - 1] == '/')
+			if (!webRoot.empty() && webRoot[webRoot.size() - 1] == '/')
 			{
 				m_webRoot = webRoot.substr(0, webRoot.size() - 1);
 			}
@@ -844,7 +842,7 @@ namespace http {
 				m_webRoot = webRoot;
 			}
 			// put slash at the front if required
-			if (m_webRoot.size() > 0 && m_webRoot[0] != '/')
+			if (!m_webRoot.empty() && m_webRoot[0] != '/')
 			{
 				m_webRoot = "/" + webRoot;
 			}
@@ -870,7 +868,7 @@ namespace http {
 				request_path += "index.html";
 			}
 
-			if (m_webRoot.size() > 0)
+			if (!m_webRoot.empty())
 			{
 				// remove web root if present otherwise
 				// create invalid request
@@ -907,7 +905,7 @@ namespace http {
 			}
 
 			// if we have a web root set the request must start with it
-			if (m_webRoot.size() > 0)
+			if (!m_webRoot.empty())
 			{
 				if (request_path.find(m_webRoot) != 0)
 				{
@@ -1119,18 +1117,18 @@ namespace http {
 		// Check the user's password, return 1 if OK
 		static int check_password(struct ah *ah, const std::string &ha1, const std::string &realm)
 		{
-			if ((ah->nonce.size() == 0) && (ah->response.size() != 0))
+			if ((ah->nonce.empty()) && (!ah->response.empty()))
 				return (ha1 == GenerateMD5Hash(ah->response));
 
 			return 0;
 		}
 
-		const std::string cWebem::GetPort()
+		std::string cWebem::GetPort()
 		{
 			return m_settings.listening_port;
 		}
 
-		const std::string cWebem::GetWebRoot()
+		std::string cWebem::GetWebRoot()
 		{
 			return m_webRoot;
 		}
@@ -1257,7 +1255,7 @@ namespace http {
 				return 1;
 			}
 			// Basic Auth header
-			else if (boost::icontains(auth_header, "Basic "))
+			if (boost::icontains(auth_header, "Basic "))
 			{
 				std::string decoded = base64_decode(auth_header + 6);
 				size_t npos = decoded.find(':');
@@ -1279,8 +1277,8 @@ namespace http {
 		{
 			struct ah _ah;
 
-			std::string uname = "";
-			std::string upass = "";
+			std::string uname;
+			std::string upass;
 
 			if (!parse_auth_header(req, &_ah))
 			{
@@ -1699,7 +1697,7 @@ namespace http {
 			session.rights = -1; // no rights
 			session.id = "";
 
-			if (myWebem->m_userpasswords.size() == 0)
+			if (myWebem->m_userpasswords.empty())
 			{
 				session.rights = 2;
 			}
@@ -1813,26 +1811,23 @@ namespace http {
 					return false;
 
 				}
-				else
+				// invalid cookie
+				if (myWebem->m_authmethod != AUTH_BASIC)
 				{
-					// invalid cookie
-					if (myWebem->m_authmethod != AUTH_BASIC)
-					{
-						//Check if we need to bypass authentication (not when using basic-auth)
-						for (const auto &url : myWebem->myWhitelistURLs)
-							if (req.uri.find(url) == 0)
+					// Check if we need to bypass authentication (not when using basic-auth)
+					for (const auto &url : myWebem->myWhitelistURLs)
+						if (req.uri.find(url) == 0)
+							return true;
+
+					std::string cmdparam;
+					if (GetURICommandParameter(req.uri, cmdparam))
+						for (const auto &cmd : myWebem->myWhitelistCommands)
+							if (cmdparam.find(cmd) == 0)
 								return true;
 
-						std::string cmdparam;
-						if (GetURICommandParameter(req.uri, cmdparam))
-							for (const auto &cmd : myWebem->myWhitelistCommands)
-								if (cmdparam.find(cmd) == 0)
-									return true;
-
-						// Force login form
-						send_authorization_request(rep);
-						return false;
-					}
+					// Force login form
+					send_authorization_request(rep);
+					return false;
 				}
 			}
 
@@ -1929,12 +1924,9 @@ namespace http {
 					removeAuthToken(session.id);
 					return false;
 				}
-				else
-				{
-					session.timeout = now + SHORT_SESSION_TIMEOUT;
-					myWebem->AddSession(session);
-					return true;
-				}
+				session.timeout = now + SHORT_SESSION_TIMEOUT;
+				myWebem->AddSession(session);
+				return true;
 			}
 
 			if (session.username.empty())
@@ -2001,7 +1993,7 @@ namespace http {
 			WebEmSession session;
 			session.remote_host = req.host_address;
 
-			if (myWebem->myRemoteProxyIPs.size() > 0)
+			if (!myWebem->myRemoteProxyIPs.empty())
 			{
 				for (auto &myRemoteProxyIP : myWebem->myRemoteProxyIPs)
 				{
@@ -2321,7 +2313,7 @@ namespace http {
 				}
 
 			}
-			else if (session.id.size() > 0)
+			else if (!session.id.empty())
 			{
 				// Renew session expiration and authentication token
 				WebEmSession* memSession = myWebem->GetSession(session.id);

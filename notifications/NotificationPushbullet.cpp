@@ -60,5 +60,5 @@ bool CNotificationPushbullet::SendMessageImplementation(
 
 bool CNotificationPushbullet::IsConfigured()
 {
-	return _apikey != "";
+	return !_apikey.empty();
 }

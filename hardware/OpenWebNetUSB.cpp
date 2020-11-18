@@ -220,7 +220,7 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 	bt_openwebnet request(whoStr.str(), whatStr.str(), whereStr.str(), "");
 	if (sendCommand(request, responses))
 	{
-		if (responses.size() > 0)
+		if (!responses.empty())
 		{
 			return responses.at(0).IsOKFrame();
 		}

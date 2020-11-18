@@ -1,6 +1,7 @@
 /* Copyright 2012 William Woodall and John Harrison */
 #include "stdafx.h"
 #include <algorithm>
+#include <utility>
 
 #ifdef __sun
 # include <alloca.h>
@@ -160,8 +161,7 @@ Serial::read (size_t size)
   return buffer;
 }
 
-size_t
-Serial::readline (string &buffer, size_t size, string eol)
+size_t Serial::readline(string &buffer, size_t size, const string &eol)
 {
   ScopedReadLock lock(this->pimpl_);
   size_t eol_len = eol.length ();
@@ -187,16 +187,14 @@ Serial::readline (string &buffer, size_t size, string eol)
   return read_so_far;
 }
 
-string
-Serial::readline (size_t size, string eol)
+string Serial::readline(size_t size, const string &eol)
 {
   std::string buffer;
-  this->readline (buffer, size, eol);
+  this->readline(buffer, size, std::move(eol));
   return buffer;
 }
 
-vector<string>
-Serial::readlines (size_t size, string eol)
+vector<string> Serial::readlines(size_t size, const string &eol)
 {
   ScopedReadLock lock(this->pimpl_);
   std::vector<std::string> lines;

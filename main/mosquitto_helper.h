@@ -81,16 +81,31 @@ namespace mosqdz {
 	  // names in the functions commented to prevent unused parameter warning
 	  virtual void on_connect(int /*rc*/)
 	  {
-		  return;
 	  }
-		virtual void on_connect_with_flags(int /*rc*/, int /*flags*/) { return; }
-		virtual void on_disconnect(int /*rc*/) { return; }
-		virtual void on_publish(int /*mid*/) { return; }
-		virtual void on_message(const struct mosquitto_message* /*message*/) { return; }
-		virtual void on_subscribe(int /*mid*/, int /*qos_count*/, const int* /*granted_qos*/) { return; }
-		virtual void on_unsubscribe(int /*mid*/) { return; }
-		virtual void on_log(int /*level*/, const char* /*str*/) { return; }
-		virtual void on_error() { return; }
+	  virtual void on_connect_with_flags(int /*rc*/, int /*flags*/)
+	  {
+	  }
+	  virtual void on_disconnect(int /*rc*/)
+	  {
+	  }
+	  virtual void on_publish(int /*mid*/)
+	  {
+	  }
+	  virtual void on_message(const struct mosquitto_message * /*message*/)
+	  {
+	  }
+	  virtual void on_subscribe(int /*mid*/, int /*qos_count*/, const int * /*granted_qos*/)
+	  {
+	  }
+	  virtual void on_unsubscribe(int /*mid*/)
+	  {
+	  }
+	  virtual void on_log(int /*level*/, const char * /*str*/)
+	  {
+	  }
+	  virtual void on_error()
+	  {
+	  }
 	};
 }
 #endif

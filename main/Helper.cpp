@@ -339,7 +339,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	//also scan /dev/serial/by-id/* on Linux
 
 	bool bHaveTtyAMAfree=false;
-	std::string sLine = "";
+	std::string sLine;
 	std::ifstream infile;
 
 	infile.open("/boot/cmdline.txt");
@@ -1087,7 +1087,6 @@ void DirectoryListing(std::vector<std::string>& entries, const std::string &dir,
 		}
 		closedir(d);
 	}
-	return;
 }
 
 std::string GenerateUserAgent()
@@ -1271,7 +1270,7 @@ int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> 
 				if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0) && (strcmp(ent->d_name, ".svn") != 0))
 				{
 					std::string nextdir = DirPath + ent->d_name + "/";
-					if (GetDirFilesRecursive(nextdir.c_str(), _Files))
+					if (GetDirFilesRecursive(nextdir, _Files))
 					{
 						closedir(dir);
 						return 1;
@@ -1376,8 +1375,7 @@ bool IsDebuggerPresent()
 	{
 		if (::isspace(*characterPtr))
 			continue;
-		else
-			return ::isdigit(*characterPtr) != 0 && *characterPtr != '0';
+		return ::isdigit(*characterPtr) != 0 && *characterPtr != '0';
 	}
 
 	return false;

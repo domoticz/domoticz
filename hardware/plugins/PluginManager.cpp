@@ -29,10 +29,7 @@
 #endif
 
 #include "DelayedLink.h"
-
-#ifdef ENABLE_PYTHON
 #include "../../main/EventsPythonModule.h"
-#endif
 
 #define MINIMUM_PYTHON_VERSION "3.4.0"
 
@@ -61,10 +58,8 @@ namespace Plugins {
 
 	PyMODINIT_FUNC PyInit_Domoticz(void);
 
-#ifdef ENABLE_PYTHON
-    // Need forward decleration
-    // PyMODINIT_FUNC PyInit_DomoticzEvents(void);
-#endif // ENABLE_PYTHON
+	// Need forward decleration
+	// PyMODINIT_FUNC PyInit_DomoticzEvents(void);
 
 	std::mutex PluginMutex;	// controls accessto the message queue and m_pPlugins map
 	std::queue<CPluginMessageBase*>	PluginMessageQueue;

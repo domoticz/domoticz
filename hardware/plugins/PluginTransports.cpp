@@ -397,7 +397,7 @@ namespace Plugins {
 			SSL_set_tlsext_host_name(m_TLSSock->native_handle(), m_IP.c_str());			// Enable SNI
 
 			m_TLSSock->set_verify_mode(boost::asio::ssl::verify_none);
-			m_TLSSock->set_verify_callback(boost::asio::ssl::rfc2818_verification(m_IP.c_str()));
+			m_TLSSock->set_verify_callback(boost::asio::ssl::rfc2818_verification(m_IP));
 			//m_TLSSock->set_verify_callback(boost::bind(&CPluginTransportTCPSecure::VerifyCertificate, this, _1, _2));
 			try
 			{
@@ -699,7 +699,7 @@ namespace Plugins {
 		}
 	};
 
-	void CPluginTransportICMP::handleAsyncResolve(const boost::system::error_code &ec, boost::asio::ip::icmp::resolver::iterator endpoint_iterator)
+	void CPluginTransportICMP::handleAsyncResolve(const boost::system::error_code &ec, const boost::asio::ip::icmp::resolver::iterator &endpoint_iterator)
 	{
 		if (!ec)
 		{
@@ -1009,7 +1009,7 @@ namespace Plugins {
 
 	void CPluginTransportSerial::handleWrite(const std::vector<byte>& data)
 	{
-		if (data.size())
+		if (!data.empty())
 		{
 			write((const char *)&data[0], data.size());
 		}

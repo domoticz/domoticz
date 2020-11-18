@@ -52,13 +52,13 @@ static const point* get_light_gamut(const std::string &modelid)
 {
 	if (std::find(GAMUT_A_BULBS_LIST.begin(), GAMUT_A_BULBS_LIST.end(), modelid) != GAMUT_A_BULBS_LIST.end())
 		return colorPointsGamut_A;
-	else if (std::find(GAMUT_B_BULBS_LIST.begin(), GAMUT_B_BULBS_LIST.end(), modelid) != GAMUT_B_BULBS_LIST.end())
+	if (std::find(GAMUT_B_BULBS_LIST.begin(), GAMUT_B_BULBS_LIST.end(), modelid) != GAMUT_B_BULBS_LIST.end())
 		return colorPointsGamut_B;
-	else if (std::find(MULTI_SOURCE_LUMINAIRES.begin(), MULTI_SOURCE_LUMINAIRES.end(), modelid) != MULTI_SOURCE_LUMINAIRES.end())
+	if (std::find(MULTI_SOURCE_LUMINAIRES.begin(), MULTI_SOURCE_LUMINAIRES.end(), modelid) != MULTI_SOURCE_LUMINAIRES.end())
 		return colorPointsGamut_B;
-	else if (std::find(GAMUT_C_BULBS_LIST.begin(), GAMUT_C_BULBS_LIST.end(), modelid) != GAMUT_C_BULBS_LIST.end())
+	if (std::find(GAMUT_C_BULBS_LIST.begin(), GAMUT_C_BULBS_LIST.end(), modelid) != GAMUT_C_BULBS_LIST.end())
 		return colorPointsGamut_C;
-	else return colorPointsGamut_Default;
+	return colorPointsGamut_Default;
 }
 
 static double cross_product(point p1, point p2)

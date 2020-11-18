@@ -11,10 +11,13 @@ namespace Json
 
 class COctoPrintMQTT : public MySensorsBase, mosqdz::mosquittodz
 {
-public:
-	COctoPrintMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAFile);
+      public:
+	COctoPrintMQTT(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAFile);
 	~COctoPrintMQTT() override;
-	bool isConnected(){ return m_IsConnected; };
+	bool isConnected()
+	{
+		return m_IsConnected;
+	};
 
 	void on_connect(int rc) override;
 	void on_disconnect(int rc) override;
@@ -23,13 +26,14 @@ public:
 
 	void SendMessage(const std::string &Topic, const std::string &Message);
 
-public:
+      public:
 	void UpdateUserVariable(const std::string &varName, const std::string &varValue);
 
 	bool m_bDoReconnect;
 	bool m_IsConnected;
-	boost::signals2::signal<void()>	sDisconnected;
-protected:
+	boost::signals2::signal<void()> sDisconnected;
+
+      protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_UserName;
@@ -43,10 +47,10 @@ protected:
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
-private:
+
+      private:
 	bool ConnectInt();
 	bool ConnectIntEx();
 	std::string m_szLastEventName;
 	std::map<std::string, time_t> m_LastSendTemp;
 };
-

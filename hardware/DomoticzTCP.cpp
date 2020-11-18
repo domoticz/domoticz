@@ -171,11 +171,8 @@ bool DomoticzTCP::isConnected()
 #ifndef NOCLOUD
 	if (b_useProxy)
 		return isConnectedProxy();
-	else
-		return ASyncTCP::isConnected();
-#else
-	return ASyncTCP::isConnected();
 #endif
+	return ASyncTCP::isConnected();
 }
 
 #ifndef NOCLOUD

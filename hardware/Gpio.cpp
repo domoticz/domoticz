@@ -179,7 +179,6 @@ void CGpio::InterruptHandler()
 				close(fd);
 	}
 	_log.Log(LOG_STATUS, "GPIO: Interrupt handler for GPIO %d stopped. TID: %d", pin, (pid_t)syscall(SYS_gettid));
-	return;
 }
 
 int CGpio::waitForInterrupt(int fd, const int mS)
@@ -461,7 +460,7 @@ void CGpio::UpdateDeviceStates(bool forceUpdate)
 							  "(HardwareID==%d) AND (Unit==%d)",
 							  m_HwdID, p.GetPin());
 
-				if ((!result.empty()) && (result.size() > 0))
+				if ((!result.empty()) && (!result.empty()))
 				{
 					std::vector<std::string> sd = result[0];
 
@@ -525,7 +524,7 @@ bool CGpio::InitPins()
 			}
 		}
 	}
-	return (pins.size() > 0);
+	return (!pins.empty());
 }
 
 int CGpio::GetReadResult(int bytecount, char *value_str)
@@ -645,7 +644,6 @@ void CGpio::GetSchedPriority(int *s, int *pri)
 		*pri = getpriority(PRIO_PROCESS, 0);
 	else
 		*pri = sched.sched_priority;
-	return;
 }
 
 #endif

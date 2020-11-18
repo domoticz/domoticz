@@ -314,7 +314,6 @@ bool CLimitLess::GetV6BridgeID()
 			{
 				totRetries++;
 				trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*) & si_other, &slen);
-				continue;
 			}
 		//return false;
 		if ((rbuffer[0x00] != 0x28) || (rbuffer[0x15] != 0x00))
@@ -382,7 +381,6 @@ bool CLimitLess::SendV6Command(const uint8_t* pCmd)
 		//8000000015ACCF23F581D8050200340000000000000000000034
 		while ((RBuffer[0x00] == 0x80) && (RBuffer[0x04] == 0x15)) {
 			trecv = recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*) & si_other, &slen);
-			continue;
 		}
 		if (trecv < 1)
 			return false;
@@ -1421,7 +1419,8 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 
@@ -1438,8 +1437,6 @@ namespace http {
 			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0, 0);
 
 			m_mainworker.RestartHardware(idx);
-
-			return;
 		}
 	} // namespace server
 } // namespace http

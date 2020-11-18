@@ -192,10 +192,7 @@ bool CLuaHandler::executeLuaScript(const std::string &script, const std::string 
 		aluaThread.timed_join(boost::posix_time::seconds(10));
 		return true;
 	}
-	else
-	{
-		report_errors(lua_state, status);
-		lua_close(lua_state);
-	}
+	report_errors(lua_state, status);
+	lua_close(lua_state);
 	return false;
 }

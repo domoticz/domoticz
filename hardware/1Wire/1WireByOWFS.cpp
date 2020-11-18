@@ -285,8 +285,8 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
          int iValue=atoi(readValue.c_str())==2;
          if (iValue!=1 && iValue!=2)
             return false;
-         else
-            return (iValue==2);
+
+	 return (iValue == 2);
       }
    }
    return false;
@@ -437,7 +437,7 @@ std::string C1WireByOWFS::nameHelper(const std::string& dirname, const _e1WireFa
 	std::string name;
 	DIR *d = nullptr;
 
-	d=opendir(std::string(std::string(m_path) + "/" + dirname.c_str()).c_str());
+	d = opendir(std::string(std::string(m_path) + "/" + dirname).c_str());
 	if (d != nullptr)
 	{
 		struct dirent *de = nullptr;

@@ -190,5 +190,4 @@ void KMTronicUDP::GetMeterDetails()
                 sstr << "Relay " << iRelay;
                 SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
         }
-	return;
 }

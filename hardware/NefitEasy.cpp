@@ -234,7 +234,7 @@ bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char /*length
 			SetUserMode(bIsOn);
 			return true;
 		}
-		else if (node_id == 2)
+		if (node_id == 2)
 		{
 			//Hot Water Switch
 			SetHotWaterMode(bIsOn);
@@ -421,7 +421,7 @@ bool CNefitEasy::GetStatusDetails()
 		tmpstr = root2["BAI"].asString();
 		if (tmpstr != "null")
 		{
-			std::string bstatus = "";
+			std::string bstatus;
 			if (tmpstr == "CH")
 				bstatus = "central heating";
 			else if (tmpstr == "HW")

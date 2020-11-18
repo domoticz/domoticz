@@ -124,7 +124,7 @@ namespace http {
 				void handle_request(const request &req, reply &rep) override;
 
 			      private:
-				char *strftime_t(const char *format, const time_t rawtime);
+				char *strftime_t(const char *format, time_t rawtime);
 				bool CompressWebOutput(const request &req, reply &rep);
 				/// Websocket methods
 				bool is_upgrade_request(WebEmSession &session, const request &req, reply &rep);
@@ -160,30 +160,16 @@ namespace http {
 			void Run();
 			void Stop();
 
-			void RegisterIncludeCode(
-				const char* idname,
-				webem_include_function fun );
+			void RegisterIncludeCode(const char *idname, const webem_include_function &fun);
 
-			void RegisterIncludeCodeW(
-				const char* idname,
-				webem_include_function_w fun );
+			void RegisterIncludeCodeW(const char *idname, const webem_include_function_w &fun);
 
-			void RegisterPageCode(
-				const char* pageurl,
-				webem_page_function fun,
-				bool bypassAuthentication = false
-			);
-			void RegisterPageCodeW(
-				const char* pageurl,
-				webem_page_function fun,
-				bool bypassAuthentication = false
-			);
+			void RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication = false);
+			void RegisterPageCodeW(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication = false);
 
 			bool Include( std::string& reply );
 
-			void RegisterActionCode(
-				const char* idname,
-				webem_action_function fun );
+			void RegisterActionCode(const char *idname, const webem_action_function &fun);
 
 			void RegisterWhitelistURLString(const char* idname);
 			void RegisterWhitelistCommandsString(const char* idname);
@@ -194,10 +180,10 @@ namespace http {
 			bool IsPageOverride(const request& req, reply& rep);
 			bool CheckForPageOverride(WebEmSession & session, request& req, reply& rep);
 
-			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
+			void SetAuthenticationMethod(_eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
-			void AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs);
+			void AddUserPassword(unsigned long ID, const std::string &username, const std::string &password, _eUserRights userrights, int activetabs);
 			std::string ExtractRequestPath(const std::string& original_request_path);
 			bool IsBadRequestPath(const std::string& original_request_path);
 
@@ -220,8 +206,8 @@ namespace http {
 			session_store_impl_ptr GetSessionStore();
 
 			std::string m_zippassword;
-			const std::string GetPort();
-			const std::string GetWebRoot();
+			std::string GetPort();
+			std::string GetWebRoot();
 			WebEmSession * GetSession(const std::string & ssid);
 			void AddSession(const WebEmSession & session);
 			void RemoveSession(const WebEmSession & session);
@@ -236,7 +222,7 @@ namespace http {
 			// actual theme selected
 			std::string m_actTheme;
 
-			void SetWebCompressionMode(const _eWebCompressionMode gzmode);
+			void SetWebCompressionMode(_eWebCompressionMode gzmode);
 			_eWebCompressionMode m_gzipmode;
 		private:
 			/// store map between include codes and application functions

@@ -156,7 +156,8 @@ I2C::I2C(const int ID, const _eI2CType DevType, const std::string &Address, cons
 {
 	_log.Log(LOG_STATUS, "I2C  Start HW witf ID: %d Name: %s Address: %d Port: %s Invert:%d ", ID, szI2CTypeNames[m_dev_type], m_i2c_addr, m_ActI2CBus.c_str(), m_invert_data);
 	m_HwdID = ID;
-	if (m_ActI2CBus == "") { // if empty option then autodetect i2c bus
+	if (m_ActI2CBus.empty())
+	{ // if empty option then autodetect i2c bus
 		m_ActI2CBus = "/dev/i2c-1";
 		if (!i2c_test(m_ActI2CBus.c_str()))
 		{
@@ -220,7 +221,8 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 				return false;
 			return true;
 		}
-		else if (m_dev_type == I2CTYPE_MCP23017) {
+		if (m_dev_type == I2CTYPE_MCP23017)
+		{
 			if (MCP23017_WritePin(pin_number, value) < 0)
 				return false;
 			return true;
@@ -1174,18 +1176,17 @@ uint8_t I2C::bmp_CalculateForecast(const float pressure)
 
 	if (m_minuteCount < 35 && m_firstRound) //if time is less than 35 min on the first 3 hour interval.
 		return FC_BMP085_UNKNOWN; // Unknown, more time needed
-	else if (dP_dt < (-0.25))
+	if (dP_dt < (-0.25))
 		return FC_BMP085_THUNDERSTORM; // Quickly falling LP, Thunderstorm, not stable
-	else if (dP_dt > 0.25)
+	if (dP_dt > 0.25)
 		return FC_BMP085_UNSTABLE; // Quickly rising HP, not stable weather
-	else if ((dP_dt > (-0.25)) && (dP_dt < (-0.05)))
+	if ((dP_dt > (-0.25)) && (dP_dt < (-0.05)))
 		return FC_BMP085_CLOUDY_RAIN; // Slowly falling Low Pressure System, stable rainy weather
-	else if ((dP_dt > 0.05) && (dP_dt < 0.25))
+	if ((dP_dt > 0.05) && (dP_dt < 0.25))
 		return FC_BMP085_SUNNY; // Slowly rising HP stable good weather
-	else if ((dP_dt > (-0.05)) && (dP_dt < 0.05))
+	if ((dP_dt > (-0.05)) && (dP_dt < 0.05))
 		return FC_BMP085_STABLE; // Stable weather
-	else
-		return FC_BMP085_UNKNOWN; // Unknown
+	return FC_BMP085_UNKNOWN;	 // Unknown
 }
 
 uint8_t I2C::CalculateForecast(const float pressure)

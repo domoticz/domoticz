@@ -440,16 +440,16 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 
 						//Créates 3 switch for Learning, Learning Exit and Clearing switches store into blocs
 
-						std::string defaultname = NomRefBloc[RefBloc].c_str();
+						std::string defaultname = NomRefBloc[RefBloc];
 						std::string defaultnamenormal = defaultname + " LEARN EXIT";
 						std::string defaultnamelearn = defaultname + " LEARN ENTRY";
 						std::string defaultnameclear = defaultname + " CLEAR ALL";
 						std::string defaultnamenextlearning = defaultname + " NEXT LEARNING OUTPUT";
 
 						unsigned long sID_CommandBase = sID + (type_COMMANDE_ETAT_BLOC<<SHIFT_TYPE_TRAME);
-						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING_STOP, defaultnamenormal.c_str() );
-						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING, defaultnamelearn.c_str() );
-						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_CLEARING, defaultnameclear.c_str() );
+						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING_STOP, defaultnamenormal);
+						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING, defaultnamelearn);
+						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_CLEARING, defaultnameclear);
 
 						//not necessary : because the CommandBase LEARN ENTRY handles both the entry in Learn Mode
 						//and after that, the jump from first to seconde output to learn, etc... and Go out automatically at end
@@ -687,7 +687,7 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,bool
 	lcmd.LIGHTING2.filler = 2;
 	lcmd.LIGHTING2.rssi = 12;
 	//default name creation :
-	std::string defaultname=NomRefBloc[RefBloc].c_str();
+	std::string defaultname = NomRefBloc[RefBloc];
 	defaultname += " output S";
 	std::ostringstream convert;   // stream used for the conversion
 	convert << OutputNumber;
@@ -912,7 +912,8 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 				writeFrame(szTrameToSend);
 				return true;
 			}
-			else if( FrameType == type_SFSP_SWITCH ){
+			if (FrameType == type_SFSP_SWITCH)
+			{
 				//Pas d'envoi des switch créé sur réception de trames, ce sont des switch réel
 				//no sending frame for switch created by the CAN, they are real switch not virtual ! it's like enocean
 
@@ -928,7 +929,8 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 						m_BOOL_SendPushOffSwitch = true; //Auto push off switch because it works like EnOcean (Press and Released info on one switch).
 						return true;
 					}
-					else if( pSen->LIGHTING2.cmnd == light2_sSetLevel ){
+					if (pSen->LIGHTING2.cmnd == light2_sSetLevel)
+					{
 						//to do : if user set the level we must send the command By Outpu direct command and not by SFSP Frame
 						_log.Log(LOG_ERROR,"MultiblocV8: Dimmer level not yet supported !");
 						return false;
@@ -954,10 +956,8 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 					} */
 					return true;
 				}
-				else{
-					_log.Log(LOG_ERROR,"MultiblocV8: Error Command BLoc not allowed !");
-					return false;
-				}
+				_log.Log(LOG_ERROR, "MultiblocV8: Error Command BLoc not allowed !");
+				return false;
 			}
 			else if( FrameType == type_SFSP_LearnCommand ){ //specific command for sfsp to jump from one output to the next
 				if( ReferenceBloc == BLOC_SFSP_M || ReferenceBloc == BLOC_SFSP_E ){
@@ -965,10 +965,8 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 					USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(sID_EnBase,Commande); //
 					return true;
 				}
-				else{
-					_log.Log(LOG_ERROR,"MultiblocV8: Error Command SFSP Learn not allowed !");
-					return false;
-				}
+				_log.Log(LOG_ERROR, "MultiblocV8: Error Command SFSP Learn not allowed !");
+				return false;
 			}
 		}
 		else{

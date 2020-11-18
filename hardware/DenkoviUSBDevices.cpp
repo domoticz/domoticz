@@ -105,7 +105,7 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 	m_readingNow = false;
 }
 
-void CDenkoviUSBDevices::OnError(const std::exception e)
+void CDenkoviUSBDevices::OnError(const std::exception &e)
 {
 	_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Error: %s", e.what());
 }

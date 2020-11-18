@@ -54,13 +54,13 @@ void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx,
 
 void CHttpPush::DoHttpPush()
 {
-	std::string httpUrl = "";
-	std::string httpData = "";
-	std::string httpHeaders = "";
+	std::string httpUrl;
+	std::string httpData;
+	std::string httpHeaders;
 	int httpMethodInt = 0;
 	int httpAuthInt = 0;
-	std::string httpAuthBasicLogin = "";
-	std::string httpAuthBasicPassword = "";
+	std::string httpAuthBasicLogin;
+	std::string httpAuthBasicPassword;
 	m_sql.GetPreferencesVar("HttpMethod", httpMethodInt);
 	m_sql.GetPreferencesVar("HttpAuth", httpAuthInt);
 	m_sql.GetPreferencesVar("HttpAuthBasicLogin", httpAuthBasicLogin);
@@ -86,27 +86,27 @@ void CHttpPush::DoHttpPush()
 			m_sql.GetPreferencesVar("HttpUrl", httpUrl);
 			m_sql.GetPreferencesVar("HttpData", httpData);
 			m_sql.GetPreferencesVar("HttpHeaders", httpHeaders);
-			if (httpUrl == "")
+			if (httpUrl.empty())
 				return;
 
 			//unsigned int deviceId = atoi(sd[0].c_str());
-			std::string sdeviceId = sd[0].c_str();
-			std::string ldelpos = sd[1].c_str();
+			std::string sdeviceId = sd[0];
+			std::string ldelpos = sd[1];
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
 			int nValue = atoi(sd[5].c_str());
-			std::string sValue = sd[6].c_str();
+			std::string sValue = sd[6];
 			//int targetType = atoi(sd[7].c_str());
-			std::string targetVariable = sd[8].c_str();
+			std::string targetVariable = sd[8];
 			//int targetDeviceID = atoi(sd[9].c_str());
 			//std::string targetProperty = sd[10].c_str();
 			int includeUnit = atoi(sd[11].c_str());
 			int metertype = atoi(sd[12].c_str());
 			int lastUpdate = atoi(sd[13].c_str());
-			std::string ltargetVariable = sd[8].c_str();
-			std::string ltargetDeviceId = sd[9].c_str();
-			std::string lname = sd[14].c_str();
+			std::string ltargetVariable = sd[8];
+			std::string ltargetDeviceId = sd[9];
+			std::string lname = sd[14];
 			sendValue = sValue;
 
 			unsigned long tzoffset = get_tzoffset();
@@ -161,7 +161,7 @@ void CHttpPush::DoHttpPush()
 				StringSplit(sendValue, ";", strarray);
 				if (int(strarray.size()) >= delpos && delpos > 0)
 				{
-					std::string rawsendValue = strarray[delpos - 1].c_str();
+					std::string rawsendValue = strarray[delpos - 1];
 					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
 				}
 			}
@@ -202,7 +202,8 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpData, "%h", std::string(hostname));
 			replaceAll(httpData, "%idx", sdeviceId);
 
-			if (sendValue != "") {
+			if (!sendValue.empty())
+			{
 				std::string sResult;
 				std::vector<std::string> ExtraHeaders;
 				if (httpAuthInt == 1) {			// BASIC authentication
@@ -225,7 +226,7 @@ void CHttpPush::DoHttpPush()
 					}
 				}
 				else if (httpMethodInt == 1) {		// POST
-					if (httpHeaders.size() > 0)
+					if (!httpHeaders.empty())
 					{
 						// Add additional headers
 						std::vector<std::string> ExtraHeaders2;
@@ -273,26 +274,21 @@ namespace http {
 			std::string auth = request::findValue(&req, "auth");
 			std::string authbasiclogin = request::findValue(&req, "authbasiclogin");
 			std::string authbasicpassword = request::findValue(&req, "authbasicpassword");
-			if (
-				(url == "") ||
-				(method == "") ||
-				(linkactive == "") ||
-				(debugenabled == "")
-				)
+			if ((url.empty()) || (method.empty()) || (linkactive.empty()) || (debugenabled.empty()))
 				return;
 			if ((method != "0") && (data.empty())) //PUT/POST should have data
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
-			m_sql.UpdatePreferencesVar("HttpUrl", url.c_str());
+			m_sql.UpdatePreferencesVar("HttpUrl", url);
 			m_sql.UpdatePreferencesVar("HttpMethod", atoi(method.c_str()));
-			m_sql.UpdatePreferencesVar("HttpData", data.c_str());
-			m_sql.UpdatePreferencesVar("HttpHeaders", headers.c_str());
+			m_sql.UpdatePreferencesVar("HttpData", data);
+			m_sql.UpdatePreferencesVar("HttpHeaders", headers);
 			m_sql.UpdatePreferencesVar("HttpActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("HttpDebug", idebugenabled);
 			m_sql.UpdatePreferencesVar("HttpAuth", atoi(auth.c_str()));
-			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin.c_str());
-			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword.c_str());
+			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin);
+			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword);
 
 			m_httppush.UpdateActive();
 			root["status"] = "OK";
@@ -407,11 +403,11 @@ namespace http {
 			std::string targetproperty = request::findValue(&req, "targetproperty");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string includeunit = request::findValue(&req, "includeunit");
-			if ((targettypei == 0) && (targetvariable == ""))
+			if ((targettypei == 0) && (targetvariable.empty()))
 				return;
-			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
+			if ((targettypei == 1) && ((targetdeviceid.empty()) || (targetproperty.empty())))
 				return;
-			if ((targettypei == 2) && (targetdeviceid == ""))
+			if ((targettypei == 2) && (targetdeviceid.empty()))
 				return;
 			if (idx == "0") {
 				m_sql.safe_query(
@@ -454,7 +450,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
 			root["status"] = "OK";

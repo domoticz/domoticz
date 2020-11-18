@@ -210,7 +210,7 @@ bool CNestOAuthAPI::Login()
 		if (!m_ProductId.empty() && !m_ProductSecret.empty() && !m_PinCode.empty()) {
 			_log.Log(LOG_NORM, "NestOAuthAPI: Access token missing. Will request an API key based on Product Id, Product Secret and PIN code.");
 
-			std::string sTmpToken = "";
+			std::string sTmpToken;
 			try
 			{
 				// Request the token using the information that we already have.
@@ -258,10 +258,9 @@ bool CNestOAuthAPI::Login()
 		m_bDoLogin = false;
 		return true;
 	}
-	else {
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Login failed: token did not validate.");
-		return false;
-	}
+
+	_log.Log(LOG_ERROR, "NestOAuthAPI: Login failed: token did not validate.");
+	return false;
 }
 
 void CNestOAuthAPI::Logout()

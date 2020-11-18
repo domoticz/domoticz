@@ -27,7 +27,7 @@ public:
 	  return is_secure_;
   }
 	bool is_enabled() const {
-		return ((listening_port != "0") && (listening_port != ""));
+		return ((listening_port != "0") && (!listening_port.empty()));
 	}
 	bool is_php_enabled() const {
 		return !php_cgi_path.empty();
@@ -149,7 +149,7 @@ public:
 	boost::asio::ssl::context::options get_ssl_options() const {
 		boost::asio::ssl::context::options opts(0x0L);
 
-		std::string error_message("");
+		std::string error_message;
 
 		std::vector<std::string> options_array;
 		boost::split(options_array, ssl_options, boost::is_any_of(","), boost::token_compress_on);

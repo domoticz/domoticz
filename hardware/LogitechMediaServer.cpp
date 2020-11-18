@@ -58,7 +58,7 @@ Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort,
 	std::stringstream sURL;
 	std::stringstream sPostData;
 
-	if ((m_User != "") && (m_Pwd != ""))
+	if ((!m_User.empty()) && (!m_Pwd.empty()))
 		sURL << "http://" << m_User << ":" << m_Pwd << "@" << sIP << ":" << iPort << "/jsonrpc.js";
 	else
 		sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
@@ -202,8 +202,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				// 4:   Trigger Notifications & events on status change
 				if (node.nStatus != nStatus)
 				{
-					m_notifications.CheckAndHandleNotification(node.ID, sDevName, NotificationType(nStatus),
-										   sStatus.c_str());
+					m_notifications.CheckAndHandleNotification(node.ID, sDevName, NotificationType(nStatus), sStatus);
 					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, node.ID, 1, int(pTypeLighting2), int(sTypeAC), 12,
 										 100, int(nStatus), sStatus.c_str(), sDevName);
 				}
@@ -223,7 +222,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 	_eMediaStatus nStatus = MSTAT_UNKNOWN;
 	_eMediaStatus nOldStatus = Node.nStatus;
 	std::string	sPlayerId = Node.IP;
-	std::string	sStatus = "";
+	std::string sStatus;
 
 	try
 	{
@@ -259,16 +258,17 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 							nStatus = MSTAT_STOPPED;
 					else
 						nStatus = MSTAT_ON;
-					std::string	sTitle = "";
-					std::string	sAlbum = "";
-					std::string	sArtist = "";
-					std::string	sAlbumArtist = "";
-					std::string	sTrackArtist = "";
-					std::string	sYear = "";
-					std::string	sDuration = "";
-					std::string sLabel = "";
+					std::string sTitle;
+					std::string sAlbum;
+					std::string sArtist;
+					std::string sAlbumArtist;
+					std::string sTrackArtist;
+					std::string sYear;
+					std::string sDuration;
+					std::string sLabel;
 
-					if (root["playlist_loop"].size()) {
+					if (!root["playlist_loop"].empty())
+					{
 						sTitle = root["playlist_loop"][0]["title"].asString();
 						sAlbum = root["playlist_loop"][0]["album"].asString();
 						sArtist = root["playlist_loop"][0]["artist"].asString();
@@ -277,13 +277,12 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 						sYear = root["playlist_loop"][0]["year"].asString();
 						sDuration = root["playlist_loop"][0]["duration"].asString();
 
-						if (sTrackArtist != "")
+						if (!sTrackArtist.empty())
 							sArtist = sTrackArtist;
-						else
-							if (sAlbumArtist != "")
-								sArtist = sAlbumArtist;
+						else if (!sAlbumArtist.empty())
+							sArtist = sAlbumArtist;
 						if (sYear == "0") sYear = "";
-						if (sYear != "")
+						if (!sYear.empty())
 							sYear = " (" + sYear + ")";
 
 						sLabel = sArtist + " - " + sTitle + sYear;
@@ -446,7 +445,8 @@ void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::stri
 	//1) Check on MacAddress (default)
 	result = m_sql.safe_query("SELECT Name FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, MacAddress.c_str());
 	if (!result.empty()) {
-		if (result[0][0].c_str() != Name) { //Update Name in case it has been changed
+		if (result[0][0] != Name)
+		{ // Update Name in case it has been changed
 			m_sql.safe_query("UPDATE WOLNodes SET Name='%q', Timeout=0 WHERE (HardwareID==%d) AND (MacAddress=='%q')", Name.c_str(), m_HwdID, MacAddress.c_str());
 			_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' renamed to '%s'", result[0][0].c_str(), Name.c_str());
 		}
@@ -635,8 +635,8 @@ std::string CLogitechMediaServer::GetPlaylistByRefID(const int ID)
 bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command, const std::string &param)
 {
 	std::vector<std::vector<std::string> > result;
-	std::string sPlayerId = "";
-	std::string sLMSCmnd = "";
+	std::string sPlayerId;
+	std::string sLMSCmnd;
 
 	// Get device details
 	result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (ID==%d)", ID);
@@ -697,7 +697,8 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 			sLMSCmnd = R"("button", "play.single")";
 		}
 		else if (command == "PlayPlaylist") {
-			if (param == "") return false;
+			if (param.empty())
+				return false;
 			sLMSCmnd = R"("playlist", "play", ")" + param + "\"";
 		}
 		else if (command == "PlayFavorites") {
@@ -716,11 +717,12 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 			sLMSCmnd = R"("power", "0")";
 		}
 		else if (command == "SetVolume") {
-			if (param == "") return false;
+			if (param.empty())
+				return false;
 			sLMSCmnd = R"("mixer", "volume", ")" + param + "\"";
 		}
 
-		if (sLMSCmnd != "")
+		if (!sLMSCmnd.empty())
 		{
 			std::string sPostdata = R"({"id":1,"method":"slim.request","params":[")" + sPlayerId + "\",[" + sLMSCmnd + "]]}";
 			Json::Value root = Query(m_IP, m_Port, sPostdata);
@@ -735,44 +737,35 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 
 				if (command == "Stop")
 					return sMode == "stop";
-				else if (command == "Pause")
+				if (command == "Pause")
 					return sMode == "pause";
-				else if (command == "Play")
+				if (command == "Play")
 					return sMode == "play";
-				else if (command == "PlayPlaylist")
+				if (command == "PlayPlaylist")
 					return sMode == "play";
-				else if (command == "PlayFavorites")
+				if (command == "PlayFavorites")
 					return sMode == "play";
-				else if (command == "PowerOn")
+				if (command == "PowerOn")
 					return sPower == "1";
-				else if (command == "PowerOff")
+				if (command == "PowerOff")
 					return sPower == "0";
-				else
-					return false;
 			}
-			else
-				return false;
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "Logitech Media Server: (%s) Command: '%s'. Unknown command.", result[0][0].c_str(), command.c_str());
 			return false;
 		}
-	}
-	else
-	{
-		_log.Log(LOG_ERROR, "Logitech Media Server: (%d) Command: '%s'. Device not found.", ID, command.c_str());
+		_log.Log(LOG_ERROR, "Logitech Media Server: (%s) Command: '%s'. Unknown command.", result[0][0].c_str(), command.c_str());
 		return false;
 	}
+	_log.Log(LOG_ERROR, "Logitech Media Server: (%d) Command: '%s'. Device not found.", ID, command.c_str());
+	return false;
 }
 
 void CLogitechMediaServer::SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration)
 {
-	if ((playerIP != "") && (text != "") && (duration > 0))
+	if ((!playerIP.empty()) && (!text.empty()) && (duration > 0))
 	{
 		const std::string &sLine1 = subject;
 		const std::string &sLine2 = text;
-		std::string sFont = ""; //"huge";
+		std::string sFont; //"huge";
 		std::string sBrightness = "4";
 		std::string sDuration = std::to_string(duration);
 		std::string sPostdata = R"({"id":1,"method":"slim.request","params":[")" + playerIP + R"(",["show","line1:)" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration +
@@ -808,10 +801,7 @@ namespace http {
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
-			if (
-				(hwid == "") ||
-				(mode1 == "")
-				)
+			if ((hwid.empty()) || (mode1.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -839,7 +829,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -858,7 +848,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
@@ -889,7 +879,7 @@ namespace http {
 		void CWebServer::Cmd_LMSGetPlaylists(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);

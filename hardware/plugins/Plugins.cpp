@@ -511,14 +511,11 @@ namespace Plugins {
 					_log.Log(LOG_ERROR, "CPlugin:%s, Function expects no parameter or a Dictionary.", __func__);
 					return pConfig;
 				}
-				else
-				{
-					//  Convert to JSON and store
-					sConfig = pProtocol->PythontoJSON(pNewConfig);
+				//  Convert to JSON and store
+				sConfig = pProtocol->PythontoJSON(pNewConfig);
 
-					// Update database
-					m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
-				}
+				// Update database
+				m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
 			}
 			PyErr_Clear();
 
@@ -791,7 +788,7 @@ namespace Plugins {
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
 				PyCodeObject*	pCode = frame->f_code;
-				std::string		FileName = "";
+				std::string FileName;
 				if (pCode->co_filename)
 				{
 					PyBytesObject*	pFileBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_filename);
@@ -831,7 +828,7 @@ namespace Plugins {
 		return m_iPollInterval;
 	}
 
-	void CPlugin::Notifier(std::string Notifier)
+	void CPlugin::Notifier(const std::string &Notifier)
 	{
 		delete m_Notifier;
 		m_Notifier = nullptr;
@@ -922,7 +919,7 @@ namespace Plugins {
 			if (m_bIsStarted)
 			{
 				// If we have connections queue disconnects
-				if (m_Transports.size())
+				if (!m_Transports.empty())
 				{
 					std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 					                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
@@ -995,7 +992,7 @@ namespace Plugins {
 				std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 				                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
 				std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
-				if (m_Transports.size())
+				if (!m_Transports.empty())
 				{
 					for (const auto &pPluginTransport : m_Transports)
 					{
@@ -1242,7 +1239,6 @@ Error:
 			{
 				for (const auto &sd : result)
 				{
-					const char*	pChar = sd[0].c_str();
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "UserDataFolder", szUserDataFolder);
@@ -1466,14 +1462,14 @@ Error:
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
+			pConnection->pTransport = (CPluginTransport *)new CPluginTransportUDP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "ICMP/IP")
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportICMP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
+			pConnection->pTransport = (CPluginTransport *)new CPluginTransportICMP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
 		}
 		else
 		{
@@ -1599,7 +1595,7 @@ Error:
 				pConnection->pTransport = nullptr;
 
 				// Plugin exiting and all connections have disconnect messages queued
-				if (IsStopRequested(0) && !m_Transports.size())
+				if (IsStopRequested(0) && m_Transports.empty())
 				{
 					MessagePlugin(new onStopCallback(this));
 				}
@@ -1719,7 +1715,7 @@ Error:
 			}
 
 			// Plugin exiting and all connections have disconnect messages queued
-			if (IsStopRequested(0) && !m_Transports.size())
+			if (IsStopRequested(0) && m_Transports.empty())
 			{
 				MessagePlugin(new onStopCallback(this));
 			}
@@ -1738,7 +1734,7 @@ Error:
 			PyEval_SaveThread();
 	}
 
-	void CPlugin::Callback(std::string sHandler, void * pParams)
+	void CPlugin::Callback(const std::string &sHandler, void *pParams)
 	{
 		try
 		{
@@ -1947,7 +1943,7 @@ Error:
 		std::string szRetVal = "Light48";
 		if (iIconLine < 100)  // default set of custom icons
 		{
-			std::string sLine = "";
+			std::string sLine;
 			std::ifstream infile;
 			std::string switchlightsfile = szWWWFolder + "/switch_icons.txt";
 			infile.open(switchlightsfile.c_str());
@@ -1957,7 +1953,7 @@ Error:
 				while (!infile.eof())
 				{
 					getline(infile, sLine);
-					if ((sLine.size() != 0) && (index++ == iIconLine))
+					if ((!sLine.empty()) && (index++ == iIconLine))
 					{
 						std::vector<std::string> results;
 						StringSplit(sLine, ";", results);

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #ifndef NOCLOUD
 #include "proxyclient.h"
+
+#include <utility>
 #include "../hardware/DomoticzTCP.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -43,7 +45,8 @@ namespace http {
 			m_sql.GetPreferencesVar("MyDomoticzUserId", _apikey);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", _password);
 			m_sql.GetPreferencesVar("MyDomoticzSubsystems", _allowed_subsystems);
-			if (_password != "") {
+			if (!_password.empty())
+			{
 				_password = base64_decode(_password);
 			}
 			readbuf.clear();
@@ -150,7 +153,7 @@ namespace http {
 
 		std::string CProxyClient::GetResponseHeaders(const http::server::reply &reply_)
 		{
-			std::string result = "";
+			std::string result;
 			for (const auto &header : reply_.headers)
 			{
 				result += header.name;
@@ -177,7 +180,8 @@ namespace http {
 			if (pdu->m_subsystem == SUBSYSTEM_HTTP) {
 				// "normal web request", get parameters
 
-				if (pdu->m_requestbody.size() > 0) {
+				if (!pdu->m_requestbody.empty())
+				{
 					request = "POST ";
 				}
 				else {
@@ -269,7 +273,7 @@ namespace http {
 				return;
 			}
 			long authenticated;
-			std::string reason = "";
+			std::string reason;
 
 			sharedData.AddConnectedServer(pdu->m_ipparam);
 			if (pdu->m_protocol_version > 4) {
@@ -484,7 +488,7 @@ namespace http {
 		bool CProxyClient::Enabled()
 		{
 			Reset();
-			return (_apikey != "" && _password != "" && _allowed_subsystems != 0);
+			return (!_apikey.empty() && !_password.empty() && _allowed_subsystems != 0);
 		}
 
 		CProxyManager::~CProxyManager()
@@ -525,9 +529,9 @@ namespace http {
 		void CProxyClient::ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *master, int protocol_version)
 		{
 			ProxyPdu_SERV_CONNECT response;
-			response.m_ipparam = instancekey;
-			response.m_usernameparam = username;
-			response.m_passwordparam = password;
+			response.m_ipparam = std::move(instancekey);
+			response.m_usernameparam = std::move(username);
+			response.m_passwordparam = std::move(password);
 			response.m_protocol_version = protocol_version;
 			MyWrite(response.ToBinary());
 		}
@@ -559,7 +563,7 @@ namespace http {
 			return _instanceid;
 		}
 
-		bool CProxySharedData::AddConnectedIp(std::string ip)
+		bool CProxySharedData::AddConnectedIp(const std::string &ip)
 		{
 			if (connectedips_.find(ip) == connectedips_.end())
 			{
@@ -571,7 +575,7 @@ namespace http {
 			return false;
 		}
 
-		bool CProxySharedData::AddConnectedServer(std::string ip)
+		bool CProxySharedData::AddConnectedServer(const std::string &ip)
 		{
 			if (connectedservers_.find(ip) == connectedservers_.end())
 			{

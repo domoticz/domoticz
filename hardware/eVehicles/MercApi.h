@@ -16,34 +16,36 @@ License: Public domain
 class CMercApi: public CVehicleApi
 {
 public:
-	CMercApi(const std::string username, const std::string password, const std::string vin);
-	~CMercApi() override = default;
+  CMercApi(const std::string &username, const std::string &password, const std::string &vin);
+  ~CMercApi() override = default;
 
-	bool Login() override;
-	bool RefreshLogin() override;
-	bool SendCommand(eCommandType command, std::string parameter) override;
-	bool GetAllData(tAllCarData& data) override;
-	bool GetLocationData(tLocationData& data) override;
-	bool GetChargeData(tChargeData& data) override;
-	bool GetClimateData(tClimateData& data) override;
-	bool GetVehicleData(tVehicleData& data) override;
-	bool GetCustomData(tCustomData& data) override;
-	bool IsAwake() override;
+  bool Login() override;
+  bool RefreshLogin() override;
+  bool SendCommand(eCommandType command, std::string parameter) override;
+  bool GetAllData(tAllCarData &data) override;
+  bool GetLocationData(tLocationData &data) override;
+  bool GetChargeData(tChargeData &data) override;
+  bool GetClimateData(tClimateData &data) override;
+  bool GetVehicleData(tVehicleData &data) override;
+  bool GetCustomData(tCustomData &data) override;
+  bool IsAwake() override;
+
 private:
 	enum eApiMethod {
 		Post,
 		Get
 	};
-	bool GetData(std::string datatype, Json::Value& reply);
-	bool GetResourceData(std::string datatype, Json::Value& reply);
+	bool GetData(const std::string &datatype, Json::Value &reply);
+	bool GetResourceData(const std::string &datatype, Json::Value &reply);
 	bool ProcessAvailableResources(Json::Value& jsondata);
-	bool SendCommand(std::string command, Json::Value& reply, std::string parameters = "");
+	bool SendCommand(const std::string &command, Json::Value &reply, const std::string &parameters = "");
 	void GetLocationData(Json::Value& jsondata, tLocationData& data);
 	void GetChargeData(Json::Value& jsondata, tChargeData& data);
 	void GetClimateData(Json::Value& jsondata, tClimateData& data);
 	void GetVehicleData(Json::Value& jsondata, tVehicleData& data);
-	bool GetAuthToken(const std::string username, const std::string password, const bool refreshUsingToken = false);
-	bool SendToApi(const eApiMethod eMethod, const std::string& sUrl, const std::string& sPostData, std::string& sResponse, const std::vector<std::string>& vExtraHeaders, Json::Value& jsDecodedResponse, const bool bSendAuthHeaders = true, const int timeout = 0);
+	bool GetAuthToken(const std::string &username, const std::string &password, bool refreshUsingToken = false);
+	bool SendToApi(eApiMethod eMethod, const std::string &sUrl, const std::string &sPostData, std::string &sResponse, const std::vector<std::string> &vExtraHeaders, Json::Value &jsDecodedResponse,
+		       bool bSendAuthHeaders = true, int timeout = 0);
 
 	std::string m_username;
 	std::string m_password;

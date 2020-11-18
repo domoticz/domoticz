@@ -224,9 +224,7 @@ bool CTTNMQTT::ConnectIntEx()
 			Log(LOG_ERROR, "Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
 			return false;
 		}
-		else {
-			Log(LOG_STATUS, "Enabled TLS mode");
-		}
+		Log(LOG_STATUS, "Enabled TLS mode");
 	}
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
@@ -416,7 +414,7 @@ int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &Device
 	return DeviceID;
 }
 
-bool CTTNMQTT::ConvertField2Payload(const std::string sType, const std::string sValue, const uint8_t channel, const uint8_t index, Json::Value &payload)
+bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string &sValue, const uint8_t channel, const uint8_t index, Json::Value &payload)
 {
 	bool ret = false;
 
@@ -507,12 +505,12 @@ bool CTTNMQTT::ConvertFields2Payload(const Json::Value &fields, Json::Value &pay
 	bool ret = false;
 	uint8_t index = 0;
 
-    if( fields.size() > 0 )
+	if (!fields.empty())
 	{
 		Debug(DEBUG_NORM, "Processing fields payload for %d fields!", fields.size());
 		for (const auto &id : fields.getMemberNames())
 		{
-			if(!(fields[id].isNull()) && ConvertField2Payload(id.c_str(), fields[id].asString().c_str(), index + 1, index, payload))
+			if (!(fields[id].isNull()) && ConvertField2Payload(id, fields[id].asString(), index + 1, index, payload))
 			{
 				Debug(DEBUG_NORM, "Converted field %s !", id.c_str());
 				index++;
@@ -670,7 +668,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			return;
 		}
 
-		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName.c_str(), DeviceSerial.c_str());
+		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName, DeviceSerial);
 		if (DeviceID == 0) // Unable to find the Device and/or Add the new Device
 		{
 			return;

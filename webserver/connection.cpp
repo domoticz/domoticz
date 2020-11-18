@@ -79,9 +79,7 @@ namespace http {
 			if (secure_) {
 				return sslsocket_->lowest_layer();
 			}
-			else {
-				return socket_->lowest_layer();
-			}
+			return socket_->lowest_layer();
 		}
 #else
 		// alternative: get the attached client socket of this connection if ssl is not compiled in
@@ -303,7 +301,6 @@ namespace http {
 			delete[] send_buffer_;
 			send_buffer_ = nullptr;
 			connection_manager_.stop(shared_from_this());
-			return;
 		}
 
 		bool connection::send_file(const std::string& filename, std::string& attachment_name, reply& rep)

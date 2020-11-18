@@ -439,7 +439,7 @@ void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, 100 + InputNumber);
 
-	if ((!result.empty()) && (result.size()>0))
+	if ((!result.empty()) && (!result.empty()))
 	{
 		std::vector<std::string> sd=result[0];
 		bool dbState = true;
@@ -491,7 +491,7 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, RelayNumber);
 
-	if ((!result.empty()) && (result.size()>0))
+	if ((!result.empty()) && (!result.empty()))
 	{
 		std::vector<std::string> sd = result[0];
 		bool dbState = true;

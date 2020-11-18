@@ -185,14 +185,11 @@ namespace Plugins {
 									_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", self->pPlugin->m_PluginKey.c_str(), sd[0].c_str());
 									break;
 								}
-								else
-								{
-									pImage->ImageID = atoi(sd[0].c_str()) + 100;
-									pImage->Base = PyUnicode_FromString(sd[1].c_str());
-									pImage->Name = PyUnicode_FromString(sd[2].c_str());
-									pImage->Description = PyUnicode_FromString(sd[3].c_str());
-									Py_DECREF(pImage);
-								}
+								pImage->ImageID = atoi(sd[0].c_str()) + 100;
+								pImage->Base = PyUnicode_FromString(sd[1].c_str());
+								pImage->Name = PyUnicode_FromString(sd[2].c_str());
+								pImage->Description = PyUnicode_FromString(sd[3].c_str());
+								Py_DECREF(pImage);
 							}
 						}
 					}
@@ -597,7 +594,7 @@ namespace Plugins {
 					self->DeviceID = PyUnicode_FromString(szID);
 				}
 				if (TypeName) {
-					std::string sValue = "";
+					std::string sValue;
 					maptypename(std::string(TypeName), self->Type, self->SubType, self->SwitchType, sValue, Options, self->Options);
 					Py_DECREF(self->sValue);
 					self->sValue = PyUnicode_FromString(sValue.c_str());
@@ -779,7 +776,7 @@ namespace Plugins {
 						}
 
 						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
-						if (result.size())
+						if (!result.empty())
 						{
 							self->ID = atoi(result[0][0].c_str());
 
@@ -896,7 +893,7 @@ namespace Plugins {
 
 			// TypeName change - actually derives new Type, SubType and SwitchType values
 			if (TypeName) {
-				std::string stdsValue = "";
+				std::string stdsValue;
 				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
 
 				// Reset nValue and sValue when changing device types
@@ -961,7 +958,7 @@ namespace Plugins {
 				}
 				else
 				{
-					std::string sOptionValue = "";
+					std::string sOptionValue;
 					PyObject *pValue = PyDict_GetItemString(pOptionsDict, "Custom");
 					if (pValue)
 					{
@@ -1478,12 +1475,9 @@ namespace Plugins {
 				(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"), date, sParent.c_str());
 			return pRetVal;
 		}
-		else
-		{
-			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Connected: False, Parent: '%s'",
-				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud, sParent.c_str());
-			return pRetVal;
-		}
+		PyObject *pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Connected: False, Parent: '%s'", self->Name,
+							 self->Transport, self->Protocol, self->Address, self->Port, self->Baud, sParent.c_str());
+		return pRetVal;
 	}
 
 } // namespace Plugins

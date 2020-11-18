@@ -119,7 +119,7 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 
 	std::string szURLPreFix = (pCamera->Protocol == CPROTOCOL_HTTP) ? "http" : "https";
 
-	if ((!bHaveUPinURL) && ((pCamera->Username != "") || (pCamera->Password != "")))
+	if ((!bHaveUPinURL) && ((!pCamera->Username.empty()) || (!pCamera->Password.empty())))
 		s_str << szURLPreFix << "://" << CURLEncode::URLEncode(pCamera->Username) << ":" << CURLEncode::URLEncode(pCamera->Password) << "@" << pCamera->Address << ":" << pCamera->Port;
 	else
 		s_str << szURLPreFix << "://" << pCamera->Address << ":" << pCamera->Port;
@@ -246,7 +246,7 @@ bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned cha
 
 	if (pCamera->ImageURL == "raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);
-	else if (pCamera->ImageURL == "uvccapture.cgi")
+	if (pCamera->ImageURL == "uvccapture.cgi")
 		return TakeUVCSnapshot(pCamera->Username, camimage);
 
 	std::vector<std::string> ExtraHeaders;
@@ -256,7 +256,7 @@ bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned cha
 std::string WrapBase64(const std::string &szSource, const size_t lsize = 72)
 {
 	std::string cstring = szSource;
-	std::string ret = "";
+	std::string ret;
 	while (cstring.size() > lsize)
 	{
 		std::string pstring = cstring.substr(0, lsize);
@@ -287,11 +287,11 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 	{
 		return false;//no email setup
 	}
-	if (sValue == "")
+	if (sValue.empty())
 	{
 		return false;//no email setup
 	}
-	if (CamIdx == "")
+	if (CamIdx.empty())
 		return false;
 
 	std::vector<std::string> splitresults;
@@ -315,10 +315,10 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 		"<body>\r\n";
 
 	SMTPClient sclient;
-	sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
-	sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+	sclient.SetFrom(CURLEncode::URLDecode(EmailFrom));
+	sclient.SetTo(CURLEncode::URLDecode(EmailTo));
 	sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
-	sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
+	sclient.SetServer(CURLEncode::URLDecode(EmailServer), EmailPort);
 	sclient.SetSubject(CURLEncode::URLDecode(subject));
 
 	for (const auto & camIt : splitresults)
@@ -434,7 +434,8 @@ namespace http {
 		{
 			std::vector<unsigned char> camimage;
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 			if (!m_mainworker.m_cameras.TakeSnapshot(idx, camimage)) {
@@ -460,11 +461,7 @@ namespace http {
 			std::string password = request::findValue(&req, "password");
 			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
 			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
-			if (
-				(name == "") ||
-				(address == "") ||
-				(timageurl == "")
-				)
+			if ((name.empty()) || (address.empty()) || (timageurl.empty()))
 				return;
 
 			std::string imageurl;
@@ -499,7 +496,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string senabled = request::findValue(&req, "enabled");
@@ -509,12 +506,7 @@ namespace http {
 			std::string password = request::findValue(&req, "password");
 			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
 			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
-			if (
-				(name == "") ||
-				(senabled == "") ||
-				(address == "") ||
-				(timageurl == "")
-				)
+			if ((name.empty()) || (senabled.empty()) || (address.empty()) || (timageurl.empty()))
 				return;
 
 			std::string imageurl;
@@ -552,7 +544,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "DeleteCamera";

@@ -36,8 +36,8 @@ void CKodiNode::CKodiStatus::Clear()
 
 std::string	CKodiNode::CKodiStatus::LogMessage()
 {
-	std::string	sLogText = "";
-	if (m_sType != "")
+	std::string sLogText;
+	if (!m_sType.empty())
 	{
 		if (m_sType == "episode")
 		{
@@ -253,7 +253,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 									_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown type in OnPlay/OnResume message: '%s' from '%s'", m_Name.c_str(), root["params"]["data"]["item"]["type"].asCString(), pMessage.c_str());
 								}
 
-								if (m_CurrentStatus.PlayerID() != "")  // if we now have a player id then request more details
+								if (!m_CurrentStatus.PlayerID().empty()) // if we now have a player id then request more details
 								{
 									sMessage = R"({"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":)" + m_CurrentStatus.PlayerID() +
 										   R"(,"properties":["artist","album","year","channel","showtitle","season","episode","title"]}})";
@@ -267,7 +267,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							}
 							else if (root["method"] == "Player.OnSeek")
 							{
-								if (m_CurrentStatus.PlayerID() != "")
+								if (!m_CurrentStatus.PlayerID().empty())
 									sMessage = R"({"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":)" + m_CurrentStatus.PlayerID() +
 										   R"(,"properties":["live","percentage","speed"]}})";
 								else
@@ -383,7 +383,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							if (root["result"]["item"].isMember("title"))			m_CurrentStatus.Title(root["result"]["item"]["title"].asCString());
 							if (root["result"]["item"].isMember("year"))			m_CurrentStatus.Year(root["result"]["item"]["year"].asInt());
 							if (root["result"]["item"].isMember("label"))			m_CurrentStatus.Label(root["result"]["item"]["label"].asCString());
-							if ((m_CurrentStatus.PlayerID() != "") && (m_CurrentStatus.Type() != "picture")) // request final details
+							if ((!m_CurrentStatus.PlayerID().empty()) && (m_CurrentStatus.Type() != "picture")) // request final details
 							{
 								sMessage = R"({"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":)" + m_CurrentStatus.PlayerID() +
 									   R"(,"properties":["live","percentage","speed"]}})";
@@ -502,10 +502,10 @@ void CKodiNode::handleMessage(std::string& pMessage)
 												handleWrite(ssMessage.str());
 												break;
 											}
-											else {
-												_log.Log(LOG_NORM, "Kodi: (%s) Requested Favourite ('%s') is not playable, next playable item will be selected.", m_Name.c_str(), root["result"]["favourites"][i]["title"].asCString());
-												m_PlaylistPosition++;
-											}
+											_log.Log(LOG_NORM,
+												 "Kodi: (%s) Requested Favourite ('%s') is not playable, next playable item will be selected.",
+												 m_Name.c_str(), root["result"]["favourites"][i]["title"].asCString());
+											m_PlaylistPosition++;
 										}
 									}
 								else
@@ -567,7 +567,7 @@ void CKodiNode::UpdateStatus()
 	if (m_CurrentStatus.Status() != m_PreviousStatus.Status())
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
-		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str());
+		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name);
 	}
 
 	m_PreviousStatus = m_CurrentStatus;
@@ -677,7 +677,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 	}
 }
 
-void CKodiNode::handleWrite(std::string pMessage)
+void CKodiNode::handleWrite(const std::string &pMessage)
 {
 	if (!IsStopRequested(0)) {
 		if (m_Socket)
@@ -728,7 +728,7 @@ void CKodiNode::Do_Work()
 				std::string	sMessage;
 				if (m_CurrentStatus.IsStreaming())
 				{	// Update percentage if playing media (required because Player.OnPropertyChanged never get received as of Kodi 'Helix')
-					if (m_CurrentStatus.PlayerID() != "")
+					if (!m_CurrentStatus.PlayerID().empty())
 						sMessage = R"({"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":)" + m_CurrentStatus.PlayerID() +
 							   R"(,"properties":["live","percentage","speed"]}})";
 					else
@@ -762,7 +762,7 @@ void CKodiNode::Do_Work()
 void CKodiNode::SendCommand(const std::string &command)
 {
 	std::string	sKodiCall;
-	std::string	sKodiParam = "";
+	std::string sKodiParam;
 	if (command == "Home")
 	{
 		sKodiCall = "Input.Home";
@@ -1075,12 +1075,12 @@ void CKodi::AddNode(const std::string &Name, const std::string &IPAddress, const
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()>0)
+	if (!result.empty())
 		return; //Already exists
 	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', %d)", m_HwdID, Name.c_str(), IPAddress.c_str(), Port);
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()<1)
+	if (result.empty())
 		return;
 
 	int ID = atoi(result[0][0].c_str());
@@ -1100,7 +1100,7 @@ bool CKodi::UpdateNode(const int ID, const std::string &Name, const std::string 
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, ID);
-	if (result.size()<1)
+	if (result.empty())
 		return false; //Not Found!?
 
 	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=%d WHERE (HardwareID==%d) AND (ID==%d)", Name.c_str(), IPAddress.c_str(), Port, m_HwdID, ID);
@@ -1244,7 +1244,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
@@ -1282,11 +1282,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
-			if (
-				(hwid == "") ||
-				(mode1 == "") ||
-				(mode2 == "")
-				)
+			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -1319,12 +1315,7 @@ namespace http {
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Port = atoi(request::findValue(&req, "port").c_str());
-			if (
-				(hwid == "") ||
-				(name == "") ||
-				(ip == "") ||
-				(Port == 0)
-				)
+			if ((hwid.empty()) || (name.empty()) || (ip.empty()) || (Port == 0))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -1352,13 +1343,7 @@ namespace http {
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Port = atoi(request::findValue(&req, "port").c_str());
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(name == "") ||
-				(ip == "") ||
-				(Port == 0)
-				)
+			if ((hwid.empty()) || (nodeid.empty()) || (name.empty()) || (ip.empty()) || (Port == 0))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -1384,10 +1369,7 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
@@ -1412,7 +1394,7 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);

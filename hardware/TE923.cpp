@@ -104,8 +104,7 @@ void CTE923::GetSensorDetails()
 			_log.Log(LOG_ERROR, "TE923: Could not read weather data!");
 			return;
 		}
-		else
-			_te923tool2.CloseDevice();
+		_te923tool2.CloseDevice();
 	}
 	else
 		_te923tool.CloseDevice();

@@ -40,10 +40,8 @@ bool CurrentCostMeterTCP::StartHardware()
 		{
 			return false;
 		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr),he->h_addr_list[0],4);
-		}
+
+		memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
 	}
 
 	//force connect the next first time

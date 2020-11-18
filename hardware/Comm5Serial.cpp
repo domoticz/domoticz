@@ -330,7 +330,7 @@ void Comm5Serial::enableNotifications()
 	writeFrame(data);
 }
 
-void Comm5Serial::OnError(const std::exception e)
+void Comm5Serial::OnError(const std::exception &e)
 {
 	Log(LOG_ERROR, "Error: %s", e.what());
 }

@@ -18,7 +18,7 @@ namespace Plugins {
 		virtual int					Length() { return m_sRetainedData.size(); };
 		virtual bool				Secure() { return m_Secure; };
 
-		static CPluginProtocol*		Create(std::string sProtocol);
+		static CPluginProtocol *Create(const std::string &sProtocol);
 	};
 
 	class CPluginProtocolLine : CPluginProtocol
@@ -39,9 +39,9 @@ namespace Plugins {
 	protected:
 		PyObject* JSONtoPython(Json::Value* pJSON);
 	public:
-		PyObject * JSONtoPython(std::string sJSON);
-		std::string PythontoJSON(PyObject * pDict);
-		void ProcessInbound(const ReadEvent *Message) override;
+	  PyObject *JSONtoPython(const std::string &sJSON);
+	  std::string PythontoJSON(PyObject *pDict);
+	  void ProcessInbound(const ReadEvent *Message) override;
 	};
 
 	class CPluginProtocolHTTP : public CPluginProtocol

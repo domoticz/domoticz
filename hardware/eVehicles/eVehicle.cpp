@@ -24,6 +24,7 @@ License: Public domain
 #include <sstream>
 #include <iomanip>
 #include <cmath>
+#include <utility>
 
 #define VEHICLE_SWITCH_CHARGE 1
 #define VEHICLE_SWITCH_CLIMATE 2
@@ -153,7 +154,7 @@ void CeVehicle::SendAlert()
 	}
 }
 
-void CeVehicle::SendAlert(int alertType, int value, std::string title)
+void CeVehicle::SendAlert(int alertType, int value, const std::string &title)
 {
 	if (alertType == VEHICLE_ALERT_STATUS)
 		SendAlertSensor(VEHICLE_ALERT_STATUS, 255, value, title, m_Name + " State");
@@ -197,16 +198,16 @@ void CeVehicle::SendCounter(int countType, float value)
 		SendCustomSensor(VEHICLE_COUNTER_ODO, 1, 255, value, m_Name + " Odometer", m_api->m_config.distance_unit);
 }
 
-void CeVehicle::SendCustom(int countType, int ChildId, float value, std::string label)
+void CeVehicle::SendCustom(int countType, int ChildId, float value, const std::string &label)
 {
 	if ((countType == VEHICLE_CUSTOM) && m_api->m_capabilities.has_custom_data)
-		SendCustomSensor(VEHICLE_CUSTOM, ChildId, 255, value, m_Name + " " + label.c_str(), "");
+		SendCustomSensor(VEHICLE_CUSTOM, ChildId, 255, value, m_Name + " " + label, "");
 }
 
-void CeVehicle::SendText(int countType, int ChildId, std::string value, std::string label)
+void CeVehicle::SendText(int countType, int ChildId, const std::string &value, const std::string &label)
 {
 	if ((countType == VEHICLE_CUSTOM) && m_api->m_capabilities.has_custom_data)
-		SendTextSensor(VEHICLE_CUSTOM, ChildId, 255, value.c_str(), m_Name + " " + label.c_str());
+		SendTextSensor(VEHICLE_CUSTOM, ChildId, 255, value, m_Name + " " + label);
 }
 
 bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
@@ -217,7 +218,7 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 		SendAlert();
 		return true;
 	}
-	else if(m_command_nr_tries > VEHICLE_MAXTRIES)
+	if (m_command_nr_tries > VEHICLE_MAXTRIES)
 	{
 		Init();
 		SendSwitch(VEHICLE_SWITCH_CHARGE, m_car.charging);
@@ -230,18 +231,15 @@ bool CeVehicle::ConditionalReturn(bool commandOK, eApiCommandType command)
 		SendAlert();
 		return false;
 	}
-	else
+	if (command == Wake_Up)
 	{
-		if (command == Wake_Up)
-		{
-			Log(LOG_ERROR, "Car not yet awake. Will retry.");
-			SendAlert();
-		}
-		else
-			Log(LOG_ERROR, "Timeout requesting %s. Will retry.", GetCommandString(command).c_str());
-		m_command_nr_tries++;
+		Log(LOG_ERROR, "Car not yet awake. Will retry.");
+		SendAlert();
 	}
+	else
+		Log(LOG_ERROR, "Timeout requesting %s. Will retry.", GetCommandString(command).c_str());
 
+	m_command_nr_tries++;
 	return true;
 }
 
@@ -377,7 +375,7 @@ void CeVehicle::Do_Work()
 			}
 			continue;
 		}
-		else if (bIsAborted)
+		if (bIsAborted)
 		{
 			if (sec_counter % 7200 == 0)
 			{
@@ -603,7 +601,7 @@ void CeVehicle::AddCommand(eApiCommandType command_type, std::string command_par
 	tApiCommand command;
 
 	command.command_type = command_type;
-	command.command_parameter = command_parameter;
+	command.command_parameter = std::move(command_parameter);
 
 	m_commands.push(command);
 }
@@ -652,7 +650,7 @@ bool CeVehicle::DoNextCommand()
 	return commandOK;
 }
 
-bool CeVehicle::DoSetCommand(tApiCommand command)
+bool CeVehicle::DoSetCommand(const tApiCommand &command)
 {
 	CVehicleApi::eCommandType api_command;
 

@@ -248,7 +248,7 @@ int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const u
 	sprintf(IDX, "%02X%02X%02X%02X", devh, devl, code, nr);  //index calculated adrh,adrl,signalcode,i/o nr
 	if ((type == pTypeLighting2)) // || (type==pTypeTEMP))
 		sprintf(IDX, "%X%02X%02X%02X", devh, devl, code, nr);    //exception bug in Domoticz??
-	std::string devname = "";
+	std::string devname;
 	std::vector<std::vector<std::string> > result;
 	//if name contains '@' - ignore i/o - do not add to DB (unused)
 	if ((strstr(Name, "@") == nullptr) && (strlen(Name) > 0))
@@ -311,14 +311,14 @@ void eHouseTCP::UpdatePGM(int /*adrh*/, int /*adrl*/, int /*devtype*/, const cha
 	std::string Names = ISO2UTF8
 	(std::string(names));
 	//_log.Log(LOG_ERROR, "PGM: %s", Names.c_str());
-	m_sql.SetDeviceOptions(idx, m_sql.BuildDeviceOptions(Names.c_str(), false));
+	m_sql.SetDeviceOptions(idx, m_sql.BuildDeviceOptions(Names, false));
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Add Controllers To 'Plans' DB
 int eHouseTCP::UpdateSQLPlan(int /*devh*/, int /*devl*/, int /*devtype*/, const char * Name)
 {
 	int i = 0;
-	std::string devname = "";
+	std::string devname;
 	std::vector<std::vector<std::string> > result;
 	devname.append(Name, strlen(Name));
 	devname = ISO2UTF8(devname);
@@ -738,7 +738,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 //////////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::CheckAddress()
 {
-	if (m_IPAddress.size() == 0 || m_IPPort < 1 || m_IPPort > 65535)
+	if (m_IPAddress.empty() || m_IPPort < 1 || m_IPPort > 65535)
 	{
 		LOG(LOG_ERROR, "eHouse: Empty IP Address or bad Port");
 		return false;
@@ -767,17 +767,14 @@ bool eHouseTCP::CheckAddress()
 			LOG(LOG_ERROR, "eHouse: cannot resolve host name");
 			return false;
 		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
-			m_SrvAddrU = ip & 0xff;
-			m_SrvAddrM = (ip >> 8) & 0xff;
-			m_SrvAddrL = ip >> 24;
-			m_SrvAddrH = (ip >> 16) & 0xff;
-			LOG(LOG_STATUS, "[eHouse PRO] %s =>IP Address: %d.%d.%d.%d\r\n", m_IPAddress.c_str(), m_SrvAddrU, m_SrvAddrM, m_SrvAddrH, m_SrvAddrL);
-			if ((m_SrvAddrU != 192) || (m_SrvAddrM != 168))
-				m_ViaTCP = 1;
-		}
+		memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
+		m_SrvAddrU = ip & 0xff;
+		m_SrvAddrM = (ip >> 8) & 0xff;
+		m_SrvAddrL = ip >> 24;
+		m_SrvAddrH = (ip >> 16) & 0xff;
+		LOG(LOG_STATUS, "[eHouse PRO] %s =>IP Address: %d.%d.%d.%d\r\n", m_IPAddress.c_str(), m_SrvAddrU, m_SrvAddrM, m_SrvAddrH, m_SrvAddrL);
+		if ((m_SrvAddrU != 192) || (m_SrvAddrM != 168))
+			m_ViaTCP = 1;
 	}
 	if (m_ViaTCP)
 		m_TCPSocket = ConnectTCP(m_addr.sin_addr.s_addr);
