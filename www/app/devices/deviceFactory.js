@@ -169,7 +169,7 @@ define(function () {
                 var deviceType = this.Type;
                 var logLink = '#/Devices/' + this.idx + '/Log';
 
-                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy'];
+                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy', 'Heating'];
                 var deviceSubTypes = [
                     'Voltage', 'Current', 'Pressure', 'Custom Sensor', 'kWh',
                     'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',

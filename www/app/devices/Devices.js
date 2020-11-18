@@ -346,8 +346,6 @@ define(['app', 'livesocket'], function(app) {
                     actions.push('<a class="btn btn-icon" href="#/Scenes/' + device.idx + '/Log" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
                 } else if (logLink) {
                     actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
-                } else {
-                    actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>')
                 }
 
                 actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
