@@ -198,9 +198,10 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 
 	if (sunRise != 0 && sunSet != 0)
 	{
-		//We only poll one hour before sunrise till one hour after sunset
+		//We only process one hour before sunrise till one hour after sunset
 
 		//GizMoCuz: why is this as the production.json is retreived anyway ?
+			//Tuurtje: production.json also contains data from the CT's. Consumption and NetConsumption produce data all day.
 
 		if (ActHourMin + 60 < sunRise)
 			return;
@@ -248,7 +249,7 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 
 	m_c1power.powerusage1 = mtotal;
 	m_c1power.powerusage2 = 0;
-	m_c1power.usagecurrent = musage;
+	m_c1power.usagecurrent = std::max(musage,0);
 	sDecodeRXMessage(this, (const unsigned char *)&m_c1power, "Enphase Consumption kWh Total", 255);
 }
 
@@ -273,6 +274,6 @@ void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 
 	m_c2power.powerusage1 = mtotal;
 	m_c2power.powerusage2 = 0;
-	m_c2power.usagecurrent = musage;
+	m_c2power.usagecurrent = std::max(musage,0);
 	sDecodeRXMessage(this, (const unsigned char *)&m_c2power, "Enphase Net Consumption kWh Total", 255);
 }
