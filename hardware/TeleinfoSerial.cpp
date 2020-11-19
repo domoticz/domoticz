@@ -28,7 +28,10 @@ History :
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
+
+using namespace boost::placeholders;
 
 CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate, const bool disable_crc, const int ratelimit)
 {
@@ -99,7 +102,7 @@ bool CTeleinfoSerial::StartHardware()
 	}
 	StartHeartbeatThread();
 
-	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
+	setReadCallback(boost::bind(&CTeleinfoSerial::readCallback, this, _1, _2));
 	m_bIsStarted = true;
 	sOnConnected(this);
 

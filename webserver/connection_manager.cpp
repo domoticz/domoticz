@@ -10,8 +10,11 @@
 #include "stdafx.h"
 #include "connection_manager.hpp"
 #include <algorithm>
+#include <boost/bind/bind.hpp>
 #include <iostream>
 #include "../main/Logger.h"
+
+using namespace boost::placeholders;
 
 namespace http {
 namespace server {
@@ -54,7 +57,8 @@ namespace server {
 
 void connection_manager::stop_all()
 {
-	std::for_each(connections_.begin(), connections_.end(), [](const std::shared_ptr<http::server::connection> &con) { con->stop(); });
+	std::for_each(connections_.begin(), connections_.end(),
+			boost::bind(&connection::stop, _1));
 	connections_.clear();
 }
 

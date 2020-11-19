@@ -8,10 +8,13 @@
 #include "../main/localtime_r.h"
 
 #include <algorithm>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 #include <iostream>
 #include <string>
+
+using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 #define OTGW_READ_INTERVAL 10
@@ -95,7 +98,7 @@ bool OTGWSerial::OpenSerialDevice()
 	}
 	m_bIsStarted=true;
 	m_bufferpos=0;
-	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
+	setReadCallback(boost::bind(&OTGWSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
 	m_bRequestVersion = true;
 	return true;

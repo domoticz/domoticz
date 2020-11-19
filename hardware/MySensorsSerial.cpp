@@ -8,10 +8,13 @@
 #include "hardwaretypes.h"
 
 #include <algorithm>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 #include <iostream>
 #include <string>
+
+using namespace boost::placeholders;
 
 //#define DEBUG_MYSENSORS
 
@@ -183,7 +186,7 @@ bool MySensorsSerial::OpenSerialDevice()
 #endif
 	m_bIsStarted = true;
 	m_LineReceived.clear();
-	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
+	setReadCallback(boost::bind(&MySensorsSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
 	return true;
 	}

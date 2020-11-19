@@ -15,6 +15,8 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+using namespace boost::placeholders;
+
 CInfluxPush::CInfluxPush()
 {
 	m_PushType = PushType::PUSHTYPE_INFLUXDB;
@@ -32,7 +34,7 @@ bool CInfluxPush::Start()
 	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "InfluxPush");
 
-	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](int id, uint64_t idx, const std::string &name, const unsigned char *rx) { OnDeviceReceived(id, idx, name, rx); });
+	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CInfluxPush::OnDeviceReceived, this, _1, _2, _3, _4));
 
 	return (m_thread != nullptr);
 }

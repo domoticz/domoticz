@@ -5,6 +5,8 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
+using namespace boost::placeholders;
+
 #define MAX_POLL_INTERVAL 3600*1000
 
 #define DAE_IO_TYPE_RELAY		2
@@ -66,8 +68,8 @@ bool CDenkoviUSBDevices::StartHardware()
 	m_thread = std::make_shared<std::thread>(&CDenkoviUSBDevices::Do_Work, this);
 
 	m_bIsStarted = true;
-	setReadCallback([this](const char *d, size_t l) { readCallBack(d, l); });
-
+	setReadCallback(boost::bind(&CDenkoviUSBDevices::readCallBack, this, _1, _2));
+	
 	sOnConnected(this);
 	return true;
 }

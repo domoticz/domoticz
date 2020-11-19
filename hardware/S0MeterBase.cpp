@@ -13,6 +13,7 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <boost/bind/bind.hpp>
 
 #include <ctime>
 
