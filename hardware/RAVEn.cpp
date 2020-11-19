@@ -8,6 +8,8 @@
 #include "../tinyxpath/tinyxml.h"
 #include "hardwaretypes.h"
 
+using namespace boost::placeholders;
+
 //Rainforest RAVEn USB ZigBee Smart Meter Adapter
 //https://rainforestautomation.com/rfa-z106-raven/
 
@@ -42,7 +44,7 @@ bool RAVEn::StartHardware()
         _log.Log(LOG_ERROR, "RAVEn: Error opening serial port!!!");
         return false;
     }
-    setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
+    setReadCallback(boost::bind(&RAVEn::readCallback, this, _1, _2));
     m_bIsStarted = true;
     sOnConnected(this);
 

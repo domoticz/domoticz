@@ -13,6 +13,8 @@
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
 
+using namespace boost::placeholders;
+
 namespace Plugins {
 
 	void CPluginTransport::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
@@ -67,7 +69,7 @@ namespace Plugins {
 				//
 				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
 				//
-				m_Resolver.async_resolve(query, [this](const boost::system::error_code &err, boost::asio::ip::tcp::resolver::iterator end) { handleAsyncResolve(err, end); });
+				m_Resolver.async_resolve(query, boost::bind(&CPluginTransportTCP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 			}
 		}
 		catch (std::exception& e)
@@ -90,7 +92,7 @@ namespace Plugins {
 		if (!err)
 		{
 			boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
-			m_Socket->async_connect(endpoint, [this, endpoint_iterator](const boost::system::error_code &err) mutable { handleAsyncConnect(err, ++endpoint_iterator); });
+			m_Socket->async_connect(endpoint, boost::bind(&CPluginTransportTCP::handleAsyncConnect, this, boost::asio::placeholders::error, ++endpoint_iterator));
 		}
 		else
 		{
@@ -116,7 +118,8 @@ namespace Plugins {
 		{
 			m_bConnected = true;
 			m_tLastSeen = time(nullptr);
-			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](const boost::system::error_code &err, size_t bytes) { handleRead(err, bytes); });
+			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
+				boost::bind(&CPluginTransportTCP::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
 		else
 		{
@@ -147,7 +150,7 @@ namespace Plugins {
 				//	Acceptor based on http://www.boost.org/doc/libs/1_62_0/doc/html/boost_asio/tutorial/tutdaytime3/src.html
 				//
 				boost::asio::ip::tcp::socket*	pSocket = new boost::asio::ip::tcp::socket(ios);
-				m_Acceptor->async_accept((boost::asio::ip::tcp::socket &)*pSocket, [this, pSocket](const boost::system::error_code &err) { handleAsyncAccept(pSocket, err); });
+				m_Acceptor->async_accept((boost::asio::ip::tcp::socket&)*pSocket, boost::bind(&CPluginTransportTCP::handleAsyncAccept, this, pSocket, boost::asio::placeholders::error));
 				m_bConnecting = true;
 			}
 		}
@@ -213,7 +216,7 @@ namespace Plugins {
 			}
 
 			pTcpTransport->m_Socket->async_read_some(boost::asio::buffer(pTcpTransport->m_Buffer, sizeof pTcpTransport->m_Buffer),
-								 [this](const boost::system::error_code &err, size_t bytes) { handleRead(err, bytes); });
+				boost::bind(&CPluginTransportTCP::handleRead, pTcpTransport, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 
 			// Requeue listener
 			if (m_Acceptor)
@@ -245,7 +248,11 @@ namespace Plugins {
 
 			//ready for next read
 			if (m_Socket)
-				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](const boost::system::error_code &err, size_t bytes) { handleRead(err, bytes); });
+				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
+					boost::bind(&CPluginTransportTCP::handleRead,
+						this,
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred));
 		}
 		else
 		{
@@ -391,7 +398,7 @@ namespace Plugins {
 
 			m_TLSSock->set_verify_mode(boost::asio::ssl::verify_none);
 			m_TLSSock->set_verify_callback(boost::asio::ssl::rfc2818_verification(m_IP));
-			// m_TLSSock->set_verify_callback([this](bool v, boost::asio::ssl::verify_context &c){VerifyCertificate(v, c);});
+			//m_TLSSock->set_verify_callback(boost::bind(&CPluginTransportTCPSecure::VerifyCertificate, this, _1, _2));
 			try
 			{
 #ifdef WWW_ENABLE_SSL
@@ -403,7 +410,8 @@ namespace Plugins {
 				pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
 
 				m_tLastSeen = time(nullptr);
-				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](const boost::system::error_code &err, size_t bytes) { handleRead(err, bytes); });
+				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
+					boost::bind(&CPluginTransportTCP::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 			}
 			catch (boost::system::system_error se)
 			{
@@ -460,7 +468,11 @@ namespace Plugins {
 
 			//ready for next read
 			if (m_TLSSock)
-				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](const boost::system::error_code &err, size_t bytes) { handleRead(err, bytes); });
+				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
+					boost::bind(&CPluginTransportTCPSecure::handleRead,
+						this,
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred));
 		}
 		else
 		{
@@ -523,7 +535,9 @@ namespace Plugins {
 			}
 
 			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_remote_endpoint,
-						     [this](const boost::system::error_code &err, size_t bytes) { handleRead(err, bytes); });
+											boost::bind(&CPluginTransportUDP::handleRead, this,
+												boost::asio::placeholders::error,
+												boost::asio::placeholders::bytes_transferred));
 
 			m_bConnected = true;
 		}
@@ -698,7 +712,9 @@ namespace Plugins {
 			handleWrite(vBody);
 
 			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint,
-						     [this](const boost::system::error_code &err, size_t bytes) { handleRead(err, bytes); });
+				boost::bind(&CPluginTransportICMP::handleRead, this,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
 		}
 		else
 		{
@@ -726,12 +742,14 @@ namespace Plugins {
 				//
 				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_51_0/doc/html/boost_asio/example/icmp/ping.cpp
 				//
-				m_Resolver.async_resolve(query, [this](const boost::system::error_code &err, boost::asio::ip::icmp::resolver::iterator i) { handleAsyncResolve(err, i); });
+				m_Resolver.async_resolve(query, boost::bind(&CPluginTransportICMP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 			}
 			else
 			{
 				m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint,
-							     [this](const boost::system::error_code &err, size_t bytes) { handleRead(err, bytes); });
+					boost::bind(&CPluginTransportICMP::handleRead, this,
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred));
 			}
 		}
 		catch (std::exception& e)
@@ -851,7 +869,7 @@ namespace Plugins {
 			m_Timer = new boost::asio::deadline_timer(ios);
 		}
 		m_Timer->expires_from_now(boost::posix_time::seconds(5));
-		m_Timer->async_wait([this](const boost::system::error_code &err) { handleTimeout(err); });
+		m_Timer->async_wait(boost::bind(&CPluginTransportICMP::handleTimeout, this, boost::asio::placeholders::error));
 
 		// Create an ICMP header for an echo request.
 		icmp_header echo_request;
@@ -954,7 +972,7 @@ namespace Plugins {
 				if (m_bConnected)
 				{
 					pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, 0, "SerialPort " + m_Port + " opened successfully."));
-					setReadCallback([this](const char *err, size_t bytes) { handleRead(err, bytes); });
+					setReadCallback(boost::bind(&CPluginTransportSerial::handleRead, this, _1, _2));
 				}
 				else
 				{

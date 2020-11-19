@@ -8,12 +8,15 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <cmath>
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #if _DEBUG
 	#define ENOCEAN_BUTTON_DEBUG
@@ -580,7 +583,7 @@ bool CEnOceanESP3::OpenSerialDevice()
 	m_bIsStarted=true;
 
 	m_receivestate=ERS_SYNCBYTE;
-	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
+	setReadCallback(boost::bind(&CEnOceanESP3::readCallback, this, _1, _2));
 	sOnConnected(this);
 
 	uint8_t buf[100];

@@ -7,6 +7,8 @@
 #include "../main/localtime_r.h"
 #include <boost/exception/diagnostic_information.hpp>
 
+using namespace boost::placeholders;
+
 CEvohomeSerial::CEvohomeSerial(const int ID, const std::string &szSerialPort, const int baudrate, const std::string &UserContID) :
 CEvohomeRadio(ID, UserContID)
 {
@@ -64,7 +66,7 @@ bool CEvohomeSerial::OpenSerialDevice()
 	}
 	m_nBufPtr=0;
 	m_bIsStarted=true;
-	setReadCallback([this](const char *d, size_t l) { ReadCallback(d, l); });
+	setReadCallback(boost::bind(&CEvohomeSerial::ReadCallback, this, _1, _2));
 	sOnConnected(this);
 	return true;
 }

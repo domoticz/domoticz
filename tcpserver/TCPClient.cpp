@@ -28,7 +28,10 @@ CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase *pManager
 
 void CTCPClient::start()
 {
-	socket_->async_read_some(boost::asio::buffer(buffer_), [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handleRead(err, bytes); });
+	socket_->async_read_some(boost::asio::buffer(buffer_),
+		boost::bind(&CTCPClient::handleRead, shared_from_this(),
+		boost::asio::placeholders::error,
+		boost::asio::placeholders::bytes_transferred));
 }
 
 void CTCPClient::stop()
@@ -59,7 +62,8 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 					{
 						//Wrong username/password
 						boost::asio::async_write(*socket_, boost::asio::buffer("NOAUTH", 6),
-									 [this](const boost::system::error_code &err, size_t) { shared_from_this()->handleWrite(err); });
+							boost::bind(&CTCPClient::handleWrite, shared_from_this(),
+							boost::asio::placeholders::error));
 						pConnectionManager->stopClient(shared_from_this());
 						return;
 					}
@@ -73,7 +77,10 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 		}
 
 		//ready for next read
-		socket_->async_read_some(boost::asio::buffer(buffer_), [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handleRead(err, bytes); });
+		socket_->async_read_some(boost::asio::buffer(buffer_),
+			boost::bind(&CTCPClient::handleRead, shared_from_this(),
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
 	}
 	else if (e != boost::asio::error::operation_aborted)
 	{
@@ -85,7 +92,9 @@ void CTCPClient::write(const char *pData, size_t Length)
 {
 	if (!m_bIsLoggedIn)
 		return;
-	boost::asio::async_write(*socket_, boost::asio::buffer(pData, Length), [this](const boost::system::error_code &err, size_t) { shared_from_this()->handleWrite(err); });
+	boost::asio::async_write(*socket_, boost::asio::buffer(pData, Length),
+		boost::bind(&CTCPClient::handleWrite, shared_from_this(),
+		boost::asio::placeholders::error));
 }
 
 void CTCPClient::handleWrite(const boost::system::error_code& error)

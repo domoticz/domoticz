@@ -9,9 +9,12 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 //#define DEBUG_KMTronic
 
@@ -128,7 +131,7 @@ bool KMTronic433::OpenSerialDevice()
 	}
 	m_bIsStarted = true;
 	m_bufferpos = 0;
-	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
+	setReadCallback(boost::bind(&KMTronic433::readCallback, this, _1, _2));
 	sOnConnected(this);
 	return true;
 }
