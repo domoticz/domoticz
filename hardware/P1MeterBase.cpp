@@ -814,7 +814,7 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					cipherText.append(m_dataPayload.begin(), m_dataPayload.end());
 					cipherText.append(m_gcmTag.begin(), m_gcmTag.end());
 
-					size_t neededDecryptBufferSize = std::min(1000, static_cast<int>(cipherText.size() + 16));
+					size_t neededDecryptBufferSize = std::min(2048, static_cast<int>(cipherText.size() + 16));
 					if (neededDecryptBufferSize > m_DecryptBufferSize)
 					{
 						delete[] m_pDecryptBuffer;
