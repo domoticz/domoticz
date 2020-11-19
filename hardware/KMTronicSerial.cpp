@@ -10,13 +10,10 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 
 //#define DEBUG_KMTronic
-
-using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 
@@ -132,7 +129,7 @@ bool KMTronicSerial::OpenSerialDevice()
 	}
 	m_bIsStarted = true;
 	m_bufferpos = 0;
-	setReadCallback(boost::bind(&KMTronicSerial::readCallback, this, _1, _2));
+	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }

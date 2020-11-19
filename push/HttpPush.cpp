@@ -15,8 +15,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-using namespace boost::placeholders;
-
 CHttpPush::CHttpPush()
 {
 	m_PushType = PushType::PUSHTYPE_HTTP;
@@ -26,7 +24,7 @@ CHttpPush::CHttpPush()
 void CHttpPush::Start()
 {
 	UpdateActive();
-	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CHttpPush::OnDeviceReceived, this, _1, _2, _3, _4));
+	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](int id, uint64_t idx, const std::string &name, const unsigned char *rx) { OnDeviceReceived(id, idx, name, rx); });
 }
 
 void CHttpPush::Stop()

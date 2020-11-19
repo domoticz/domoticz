@@ -5,8 +5,6 @@
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 
-using namespace boost::placeholders;
-
 /*
 	This driver allows Domoticz to control any I/O module from the MA-4xxx Family
 
@@ -94,7 +92,7 @@ bool Comm5Serial::StartHardware()
 		return false;
 	}
 	m_bIsStarted=true;
-	setReadCallback(boost::bind(&Comm5Serial::readCallBack, this, _1, _2));
+	setReadCallback([this](const char *d, size_t l) { readCallBack(d, l); });
 
 	sOnConnected(this);
 	return true;

@@ -11,7 +11,6 @@
 #include "../main/localtime_r.h"
 #include <boost/asio.hpp>
 #include <algorithm>
-#include <boost/bind/bind.hpp>
 
 namespace tcp {
 namespace server {
@@ -34,7 +33,7 @@ void CTCPServerInt::stop()
 {
 	// Post a call to the stop function so that server::stop() is safe to call
 	// from any thread.
-	io_service_.post(boost::bind(&CTCPServerInt::handle_stop, this));
+	io_service_.post([this] { handle_stop(); });
 	m_incoming_domoticz_history.clear();
 }
 
@@ -106,10 +105,7 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 
 	new_connection_.reset(new CTCPClient(io_service_, this));
 
-	acceptor_.async_accept(
-		*(new_connection_->socket()),
-		boost::bind(&CTCPServerInt::handleAccept, this,
-		boost::asio::placeholders::error));
+	acceptor_.async_accept(*(new_connection_->socket()), [this](const boost::system::error_code &err) { handleAccept(err); });
 }
 
 _tRemoteShareUser* CTCPServerIntBase::FindUser(const std::string &username)
@@ -205,8 +201,7 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 				if (pUser->Devices.empty())
 					bOk2Send=true;
 				else
-					bOk2Send = std::any_of(pUser->Devices.begin(), pUser->Devices.end(),
-							       [=](uint64_t d) { return d == DeviceRowID; });
+					bOk2Send = std::any_of(pUser->Devices.begin(), pUser->Devices.end(), [DeviceRowID](uint64_t d) { return d == DeviceRowID; });
 
 				if (bOk2Send)
 					pClient->write(pData,Length);
@@ -231,10 +226,7 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 
 	new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
 
-	acceptor_.async_accept(
-		*(new_connection_->socket()),
-		boost::bind(&CTCPServerInt::handleAccept, this,
-			boost::asio::placeholders::error));
+	acceptor_.async_accept(*(new_connection_->socket()), [this](const boost::system::error_code &err) { handleAccept(err); });
 }
 
 #ifndef NOCLOUD

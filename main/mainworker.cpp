@@ -178,8 +178,6 @@
 #include <fstream>
 #endif
 
-using namespace boost::placeholders;
-
 #define round(a) ( int ) ( a + .5 )
 
 extern std::string szStartupFolder;
@@ -348,8 +346,8 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase* pHardware)
 	if (devidx != -1) //it is already there!, remove it
 		RemoveDomoticzHardware(m_hardwaredevices[devidx]);
 	std::lock_guard<std::mutex> l(m_devicemutex);
-	pHardware->sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4));
-	pHardware->sOnConnected.connect(boost::bind(&MainWorker::OnHardwareConnected, this, _1));
+	pHardware->sDecodeRXMessage.connect([this](const CDomoticzHardwareBase *hw, const uint8_t *rx, const char *name, int battery) { DecodeRXMessage(hw, rx, name, battery); });
+	pHardware->sOnConnected.connect([this](CDomoticzHardwareBase *hw) { OnHardwareConnected(hw); });
 	m_hardwaredevices.push_back(pHardware);
 }
 
@@ -1182,7 +1180,7 @@ bool MainWorker::Start()
 	{
 		char szPort[100];
 		sprintf(szPort, "%d", rnvalue);
-		m_sharedserver.sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4));
+		m_sharedserver.sDecodeRXMessage.connect([this](const CDomoticzHardwareBase *hw, const uint8_t *rx, const char *name, int battery) { DecodeRXMessage(hw, rx, name, battery); });
 		m_sharedserver.StartServer("::", szPort);
 
 		LoadSharedUsers();
@@ -1526,7 +1524,7 @@ void MainWorker::ParseRFXLogFile()
 	if (pHardware == NULL)
 	{
 		pHardware = new CDummy(HWID);
-		//pHardware->sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4));
+		// pHardware->sDecodeRXMessage.connect(std::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4));
 		AddDomoticzHardware(pHardware);
 	}
 
