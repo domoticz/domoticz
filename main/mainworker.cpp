@@ -2186,51 +2186,54 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 
 	if (pHardware->HwdType == HTYPE_Domoticz)
 	{
-		if (pHardware->m_HwdID == 8765) //did we receive it from our master?
+		if (pHardware->m_HwdID == 8765) // did we receive it from our master?
 		{
 			CDomoticzHardwareBase *pOrgHardware = nullptr;
 			switch (pRXCommand[1])
 			{
-			case pTypeLighting1:
-			case pTypeLighting2:
-			case pTypeLighting3:
-			case pTypeLighting4:
-			case pTypeLighting5:
-			case pTypeLighting6:
-			case pTypeColorSwitch:
-			case pTypeCurtain:
-			case pTypeBlinds:
-			case pTypeRFY:
-			case pTypeSecurity1:
-			case pTypeSecurity2:
-			case pTypeChime:
-			case pTypeThermostat:
-			case pTypeThermostat2:
-			case pTypeThermostat3:
-			case pTypeThermostat4:
-			case pTypeRadiator1:
-			case pTypeGeneralSwitch:
-			case pTypeHomeConfort:
-			case pTypeFan:
-			case pTypeFS20:
-			case pTypeHunter:
-				//we received a control message from a domoticz client,
-				//and should actually perform this command ourself switch
-				DeviceRowIdx = PerformRealActionFromDomoticzClient(pRXCommand, &pOrgHardware);
-				if (DeviceRowIdx != (uint64_t)-1)
-				{
-					if (pOrgHardware != nullptr)
+				case pTypeLighting1:
+				case pTypeLighting2:
+				case pTypeLighting3:
+				case pTypeLighting4:
+				case pTypeLighting5:
+				case pTypeLighting6:
+				case pTypeColorSwitch:
+				case pTypeCurtain:
+				case pTypeBlinds:
+				case pTypeRFY:
+				case pTypeSecurity1:
+				case pTypeSecurity2:
+				case pTypeChime:
+				case pTypeThermostat:
+				case pTypeThermostat2:
+				case pTypeThermostat3:
+				case pTypeThermostat4:
+				case pTypeRadiator1:
+				case pTypeGeneralSwitch:
+				case pTypeHomeConfort:
+				case pTypeFan:
+				case pTypeFS20:
+				case pTypeHunter:
+					// we received a control message from a domoticz client,
+					// and should actually perform this command ourself switch
+					DeviceRowIdx = PerformRealActionFromDomoticzClient(pRXCommand, &pOrgHardware);
+					if (DeviceRowIdx != (uint64_t)-1)
 					{
-						DeviceRowIdx = -1;
-						pClient2Ignore = (tcp::server::CTCPClient*)pHardware->m_pUserData;
-						pHardware = pOrgHardware;
+						if (pOrgHardware != nullptr)
+						{
+							DeviceRowIdx = -1;
+							pClient2Ignore = (tcp::server::CTCPClient *)pHardware->m_pUserData;
+							pHardware = pOrgHardware;
+						}
+						WriteMessage("Control Command, ", (pOrgHardware == nullptr));
 					}
-					WriteMessage("Control Command, ", (pOrgHardware == nullptr));
-				}
-				break;
+					break;
 			}
 		}
 	}
+
+	m_szLastSwitchUser = pHardware->m_Name;
+
 
 	_tRxMessageProcessingResult procResult;
 	procResult.DeviceName = "";
