@@ -905,7 +905,7 @@ void CPiFace::Do_Work_Queue()
         sendData = *itt;
         m_send_queue.erase(itt);
         m_queue_mutex.unlock();
-	sDecodeRXMessage(this, (const unsigned char *)sendData.c_str(), nullptr, 255);
+	sDecodeRXMessage(this, (const unsigned char *)sendData.c_str(), nullptr, 255, m_Name.c_str());
     }
 }
 

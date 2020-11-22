@@ -442,13 +442,13 @@ bool CNefitEasy::GetStatusDetails()
 	{
 		tmpstr = root2["UMD"].asString();
 		m_bClockMode = (tmpstr == "clock");
-		SendSwitch(1, 1, -1, m_bClockMode, 0, "Clock Mode");
+		SendSwitch(1, 1, -1, m_bClockMode, 0, "Clock Mode", m_Name);
 	}
 	if (!root2["DHW"].empty())
 	{
 		tmpstr = root2["DHW"].asString();
 		bool bIsOn = (tmpstr != "off");
-		SendSwitch(2, 1, -1, bIsOn, 0, "Hot Water");
+		SendSwitch(2, 1, -1, bIsOn, 0, "Hot Water", m_Name);
 	}
 
 	return true;
@@ -763,7 +763,7 @@ bool CNefitEasy::GetGasUsage()
 
 	}
 	m_p1gas.gasusage = gusage;
-	sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+	sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255, nullptr);
 	return true;
 }
 

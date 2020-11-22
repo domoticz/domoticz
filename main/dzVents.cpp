@@ -384,7 +384,7 @@ bool CdzVents::TriggerCustomEvent(lua_State* lua_state, const std::vector<_tLuaT
 
 	return true;
 }
-bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
+bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable, const std::string &eventName)
 {
 	bool bEventTrigger = false;
 	int nValue = -1, Protected = -1;
@@ -416,7 +416,7 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 	if (idx == -1)
 		return false;
 
-	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger), false);
+	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger, "dzVents/" + eventName), false);
 	return true;
 }
 
@@ -501,7 +501,7 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 	return true;
 }
 
-bool CdzVents::CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
+bool CdzVents::CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable, const std::string &eventName)
 {
 	int idx = 0;
 	std::string type;
@@ -520,6 +520,7 @@ bool CdzVents::CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValu
 	_tTaskItem tItem;
 	tItem._idx = idx;
 	tItem._DelayTime = 0;
+	tItem._sUser = "dzVents/" + eventName;
 	if (type == "device")
 	{
 		tItem._ItemType = TITEM_SWITCHCMD_EVENT;
@@ -547,11 +548,11 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 		if (lCommand == "OpenURL")
 			scriptTrue = OpenURL(lua_state, vLuaTable);
 		else if (lCommand == "UpdateDevice")
-			scriptTrue = UpdateDevice(lua_state, vLuaTable);
+			scriptTrue = UpdateDevice(lua_state, vLuaTable, filename);
 		else if (lCommand == "Variable")
 			scriptTrue = UpdateVariable(lua_state, vLuaTable);
 		else if (lCommand == "Cancel")
-			scriptTrue = CancelItem(lua_state, vLuaTable);
+			scriptTrue = CancelItem(lua_state, vLuaTable, filename);
 		else if (lCommand == "TriggerIFTTT")
 			scriptTrue = TriggerIFTTT(lua_state, vLuaTable);
 		else if (lCommand == "CustomEvent")

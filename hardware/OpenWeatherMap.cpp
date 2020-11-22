@@ -789,7 +789,7 @@ void COpenWeatherMap::GetMeterDetails()
 	}
 	SendRainRateSensor(8, 255, precipitation, "Precipitation");
 	m_itIsRaining = precipitation > 0;
-	SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it raining/snowing");
+	SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it raining/snowing", m_Name);
 
 	// Process daily forecast data if available
 	if (root["daily"].empty())

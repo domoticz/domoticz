@@ -2237,9 +2237,10 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			StripQuotes(parseResult.sCommand);
 
 			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
-				m_mainworker.UpdateDevice(std::stoi(variableName), 0, parseResult.sCommand, 12, 255, false);
+				m_mainworker.UpdateDevice(std::stoi(variableName), 0, parseResult.sCommand, "EventSystem/" + item.Name,
+					12, 255, false);
 			else
-				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(parseResult.fAfterSec, std::stoull(variableName), 0, parseResult.sCommand, false, false));
+				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(parseResult.fAfterSec, std::stoull(variableName), 0, parseResult.sCommand, false, false, item.Name));
 
 			actionsDone = true;
 		}
@@ -3346,7 +3347,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		//if (strarray.size() > 3 && !strarray[3].empty())
 			//Protected = atoi(strarray[3].c_str()); //GizMoCuz: this should not be able to be changed via events!
 
-		m_mainworker.UpdateDevice(idx, nValue, sValue, 12, 255, false);
+		m_mainworker.UpdateDevice(idx, nValue, sValue, "EventSystem/" + filename, 12, 255, false);
 		scriptTrue = true;
 	}
 	else if (lCommand.find("Variable:") == 0)

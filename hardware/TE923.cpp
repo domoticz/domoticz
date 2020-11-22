@@ -234,7 +234,7 @@ void CTE923::GetSensorDetails()
 			tsen.WIND.chilll=(BYTE)(at10);
 		}
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, -1);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, -1, nullptr);
 	}
 
 	//Rain
@@ -265,7 +265,7 @@ void CTE923::GetSensorDetails()
 				tsen.RAIN.raintotal2=(BYTE)(tr10/256);
 				tr10-=(tsen.RAIN.raintotal2*256);
 				tsen.RAIN.raintotal3=(BYTE)(tr10);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, nullptr, -1);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, nullptr, -1, nullptr);
 		*/
 	}
 	//UV

@@ -385,7 +385,7 @@ bool CRego6XXSerial::ParseData()
 			{
 				g_allRegisters[m_pollcntr].lastSent = atime;
 				g_allRegisters[m_pollcntr].lastTemp = m_Rego6XXTemp.temperature;
-				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXTemp, nullptr, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXTemp, nullptr, 255, nullptr);
 			}
 		}
 		else if (g_allRegisters[m_pollcntr].type == REGO_TYPE_STATUS)
@@ -398,7 +398,7 @@ bool CRego6XXSerial::ParseData()
 			{
 				g_allRegisters[m_pollcntr].lastSent = atime;
 				g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
-				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue, nullptr, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue, nullptr, 255, nullptr);
 			}
 		}
 		else if (g_allRegisters[m_pollcntr].type == REGO_TYPE_COUNTER)
@@ -411,7 +411,7 @@ bool CRego6XXSerial::ParseData()
 			{
 				g_allRegisters[m_pollcntr].lastSent = atime;
 				g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
-				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue, nullptr, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue, nullptr, 255, nullptr);
 			}
 		}
 

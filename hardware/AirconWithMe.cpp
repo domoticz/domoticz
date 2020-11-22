@@ -325,7 +325,7 @@ bool CAirconWithMe::GetInfo()
 			if (info[it.mName].isInt())
 			{
 				int32_t value = info[it.mName].asInt();
-				SendGeneralSwitch(it.mUID, 1, 255, value > 0 ? gswitch_sOn : gswitch_sOff, 1, it.mDescription);
+				SendGeneralSwitch(it.mUID, 1, 255, value > 0 ? gswitch_sOn : gswitch_sOff, 1, it.mDescription, m_Name.c_str());
 			}
 		}
 	}
@@ -342,8 +342,8 @@ void CAirconWithMe::UpdateDomoticzWithValue(int32_t uid, int32_t value)
 	switch (valueInfo.mDomoticzType)
 	{
 	case NDT_SWITCH:
-		//SendSwitch(uid, 0, 255, value > 0, 1, valueInfo.mDefaultName.c_str());
-		SendGeneralSwitch(uid, 1, 255, value > 0 ? gswitch_sOn : gswitch_sOff, 1, valueInfo.mDefaultName);
+		//SendSwitch(uid, 0, 255, value > 0, 1, valueInfo.mDefaultName.c_str(), m_Name);
+		SendGeneralSwitch(uid, 1, 255, value > 0 ? gswitch_sOn : gswitch_sOff, 1, valueInfo.mDefaultName, m_Name);
 		break;
 
 	case NDT_THERMOSTAT:
@@ -392,7 +392,7 @@ void CAirconWithMe::UpdateSelectorSwitch(const int32_t uid, const int32_t value,
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, xcmd.id, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, valueInfo.mDefaultName.c_str(), xcmd.battery_level);
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, valueInfo.mDefaultName.c_str(), xcmd.battery_level, m_Name.c_str());
 	if (result.empty())
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%08X') AND (Unit == '%d')", valueInfo.mDefaultName.c_str(), (STYPE_Selector), 0, m_HwdID, xcmd.id, xcmd.unitcode);

@@ -485,11 +485,11 @@ void CAtagOne::GetMeterDetails()
 	{
 		std::string actSource = root["currentMode"].asString();
 		bool bIsScheduleMode = (actSource == "schedule_active");
-		SendSwitch(1, 1, 255, bIsScheduleMode, 0, "Thermostat Schedule Mode");
+		SendSwitch(1, 1, 255, bIsScheduleMode, 0, "Thermostat Schedule Mode", m_Name);
 	}
 	if (!root["flameStatus"].empty())
 	{
-		SendSwitch(2, 1, 255, root["flameStatus"].asBool(), 0, "Flame Status");
+		SendSwitch(2, 1, 255, root["flameStatus"].asBool(), 0, "Flame Status", m_Name);
 	}
 
 }

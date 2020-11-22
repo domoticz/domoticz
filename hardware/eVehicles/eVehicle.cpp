@@ -165,17 +165,17 @@ void CeVehicle::SendAlert(int alertType, int value, const std::string &title)
 void CeVehicle::SendSwitch(int switchType, bool value)
 {
 	if ((switchType == VEHICLE_SWITCH_CHARGE) && m_api->m_capabilities.has_charge_command)
-		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_CHARGE, 1, 255, value, 0, m_Name + " Charge switch");
+		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_CHARGE, 1, 255, value, 0, m_Name + " Charge switch", m_Name);
 	if ((switchType == VEHICLE_SWITCH_CLIMATE) && m_api->m_capabilities.has_charge_command)
-		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_CLIMATE, 1, 255, value, 0, m_Name + " Climate switch");
+		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_CLIMATE, 1, 255, value, 0, m_Name + " Climate switch", m_Name);
 	if ((switchType == VEHICLE_SWITCH_DEFROST) && m_api->m_capabilities.has_charge_command)
-		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_DEFROST, 1, 255, value, 0, m_Name + " Defrost switch");
+		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_DEFROST, 1, 255, value, 0, m_Name + " Defrost switch", m_Name);
 }
 
 void CeVehicle::SendValueSwitch(int switchType, int value)
 {
 	if ((switchType == VEHICLE_SWITCH_MAX_CHARGE) && m_api->m_capabilities.has_charge_limit)
-		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_MAX_CHARGE, 1, 255, (value == 100), 0, m_Name + " Max charge limit switch");
+		CDomoticzHardwareBase::SendSwitch(VEHICLE_SWITCH_MAX_CHARGE, 1, 255, (value == 100), 0, m_Name + " Max charge limit switch", m_Name);
 }
 
 void CeVehicle::SendTemperature(int tempType, float value)

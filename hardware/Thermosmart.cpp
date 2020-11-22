@@ -170,7 +170,7 @@ void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp,
 	thermos.id4=Idx;
 	thermos.dunit=0;
 	thermos.temp=Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255, nullptr);
 }
 
 bool CThermosmart::Login()
@@ -383,7 +383,7 @@ void CThermosmart::GetMeterDetails()
 	{
 		std::string actSource = root["source"].asString();
 		bool bPauzeOn = (actSource == "pause");
-		SendSwitch(1, 1, 255, bPauzeOn, 0, "Thermostat Pause");
+		SendSwitch(1, 1, 255, bPauzeOn, 0, "Thermostat Pause", m_Name);
 	}
 }
 

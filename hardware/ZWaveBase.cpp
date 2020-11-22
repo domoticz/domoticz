@@ -254,7 +254,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 		lcmd.command = Color_LedOff;
 		lcmd.subtype = SubType;
 		lcmd.value = 0;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)& lcmd, pDevice->label.c_str(), pDevice->batValue);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, pDevice->label.c_str(), pDevice->batValue, m_Name.c_str());
 	}
 	else
 	{
@@ -293,7 +293,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 		// Update the lcmd with the correct level value.
 		gswitch.level = level;
 
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)& gswitch, pDevice->label.c_str(), pDevice->batValue);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&gswitch, pDevice->label.c_str(), pDevice->batValue, m_Name.c_str());
 	}
 
 	//Set SwitchType
@@ -374,7 +374,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		// Update the lcmd with the correct level value.
 		gswitch.level = level;
 		gswitch.rssi = 12;
-		sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, BatLevel, m_Name.c_str());
 		return;
 	}
 	if ((pDevice->devType == ZDTYPE_SWITCH_RGBW) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
@@ -391,7 +391,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		else
 			lcmd.command = Color_LedOn;
 		lcmd.value = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd, nullptr, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd, nullptr, BatLevel, m_Name.c_str());
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_POWER)
 	{
@@ -402,7 +402,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		umeter.id4 = ID4;
 		umeter.dunit = 2;
 		umeter.fusage = pDevice->floatValue;
-		sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, BatLevel, nullptr);
 
 		//Search Energy Device
 		const _tZWaveDevice* pEnergyDevice;
@@ -543,7 +543,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		tsen.CURRENT.ch1l = (BYTE)amps;
 		tsen.CURRENT.battery_level = Convert_Battery_To_PercInt(pDevice->batValue);
 		tsen.CURRENT.rssi = 12;
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT, nullptr, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT, nullptr, BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_UV)
 	{
@@ -657,7 +657,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 			tsen.WIND.temperaturel = (BYTE)(at10);
 			tsen.WIND.chilll = (BYTE)(at10);
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_BAROMETER)
 	{
@@ -693,7 +693,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		lmeter.dunit = 255;
 		lmeter.fLux = pDevice->floatValue;
 		lmeter.battery_level = BatLevel;
-		sDecodeRXMessage(this, (const unsigned char*)& lmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Light", BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&lmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Light", BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_GAS)
 	{
@@ -702,7 +702,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		m_p1gas.subtype = sTypeP1Gas;
 		m_p1gas.gasusage = (unsigned long)(pDevice->floatValue * 1000);
 		m_p1gas.ID = lID;
-		sDecodeRXMessage(this, (const unsigned char*)& m_p1gas, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Gas", BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Gas", BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_WATER)
 	{
@@ -736,7 +736,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		tmeter.dunit = 1;
 		tmeter.battery_level = BatLevel;
 		tmeter.temp = pDevice->floatValue;
-		sDecodeRXMessage(this, (const unsigned char*)& tmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Setpoint", BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&tmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : "Setpoint", BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_CLOCK)
 	{
@@ -745,7 +745,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = lID;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char*)& gDevice, "Thermostat Clock", BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, "Thermostat Clock", BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_MODE)
 	{
@@ -754,7 +754,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = lID;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char*)& gDevice, "Thermostat Mode", BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, "Thermostat Mode", BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE)
 	{
@@ -763,7 +763,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = lID;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char*)& gDevice, "Thermostat Fan Mode", BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, "Thermostat Fan Mode", BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_OPERATING_STATE)
 	{
@@ -772,7 +772,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = lID;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char*)& gDevice, "Thermostat Operating State", BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, "Thermostat Operating State", BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_ALARM)
 	{
@@ -783,7 +783,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		gDevice.intval2 = pDevice->intvalue;
 		char szTmp[100];
 		sprintf(szTmp, "Alarm Type: %s %d(0x%02X)", pDevice->label.c_str(), pDevice->Alarm_Type, pDevice->Alarm_Type);
-		sDecodeRXMessage(this, (const unsigned char*)& gDevice, szTmp, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, szTmp, BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_CUSTOM)
 	{

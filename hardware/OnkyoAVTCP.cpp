@@ -420,7 +420,7 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
 
-	sDecodeRXMessage(this, (const unsigned char *)&gswitch, switch_types[ID].name, 255);
+	sDecodeRXMessage(this, (const unsigned char *)&gswitch, switch_types[ID].name, 255, m_Name.c_str());
 }
 
 void OnkyoAVTCP::EnsureSwitchDevice(int ID, const char *options)

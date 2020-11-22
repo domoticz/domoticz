@@ -737,7 +737,7 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 					UpdateDeviceID(s.pin_number);
 					m_Packet.LIGHTING2.unitcode = (char)s.pin_number;
 					m_Packet.LIGHTING2.seqnbr++;
-					sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Input", 255);
+					sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Input", 255, m_Name.c_str());
 
 					if (log_db_change)
 					{

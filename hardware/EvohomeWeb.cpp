@@ -503,7 +503,7 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 	RFX_SETID3(ID, tsen.id1, tsen.id2, tsen.id3);
 	tsen.mode = 0; // web API does not support temp override of controller mode
 	tsen.status = sysmode;
-	sDecodeRXMessage(this, (const unsigned char *)&tsen, "Controller mode", -1);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen, "Controller mode", -1, nullptr);
 
 	if (GetControllerName().empty() || m_updatedev)
 	{

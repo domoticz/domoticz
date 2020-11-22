@@ -571,7 +571,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.value = tstate.level;
 		lcmd.color = color;
 		lcmd.subtype = sType;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -622,7 +622,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.command = cmd;
 		lcmd.value = 0;
 		//lcmd.subtype = sType; // TODO: set type also for groups?
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -685,7 +685,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.cmnd = cmd;
 		lcmd.level = tstate.level;
 		lcmd.seqnbr = 1;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -1180,7 +1180,7 @@ bool CPhilipsHue::InsertUpdateSelectorSwitch(const int NodeID, const uint8_t Uni
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, Name.c_str(), BatteryLevel);
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel, m_Name.c_str());
 	if (result.empty())
 	{
 		//_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
@@ -1208,7 +1208,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, c
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, Name.c_str(), BatteryLevel);
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel, m_Name.c_str());
 	if (result.empty())
 	{
 		//_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());

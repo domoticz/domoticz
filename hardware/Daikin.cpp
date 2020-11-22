@@ -243,7 +243,7 @@ void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int /*SubUnit*/, co
 		gswitch.cmnd = gswitch_sOn;
 	gswitch.level = static_cast<uint8_t>(Level);
 	gswitch.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char*)&gswitch, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&gswitch, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void CDaikin::GetMeterDetails()
@@ -658,7 +658,7 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx, const bool bIs
 	}
 
 	result = m_sql.safe_query("SELECT nValue, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, defaultname.c_str(), 255);
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, defaultname.c_str(), 255, m_Name.c_str());
 	if (result.empty())
 	{
 		// New Hardware -> Create the corresponding devices Selector

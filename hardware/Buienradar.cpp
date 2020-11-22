@@ -490,7 +490,7 @@ void CBuienRadar::GetMeterDetails()
 		float precipitation = root["precipitationmm"].asFloat();
 		SendRainRateSensor(1, 255, precipitation, "Rain");
 		m_itIsRaining = precipitation > 0;
-		SendSwitch(1, 1, 255, m_itIsRaining, 0, "Is it Raining");
+		SendSwitch(1, 1, 255, m_itIsRaining, 0, "Is it Raining", m_Name);
 	}
 }
 
@@ -714,7 +714,7 @@ void CBuienRadar::GetRainPrediction()
 			//double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
 			double rain_perc = (rain_avg == 0) ? 0 : (rain_avg * 0.392156862745098);
 			SendPercentageSensor(1, 1, 255, static_cast<float>(rain_perc), "Rain Intensity");
-			SendSwitch(2, 1, 255, (rain_perc >= m_iThreshold), 0, "Possible Rain");
+			SendSwitch(2, 1, 255, (rain_perc >= m_iThreshold), 0, "Possible Rain", m_Name);
 		}
 		if (total_rain_values_next_hour)
 		{

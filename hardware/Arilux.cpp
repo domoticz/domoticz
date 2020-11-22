@@ -99,7 +99,7 @@ void Arilux::InsertUpdateSwitch(const std::string &lightName, const int subType,
 		ycmd.dunit = 0;
 		ycmd.value = 0;
 		ycmd.command = Color_LedOff;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', switchType=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), STYPE_Dimmer, m_HwdID, szDeviceID);
 	}
 }

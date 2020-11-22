@@ -500,7 +500,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 					}
 					if (bIsPrintStatus)
 					{
-						SendSwitch(1, 1, 255, bIsPrinting, 0, "Printing");
+						SendSwitch(1, 1, 255, bIsPrinting, 0, "Printing", m_Name);
 						SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
 					}
 				}

@@ -145,7 +145,7 @@ bool CYouLess::GetP1Details()
 			m_p1power.delivcurrent = -Pwr;
 			m_p1power.usagecurrent = 0;
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255, nullptr);
 
 		m_p1gas.gasusage = (unsigned long)(root["gas"].asDouble() * 1000);
 		time_t atime = mytime(nullptr);
@@ -156,7 +156,7 @@ bool CYouLess::GetP1Details()
 		{
 			m_lastgasusage = m_p1gas.gasusage;
 			m_lastSharedSendGas = atime;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255, nullptr);
 		}
 		m_bHaveP1OrS0 = true;
 	}
@@ -222,6 +222,6 @@ void CYouLess::GetMeterDetails()
 	{
 		m_meter.powerusage = lpusage;
 		m_meter.usagecurrent = lpcurrent;
-		sDecodeRXMessage(this, (const unsigned char *)&m_meter, nullptr, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_meter, nullptr, 255, nullptr);
 	}
 }

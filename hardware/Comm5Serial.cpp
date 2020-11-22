@@ -147,7 +147,7 @@ void Comm5Serial::requestDigitalInputResponseHandler(const std::string & mframe)
 	for (int i = 0; i < 8; ++i) {
 		bool on = (sensorStatus & (1 << i)) != 0 ? true : false;
 		if (((lastKnownSensorState & (1 << i)) ^ (sensorStatus & (1 << i))) || initSensorData) {
-			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + std::to_string(i + 1));
+			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + std::to_string(i + 1), m_Name);
 		}
 	}
 	lastKnownSensorState = sensorStatus;
@@ -163,7 +163,7 @@ void Comm5Serial::requestDigitalOutputResponseHandler(const std::string & mframe
 	relayStatus = mframe[6];
 	for (int i = 0; i < 8; ++i) {
 		bool on = (relayStatus & (1 << i)) != 0 ? true : false;
-		SendSwitch(i + 1, 1, 255, on, 0, "Relay " + std::to_string(i + 1));
+		SendSwitch(i + 1, 1, 255, on, 0, "Relay " + std::to_string(i + 1), m_Name);
 	}
 }
 

@@ -428,7 +428,7 @@ void CTado::SendSetPointSensor(const int Idx, const float Temp, const std::strin
 
 	thermos.temp = Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 // Creates or updates on/off switches.
@@ -480,7 +480,7 @@ void CTado::UpdateSwitch(const int Idx, const bool bOn, const std::string &defau
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 // Removes any active overlay from a specific zone.

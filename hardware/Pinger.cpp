@@ -253,7 +253,7 @@ void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, con
 	char szID[40];
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
-	SendSwitch(ID, 1, 255, false, 0, Name);
+	SendSwitch(ID, 1, 255, false, 0, Name, m_Name);
 	ReloadNodes();
 }
 
@@ -377,14 +377,14 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 			if (bPingOK)
 			{
 				node.LastOK = atime;
-				SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
+				SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name, m_Name);
 			}
 			else
 			{
 				if (difftime(atime, node.LastOK) >= Node.SensorTimeoutSec)
 				{
 					node.LastOK = atime;
-					SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
+					SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name, m_Name);
 				}
 			}
 			break;

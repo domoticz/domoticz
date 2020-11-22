@@ -323,7 +323,7 @@ void CDarkSky::GetMeterDetails()
 		at10-=(tsen.WIND.chillh*256);
 		tsen.WIND.chilll=(BYTE)(at10);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255, nullptr);
 	}
 
 	//UV
@@ -363,7 +363,7 @@ void CDarkSky::GetMeterDetails()
 				_tGeneralDevice gdevice;
 				gdevice.subtype=sTypeVisibility;
 				gdevice.floatval1=visibility;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
 			}
 		}
 	}

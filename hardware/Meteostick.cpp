@@ -248,7 +248,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	dWindChill -= (tsen.WIND.chillh * 256);
 	tsen.WIND.chilll = (BYTE)(dWindChill);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), 255, nullptr);
 }
 
 void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname)
@@ -258,7 +258,7 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 	gdevice.subtype = sTypeLeafWetness;
 	gdevice.intval1 = Wetness;
 	gdevice.id = (uint8_t)finalID;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255, nullptr);
 }
 
 void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname)
@@ -273,7 +273,7 @@ void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float R
 	gdevice.subtype = sTypeSolarRadiation;
 	gdevice.id = static_cast<int>(Idx);
 	gdevice.floatval1 = Radiation;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255, nullptr);
 }
 
 void Meteostick::ParseLine()

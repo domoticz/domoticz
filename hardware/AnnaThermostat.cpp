@@ -158,7 +158,7 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	thermos.id4 = Idx;
 	thermos.dunit = 1;
 	thermos.temp = Temp;
-	sDecodeRXMessage(this, (const unsigned char*)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 bool CAnnaThermostat::WriteToHardware(const char* pdata, const unsigned char /*length*/)
@@ -572,11 +572,11 @@ void CAnnaThermostat::GetMeterDetails()
 				{
 					if (strcmp(tmpstr.c_str(), "on") == 0)
 					{
-						SendSwitch(sAnneBoilerState, 1, 255, true, 0, sname);
+						SendSwitch(sAnneBoilerState, 1, 255, true, 0, sname, m_Name);
 					}
 					else
 					{
-						SendSwitch(sAnneBoilerState, 1, 255, false, 0, sname);
+						SendSwitch(sAnneBoilerState, 1, 255, false, 0, sname, m_Name);
 					}
 				}
 			}
@@ -588,11 +588,11 @@ void CAnnaThermostat::GetMeterDetails()
 					if (strcmp(tmpstr.c_str(), "on") == 0)
 					{
 
-						SendSwitch(sAnnaFlameState, 1, 255, true, 0, sname);
+						SendSwitch(sAnnaFlameState, 1, 255, true, 0, sname, m_Name);
 					}
 					else
 					{
-						SendSwitch(sAnnaFlameState, 1, 255, false, 0, sname);
+						SendSwitch(sAnnaFlameState, 1, 255, false, 0, sname, m_Name);
 					}
 				}
 			}
@@ -627,7 +627,7 @@ void CAnnaThermostat::GetMeterDetails()
 					{
 						bSwitch = false;
 					}
-					SendSwitch(sAnnaProximity, 1, 255, bSwitch, 0, sname);
+					SendSwitch(sAnnaProximity, 1, 255, bSwitch, 0, sname, m_Name);
 				}
 			}
 			else if (sname == "preset_state")
@@ -668,7 +668,7 @@ void CAnnaThermostat::GetMeterDetails()
 				else strncpy(sPreset, "50", sizeof(sPreset));
 
 				std::string PresetName = "Anna Preset";
-				SendSelectorSwitch(sAnnaPresets, 1, sPreset, PresetName, 16, false, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS, true);
+				SendSelectorSwitch(sAnnaPresets, 1, sPreset, PresetName, 16, false, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS, true, m_Name.c_str());
 			}
 		}
 		pAppliance = pAppliance->NextSiblingElement("appliance");

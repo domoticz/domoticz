@@ -42,9 +42,9 @@ private:
 
 	float RandomTime(const int randomTime);
 	bool OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
-	bool UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
+	bool UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable, const std::string &eventName);
 	bool UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
-	bool CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
+	bool CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable, const std::string &eventName);
 	bool TriggerIFTTT(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool TriggerCustomEvent(lua_State *lua_state, const std::vector<_tLuaTableValues>& vLuaTable);
 	void ExportHardwareData(CLuaTable &luaTable, int& index, const std::vector<CEventSystem::_tEventQueue>& items);

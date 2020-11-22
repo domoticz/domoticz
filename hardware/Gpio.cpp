@@ -220,7 +220,7 @@ void CGpio::UpdateSwitch(const int pin, const bool value)
 	IOPinStatusPacket.LIGHTING1.seqnbr++;
 	IOPinStatusPacket.LIGHTING1.unitcode = pin;
 
-	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, nullptr, 255);
+	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, nullptr, 255, m_Name.c_str());
 
 	for (auto &p : pins)
 	{

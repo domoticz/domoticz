@@ -902,7 +902,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 											std::string setpoint_mode = module["setpoint"]["setpoint_mode"].asString();
 											bool bIsAway = (setpoint_mode == "away");
 											std::string aName = "Away " + mname;
-											SendSwitch(3, (uint8_t)(1 + iDevIndex), 255, bIsAway, 0, aName);
+											SendSwitch(3, (uint8_t)(1 + iDevIndex), 255, bIsAway, 0, aName, m_Name);
 										}
 										//Check if setpoint was just set, and if yes, overrule the previous setpoint
 										if (!module["setpoint"]["setpoint_temp"].empty())
@@ -1358,7 +1358,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				{
 					std::string aName = "Status";
 					bool bIsActive = (module["boiler_status"].asString() == "true");
-					SendSwitch((moduleID & 0x00FFFFFF) | 0x10000000, 1, 255, bIsActive, 0, aName);
+					SendSwitch((moduleID & 0x00FFFFFF) | 0x10000000, 1, 255, bIsActive, 0, aName, m_Name);
 				}
 				if (!module["battery_level"].empty())
 				{
@@ -1431,7 +1431,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 					std::string setpoint_mode = room["therm_setpoint_mode"].asString();
 					bool bIsAway = (setpoint_mode == "away");
 					std::string aName = "Away " + roomName;
-					SendSwitch((roomID & 0x00FFFFFF) | 0x01000000, 1, 255, bIsAway, 0, aName);
+					SendSwitch((roomID & 0x00FFFFFF) | 0x01000000, 1, 255, bIsAway, 0, aName, m_Name);
 				}
 			}
 			iDevIndex++;

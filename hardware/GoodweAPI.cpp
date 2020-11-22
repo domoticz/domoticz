@@ -180,15 +180,13 @@ bool GoodweAPI::WriteToHardware(const char* /*pdata*/, const unsigned char /*len
 
 void GoodweAPI::SendCurrentSensor(const int NodeID, const uint8_t ChildID, const int /*BatteryLevel*/, const float Amp, const std::string &defaultname)
 {
-
-        _tGeneralDevice gDevice;
-        gDevice.subtype = sTypeCurrent;
-        gDevice.id = ChildID;
-        gDevice.intval1 = (NodeID << 8) | ChildID;
-        gDevice.floatval1 = Amp;
-        sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeCurrent;
+	gDevice.id = ChildID;
+	gDevice.intval1 = (NodeID << 8) | ChildID;
+	gDevice.floatval1 = Amp;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255, nullptr);
 }
-
 
 int GoodweAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 {

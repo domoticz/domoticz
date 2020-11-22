@@ -297,7 +297,7 @@ bool P1MeterBase::MatchLine()
 			if (difftime(atime, m_lastUpdateTime) >= m_ratelimit)
 			{
 				m_lastUpdateTime = atime;
-				sDecodeRXMessage(this, (const unsigned char*)&m_power, "Power", 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_power, "Power", 255, nullptr);
 				if (m_voltagel1 != -1) {
 					SendVoltageSensor(0, 1, 255, m_voltagel1, "Voltage L1");
 				}
@@ -341,7 +341,7 @@ bool P1MeterBase::MatchLine()
 						// just accept it - we cannot sync to our clock
 						m_lastSharedSendGas = atime;
 						m_lastgasusage = m_gas.gasusage;
-						sDecodeRXMessage(this, (const unsigned char*)&m_gas, "Gas", 255);
+						sDecodeRXMessage(this, (const unsigned char *)&m_gas, "Gas", 255, nullptr);
 					}
 					else if (atime >= m_gasoktime)
 					{
@@ -356,7 +356,7 @@ bool P1MeterBase::MatchLine()
 							m_lastSharedSendGas = atime;
 							m_lastgasusage = m_gas.gasusage;
 							m_gasoktime += 300;
-							sDecodeRXMessage(this, (const unsigned char*)&m_gas, "Gas", 255);
+							sDecodeRXMessage(this, (const unsigned char *)&m_gas, "Gas", 255, nullptr);
 						}
 						else // gas clock is ahead
 						{

@@ -128,10 +128,9 @@ void CNest::SendSetPointSensor(const unsigned char Idx, const float Temp, const 
 	thermos.id3=0;
 	thermos.id4=Idx;
 	thermos.dunit=0;
-
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 
@@ -178,7 +177,7 @@ void CNest::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::str
 	lcmd.LIGHTING2.level = (BYTE)level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 bool CNest::Login()
@@ -344,7 +343,7 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 
 	if (!bDeviceExits)
 	{
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 		//Assign default name for device
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szIdx);
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
@@ -354,7 +353,7 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 		}
 	}
 	else
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 
@@ -631,7 +630,7 @@ void CNest::GetMeterDetails()
 			if (!nstructure["away"].empty())
 			{
 				bool bIsAway = nstructure["away"].asBool();
-				SendSwitch((iThermostat * 3) + 3, 1, 255, bIsAway, 0, Name + " Away");
+				SendSwitch((iThermostat * 3) + 3, 1, 255, bIsAway, 0, Name + " Away", m_Name);
 			}
 
 			//Manual Eco mode
@@ -639,7 +638,7 @@ void CNest::GetMeterDetails()
 			{
 				std::string sCurrentHvacMode = ndevice["eco"]["mode"].asString();
 				bool bIsManualEcoMode = (sCurrentHvacMode == "manual-eco");
-				SendSwitch((iThermostat * 3) + 4, 1, 255, bIsManualEcoMode, 0, Name + " Manual Eco Mode");
+				SendSwitch((iThermostat * 3) + 4, 1, 255, bIsManualEcoMode, 0, Name + " Manual Eco Mode", m_Name);
 			}
 
 			iThermostat++;

@@ -477,7 +477,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 			tsen.WIND.chilll = (BYTE)(at10);
 		}
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255, nullptr);
 	}
 
 	//UV
@@ -520,7 +520,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		_tGeneralDevice gdevice;
 		gdevice.subtype = sTypeSolarRadiation;
 		gdevice.floatval1 = float(solarRadiation);
-		sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
 	}
 
 	//Soil Moistures
@@ -544,7 +544,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 			gdevice.subtype = sTypeLeafWetness;
 			gdevice.intval1 = leaf_wetness;
 			gdevice.id = (uint8_t)(1 + iLeaf);
-			sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255);
+			sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
 		}
 	}
 

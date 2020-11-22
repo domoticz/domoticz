@@ -157,7 +157,7 @@ void BleBox::GetDevicesState()
 					unsigned int hexNumber;
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 
-					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[device.second].name);
+					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[device.second].name, m_Name.c_str());
 					break;
 				}
 				case 4:
@@ -740,7 +740,7 @@ void BleBox::SendSwitch(const int NodeID, const uint8_t ChildID, const int Batte
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char*)& lcmd.LIGHTING2, defaultname.c_str(), BatteryLevel);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), BatteryLevel, m_Name.c_str());
 }
 
 

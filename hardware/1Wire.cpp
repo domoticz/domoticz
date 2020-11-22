@@ -441,7 +441,7 @@ void C1Wire::ReportWiper(const std::string& deviceId, const int wiper)
 
 	int NodeID = (deviceIdByteArray[0] << 24) | (deviceIdByteArray[1] << 16) | (deviceIdByteArray[2] << 8) | (deviceIdByteArray[3]);
 	unsigned int value = static_cast<int>(wiper * (100.0 / 255.0));
-	SendSwitch(NodeID, 0, 255, wiper > 0, value, "Wiper");
+	SendSwitch(NodeID, 0, 255, wiper > 0, value, "Wiper", m_Name);
 }
 
 void C1Wire::ReportTemperature(const std::string& deviceId, const float temperature)
@@ -498,7 +498,7 @@ void C1Wire::ReportLightState(const std::string& deviceId, const uint8_t unit, c
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 	int lID = (deviceIdByteArray[0] << 24) + (deviceIdByteArray[1] << 16) + (deviceIdByteArray[2] << 8) + deviceIdByteArray[3];
 
-	SendSwitch(lID, unit, 255, state, 0, "Switch");
+	SendSwitch(lID, unit, 255, state, 0, "Switch", m_Name);
 }
 
 void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const unsigned long counter)
@@ -525,7 +525,7 @@ void C1Wire::ReportVoltage(const std::string& /*deviceId*/, const int unit, cons
 
 	tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 	tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 }
 
 void C1Wire::ReportIlluminance(const std::string& deviceId, const float illuminescence)

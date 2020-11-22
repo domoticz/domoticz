@@ -389,7 +389,7 @@ void CWunderground::GetMeterDetails()
 		at10-=(tsen.WIND.chillh*256);
 		tsen.WIND.chilll=(BYTE)(at10);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255, nullptr);
 	}
 
 	//UV
@@ -447,7 +447,7 @@ void CWunderground::GetMeterDetails()
 				tr10 -= (tsen.RAIN.raintotal2 * 256);
 				tsen.RAIN.raintotal3 = (BYTE)(tr10);
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, nullptr, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, nullptr, 255, nullptr);
 			}
 		}
 	}
@@ -463,7 +463,7 @@ void CWunderground::GetMeterDetails()
 				_tGeneralDevice gdevice;
 				gdevice.subtype = sTypeVisibility;
 				gdevice.floatval1 = visibility;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
 			}
 		}
 	}
@@ -477,7 +477,7 @@ void CWunderground::GetMeterDetails()
 			_tGeneralDevice gdevice;
 			gdevice.subtype = sTypeSolarRadiation;
 			gdevice.floatval1 = radiation;
-			sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255);
+			sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
 		}
 	}
 }

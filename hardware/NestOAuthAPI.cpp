@@ -102,10 +102,9 @@ void CNestOAuthAPI::SendSetPointSensor(const unsigned char Idx, const float Temp
 	thermos.id3=0;
 	thermos.id4=Idx;
 	thermos.dunit=0;
-
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 // Creates and updates switch used to log Heating and/or Cooling.
@@ -151,7 +150,7 @@ void CNestOAuthAPI::UpdateSwitch(const unsigned char Idx, const bool bOn, const 
 	lcmd.LIGHTING2.level = (BYTE)level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string & /*accesstoken*/) {
@@ -361,7 +360,7 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 
 	if (!bDeviceExists)
 	{
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 		//Assign default name for device
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szIdx);
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
@@ -371,7 +370,7 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 		}
 	}
 	else
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void CNestOAuthAPI::GetMeterDetails()
@@ -527,7 +526,7 @@ void CNestOAuthAPI::GetMeterDetails()
 		if (!nstructure["away"].empty())
 		{
 			bool bIsAway = (nstructure["away"].asString() == "away" || nstructure["away"].asString() == "auto-away");
-			SendSwitch((iStructure * 3) + 3, 1, 255, bIsAway, 0, nstruct.Name + " Away");
+			SendSwitch((iStructure * 3) + 3, 1, 255, bIsAway, 0, nstruct.Name + " Away", m_Name);
 		}
 
 		// Find out which thermostats are available under this structure
@@ -602,7 +601,7 @@ void CNestOAuthAPI::GetMeterDetails()
 			bool bManualEcomodeEnabled = (!sHvacMode.empty() && sHvacMode == "off");
 
 			// UpdateSwitch(115 + (iThermostat * 3), bManualEcomodeEnabled, Name + " Manual Eco Mode");
-			SendSwitch((iThermostat * 3) + 4, 1, 255, bManualEcomodeEnabled, 0, Name + " Manual Eco Mode");
+			SendSwitch((iThermostat * 3) + 4, 1, 255, bManualEcomodeEnabled, 0, Name + " Manual Eco Mode", m_Name);
 
 			iThermostat++;
 		}

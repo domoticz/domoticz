@@ -16,7 +16,7 @@ define(['app'], function (app) {
                 columns: [
                     {title: $.t('Date'), data: 'Date', type: 'date-us'},
                     {title: $.t('Data'), data: 'Data'},
-                    {title: $.t('User'), data: 'User', width: 140}
+                    {title: $.t('User'), data: 'User', width: 240}
                 ]
             })).api();
         };

@@ -276,8 +276,8 @@ void CInComfort::ParseAndUpdateDevices(const std::string &jsonData)
 		bool pumpActive = (io & 0x02) > 0;
 		bool tapFunctionActive = (io & 0x04) > 0;
 		bool burnerActive = (io & 0x08) > 0;
-		SendSwitch(8, 1, 255, pumpActive, 0, "Pump Active");
-		SendSwitch(8, 2, 255, tapFunctionActive, 0, "Tap Function Active");
-		SendSwitch(8, 3, 255, burnerActive, 0, "Burner Active");
+		SendSwitch(8, 1, 255, pumpActive, 0, "Pump Active", m_Name);
+		SendSwitch(8, 2, 255, tapFunctionActive, 0, "Tap Function Active", m_Name);
+		SendSwitch(8, 3, 255, burnerActive, 0, "Burner Active", m_Name);
 	}
 }

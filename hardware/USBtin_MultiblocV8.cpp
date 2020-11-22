@@ -380,7 +380,7 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	convert << CodeNumber;
 	defaultname += convert.str();
 
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 
 }
 
@@ -587,7 +587,7 @@ void USBtin_MultiblocV8::Traitement_Trame_EtatBloc(const unsigned char RefBloc, 
 					lcmd.LIGHTING2.level = 0; //level_value;
 					lcmd.LIGHTING2.filler = 2;
 					lcmd.LIGHTING2.rssi = 12;
-					sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, nullptr, 255);
+					sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, nullptr, 255, m_Name.c_str());
 
 				}*/
 			}
@@ -693,7 +693,7 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,bool
 	convert << OutputNumber;
 	defaultname += convert.str();
 
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 //The STOR Frame always contain a maximum of 2 stor States. 4 Low bytes = STOR 1 / 4 high bytes = STOR2

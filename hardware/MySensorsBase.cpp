@@ -825,18 +825,19 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_RGB:
 		//RRGGBB
 		if (pChild->GetValue(vType, intValue))
-			SendRGBWSwitch(pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, intValue, false, (!pChild->childName.empty()) ? pChild->childName : "RGB Light");
+			SendRGBWSwitch(pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, intValue, false, (!pChild->childName.empty()) ? pChild->childName : "RGB Light", m_Name.c_str());
 		break;
 	case V_RGBW:
 		//RRGGBBWW
 		if (pChild->GetValue(vType, intValue))
-			SendRGBWSwitch(pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, intValue, true, (!pChild->childName.empty()) ? pChild->childName : "RGBW Light");
+			SendRGBWSwitch(pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, intValue, true, (!pChild->childName.empty()) ? pChild->childName : "RGBW Light", m_Name.c_str());
 		break;
 	case V_UP:
 	case V_DOWN:
 	case V_STOP:
 		if (pChild->GetValue(vType, intValue))
-			SendBlindSensor((uint8_t)pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, (uint8_t)intValue, (!pChild->childName.empty()) ? pChild->childName : "Blinds/Window");
+			SendBlindSensor((uint8_t)pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, (uint8_t)intValue, (!pChild->childName.empty()) ? pChild->childName : "Blinds/Window",
+					m_Name.c_str());
 		break;
 	case V_LIGHT_LEVEL:
 		if (pChild->GetValue(vType, floatValue))
@@ -1015,7 +1016,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			gswitch.battery_level = (uint8_t)pChild->batValue;
 			gswitch.rssi = 12;
 			gswitch.seqnbr = 0;
-			sDecodeRXMessage(this, (const unsigned char *)&gswitch, (!pChild->childName.empty()) ? pChild->childName.c_str() : "IR Command", pChild->batValue);
+			sDecodeRXMessage(this, (const unsigned char *)&gswitch, (!pChild->childName.empty()) ? pChild->childName.c_str() : "IR Command", pChild->batValue, m_Name.c_str());
 		}
 		break;
 	case V_PH:
@@ -1173,7 +1174,7 @@ void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx,
 	gswitch.battery_level = (uint8_t)BatLevel;
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
-	sDecodeRXMessage(this, (const unsigned char *)&gswitch, defaultname.c_str(), BatLevel);
+	sDecodeRXMessage(this, (const unsigned char *)&gswitch, defaultname.c_str(), BatLevel, m_Name.c_str());
 
 
 }
@@ -2225,9 +2226,9 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 				else if (vType == V_TRIPPED)
 					UpdateSwitch(vType, node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Security Sensor", pSensor->batValue);
 				else if (vType == V_RGBW)
-					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, true, (!pSensor->childName.empty()) ? pSensor->childName : "RGBW Light");
+					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, true, (!pSensor->childName.empty()) ? pSensor->childName : "RGBW Light", m_Name.c_str());
 				else if (vType == V_RGB)
-					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, false, (!pSensor->childName.empty()) ? pSensor->childName : "RGB Light");
+					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, false, (!pSensor->childName.empty()) ? pSensor->childName : "RGB Light", m_Name.c_str());
 			}
 		}
 		else if (vType == V_UP)
@@ -2235,7 +2236,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			int blind_value;
 			if (!GetBlindsValue(node_id, child_sensor_id, blind_value))
 			{
-				SendBlindSensor(node_id, child_sensor_id, pSensor->batValue, blinds_sOpen, (!pSensor->childName.empty()) ? pSensor->childName : "Blinds/Window");
+				SendBlindSensor(node_id, child_sensor_id, pSensor->batValue, blinds_sOpen, (!pSensor->childName.empty()) ? pSensor->childName : "Blinds/Window", m_Name.c_str());
 			}
 		}
 		else if (vType == V_TEXT)

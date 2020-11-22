@@ -116,6 +116,9 @@ namespace http {
 		//TODO: Is this function called from anywhere, or can it be removed?
 		void CWebServer::RType_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root)
 		{ // deprecated (for dzVents). Use RType_CreateDevice
+			std::string Username = "Admin";
+			if (!session.username.empty())
+				Username = session.username;
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
@@ -160,7 +163,8 @@ namespace http {
 					bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 
-					DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, ssensorname, nid, soptions);
+					std::string szCreateUser = Username + " (IP: " + session.remote_host + ")";
+					DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, ssensorname, nid, soptions, szCreateUser);
 
 					m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
 
@@ -177,6 +181,9 @@ namespace http {
 
 		void CWebServer::RType_CreateDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			std::string Username = "Admin";
+			if (!session.username.empty())
+				Username = session.username;
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
@@ -235,7 +242,8 @@ namespace http {
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
 
-			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, ssensorname, nid, soptions);
+			std::string szCreateUser = Username + " (IP: " + session.remote_host + ")";
+			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, ssensorname, nid, soptions, szCreateUser);
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
 

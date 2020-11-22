@@ -798,7 +798,7 @@ void COpenWebNetTCP::SendGeneralSwitch(const int NodeID, const uint8_t ChildID, 
 	gSwitch.cmnd = cmd;
 	gSwitch.level = level;
 	gSwitch.rssi = (uint8_t)RssiLevel;
-	sDecodeRXMessage(this, (const unsigned char*)& gSwitch, defaultname.c_str(), BatteryLevel);
+	sDecodeRXMessage(this, (const unsigned char*)& gSwitch, defaultname.c_str(), BatteryLevel, m_Name.c_str());
 }
 
 /**
