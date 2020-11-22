@@ -2015,7 +2015,8 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 		rxMessage.Name = defaultName;
 	}
 	rxMessage.BatteryLevel = BatteryLevel;
-	rxMessage.UserName = userName;
+	if (userName != nullptr)
+		rxMessage.UserName = userName;
 	rxMessage.rxMessageIdx = m_rxMessageIdx++;
 	rxMessage.hardwareId = pHardware->m_HwdID;
 	// defensive copy of the command
