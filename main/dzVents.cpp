@@ -289,25 +289,25 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 	float delayTime = 0;
 	std::string URL, extraHeaders, method, postData, trigger;
 
-	for (auto itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
+	for (const auto &value : vLuaTable)
 	{
-		if (itt->type == TYPE_STRING)
+		if (value.type == TYPE_STRING)
 		{
-			if (itt->name == "URL")
-				URL = itt->sValue;
-			else if (itt->name == "method")
-				method = itt->sValue;
-			else if (itt->name == "postdata")
-				postData = itt->sValue;
-			else if (itt->name == "_trigger")
-				trigger = itt->sValue;
-			else if (itt->name == "headers")
-				extraHeaders = itt->sValue;
+			if (value.name == "URL")
+				URL = value.sValue;
+			else if (value.name == "method")
+				method = value.sValue;
+			else if (value.name == "postdata")
+				postData = value.sValue;
+			else if (value.name == "_trigger")
+				trigger = value.sValue;
+			else if (value.name == "headers")
+				extraHeaders = value.sValue;
 		}
-		else if ((itt->type == TYPE_INTEGER) && (itt->name == "_random"))
-			delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
-		else if ((itt->type == TYPE_FLOAT) && (itt->name == "_after"))
-			delayTime = itt->fValue;
+		else if ((value.type == TYPE_INTEGER) && (value.name == "_random"))
+			delayTime = static_cast<float>(GenerateRandomNumber(value.iValue));
+		else if ((value.type == TYPE_FLOAT) && (value.name == "_after"))
+			delayTime = value.fValue;
 	}
 
 	if (URL.empty())
