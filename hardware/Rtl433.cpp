@@ -399,7 +399,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (havePower)
 	{
-		SendWattMeter((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model, snr);
+		SendWattMeter_Check((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model, snr);
 		bHandled = true;
 	}
 	if (havePressure_PSI)
