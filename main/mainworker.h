@@ -72,7 +72,7 @@ public:
 	bool SetZWaveThermostatModeInt(const std::vector<std::string> &sd, int tMode);
 	bool SetZWaveThermostatFanModeInt(const std::vector<std::string> &sd, int fMode);
 
-	bool SwitchModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
+	bool SwitchEvoModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
 
 	bool GetSunSettings();
 	void LoadSharedUsers();

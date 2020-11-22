@@ -12353,7 +12353,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	return false;
 }
 
-bool MainWorker::SwitchModal(const std::string& idx, const std::string& status, const std::string& action, const std::string& ooc, const std::string& until)
+bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& status, const std::string& action, const std::string& ooc, const std::string& until)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
