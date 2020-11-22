@@ -305,8 +305,8 @@ checkFunc:
 		if (!(' '==  m_mochadbuffer[j++])) goto onError;
 		if (!('O'==  m_mochadbuffer[j++])) goto onError;
 		if ('f'==  m_mochadbuffer[j]) m_mochad.LIGHTING1.cmnd = 0;
-		else
-		if ('n'==  m_mochadbuffer[j]) m_mochad.LIGHTING1.cmnd = 1;
+		else if ('n' == m_mochadbuffer[j])
+			m_mochad.LIGHTING1.cmnd = 1;
 		else goto onError;
 		for (k=1;k<=16;k++) {
 			if (selected[currentHouse][k] >0) {

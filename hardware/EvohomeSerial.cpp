@@ -12,14 +12,14 @@ using namespace boost::placeholders;
 CEvohomeSerial::CEvohomeSerial(const int ID, const std::string &szSerialPort, const int baudrate, const std::string &UserContID) :
 CEvohomeRadio(ID, UserContID)
 {
-    if(baudrate!=0)
+	if (baudrate != 0)
 	{
-	  m_iBaudRate=baudrate;
+		m_iBaudRate = baudrate;
 	}
 	else
 	{
-	  // allow migration of hardware created before baud rate was configurable
-	  m_iBaudRate=115200;
+		// allow migration of hardware created before baud rate was configurable
+		m_iBaudRate = 115200;
 	}
 	m_szSerialPort=szSerialPort;
 }

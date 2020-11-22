@@ -1203,9 +1203,9 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end();)
 		{
 			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later or equal queued items
-			itt = m_eventtrigger.erase(itt);
-		else
-			itt++;
+				itt = m_eventtrigger.erase(itt);
+			else
+				itt++;
 		}
 	}
 	_tEventTrigger item;
