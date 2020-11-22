@@ -349,7 +349,7 @@ void I2C::PCF8574_ReadChipDetails()
 		unsigned char Unit = pin_number;
 		uint8_t pin_mask = 0x01 << pin_number;
 		bool value = (buf & pin_mask);
-		SendSwitch(DeviceID, Unit, 255, value, 0, ""); // create or update switch
+		SendSwitch(DeviceID, Unit, 255, value, 0, "", m_Name); // create or update switch
 	}
 	close(fd);
 #endif
@@ -419,14 +419,14 @@ void I2C::MCP23017_Init()
 			}
 
 			int DeviceID = (m_i2c_addr << 8) + (unsigned char)unit; 			// DeviceID from i2c_address and pin_number
-			SendSwitch(DeviceID, unit, 255, value, 0, ""); 					// create or update switch
+			SendSwitch(DeviceID, unit, 255, value, 0, "", m_Name); 					// create or update switch
 			//_log.Log(LOG_NORM, "SendSwitch(DeviceID: %d, unit: %d, value: %d", DeviceID, unit, value );
 		}
 	}
 	else {
 		for (char pin_number = 0; pin_number < 16; pin_number++) {
 			int DeviceID = (m_i2c_addr << 8) + pin_number; 			// DeviceID from i2c_address and pin_number
-			SendSwitch(DeviceID, pin_number, 255, value, 0, ""); 			// create switch
+			SendSwitch(DeviceID, pin_number, 255, value, 0, "", m_Name); // create switch
 		}
 	}
 	if (I2CWriteReg16(fd, MCP23x17_GPIOA, GPIO_reg) < 0) {	// write values from domoticz db to gpio register
