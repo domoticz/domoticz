@@ -113,7 +113,7 @@ void CurrentCostMeterBase::ExtractReadings()
 			char sensorInt(static_cast<char>(sensor));
 			std::string sensorName("CC Sensor 0 Power");
 			sensorName[10] += sensorInt;
-			SendWattMeter_Check(2 + sensorInt, 1, 255, totalPower, sensorName);
+			SendWattMeter(2 + sensorInt, 1, 255, totalPower, sensorName);
 		}
 	}
 	else if (type == 2.0)

@@ -31,7 +31,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 145
+#define DB_VERSION 146
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2747,6 +2747,16 @@ bool CSQLHelper::OpenDatabase()
 						}
 					}
 				}
+			}
+		}
+		if (dbversion < 146)
+		{
+			// Set Max. Power Usage to 6000
+			int nValue = 4000;
+			if (GetPreferencesVar("MaxElectricPower", nValue))
+			{
+				if (nValue == 4000)
+					UpdatePreferencesVar("MaxElectricPower", 6000);
 			}
 		}
 	}

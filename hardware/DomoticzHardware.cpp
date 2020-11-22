@@ -502,7 +502,7 @@ bool CDomoticzHardwareBase::GetWindSensorValue(const int NodeID, int& WindDir, f
 	return bExists;
 }
 
-void CDomoticzHardwareBase::SendWattMeter_Check(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float musage, const std::string& defaultname, const int RssiLevel /* =12 */)
+void CDomoticzHardwareBase::SendWattMeter(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float musage, const std::string& defaultname, const int RssiLevel /* =12 */)
 {
 	if (musage > m_sql.m_max_kwh_usage)
 	{
@@ -510,12 +510,6 @@ void CDomoticzHardwareBase::SendWattMeter_Check(const uint8_t NodeID, const uint
 		    defaultname.c_str());
 		return;
 	}
-	SendWattMeter(NodeID, ChildID, BatteryLevel, musage, defaultname, RssiLevel);
-}
-
-void CDomoticzHardwareBase::SendWattMeter(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float musage, const std::string &defaultname,
-						  const int RssiLevel /* =12 */)
-{
 	_tUsageMeter umeter;
 	umeter.id1 = 0;
 	umeter.id2 = 0;
@@ -527,6 +521,7 @@ void CDomoticzHardwareBase::SendWattMeter(const uint8_t NodeID, const uint8_t Ch
 	sDecodeRXMessage(this, (const unsigned char *)&umeter, defaultname.c_str(), BatteryLevel, nullptr);
 }
 
+
 //Obsolete, we should not call this anymore
 //when all calls are removed, we should delete this function
 void CDomoticzHardwareBase::SendKwhMeterOldWay(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string& defaultname, const int RssiLevel /* =12 */)
@@ -534,7 +529,7 @@ void CDomoticzHardwareBase::SendKwhMeterOldWay(const int NodeID, const int Child
 	SendKwhMeter(NodeID, ChildID, BatteryLevel, musage * 1000, mtotal, defaultname);
 }
 
-void CDomoticzHardwareBase::SendKwhMeter_Check(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string& defaultname, const int RssiLevel /* =12 */)
+void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string& defaultname, const int RssiLevel /* =12 */)
 {
 	if (musage > m_sql.m_max_kwh_usage)
 	{
@@ -542,12 +537,6 @@ void CDomoticzHardwareBase::SendKwhMeter_Check(const int NodeID, const int Child
 		    defaultname.c_str());
 		return;
 	}
-	SendKwhMeter(NodeID, ChildID, BatteryLevel, musage, mtotal, defaultname, RssiLevel);
-}
-
-void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname,
-					 const int RssiLevel /* =12 */)
-{
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeKwh;
 	gdevice.intval1 = (NodeID << 8) | ChildID;
