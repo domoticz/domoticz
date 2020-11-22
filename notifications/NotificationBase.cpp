@@ -228,31 +228,16 @@ bool CNotificationBase::IsInConfig(const std::string &Key)
 
 bool CNotificationBase::IsInConfigString(const std::string &Key)
 {
-	return std::any_of(_configValues.begin(), _configValues.end(),
-			   [&](const std::pair<std::string, std::string *> &val) { return Key == val.first; });
+	return std::any_of(_configValues.begin(), _configValues.end(), [&](const std::pair<std::string, std::string *> &val) { return Key == val.first; });
 }
 
 bool CNotificationBase::IsInConfigInt(const std::string &Key)
 {
-	for (auto &iter : _configValuesInt)
-	{
-		if (Key == iter.first)
-		{
-			return true;
-		}
-	}
-	return false;
+	return std::any_of(_configValuesInt.begin(), _configValuesInt.end(), [&](const std::pair<std::string, int *> &val) { return Key == val.first; });
 }
 
 bool CNotificationBase::IsInConfigBase64(const std::string &Key)
 {
-	for (auto &iter : _configValuesBase64)
-	{
-		if (Key == iter.first)
-		{
-			return true;
-		}
-	}
-	return false;
+	return std::any_of(_configValuesBase64.begin(), _configValuesBase64.end(), [&](const std::pair<std::string, std::string *> &val) { return Key == val.first; });
 }
 
