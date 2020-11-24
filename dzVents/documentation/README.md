@@ -1,7 +1,7 @@
 ﻿**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
-**Breaking change warning!!**: For people using with dzVents prior to version 2.4: Please read the [change log](#Change_log) below as there is an easy-to-fix breaking change regarding the second parameter passed to the execute function (it is no longer `nil` for timer/security triggers).
+Documentation for dzVents 2.4.0 - 2.5.7 (Domoticz v4.11652) can be found [here](https://github.com/domoticz/domoticz/blob/a0a6069e40744df222e889474032439476b7ecfb/dzVents/documentation/README.md).
 
 Documentation for dzVents 2.3.0 (Domoticz v3.8153) can be found [here](https://github.com/domoticz/domoticz/blob/2f6ba5c5a8978a010d6867228ad84eab762c5936/dzVents/documentation/README.md).
 
@@ -89,7 +89,7 @@ Also make sure that in the Security section in the settings **(Setup > Settings 
 There are two ways of creating dzVents event scripts in Domoticz:
 
  1. By creating scripts in your domoticz instance on your domoticz server: `/path/to/domoticz/scripts/dzVents/scripts`. Make sure that each script has the extension `.lua` and follows the guidelines as described below.
- 2. By creating scripts inside Domoticz using the internal Domoticz event editor: Go to **Setup > More Options > Events**. Press the + button and choose dzVents. You must then choose a template. They are there just for convenience during writing the script; the actual trigger for the script is determined by what you entered in the on = section. The internal event editor have a help button <sup>2.4.23</sup> when writing dzVents scripts, next to Save and Delete. This button opens this wiki in a separate browser tab when clicked. Name your script to your liking but leave out the extension .lua
+ 2. By creating scripts inside Domoticz using the internal Domoticz event editor: Go to **Setup > More Options > Events**. Press the + button and choose dzVents. You must then choose a template. They are there just for convenience during writing the script; the actual trigger for the script is determined by what you entered in the on = section. The internal event editor have a help button when writing dzVents scripts, next to Save and Delete. This button opens this wiki in a separate browser tab when clicked. Name your script to your liking but leave out the extension .lua
 
 **Note: scripts that you write on the file-system and inside Domoticz using the internal web-editor all share the same name-space. That means that if you have two scripts with the same name, only the one of the file-system will be used. The log will tell you when this happens.**
 
@@ -557,7 +557,7 @@ return {
 
 ## *timer* trigger rules
 There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm):
-Keywords recognized are "at, between, every, except, in, on " ( except supported from version )<sup>3.0.16</sup> onwards.
+Keywords recognized are "at, between, every, except, in, on " ( except supported from version <sup>3.0.16</sup> onwards ).
 
 ```Lua
 	on = {
@@ -659,7 +659,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 
 ### Domoticz attributes and methods
  - **devices(idx/name)**: *Function*. A function returning a device by idx or name: `domoticz.devices(123)` or `domoticz.devices('My switch')`. For the device API see [Device object API](#Device_object_API). To iterate over all devices do: `domoticz.devices().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.devices()) do .. end`.
- - **dump([osfile]<sup>3.0.0</sup>)**: *Function*. <sup>2.4.16</sup> Dump all domoticz.settings attributes to the Domoticz log. This ignores the log level setting.
+ - **dump([osfile]<sup>3.0.0</sup>)**: *Function*. Dump all domoticz.settings attributes to the Domoticz log. This ignores the log level setting.
  - **email(subject, message, mailTo [, delay]<sup>3.0.10</sup>)**: *Function*. Send email. Optional parm delay is delay in seconds.
  - **emitEvent(name,[extra data ])**:*Function*. <sup>3.0.0</sup> Have Domoticz 'call' a customEvent. If you just pass a name then Domoticz will execute the script(s) that subscribed to the named customEvent after your script has finished. You can optionally pass extra information as a string or table. A table will be automatically converted into a json string and converted back to a table in the subscribed script(s). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
   - **groups(idx/name)**: *Function*: A function returning a group by name or idx. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.groups()) do .. end`. Read more about [Groups](#Group).
@@ -674,12 +674,12 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
  - **sendCommand(command, value[, delay] <sup>3.0.10</sup>)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. Optional parm delay is delay in seconds *There is likely no need to use this directly. Use any of the device methods instead (see below).*
  - **settings**:
-	- **domoticzVersion**:<sup>2.4.15</sup> domoticz version string.
-	- **dzVentsVersion**:<sup>2.4.15</sup> dzVents version string.
+	- **domoticzVersion**: domoticz version string.
+	- **dzVentsVersion**: dzVents version string.
 	- **location**
-		- **latitude**:<sup>2.4.14</sup> domoticz settings locations latitude.
-		- **longitude**:<sup>2.4.14</sup> domoticz settings locations longitude.
-		- **name**:<sup>2.4.14</sup> domoticz settings location Name.
+		- **latitude**: domoticz settings locations latitude.
+		- **longitude**: domoticz settings locations longitude.
+		- **name**: domoticz settings location Name.
 	- **serverPort**: webserver listening port.
 	- **url**: internal url to access the API service.
 	- **webRoot**: `webroot` value as specified when starting the Domoticz service.
@@ -700,15 +700,15 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
 	- **isDayTime**: *Boolean*
 	- **isNightTime**: *Boolean*
-	- **isCivilDayTime**: *Boolean*. <sup>2.4.7</sup>
-	- **isCivilNightTime**: *Boolean*. <sup>2.4.7</sup>
+	- **isCivilDayTime**: *Boolean*. 
+	- **isCivilNightTime**: *Boolean*. 
 	- **isToday**: *Boolean*. Indicates if the device was updated today
 	- **sunriseInMinutes**: *Number*. Number of minutes since midnight when the sun will rise.
 	- **sunsetInMinutes**: *Number*. Number of minutes since midnight when the sun will set.
-	- **civTwilightStartInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.
-	- **civTwilightEndInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
- - **triggerHTTPResponse([httpResponse], [delay], [message])**: <sup>2.5.3</sup> *Function*. Creates a callback by sending a logmessage. httpResponse defaults to scriptname, delay defaults to 0 (immediate), message defaults to httpResponse. Left in for backward compatibility only. You can use emitEvent / customEvents now.
- - **triggerIFTTT(makerName [,sValue1, sValue2, sValue3])**: *Function*. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+	- **civTwilightStartInMinutes**: *Number*.  Number of minutes since midnight when the civil twilight will start.
+	- **civTwilightEndInMinutes**: *Number*. Number of minutes since midnight when the civil twilight will end.
+ - **triggerHTTPResponse([httpResponse], [delay], [message])**: *Function*. Creates a callback by sending a logmessage. httpResponse defaults to scriptname, delay defaults to 0 (immediate), message defaults to httpResponse. Left in for backward compatibility only. You can use emitEvent / customEvents now.
+ - **triggerIFTTT(makerName [,sValue1, sValue2, sValue3])**: *Function*. Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **utils**: . A subset of handy utilities:
 		Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example:
 
@@ -723,8 +723,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
 		domoticz.utils._.size({'abc', 'def'}))` Returns 2.
 		```
 
-	- **cameraExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with a valid camera ^3.0.12^ or cameraID and return ID when entered with valid cameraName or false when not a camera, cameraID or cameraName of an existing camera
-	- **deviceExists(parm)**: *Function*: ^2.4.28^ returns name when entered with a valid device ^3.0.12^ or deviceID and returns ID when entered with valid deviceName or false when not a device, deviceID or deviceName of an existing (and active) device.
+	- **cameraExists(parm)**: *Function*: returns name when entered with a valid camera ^3.0.12^ or cameraID and return ID when entered with valid cameraName or false when not a camera, cameraID or cameraName of an existing camera
+	- **deviceExists(parm)**: *Function*: returns name when entered with a valid device ^3.0.12^ or deviceID and returns ID when entered with valid deviceName or false when not a device, deviceID or deviceName of an existing (and active) device.
 		Example:
 
 		``` {.lua}
@@ -744,20 +744,20 @@ The domoticz object holds all information about your Domoticz system. It has glo
 		end
 		```
 
-	- **dumpTable(table,[levelIndicator],[osfile]<sup>3.0.0</sup>))**: *Function*: <sup>2.4.19</sup> print table structure and contents to log
+	- **dumpTable(table,[levelIndicator],[osfile]<sup>3.0.0</sup>))**: *Function*: print table structure and contents to log
 	- **fileExists(path)**: *Function*:  Returns `true` if the file (with full path) exists.
-	- **fromBase64(string)**: *Function*: <sup>2.5.2</sup>) Decode a base64 string
-	- **fromJSON(json, fallback <sup>2.4.16</sup>)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
-	- **fromXML(xml, fallback )**: *Function*: <sup>2.5.1</sup>. Turns a xml string to a Lua table. Example: `local t = domoticz.utils.fromXML('<testtag>What a nice feature!</testtag>') Followed by: `print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.
+	- **fromBase64(string)**: *Function*: Decode a base64 string
+	- **fromJSON(json, fallback)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
+	- **fromXML(xml, fallback )**: *Function*: Turns a xml string to a Lua table. Example: `local t = domoticz.utils.fromXML('<testtag>What a nice feature!</testtag>') Followed by: `print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.
 	- **fuzzyLookup([string|array of strings], parm)**: *Function*: <sup>3.0.14</sup>. Search fuzzy matching string in parm. If parm is string it returns a number (lower is better match). If parm is array of strings it returns the best matching string.
-	 - **groupExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with a valid group ^3.0.12^ or groupID and return ID when entered with valid groupName or false when not a group, groupID or groupName of an existing group
+	 - **groupExists(parm)**: *Function*: returns name when entered with a valid group ^3.0.12^ or groupID and return ID when entered with valid groupName or false when not a group, groupID or groupName of an existing group
 	 - **hardwareExists(parm)**: *Function*: <sup>3.0.7</sup> returns name when entered with valid hardwareID or ID when entered with valid hardwareName or false when not a hardwareID or hardwareName of an existing (and active  )hardware module
-	- **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
+	- **inTable(table, searchString)**: *Function*: Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
 	- **isJSON(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'application/json' or string is enclosed in {} and `false` otherwise.
 	- **isXML(string[, content])**: *Function*: <sup>3.0.4</sup> Returns `true` if content is 'text/xml' or 'application/xml' or string is enclosed in <> and `false` otherwise.
-	- **leftPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.
-	- **centerPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.
-	- **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation.
+	- **leftPad(string, length [, character])**: *Function*: Precede string with given character(s) (default = space) to given length.
+	- **centerPad(string, length [, character])**: *Function*: Center string by preceding and succeeding with given character(s) (default = space) to given length.
+	- **numDecimals(number [, integer [, decimals ]])**: *Function*: Format number to float representation.
 	*Examples:*
 	```Lua
 			domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,
@@ -766,11 +766,11 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	```
 	- **osCommand(cmd)**: *Function*: <sup>3.0.13</sup> Execute an OS command and return result and returncode.
 	- **osExecute(cmd)**: *Function*: Execute an OS command. (no return)
-	- **rightPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.
+	- **rightPad(string, length [, character])**: *Function*: Succeed string with given character(s) (default = space) to given length.
 	- **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
-	- **sceneExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with valid scene ^3.0.12^ or sceneID and return ID when entered with valid sceneName or false when not a scene, sceneID or sceneName of an existing scene
-	- **setLogMarker([marker])**: *Function*: <sup>2.5.2</sup> set logMarker to 'marker'. Defaults to scriptname. Can be used to change logMarker based on flow in script
-	- **stringSplit(string [,separator ] [,convert ]<sup>3.0.13</sup>)**:<sup>2.4.19</sup> *Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words. Default convert is false when set to true it will convert strings to number where possible.
+	- **sceneExists(parm)**: *Function*: returns name when entered with valid scene ^3.0.12^ or sceneID and return ID when entered with valid sceneName or false when not a scene, sceneID or sceneName of an existing scene
+	- **setLogMarker([marker])**: *Function*: set logMarker to 'marker'. Defaults to scriptname. Can be used to change logMarker based on flow in script
+	- **stringSplit(string [,separator ] [,convert ]<sup>3.0.13</sup>)**:*Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words. Default convert is false when set to true it will convert strings to number where possible.
 	- **stringToSeconds(str)**:  *Function*: <sup>3.0.1</sup>  Returns number of seconds between now and str.	
 	*Examples:*
 
@@ -779,14 +779,14 @@ The domoticz object holds all information about your Domoticz system. It has glo
 		domoticz.utils.stringToSeconds('08:53:30 on fri')		-- number of seconds between now and Friday at 08:53:30
 		domoticz.utils.stringToSeconds('08:53:30 on sat, sun')	-- number of seconds between now and Saturday or Sunday at 08:53:30 ;whatever comes first
 		```
-	- **toBase64(string)**: *Function*: <sup>2.5.2</sup>) Encode a string to base64
+	- **toBase64(string)**: *Function*: ) Encode a string to base64
 	- **toCelsius(f, relative)**: *Function*. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative == true it uses the fact that 1F = 0.56C. So `toCelsius(5, true)` returns 5F*(1/1.8) = 2.78C.
 	- **toJSON(luaTable)**: *Function*.  Converts a Lua table to a json string.
-	- **toXML(luaTable, [header])**: *Function*. <sup>2.5.1</sup> Converts a Lua table to a xml string.
-	- **urlDecode(s)**: <sup>2.4.13</sup> *Function*. Simple deCoder to convert a string with escaped chars (%20, %3A and the likes) to human readable format.
+	- **toXML(luaTable, [header])**: *Function*. Converts a Lua table to a xml string.
+	- **urlDecode(s)**: *Function*. Simple deCoder to convert a string with escaped chars (%20, %3A and the likes) to human readable format.
 	- **urlEncode(s, [strSub])**: *Function*. Simple url encoder for string so you can use them in `openURL()`. `strSub` is optional and defaults to + but you can also pass %20 if you like/need.
-	- **variableExists(parm)**: *Function*: <sup>2.4.28</sup> returns name when entered with a valid variable ^3.0.12^ or variableID and return ID when entered with valid variableName or false when not a variable, variableID or variableName of an existing variable
-	- **leadingZeros(number, length)**: *Function*: <sup>2.4.27</sup> Precede number with given zeros to given length.
+	- **variableExists(parm)**: *Function*: returns name when entered with a valid variable ^3.0.12^ or variableID and return ID when entered with valid variableName or false when not a variable, variableID or variableName of an existing variable
+	- **leadingZeros(number, length)**: *Function*: Precede number with given zeros to given length.
 	- **variables(idx/name)**: *Function*. A function returning a variable by it's name or idx. See  [Variable object API]
 (#Variable_object_API_.28user_variables.29) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). **Note that you cannot do `for i, j in pairs(domoticz.variables()) do .. end`**.
 
@@ -869,12 +869,12 @@ The domoticz object has these constants available for use in your code e.g. `dom
 
  - **BARO_CLOUDY, BARO_CLOUDY_RAIN, BARO_STABLE, BARO_SUNNY, BARO_THUNDERSTORM, BARO_NOINFO, BARO_UNSTABLE, BARO_COMPUTE** : for updating barometric values.
  - **EVENT_TYPE_DEVICE, EVENT_TYPE_VARIABLE, EVENT_TYPE_CUSTOM<sup>3.0.0</sup>EVENT_TYPE_SECURITY,  EVENT_TYPE_HTTPRESPONSE, EVENT_TYPE_SYSTEM<sup>3.0.0</sup> EVENT_TYPE_TIMER**: triggerInfo types passed to the execute function in your scripts.
- - **EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE, EVOHOME_MODE_PERMANENT_OVERRIDE, EVOHOME_MODE_FOLLOW_SCHEDULE** <sup>2.4.9</sup>: mode for EvoHome system.
- - **EVOHOME_MODE_AUTO, EVOHOME_MODE_AUTOWITHRESET, EVOHOME_MODE_AUTOWITHECO, EVOHOME_MODE_AWAY, EVOHOME_MODE_DAYOFF, EVOHOME_MODE_CUSTOM, EVOHOME_MODE_HEATINGOFF** <sup>2.4.23</sup>: mode for EvoHome controller
+ - **EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE, EVOHOME_MODE_PERMANENT_OVERRIDE, EVOHOME_MODE_FOLLOW_SCHEDULE**: mode for EvoHome system.
+ - **EVOHOME_MODE_AUTO, EVOHOME_MODE_AUTOWITHRESET, EVOHOME_MODE_AUTOWITHECO, EVOHOME_MODE_AWAY, EVOHOME_MODE_DAYOFF, EVOHOME_MODE_CUSTOM, EVOHOME_MODE_HEATINGOFF** : mode for EvoHome controller
  - **HUM_COMFORTABLE, HUM_DRY, HUM_NORMAL, HUM_WET, HUM_COMPUTE** <sup>3.0.15</sup>: constant for humidity status.
  - **INTEGER**, **FLOAT**, **STRING**, **DATE**, **TIME**: variable types.
  - **LOG_DEBUG**, **LOG_ERROR**, **LOG_INFO**, **LOG_FORCE**: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
- - **NSS_FIREBASE, NSS_FIREBASE_CLOUD_MESSAGING, NSS_GOOGLE_DEVICES <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM <sup>2.4.8</sup>, NSS_GOOGLE_CLOUD_MESSAGING** <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
+ - **NSS_FIREBASE, NSS_FIREBASE_CLOUD_MESSAGING, NSS_GOOGLE_DEVICES <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM, NSS_GOOGLE_CLOUD_MESSAGING** <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
  - **PRIORITY_LOW**, **PRIORITY_MODERATE**, **PRIORITY_NORMAL**, **PRIORITY_HIGH**, **PRIORITY_EMERGENCY**: for notification priority.
  - **SECURITY_ARMEDAWAY**, **SECURITY_ARMEDHOME**, **SECURITY_DISARMED**: for security state.
  - **SOUND_ALIEN** , **SOUND_BIKE**, **SOUND_BUGLE**, **SOUND_CASH_REGISTER**, **SOUND_CLASSICAL**, **SOUND_CLIMB** , **SOUND_COSMIC**, **SOUND_DEFAULT** , **SOUND_ECHO**, **SOUND_FALLING**  , **SOUND_GAMELAN**, **SOUND_INCOMING**, **SOUND_INTERMISSION**, **SOUND_MAGIC** , **SOUND_MECHANICAL**, **SOUND_NONE**, **SOUND_PERSISTENT**, **SOUND_PIANOBAR** , **SOUND_SIREN** , **SOUND_SPACEALARM**, **SOUND_TUGBOAT**  , **SOUND_UPDOWN**: for notification sounds.
@@ -910,19 +910,19 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **lastUpdate**: *[Time Object](#Time_object)*: Time when the device was updated. **Note: The lastUpdate for devices that triggered the script at hand is in fact the previousUpdate time. The real lastUpdate time for these "script triggering" devices is the current time.
  - **name**: *String*. Name of the device.
  - **nValue**: *Number*. Numerical representation of the state.
- - **protected**: *Boolean*. <sup>2.4.27</sup> True when device / scene / group is protected. False otherwise.
- - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
- - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options] !! **Note: domoticz protects against GUI and API access only. switchOn / switchOff type Blockly / Lua / dzVents commands are not influenced (because they are executed as admin user)
+ - **protected**: *Boolean*. True when device / scene / group is protected. False otherwise.
+ - **protectionOff()**: *Function*. switch protection to off. Supports some [command options]
+ - **protectionOn()**: *Function*. switch protection to on. Supports some [command options] !! **Note: domoticz protects against GUI and API access only. switchOn / switchOff type Blockly / Lua / dzVents commands are not influenced (because they are executed as admin user)
  - **rawData**: *Table*: All values are *String* types and hold the raw data received from Domoticz.
- - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current devicename to new devicename Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **setDescription(description)**: *Function*. <sup>2.4.16</sup> Generic method to update the description for all devices, groups and scenes. E.g.: device.setDescription(device.description .. '/nChanged by '.. item.trigger .. 'at ' .. domoticz.time.raw). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **setIcon(iconNumber)**: *Function*. <sup>2.4.17</sup> method to update the icon for devices. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **rename(newName)**: *Function*. Change current devicename to new devicename Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **setDescription(description)**: *Function*. Generic method to update the description for all devices, groups and scenes. E.g.: device.setDescription(device.description .. '/nChanged by '.. item.trigger .. 'at ' .. domoticz.time.raw). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **setIcon(iconNumber)**: *Function*. method to update the icon for devices. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setState(newState)**: *Function*. Generic update method for switch-like devices. E.g.: device.setState('On'). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **setValues(nValue,[ sValue1, sValue2, ...])**: *Function*. <sup>2.4.17</sup> Generic alternative method to update device nValue, sValues. Uses domoticz JSON API to force subsequent pushes like influxdb and MQTT. nValue required but when set to nil it defaults to current nValue. sValue parms are optional and can be many. <sup>3.0.8</sup> If one of sValue parms is 'parsetrigger', subsequent eventscripts will be triggered.
+ - **setValues(nValue,[ sValue1, sValue2, ...])**: *Function*. Generic alternative method to update device nValue, sValues. Uses domoticz JSON API to force subsequent pushes like influxdb and MQTT. nValue required but when set to nil it defaults to current nValue. sValue parms are optional and can be many. <sup>3.0.8</sup> If one of sValue parms is 'parsetrigger', subsequent eventscripts will be triggered.
  - **state**: *String*. For switches, holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
  - **signalLevel**: *Number* If applicable for that device then it will be from 0-100.
  - **switchType**: *String*. See Domoticz devices table in Domoticz GUI(Switches tab). E.g. 'On/Off', 'Door Contact', 'Motion Sensor' or 'Blinds'
- - **sValue**: *String*. <sup>2.4.21</sup> Returns the sValue (string Value) of a device.
+ - **sValue**: *String*. Returns the sValue (string Value) of a device.
  - **switchTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
  - **timedOut**: *Boolean*. Is true when the device couldn't be reached.
  - **unit**: *Number*. Device unit. See device list in Domoticz' settings for the unit.
@@ -955,11 +955,11 @@ Note that if you do not find your specific device type here you can always inspe
  - **forecastString**: *String*.
  - **updateBarometer(pressure, forecast)**: *Function*. Update barometric pressure. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
-#### Counter, managed Counter <sup>2.4.12</sup>,counter incremental
+#### Counter, managed Counter, counter incremental
  - **counter**: *Number*
  - **counterToday**: *Number*. Today's counter value.
  - **updateCounter(value)**: *Function*. **This will overwrite; and not increment !**. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **incrementCounter(value)**: <sup>2.4.23</sup>*Function*. (counter incremental) Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **incrementCounter(value)**: *Function*. (counter incremental) Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **valueQuantity**: *String*. For counters.
  - **valueUnits**: *String*.
 
@@ -974,21 +974,21 @@ Note that if you do not find your specific device type here you can always inspe
  - **updateDistance(distance)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Electric usage
- - **actualWatt**: *Number*. <sup>2.5.2 </sup> Current Watt usage.
+ - **actualWatt**: *Number*. Current Watt usage.
  - **WhActual**: *Number*. Current Watt usage. (please use actualWatt)
  - **updateEnergy(energy)**: *Function*. In Watt. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Evohome (zones)
  - **setPoint**: *Number*.
- - **mode**: *string* <sup>2.4.9</sup>.
- - **untilDate**: *string in ISO 8601 format* or n/a <sup>2.4.9</sup>.
- - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE <sup>2.4.9</sup> or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **mode**: *string* .
+ - **untilDate**: *string in ISO 8601 format* or n/a .
+ - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
-#### Evohome (controller) <sup>2.4.23</sup>
+#### Evohome (controller) 
  - **mode**: *string* <sup>3.0.0</sup>.
  - **setMode(mode, dparm, action, ooc )**: *Function*. set mode for controller. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_AUTOWITHRESET, domoticz.EVOHOME_MODE_AUTOWITHECO, domoticz.EVOHOME_MODE_AWAY, domoticz.EVOHOME_MODE_DAYOFF, domoticz.EVOHOME_MODE_CUSTOM or domoticz.EVOHOME_MODE_HEATINGOFF. dParm <optional> can be a future time string (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`), a future time object, a future time as number of seconds since epoch or a number representing a positive offset in minutes (max 1 year). action <optional> (1 = run on action script, 0 = disable), ooc <optional> (1 = only trigger the event & log on change, 0 = always trigger & log)
 
-#### Evohome (hotWater) <sup>2.4.9</sup>.
+#### Evohome (hotWater) .
  - **state**: *string*  ('On' or 'Off')
  - **mode**: *string*
  - **untilDate**: *string in ISO 8601 format* or n/a.
@@ -1001,9 +1001,9 @@ Note that if you do not find your specific device type here you can always inspe
 
 #### Group
  - **devices()**: *Function*. Returns the collection of associated devices. Supports the same iterators as for `domoticz.devices()`: `forEach()`, `filter()`, `find()`, `reduce()`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that the function doesn't allow you to get a device by its name or id. Use `domoticz.devices()` for that.
- - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
- - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
- - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current group-name to new group-name Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **protectionOff()**: *Function*. switch protection to off. Supports some [command options]
+ - **protectionOn()**: *Function*. switch protection to on. Supports some [command options]
+ - **rename(newName)**: *Function*. Change current group-name to new group-name Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **toggleGroup()**: Toggles the state of a group. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -1032,7 +1032,7 @@ Note that if you do not find your specific device type here you can always inspe
  - **kodiSwitchOff()**: *Function*. Will turn the device off if this is supported in settings on the device.
 
 #### kWh, Electricity (instant and counter)
- - **actualWatt**: *Number*.  <sup>2.5.2 </sup>Actual usage in Watt.
+ - **actualWatt**: *Number*. Actual usage in Watt.
  - **counterToday**: *Number*.
  - **updateElectricity(power, energy)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **usage**: *Number*.
@@ -1052,8 +1052,8 @@ Note that if you do not find your specific device type here you can always inspe
  - **setVolume(level)**: *Function*.  Sets the volume (0 <= level <= 100). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **startPlaylist(name)**: *Function*.  Will start the playlist by its `name`. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **stop()**: *Function*.  Will stop the device (only effective if the device is streaming). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **volumeUp()**: *Function*. <sup>2.4.16</sup> Will turn the device volume up with 2 points. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **volumeDown()**: *Function*. <sup>2.4.16</sup> Will turn the device volume down with 2 points. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **volumeUp()**: *Function*. Will turn the device volume up with 2 points. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **volumeDown()**: *Function*. Will turn the device volume down with 2 points. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Lux sensor
  - **lux**: *Number*. Lux level for light sensors.
@@ -1093,13 +1093,13 @@ See switch below.
 
 #### RGBW(W) / Lighting Limitless/Applamp
  - **decreaseBrightness()**: deprecated because only very limited supported and will be removed from API
- - **getColor()**; *Function*. <sup>2.4.17</sup> Returns table with color attributes or nil when color field of device is not set.
+ - **getColor()**; *Function*. Returns table with color attributes or nil when color field of device is not set.
  - **increaseBrightness()**: deprecated because only very limited supported and will be removed from API
- - **setColor(r, g, b, br, cw, ww, m, t)**: *Function*. <sup>2.4.16</sup> Sets the light to requested color.  r, g, b required, others optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). Meaning and limits of parms can be found [here](https://www.domoticz.com/wiki/Domoticz_API/JSON_URL's#Set_a_light_to_a_certain_color_or_color_temperature).
+ - **setColor(r, g, b, br, cw, ww, m, t)**: *Function*. Sets the light to requested color.  r, g, b required, others optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). Meaning and limits of parms can be found [here](https://www.domoticz.com/wiki/Domoticz_API/JSON_URL's#Set_a_light_to_a_certain_color_or_color_temperature).
  - **setColorBrightness()**: same as setColor
  - **setDiscoMode(modeNum)**: deprecated because only very limited supported and will be removed from API
-- **setHex(r, g, b)**: *Function*. <sup>2.4.16</sup> Sets the light to requested color.  r, g, b required (decimal Values 0-255). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
-- **setHue(hue, brightness, isWhite)**: *Function*. <sup>2.4.16</sup> Sets the light to requested Hue. Hue and brightness required. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+- **setHex(r, g, b)**: *Function*. Sets the light to requested color.  r, g, b required (decimal Values 0-255). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+- **setHue(hue, brightness, isWhite)**: *Function*. Sets the light to requested Hue. Hue and brightness required. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setKelvin(Kelvin)**: *Function*.  Sets Kelvin level of the light (For RGBWW devices only). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setNightMode()**: *Function*.  Sets the lamp to night mode. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setRGB(red, green, blue)**: *Function*.  Set the lamps RGB color. Values are from 0-255. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -1111,9 +1111,9 @@ See switch below.
 
 #### Scene
  - **devices()**: *Function*. Returns the collection of associated devices. Supports the same iterators as for `domoticz.devices()`: `forEach()`, `filter()`, `find()`, `reduce()`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that the function doesn't allow you to get a device by its name or id. Use `domoticz.devices()` for that.
- - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
- - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
- - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current scene-name to new scene-name Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **protectionOff()**: *Function*. switch protection to off. Supports some [command options]
+ - **protectionOn()**: *Function*. switch protection to on. Supports some [command options]
+ - **rename(newName)**: *Function*. Change current scene-name to new scene-name Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
@@ -1132,7 +1132,7 @@ Methods/attributes:
  - **disarm()**: Disarms a security device. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **state**: *String*: Same values as domoticz.security value.
 
-#### Smoke detection <sup>2.4.26</sup>.
+#### Smoke detection
  - **activate()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **reset()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
@@ -1160,13 +1160,13 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **levelNames**: *Table*. Table holding the level names for selector switch devices.
  - **maxDimLevel**: *Number*.
  - **open()**: *Function*. Set device to Open if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **quietOn()**: *Function*. <sup>2.4.20</sup> Set deviceStatus to on without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **quietOff()**: *Function*. <sup>2.4.20</sup> set deviceStatus to off without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **setLevel(percentage)**: *Function*. <sup>2.4.29</sup> Set device to a given level if it supports it (e.g. blinds percentage). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **quietOn()**: *Function*. Set deviceStatus to on without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **quietOff()**: *Function*. set deviceStatus to off without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **setLevel(percentage)**: *Function*. Set device to a given level if it supports it (e.g. blinds percentage). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **stop()**: *Function*. Set device to Stop if it supports it (e.g. blinds). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Switch device off it is supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: *Function*. Switch device on if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **switchSelector(<[level]|[levelname] >)** <sup>levelname >= 2.4.22</sup> : *Function*. Switches a selector switch to a specific level ( levelname or level(numeric) required ) levelname must be exact, for level the closest fit will be picked. See the edit page in Domoticz for such a switch to get a list of the values). Levelname is only supported when level 0 ("Off") is not removed Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **switchSelector(<[level]|[levelname] >)** : *Function*. Switches a selector switch to a specific level ( levelname or level(numeric) required ) levelname must be exact, for level the closest fit will be picked. See the edit page in Domoticz for such a switch to get a list of the values). Levelname is only supported when level 0 ("Off") is not removed Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **toggleSwitch()**: *Function*. Toggles the state of the switch (if it is togglable) like On/Off, Open/Close etc.
 
 #### Temperature sensor
@@ -1234,13 +1234,13 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **direction**: *Number*. Degrees.
  - **directionString**: *String*. Formatted wind direction like N, SE.
  - **gust**: *Number*. ( in meters / second, might change in future releases to Meters/Counters settings for Wind Meter )
- - **gustMs**: *Number*. Gust ( in meters / second ) <sup>2.4.9</sup>
+ - **gustMs**: *Number*. Gust ( in meters / second ) 
  - **temperature**: *Number*
  - **speed**: *Number*. Windspeed ( in the unit set in Meters/Counters settings for Wind Meter )
- - **speedMs**: *Number*. Windspeed ( in meters / second ) <sup>2.4.9</sup>
+ - **speedMs**: *Number*. Windspeed ( in meters / second ) 
  - **updateWind(bearing, direction, speed, gust, temperature, chill)**: *Function*. Bearing in degrees, direction in N, S, NNW etc, speed in m/s, gust in m/s, temperature and chill in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
-#### Youless meter <sup>2.4.6</sup>
+#### Youless meter
  - **counterDeliveredToday**: *Number*.
  - **counterDeliveredTotal**: *Number*.
  - **powerYield**: *String*.
@@ -1250,7 +1250,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **setPoint**: *Number*.
  - **heatingMode**: *String*.
 
-#### Z-Wave Fan mode <sup>2.5.5</sup>
+#### Z-Wave Fan mode
  - **mode**: *Number*. Current mode number.
  - **modeString**: *String*. Mode name.
  - **modes**: *Table*. Lists all available modes.
@@ -1442,7 +1442,7 @@ User variables created in Domoticz have these attributes and methods:
  - **id**: *Number*. Index of the variable.
  - **lastUpdate**: *[Time Object](#Time_object)*
  - **name**: *String*. Name of the variable
- - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current variable name to new variable name. (does not support timing options)
+ - **rename(newName)**: *Function*. Change current variable name to new variable name. (does not support timing options)
  - **set(value)**: Tells Domoticz to update the variable. Supports timing options. See [above](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **time**: *Date*. If type is domoticz.TIME. See lastUpdate for the sub-attributes.
  - **type**: *String*. Can be domoticz.INTEGER, domoticz.FLOAT, domoticz.STRING, domoticz.DATE, domoticz.TIME.
@@ -1505,13 +1505,13 @@ local someTime = Time('2017-12-31 22:19:15')
 local utcTime = Time('2017-12-31 22:19:15', true)
 ```
 
-Creation:<sup>2.5.4</sup>
+Creation:
 ```Lua
 local someTime = domoticz.time.addMinutes(30) -- someTime = domoticz time object for now + 30 minutes
 local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object.
 ```
 
- - **addAAA(offset)**: *time object*. <sup>2.5.4</sup> time object with given offset (positive or negativ. AAA is a placeholder for `Seconds, Minutes, Hours or Days` affix e.g. `addHours(-2)
+ - **addAAA(offset)**: *time object*. time object with given offset (positive or negative. AAA is a placeholder for `Seconds, Minutes, Hours or Days` affix e.g. `addHours(-2)
  - **civTwilightEndInMinutes**: *Number*. Minutes from midnight until civTwilightEnd.
  - **civTwilightStartInMinutes**:*Number*. Minutes from midnight until civTwilightStart.
  - **compare(time)**: *Function*. Compares the current time object with another time object. *Make sure you pass a Time object!* Returns a table (all values are *positive*, use the compare property to see if *time* is in the past or future):
@@ -1521,29 +1521,69 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 	- **hours**: Total difference in whole hours.
 	- **days**: Total difference in whole days.
 	- **compare**: 0 = both are equal, 1 = *time* is in the future, -1 = *time* is in the past.
+ - **dateToDate( dateString, sourceFormat, targetFormat[ , offSet] )**:<sup>3.0.17</sup> *Function*: Returns a reformatted datestring. dateString is a formatted date and source- and targetFormat are representations of the dateString elements and their locations in the string (see examples in dateToTimestamp) . Offset is a number (default = 0 )
+ assert.is_same('Fri Friday 31 December 23:31:06', Time( os.time()).dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'ddd dddd dd mmmm hh:MM:ss',  1 ))
+			assert.is_same('Thu Thursday 30 Dec 23:31:02', Time( os.time()).dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'ddd dddd dd mmm hh:MM:ss',  -3600 * 24 - 3 ))
+```Lua
+		-- examples:
+		domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'dddd dd mmmm hh:MM:ss',  1 )             -- > 'Friday 31 December 23:31:06'
+		domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'ddd dd mmm hh:MM:ss',  -3600 * 24 - 3 )) -- > 'Thu 30 Dec 23:31:02'
+```
+
+ - **dateToTimestamp([ dateString [,control] ] )**: *Function*:  Returns *Number* representing time since epoch in seconds. dateString is a formatted date and control is a representation of the dateString elements and their location in the string. Default control is 'yyyy-mm-dd hh:MM'.
+	recognized controls are either a Lua pattern string or a string containing following codes:
+```Lua
+		dddd -- full weekdayname(e.g. Wednesday) language depends on locale
+		ddd  -- abbreviated weekdayname(e.g. Wed) language depends on locale
+		dd   -- day of the month {[01-31]
+		mmmm -- full monthname(e.g September) language depends on locale
+		mmm  -- abbreviated monthname(e.g. Sep) language depends on locale
+		mm   -- month [01-12]
+		yyyy -- 4 digit year
+		yy   -- 2 digit year 
+		hh   -- hour 24-hour clock
+		ii   -- hour 12-hour clock
+		MM   -- minute
+		ss   -- second
+		W	 -- weeknumber [01-53]
+		w	 -- weekday{[0-6] Sunday-Saturday
+		datm -- date and time (e.g. 09/16/98 23:48:10) format depends on locale
+		mer  -- either "AM" or "PM" locale
+		date -- date(e.g. 09/16/98) format depends on locale
+		time -- time (e.g. 23:48:10)
+
+		-- examples:
+		domoticz.time.dateToTimestamp('2020-12-31 23:59'))                                                        -- > 1609455540
+		domoticz.time.dateToTimestamp('2020-12-31 23:59:01','yyyy-mm-dd hh:MM:ss'))                               -- > 1609455541
+		domoticz.time.dateToTimestamp('December 31, 23:59:02','mmmm dd, hh:MM:ss'))                               -- > 1609455542
+		domoticz.time.dateToTimestamp('2020-12-31 23:59:03','(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)' ))    -- > 1609455543
+		domoticz.time.dateToTimestamp('20201231235904','(%d%d%d%d)(%d%d)(%d%d)(%d%d)(%d%d)(%d%d)'))               -- > 1609455544
+```
+
+ - **day**: *Number*
  - **day**: *Number*
  - **dayAbbrOfWeek**: *String*. sun,mon,tue,wed,thu,fri or sat
  - **daysAgo**: *Number*
- - **dayName**: *String*.<sup>2.5.6</sup>  complete name Sunday, Monday, etc
+ - **dayName**: *String*. complete name Sunday, Monday, etc
  - **dDate**: *Number*. timestamp (seconds since 01/01/1970 00:00)
  - **getISO**: *Function*. Returns the ISO 8601 formatted date.
  - **hour**: *Number*
  - **hoursAgo**: *Number*. Number of hours since the last update.
  - **isToday**: *Boolean*. Indicates if the device was updated today
  - **isUTC**: *Boolean*.
- - **makeTime(string | table,[isUTC])**: *domoticz time object*. <sup>2.5.4</sup> returns domoticz time object based on first parameter (time as table or string) string format must be 'yyyy-mm-dd hh:mm:ss'. isUTC defaults to false.
+ - **makeTime(string | table,[isUTC])**: *domoticz time object*. returns domoticz time object based on first parameter (time as table or string) string format must be 'yyyy-mm-dd hh:mm:ss'. isUTC defaults to false.
  - **matchesRule(rule) **: *Function*. Returns true if the rule matches with the time. See [time trigger rules](#timer_trigger_rules) for rule examples.
  - **millisecondsAgo**: *Number*. Number of milliseconds since the last update.
  - **minutes**: *Number*
  - **minutesAgo**: *Number*. Number of minutes since the last update.
- - **minutesSinceMidnight**: *Number* <sup>2.5.4</sup>
+ - **minutesSinceMidnight**: *Number* 
  - **month**: *Number*
- - **monthAbbrName**: String. <sup>2.5.6</sup> jan, feb, mar, etc
- - **monthName**: *String*. <sup>2.5.6</sup>  January, February, etc
+ - **monthAbbrName**: String. jan, feb, mar, etc
+ - **monthName**: *String*.  January, February, etc
  - **msAgo**: *Number*. Number of milliseconds since the last update.
  - **raw**: *String*. Generated by Domoticz
  - **rawDate**: *String*. Returns the date part of the raw data.
- - **rawDateTime**: *String*. <sup>2.4.25</sup> Combined date / time formatted as domoticz does in API / JSON returns (rawDate .. ' '.. rawTime )
+ - **rawDateTime**: *String*. Combined date / time formatted as domoticz does in API / JSON returns (rawDate .. ' '.. rawTime )
  - **rawTime**: *String*. Returns the time part of the raw data as HH:MM:SS
  - **seconds**: *Number*
  - **secondsSinceMidnight**: *Number*
@@ -1551,7 +1591,15 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **sunsetInMinutes**: *Number*. Minutes from midnight until sunset.
  - **sunriseInMinutes**: *Number*. Minutes from midnight until sunrise.
  - **solarnoonInMinutes**: *Number*. <sup>3.0.11</sup> Minutes from midnight until solarnoon.
- - **time**: *String*. <sup>2.5.6</sup> Returns the time part of the raw data as HH:MM
+ - **time**: *String*. Returns the time part of the raw data as HH:MM
+ - **timestampToDate([ [ timestamp ] , [ pattern ] ,[ offSet ]  )**: *function*. Returns a datestring. timestamp is number of seconds since epoch (default = now) , pattern is a string as explained in this wiki at the description of the domoticz.time.date2Timestamp function (default = 'yyyy-mm-dd hh:MM:ss'). Offset is a number (default = 0 )
+```Lua
+        -- examples:
+        domoticz.time.timestampToDate(10,'date time')                               --> '01/01/70 01:00:10'
+        domoticz.time.timestampToDate(60,'ddd mm mmm yyyy ii:MM mer','date time')   --> 'Thu 01 Jan 1970 01:01 AM''
+        domoticz.time.timestampToDate(1598077445,'dd/mm/yy ii:MM mer nZero')        --> '22/08/20 8:24 AM'
+```
+ 
  - **toUTC(string | table,[offset])**: *domoticz time object*. <sup>3.0.9</sup> returns domoticz time object based on first parameter (time as table or string) string format must be 'yyyy-mm-dd hh:mm:ss'. offset defaults to 0.
  - **utcSystemTime**: *Table*. UTC system time (only when in UTC mode):
 	- **day**: *Number*
@@ -2151,16 +2199,16 @@ The response object  (second parameter in your execute function) has these attri
  - **data**: Raw response data.
  - **headers**: *Table*. Response headers.
  - **isJSON**: *Boolean*. Short for `response.headers['Content-Type'] == 'application/json'`. When true, the data is automatically converted to a Lua table.
- - **isXML**: *Boolean*. <sup>2.5.1</sup> Short for `response.headers['Content-Type'] == 'text/xml'`. When true, the data is automatically converted to a Lua table.
+ - **isXML**: *Boolean*. Short for `response.headers['Content-Type'] == 'text/xml'`. When true, the data is automatically converted to a Lua table.
  - **json**. *Table*. When the response data is `application/json` then the response data is automatically converted to a Lua table for quick and easy access.
  - **ok**: *Boolean*. `True` when the request was successful. It checks for statusCode to be in range of 200-299.
  - **statusCode**: *Number*. HTTP status codes. See [HTTP response status codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes ).
- - **statusText**: *String*. <sup>2.4.19</sup> HTTP status message. See [HTTP response status codes]( https://en.wikipedia.org/wiki/List_of_HTTP_status_codes ).
- - **protocol**: *String*. <sup>2.4.19</sup> HTTP protocol. See [HTTP response status codes]( https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol ).
+ - **statusText**: *String*. HTTP status message. See [HTTP response status codes]( https://en.wikipedia.org/wiki/List_of_HTTP_status_codes ).
+ - **protocol**: *String*. HTTP protocol. See [HTTP response status codes]( https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol ).
  - **trigger**, **callback**: *String*. The callback string that triggered this response instance. This is useful if you have a script that is triggered by multiple different callback strings.
- - **xml**. *Table*. <sup>2.5.1</sup> When the response data is `text/xml` , the response data is automatically converted to a Lua table for quick and easy access.
- - **xmlEncoding**. *String*. <sup>2.5.1</sup> When the response data is `text/xml` See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
- - **xmlVersion**. *String*. <sup>2.5.1</sup> When the response data is `text/xml` See [ xml versions ] ( https://en.wikipedia.org/wiki/XML ).
+ - **xml**. *Table*. When the response data is `text/xml` , the response data is automatically converted to a Lua table for quick and easy access.
+ - **xmlEncoding**. *String*. When the response data is `text/xml` See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
+ - **xmlVersion**. *String*. When the response data is `text/xml` See [ xml versions ] ( https://en.wikipedia.org/wiki/XML ).
 
 ### More about request and response headers
 Whenever you do an http request it is not just some data that is sent. Along with the request a bunch of so-called headers are sent along with it. HTTP headers allow the client and the server to pass additional information with the request or the response. Also, in the response there are also headers (response header). These response headers usually tell you what kind of data is returned, if it is compressed, if the request was successful etc.
@@ -2361,127 +2409,7 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))
 <!--- (Removed because link is dead. Hopefully only temporarily  ) Check out the great documentation [here](http://axmat.github.io/lodash.lua/).  --->
 Check out the documentation [here](https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html).
 
-# Migrating from version 1.x.x
-As you can read in the change log below there are a couple of changes in 2.0 that will break older scripts.
-
-## The 'on={..}' section.
-The on-section needs the items to be grouped based on their type. Prior to 2.0 you had
-```Lua
-	on = {
-	  'myDevice',
-	  'anotherDevice'
-	}
-```
-In 2.x you have:
-```Lua
-	on = {
-	  devices = {
-		 'myDevice',
-		 'anotherDevice'
-	  }
-	}
-```
-The same for timer options, in 1.x.x:
-```Lua
-	on = {
-	  ['timer'] = 'every 10 minutes on mon,tue'
-	}
-```
-2.x:
-```Lua
-	on = {
-	  timer = {
-		 'every 10 minutes on mon,tue'
-	  }
-	}
-```
-Or when you have a combination, in 1.x.x
-```Lua
-	on = {
-		 'myDevice',
-		 ['timer'] = 'every 10 minutes on mon,tue'
-	  }
-	}
-
-```
-2.x:
-```Lua
-	on = {
-	  devices = {
-		 'myDevice'
-	  }
-	  timer = {
-		 'every 10 minutes on mon,tue'
-	  }
-	}
-
-```
-## Getting devices, groups, scenes etc.
-Prior to 2.x you did this to get a device:
-```Lua
-	domoticz.devices['myDevice']
-	domoticz.groups['myGroup']
-	domoticz.scenes['myScene']
-	domoticz.variables['myVariable']
-	domoticz.changedDevices['myDevices']
-	domoticz.changeVariables['myVariable']
-```
-Change that to:
-```Lua
-	domoticz.devices('myDevice') -- a function call
-	domoticz.groups('myGroup')
-	domoticz.scenes('myScene')
-	domoticz.variables('myVariable')
-	domoticz.changedDevices('myDevices')
-	domoticz.changeVariables('myVariable')
-```
-## Looping through the devices (and other dzVents collections), iterators
-Earlier you could do this:
-```Lua
-	for i, device in pairs(domoticz.devices) do
-	  domoticz.log(device.name)
-	end
-```
-In 2.x that is no longer possible. You now have to do this:
-```Lua
-	domoticz.devices().forEach(function(device)
-	  domoticz.log(device.name)
-	end)
-```
-The same applies for the other collections like groups, scenes, variables, changedDevices and changedVariables.
-Note that you can easily search for a device using iterators as well:
-```Lua
-	local myDevice = domoticz.devices().find(function(device)
-	  return device.name == 'deviceImLookingFor'
-	end)
-```
-For more information about these iterators see: [Looping through the collections: iterators](#Looping_through_the_collections:_iterators).
-
-## Timed commands
-Prior to 2.0, to turn a switch off after 10 seconds:
-```Lua
-	domoticz.devices['mySwitch'].switchOff().after_sec(10)
-```
-In 2.x:
-```Lua
-	domoticz.devices('mySwitch').switchOff().afterSec(10)
-```
-The same applies for for_min and with_min.
-
-## Device attributes
-Some device attributes are no longer formatted strings with units in there like WhToday. It is possible that you have some scripts that deal with strings instead of values.
-
-## Changed attributes
-In 1.x.x you had a changedAttributes collection on a device. That is no longer there. Just remove it and just check for the device to be changed instead.
-
-## Using rawData
-Prior to 2.x you likely used the rawData attribute to get to certain device values. With 2.x this is likely not needed anymore. Check the various device types above and check if there isn't a named attribute for you device type. dzVents 2.x uses so called device adapters which should take care of interpreting raw values and put them in named attributes for you. If you miss your device you can file a ticket or create an adapter yourself. See ![Create your own device adapter](#Create_your_own_device_adapter).
-
-## What happened to fetch http data?
-In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy.
-On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and/or `::1` and you're good to go.
-
 # History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
 
-## [3.0.16]
-- Add except as keyword in timeRules
+## [3.0.17]
+- Add timestampTodate, dateToTimestamp and date2date functions in Time
