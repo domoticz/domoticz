@@ -1101,28 +1101,29 @@ define(['app', 'livesocket'], function (app) {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editcustomsensordevice #devicename"), 2, 100);
 				bValid = bValid && checkLength($("#dialog-editcustomsensordevice #sensoraxis"), 1, 100);
-				if (bValid) {
-					$(this).dialog("close");
-					var soptions = $.sensorType + ";" + encodeURIComponent($("#dialog-editcustomsensordevice #sensoraxis").val());
-					var cval = $('#dialog-editcustomsensordevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData[cval].value;
-
-					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
-						'&name=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicename").val()) +
-						'&description=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicedescription").val()) +
-						'&switchtype=0' +
-						'&customimage=' + CustomImage +
-						'&devoptions=' + encodeURIComponent(soptions) +
-						'&used=true',
-						async: false,
-						dataType: 'json',
-						success: function (data) {
-							ShowUtilities();
-						}
-					});
-
+				if (!bValid) {
+					bootbox.alert($.t('Please provide a Name and Axis label!'));
+					return;
 				}
+				$(this).dialog("close");
+				var soptions = $.sensorType + ";" + encodeURIComponent($("#dialog-editcustomsensordevice #sensoraxis").val());
+				var cval = $('#dialog-editcustomsensordevice #combosensoricon').data('ddslick').selectedIndex;
+				var CustomImage = $.ddData[cval].value;
+
+				$.ajax({
+					url: "json.htm?type=setused&idx=" + $.devIdx +
+					'&name=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicename").val()) +
+					'&description=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicedescription").val()) +
+					'&switchtype=0' +
+					'&customimage=' + CustomImage +
+					'&devoptions=' + encodeURIComponent(soptions) +
+					'&used=true',
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						ShowUtilities();
+					}
+				});
 			};
 			dialog_editcustomsensordevice_buttons[$.t("Remove Device")] = function () {
 				$(this).dialog("close");
