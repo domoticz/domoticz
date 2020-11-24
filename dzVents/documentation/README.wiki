@@ -1,6 +1,6 @@
 '''Note''': This document is maintained on [https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md github], and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article’s [https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting Discussion page]. Editing can be done by any editor but if you are looking for a specialized markDown editor; [https://stackedit.io/app# stackedit.io] would be a good choice.
 
-Documentation for dzVents 2.4.0 - 2.5.7 (Domoticz v4.11652) can be found [here] (https://github.com/domoticz/domoticz/blob/a0a6069e40744df222e889474032439476b7ecfb/dzVents/documentation/README.md).
+Documentation for dzVents 2.4.0 - 2.5.7 (Domoticz v4.11652) can be found [https://github.com/domoticz/domoticz/blob/a0a6069e40744df222e889474032439476b7ecfb/dzVents/documentation/README.md here].
 
 Documentation for dzVents 2.3.0 (Domoticz v3.8153) can be found [https://github.com/domoticz/domoticz/blob/2f6ba5c5a8978a010d6867228ad84eab762c5936/dzVents/documentation/README.md here].
 
@@ -1511,7 +1511,11 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 ** '''hours''': Total difference in whole hours.
 ** '''days''': Total difference in whole days.
 ** '''compare''': 0 = both are equal, 1 = ''time'' is in the future, -1 = ''time'' is in the past.
-* '''dateToDate( dateString, sourceFormat, targetFormat[ , offSet] )''':<sup>3.0.17</sup> ''Function'': Returns a reformatted datestring. dateString is a formatted date and source- and targetFormat are representations of the dateString elements and their locations in the string (see examples in dateToTimestamp) . Offset is a number (default = 0 )
+* '''dateToDate( dateString, sourceFormat, targetFormat[ , offSet] )''':<sup>3.0.17</sup> ''Function'': Returns a reformatted datestring. dateString is a formatted date and source- and targetFormat are representations of the dateString elements and their locations in the string (see examples in dateToTimestamp) . Offset is a number (default = 0 ) assert.is_same(‘Fri Friday 31 December 23:31:06’, Time( os.time()).dateToDate(‘31/12/2021 23:31:05’,‘dd/mm/yyyy hh:MM:ss’, ‘ddd dddd dd mmmm hh:MM:ss’, 1 )) assert.is_same(‘Thu Thursday 30 Dec 23:31:02’, Time( os.time()).dateToDate(‘31/12/2021 23:31:05’,‘dd/mm/yyyy hh:MM:ss’, ‘ddd dddd dd mmm hh:MM:ss’, -3600 * 24 - 3 ))
+
+<source lang="lua">        -- examples:
+        domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'dddd dd mmmm hh:MM:ss',  1 )             -- > 'Friday 31 December 23:31:06'
+        domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'ddd dd mmm hh:MM:ss',  -3600 * 24 - 3 )) -- > 'Thu 30 Dec 23:31:02'</source>
 * '''dateToTimestamp([ dateString [,control] ] )''': ''Function'': Returns ''Number'' representing time since epoch in seconds. dateString is a formatted date and control is a representation of the dateString elements and their location in the string. Default control is ‘yyyy-mm-dd hh:MM’. recognized controls are either a Lua pattern string or a string containing following codes:
 
 <source lang="lua">        dddd -- full weekdayname(e.g. Wednesday) language depends on locale
@@ -1571,7 +1575,12 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 * '''sunriseInMinutes''': ''Number''. Minutes from midnight until sunrise.
 * '''solarnoonInMinutes''': ''Number''. <sup>3.0.11</sup> Minutes from midnight until solarnoon.
 * '''time''': ''String''. Returns the time part of the raw data as HH:MM
-* '''timestamp2Date([ [ timestamp ] , [ pattern ] ,[ offSet ] )''': ''function''. Returns a datestring. timestamp is number of seconds since epoch (default = now) , pattern is a string as explained in this wiki at the description of the domoticz.time.date2Timestamp function (default = ‘yyyy-mm-dd hh:MM:ss’). Offset is a number (default = 0 )
+* '''timestampToDate([ [ timestamp ] , [ pattern ] ,[ offSet ] )''': ''function''. Returns a datestring. timestamp is number of seconds since epoch (default = now) , pattern is a string as explained in this wiki at the description of the domoticz.time.date2Timestamp function (default = ‘yyyy-mm-dd hh:MM:ss’). Offset is a number (default = 0 )
+
+<source lang="lua">        -- examples:
+        domoticz.time.timestampToDate(10,'date time')                               --> '01/01/70 01:00:10'
+        domoticz.time.timestampToDate(60,'ddd mm mmm yyyy ii:MM mer','date time')   --> 'Thu 01 Jan 1970 01:01 AM''
+        domoticz.time.timestampToDate(1598077445,'dd/mm/yy ii:MM mer nZero')        --> '22/08/20 8:24 AM'</source>
 * '''toUTC(string | table,[offset])''': ''domoticz time object''. <sup>3.0.9</sup> returns domoticz time object based on first parameter (time as table or string) string format must be ‘yyyy-mm-dd hh:mm:ss’. offset defaults to 0.
 * '''utcSystemTime''': ''Table''. UTC system time (only when in UTC mode):
 ** '''day''': ''Number''
