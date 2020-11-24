@@ -608,7 +608,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		$rootScope.GetItemBackgroundStatus = function (item) {
 			// generate protected/timeout/lowbattery status
 			var backgroundClass = "statusNormal";
-			if (item.HaveTimeout == true) {
+			if (item.HardwareDisabled == true) {
+				backgroundClass = "statusDisabled";
+			}
+			else if (item.HaveTimeout == true) {
 				backgroundClass = "statusTimeout";
 			}
 			else {

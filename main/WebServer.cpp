@@ -9069,11 +9069,13 @@ namespace http {
 					}
 					int hardwareID = atoi(sd[14].c_str());
 					auto hItt = _hardwareNames.find(hardwareID);
+					bool bIsHardwareDisabled = true;
 					if (hItt != _hardwareNames.end())
 					{
 						//ignore sensors where the hardware is disabled
 						if ((!bDisplayDisabled) && (!(*hItt).second.Enabled))
 							continue;
+						bIsHardwareDisabled = !(*hItt).second.Enabled;
 					}
 
 					unsigned int dType = atoi(sd[5].c_str());
@@ -9300,6 +9302,8 @@ namespace http {
 						root["result"][ii]["HardwareTypeVal"] = _hardwareNames[hardwareID].HardwareTypeVal;
 						root["result"][ii]["HardwareType"] = _hardwareNames[hardwareID].HardwareType;
 					}
+					root["result"][ii]["HardwareDisabled"] = bIsHardwareDisabled;
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Protected"] = (iProtected != 0);
 

@@ -761,7 +761,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 
 				var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-				obj.removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+				obj.removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery').removeClass('statusDisabled');
 				obj.addClass(backgroundClass);
 
 				var img1 = "";
