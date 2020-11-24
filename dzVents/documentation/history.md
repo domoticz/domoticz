@@ -1,5 +1,8 @@
 # [3.0]
 
+  [3.0.17]
+- Add timestampTodate, dateToTimestamp and date2date functions in Time
+
   [3.0.16]
 - Add except as keyword in timeRules
 
