@@ -2769,6 +2769,18 @@ bool CSQLHelper::OpenDatabase()
 	}
 	UpdatePreferencesVar("DB_Version", DB_VERSION);
 
+	//Check preferences table for extreme sized sValues
+	result = safe_query("SELECT Key FROM Preferences WHERE LENGTH(sValue) > 1000");
+	if (!result.empty())
+	{
+		for (const auto &sd : result)
+		{
+			_log.Log(LOG_ERROR, "Preferences: sValue of Key %s has an extreme size. Please report on the forum", sd[0].c_str() );
+		}
+		_log.Log(LOG_STATUS, "Empty extreme sized sValue(s) in Preferences table to prevent future issues" );
+		safe_query("UPDATE Preferences SET sValue ='' WHERE LENGTH(sValue) > 1000");
+	}
+
 	//Make sure we have some default preferences
 	int nValue = 10;
 	std::string sValue;
@@ -3222,13 +3234,13 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("EmailEnabled", 1);
 	}
-	nValue = 4000;
+	nValue = 6000;
 	if (!GetPreferencesVar("MaxElectricPower", nValue))
 	{
 		UpdatePreferencesVar("MaxElectricPower", nValue);
 	}
 	if (nValue < 1)
-		nValue = 4000;
+		nValue = 6000;
 	m_max_kwh_usage = nValue;
 
 	//Start background thread
