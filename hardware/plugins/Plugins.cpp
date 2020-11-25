@@ -1781,6 +1781,10 @@ Error:
 			if (m_ImageDict) Py_XDECREF(m_ImageDict);
 			if (m_SettingsDict) Py_XDECREF(m_SettingsDict);
 			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
+			// To release the GIL there must be a valid thread state so use
+			// the one created during start up of the plugin system because it will always exist
+			CPluginSystem pManager;
+			PyThreadState_Swap((PyThreadState *)pManager.PythonThread());
 			PyEval_ReleaseLock();
 		}
 		catch (std::exception *e)
