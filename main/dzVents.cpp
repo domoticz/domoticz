@@ -823,16 +823,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			luaTable.AddString("_state", sitem.nValueWording);
 			luaTable.AddInteger("_nValue", sitem.nValue);
 			luaTable.AddInteger("hardwareID", sitem.hardwareID);
-
-			// Lux does not have it's own field yet.
-			if (sitem.devType == pTypeLux && sitem.subType == sTypeLux)
-			{
-				int lux = 0;
-				if (!strarray.empty())
-					lux = atoi(strarray[0].c_str());
-				luaTable.AddNumber("lux", lux);
-			}
-
 			if (sitem.devType == pTypeGeneral && sitem.subType == sTypeKwh)
 			{
 				long double value = 0.0f;
