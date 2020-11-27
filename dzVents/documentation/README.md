@@ -615,7 +615,7 @@ Keywords recognized are "at, between, every, except, in, on " ( except supported
 			'on -3/4,4/7-',				-- before 3/4 or after 4/7
 
 			'at 12:45-21:15 except at 18:00-18:30',	-- between 12:45 and 21:15 but not between 18:00 and 18:30 ( except supported from 3.0.16 onwards )
-			'at daytime except on sun',				-- between sunrise and sunset but not on Sundays 
+			'at daytime except on sun',				-- between sunrise and sunset but not on Sundays
 
 			-- or if you want to go really wild and combine them:
 				'at nighttime at 21:32-05:44 every 5 minutes on sat, sun except at 04:00', -- except supported from 3.0.16 onwards
@@ -700,8 +700,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
 	- **isDayTime**: *Boolean*
 	- **isNightTime**: *Boolean*
-	- **isCivilDayTime**: *Boolean*. 
-	- **isCivilNightTime**: *Boolean*. 
+	- **isCivilDayTime**: *Boolean*.
+	- **isCivilNightTime**: *Boolean*.
 	- **isToday**: *Boolean*. Indicates if the device was updated today
 	- **sunriseInMinutes**: *Number*. Number of minutes since midnight when the sun will rise.
 	- **sunsetInMinutes**: *Number*. Number of minutes since midnight when the sun will set.
@@ -927,7 +927,7 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **timedOut**: *Boolean*. Is true when the device couldn't be reached.
  - **unit**: *Number*. Device unit. See device list in Domoticz' settings for the unit.
  - **update(< params >)**: *Function*. Generic update method. Accepts any number of parameters that will be sent back to Domoticz. There is no need to pass the device.id here. It will be passed for you. Example to update a temperature: `device.update(0,12)`. This will eventually result in a commandArray entry `['UpdateDevice']='<idx>|0|12'`. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- 
+
 ### Device attributes and methods for specific devices
 Note that if you do not find your specific device type here you can always inspect what is in the `rawData` attribute. Please let us know that it is missing so we can write an adapter for it (or you can write your own and submit it). Calling `myDevice.dump()` will dump all attributes and values for myDevice to the Domoticz log.
 
@@ -984,7 +984,7 @@ Note that if you do not find your specific device type here you can always inspe
  - **untilDate**: *string in ISO 8601 format* or n/a .
  - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
-#### Evohome (controller) 
+#### Evohome (controller)
  - **mode**: *string* <sup>3.0.0</sup>.
  - **setMode(mode, dparm, action, ooc )**: *Function*. set mode for controller. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_AUTOWITHRESET, domoticz.EVOHOME_MODE_AUTOWITHECO, domoticz.EVOHOME_MODE_AWAY, domoticz.EVOHOME_MODE_DAYOFF, domoticz.EVOHOME_MODE_CUSTOM or domoticz.EVOHOME_MODE_HEATINGOFF. dParm <optional> can be a future time string (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`), a future time object, a future time as number of seconds since epoch or a number representing a positive offset in minutes (max 1 year). action <optional> (1 = run on action script, 0 = disable), ooc <optional> (1 = only trigger the event & log on change, 0 = always trigger & log)
 
@@ -1234,10 +1234,10 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **direction**: *Number*. Degrees.
  - **directionString**: *String*. Formatted wind direction like N, SE.
  - **gust**: *Number*. ( in meters / second, might change in future releases to Meters/Counters settings for Wind Meter )
- - **gustMs**: *Number*. Gust ( in meters / second ) 
+ - **gustMs**: *Number*. Gust ( in meters / second )
  - **temperature**: *Number*
  - **speed**: *Number*. Windspeed ( in the unit set in Meters/Counters settings for Wind Meter )
- - **speedMs**: *Number*. Windspeed ( in meters / second ) 
+ - **speedMs**: *Number*. Windspeed ( in meters / second )
  - **updateWind(bearing, direction, speed, gust, temperature, chill)**: *Function*. Bearing in degrees, direction in N, S, NNW etc, speed in m/s, gust in m/s, temperature and chill in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Youless meter
@@ -1540,7 +1540,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 		mmm  -- abbreviated monthname(e.g. Sep) language depends on locale
 		mm   -- month [01-12]
 		yyyy -- 4 digit year
-		yy   -- 2 digit year 
+		yy   -- 2 digit year
 		hh   -- hour 24-hour clock
 		ii   -- hour 12-hour clock
 		MM   -- minute
@@ -1576,7 +1576,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **millisecondsAgo**: *Number*. Number of milliseconds since the last update.
  - **minutes**: *Number*
  - **minutesAgo**: *Number*. Number of minutes since the last update.
- - **minutesSinceMidnight**: *Number* 
+ - **minutesSinceMidnight**: *Number*
  - **month**: *Number*
  - **monthAbbrName**: String. jan, feb, mar, etc
  - **monthName**: *String*.  January, February, etc
@@ -1599,7 +1599,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
         domoticz.time.timestampToDate(60,'ddd mm mmm yyyy ii:MM mer','date time')   --> 'Thu 01 Jan 1970 01:01 AM''
         domoticz.time.timestampToDate(1598077445,'dd/mm/yy ii:MM mer nZero')        --> '22/08/20 8:24 AM'
 ```
- 
+
  - **toUTC(string | table,[offset])**: *domoticz time object*. <sup>3.0.9</sup> returns domoticz time object based on first parameter (time as table or string) string format must be 'yyyy-mm-dd hh:mm:ss'. offset defaults to 0.
  - **utcSystemTime**: *Table*. UTC system time (only when in UTC mode):
 	- **day**: *Number*
@@ -2096,7 +2096,7 @@ For every script file that defines persisted variables (using the `data={ … }`
 
 	domoticz/
 		scripts/
- 			dzVents/
+			dzVents/
 				data/
 					__data_yourscript1.lua
 					__data_yourscript2.lua
@@ -2352,7 +2352,7 @@ Settings for dzVents are found in the Domoticz GUI: **Setup > Settings > Other >
 	- *Errors*,
 	- *Errors + minimal execution info*: Errors and some minimal information about which script is being executed and why,
 	- *Errors + minimal execution info + generic info*. Even more information about script execution and a bit more log formatting.
-	- *Debug*. Shows everything and dzVents will create a file `domoticzData.lua` in the dzVents folder. This is a dump of all the data received by dzVents from Domoticz.. These data are used to create the entire dzVents data structure.
+	- *Debug*. Shows everything and dzVents will create the files `domoticzData.lua` and `module.log` in the scripts/dzVents folder. `domoticzData.lua` is a dump of all the data received by dzVents from Domoticz and `module.log` is a summary of the execution time and CPU usage of the user scripts active during the debug period.
 	- *No logging*. As silent as possible.
 
 # Troubleshooting
@@ -2367,9 +2367,22 @@ Make sure the active section in your script is set to `true`:  `active = true`. 
 ### Turn on debug logging
 Activate debug logging in the settings (see above). This will produce a lot of extra messages in the Domoticz log (don't forget to turn it off when you are done troubleshooting!). It is best to monitor the log through the command line, as the log in the browser sometimes tends to not always show all log messages. See the Domoticz manual for how to do that.
 
-When debug logging is enabled, every time dzVents kicks into action (Domoticz throws an event) it will log it, and it will create a file `/path/to/domoticz/scripts/dzVents/domoticzData.lua` with a dump of the data sent to dzVents. These data lie at the core of the dzVents object model. You can open this file in an editor to see if your device/variable/scene/group/hardware is in there. Note that the data in the file are not exactly the same as what you will get when you interact with dzVents, but it is a good start. If your object is not in the data file, then you will not have access to it in dzVents and dzVents will not be able to match triggers with that object. Something's wrong if you expect your object to be in there but it is not (is the object active/used?).
+When debug logging is enabled, every time dzVents kicks into action (Domoticz throws an event) it will log it, and it will create the files `domoticzData.lua` and `module.log` in `/path/to/domoticz/scripts/dzVents`. `domoticzData.lua` is a dump of all the data received by dzVents from Domoticz. This data lie at the core of the dzVents object model. You can open this file in an editor to see if your device/variable/scene/group/hardware is in there. Note that the data in the file are not exactly the same as what you will get when you interact with dzVents, but it is a good start. If your object is not in the data file, then you will not have access to it in dzVents and dzVents will not be able to match triggers with that object. Something's wrong if you expect your object to be in there but it is not (is the object active/used?).
+`module.log` is a summary of the execution time and CPU usage of the user scripts active during the debug period.with a dump of the data sent to dzVents.
 
-Every time Domoticz starts dzVents and debug logging is enabled you should see these lines:
+Example content of `module.log`
+```
+	Startdate time    - End date time     (clk - CPU  )                 module / scriptname << type: "trigger"
+	---------------------------------------------------------------------------------------------------------------
+	11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0029)                            waqi.lua << timer: "every 20 minutes"
+	11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0016)                          Washer.lua << timer: "every 5 minutes"
+	11/27/20 18:40:01 - 11/27/20 18:40:01 (00 - 0.0215)          getWaterFromHomewizard.lua << HTTPResponse: "WaterfromHomewizard"
+	11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.2472)            updateWeatherSensors.lua << HTTPResponse: "WUS_buienradarResponse"
+	11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.0290)                            waqi.lua << HTTPResponse: "waqi_nearby"
+	11/27/20 18:41:00 - 11/27/20 18:41:00 (00 - 0.0583)               Bathroom humidity.lua << timer: "every minute between 05:15 and 23:30"
+```
+
+Every time Domoticz starts dzVents and debug logging is enabled you should see these lines in the domoticz log:
 ```
 dzVents version: x.y.z
 Event trigger type: aaaa

@@ -449,6 +449,19 @@ local function EventHelpers(domoticz, mainMethod)
 				utils.log('------ Finished ' .. moduleLabel , utils.LOG_MODULE_EXEC_INFO)
 			end
 
+			if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMODE ) then
+				local moduleSummary = globalvariables.script_path  .. 'module.log'
+				utils.log('Debug: Writing module summary to ' .. moduleSummary ,utils.LOG_FORCE)
+
+				local f = io.open(moduleSummary, 'a' )
+				f:write(
+					os.date('%x %X - ',timeStampAtStart) .. os.date('%x %X ') .. '(' ..
+					string.format('%02d', realTimeSpend) .. ' - ' .. string.format('%.4f',clockTimeSpend) ..
+					') ' .. string.format('%35s',moduleLabel) .. ' <<' .. moduleLabelInfo ..
+					( eventHandler.trigger and ( ' timer: "' .. eventHandler.trigger .. '"' ) or '') ,'\n')
+				f:close()
+			end
+
 			restoreLogging()
 		end
 	end

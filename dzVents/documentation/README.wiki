@@ -592,7 +592,7 @@ There are several options for time triggers. It is important to know that Domoti
             'on -3/4,4/7-',             -- before 3/4 or after 4/7
 
             'at 12:45-21:15 except at 18:00-18:30', -- between 12:45 and 21:15 but not between 18:00 and 18:30 ( except supported from 3.0.16 onwards )
-            'at daytime except on sun',             -- between sunrise and sunset but not on Sundays 
+            'at daytime except on sun',             -- between sunrise and sunset but not on Sundays
 
             -- or if you want to go really wild and combine them:
                 'at nighttime at 21:32-05:44 every 5 minutes on sat, sun except at 04:00', -- except supported from 3.0.16 onwards
@@ -1525,7 +1525,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
         mmm  -- abbreviated monthname(e.g. Sep) language depends on locale
         mm   -- month [01-12]
         yyyy -- 4 digit year
-        yy   -- 2 digit year 
+        yy   -- 2 digit year
         hh   -- hour 24-hour clock
         ii   -- hour 12-hour clock
         MM   -- minute
@@ -2296,7 +2296,7 @@ Settings for dzVents are found in the Domoticz GUI: '''Setup &gt; Settings &gt; 
 ** ''Errors'',
 ** ''Errors + minimal execution info'': Errors and some minimal information about which script is being executed and why,
 ** ''Errors + minimal execution info + generic info''. Even more information about script execution and a bit more log formatting.
-** ''Debug''. Shows everything and dzVents will create a file <code>domoticzData.lua</code> in the dzVents folder. This is a dump of all the data received by dzVents from Domoticz.. These data are used to create the entire dzVents data structure.
+** ''Debug''. Shows everything and dzVents will create the files <code>domoticzData.lua</code> and <code>module.log</code> in the scripts/dzVents folder. <code>domoticzData.lua</code> is a dump of all the data received by dzVents from Domoticz and <code>module.log</code> is a summary of the execution time and CPU usage of the user scripts active during the debug period.
 ** ''No logging''. As silent as possible.
 
 = Troubleshooting =
@@ -2315,9 +2315,19 @@ Make sure the active section in your script is set to <code>true</code>: <code>a
 
 Activate debug logging in the settings (see above). This will produce a lot of extra messages in the Domoticz log (don’t forget to turn it off when you are done troubleshooting!). It is best to monitor the log through the command line, as the log in the browser sometimes tends to not always show all log messages. See the Domoticz manual for how to do that.
 
-When debug logging is enabled, every time dzVents kicks into action (Domoticz throws an event) it will log it, and it will create a file <code>/path/to/domoticz/scripts/dzVents/domoticzData.lua</code> with a dump of the data sent to dzVents. These data lie at the core of the dzVents object model. You can open this file in an editor to see if your device/variable/scene/group/hardware is in there. Note that the data in the file are not exactly the same as what you will get when you interact with dzVents, but it is a good start. If your object is not in the data file, then you will not have access to it in dzVents and dzVents will not be able to match triggers with that object. Something’s wrong if you expect your object to be in there but it is not (is the object active/used?).
+When debug logging is enabled, every time dzVents kicks into action (Domoticz throws an event) it will log it, and it will create the files <code>domoticzData.lua</code> and <code>module.log</code> in <code>/path/to/domoticz/scripts/dzVents</code>. <code>domoticzData.lua</code> is a dump of all the data received by dzVents from Domoticz. This data lie at the core of the dzVents object model. You can open this file in an editor to see if your device/variable/scene/group/hardware is in there. Note that the data in the file are not exactly the same as what you will get when you interact with dzVents, but it is a good start. If your object is not in the data file, then you will not have access to it in dzVents and dzVents will not be able to match triggers with that object. Something’s wrong if you expect your object to be in there but it is not (is the object active/used?). <code>module.log</code> is a summary of the execution time and CPU usage of the user scripts active during the debug period.with a dump of the data sent to dzVents.
 
-Every time Domoticz starts dzVents and debug logging is enabled you should see these lines:
+Example content of <code>module.log</code>
+
+<pre>    Startdate time    - End date time     (clk - CPU  )                 module / scriptname &lt;&lt; type: &quot;trigger&quot;
+    ---------------------------------------------------------------------------------------------------------------
+    11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0029)                            waqi.lua &lt;&lt; timer: &quot;every 20 minutes&quot;
+    11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0016)                          Washer.lua &lt;&lt; timer: &quot;every 5 minutes&quot;
+    11/27/20 18:40:01 - 11/27/20 18:40:01 (00 - 0.0215)          getWaterFromHomewizard.lua &lt;&lt; HTTPResponse: &quot;WaterfromHomewizard&quot;
+    11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.2472)            updateWeatherSensors.lua &lt;&lt; HTTPResponse: &quot;WUS_buienradarResponse&quot;
+    11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.0290)                            waqi.lua &lt;&lt; HTTPResponse: &quot;waqi_nearby&quot;
+    11/27/20 18:41:00 - 11/27/20 18:41:00 (00 - 0.0583)               Bathroom humidity.lua &lt;&lt; timer: &quot;every minute between 05:15 and 23:30&quot;</pre>
+Every time Domoticz starts dzVents and debug logging is enabled you should see these lines in the domoticz log:
 
 <pre>dzVents version: x.y.z
 Event trigger type: aaaa</pre>
