@@ -108,7 +108,8 @@ namespace http {
 #ifdef WWW_ENABLE_SSL
 				status_ = WAITING_HANDSHAKE;
 				// with ssl, we first need to complete the handshake before reading
-				sslsocket_->async_handshake(boost::asio::ssl::stream_base::server, [this](const boost::system::error_code &err) { shared_from_this()->handle_handshake(err); });
+				auto self = shared_from_this();
+				sslsocket_->async_handshake(boost::asio::ssl::stream_base::server, [this, self](const boost::system::error_code &err) { handle_handshake(err); });
 #endif
 			}
 			else {
@@ -199,15 +200,16 @@ namespace http {
 			// set timeout timer
 			reset_read_timeout();
 
+			auto self = shared_from_this();
 			if (secure_) {
 #ifdef WWW_ENABLE_SSL
 				// Perform secure read
-				sslsocket_->async_read_some(buf, [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handle_read(err, bytes); });
+				sslsocket_->async_read_some(buf, [this, self](const boost::system::error_code &err, size_t bytes) { handle_read(err, bytes); });
 #endif
 			}
 			else {
 				// Perform plain read
-				socket_->async_read_some(buf, [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handle_read(err, bytes); });
+				socket_->async_read_some(buf, [this, self](const boost::system::error_code &err, size_t bytes) { handle_read(err, bytes); });
 			}
 		}
 
@@ -219,15 +221,15 @@ namespace http {
 			}
 			write_in_progress = true;
 			write_buffer = buf;
+			auto self = shared_from_this();
 			if (secure_) {
 #ifdef WWW_ENABLE_SSL
 				boost::asio::async_write(*sslsocket_, boost::asio::buffer(write_buffer),
-							 [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handle_write(err, bytes); });
+							 [this, self](const boost::system::error_code &err, size_t bytes) { handle_write(err, bytes); });
 #endif
 			}
 			else {
-				boost::asio::async_write(*socket_, boost::asio::buffer(write_buffer),
-							 [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handle_write(err, bytes); });
+				boost::asio::async_write(*socket_, boost::asio::buffer(write_buffer), [this, self](const boost::system::error_code &err, size_t bytes) { handle_write(err, bytes); });
 			}
 
 		}
@@ -275,15 +277,16 @@ namespace http {
 					//Error reading file!
 					return;
 				};
+				auto self = shared_from_this();
 				if (secure_) {
 #ifdef WWW_ENABLE_SSL
 					boost::asio::async_write(*sslsocket_, boost::asio::buffer(send_buffer_, bread),
-								 [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handle_write_file(err, bytes); });
+								 [this, self](const boost::system::error_code &err, size_t bytes) { handle_write_file(err, bytes); });
 #endif
 				}
 				else {
 					boost::asio::async_write(*socket_, boost::asio::buffer(send_buffer_, bread),
-								 [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handle_write_file(err, bytes); });
+								 [this, self](const boost::system::error_code &err, size_t bytes) { handle_write_file(err, bytes); });
 				}
 				return;
 			}
@@ -341,15 +344,16 @@ namespace http {
 			std::string headers = rep.to_string("GET");
 			write_buffer = headers;
 
+			auto self = shared_from_this();
 			if (secure_) {
 #ifdef WWW_ENABLE_SSL
 				boost::asio::async_write(*sslsocket_, boost::asio::buffer(write_buffer),
-							 [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handle_write_file(err, bytes); });
+							 [this, self](const boost::system::error_code &err, size_t bytes) { handle_write_file(err, bytes); });
 #endif
 			}
 			else {
 				boost::asio::async_write(*socket_, boost::asio::buffer(write_buffer),
-							 [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handle_write_file(err, bytes); });
+							 [this, self](const boost::system::error_code &err, size_t bytes) { handle_write_file(err, bytes); });
 			}
 			return true;
 		}
@@ -561,7 +565,8 @@ This does not seem to print the correct request
 		// schedule read timeout timer
 		void connection::set_read_timeout() {
 			read_timer_.expires_from_now(boost::posix_time::seconds(read_timeout_));
-			read_timer_.async_wait([this](const boost::system::error_code &err) { shared_from_this()->handle_read_timeout(err); });
+			auto self = shared_from_this();
+			read_timer_.async_wait([this, self](const boost::system::error_code &err) { handle_read_timeout(err); });
 		}
 
 		/// simply cancel read timeout timer
@@ -604,7 +609,8 @@ This does not seem to print the correct request
 		/// schedule abandoned timeout timer
 		void connection::set_abandoned_timeout() {
 			abandoned_timer_.expires_from_now(boost::posix_time::seconds(default_abandoned_timeout_));
-			abandoned_timer_.async_wait([this](const boost::system::error_code &err) { shared_from_this()->handle_abandoned_timeout(err); });
+			auto self = shared_from_this();
+			abandoned_timer_.async_wait([this, self](const boost::system::error_code &err) { handle_abandoned_timeout(err); });
 		}
 
 		/// simply cancel abandoned timeout timer

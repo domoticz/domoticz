@@ -596,8 +596,8 @@ void CKodiNode::handleConnect()
 					m_CurrentStatus.Status(MSTAT_ON);
 					UpdateStatus();
 				}
-				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-							  [this, ec](boost::system::error_code, size_t bytes) { shared_from_this()->handleRead(ec, bytes); });
+				auto self = shared_from_this();
+				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this, ec, self](boost::system::error_code, size_t bytes) { handleRead(ec, bytes); });
 				handleWrite(std::string(R"({"jsonrpc":"2.0","method":"System.GetProperties","params":{"properties":["canhibernate","cansuspend","canshutdown"]},"id":1007})"));
 			}
 			else
@@ -657,8 +657,11 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 
 		//ready for next read
 		if (!IsStopRequested(0) && m_Socket)
+		{
+			auto self = shared_from_this();
 			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-						  [this, &e, &bytes_transferred](const boost::system::error_code &, size_t) { shared_from_this()->handleRead(e, bytes_transferred); });
+						  [this, &e, &bytes_transferred, self](const boost::system::error_code &, size_t) { handleRead(e, bytes_transferred); });
+		}
 	}
 	else
 	{

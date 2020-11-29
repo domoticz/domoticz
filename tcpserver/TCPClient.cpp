@@ -28,7 +28,8 @@ CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase *pManager
 
 void CTCPClient::start()
 {
-	socket_->async_read_some(boost::asio::buffer(buffer_), [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handleRead(err, bytes); });
+	auto self = shared_from_this();
+	socket_->async_read_some(boost::asio::buffer(buffer_), [this, self](const boost::system::error_code &err, size_t bytes) { handleRead(err, bytes); });
 }
 
 void CTCPClient::stop()
@@ -39,6 +40,7 @@ void CTCPClient::stop()
 void CTCPClient::handleRead(const boost::system::error_code& e,
 	std::size_t bytes_transferred)
 {
+	auto self = shared_from_this();
 	if (!e)
 	{
 		//do something with the data
@@ -54,13 +56,12 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 				StringSplit(recstr, ";", strarray);
 				if (strarray.size()==3)
 				{
-					m_bIsLoggedIn=pConnectionManager->HandleAuthentication(shared_from_this(), strarray[1] ,strarray[2]);
+					m_bIsLoggedIn = pConnectionManager->HandleAuthentication(self, strarray[1], strarray[2]);
 					if (!m_bIsLoggedIn)
 					{
 						//Wrong username/password
-						boost::asio::async_write(*socket_, boost::asio::buffer("NOAUTH", 6),
-									 [this](const boost::system::error_code &err, size_t) { shared_from_this()->handleWrite(err); });
-						pConnectionManager->stopClient(shared_from_this());
+						boost::asio::async_write(*socket_, boost::asio::buffer("NOAUTH", 6), [this, self](const boost::system::error_code &err, size_t) { handleWrite(err); });
+						pConnectionManager->stopClient(self);
 						return;
 					}
 					m_username=strarray[1];
@@ -73,11 +74,11 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 		}
 
 		//ready for next read
-		socket_->async_read_some(boost::asio::buffer(buffer_), [this](const boost::system::error_code &err, size_t bytes) { shared_from_this()->handleRead(err, bytes); });
+		socket_->async_read_some(boost::asio::buffer(buffer_), [this, self](const boost::system::error_code &err, size_t bytes) { handleRead(err, bytes); });
 	}
 	else if (e != boost::asio::error::operation_aborted)
 	{
-		pConnectionManager->stopClient(shared_from_this());
+		pConnectionManager->stopClient(self);
 	}
 }
 
@@ -85,7 +86,8 @@ void CTCPClient::write(const char *pData, size_t Length)
 {
 	if (!m_bIsLoggedIn)
 		return;
-	boost::asio::async_write(*socket_, boost::asio::buffer(pData, Length), [this](const boost::system::error_code &err, size_t) { shared_from_this()->handleWrite(err); });
+	auto self = shared_from_this();
+	boost::asio::async_write(*socket_, boost::asio::buffer(pData, Length), [this, self](const boost::system::error_code &err, size_t) { handleWrite(err); });
 }
 
 void CTCPClient::handleWrite(const boost::system::error_code& error)
