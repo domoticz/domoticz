@@ -8,14 +8,11 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #include <ctime>
-
-using namespace boost::placeholders;
 
 #ifdef _DEBUG
 //#define DEBUG_DAVIS
@@ -88,7 +85,7 @@ bool CDavisLoggerSerial::OpenSerialDevice()
 		return false;
 	}
 	m_bIsStarted = true;
-	setReadCallback(boost::bind(&CDavisLoggerSerial::readCallback, this, _1, _2));
+	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }

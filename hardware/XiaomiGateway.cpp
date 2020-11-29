@@ -12,7 +12,6 @@
 #include "XiaomiHardware.h"
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
 
 #ifndef WIN32
 #include <ifaddrs.h>
@@ -774,7 +773,7 @@ void XiaomiGateway::Do_Work()
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
 	boost::thread bt;
 	if (m_ListenPort9898) {
-		bt = boost::thread(boost::bind(&boost::asio::io_service::run, &io_service));
+		bt = boost::thread([&] { io_service.run(); });
 		SetThreadName(bt.native_handle(), "XiaomiGatewayIO");
 	}
 
@@ -897,7 +896,7 @@ void XiaomiGateway::xiaomi_udp_server::start_receive()
 {
 	//_log.Log(LOG_STATUS, "start_receive");
 	memset(&data_[0], 0, sizeof(data_));
-	socket_.async_receive_from(boost::asio::buffer(data_, max_length), remote_endpoint_, boost::bind(&xiaomi_udp_server::handle_receive, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+	socket_.async_receive_from(boost::asio::buffer(data_, max_length), remote_endpoint_, [this](const boost::system::error_code &err, size_t bytes) { handle_receive(err, bytes); });
 }
 
 void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error_code & error, std::size_t bytes_recvd)

@@ -13,15 +13,11 @@
 // And the TaloLogger:
 // http://zil.olammi.iki.fi/sw/taloLogger/howto.php
 
+#include <ctime>
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
-
-#include <ctime>
-
-using namespace boost::placeholders;
 
 #define Rego6XX_RETRY_DELAY 30
 #define Rego6XX_COMMAND_DELAY 5
@@ -308,7 +304,7 @@ bool CRego6XXSerial::OpenSerialDevice()
 		return false;
 	}
 	m_bIsStarted=true;
-	setReadCallback(boost::bind(&CRego6XXSerial::readCallback, this, _1, _2));
+	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }

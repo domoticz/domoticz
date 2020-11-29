@@ -5,8 +5,6 @@
 #include "../main/localtime_r.h"
 #include <boost/exception/diagnostic_information.hpp>
 
-using namespace boost::placeholders;
-
 CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname) :
 m_szSerialPort(devname)
 {
@@ -179,7 +177,7 @@ bool CRFLinkSerial::OpenSerialDevice()
 	m_rfbufferpos = 0;
 	m_LastReceivedTime = mytime(nullptr);
 
-	setReadCallback(boost::bind(&CRFLinkSerial::readCallback, this, _1, _2));
+	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
 	sOnConnected(this);
 
 	return true;
