@@ -13,15 +13,11 @@
 // And the TaloLogger:
 // http://zil.olammi.iki.fi/sw/taloLogger/howto.php
 
+#include <ctime>
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
-
-#include <ctime>
-
-using namespace boost::placeholders;
 
 #define Rego6XX_RETRY_DELAY 30
 #define Rego6XX_COMMAND_DELAY 5
@@ -138,7 +134,7 @@ bool CRego6XXSerial::StartHardware()
 	m_retrycntr=Rego6XX_RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CRego6XXSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -305,7 +301,7 @@ bool CRego6XXSerial::OpenSerialDevice()
 		return false;
 	}
 	m_bIsStarted=true;
-	setReadCallback(boost::bind(&CRego6XXSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }

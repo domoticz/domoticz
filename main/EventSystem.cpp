@@ -154,9 +154,9 @@ void CEventSystem::StartEventSystem()
 	Plugins::PythonEventsInitialize(szUserDataFolder);
 #endif
 
-	m_thread = std::make_shared<std::thread>(&CEventSystem::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadName(m_thread->native_handle(), "EventSystem");
-	m_eventqueuethread = std::make_shared<std::thread>(&CEventSystem::EventQueueThread, this);
+	m_eventqueuethread = std::make_shared<std::thread>([this] { EventQueueThread(); });
 	SetThreadName(m_eventqueuethread->native_handle(), "EventSystemQueue");
 	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
 }
@@ -3123,7 +3123,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 
-		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename));
+		boost::thread luaThread([this, lua_state, filename] { CEventSystem::luaThread(lua_state, filename); });
 		SetThreadName(luaThread.native_handle(), "luaThread");
 
 		if (!luaThread.timed_join(boost::posix_time::seconds(10)))

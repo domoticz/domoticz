@@ -14,8 +14,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-using namespace boost::placeholders;
-
 extern CFibaroPush m_fibaropush;
 
 CFibaroPush::CFibaroPush()
@@ -28,7 +26,7 @@ void CFibaroPush::Start()
 {
 	UpdateActive();
 	ReloadPushLinks(m_PushType);
-	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CFibaroPush::OnDeviceReceived, this, _1, _2, _3, _4));
+	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, const auto &name, auto rx) { OnDeviceReceived(id, idx, name, rx); });
 }
 
 void CFibaroPush::Stop()

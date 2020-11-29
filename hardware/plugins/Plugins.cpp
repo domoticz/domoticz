@@ -1176,7 +1176,7 @@ namespace Plugins
 			pModState->pPlugin = this;
 
 			// Start worker thread
-			m_thread = std::make_shared<std::thread>(&CPlugin::Do_Work, this);
+			m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 			std::string plugin_name = "Plugin_" + m_PluginKey;
 			SetThreadName(m_thread->native_handle(), plugin_name.c_str());
 

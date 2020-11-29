@@ -6,8 +6,6 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 
-using namespace boost::placeholders;
-
 #define ZiBlue_RETRY_DELAY 30
 
 CZiBlueSerial::CZiBlueSerial(const int ID, const std::string& devname) :
@@ -24,7 +22,7 @@ bool CZiBlueSerial::StartHardware()
 	m_retrycntr=ZiBlue_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CZiBlueSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -133,7 +131,7 @@ bool CZiBlueSerial::OpenSerialDevice()
 	m_rfbufferpos = 0;
 	m_LastReceivedTime = mytime(nullptr);
 
-	setReadCallback(boost::bind(&CZiBlueSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 
 	sOnConnected(this);
 

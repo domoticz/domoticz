@@ -8,13 +8,10 @@
 #include "../main/localtime_r.h"
 
 #include <algorithm>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 #include <iostream>
 #include <string>
-
-using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 #define OTGW_READ_INTERVAL 10
@@ -37,7 +34,7 @@ bool OTGWSerial::StartHardware()
 
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
-	m_thread = std::make_shared<std::thread>(&OTGWSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return true;
 }
@@ -98,7 +95,7 @@ bool OTGWSerial::OpenSerialDevice()
 	}
 	m_bIsStarted=true;
 	m_bufferpos=0;
-	setReadCallback(boost::bind(&OTGWSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	m_bRequestVersion = true;
 	return true;

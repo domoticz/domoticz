@@ -101,7 +101,7 @@ namespace http {
 			m_Push.Start();
 
 			//Start worker thread
-			m_thread = std::make_shared<std::thread>(&CWebsocketHandler::Do_Work, this);
+			m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 		}
 
 		void CWebsocketHandler::Stop()

@@ -9,15 +9,13 @@
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "hardwaretypes.h"
+#include <ctime>
 #include <string>
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include "../webserver/cWebem.h"
 #include <json/json.h>
-
-#include <ctime>
 
 #define round(a) ( int ) ( a + .5 )
 #define MAX_PAYLOAD_LENGTH 25 //https://www.mysensors.org/download/serial_api_20
@@ -279,9 +277,7 @@ void MySensorsBase::LoadDevicesFromDatabase()
 					mSensor.childID = atoi(sd2[0].c_str());
 					mSensor.presType = (_ePresentationType)atoi(sd2[1].c_str());
 					gID += std::count_if(mNode.m_childs.begin(), mNode.m_childs.end(),
-							     [&](const _tMySensorChild &child) {
-								     return (child.presType == mSensor.presType) && (child.groupID == gID);
-							     });
+							     [&](const _tMySensorChild &child) { return (child.presType == mSensor.presType) && (child.groupID == gID); });
 					mSensor.groupID = gID;
 					mSensor.childName = sd2[2];
 					mSensor.useAck = atoi(sd2[3].c_str()) != 0;
@@ -2320,7 +2316,7 @@ void MySensorsBase::SendTextSensorValue(const int nodeID, const int childID, con
 bool MySensorsBase::StartSendQueue()
 {
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&MySensorsBase::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadName(m_thread->native_handle(), "MySensorsBase");
 	return (m_thread != nullptr);
 }

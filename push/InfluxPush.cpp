@@ -15,8 +15,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-using namespace boost::placeholders;
-
 extern CInfluxPush m_influxpush;
 
 CInfluxPush::CInfluxPush()
@@ -34,10 +32,10 @@ bool CInfluxPush::Start()
 	UpdateSettings();
 	ReloadPushLinks(m_PushType);
 
-	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadName(m_thread->native_handle(), "InfluxPush");
 
-	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CInfluxPush::OnDeviceReceived, this, _1, _2, _3, _4));
+	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, const auto &name, auto rx) { OnDeviceReceived(id, idx, name, rx); });
 
 	return (m_thread != nullptr);
 }

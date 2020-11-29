@@ -19,12 +19,9 @@ License: Public domain
 
 #include <algorithm>
 #include <ctime>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <iostream>
 #include <string>
-
-using namespace boost::placeholders;
 
 COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate)
 {
@@ -43,7 +40,7 @@ bool COpenWebNetUSB::StartHardware()
 	m_retrycntr = RETRY_DELAY - 2; //will force reconnect first thing
 
 								   //Start worker thread
-	m_thread = std::make_shared<std::thread>(&COpenWebNetUSB::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -328,7 +325,7 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		return false;
 	}
 
-	setReadCallback(boost::bind(&COpenWebNetUSB::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	m_bIsStarted = true;
 

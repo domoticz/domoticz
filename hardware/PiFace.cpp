@@ -753,9 +753,9 @@ bool CPiFace::StartHardware()
 					GetAndSetInitialDeviceState(devId);
 			}
 
-			m_thread = std::make_shared<std::thread>(&CPiFace::Do_Work, this);
+			m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 			SetThreadNameInt(m_thread->native_handle());
-			m_queue_thread = std::make_shared<std::thread>(&CPiFace::Do_Work_Queue, this);
+			m_queue_thread = std::make_shared<std::thread>([this] { Do_Work_Queue(); });
 			SetThreadName(m_queue_thread->native_handle(), "PiFaceQueue");
 		}
 		else

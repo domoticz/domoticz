@@ -178,8 +178,6 @@
 #include <fstream>
 #endif
 
-using namespace boost::placeholders;
-
 #define round(a) ( int ) ( a + .5 )
 
 extern std::string szStartupFolder;
@@ -350,8 +348,8 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase* pHardware)
 	if (devidx != -1) //it is already there!, remove it
 		RemoveDomoticzHardware(m_hardwaredevices[devidx]);
 	std::lock_guard<std::mutex> l(m_devicemutex);
-	pHardware->sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4, _5));
-	pHardware->sOnConnected.connect(boost::bind(&MainWorker::OnHardwareConnected, this, _1));
+	pHardware->sDecodeRXMessage.connect([this](auto hw, auto rx, auto name, auto battery, auto userName) { DecodeRXMessage(hw, rx, name, battery, userName); });
+	pHardware->sOnConnected.connect([this](auto hw) { OnHardwareConnected(hw); });
 	m_hardwaredevices.push_back(pHardware);
 }
 
@@ -1188,15 +1186,15 @@ bool MainWorker::Start()
 	{
 		char szPort[100];
 		sprintf(szPort, "%d", rnvalue);
-		m_sharedserver.sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4, _5));
+		m_sharedserver.sDecodeRXMessage.connect([this](auto hw, auto rx, auto name, auto battery, auto userName) { DecodeRXMessage(hw, rx, name, battery, userName); });
 		m_sharedserver.StartServer("::", szPort);
 
 		LoadSharedUsers();
 	}
 
-	m_thread = std::make_shared<std::thread>(&MainWorker::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadName(m_thread->native_handle(), "MainWorker");
-	m_rxMessageThread = std::make_shared<std::thread>(&MainWorker::Do_Work_On_Rx_Messages, this);
+	m_rxMessageThread = std::make_shared<std::thread>([this] { Do_Work_On_Rx_Messages(); });
 	SetThreadName(m_rxMessageThread->native_handle(), "MainWorkerRxMsg");
 	return (m_thread != nullptr) && (m_rxMessageThread != nullptr);
 }

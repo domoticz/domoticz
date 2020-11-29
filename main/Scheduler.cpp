@@ -30,7 +30,7 @@ CScheduler::CScheduler()
 
 void CScheduler::StartScheduler()
 {
-	m_thread = std::make_shared<std::thread>(&CScheduler::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadName(m_thread->native_handle(), "Scheduler");
 }
 
