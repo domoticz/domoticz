@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
 #include <boost/smart_ptr/shared_array.hpp>  // for shared_array
@@ -121,12 +120,12 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
 	pimpl->io.reset();
 
     //This gives some work to the io_service before it is started
-    pimpl->io.post(boost::bind(&AsyncSerial::doRead, this));
+	pimpl->io.post([this] { return doRead(); });
 
-    boost::thread t(boost::bind(&boost::asio::io_service::run, &pimpl->io));
-    pimpl->backgroundThread.swap(t);
-    setErrorStatus(false);//If we get here, no error
-    pimpl->open=true; //Port is now open
+	boost::thread t([this] { pimpl->io.run(); });
+	pimpl->backgroundThread.swap(t);
+	setErrorStatus(false); // If we get here, no error
+	pimpl->open = true;    // Port is now open
 }
 
 void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rate,
@@ -153,9 +152,9 @@ void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rat
 	pimpl->io.reset();
 
 	//This gives some work to the io_service before it is started
-	pimpl->io.post(boost::bind(&AsyncSerial::doRead, this));
+	pimpl->io.post([this] { return doRead(); });
 
-	boost::thread t(boost::bind(&boost::asio::io_service::run, &pimpl->io));
+	boost::thread t([this] { pimpl->io.run(); });
 	pimpl->backgroundThread.swap(t);
 	setErrorStatus(false);//If we get here, no error
 	pimpl->open=true; //Port is now open
@@ -177,7 +176,7 @@ void AsyncSerial::close()
     if(!isOpen()) return;
 
     pimpl->open = false;
-    pimpl->io.post(boost::bind(&AsyncSerial::doClose, this));
+    pimpl->io.post([this] { doClose(); });
     pimpl->backgroundThread.join();
     pimpl->io.reset();
     if(errorStatus())
@@ -193,7 +192,7 @@ void AsyncSerial::write(const char *data, size_t size)
         std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
         pimpl->writeQueue.insert(pimpl->writeQueue.end(),data,data+size);
     }
-    pimpl->io.post(boost::bind(&AsyncSerial::doWrite, this));
+    pimpl->io.post([this] { doWrite(); });
 }
 
 void AsyncSerial::write(const std::string &data)
@@ -202,7 +201,7 @@ void AsyncSerial::write(const std::string &data)
 		std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
 		pimpl->writeQueue.insert(pimpl->writeQueue.end(), data.c_str(), data.c_str()+data.size());
 	}
-	pimpl->io.post(boost::bind(&AsyncSerial::doWrite, this));
+	pimpl->io.post([this] { doWrite(); });
 }
 
 void AsyncSerial::write(const std::vector<char>& data)
@@ -212,7 +211,7 @@ void AsyncSerial::write(const std::vector<char>& data)
         pimpl->writeQueue.insert(pimpl->writeQueue.end(),data.begin(),
                 data.end());
     }
-    pimpl->io.post(boost::bind(&AsyncSerial::doWrite, this));
+    pimpl->io.post([this] { doWrite(); });
 }
 
 void AsyncSerial::writeString(const std::string& s)
@@ -221,17 +220,13 @@ void AsyncSerial::writeString(const std::string& s)
         std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
         pimpl->writeQueue.insert(pimpl->writeQueue.end(),s.begin(),s.end());
     }
-    pimpl->io.post(boost::bind(&AsyncSerial::doWrite, this));
+    pimpl->io.post([this] { doWrite(); });
 }
 
 void AsyncSerial::doRead()
 {
 	if(isOpen()==false) return;
-    pimpl->port.async_read_some(boost::asio::buffer(pimpl->readBuffer,sizeof(pimpl->readBuffer)),
-            boost::bind(&AsyncSerial::readEnd,
-            this,
-            boost::asio::placeholders::error,
-            boost::asio::placeholders::bytes_transferred));
+	pimpl->port.async_read_some(boost::asio::buffer(pimpl->readBuffer, sizeof(pimpl->readBuffer)), [this](const boost::system::error_code &err, size_t bytes) { readEnd(err, bytes); });
 }
 
 void AsyncSerial::readEnd(const boost::system::error_code& error,
@@ -264,8 +259,7 @@ void AsyncSerial::doWrite()
 
 	    copy(pimpl->writeQueue.begin(), pimpl->writeQueue.end(), pimpl->writeBuffer.get());
 	    pimpl->writeQueue.clear();
-	    async_write(pimpl->port, boost::asio::buffer(pimpl->writeBuffer.get(), pimpl->writeBufferSize),
-			boost::bind(&AsyncSerial::writeEnd, this, boost::asio::placeholders::error));
+	    async_write(pimpl->port, boost::asio::buffer(pimpl->writeBuffer.get(), pimpl->writeBufferSize), [this](const boost::system::error_code &err, size_t) { writeEnd(err); });
     }
 }
 
@@ -286,9 +280,7 @@ void AsyncSerial::writeEnd(const boost::system::error_code& error)
         copy(pimpl->writeQueue.begin(),pimpl->writeQueue.end(),
                 pimpl->writeBuffer.get());
         pimpl->writeQueue.clear();
-        async_write(pimpl->port,boost::asio::buffer(pimpl->writeBuffer.get(),
-                pimpl->writeBufferSize),
-                boost::bind(&AsyncSerial::writeEnd, this, boost::asio::placeholders::error));
+	async_write(pimpl->port, boost::asio::buffer(pimpl->writeBuffer.get(), pimpl->writeBufferSize), [this](const boost::system::error_code &err, size_t) { writeEnd(err); });
     } else {
 		try
 		{

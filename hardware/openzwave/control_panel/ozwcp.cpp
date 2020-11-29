@@ -188,9 +188,9 @@ void MyNode::addValue(OpenZWave::ValueID id)
  */
 void MyNode::removeValue(OpenZWave::ValueID id)
 {
-	values.erase(std::remove_if(values.begin(), values.end(), [=](MyValue *value) { return value->id == id; }), values.end());
+	values.erase(std::remove_if(values.begin(), values.end(), [id](MyValue *value) { return value->id == id; }), values.end());
 
-	bool found = std::any_of(values.begin(), values.end(), [=](MyValue *value) { return value->id == id; });
+	bool found = std::any_of(values.begin(), values.end(), [id](MyValue *value) { return value->id == id; });
 	if (!found)
 	{
 #ifdef OZW_WRITE_LOG
@@ -293,7 +293,7 @@ void MyNode::updateGroup(uint8 node, uint8 grp, char* glist)
 #ifdef OZW_WRITE_LOG
 	Log::Write(LogLevel_Info, "updateGroup: node %d group %d\n", node, grp);
 #endif
-	auto it = std::find_if(groups.begin(), groups.end(), [=](MyGroup *group) { return group->groupid == grp; });
+	auto it = std::find_if(groups.begin(), groups.end(), [grp](MyGroup *group) { return group->groupid == grp; });
 	if (it == groups.end()) {
 #ifdef OZW_WRITE_LOG
 		Log::Write(LogLevel_Error, "updateGroup: node %d group %d not found\n", node, grp);
