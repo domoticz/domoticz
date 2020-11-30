@@ -26,7 +26,10 @@ define(function () {
                 } else if (device.Type === 'Scene' || device.Type === 'Group') {
                     image = device.isActive() ? 'push.png' : 'pushoff.png'
                 } else {
-                    image = device.TypeImg + '.png'
+                    if(device.CustomImage == 0)
+                        image = device.TypeImg + '.png'
+                    else
+                        image = device.Image + '48_On.png';
                 }
 
                 return 'images/' + image;

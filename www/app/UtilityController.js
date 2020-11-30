@@ -581,27 +581,48 @@ define(['app', 'livesocket'], function (app) {
 							if (typeof item.Counter != 'undefined') {
 								if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
 									if (item.SwitchTypeVal == 1) {
-										xhtm += '<img src="images/Gas48.png" height="48" width="48"></td>\n';
+										if(item.CustomImage == 0)
+											xhtm += '<img src="images/Gas48.png" height="48" width="48"></td>\n';
+										else
+											xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 									}
 									else if (item.SwitchTypeVal == 2) {
-										xhtm += '<img src="images/Water48_On.png" height="48" width="48"></td>\n';
+										if(item.Image)
+											xhtm += '<img src="images/Water48_On.png" height="48" width="48"></td>\n';
+										else
+											xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 									}
 									else if (item.SwitchTypeVal == 3) {
-										xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
+										if(item.CustomImage == 0)
+											xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
+										else
+											xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 									}
 									else if (item.SwitchTypeVal == 4) {
-										xhtm += '<img src="images/PV48.png" height="48" width="48"></td>\n';
+										if(item.CustomImage == 0)
+											xhtm += '<img src="images/PV48.png" height="48" width="48"></td>\n';
+										else
+											xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 									}
 									else {
-										xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
+										if(item.CustomImage == 0)
+											xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
+										else
+											xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 									}
 								}
 								else {
 									if (item.SubType == "Gas") {
-										xhtm += '<img src="images/Gas48.png" height="48" width="48"></td>\n';
+										if(item.CustomImage == 0)
+											xhtm += '<img src="images/Gas48.png" height="48" width="48"></td>\n';
+										else
+											xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 									}
 									else {
-										xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
+										if(item.CustomImage == 0)
+											xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
+										else
+											xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 									}
 								}
 								if (
@@ -616,15 +637,24 @@ define(['app', 'livesocket'], function (app) {
 								}
 							}
 							else if (item.Type == "Current") {
-								xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
+								if(item.CustomImage == 0)
+									xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
+								else
+									xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 								if (((item.Type == "Energy") || (item.SubType == "kWh")) && (item.SwitchTypeVal == 4)) {
-									xhtm += '<img src="images/PV48.png" height="48" width="48"></td>\n';
+									if(item.CustomImage == 0)
+										xhtm += '<img src="images/PV48.png" height="48" width="48"></td>\n';
+									else
+										xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 								}
 								else {
-									xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
+									if(item.CustomImage == 0)
+										xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
+									else
+										xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 								}
 								if (typeof item.CounterToday != 'undefined') {
 									status += $.t("Today") + ': ' + item.CounterToday;
@@ -643,7 +673,10 @@ define(['app', 'livesocket'], function (app) {
 								status = item.Desc;
 							}
 							else if (item.SubType == "Percentage") {
-								xhtm += '<img src="images/Percentage48.png" height="48" width="48"></td>\n';
+								if(item.CustomImage == 0)
+									xhtm += '<img src="images/Percentage48.png" height="48" width="48"></td>\n';
+								else
+									xhtm += '<img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Fan") {
@@ -659,7 +692,10 @@ define(['app', 'livesocket'], function (app) {
 								status = "";
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
-								xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
+								if(item.CustomImage == 0)
+									xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
+								else
+									xhtm += '<img src="images/'+item.Image+'48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Text") {
@@ -671,19 +707,31 @@ define(['app', 'livesocket'], function (app) {
 								status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 							}
 							else if (item.SubType == "Pressure") {
-								xhtm += '<img src="images/gauge48.png" height="48" width="48"></td>\n';
+								if(item.CustomImage == 0)
+									xhtm += '<img src="images/gauge48.png" height="48" width="48"></td>\n';
+								else
+									xhtm += '<img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.Type == "Lux") {
-								xhtm += '<img src="images/lux48.png" height="48" width="48"></td>\n';
+								if(item.CustomImage == 0)
+									xhtm += '<img src="images/lux48.png" height="48" width="48"></td>\n';
+								else
+									xhtm += '<img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.Type == "Weight") {
-								xhtm += '<img src="images/scale48.png" height="48" width="48"></td>\n';
+								if(item.CustomImage == 0)
+									xhtm += '<img src="images/scale48.png" height="48" width="48"></td>\n';
+								else
+									xhtm += '<img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.Type == "Usage") {
-								xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
+								if(item.CustomImage == 0)
+									xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
+								else
+									xhtm += '<img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (((item.Type == "Thermostat") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
