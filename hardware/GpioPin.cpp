@@ -42,11 +42,6 @@ m_label(label)
 	m_db_state = db_state;		// Database Value
 }
 
-CGpioPin::~CGpioPin()
-{
-}
-
-
 int CGpioPin::GetPin()
 {
 	return m_pin_number;
@@ -78,7 +73,7 @@ int CGpioPin::SetReadValueFd(int value)
 	return m_read_value_fd;
 }
 
-bool CGpioPin::SetDBState(int db_state)
+void CGpioPin::SetDBState(int db_state)
 {
 	m_db_state = db_state;
 }
@@ -92,7 +87,7 @@ std::string CGpioPin::ToString()
 {
 	if (m_direction == 0)
 		return m_label + " (INPUT)";
-	else if (m_direction == 1)
+	if (m_direction == 1)
 		return m_label + " (OUTPUT)";
 	return m_label + " Unknown!?";
 }

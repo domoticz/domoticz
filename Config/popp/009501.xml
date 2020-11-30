@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Popp Flow Stop Automated Water Shut-Off Valve
      https://www.popp.eu/wp-content/uploads/2015/07/Manual_Flow-Stop_POPP_En.pdf -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="list" genre="config" instance="1" index="0" label="LED status" size="1" value="0">

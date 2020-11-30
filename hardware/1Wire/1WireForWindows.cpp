@@ -2,9 +2,9 @@
 #include "stdafx.h"
 #ifdef WIN32
 #include "1WireForWindows.h"
+#include "../../main/json_helper.h"
 #include "../../main/Logger.h"
 #include <boost/optional.hpp>
-#include "../json/json.h"
 #include <WS2tcpip.h>
 
 #define _1WIRE_SERVICE_PORT "1664"
@@ -28,9 +28,7 @@ SOCKET ConnectToService()
 {
    // Connection
    SOCKET theSocket = INVALID_SOCKET;
-   struct addrinfo *result = NULL,
-      *ptr = NULL,
-      hints;
+   struct addrinfo *result = nullptr, *ptr = nullptr, hints;
 
    ZeroMemory(&hints,sizeof(hints));
    hints.ai_family = AF_UNSPEC;
@@ -46,7 +44,7 @@ SOCKET ConnectToService()
    }
 
    // Attempt to connect to an address until one succeeds
-   for(ptr=result;ptr!=NULL;ptr=ptr->ai_next)
+   for (ptr = result; ptr != nullptr; ptr = ptr->ai_next)
    {
       // Create a SOCKET for connecting to server
       theSocket = socket(ptr->ai_family,ptr->ai_socktype,ptr->ai_protocol);
@@ -163,10 +161,9 @@ bool C1WireForWindows::IsAvailable()
    // Request
    Json::Value reqRoot;
    reqRoot["IsAvailable"]="";
-   Json::FastWriter writer;
 
    // Send request and wait for answer
-   std::string answer = ::SendAndReceive(theSocket,writer.write(reqRoot));
+   std::string answer = ::SendAndReceive(theSocket, JSonToRawString(reqRoot));
 
    // Answer processing
    if (answer.empty())
@@ -177,8 +174,7 @@ bool C1WireForWindows::IsAvailable()
    }
 
    Json::Value ansRoot;
-   Json::Reader reader;
-   if (!reader.parse(answer,ansRoot))
+   if (!ParseJSon(answer,ansRoot))
    {
       IsAvailable=false;
       DisconnectFromService(theSocket);
@@ -216,15 +212,13 @@ void C1WireForWindows::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) co
    // Request
    Json::Value reqRoot;
    reqRoot["GetDevices"]="";
-   Json::FastWriter writer;
 
    // Send request and wait for answer
-   std::string answer = SendAndReceive(writer.write(reqRoot));
+   std::string answer = SendAndReceive(JSonToRawString(reqRoot));
 
    // Answer processing
    Json::Value ansRoot;
-   Json::Reader reader;
-   if (answer.empty() || !reader.parse(answer,ansRoot))
+   if (ParseJSon(answer,ansRoot))
       return;
 
    if (!ansRoot["InvalidRequest"].isNull())
@@ -253,15 +247,13 @@ Json::Value C1WireForWindows::readData(const _t1WireDevice& device,int unit) con
    Json::Value reqRoot;
    reqRoot["ReadData"]["Id"]=device.devid;
    reqRoot["ReadData"]["Unit"]=unit;
-   Json::FastWriter writer;
 
    // Send request and wait for answer
-   std::string answer = SendAndReceive(writer.write(reqRoot));
+   std::string answer = SendAndReceive(JSonToRawString(reqRoot));
 
    // Answer processing
    Json::Value ansRoot;
-   Json::Reader reader;
-   if (answer.empty() || !reader.parse(answer,ansRoot))
+   if (ParseJSon(answer,ansRoot))
       throw C1WireForWindowsReadException("invalid answer");
 
    if (!ansRoot["InvalidRequestReason"].isNull())
@@ -278,15 +270,13 @@ unsigned int C1WireForWindows::readChanelsNb(const _t1WireDevice& device) const
    // Request
    Json::Value reqRoot;
    reqRoot["ReadChanelsNb"]["Id"]=device.devid;
-   Json::FastWriter writer;
 
    // Send request and wait for answer
-   std::string answer = SendAndReceive(writer.write(reqRoot));
+   std::string answer = SendAndReceive(JSonToRawString(reqRoot));
 
    // Answer processing
    Json::Value ansRoot;
-   Json::Reader reader;
-   if (answer.empty() || !reader.parse(answer,ansRoot))
+   if (ParseJSon(answer,ansRoot))
       throw C1WireForWindowsReadException("invalid answer");
 
 
@@ -441,10 +431,9 @@ void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value,
    reqRoot["WriteData"]["Id"]=sId;
    reqRoot["WriteData"]["Unit"]=unit;
    reqRoot["WriteData"]["Value"]=!value;
-   Json::FastWriter writer;
 
    // Send request and wait for answer
-   SendAndReceive(writer.write(reqRoot));
+   SendAndReceive(JSonToRawString(reqRoot));
 
    // No answer processing
 }

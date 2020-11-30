@@ -1,19 +1,46 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Ingersoll Rand - Nexia Home Intelligence; DB100Z Z-Wave Doorbell Sensor -->
-<!-- If the device isn't being discovered by OZW, tap the install button 3 times in a second (LED will turn on for 10 seconds) -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" index="1" genre="config" label="Send Battery Report with Notification Report" min="0" max="1" value="0" size="1">
-			<Help>Send a battery report in addition to the alarm report when the alarm report is triggered</Help>
-			<Item label="No (default)" value="0" />
-			<Item label="Yes (recommended)" value="1" />
-		</Value>
-	</CommandClass>
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<!-- Z-Wave Plus Lifeline Battery Report, Notification Report, Device Reset Locally Notification -->
-			<Group index="1" max_associations="5" label="Lifeline" />
-		</Associations>
-	</CommandClass>
+<!-- Ingersoll Rand - Nexia Home Intelligence; DB100Z Z-Wave Doorbell Sensor --><!-- If the device isn't being discovered by OZW, tap the install button 3 times in a second (LED will turn on for 10 seconds) --><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0178:3130:4442</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/nexia/db100z.png</MetaDataItem>
+    <MetaDataItem id="3130" name="ZWProductPage" type="4442">https://products.z-wavealliance.org/products/1349/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">When the Install Button is triple-pressed, the device will send a Wakeup Notification report and stay awake for 10 seconds.
+
+WAKEUP_INTERVAL_CAPABILITIES_REPORT 
+Min Wake Up Interval :60 seconds 
+Max Wake Up Interval: 86400 seconds 
+Default Wake Up Interval: 25200 seconds 
+Wake Up Interval Step: 60
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1.  Set primary controller to Exclude mode
+2. Press the Install Button</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave Doorbell Sensor</MetaDataItem>
+    <MetaDataItem name="Description">The DB100Z is a battery powered, voltage sensing device that sends out a Notification report when voltage is detected at the sensor inputs.    </MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1.  Set primary controller to Include mode
+2. Press the Install Button</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1349/18-HD77D1-1-EN DB100Z Z-Wave Door Bell Sensor.pdf</MetaDataItem>
+    <MetaDataItem id="3130" name="Identifier" type="4442">DB100Z</MetaDataItem>
+    <MetaDataItem id="3130" name="FrequencyName" type="4442">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please only perform a factory reset when the primary controller is missing or inoperable.  A factory reset will remove all network settings and configurations. 
+
+1. Hold down Install Button for 10 seconds
+2. Release the Install Button
+3. When the Status LED begins to blink, the unit has finished restoring configuration</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1349/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Send Battery Report with Notification Report" max="1" min="0" size="1" type="list" value="0">
+      <Help>Send a battery report in addition to the alarm report when the alarm report is triggered</Help>
+      <Item label="No (default)" value="0"/>
+      <Item label="Yes (recommended)" value="1"/>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <!-- Z-Wave Plus Lifeline Battery Report, Notification Report, Device Reset Locally Notification -->
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

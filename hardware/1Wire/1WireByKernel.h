@@ -8,22 +8,22 @@ class C1WireByKernel : public I_1WireSystem, StoppableTask
 {
 public:
    C1WireByKernel();
-   virtual ~C1WireByKernel();
+   ~C1WireByKernel() override;
 
    // I_1WireSystem implementation
-   virtual void GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const;
-   virtual void SetLightState(const std::string& sId,int unit,bool value, const unsigned int level);
-   virtual float GetTemperature(const _t1WireDevice& device) const;
-   virtual float GetHumidity(const _t1WireDevice& device) const;
-   virtual float GetPressure(const _t1WireDevice& device) const;
-   virtual bool GetLightState(const _t1WireDevice& device,int unit) const;
-   virtual unsigned int GetNbChannels(const _t1WireDevice& device) const;
-   virtual unsigned long GetCounter(const _t1WireDevice& device,int unit) const;
-   virtual int GetVoltage(const _t1WireDevice& device,int unit) const;
-   virtual float GetIlluminance(const _t1WireDevice& device) const;
-   virtual int GetWiper(const _t1WireDevice& device) const;
-   virtual void StartSimultaneousTemperatureRead();
-   virtual void PrepareDevices();
+   void GetDevices(/*out*/ std::vector<_t1WireDevice> &devices) const override;
+   void SetLightState(const std::string &sId, int unit, bool value, unsigned int level) override;
+   float GetTemperature(const _t1WireDevice &device) const override;
+   float GetHumidity(const _t1WireDevice &device) const override;
+   float GetPressure(const _t1WireDevice &device) const override;
+   bool GetLightState(const _t1WireDevice &device, int unit) const override;
+   unsigned int GetNbChannels(const _t1WireDevice &device) const override;
+   unsigned long GetCounter(const _t1WireDevice &device, int unit) const override;
+   int GetVoltage(const _t1WireDevice &device, int unit) const override;
+   float GetIlluminance(const _t1WireDevice &device) const override;
+   int GetWiper(const _t1WireDevice &device) const override;
+   void StartSimultaneousTemperatureRead() override;
+   void PrepareDevices() override;
    // END : I_1WireSystem implementation
 
    static bool IsAvailable();
@@ -31,7 +31,7 @@ public:
 protected:
    void GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const;
 
-   bool sendAndReceiveByRwFile(std::string path,const unsigned char * const cmd,size_t cmdSize,unsigned char * const answer,size_t answerSize) const;
+   bool sendAndReceiveByRwFile(std::string path, const unsigned char *cmd, size_t cmdSize, unsigned char *answer, size_t answerSize) const;
    void ReadStates();
 
    // Thread management
@@ -69,7 +69,7 @@ private:
    {
    public:
 	   explicit Locker(const std::mutex& mutex):std::lock_guard<std::mutex>(*(const_cast<std::mutex*>(&mutex))){}
-      virtual ~Locker(){}
+	   virtual ~Locker() = default;
    };
    typedef std::map<std::string,DeviceState*> DeviceCollection;
    DeviceCollection m_Devices;
@@ -93,8 +93,12 @@ class OneWireReadErrorException : public std::exception
 {
 public:
 	explicit OneWireReadErrorException(const std::string& deviceFileName) : m_Message("1-Wire system : error reading value from ") {m_Message.append(deviceFileName);}
-   virtual ~OneWireReadErrorException() throw() {}
-   virtual const char* what() const throw() {return m_Message.c_str();}
+	~OneWireReadErrorException() noexcept override = default;
+	const char *what() const noexcept override
+	{
+		return m_Message.c_str();
+	}
+
 protected:
    std::string m_Message;
 };
@@ -103,8 +107,12 @@ class OneWireWriteErrorException : public std::exception
 {
 public:
 	explicit  OneWireWriteErrorException(const std::string& deviceFileName) : m_Message("1-Wire system : error writing value from ") {m_Message.append(deviceFileName);}
-   virtual ~OneWireWriteErrorException() throw() {}
-   virtual const char* what() const throw() {return m_Message.c_str();}
+	~OneWireWriteErrorException() noexcept override = default;
+	const char *what() const noexcept override
+	{
+		return m_Message.c_str();
+	}
+
 protected:
    std::string m_Message;
 };

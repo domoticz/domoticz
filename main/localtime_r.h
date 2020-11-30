@@ -12,6 +12,7 @@ time_t mytime(time_t * _Time);
 
 // DST safe SQL datetime string parser
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLdate);
+bool ParseISOdatetime(time_t &time, struct tm &result, const std::string &sISOdate);
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLdate, int isdst);
 
 
@@ -22,5 +23,5 @@ bool getMidnight(time_t &time, struct tm &result, int year, int month, int day);
 bool getNoon(time_t &time, struct tm &result);
 bool getNoon(time_t &time, struct tm &result, int year, int month, int day);
 
-bool constructTime(time_t &time, struct tm &result, const int year, const int month, const int day, const int hour, const int minute, const int second);
-bool constructTime(time_t &time, struct tm &result, const int year, const int month, const int day, const int hour, const int minute, const int second, int isdst);
+bool constructTime(time_t &time, struct tm &result, int year, int month, int day, int hour, int minute, int second);
+bool constructTime(time_t &time, struct tm &result, int year, int month, int day, int hour, int minute, int second, int isdst);

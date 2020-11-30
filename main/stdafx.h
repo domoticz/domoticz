@@ -1,3 +1,4 @@
+#pragma once
 // stdafx.h : include file for standard system include files,
 // or project specific include files that are used frequently, but
 // are changed infrequently
@@ -43,9 +44,22 @@ typedef unsigned char       BYTE;
 
 #define WEBSERVER_DONT_USE_ZIP
 
+// system, runtime, STL
+#include <algorithm>
 #include <iomanip>
 #include <map>
 #include <mutex>
-#include <sstream>
-#include <thread>
 #include <vector>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <cmath>
+
+// third-party
+#include <json/json.h>
+#include "RFXtrx.h"
+
+// rarely changing project-specific
+#include "concurrent_queue.h"
+#include "localtime_r.h"
+#include "StoppableTask.h"

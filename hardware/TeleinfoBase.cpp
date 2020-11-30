@@ -17,6 +17,7 @@ History :
 1.4 2017-04-13 : Added DataTimeout
 1.5 2017-04-20 : Fix bug affecting "demain" for white days
 1.6 2017-12-17 : Fix bug affecting meters not providing PAPP, thanks to H. Lertouani
+1.7 2019-09-13 : Remove to not update the PAPP value if similar to previous (was causing some values to never update), P. Darré
 */
 
 #include "stdafx.h"
@@ -39,11 +40,6 @@ CTeleinfoBase::CTeleinfoBase()
 	m_bDisableCRC = false;
 
 	InitTeleinfo();
-}
-
-
-CTeleinfoBase::~CTeleinfoBase()
-{
 }
 
 void CTeleinfoBase::InitTeleinfo()
@@ -89,12 +85,12 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, char* text)
 
 void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo &teleinfo)
 {
-	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR;
+	uint32_t m_pappHC = 0, m_pappHP = 0, m_pappHCJB = 0, m_pappHPJB = 0, m_pappHCJW = 0, m_pappHPJW = 0, m_pappHCJR = 0, m_pappHPJR = 0;
 	int rate_alert = 0, color_alert = 0, demain_alert = 0;
 	int alertI1, alertI2, alertI3, alertEJP, alertPPOT;
 	char szTmp[100];
 	std::string message;
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	// We need to limit the number of Teleinfo devices per hardware because of the subID in sensors. i
 	if ((rank < 1) || (rank > 4))
@@ -154,13 +150,13 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		rate_alert = 3;
 	}
 
-	// Process only if maximum time between updates (5mn) has been reached or power consumption changed
+	// Process only if maximum time between updates (5mn) has been reached (or power consumption changed => removed)
 	// If it did not, then alerts and intensity have not changed either
 #ifdef DEBUG_TeleinfoBase
 	_log.Log(LOG_NORM, "(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", m_Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP) ? "true" : "false", difftime(atime, teleinfo.last));
 #endif
-	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 290))
-	{
+	// 1.6 version: if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 290))
+
 		teleinfo.pAlertPAPP = teleinfo.PAPP;
 
 		//Send data at mamximum rate specified in settings, and at least every 5mn (minus 10s as a grace period for the watchdog)
@@ -176,7 +172,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				teleinfo.tariff = "Tarif de Base";
 				m_p1power.powerusage1 = teleinfo.BASE;
 				m_p1power.powerusage2 = 0;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255, nullptr);
 			}
 			else if (teleinfo.OPTARIF == "HC..")
 			{
@@ -185,7 +181,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendKwhMeter(m_HwdID, 32 * rank + 4, 255, m_pappHP, teleinfo.HCHP / 1000.0, name + " kWh Heures Pleines");
 				m_p1power.powerusage1 = teleinfo.HCHP;
 				m_p1power.powerusage2 = teleinfo.HCHC;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255, nullptr);
 			}
 			else if (teleinfo.OPTARIF == "EJP.")
 			{
@@ -194,7 +190,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendKwhMeter(m_HwdID, 32 * rank + 7, 255, m_pappHP, teleinfo.EJPHPM / 1000.0, name + " kWh Pointe Mobile");
 				m_p1power.powerusage1 = teleinfo.EJPHPM;
 				m_p1power.powerusage2 = teleinfo.EJPHN;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh EJP").c_str(), 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh EJP").c_str(), 255, nullptr);
 				alertEJP = (teleinfo.PEJP == 30) ? 4 : 1;
 				if (alertEJP != teleinfo.pAlertEJP)
 				{
@@ -254,9 +250,9 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				m_p3power.powerusage1 = teleinfo.BBRHPJR;
 				m_p3power.powerusage2 = teleinfo.BBRHCJR;
 				m_p3power.usagecurrent = m_pappHCJR + m_pappHPJR;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + "kWh Jours Bleus").c_str(), 255);
-				sDecodeRXMessage(this, (const unsigned char *)&m_p2power, (name + "kWh Jours Blancs").c_str(), 255);
-				sDecodeRXMessage(this, (const unsigned char *)&m_p3power, (name + "kWh Jours Rouges").c_str(), 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + "kWh Jours Bleus").c_str(), 255, nullptr);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p2power, (name + "kWh Jours Blancs").c_str(), 255, nullptr);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p3power, (name + "kWh Jours Rouges").c_str(), 255, nullptr);
 				if (color_alert != teleinfo.pAlertColor)
 				{
 					SendAlertSensor(32 * rank + 2, 255, color_alert, "Jour " + teleinfo.color, name + " Couleur du jour");
@@ -351,7 +347,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendAlertSensor(32 * rank + 7, 255, alertPPOT, message, " Alerte Potentiels");
 			}
 		}
-	}
+	
 }
 
 //Example of data received from power meter

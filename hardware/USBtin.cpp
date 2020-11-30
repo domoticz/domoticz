@@ -27,13 +27,15 @@ History :
 #include "../main/SQLHelper.h"
 
 #include <algorithm>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <string>
 #include <time.h>
+
+using namespace boost::placeholders;
 
 #define USBTIN_BAUD_RATE         115200
 #define USBTIN_PARITY            boost::asio::serial_port_base::parity::none
@@ -72,7 +74,8 @@ m_szSerialPort(devname)
 	Init();
 }
 
-USBtin::~USBtin(void){
+USBtin::~USBtin()
+{
 	StopHardware();
 }
 
@@ -119,7 +122,7 @@ void USBtin::Do_Work()
 			m_V8secCounterBase++;
 
 			if (m_V8secCounterBase % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 
 			if (isOpen()) //Serial port open, we can initiate the Can BUS :
@@ -296,14 +299,12 @@ void USBtin::ParseData(const char *pData, int Len)
 				memset(&value[0], 0, sizeof(value));
 
 				unsigned int Buffer_Octets[8]; //buffer of 8 bytes(max in the frame)
-				char i=0;
-				for(i=0;i<8;i++){ //Reset of 8 bytes
-					Buffer_Octets[i]=0;
-				}
-				unsigned int ValData;
+				std::fill(std::begin(Buffer_Octets), std::end(Buffer_Octets), 0);
 
+				unsigned int ValData;
 				if( DLChexNumber > 0 ){ //bytes presents
-					for(i=0;i<=DLChexNumber;i++){
+					for (unsigned char i = 0; i <= DLChexNumber; i++)
+					{
 						ValData = 0;
 
 						strncpy(value, (char*)&(m_USBtinBuffer[10+(2*i)]), 2); //to fill the Buffer of 8 bytes

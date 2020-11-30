@@ -1,5 +1,5 @@
-define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog'], function (app) {
-    app.controller('DeviceLogController', function ($routeParams, domoticzApi, deviceApi) {
+define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog'], function (app) {
+    app.controller('DeviceLogController', function ($location, $routeParams, domoticzApi, deviceApi) {
         var vm = this;
 
         vm.isTextLog = isTextLog;
@@ -7,6 +7,8 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
         vm.isGraphLog = isGraphLog;
         vm.isTemperatureLog = isTemperatureLog;
         vm.isReportAvailable = isReportAvailable;
+        vm.isCounterLogSpline = isCounterLogSpline;
+        vm.isP1Log = isP1Log;
 
         init();
 
@@ -17,10 +19,8 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 vm.device = device;
                 vm.pageName = device.Name;
 
-                if (isSmartLog()) {
+                if (false && isP1Log()) {
                     ShowSmartLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
-                } else if (isCounterLogSpline()) {
-                    ShowCounterLogSpline('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
                 } else if (isCounterLog()) {
                     ShowCounterLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
                 }
@@ -46,7 +46,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             }
 
             var isLightType = [
-				'Lighting 1', 'Lighting 2', 'Lighting 3', 'Lighting 4', 'Lighting 5',
+                'Lighting 1', 'Lighting 2', 'Lighting 3', 'Lighting 4', 'Lighting 5',
                 'Light', 'Light/Switch', 'Color Switch', 'Chime',
                 'Security', 'RFY', 'ASA', 'Blinds'
             ].includes(vm.device.Type);
@@ -71,7 +71,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             //This goes wrong (when we also use this log call from the weather tab), for wind sensors
             //as this is placed in weather and temperature, we might have to set a parameter in the url
             //for now, we assume it is a temperature
-            return (/Temp|Thermostat|Humidity|Radiator|Wind/i).test(vm.device.Type)
+            return (/Temp|Thermostat|Humidity|RFXSensor|Radiator|Wind/i).test(vm.device.Type)
         }
 
         function isGraphLog() {
@@ -79,14 +79,14 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 return undefined;
             }
 
-            return vm.device.Type === 'Usage' || [
+            return vm.device.Type === 'Usage' || vm.device.Type === 'Weight' || [
                 'Voltage', 'Current', 'Pressure', 'Custom Sensor',
                 'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                 'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage'
             ].includes(vm.device.SubType)
         }
 
-        function isSmartLog() {
+        function isP1Log() {
             if (!vm.device) {
                 return undefined;
             }
@@ -99,7 +99,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 return undefined;
             }
 
-            if (isCounterLogSpline() || isSmartLog()) {
+            if (isCounterLogSpline() || isP1Log()) {
                 return false;
             }
 
@@ -124,7 +124,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             }
 
             return isTemperatureLog()
-                || ((isCounterLogSpline() || isCounterLog() || isSmartLog()) && [0, 1, 2, 3, 4].includes(vm.device.SwitchTypeVal));
+                || ((isCounterLogSpline() || isCounterLog() || isP1Log()) && [0, 1, 2, 3, 4].includes(vm.device.SwitchTypeVal));
         }
     });
 });

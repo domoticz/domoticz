@@ -2,12 +2,9 @@
 
 #include <string>
 
-#define sTypeTH_LC_TC 0xA0   //La Cross Temp_Hum combined
-#define sTypeTEMP_SYSTEM 0xA0  //Internal sensor
-
 enum _eSwitchType
 {
-	STYPE_OnOff = 0,					//0
+	STYPE_OnOff = 0,				//0
 	STYPE_Doorbell,					//1
 	STYPE_Contact,					//2
 	STYPE_Blinds,					//3
@@ -27,13 +24,13 @@ enum _eSwitchType
 	STYPE_Media,					//17
 	STYPE_Selector,					//18
 	STYPE_DoorLock,					//19
-	STYPE_DoorLockInverted,					//20
+	STYPE_DoorLockInverted,			//20
 	STYPE_END
 };
 
 enum _eMeterType
 {
-	MTYPE_ENERGY = 0,			//0
+	MTYPE_ENERGY = 0,		//0
 	MTYPE_GAS,				//1
 	MTYPE_WATER,			//2
 	MTYPE_COUNTER,			//3
@@ -175,7 +172,7 @@ enum _eHardwareTypes {
 	HTYPE_EVOHOME_WEB,			//75
 	HTYPE_RAVEn,	    		//76
 	HTYPE_S0SmartMeterTCP,		//77
-	HTYPE_RESERVED_FOR_YOU_1,	//78
+	HTYPE_BuienRadar,			//78
 	HTYPE_AccuWeather,			//79
 	HTYPE_Comm5Serial,          //80
 	HTYPE_Ec3kMeterTCP,			//81
@@ -213,9 +210,14 @@ enum _eHardwareTypes {
 	HTYPE_EcoCompteur,			//113
 	HTYPE_Honeywell,			//114
 	HTYPE_Tado,					//115
-	HTYPE_DenkoviHTTPDevices,		//116
+	HTYPE_DenkoviHTTPDevices,	//116
 	HTYPE_DenkoviUSBDevices,	//117
 	HTYPE_DenkoviTCPDevices,	//118
+	HTYPE_OctoPrint,			//119
+	HTYPE_Tesla,                //120
+	HTYPE_Meteorologisk,        //121
+	HTYPE_Mercedes,				//122
+	HTYPE_AirconWithMe,         //123
 	HTYPE_END
 };
 
@@ -253,57 +255,41 @@ enum _eNotificationTypes
 	NTYPE_SLEEPING
 };
 
-const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
-const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType);
-unsigned char Get_Humidity_Level(const unsigned char hlevel);
-const char *RFX_Humidity_Status_Desc(const unsigned char status);
-const char *Switch_Type_Desc(const _eSwitchType sType);
-const char *Meter_Type_Desc(const _eMeterType sType);
-const char *RFX_Forecast_Desc(const unsigned char Forecast);
-const char *RFX_WSForecast_Desc(const unsigned char Forecast);
-const char *BMP_Forecast_Desc(const unsigned char Forecast);
-const char *Timer_Type_Desc(const int tType);
-const char *Timer_Cmd_Desc(const int tCmd);
+const char *RFX_Type_Desc(unsigned char i, unsigned char snum);
+const char *RFX_Type_SubType_Desc(unsigned char dType, unsigned char sType);
+unsigned char Get_Humidity_Level(unsigned char hlevel);
+const char *RFX_Humidity_Status_Desc(unsigned char status);
+const char *Switch_Type_Desc(_eSwitchType sType);
+const char *Meter_Type_Desc(_eMeterType sType);
+const char *RFX_Forecast_Desc(unsigned char Forecast);
+const char *RFX_WSForecast_Desc(unsigned char Forecast);
+const char *BMP_Forecast_Desc(unsigned char Forecast);
+const char *Timer_Type_Desc(int tType);
+const char *Timer_Cmd_Desc(int tCmd);
 const char *Hardware_Type_Desc(int hType);
 const char *Hardware_Short_Desc(int hType);
-const char *Security_Status_Desc(const unsigned char status);
-const char *Notification_Type_Desc(const int nType, const unsigned char snum);
-const char *Notification_Type_Label(const int nType);
-const char *Get_Moisture_Desc(const int moisture);
-const char *Get_Alert_Desc(const int level);
-const char *Media_Player_States(const _eMediaStatus Status);
-const char *ZWave_Clock_Days(const unsigned char Day);
+const char *Security_Status_Desc(unsigned char status);
+const char *Notification_Type_Desc(int nType, unsigned char snum);
+const char *Notification_Type_Label(int nType);
+const char *Get_Moisture_Desc(int moisture);
+const char *Get_Alert_Desc(int level);
+const char *Media_Player_States(_eMediaStatus Status);
+const char *ZWave_Clock_Days(unsigned char Day);
 extern const char *ZWave_Thermostat_Fan_Modes[];
 int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string> &Modes, const std::string &sMode);
 int Lookup_ZWave_Thermostat_Fan_Modes(const std::string &sMode);
 
-void GetLightStatus(
-	const unsigned char dType,
-	const unsigned char dSubType,
-	const _eSwitchType switchtype,
-	const unsigned char nValue,
-	const std::string &sValue,
-	std::string &lstatus,
-	int &llevel,
-	bool &bHaveDimmer,
-	int &maxDimLevel,
-	bool &bHaveGroupCmd);
+void GetLightStatus(unsigned char dType, unsigned char dSubType, _eSwitchType switchtype, unsigned char nValue, const std::string &sValue, std::string &lstatus, int &llevel, bool &bHaveDimmer,
+		    int &maxDimLevel, bool &bHaveGroupCmd);
 
 int  GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, const std::string & levelName);
-std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string> & options, const int level);
+std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string> &options, int level);
 void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & options, std::map<std::string, std::string> & statuses);
 
-bool GetLightCommand(
-	const unsigned char dType,
-	const unsigned char dSubType,
-	const _eSwitchType switchtype,
-	std::string switchcmd,
-	unsigned char &cmd,
-	const std::map<std::string, std::string> & options
-);
+bool GetLightCommand(unsigned char dType, unsigned char dSubType, _eSwitchType switchtype, std::string switchcmd, unsigned char &cmd, const std::map<std::string, std::string> &options);
 
 bool IsLightSwitchOn(const std::string &lstatus);
 
-bool IsSerialDevice(const _eHardwareTypes htype);
-bool IsNetworkDevice(const _eHardwareTypes htype);
+bool IsSerialDevice(_eHardwareTypes htype);
+bool IsNetworkDevice(_eHardwareTypes htype);
 void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype);

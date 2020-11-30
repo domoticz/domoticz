@@ -7,7 +7,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 #define YOULESS_POLL_INTERVAL 10
 
@@ -18,10 +18,6 @@ m_Password(CURLEncode::URLEncode(password))
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
 	Init();
-}
-
-CYouLess::~CYouLess(void)
-{
 }
 
 void CYouLess::Init()
@@ -46,10 +42,10 @@ void CYouLess::Init()
 	m_p1gas.subtype = sTypeP1Gas;
 	m_p1gas.ID = 1;
 
-	m_bHaveP1 = false;
+	m_bHaveP1OrS0 = false;
 	m_bCheckP1 = true;
 	m_lastgasusage = 0;
-	m_lastSharedSendGas = mytime(NULL);
+	m_lastSharedSendGas = mytime(nullptr);
 }
 
 bool CYouLess::StartHardware()
@@ -87,7 +83,7 @@ void CYouLess::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % YOULESS_POLL_INTERVAL == 0)
 		{
@@ -107,32 +103,25 @@ bool CYouLess::GetP1Details()
 	m_bCheckP1 = false;
 
 	std::string sResult;
+	std::stringstream szURL;
 
-	char szURL[200];
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << "/e";
+	if (!m_Password.empty())
+		szURL << "&w=" << m_Password;
 
-	if (m_Password.size() == 0)
+	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		sprintf(szURL, "http://%s:%d/e", m_szIPAddress.c_str(), m_usIPPort);
-	}
-	else
-	{
-		sprintf(szURL, "http://%s:%d/e&w=%s", m_szIPAddress.c_str(), m_usIPPort, m_Password.c_str());
-	}
-
-	if (!HTTPClient::GET(szURL, sResult))
-	{
-		_log.Log(LOG_ERROR, "YouLess: Error getting meter details!");
+		_log.Log(LOG_ERROR, "YouLess: Error getting meter details from %s !", m_szIPAddress.c_str() );
 		return false;
 	}
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (root.empty()))
 	{
 		return false;
 	}
-	if (root.size() < 1)
+	if (root.empty())
 		return false;
 	root = root[0];
 
@@ -156,10 +145,10 @@ bool CYouLess::GetP1Details()
 			m_p1power.delivcurrent = -Pwr;
 			m_p1power.usagecurrent = 0;
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255, nullptr);
 
 		m_p1gas.gasusage = (unsigned long)(root["gas"].asDouble() * 1000);
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		if (
 			(m_p1gas.gasusage != m_lastgasusage) ||
 			(difftime(atime, m_lastSharedSendGas) >= 300)
@@ -167,44 +156,41 @@ bool CYouLess::GetP1Details()
 		{
 			m_lastgasusage = m_p1gas.gasusage;
 			m_lastSharedSendGas = atime;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255, nullptr);
 		}
-		m_bHaveP1 = true;
+		m_bHaveP1OrS0 = true;
 	}
 
 	if (!root["cs0"].empty())
 	{
 		//S0 Meter
+		double mcntr = root["cs0"].asDouble();
 		double musage = root["ps0"].asDouble();
-		SendKwhMeter(m_HwdID, 1, 255, musage, root["cs0"].asDouble(), "S0");
+		if (mcntr != 0)
+		{
+			SendKwhMeter(m_HwdID, 1, 255, musage, mcntr, "S0");
+			m_bHaveP1OrS0 = true;
+		}
 	}
-	return true;
+	return m_bHaveP1OrS0;
 }
 
 void CYouLess::GetMeterDetails()
 {
-	if (m_bCheckP1 || m_bHaveP1)
+	if (m_bCheckP1 || m_bHaveP1OrS0)
 	{
 		if (GetP1Details())
-			return;
-		if (m_bHaveP1)
 			return;
 	}
 
 	std::string sResult;
+	std::stringstream szURL;
 
-	char szURL[200];
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << "/a";
+	if (!m_Password.empty())
+		szURL << "&w=" << m_Password;
 
-	if(m_Password.size() == 0)
-	{
-		sprintf(szURL,"http://%s:%d/a",m_szIPAddress.c_str(), m_usIPPort);
-	}
-	else
-	{
-		sprintf(szURL,"http://%s:%d/a&w=%s",m_szIPAddress.c_str(), m_usIPPort, m_Password.c_str());
-	}
-
-	if (!HTTPClient::GET(szURL,sResult))
+	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s", m_szIPAddress.c_str());
 		return;
@@ -219,18 +205,23 @@ void CYouLess::GetMeterDetails()
 	}
 	int fpos;
 	std::string pusage=stdstring_trim(results[0]);
-	fpos=pusage.find_first_of(" ");
+	fpos = pusage.find_first_of(' ');
 	if (fpos!=std::string::npos)
 		pusage=pusage.substr(0,fpos);
 	stdreplace(pusage,",","");
 
 	std::string pcurrent=stdstring_trim(results[1]);
-	fpos=pcurrent.find_first_of(" ");
+	fpos = pcurrent.find_first_of(' ');
 	if (fpos!=std::string::npos)
 		pcurrent=pcurrent.substr(0,fpos);
 	stdreplace(pcurrent,",","");
 
-	m_meter.powerusage=atol(pusage.c_str());
-	m_meter.usagecurrent=atol(pcurrent.c_str());
-	sDecodeRXMessage(this, (const unsigned char *)&m_meter, NULL, 255);
+	unsigned long lpusage = atol(pusage.c_str());
+	unsigned long lpcurrent = atol(pcurrent.c_str());
+	if (lpusage)
+	{
+		m_meter.powerusage = lpusage;
+		m_meter.usagecurrent = lpcurrent;
+		sDecodeRXMessage(this, (const unsigned char *)&m_meter, nullptr, 255, nullptr);
+	}
 }

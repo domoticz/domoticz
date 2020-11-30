@@ -6,7 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 
@@ -55,10 +55,6 @@ m_Location(Location)
 	Init();
 }
 
-CDarkSky::~CDarkSky(void)
-{
-}
-
 void CDarkSky::Init()
 {
 }
@@ -97,7 +93,7 @@ void CDarkSky::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 300 == 0)
 		{
@@ -132,10 +128,7 @@ void CDarkSky::GetMeterDetails()
 	sURL << "https://api.darksky.net/forecast/" << m_APIKey << "/" << szLoc << "?exclude=" << szExclude;
 	try
 	{
-		bool bret;
-		std::string szURL = sURL.str();
-		bret = HTTPClient::GET(szURL, sResult);
-		if (!bret)
+		if (!HTTPClient::GET(sURL.str(), sResult))
 		{
 			Log(LOG_ERROR, "Error getting http data!.");
 			return;
@@ -153,8 +146,7 @@ void CDarkSky::GetMeterDetails()
 #endif
 	Json::Value root;
 
-	Json::Reader jReader;
-	bool ret=jReader.parse(sResult,root);
+	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		Log(LOG_ERROR,"Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
@@ -331,7 +323,7 @@ void CDarkSky::GetMeterDetails()
 		at10-=(tsen.WIND.chillh*256);
 		tsen.WIND.chilll=(BYTE)(at10);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255, nullptr);
 	}
 
 	//UV
@@ -352,29 +344,10 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["precipIntensity"] != "N/A") && (root["currently"]["precipIntensity"] != "--"))
 		{
-			float RainCount = static_cast<float>(atof(root["currently"]["precipIntensity"].asString().c_str()))*25.4f; //inches to mm
-			if ((RainCount!=-9999.00f)&&(RainCount>=0.00f))
+			float rainrateph = static_cast<float>(atof(root["currently"]["precipIntensity"].asString().c_str()))*25.4f; //inches to mm
+			if ((rainrateph !=-9999.00f)&&(rainrateph >=0.00f))
 			{
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
-				tsen.RAIN.packettype=pTypeRAIN;
-				tsen.RAIN.subtype=sTypeRAINWU;
-				tsen.RAIN.battery_level=9;
-				tsen.RAIN.rssi=12;
-				tsen.RAIN.id1=0;
-				tsen.RAIN.id2=1;
-
-				tsen.RAIN.rainrateh=0;
-				tsen.RAIN.rainratel=0;
-
-				int tr10=int((float(RainCount)*10.0f));
-				tsen.RAIN.raintotal1=0;
-				tsen.RAIN.raintotal2=(BYTE)(tr10/256);
-				tr10-=(tsen.RAIN.raintotal2*256);
-				tsen.RAIN.raintotal3=(BYTE)(tr10);
-
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, 255);
+				SendRainRateSensor(1, 255, rainrateph, "Rain");
 			}
 		}
 	}
@@ -390,7 +363,7 @@ void CDarkSky::GetMeterDetails()
 				_tGeneralDevice gdevice;
 				gdevice.subtype=sTypeVisibility;
 				gdevice.floatval1=visibility;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
 			}
 		}
 	}
@@ -403,6 +376,18 @@ void CDarkSky::GetMeterDetails()
 			if (radiation>=0.0f)
 			{
 				SendCustomSensor(1, 0, 255, radiation, "Ozone Sensor", "DU"); //(dobson units)
+			}
+		}
+	}
+	//Cloud Cover
+	if (root["currently"]["cloudCover"].empty() == false)
+	{
+		if ((root["currently"]["cloudCover"] != "N/A") && (root["currently"]["cloudCover"] != "--"))
+		{
+			float cloudcover = static_cast<float>(atof(root["currently"]["cloudCover"].asString().c_str()));
+			if (cloudcover >= 0.0f)
+			{
+				SendPercentageSensor(1, 0, 255, cloudcover * 100.0f, "Cloud Cover");
 			}
 		}
 	}

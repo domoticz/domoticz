@@ -5,6 +5,8 @@
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 
+using namespace boost::placeholders;
+
 /*
 	This driver allows Domoticz to control any I/O module from the MA-4xxx Family
 
@@ -124,7 +126,7 @@ void Comm5Serial::Do_Work()
 
 	while (!IsStopRequested(100))
 	{
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 		if (msec_counter++ >= 40) 
 		{
 			//every 4 seconds ?
@@ -145,7 +147,7 @@ void Comm5Serial::requestDigitalInputResponseHandler(const std::string & mframe)
 	for (int i = 0; i < 8; ++i) {
 		bool on = (sensorStatus & (1 << i)) != 0 ? true : false;
 		if (((lastKnownSensorState & (1 << i)) ^ (sensorStatus & (1 << i))) || initSensorData) {
-			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + std::to_string(i + 1));
+			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + std::to_string(i + 1), m_Name);
 		}
 	}
 	lastKnownSensorState = sensorStatus;
@@ -161,7 +163,7 @@ void Comm5Serial::requestDigitalOutputResponseHandler(const std::string & mframe
 	relayStatus = mframe[6];
 	for (int i = 0; i < 8; ++i) {
 		bool on = (relayStatus & (1 << i)) != 0 ? true : false;
-		SendSwitch(i + 1, 1, 255, on, 0, "Relay " + std::to_string(i + 1));
+		SendSwitch(i + 1, 1, 255, on, 0, "Relay " + std::to_string(i + 1), m_Name);
 	}
 }
 
@@ -180,7 +182,7 @@ void Comm5Serial::readCallBack(const char * data, size_t len)
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
-static uint16_t crc16_update(uint16_t crc, uint8_t data)
+uint16_t Comm5Serial::crc16_update(uint16_t crc, const uint8_t data)
 {
 #define POLYNOME 0x13D65
 	int i;
@@ -260,9 +262,11 @@ void Comm5Serial::ParseData(const unsigned char* data, const size_t len)
 		case STFRAME_CRC2:
 			frame.push_back(data[i]);
 			frameCRC = crc16_update(frameCRC, 0);
-			readCRC =  (uint16_t)(frame.at(frame.size() - 2) << 8) | (frame.at(frame.size() - 1) & 0xFF);
+			readCRC = (static_cast<uint16_t>(frame.at(frame.size() - 2)) << 8) | frame.at(frame.size() - 1);
 			if (frameCRC == readCRC)
 				parseFrame(frame);
+			else
+				Log(LOG_ERROR, "Frame CRC error");			
 			currentState = STSTART_OCTET1;
 			frame.clear();
 			break;
@@ -294,8 +298,8 @@ bool Comm5Serial::writeFrame(const std::string & data)
 	mframe.push_back(0x00);
 	mframe.append(data);
 	uint16_t crc = 0;
-	for (size_t i = 0; i < mframe.size(); ++i)
-		crc = crc16_update(crc, mframe.at(i));
+	for (char i : mframe)
+		crc = crc16_update(crc, i);
 	crc = crc16_update(crc, 0);
 	crc = crc16_update(crc, 0);
 
@@ -326,7 +330,7 @@ void Comm5Serial::enableNotifications()
 	writeFrame(data);
 }
 
-void Comm5Serial::OnError(const std::exception e)
+void Comm5Serial::OnError(const std::exception &e)
 {
 	Log(LOG_ERROR, "Error: %s", e.what());
 }

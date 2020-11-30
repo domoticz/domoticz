@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="2"
+	xmlns="https://github.com/OpenZWave/open-zwave">
+	<!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+	<MetaData>
+		<MetaDataItem name="Name">Duco CO2/RH sensor</MetaDataItem>
+		<MetaDataItem name="Description">The DUCO CO2 sensor measures the indoor CO2 levels and temperature. This is a good indication for the indoor air quality.Duco Tronic System 
+		The Duco Tronic System is a demand-driven natural ventilation system that always provides a balance between controlled natural ventilation and a central mechanical extraction. 
+		The demand for ventilation is determined based on air quality (CO 2 ) in the living spaces, the relative humidity (RH) in the 'wet' rooms and outdoor temperature readings. 
+		These values ​​are measured by means of various sensors in different rooms. The sensors communicate wirelessly via the Z-wave protocol with the electronically controlled by the air supply 
+		grilles and DucoBox the mechanical removal of the polluted and humid air controls. This electronic control ensures that only where a ventilation when needed, so the energy loss is limited. 
+		Moreover, the Duco Tronic System takes into account the temperature and adjusts to the weather conditions. If it gets colder outside, it will automatically schedule a higher CO 2 target gain. T
+		his opens it progresses less rapidly and less far. When the weather warms up, the opposite is true. In extreme heat is ventilated only by those grids where the lowest temperature measured, for example, 
+		on the shady side of the building. The measurement of the outside temperature is done by means of a sensor located in the control unit of the air vents situated. Thanks to the electronically controlled grids 
+		within the 'Duco Tronic System requires the user to do anything. The system ventilates automatically . Still, the resident boss and he may, if necessary or desired, the air supply and exhaust manually. 
+		Over time, the system automatically switches back to the most optimal position. All components, sensors, DucoBox and grills are aesthetically designed, fast and easy to install, use and maintenance.</MetaDataItem>
+		<MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/XXXX:XXXX:XXXX</MetaDataItem>
+		<MetaDataItem name="ProductPage">https://www.duco.eu/nl-nl-gearchiveerde-systemen</MetaDataItem>
+		<MetaDataItem name="ProductSupport">https://www.duco.eu/nl-nl-gearchiveerde-systemen</MetaDataItem>
+		<MetaDataItem name="ProductPic">images/DefaultProductImage.png</MetaDataItem>
+		<MetaDataItem name="ProductManual">https://www.duco.eu/Wes/CDN/1/Attachments/GH_DucoTronic%20System%20Z-wave_(nl)_online%20garantie_LowRes_635500206155264045.pdf</MetaDataItem>
+		<MetaDataItem name="WakeupDescription">			<!-- Short description on how to wake up the device if its battery powered --></MetaDataItem>
+		<MetaDataItem name="InclusionDescription">Press all 4 buttons to enter installer mode. Next pres button 1 to add the device to a z-wave network.</MetaDataItem>
+		<MetaDataItem name="ExclusionDescription">			<!-- Short Description on how to exclude the device --></MetaDataItem>
+		<MetaDataItem name="ResetDescription">Press all 4 buttons to enter installer mode. Next press and hold button 1 and 2 to remove the device from a z-wave network.</MetaDataItem>
+		<MetaDataItem id="0001" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/49</MetaDataItem>
+		<MetaDataItem id="0001" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+		<MetaDataItem id="0001" name="Identifier" type="0004">00001801/G12809</MetaDataItem>
+		<ChangeLog>
+			<Entry author="Mark van Kemenade - mark@kemdo.nl" date="29 Januari 2020" revision="1">Created the config file from scratch based on information from https://products.z-wavealliance.org/products/49 and http://devel.pepper1.net/zwavedb/device/156</Entry>
+			<Entry author="Jean-Francois Auger" date="23 Sept 2020" revision="2">Remove auto on group 1, cleanup MetaDataItem</Entry>
+		</ChangeLog>
+	</MetaData>
+
+	<CommandClass id="133">		<!-- Association -->
+		<Associations num_groups="7">
+			<Group index="1" label="Duco control" max_associations="20"/>
+			<!-- This is the control group used by the DUCO products to talk to each other. Only DUCO products should be added to this group. -->
+			<Group auto="true" index="2" label="Temp Basic set (on)" max_associations="20"/>
+			<!-- This is the temperature ON group. When the temperature goes above the temperature high set point, then the sensor will send BASIC SET( ON ) to all the nodes in the group. And when the temperature goes below the temperature low set point, then the sensor will send BASIC SET( OFF ) to all the nodes in the group. -->
+			<Group auto="true" index="3" label="Temp Basic set (off)" max_associations="20"/>
+			<!-- This is the temperature OFF group. When the temperature goes above the temperature high set point, then the sensor will send BASIC SET( OFF ) to all the nodes in the group. And when the temperature goes below the temperature low set point, then the sensor will send BASIC SET( ON ) to all the nodes in the group. -->
+			<Group auto="true" index="4" label="Temperature delta" max_associations="20"/>
+			<!-- This is the temperature DELTA group. When the temperature has changed more than the Delta temperature value, then the sensor will send a MULTI SENSOR REPORT with the temperature value to all the nodes in the group. -->
+			<Group auto="true" index="5" label="RH Basic set (on)" max_associations="20"/>
+			<!-- This is the RH ON group. When the RH goes above the RH high set point, then the sensor will send BASIC SET( ON ) to all the nodes in the group. And when the RH goes below the RH low set point, then the sensor will send BASIC SET( OFF ) to all the nodes in the group. -->
+			<Group auto="true" index="6" label="RH Basic set (off)" max_associations="20"/>
+			<!-- This is the RH OFF group. When the RH goes above the RH high set point, then the sensor will send BASIC SET( OFF ) to all the nodes in the group. And when the RH goes below the RH low set point, then the sensor will send BASIC SET( ON ) to all the nodes in the group. -->
+			<Group auto="true" index="7" label="RH delta" max_associations="20"/>
+			<!-- This is the RH DELTA group. When the RH has changed more than the Delta RH value, then the sensor will send a MULTI SENSOR REPORT with the RH value to all the nodes in the group. -->
+		</Associations>
+	</CommandClass>
+
+	<CommandClass id="112">		<!-- Configuration -->
+
+		<!-- Measure Level -->
+		<Value genre="config" index="1" label="Measure Level" size="1" type="byte" value="60" min="1" max="127" units="sec">
+			<Help>How often the value is measured(example: if value=60, the sensor value is measured every 60 seconds)</Help>
+		</Value>
+
+		<!-- CO² set point -->
+		<Value genre="config" index="2" label="CO² set point" size="2" type="short" value="1000" min="1" max="32767" units="PPM">
+			<Help>Set point CO2: Used in ‘automatic mode’. (button 4) if the device is a CO2 sensor. The CO2 level in a room is a good indication of the air quality in this room. 
+			When the CO2 level is above this set point, the room needs more ventilation. Consequently, the CO2 sensor will open the associated grating unit.</Help>
+		</Value>
+
+		<!-- Humidity set point -->
+		<Value genre="config" index="3" label="CO² set point" size="1" type="byte" value="70" min="1" max="127" units="%">
+			<Help>Set point RH: Used in ‘automatic mode’. (button 4) if the device is a humidity sensor. The humidity level in a room is a good indication of the air quality in this room. 
+			When the RH level is above this set point, the room needs more ventilation. Consequently, the RH sensor will open the associated grating unit.</Help>
+		</Value>
+
+		<!-- Button 1 -->
+		<Value genre="config" index="4" label="Button 1" size="1" type="byte" value="15" min="1" max="127" units="%">
+			<Help>	The value when button1 is pressed. Values above 99 will be capped to 99 (maximum) used in association group 1</Help>
+		</Value>
+
+		<!-- Button 2 -->
+		<Value genre="config" index="5" label="Button 2" size="1" type="byte" value="50" min="1" max="127" units="%">
+			<Help>	The value when button2 is pressed. Values above 99 will be capped to 99 (maximum) used in association group 1</Help>
+		</Value>
+
+		<!-- Button 3 -->
+		<Value genre="config" index="6" label="Button 3" size="1" type="byte" value="99" min="1" max="127" units="%">
+			<Help>The value when button3 is pressed. Values above 99 will be capped to 99 (maximum) used in association group 1</Help>
+		</Value>
+
+		<!-- Min automatic level -->
+		<Value genre="config" index="7" label="Min automatic level" size="1" type="byte" value="15" min="1" max="127" units="%">
+			<Help>The minimum value that can be send by the CO2 sensor when it is in automatic mode.</Help>
+		</Value>
+
+		<!-- Temperature high setpoint -->
+		<Value genre="config" index="8" label="Temperature high setpoint" size="2" type="short" value="0" min="1" max="32767" units="°C">
+			<Help>Temperature high set point: used in association group 2 or 3</Help>
+		</Value>
+
+		<!-- Temperature low setpoint -->
+		<Value genre="config" index="9" label="Temperature low setpoint" size="2" type="short" value="0" min="1" max="32767" units="°C">
+			<Help>Temperature low set point: used in association group 2 or 3</Help>
+		</Value>
+
+		<!-- Temperature delta setpoint -->
+		<Value genre="config" index="10" label="Temperature delta setpoint" size="2" type="short" value="2" min="1" max="32767" units="°C">
+			<Help>Temperature delta set point: used in association group 4</Help>
+		</Value>
+
+		<!-- RH high setpoint -->
+		<Value genre="config" index="11" label="RH high setpoint" size="2" type="short" value="0" min="1" max="32767" units="%">
+			<Help>RH high set point: used in association group 5 or 6</Help>
+		</Value>
+
+		<!-- RH low setpoint -->
+		<Value genre="config" index="12" label="RH low setpoint" size="2" type="short" value="0" min="1" max="32767" units="%">
+			<Help>RH low set point: used in group5 or 6</Help>
+		</Value>
+
+		<!-- RH delta setpoint -->
+		<Value genre="config" index="13" label="RH delta setpoint" size="2" type="short" value="0" min="1" max="32767" units="%">
+			<Help>RH delta set point: used in group7</Help>
+		</Value>
+
+		<!-- CO2 high setpoint -->
+		<Value genre="config" index="14" label="CO2 high setpoint" size="2" type="short" value="0" min="1" max="32767" units="PPM">
+			<Help>CO2 high set point: not available in RH sensor</Help>
+		</Value>
+
+		<!-- CO2 low setpoint -->
+		<Value genre="config" index="15" label="CO2 low setpoint" size="2" type="short" value="0" min="1" max="32767" units="PPM">
+			<Help>CO2 low set point: not available in RH sensor</Help>
+		</Value>
+
+		<!-- CO2 delta setpoint -->
+		<Value genre="config" index="16" label="CO2 delta setpoint" size="2" type="short" value="500" min="1" max="32767" units="PPM">
+			<Help>	CO2 delta set point: not available in RH sensor</Help>
+		</Value>
+
+	</CommandClass>
+
+</Product>

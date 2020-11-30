@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include "RAVEn.h"
 #include "../main/Helper.h"
-#include "../main/Logger.h"
-#include "hardwaretypes.h"
-#include "../main/RFXtrx.h"
 #include "../main/localtime_r.h"
+#include "../main/Logger.h"
 #include "../main/mainworker.h"
+#include "../main/RFXtrx.h"
+#include "../tinyxpath/tinyxml.h"
+#include "hardwaretypes.h"
 
-#include <tinyxml.h>
+using namespace boost::placeholders;
 
 //Rainforest RAVEn USB ZigBee Smart Meter Adapter
 //https://rainforestautomation.com/rfa-z106-raven/
@@ -16,10 +17,6 @@ RAVEn::RAVEn(const int ID, const std::string& devname)
 : device_(devname), m_wptr(m_buffer), m_currUsage(0), m_totalUsage(0)
 {
     m_HwdID = ID;
-}
-
-RAVEn::~RAVEn(void)
-{
 }
 
 bool RAVEn::StartHardware()
@@ -103,14 +100,11 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
 #endif
         return;
     }
-    else
-    {
 #ifdef _DEBUG
-        _log.Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - m_buffer, m_wptr - endPtr, endPtr);
+    _log.Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - m_buffer, m_wptr - endPtr, endPtr);
 #endif
-        memmove(m_buffer, endPtr, m_wptr - endPtr);
-        m_wptr = m_buffer + (m_wptr - endPtr);
-    }
+    memmove(m_buffer, endPtr, m_wptr - endPtr);
+    m_wptr = m_buffer + (m_wptr - endPtr);
 
     TiXmlElement *pRoot;
 
@@ -118,14 +112,16 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     bool updated=false;
     if (pRoot)
     {
-        m_currUsage = 1000*double(strtoul(pRoot->FirstChildElement("Demand")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
-        updated = true;
+	    m_currUsage = 1000 * double(strtoul(pRoot->FirstChildElement("Demand")->GetText(), nullptr, 16))
+			  / strtoul(pRoot->FirstChildElement("Divisor")->GetText(), nullptr, 16);
+	    updated = true;
     }
     pRoot = doc.FirstChildElement("CurrentSummationDelivered");
     if(pRoot)
     {
-        m_totalUsage = double(strtoul(pRoot->FirstChildElement("SummationDelivered")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
-        updated = true;
+	    m_totalUsage = double(strtoul(pRoot->FirstChildElement("SummationDelivered")->GetText(), nullptr, 16))
+			   / strtoul(pRoot->FirstChildElement("Divisor")->GetText(), nullptr, 16);
+	    updated = true;
     }
 
     if(updated)

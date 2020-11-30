@@ -14,20 +14,59 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <ctime>
+
+using namespace boost::placeholders;
+
+#ifdef _DEBUG
+//#define DEBUG_P1_R
+#endif
+
+#ifdef DEBUG_P1_R
+//Belgium
+const char *szP1Test=R"p1_test(/FLU5\253770234_A
+
+0-0:96.1.4(50213)
+0-0:96.1.1(3153414731313030303037313930)
+0-0:1.0.0(190905142315S)
+1-0:1.8.1(000244.844*kWh)
+1-0:1.8.2(000226.027*kWh)
+1-0:2.8.1(000139.553*kWh)
+1-0:2.8.2(000045.390*kWh)
+0-0:96.14.0(0001)
+1-0:1.7.0(00.000*kW)
+1-0:2.7.0(00.198*kW)
+1-0:32.7.0(240.0*V)
+1-0:31.7.0(002*A)
+0-0:96.3.10(1)
+0-0:17.0.0(999.9*kW)
+1-0:31.4.0(999*A)
+0-0:96.13.0()
+0-1:24.1.0(003)
+0-1:96.1.1(37464C4F32313139303137303532)
+0-1:24.4.0(1)
+0-1:24.2.3(190905142001S)(00071.724*m3)
+!0F77)p1_test";
+#endif
 
 //
 //Class P1MeterSerial
 //
-P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const bool disable_crc, const int ratelimit):
+P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const bool disable_crc, const int ratelimit, const std::string& DecryptionKey):
 m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
 	m_bDisableCRC = disable_crc;
 	m_ratelimit = ratelimit;
+
+	if (!DecryptionKey.empty())
+	{
+		m_bIsEncrypted = true;
+		m_szHexKey = HexToBytes(DecryptionKey);
+	}
 }
 
 P1MeterSerial::P1MeterSerial(const std::string& devname,
@@ -39,11 +78,6 @@ P1MeterSerial::P1MeterSerial(const std::string& devname,
         :AsyncSerial(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop),
 		m_iBaudRate(baud_rate)
 {
-}
-
-P1MeterSerial::~P1MeterSerial()
-{
-
 }
 
 #ifdef _DEBUG
@@ -116,6 +150,11 @@ bool P1MeterSerial::StartHardware()
 
 	setReadCallback(boost::bind(&P1MeterSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
+
+#ifdef DEBUG_P1_R
+	ParseP1Data((const uint8_t*)szP1Test, static_cast<int>(strlen(szP1Test)), m_bDisableCRC, m_ratelimit);
+#endif
+
 	return true;
 }
 
@@ -158,7 +197,7 @@ void P1MeterSerial::Do_Work()
 
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat=mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 		}
 	}

@@ -5,19 +5,18 @@
 //
 #ifdef ENABLE_PYTHON
 
-#include <tinyxml.h>
-
 #include "Plugins.h"
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
 #include "PythonObjects.h"
 
-#include "../main/Helper.h"
-#include "../main/Logger.h"
-#include "../main/SQLHelper.h"
-#include "../main/mainworker.h"
-#include "../main/localtime_r.h"
+#include "../../main/Helper.h"
+#include "../../main/Logger.h"
+#include "../../main/SQLHelper.h"
+#include "../../main/mainworker.h"
+#include "../../main/localtime_r.h"
+#include "../../tinyxpath/tinyxml.h"
 
 #include "../../notifications/NotificationHelper.h"
 
@@ -48,21 +47,13 @@ namespace Plugins {
 
 	std::mutex PythonMutex;			// controls access to Python
 
-	//
-	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
-	//
-	struct module_state {
-		CPlugin*	pPlugin;
-		PyObject*	error;
-	};
-
 	void LogPythonException(CPlugin* pPlugin, const std::string &sHandler)
 	{
 		PyTracebackObject	*pTraceback;
 		PyObject			*pExcept, *pValue;
 		PyTypeObject		*TypeName;
-		PyBytesObject		*pErrBytes = NULL;
-		const char*			pTypeText = NULL;
+		PyBytesObject *pErrBytes = nullptr;
+		const char *pTypeText = nullptr;
 		std::string			Name = "Unknown";
 
 		if (pPlugin)
@@ -147,7 +138,7 @@ namespace Plugins {
 			}
 			if (pCode && pCode->co_name)
 			{
-				if (sFuncName.length()) sFuncName += "\\";
+				if (!sFuncName.empty()) sFuncName += "\\";
 				PyBytesObject*	pFuncBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_name);
 				sFuncName = pFuncBytes->ob_sval;
 			}
@@ -192,7 +183,7 @@ namespace Plugins {
 			}
 			if (pCode && pCode->co_name)
 			{
-				if (sFuncName.length()) sFuncName += "\\";
+				if (!sFuncName.empty()) sFuncName += "\\";
 				PyBytesObject*	pFuncBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_name);
 				sFuncName = pFuncBytes->ob_sval;
 			}
@@ -433,7 +424,7 @@ namespace Plugins {
 			else
 			{
 				std::string		sNotifierName = szNotifier;
-				if ((!sNotifierName.length()) || (sNotifierName.find_first_of(' ') != -1))
+				if ((sNotifierName.empty()) || (sNotifierName.find_first_of(' ') != std::string::npos))
 				{
 					_log.Log(LOG_ERROR, "(%s) failed to parse parameters, valid Notifier Name expected, received '%s'.", pModState->pPlugin->m_Name.c_str(), szNotifier);
 				}
@@ -480,8 +471,8 @@ namespace Plugins {
 				}
 				else
 				{
-					PyEval_SetProfile(NULL, NULL);
-					PyEval_SetTrace(NULL, NULL);
+					PyEval_SetProfile(nullptr, nullptr);
+					PyEval_SetTrace(nullptr, nullptr);
 				}
 			}
 		}
@@ -490,17 +481,75 @@ namespace Plugins {
 		return Py_None;
 	}
 
-	static PyMethodDef DomoticzMethods[] = {
-		{ "Debug", PyDomoticz_Debug, METH_VARARGS, "Write a message to Domoticz log only if verbose logging is turned on." },
-		{ "Log", PyDomoticz_Log, METH_VARARGS, "Write a message to Domoticz log." },
-		{ "Status", PyDomoticz_Status, METH_VARARGS, "Write a status message to Domoticz log." },
-		{ "Error", PyDomoticz_Error, METH_VARARGS, "Write an error message to Domoticz log." },
-		{ "Debugging", PyDomoticz_Debugging, METH_VARARGS, "Set logging level. 1 set verbose logging, all other values use default level" },
-		{ "Heartbeat", PyDomoticz_Heartbeat, METH_VARARGS, "Set the heartbeat interval, default 10 seconds." },
-		{ "Notifier", PyDomoticz_Notifier, METH_VARARGS, "Enable notification handling with supplied name." },
-		{ "Trace", PyDomoticz_Trace, METH_VARARGS, "Enable/Disable line level Python tracing." },
-		{ NULL, NULL, 0, NULL }
-	};
+	static PyObject*	PyDomoticz_Configuration(PyObject *self, PyObject *args, PyObject* kwds)
+	{
+		PyObject*		pConfig = Py_None;
+		std::string		sConfig;
+		std::vector<std::vector<std::string> > result;
+
+		Py_INCREF(Py_None);
+
+		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
+		if (!pModState)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+		}
+		else
+		{
+			CPluginProtocolJSON* pProtocol = (CPluginProtocolJSON*)CPluginProtocol::Create("JSON");
+			PyObject *pNewConfig = nullptr;
+			static char *kwlist[] = { "Config", nullptr };
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist , &pNewConfig))
+			{
+				// Python object supplied if it is not a dictionary
+				if (!PyDict_Check(pNewConfig))
+				{
+					_log.Log(LOG_ERROR, "CPlugin:%s, Function expects no parameter or a Dictionary.", __func__);
+					return pConfig;
+				}
+				//  Convert to JSON and store
+				sConfig = pProtocol->PythontoJSON(pNewConfig);
+
+				// Update database
+				m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
+			}
+			PyErr_Clear();
+
+			// Read the configuration 
+			result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
+			if (result.empty())
+			{
+				_log.Log(LOG_ERROR, "CPlugin:%s, Hardware ID not found in database '%d'.", __func__, pModState->pPlugin->m_HwdID);
+				return pConfig;
+			}
+
+			// Build a Python structure to return 
+			sConfig = result[0][0];
+			if (sConfig.empty()) sConfig = "{}";
+			pConfig = pProtocol->JSONtoPython(sConfig);
+			Py_DECREF(Py_None);
+		}
+
+		return pConfig;
+	}
+
+	static PyMethodDef DomoticzMethods[]
+		= { { "Debug", PyDomoticz_Debug, METH_VARARGS, "Write a message to Domoticz log only if verbose logging is turned on." },
+		    { "Log", PyDomoticz_Log, METH_VARARGS, "Write a message to Domoticz log." },
+		    { "Status", PyDomoticz_Status, METH_VARARGS, "Write a status message to Domoticz log." },
+		    { "Error", PyDomoticz_Error, METH_VARARGS, "Write an error message to Domoticz log." },
+		    { "Debugging", PyDomoticz_Debugging, METH_VARARGS,
+		      "Set logging level. 1 set verbose logging, all other values use default level" },
+		    { "Heartbeat", PyDomoticz_Heartbeat, METH_VARARGS, "Set the heartbeat interval, default 10 seconds." },
+		    { "Notifier", PyDomoticz_Notifier, METH_VARARGS, "Enable notification handling with supplied name." },
+		    { "Trace", PyDomoticz_Trace, METH_VARARGS, "Enable/Disable line level Python tracing." },
+		    { "Configuration", (PyCFunction)PyDomoticz_Configuration, METH_VARARGS | METH_KEYWORDS,
+		      "Retrieve and Store structured plugin configuration." },
+		    { nullptr, nullptr, 0, nullptr } };
 
 	static int DomoticzTraverse(PyObject *m, visitproc visit, void *arg) {
 		Py_VISIT(GETSTATE(m)->error);
@@ -512,17 +561,9 @@ namespace Plugins {
 		return 0;
 	}
 
-	struct PyModuleDef DomoticzModuleDef = {
-		PyModuleDef_HEAD_INIT,
-		"Domoticz",
-		NULL,
-		sizeof(struct module_state),
-		DomoticzMethods,
-		NULL,
-		DomoticzTraverse,
-		DomoticzClear,
-		NULL
-	};
+	struct PyModuleDef DomoticzModuleDef
+		= { PyModuleDef_HEAD_INIT, "Domoticz",	  nullptr, sizeof(struct module_state), DomoticzMethods, nullptr,
+		    DomoticzTraverse,	   DomoticzClear, nullptr };
 
 	PyMODINIT_FUNC PyInit_Domoticz(void)
 	{
@@ -558,17 +599,16 @@ namespace Plugins {
 		return pModule;
 	}
 
-
-	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey) :
-		m_PluginKey(sPluginKey),
-		m_iPollInterval(10),
-		m_Notifier(NULL),
-		m_bDebug(PDM_NONE),
-		m_PyInterpreter(NULL),
-		m_PyModule(NULL),
-		m_DeviceDict(NULL),
-		m_ImageDict(NULL),
-		m_SettingsDict(NULL)
+	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey)
+		: m_iPollInterval(10)
+		, m_PyInterpreter(nullptr)
+		, m_PyModule(nullptr)
+		, m_Notifier(nullptr)
+		, m_PluginKey(sPluginKey)
+		, m_DeviceDict(nullptr)
+		, m_ImageDict(nullptr)
+		, m_SettingsDict(nullptr)
+		, m_bDebug(PDM_NONE)
 	{
 		m_HwdID = HwdID;
 		m_Name = sName;
@@ -577,7 +617,7 @@ namespace Plugins {
 		m_bTracing = false;
 	}
 
-	CPlugin::~CPlugin(void)
+	CPlugin::~CPlugin()
 	{
 		m_bIsStarted = false;
 	}
@@ -587,7 +627,7 @@ namespace Plugins {
 		PyTracebackObject	*pTraceback;
 		PyObject			*pExcept, *pValue;
 		PyTypeObject		*TypeName;
-		PyBytesObject		*pErrBytes = NULL;
+		PyBytesObject *pErrBytes = nullptr;
 
 		PyErr_Fetch(&pExcept, &pValue, (PyObject**)&pTraceback);
 
@@ -627,7 +667,7 @@ namespace Plugins {
 					}
 					Py_XDECREF(pString);
 				}
-				if (sError.length())
+				if (!sError.empty())
 				{
 					_log.Log(LOG_ERROR, "(%s) Module Import failed: '%s'", m_Name.c_str(), sError.c_str());
 					sError = "";
@@ -658,7 +698,7 @@ namespace Plugins {
 					Py_XDECREF(pString);
 				}
 
-				if (sError.length())
+				if (!sError.empty())
 				{
 					if ((lineno > 0) && (lineno < 1000))
 					{
@@ -683,7 +723,7 @@ namespace Plugins {
 					_log.Log(LOG_ERROR, "(%s) Error Line details not available.", m_Name.c_str());
 				}
 
-				if (sError.length())
+				if (!sError.empty())
 				{
 					_log.Log(LOG_ERROR, "(%s) Import detail: %s", m_Name.c_str(), sError.c_str());
 				}
@@ -708,8 +748,8 @@ namespace Plugins {
 		PyTracebackObject	*pTraceback;
 		PyObject			*pExcept, *pValue;
 		PyTypeObject		*TypeName;
-		PyBytesObject		*pErrBytes = NULL;
-		const char*			pTypeText = NULL;
+		PyBytesObject *pErrBytes = nullptr;
+		const char *pTypeText = nullptr;
 
 		PyErr_Fetch(&pExcept, &pValue, (PyObject**)&pTraceback);
 
@@ -748,7 +788,7 @@ namespace Plugins {
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
 				PyCodeObject*	pCode = frame->f_code;
-				std::string		FileName = "";
+				std::string FileName;
 				if (pCode->co_filename)
 				{
 					PyBytesObject*	pFileBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_filename);
@@ -762,7 +802,7 @@ namespace Plugins {
 					FuncName = pFuncBytes->ob_sval;
 					Py_XDECREF(pFuncBytes);
 				}
-				if (FileName.length())
+				if (!FileName.empty())
 					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
 				else
 					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
@@ -788,11 +828,10 @@ namespace Plugins {
 		return m_iPollInterval;
 	}
 
-	void CPlugin::Notifier(std::string Notifier)
+	void CPlugin::Notifier(const std::string &Notifier)
 	{
-		if (m_Notifier)
-			delete m_Notifier;
-		m_Notifier = NULL;
+		delete m_Notifier;
+		m_Notifier = nullptr;
 		if (m_bDebug & PDM_PLUGIN) _log.Log(LOG_NORM, "(%s) Notifier Name set to: %s.", m_Name.c_str(), Notifier.c_str());
 		m_Notifier = new CPluginNotifier(this, Notifier);
 	}
@@ -806,7 +845,7 @@ namespace Plugins {
 	void CPlugin::RemoveConnection(CPluginTransport *pTransport)
 	{
 		std::lock_guard<std::mutex> l(m_TransportsMutex);
-		for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+		for (auto itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 		{
 			CPluginTransport*	pPluginTransport = *itt;
 			if (pTransport == pPluginTransport)
@@ -880,14 +919,13 @@ namespace Plugins {
 			if (m_bIsStarted)
 			{
 				// If we have connections queue disconnects
-				if (m_Transports.size())
+				if (!m_Transports.empty())
 				{
 					std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 					                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
 					std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
-					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+					for (const auto &pPluginTransport : m_Transports)
 					{
-						CPluginTransport*	pPluginTransport = *itt;
 						// Tell transport to disconnect if required
 						if (pPluginTransport)
 						{
@@ -920,7 +958,7 @@ namespace Plugins {
 			if (m_Notifier)
 			{
 				delete m_Notifier;
-				m_Notifier = NULL;
+				m_Notifier = nullptr;
 			}
 		}
 		catch (...)
@@ -936,7 +974,7 @@ namespace Plugins {
 	void CPlugin::Do_Work()
 	{
 		_log.Log(LOG_STATUS, "(%s) Entering work loop.", m_Name.c_str());
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 		int scounter = m_iPollInterval * 2;
 		while (!IsStopRequested(500))
 		{
@@ -945,7 +983,7 @@ namespace Plugins {
 				//	Add heartbeat to message queue
 				MessagePlugin(new onHeartbeatCallback(this));
 				scounter = m_iPollInterval * 2;
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 
 			// Check all connections are still valid, vector could be affected by a disconnect on another thread
@@ -954,12 +992,11 @@ namespace Plugins {
 				std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 				                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
 				std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
-				if (m_Transports.size())
+				if (!m_Transports.empty())
 				{
-					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+					for (const auto &pPluginTransport : m_Transports)
 					{
 						//std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-						CPluginTransport*	pPluginTransport = *itt;
 						pPluginTransport->VerifyConnection();
 					}
 				}
@@ -998,13 +1035,13 @@ namespace Plugins {
 			CPluginSystem Plugins;
 			std::map<std::string, std::string>*	mPluginXml = Plugins.GetManifest();
 			std::string		sPluginXML;
-			for (std::map<std::string, std::string>::iterator it_type = mPluginXml->begin(); it_type != mPluginXml->end(); it_type++)
+			for (const auto &type : *mPluginXml)
 			{
-				if (it_type->second.find(sFind) != std::string::npos)
+				if (type.second.find(sFind) != std::string::npos)
 				{
-					m_HomeFolder = it_type->first;
+					m_HomeFolder = type.first;
 					ssPath << m_HomeFolder.c_str();
-					sPluginXML = it_type->second;
+					sPluginXML = type.second;
 					break;
 				}
 			}
@@ -1028,7 +1065,7 @@ namespace Plugins {
 					PyObject*	pFunc = PyObject_GetAttrString((PyObject*)pSiteModule, "getsitepackages");
 					if (pFunc && PyCallable_Check(pFunc))
 					{
-						PyObject*	pSites = PyObject_CallObject(pFunc, NULL);
+						PyObject *pSites = PyObject_CallObject(pFunc, nullptr);
 						if (!pSites)
 						{
 							LogPythonException("getsitepackages");
@@ -1056,6 +1093,31 @@ namespace Plugins {
 
 			// Update the path itself
 			PySys_SetPath((wchar_t*)sPath.c_str());
+
+			try
+			{
+				//
+				//	Load the 'faulthandler' module to get a python stackdump during a segfault
+				//
+				void*	pFaultModule = PyImport_ImportModule("faulthandler");
+				if (!pFaultModule)
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to load 'faulthandler' module, continuing.", m_PluginKey.c_str());
+				}
+				else
+				{
+					PyObject*	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "enable");
+					if (pFunc && PyCallable_Check(pFunc))
+					{
+						PyObject_CallObject(pFunc, nullptr);
+					}
+				}
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "(%s) exception loading 'faulthandler' module, continuing.", m_PluginKey.c_str());
+				PyErr_Clear();
+			}
 
 			try
 			{
@@ -1123,7 +1185,7 @@ namespace Plugins {
 						if (pAttributeValue)
 						{
 							m_Author = pAttributeValue;
-							if (sExtraDetail.length()) sExtraDetail += ", ";
+							if (!sExtraDetail.empty()) sExtraDetail += ", ";
 							sExtraDetail += "author '";
 							sExtraDetail += pAttributeValue;
 							sExtraDetail += "'";
@@ -1175,11 +1237,8 @@ Error:
 			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID==%d)", m_HwdID);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
-					const char*	pChar = sd[0].c_str();
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "UserDataFolder", szUserDataFolder);
@@ -1205,10 +1264,6 @@ Error:
 					ADD_STRING_TO_DICT(pParamsDict, "DomoticzVersion", szAppVersion);
 					ADD_STRING_TO_DICT(pParamsDict, "DomoticzHash", szAppHash);
 					ADD_STRING_TO_DICT(pParamsDict, "DomoticzBuildTime", szAppDate);
-
-					// Remember these for use with some protocols
-					m_Username = sd[4];
-					m_Password = sd[5];
 				}
 			}
 
@@ -1225,10 +1280,9 @@ Error:
 			{
 				PyType_Ready(&CDeviceType);
 				// Add device objects into the device dictionary with Unit as the key
-				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
-					CDevice* pDevice = (CDevice*)CDevice_new(&CDeviceType, (PyObject*)NULL, (PyObject*)NULL);
+					CDevice *pDevice = (CDevice *)CDevice_new(&CDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
 
 					PyObject*	pKey = PyLong_FromLong(atoi(sd[0].c_str()));
 					if (PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)pDevice) == -1)
@@ -1259,10 +1313,9 @@ Error:
 			{
 				PyType_Ready(&CImageType);
 				// Add image objects into the image dictionary with ID as the key
-				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
-					CImage* pImage = (CImage*)CImage_new(&CImageType, (PyObject*)NULL, (PyObject*)NULL);
+					CImage *pImage = (CImage *)CImage_new(&CImageType, (PyObject *)nullptr, (PyObject *)nullptr);
 
 					PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
 					if (PyDict_SetItem((PyObject*)m_ImageDict, pKey, (PyObject*)pImage) == -1)
@@ -1302,10 +1355,10 @@ Error:
 		if (m_Notifier)
 		{
 			delete pConnection->pProtocol;
-			pConnection->pProtocol = NULL;
+			pConnection->pProtocol = nullptr;
 		}
 		std::string	sProtocol = PyUnicode_AsUTF8(pConnection->Protocol);
-		pConnection->pProtocol = CPluginProtocol::Create(sProtocol, m_Username, m_Password);
+		pConnection->pProtocol = CPluginProtocol::Create(sProtocol);
 		if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Protocol set to: '%s'.", m_Name.c_str(), sProtocol.c_str());
 	}
 
@@ -1336,7 +1389,7 @@ Error:
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			if (!sPort.length())
+			if (sPort.empty())
 			{
 				_log.Log(LOG_ERROR, "(%s) No port number specified for %s connection to: '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str());
 				return;
@@ -1409,14 +1462,14 @@ Error:
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
+			pConnection->pTransport = (CPluginTransport *)new CPluginTransportUDP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "ICMP/IP")
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportICMP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
+			pConnection->pTransport = (CPluginTransport *)new CPluginTransportICMP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
 		}
 		else
 		{
@@ -1476,7 +1529,7 @@ Error:
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 				if (m_bDebug & PDM_CONNECTION)
 				{
-					if (sPort.length())
+					if (!sPort.empty())
 						_log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s for '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str(), sConnection.c_str());
 					else
 						_log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s for '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sConnection.c_str());
@@ -1505,7 +1558,7 @@ Error:
 		if (pConnection->pTransport && (sTransport == "UDP/IP"))
 		{
 			delete pConnection->pTransport;
-			pConnection->pTransport = NULL;
+			pConnection->pTransport = nullptr;
 		}
 	}
 
@@ -1527,7 +1580,7 @@ Error:
 				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-				if ((sTransport == "Serial") || (!sPort.length()))
+				if ((sTransport == "Serial") || (sPort.empty()))
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s'.", m_Name.c_str(), sAddress.c_str());
 				else
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s:%s'.", m_Name.c_str(), sAddress.c_str(), sPort.c_str());
@@ -1539,10 +1592,10 @@ Error:
 				pConnection->pTransport->handleDisconnect();
 				RemoveConnection(pConnection->pTransport);
 				delete pConnection->pTransport;
-				pConnection->pTransport = NULL;
+				pConnection->pTransport = nullptr;
 
 				// Plugin exiting and all connections have disconnect messages queued
-				if (IsStopRequested(0) && !m_Transports.size())
+				if (IsStopRequested(0) && m_Transports.empty())
 				{
 					MessagePlugin(new onStopCallback(this));
 				}
@@ -1556,7 +1609,7 @@ Error:
 
 	void CPlugin::onDeviceAdded(int Unit)
 	{
-		CDevice* pDevice = (CDevice*)CDevice_new(&CDeviceType, (PyObject*)NULL, (PyObject*)NULL);
+		CDevice *pDevice = (CDevice *)CDevice_new(&CDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
 
 		PyObject*	pKey = PyLong_FromLong(Unit);
 		if (PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)pDevice) == -1)
@@ -1631,6 +1684,13 @@ Error:
 	{
 		DisconnectedEvent*	pMessage = (DisconnectedEvent*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+
+		// Return any partial data to plugin
+		if (pConnection->pProtocol)
+		{
+			pConnection->pProtocol->Flush(pMessage->m_pPlugin, (PyObject*)pConnection);
+		}
+
 		if (pConnection->pTransport)
 		{
 			if (m_bDebug & PDM_CONNECTION)
@@ -1638,7 +1698,7 @@ Error:
 				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-				if ((sTransport == "Serial") || (!sPort.length()))
+				if ((sTransport == "Serial") || (sPort.empty()))
 					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s'.", m_Name.c_str(), sAddress.c_str());
 				else
 					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s:%s'.", m_Name.c_str(), sAddress.c_str(), sPort.c_str());
@@ -1646,7 +1706,7 @@ Error:
 
 			RemoveConnection(pConnection->pTransport);
 			delete pConnection->pTransport;
-			pConnection->pTransport = NULL;
+			pConnection->pTransport = nullptr;
 
 			// inform the plugin if transport is connection based
 			if (pMessage->bNotifyPlugin)
@@ -1655,7 +1715,7 @@ Error:
 			}
 
 			// Plugin exiting and all connections have disconnect messages queued
-			if (IsStopRequested(0) && !m_Transports.size())
+			if (IsStopRequested(0) && m_Transports.empty())
 			{
 				MessagePlugin(new onStopCallback(this));
 			}
@@ -1674,12 +1734,12 @@ Error:
 			PyEval_SaveThread();
 	}
 
-	void CPlugin::Callback(std::string sHandler, void * pParams)
+	void CPlugin::Callback(const std::string &sHandler, void *pParams)
 	{
 		try
 		{
 			// Callbacks MUST already have taken the PythonMutex lock otherwise bad things will happen
-			if (m_PyModule && sHandler.length())
+			if (m_PyModule && !sHandler.empty())
 			{
 				PyObject*	pFunc = PyObject_GetAttrString((PyObject*)m_PyModule, sHandler.c_str());
 				if (pFunc && PyCallable_Check(pFunc))
@@ -1716,11 +1776,15 @@ Error:
 			PyErr_Clear();
 
 			// Stop Python
+			Py_XDECREF(m_PyModule);
 			if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
 			if (m_ImageDict) Py_XDECREF(m_ImageDict);
 			if (m_SettingsDict) Py_XDECREF(m_SettingsDict);
 			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
-			Py_XDECREF(m_PyModule);
+			// To release the GIL there must be a valid thread state so use
+			// the one created during start up of the plugin system because it will always exist
+			CPluginSystem pManager;
+			PyThreadState_Swap((PyThreadState *)pManager.PythonThread());
 			PyEval_ReleaseLock();
 		}
 		catch (std::exception *e)
@@ -1732,11 +1796,11 @@ Error:
 			_log.Log(LOG_ERROR, "%s: Unknown execption thrown releasing Interpreter", __func__);
 		}
 		ClearMessageQueue();
-		m_PyModule = NULL;
-		m_DeviceDict = NULL;
-		m_ImageDict = NULL;
-		m_SettingsDict = NULL;
-		m_PyInterpreter = NULL;
+		m_PyModule = nullptr;
+		m_DeviceDict = nullptr;
+		m_ImageDict = nullptr;
+		m_SettingsDict = nullptr;
+		m_PyInterpreter = nullptr;
 		m_bIsStarted = false;
 	}
 
@@ -1758,13 +1822,11 @@ Error:
 		{
 			PyType_Ready(&CDeviceType);
 			// Add settings strings into the settings dictionary with Unit as the key
-			for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+			for (const auto &sd : result)
 			{
-				std::vector<std::string> sd = *itt;
-
 				PyObject*	pKey = PyUnicode_FromString(sd[0].c_str());
-				PyObject*	pValue = NULL;
-				if (sd[2].length())
+				PyObject *pValue = nullptr;
+				if (!sd[2].empty())
 				{
 					pValue = PyUnicode_FromString(sd[2].c_str());
 				}
@@ -1885,7 +1947,7 @@ Error:
 		std::string szRetVal = "Light48";
 		if (iIconLine < 100)  // default set of custom icons
 		{
-			std::string sLine = "";
+			std::string sLine;
 			std::ifstream infile;
 			std::string switchlightsfile = szWWWFolder + "/switch_icons.txt";
 			infile.open(switchlightsfile.c_str());
@@ -1895,7 +1957,7 @@ Error:
 				while (!infile.eof())
 				{
 					getline(infile, sLine);
-					if ((sLine.size() != 0) && (index++ == iIconLine))
+					if ((!sLine.empty()) && (index++ == iIconLine))
 					{
 						std::vector<std::string> results;
 						StringSplit(sLine, ";", results);
@@ -1937,7 +1999,7 @@ Error:
 		if (posStatus >= 0)
 		{
 			posStatus += 8;
-			szStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus) - posStatus);
+			szStatus = ExtraData.substr(posStatus, ExtraData.find('|', posStatus) - posStatus);
 			if (szStatus != "Off") szStatus = "On";
 		}
 
@@ -1946,7 +2008,7 @@ Error:
 		if (posImage >= 0)
 		{
 			posImage += 7;
-			szImageFile = szImageFolder + ExtraData.substr(posImage, ExtraData.find("|", posImage) - posImage) + ".png";
+			szImageFile = szImageFolder + ExtraData.substr(posImage, ExtraData.find('|', posImage) - posImage) + ".png";
 			if (file_exist(szImageFile.c_str()))
 			{
 				return szImageFile;
@@ -1958,7 +2020,7 @@ Error:
 		if (posCustom >= 0)
 		{
 			posCustom += 13;
-			std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+			std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
 			int iCustom = atoi(szCustom.c_str());
 			if (iCustom)
 			{
@@ -1985,7 +2047,7 @@ Error:
 		if (posType >= 0)
 		{
 			posType += 12;
-			std::string	szType = ExtraData.substr(posType, ExtraData.find("|", posType) - posType);
+			std::string szType = ExtraData.substr(posType, ExtraData.find('|', posType) - posType);
 			std::string	szTypeImage;
 			_eSwitchType switchtype = (_eSwitchType)atoi(szType.c_str());
 			switch (switchtype)
@@ -1993,7 +2055,7 @@ Error:
 			case STYPE_OnOff:
 				if (posCustom >= 0)
 				{
-					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
 				else 
@@ -2043,7 +2105,7 @@ Error:
 			case STYPE_Media:
 				if (posCustom >= 0)
 				{
-					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
 				else
@@ -2097,7 +2159,7 @@ Error:
 		if (posName >= 0)
 		{
 			posName += 6;
-			sName = ExtraData.substr(posName, ExtraData.find("|", posName) - posName);
+			sName = ExtraData.substr(posName, ExtraData.find('|', posName) - posName);
 		}
 
 		std::string	sStatus = "Unknown";
@@ -2105,7 +2167,7 @@ Error:
 		if (posStatus >= 0)
 		{
 			posStatus += 8;
-			sStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus) - posStatus);
+			sStatus = ExtraData.substr(posStatus, ExtraData.find('|', posStatus) - posStatus);
 		}
 
 		//	Add command to message queue for every plugin
@@ -2113,5 +2175,5 @@ Error:
 
 		return true;
 	}
-}
+} // namespace Plugins
 #endif

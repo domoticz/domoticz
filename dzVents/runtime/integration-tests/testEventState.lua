@@ -5,8 +5,6 @@ package.path = package.path ..
 local TestTools = require('domoticzTestTools')('8080', true)
 local socket = require("socket")
 
-local _ = require 'lodash'
-
 local fsScripts = {'scriptTestEventState.lua'}
 
 describe('Test event state', function ()
@@ -26,10 +24,8 @@ describe('Test event state', function ()
 		TestTools.createVariable('varInt', 0, 0)
 		ok, scSwitchIdx = TestTools.createVirtualDevice(dummyIdx, 'sceneSilentSwitch1', 6)
 		TestTools.createVirtualDevice(dummyIdx, 'vdTempHumBaro', 84)
-
 		TestTools.createScene('scScene')
-		TestTools.addSceneDevice(sceneIdx, scSwitchIdx)
-
+        TestTools.addSceneDevice(1, scSwitchIdx)
 		TestTools.installFSScripts(fsScripts)
 
 

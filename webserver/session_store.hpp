@@ -24,27 +24,28 @@ typedef struct _tWebEmStoredSession {
  */
 class session_store {
 public:
-	virtual ~session_store() {};
+  virtual ~session_store() = default;
+  ;
 
-	/**
-	 * Retrieve user session from store
-	 */
-	virtual const WebEmStoredSession GetSession(const std::string & sessionId)=0;
+  /**
+   * Retrieve user session from store
+   */
+  virtual WebEmStoredSession GetSession(const std::string &sessionId) = 0;
 
-	/**
-	 * Save user session into store
-	 */
-	virtual void StoreSession(const WebEmStoredSession & session)=0;
+  /**
+   * Save user session into store
+   */
+  virtual void StoreSession(const WebEmStoredSession &session) = 0;
 
-	/**
-	 * Remove user session from store
-	 */
-	virtual void RemoveSession(const std::string & sessionId)=0;
+  /**
+   * Remove user session from store
+   */
+  virtual void RemoveSession(const std::string &sessionId) = 0;
 
-	/**
-	 * Remove expired user sessions from store
-	 */
-	virtual void CleanSessions()=0;
+  /**
+   * Remove expired user sessions from store
+   */
+  virtual void CleanSessions() = 0;
 };
 
 typedef session_store* session_store_impl_ptr;

@@ -233,7 +233,7 @@ extern "C" {
 extern void *UDPListener(void *ptr);  //for eHouse4Ethernet devices and eHouse1 via CommManager
 #else
 
-extern void UDPListener(void);  //for eHouse4Ethernet devices and eHouse1 via CommManager
+extern void UDPListener(); // for eHouse4Ethernet devices and eHouse1 via CommManager
 #endif
 #define GSMLOOP 1
 #define SIZE_OF_EHOUSE_PRO_STATUS 4000

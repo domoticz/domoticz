@@ -8,11 +8,13 @@
 #include "hardwaretypes.h"
 
 #include <algorithm>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 #include <iostream>
 #include <string>
+
+using namespace boost::placeholders;
 
 //#define DEBUG_MYSENSORS
 
@@ -32,11 +34,6 @@ MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname, const
 	}
 	m_szSerialPort = devname;
 	m_HwdID = ID;
-}
-
-MySensorsSerial::~MySensorsSerial()
-{
-
 }
 
 bool MySensorsSerial::StartHardware()

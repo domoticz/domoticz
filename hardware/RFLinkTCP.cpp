@@ -13,10 +13,6 @@ CRFLinkTCP::CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_usIPPort = usIPPort;
 }
 
-CRFLinkTCP::~CRFLinkTCP(void)
-{
-}
-
 bool CRFLinkTCP::StartHardware()
 {
 	RequestStart();
@@ -51,9 +47,10 @@ void CRFLinkTCP::OnConnect()
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
-	m_LastReceivedTime = mytime(NULL);
+	m_LastReceivedTime = mytime(nullptr);
 	sOnConnected(this);
 	write("10;PING;\n");
+	write("10;VERSION;\n");
 }
 
 void CRFLinkTCP::OnDisconnect()
@@ -72,13 +69,13 @@ void CRFLinkTCP::Do_Work()
 	{
 		sec_counter++;
 
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if ((sec_counter % 20 == 0) && (isConnected()))
 		{
-			time_t atime = mytime(NULL);
+			time_t atime = mytime(nullptr);
 			//Send ping (keep alive)
 			if (atime - m_LastReceivedTime > 30)
 			{
@@ -108,11 +105,6 @@ void CRFLinkTCP::Do_Work()
 void CRFLinkTCP::OnData(const unsigned char *pData, size_t length)
 {
 	ParseData((const char*)pData,length);
-}
-
-void CRFLinkTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"RFLink: Error: %s",e.what());
 }
 
 void CRFLinkTCP::OnError(const boost::system::error_code& error)

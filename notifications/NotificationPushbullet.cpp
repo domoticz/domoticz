@@ -2,17 +2,13 @@
 #include "NotificationPushbullet.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/Logger.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include "../httpclient/UrlEncode.h"
 
 CNotificationPushbullet::CNotificationPushbullet() : CNotificationBase(std::string("pushbullet"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
 	SetupConfig(std::string("PushbulletEnabled"), &m_IsEnabled);
 	SetupConfig(std::string("PushbulletAPI"), _apikey);
-}
-
-CNotificationPushbullet::~CNotificationPushbullet()
-{
 }
 
 bool CNotificationPushbullet::SendMessageImplementation(
@@ -34,13 +30,14 @@ bool CNotificationPushbullet::SendMessageImplementation(
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 	Json::Value json;
-	Json::StyledWriter jsonWriter;
 
 	//Build the message in JSON
 	json["type"] = "note";
 	json["title"] = CURLEncode::URLDecode(cSubject);
 	json["body"] = CURLEncode::URLDecode(Text);
-	sPostData = jsonWriter.write(json);
+
+
+	sPostData = JSonToFormatString(json);
 
 	//Add the required Access Token and Content Type
 	sHeaderKey << "Access-Token: " << _apikey;
@@ -63,5 +60,5 @@ bool CNotificationPushbullet::SendMessageImplementation(
 
 bool CNotificationPushbullet::IsConfigured()
 {
-	return _apikey != "";
+	return !_apikey.empty();
 }

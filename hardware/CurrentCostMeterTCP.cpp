@@ -16,10 +16,6 @@ CurrentCostMeterTCP::CurrentCostMeterTCP(const int ID, const std::string &IPAddr
 	m_HwdID=ID;
 }
 
-CurrentCostMeterTCP::~CurrentCostMeterTCP(void)
-{
-}
-
 bool CurrentCostMeterTCP::StartHardware()
 {
 	RequestStart();
@@ -40,14 +36,12 @@ bool CurrentCostMeterTCP::StartHardware()
 	{
 		// change Hostname in serveraddr
 		hostent *he=gethostbyname(m_szIPAddress.c_str());
-		if(he==NULL)
+		if (he == nullptr)
 		{
 			return false;
 		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr),he->h_addr_list[0],4);
-		}
+
+		memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
 	}
 
 	//force connect the next first time
@@ -127,7 +121,7 @@ void CurrentCostMeterTCP::Do_Work()
 				sec_counter++;
 
 				if (sec_counter % 12 == 0) {
-					m_LastHeartbeat = mytime(NULL);
+					m_LastHeartbeat = mytime(nullptr);
 				}
 
 				m_retrycntr++;
@@ -148,7 +142,7 @@ void CurrentCostMeterTCP::Do_Work()
 			int bread=recv(m_socket,data,sizeof(data),0);
 			if (IsStopRequested(100))
 				break;
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 			if ((bread==0)||(bread<0))
 			{
 				disconnect();

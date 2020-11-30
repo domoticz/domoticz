@@ -156,17 +156,14 @@ I2C::I2C(const int ID, const _eI2CType DevType, const std::string &Address, cons
 {
 	_log.Log(LOG_STATUS, "I2C  Start HW witf ID: %d Name: %s Address: %d Port: %s Invert:%d ", ID, szI2CTypeNames[m_dev_type], m_i2c_addr, m_ActI2CBus.c_str(), m_invert_data);
 	m_HwdID = ID;
-	if (m_ActI2CBus == "") { // if empty option then autodetect i2c bus
+	if (m_ActI2CBus.empty())
+	{ // if empty option then autodetect i2c bus
 		m_ActI2CBus = "/dev/i2c-1";
 		if (!i2c_test(m_ActI2CBus.c_str()))
 		{
 			m_ActI2CBus = "/dev/i2c-0";
 		}
 	}
-}
-
-I2C::~I2C()
-{
 }
 
 bool I2C::StartHardware()
@@ -224,7 +221,8 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 				return false;
 			return true;
 		}
-		else if (m_dev_type == I2CTYPE_MCP23017) {
+		if (m_dev_type == I2CTYPE_MCP23017)
+		{
 			if (MCP23017_WritePin(pin_number, value) < 0)
 				return false;
 			return true;
@@ -252,7 +250,7 @@ void I2C::Do_Work()
 			msec_counter = 0;
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 			try
 			{
@@ -351,7 +349,7 @@ void I2C::PCF8574_ReadChipDetails()
 		unsigned char Unit = pin_number;
 		uint8_t pin_mask = 0x01 << pin_number;
 		bool value = (buf & pin_mask);
-		SendSwitch(DeviceID, Unit, 255, value, 0, ""); // create or update switch
+		SendSwitch(DeviceID, Unit, 255, value, 0, "", m_Name); // create or update switch
 	}
 	close(fd);
 #endif
@@ -397,14 +395,13 @@ void I2C::MCP23017_Init()
 	unsigned char nvalue;
 	uint16_t GPIO_reg = 0xFFFF;
 	int unit;
-	bool value;
+	bool value = false;
 
 	results = m_sql.safe_query("SELECT Unit, nValue FROM DeviceStatus WHERE (HardwareID = %d) AND (DeviceID like '000%02X%%');", m_HwdID, m_i2c_addr);
 	if (!results.empty())
 	{
-		for (const auto & itt : results)
+		for (const auto &sd : results)
 		{
-			std::vector<std::string> sd = itt;
 			unit = atoi(sd[0].c_str());
 			nvalue = atoi(sd[1].c_str());
 
@@ -422,14 +419,14 @@ void I2C::MCP23017_Init()
 			}
 
 			int DeviceID = (m_i2c_addr << 8) + (unsigned char)unit; 			// DeviceID from i2c_address and pin_number
-			SendSwitch(DeviceID, unit, 255, value, 0, ""); 					// create or update switch
+			SendSwitch(DeviceID, unit, 255, value, 0, "", m_Name); 					// create or update switch
 			//_log.Log(LOG_NORM, "SendSwitch(DeviceID: %d, unit: %d, value: %d", DeviceID, unit, value );
 		}
 	}
 	else {
 		for (char pin_number = 0; pin_number < 16; pin_number++) {
 			int DeviceID = (m_i2c_addr << 8) + pin_number; 			// DeviceID from i2c_address and pin_number
-			SendSwitch(DeviceID, pin_number, 255, value, 0, ""); 			// create switch
+			SendSwitch(DeviceID, pin_number, 255, value, 0, "", m_Name); // create switch
 		}
 	}
 	if (I2CWriteReg16(fd, MCP23x17_GPIOA, GPIO_reg) < 0) {	// write values from domoticz db to gpio register
@@ -450,7 +447,6 @@ void I2C::MCP23017_ReadChipDetails()
 	return;
 #else
 	//	uint16_t data = 0;
-	uint16_t cur_iodir = 0;
 	i2c_data data;
 	int rc;
 
@@ -465,7 +461,8 @@ void I2C::MCP23017_ReadChipDetails()
 		_log.Log(LOG_NORM, "I2C::MCP23017_ReadChipDetails. %s. Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
 		return; //read from i2c failed
 	}
-	if ((data.word == 0xFFFF)) {									// if oidir port is 0xFFFF means the chip has been reset
+	if (data.word == 0xFFFF)
+	{ // if oidir port is 0xFFFF means the chip has been reset
 		_log.Log(LOG_NORM, "I2C::MCP23017_ReadChipDetails, Cur_iodir: 0xFFFF, call MCP23017_Init");
 		MCP23017_Init();										// initialize gpio pins with switch status from db
 	}
@@ -479,7 +476,6 @@ int I2C::MCP23017_WritePin(uint8_t pin_number, uint8_t  value)
 #else
 	_log.Log(LOG_NORM, "GPIO: WRITE TO MCP23017 pin:%d, value: %d, i2c_address:%d", pin_number, value, m_i2c_addr);
 	uint16_t pin_mask = 0, iodir_mask = 0;
-	unsigned char gpio_port, iodir_port;
 	uint16_t new_data = 0;
 	i2c_data cur_data, cur_iodir;
 	int rc;
@@ -739,7 +735,6 @@ int I2C::I2CReadReg16(int fd, unsigned char reg, i2c_data *data)
 #ifndef HAVE_LINUX_I2C
 	return -1;
 #else
-	int rc;
 	//i2c_data data;
 	struct i2c_rdwr_ioctl_data messagebuffer;
 	struct i2c_msg read_reg[3] = {
@@ -749,11 +744,6 @@ int I2C::I2CReadReg16(int fd, unsigned char reg, i2c_data *data)
 	messagebuffer.nmsgs = 2;                  		//Two message/action
 	messagebuffer.msgs = read_reg;            		//load the 'read__reg' message into the buffer
 	return ioctl(fd, I2C_RDWR, &messagebuffer); 		//Send the buffer to the bus and returns a send status
-//	if (rc < 0) {
-//		_log.Log(LOG_NORM, "I2C::I2CReadReg16. %s, Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
-//		return rc;
-//	}
-	//return data.word ;
 #endif
 }
 
@@ -765,7 +755,7 @@ int I2C::HTU21D_checkCRC8(uint16_t data)
 	{
 		if (data & 0x8000)
 		{
-			data = (data << 1) ^ HTU21D_CRC8_POLYNOMINAL;
+			data = (uint16_t)((data << 1) ^ HTU21D_CRC8_POLYNOMINAL);
 		}
 		else
 		{
@@ -1097,7 +1087,7 @@ double I2C::bmp_ppl_DensityAlt(double PAlt, double Temp) {
 #define FC_BMP085_UNKNOWN 5			//
 
 //Should be called every minute
-int I2C::bmp_CalculateForecast(const float pressure)
+uint8_t I2C::bmp_CalculateForecast(const float pressure)
 {
 	double dP_dt = 0;
 
@@ -1186,23 +1176,22 @@ int I2C::bmp_CalculateForecast(const float pressure)
 
 	if (m_minuteCount < 35 && m_firstRound) //if time is less than 35 min on the first 3 hour interval.
 		return FC_BMP085_UNKNOWN; // Unknown, more time needed
-	else if (dP_dt < (-0.25))
+	if (dP_dt < (-0.25))
 		return FC_BMP085_THUNDERSTORM; // Quickly falling LP, Thunderstorm, not stable
-	else if (dP_dt > 0.25)
+	if (dP_dt > 0.25)
 		return FC_BMP085_UNSTABLE; // Quickly rising HP, not stable weather
-	else if ((dP_dt > (-0.25)) && (dP_dt < (-0.05)))
+	if ((dP_dt > (-0.25)) && (dP_dt < (-0.05)))
 		return FC_BMP085_CLOUDY_RAIN; // Slowly falling Low Pressure System, stable rainy weather
-	else if ((dP_dt > 0.05) && (dP_dt < 0.25))
+	if ((dP_dt > 0.05) && (dP_dt < 0.25))
 		return FC_BMP085_SUNNY; // Slowly rising HP stable good weather
-	else if ((dP_dt > (-0.05)) && (dP_dt < 0.05))
+	if ((dP_dt > (-0.05)) && (dP_dt < 0.05))
 		return FC_BMP085_STABLE; // Stable weather
-	else
-		return FC_BMP085_UNKNOWN; // Unknown
+	return FC_BMP085_UNKNOWN;	 // Unknown
 }
 
-int I2C::CalculateForcast(const float pressure)
+uint8_t I2C::CalculateForecast(const float pressure)
 {
-	int forecast = bmp_CalculateForecast(pressure);
+	uint8_t forecast = bmp_CalculateForecast(pressure);
 	if (forecast != m_LastForecast)
 	{
 		m_LastForecast = forecast;
@@ -1239,7 +1228,7 @@ int I2C::CalculateForcast(const float pressure)
 				nforecast = bmpbaroforecast_rain;
 			else if (pressure >= 1029)
 				nforecast = bmpbaroforecast_sunny;
-			m_LastSendForecast = nforecast;
+			m_LastSendForecast = (unsigned char)nforecast;
 		}
 		break;
 		}
@@ -1294,8 +1283,8 @@ void I2C::bmp_Read_BMP_SensorDetails()
 	//this is probably not good, need to take the rising/falling of the pressure into account?
 	//any help would be welcome!
 
-	tsensor.forecast = CalculateForcast(((float)pressure) * 10.0f);
-	sDecodeRXMessage(this, (const unsigned char *)&tsensor, NULL, 255);
+	tsensor.forecast = CalculateForecast(((float)pressure) * 10.0f);
+	sDecodeRXMessage(this, (const unsigned char *)&tsensor, nullptr, 255, nullptr);
 }
 
 bool I2C::readBME280ID(const int fd, int &ChipID, int &Version)
@@ -1477,36 +1466,36 @@ void I2C::bmp_Read_BME_SensorDetails()
 	}
 	close(fd);
 #endif
-	int forecast = CalculateForcast(((float)pressure) * 10.0f);
+	uint8_t forecast = CalculateForecast(((float)pressure) * 10.0f);
 	//We are using the TempHumBaro Float type now, convert the forecast
-	int nforecast = wsbaroforcast_some_clouds;
+	int nforecast = wsbaroforecast_some_clouds;
 	if (pressure <= 980)
-		nforecast = wsbaroforcast_heavy_rain;
+		nforecast = wsbaroforecast_heavy_rain;
 	else if (pressure <= 995)
 	{
 		if (temperature > 1)
-			nforecast = wsbaroforcast_rain;
+			nforecast = wsbaroforecast_rain;
 		else
-			nforecast = wsbaroforcast_snow;
+			nforecast = wsbaroforecast_snow;
 	}
 	else if (pressure >= 1029)
-		nforecast = wsbaroforcast_sunny;
+		nforecast = wsbaroforecast_sunny;
 	switch (forecast)
 	{
 	case bmpbaroforecast_sunny:
-		nforecast = wsbaroforcast_sunny;
+		nforecast = wsbaroforecast_sunny;
 		break;
 	case bmpbaroforecast_cloudy:
-		nforecast = wsbaroforcast_cloudy;
+		nforecast = wsbaroforecast_cloudy;
 		break;
 	case bmpbaroforecast_thunderstorm:
-		nforecast = wsbaroforcast_heavy_rain;
+		nforecast = wsbaroforecast_heavy_rain;
 		break;
 	case bmpbaroforecast_rain:
 		if (temperature > 1)
-			nforecast = wsbaroforcast_rain;
+			nforecast = wsbaroforecast_rain;
 		else
-			nforecast = wsbaroforcast_snow;
+			nforecast = wsbaroforecast_snow;
 		break;
 	}
 

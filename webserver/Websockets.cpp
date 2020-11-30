@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Websockets.hpp"
-// debug
-#include "../main/Logger.h"
-#include "../json/json.h"
+#include <json/json.h>
+
+#include <utility>
 
 #define FIN_MASK 0x80
 #define RSVI1_MASK 0x40
@@ -23,7 +23,6 @@ namespace http {
 			payloadlen = 0;
 			bytes_consumed = 0;
 		};
-		CWebsocketFrame::~CWebsocketFrame() {};
 
 		std::string CWebsocketFrame::unmask(const uint8_t *mask, const uint8_t *bytes, size_t payloadlen) {
 			std::string result;
@@ -65,9 +64,10 @@ namespace http {
 			if (domasking) {
 				// masking key
 				uint8_t masking_key[4];
-				for (uint8_t i = 0; i < 4; i++) {
-					masking_key[i] = rand();
-					res += masking_key[i];
+				for (unsigned char &i : masking_key)
+				{
+					i = rand();
+					res += i;
 				}
 				res += unmask(masking_key, (const uint8_t *)payload.c_str(), (size_t)payloadlen);
 			}
@@ -121,8 +121,9 @@ namespace http {
 				if (remaining < 4) {
 					return false;
 				}
-				for (uint8_t i = 0; i < 4; i++) {
-					masking_key[i] = bytes[ptr++];
+				for (unsigned char &i : masking_key)
+				{
+					i = bytes[ptr++];
 					remaining--;
 				}
 			}
@@ -157,16 +158,12 @@ namespace http {
 			return opcode;
 		};
 
-		CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, cWebem *_webEm, boost::function<void(const std::string &packet_data)> _WSWrite) :
-			handler(_webEm, _WSWrite),
-			OUR_PING_ID("fd")
+		CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, cWebem *_webEm, boost::function<void(const std::string &packet_data)> _WSWrite)
+			: OUR_PING_ID("fd")
+			, handler(_webEm, std::move(_WSWrite))
 		{
 			start_new_packet = true;
-			MyWrite = _MyWrite;
-		}
-
-		CWebsocket::~CWebsocket()
-		{
+			MyWrite = std::move(_MyWrite);
 		}
 
 		boost::tribool CWebsocket::parse(const uint8_t *begin, size_t size, size_t &bytes_consumed, bool &keep_alive)
@@ -225,14 +222,14 @@ namespace http {
 		//       if everything works. We need a proper implementation here.
 		void CWebsocket::OnReceiveText(const std::string &packet_data)
 		{
-			boost::tribool result = handler.Handle(packet_data);
+			boost::tribool result = handler.Handle(packet_data, false);
 		}
 
 		void CWebsocket::OnReceiveBinary(const std::string &packet_data)
 		{
 			// we assume we received a gzipped json request
 			// todo: unzip the data
-			std::string the_data = packet_data;
+			const std::string &the_data = packet_data;
 			OnReceiveText(the_data);
 		}
 
@@ -277,5 +274,5 @@ namespace http {
 			return &handler;
 		}
 
-	}
-}
+	} // namespace server
+} // namespace http

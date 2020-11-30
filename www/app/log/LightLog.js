@@ -1,4 +1,4 @@
-define(['app', 'log/components/DeviceLevelChart', 'log/components/DeviceOnOffChart', 'log/components/DeviceTextLogTable'], function (app) {
+define(['app', 'log/components/DeviceLevelChart', 'log/components/DeviceOnOffChart', 'log/components/DeviceTextLogTable'], function(app) {
 
     app.component('deviceLightLog', {
         bindings: {
@@ -9,14 +9,21 @@ define(['app', 'log/components/DeviceLevelChart', 'log/components/DeviceOnOffCha
         controllerAs: 'vm'
     });
 
-    function DeviceLightLogController(domoticzApi, deviceApi, permissions) {
+    function DeviceLightLogController($scope, domoticzApi, deviceApi, permissions) {
         var vm = this;
 
+        vm.autoRefresh = true;
         vm.clearLog = clearLog;
         vm.$onInit = init;
 
         function init() {
             refreshLog();
+
+            $scope.$on('device_update', function(event, device) {
+                if (vm.autoRefresh && device.idx === vm.deviceIdx) {
+                    refreshLog();
+                }
+            });
         }
 
         function refreshLog() {
@@ -25,12 +32,12 @@ define(['app', 'log/components/DeviceLevelChart', 'log/components/DeviceOnOffCha
                     type: 'lightlog',
                     idx: vm.deviceIdx
                 })
-                .then(function (data) {
+                .then(function(data) {
                     if (typeof data.result === 'undefined') {
                         return;
                     }
 
-                    vm.log = (data.result || []).sort(function (a, b) {
+                    vm.log = (data.result || []).sort(function(a, b) {
                         return a.Date < b.Date ? -1 : 1;
                     });
 
@@ -47,7 +54,7 @@ define(['app', 'log/components/DeviceLevelChart', 'log/components/DeviceOnOffCha
                 return;
             }
 
-            bootbox.confirm($.t('Are you sure to delete the Log?\n\nThis action can not be undone!'), function (result) {
+            bootbox.confirm($.t('Are you sure to delete the Log?\n\nThis action can not be undone!'), function(result) {
                 if (result !== true) {
                     return;
                 }
@@ -57,7 +64,7 @@ define(['app', 'log/components/DeviceLevelChart', 'log/components/DeviceOnOffCha
                         idx: vm.deviceIdx
                     })
                     .then(refreshLog)
-                    .catch(function () {
+                    .catch(function() {
                         HideNotify();
                         ShowNotify($.t('Problem clearing the Log!'), 2500, true);
                     });
@@ -65,4 +72,3 @@ define(['app', 'log/components/DeviceLevelChart', 'log/components/DeviceOnOffCha
         }
     }
 });
-

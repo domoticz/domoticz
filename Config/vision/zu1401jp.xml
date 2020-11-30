@@ -1,0 +1,14 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0101:1001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/zu1401jp.png</MetaDataItem>
+    <MetaDataItem id="0101" name="ZWProductPage" type="1001">https://products.z-wavealliance.org/products/849/</MetaDataItem>
+    <MetaDataItem id="0101" name="FrequencyName" type="1001">Japan</MetaDataItem>
+    <MetaDataItem id="0101" name="Identifier" type="1001">ZU1401JP</MetaDataItem>
+    <MetaDataItem name="Description">Z-wave USB dongle</MetaDataItem>
+    <MetaDataItem name="Name">USB Dongle</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/849/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

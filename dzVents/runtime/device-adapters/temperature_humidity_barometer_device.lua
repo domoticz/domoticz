@@ -13,7 +13,6 @@ local humidityMapping = {
 	['wet'] = 3
 }
 
-
 return {
 
 	baseType = 'device',
@@ -36,22 +35,23 @@ return {
 		local humVal = humidityMapping[string.lower(device.humidityStatus or '')] or -1
 		device.humidityStatusValue = humVal
 
-
 		function device.updateTempHumBaro(temperature, humidity, status, pressure, forecast)
 
 			if (status == nil) then
 				-- when no status is provided, domoticz will not set the device obviously
 				utils.log('No status provided. Temperature + humidity not set', utils.LOG_ERROR)
 				return
+			elseif status == -1 then
+				status = utils.humidityStatus(temperature, humidity) -- HUM_COMPUTE
 			end
 
 			forecast = forecast ~= nil and constMapping[forecast] or 5
 
 			local value = tostring(temperature) .. ';' ..
-					tostring(humidity) .. ';' ..
-					tostring(status) .. ';' ..
-					tostring(pressure) .. ';' ..
-					tostring(forecast)
+				tostring(humidity) .. ';' ..
+				tostring(status) .. ';' ..
+				tostring(pressure) .. ';' ..
+				tostring(forecast)
 			return device.update(0, value)
 		end
 

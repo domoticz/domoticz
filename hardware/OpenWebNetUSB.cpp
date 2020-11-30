@@ -19,11 +19,12 @@ License: Public domain
 
 #include <algorithm>
 #include <ctime>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <iostream>
 #include <string>
 
+using namespace boost::placeholders;
 
 COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate)
 {
@@ -34,12 +35,6 @@ COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigne
 	m_bHaveReceived = false;
 	m_bEnableReceive = true;
 }
-
-
-COpenWebNetUSB::~COpenWebNetUSB()
-{
-}
-
 
 bool COpenWebNetUSB::StartHardware()
 {
@@ -69,7 +64,7 @@ void COpenWebNetUSB::Do_Work()
 {
 	while (!IsStopRequested(OPENWEBNET_HEARTBEAT_DELAY))
 	{
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 	}
 	terminate();
 
@@ -225,7 +220,7 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 	bt_openwebnet request(whoStr.str(), whatStr.str(), whereStr.str(), "");
 	if (sendCommand(request, responses))
 	{
-		if (responses.size() > 0)
+		if (!responses.empty())
 		{
 			return responses.at(0).IsOKFrame();
 		}
@@ -250,7 +245,7 @@ bool COpenWebNetUSB::FindDevice(int deviceID, int deviceUnit, int subType, int* 
 	char szIdx[10];
 	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
-	if (used != NULL)
+	if (used != nullptr)
 	{
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d) and Used == %d",
 			m_HwdID, szIdx, deviceUnit, pTypeGeneralSwitch, subType, *used);
@@ -356,12 +351,12 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		return false;
 	}
 
-	if (!writeRead(command.frame_open.c_str(), command.frame_open.length(), silent)) {
+	if (!writeRead(command.m_frameOpen.c_str(), command.m_frameOpen.length(), silent)) {
 		m_bWriting = false;
 		return false;
 	}
 	if (!silent) {
-		_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.frame_open.c_str(), m_readBuffer);
+		_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.m_frameOpen.c_str(), m_readBuffer);
 	}
 
 	if (!ParseData((char*)m_readBuffer, m_readBufferSize, response)) {

@@ -28,12 +28,12 @@ public:
 		std::string Title;
 		std::string Description;
 	};
-	CWebServer(void);
-	~CWebServer(void);
-	bool StartServer(server_settings & settings, const std::string &serverpath, const bool bIgnoreUsernamePassword);
+	CWebServer();
+	~CWebServer() override;
+	bool StartServer(server_settings &settings, const std::string &serverpath, bool bIgnoreUsernamePassword);
 	void StopServer();
-	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication=false);
-	void RegisterRType(const char* idname, webserver_response_function ResponseFunction);
+	void RegisterCommandCode(const char *idname, const webserver_response_function &ResponseFunction, bool bypassAuthentication = false);
+	void RegisterRType(const char *idname, const webserver_response_function &ResponseFunction);
 
 	void DisplaySwitchTypesCombo(std::string & content_part);
 	void DisplayMeterTypesCombo(std::string & content_part);
@@ -47,7 +47,8 @@ public:
 	void GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep);
 	void Post_UploadCustomIcon(WebEmSession & session, const request& req, reply & rep);
 
-	void PostSettings(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void PostSettings(WebEmSession& session, const request& req, reply& rep);
+	void PostLoginCheck(WebEmSession& session, const request& req, reply& rep);
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void RFXComUpgradeFirmware(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri);
@@ -70,33 +71,22 @@ public:
 	void ReloadCustomSwitchIcons();
 
 	void LoadUsers();
-	void AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs);
+	void AddUser(unsigned long ID, const std::string &username, const std::string &password, int userrights, int activetabs);
 	void ClearUserPasswords();
 	bool FindAdminUser();
 	int FindUser(const char* szUserName);
-	void SetWebCompressionMode(const _eWebCompressionMode gzmode);
-	void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
+	void SetWebCompressionMode(_eWebCompressionMode gzmode);
+	void SetAuthenticationMethod(_eAuthenticationMethod amethod);
 	void SetWebTheme(const std::string &themename);
 	void SetWebRoot(const std::string &webRoot);
 	std::vector<_tWebUserPassword> m_users;
 	//JSon
-	void GetJSonDevices(
-		Json::Value &root,
-		const std::string &rused,
-		const std::string &rfilter,
-		const std::string &order,
-		const std::string &rowid,
-		const std::string &planID,
-		const std::string &floorID,
-		const bool bDisplayHidden,
-		const bool bDisplayDisabled,
-		const bool bFetchFavorites,
-		const time_t LastUpdate,
-		const std::string &username,
-		const std::string &hardwareid = ""); // OTO
+	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID,
+			    const std::string &floorID, bool bDisplayHidden, bool bDisplayDisabled, bool bFetchFavorites, time_t LastUpdate, const std::string &username,
+			    const std::string &hardwareid = ""); // OTO
 
 	// SessionStore interface
-	const WebEmStoredSession GetSession(const std::string & sessionId) override;
+	WebEmStoredSession GetSession(const std::string &sessionId) override;
 	void StoreSession(const WebEmStoredSession & session) override;
 	void RemoveSession(const std::string & sessionId) override;
 	void CleanSessions() override;
@@ -107,7 +97,7 @@ private:
 	void HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
 	void HandleRType(const std::string &rtype, WebEmSession & session, const request& req, Json::Value &root);
 
-	bool IsIdxForUser(const WebEmSession *pSession, const int Idx);
+	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
 
 	//Commands
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
@@ -186,7 +176,9 @@ private:
 	void Cmd_GetUptime(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetActualHistory(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetNewHistory(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_GetConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetConfig(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetLocation(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetForecastConfig(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_SendNotification(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_EmailCameraSnapshot(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root);
@@ -195,8 +187,10 @@ private:
 	void Cmd_SystemShutdown(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SystemReboot(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ExcecuteScript(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateApplication(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetCosts(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CheckForUpdate(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_CustomEvent(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_DownloadUpdate(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DownloadReady(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root);
@@ -302,7 +296,8 @@ private:
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Hardware(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Devices(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_Cameras(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_Cameras(WebEmSession& session, const request& req, Json::Value& root);
+	void RType_CamerasUser(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Users(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Timers(WebEmSession & session, const request& req, Json::Value &root);
@@ -334,8 +329,10 @@ private:
 	void Cmd_ZWaveDeleteNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveInclude(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveExclude(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ZWaveIsNodeReplaced(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveIsNodeIncluded(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveIsNodeExcluded(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ZWaveIsHasNodeFailedDone(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveSoftReset(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveHardReset(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveNetworkHeal(WebEmSession & session, const request& req, Json::Value &root);
@@ -347,7 +344,10 @@ private:
 	void Cmd_ZWaveCancel(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ApplyZWaveNodeConfig(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveStateCheck(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_ZWaveRequestNodeConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ZWaveHasNodeFailed(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_ZWaveReplaceFailedNode(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_ZWaveRequestNodeConfig(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_ZWaveRequestNodeInfo(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_ZWaveReceiveConfigurationFromOtherController(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveSendConfigurationToSecondaryController(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveTransferPrimaryRole(WebEmSession & session, const request& req, Json::Value &root);
@@ -360,15 +360,14 @@ private:
 	void ZWaveCPNodeSetButton(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPAdminCommand(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPNodeChange(WebEmSession & session, const request& req, reply & rep);
-	void ZWaveCPSaveConfig(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPGetTopo(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPGetStats(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPSetGroup(WebEmSession & session, const request& req, reply & rep);
-	void ZWaveCPSceneCommand(WebEmSession & session, const request& req, reply & rep);
 	void Cmd_ZWaveSetUserCodeEnrollmentMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveGetNodeUserCodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveRemoveUserCode(WebEmSession & session, const request& req, Json::Value &root);
 	void ZWaveCPTestHeal(WebEmSession & session, const request& req, reply & rep);
+	void Cmd_ZWaveGetBatteryLevels(WebEmSession& session, const request& req, Json::Value& root);
 	//RTypes
 	void RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root);
 	int m_ZW_Hwidx;

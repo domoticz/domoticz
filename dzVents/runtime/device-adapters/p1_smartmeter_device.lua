@@ -14,7 +14,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		device['WhActual'] = tonumber(device.rawData[5]) or 0
+		device['WhActual'] = tonumber(device.rawData[5]) or 0 -- left in for compatibility reasons
+		device['actualWatt'] = tonumber(device.rawData[5]) or 0 
 
 		device['usage1'] = tonumber(device.rawData[1])
 		device['usage2'] = tonumber(device.rawData[2])
@@ -44,11 +45,11 @@ return {
 				(So if your meter displays f.i. USAGE1= 523,66 KWh you need to send 523660)
 			 ]]
 			local value = tostring(usage1) .. ';' ..
-					tostring(usage2) .. ';' ..
-					tostring(return1) .. ';' ..
-					tostring(return2) .. ';' ..
-					tostring(cons) .. ';' ..
-					tostring(prod)
+				tostring(usage2) .. ';' ..
+				tostring(return1) .. ';' ..
+				tostring(return2) .. ';' ..
+				tostring(cons) .. ';' ..
+				tostring(prod)
 			return device.update(0, value)
 		end
 	end

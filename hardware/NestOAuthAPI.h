@@ -26,30 +26,33 @@ class CNestOAuthAPI : public CDomoticzHardwareBase
 		bool CanHeat;
 		bool CanCool;
 	};
-public:
-	CNestOAuthAPI(const int ID, const std::string &apikey, const std::string &extradata);
-	~CNestOAuthAPI(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	void SetSetpoint(const int idx, const float temp);
-	bool SetManualEcoMode(const unsigned char node_id, const bool bIsOn);
-	bool PushToNestApi(const std::string &sMethod, const std::string &sUrl, const Json::Value &jPostData, std::string & sResult);
-	void SetProgramState(const int newState);
-private:
+
+      public:
+	CNestOAuthAPI(int ID, const std::string &apikey, const std::string &extradata);
+	~CNestOAuthAPI() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	void SetSetpoint(int idx, float temp);
+	bool SetManualEcoMode(unsigned char node_id, bool bIsOn);
+	bool PushToNestApi(const std::string &sMethod, const std::string &sUrl, const Json::Value &jPostData, std::string &sResult);
+	void SetProgramState(int newState);
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
-	void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname);
-	void UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std::string &defaultname);
-	bool SetAway(const unsigned char Idx, const bool bIsAway);
-	bool ValidateNestApiAccessToken(const std::string & accesstoken);
+	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
+	void UpdateSwitch(unsigned char Idx, bool bOn, const std::string &defaultname);
+	void UpdateSmokeSensor(unsigned char Idx, bool bOn, const std::string &defaultname);
+	bool SetAway(unsigned char Idx, bool bIsAway);
+	bool ValidateNestApiAccessToken(const std::string &accesstoken);
 	bool Login();
 	void Logout();
 	std::string FetchNestApiAccessToken(const std::string &productid, const std::string &secret, const std::string &pincode);
-	bool SetOAuthAccessToken(const unsigned int ID, std::string &newToken);
-private:
+	bool SetOAuthAccessToken(unsigned int ID, std::string &newToken);
+
+      private:
 	std::string m_UserName;
 	std::string m_Password;
 	std::string m_TransportURL;
@@ -65,4 +68,3 @@ private:
 	std::string m_ProductSecret;
 	std::string m_PinCode;
 };
-

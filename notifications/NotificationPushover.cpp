@@ -2,16 +2,13 @@
 #include "NotificationPushover.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/Logger.h"
+#include "../main/json_helper.h"
 
 CNotificationPushover::CNotificationPushover() : CNotificationBase(std::string("pushover"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
 	SetupConfig(std::string("PushoverEnabled"), &m_IsEnabled);
 	SetupConfig(std::string("PushoverAPI"), _apikey);
 	SetupConfig(std::string("PushoverUser"), _apiuser);
-}
-
-CNotificationPushover::~CNotificationPushover()
-{
 }
 
 bool CNotificationPushover::SendMessageImplementation(
@@ -35,13 +32,14 @@ bool CNotificationPushover::SendMessageImplementation(
 	size_t posDevice = ExtraData.find("|Device=");
 	if (posDevice != std::string::npos) {
 		posDevice += 8;
-		std::string sDevice = ExtraData.substr(posDevice, ExtraData.find("|", posDevice) - posDevice);
-		if (sDevice != "") {
+		std::string sDevice = ExtraData.substr(posDevice, ExtraData.find('|', posDevice) - posDevice);
+		if (!sDevice.empty())
+		{
 			sPostData << "&device=" << sDevice;
 		}
 	}
 
-	if (Sound != "") {
+	if (!Sound.empty()) {
 		sPostData << "&sound=" << Sound;
 	}
 
@@ -57,13 +55,34 @@ bool CNotificationPushover::SendMessageImplementation(
 #ifndef WIN32
 	HTTPClient::SetSecurityOptions(false, false);
 #endif
-
 	if (!bRet)
-		_log.Log(LOG_ERROR, "Pushover: %s", sResult.c_str());
-	return bRet;
+	{
+		_log.Log(LOG_ERROR, "Pushover: Could not send message!");
+		return false;
+	}
+
+	Json::Value root;
+	bRet = ParseJSon(sResult, root);
+	if (!bRet)
+	{
+		_log.Log(LOG_ERROR, "Pushover: Invalid response received!");
+		return false;
+	}
+	if (!root["status"].empty())
+	{
+		int iStatus = root["status"].asInt();
+		if (iStatus != 0)
+			return true;
+		for (const auto &error : root["errors"])
+		{
+			_log.Log(LOG_ERROR, "Pushover: Error, %s", error.asString().c_str());
+		}
+	}
+	_log.Log(LOG_ERROR, "Pushover: Invalid response received!");
+	return false;
 }
 
 bool CNotificationPushover::IsConfigured()
 {
-	return _apikey != "" && _apiuser != "";
+	return !_apikey.empty() && !_apiuser.empty();
 }

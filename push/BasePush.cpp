@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "BasePush.h"
 #include "../hardware/hardwaretypes.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
@@ -18,12 +18,11 @@ typedef struct _STR_TABLE_ID1_ID2 {
 	const char   *str1;
 } STR_TABLE_ID1_ID2;
 
-extern const char *findTableID1ID2(const _STR_TABLE_ID1_ID2 *t, const unsigned long id1, const unsigned long id2);
+extern const char *findTableID1ID2(const _STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2);
 
 const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType)
 {
-	static const STR_TABLE_ID1_ID2	Table[] =
-	{
+	static const STR_TABLE_ID1_ID2 Table[] = {
 		{ pTypeTEMP, sTypeTEMP1, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP2, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP3, "Temperature" },
@@ -56,7 +55,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeTEMP_HUM, sTypeTH14, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "Temperature,Humidity,Humidity Status" },
 
-
 		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
 		{ pTypeTEMP_HUM_BARO, sTypeTHB2, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
 		{ pTypeTEMP_HUM_BARO, sTypeTHBFloat, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
@@ -71,6 +69,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeRAIN, sTypeRAIN8, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAIN9, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAINWU, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAINByRate, "Rain rate,Total rain" },
 
 		{ pTypeWIND, sTypeWIND1, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND2, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
@@ -79,7 +78,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeWIND, sTypeWIND5, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND6, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND7, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
-		{ pTypeWIND, sTypeWIND8, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWINDNoTemp, "Direction,Direction string,Speed,Gust,Chill" },
 		{ pTypeWIND, sTypeWINDNoTempNoChill, "Direction,Direction string,Speed,Gust" },
 
@@ -165,6 +163,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeSecurity1, sTypePowercodeAux, "Status" },
 		{ pTypeSecurity1, sTypeMeiantech, "Status" },
 		{ pTypeSecurity1, sTypeSA30, "Status" },
+		{ pTypeSecurity1, sTypeRM174RF, "Status" },
 		{ pTypeSecurity1, sTypeDomoticzSecurity, "Status" },
 
 		{ pTypeSecurity2, sTypeSec2Classic, "Status" },
@@ -250,6 +249,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeTextStatus, "Text" },
 		{ pTypeGeneral, sTypeZWaveThermostatMode, "Thermostat Mode" },
 		{ pTypeGeneral, sTypeZWaveThermostatFanMode, "Thermostat Fan Mode" },
+		{ pTypeGeneral, sTypeZWaveThermostatOperatingState, "Thermostat Operating State" },
 		{ pTypeGeneral, sTypeAlert, "Alert" },
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeUV, "UV,Temperature" },
@@ -267,8 +267,9 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeChime, sTypeByronSX, "Status" },
 		{ pTypeChime, sTypeByronMP001, "Status" },
 		{ pTypeChime, sTypeSelectPlus, "Status" },
-		{ pTypeChime, sTypeSelectPlus3, "Status" },
+		{ pTypeChime, sTypeByronBY, "Status" },
 		{ pTypeChime, sTypeEnvivo, "Status" },
+		{ pTypeChime, sTypeAlfawise, "Status" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Temperature,Total rain" },
 
@@ -367,7 +368,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeNice, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Status" },
 
-		{ 0,0,NULL }
+		{ 0, 0, nullptr },
 	};
 	return findTableID1ID2(Table, dType, sType);
 }
@@ -448,9 +449,7 @@ std::vector<std::string> CBasePush::DropdownOptions(const uint64_t DeviceRowIdxI
 		std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
 		std::vector<std::string> tmpV;
 		StringSplit(sOptions, ",", tmpV);
-		for (int i = 0; i < (int)tmpV.size(); ++i) {
-			dropdownOptions.push_back(tmpV[i]);
-		}
+		std::copy(tmpV.begin(), tmpV.end(), std::back_inserter(dropdownOptions));
 	}
 	else
 	{
@@ -490,206 +489,218 @@ std::string CBasePush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const
 
 std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int devType, const int devSubType, const int metertypein)
 {
-	std::string vType = DropdownOptionsValue(m_DeviceRowIdx, delpos);
-	unsigned char tempsign = m_sql.m_tempsign[0];
-	_eMeterType metertype = (_eMeterType)metertypein;
 	char szData[100];
 	szData[0] = 0;
-
-	if ((vType == "Temperature") || (vType == "Temperature 1") || (vType == "Temperature 2") || (vType == "Set point"))
+	try
 	{
-		double tvalue = ConvertTemperature(atof(rawsendValue.c_str()), tempsign);
-		sprintf(szData, "%.1f", tvalue);
-	}
-	else if (vType == "Concentration")
-	{
-		sprintf(szData, "%d", nValue);
-	}
-	else if (vType == "Humidity")
-	{
-		if (devType == pTypeHUM)
+		std::string vType = DropdownOptionsValue(m_DeviceRowIdx, delpos);
+		unsigned char tempsign = m_sql.m_tempsign[0];
+		_eMeterType metertype = (_eMeterType)metertypein;
+		
+		if ((vType == "Temperature") || (vType == "Temperature 1") || (vType == "Temperature 2") || (vType == "Set point"))
+		{
+			sprintf(szData, "%g", ConvertTemperature(std::stod(rawsendValue), tempsign));
+		}
+		else if (vType == "Concentration")
+		{
 			sprintf(szData, "%d", nValue);
-		else
-			sprintf(szData, "%d", atoi(rawsendValue.c_str()));
-	}
-	else if (vType == "Humidity Status")
-	{
-		sprintf(szData, "%s", RFX_Humidity_Status_Desc(atoi(rawsendValue.c_str())));
-	}
-	else if (vType == "Barometer")
-	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "Forecast")
-	{
-		int forecast = atoi(rawsendValue.c_str());
-		if (forecast != baroForecastNoInfo)
+		}
+		else if (vType == "Humidity")
 		{
-			sprintf(szData, "%s", RFX_Forecast_Desc(forecast));
+			if (devType == pTypeHUM)
+				sprintf(szData, "%d", nValue);
+			else
+				sprintf(szData, "%g", std::stof(rawsendValue));
 		}
-		else {
-			sprintf(szData, "%d", forecast);
-		}
-	}
-	else if (vType == "Altitude")
-	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "UV")
-	{
-		float UVI = static_cast<float>(atof(rawsendValue.c_str()));
-		sprintf(szData, "%.1f", UVI);
-	}
-	else if (vType == "Direction")
-	{
-		float Direction = static_cast<float>(atof(rawsendValue.c_str()));
-		sprintf(szData, "%.1f", Direction);
-	}
-	else if (vType == "Direction string")
-	{
-		sprintf(szData, "%s", rawsendValue.c_str());
-	}
-	else if (vType == "Speed")
-	{
-		int intSpeed = atoi(rawsendValue.c_str());
-		if (m_sql.m_windunit != WINDUNIT_Beaufort)
+		else if (vType == "Humidity Status")
 		{
-			sprintf(szData, "%.1f", float(intSpeed) * m_sql.m_windscale);
+			sprintf(szData, "%s", RFX_Humidity_Status_Desc(std::stoi(rawsendValue)));
 		}
-		else
+		else if (vType == "Barometer")
 		{
-			float speedms = float(intSpeed)*0.1f;
-			sprintf(szData, "%d", MStoBeaufort(speedms));
+			sprintf(szData, "%g", std::stof(rawsendValue));
 		}
-	}
-	else if (vType == "Gust")
-	{
-		int intGust = atoi(rawsendValue.c_str());
-		if (m_sql.m_windunit != WINDUNIT_Beaufort)
+		else if (vType == "Forecast")
 		{
-			sprintf(szData, "%.1f", float(intGust) *m_sql.m_windscale);
+			int forecast = std::stoi(rawsendValue);
+			if (forecast != baroForecastNoInfo)
+			{
+				sprintf(szData, "%s", RFX_Forecast_Desc(forecast));
+			}
+			else {
+				sprintf(szData, "%d", forecast);
+			}
 		}
-		else
+		else if (vType == "Altitude")
 		{
-			float gustms = float(intGust)*0.1f;
-			sprintf(szData, "%d", MStoBeaufort(gustms));
+			sprintf(szData, "%g", std::stof(rawsendValue));
 		}
-	}
-	else if (vType == "Chill")
-	{
-		double tvalue = ConvertTemperature(atof(rawsendValue.c_str()), tempsign);
-		sprintf(szData, "%.1f", tvalue);
-	}
-	else if (vType == "Rain rate")
-	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "Total rain")
-	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "Counter")
-	{
-		strcpy(szData, rawsendValue.c_str());
-	}
-	else if (vType == "Mode")
-	{
-		sprintf(szData, "Not supported yet");
-	}
-	else if (vType == "Sound Level")
-	{
-		strcpy(szData, rawsendValue.c_str());
-	}
-	else if (vType == "Distance")
-	{
-		strcpy(szData, rawsendValue.c_str());
-	}
-	else if (vType == "Status")
-	{
-		sprintf(szData, "%d", nValue);
-	}
-	else if ((vType == "Current 1") || (vType == "Current 2") || (vType == "Current 3"))
-	{
-		sprintf(szData, "%.3f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "Instant")
-	{
-		sprintf(szData, "%.3f", atof(rawsendValue.c_str()));
-	}
-	else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2"))
-	{
-		strcpy(szData, rawsendValue.c_str());
-	}
-	else if ((vType == "Delivery") || (vType == "Delivery 1") || (vType == "Delivery 2"))
-	{
-		strcpy(szData, rawsendValue.c_str());
-	}
-	else if (vType == "Usage current")
-	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "Delivery current")
-	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "Gas usage")
-	{
-		sprintf(szData, "%.3f", atof(rawsendValue.c_str()) / 1000.0f);
-	}
-	else if (vType == "Weight")
-	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "Voltage")
-	{
-		sprintf(szData, "%.3f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "Value")
-	{
-		sprintf(szData, "%d", atoi(rawsendValue.c_str()));
-	}
-	else if (vType == "Visibility")
-	{
-		float vis = static_cast<float>(atof(rawsendValue.c_str()));
-		if (metertype == 0)
+		else if (vType == "UV")
 		{
-			//km
-			sprintf(szData, "%.1f", vis);
+			sprintf(szData, "%g", std::stof(rawsendValue));
 		}
-		else
+		else if (vType == "Direction")
 		{
-			//miles
-			sprintf(szData, "%.1f", vis*0.6214f);
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Direction string")
+		{
+			strcpy(szData, rawsendValue.c_str());
+		}
+		else if (vType == "Speed")
+		{
+			int intSpeed = std::stoi(rawsendValue);
+			if (m_sql.m_windunit != WINDUNIT_Beaufort)
+			{
+				sprintf(szData, "%g", float(intSpeed) * m_sql.m_windscale);
+			}
+			else
+			{
+				float speedms = float(intSpeed) * 0.1f;
+				sprintf(szData, "%d", MStoBeaufort(speedms));
+			}
+		}
+		else if (vType == "Gust")
+		{
+			int intGust = std::stoi(rawsendValue);
+			if (m_sql.m_windunit != WINDUNIT_Beaufort)
+			{
+				sprintf(szData, "%g", float(intGust) * m_sql.m_windscale);
+			}
+			else
+			{
+				float gustms = float(intGust) * 0.1f;
+				sprintf(szData, "%d", MStoBeaufort(gustms));
+			}
+		}
+		else if (vType == "Chill")
+		{
+			sprintf(szData, "%g", ConvertTemperature(std::stof(rawsendValue), tempsign));
+		}
+		else if (vType == "Rain rate")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Total rain")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Counter" || vType == "Counter Incremental" )
+		{
+			strcpy(szData, rawsendValue.c_str());
+		}
+		else if (vType == "Mode")
+		{
+			sprintf(szData, "Not supported yet");
+		}
+		else if (vType == "Sound Level")
+		{
+			strcpy(szData, rawsendValue.c_str());
+		}
+		else if (vType == "Distance")
+		{
+			float vis = std::stof(rawsendValue);
+			if (metertype == 0)
+			{
+				//cm
+				sprintf(szData, "%g", vis);
+			}
+			else
+			{
+				//inches
+				sprintf(szData, "%g", vis * 0.3937007874015748f);
+			}
+		}
+		else if (vType == "Status")
+		{
+			sprintf(szData, "%d", nValue);
+		}
+		else if ((vType == "Current 1") || (vType == "Current 2") || (vType == "Current 3"))
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Instant")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2"))
+		{
+			strcpy(szData, rawsendValue.c_str());
+		}
+		else if ((vType == "Delivery") || (vType == "Delivery 1") || (vType == "Delivery 2"))
+		{
+			strcpy(szData, rawsendValue.c_str());
+		}
+		else if (vType == "Usage current")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Delivery current")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Gas usage")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue) / 1000.0f);
+		}
+		else if (vType == "Weight")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Voltage")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Value")
+		{
+			sprintf(szData, "%d", std::stoi(rawsendValue));
+		}
+		else if (vType == "Visibility")
+		{
+			float vis = std::stof(rawsendValue);
+			if (metertype == 0)
+			{
+				//km
+				sprintf(szData, "%g", vis);
+			}
+			else
+			{
+				//miles
+				sprintf(szData, "%g", vis * 0.6214f);
+			}
+		}
+		else if (vType == "Solar Radiation")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Soil Moisture")
+		{
+			sprintf(szData, "%d", nValue);
+		}
+		else if (vType == "Leaf Wetness")
+		{
+			sprintf(szData, "%d", nValue);
+		}
+		else if (vType == "Percentage")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Fanspeed")
+		{
+			sprintf(szData, "%d", std::stoi(rawsendValue));
+		}
+		else if (vType == "Pressure")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
+		}
+		else if (vType == "Lux")
+		{
+			sprintf(szData, "%g", std::stof(rawsendValue));
 		}
 	}
-	else if (vType == "Solar Radiation")
+	catch (...)
 	{
-		float radiation = static_cast<float>(atof(rawsendValue.c_str()));
-		sprintf(szData, "%.1f", radiation);
-	}
-	else if (vType == "Soil Moisture")
-	{
-		sprintf(szData, "%d", nValue);
-	}
-	else if (vType == "Leaf Wetness")
-	{
-		sprintf(szData, "%d", nValue);
-	}
-	else if (vType == "Percentage")
-	{
-		sprintf(szData, "%.2f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "Fanspeed")
-	{
-		sprintf(szData, "%d", atoi(rawsendValue.c_str()));
-	}
-	else if (vType == "Pressure")
-	{
-		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
-	}
-	else if (vType == "Lux")
-	{
-		sprintf(szData, "%.0f", atof(rawsendValue.c_str()));
+		_log.Log(LOG_ERROR, "BasePush: Problem with conversion!");
 	}
 	if (szData[0] != 0)
 	{
@@ -705,10 +716,8 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 		}
 		return sendValue;
 	}
-	else {
-		_log.Log(LOG_ERROR, "Could not determine data push value");
-		return "";
-	}
+	_log.Log(LOG_ERROR, "BasePush: Could not determine data push value");
+	return "";
 }
 
 std::string CBasePush::getUnit(const int delpos, const int metertypein)
@@ -895,11 +904,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
 					int dType = atoi(sd[2].c_str());
 					int dSubType = atoi(sd[3].c_str());
 					std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
@@ -912,5 +919,5 @@ namespace http {
 				}
 			}
 		}
-	}
-}
+	} // namespace server
+} // namespace http

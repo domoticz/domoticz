@@ -16,10 +16,6 @@ OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned shor
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
 }
 
-OTGWTCP::~OTGWTCP(void)
-{
-}
-
 bool OTGWTCP::StartHardware()
 {
 	RequestStart();
@@ -69,7 +65,7 @@ void OTGWTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (isConnected())
@@ -95,11 +91,6 @@ void OTGWTCP::Do_Work()
 void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 {
 	ParseData(pData,length);
-}
-
-void OTGWTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"OTGW: Error: %s",e.what());
 }
 
 void OTGWTCP::OnError(const boost::system::error_code& error)

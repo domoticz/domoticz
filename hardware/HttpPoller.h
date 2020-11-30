@@ -9,17 +9,19 @@ namespace Json
 
 class CHttpPoller : public CDomoticzHardwareBase
 {
-public:
-	CHttpPoller(const int ID, const std::string& username, const std::string& password, const std::string& url, const std::string& extradata, const unsigned short refresh);
-	~CHttpPoller(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
+      public:
+	CHttpPoller(int ID, const std::string &username, const std::string &password, const std::string &url, const std::string &extradata, unsigned short refresh);
+	~CHttpPoller() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	void GetScript();
-private:
+
+      private:
 	std::string m_username;
 	std::string m_password;
 	std::string m_url;
@@ -31,4 +33,3 @@ private:
 	unsigned short m_refresh;
 	std::shared_ptr<std::thread> m_thread;
 };
-

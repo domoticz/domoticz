@@ -16,10 +16,6 @@ S0MeterTCP::S0MeterTCP(const int ID, const std::string &IPAddress, const unsigne
 	InitBase();
 }
 
-S0MeterTCP::~S0MeterTCP(void)
-{
-}
-
 bool S0MeterTCP::StartHardware()
 {
 	RequestStart();
@@ -72,7 +68,7 @@ void S0MeterTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
@@ -88,11 +84,6 @@ bool S0MeterTCP::WriteToHardware(const char *pdata, const unsigned char length)
 void S0MeterTCP::OnData(const unsigned char *pData, size_t length)
 {
 	ParseData((const unsigned char*)pData,length);
-}
-
-void S0MeterTCP::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR,"S0 Meter: Error: %s",e.what());
 }
 
 void S0MeterTCP::OnError(const boost::system::error_code& error)

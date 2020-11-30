@@ -191,7 +191,7 @@ function CalculateTrendLine(data) {
 	return dReturn;
 };
 
-function SendX10Command(idx, switchcmd, refreshfunction, passcode) {
+function SendX10Command(idx, switchcmd, passcode) {
 	ShowNotify($.t('Switching') + ' ' + $.t(switchcmd));
 	$.ajax({
 		url: "json.htm?type=command&param=switchlight&idx=" + $.devIdx +
@@ -208,7 +208,6 @@ function SendX10Command(idx, switchcmd, refreshfunction, passcode) {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -218,7 +217,7 @@ function SendX10Command(idx, switchcmd, refreshfunction, passcode) {
 	});
 }
 
-function ArmSystemInt(idx, switchcmd, refreshfunction, passcode) {
+function ArmSystemInt(idx, switchcmd, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 
 	$.devIdx = idx;
@@ -233,21 +232,21 @@ function ArmSystemInt(idx, switchcmd, refreshfunction, passcode) {
 				text: $.t("Arm Home"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Home", refreshfunction, passcode)
+					SendX10Command(idx, "Arm Home", passcode)
 				}
 			},
 			{
 				text: $.t("Arm Away"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Away", refreshfunction, passcode)
+					SendX10Command(idx, "Arm Away", passcode)
 				}
 			}
 		]
 	});
 }
 
-function ArmSystem(idx, switchcmd, refreshfunction, isprotected) {
+function ArmSystem(idx, switchcmd, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -265,20 +264,20 @@ function ArmSystem(idx, switchcmd, refreshfunction, isprotected) {
 						return;
 					}
 					passcode = result;
-					ArmSystemInt(idx, switchcmd, refreshfunction, passcode);
+					ArmSystemInt(idx, switchcmd, passcode);
 				}
 			});
 		}
 		else {
-			ArmSystemInt(idx, switchcmd, refreshfunction, passcode);
+			ArmSystemInt(idx, switchcmd, passcode);
 		}
 	}
 	else {
-		ArmSystemInt(idx, switchcmd, refreshfunction, passcode);
+		ArmSystemInt(idx, switchcmd, passcode);
 	}
 }
 
-function ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode) {
+function ArmSystemMeiantechInt(idx, switchcmd, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 
 	$.devIdx = idx;
@@ -294,7 +293,7 @@ function ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode) {
 				click: function () {
 					$dialog.remove();
 					switchcmd = "Arm Home";
-					SendX10Command(idx, "Arm Home", refreshfunction, passcode)
+					SendX10Command(idx, "Arm Home", passcode)
 				}
 			},
 			{
@@ -302,7 +301,7 @@ function ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode) {
 				click: function () {
 					$dialog.remove();
 					switchcmd = "Arm Away";
-					SendX10Command(idx, "Arm Away", refreshfunction, passcode)
+					SendX10Command(idx, "Arm Away", passcode)
 				}
 			},
 			{
@@ -310,7 +309,7 @@ function ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode) {
 				click: function () {
 					$dialog.remove();
 					switchcmd = "Panic";
-					SendX10Command(idx, "Panic", refreshfunction, passcode)
+					SendX10Command(idx, "Panic", passcode)
 				}
 			},
 			{
@@ -318,14 +317,14 @@ function ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode) {
 				click: function () {
 					$dialog.remove();
 					switchcmd = "Disarm";
-					SendX10Command(idx, "Disarm", refreshfunction, passcode)
+					SendX10Command(idx, "Disarm", passcode)
 				}
 			}
 		]
 	});
 }
 
-function ArmSystemMeiantech(idx, switchcmd, refreshfunction, isprotected) {
+function ArmSystemMeiantech(idx, switchcmd, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -343,20 +342,20 @@ function ArmSystemMeiantech(idx, switchcmd, refreshfunction, isprotected) {
 						return;
 					}
 					passcode = result;
-					ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode);
+					ArmSystemMeiantechInt(idx, switchcmd, passcode);
 				}
 			});
 		}
 		else {
-			ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode);
+			ArmSystemMeiantechInt(idx, switchcmd, passcode);
 		}
 	}
 	else {
-		ArmSystemMeiantechInt(idx, switchcmd, refreshfunction, passcode);
+		ArmSystemMeiantechInt(idx, switchcmd, passcode);
 	}
 }
 
-function ArmSystemX10Int(idx, switchcmd, refreshfunction, passcode) {
+function ArmSystemX10Int(idx, switchcmd, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 
 	$.devIdx = idx;
@@ -371,91 +370,91 @@ function ArmSystemX10Int(idx, switchcmd, refreshfunction, passcode) {
 				text: $.t("Normal"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Normal", refreshfunction, passcode);
+					SendX10Command(idx, "Normal", passcode);
 				}
 			},
 			{
 				text: $.t("Alarm"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Alarm", refreshfunction, passcode);
+					SendX10Command(idx, "Alarm", passcode);
 				}
 			},
 			{
 				text: $.t("Arm Home"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Home", refreshfunction, passcode);
+					SendX10Command(idx, "Arm Home", passcode);
 				}
 			},
 			{
 				text: $.t("Arm Home Delayed"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Home Delayed", refreshfunction, passcode);
+					SendX10Command(idx, "Arm Home Delayed", passcode);
 				}
 			},
 			{
 				text: $.t("Arm Away"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Away", refreshfunction, passcode);
+					SendX10Command(idx, "Arm Away", passcode);
 				}
 			},
 			{
 				text: $.t("Arm Away Delayed"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Arm Away Delayed", refreshfunction, passcode);
+					SendX10Command(idx, "Arm Away Delayed", passcode);
 				}
 			},
 			{
 				text: $.t("Panic"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Panic", refreshfunction, passcode);
+					SendX10Command(idx, "Panic", passcode);
 				}
 			},
 			{
 				text: $.t("Disarm"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Disarm", refreshfunction, passcode);
+					SendX10Command(idx, "Disarm", passcode);
 				}
 			},
 			{
 				text: $.t("Light On"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Light On", refreshfunction, passcode);
+					SendX10Command(idx, "Light On", passcode);
 				}
 			},
 			{
 				text: $.t("Light Off"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Light Off", refreshfunction, passcode);
+					SendX10Command(idx, "Light Off", passcode);
 				}
 			},
 			{
 				text: $.t("Light 2 On"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Light 2 On", refreshfunction, passcode);
+					SendX10Command(idx, "Light 2 On", passcode);
 				}
 			},
 			{
 				text: $.t("Light 2 Off"),
 				click: function () {
 					$dialog.remove();
-					SendX10Command(idx, "Light 2 Off", refreshfunction, passcode);
+					SendX10Command(idx, "Light 2 Off", passcode);
 				}
 			}
 		]
 	});
 }
 
-function ArmSystemX10(idx, switchcmd, refreshfunction, isprotected) {
+function ArmSystemX10(idx, switchcmd, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -473,20 +472,20 @@ function ArmSystemX10(idx, switchcmd, refreshfunction, isprotected) {
 						return;
 					}
 					passcode = result;
-					ArmSystemX10Int(idx, switchcmd, refreshfunction, passcode);
+					ArmSystemX10Int(idx, switchcmd, passcode);
 				}
 			});
 		}
 		else {
-			ArmSystemX10Int(idx, switchcmd, refreshfunction, passcode);
+			ArmSystemX10Int(idx, switchcmd, passcode);
 		}
 	}
 	else {
-		ArmSystemX10Int(idx, switchcmd, refreshfunction, passcode);
+		ArmSystemX10Int(idx, switchcmd, passcode);
 	}
 }
 
-function SwitchLightInt(idx, switchcmd, refreshfunction, passcode) {
+function SwitchLightInt(idx, switchcmd, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 
 	ShowNotify($.t('Switching') + ' ' + $.t(switchcmd));
@@ -507,7 +506,6 @@ function SwitchLightInt(idx, switchcmd, refreshfunction, passcode) {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -517,7 +515,7 @@ function SwitchLightInt(idx, switchcmd, refreshfunction, passcode) {
 	});
 }
 
-function SwitchLight(idx, switchcmd, refreshfunction, isprotected) {
+function SwitchLight(idx, switchcmd, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -535,19 +533,19 @@ function SwitchLight(idx, switchcmd, refreshfunction, isprotected) {
 						return;
 					}
 					passcode = result;
-					SwitchLightInt(idx, switchcmd, refreshfunction, passcode);
+					SwitchLightInt(idx, switchcmd, passcode);
 				}
 			});
 		}
 		else {
-			SwitchLightInt(idx, switchcmd, refreshfunction, passcode);
+			SwitchLightInt(idx, switchcmd, passcode);
 		}
 	}
 	else {
-		SwitchLightInt(idx, switchcmd, refreshfunction, passcode);
+		SwitchLightInt(idx, switchcmd, passcode);
 	}
 }
-function SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, passcode) {
+function SwitchSelectorLevelInt(idx, levelName, levelValue, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 
 	ShowNotify($.t('Switching') + ' ' + levelName);
@@ -567,7 +565,6 @@ function SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, pas
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -577,7 +574,7 @@ function SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, pas
 	});
 }
 
-function SwitchSelectorLevel(idx, levelName, levelValue, refreshfunction, isprotected) {
+function SwitchSelectorLevel(idx, levelName, levelValue, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -595,20 +592,20 @@ function SwitchSelectorLevel(idx, levelName, levelValue, refreshfunction, isprot
 						return;
 					}
 					passcode = result;
-					SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, passcode);
+					SwitchSelectorLevelInt(idx, levelName, levelValue, passcode);
 				}
 			});
 		}
 		else {
-			SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, passcode);
+			SwitchSelectorLevelInt(idx, levelName, levelValue, passcode);
 		}
 	}
 	else {
-		SwitchSelectorLevelInt(idx, levelName, levelValue, refreshfunction, passcode);
+		SwitchSelectorLevelInt(idx, levelName, levelValue, passcode);
 	}
 }
 
-function SwitchSceneInt(idx, switchcmd, refreshfunction, passcode) {
+function SwitchSceneInt(idx, switchcmd, passcode) {
 	clearInterval($.myglobals.refreshTimer);
 	ShowNotify($.t('Switching') + ' ' + $.t(switchcmd));
 
@@ -626,7 +623,6 @@ function SwitchSceneInt(idx, switchcmd, refreshfunction, passcode) {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -636,7 +632,7 @@ function SwitchSceneInt(idx, switchcmd, refreshfunction, passcode) {
 	});
 }
 
-function SwitchScene(idx, switchcmd, refreshfunction, isprotected) {
+function SwitchScene(idx, switchcmd, isprotected) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -653,20 +649,20 @@ function SwitchScene(idx, switchcmd, refreshfunction, isprotected) {
 						return;
 					}
 					passcode = result;
-					SwitchSceneInt(idx, switchcmd, refreshfunction, passcode);
+					SwitchSceneInt(idx, switchcmd, passcode);
 				}
 			});
 		}
 		else {
-			SwitchSceneInt(idx, switchcmd, refreshfunction, passcode);
+			SwitchSceneInt(idx, switchcmd, passcode);
 		}
 	}
 	else {
-		SwitchSceneInt(idx, switchcmd, refreshfunction, passcode);
+		SwitchSceneInt(idx, switchcmd, passcode);
 	}
 }
 
-function ResetSecurityStatus(idx, switchcmd, refreshfunction) {
+function ResetSecurityStatus(idx, switchcmd) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -684,7 +680,6 @@ function ResetSecurityStatus(idx, switchcmd, refreshfunction) {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -714,6 +709,28 @@ function GetUTCFromString(s) {
 	);
 }
 
+function GetLocalDateTimeFromString(s, yearOffset=0) {
+	return new Date(
+		parseInt(s.substring(0, 4), 10) + yearOffset,
+		parseInt(s.substring(5, 7), 10) - 1,
+		parseInt(s.substring(8, 10), 10),
+		parseInt(s.substring(11, 13), 10),
+		parseInt(s.substring(14, 16), 10),
+		19 <= s.length ? parseInt(s.substring(17, 19), 10) : 0
+	).getTime();
+}
+
+function GetLocalTimestampFromString(s, yearOffset=0) {
+	return new Date(
+		parseInt(s.substring(0, 4), 10) + yearOffset,
+		parseInt(s.substring(5, 7), 10) - 1,
+		parseInt(s.substring(8, 10), 10),
+		parseInt(s.substring(11, 13), 10),
+		parseInt(s.substring(14, 16), 10),
+		parseInt(s.substring(17, 19), 10)
+	).getTime();
+}
+
 function GetUTCFromStringSec(s) {
 	return Date.UTC(
 		parseInt(s.substring(0, 4), 10),
@@ -723,6 +740,13 @@ function GetUTCFromStringSec(s) {
 		parseInt(s.substring(14, 16), 10),
 		parseInt(s.substring(17, 19), 10)
 	);
+}
+
+function GetLocalDateFromString(s, yearOffset=0) {
+	return new Date(
+		parseInt(s.substring(0, 4), 10) + yearOffset,
+		parseInt(s.substring(5, 7), 10) - 1,
+		parseInt(s.substring(8, 10), 10)).getTime();
 }
 
 function GetDateFromString(s) {
@@ -856,6 +880,13 @@ function checkLength(o, min, max) {
 		return true;
 	}
 }
+function checkLengthText(text, min, max) {
+	if (text.length > max || text.length < min) {
+		return false;
+	} else {
+		return true;
+	}
+}
 
 function SetDimValue(idx, value) {
 	clearInterval($.setDimValue);
@@ -976,25 +1007,14 @@ function GetTemp48Item(temp) {
 }
 
 function generate_noty(ntype, ntext, ntimeout) {
-	return noty({
-		text: ntext,
+	return new Noty({
 		type: ntype,
-		dismissQueue: true,
-		timeout: ntimeout,
 		layout: 'topRight',
-		theme: 'defaultTheme'
-	});
-}
-
-function generate_noty_tl(ntype, ntext, ntimeout) {
-	return noty({
 		text: ntext,
-		type: ntype,
 		dismissQueue: true,
 		timeout: ntimeout,
-		layout: 'topLeft',
-		theme: 'defaultTheme'
-	});
+		theme: 'relax'
+	}).show();
 }
 
 function rgb2hex(rgb) {
@@ -1242,6 +1262,9 @@ function TranslateStatus(status) {
 }
 
 function TranslateStatusShort(status) {
+	if (typeof status == 'undefined')
+		return "-?-";
+
 	//will remove the Set Level
 	if (status.indexOf("Set Level") != -1) {
 		if (status.substring(11) == "100 %") {
@@ -1253,400 +1276,6 @@ function TranslateStatusShort(status) {
 	}
 	else {
 		return $.t(status);
-	}
-}
-
-function AddDataToTempChart(data, chart, isday, isthermostat) {
-	var datatablete = [];
-	var datatabletm = [];
-	var datatableta = [];
-	var datatabletrange = [];
-
-	var datatablehu = [];
-	var datatablech = [];
-	var datatablecm = [];
-	var datatabledp = [];
-	var datatableba = [];
-
-	var datatablese = [];
-	var datatablesm = [];
-	var datatablesx = [];
-	var datatablesrange = [];
-
-	var datatablete_prev = [];
-	var datatabletm_prev = [];
-	var datatableta_prev = [];
-	var datatabletrange_prev = [];
-
-	var datatablehu_prev = [];
-	var datatablech_prev = [];
-	var datatablecm_prev = [];
-	var datatabledp_prev = [];
-	var datatableba_prev = [];
-
-	var datatablese_prev = [];
-	var datatablesm_prev = [];
-	var datatablesx_prev = [];
-	var datatablesrange_prev = [];
-
-	var bHavePrev = (typeof data.resultprev != 'undefined');
-	if (bHavePrev) {
-		$.each(data.resultprev, function (i, item) {
-			if (typeof item.te != 'undefined') {
-				datatablete_prev.push([GetPrevDateFromString(item.d), parseFloat(item.te)]);
-				datatabletm_prev.push([GetPrevDateFromString(item.d), parseFloat(item.tm)]);
-				datatabletrange_prev.push([GetPrevDateFromString(item.d), parseFloat(item.tm), parseFloat(item.te)]);
-				if (typeof item.ta != 'undefined') {
-					datatableta_prev.push([GetPrevDateFromString(item.d), parseFloat(item.ta)]);
-				}
-			}
-			if (typeof item.hu != 'undefined') {
-				datatablehu_prev.push([GetPrevDateFromString(item.d), parseFloat(item.hu)]);
-			}
-			if (typeof item.ch != 'undefined') {
-				datatablech_prev.push([GetPrevDateFromString(item.d), parseFloat(item.ch)]);
-				datatablecm_prev.push([GetPrevDateFromString(item.d), parseFloat(item.cm)]);
-			}
-			if (typeof item.dp != 'undefined') {
-				datatabledp_prev.push([GetPrevDateFromString(item.d), parseFloat(item.dp)]);
-			}
-			if (typeof item.ba != 'undefined') {
-				datatableba_prev.push([GetPrevDateFromString(item.d), parseFloat(item.ba)]);
-			}
-			if (typeof item.se != 'undefined') {
-				datatablese_prev.push([GetPrevDateFromString(item.d), parseFloat(item.se)]);
-			}
-			if (typeof item.sm != 'undefined' && typeof item.sx != 'undefined') {
-				datatablesm_prev.push([GetPrevDateFromString(item.d), parseFloat(item.sm)]);
-				datatablesx_prev.push([GetPrevDateFromString(item.d), parseFloat(item.sx)]);
-				datatablesrange_prev.push([GetPrevDateFromString(item.d), parseFloat(item.sm), parseFloat(item.sx)]);
-			}
-		});
-	}
-
-	$.each(data.result, function (i, item) {
-		if (isday == 1) {
-			if (typeof item.te != 'undefined') {
-				datatablete.push([GetUTCFromString(item.d), parseFloat(item.te)]);
-			}
-			if (typeof item.hu != 'undefined') {
-				datatablehu.push([GetUTCFromString(item.d), parseFloat(item.hu)]);
-			}
-			if (typeof item.ch != 'undefined') {
-				datatablech.push([GetUTCFromString(item.d), parseFloat(item.ch)]);
-			}
-			if (typeof item.dp != 'undefined') {
-				datatabledp.push([GetUTCFromString(item.d), parseFloat(item.dp)]);
-			}
-			if (typeof item.ba != 'undefined') {
-				datatableba.push([GetUTCFromString(item.d), parseFloat(item.ba)]);
-			}
-			if (typeof item.se != 'undefined') {
-				datatablese.push([GetUTCFromString(item.d), parseFloat(item.se)]);
-			}
-		} else {
-			if (typeof item.te != 'undefined') {
-				datatablete.push([GetDateFromString(item.d), parseFloat(item.te)]);
-				datatabletm.push([GetDateFromString(item.d), parseFloat(item.tm)]);
-				datatabletrange.push([GetDateFromString(item.d), parseFloat(item.tm), parseFloat(item.te)]);
-				if (typeof item.ta != 'undefined') {
-					datatableta.push([GetDateFromString(item.d), parseFloat(item.ta)]);
-				}
-			}
-			if (typeof item.hu != 'undefined') {
-				datatablehu.push([GetDateFromString(item.d), parseFloat(item.hu)]);
-			}
-			if (typeof item.ch != 'undefined') {
-				datatablech.push([GetDateFromString(item.d), parseFloat(item.ch)]);
-				datatablecm.push([GetDateFromString(item.d), parseFloat(item.cm)]);
-			}
-			if (typeof item.dp != 'undefined') {
-				datatabledp.push([GetDateFromString(item.d), parseFloat(item.dp)]);
-			}
-			if (typeof item.ba != 'undefined') {
-				datatableba.push([GetDateFromString(item.d), parseFloat(item.ba)]);
-			}
-			if (typeof item.se != 'undefined') {
-				datatablese.push([GetDateFromString(item.d), parseFloat(item.se)]);//avergae
-				datatablesm.push([GetDateFromString(item.d), parseFloat(item.sm)]);//min
-				datatablesx.push([GetDateFromString(item.d), parseFloat(item.sx)]);//max
-				datatablesrange.push([GetDateFromString(item.d), parseFloat(item.sm), parseFloat(item.sx)]);
-			}
-		}
-	});
-	var series;
-	if (datatablehu.length != 0) {
-		chart.addSeries({
-			id: 'humidity',
-			name: $.t('Humidity'),
-			color: 'limegreen',
-			yAxis: 1,
-			tooltip: {
-				valueSuffix: ' %',
-				valueDecimals: 0
-			}
-		}, false);
-		series = chart.get('humidity');
-		series.setData(datatablehu, false);
-	}
-
-	if (datatablech.length != 0) {
-		chart.addSeries({
-			id: 'chill',
-			name: $.t('Chill'),
-			color: 'red',
-			zIndex: 1,
-			tooltip: {
-				valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-				valueDecimals: 1
-			},
-			yAxis: 0
-		}, false);
-		series = chart.get('chill');
-		series.setData(datatablech, false);
-
-		if (isday == 0) {
-			chart.addSeries({
-				id: 'chillmin',
-				name: $.t('Chill') + '_min',
-				color: 'rgba(255,127,39,0.8)',
-				linkedTo: ':previous',
-				zIndex: 1,
-				tooltip: {
-					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-					valueDecimals: 1
-				},
-				yAxis: 0
-			}, false);
-			series = chart.get('chillmin');
-			series.setData(datatablecm, false);
-		}
-	}
-
-	if (datatablese.length != 0) {
-		if (isday == 1) {
-			chart.addSeries({
-				id: 'setpoint',
-				name: $.t('Set Point'),
-				color: 'blue',
-				zIndex: 1,
-				tooltip: {
-					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-					valueDecimals: 1
-				},
-				yAxis: 0
-			}, false);
-			series = chart.get('setpoint');
-			series.setData(datatablese, false);
-		} else {
-			chart.addSeries({
-				id: 'setpointavg',
-				name: $.t('Set Point') + '_avg',
-				color: 'blue',
-				fillOpacity: 0.7,
-				zIndex: 2,
-				tooltip: {
-					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-					valueDecimals: 1
-				},
-				yAxis: 0
-			}, false);
-			series = chart.get('setpointavg');
-			series.setData(datatablese, false);
-			/*
-						chart.addSeries({
-							id: 'setpointmin',
-							name: $.t('Set Point') + '_min',
-							color: 'rgba(39,127,255,0.8)',
-							linkedTo: ':previous',
-							zIndex: 1,
-							tooltip: {
-								valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-								valueDecimals: 1
-							},
-							yAxis: 0
-						}, false);
-						series = chart.get('setpointmin');
-						series.setData(datatablesm, false);
-
-						chart.addSeries( {
-							id: 'setpointmax',
-							name: $.t('Set Point') + '_max',
-							color: 'rgba(127,39,255,0.8)',
-							linkedTo: ':previous',
-							zIndex: 1,
-							tooltip: {
-								valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-								valueDecimals: 1
-							},
-							yAxis: 0
-						}, false);
-						series = chart.get('setpointmax');
-						series.setData(datatablesx, false);
-			*/
-
-			if (datatablesrange.length != 0) {
-				chart.addSeries({
-					id: 'setpointrange',
-					name: $.t('Set Point') + '_range',
-					color: 'rgba(164,75,148,1.0)',
-					type: 'areasplinerange',
-					linkedTo: ':previous',
-					zIndex: 1,
-					lineWidth: 0,
-					fillOpacity: 0.5,
-					yAxis: 0,
-					tooltip: {
-						valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-						valueDecimals: 1
-					}
-				}, false);
-				series = chart.get('setpointrange');
-				series.setData(datatablesrange, false);
-			}
-			if (datatablese_prev.length != 0) {
-				chart.addSeries({
-					id: 'prev_setpoint',
-					name: $.t('Past') + ' ' + $.t('Set Point'),
-					color: 'rgba(223,212,246,0.8)',
-					zIndex: 3,
-					yAxis: 0,
-					tooltip: {
-						valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-						valueDecimals: 1
-					},
-					visible: false
-				}, false);
-				series = chart.get('prev_setpoint');
-				series.setData(datatablese_prev, false);
-			}
-		}
-	}
-
-	if (datatablete.length != 0) {
-		//Add Temperature series
-		if (isday == 1) {
-			chart.addSeries({
-				id: 'temperature',
-				name: $.t('Temperature'),
-				color: 'yellow',
-				yAxis: 0,
-				step: (isthermostat) ? 'left' : null,
-				tooltip: {
-					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-					valueDecimals: 1
-				}
-			}, false);
-			series = chart.get('temperature');
-			series.setData(datatablete, false);
-		} else {
-			//Min/Max range
-			if (datatableta.length != 0) {
-				chart.addSeries({
-					id: 'temperature_avg',
-					name: $.t('Temperature'),
-					color: 'yellow',
-					fillOpacity: 0.7,
-					yAxis: 0,
-					zIndex: 2,
-					tooltip: {
-						valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-						valueDecimals: 1
-					}
-				}, false);
-				series = chart.get('temperature_avg');
-				series.setData(datatableta, false);
-				var trandLine = CalculateTrendLine(datatableta);
-				if (typeof trandLine != 'undefined') {
-					var datatableTrendline = [];
-					datatableTrendline.push([trandLine.x0, trandLine.y0]);
-					datatableTrendline.push([trandLine.x1, trandLine.y1]);
-				}
-			}
-			if (datatabletrange.length != 0) {
-				chart.addSeries({
-					id: 'temperature',
-					name: $.t('Temperature') + '_range',
-					color: 'rgba(3,190,252,1.0)',
-					type: 'areasplinerange',
-					linkedTo: ':previous',
-					zIndex: 0,
-					lineWidth: 0,
-					fillOpacity: 0.5,
-					yAxis: 0,
-					tooltip: {
-						valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-						valueDecimals: 1
-					}
-				}, false);
-				series = chart.get('temperature');
-				series.setData(datatabletrange, false);
-			}
-			if (datatableta_prev.length != 0) {
-				chart.addSeries({
-					id: 'prev_temperature',
-					name: $.t('Past') + ' ' + $.t('Temperature'),
-					color: 'rgba(224,224,230,0.8)',
-					zIndex: 3,
-					yAxis: 0,
-					tooltip: {
-						valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-						valueDecimals: 1
-					},
-					visible: false
-				}, false);
-				series = chart.get('prev_temperature');
-				series.setData(datatableta_prev, false);
-			}
-		}
-	}
-	if (typeof datatableTrendline != 'undefined') {
-		if (datatableTrendline.length > 0) {
-			chart.addSeries({
-				id: 'temp_trendline',
-				name: $.t('Trendline') + ' ' + $.t('Temperature'),
-				zIndex: 1,
-				tooltip: {
-					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-					valueDecimals: 1
-				},
-				color: 'rgba(255,3,3,0.8)',
-				dashStyle: 'LongDash',
-				yAxis: 0,
-				visible: false
-			}, false);
-			series = chart.get('temp_trendline');
-			series.setData(datatableTrendline, false);
-		}
-	}
-	return;
-	if (datatabledp.length != 0) {
-		chart.addSeries({
-			id: 'dewpoint',
-			name: $.t('Dew Point'),
-			color: 'blue',
-			yAxis: 0,
-			tooltip: {
-				valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-				valueDecimals: 1
-			}
-		}, false);
-		series = chart.get('dewpoint');
-		series.setData(datatabledp, false);
-	}
-	if (datatableba.length != 0) {
-		chart.addSeries({
-			id: 'baro',
-			name: $.t('Barometer'),
-			color: 'pink',
-			yAxis: 2,
-			tooltip: {
-				valueSuffix: ' hPa',
-				valueDecimals: 1
-			}
-		}, false);
-		series = chart.get('baro');
-		series.setData(datatableba, false);
 	}
 }
 
@@ -1676,31 +1305,26 @@ function ShowCameraLiveStream(Name, camIdx) {
 	$('#dialog-camera-live #camfeed').attr("src", "images/camera_default.png");
 	//$('#dialog-camera-live #camfeed').attr("src", FeedURL);
 
-	var dwidth = $(window).width() / 2;
-	var dheight = $(window).height() / 2;
+	var windowWidth = $(window).width() - 20;
+	var windowHeight = $(window).height() - 150;
+	
+	var AspectSource = 4 / 3;
 
-	if (dwidth > 630) {
-		dwidth = 630;
-		dheight = parseInt((dwidth / 16) * 9);
+	var height = windowHeight;
+	var width = Math.round(height * AspectSource) & ~1;
+	if (width > windowWidth) {
+		width = windowWidth;
+		height = Math.round(width / AspectSource) & ~1;
 	}
-	if (dheight > 470) {
-		dheight = 470;
-		dwidth = parseInt((dheight / 9) * 16);
-	}
-	if (dwidth > dheight) {
-		dwidth = parseInt((dheight / 9) * 16);
-	}
-	else {
-		dheight = parseInt((dwidth / 16) * 9);
-	}
+	
 	//Set inner Camera feed width/height
-	$("#dialog-camera-live #camfeed").width(dwidth - 30);
-	$("#dialog-camera-live #camfeed").height(dheight - 16);
+	$("#dialog-camera-live #camfeed").width(width - 30);
+	$("#dialog-camera-live #camfeed").height(height - 16);
 
 	$("#dialog-camera-live").dialog({
 		resizable: false,
-		width: dwidth + 2,
-		height: dheight + 118,
+		width: width + 2,
+		height: height + 50,
 		position: {
 			my: "center",
 			at: "center",
@@ -1708,11 +1332,6 @@ function ShowCameraLiveStream(Name, camIdx) {
 		},
 		modal: true,
 		title: unescape(Name),
-		buttons: {
-			"OK": function () {
-				$(this).dialog("close");
-			}
-		},
 		open: function () {
 			load_cam_video();
 		},
@@ -5794,7 +5413,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 						pointRange: 3600 * 1000, // 1 hour in ms
 						zIndex: 5,
 						animation: false,
-						name: (switchtype == 0) ? $.t('Energy Usage') : $.t('Energy Generated'),
+						name: switchtype == 0 ? $.t('Energy Usage') : $.t('Energy Generated'),
 						tooltip: {
 							valueSuffix: (chart == $.WeekChart) ? ' kWh' : ' Wh',
 							valueDecimals: totDecimals
@@ -5846,7 +5465,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 						// counter type (no power)
 						chart.highcharts().addSeries({
 							id: 'usage1',
-							name: (switchtype == 0) ? $.t('Energy Usage') : $.t('Energy Generated'),
+							name: switchtype == 0 ? $.t('Energy Usage') : $.t('Energy Generated'),
 							tooltip: {
 								valueSuffix: (chart == $.DayChart) ? ' Wh' : ' kWh',
 								valueDecimals: totDecimals
@@ -5859,7 +5478,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 						// instant + counter type
 						chart.highcharts().addSeries({
 							id: 'usage1',
-							name: (switchtype == 0) ? $.t('Power Usage') : $.t('Power Generated'),
+							name: switchtype == 0 ? $.t('Power Usage') : $.t('Power Generated'),
 							zIndex: 10,
 							type: (chart == $.DayChart) ? 'spline' : 'column', // power vs energy
 							tooltip: {
@@ -6130,8 +5749,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 			id: 'counter',
 			name: valueQuantity,
 			tooltip: {
-				valueSuffix: ' ' + valueUnits,
-				valueDecimals: 0
+				valueSuffix: ' ' + valueUnits
 			},
 			color: 'rgba(3,190,252,0.8)',
 			yAxis: 0
@@ -6800,357 +6418,8 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 	});
 }
 
-function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
-	clearInterval($.myglobals.refreshTimer);
-	$(window).scrollTop(0);
-	$('#modal').show();
-
-	$.content = contentdiv;
-	$.backfunction = backfunction;
-	$.devIdx = id;
-	$.devName = name;
-	if (typeof switchtype != 'undefined') {
-		$.devSwitchType = switchtype;
-	}
-	else {
-		switchtype = $.devSwitchType;
-	}
-
-    var htmlcontent = $('#dayweekmonthyearlog').html();
-	$($.content).html(htmlcontent);
-
-	var graph_title = (switchtype == 4) ? $.t('Generated') : $.t('Usage');
-	graph_title += ' ' + Get5MinuteHistoryDaysGraphTitle();
-
-	$.DayChart = $($.content + ' #daygraph');
-	$.DayChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			alignTicks: false, // necessary for y-axis extremes matching
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&method=1&idx=" + id + "&range=day",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.DayChart, switchtype);
-								$.DayChart.highcharts().redraw();
-							}
-						});
-				},
-				redraw: function () {
-					var me = this, iMin = 0, iMax = 0, bRedraw = false;
-					me.redrawCnt = me.redrawCnt || 0; // failsafe
-					me.redrawCnt++;
-					$.each(me.series, function (iIndex_, oSerie_) {
-						var iAxisMin = me.yAxis[oSerie_.options.yAxis].min;
-						if (iAxisMin < iMin) {
-							bRedraw = bRedraw || (0 != iMin);
-							iMin = iAxisMin;
-						}
-						var iAxisMax = me.yAxis[oSerie_.options.yAxis].max;
-						if (iAxisMax > iMax) {
-							bRedraw = bRedraw || (0 != iMax);
-							iMax = iAxisMax;
-						}
-					});
-					if (bRedraw && me.redrawCnt == 1) {
-						$.each($.DayChart.highcharts().yAxis, function (iIndex_, oAxis_) {
-							oAxis_.setExtremes((iMin != 0) ? iMin : null, (iMax != 0) ? iMax : null, false);
-						});
-						me.redraw();
-					} else {
-						$.each($.DayChart.highcharts().yAxis, function (iIndex_, oAxis_) {
-							oAxis_.setExtremes(null, null, false); // next time rescale yaxis if necessary
-						});
-						me.redrawCnt = 0;
-					}
-				}
-			}
-		},
-		title: {
-			text: graph_title
-		},
-		xAxis: {
-			type: 'datetime',
-		},
-		yAxis: [{
-			title: {
-				text: $.t('Energy') + ' (Wh)'
-			}
-		}, {
-			title: {
-				text: $.t('Power') + ' (Watt)'
-			},
-			opposite: true
-		}],
-		tooltip: {
-			crosshairs: true,
-			shared: false
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNew(event, true, ShowCounterLogSpline);
-						}
-					}
-				},
-				matchExtremes: true
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			},
-			areaspline: {
-				lineWidth: 3,
-				marker: {
-					enabled: false
-				},
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				}
-			},
-			column: {
-				minPointLength: 4,
-				pointPadding: 0.1,
-				groupPadding: 0,
-				dataLabels: {
-					enabled: false,
-					color: 'white'
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-	$.WeekChart = $($.content + ' #weekgraph');
-	$.WeekChart.highcharts({
-		chart: {
-			type: 'column',
-			marginRight: 10,
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=week",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.WeekChart, switchtype);
-								$.WeekChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		title: {
-			text: $.t('Last Week')
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: {
-				day: '%a'
-			},
-			tickInterval: 24 * 3600 * 1000
-		},
-		yAxis: {
-			maxPadding: 0.2,
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			}
-		},
-		plotOptions: {
-			column: {
-				minPointLength: 4,
-				pointPadding: 0.1,
-				groupPadding: 0,
-				dataLabels: {
-					enabled: true,
-					color: 'white'
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-
-	$.MonthChart = $($.content + ' #monthgraph');
-	$.MonthChart.highcharts({
-		chart: {
-			type: 'spline',
-			marginRight: 10,
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=month",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.MonthChart, switchtype);
-								$.MonthChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		title: {
-			text: $.t('Last Month')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			}
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNewEx(event, false, ShowCounterLogSpline);
-						}
-					}
-				}
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-
-	$.YearChart = $($.content + ' #yeargraph');
-	$.YearChart.highcharts({
-		chart: {
-			type: 'spline',
-			marginRight: 10,
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=year",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.YearChart, switchtype);
-								$.YearChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		title: {
-			text: $.t('Last Year')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			}
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNewEx(event, false, ShowCounterLogSpline);
-						}
-					}
-				}
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-}
-
-function SwitchLightPopup(idx, switchcmd, refreshfunction, isprotected) {
-	SwitchLight(idx, switchcmd, refreshfunction, isprotected);
+function SwitchLightPopup(idx, switchcmd, isprotected) {
+	SwitchLight(idx, switchcmd, isprotected);
 	$("#rgbw_popup").hide();
 }
 
@@ -7430,15 +6699,15 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	});
 }
 
-function ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, colorJSON, SubType, DimmerType) {
+function ShowRGBWPopupInt(mouseX, mouseY, idx, Protected, MaxDimLevel, LevelInt, colorJSON, SubType, DimmerType) {
 	var ledType = getLEDType(SubType);
 	var devIdx = idx;
 
 	ShowRGBWPicker("#rgbw_popup", idx, Protected, MaxDimLevel, LevelInt, colorJSON, SubType, DimmerType);
 
 	// Setup on and Off buttons
-	$('#rgbw_popup #popup_switch_on').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'On\',' + refreshfunction + ',' + Protected + ');');
-	$('#rgbw_popup #popup_switch_off').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'Off\',' + refreshfunction + ',' + Protected + ');');
+	$('#rgbw_popup #popup_switch_on').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'On\',' + Protected + ');');
+	$('#rgbw_popup #popup_switch_off').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'Off\',' + Protected + ');');
 
 	// Show brightness and temperature buttons
 	$('#rgbw_popup #popup_bright_up').hide();
@@ -7498,7 +6767,7 @@ function ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDi
 function CloseRGBWPopup() {
 	$("#rgbw_popup").hide();
 }
-function ShowRGBWPopup(event, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType) {
+function ShowRGBWPopup(event, idx, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType) {
 	clearInterval($.setColValue);
 	var event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
@@ -7520,19 +6789,19 @@ function ShowRGBWPopup(event, idx, refreshfunction, Protected, MaxDimLevel, Leve
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function () {
-		ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType);
+		ShowRGBWPopupInt(mouseX, mouseY, idx, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType);
 	});
 }
 
-function SwitchTherm3Popup(idx, switchcmd, refreshfunction) {
-	SwitchLightInt(idx, switchcmd, refreshfunction, $.devpwd);
+function SwitchTherm3Popup(idx, switchcmd) {
+	SwitchLightInt(idx, switchcmd, $.devpwd);
 	$("#thermostat3_popup").hide();
 }
-function ShowTherm3PopupInt(mouseX, mouseY, idx, refreshfunction, pwd) {
+function ShowTherm3PopupInt(mouseX, mouseY, idx, pwd) {
 	$.devIdx = idx;
 	$.devpwd = pwd;
-	$('#thermostat3_popup #popup_therm_on').attr("href", 'javascript:SwitchTherm3Popup(' + idx + ',\'On\',' + refreshfunction + ');');
-	$('#thermostat3_popup #popup_therm_off').attr("href", 'javascript:SwitchTherm3Popup(' + idx + ',\'Off\',' + refreshfunction + ');');
+	$('#thermostat3_popup #popup_therm_on').attr("href", 'javascript:SwitchTherm3Popup(' + idx + ',\'On\');');
+	$('#thermostat3_popup #popup_therm_off').attr("href", 'javascript:SwitchTherm3Popup(' + idx + ',\'Off\');');
 
 	$("#thermostat3_popup").css({
 		"top": mouseY,
@@ -7644,7 +6913,7 @@ function ThermStop() {
 	});
 }
 
-function ShowTherm3Popup(event, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, hue) {
+function ShowTherm3Popup(event, idx, Protected, MaxDimLevel, LevelInt, hue) {
 	clearInterval($.setColValue);
 	var event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
@@ -7666,7 +6935,7 @@ function ShowTherm3Popup(event, idx, refreshfunction, Protected, MaxDimLevel, Le
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function (pwd) {
-		ShowTherm3PopupInt(mouseX, mouseY, idx, refreshfunction, pwd);
+		ShowTherm3PopupInt(mouseX, mouseY, idx, pwd);
 	});
 }
 
@@ -7710,7 +6979,6 @@ function SetSetpoint() {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
-				$.refreshfunction();
 			}, 1000);
 		},
 		error: function () {
@@ -7726,12 +6994,11 @@ function RFYEnableSunWind(bDoEnable) {
 		switchcmd = "DisableSunWind";
 	}
 	$("#rfy_popup").hide();
-	SwitchLight($.devIdx, switchcmd, $.refreshfunction, $.Protected);
+	SwitchLight($.devIdx, switchcmd, $.Protected);
 }
 
-function ShowSetpointPopupInt(mouseX, mouseY, idx, refreshfunction, currentvalue, ismobile) {
+function ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile) {
 	$.devIdx = idx;
-	$.refreshfunction = refreshfunction;
 	var curValue = parseFloat(currentvalue).toFixed(1);
 	$('#setpoint_popup #actual_value').html(curValue);
 	$('#setpoint_popup #popup_setpoint').val(curValue);
@@ -7762,7 +7029,7 @@ function ShowSetpointPopupInt(mouseX, mouseY, idx, refreshfunction, currentvalue
 	$("#setpoint_popup").show();
 }
 
-function ShowSetpointPopup(event, idx, refreshfunction, Protected, currentvalue, ismobile) {
+function ShowSetpointPopup(event, idx, Protected, currentvalue, ismobile) {
 	$.Protected = Protected;
 	event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
@@ -7783,16 +7050,15 @@ function ShowSetpointPopup(event, idx, refreshfunction, Protected, currentvalue,
 	var mouseX = event.pageX;
 	var mouseY = event.pageY;
 
-	ShowSetpointPopupInt(mouseX, mouseY, idx, refreshfunction, currentvalue, ismobile);
+	ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile);
 }
 
 function CloseRFYPopup() {
 	$("#rfy_popup").hide();
 }
 
-function ShowRFYPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
+function ShowRFYPopupInt(mouseX, mouseY, idx, ismobile) {
 	$.devIdx = idx;
-	$.refreshfunction = refreshfunction;
 
 	if (typeof ismobile == 'undefined') {
 		$("#rfy_popup").css({
@@ -7820,7 +7086,7 @@ function ShowRFYPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
 	$("#rfy_popup").show();
 }
 
-function ShowRFYPopup(event, idx, refreshfunction, Protected, ismobile) {
+function ShowRFYPopup(event, idx, Protected, ismobile) {
 	event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
 	// calculate pageX/Y - logic taken from jQuery.
@@ -7841,7 +7107,7 @@ function ShowRFYPopup(event, idx, refreshfunction, Protected, ismobile) {
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function () {
-		ShowRFYPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile);
+		ShowRFYPopupInt(mouseX, mouseY, idx, ismobile);
 	});
 }
 
@@ -7852,12 +7118,11 @@ function CloseIthoPopup() {
 function IthoSendCommand(itho_cmnd) {
 	var switchcmd = itho_cmnd;
 	$("#itho_popup").hide();
-	SwitchLight($.devIdx, switchcmd, $.refreshfunction, $.Protected);
+	SwitchLight($.devIdx, switchcmd, $.Protected);
 }
 
-function ShowIthoPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
+function ShowIthoPopupInt(mouseX, mouseY, idx, ismobile) {
 	$.devIdx = idx;
-	$.refreshfunction = refreshfunction;
 
 	if (typeof ismobile == 'undefined') {
 		$("#itho_popup").css({
@@ -7885,7 +7150,7 @@ function ShowIthoPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
 	$("#itho_popup").show();
 }
 
-function ShowIthoPopup(event, idx, refreshfunction, Protected, ismobile) {
+function ShowIthoPopup(event, idx, Protected, ismobile) {
 	event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
 	// calculate pageX/Y - logic taken from jQuery.
@@ -7906,7 +7171,7 @@ function ShowIthoPopup(event, idx, refreshfunction, Protected, ismobile) {
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function () {
-		ShowIthoPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile);
+		ShowIthoPopupInt(mouseX, mouseY, idx, ismobile);
 	});
 }
 
@@ -7920,12 +7185,11 @@ function LucciSendCommand(lucci_cmnd) {
 	var switchcmd = lucci_cmnd;
 	$("#lucci_popup").hide();
 	$("#lucci_dc_popup").hide();
-	SwitchLight($.devIdx, switchcmd, $.refreshfunction, $.Protected);
+	SwitchLight($.devIdx, switchcmd, $.Protected);
 }
 
-function ShowLucciPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
+function ShowLucciPopupInt(mouseX, mouseY, idx, ismobile) {
 	$.devIdx = idx;
-	$.refreshfunction = refreshfunction;
 
 	if (typeof ismobile == 'undefined') {
 		$("#lucci_popup").css({
@@ -7953,7 +7217,7 @@ function ShowLucciPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
 	$("#lucci_popup").show();
 }
 
-function ShowLucciPopup(event, idx, refreshfunction, Protected, ismobile) {
+function ShowLucciPopup(event, idx, Protected, ismobile) {
 	event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
 	// calculate pageX/Y - logic taken from jQuery.
@@ -7974,13 +7238,12 @@ function ShowLucciPopup(event, idx, refreshfunction, Protected, ismobile) {
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function () {
-		ShowLucciPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile);
+		ShowLucciPopupInt(mouseX, mouseY, idx, ismobile);
 	});
 }
 
-function ShowLucciDCPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
+function ShowLucciDCPopupInt(mouseX, mouseY, idx, ismobile) {
     $.devIdx = idx;
-    $.refreshfunction = refreshfunction;
 
     if (typeof ismobile == 'undefined') {
         $("#lucci_dc_popup").css({
@@ -8008,7 +7271,7 @@ function ShowLucciDCPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
     $("#lucci_dc_popup").show();
 }
 
-function ShowLucciDCPopup(event, idx, refreshfunction, Protected, ismobile) {
+function ShowLucciDCPopup(event, idx, Protected, ismobile) {
     event = event || window.event;
     // If pageX/Y aren't available and clientX/Y are,
     // calculate pageX/Y - logic taken from jQuery.
@@ -8029,7 +7292,7 @@ function ShowLucciDCPopup(event, idx, refreshfunction, Protected, ismobile) {
     var mouseY = event.pageY;
 
     HandleProtection(Protected, function () {
-        ShowLucciDCPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile);
+        ShowLucciDCPopupInt(mouseX, mouseY, idx, ismobile);
     });
 }
 

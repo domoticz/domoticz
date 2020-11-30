@@ -33,9 +33,10 @@ Version history
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include <../tinyxpath/xpath_static.h>
+#include "../tinyxpath/tinyxml.h"
+#include "../tinyxpath/xpath_static.h"
 #include "../webserver/Base64.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 #include <sstream>
 
 #ifdef _DEBUG
@@ -75,19 +76,13 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	Init();
 }
 
-
-CEcoDevices::~CEcoDevices(void)
-{
-}
-
-
 void CEcoDevices::Init()
 {
 	m_bFirstRun = true;
 
 	// Is the device we poll password protected?
 	m_ssURL.str("");
-	if ((m_username.size() > 0) && (m_password.size() > 0))
+	if ((!m_username.empty()) && (!m_password.empty()))
 		m_ssURL << "http://" << m_username << ":" << m_password << "@";
 	else
 		m_ssURL << "http://";
@@ -150,7 +145,7 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 {
 	TiXmlDocument XMLdoc("Teleinfo.xml");
 
-	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	XMLdoc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
 		_log.Log(LOG_ERROR, "Error parsing XML for /protect/settings/teleinfo?.xml: %s", XMLdoc.ErrorDesc());
@@ -164,6 +159,9 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	teleinfo.DEMAIN = S_xpath_string(XMLdoc.RootElement(), "/response/DEMAIN/text()").c_str();
 	teleinfo.ISOUSC = i_xpath_int(XMLdoc.RootElement(), "/response/ISOUSC/text()");
 	teleinfo.PAPP = i_xpath_int(XMLdoc.RootElement(), "/response/PAPP/text()");
+	if ( teleinfo.PAPP > 0 ) {
+		teleinfo.withPAPP = true;
+	}
 	teleinfo.BASE = i_xpath_int(XMLdoc.RootElement(), "/response/BASE/text()");
 	teleinfo.HCHC = i_xpath_int(XMLdoc.RootElement(), "/response/HCHC/text()");
 	teleinfo.HCHP = i_xpath_int(XMLdoc.RootElement(), "/response/HCHP/text()");
@@ -192,7 +190,7 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 
 void CEcoDevices::GetMeterDetails()
 {
-	if (m_szIPAddress.size() == 0)
+	if (m_szIPAddress.empty())
 		return;
 	// From http://xx.xx.xx.xx/status.xml we get the pulse counters indexes and current flow
 	// From http://xx.xx.xx.xx/protect/settings/teleinfoX.xml we get a complete feed of Teleinfo data
@@ -202,7 +200,7 @@ void CEcoDevices::GetMeterDetails()
 	std::string::size_type len, pos;
 	std::stringstream sstr;
 	TiXmlDocument XMLdoc("Teleinfo.xml");
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	int   major, minor, release;
 	int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
 
@@ -221,7 +219,7 @@ void CEcoDevices::GetMeterDetails()
 	}
 
 	// Process XML result
-	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	XMLdoc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
 		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /status.xml: %s", m_Name.c_str(), XMLdoc.ErrorDesc());
@@ -237,11 +235,11 @@ void CEcoDevices::GetMeterDetails()
 #endif
 
 	m_status.version = m_status.version + "..";
-	major = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
-	m_status.version.erase(0, m_status.version.find(".") + 1);
-	minor = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
-	m_status.version.erase(0, m_status.version.find(".") + 1);
-	release = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
+	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	m_status.version.erase(0, m_status.version.find('.') + 1);
+	minor = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	m_status.version.erase(0, m_status.version.find('.') + 1);
+	release = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/version/text()").c_str();
 
 	if ((major > min_major) || ((major == min_major) && (minor > min_minor)) || ((major == min_major) && (minor == min_minor) && (release >= min_release)))
@@ -348,7 +346,7 @@ void CEcoDevices::GetMeterDetails()
 
 void CEcoDevices::GetMeterRT2Details()
 {
-	if (m_szIPAddress.size() == 0)
+	if (m_szIPAddress.empty())
 		return;
 
 	// From http://xx.xx.xx.xx/admin/status.xml we get the Teleinfo data
@@ -360,7 +358,7 @@ void CEcoDevices::GetMeterRT2Details()
 	std::stringstream sstr;
 	std::map<std::string, std::string> XMLmap;
 	TiXmlDocument XMLdoc("Teleinfo.xml");
-	//time_t atime = mytime(NULL);
+	// time_t atime = mytime(nullptr);
 	int   i, major, minor, release;
 	int min_major = MAJOR_RT2, min_minor = MINOR_RT2, min_release = RELEASE_RT2;
 
@@ -376,8 +374,7 @@ void CEcoDevices::GetMeterRT2Details()
 	}
 
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
+	bool bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", m_Name.c_str());
@@ -414,7 +411,7 @@ void CEcoDevices::GetMeterRT2Details()
 	}
 
 	// Process XML result
-	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	XMLdoc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
 		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /admin/status.xml: %s", m_Name.c_str(), XMLdoc.ErrorDesc());
@@ -436,11 +433,11 @@ void CEcoDevices::GetMeterRT2Details()
 #endif
 
 	m_status.version = m_status.version + "..";
-	major = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
-	m_status.version.erase(0, m_status.version.find(".") + 1);
-	minor = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
-	m_status.version.erase(0, m_status.version.find(".") + 1);
-	release = atoi(m_status.version.substr(0, m_status.version.find(".")).c_str());
+	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	m_status.version.erase(0, m_status.version.find('.') + 1);
+	minor = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	m_status.version.erase(0, m_status.version.find('.') + 1);
+	release = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/version/text()").c_str();
 
 	if (!((major > min_major) || ((major == min_major) && (minor > min_minor)) || ((major == min_major) && (minor == min_minor) && (release >= min_release))))
@@ -463,7 +460,8 @@ void CEcoDevices::GetMeterRT2Details()
 		label = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
 		sprintf(XMLLabel, "/response/etiquetteEC%i/text()", i);
 		value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
-		if (label == "") break;
+		if (label.empty())
+			break;
 		XMLmap[label] = value;
 	}
 	m_teleinfo1.OPTARIF = XMLmap["OPTARIF"];
@@ -471,6 +469,9 @@ void CEcoDevices::GetMeterRT2Details()
 	m_teleinfo1.DEMAIN = XMLmap["DEMAIN"];
 	m_teleinfo1.ISOUSC = atoi(XMLmap["ISOUSC"].c_str());
 	m_teleinfo1.PAPP = atoi(XMLmap["PAPP"].c_str());
+	if ( m_teleinfo1.PAPP > 0 ) {
+		m_teleinfo1.withPAPP = true;
+	}
 	m_teleinfo1.BASE = atoi(XMLmap["BASE"].c_str());
 	m_teleinfo1.HCHC = atoi(XMLmap["HCHC"].c_str());
 	m_teleinfo1.HCHP = atoi(XMLmap["HCHP"].c_str());
@@ -495,7 +496,7 @@ void CEcoDevices::GetMeterRT2Details()
 	_log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
 	_log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
 #endif
-	ProcessTeleinfo(m_status.hostname.c_str(), 1, m_teleinfo1);
+	ProcessTeleinfo(m_status.hostname, 1, m_teleinfo1);
 
 	// 8 internal counters (postes) processing
 	for (i = 0; i < 8; i++)
@@ -505,14 +506,14 @@ void CEcoDevices::GetMeterRT2Details()
 		sprintf(XMLLabel, "/response/info%i/text()", i);
 		value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
 		StringSplit(value, ",", splitresults);
-		if (splitresults[0] == "")
+		if (splitresults[0].empty())
 			break;
-		else
-		{
-			fvalue1 = (float)atof(splitresults[0].c_str());
-			if (fvalue1 > 0) SendMeterSensor(m_HwdID, i, 255, fvalue1 / 1000, m_status.hostname + " " + label);
-			fvalue2 = (float)atof(splitresults[1].c_str());
-			if (fvalue2 > 0) SendWaterflowSensor(m_HwdID, (uint8_t)i, 255, fvalue2, m_status.hostname + " " + label);
-		}
+
+		fvalue1 = (float)atof(splitresults[0].c_str());
+		if (fvalue1 > 0)
+			SendMeterSensor(m_HwdID, i, 255, fvalue1 / 1000, m_status.hostname + " " + label);
+		fvalue2 = (float)atof(splitresults[1].c_str());
+		if (fvalue2 > 0)
+			SendWaterflowSensor(m_HwdID, (uint8_t)i, 255, fvalue2, m_status.hostname + " " + label);
 	}
 }

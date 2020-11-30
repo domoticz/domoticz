@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include "WebServer.h"
 #include "WebServerHelper.h"
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <iostream>
 #include <fstream>
 #include "mainworker.h"
 #include "Helper.h"
 #include "localtime_r.h"
 #include "EventSystem.h"
+#include "HTMLSanitizer.h"
 #include "dzVents.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
@@ -22,6 +23,8 @@
 #include "../hardware/DarkSky.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/OpenWeatherMap.h"
+#include "../hardware/Buienradar.h"
+#include "../hardware/Meteorologisk.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/LogitechMediaServer.h"
@@ -33,6 +36,7 @@
 #include "../hardware/eHouseTCP.h"
 #include "../hardware/USBtin.h"
 #include "../hardware/USBtin_MultiblocV8.h"
+#include "../hardware/AirconWithMe.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -40,7 +44,8 @@
 #include "../hardware/Tellstick.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
-#include "../json/json.h"
+#include <json/json.h>
+#include "../main/json_helper.h"
 #include "Logger.h"
 #include "SQLHelper.h"
 #include "../push/BasePush.h"
@@ -62,8 +67,11 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+using namespace boost::placeholders;
+
 #define round(a) ( int ) ( a + .5 )
 
+extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 
@@ -83,45 +91,15 @@ struct _tGuiLanguage {
 	const char* szLong;
 };
 
-static const _tGuiLanguage guiLanguage[] =
-{
-	{ "en", "English" },
-	{ "sq", "Albanian" },
-	{ "ar", "Arabic" },
-	{ "bs", "Bosnian" },
-	{ "bg", "Bulgarian" },
-	{ "ca", "Catalan" },
-	{ "zh", "Chinese" },
-	{ "cs", "Czech" },
-	{ "da", "Danish" },
-	{ "nl", "Dutch" },
-	{ "et", "Estonian" },
-	{ "de", "German" },
-	{ "el", "Greek" },
-	{ "fr", "French" },
-	{ "fi", "Finnish" },
-	{ "he", "Hebrew" },
-	{ "hu", "Hungarian" },
-	{ "is", "Icelandic" },
-	{ "it", "Italian" },
-	{ "lt", "Lithuanian" },
-	{ "lv", "Latvian" },
-	{ "mk", "Macedonian" },
-	{ "no", "Norwegian" },
-	{ "fa", "Persian" },
-	{ "pl", "Polish" },
-	{ "pt", "Portuguese" },
-	{ "ro", "Romanian" },
-	{ "ru", "Russian" },
-	{ "sr", "Serbian" },
-	{ "sk", "Slovak" },
-	{ "sl", "Slovenian" },
-	{ "es", "Spanish" },
-	{ "sv", "Swedish" },
-	{ "zh_TW", "Taiwanese" },
-	{ "tr", "Turkish" },
-	{ "uk", "Ukrainian" },
-	{ NULL, NULL }
+static const _tGuiLanguage guiLanguage[] = {
+	{ "en", "English" },	{ "sq", "Albanian" },	{ "ar", "Arabic" },    { "bs", "Bosnian" },	 { "bg", "Bulgarian" },
+	{ "ca", "Catalan" },	{ "zh", "Chinese" },	{ "cs", "Czech" },     { "da", "Danish" },	 { "nl", "Dutch" },
+	{ "et", "Estonian" },	{ "de", "German" },	{ "el", "Greek" },     { "fr", "French" },	 { "fi", "Finnish" },
+	{ "he", "Hebrew" },	{ "hu", "Hungarian" },	{ "is", "Icelandic" }, { "it", "Italian" },	 { "lt", "Lithuanian" },
+	{ "lv", "Latvian" },	{ "mk", "Macedonian" }, { "no", "Norwegian" }, { "fa", "Persian" },	 { "pl", "Polish" },
+	{ "pt", "Portuguese" }, { "ro", "Romanian" },	{ "ru", "Russian" },   { "sr", "Serbian" },	 { "sk", "Slovak" },
+	{ "sl", "Slovenian" },	{ "es", "Spanish" },	{ "sv", "Swedish" },   { "zh_TW", "Taiwanese" }, { "tr", "Turkish" },
+	{ "uk", "Ukrainian" },	{ nullptr, nullptr },
 };
 
 extern http::server::CWebServerHelper m_webservers;
@@ -129,17 +107,16 @@ extern http::server::CWebServerHelper m_webservers;
 namespace http {
 	namespace server {
 
-		CWebServer::CWebServer(void) : session_store()
+		CWebServer::CWebServer()
 		{
-			m_pWebEm = NULL;
+			m_pWebEm = nullptr;
 			m_bDoStop = false;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
 		}
 
-
-		CWebServer::~CWebServer(void)
+		CWebServer::~CWebServer()
 		{
 			// RK, we call StopServer() instead of just deleting m_pWebEm. The Do_Work thread might still be accessing that object
 			StopServer();
@@ -178,7 +155,7 @@ namespace http {
 		{
 			m_custom_light_icons.clear();
 			m_custom_light_icons_lookup.clear();
-			std::string sLine = "";
+			std::string sLine;
 
 			//First get them from the switch_icons.txt file
 			std::ifstream infile;
@@ -190,7 +167,7 @@ namespace http {
 				while (!infile.eof())
 				{
 					getline(infile, sLine);
-					if (sLine.size() != 0)
+					if (!sLine.empty())
 					{
 						std::vector<std::string> results;
 						StringSplit(sLine, ";", results);
@@ -214,10 +191,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					int ID = atoi(sd[0].c_str());
 
 					_tCustomIcon cImage;
@@ -236,10 +211,10 @@ namespace http {
 					_dbImageFiles["IconOff"] = szWWWFolder + "/images/" + IconFile48Off;
 
 					//Check if files are on disk, else add them
-					for (const auto & iItt : _dbImageFiles)
+					for (const auto &db : _dbImageFiles)
 					{
-						std::string TableField = iItt.first;
-						std::string IconFile = iItt.second;
+						std::string TableField = db.first;
+						std::string IconFile = db.second;
 
 						if (!file_exist(IconFile.c_str()))
 						{
@@ -282,7 +257,7 @@ namespace http {
 			do {
 				try {
 					exception = false;
-					m_pWebEm = new http::server::cWebem(settings, serverpath.c_str());
+					m_pWebEm = new http::server::cWebem(settings, serverpath);
 				}
 				catch (std::exception& e) {
 					exception = true;
@@ -319,8 +294,8 @@ namespace http {
 				{
 					std::vector<std::string> strarray;
 					StringSplit(WebLocalNetworks, ";", strarray);
-					for (const auto & itt : strarray)
-						m_pWebEm->AddLocalNetworks(itt);
+					for (const auto &str : strarray)
+						m_pWebEm->AddLocalNetworks(str);
 					//add local hostname
 					m_pWebEm->AddLocalNetworks("");
 				}
@@ -332,8 +307,8 @@ namespace http {
 			{
 				std::vector<std::string> strarray;
 				StringSplit(WebRemoteProxyIPs, ";", strarray);
-				for (const auto & itt : strarray)
-					m_pWebEm->AddRemoteProxyIPs(itt);
+				for (const auto &str : strarray)
+					m_pWebEm->AddRemoteProxyIPs(str);
 			}
 
 			//register callbacks
@@ -351,7 +326,7 @@ namespace http {
 			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/images/floorplans/plan", boost::bind(&CWebServer::GetFloorplanImage, this, _1, _2, _3));
 
-			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/storesettings", boost::bind(&CWebServer::PostSettings, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this, _1, _2, _3));
 			RegisterCommandCode("rfxfirmwaregetpercentage", boost::bind(&CWebServer::Cmd_RFXComGetFirmwarePercentage, this, _1, _2, _3), true);
@@ -377,6 +352,8 @@ namespace http {
 			RegisterCommandCode("gettitle", boost::bind(&CWebServer::Cmd_GetTitle, this, _1, _2, _3), true);
 
 			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2, _3), true);
+			m_pWebEm->RegisterPageCode("/logincheck", boost::bind(&CWebServer::PostLoginCheck, this, _1, _2, _3), true);
+
 			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
 			RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1, _2, _3));
 			RegisterCommandCode("clearlog", boost::bind(&CWebServer::Cmd_ClearLog, this, _1, _2, _3));
@@ -505,6 +482,8 @@ namespace http {
 			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1, _2, _3));
 
 			RegisterCommandCode("getconfig", boost::bind(&CWebServer::Cmd_GetConfig, this, _1, _2, _3), true);
+			RegisterCommandCode("getlocation", boost::bind(&CWebServer::Cmd_GetLocation, this, _1, _2, _3));
+			RegisterCommandCode("getforecastconfig", boost::bind(&CWebServer::Cmd_GetForecastConfig, this, _1, _2, _3));
 			RegisterCommandCode("sendnotification", boost::bind(&CWebServer::Cmd_SendNotification, this, _1, _2, _3));
 			RegisterCommandCode("emailcamerasnapshot", boost::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1, _2, _3));
 			RegisterCommandCode("udevice", boost::bind(&CWebServer::Cmd_UpdateDevice, this, _1, _2, _3));
@@ -517,7 +496,9 @@ namespace http {
 			RegisterCommandCode("checkforupdate", boost::bind(&CWebServer::Cmd_CheckForUpdate, this, _1, _2, _3));
 			RegisterCommandCode("downloadupdate", boost::bind(&CWebServer::Cmd_DownloadUpdate, this, _1, _2, _3));
 			RegisterCommandCode("downloadready", boost::bind(&CWebServer::Cmd_DownloadReady, this, _1, _2, _3));
+			RegisterCommandCode("update_application", boost::bind(&CWebServer::Cmd_UpdateApplication, this, _1, _2, _3));
 			RegisterCommandCode("deletedatapoint", boost::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1, _2, _3));
+			RegisterCommandCode("customevent", boost::bind(&CWebServer::Cmd_CustomEvent, this, _1, _2, _3));
 
 			RegisterCommandCode("setactivetimerplan", boost::bind(&CWebServer::Cmd_SetActiveTimerPlan, this, _1, _2, _3));
 			RegisterCommandCode("addtimer", boost::bind(&CWebServer::Cmd_AddTimer, this, _1, _2, _3));
@@ -583,6 +564,7 @@ namespace http {
 			RegisterRType("devices", boost::bind(&CWebServer::RType_Devices, this, _1, _2, _3));
 			RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1, _2, _3));
 			RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1, _2, _3));
+			RegisterRType("cameras_user", boost::bind(&CWebServer::RType_CamerasUser, this, _1, _2, _3));
 			RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1, _2, _3));
 			RegisterRType("mobiles", boost::bind(&CWebServer::RType_Mobiles, this, _1, _2, _3));
 
@@ -620,6 +602,8 @@ namespace http {
 
 			RegisterCommandCode("zwaveisnodeincluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeIncluded, this, _1, _2, _3));
 			RegisterCommandCode("zwaveisnodeexcluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeExcluded, this, _1, _2, _3));
+			RegisterCommandCode("zwaveisnodereplaced", boost::bind(&CWebServer::Cmd_ZWaveIsNodeReplaced, this, _1, _2, _3));
+			RegisterCommandCode("zwaveishasnodefaileddone", boost::bind(&CWebServer::Cmd_ZWaveIsHasNodeFailedDone, this, _1, _2, _3));
 
 			RegisterCommandCode("zwavesoftreset", boost::bind(&CWebServer::Cmd_ZWaveSoftReset, this, _1, _2, _3));
 			RegisterCommandCode("zwavehardreset", boost::bind(&CWebServer::Cmd_ZWaveHardReset, this, _1, _2, _3));
@@ -631,7 +615,10 @@ namespace http {
 			RegisterCommandCode("zwavegroupinfo", boost::bind(&CWebServer::Cmd_ZWaveGroupInfo, this, _1, _2, _3));
 			RegisterCommandCode("zwavecancel", boost::bind(&CWebServer::Cmd_ZWaveCancel, this, _1, _2, _3));
 			RegisterCommandCode("applyzwavenodeconfig", boost::bind(&CWebServer::Cmd_ApplyZWaveNodeConfig, this, _1, _2, _3));
+			RegisterCommandCode("zwavehasnodefailed", boost::bind(&CWebServer::Cmd_ZWaveHasNodeFailed, this, _1, _2, _3));
+			RegisterCommandCode("zwavereplacefailednode", boost::bind(&CWebServer::Cmd_ZWaveReplaceFailedNode, this, _1, _2, _3));
 			RegisterCommandCode("requestzwavenodeconfig", boost::bind(&CWebServer::Cmd_ZWaveRequestNodeConfig, this, _1, _2, _3));
+			RegisterCommandCode("requestzwavenodeinfo", boost::bind(&CWebServer::Cmd_ZWaveRequestNodeInfo, this, _1, _2, _3));
 			RegisterCommandCode("zwavestatecheck", boost::bind(&CWebServer::Cmd_ZWaveStateCheck, this, _1, _2, _3));
 			RegisterCommandCode("zwavereceiveconfigurationfromothercontroller", boost::bind(&CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController, this, _1, _2, _3));
 			RegisterCommandCode("zwavesendconfigurationtosecondcontroller", boost::bind(&CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController, this, _1, _2, _3));
@@ -639,6 +626,7 @@ namespace http {
 			RegisterCommandCode("zwavestartusercodeenrollmentmode", boost::bind(&CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode, this, _1, _2, _3));
 			RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1, _2, _3));
 			RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1, _2, _3));
+			RegisterCommandCode("zwavegetbatterylevels", boost::bind(&CWebServer::Cmd_ZWaveGetBatteryLevels, this, _1, _2, _3));
 
 			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", boost::bind(&CWebServer::ZWaveGetConfigFile, this, _1, _2, _3));
 
@@ -650,16 +638,12 @@ namespace http {
 			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", boost::bind(&CWebServer::ZWaveCPNodeSetButton, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", boost::bind(&CWebServer::ZWaveCPAdminCommand, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", boost::bind(&CWebServer::ZWaveCPNodeChange, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/savepost.html", boost::bind(&CWebServer::ZWaveCPSaveConfig, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/thpost.html", boost::bind(&CWebServer::ZWaveCPTestHeal, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/grouppost.html", boost::bind(&CWebServer::ZWaveCPSetGroup, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/scenepost.html", boost::bind(&CWebServer::ZWaveCPSceneCommand, this, _1, _2, _3));
 			//
 			//pollpost.html
-			//scenepost.html
-			//thpost.html
 			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1, _2, _3));
 #endif
 			RegisterCommandCode("tellstickApplySettings", boost::bind(&CWebServer::Cmd_TellstickApplySettings, this, _1, _2, _3));
@@ -680,7 +664,7 @@ namespace http {
 			m_bDoStop = true;
 			try
 			{
-				if (m_pWebEm == NULL)
+				if (m_pWebEm == nullptr)
 					return;
 				m_pWebEm->Stop();
 				if (m_thread) {
@@ -688,7 +672,7 @@ namespace http {
 					m_thread.reset();
 				}
 				delete m_pWebEm;
-				m_pWebEm = NULL;
+				m_pWebEm = nullptr;
 			}
 			catch (...)
 			{
@@ -698,49 +682,49 @@ namespace http {
 
 		void CWebServer::SetWebCompressionMode(const _eWebCompressionMode gzmode)
 		{
-			if (m_pWebEm == NULL)
+			if (m_pWebEm == nullptr)
 				return;
 			m_pWebEm->SetWebCompressionMode(gzmode);
 		}
 
 		void CWebServer::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
-			if (m_pWebEm == NULL)
+			if (m_pWebEm == nullptr)
 				return;
 			m_pWebEm->SetAuthenticationMethod(amethod);
 		}
 
 		void CWebServer::SetWebTheme(const std::string &themename)
 		{
-			if (m_pWebEm == NULL)
+			if (m_pWebEm == nullptr)
 				return;
 			m_pWebEm->SetWebTheme(themename);
 		}
 
 		void CWebServer::SetWebRoot(const std::string &webRoot)
 		{
-			if (m_pWebEm == NULL)
+			if (m_pWebEm == nullptr)
 				return;
 			m_pWebEm->SetWebRoot(webRoot);
 		}
 
-		void CWebServer::RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication)
+		void CWebServer::RegisterCommandCode(const char *idname, const webserver_response_function &ResponseFunction, bool bypassAuthentication)
 		{
 			m_webcommands.insert(std::pair<std::string, webserver_response_function >(std::string(idname), ResponseFunction));
 			if (bypassAuthentication)
 			{
-				m_pWebEm->RegisterWhitelistURLString(idname);
+				m_pWebEm->RegisterWhitelistCommandsString(idname);
 			}
 		}
 
-		void CWebServer::RegisterRType(const char* idname, webserver_response_function ResponseFunction)
+		void CWebServer::RegisterRType(const char *idname, const webserver_response_function &ResponseFunction)
 		{
 			m_webrtypes.insert(std::pair<std::string, webserver_response_function >(std::string(idname), ResponseFunction));
 		}
 
 		void CWebServer::HandleRType(const std::string &rtype, WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::map < std::string, webserver_response_function >::iterator pf = m_webrtypes.find(rtype);
+			auto pf = m_webrtypes.find(rtype);
 			if (pf != m_webrtypes.end())
 			{
 				pf->second(session, req, root);
@@ -749,7 +733,7 @@ namespace http {
 
 		void CWebServer::GetAppCache(WebEmSession & session, const request& req, reply & rep)
 		{
-			std::string response = "";
+			std::string response;
 			if (g_bDontCacheWWW)
 			{
 				return;
@@ -772,9 +756,8 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID FROM Floorplans ORDER BY [Order]");
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
 					std::string ImageURL = "images/floorplans/plan?idx=" + sd[0];
 					_FloorplanFiles[ImageURL] = 1;
 				}
@@ -796,9 +779,9 @@ namespace http {
 						{
 							response += "#Theme=" + sWebTheme + '\n';
 							//Add all theme files
-							for (const auto & itt : _ThemeFiles)
+							for (const auto &file : _ThemeFiles)
 							{
-								std::string tfname = itt.first.substr(szWWWFolder.size() + 1);
+								std::string tfname = file.first.substr(szWWWFolder.size() + 1);
 								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
 								response += tfname + '\n';
 							}
@@ -807,9 +790,9 @@ namespace http {
 						else if (sLine.find("#Floorplans") != std::string::npos)
 						{
 							//Add all floorplans
-							for (const auto & itt : _FloorplanFiles)
+							for (const auto &file : _FloorplanFiles)
 							{
-								std::string tfname = itt.first;
+								std::string tfname = file.first;
 								response += tfname + '\n';
 							}
 							continue;
@@ -817,13 +800,13 @@ namespace http {
 						else if (sLine.find("#SwitchIcons") != std::string::npos)
 						{
 							//Add database switch icons
-							for (const auto & itt : m_custom_light_icons)
+							for (const auto &db : m_custom_light_icons)
 							{
-								if (itt.idx >= 100)
+								if (db.idx >= 100)
 								{
-									std::string IconFile16 = itt.RootFile + ".png";
-									std::string IconFile48On = itt.RootFile + "48_On.png";
-									std::string IconFile48Off = itt.RootFile + "48_Off.png";
+									std::string IconFile16 = db.RootFile + ".png";
+									std::string IconFile48On = db.RootFile + "48_On.png";
+									std::string IconFile48Off = db.RootFile + "48_Off.png";
 
 									response += "images/" + CURLEncode::URLEncode(IconFile16) + '\n';
 									response += "images/" + CURLEncode::URLEncode(IconFile48On) + '\n';
@@ -871,7 +854,8 @@ namespace http {
 			}
 		exitjson:
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0) {
+			if (jcallback.empty())
+			{
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
@@ -895,9 +879,9 @@ namespace http {
 			root["title"] = "GetThemes";
 			m_mainworker.GetAvailableWebThemes();
 			int ii = 0;
-			for (const auto & itt : m_mainworker.m_webthemes)
+			for (const auto &theme : m_mainworker.m_webthemes)
 			{
-				root["result"][ii]["theme"] = itt;
+				root["result"][ii]["theme"] = theme;
 				ii++;
 			}
 		}
@@ -911,6 +895,21 @@ namespace http {
 				root["Title"] = sValue;
 			else
 				root["Title"] = "Domoticz";
+		}
+
+		//PostSettings
+		void CWebServer::PostLoginCheck(WebEmSession& session, const request& req, reply& rep)
+		{
+			Json::Value root;
+			Cmd_LoginCheck(session, req, root);
+
+			std::string jcallback = request::findValue(&req, "jsoncallback");
+			if (jcallback.empty())
+			{
+				reply::set_content(&rep, root.toStyledString());
+				return;
+			}
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root)
@@ -995,8 +994,7 @@ namespace http {
 						bDoAdd = false;
 					}
 #endif
-
-		}
+				}
 #endif
 #endif
 #ifndef WITH_OPENZWAVE
@@ -1016,15 +1014,17 @@ namespace http {
 #endif
 				if (ii == HTYPE_PythonPlugin)
 					bDoAdd = false;
+
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
-	}
+			}
+
 			//return a sorted hardware list
 			int ii = 0;
-			for (const auto & itt : _htypes)
+			for (const auto &type : _htypes)
 			{
-				root["result"][ii]["idx"] = itt.second;
-				root["result"][ii]["name"] = itt.first;
+				root["result"][ii]["idx"] = type.second;
+				root["result"][ii]["name"] = type.first;
 				ii++;
 			}
 
@@ -1042,13 +1042,13 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string name = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string shtype = request::findValue(&req, "htype");
-			std::string address = request::findValue(&req, "address");
+			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
-			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+			std::string username = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "username")));
+			std::string password = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "password")));
 			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 			if (
@@ -1211,6 +1211,9 @@ namespace http {
 			else if (htype == HTYPE_USBtinGateway) {
 				//All fine here
 			}
+			else if (htype == HTYPE_BuienRadar) {
+				//All fine here
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_DarkSky) ||
@@ -1224,6 +1227,8 @@ namespace http {
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
+				(htype == HTYPE_Tesla) ||
+				(htype == HTYPE_Mercedes) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -1241,10 +1246,7 @@ namespace http {
 					return;
 			}
 			else if (htype == HTYPE_Nest_OAuthAPI) {
-				if (
-					(username == "") &&
-					(extra == "||")
-					)
+				if ((username.empty()) && (extra == "||"))
 					return;
 			}
 			else if (htype == HTYPE_SBFSpot) {
@@ -1311,6 +1313,12 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_EcoCompteur) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_Meteorologisk) {
+				//all fine here!
+			} 
+			else if (htype == HTYPE_AirconWithMe) {
 				//all fine here!
 			}
 			else
@@ -1458,14 +1466,14 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string name = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string shtype = request::findValue(&req, "htype");
-			std::string address = request::findValue(&req, "address");
+			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
+			std::string username = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "username")));
 			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
-			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
+			std::string extra = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "extra")));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 
 			if (
@@ -1502,13 +1510,14 @@ namespace http {
 				}
 			}
 			else if (
-				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) ||
-				(htype == HTYPE_YouLess) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
-				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
-				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_TTN_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
-				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP) ||
-				(htype == HTYPE_Comm5TCP || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviHTTPDevices) || (htype == HTYPE_DenkoviTCPDevices) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
+				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN)
+				|| (htype == HTYPE_YouLess) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights)
+				|| (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad)
+				|| (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_TTN_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox)
+				|| (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP)
+				|| (htype == HTYPE_Comm5TCP || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN))
+				|| (htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviHTTPDevices) || (htype == HTYPE_DenkoviTCPDevices) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
+				|| (htype == HTYPE_OctoPrint)
 				) {
 				//Lan
 				if (address.empty())
@@ -1601,6 +1610,9 @@ namespace http {
 			else if (htype == HTYPE_USBtinGateway) {
 				//All fine here
 			}
+			else if (htype == HTYPE_BuienRadar) {
+				//All fine here
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_DarkSky) ||
@@ -1614,6 +1626,8 @@ namespace http {
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_Tado) ||
+				(htype == HTYPE_Tesla) ||
+				(htype == HTYPE_Mercedes) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -1631,10 +1645,7 @@ namespace http {
 					return;
 			}
 			else if (htype == HTYPE_Nest_OAuthAPI) {
-				if (
-					(username == "") &&
-					(extra == "||")
-					)
+				if ((username.empty()) && (extra == "||"))
 					return;
 			}
 			else if (htype == HTYPE_HARMONY_HUB) {
@@ -1700,6 +1711,12 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_EnphaseAPI) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_Meteorologisk) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_AirconWithMe) {
 				//all fine here!
 			}
 			else
@@ -1841,14 +1858,12 @@ namespace http {
 			}
 			else {
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &ddOption : result)
 				{
-					std::string ddOption = itt;
 					root["result"][ii]["Value"] = ii + 1;
 					root["result"][ii]["Wording"] = ddOption.c_str();
 					ii++;
 				}
-
 			}
 			root["status"] = "OK";
 			root["title"] = "GetDeviceValueOptions";
@@ -1872,11 +1887,68 @@ namespace http {
 			root["title"] = "GetDeviceValueOptions";
 		}
 
+		void CWebServer::Cmd_AddUserVariable(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				_log.Log(LOG_ERROR, "User: %s tried to add a uservariable!", session.username.c_str());
+				return; //Only admin user allowed
+			}
+			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
+			std::string variablevalue = request::findValue(&req, "vvalue");
+			std::string variabletype = request::findValue(&req, "vtype");
+			
+			root["title"] = "AddUserVariable";
+			root["status"] = "ERR";
+			
+			if (!std::isdigit(variabletype[0])) 
+			{
+				stdlower(variabletype);
+				if (variabletype == "integer")
+					variabletype = "0";
+				else if (variabletype == "float")
+					variabletype = "1";
+				else if (variabletype == "string")
+					variabletype = "2";
+				else if (variabletype == "date")
+					variabletype = "3";
+				else if (variabletype == "time")
+					variabletype = "4";
+				else
+				{
+					root["message"] = "Invalid variabletype " + variabletype;
+					return;
+				}
+			}
+			
+			if (
+				(variablename.empty()) ||
+				(variabletype.empty()) ||
+				((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4")) || 
+				((variablevalue.empty()) && (variabletype != "2"))
+				)
+			{
+				root["message"] = "Invalid variabletype " + variabletype;
+				return;
+			}
+
+			std::string errorMessage;
+			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, errorMessage))
+			{
+				root["message"] = errorMessage;
+			}
+			else 
+			{
+				root["status"] = "OK";
+			}
+		}
 
 		void CWebServer::Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
+				_log.Log(LOG_ERROR, "User: %s tried to delete a uservariable!", session.username.c_str());
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
@@ -1884,63 +1956,77 @@ namespace http {
 			if (idx.empty())
 				return;
 
-			root["status"] = m_sql.DeleteUserVariable(idx);
+			m_sql.DeleteUserVariable(idx);
+			root["status"] = "OK";
 			root["title"] = "DeleteUserVariable";
-		}
-
-		void CWebServer::Cmd_AddUserVariable(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-			std::string variablename = request::findValue(&req, "vname");
-			std::string variablevalue = request::findValue(&req, "vvalue");
-			std::string variabletype = request::findValue(&req, "vtype");
-			if (
-				(variablename.empty()) ||
-				(variabletype.empty()) ||
-				((variablevalue.empty()) && (variabletype != "2"))
-				)
-				return;
-
-			root["status"] = m_sql.AddUserVariable(variablename, variabletype, variablevalue);
-			root["title"] = "AddUserVariable";
 		}
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
+				_log.Log(LOG_ERROR, "User: %s tried to update a uservariable!", session.username.c_str());
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
-
+			
 			std::string idx = request::findValue(&req, "idx");
-			std::string variablename = request::findValue(&req, "vname");
+			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
-
+			
+			root["title"] = "UpdateUserVariable";
+			root["status"] = "ERR";
+			
+			if (!std::isdigit(variabletype[0])) 
+			{
+				stdlower(variabletype);
+				if (variabletype == "integer")
+					variabletype = "0";
+				else if (variabletype == "float")
+					variabletype = "1";
+				else if (variabletype == "string")
+					variabletype = "2";
+				else if (variabletype == "date")
+					variabletype = "3";
+				else if (variabletype == "time")
+					variabletype = "4";
+				else
+				{
+					root["message"] = "Invalid variabletype " + variabletype;
+					return;
+				}
+			}
+			
 			if (
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
+				((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4")) || 
 				((variablevalue.empty()) && (variabletype != "2"))
 				)
+			{
+				root["message"] = "Invalid variabletype " + variabletype;
 				return;
+			}
 
 			std::vector<std::vector<std::string> > result;
 			if (idx.empty())
 			{
 				result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'", variablename.c_str());
 				if (result.empty())
+				{
+					root["message"] = "Uservariable " + variablename + " does not exist";
 					return;
+				}
 				idx = result[0][0];
 			}
 
 			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE ID='%q'", idx.c_str());
 			if (result.empty())
+			{
+				root["message"] = "Uservariable " + variablename + " does not exist";
 				return;
+			}
 
 			bool bTypeNameChanged = false;
 			if (variablename != result[0][0])
@@ -1948,36 +2034,35 @@ namespace http {
 			else if (variabletype != result[0][1])
 				bTypeNameChanged = true; //new type
 
-			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, !bTypeNameChanged);
-			root["title"] = "UpdateUserVariable";
-
-			if (bTypeNameChanged)
+			std::string errorMessage;
+			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged, errorMessage))
 			{
-				if (m_sql.m_bEnableEventSystem)
-					m_mainworker.m_eventsystem.GetCurrentUserVariables();
+				root["message"] = errorMessage;
+			}
+			else {
+				root["status"] = "OK";
+				if (bTypeNameChanged)
+				{
+					if (m_sql.m_bEnableEventSystem)
+						m_mainworker.m_eventsystem.GetCurrentUserVariables();
+				}
 			}
 		}
 
 
 		void CWebServer::Cmd_GetUserVariables(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID,Name,ValueType,Value,LastUpdate FROM UserVariables";
-			result = m_sql.GetUserVariables();
-			if (!result.empty())
+			result = m_sql.safe_query("SELECT ID, Name, ValueType, Value, LastUpdate FROM UserVariables");
+			int ii = 0;
+			for (const auto &sd : result)
 			{
-				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["Type"] = sd[2];
-					root["result"][ii]["Value"] = sd[3];
-					root["result"][ii]["LastUpdate"] = sd[4];
-					ii++;
-				}
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Name"] = sd[1];
+				root["result"][ii]["Type"] = sd[2];
+				root["result"][ii]["Value"] = sd[3];
+				root["result"][ii]["LastUpdate"] = sd[4];
+				ii++;
 			}
 			root["status"] = "OK";
 			root["title"] = "GetUserVariables";
@@ -1992,21 +2077,16 @@ namespace http {
 			int iVarID = atoi(idx.c_str());
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID,Name,ValueType,Value,LastUpdate FROM UserVariables WHERE (ID==%d)",
-				iVarID);
-			if (!result.empty())
+			result = m_sql.safe_query("SELECT ID, Name, ValueType, Value, LastUpdate FROM UserVariables WHERE (ID==%d)", iVarID);
+			int ii = 0;
+			for (const auto &sd : result)
 			{
-				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["Type"] = sd[2];
-					root["result"][ii]["Value"] = sd[3];
-					root["result"][ii]["LastUpdate"] = sd[4];
-					ii++;
-				}
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Name"] = sd[1];
+				root["result"][ii]["Type"] = sd[2];
+				root["result"][ii]["Value"] = sd[3];
+				root["result"][ii]["LastUpdate"] = sd[4];
+				ii++;
 			}
 			root["status"] = "OK";
 			root["title"] = "GetUserVariable";
@@ -2044,7 +2124,8 @@ namespace http {
 			int hwID = atoi(idx.c_str());
 
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(hwID);
-			if ((pBaseHardware != NULL) && (pBaseHardware->HwdType == HTYPE_DomoticzInternal)) {
+			if ((pBaseHardware != nullptr) && (pBaseHardware->HwdType == HTYPE_DomoticzInternal))
+			{
 				// DomoticzInternal cannot be removed
 				return;
 			}
@@ -2063,7 +2144,7 @@ namespace http {
 
 			time_t lastlogtime = 0;
 			std::string slastlogtime = request::findValue(&req, "lastlogtime");
-			if (slastlogtime != "")
+			if (!slastlogtime.empty())
 			{
 				std::stringstream s_str(slastlogtime);
 				s_str >> lastlogtime;
@@ -2078,15 +2159,15 @@ namespace http {
 
 			std::list<CLogger::_tLogLineStruct> logmessages = _log.GetLog(lLevel);
 			int ii = 0;
-			for (const auto & itt : logmessages)
+			for (const auto &msg : logmessages)
 			{
-				if (itt.logtime > lastlogtime)
+				if (msg.logtime > lastlogtime)
 				{
 					std::stringstream szLogTime;
-					szLogTime << itt.logtime;
+					szLogTime << msg.logtime;
 					root["LastLogTime"] = szLogTime.str();
-					root["result"][ii]["level"] = static_cast<int>(itt.level);
-					root["result"][ii]["message"] = itt.logmessage;
+					root["result"][ii]["level"] = static_cast<int>(msg.level);
+					root["result"][ii]["message"] = msg.logmessage;
 					ii++;
 				}
 			}
@@ -2108,13 +2189,27 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			if (name.empty())
+			{
+				session.reply_status = reply::bad_request;
+			}
+
 			root["status"] = "OK";
 			root["title"] = "AddPlan";
 			m_sql.safe_query(
 				"INSERT INTO Plans (Name) VALUES ('%q')",
 				name.c_str()
 			);
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT MAX(ID) FROM Plans");
+			if (!result.empty())
+			{
+				std::vector<std::string> sd = result[0];
+				int ID = atoi(sd[0].c_str());
+
+				root["idx"] = ID; // OTO output the created ID for easier management on the caller side (if automated)
+			}
 		}
 
 		void CWebServer::Cmd_UpdatePlan(WebEmSession & session, const request& req, Json::Value &root)
@@ -2128,11 +2223,12 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = request::findValue(&req, "name");
-			if (
-				(name.empty())
-				)
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			if (name.empty())
+			{
+				session.reply_status = reply::bad_request;
 				return;
+			}
 
 			root["status"] = "OK";
 			root["title"] = "UpdatePlan";
@@ -2182,16 +2278,14 @@ namespace http {
 			result = m_sql.safe_query("SELECT T1.[ID], T1.[Name], T1.[Type], T1.[SubType], T2.[Name] AS HardwareName FROM DeviceStatus as T1, Hardware as T2 WHERE (T1.[Used]==1) AND (T2.[ID]==T1.[HardwareID]) ORDER BY T2.[Name], T1.[Name]");
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					bool bDoAdd = true;
 					if (iUnique)
 					{
 						result2 = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=='%q') AND (DevSceneType==0)",
 							sd[0].c_str());
-						bDoAdd = (result2.size() == 0);
+						bDoAdd = (result2.empty());
 					}
 					if (bDoAdd)
 					{
@@ -2208,16 +2302,14 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					bool bDoAdd = true;
 					if (iUnique)
 					{
 						result2 = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=='%q') AND (DevSceneType==1)",
 							sd[0].c_str());
-						bDoAdd = (result2.size() == 0);
+						bDoAdd = (result2.empty());
 					}
 					if (bDoAdd)
 					{
@@ -2282,15 +2374,13 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					std::string ID = sd[0];
 					int DevSceneType = atoi(sd[1].c_str());
 					std::string DevSceneRowID = sd[2];
 
-					std::string Name = "";
+					std::string Name;
 					if (DevSceneType == 0)
 					{
 						std::vector<std::vector<std::string> > result2;
@@ -2311,7 +2401,7 @@ namespace http {
 							Name = "[Scene] " + result2[0][0];
 						}
 					}
-					if (Name != "")
+					if (!Name.empty())
 					{
 						root["result"][ii]["idx"] = ID;
 						root["result"][ii]["devidx"] = DevSceneRowID;
@@ -2515,7 +2605,7 @@ namespace http {
 		void CWebServer::Cmd_GetUptime(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			//this is used in the about page, we are going to round the seconds a bit to display nicer
-			time_t atime = mytime(NULL);
+			time_t atime = mytime(nullptr);
 			time_t tuptime = atime - m_StartTime;
 			//round to 5 seconds (nicer in about page)
 			tuptime = ((tuptime / 5) * 5) + 5;
@@ -2589,7 +2679,9 @@ namespace http {
 					machine = "armv7l";
 				}
 
-				if (((machine != "armv6l") && (machine != "armv7l") && (systemname != "windows") && (machine != "x86_64") && (machine != "aarch64")) || (strstr(my_uname.release, "ARCH+") != NULL))
+				if (((machine != "armv6l") && (machine != "armv7l") && (systemname != "windows") && (machine != "x86_64")
+				     && (machine != "aarch64"))
+				    || (strstr(my_uname.release, "ARCH+") != nullptr))
 					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history";
 				else
 					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
@@ -2616,27 +2708,20 @@ namespace http {
 
 		void CWebServer::Cmd_GetConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (session.rights == -1)
-			{
-				session.reply_status = reply::forbidden;
-				return;//Only auth user allowed
-			}
-
 			root["status"] = "OK";
 			root["title"] = "GetConfig";
 
-			bool bHaveUser = (session.username != "");
-			int urights = 3;
+			bool bHaveUser = (!session.username.empty());
+			//int urights = 3;
 			unsigned long UserID = 0;
 			if (bHaveUser)
 			{
 				int iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 				{
-					urights = static_cast<int>(m_users[iUser].userrights);
+					//urights = static_cast<int>(m_users[iUser].userrights);
 					UserID = m_users[iUser].ID;
 				}
-
 			}
 
 			int nValue;
@@ -2673,24 +2758,8 @@ namespace http {
 			root["TempScale"] = m_sql.m_tempscale;
 			root["TempSign"] = m_sql.m_tempsign;
 
-			std::string Latitude = "1";
-			std::string Longitude = "1";
-			if (m_sql.GetPreferencesVar("Location", nValue, sValue))
-			{
-				std::vector<std::string> strarray;
-				StringSplit(sValue, ";", strarray);
-
-				if (strarray.size() == 2)
-				{
-					Latitude = strarray[0];
-					Longitude = strarray[1];
-				}
-			}
-			root["Latitude"] = Latitude;
-			root["Longitude"] = Longitude;
-
 #ifndef NOCLOUD
-			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != NULL;
+			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != nullptr;
 #else
 			bool bEnableTabProxy = false;
 #endif
@@ -2753,9 +2822,9 @@ namespace http {
 				struct dirent *ent;
 				std::string templatesFolder = szWWWFolder + "/templates";
 				int iFile = 0;
-				if ((lDir = opendir(templatesFolder.c_str())) != NULL)
+				if ((lDir = opendir(templatesFolder.c_str())) != nullptr)
 				{
-					while ((ent = readdir(lDir)) != NULL)
+					while ((ent = readdir(lDir)) != nullptr)
 					{
 						std::string filename = ent->d_name;
 						size_t pos = filename.find(".htm");
@@ -2767,6 +2836,138 @@ namespace http {
 					}
 					closedir(lDir);
 				}
+			}
+		}
+
+		// Could now be obsolete as only 1 usage was found in Forecast screen, which now uses other command
+		void CWebServer::Cmd_GetLocation(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;//Only auth user allowed
+			}
+			root["title"] = "GetLocation";
+			std::string Latitude = "1";
+			std::string Longitude = "1";
+			std::string sValue;
+			if (m_sql.GetPreferencesVar("Location", sValue))
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+
+				if (strarray.size() == 2)
+				{
+					Latitude = strarray[0];
+					Longitude = strarray[1];
+					root["status"] = "OK";
+				}
+			}
+			root["Latitude"] = Latitude;
+			root["Longitude"] = Longitude;
+		}
+
+		void CWebServer::Cmd_GetForecastConfig(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;//Only auth user allowed
+			}
+
+			std::string Latitude = "1";
+			std::string Longitude = "1";
+			std::string sValue, sFURL, forecast_url;
+			std::stringstream ss, sURL;
+			uint8_t iSucces = 0;
+			bool iFrame = true;
+
+			root["title"] = "GetForecastConfig";
+			root["status"] = "Error";
+
+			if (m_sql.GetPreferencesVar("Location", sValue))
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+
+				if (strarray.size() == 2)
+				{
+					Latitude = strarray[0];
+					Longitude = strarray[1];
+					iSucces++;
+				}
+				root["Latitude"] = Latitude;
+				root["Longitude"] = Longitude;
+				sValue = "";
+				sValue.clear();
+			}
+
+			root["Forecasthardware"] = "0";
+			if (m_sql.GetUserVariable("forecasthardware", USERVARTYPE_INTEGER, sValue))
+			{
+				root["Forecasthardware"] = sValue;
+				sValue = "";
+				sValue.clear();
+			}
+
+			if (root["Forecasthardware"] != "0")
+			{
+				int iHardwareID = atoi(root["Forecasthardware"].asString().c_str());
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
+				if (pHardware != nullptr)
+				{
+					if (pHardware->HwdType == HTYPE_OpenWeatherMap)
+					{
+						root["Forecasthardwaretype"] = HTYPE_OpenWeatherMap;
+						COpenWeatherMap *pWHardware = reinterpret_cast<COpenWeatherMap*>(pHardware);
+						forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							sFURL = forecast_url;
+							iFrame = false;
+						}
+						Json::Value forecast_data = pWHardware->GetForecastData();
+						if (!forecast_data.empty())
+						{
+							root["Forecastdata"] = forecast_data;
+						}
+					}
+					else if (pHardware->HwdType == HTYPE_BuienRadar)
+					{
+						root["Forecasthardwaretype"] = HTYPE_BuienRadar;
+						CBuienRadar *pWHardware = reinterpret_cast<CBuienRadar*>(pHardware);
+						forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							sFURL = forecast_url;
+						}
+					}
+					else
+					{
+						root["Forecasthardware"] = "0";	// reset to 0
+					}
+				}
+				else
+				{
+					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
+					root["Forecasthardware"] = "0";	// reset to 0
+				}
+			}
+
+			if (root["Forecasthardware"] == "0" && iSucces == 1)
+			{
+				// No forecast device, but we have geo coords, so enough for fallback
+				iSucces++;
+			}
+			else if (!sFURL.empty())
+			{
+				root["Forecasturl"] = sFURL;
+				iSucces++;
+			}
+
+			if (iSucces == 2)
+			{
+				root["status"] = "OK";
 			}
 		}
 
@@ -2805,6 +3006,10 @@ namespace http {
 
 		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			std::string Username = "Admin";
+			if (!session.username.empty())
+				Username = session.username;
+
 			if (session.rights < 1)
 			{
 				session.reply_status = reply::forbidden;
@@ -2828,6 +3033,9 @@ namespace http {
 
 			std::string nvalue = request::findValue(&req, "nvalue");
 			std::string svalue = request::findValue(&req, "svalue");
+			std::string ptrigger = request::findValue(&req, "parsetrigger");
+
+			bool parseTrigger = (ptrigger != "false");
 
 			if ((nvalue.empty() && svalue.empty()))
 			{
@@ -2870,21 +3078,22 @@ namespace http {
 			int devType = atoi(dtype.c_str());
 			int subType = atoi(dsubtype.c_str());
 
-			uint64_t ulIdx = std::strtoull(idx.c_str(), nullptr, 10);
+			//uint64_t ulIdx = std::strtoull(idx.c_str(), nullptr, 10);
 
 			int invalue = atoi(nvalue.c_str());
 
 			std::string sSignalLevel = request::findValue(&req, "rssi");
-			if (sSignalLevel != "")
+			if (!sSignalLevel.empty())
 			{
 				signallevel = atoi(sSignalLevel.c_str());
 			}
 			std::string sBatteryLevel = request::findValue(&req, "battery");
-			if (sBatteryLevel != "")
+			if (!sBatteryLevel.empty())
 			{
 				batterylevel = atoi(sBatteryLevel.c_str());
 			}
-			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel))
+			std::string szUpdateUser = Username + " (IP: " + session.remote_host + ")";
+			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, szUpdateUser, signallevel, batterylevel, parseTrigger))
 			{
 				root["status"] = "OK";
 				root["title"] = "Update Device";
@@ -2920,11 +3129,36 @@ namespace http {
 			}
 		}
 
+		void CWebServer::Cmd_CustomEvent(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights < 1)
+			{
+				session.reply_status = reply::forbidden;
+				return; //only user or higher allowed
+			}
+			Json::Value eventInfo;
+			eventInfo["name"] = request::findValue(&req, "event");
+			if (!req.content.empty())
+				eventInfo["data"] = req.content.c_str(); // data from POST
+			else
+				eventInfo["data"] = request::findValue(&req, "data"); // data in URL
+
+			if (eventInfo["name"].empty())
+			{
+				return;
+			}
+
+			m_mainworker.m_notificationsystem.Notify(Notification::DZ_CUSTOM, Notification::STATUS_INFO, JSonToRawString(eventInfo));
+
+			root["status"] = "OK";
+			root["title"] = "Custom Event";
+		}
+
 		void CWebServer::Cmd_SetThermostatState(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string sstate = request::findValue(&req, "state");
 			std::string idx = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 
 			if (
 				(idx.empty()) ||
@@ -2934,7 +3168,7 @@ namespace http {
 			int iState = atoi(sstate.c_str());
 
 			int urights = 3;
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			if (bHaveUser)
 			{
 				int iUser = FindUser(session.username.c_str());
@@ -2997,6 +3231,11 @@ namespace http {
 
 		void CWebServer::Cmd_ExcecuteScript(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string scriptname = request::findValue(&req, "scriptname");
 			if (scriptname.empty())
 				return;
@@ -3013,7 +3252,7 @@ namespace http {
 			std::string strparm = szUserDataFolder;
 			if (!script_params.empty())
 			{
-				if (strparm.size() > 0)
+				if (!strparm.empty())
 					strparm += " " + script_params;
 				else
 					strparm = script_params;
@@ -3040,6 +3279,32 @@ namespace http {
 				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, strparm));
 			}
 			root["title"] = "ExecuteScript";
+			root["status"] = "OK";
+		}
+
+		//Only for Unix systems
+		void CWebServer::Cmd_UpdateApplication(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+#ifdef WIN32
+#ifndef _DEBUG
+			return;
+#endif
+#endif
+			int nValue;
+			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+			bool bIsBetaChannel = (nValue != 0);
+
+			std::string scriptname(szStartupFolder);
+			scriptname += (bIsBetaChannel) ? "updatebeta" : "updaterelease";
+			//run script in background
+			std::string lscript = scriptname + " &";
+			int ret = system(lscript.c_str());
+			root["title"] = "UpdateApplication";
 			root["status"] = "OK";
 		}
 
@@ -3102,8 +3367,8 @@ namespace http {
 					unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
 					unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
 					unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
-					unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
-					unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
+					//unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
+					//unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
 
 					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
@@ -3122,7 +3387,7 @@ namespace http {
 
 		void CWebServer::Cmd_CheckForUpdate(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			int urights = 3;
 			if (bHaveUser)
 			{
@@ -3213,7 +3478,7 @@ namespace http {
 
 		void CWebServer::HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::map < std::string, webserver_response_function >::iterator pf = m_webcommands.find(cparam);
+			auto pf = m_webcommands.find(cparam);
 			if (pf != m_webcommands.end())
 			{
 				pf->second(session, req, root);
@@ -3223,13 +3488,14 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			char szTmp[300];
 
-			bool bHaveUser = (session.username != "");
-			int iUser = -1;
-			if (bHaveUser)
-			{
-				iUser = FindUser(session.username.c_str());
-			}
-
+			bool bHaveUser = (!session.username.empty());
+			/*
+						int iUser = -1;
+						if (bHaveUser)
+						{
+							iUser = FindUser(session.username.c_str());
+						}
+			*/
 			if (cparam == "deleteallsubdevices")
 			{
 				if (session.rights < 2)
@@ -3324,7 +3590,7 @@ namespace http {
 					int dType = atoi(result[0][3].c_str());
 					int sType = atoi(result[0][4].c_str());
 					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
-					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6].c_str());
+					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6]);
 					GetLightCommand(dType, sType, switchtype, scommand, command, options);
 				}
 
@@ -3332,19 +3598,17 @@ namespace http {
 				result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID=='%q')", idx.c_str());
 				if (!result.empty())
 				{
-					int SceneType = atoi(result[0][1].c_str());
+					//int SceneType = atoi(result[0][1].c_str());
 
 					std::vector<std::string> arrayActivators;
 					StringSplit(result[0][0], ";", arrayActivators);
-					for (const auto & ittAct : arrayActivators)
+					for (const auto &sCodeCmd : arrayActivators)
 					{
-						std::string sCodeCmd = ittAct;
-
 						std::vector<std::string> arrayCode;
 						StringSplit(sCodeCmd, ":", arrayCode);
 
 						std::string sID = arrayCode[0];
-						std::string sCode = "";
+						std::string sCode;
 						if (arrayCode.size() == 2)
 						{
 							sCode = arrayCode[1];
@@ -3428,7 +3692,7 @@ namespace http {
 					int dType = atoi(result[0][3].c_str());
 					int sType = atoi(result[0][4].c_str());
 					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
-					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6].c_str());
+					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6]);
 					GetLightCommand(dType, sType, switchtype, scommand, command, options);
 				}
 				int level = -1;
@@ -3472,10 +3736,8 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = itt;
-
 						root["result"][ii]["ID"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
 						ii++;
@@ -3501,10 +3763,8 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = itt;
-
 						root["result"][ii]["ID"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
 						root["result"][ii]["DevID"] = sd[2];
@@ -3523,12 +3783,12 @@ namespace http {
 							switchtype = STYPE_OnOff;
 
 						unsigned char subType = atoi(sd[4].c_str());
-						unsigned char nValue = (unsigned char)atoi(sd[5].c_str());
+						//unsigned char nValue = (unsigned char)atoi(sd[5].c_str());
 						std::string sValue = sd[6];
 						int command = atoi(sd[7].c_str());
 						int level = atoi(sd[8].c_str());
 
-						std::string lstatus = "";
+						std::string lstatus;
 						int llevel = 0;
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
@@ -3622,10 +3882,8 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = itt;
-
 						int ID = atoi(sd[0].c_str());
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
@@ -3667,16 +3925,16 @@ namespace http {
 				root["title"] = "GetGpio";
 #ifdef WITH_GPIO
 				std::vector<CGpioPin> pins = CGpio::GetPinList();
-				if (pins.size() == 0) {
+				if (pins.empty())
+				{
 					root["status"] = "ERROR";
 					root["result"][0]["idx"] = 0;
 					root["result"][0]["Name"] = "GPIO INIT ERROR";
 				}
 				else {
 					int ii = 0;
-					for (const auto & it : pins)
+					for (auto &pin : pins)
 					{
-						CGpioPin pin = it;
 						root["status"] = "OK";
 						root["result"][ii]["idx"] = pin.GetPin();
 						root["result"][ii]["Name"] = pin.ToString();
@@ -3697,7 +3955,8 @@ namespace http {
 				std::vector<int> gpio_ids = CSysfsGpio::GetGpioIds();
 				std::vector<std::string> gpio_names = CSysfsGpio::GetGpioNames();
 
-				if (gpio_ids.size() == 0) {
+				if (gpio_ids.empty())
+				{
 					root["status"] = "ERROR";
 					root["result"][0]["idx"] = 0;
 					root["result"][0]["Name"] = "No sysfs-gpio exports";
@@ -3724,10 +3983,8 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = itt;
-
 						std::string ID = sd[0];
 						std::string Name = sd[1];
 						int Type = atoi(sd[2].c_str());
@@ -3762,15 +4019,16 @@ namespace http {
 						case pTypeGeneralSwitch:
 						case pTypeHomeConfort:
 						case pTypeFS20:
+						case pTypeHunter:
 							bdoAdd = true;
 							if (!used)
 							{
 								bdoAdd = false;
-								bool bIsSubDevice = false;
+								//bool bIsSubDevice = false;
 								std::vector<std::vector<std::string> > resultSD;
 								resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')",
 									sd[0].c_str());
-								if (resultSD.size() > 0)
+								if (!resultSD.empty())
 									bdoAdd = true;
 							}
 							if ((Type == pTypeRadiator1) && (SubType != sTypeSmartwaresSwitchRadiator))
@@ -3815,8 +4073,8 @@ namespace http {
 									else
 									{
 										int nValue = 0;
-										std::string sValue = "";
-										std::string lstatus = "";
+										std::string sValue;
+										std::string lstatus;
 										int llevel = 0;
 										bool bHaveDimmer = false;
 										int maxDimLevel = 0;
@@ -3853,10 +4111,8 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used FROM DeviceStatus ORDER BY Name");
 				if (!result.empty())
 				{
-					for (const auto & itt : result)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = itt;
-
 						std::string ID = sd[0];
 						std::string Name = sd[1];
 						int Type = atoi(sd[2].c_str());
@@ -3889,6 +4145,7 @@ namespace http {
 							case pTypeGeneralSwitch:
 							case pTypeHomeConfort:
 							case pTypeFS20:
+							case pTypeHunter:
 								root["result"][ii]["type"] = 0;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
@@ -3912,10 +4169,8 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
 				if (!result.empty())
 				{
-					for (const auto & itt : result)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = itt;
-
 						std::string ID = sd[0];
 						std::string Name = sd[1];
 
@@ -3939,17 +4194,15 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = itt;
-
 						std::string ID = sd[0];
 						int DevSceneType = atoi(sd[1].c_str());
 						std::string DevSceneRowID = sd[2];
 						int DevSceneWhen = atoi(sd[3].c_str());
 						int DevSceneDelay = atoi(sd[4].c_str());
 
-						std::string Name = "";
+						std::string Name;
 						if (DevSceneType == 0)
 						{
 							std::vector<std::vector<std::string> > result2;
@@ -3970,7 +4223,7 @@ namespace http {
 								Name = "[Scene] " + result2[0][0];
 							}
 						}
-						if (Name != "")
+						if (!Name.empty())
 						{
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["type"] = DevSceneType;
@@ -4089,6 +4342,9 @@ namespace http {
 			}
 			else if (cparam == "testswitch")
 			{
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -4128,7 +4384,7 @@ namespace http {
 						return;
 					sunitcode = sgroupcode;//Button A or B
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pBaseHardware == NULL)
+					if (pBaseHardware == nullptr)
 						return;
 					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3)
 						&& (pBaseHardware->HwdType != HTYPE_USBtinGateway) )
@@ -4173,7 +4429,8 @@ namespace http {
 						return;
 					}
 					CGpio *pGpio = reinterpret_cast<CGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pGpio == NULL) {
+					if (pGpio == nullptr)
+					{
 						root["status"] = "ERROR";
 						root["message"] = "Could not retrieve GPIO hardware pointer";
 						return;
@@ -4184,7 +4441,8 @@ namespace http {
 						return;
 					}
 					CGpioPin *pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
-					if (pPin == NULL) {
+					if (pPin == nullptr)
+					{
 						root["status"] = "ERROR";
 						root["message"] = "Given pin does not exist on this GPIO hardware";
 						return;
@@ -4227,7 +4485,8 @@ namespace http {
 
 					CSysfsGpio *pSysfsGpio = reinterpret_cast<CSysfsGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 
-					if (pSysfsGpio == NULL) {
+					if (pSysfsGpio == nullptr)
+					{
 						root["status"] = "ERROR";
 						root["message"] = "Could not retrieve SysfsGpio hardware pointer";
 						return;
@@ -4547,10 +4806,76 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
+					else if (lighttype == 308)
+					{
+						//Casafan
+						dtype = pTypeFan;
+						subtype = sTypeCasafan;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 309)
+					{
+						//FT1211R
+						dtype = pTypeFan;
+						subtype = sTypeFT1211R;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 310)
+					{
+						//Falmec
+						dtype = pTypeFan;
+						subtype = sTypeFalmec;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 311)
+					{
+						//Lucci Air DC II
+						dtype = pTypeFan;
+						subtype = sTypeLucciAirDCII;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 312)
+					{
+						//Itho ECO
+						dtype = pTypeFan;
+						subtype = sTypeIthoECO;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 313)
+					{
+						//Novy
+						dtype = pTypeFan;
+						subtype = sTypeNovy;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
 					else if (lighttype == 400) {
 						//Openwebnet Bus Blinds
 						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchBlindsT1;
+						subtype = sSwitchTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4562,7 +4887,7 @@ namespace http {
 					else if (lighttype == 401) {
 						//Openwebnet Bus Lights
 						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchLightT1;
+						subtype = sSwitchTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4575,7 +4900,7 @@ namespace http {
 					{
 						//Openwebnet Bus Auxiliary
 						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchAuxiliaryT1;
+						subtype = sSwitchTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4620,10 +4945,27 @@ namespace http {
 							)
 							return;
 					}
+					else if (lighttype == 407) {
+						//Openwebnet Bus Custom
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchTypeAC;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						std::string StrParam1 = request::findValue(&req, "StrParam1");
+						if (
+							(devid.empty()) ||
+							(sunitcode.empty()) ||
+							(StrParam1.empty())
+							)
+						{
+							root["message"] = "Some field empty or not valid.";
+							return;
+						}
+					}
 				}
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
 				CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-				if (pBaseHardware != NULL)
+				if (pBaseHardware != nullptr)
 				{
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
 						ConvertToGeneralSwitchType(devid, dtype, subtype);
@@ -4659,7 +5001,8 @@ namespace http {
 					if (switchtype == STYPE_Dimmer)
 						level = 5;
 				}
-				m_mainworker.SwitchLightInt(sd, switchcmd, level, NoColor, true);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLightInt(sd, switchcmd, level, NoColor, true, Username);
 			}
 			else if (cparam == "addswitch")
 			{
@@ -4670,7 +5013,7 @@ namespace http {
 				}
 
 				std::string hwdid = request::findValue(&req, "hwdid");
-				std::string name = request::findValue(&req, "name");
+				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 				std::string sswitchtype = request::findValue(&req, "switchtype");
 				std::string slighttype = request::findValue(&req, "lighttype");
 				std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
@@ -4689,6 +5032,7 @@ namespace http {
 				int subtype = 0;
 				std::string sunitcode;
 				std::string devid;
+				std::string StrParam1;
 
 #ifdef ENABLE_PYTHON
 				//check if HW is plugin
@@ -4725,7 +5069,7 @@ namespace http {
 						return;
 					sunitcode = sgroupcode;//Button A/B
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pBaseHardware == NULL)
+					if (pBaseHardware == nullptr)
 						return;
 					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3)
 						&& (pBaseHardware->HwdType != HTYPE_USBtinGateway) )
@@ -4776,16 +5120,18 @@ namespace http {
 						return;
 					}
 					CGpio *pGpio = reinterpret_cast<CGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pGpio == NULL) {
+					if (pGpio == nullptr)
+					{
 						return;
 					}
 					if (pGpio->HwdType != HTYPE_RaspberryGPIO) {
 						return;
 					}
 					CGpioPin *pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
-					if (pPin == NULL) {
+					if (pPin == nullptr)
+					{
 						return;
-			}
+					}
 #else
 					return;
 #endif
@@ -4811,7 +5157,7 @@ namespace http {
 
 					CSysfsGpio *pSysfsGpio = reinterpret_cast<CSysfsGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 
-					if ((pSysfsGpio == NULL) || (pSysfsGpio->HwdType != HTYPE_SysfsGpio))
+					if ((pSysfsGpio == nullptr) || (pSysfsGpio->HwdType != HTYPE_SysfsGpio))
 					{
 						return;
 					}
@@ -5163,11 +5509,77 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
+					else if (lighttype == 308)
+					{
+						//Casafan
+						dtype = pTypeFan;
+						subtype = sTypeCasafan;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 309)
+					{
+						//FT1211R
+						dtype = pTypeFan;
+						subtype = sTypeFT1211R;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 310)
+					{
+						//Falmec
+						dtype = pTypeFan;
+						subtype = sTypeFalmec;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 311)
+					{
+						//Lucci Air DC II
+						dtype = pTypeFan;
+						subtype = sTypeLucciAirDCII;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 312)
+					{
+						//Itho ECO
+						dtype = pTypeFan;
+						subtype = sTypeIthoECO;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 313)
+					{
+						//Novy
+						dtype = pTypeFan;
+						subtype = sTypeNovy;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
 					else if (lighttype == 400)
 					{
 						//Openwebnet Bus Blinds
 						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchBlindsT1;
+						subtype = sSwitchTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -5180,7 +5592,7 @@ namespace http {
 					{
 						//Openwebnet Bus Lights
 						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchLightT1;
+						subtype = sSwitchTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -5193,7 +5605,7 @@ namespace http {
 					{
 						//Openwebnet Bus Auxiliary
 						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchAuxiliaryT1;
+						subtype = sSwitchTypeAC;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -5241,6 +5653,24 @@ namespace http {
 							)
 							return;
 					}
+					else if (lighttype == 407) {
+						//Openwebnet Bus Custom
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchTypeAC;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						StrParam1 = request::findValue(&req, "StrParam1");
+						_log.Log(LOG_STATUS, "COpenWebNetTCP: custom command: '%s'", StrParam1.c_str());
+						if (
+							(devid.empty()) ||
+							(sunitcode.empty()) ||
+							(StrParam1.empty())
+							)
+						{
+							root["message"] = "Some field empty or not valid.";
+							return;
+						}
+					}
 				}
 
 				//check if switch is unique
@@ -5255,7 +5685,7 @@ namespace http {
 
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
 				CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
-				if (pBaseHardware != NULL)
+				if (pBaseHardware != nullptr)
 				{
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
 						ConvertToGeneralSwitchType(devid, dtype, subtype);
@@ -5283,12 +5713,20 @@ namespace http {
 				m_sql.safe_query(
 					"UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')",
 					name.c_str(), switchtype, ID.c_str());
+
+				if (lighttype == 407) {
+					//Openwebnet Bus Custom
+					m_sql.safe_query(
+						"UPDATE DeviceStatus SET StrParam1='%s' WHERE (ID == '%q')", 
+						StrParam1.c_str(), ID.c_str());
+				}
+
 				m_mainworker.m_eventsystem.GetCurrentStates();
 
 				//Set device options
 				m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
 
-				if (maindeviceidx != "")
+				if (!maindeviceidx.empty())
 				{
 					if (maindeviceidx != ID)
 					{
@@ -5385,7 +5823,8 @@ namespace http {
 						{
 							std::string hdwid = result[0][0];
 							CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hdwid.c_str())));
-							if (pBaseHardware != NULL) {
+							if (pBaseHardware != nullptr)
+							{
 								_eHardwareTypes type = pBaseHardware->HwdType;
 								root["result"][ii]["val"] = NTYPE_PAUSED;
 								root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
@@ -5875,7 +6314,8 @@ namespace http {
 				root["title"] = "UpdateNotification";
 
 				std::string recoverymsg;
-				if ((srecovery == "1") && (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(), NULL, 0), recoverymsg, true)))
+				if ((srecovery == "1")
+				    && (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(), nullptr, 0), recoverymsg, true)))
 				{
 					scustommessage.append(";;");
 					scustommessage.append(recoverymsg);
@@ -6119,6 +6559,13 @@ namespace http {
 						return;
 					}
 				}
+				//Check for duplicate user name
+				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", base64_encode(username).c_str());
+				if (!result.empty())
+				{
+					root["message"] = "Duplicate Username!";
+					return;
+				}
 				root["status"] = "OK";
 				root["title"] = "AddUser";
 				m_sql.safe_query(
@@ -6168,6 +6615,18 @@ namespace http {
 					}
 				}
 				std::string sHashedUsername = base64_encode(username);
+
+				//Check for duplicate user name
+				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", base64_encode(username).c_str());
+				if (!result.empty())
+				{
+					std::string oidx = result[0][0];
+					if (oidx != idx)
+					{
+						root["message"] = "Duplicate Username!";
+						return;
+					}
+				}
 
 				// Invalid user's sessions if username or password has changed
 				std::string sOldUsername;
@@ -6271,7 +6730,8 @@ namespace http {
 					(dType != pTypeFS20) &&
 					(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
 					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
-					(!((dType == pTypeGeneral) && (dSubType == sTypeAlert)))
+					(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) &&
+					(dType != pTypeHunter)
 					)
 					return; //no light device! we should not be here!
 
@@ -6310,17 +6770,14 @@ namespace http {
 				unsigned char cntr = 0;
 				while ((!bReceivedSwitch) && (cntr < 50))	//wait for max. 5 seconds
 				{
-					if (m_sql.m_LastSwitchID != "")
+					if (!m_sql.m_LastSwitchID.empty())
 					{
 						bReceivedSwitch = true;
 						break;
 					}
-					else
-					{
-						//sleep 100ms
-						sleep_milliseconds(100);
-						cntr++;
-					}
+					// sleep 100ms
+					sleep_milliseconds(100);
+					cntr++;
 				}
 				if (bReceivedSwitch)
 				{
@@ -6332,7 +6789,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "LearnSW";
 						root["ID"] = m_sql.m_LastSwitchID;
-						root["idx"] = m_sql.m_LastSwitchRowID;
+						root["idx"] = Json::Value::UInt64(m_sql.m_LastSwitchRowID);
 						root["Name"] = result[0][0];
 						root["Used"] = atoi(result[0][1].c_str());
 						root["Cmd"] = atoi(result[0][2].c_str());
@@ -6341,21 +6798,31 @@ namespace http {
 			} //learnsw
 			else if (cparam == "makefavorite")
 			{
-				if (session.rights < 2)
+				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
-
 				std::string idx = request::findValue(&req, "idx");
 				std::string sisfavorite = request::findValue(&req, "isfavorite");
 				if ((idx.empty()) || (sisfavorite.empty()))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
-				m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')",
-					isfavorite, idx.c_str());
+
 				root["status"] = "OK";
 				root["title"] = "MakeFavorite";
+
+				const int iUser = FindUser(session.username.c_str());
+				if (iUser != -1)
+				{
+					const _eUserRights urights = m_users[iUser].userrights;
+					if ((urights != URIGHTS_ADMIN) && (m_users[iUser].ID != 0xFFFF))
+					{
+						m_sql.safe_query("UPDATE SharedDevices SET Favorite=%d WHERE (DeviceRowID == '%q') AND (SharedUserID == %d)", isfavorite, idx.c_str(), m_users[iUser].ID);
+						return;
+					}
+				}
+				m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')", isfavorite, idx.c_str());
 			} //makefavorite
 			else if (cparam == "makescenefavorite")
 			{
@@ -6450,7 +6917,7 @@ namespace http {
 					return;
 
 				std::string passcode = request::findValue(&req, "passcode");
-				if (passcode.size() > 0)
+				if (!passcode.empty())
 				{
 					//Check if passcode is correct
 					passcode = GenerateMD5Hash(passcode);
@@ -6466,7 +6933,7 @@ namespace http {
 					}
 				}
 
-				if (m_mainworker.SwitchModal(idx, switchcmd, action, onlyonchange, until) == true)//FIXME we need to return a status of already set / no update if ooc=="1" and no status update was performed
+				if (m_mainworker.SwitchEvoModal(idx, switchcmd, action, onlyonchange, until) == true)//FIXME we need to return a status of already set / no update if ooc=="1" and no status update was performed
 				{
 					root["status"] = "OK";
 					root["title"] = "Modal";
@@ -6500,6 +6967,7 @@ namespace http {
 				if (result.empty())
 				{
 					//Switch not found!
+					_log.Log(LOG_ERROR, "User: %s, switch not found (idx=%s)!", Username.c_str(), idx.c_str());
 					return;
 				}
 				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
@@ -6513,6 +6981,8 @@ namespace http {
 						return;
 					}
 				}
+
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 
 				if (bIsProtected)
 				{
@@ -6531,7 +7001,7 @@ namespace http {
 					m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
 					if (passcode != rpassword)
 					{
-						_log.Log(LOG_ERROR, "User: %s initiated a switch command (Wrong code!)", Username.c_str());
+						_log.Log(LOG_ERROR, "User: %s initiated a switch command (Wrong code!)", szSwitchUser.c_str());
 						root["title"] = "SwitchLight";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
@@ -6539,17 +7009,17 @@ namespace http {
 					}
 				}
 
-				_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", Username.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
+				_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", szSwitchUser.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
 
 				root["title"] = "SwitchLight";
-				if (m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0) == true)
+				if (m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0, szSwitchUser) == true)
 				{
 					root["status"] = "OK";
 				}
 				else
 				{
 					root["status"] = "ERROR";
-					root["message"] = "Error sending switch command, check device/hardware !";
+					root["message"] = "Error sending switch command, check device/hardware (idx=" + idx + ") !";
 				}
 			} //(rtype=="switchlight")
 			else if (cparam == "switchscene")
@@ -6563,6 +7033,8 @@ namespace http {
 				if (!session.username.empty())
 					Username = session.username;
 
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+
 				std::string idx = request::findValue(&req, "idx");
 				std::string switchcmd = request::findValue(&req, "switchcmd");
 				std::string passcode = request::findValue(&req, "passcode");
@@ -6574,6 +7046,7 @@ namespace http {
 				if (result.empty())
 				{
 					//Scene/Group not found!
+					_log.Log(LOG_ERROR, "User: %s, scene not found (idx=%s)!", szSwitchUser.c_str(), idx.c_str());
 					return;
 				}
 				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
@@ -6596,13 +7069,13 @@ namespace http {
 						root["title"] = "SwitchScene";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
-						_log.Log(LOG_ERROR, "User: %s initiated a scene/group command (Wrong code!)", Username.c_str());
+						_log.Log(LOG_ERROR, "User: %s initiated a scene/group command (Wrong code!)", szSwitchUser.c_str());
 						return;
 					}
 				}
-				_log.Log(LOG_STATUS, "User: %s initiated a scene/group command", Username.c_str());
+				_log.Log(LOG_STATUS, "User: %s initiated a scene/group command", szSwitchUser.c_str());
 
-				if (m_mainworker.SwitchScene(idx, switchcmd) == true)
+				if (m_mainworker.SwitchScene(idx, switchcmd, szSwitchUser) == true)
 				{
 					root["status"] = "OK";
 					root["title"] = "SwitchScene";
@@ -6616,7 +7089,7 @@ namespace http {
 					if (strarray.size() == 10)
 					{
 						struct tm loctime;
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 
 						localtime_r(&now, &loctime);
 						//strftime(szTmp, 80, "%b %d %Y %X", &loctime);
@@ -6641,7 +7114,7 @@ namespace http {
 			else if (cparam == "getServerTime") {
 
 				struct tm loctime;
-				time_t now = mytime(NULL);
+				time_t now = mytime(nullptr);
 
 				localtime_r(&now, &loctime);
 				//strftime(szTmp, 80, "%b %d %Y %X", &loctime);
@@ -6689,6 +7162,16 @@ namespace http {
 			}
 			else if (cparam == "setcolbrightnessvalue")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx.empty())
@@ -6800,13 +7283,24 @@ namespace http {
 				ival = std::min(ival, 100);
 
 				_log.Log(LOG_STATUS, "setcolbrightnessvalue: ID: %" PRIx64 ", bri: %d, color: '%s'", ID, ival, color.toString().c_str());
-				m_mainworker.SwitchLight(ID, "Set Color", (unsigned char)ival, color, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Set Color", (unsigned char)ival, color, false, 0, szSwitchUser);
 
 				root["status"] = "OK";
 				root["title"] = "SetColBrightnessValue";
 			}
 			else if (cparam.find("setkelvinlevel") == 0)
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set Kelvin Level";
 
@@ -6826,10 +7320,21 @@ namespace http {
 				_tColor color = _tColor(round(ival*255.0f/100.0f), ColorModeTemp);
 				_log.Log(LOG_STATUS, "setkelvinlevel: t: %f, color: '%s'", ival, color.toString().c_str());
 
-				m_mainworker.SwitchLight(ID, "Set Color", -1, color, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Set Color", -1, color, false, 0, szSwitchUser);
 			}
 			else if (cparam == "brightnessup")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set brightness up!";
 
@@ -6841,10 +7346,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Bright Up", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Bright Up", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "brightnessdown")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set brightness down!";
 
@@ -6856,10 +7372,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Bright Down", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Bright Down", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "discomode")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set to last known disco mode!";
 
@@ -6871,10 +7398,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam.find("discomodenum") == 0 && cparam != "discomode" && cparam.size() == 13)
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set to disco mode!";
 
@@ -6888,10 +7426,21 @@ namespace http {
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				char szTmp[40];
 				sprintf(szTmp, "Disco Mode %s", cparam.substr(12).c_str());
-				m_mainworker.SwitchLight(ID, szTmp, 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, szTmp, 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "discoup")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set to next disco mode!";
 
@@ -6903,10 +7452,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Disco Up", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Disco Up", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "discodown")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set to previous disco mode!";
 
@@ -6918,10 +7478,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Disco Down", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Disco Down", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "speedup")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set disco speed up!";
 
@@ -6933,10 +7504,20 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Speed Up", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Speed Up", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "speeduplong")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set speed long!";
@@ -6949,10 +7530,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "speeddown")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set disco speed down!";
 
@@ -6964,10 +7556,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Speed Down", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Speed Down", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "speedmin")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set disco speed minimal!";
 
@@ -6979,10 +7582,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "speedmax")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set disco speed maximal!";
 
@@ -6994,10 +7608,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "warmer")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set Kelvin up!";
 
@@ -7009,10 +7634,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Warmer", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Warmer", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "cooler")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set Kelvin down!";
 
@@ -7024,10 +7660,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Cooler", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Cooler", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "fulllight")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set Full!";
 
@@ -7039,10 +7686,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Set Full", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Set Full", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "nightlight")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set to nightlight!";
 
@@ -7054,10 +7712,21 @@ namespace http {
 				}
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				m_mainworker.SwitchLight(ID, "Set Night", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Set Night", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "whitelight")
 			{
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
+
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+
 				root["status"] = "OK";
 				root["title"] = "Set to clear white!";
 
@@ -7070,7 +7739,8 @@ namespace http {
 
 				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				//TODO: Change to color with mode=ColorModeWhite and level=100?
-				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0);
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "getfloorplanimages")
 			{
@@ -7086,10 +7756,8 @@ namespace http {
 				if (!result.empty())
 				{
 					int ii = 0;
-					for (const auto & itt : result)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = itt;
-
 						root["result"][ii]["idx"] = sd[0];
 						root["result"][ii]["name"] = sd[1];
 						root["result"][ii]["scalefactor"] = sd[2];
@@ -7108,7 +7776,7 @@ namespace http {
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return;
-				std::string name = request::findValue(&req, "name");
+				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 				std::string scalefactor = request::findValue(&req, "scalefactor");
 				if (
 					(name.empty())
@@ -7211,10 +7879,8 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name");
 				if (!result.empty())
 				{
-					for (const auto & itt : result)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = itt;
-
 						root["result"][ii]["type"] = 0;
 						root["result"][ii]["idx"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
@@ -7234,10 +7900,8 @@ namespace http {
 					idx.c_str());
 				if (!result.empty())
 				{
-					for (const auto & itt : result)
+					for (const auto &sd : result)
 					{
-						std::vector<std::string> sd = itt;
-
 						root["result"][ii]["idx"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
 						root["result"][ii]["Area"] = sd[2];
@@ -7329,9 +7993,9 @@ namespace http {
 				_switchtypes[Switch_Type_Desc((_eSwitchType)ii)] = ii;
 			}
 			//return a sorted list
-			for (const auto & itt : _switchtypes)
+			for (const auto &type : _switchtypes)
 			{
-				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", itt.second, itt.first.c_str());
+				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", type.second, type.first.c_str());
 				content_part += szTmp;
 			}
 		}
@@ -7352,14 +8016,14 @@ namespace http {
 			std::map<std::string, std::string> _ltypes;
 			char szTmp[200];
 			int ii = 0;
-			while (guiLanguage[ii].szShort != NULL)
+			while (guiLanguage[ii].szShort != nullptr)
 			{
 				_ltypes[guiLanguage[ii].szLong] = guiLanguage[ii].szShort;
 				ii++;
 			}
-			for (const auto & itt : _ltypes)
+			for (const auto &type : _ltypes)
 			{
-				sprintf(szTmp, "<option value=\"%s\">%s</option>\n", itt.second.c_str(), itt.first.c_str());
+				sprintf(szTmp, "<option value=\"%s\">%s</option>\n", type.second.c_str(), type.first.c_str());
 				content_part += szTmp;
 			}
 		}
@@ -7383,7 +8047,7 @@ namespace http {
 			{
 				if (m_sql.GetPreferencesVar("WebPassword", nValue, WebPassword))
 				{
-					if ((WebUserName != "") && (WebPassword != ""))
+					if ((!WebUserName.empty()) && (!WebPassword.empty()))
 					{
 						WebUserName = base64_decode(WebUserName);
 						//WebPassword = WebPassword;
@@ -7393,11 +8057,8 @@ namespace http {
 						result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
 						if (!result.empty())
 						{
-							int ii = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 								if (bIsActive)
 								{
@@ -7446,9 +8107,9 @@ namespace http {
 		int CWebServer::FindUser(const char* szUserName)
 		{
 			int iUser = 0;
-			for (const auto & itt : m_users)
+			for (const auto &user : m_users)
 			{
-				if (itt.Username == szUserName)
+				if (user.Username == szUserName)
 					return iUser;
 				iUser++;
 			}
@@ -7457,18 +8118,12 @@ namespace http {
 
 		bool CWebServer::FindAdminUser()
 		{
-			for (const auto & itt : m_users)
-			{
-				if (itt.userrights == URIGHTS_ADMIN)
-					return true;
-			}
-			return false;
+			return std::any_of(m_users.begin(), m_users.end(),
+					   [](const _tWebUserPassword &user) { return user.userrights == URIGHTS_ADMIN; });
 		}
 
-		void CWebServer::PostSettings(WebEmSession & session, const request& req, std::string & redirect_uri)
+		void CWebServer::PostSettings(WebEmSession& session, const request& req, reply& rep)
 		{
-			redirect_uri = "/index.html";
-
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
@@ -7477,10 +8132,10 @@ namespace http {
 
 			std::string Latitude = request::findValue(&req, "Latitude");
 			std::string Longitude = request::findValue(&req, "Longitude");
-			if ((Latitude != "") && (Longitude != ""))
+			if ((!Latitude.empty()) && (!Longitude.empty()))
 			{
 				std::string LatLong = Latitude + ";" + Longitude;
-				m_sql.UpdatePreferencesVar("Location", LatLong.c_str());
+				m_sql.UpdatePreferencesVar("Location", LatLong);
 				m_mainworker.GetSunSettings();
 			}
 			m_notifications.ConfigFromGetvars(req, true);
@@ -7564,29 +8219,29 @@ namespace http {
 			if (bHaveAdminUserPasswordChange)
 			{
 				RemoveUsersSessions(sOldWebLogin, session);
-				m_sql.UpdatePreferencesVar("WebUserName", WebUserName.c_str());
-				m_sql.UpdatePreferencesVar("WebPassword", WebPassword.c_str());
+				m_sql.UpdatePreferencesVar("WebUserName", WebUserName);
+				m_sql.UpdatePreferencesVar("WebPassword", WebPassword);
 			}
 
 			std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 			std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
-			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks.c_str());
-			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs.c_str());
+			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
 
 			LoadUsers();
 			m_pWebEm->ClearLocalNetworks();
 			std::vector<std::string> strarray;
 			StringSplit(WebLocalNetworks, ";", strarray);
-			for (const auto & itt : strarray)
-				m_pWebEm->AddLocalNetworks(itt);
+			for (const auto &str : strarray)
+				m_pWebEm->AddLocalNetworks(str);
 			//add local hostname
 			m_pWebEm->AddLocalNetworks("");
 
 			m_pWebEm->ClearRemoteProxyIPs();
 			strarray.clear();
 			StringSplit(WebRemoteProxyIPs, ";", strarray);
-			for (const auto & itt : strarray)
-				m_pWebEm->AddRemoteProxyIPs(itt);
+			for (const auto &str : strarray)
+				m_pWebEm->AddRemoteProxyIPs(str);
 
 			if (session.username.empty())
 			{
@@ -7600,7 +8255,7 @@ namespace http {
 			{
 				SecPassword = GenerateMD5Hash(SecPassword);
 			}
-			m_sql.UpdatePreferencesVar("SecPassword", SecPassword.c_str());
+			m_sql.UpdatePreferencesVar("SecPassword", SecPassword);
 
 			std::string ProtectionPassword = request::findValue(&req, "ProtectionPassword");
 			ProtectionPassword = CURLEncode::URLDecode(ProtectionPassword);
@@ -7608,7 +8263,7 @@ namespace http {
 			{
 				ProtectionPassword = GenerateMD5Hash(ProtectionPassword);
 			}
-			m_sql.UpdatePreferencesVar("ProtectionPassword", ProtectionPassword.c_str());
+			m_sql.UpdatePreferencesVar("ProtectionPassword", ProtectionPassword);
 
 			int EnergyDivider = atoi(request::findValue(&req, "EnergyDivider").c_str());
 			int GasDivider = atoi(request::findValue(&req, "GasDivider").c_str());
@@ -7622,6 +8277,10 @@ namespace http {
 			m_sql.UpdatePreferencesVar("MeterDividerEnergy", EnergyDivider);
 			m_sql.UpdatePreferencesVar("MeterDividerGas", GasDivider);
 			m_sql.UpdatePreferencesVar("MeterDividerWater", WaterDivider);
+
+			int EnergyMaxPower = atoi(request::findValue(&req, "MaxElectricPower").c_str());
+			m_sql.UpdatePreferencesVar("MaxElectricPower", EnergyMaxPower);
+
 
 			std::string scheckforupdates = request::findValue(&req, "checkforupdates");
 			m_sql.UpdatePreferencesVar("UseAutoUpdate", (scheckforupdates == "on" ? 1 : 0));
@@ -7686,17 +8345,17 @@ namespace http {
 				m_notifications.ReloadNotifications();
 			}
 			std::string RaspCamParams = request::findValue(&req, "RaspCamParams");
-			if (RaspCamParams != "")
+			if (!RaspCamParams.empty())
 			{
 				if (IsArgumentSecure(RaspCamParams))
-					m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
+					m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams);
 			}
 
 			std::string UVCParams = request::findValue(&req, "UVCParams");
-			if (UVCParams != "")
+			if (!UVCParams.empty())
 			{
 				if (IsArgumentSecure(UVCParams))
-					m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
+					m_sql.UpdatePreferencesVar("UVCParams", UVCParams);
 			}
 
 			std::string EnableNewHardware = request::findValue(&req, "AcceptNewHardware");
@@ -7731,6 +8390,9 @@ namespace http {
 				m_mainworker.m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
+			std::string EnableEventSystemFullURLLog = request::findValue(&req, "EventSystemLogFullURL");
+			m_sql.m_bEnableEventSystemFullURLLog = EnableEventSystemFullURLLog == "on" ? true : false;
+			m_sql.UpdatePreferencesVar("EventSystemLogFullURL", (int)m_sql.m_bEnableEventSystemFullURLLog);
 
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
@@ -7774,11 +8436,11 @@ namespace http {
 				}
 			}
 
-			m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language").c_str());
+			m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language"));
 			std::string SelectedTheme = request::findValue(&req, "Themes");
-			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
+			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme);
 			m_pWebEm->SetWebTheme(SelectedTheme);
-			std::string Title = request::findValue(&req, "Title").c_str();
+			std::string Title = request::findValue(&req, "Title");
 			m_sql.UpdatePreferencesVar("Title", (Title.empty()) ? "Domoticz" : Title);
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
@@ -7817,7 +8479,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues", (FloorplanShowSwitchValues == "on" ? 1 : 0));
 			std::string FloorplanShowSceneNames = request::findValue(&req, "FloorplanShowSceneNames");
 			m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (FloorplanShowSceneNames == "on" ? 1 : 0));
-			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour").c_str()).c_str());
+			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour")));
 			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str()));
 			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(request::findValue(&req, "FloorplanInactiveOpacity").c_str()));
 
@@ -7855,6 +8517,19 @@ namespace http {
 			//Signal plugins to update Settings dictionary
 			PluginLoadConfig();
 #endif
+
+			Json::Value root;
+			root["status"] = "OK";
+			root["title"] = "StoreSettings";
+
+			std::string jcallback = request::findValue(&req, "jsoncallback");
+			if (jcallback.empty())
+			{
+				reply::set_content(&rep, root.toStyledString());
+				return;
+			}
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri)
@@ -7903,7 +8578,7 @@ namespace http {
 		{
 			std::vector<std::vector<std::string> > result;
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			struct tm tLastUpdate;
@@ -7919,10 +8594,8 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Mode1, Mode2 FROM Hardware");
 			if (!result.empty())
 			{
-				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
 					_tHardwareListInt tlist;
 					int ID = atoi(sd[0].c_str());
 					tlist.Name = sd[1];
@@ -7975,9 +8648,11 @@ namespace http {
 			char szOrderBy[50];
 			std::string szQuery;
 			bool isAlpha = true;
-			const std::string orderBy = order.c_str();
-			for (size_t i = 0; i < orderBy.size(); i++) {
-				if (!isalpha(orderBy[i])) {
+			const std::string orderBy = order;
+			for (char i : orderBy)
+			{
+				if (!isalpha(i))
+				{
 					isAlpha = false;
 				}
 			}
@@ -7993,7 +8668,7 @@ namespace http {
 			int iUser = -1;
 			unsigned int totUserDevices = 0;
 			bool bShowScenes = true;
-			bHaveUser = (username != "");
+			bHaveUser = (!username.empty());
 			if (bHaveUser)
 			{
 				iUser = FindUser(username.c_str());
@@ -8002,8 +8677,11 @@ namespace http {
 					_eUserRights urights = m_users[iUser].userrights;
 					if (urights != URIGHTS_ADMIN)
 					{
-						result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %lu)", m_users[iUser].ID);
-						totUserDevices = (unsigned int)result.size();
+						result = m_sql.safe_query("SELECT COUNT(*) FROM SharedDevices WHERE (SharedUserID == %lu)", m_users[iUser].ID);
+						if (!result.empty())
+						{
+							totUserDevices = (unsigned int)std::stoi(result[0][0]);
+						}
 						bShowScenes = (m_users[iUser].ActiveTabs&(1 << 1)) != 0;
 					}
 				}
@@ -8021,7 +8699,7 @@ namespace http {
 					)
 				{
 					//add scenes
-					if (rowid != "")
+					if (!rowid.empty())
 						result = m_sql.safe_query(
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
@@ -8029,14 +8707,14 @@ namespace http {
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
 							" WHERE (A.ID=='%q')",
 							rowid.c_str());
-					else if ((planID != "") && (planID != "0"))
+					else if ((!planID.empty()) && (planID != "0"))
 						result = m_sql.safe_query(
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
 							" FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID=='%q')"
 							" AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]",
 							planID.c_str());
-					else if ((floorID != "") && (floorID != "0"))
+					else if ((!floorID.empty()) && (floorID != "0"))
 						result = m_sql.safe_query(
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
@@ -8057,10 +8735,8 @@ namespace http {
 
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							unsigned char favorite = atoi(sd[4].c_str());
 							//Check if we only want favorite devices
 							if ((bFetchFavorites) && (!favorite))
@@ -8091,6 +8767,7 @@ namespace http {
 							{
 								root["result"][ii]["Type"] = "Scene";
 								root["result"][ii]["TypeImg"] = "scene";
+								root["result"][ii]["Image"] = "Push";
 							}
 							else
 							{
@@ -8144,11 +8821,11 @@ namespace http {
 				}
 			}
 
-			char szData[250];
+			char szData[320];
 			if (totUserDevices == 0)
 			{
 				//All
-				if (rowid != "")
+				if (!rowid.empty())
 				{
 					//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 					result = m_sql.safe_query(
@@ -8163,7 +8840,7 @@ namespace http {
 						"WHERE (A.ID=='%q')",
 						rowid.c_str());
 				}
-				else if ((planID != "") && (planID != "0"))
+				else if ((!planID.empty()) && (planID != "0"))
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -8178,7 +8855,7 @@ namespace http {
 						"WHERE (B.PlanID=='%q') AND (B.DeviceRowID==a.ID)"
 						" AND (B.DevSceneType==0) ORDER BY B.[Order]",
 						planID.c_str());
-				else if ((floorID != "") && (floorID != "0"))
+				else if ((!floorID.empty()) && (floorID != "0"))
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -8207,10 +8884,9 @@ namespace http {
 								pID.c_str());
 							if (!result.empty())
 							{
-								std::vector<std::vector<std::string> >::const_iterator ittP;
-								for (ittP = result.begin(); ittP != result.end(); ++ittP)
+								for (const auto &r : result)
 								{
-									_HiddenDevices.insert(ittP[0][0]);
+									_HiddenDevices.insert(r[0]);
 								}
 							}
 						}
@@ -8224,7 +8900,8 @@ namespace http {
 						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
 					}
 					//_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
-					if (hardwareid != "") {
+					if (!hardwareid.empty())
+					{
 						szQuery = (
 							"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
 							" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
@@ -8263,13 +8940,13 @@ namespace http {
 					return;
 				}
 				//Specific devices
-				if (rowid != "")
+				if (!rowid.empty())
 				{
 					//_log.Log(LOG_STATUS, "Getting device with id: %s for user %lu", rowid.c_str(), m_users[iUser].ID);
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
-						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
+						" A.nValue, A.sValue, A.LastUpdate, B.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
@@ -8281,11 +8958,11 @@ namespace http {
 						" AND (B.SharedUserID==%lu) AND (A.ID=='%q')",
 						m_users[iUser].ID, rowid.c_str());
 				}
-				else if ((planID != "") && (planID != "0"))
+				else if ((!planID.empty()) && (planID != "0"))
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
-						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
+						" A.nValue, A.sValue, A.LastUpdate, B.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
@@ -8298,11 +8975,11 @@ namespace http {
 						" AND (B.DeviceRowID==a.ID) "
 						"AND (B.SharedUserID==%lu) ORDER BY C.[Order]",
 						planID.c_str(), m_users[iUser].ID);
-				else if ((floorID != "") && (floorID != "0"))
+				else if ((!floorID.empty()) && (floorID != "0"))
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
-						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
+						" A.nValue, A.sValue, A.LastUpdate, B.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
@@ -8327,10 +9004,9 @@ namespace http {
 								pID.c_str());
 							if (!result.empty())
 							{
-								std::vector<std::vector<std::string> >::const_iterator ittP;
-								for (ittP = result.begin(); ittP != result.end(); ++ittP)
+								for (const auto &r : result)
 								{
-									_HiddenDevices.insert(ittP[0][0]);
+									_HiddenDevices.insert(r[0]);
 								}
 							}
 						}
@@ -8349,7 +9025,7 @@ namespace http {
 					szQuery = (
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
-						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
+						" A.nValue, A.sValue, A.LastUpdate, B.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
@@ -8367,12 +9043,10 @@ namespace http {
 
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					unsigned char favorite = atoi(sd[12].c_str());
-					if ((planID != "") && (planID != "0"))
+					if ((!planID.empty()) && (planID != "0"))
 						favorite = 1;
 
 					//Check if we only want favorite devices
@@ -8389,17 +9063,19 @@ namespace http {
 						{
 							if (bAllowDeviceToBeHidden)
 								continue;
-							if (planID.size() > 0)
+							if (!planID.empty())
 								sDeviceName = sDeviceName.substr(1);
 						}
 					}
 					int hardwareID = atoi(sd[14].c_str());
-					std::map<int, _tHardwareListInt>::iterator hItt = _hardwareNames.find(hardwareID);
+					auto hItt = _hardwareNames.find(hardwareID);
+					bool bIsHardwareDisabled = true;
 					if (hItt != _hardwareNames.end())
 					{
 						//ignore sensors where the hardware is disabled
 						if ((!bDisplayDisabled) && (!(*hItt).second.Enabled))
 							continue;
+						bIsHardwareDisabled = !(*hItt).second.Enabled;
 					}
 
 					unsigned int dType = atoi(sd[5].c_str());
@@ -8452,7 +9128,7 @@ namespace http {
 						(used)
 						)
 						continue;
-					if (rfilter != "")
+					if (!rfilter.empty())
 					{
 						if (rfilter == "light")
 						{
@@ -8482,7 +9158,8 @@ namespace http {
 								(dType != pTypeChime) &&
 								(dType != pTypeFS20) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
-								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
+								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))&&
+								(dType != pTypeHunter)
 								)
 								continue;
 						}
@@ -8540,6 +9217,7 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatOperatingState))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) &&
@@ -8624,11 +9302,13 @@ namespace http {
 						root["result"][ii]["HardwareTypeVal"] = _hardwareNames[hardwareID].HardwareTypeVal;
 						root["result"][ii]["HardwareType"] = _hardwareNames[hardwareID].HardwareType;
 					}
+					root["result"][ii]["HardwareDisabled"] = bIsHardwareDisabled;
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Protected"] = (iProtected != 0);
 
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
-					if (pHardware != NULL)
+					if (pHardware != nullptr)
 					{
 						if (pHardware->HwdType == HTYPE_SolarEdgeAPI)
 						{
@@ -8639,7 +9319,7 @@ namespace http {
 						{
 							CWunderground *pWHardware = reinterpret_cast<CWunderground *>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
-							if (forecast_url != "")
+							if (!forecast_url.empty())
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
@@ -8648,7 +9328,7 @@ namespace http {
 						{
 							CDarkSky *pWHardware = reinterpret_cast<CDarkSky*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
-							if (forecast_url != "")
+							if (!forecast_url.empty())
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
@@ -8657,7 +9337,7 @@ namespace http {
 						{
 							CAccuWeather *pWHardware = reinterpret_cast<CAccuWeather*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
-							if (forecast_url != "")
+							if (!forecast_url.empty())
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
@@ -8666,14 +9346,32 @@ namespace http {
 						{
 							COpenWeatherMap *pWHardware = reinterpret_cast<COpenWeatherMap*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
-							if (forecast_url != "")
+							if (!forecast_url.empty())
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
+						else if (pHardware->HwdType == HTYPE_BuienRadar)
+						{
+							CBuienRadar* pWHardware = reinterpret_cast<CBuienRadar*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
+						else if (pHardware->HwdType == HTYPE_Meteorologisk)
+						{
+							CMeteorologisk* pWHardware = reinterpret_cast<CMeteorologisk*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
 							{
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
 					}
 
-					if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_PythonPlugin))
+					if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_PythonPlugin))
 					{
 						// Device ID special formatting should not be applied to Python plugins
 						root["result"][ii]["ID"] = sd[1];
@@ -8766,7 +9464,8 @@ namespace http {
 						(dType == pTypeHomeConfort) ||
 						(dType == pTypeFS20) ||
 						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) ||
-						((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
+						((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus)) ||
+						(dType == pTypeHunter)
 						)
 					{
 						//add light details
@@ -8774,7 +9473,7 @@ namespace http {
 
 						bHaveTimeout = false;
 #ifdef WITH_OPENZWAVE
-						if (pHardware != NULL)
+						if (pHardware != nullptr)
 						{
 							if (pHardware->HwdType == HTYPE_OpenZWave)
 							{
@@ -8790,7 +9489,7 @@ namespace http {
 #endif
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
-						std::string lstatus = "";
+						std::string lstatus;
 						int llevel = 0;
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
@@ -8803,7 +9502,7 @@ namespace http {
 						root["result"][ii]["StrParam2"] = strParam2;
 
 						std::string IconFile = "Light";
-						std::map<int, int>::const_iterator ittIcon = m_custom_light_icons_lookup.find(CustomImage);
+						auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
 						if (ittIcon != m_custom_light_icons_lookup.end())
 						{
 							IconFile = m_custom_light_icons[ittIcon->second].RootFile;
@@ -8872,7 +9571,7 @@ namespace http {
 						std::vector<std::vector<std::string> > resultSD;
 						resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')",
 							sd[0].c_str());
-						bIsSubDevice = (resultSD.size() > 0);
+						bIsSubDevice = (!resultSD.empty());
 
 						root["result"][ii]["IsSubDevice"] = bIsSubDevice;
 
@@ -8978,7 +9677,7 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Media)
 						{
-							if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
+							if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
 								root["result"][ii]["TypeImg"] = "LogitechMediaServer";
 							else
 								root["result"][ii]["TypeImg"] = "Media";
@@ -9063,7 +9762,7 @@ namespace http {
 					}
 					else if (dType == pTypeSecurity1)
 					{
-						std::string lstatus = "";
+						std::string lstatus;
 						int llevel = 0;
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
@@ -9082,7 +9781,12 @@ namespace http {
 						root["result"][ii]["StrParam2"] = strParam2;
 						root["result"][ii]["Protected"] = (iProtected != 0);
 
-						if ((dSubType == sTypeKD101) || (dSubType == sTypeSA30) || (switchtype == STYPE_SMOKEDETECTOR))
+						if (
+							(dSubType == sTypeKD101)
+							|| (dSubType == sTypeSA30)
+							|| (dSubType == sTypeRM174RF)
+							|| (switchtype == STYPE_SMOKEDETECTOR)
+							)
 						{
 							root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
 							root["result"][ii]["TypeImg"] = "smoke";
@@ -9094,7 +9798,7 @@ namespace http {
 					}
 					else if (dType == pTypeSecurity2)
 					{
-						std::string lstatus = "";
+						std::string lstatus;
 						int llevel = 0;
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
@@ -9118,7 +9822,7 @@ namespace http {
 					}
 					else if (dType == pTypeEvohome || dType == pTypeEvohomeRelay)
 					{
-						std::string lstatus = "";
+						std::string lstatus;
 						int llevel = 0;
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
@@ -9167,14 +9871,14 @@ namespace http {
 							double temp = ConvertTemperature(tempCelcius, tempsign);
 							double tempSetPoint;
 							root["result"][ii]["Temp"] = temp;
-							if (dType == pTypeEvohomeZone)
+							if (dType == pTypeEvohomeWater && (strarray[i] == "Off" || strarray[i] == "On"))
 							{
+								root["result"][ii]["State"] = strarray[i++];
+							} else {
 								tempCelcius = atof(strarray[i++].c_str());
 								tempSetPoint = ConvertTemperature(tempCelcius, tempsign);
 								root["result"][ii]["SetPoint"] = tempSetPoint;
 							}
-							else
-								root["result"][ii]["State"] = strarray[i++];
 
 							std::string strstatus = strarray[i++];
 							root["result"][ii]["Status"] = strstatus;
@@ -9473,7 +10177,7 @@ namespace http {
 						if (strarray.size() == 2)
 						{
 							//get lowest value of today, and max rate
-							time_t now = mytime(NULL);
+							time_t now = mytime(nullptr);
 							struct tm ltime;
 							localtime_r(&now, &ltime);
 							char szDate[40];
@@ -9481,33 +10185,43 @@ namespace http {
 
 							std::vector<std::vector<std::string> > result2;
 
-							if (dSubType != sTypeRAINWU)
+							if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 							{
 								result2 = m_sql.safe_query(
-									"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+									"SELECT Total, Rate FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", sd[0].c_str(), szDate);
 							}
 							else
 							{
 								result2 = m_sql.safe_query(
-									"SELECT Total, Total FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", sd[0].c_str(), szDate);
+									"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
 							}
+
 							if (!result2.empty())
 							{
 								double total_real = 0;
 								float rate = 0;
 								std::vector<std::string> sd2 = result2[0];
-								if (dSubType != sTypeRAINWU)
+
+								if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
+								{
+									total_real = atof(sd2[0].c_str());
+								}
+								else
 								{
 									double total_min = atof(sd2[0].c_str());
 									double total_max = atof(strarray[1].c_str());
 									total_real = total_max - total_min;
 								}
+
+								total_real *= AddjMulti;
+								if (dSubType == sTypeRAINByRate)
+								{
+									rate = static_cast<float>(atof(sd2[1].c_str()) / 10000.0f);
+								}
 								else
 								{
-									total_real = atof(sd2[1].c_str());
+									rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 								}
-								total_real *= AddjMulti;
-								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 
 								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
@@ -9538,7 +10252,7 @@ namespace http {
 						}
 
 						//get value of today
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 						struct tm ltime;
 						localtime_r(&now, &ltime);
 						char szDate[40];
@@ -9557,6 +10271,7 @@ namespace http {
 							sprintf(szTmp, "%" PRIu64, total_real);
 
 							float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
 							float musage = 0.0f;
 							switch (metertype)
 							{
@@ -9574,7 +10289,8 @@ namespace http {
 								sprintf(szTmp, "%d Liter", round(musage));
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%" PRIu64, total_real);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%g", musage);
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
@@ -9617,7 +10333,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9644,7 +10360,7 @@ namespace http {
 						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						//get value of today
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 						struct tm ltime;
 						localtime_r(&now, &ltime);
 						char szDate[40];
@@ -9679,7 +10395,7 @@ namespace http {
 								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%" PRIu64, total_real);
+								sprintf(szTmp, "%g", float(total_real) / divider);
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
@@ -9720,7 +10436,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%" PRIu64 " %s", static_cast<uint64_t>(meteroffset + dvalue), ValueUnits.c_str());
+							sprintf(szTmp, "%g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9787,7 +10503,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9815,7 +10531,7 @@ namespace http {
 						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						//get value of today
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 						struct tm ltime;
 						localtime_r(&now, &ltime);
 						char szDate[40];
@@ -9833,7 +10549,7 @@ namespace http {
 							unsigned long long total_real;
 
 							total_real = total_max - total_min;
-							sprintf(szTmp, "%llu", total_real);
+							sprintf(szTmp, "%lld", total_real);
 
 							musage = 0;
 							switch (metertype)
@@ -9852,7 +10568,7 @@ namespace http {
 								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
+								sprintf(szTmp, "%g %s", float(total_real) / divider, ValueUnits.c_str());
 								break;
 							default:
 								strcpy(szTmp, "0");
@@ -9882,7 +10598,7 @@ namespace http {
 							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%llu", total_actual);
+							sprintf(szTmp, "%g", float(total_actual) / divider);
 							break;
 						default:
 							strcpy(szTmp, "0");
@@ -9910,7 +10626,7 @@ namespace http {
 							sprintf(szTmp, "%.3f m3", musage);
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%llu %s", acounter, ValueUnits.c_str());
+							sprintf(szTmp, "%g %s", float(acounter) / divider, ValueUnits.c_str());
 							break;
 						default:
 							strcpy(szTmp, "0");
@@ -10007,7 +10723,7 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
 							//get value of today
-							time_t now = mytime(NULL);
+							time_t now = mytime(nullptr);
 							struct tm ltime;
 							localtime_r(&now, &ltime);
 							char szDate[40];
@@ -10050,7 +10766,7 @@ namespace http {
 						root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
 
 						//get lowest value of today
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 						struct tm ltime;
 						localtime_r(&now, &ltime);
 						char szDate[40];
@@ -10068,7 +10784,14 @@ namespace http {
 							std::vector<std::string> sd2 = result2[0];
 
 							uint64_t total_min_gas = std::stoull(sd2[0]);
-							uint64_t gasactual = std::stoull(sValue);
+							uint64_t gasactual;
+							try {
+								 gasactual = std::stoull(sValue);
+							}
+							catch( std::invalid_argument e ) {
+								_log.Log(LOG_ERROR, "Gas - invalid value: '%s'", sValue.c_str());
+								continue;
+							}
 							uint64_t total_real_gas = gasactual - total_min_gas;
 
 							double musage = double(gasactual) / divider;
@@ -10169,7 +10892,7 @@ namespace http {
 						{
 							double total = atof(strarray[1].c_str()) / 1000;
 
-							time_t now = mytime(NULL);
+							time_t now = mytime(nullptr);
 							struct tm ltime;
 							localtime_r(&now, &ltime);
 							char szDate[40];
@@ -10177,7 +10900,9 @@ namespace http {
 
 							std::vector<std::vector<std::string> > result2;
 							strcpy(szTmp, "0");
-							result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
+							// get the first value of the day instead of the minimum value, because counter can also decrease
+							//result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
+							result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1",
 								sd[0].c_str(), szDate);
 							if (!result2.empty())
 							{
@@ -10300,13 +11025,13 @@ namespace http {
 							float vis = static_cast<float>(atof(sValue.c_str()));
 							if (metertype == 0)
 							{
-								//km
+								//Metric
 								sprintf(szTmp, "%.1f cm", vis);
 							}
 							else
 							{
-								//miles
-								sprintf(szTmp, "%.1f in", vis*0.6214f);
+								//Imperial
+								sprintf(szTmp, "%.1f in", vis * 0.3937007874015748f);
 							}
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -10376,7 +11101,7 @@ namespace http {
 						}
 						else if (dSubType == sTypeCustom)
 						{
-							std::string szAxesLabel = "";
+							std::string szAxesLabel;
 							int SensorType = 1;
 							std::vector<std::string> sResults;
 							StringSplit(sOptions, ";", sResults);
@@ -10395,7 +11120,7 @@ namespace http {
 							std::string IconFile = "Custom";
 							if (CustomImage != 0)
 							{
-								std::map<int, int>::const_iterator ittIcon = m_custom_light_icons_lookup.find(CustomImage);
+								auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
 								if (ittIcon != m_custom_light_icons_lookup.end())
 								{
 									IconFile = m_custom_light_icons[ittIcon->second].RootFile;
@@ -10507,7 +11232,7 @@ namespace http {
 							root["result"][ii]["Mode"] = nValue;
 							root["result"][ii]["TypeImg"] = "mode";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							std::string modes = "";
+							std::string modes;
 							//Add supported modes
 #ifdef WITH_OPENZWAVE
 							if (pHardware)
@@ -10522,10 +11247,10 @@ namespace http {
 									std::vector<std::string> vmodes = pZWave->GetSupportedThermostatModes(ID);
 									int smode = 0;
 									char szTmp[200];
-									for (const auto & itt : vmodes)
+									for (const auto &mode : vmodes)
 									{
 										//Value supported
-										sprintf(szTmp, "%d;%s;", smode, itt.c_str());
+										sprintf(szTmp, "%d;%s;", smode, mode.c_str());
 										modes += szTmp;
 										smode++;
 									}
@@ -10552,7 +11277,7 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							//Add supported modes (add all for now)
 							bool bAddedSupportedModes = false;
-							std::string modes = "";
+							std::string modes;
 							//Add supported modes
 #ifdef WITH_OPENZWAVE
 							if (pHardware)
@@ -10572,7 +11297,7 @@ namespace http {
 							if (!bAddedSupportedModes)
 							{
 								int smode = 0;
-								while (ZWave_Thermostat_Fan_Modes[smode] != NULL)
+								while (ZWave_Thermostat_Fan_Modes[smode] != nullptr)
 								{
 									sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Fan_Modes[smode]);
 									modes += szTmp;
@@ -10580,6 +11305,26 @@ namespace http {
 								}
 							}
 							root["result"][ii]["Modes"] = modes;
+						}
+						else if (dSubType == sTypeZWaveThermostatOperatingState)
+						{
+							strcpy(szData, "");
+							root["result"][ii]["State"] = nValue;
+							root["result"][ii]["TypeImg"] = "Fan";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							if (nValue == 1)
+							{
+								sprintf(szData, "%s", "Cooling");
+							}
+							else if (nValue == 2)
+							{
+								sprintf(szData, "%s", "Heating");
+							}
+							else
+							{
+								sprintf(szData, "%s", "Idle");
+							}
+							root["result"][ii]["Data"] = szData;
 						}
 						else if (dSubType == sTypeZWaveAlarm)
 						{
@@ -10601,6 +11346,7 @@ namespace http {
 						sprintf(szTmp, "%g %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = false;
+						root["result"][ii]["SwitchTypeVal"] = (m_sql.m_weightsign=="kg") ? 0 : 1;
 					}
 					else if (dType == pTypeUsage)
 					{
@@ -10677,7 +11423,7 @@ namespace http {
 						case sTypeRego6XXCounter:
 						{
 							//get value of today
-							time_t now = mytime(NULL);
+							time_t now = mytime(nullptr);
 							struct tm ltime;
 							localtime_r(&now, &ltime);
 							char szDate[40];
@@ -10696,7 +11442,7 @@ namespace http {
 								unsigned long long total_real;
 
 								total_real = total_max - total_min;
-								sprintf(szTmp, "%llu", total_real);
+								sprintf(szTmp, "%lld", total_real);
 							}
 							root["result"][ii]["SwitchTypeVal"] = MTYPE_COUNTER;
 							root["result"][ii]["Counter"] = sValue;
@@ -10708,7 +11454,7 @@ namespace http {
 						}
 					}
 #ifdef ENABLE_PYTHON
-					if (pHardware != NULL)
+					if (pHardware != nullptr)
 					{
 						if (pHardware->HwdType == HTYPE_PythonPlugin)
 						{
@@ -10726,7 +11472,10 @@ namespace http {
 
 		void CWebServer::UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			redirect_uri = "/index.html";
+			Json::Value root;
+			root["title"] = "UploadFloorplanImage";
+			root["status"] = "ERR";
+
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
@@ -10743,18 +11492,24 @@ namespace http {
 			if (!result.empty())
 			{
 				if (!m_sql.safe_UpdateBlobInTableWithID("Floorplans", "Image", result[0][0], imagefile))
+				{
 					_log.Log(LOG_ERROR, "SQL: Problem inserting floorplan image into database! ");
+				}
+				else
+					root["status"] = "OK";
 			}
+			redirect_uri = root.toStyledString();
 		}
 
 		void CWebServer::GetFloorplanImage(WebEmSession & session, const request& req, reply & rep)
 		{
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_queryBlob("SELECT Image FROM Floorplans WHERE ID=%s", idx.c_str());
+			result = m_sql.safe_queryBlob("SELECT Image FROM Floorplans WHERE ID=%d", atol(idx.c_str()));
 			if (result.empty())
 				return;
 			reply::set_content(&rep, result[0][0].begin(), result[0][0].end());
@@ -10769,6 +11524,10 @@ namespace http {
 					oname += ".bmp";
 				else if (result[0][0][0] == 'G')
 					oname += ".gif";
+				else if ((result[0][0][0] == '<') && (result[0][0][1] == 's') && (result[0][0][2] == 'v') && (result[0][0][3] == 'g'))
+					oname += ".svg";
+				else if (result[0][0].find("<svg") != std::string::npos) //some SVG's start with <xml
+					oname += ".svg";
 			}
 			reply::add_header_attachment(&rep, oname);
 		}
@@ -10780,12 +11539,16 @@ namespace http {
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
+			time_t now = mytime(nullptr);
+			Json::Value backupInfo;
+
+			backupInfo["type"] = "Web";
 #ifdef WIN32
-			std::string OutputFileName = szUserDataFolder + "backup.db";
+			backupInfo["location"] = szUserDataFolder + "backup.db";
 #else
-			std::string OutputFileName = "/tmp/backup.db";
+			backupInfo["location"] = "/tmp/backup.db";
 #endif
-			if (m_sql.BackupDatabase(OutputFileName))
+			if (m_sql.BackupDatabase(backupInfo["location"].asString()))
 			{
 				std::string szAttachmentName = "domoticz.db";
 				std::string szVar;
@@ -10798,7 +11561,9 @@ namespace http {
 						szAttachmentName = szVar + ".db";
 					}
 				}
-				reply::set_content_from_file(&rep, OutputFileName, szAttachmentName, true);
+				reply::set_download_file(&rep, backupInfo["location"].asString(), szAttachmentName);
+				backupInfo["duration"] = difftime(mytime(nullptr), now);
+				m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, Notification::STATUS_INFO, JSonToRawString(backupInfo));
 			}
 		}
 
@@ -10828,7 +11593,8 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			name = HTMLSanitizer::Sanitize(name);
 			if (name.empty())
 			{
 				root["status"] = "ERR";
@@ -10874,12 +11640,7 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "DeleteScene";
-			m_sql.safe_query("DELETE FROM Scenes WHERE (ID == '%q')", idx.c_str());
-			m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == '%q')", idx.c_str());
-			m_sql.safe_query("DELETE FROM SceneTimers WHERE (SceneRowID == '%q')", idx.c_str());
-			m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
-			uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
-			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
+			m_sql.DeleteScenes(idx);
 		}
 
 		void CWebServer::RType_UpdateScene(WebEmSession & session, const request& req, Json::Value &root)
@@ -10891,8 +11652,12 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
-			std::string description = request::findValue(&req, "description");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
+
+			name = HTMLSanitizer::Sanitize(name);
+			description = HTMLSanitizer::Sanitize(description);
+
 			if ((idx.empty()) || (name.empty()))
 				return;
 			std::string stype = request::findValue(&req, "scenetype");
@@ -10937,12 +11702,12 @@ namespace http {
 			//Sort by name
 			std::sort(temp_custom_light_icons.begin(), temp_custom_light_icons.end(), compareIconsByName);
 
-			for (const auto & itt : temp_custom_light_icons)
+			for (const auto &icon : temp_custom_light_icons)
 			{
-				root["result"][ii]["idx"] = itt.idx;
-				root["result"][ii]["imageSrc"] = itt.RootFile;
-				root["result"][ii]["text"] = itt.Title;
-				root["result"][ii]["description"] = itt.Description;
+				root["result"][ii]["idx"] = icon.idx;
+				root["result"][ii]["imageSrc"] = icon.RootFile;
+				root["result"][ii]["text"] = icon.Title;
+				root["result"][ii]["description"] = icon.Description;
 				ii++;
 			}
 			root["status"] = "OK";
@@ -10961,10 +11726,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					std::string Name = sd[1];
 					bool bIsHidden = (Name[0] == '$');
 
@@ -11001,9 +11764,8 @@ namespace http {
 			if (result.empty())
 				return;
 
-			for (const auto & itt : result)
+			for (const auto &sd : result)
 			{
-				std::vector<std::string> sd = itt;
 				std::string Key = sd[0];
 				int nValue = atoi(sd[1].c_str());
 				std::string sValue = sd[2];
@@ -11050,10 +11812,8 @@ namespace http {
 			if (!result2.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result2)
+				for (const auto &sd : result2)
 				{
-					std::vector<std::string> sd = itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					std::string ImageURL = "images/floorplans/plan?idx=" + sd[0];
@@ -11086,15 +11846,17 @@ namespace http {
 
 			std::string sLastUpdate = request::findValue(&req, "lastupdate");
 
+			std::string rid = request::findValue(&req, "rid");
+
 			time_t LastUpdate = 0;
-			if (sLastUpdate != "")
+			if (!sLastUpdate.empty())
 			{
 				std::stringstream sstr;
 				sstr << sLastUpdate;
 				sstr >> LastUpdate;
 			}
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			struct tm tLastUpdate;
@@ -11103,19 +11865,21 @@ namespace http {
 			root["ActTime"] = static_cast<int>(now);
 
 			std::vector<std::vector<std::string> > result, result2;
-			result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes ORDER BY [Order]");
+			std::string szQuery = "SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes";
+			if (!rid.empty())
+				szQuery += " WHERE (ID == " + rid + ")";
+			szQuery += " ORDER BY [Order]";
+			result = m_sql.safe_query(szQuery.c_str());
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					std::string sName = sd[1];
 					if ((bDisplayHidden == false) && (sName[0] == '$'))
 						continue;
 
-					std::string sLastUpdate = sd[6].c_str();
+					std::string sLastUpdate = sd[6];
 					if (LastUpdate != 0)
 					{
 						time_t cLastUpdate;
@@ -11205,14 +11969,10 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
-						continue;
-					if (hType == HTYPE_RESERVED_FOR_YOU_1)
 						continue;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
@@ -11245,7 +12005,7 @@ namespace http {
 
 					//Special case for openzwave (status for nodes queried)
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
-					if (pHardware != NULL)
+					if (pHardware != nullptr)
 					{
 						if (
 							(pHardware->HwdType == HTYPE_RFXtrx315) ||
@@ -11317,7 +12077,7 @@ namespace http {
 			std::string hwidx = request::findValue(&req, "hwidx"); // OTO
 
 			time_t LastUpdate = 0;
-			if (sLastUpdate != "")
+			if (!sLastUpdate.empty())
 			{
 				std::stringstream sstr;
 				sstr << sLastUpdate;
@@ -11332,7 +12092,7 @@ namespace http {
 
 		void CWebServer::RType_Users(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			int urights = 3;
 			if (bHaveUser)
 			{
@@ -11351,10 +12111,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
 					root["result"][ii]["Username"] = base64_decode(sd[2]);
@@ -11369,7 +12127,7 @@ namespace http {
 
 		void CWebServer::RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			int urights = 3;
 			if (bHaveUser)
 			{
@@ -11388,10 +12146,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
 					root["result"][ii]["Name"] = sd[2];
@@ -11405,7 +12161,7 @@ namespace http {
 
 		void CWebServer::Cmd_SetSetpoint(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (session.username != "");
+			bool bHaveUser = (!session.username.empty());
 			int iUser = -1;
 			int urights = 3;
 			if (bHaveUser)
@@ -11462,10 +12218,8 @@ namespace http {
 				//Get Activator device names
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
-				for (const auto & ittAct : arrayActivators)
+				for (const auto &sCodeCmd : arrayActivators)
 				{
-					std::string sCodeCmd = ittAct;
-
 					std::vector<std::string> arrayCode;
 					StringSplit(sCodeCmd, ":", arrayCode);
 
@@ -11488,7 +12242,7 @@ namespace http {
 							unsigned char subType = (unsigned char)atoi(sd[2].c_str());
 							_eSwitchType switchtype = (_eSwitchType)atoi(sd[3].c_str());
 							int nValue = sCode;
-							std::string sValue = "";
+							std::string sValue;
 							int llevel = 0;
 							bool bHaveDimmer = false;
 							bool bHaveGroupCmd = false;
@@ -11496,7 +12250,7 @@ namespace http {
 							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						}
 						uint64_t dID = std::strtoull(sID.c_str(), nullptr, 10);
-						root["result"][ii]["idx"] = dID;
+						root["result"][ii]["idx"] = Json::Value::UInt64(dID);
 						root["result"][ii]["name"] = sd[0];
 						root["result"][ii]["code"] = sCode;
 						root["result"][ii]["codestr"] = lstatus;
@@ -11539,15 +12293,13 @@ namespace http {
 				//Get Activator device names
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
-				for (const auto & ittAct : arrayActivators)
+				for (const auto &sCodeCmd : arrayActivators)
 				{
-					std::string sCodeCmd = ittAct;
-
 					std::vector<std::string> arrayCode;
 					StringSplit(sCodeCmd, ":", arrayCode);
 
 					std::string sID = arrayCode[0];
-					std::string sCode = "";
+					std::string sCode;
 					if (arrayCode.size() == 2)
 					{
 						sCode = arrayCode[1];
@@ -11603,16 +12355,14 @@ namespace http {
 				//Get Activator device names
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
-				std::string newActivation = "";
-				for (const auto & ittAct : arrayActivators)
+				std::string newActivation;
+				for (const auto &sCodeCmd : arrayActivators)
 				{
-					std::string sCodeCmd = ittAct;
-
 					std::vector<std::string> arrayCode;
 					StringSplit(sCodeCmd, ":", arrayCode);
 
 					std::string sID = arrayCode[0];
-					std::string sCode = "";
+					std::string sCode;
 					if (arrayCode.size() == 2)
 					{
 						sCode = arrayCode[1];
@@ -11673,9 +12423,9 @@ namespace http {
 			bool bUseDirectPath = false;
 			std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
 			int ii = 0;
-			for (const auto & itt : serialports)
+			for (const auto &port : serialports)
 			{
-				root["result"][ii]["name"] = itt;
+				root["result"][ii]["name"] = port;
 				root["result"][ii]["value"] = ii;
 				ii++;
 			}
@@ -11690,9 +12440,8 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
 			if (!result.empty())
 			{
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
 					root["result"][ii]["name"] = sd[1];
 					root["result"][ii]["value"] = sd[0];
 					ii++;
@@ -11713,7 +12462,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string zipfile = request::findValue(&req, "file");
-			if (zipfile != "")
+			if (!zipfile.empty())
 			{
 				std::string ErrorMessage;
 				bool bOK = m_sql.InsertCustomIconFromZip(zipfile, ErrorMessage);
@@ -11728,7 +12477,8 @@ namespace http {
 				}
 			}
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0) {
+			if (jcallback.empty())
+			{
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
@@ -11740,17 +12490,17 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetCustomIconSet";
 			int ii = 0;
-			for (const auto & itt : m_custom_light_icons)
+			for (const auto &icon : m_custom_light_icons)
 			{
-				if (itt.idx >= 100)
+				if (icon.idx >= 100)
 				{
-					std::string IconFile16 = "images/" + itt.RootFile + ".png";
-					std::string IconFile48On = "images/" + itt.RootFile + "48_On.png";
-					std::string IconFile48Off = "images/" + itt.RootFile + "48_Off.png";
+					std::string IconFile16 = "images/" + icon.RootFile + ".png";
+					std::string IconFile48On = "images/" + icon.RootFile + "48_On.png";
+					std::string IconFile48Off = "images/" + icon.RootFile + "48_Off.png";
 
-					root["result"][ii]["idx"] = itt.idx - 100;
-					root["result"][ii]["Title"] = itt.Title;
-					root["result"][ii]["Description"] = itt.Description;
+					root["result"][ii]["idx"] = icon.idx - 100;
+					root["result"][ii]["Title"] = icon.Title;
+					root["result"][ii]["Description"] = icon.Description;
 					root["result"][ii]["IconFile16"] = IconFile16;
 					root["result"][ii]["IconFile48On"] = IconFile48On;
 					root["result"][ii]["IconFile48Off"] = IconFile48Off;
@@ -11777,13 +12527,13 @@ namespace http {
 			m_sql.safe_query("DELETE FROM CustomImages WHERE (ID == %d)", idx);
 
 			//Delete icons file from disk
-			for (const auto & itt : m_custom_light_icons)
+			for (const auto &icon : m_custom_light_icons)
 			{
-				if (itt.idx == idx + 100)
+				if (icon.idx == idx + 100)
 				{
-					std::string IconFile16 = szWWWFolder + "/images/" + itt.RootFile + ".png";
-					std::string IconFile48On = szWWWFolder + "/images/" + itt.RootFile + "48_On.png";
-					std::string IconFile48Off = szWWWFolder + "/images/" + itt.RootFile + "48_Off.png";
+					std::string IconFile16 = szWWWFolder + "/images/" + icon.RootFile + ".png";
+					std::string IconFile48On = szWWWFolder + "/images/" + icon.RootFile + "48_On.png";
+					std::string IconFile48Off = szWWWFolder + "/images/" + icon.RootFile + "48_Off.png";
 					std::remove(IconFile16.c_str());
 					std::remove(IconFile48On.c_str());
 					std::remove(IconFile48Off.c_str());
@@ -11802,8 +12552,8 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
-			std::string sdescription = request::findValue(&req, "description");
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string sdescription = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty()) ||
@@ -11828,7 +12578,7 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty())
@@ -11857,7 +12607,7 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty())
@@ -11901,10 +12651,26 @@ namespace http {
 			std::string smessage = request::findValue(&req, "message");
 			if (smessage.empty())
 				return;
-			root["status"] = "OK";
 			root["title"] = "AddLogMessage";
 
-			_log.Log(LOG_STATUS, "%s", smessage.c_str());
+			_eLogLevel logLevel = LOG_STATUS;
+			std::string slevel = request::findValue(&req, "level");
+			if (!slevel.empty())
+			{
+				if ((slevel == "1") || (slevel == "normal"))
+					logLevel = LOG_NORM;
+				else if ((slevel == "2") || (slevel == "status"))
+					logLevel = LOG_STATUS;
+				else if ((slevel == "4") || (slevel == "error"))
+					logLevel = LOG_ERROR;
+				else {
+					root["status"] = "ERR";
+					return;
+				}
+			}
+			root["status"] = "OK";
+
+			_log.Log(logLevel, "%s", smessage.c_str());
 		}
 
 		void CWebServer::Cmd_ClearShortLog(WebEmSession & session, const request& req, Json::Value &root)
@@ -11939,10 +12705,10 @@ namespace http {
 
 		void CWebServer::Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string suuid = request::findValue(&req, "uuid");
-			std::string ssenderid = request::findValue(&req, "senderid");
-			std::string sname = request::findValue(&req, "name");
-			std::string sdevtype = request::findValue(&req, "devicetype");
+			std::string suuid = HTMLSanitizer::Sanitize(request::findValue(&req, "uuid"));
+			std::string ssenderid = HTMLSanitizer::Sanitize(request::findValue(&req, "senderid"));
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string sdevtype = HTMLSanitizer::Sanitize(request::findValue(&req, "devicetype"));
 			std::string sactive = request::findValue(&req, "active");
 			if (
 				(suuid.empty()) ||
@@ -11971,7 +12737,7 @@ namespace http {
 			else
 			{
 				//Update
-				time_t now = mytime(NULL);
+				time_t now = mytime(nullptr);
 				struct tm ltime;
 				localtime_r(&now, &ltime);
 				m_sql.safe_query("UPDATE MobileDevices SET Active=%d, SenderID='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (UUID == '%q')",
@@ -12002,7 +12768,7 @@ namespace http {
 			}
 			std::string sidx = request::findValue(&req, "idx");
 			std::string enabled = request::findValue(&req, "enabled");
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 
 			if (
 				(sidx.empty()) ||
@@ -12045,7 +12811,7 @@ namespace http {
 			root["title"] = "GetTransfers";
 
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -12057,8 +12823,9 @@ namespace http {
 			{
 				int dType = atoi(result[0][0].c_str());
 				if (
-					(dType == pTypeTEMP) ||
-					(dType == pTypeTEMP_HUM)
+					(dType == pTypeTEMP)
+					|| (dType == pTypeTEMP_HUM)
+					|| (dType == pTypeTEMP_HUM_BARO)
 					)
 				{
 					result = m_sql.safe_query(
@@ -12072,11 +12839,11 @@ namespace http {
 						result[0][0].c_str(), result[0][1].c_str(), idx);
 				}
 
-				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
+				std::sort(std::begin(result), std::end(result), [](std::vector<std::string> a, std::vector<std::string> b) {return a[1] < b[1]; });
 
+				int ii = 0;
+				for (const auto &sd : result)
+				{
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					ii++;
@@ -12101,7 +12868,7 @@ namespace http {
 
 			//Check which device is newer
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			struct tm LastUpdateTime_A;
@@ -12152,34 +12919,34 @@ namespace http {
 			int ii = 0;
 
 			//Add known notification systems
-			for (const auto & ittNotifiers : m_notifications.m_notifiers)
+			for (const auto &notifier : m_notifications.m_notifiers)
 			{
-				root["notifiers"][ii]["name"] = ittNotifiers.first;
-				root["notifiers"][ii]["description"] = ittNotifiers.first;
+				root["notifiers"][ii]["name"] = notifier.first;
+				root["notifiers"][ii]["description"] = notifier.first;
 				ii++;
 			}
 
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
-			if (notifications.size() > 0)
+			if (!notifications.empty())
 			{
 				ii = 0;
-				for (const auto & itt : notifications)
+				for (const auto &n : notifications)
 				{
-					root["result"][ii]["idx"] = itt.ID;
-					std::string sParams = itt.Params;
+					root["result"][ii]["idx"] = Json::Value::UInt64(n.ID);
+					std::string sParams = n.Params;
 					if (sParams.empty()) {
 						sParams = "S";
 					}
 					root["result"][ii]["Params"] = sParams;
-					root["result"][ii]["Priority"] = itt.Priority;
-					root["result"][ii]["SendAlways"] = itt.SendAlways;
-					root["result"][ii]["CustomMessage"] = itt.CustomMessage;
-					root["result"][ii]["ActiveSystems"] = itt.ActiveSystems;
+					root["result"][ii]["Priority"] = n.Priority;
+					root["result"][ii]["SendAlways"] = n.SendAlways;
+					root["result"][ii]["CustomMessage"] = n.CustomMessage;
+					root["result"][ii]["ActiveSystems"] = n.ActiveSystems;
 					ii++;
 				}
 			}
@@ -12198,9 +12965,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
 					root["result"][ii]["DeviceRowIdx"] = sd[0];
 					ii++;
 				}
@@ -12239,8 +13005,8 @@ namespace http {
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
-			std::string name = request::findValue(&req, "name");
-			std::string description = request::findValue(&req, "description");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
 			std::string sused = request::findValue(&req, "used");
 			std::string sswitchtype = request::findValue(&req, "switchtype");
 			std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
@@ -12258,37 +13024,37 @@ namespace http {
 			std::string sCustomImage = request::findValue(&req, "customimage");
 
 			std::string strunit = request::findValue(&req, "unit");
-			std::string strParam1 = base64_decode(request::findValue(&req, "strparam1"));
-			std::string strParam2 = base64_decode(request::findValue(&req, "strparam2"));
+			std::string strParam1 = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "strparam1")));
+			std::string strParam2 = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "strparam2")));
 			std::string tmpstr = request::findValue(&req, "protected");
 			bool bHasstrParam1 = request::hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string sOptions = base64_decode(request::findValue(&req, "options"));
-			std::string devoptions = CURLEncode::URLDecode(request::findValue(&req, "devoptions"));
+			std::string sOptions = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "options")));
+			std::string devoptions = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "devoptions")));
 			std::string EnergyMeterMode = CURLEncode::URLDecode(request::findValue(&req, "EnergyMeterMode"));
 
 			char szTmp[200];
 
-			bool bHaveUser = (session.username != "");
-			int iUser = -1;
+			bool bHaveUser = (!session.username.empty());
+			//int iUser = -1;
 			if (bHaveUser)
 			{
-				iUser = FindUser(session.username.c_str());
+				//iUser = FindUser(session.username.c_str());
 			}
 
 			int switchtype = -1;
-			if (sswitchtype != "")
+			if (!sswitchtype.empty())
 				switchtype = atoi(sswitchtype.c_str());
 
 			if ((idx.empty()) || (sused.empty()))
 				return;
 			int used = (sused == "true") ? 1 : 0;
-			if (maindeviceidx != "")
+			if (!maindeviceidx.empty())
 				used = 0;
 
 			int CustomImage = 0;
-			if (sCustomImage != "")
+			if (!sCustomImage.empty())
 				CustomImage = atoi(sCustomImage.c_str());
 
 			//Strip trailing spaces in 'name'
@@ -12309,7 +13075,7 @@ namespace http {
 			int HwdID = atoi(sd[2].c_str());
 			std::string sHwdID = sd[2];
 
-			if (setPoint != "" || state != "")
+			if (!setPoint.empty() || !state.empty())
 			{
 				double tempcelcius = atof(setPoint.c_str());
 				if (m_sql.m_tempunit == TEMPUNIT_F)
@@ -12515,7 +13281,7 @@ namespace http {
 				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
 			}
 
-			if (maindeviceidx != "")
+			if (!maindeviceidx.empty())
 			{
 				if (maindeviceidx != idx)
 				{
@@ -12571,9 +13337,8 @@ namespace http {
 			root["cloudenabled"] = false;
 #endif
 
-			for (const auto & itt : result)
+			for (const auto &sd : result)
 			{
-				std::vector<std::string> sd = itt;
 				std::string Key = sd[0];
 				int nValue = atoi(sd[1].c_str());
 				std::string sValue = sd[2];
@@ -12661,6 +13426,10 @@ namespace http {
 				else if (Key == "ElectricVoltage")
 				{
 					root["ElectricVoltage"] = nValue;
+				}
+				else if (Key == "MaxElectricPower")
+				{
+					root["MaxElectricPower"] = nValue;
 				}
 				else if (Key == "CM113DisplayType")
 				{
@@ -12816,6 +13585,10 @@ namespace http {
 				{
 					root["EnableEventScriptSystem"] = nValue;
 				}
+				else if (Key == "EventSystemLogFullURL")
+				{
+					root["EventSystemLogFullURL"] = nValue;
+				}
 				else if (Key == "DisableDzVentsSystem")
 				{
 					root["DisableDzVentsSystem"] = nValue;
@@ -12927,7 +13700,7 @@ namespace http {
 		void CWebServer::RType_LightLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -12941,7 +13714,7 @@ namespace http {
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eSwitchType switchtype = (_eSwitchType)atoi(result[0][2].c_str());
-			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3].c_str());
+			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3]);
 
 			if (
 				(dType != pTypeLighting1) &&
@@ -12968,14 +13741,15 @@ namespace http {
 				(dType != pTypeGeneralSwitch) &&
 				(dType != pTypeHomeConfort) &&
 				(dType != pTypeFS20) &&
-				(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
+				(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
+				(dType != pTypeHunter)
 				)
 				return; //no light device! we should not be here!
 
 			root["status"] = "OK";
 			root["title"] = "LightLog";
 
-			result = m_sql.safe_query("SELECT ROWID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
+			result = m_sql.safe_query("SELECT ROWID, nValue, sValue, User, Date FROM LightingLog WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
 			if (!result.empty())
 			{
 				std::map<std::string, std::string> selectorStatuses;
@@ -12984,21 +13758,17 @@ namespace http {
 				}
 
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
-					int nValue = atoi(sd[1].c_str());
-					std::string sValue = sd[2];
-
-					//skip 0-values in log for MediaPlayers
-					if ((switchtype == STYPE_Media) && (sValue == "0")) continue;
-
-					root["result"][ii]["idx"] = sd[0];
+					std::string lidx = sd.at(0);
+					int nValue = atoi(sd.at(1).c_str());
+					std::string sValue = sd.at(2);
+					std::string sUser = sd.at(3);
+					std::string ldate = sd.at(4);
 
 					//add light details
-					std::string lstatus = "";
-					std::string ldata = "";
+					std::string lstatus;
+					std::string ldata;
 					int llevel = 0;
 					bool bHaveDimmer = false;
 					bool bHaveSelector = false;
@@ -13006,9 +13776,9 @@ namespace http {
 					int maxDimLevel = 0;
 
 					if (switchtype == STYPE_Media) {
-						lstatus = sValue;
+						if (sValue == "0") continue; //skip 0-values in log for MediaPlayers
+							lstatus = sValue;
 						ldata = lstatus;
-
 					}
 					else if (switchtype == STYPE_Selector)
 					{
@@ -13031,17 +13801,56 @@ namespace http {
 
 					if (ii == 0)
 					{
+						//Log these parameters once
 						root["HaveDimmer"] = bHaveDimmer;
 						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
 						root["HaveGroupCmd"] = bHaveGroupCmd;
 						root["HaveSelector"] = bHaveSelector;
 					}
 
-					root["result"][ii]["Date"] = sd[3];
+					//Corrent names for certain switch types
+					switch (switchtype)
+					{
+					case STYPE_Contact:
+						ldata = (ldata == "On") ? "Open" : "Closed";
+						break;
+					case STYPE_DoorContact:
+						ldata = (ldata == "On") ? "Open" : "Closed";
+						break;
+					case STYPE_DoorLock:
+						ldata = (ldata == "On") ? "Locked" : "Unlocked";
+						break;
+					case STYPE_DoorLockInverted:
+						ldata = (ldata == "On") ? "Unlocked" : "Locked";
+						break;
+					case STYPE_Blinds:
+					case STYPE_VenetianBlindsEU:
+					case STYPE_VenetianBlindsUS:
+						ldata = (ldata == "On") ? "Closed" : "Open";
+						break;
+					case STYPE_BlindsInverted:
+						ldata = (ldata == "On") ? "Open" : "Closed";
+						break;
+					case STYPE_BlindsPercentage:
+						if ((ldata == "On") || (ldata == "Off"))
+						{
+							ldata = (ldata == "On") ? "Closed" : "Open";
+						}
+						break;
+					case STYPE_BlindsPercentageInverted:
+						if ((ldata == "On") || (ldata == "Off"))
+						{
+							ldata = (ldata == "On") ? "Open" : "Closed";
+						}
+						break;
+					}
+
+					root["result"][ii]["idx"] = lidx;
+					root["result"][ii]["Date"] = ldate;
 					root["result"][ii]["Data"] = ldata;
 					root["result"][ii]["Status"] = lstatus;
 					root["result"][ii]["Level"] = llevel;
-
+					root["result"][ii]["User"] = sUser;
 					ii++;
 				}
 			}
@@ -13050,7 +13859,7 @@ namespace http {
 		void CWebServer::RType_TextLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -13059,18 +13868,17 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "TextLog";
 
-			result = m_sql.safe_query("SELECT ROWID, sValue, Date FROM LightingLog WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date DESC",
+			result = m_sql.safe_query("SELECT ROWID, sValue, User, Date FROM LightingLog WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date DESC",
 				idx);
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Date"] = sd[2];
 					root["result"][ii]["Data"] = sd[1];
+					root["result"][ii]["User"] = sd[2];
+					root["result"][ii]["Date"] = sd[3];
 					ii++;
 				}
 			}
@@ -13079,7 +13887,7 @@ namespace http {
 		void CWebServer::RType_SceneLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -13088,18 +13896,17 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "SceneLog";
 
-			result = m_sql.safe_query("SELECT ROWID, nValue, Date FROM SceneLog WHERE (SceneRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
+			result = m_sql.safe_query("SELECT ROWID, nValue, User, Date FROM SceneLog WHERE (SceneRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
-					int nValue = atoi(sd[1].c_str());
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Date"] = sd[2];
+					int nValue = atoi(sd[1].c_str());
 					root["result"][ii]["Data"] = (nValue == 0) ? "Off" : "On";
+					root["result"][ii]["User"] = sd[2];
+					root["result"][ii]["Date"] = sd[3];
 					ii++;
 				}
 			}
@@ -13108,7 +13915,7 @@ namespace http {
 		void CWebServer::RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -13117,13 +13924,13 @@ namespace http {
 			char szTmp[300];
 
 			std::string sensor = request::findValue(&req, "sensor");
-			if (sensor == "")
+			if (sensor.empty())
 				return;
 			std::string srange = request::findValue(&req, "range");
-			if (srange == "")
+			if (srange.empty())
 				return;
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 
@@ -13156,12 +13963,12 @@ namespace http {
 			double AddjValue = atof(result[0][3].c_str());
 			double AddjMulti = atof(result[0][4].c_str());
 			double AddjValue2 = atof(result[0][5].c_str());
-			std::string sOptions = result[0][6].c_str();
+			std::string sOptions = result[0][6];
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 
 			float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
-			std::string dbasetable = "";
+			std::string dbasetable;
 			if (srange == "day") {
 				if (sensor == "temp")
 					dbasetable = "Temperature";
@@ -13246,10 +14053,8 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[4].substr(0, 16);
 							if (
 								(dType == pTypeRego6XXTemp) ||
@@ -13329,10 +14134,8 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["v"] = sd[0];
 							ii++;
@@ -13347,10 +14150,8 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["v"] = sd[0];
 							ii++;
@@ -13374,17 +14175,18 @@ namespace http {
 							long long lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
 							time_t lastTime = 0;
 
-							long long firstUsage1, firstUsage2, firstDeliv1, firstDeliv2;
+							long long firstUsage1 = 0;
+							long long firstUsage2 = 0;
+							long long firstDeliv1 = 0;
+							long long firstDeliv2 = 0;
 
 							int nMeterType = 0;
 							m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
 
 							int lastDay = 0;
 
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								if (nMeterType == 0)
 								{
 									long long actUsage1 = std::strtoll(sd[0].c_str(), nullptr, 10);
@@ -13523,10 +14325,8 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["co2"] = sd[0];
 								ii++;
@@ -13542,10 +14342,8 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["v"] = sd[0];
 								ii++;
@@ -13576,14 +14374,17 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								float fValue = float(atof(sd[0].c_str())) / vdiv;
 								if (metertype == 1)
-									fValue *= 0.6214f;
+								{
+									if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
+										fValue *= 0.3937007874015748f; //inches
+									else
+										fValue *= 0.6214f; //miles
+								}
 								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
 									sprintf(szTmp, "%.3f", fValue);
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
@@ -13604,10 +14405,8 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["v"] = sd[0];
 								ii++;
@@ -13623,10 +14422,8 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["lux"] = sd[0];
 								ii++;
@@ -13642,10 +14439,8 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f);
 								root["result"][ii]["v"] = szTmp;
@@ -13662,10 +14457,8 @@ namespace http {
 						if (!result.empty())
 						{
 							int ii = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["u"] = atof(sd[0].c_str()) / 10.0f;
 								ii++;
@@ -13692,10 +14485,8 @@ namespace http {
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
 								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
@@ -13766,10 +14557,8 @@ namespace http {
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
 								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
@@ -13834,6 +14623,7 @@ namespace http {
 						{
 							long long minValue = std::strtoll(result[0][0].c_str(), nullptr, 10);
 							long long maxValue = std::strtoll(result[0][1].c_str(), nullptr, 10);
+
 							if ((minValue == 0) && (maxValue == 0))
 							{
 								bHaveUsage = false;
@@ -13845,7 +14635,7 @@ namespace http {
 
 						int method = 0;
 						std::string sMethod = request::findValue(&req, "method");
-						if (sMethod.size() > 0)
+						if (!sMethod.empty())
 							method = atoi(sMethod.c_str());
 						if (bHaveUsage == false)
 							method = 0;
@@ -13862,17 +14652,14 @@ namespace http {
 						root["method"] = method;
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
-						float FirstValue = 0;
 						long long ulFirstRealValue = 0;
 						long long ulFirstValue = 0;
 						long long ulLastValue = 0;
-						std::string LastDateTime = "";
-						time_t lastTime = 0;
+						std::string LastDateTime;
 
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt!=result.end(); ++itt)
+							for (auto itt = result.begin(); itt != result.end(); ++itt)
 							{
 								std::vector<std::string> sd = *itt;
 
@@ -13880,6 +14667,11 @@ namespace http {
 								{
 									//bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
+									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10); //actual energy value
+
+									//if (actValue >= ulLastValue) ulLastValue = actValue; //Removed because usage energy may be negative if the production power is greater than usage power
+									ulLastValue = actValue;
+
 									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
 										if (bHaveFirstValue)
@@ -13909,7 +14701,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / divider);
 												break;
 											case MTYPE_COUNTER:
-												sprintf(szTmp, "%.1f", TotalValue);
+												sprintf(szTmp, "%g", TotalValue / divider);
 												break;
 											default:
 												strcpy(szTmp, "0");
@@ -13921,11 +14713,6 @@ namespace http {
 										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = false;
 									}
-									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10);
-
-									if (actValue >= ulLastValue)
-										ulLastValue = actValue;
-
 									if (!bHaveFirstValue)
 									{
 										ulFirstValue = ulLastValue;
@@ -13960,7 +14747,7 @@ namespace http {
 										sprintf(szTmp, "%.3f", TotalValue / divider);
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%.1f", TotalValue);
+										sprintf(szTmp, "%g", TotalValue / divider);
 										break;
 									default:
 										strcpy(szTmp, "0");
@@ -13983,12 +14770,10 @@ namespace http {
 
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
-						float FirstValue = 0;
-						unsigned long long ulFirstRealValue = 0;
 						unsigned long long ulFirstValue = 0;
 						unsigned long long ulLastValue = 0;
 
-						std::string LastDateTime = "";
+						std::string LastDateTime;
 						time_t lastTime = 0;
 
 						if (bIsManagedCounter) {
@@ -14002,15 +14787,13 @@ namespace http {
 
 						int method = 0;
 						std::string sMethod = request::findValue(&req, "method");
-						if (sMethod.size() > 0)
+						if (!sMethod.empty())
 							method = atoi(sMethod.c_str());
 
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								if (method == 0)
 								{
 									//bars / hour
@@ -14057,7 +14840,7 @@ namespace http {
 													sprintf(szTmp, "%.3f", TotalValue / divider);
 													break;
 												case MTYPE_COUNTER:
-													sprintf(szTmp, "%.1f", TotalValue);
+													sprintf(szTmp, "%g", TotalValue / divider);
 													break;
 												default:
 													strcpy(szTmp, "0");
@@ -14117,7 +14900,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / divider);
 												break;
 											case MTYPE_COUNTER:
-												sprintf(szTmp, "%.1f", TotalValue);
+												sprintf(szTmp, "%g", TotalValue / divider);
 												break;
 											default:
 												strcpy(szTmp, "0");
@@ -14161,7 +14944,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", TotalValue / divider);
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.1f", TotalValue);
+									sprintf(szTmp, "%g", TotalValue / divider);
 									break;
 								default:
 									strcpy(szTmp, "0");
@@ -14181,10 +14964,8 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["uvi"] = sd[0];
 							ii++;
@@ -14199,15 +14980,14 @@ namespace http {
 					float LastTotalPreviousHour = -1;
 
 					float LastValue = -1;
-					std::string LastDate = "";
+					std::string LastDate;
 
 					result = m_sql.safe_query("SELECT Total, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
 							float ActTotal = static_cast<float>(atof(sd[0].c_str()));
 							int Hour = atoi(sd[1].substr(11, 2).c_str());
 							if (Hour != LastHour)
@@ -14251,15 +15031,14 @@ namespace http {
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[3].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
 
 							int intSpeed = atoi(sd[1].c_str());
 							int intGust = atoi(sd[2].c_str());
+
 							if (m_sql.m_windunit != WINDUNIT_Beaufort)
 							{
 								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
@@ -14298,12 +15077,7 @@ namespace http {
 						for (idir = 0; idir < 360 + 1; idir++)
 							_directions[idir] = 0;
 						for (ii = 0; ii < 17; ii++)
-						{
-							for (int jj = 0; jj < 8; jj++)
-							{
-								wdirtabletemp[ii][jj] = 0;
-							}
-						}
+							std::fill(std::begin(wdirtabletemp[ii]), std::end(wdirtabletemp[ii]), 0);
 
 						if (m_sql.m_windunit == WINDUNIT_MS)
 						{
@@ -14366,10 +15140,8 @@ namespace http {
 							szLegendLabels[6] = "&gt; 10" + m_sql.m_windsign;
 						}
 
-
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
 							float fdirection = static_cast<float>(atof(sd[0].c_str()));
 							if (fdirection >= 360)
 								fdirection = 0;
@@ -14380,7 +15152,7 @@ namespace http {
 								gustOrg = speedOrg;
 							if (gustOrg == 0)
 								continue; //no direction if wind is still
-							float speed = speedOrg * m_sql.m_windscale;
+							//float speed = speedOrg * m_sql.m_windscale;
 							float gust = gustOrg * m_sql.m_windscale;
 							int bucket = int(fdirection / 22.5f);
 
@@ -14509,10 +15281,8 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							double mmval = atof(sd[0].c_str());
 							mmval *= AddjMulti;
@@ -14522,16 +15292,16 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					if (dSubType != sTypeRAINWU)
+					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 					{
 						result = m_sql.safe_query(
-							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 							idx, szDateEnd);
 					}
 					else
 					{
 						result = m_sql.safe_query(
-							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd);
 					}
 					if (!result.empty())
@@ -14540,16 +15310,16 @@ namespace http {
 
 						float total_min = static_cast<float>(atof(sd[0].c_str()));
 						float total_max = static_cast<float>(atof(sd[1].c_str()));
-						int rate = atoi(sd[2].c_str());
+						//int rate = atoi(sd[2].c_str());
 
 						double total_real = 0;
-						if (dSubType != sTypeRAINWU)
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
-							total_real = total_max - total_min;
+							total_real = total_max;
 						}
 						else
 						{
-							total_real = total_max;
+							total_real = total_max - total_min;
 						}
 						total_real *= AddjMulti;
 						sprintf(szTmp, "%.1f", total_real);
@@ -14582,9 +15352,8 @@ namespace http {
 						if (!result.empty())
 						{
 							bool bHaveDeliverd = false;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 								std::string szValueUsage1 = sd[0];
 								std::string szValueDeliv1 = sd[1];
@@ -14622,10 +15391,8 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								std::string szValue = sd[0];
 								switch (metertype)
@@ -14644,7 +15411,8 @@ namespace http {
 									szValue = szTmp;
 									break;
 								case MTYPE_COUNTER:
-									//value already set above!
+									sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+									szValue = szTmp;
 									break;
 								default:
 									szValue = "0";
@@ -14714,19 +15482,29 @@ namespace http {
 						}
 					}
 					else if (!bIsManagedCounter)
-					{
-						result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+					{	
+						// get the first value of the day
+						result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
 							idx, szDateEnd);
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
 
 							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = std::strtoull(sd[1].c_str(), nullptr, 10);
+							unsigned long long total_max = total_min;
 							unsigned long long total_real;
 
+							// get the last value of the day
+							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1",
+									idx, szDateEnd);
+							if (!result.empty())
+							{
+								std::vector<std::string> sd = result[0];
+								total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+							}
+
 							total_real = total_max - total_min;
-							sprintf(szTmp, "%llu", total_real);
+							sprintf(szTmp, "%lld", total_real);
 							std::string szValue = szTmp;
 							switch (metertype)
 							{
@@ -14744,7 +15522,8 @@ namespace http {
 								szValue = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								//value already set above!
+								sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+								szValue = szTmp;
 								break;
 							default:
 								szValue = "0";
@@ -14771,7 +15550,7 @@ namespace http {
 				int actMonth = atoi(sactmonth.c_str());
 				int actYear = atoi(sactyear.c_str());
 
-				if ((sactmonth != "") && (sactyear != ""))
+				if ((!sactmonth.empty()) && (!sactyear.empty()))
 				{
 					sprintf(szDateStart, "%04d-%02d-%02d", actYear, actMonth, 1);
 					sprintf(szDateStartPrev, "%04d-%02d-%02d", actYear - 1, actMonth, 1);
@@ -14784,7 +15563,7 @@ namespace http {
 					sprintf(szDateEnd, "%04d-%02d-%02d", actYear, actMonth, 1);
 					sprintf(szDateEndPrev, "%04d-%02d-%02d", actYear - 1, actMonth, 1);
 				}
-				else if (sactyear != "")
+				else if (!sactyear.empty())
 				{
 					sprintf(szDateStart, "%04d-%02d-%02d", actYear, 1, 1);
 					sprintf(szDateStartPrev, "%04d-%02d-%02d", actYear - 1, 1, 1);
@@ -14830,10 +15609,8 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[7].substr(0, 16);
 
 							if (
@@ -15006,10 +15783,8 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["resultprev"][iPrev]["d"] = sd[7].substr(0, 16);
 
 							if (
@@ -15098,10 +15873,8 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[3].substr(0, 16);
 							root["result"][ii]["v_min"] = sd[0];
 							root["result"][ii]["v_max"] = sd[1];
@@ -15132,10 +15905,8 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							root["result"][ii]["v_max"] = sd[1];
 							root["result"][ii]["v_min"] = sd[0];
@@ -15163,10 +15934,8 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["uvi"] = sd[0];
 							ii++;
@@ -15189,10 +15958,8 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 							root["resultprev"][iPrev]["uvi"] = sd[0];
 							iPrev++;
@@ -15207,10 +15974,8 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							double mmval = atof(sd[0].c_str());
 							mmval *= AddjMulti;
@@ -15220,16 +15985,16 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					if (dSubType != sTypeRAINWU)
+					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 					{
 						result = m_sql.safe_query(
-							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 							idx, szDateEnd);
 					}
 					else
 					{
 						result = m_sql.safe_query(
-							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd);
 					}
 					if (!result.empty())
@@ -15238,16 +16003,16 @@ namespace http {
 
 						float total_min = static_cast<float>(atof(sd[0].c_str()));
 						float total_max = static_cast<float>(atof(sd[1].c_str()));
-						int rate = atoi(sd[2].c_str());
+						//int rate = atoi(sd[2].c_str());
 
 						double total_real = 0;
-						if (dSubType != sTypeRAINWU)
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
-							total_real = total_max - total_min;
+							total_real = total_max;
 						}
 						else
 						{
-							total_real = total_max;
+							total_real = total_max - total_min;
 						}
 						total_real *= AddjMulti;
 						sprintf(szTmp, "%.1f", total_real);
@@ -15261,10 +16026,8 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["resultprev"][iPrev]["d"] = sd[2].substr(0, 16);
 							double mmval = atof(sd[0].c_str());
 							mmval *= AddjMulti;
@@ -15280,15 +16043,15 @@ namespace http {
 					root["ValueQuantity"] = options["ValueQuantity"];
 					root["ValueUnits"] = options["ValueUnits"];
 
-					int nValue = 0;
-					std::string sValue = "";
+					//int nValue = 0;
+					std::string sValue;
 
 					result = m_sql.safe_query("SELECT nValue, sValue FROM DeviceStatus WHERE (ID==%" PRIu64 ")",
 						idx);
 					if (!result.empty())
 					{
 						std::vector<std::string> sd = result[0];
-						nValue = atoi(sd[0].c_str());
+						//nValue = atoi(sd[0].c_str());
 						sValue = sd[1];
 					}
 
@@ -15306,26 +16069,19 @@ namespace http {
 						if (!result.empty())
 						{
 							bool bHaveDeliverd = false;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 
-								double counter_1 = atof(sd[5].c_str());
-								double counter_2 = atof(sd[6].c_str());
-								double counter_3 = atof(sd[7].c_str());
-								double counter_4 = atof(sd[8].c_str());
+								double counter_1 = std::stod(sd[5]);
+								double counter_2 = std::stod(sd[6]);
+								double counter_3 = std::stod(sd[7]);
+								double counter_4 = std::stod(sd[8]);
 
-								std::string szUsage1 = sd[0];
-								std::string szDeliv1 = sd[1];
-								std::string szUsage2 = sd[2];
-								std::string szDeliv2 = sd[3];
-
-								float fUsage_1 = static_cast<float>(atof(szUsage1.c_str()));
-								float fUsage_2 = static_cast<float>(atof(szUsage2.c_str()));
-								float fDeliv_1 = static_cast<float>(atof(szDeliv1.c_str()));
-								float fDeliv_2 = static_cast<float>(atof(szDeliv2.c_str()));
+								float fUsage_1 = std::stof(sd[0]);
+								float fUsage_2 = std::stof(sd[2]);
+								float fDeliv_1 = std::stof(sd[1]);
+								float fDeliv_2 = std::stof(sd[3]);
 
 								fDeliv_1 = (fDeliv_1 < 10) ? 0 : fDeliv_1;
 								fDeliv_2 = (fDeliv_2 < 10) ? 0 : fDeliv_2;
@@ -15397,21 +16153,14 @@ namespace http {
 						{
 							bool bHaveDeliverd = false;
 							iPrev = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["resultprev"][iPrev]["d"] = sd[4].substr(0, 16);
 
-								std::string szUsage1 = sd[0];
-								std::string szDeliv1 = sd[1];
-								std::string szUsage2 = sd[2];
-								std::string szDeliv2 = sd[3];
-
-								float fUsage_1 = static_cast<float>(atof(szUsage1.c_str()));
-								float fUsage_2 = static_cast<float>(atof(szUsage2.c_str()));
-								float fDeliv_1 = static_cast<float>(atof(szDeliv1.c_str()));
-								float fDeliv_2 = static_cast<float>(atof(szDeliv2.c_str()));
+								float fUsage_1 = std::stof(sd[0]);
+								float fUsage_2 = std::stof(sd[2]);
+								float fDeliv_1 = std::stof(sd[1]);
+								float fDeliv_2 = std::stof(sd[3]);
 
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;
@@ -15439,10 +16188,8 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 								root["result"][ii]["co2_min"] = sd[0];
 								root["result"][ii]["co2_max"] = sd[1];
@@ -15454,10 +16201,8 @@ namespace http {
 						if (!result.empty())
 						{
 							iPrev = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 								root["resultprev"][iPrev]["co2_max"] = sd[0];
 								iPrev++;
@@ -15475,10 +16220,8 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								root["result"][ii]["v_min"] = sd[0];
 								root["result"][ii]["v_max"] = sd[1];
@@ -15511,10 +16254,8 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								float fValue1 = float(atof(sd[0].c_str())) / vdiv;
 								float fValue2 = float(atof(sd[1].c_str())) / vdiv;
 								float fValue3 = float(atof(sd[2].c_str())) / vdiv;
@@ -15522,8 +16263,18 @@ namespace http {
 
 								if (metertype == 1)
 								{
-									fValue1 *= 0.6214f;
-									fValue2 *= 0.6214f;
+									if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
+									{
+										//Inches
+										fValue1 *= 0.3937007874015748f;
+										fValue2 *= 0.3937007874015748f;
+									}
+									else
+									{
+										//Miles
+										fValue1 *= 0.6214f;
+										fValue2 *= 0.6214f;
+									}
 								}
 								if (
 									((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
@@ -15564,10 +16315,8 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 								root["result"][ii]["lux_min"] = sd[0];
 								root["result"][ii]["lux_max"] = sd[1];
@@ -15585,10 +16334,8 @@ namespace http {
 							"SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f);
 								root["result"][ii]["v_min"] = szTmp;
@@ -15607,10 +16354,8 @@ namespace http {
 							"SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								root["result"][ii]["u_min"] = atof(sd[0].c_str()) / 10.0f;
 								root["result"][ii]["u_max"] = atof(sd[1].c_str()) / 10.0f;
@@ -15634,10 +16379,8 @@ namespace http {
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
 								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
@@ -15720,10 +16463,8 @@ namespace http {
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
 								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
@@ -15800,7 +16541,7 @@ namespace http {
 						}
 						else if (dType == pTypeENERGY)
 						{
-							size_t spos = sValue.find(";");
+							size_t spos = sValue.find(';');
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
@@ -15810,7 +16551,7 @@ namespace http {
 						}
 						else if ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
 						{
-							size_t spos = sValue.find(";");
+							size_t spos = sValue.find(';');
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
@@ -15881,10 +16622,8 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 
 								std::string szValue = sd[0];
@@ -15922,10 +16661,10 @@ namespace http {
 									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
+									sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.0f", AddjValue + ((fcounter - atof(szValue.c_str()))));
+										sprintf(szTmp, "%g", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
@@ -15939,10 +16678,8 @@ namespace http {
 						if (!result.empty())
 						{
 							iPrev = 0;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 
 								std::string szValue = sd[0];
@@ -15962,7 +16699,7 @@ namespace http {
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
+									sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								}
@@ -15972,12 +16709,12 @@ namespace http {
 					}
 					//add today (have to calculate it)
 
-					if ((sactmonth != "") || (sactyear != ""))
+					if ((!sactmonth.empty()) || (!sactyear.empty()))
 					{
 						struct tm loctime;
-						time_t now = mytime(NULL);
+						time_t now = mytime(nullptr);
 						localtime_r(&now, &loctime);
-						if ((sactmonth != "") && (sactyear != ""))
+						if ((!sactmonth.empty()) && (!sactyear.empty()))
 						{
 							bool bIsThisMonth = (atoi(sactyear.c_str()) == loctime.tm_year + 1900) && (atoi(sactmonth.c_str()) == loctime.tm_mon + 1);
 							if (bIsThisMonth)
@@ -15985,7 +16722,7 @@ namespace http {
 								sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
 							}
 						}
-						else if (sactyear != "")
+						else if (!sactyear.empty())
 						{
 							bool bIsThisYear = (atoi(sactyear.c_str()) == loctime.tm_year + 1900);
 							if (bIsThisYear)
@@ -16031,25 +16768,34 @@ namespace http {
 
 							root["result"][ii]["d"] = szDateEnd;
 
-							std::string szValue;
-
-							sprintf(szTmp, "%llu", total_real_usage_1);
-							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", (float)(total_real_usage_1 / divider));
 							root["result"][ii]["v"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_usage_2);
-							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", (float)(total_real_usage_2 / divider));
 							root["result"][ii]["v2"] = szTmp;
 
-							sprintf(szTmp, "%llu", total_real_deliv_1);
-							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", (float)(total_real_deliv_1 / divider));
 							root["result"][ii]["r1"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_deliv_2);
-							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", (float)(total_real_deliv_2 / divider));
 							root["result"][ii]["r2"] = szTmp;
+
+							sprintf(szTmp, "%.3f", (float)(total_min_usage_1 / divider));
+							root["result"][ii]["c1"] = szTmp;
+							sprintf(szTmp, "%.3f", (float)(total_min_usage_2 / divider));
+							root["result"][ii]["c3"] = szTmp;
+
+							if (total_max_deliv_2 != 0)
+							{
+								sprintf(szTmp, "%.3f", (float)(total_min_deliv_1 / divider));
+								root["result"][ii]["c2"] = szTmp;
+								sprintf(szTmp, "%.3f", (float)(total_min_deliv_2 / divider));
+								root["result"][ii]["c4"] = szTmp;
+							}
+							else
+							{
+								strcpy(szTmp, "0");
+								root["result"][ii]["c2"] = szTmp;
+								root["result"][ii]["c4"] = szTmp;
+							}
 
 							ii++;
 						}
@@ -16117,8 +16863,18 @@ namespace http {
 							float fValue2 = float(atof(result[0][1].c_str())) / vdiv;
 							if (metertype == 1)
 							{
-								fValue1 *= 0.6214f;
-								fValue2 *= 0.6214f;
+								if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
+								{
+									//Inches
+									fValue1 *= 0.3937007874015748f;
+									fValue2 *= 0.3937007874015748f;
+								}
+								else
+								{
+									//Miles
+									fValue1 *= 0.6214f;
+									fValue2 *= 0.6214f;
+								}
 							}
 
 							if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
@@ -16182,18 +16938,28 @@ namespace http {
 					}
 					else if (!bIsManagedCounter)
 					{
+						// get the first value
 						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							//"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							"SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
 							idx, szDateEnd);
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
 							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = std::strtoull(sd[1].c_str(), nullptr, 10);
+							unsigned long long total_max = total_min;
 							unsigned long long total_real;
+					
+							// Get the last value
+							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1",
+									idx, szDateEnd);
+							if (!result.empty()) {
+							std::vector<std::string> sd = result[0];
+								total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+							}
 
 							total_real = total_max - total_min;
-							sprintf(szTmp, "%llu", total_real);
+							sprintf(szTmp, "%lld", total_real);
 
 							root["result"][ii]["d"] = szDateEnd;
 
@@ -16232,9 +16998,9 @@ namespace http {
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.0f", atof(szValue.c_str()));
+								sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.0f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str()))));
+								sprintf(szTmp, "%g", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							}
@@ -16256,10 +17022,8 @@ namespace http {
 						dbasetable.c_str(), idx, szDateStart, szDateEnd);
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[5].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
 
@@ -16327,10 +17091,8 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["resultprev"][iPrev]["d"] = sd[5].substr(0, 16);
 							root["resultprev"][iPrev]["di"] = sd[0];
 
@@ -16435,10 +17197,8 @@ namespace http {
 						int ii = 0;
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[4];//.substr(0,16);
 								if (sendTemp)
 								{
@@ -16508,10 +17268,8 @@ namespace http {
 						int ii = 0;
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 								if (sendTemp)
 								{
@@ -16667,10 +17425,8 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["uvi"] = sd[0];
 							ii++;
@@ -16700,26 +17456,24 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							root["result"][ii]["mm"] = sd[0];
 							ii++;
 						}
 					}
 					//add today (have to calculate it)
-					if (dSubType != sTypeRAINWU)
+					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 					{
 						result = m_sql.safe_query(
-							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 							idx, szDateEnd.c_str());
 					}
 					else
 					{
 						result = m_sql.safe_query(
-							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd.c_str());
 					}
 					if (!result.empty())
@@ -16728,16 +17482,16 @@ namespace http {
 
 						float total_min = static_cast<float>(atof(sd[0].c_str()));
 						float total_max = static_cast<float>(atof(sd[1].c_str()));
-						int rate = atoi(sd[2].c_str());
+						//int rate = atoi(sd[2].c_str());
 
 						float total_real = 0;
-						if (dSubType != sTypeRAINWU)
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
-							total_real = total_max - total_min;
+							total_real = total_max;
 						}
 						else
 						{
-							total_real = total_max;
+							total_real = total_max - total_min;
 						}
 						sprintf(szTmp, "%.1f", total_real);
 						root["result"][ii]["d"] = szDateEnd;
@@ -16762,10 +17516,8 @@ namespace http {
 						if (!result.empty())
 						{
 							bool bHaveDeliverd = false;
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 
 								std::string szUsage1 = sd[0];
@@ -16795,10 +17547,8 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 						if (!result.empty())
 						{
-							for (const auto & itt : result)
+							for (const auto &sd : result)
 							{
-								std::vector<std::string> sd = itt;
-
 								std::string szValue = sd[0];
 								switch (metertype)
 								{
@@ -16856,7 +17606,7 @@ namespace http {
 
 							root["result"][ii]["d"] = szDateEnd;
 
-							sprintf(szTmp, "%llu", total_real_usage);
+							sprintf(szTmp, "%lld", total_real_usage);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
@@ -16872,19 +17622,30 @@ namespace http {
 						}
 					}
 					else if (!bIsManagedCounter)
-					{
+					{	// get the first value of the day
 						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							//"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							"SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
 							idx, szDateEnd.c_str());
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
 							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = std::strtoull(sd[1].c_str(), nullptr, 10);
+							unsigned long long total_max = total_min;
 							unsigned long long total_real;
 
+							// get the last value of the day
+							result = m_sql.safe_query(
+								"SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1",
+								idx, szDateEnd.c_str());
+							if (!result.empty())
+							{
+								std::vector<std::string> sd = result[0];
+								total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+							}
+
 							total_real = total_max - total_min;
-							sprintf(szTmp, "%llu", total_real);
+							sprintf(szTmp, "%lld", total_real);
 
 							std::string szValue = szTmp;
 							switch (metertype)
@@ -16924,10 +17685,8 @@ namespace http {
 						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 					if (!result.empty())
 					{
-						for (const auto & itt : result)
+						for (const auto &sd : result)
 						{
-							std::vector<std::string> sd = itt;
-
 							root["result"][ii]["d"] = sd[5].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
 
@@ -16990,7 +17749,8 @@ namespace http {
 		/**
 		 * Retrieve user session from store, without remote host.
 		 */
-		const WebEmStoredSession CWebServer::GetSession(const std::string & sessionId) {
+		WebEmStoredSession CWebServer::GetSession(const std::string &sessionId)
+		{
 			//_log.Log(LOG_STATUS, "SessionStore : get...");
 			WebEmStoredSession session;
 
@@ -17002,12 +17762,12 @@ namespace http {
 				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'",
 					sessionId.c_str());
 				if (!result.empty()) {
-					session.id = result[0][0].c_str();
+					session.id = result[0][0];
 					session.username = base64_decode(result[0][1]);
-					session.auth_token = result[0][2].c_str();
+					session.auth_token = result[0][2];
 
 					std::string sExpirationDate = result[0][3];
-					time_t now = mytime(NULL);
+					//time_t now = mytime(NULL);
 					struct tm tExpirationDate;
 					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate);
 					// RemoteHost is not used to restore the session
@@ -17089,5 +17849,5 @@ namespace http {
 			m_sql.safe_query("DELETE FROM UserSessions WHERE (Username=='%q') and (SessionID!='%q')", username.c_str(), exceptSession.id.c_str());
 		}
 
-	} //server
-}//http
+	} // namespace server
+} // namespace http

@@ -90,7 +90,7 @@ void CDenkoviSmartdenIPInOut::Do_Work()
 		poll_counter++;
 
 		if (poll_counter % 12*10 == 0) { //10 steps = 1 second (10 * 100)
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (poll_counter % poll_interval == 0)

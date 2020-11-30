@@ -10,7 +10,7 @@ define(['app', 'luxon'], function (app, luxon) {
         controller: DeviceOnOffChartController
     });
 
-    function DeviceOnOffChartController($element) {
+    function DeviceOnOffChartController($element, dzSettings) {
         var vm = this;
 
         vm.$onChanges = function (changes) {
@@ -34,7 +34,7 @@ define(['app', 'luxon'], function (app, luxon) {
 
             var firstIndex = min === undefined
                 ? data.findIndex(function (point) {
-                    return Date.parse(point.Date) >= min
+                    return DateTime.fromFormat(point.Date, dzSettings.serverDateFormat).valueOf() >= min
                 })
                 : 0;
 
@@ -52,11 +52,15 @@ define(['app', 'luxon'], function (app, luxon) {
             var chartData = [];
 
             getFilteredData(data).forEach(function (point, index, points) {
-                if (point.Status === 'On' || (point.Status.includes('Set Level') && point.Level > 0)) {
+                if (point.Status === 'On'
+                    || (point.Status.includes('Set Level') && point.Level > 0)
+                    || (point.Status.includes('Set Color'))
+                ) {
                     chartData.push({
-                        x: Date.parse(point.Date),
-                        x2: points[index + 1] ? Date.parse(points[index + 1].Date) : Date.now(),
-                        y: 0
+                        x: DateTime.fromFormat(point.Date, dzSettings.serverDateFormat).valueOf(),
+                        x2: points[index + 1] ? DateTime.fromFormat(points[index + 1].Date,  dzSettings.serverDateFormat).valueOf() : Date.now(),
+                        y: 0,
+                        d: point.Data
                     });
                 }
             });
@@ -64,6 +68,8 @@ define(['app', 'luxon'], function (app, luxon) {
             $element.highcharts({
                 chart: {
                     zoomType: 'x',
+                    panning: true,
+                    panKey: 'shift'
                 },
                 title: {
                     text: null
@@ -89,6 +95,20 @@ define(['app', 'luxon'], function (app, luxon) {
                 time: {
                     useUTC: false,
                 },
+				tooltip: {
+					formatter: function () {
+						var rStr = "";
+						rStr += '<span style="font-size: 10px">';
+						rStr += dateFormat(this.x, 'dddd, mmm dd yyyy HH:MM:ss');
+						rStr += ' - ';
+						rStr += dateFormat(this.x2, 'dddd, mmm dd yyyy HH:MM:ss');
+						rStr += '</span>';
+						rStr += '<br/>';
+						rStr += '<span style="color:' + this.point.color + '">\u25CF</span> ';
+						rStr += $.t(this.series.name) + ': ' + this.point.d;
+						return rStr;
+					}
+				},
                 series: [{
                     type: 'xrange',
                     name: 'Device Status',

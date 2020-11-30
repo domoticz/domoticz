@@ -1,24 +1,43 @@
+local scriptPath = ''
+package.path =
+	"../?.lua;../../../scripts/lua/?.lua;" ..
+	scriptPath .. '/?.lua;../device-adapters/?.lua;./data/?.lua;./generated_scripts/?.lua;' ..
+	package.path
+
+
 local _ = require('lodash')
 _G._ = require('lodash')
 
-local scriptPath = ''
-
-package.path = package.path ..
- 	";../?.lua;../../../scripts/lua/?.lua;" ..
-	scriptPath .. '/?.lua;../device-adapters/?.lua;./data/?.lua;./generated_scripts/?.lua'
-
 local Time = require('Time')
+
 local function keys(t)
-	local keys = _.keys(t)
-	return _.sortBy(keys, function(k)
-		return tostring(k)
-	end)
+	-- this doesn't work always for some weird Lodash reason/bug
+	--local keys = _.keys(t)
+	--return _.sortBy(keys, function(k)
+	--	return tostring(k)
+	--end)
+	--
+	local tkeys = {}
+	for k in pairs(t) do
+		table.insert(tkeys, tostring(k))
+	end
+	-- sort the keys
+	table.sort(tkeys)
+	return tkeys
 end
 
 local function values(t)
 	local values = _.values(t)
 	table.sort(values)
 	return values
+end
+
+local function size(t)
+	local i = 0
+	for k in pairs(t) do
+		i = i + 1
+	end
+	return i
 end
 
 describe('event helpers', function()
@@ -44,10 +63,10 @@ describe('event helpers', function()
 		_G.dataFolderPath= './data'
 		_G.generatedScriptsFolderPath = './generated_scripts'
 		_G.httpresponse = {
-            {
-	            callback='trigger1'
-            }
-        }
+			{
+				callback='trigger1'
+			}
+		}
 
 		_G.globalvariables = {
 			Security = 'sec',
@@ -57,13 +76,12 @@ describe('event helpers', function()
 			['Security'] = '',
 			['dzVents_log_level'] = 1,
 			['domoticz_listening_port'] = '8181',
-			['currentTime'] = '2017-08-17 12:13:14.123',
-            ['domoticz_title'] = "dzVents test",
+			['currentTime'] = '2017-08-17 12:13:14.123'
 		}
 
-        _G.securityupdates = {
-            'Armed Away'
-        }
+		_G.securityupdates = {
+			'Armed Away'
+		}
 
 		EventHelpers = require('EventHelpers')
 	end)
@@ -82,6 +100,15 @@ describe('event helpers', function()
 			['SECURITY_DISARMED'] = 'Disarmed',
 			['SECURITY_ARMEDAWAY'] = 'Armed Away',
 			['SECURITY_ARMEDHOME'] = 'Armed Home',
+			['BASETYPE_DEVICE'] = 'device',
+			['BASETYPE_SCENE'] = 'scene',
+			['BASETYPE_GROUP'] = 'group',
+			['BASETYPE_VARIABLE'] = 'variable',
+			['BASETYPE_SECURITY'] = 'security',
+			['BASETYPE_TIMER'] = 'timer',
+			['BASETYPE_HTTP_RESPONSE'] = 'httpResponse',
+			['BASETYPE_SYSTEM_EVENT'] = 'domoticz',
+			['BASETYPE_HARDWARE'] = 'hardware',
 			['settings'] = {},
 			['radixSeparator'] = '.',
 			['security'] = 'Armed Away',
@@ -91,7 +118,7 @@ describe('event helpers', function()
 			['devices'] = function(id)
 				return devs[id]
 			end,
-            ['notify'] = function() end
+			['notify'] = function() end
 		}
 
 		helpers = EventHelpers(domoticz)
@@ -165,55 +192,57 @@ describe('event helpers', function()
 				['aa*'] = { 'c1', 'c2', 'c3' },
 				['a*'] =  { 'd1', 'd2', 'd3' },
 				['aaa*'] = { 'e1', 'e2', 'e3' },
-                ['*xx*yy*'] = { 'f1', 'f2'},
-                ['h*'] = { 'h1','h2'},
-                ['*g'] = { 'g1', 'g2'},
-                ['*i*'] = {'i1', 'i2'}
+				['*xx*yy*'] = { 'f1', 'f2'},
+				['h*'] = { 'h1','h2'},
+				['*g'] = { 'g1', 'g2'},
+				['*i*'] = {'i1', 'i2'}
 			}
-            local scripts
+			local scripts
 
 			local scripts = helpers.findScriptForTarget('aaa', modules)
 			assert.are.same({ 'a1', 'a2', 'a3', 'c1', 'c2', 'c3', 'd1', 'd2', 'd3', 'e1', 'e2', 'e3' }, values(scripts))
 
-            scripts = helpers.findScriptForTarget('tttxxrrrryyuuuu', modules)
-            assert.are.same({ 'f1', 'f2' }, values(scripts))
+			scripts = helpers.findScriptForTarget('tttxxrrrryyuuuu', modules)
+			assert.are.same({ 'f1', 'f2' }, values(scripts))
 
-            scripts = helpers.findScriptForTarget('tttxxrrrryy', modules)
-            assert.are.same({ 'f1', 'f2' }, values(scripts))
+			scripts = helpers.findScriptForTarget('tttxxrrrryy', modules)
+			assert.are.same({ 'f1', 'f2' }, values(scripts))
 
-            scripts = helpers.findScriptForTarget('hzzz', modules)
-            assert.are.same({ 'h1', 'h2' }, values(scripts))
+			scripts = helpers.findScriptForTarget('hzzz', modules)
+			assert.are.same({ 'h1', 'h2' }, values(scripts))
 
-            scripts = helpers.findScriptForTarget('h', modules)
-            assert.are.same({ 'h1', 'h2' }, values(scripts))
+			scripts = helpers.findScriptForTarget('h', modules)
+			assert.are.same({ 'h1', 'h2' }, values(scripts))
 
-            scripts = helpers.findScriptForTarget('xxhzzz', modules)
-            assert.are.same({}, values(scripts))
+			scripts = helpers.findScriptForTarget('xxhzzz', modules)
+			assert.are.same({}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('xxxg', modules)
-            assert.are.same({'g1', 'g2'}, values(scripts))
+			scripts = helpers.findScriptForTarget('xxxg', modules)
+			assert.are.same({'g1', 'g2'}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('xxxgwww', modules)
-            assert.are.same({}, values(scripts))
+			scripts = helpers.findScriptForTarget('xxxgwww', modules)
+			assert.are.same({}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('qqqiwww', modules)
-            assert.are.same({'i1', 'i2'}, values(scripts))
+			scripts = helpers.findScriptForTarget('qqqiwww', modules)
+			assert.are.same({'i1', 'i2'}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('qqqi', modules)
-            assert.are.same({'i1', 'i2'}, values(scripts))
+			scripts = helpers.findScriptForTarget('qqqi', modules)
+			assert.are.same({'i1', 'i2'}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('iwww', modules)
-            assert.are.same({'i1', 'i2'}, values(scripts))
+			scripts = helpers.findScriptForTarget('iwww', modules)
+			assert.are.same({'i1', 'i2'}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('bbb', modules)
-            assert.are.same({'b1', 'b2', 'b3'}, values(scripts))
+			scripts = helpers.findScriptForTarget('bbb', modules)
+			assert.are.same({'b1', 'b2', 'b3'}, values(scripts))
 
 		end)
 
 		it('should return scripts for all triggers', function()
 			local modules = helpers.getEventBindings('device')
+
 			assert.are.same({
-				8,
+				'*(test)*',
+				'8',
 				'deviceGork',
 				'loggingstuff',
 				'mySwitch',
@@ -225,8 +254,9 @@ describe('event helpers', function()
 				'onscript7b',
 				'some*device',
 				'somedevice',
-				'wild*' }, keys(modules))
-			assert.are.same(13, _.size(modules))
+				'wild*'
+				}, keys(modules))
+			assert.are.same(14, size(modules))
 		end)
 
 		it('should detect erroneous modules', function()
@@ -239,7 +269,7 @@ describe('event helpers', function()
 
 			local modules, errModules = helpers.getEventBindings()
 			assert.are.same(true, err)
-			assert.are.same(1, _.size(errModules))
+			assert.are.same(1, size(errModules))
 			assert.are.same({
 				'script_error'
 			}, values(errModules))
@@ -273,9 +303,9 @@ describe('event helpers', function()
 
 		it('should return timer scripts', function()
 			--on = {'timer'} -- every minute
-			local modules = helpers.getTimerHandlers()
+			local modules = helpers.getEventBindings('timer')
 
-			assert.are.same(4, _.size(modules))
+			assert.are.same(4, size(modules))
 			local names = _.pluck(modules, {'name'})
 			table.sort(names)
 
@@ -284,7 +314,6 @@ describe('event helpers', function()
 				'script_timer_function',
 				"script_timer_single",
 				"script_timer_table" }, names)
-
 		end)
 
 		it('should return variable script', function()
@@ -307,7 +336,6 @@ describe('event helpers', function()
 			assert.are.same({ 'trigger1', 'trigger2',  }, keys(modules))
 		end)
 
-
 		it('should return an array of internal scripts for the same trigger', function()
 
 			local modules = helpers.getEventBindings()
@@ -326,7 +354,8 @@ describe('event helpers', function()
 		it('should return internal and external scripts for all triggers', function()
 			local modules = helpers.getEventBindings()
 			assert.are.same({
-				8,
+				'*(test)*',
+				'8',
 				'deviceGork',
 				'loggingstuff',
 				'mySwitch',
@@ -338,8 +367,9 @@ describe('event helpers', function()
 				'onscript7b',
 				'some*device',
 				'somedevice',
-				'wild*' }, keys(modules))
-			assert.are.same(13, _.size(modules))
+				'wild*',
+				 }, keys(modules))
+			assert.are.same(14, size(modules))
 		end)
 
 		it('should return scripts for a device that has time-constrained triggers', function()
@@ -357,7 +387,6 @@ describe('event helpers', function()
 			modules = helpers.getEventBindings('device', Time('2017-06-08 02:01:00'))
 			scripts = modules['deviceZork']
 			assert.is_nil(scripts)
-
 
 			modules = helpers.getEventBindings('device', Time('2017-06-04 02:01:00'))
 			scripts = modules['deviceDork']
@@ -396,7 +425,7 @@ describe('event helpers', function()
 			helpers.dumpCommandArray(array)
 			assert.is_same({
 				"Commands sent to Domoticz: ",
-                "- a = 1",
+				"- a = 1",
 				"- b = 2",
 				"====================================================="
 			}, messages)
@@ -404,7 +433,11 @@ describe('event helpers', function()
 
 		it('should have proper settings', function()
 			assert.are.same('http://127.0.0.1:8181', helpers.settings['Domoticz url'])
+			assert.are.same('http://127.0.0.1:8181', helpers.settings.url)
+		end)
 
+		it('should have proper location settings', function()
+			assert.are.same('Domoticz', helpers.settings.location.name)
 		end)
 
 		it('should add global helpers to the domoticz object', function()
@@ -432,7 +465,8 @@ describe('event helpers', function()
 
 			local res = helpers.callEventHandler(internal,
 				{
-					name = 'device'
+					name = 'device',
+					baseType = 'device'
 				})
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function
@@ -440,7 +474,8 @@ describe('event helpers', function()
 
 			res = helpers.callEventHandler(script1,
 				{
-					name = 'device'
+					name = 'device',
+					baseType = 'device'
 				})
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function
@@ -453,9 +488,9 @@ describe('event helpers', function()
 			local myVar1 = bindings['myVar1'][1]
 
 			local res = helpers.callEventHandler(myVar1,
-				nil,
 				{
 					name = 'myVar1',
+					baseType = 'variable',
 					set = function()
 					end
 				})
@@ -469,9 +504,10 @@ describe('event helpers', function()
 			local bindings = helpers.getEventBindings('httpResponse')
 			local trigger1 = bindings['trigger1'][1]
 
-			local res = helpers.callEventHandler(trigger1, nil, nil, nil, nil, {
+			local res = helpers.callEventHandler(trigger1, {
 				callback = 'trigger1',
-                statusCode = 200
+                statusCode = 200,
+				baseType = 'httpResponse'
 			})
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function
@@ -499,18 +535,12 @@ describe('event helpers', function()
 			}, modulesFound)
 
 
-			local res = helpers.callEventHandler(scriptSecurity,
-				nil,
-				nil,
-				'Armed Away')
+			local res = helpers.callEventHandler(scriptSecurity, { baseType = 'security', trigger = 'Armed Away' })
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function
 			assert.is_same('script_security: true Armed Away', res)
 
-			local res = helpers.callEventHandler(scriptSecurityGrouped,
-				nil,
-				nil,
-				'Armed Home')
+			local res = helpers.callEventHandler(scriptSecurityGrouped, { baseType = 'security', trigger = 'Armed Home' })
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function
 			assert.is_same('script_security: Armed Away Armed Away', res)
@@ -586,6 +616,7 @@ describe('event helpers', function()
 				['onscript1'] = getDummy(1, 'onscript1', 'state1', 10),
 				['onscript4'] = getDummy(2, 'onscript4', 'state2', 20),
 				['wildcard'] = getDummy(3, 'wildcard', 'state3', 30),
+				['(test)'] = getDummy(3, 'blabla (test) blabla', 'state3', 30),
 				['someweirddevice'] = getDummy(4, 'someweirddevice', 'state4', 40),
 				--['8device'] = getDummy(8, '8device', 'state64', 404),
 				-- ['on_script_5_Temperature'] = 50,
@@ -632,11 +663,12 @@ describe('event helpers', function()
 				"script6",
 				"script_combined",
 				"script_wildcard1",
-				"script_wildcard2"
+				"script_wildcard2",
+				"script_wildcard3",
 			}, scripts)
 
-
 			assert.is_same({
+				"blabla (test) blabla",
 				"mydevice",
 				"onscript1",
 				"onscript4",
@@ -694,11 +726,11 @@ describe('event helpers', function()
 				dumped = true
 			end
 
-			helpers.handleEvents = function(_scripts, __, ___, ____, _scenegroup)
+			helpers.handleEvents = function(_scripts, subject)
 				_.forEach(_scripts, function(s)
 					table.insert(scripts, s.name)
 				end)
-				table.insert(scenegroups, _scenegroup.name)
+				table.insert(scenegroups, subject.name)
 			end
 			local res = helpers.dispatchSceneGroupEventsToScripts({
 				['changedScenes'] = function()
@@ -814,11 +846,11 @@ describe('event helpers', function()
 				dumped = true
 			end
 
-			helpers.handleEvents = function(_scripts, _device, _variable)
+			helpers.handleEvents = function(_scripts, subject)
 				_.forEach(_scripts, function(s)
 					table.insert(scripts, s.name)
 				end)
-				table.insert(variables, _variable.name)
+				table.insert(variables, subject.name)
 			end
 			local res = helpers.dispatchVariableEventsToScripts({
 				['changedVariables'] = function()
@@ -834,7 +866,6 @@ describe('event helpers', function()
 				'script_variable2',
 				'script_variable3'
 			}, scripts)
-
 
 			assert.is_same({
 				"myVar1",
@@ -854,11 +885,11 @@ describe('event helpers', function()
 				dumped = true
 			end
 
-			helpers.handleEvents = function(_scripts, _device, _variable, _security, _scenegroup, _httpResponse)
+			helpers.handleEvents = function(_scripts, subject)
 				_.forEach(_scripts, function(s)
 					table.insert(scripts, s.name)
 				end)
-				table.insert(responses, _httpResponse.callback)
+				table.insert(responses, subject.callback)
 			end
 			local res = helpers.dispatchHTTPResponseEventsToScripts({})
 

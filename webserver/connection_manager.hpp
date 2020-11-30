@@ -25,10 +25,10 @@ class connection_manager
 {
 public:
   /// Add the specified connection to the manager and start it.
-  void start(const connection_ptr c);
+  void start(const connection_ptr &c);
 
   /// Stop the specified connection.
-  void stop(const connection_ptr c);
+  void stop(const connection_ptr &c);
 
   /// Stop all connections.
   void stop_all();

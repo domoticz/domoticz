@@ -4,23 +4,24 @@
 
 class CAccuWeather : public CDomoticzHardwareBase
 {
-public:
-	CAccuWeather(const int ID, const std::string &APIKey, const std::string &Location);
-	~CAccuWeather(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+      public:
+	CAccuWeather(int ID, const std::string &APIKey, const std::string &Location);
+	~CAccuWeather() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	std::string GetForecastURL();
-private:
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
 	std::string GetLocationKey();
-private:
+
+      private:
 	std::string m_APIKey;
 	std::string m_Location;
 	std::string m_LocationKey;
 	std::string m_ForecastURL;
 	std::shared_ptr<std::thread> m_thread;
 };
-

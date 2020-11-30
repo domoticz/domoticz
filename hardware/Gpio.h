@@ -32,30 +32,32 @@ Source: http://wiringpi.com
 
 class CGpio : public CDomoticzHardwareBase
 {
-public:
-	explicit CGpio(const int ID, const int debounce, const int period, const int pollinterval);
-	~CGpio();
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	static CGpioPin* GetPPinById(int id);
+      public:
+	explicit CGpio(int ID, int debounce, int period, int pollinterval);
+	~CGpio() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	static CGpioPin *GetPPinById(int id);
 	static std::vector<CGpioPin> GetPinList();
-private:
-	int GPIORead(int pin, const char* param);
+
+      private:
+	int GPIORead(int pin, const char *param);
 	int GPIOReadFd(int fd);
 	int GPIOWrite(int pin, bool value);
-	int GetReadResult(int bytecount, char* value_str);
-	int waitForInterrupt(int fd, const int mS);
-	int SetSchedPriority(const int s, const int pri, const int x);
+	int GetReadResult(int bytecount, char *value_str);
+	int waitForInterrupt(int fd, int mS);
+	int SetSchedPriority(int s, int pri, int x);
 	bool InitPins();
 	bool StartHardware() override;
 	bool StopHardware() override;
-	//bool CreateDomoticzDevices();
+	// bool CreateDomoticzDevices();
 	void InterruptHandler();
 	void Poller();
 	void UpdateDeviceStates(bool forceUpdate);
 	void UpdateStartup();
-	void UpdateSwitch(const int gpioId, const bool value);
+	void UpdateSwitch(int gpioId, bool value);
 	void GetSchedPriority(int *scheduler, int *priority);
-private:
+
+      private:
 	uint32_t m_period;
 	uint32_t m_debounce;
 	uint32_t m_pollinterval;

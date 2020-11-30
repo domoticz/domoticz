@@ -1,9 +1,9 @@
 <section ng-if="vm.isSelector === false">
     <h2>{{:: 'Today' | translate }}</h2>
-    <device-on-off-chart class="device-log-chart device-log-chart_sm" log="vm.log" view="daily" />
+    <device-on-off-chart class="device-log-chart device-log-chart_sm" log="vm.log" view="daily"></device-on-off-chart>
 
     <h2>{{:: 'Last 7 days' | translate }}</h2>
-    <device-on-off-chart class="device-log-chart device-log-chart_sm" log="vm.log" view="weekly" />
+    <device-on-off-chart class="device-log-chart device-log-chart_sm" log="vm.log" view="weekly"></device-on-off-chart>
 </section>
 
 <h2>{{:: 'Text log' | translate }}</h2>
@@ -20,4 +20,4 @@
 
 <br>
 
-<device-level-chart ng-if="vm.isDimmer" class="device-log-chart device-log-chart_md" log="vm.log"/>
+<device-level-chart ng-if="vm.isDimmer" class="device-log-chart device-log-chart_md" log="vm.log"></device-level-chart>

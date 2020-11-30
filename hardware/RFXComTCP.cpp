@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "RFXComTCP.h"
 #include "../main/Logger.h"
-//#include <boost/bind.hpp>
-//#include <boost/asio.hpp>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
@@ -16,10 +14,6 @@ RFXComTCP::RFXComTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_usIPPort=usIPPort;
 	m_AsyncType = AsyncType;
 	m_bReceiverStarted = false;
-}
-
-RFXComTCP::~RFXComTCP(void)
-{
 }
 
 bool RFXComTCP::StartHardware()
@@ -72,7 +66,7 @@ void RFXComTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
@@ -84,11 +78,6 @@ void RFXComTCP::OnData(const unsigned char *pData, size_t length)
 {
 	std::lock_guard<std::mutex> l(readQueueMutex);
 	onInternalMessage(pData, length);
-}
-
-void RFXComTCP::OnError(const std::exception e)
-{
-	Log(LOG_ERROR, "Error: %s", e.what());
 }
 
 void RFXComTCP::OnError(const boost::system::error_code& error)

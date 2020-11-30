@@ -70,12 +70,12 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     usage1: {
                         usage: parseFloat(item.v),
                         cost: parseFloat(item.v) * costs.CostEnergy / 10000,
-                        counter: parseFloat(item.c1)
+                        counter: parseFloat(item.c1) || 0
                     },
                     usage2: {
                         usage: parseFloat(item.v2),
                         cost: parseFloat(item.v2) * costs.CostEnergyT2 / 10000,
-                        counter: parseFloat(item.c3)
+                        counter: parseFloat(item.c3) || 0
                     },
                 };
 
@@ -83,13 +83,13 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     dayRecord.return1 = {
                         usage: parseFloat(item.r1),
                         cost: parseFloat(item.r1) * costs.CostEnergyR1 / 10000,
-                        counter: parseFloat(item.c2)
+                        counter: parseFloat(item.c2) || 0
                     };
 
                     dayRecord.return2 = {
                         usage: parseFloat(item.r2),
                         cost: parseFloat(item.r2) * costs.CostEnergyR2 / 10000,
-                        counter: parseFloat(item.c4)
+                        counter: parseFloat(item.c4) || 0
                     };
 
                     dayRecord.totalReturn = dayRecord.return1.usage + dayRecord.return2.usage;

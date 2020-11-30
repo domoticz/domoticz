@@ -43,10 +43,6 @@ m_Password(CURLEncode::URLEncode(password))
 	m_bIsTempDevice = false;
 }
 
-KMTronicTCP::~KMTronicTCP(void)
-{
-}
-
 void KMTronicTCP::Init()
 {
 }
@@ -84,7 +80,7 @@ void KMTronicTCP::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		int iPollInterval = KMTRONIC_POLL_INTERVAL;
@@ -100,7 +96,7 @@ void KMTronicTCP::Do_Work()
 	_log.Log(LOG_STATUS, "KMTronic: TCP/IP Worker stopped...");
 }
 
-bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	if (m_bIsTempDevice)
 		return false;
@@ -149,7 +145,7 @@ bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-bool KMTronicTCP::WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn)
+bool KMTronicTCP::WriteInt(const unsigned char * /*data*/, const size_t /*len*/, const bool /*bWaitForReturn*/)
 {
 	return true;
 }
@@ -233,7 +229,7 @@ void KMTronicTCP::ParseRelays(const std::string &sResult)
 				std::stringstream sstr;
 				int iRelay = (jj + 1);
 				sstr << "Relay " << iRelay;
-				SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
+				SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str(), m_Name);
 				if (iRelay > m_TotRelais)
 					m_TotRelais = iRelay;
 			}
@@ -261,7 +257,7 @@ void KMTronicTCP::ParseTemps(const std::string &sResult)
 	{
 		tmpstr = stdstring_trim(results[ii]);
 
-		int pos1;
+		size_t pos1;
 		pos1 = tmpstr.find("<name>");
 		if (pos1 != std::string::npos)
 		{

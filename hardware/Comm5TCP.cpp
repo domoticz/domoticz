@@ -17,12 +17,12 @@
 
 */
 
-static inline std::string &rtrim(std::string &s) {
+static inline std::string &c5_rtrim(std::string &s) {
 	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
 	return s;
 }
 
-static inline std::vector<std::string> tokenize(const std::string &s) {
+static inline std::vector<std::string> c5_tokenize(const std::string &s) {
 	std::vector<std::string> tokens;
 	std::istringstream iss(s);
 	std::copy(std::istream_iterator<std::string>(iss),
@@ -31,7 +31,7 @@ static inline std::vector<std::string> tokenize(const std::string &s) {
 	return tokens;
 }
 
-static inline bool startsWith(const std::string &haystack, const std::string &needle) {
+static inline bool c5_startsWith(const std::string &haystack, const std::string &needle) {
 	return needle.length() <= haystack.length()
 		&& std::equal(needle.begin(), needle.end(), haystack.begin());
 }
@@ -103,7 +103,7 @@ void Comm5TCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 4 == 0) {
 			querySensorState();
@@ -116,15 +116,15 @@ void Comm5TCP::Do_Work()
 
 void Comm5TCP::processSensorData(const std::string& line)
 {
-	std::vector<std::string> tokens = tokenize(line);
+	std::vector<std::string> tokens = c5_tokenize(line);
 	if (tokens.size() < 2)
 		return;
 
-	unsigned int sensorbitfield = ::strtol(tokens[1].c_str(), 0, 16);
+	unsigned int sensorbitfield = ::strtol(tokens[1].c_str(), nullptr, 16);
 	for (int i = 0; i < 16; ++i) {
 		bool on = (sensorbitfield & (1 << i)) != 0 ? true : false;
 		if (((lastKnownSensorState & (1 << i)) ^ (sensorbitfield & (1 << i))) || initSensorData) {
-			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + std::to_string(i + 1));
+			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + std::to_string(i + 1), m_Name);
 		}
 	}
 	lastKnownSensorState = sensorbitfield;
@@ -139,19 +139,19 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 	std::string line;
 
 	while (std::getline(stream, line, '\n')) {
-		line = rtrim(line);
-		if (startsWith(line, "211")) {
-			std::vector<std::string> tokens = tokenize(line);
+		line = c5_rtrim(line);
+		if (c5_startsWith(line, "211")) {
+			std::vector<std::string> tokens = c5_tokenize(line);
 			if (tokens.size() < 2)
 				break;
 
-			unsigned int relaybitfield = ::strtol(tokens[1].c_str(), 0, 16);
+			unsigned int relaybitfield = ::strtol(tokens[1].c_str(), nullptr, 16);
 			for (int i = 0; i < 16; ++i) {
 				bool on = (relaybitfield & (1 << i)) != 0 ? true : false;
-				SendSwitch(i + 1, 1, 255, on, 0, "Relay " + std::to_string(i + 1));
+				SendSwitch(i + 1, 1, 255, on, 0, "Relay " + std::to_string(i + 1), m_Name);
 			}
 		}
-		else if (startsWith(line, "210") && (!startsWith(line, "210 OK"))) {
+		else if (c5_startsWith(line, "210") && (!c5_startsWith(line, "210 OK"))) {
 			processSensorData(line);
 		}
 	}
@@ -207,11 +207,6 @@ bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char /*length*/
 void Comm5TCP::OnData(const unsigned char *pData, size_t length)
 {
 	ParseData(pData, length);
-}
-
-void Comm5TCP::OnError(const std::exception e)
-{
-	Log(LOG_ERROR, "Error: %s", e.what());
 }
 
 void Comm5TCP::OnError(const boost::system::error_code& error)

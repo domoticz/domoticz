@@ -10,22 +10,15 @@ CBaroForecastCalculator::CBaroForecastCalculator()
 	Init();
 }
 
-CBaroForecastCalculator::~CBaroForecastCalculator()
-{
-}
-
 void CBaroForecastCalculator::Init()
 {
 	m_baro_minuteCount = 0;
 	m_dP_dt = 0; // Pressure delta over time
-	m_last_forecast = wsbaroforcast_unknown;
+	m_last_forecast = wsbaroforecast_unknown;
 	mytime(&m_BaroCalcLastTime);
 	for (int ii = 0; ii < 9; ii++)
 	{
-		for (int jj = 0; jj < 6; jj++)
-		{
-			m_pressureSamples[ii][jj] = 0;
-		}
+		std::fill(std::begin(m_pressureSamples[ii]), std::end(m_pressureSamples[ii]), 0);
 		m_pressureAvg[ii] = 0;
 	}
 }
@@ -155,27 +148,24 @@ int CBaroForecastCalculator::CalculateBaroForecast(const double pressure)
 	m_baro_minuteCount++;
 
 	if (m_baro_minuteCount < 36) //if time is less than 35 min
-		return wsbaroforcast_unknown; // Unknown, more time needed
-	else if (m_dP_dt < (-0.25))
-		return wsbaroforcast_heavy_rain; // Quickly falling LP, Thunderstorm, not stable
-	else if (m_dP_dt > 0.25)
-		return wsbaroforcast_unstable; // Quickly rising HP, not stable weather
-	else if ((m_dP_dt > (-0.25)) && (m_dP_dt < (-0.05)))
-		return wsbaroforcast_rain; // Slowly falling Low Pressure System, stable rainy weather
-	else if ((m_dP_dt > 0.05) && (m_dP_dt < 0.25))
-		return wsbaroforcast_sunny; // Slowly rising HP stable good weather
-	else if ((m_dP_dt > (-0.05)) && (m_dP_dt < 0.05))
-		return wsbaroforcast_stable; // Stable weather
-	else
-	{
-		if (pressure <= 980)
-			return  wsbaroforcast_heavy_rain;
-		else if (pressure <= 995)
-			return wsbaroforcast_rain;
-		else if (pressure >= 1029)
-			return wsbaroforcast_sunny;
-	}
-	return wsbaroforcast_unknown;
+		return wsbaroforecast_unknown; // Unknown, more time needed
+	if (m_dP_dt < (-0.25))
+		return wsbaroforecast_heavy_rain; // Quickly falling LP, Thunderstorm, not stable
+	if (m_dP_dt > 0.25)
+		return wsbaroforecast_unstable; // Quickly rising HP, not stable weather
+	if ((m_dP_dt > (-0.25)) && (m_dP_dt < (-0.05)))
+		return wsbaroforecast_rain; // Slowly falling Low Pressure System, stable rainy weather
+	if ((m_dP_dt > 0.05) && (m_dP_dt < 0.25))
+		return wsbaroforecast_sunny; // Slowly rising HP stable good weather
+	if ((m_dP_dt > (-0.05)) && (m_dP_dt < 0.05))
+		return wsbaroforecast_stable; // Stable weather
+	if (pressure <= 980)
+		return wsbaroforecast_heavy_rain;
+	if (pressure <= 995)
+		return wsbaroforecast_rain;
+	if (pressure >= 1029)
+		return wsbaroforecast_sunny;
+	return wsbaroforecast_unknown;
 }
 
 int CBaroForecastCalculator::CalculateBaroForecast(const float temp, const double pressure)
@@ -184,11 +174,11 @@ int CBaroForecastCalculator::CalculateBaroForecast(const float temp, const doubl
 	if (temp < 0)
 	{
 		if (
-			(forecast == wsbaroforcast_rain) ||
-			(forecast == wsbaroforcast_heavy_rain)
+			(forecast == wsbaroforecast_rain) ||
+			(forecast == wsbaroforecast_heavy_rain)
 			)
 		{
-			forecast = wsbaroforcast_snow;
+			forecast = wsbaroforecast_snow;
 		}
 	}
 	return forecast;

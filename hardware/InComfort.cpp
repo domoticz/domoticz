@@ -4,12 +4,12 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json_helper.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -37,10 +37,6 @@ m_szIPAddress(IPAddress)
 	m_LastIO = 0;
 
 	Init();
-}
-
-CInComfort::~CInComfort(void)
-{
 }
 
 void CInComfort::Init()
@@ -92,13 +88,13 @@ void CInComfort::Do_Work()
 	_log.Log(LOG_STATUS, "InComfort: Worker stopped...");
 }
 
-bool CInComfort::WriteToHardware(const char *pdata, const unsigned char length)
+bool CInComfort::WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/)
 {
 	return true;
 }
 
 
-void CInComfort::SetSetpoint(const int idx, const float temp)
+void CInComfort::SetSetpoint(const int /*idx*/, const float temp)
 {
 	_log.Log(LOG_NORM, "InComfort: Setpoint of sensor with idx idx changed to temp");
 	std::string jsonData = SetRoom1SetTemperature(temp);
@@ -106,7 +102,7 @@ void CInComfort::SetSetpoint(const int idx, const float temp)
 		ParseAndUpdateDevices(jsonData);
 }
 
-std::string CInComfort::GetHTTPData(std::string sURL)
+std::string CInComfort::GetHTTPData(const std::string &sURL)
 {
 	// Get Data
 	std::vector<std::string> ExtraHeaders;
@@ -146,15 +142,14 @@ void CInComfort::GetHeaterDetails()
 	ParseAndUpdateDevices(sResult);
 }
 
-void CInComfort::SetProgramState(const int newState)
+void CInComfort::SetProgramState(const int /*newState*/)
 {
 }
 
-void CInComfort::ParseAndUpdateDevices(std::string jsonData)
+void CInComfort::ParseAndUpdateDevices(const std::string &jsonData)
 {
 	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(jsonData, root);
+	bool bRet = ParseJSon(jsonData, root);
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Data is not json formatted.");
@@ -174,8 +169,8 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 	float room2OverrideTemperature = (root["room_set_ovr_2_lsb"].asInt() + root["room_set_ovr_2_msb"].asInt() * 256) / 100.0f;
 
 	int statusDisplayCode = root["displ_code"].asInt();
-	int rssi = root["rf_message_rssi"].asInt();
-	int rfStatusCounter = root["rfstatus_cntr"].asInt();
+	//int rssi = root["rf_message_rssi"].asInt();
+	//int rfStatusCounter = root["rfstatus_cntr"].asInt();
 
 	float centralHeatingTemperature = (root["ch_temp_lsb"].asInt() + root["ch_temp_msb"].asInt() * 256) / 100.0f;
 	float centralHeatingPressure = (root["ch_pressure_lsb"].asInt() + root["ch_pressure_msb"].asInt() * 256) / 100.0f;
@@ -214,7 +209,7 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 
 	// Compare the time of the last update to the current time.
 	// For items changing frequently, update the value every 5 minutes, for all others update every 15 minutes
-	time_t currentTime = mytime(NULL);
+	time_t currentTime = mytime(nullptr);
 	bool updateFrequentChangingValues = (currentTime - m_LastUpdateFrequentChangingValues) >= 300;
 	if (updateFrequentChangingValues)
 		m_LastUpdateFrequentChangingValues = currentTime;
@@ -281,8 +276,8 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 		bool pumpActive = (io & 0x02) > 0;
 		bool tapFunctionActive = (io & 0x04) > 0;
 		bool burnerActive = (io & 0x08) > 0;
-		SendSwitch(8, 1, 255, pumpActive, 0, "Pump Active");
-		SendSwitch(8, 2, 255, tapFunctionActive, 0, "Tap Function Active");
-		SendSwitch(8, 3, 255, burnerActive, 0, "Burner Active");
+		SendSwitch(8, 1, 255, pumpActive, 0, "Pump Active", m_Name);
+		SendSwitch(8, 2, 255, tapFunctionActive, 0, "Tap Function Active", m_Name);
+		SendSwitch(8, 3, 255, burnerActive, 0, "Burner Active", m_Name);
 	}
 }

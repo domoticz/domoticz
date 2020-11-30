@@ -1,45 +1,72 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 
-Aeotec ZW090 Z-Stick Gen5
-https://aeotec.freshdesk.com/helpdesk/attachments/6009584703
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" index="81" genre="config" label="LED indicator configuration" min="0" max="1" value="1" size="1">
-			<Help>Enable/Disable LED indicator when plugged in</Help>
-			<Item label="Disable" value="0" />
-			<Item label="Enable" value="1" />
-		</Value>		
-		<Value type="list" index="220" genre="config" label="Configuration of the RF power level" min="1" max="10" value="10" size="1">
-			<Help>1~10, other= ignore. 
+<!-- Aeotec Z-Stick Gen5 --><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:005A:0101</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw090.png</MetaDataItem>
+    <MetaDataItem id="005A" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/1345/</MetaDataItem>
+    <MetaDataItem name="Name">Z-Stick Gen5</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec Z-Stick Gen5 is a USB controller. When connected to a host controller via USB, it enables the host controller to take part in the Z-Wave network.
+
+Products that are Z-Wave certified can be used and communicate with other Z-Wave certified devices.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Use this procedure only in the event that the primary controller is missing or otherwise inoperable.
+
+Press and hold the Action Button on Z-Stick for 20 seconds and then release.</MetaDataItem>
+    <MetaDataItem id="005A" name="Identifier" type="0101">ZW090-A</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Plug the Z-Stick into USB port of your host Controller and then click the “Exclusion” button on your  PC/host Controller application.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Plug the Z-Stick into USB port of your host Controller and then click the “Inclusion” button on your  PC/host Controller application.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">N/A</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1355/Z Stick Gen5 manual 1.pdf</MetaDataItem>
+    <MetaDataItem id="005A" name="FrequencyName" type="0101">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1345/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1351/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1355/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="005A" name="ZWProductPage" type="0201">https://products.z-wavealliance.org/products/1351/</MetaDataItem>
+    <MetaDataItem id="005A" name="FrequencyName" type="0201">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="005A" name="Identifier" type="0201">ZW090-B</MetaDataItem>
+    <MetaDataItem id="005A" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1355/</MetaDataItem>
+    <MetaDataItem id="005A" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="005A" name="Identifier" type="0001">ZW090-C</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="81" label="LED indicator configuration" max="1" min="0" size="1" type="list" value="1">
+      <Help>Enable/Disable LED indicator when plugged in</Help>
+      <Help lang="fr">Activer / désactiver l'indicateur LED lorsqu'il est branché</Help>
+      <Label lang="fr">Configuration d'indicateur LED</Label>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="220" label="Configuration of the RF power level" max="10" min="1" size="1" type="list" value="10">
+      <Help>1~10, other= ignore. 
 				A total of 10 levels, level 1 as the weak output power, and so on, 10 for most output power level</Help>
-			<Item label="1" value="1" />
-			<Item label="2" value="2" />
-			<Item label="3" value="3" />
-			<Item label="4" value="4" />
-			<Item label="5" value="5" />
-			<Item label="6" value="6" />
-			<Item label="7" value="7" />
-			<Item label="8" value="8" />
-			<Item label="9" value="9" />
-			<Item label="10" value="10" />
-		</Value>		
-		<Value type="list" index="242" genre="config" label="Security network enabled" min="0" max="1" value="0" size="1">
-			<Help></Help>
-			<Item label="Disable" value="0" />
-			<Item label="Enable" value="1" />
-		</Value>		
-		<Value type="int" index="243" genre="config" label="Security network key" size="16">
-			<Help></Help>
-		</Value>
-		<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" size="1" value="0">
-			<Help>Lock/ unlock all configuration parameters</Help>
-			<Item label="Unlock" value="0"/>
-			<Item label="Lock" value="1"/>
-		</Value>
-		<Value type="int" index="255" genre="config" label="Reset default configuration" units="" value="0" write_only="true" affects="all">
-			<Help>Reset to the default configuration</Help>
-		</Value>  	
-    </CommandClass>  
+      <Item label="1" value="1"/>
+      <Item label="2" value="2"/>
+      <Item label="3" value="3"/>
+      <Item label="4" value="4"/>
+      <Item label="5" value="5"/>
+      <Item label="6" value="6"/>
+      <Item label="7" value="7"/>
+      <Item label="8" value="8"/>
+      <Item label="9" value="9"/>
+      <Item label="10" value="10"/>
+    </Value>
+    <Value genre="config" index="242" label="Security network enabled" max="1" min="0" size="1" type="list" value="0">
+      <Help></Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="243" label="Security network key" size="16" type="int">
+      <Help></Help>
+    </Value>
+    <Value genre="config" index="252" label="Lock/Unlock Configuration" max="1" min="0" size="1" type="list" value="0">
+      <Help>Lock/ unlock all configuration parameters</Help>
+      <Item label="Unlock" value="0"/>
+      <Item label="Lock" value="1"/>
+    </Value>
+    <Value affects="all" genre="config" index="255" label="Reset default configuration" type="int" units="" value="0" write_only="true">
+      <Help>Reset to the default configuration</Help>
+    </Value>
+  </CommandClass>
 </Product>

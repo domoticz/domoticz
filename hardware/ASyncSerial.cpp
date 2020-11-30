@@ -28,13 +28,12 @@
 #include "ASyncSerial.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/Noncopyable.h"
 
 #include <string>
 #include <algorithm>
 #include <iostream>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
 #include <boost/smart_ptr/shared_array.hpp>  // for shared_array
@@ -51,20 +50,23 @@ class AsyncSerialImpl
 	: private domoticz::noncopyable
 {
 public:
-    AsyncSerialImpl(): io(), port(io), backgroundThread(), open(false),
-		error(false), writeBufferSize(0) {}
+  AsyncSerialImpl()
+	  : io()
+	  , port(io)
+  {
+  }
 
     boost::asio::io_service io; ///< Io service object
     boost::asio::serial_port port; ///< Serial port object
     boost::thread backgroundThread; ///< Thread that runs read/write operations
-    bool open; ///< True if port open
-    bool error; ///< Error flag
+    bool open{ false };		    ///< True if port open
+    bool error{ false };	    ///< Error flag
     mutable std::mutex errorMutex; ///< Mutex for access to error
 
     /// Data are queued here before they go in writeBuffer
     std::vector<char> writeQueue;
     boost::shared_array<char> writeBuffer; ///< Data being written
-    size_t writeBufferSize; ///< Size of writeBuffer
+    size_t writeBufferSize{ 0 };	   ///< Size of writeBuffer
     std::mutex writeQueueMutex; ///< Mutex for access to writeQueue
     char readBuffer[BUFFER_SIZE]; ///< data being read
 
@@ -254,18 +256,16 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
 void AsyncSerial::doWrite()
 {
     //If a write operation is already in progress, do nothing
-    if(pimpl->writeBuffer==0)
+    if (pimpl->writeBuffer == nullptr)
     {
-        std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
-        pimpl->writeBufferSize=pimpl->writeQueue.size();
-        pimpl->writeBuffer.reset(new char[pimpl->writeQueue.size()]);
+	    std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
+	    pimpl->writeBufferSize = pimpl->writeQueue.size();
+	    pimpl->writeBuffer.reset(new char[pimpl->writeQueue.size()]);
 
-        copy(pimpl->writeQueue.begin(),pimpl->writeQueue.end(),
-                pimpl->writeBuffer.get());
-        pimpl->writeQueue.clear();
-        async_write(pimpl->port,boost::asio::buffer(pimpl->writeBuffer.get(),
-                pimpl->writeBufferSize),
-                boost::bind(&AsyncSerial::writeEnd, this, boost::asio::placeholders::error));
+	    copy(pimpl->writeQueue.begin(), pimpl->writeQueue.end(), pimpl->writeBuffer.get());
+	    pimpl->writeQueue.clear();
+	    async_write(pimpl->port, boost::asio::buffer(pimpl->writeBuffer.get(), pimpl->writeBufferSize),
+			boost::bind(&AsyncSerial::writeEnd, this, boost::asio::placeholders::error));
     }
 }
 

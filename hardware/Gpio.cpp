@@ -100,10 +100,6 @@ CGpio::CGpio(const int ID, const int debounce, const int period, const int polli
 	IOPinStatusPacket.LIGHTING1.seqnbr = 0;
 }
 
-CGpio::~CGpio(void)
-{
-}
-
 /*
  * interrupt handlers:
  *********************************************************************************
@@ -121,10 +117,10 @@ void CGpio::InterruptHandler()
 	GetSchedPriority(&sched, &priority);
 	SetSchedPriority(SCHED_RR, (sched == SCHED_RR ? priority : 1), (sched == SCHED_RR));
 
-	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
-		if (it->GetPin() == pinPass)
+	for (auto &pin : pins)
+		if (pin.GetPin() == pinPass)
 		{
-			if ((fd = it->GetReadValueFd()) == -1)
+			if ((fd = pin.GetReadValueFd()) == -1)
 			{
 				_log.Log(LOG_STATUS, "GPIO: Could not open file descriptor for GPIO %d", pinPass);
 				pinPass = -1;
@@ -183,7 +179,6 @@ void CGpio::InterruptHandler()
 				close(fd);
 	}
 	_log.Log(LOG_STATUS, "GPIO: Interrupt handler for GPIO %d stopped. TID: %d", pin, (pid_t)syscall(SYS_gettid));
-	return;
 }
 
 int CGpio::waitForInterrupt(int fd, const int mS)
@@ -225,13 +220,13 @@ void CGpio::UpdateSwitch(const int pin, const bool value)
 	IOPinStatusPacket.LIGHTING1.seqnbr++;
 	IOPinStatusPacket.LIGHTING1.unitcode = pin;
 
-	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
+	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, nullptr, 255, m_Name.c_str());
 
-	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	for (auto &p : pins)
 	{
-		if (it->GetPin() == pin)
+		if (p.GetPin() == pin)
 		{
-			it->SetDBState(value);
+			p.SetDBState(value);
 			break;
 		}
 	}
@@ -302,18 +297,18 @@ bool CGpio::StopHardware()
 
 
 	std::unique_lock<std::mutex> lock(m_pins_mutex);
-	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	for (auto &p : pins)
 	{
-		if (m_thread_interrupt[it->GetPin()] != NULL)
+		if (m_thread_interrupt[p.GetPin()] != nullptr)
 		{
-			m_thread_interrupt[it->GetPin()]->join();
-			m_thread_interrupt[it->GetPin()].reset();
+			m_thread_interrupt[p.GetPin()]->join();
+			m_thread_interrupt[p.GetPin()].reset();
 		}
 	}
 
-	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
-		if (it->GetReadValueFd() != -1)
-			close(it->GetReadValueFd());
+	for (auto &p : pins)
+		if (p.GetReadValueFd() != -1)
+			close(p.GetReadValueFd());
 
 	pins.clear();
 	m_bIsStarted = false;
@@ -326,9 +321,9 @@ bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 	int pin = pSen->LIGHTING1.unitcode;
-	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	for (auto &p : pins)
 	{
-		if (it->GetPin() == pin && !it->GetIsInput())
+		if (p.GetPin() == pin && !p.GetIsInput())
 		{
 			unsigned char packettype = pSen->ICMND.packettype;
 
@@ -432,39 +427,40 @@ std::vector<CGpioPin> CGpio::GetPinList()
 /* static */
 CGpioPin* CGpio::GetPPinById(int id)
 {
-	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
-		if (it->GetPin() == id)
-			return &(*it);
-	return NULL;
+	for (auto &p : pins)
+		if (p.GetPin() == id)
+			return &p;
+	return nullptr;
 }
 
 void CGpio::UpdateDeviceStates(bool forceUpdate)
 {
 	std::unique_lock<std::mutex> lock(m_pins_mutex);
-	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	for (auto &p : pins)
 	{
-		if (it->GetIsInput())
+		if (p.GetIsInput())
 		{
-			int value = GPIOReadFd(it->GetReadValueFd());
+			int value = GPIOReadFd(p.GetReadValueFd());
 			if (value == -1)
 				continue;
 			bool updateDatabase = forceUpdate;
 			bool state = false;
 
-			if (it->GetActiveLow() && !value)
+			if (p.GetActiveLow() && !value)
 				state = true;
 			else if (value)
 				state = true;
 
-			if (it->GetDBState() != state || updateDatabase)
+			if (p.GetDBState() != state || updateDatabase)
 			{
 				std::vector<std::vector<std::string> > result;
 				char szIdx[10];
 
-				result = m_sql.safe_query("SELECT Name,nValue,sValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
-					m_HwdID, it->GetPin());
+				result = m_sql.safe_query("SELECT Name,nValue,sValue,Used FROM DeviceStatus WHERE "
+							  "(HardwareID==%d) AND (Unit==%d)",
+							  m_HwdID, p.GetPin());
 
-				if ((!result.empty()) && (result.size() > 0))
+				if ((!result.empty()) && (!result.empty()))
 				{
 					std::vector<std::string> sd = result[0];
 
@@ -475,7 +471,7 @@ void CGpio::UpdateDeviceStates(bool forceUpdate)
 							updateDatabase = true;
 
 						if (updateDatabase)
-							UpdateSwitch(it->GetPin(), state);
+							UpdateSwitch(p.GetPin(), state);
 					}
 				}
 			}
@@ -528,7 +524,7 @@ bool CGpio::InitPins()
 			}
 		}
 	}
-	return (pins.size() > 0);
+	return (!pins.empty());
 }
 
 int CGpio::GetReadResult(int bytecount, char *value_str)
@@ -648,7 +644,6 @@ void CGpio::GetSchedPriority(int *s, int *pri)
 		*pri = getpriority(PRIO_PROCESS, 0);
 	else
 		*pri = sched.sched_priority;
-	return;
 }
 
 #endif

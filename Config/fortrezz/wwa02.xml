@@ -1,21 +1,39 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- FortrezZ: WWA-02 Water and Temperature Alarm -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Configuration -->
-    <CommandClass id="112">
-        <Value type="byte" genre="config" instance="1" index="1" label="Low Temperature Trigger Point" units="degrees" min="0" max="255" value="4">
-            <Help></Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="2" label="High Temperature Trigger Point" units="degrees" min="0" max="255" value="70">
-            <Help></Help>
-        </Value>
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="3">
-            <Group index="1" max_associations="2" label="Water Alarm or Heat Alarm"/>
-            <Group index="2" max_associations="2" label="Water Alarm"/>
-            <Group index="3" max_associations="2" label="Temperature Alarm"/>
-        </Associations>
-    </CommandClass>
+<!-- FortrezZ: WWA-02 Water and Temperature Alarm --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0084:0109:0023</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fortrezz/wwa02.png</MetaDataItem>
+    <MetaDataItem id="0109" name="ZWProductPage" type="0023">https://products.z-wavealliance.org/products/91/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.fortrezz.com/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.fortrezz.com/</MetaDataItem>
+    <MetaDataItem name="Name">WWA-02 - Wireless Water &amp; Temperature Alarm</MetaDataItem>
+    <MetaDataItem name="Description">Wireless Water Alarm WWA-02AA. This product will provide you with peace of mind and the protection you expect. Water damages are caused by leaking pipes, corroded water heaters, water storage tanks, fixtures in bathrooms, laundry rooms, refrigerator drip pans etc.
+
+•Wireless Water Alarm WWA-02AA is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. Inclusion of this WWA-02AA into a Z-WaveTM network allows remote status monitoring and alerts when the detector is triggered. Other Z-Wave nodes in the system also act as repeaters if they support that function.</MetaDataItem>
+    <MetaDataItem id="0109" name="Identifier" type="0023">WWA-02</MetaDataItem>
+    <MetaDataItem id="0109" name="FrequencyName" type="0023">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/91/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/92/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="010A" name="ZWProductPage" type="0021">https://products.z-wavealliance.org/products/92/</MetaDataItem>
+    <MetaDataItem id="010A" name="FrequencyName" type="0021">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="010A" name="Identifier" type="0021">WWA-02</MetaDataItem>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Low Temperature Trigger Point" max="255" min="0" type="byte" units="degrees" value="4">
+      <Help></Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="High Temperature Trigger Point" max="255" min="0" type="byte" units="degrees" value="70">
+      <Help></Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Water Alarm or Heat Alarm" max_associations="2"/>
+      <Group index="2" label="Water Alarm" max_associations="2"/>
+      <Group index="3" label="Temperature Alarm" max_associations="2"/>
+    </Associations>
+  </CommandClass>
 </Product>

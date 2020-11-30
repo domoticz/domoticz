@@ -25,12 +25,12 @@
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
 #include "../main/WebServer.h"
-#include "../json/json.h"
+#include <json/json.h>
 
 
 extern std::string szUserDataFolder;
 
-std::ofstream *CEvohomeBase::m_pEvoLog=NULL;
+std::ofstream *CEvohomeBase::m_pEvoLog = nullptr;
 #ifdef _DEBUG
 bool CEvohomeBase::m_bDebug=true;
 #else
@@ -57,10 +57,9 @@ const char* CEvohomeBase::GetZoneModeName(uint8_t nZoneMode)
 	return m_szZoneMode[std::min(nZoneMode, (uint8_t)6)];
 }
 
-
-CEvohomeBase::CEvohomeBase(void) :
-	m_ZoneNames(m_nMaxZones),
-	m_ZoneOverrideLocal(m_nMaxZones)
+CEvohomeBase::CEvohomeBase()
+	: m_ZoneOverrideLocal(m_nMaxZones)
+	, m_ZoneNames(m_nMaxZones)
 {
 	m_HwdID=0;
 	m_nDevID=0;
@@ -69,12 +68,10 @@ CEvohomeBase::CEvohomeBase(void) :
 	m_nControllerMode=0;
 }
 
-
-CEvohomeBase::~CEvohomeBase(void)
+CEvohomeBase::~CEvohomeBase()
 {
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 }
-
 
 bool CEvohomeBase::SetZoneCount(uint8_t nZoneCount)
 {
@@ -173,28 +170,28 @@ std::string CEvohomeBase::GetZoneName(uint8_t nZone)
 }
 
 
-int CEvohomeBase::GetControllerID()
+unsigned int CEvohomeBase::GetControllerID()
 {
 	std::lock_guard<std::mutex> l(m_mtxControllerID);
 	return m_nDevID;
 }
 
 
-void CEvohomeBase::SetControllerID(int nID)
+void CEvohomeBase::SetControllerID(unsigned int nID)
 {
 	std::lock_guard<std::mutex> l(m_mtxControllerID);
 	m_nDevID=nID;
 }
 
 
-int CEvohomeBase::GetGatewayID()
+unsigned int CEvohomeBase::GetGatewayID()
 {
 	std::lock_guard<std::mutex> l(m_mtxGatewayID);
 	return m_nMyID;
 }
 
 
-void CEvohomeBase::SetGatewayID(int nID)
+void CEvohomeBase::SetGatewayID(unsigned int nID)
 {
 	std::lock_guard<std::mutex> l(m_mtxGatewayID);
 	m_nMyID=nID;
@@ -204,12 +201,12 @@ void CEvohomeBase::SetGatewayID(int nID)
 void CEvohomeBase::LogDate()
 {
         char szTmp[256];
-	time_t atime = mytime(NULL);
-        struct tm ltime;
-        localtime_r(&atime, &ltime);
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
 
-        strftime (szTmp,256,"%Y-%m-%d %H:%M:%S ",&ltime);
-        *m_pEvoLog << szTmp;
+	strftime(szTmp, 256, "%Y-%m-%d %H:%M:%S ", &ltime);
+	*m_pEvoLog << szTmp;
 }
 
 
@@ -264,7 +261,7 @@ namespace http {
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string ssensortype = request::findValue(&req, "sensortype");
-			if ((idx == "") || (ssensortype == ""))
+			if ((idx.empty()) || (ssensortype.empty()))
 				return;
 
 			bool bCreated = false;
@@ -335,7 +332,5 @@ namespace http {
 				root["title"] = "CreateEvohomeSensor";
 			}
 		}
-	}
-}
-
-
+	} // namespace server
+} // namespace http

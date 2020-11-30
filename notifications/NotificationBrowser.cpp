@@ -7,10 +7,6 @@ CNotificationBrowser::CNotificationBrowser() : CNotificationBase(std::string("br
 {
 }
 
-CNotificationBrowser::~CNotificationBrowser()
-{
-}
-
 bool CNotificationBrowser::IsConfigured()
 {
 	return !sOnNotificationReceived.empty();

@@ -11,12 +11,15 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include <json/json.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+using namespace boost::placeholders;
+
 CHttpPush::CHttpPush()
 {
+	m_PushType = PushType::PUSHTYPE_HTTP;
 	m_bLinkActive = false;
 }
 
@@ -51,13 +54,13 @@ void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx,
 
 void CHttpPush::DoHttpPush()
 {
-	std::string httpUrl = "";
-	std::string httpData = "";
-	std::string httpHeaders = "";
+	std::string httpUrl;
+	std::string httpData;
+	std::string httpHeaders;
 	int httpMethodInt = 0;
 	int httpAuthInt = 0;
-	std::string httpAuthBasicLogin = "";
-	std::string httpAuthBasicPassword = "";
+	std::string httpAuthBasicLogin;
+	std::string httpAuthBasicPassword;
 	m_sql.GetPreferencesVar("HttpMethod", httpMethodInt);
 	m_sql.GetPreferencesVar("HttpAuth", httpAuthInt);
 	m_sql.GetPreferencesVar("HttpAuthBasicLogin", httpAuthBasicLogin);
@@ -71,40 +74,39 @@ void CHttpPush::DoHttpPush()
 	}
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM HttpLink as A, DeviceStatus as B "
-		"WHERE (A.DeviceID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
+		"SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM PushLink as A, DeviceStatus as B "
+		"WHERE (A.PushType==%d AND A.DeviceRowID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceRowID==B.ID)",
+		PushType::PUSHTYPE_HTTP,
 		m_DeviceRowIdx);
 	if (!result.empty())
 	{
 		std::string sendValue;
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto &sd : result)
 		{
 			m_sql.GetPreferencesVar("HttpUrl", httpUrl);
 			m_sql.GetPreferencesVar("HttpData", httpData);
 			m_sql.GetPreferencesVar("HttpHeaders", httpHeaders);
-			if (httpUrl == "")
+			if (httpUrl.empty())
 				return;
 
-			std::vector<std::string> sd = *itt;
 			//unsigned int deviceId = atoi(sd[0].c_str());
-			std::string sdeviceId = sd[0].c_str();
-			std::string ldelpos = sd[1].c_str();
+			std::string sdeviceId = sd[0];
+			std::string ldelpos = sd[1];
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
 			int nValue = atoi(sd[5].c_str());
-			std::string sValue = sd[6].c_str();
+			std::string sValue = sd[6];
 			//int targetType = atoi(sd[7].c_str());
-			std::string targetVariable = sd[8].c_str();
+			std::string targetVariable = sd[8];
 			//int targetDeviceID = atoi(sd[9].c_str());
 			//std::string targetProperty = sd[10].c_str();
 			int includeUnit = atoi(sd[11].c_str());
 			int metertype = atoi(sd[12].c_str());
 			int lastUpdate = atoi(sd[13].c_str());
-			std::string ltargetVariable = sd[8].c_str();
-			std::string ltargetDeviceId = sd[9].c_str();
-			std::string lname = sd[14].c_str();
+			std::string ltargetVariable = sd[8];
+			std::string ltargetDeviceId = sd[9];
+			std::string lname = sd[14];
 			sendValue = sValue;
 
 			unsigned long tzoffset = get_tzoffset();
@@ -154,12 +156,12 @@ void CHttpPush::DoHttpPush()
 			gethostname(hostname, sizeof(hostname));
 
 			std::vector<std::string> strarray;
-			if (sendValue.find(";") != std::string::npos)
+			if (sendValue.find(';') != std::string::npos)
 			{
 				StringSplit(sendValue, ";", strarray);
 				if (int(strarray.size()) >= delpos && delpos > 0)
 				{
-					std::string rawsendValue = strarray[delpos - 1].c_str();
+					std::string rawsendValue = strarray[delpos - 1];
 					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
 				}
 			}
@@ -200,7 +202,8 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpData, "%h", std::string(hostname));
 			replaceAll(httpData, "%idx", sdeviceId);
 
-			if (sendValue != "") {
+			if (!sendValue.empty())
+			{
 				std::string sResult;
 				std::vector<std::string> ExtraHeaders;
 				if (httpAuthInt == 1) {			// BASIC authentication
@@ -223,15 +226,12 @@ void CHttpPush::DoHttpPush()
 					}
 				}
 				else if (httpMethodInt == 1) {		// POST
-					if (httpHeaders.size() > 0)
+					if (!httpHeaders.empty())
 					{
 						// Add additional headers
 						std::vector<std::string> ExtraHeaders2;
 						StringSplit(httpHeaders, "\r\n", ExtraHeaders2);
-						for (size_t i = 0; i < ExtraHeaders2.size(); i++)
-						{
-							ExtraHeaders.push_back(ExtraHeaders2[i]);
-						}
+						std::copy(ExtraHeaders2.begin(), ExtraHeaders2.end(), std::back_inserter(ExtraHeaders));
 					}
 					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, true, true))
 					{
@@ -274,26 +274,21 @@ namespace http {
 			std::string auth = request::findValue(&req, "auth");
 			std::string authbasiclogin = request::findValue(&req, "authbasiclogin");
 			std::string authbasicpassword = request::findValue(&req, "authbasicpassword");
-			if (
-				(url == "") ||
-				(method == "") ||
-				(linkactive == "") ||
-				(debugenabled == "")
-				)
+			if ((url.empty()) || (method.empty()) || (linkactive.empty()) || (debugenabled.empty()))
 				return;
 			if ((method != "0") && (data.empty())) //PUT/POST should have data
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
-			m_sql.UpdatePreferencesVar("HttpUrl", url.c_str());
+			m_sql.UpdatePreferencesVar("HttpUrl", url);
 			m_sql.UpdatePreferencesVar("HttpMethod", atoi(method.c_str()));
-			m_sql.UpdatePreferencesVar("HttpData", data.c_str());
-			m_sql.UpdatePreferencesVar("HttpHeaders", headers.c_str());
+			m_sql.UpdatePreferencesVar("HttpData", data);
+			m_sql.UpdatePreferencesVar("HttpHeaders", headers);
 			m_sql.UpdatePreferencesVar("HttpActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("HttpDebug", idebugenabled);
 			m_sql.UpdatePreferencesVar("HttpAuth", atoi(auth.c_str()));
-			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin.c_str());
-			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword.c_str());
+			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin);
+			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword);
 
 			m_httppush.UpdateActive();
 			root["status"] = "OK";
@@ -367,14 +362,12 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM HttpLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
+			result = m_sql.safe_query("SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_HTTP);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["DeviceID"] = sd[1];
 					root["result"][ii]["Delimitedvalue"] = sd[2];
@@ -410,15 +403,16 @@ namespace http {
 			std::string targetproperty = request::findValue(&req, "targetproperty");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string includeunit = request::findValue(&req, "includeunit");
-			if ((targettypei == 0) && (targetvariable == ""))
+			if ((targettypei == 0) && (targetvariable.empty()))
 				return;
-			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
+			if ((targettypei == 1) && ((targetdeviceid.empty()) || (targetproperty.empty())))
 				return;
-			if ((targettypei == 2) && (targetdeviceid == ""))
+			if ((targettypei == 2) && (targetdeviceid.empty()))
 				return;
 			if (idx == "0") {
 				m_sql.safe_query(
-					"INSERT INTO HttpLink (DeviceID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%q','%d','%q','%d','%d')",
+					"INSERT INTO PushLink (PushType, DeviceRowID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%d','%q','%d','%q','%d','%d')",
+					CBasePush::PushType::PUSHTYPE_HTTP,
 					deviceidi,
 					atoi(valuetosend.c_str()),
 					targettypei,
@@ -431,7 +425,7 @@ namespace http {
 			}
 			else {
 				m_sql.safe_query(
-					"UPDATE HttpLink SET DeviceID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%q', TargetDeviceID=%d, TargetProperty='%q', IncludeUnit='%d', Enabled='%d' WHERE (ID == '%q')",
+					"UPDATE PushLink SET DeviceRowID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%q', TargetDeviceID=%d, TargetProperty='%q', IncludeUnit='%d', Enabled='%d' WHERE (ID == '%q')",
 					deviceidi,
 					atoi(valuetosend.c_str()),
 					targettypei,
@@ -456,11 +450,11 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
-			m_sql.safe_query("DELETE FROM HttpLink WHERE (ID=='%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
 			root["status"] = "OK";
 			root["title"] = "DeleteHttpLink";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

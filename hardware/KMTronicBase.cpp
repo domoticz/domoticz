@@ -10,26 +10,17 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <ctime>
 
 #define round(a) ( int ) ( a + .5 )
 
-
-KMTronicBase::KMTronicBase(void)
+KMTronicBase::KMTronicBase()
 {
 	m_bufferpos = 0;
 	m_TotRelais = 0;
-	for (int ii = 0; ii < Max_KMTronic_Relais; ii++)
-	{
-		m_bRelaisStatus[ii] = false;
-	}
-}
-
-
-KMTronicBase::~KMTronicBase(void)
-{
+	std::fill(std::begin(m_bRelaisStatus), std::end(m_bRelaisStatus), false);
 }
 
 void KMTronicBase::ParseData(const unsigned char *pData, int Len)
@@ -61,7 +52,7 @@ void KMTronicBase::ParseData(const unsigned char *pData, int Len)
 }
 
 
-bool KMTronicBase::WriteToHardware(const char *pdata, const unsigned char length)
+bool KMTronicBase::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
@@ -76,7 +67,7 @@ bool KMTronicBase::WriteToHardware(const char *pdata, const unsigned char length
 		{
 			unsigned char SendBuf[3];
 			SendBuf[0] = 0xFF;
-			SendBuf[1] = node_id;
+			SendBuf[1] = (uint8_t)node_id;
 			SendBuf[2] = (pCmd->LIGHTING2.cmnd == light2_sOn) ? 1 : 0;
 			WriteInt(SendBuf, 3,false);
 			return true;

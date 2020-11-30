@@ -1,35 +1,56 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="byte" index="1" genre="config" label="On Level" units="" min="0" max="127" value="99">
-			<Help>
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0001:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/sm103.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/924/</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0002">SM103</MetaDataItem>
+    <MetaDataItem name="Name">Door/Window Sensor</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.everspring.com/SM103.aspx</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0002">CEPT (Europe) / Russia / CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">The Mini Door/Window contact detector consists of two parts; a Detector and a Magnet.  They are designed to be fitted to doors or windows with the Magnet mounted on the opening part and the Detector mounted on the fixed frame. Opening the protected door/window will remove the magnetic field, trigger the Detector and generate an alarm condition, (if the system is armed).
+The Door/Window Detector is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network.
+If several windows need to be protected, adopt the wire according to the placement as mentioned below. This should be wired to the terminal block provided in the battery compartment in series connection. 
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/394/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/921/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/924/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="On Level" max="127" min="0" type="byte" units="" value="99">
+      <Help>
 				Defines the level in the event sent when the sensor is triggered.  Default is 99 (full brightness for a Z-Wave dimmer). 100-127 will set device on to the last value it was when turned off.
 			</Help>
-		</Value>
-		<Value type="byte" index="2" genre="config" label="Off Time" units="seconds" min="0" max="127" value="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="2" label="Off Time" max="127" min="0" type="byte" units="seconds" value="1">
+      <Help>
 				On Time sets the number of seconds the sensor stays alerted before the off event is sent.
 			</Help>
-		</Value>
-		<Value type="byte" index="3" genre="config" label="Power Saving" units="" min="0" max="127" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="3" label="Power Saving" max="127" min="0" type="byte" units="" value="0">
+      <Help>
 			  	Enable/Disable power saving mode. 0 enables.
 			</Help>
-		</Value>
-	</CommandClass>
-
-	<!-- Basic set as report -->
-	<CommandClass id="32" setasreport="true"/>
-	<!-- COMMAND_CLASS_ALARM.  This class is supported but is missing from the list reported by the SM103 -->
-	<CommandClass id="113" action="add" getsupported="false" />
-
-	<!-- COMMAND_CLASS_ASSOCIATION. Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="Reports" />
-		</Associations>
-	</CommandClass>
-
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ALARM.  This class is supported but is missing from the list reported by the SM103 -->
+  <CommandClass action="add" id="113">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Reports" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>
-

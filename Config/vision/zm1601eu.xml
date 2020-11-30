@@ -1,27 +1,53 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Vision Security Battery Siren -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Configuration -->
-    <CommandClass id="112">
-        <Value type="list" index="0" genre="config" label="Siren Strobe Mode" min="0" max="2" value="0" size="1">
-            <Help>Defines the reaction of the siren: turn either Siren sound, Strobe light, or both when triggered</Help>
-            <Item label="Strobe and Siren" value="0" />
-            <Item label="Siren Only" value="1" />
-            <Item label="Strobe Only" value="2" />
-        </Value>
-
-        <Value type="list" index="1" genre="config" label="Alarm Auto Stop" min="0" max="3" value="0" size="1">
-            <Help>Defines the auto time out of the alarm indication</Help>
-            <Item label="30 seconds" value="0" />
-            <Item label="60 seconds" value="1" />
-            <Item label="120 seconds" value="2" />
-            <Item label="Will Not Automatically Stop" value="3" />
-        </Value>
-    </CommandClass>
-    <!-- Basic set as report -->
-	<CommandClass id="32" setasreport="true"/>
-    <!--  Binary report value when the Magnet switch is opened/closed -->
-	<CommandClass id="37" setasreport="true"/>
-    <!--  Battery set as report -->
-	<CommandClass id="128" setasreport="true"/>
+<!-- Vision Security Battery Siren --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0505:2005</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/zm1601eu.png</MetaDataItem>
+    <MetaDataItem id="0505" name="ZWProductPage" type="2005">https://products.z-wavealliance.org/products/1009/</MetaDataItem>
+    <MetaDataItem name="Name">Siren with LED strobe light</MetaDataItem>
+    <MetaDataItem id="0505" name="Identifier" type="2005">ZM1601EU-5</MetaDataItem>
+    <MetaDataItem name="ResetDescription">All user and network settings will be cleared and the device reset to factory defaults when the device is excluded.</MetaDataItem>
+    <MetaDataItem id="0505" name="FrequencyName" type="2005">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">It is FLiRS device</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">For “Inclusion” (adding to) a network, put the Z-Wave™ network controller into “inclusion” mode, and following its instruction to add the ZM 1601 to your controller.  To get the ZM 1601 in the “inclusion” mode, open the bracket and press the program switch of ZM 1601 for 1 second at least &amp; release to be included.  After waiting a few seconds the LED Setting Lighting should go off, if not, please try again. (After sending the Z-Wave NIF one time if the ZM1601 is not included it will send 4 times Network Wide Inclusion request every 4 ~ 6 seconds for auto inclusion. The orange LED will flash again if the siren has not been included or the orange LED will go off after inclusion.) </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">For “Exclusion” from (removing from) a network: Set up the Z-Wave™ network controller into “exclusion” mode, and following its instruction to delete the ZM 1601 from your controller. Press the program switch of ZM 1601 for 1 second at least &amp; release to be excluded. Note: a. LED setting light will flash (orange color) continuously in Exclusion condition for 25 seconds. b. All user and network settings will be cleared and the device reset to factory defaults when the device is excluded.</MetaDataItem>
+    <MetaDataItem name="Description">This product will sound a loud siren and flash a strobe light when an alarm message or alert is received on any Z-Wave™ enabled network.  This siren is a Z-Wave™ enabled device (interoperable, two-way RF mesh networking technology) and is fully compatible with any Z-Wave™ enabled network. Configuration modes are provided to select; Strobe, Siren or Both and to set Alarm Auto Stop time.  Features also include Self-Protection (tamper proof) alert and Battery Life Alert.  105dB siren at 1 meter.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1009/ZM 1601 Siren_20140407-500 series.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1009/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="0" label="Siren Strobe Mode" max="2" min="0" size="1" type="list" value="0">
+      <Help>Defines the reaction of the siren: turn either Siren sound, Strobe light, or both when triggered</Help>
+      <Item label="Strobe and Siren" value="0"/>
+      <Item label="Siren Only" value="1"/>
+      <Item label="Strobe Only" value="2"/>
+    </Value>
+    <Value genre="config" index="1" label="Alarm Auto Stop" max="3" min="0" size="1" type="list" value="0">
+      <Help>Defines the auto time out of the alarm indication</Help>
+      <Item label="30 seconds" value="0"/>
+      <Item label="60 seconds" value="1"/>
+      <Item label="120 seconds" value="2"/>
+      <Item label="Will Not Automatically Stop" value="3"/>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!--  Binary report value when the Magnet switch is opened/closed -->
+  <CommandClass id="37">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!--  Battery set as report -->
+  <CommandClass id="128">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
 </Product>

@@ -24,10 +24,6 @@ m_Password(password)
 	Init();
 }
 
-CSterbox::~CSterbox(void)
-{
-}
-
 void CSterbox::Init()
 {
 }
@@ -67,7 +63,7 @@ void CSterbox::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter % STERBOX_POLL_INTERVAL == 0)
@@ -179,7 +175,7 @@ void CSterbox::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bo
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void CSterbox::GetMeterDetails()
@@ -238,7 +234,7 @@ void CSterbox::GetMeterDetails()
 		if (tmpstr.find("OU") != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(strlen("OU"));
-			pos1 = tmpstr.find("=");
+			pos1 = tmpstr.find('=');
 			if (pos1 != std::string::npos)
 			{
 				tmpstr = tmpstr.substr(pos1+1);
@@ -248,14 +244,14 @@ void CSterbox::GetMeterDetails()
 				{
 					tmpinp = inputs[jj];
 					//if (( jj < 4 || jj > 7  ))
-					pos1 = tmpinp.find("o");
+					pos1 = tmpinp.find('o');
 					if (pos1 != std::string::npos)
 					{
 					int lValue = 0;
 					//tmpstr = tmpstr.substr(pos1+1);
 					tmpstr2 = outputs[jj];
 					//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr2.c_str());
-					pos1 = tmpstr2.find("s");
+					pos1 = tmpstr2.find('s');
 					if (pos1 != std::string::npos)
 					{
 						lValue = 1;
@@ -274,7 +270,7 @@ void CSterbox::GetMeterDetails()
 		else if (tmpstr.find("IN") != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(strlen("IN"));
-			pos1 = tmpstr.find("=");
+			pos1 = tmpstr.find('=');
 			if (pos1 != std::string::npos)
 			{
 				tmpstr = tmpstr.substr(pos1+1);
@@ -284,14 +280,14 @@ void CSterbox::GetMeterDetails()
 				{
 					tmpinp = inputs[jj];
 					//if (( jj > 3 && jj < 8  ))
-					pos1 = tmpinp.find("i");
+					pos1 = tmpinp.find('i');
 					if (pos1 != std::string::npos)
 					{
 					int lValue = 0;
 					//tmpstr = tmpstr.substr(pos1+1);
 					tmpstr2 = outputs[jj];
 					//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr2.c_str());
-					pos1 = tmpstr2.find("S");
+					pos1 = tmpstr2.find('S');
 					if (pos1 != std::string::npos)
 					{
 						lValue = 1;
@@ -310,7 +306,7 @@ void CSterbox::GetMeterDetails()
 		else if (tmpstr.find("AN") != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(strlen("AN"));
-			pos1 = tmpstr.find("=");
+			pos1 = tmpstr.find('=');
 			if (pos1 != std::string::npos)
 			{
 				tmpstr = tmpstr.substr(pos1+1);
@@ -335,22 +331,22 @@ void CSterbox::GetMeterDetails()
 					float lValue = (float)atof(tmpstr2.c_str());
 					std::stringstream sstr;
 					sstr << "Analog " << jj;
-					pos1 = tmpinp.find("t");
+					pos1 = tmpinp.find('t');
 					if (pos1 != std::string::npos)
 					{
 						SendTempSensor(jj,255,lValue, sstr.str());
 					}
-					pos1 = tmpinp.find("v");
+					pos1 = tmpinp.find('v');
 					if (pos1 != std::string::npos)
 					{
 						SendVoltageSensor(0, (uint8_t)jj, 255, lValue, sstr.str());
 					}
-					pos1 = tmpinp.find("l");
+					pos1 = tmpinp.find('l');
 					if (pos1 != std::string::npos)
 					{
 						SendLuxSensor(0, (uint8_t)jj, 255,lValue, sstr.str());
 					}
-					pos1 = tmpinp.find("h");
+					pos1 = tmpinp.find('h');
 					if (pos1 != std::string::npos)
 					{
 						SendHumiditySensor(jj,255,int(lValue), sstr.str());

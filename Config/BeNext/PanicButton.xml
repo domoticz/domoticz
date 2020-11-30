@@ -1,56 +1,57 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Benext Panic Button
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration -->
-	<CommandClass id="112">
-		<Value type="button" genre="config" instance="1" index="1" label="Set to Default" size="1" value="0">
-			<Help>Set all configuration values to default values (factory settings).</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="2" label="Time to press the panic button" size="1" min="0" max="255" value="100" >
-			<Help>
+<!-- Benext Panic Button-->
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Set to Default" size="1" type="button" value="0">
+      <Help>Set all configuration values to default values (factory settings).</Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Time to press the panic button" max="255" min="0" size="1" type="byte" value="100">
+      <Help>
                 The time that the panic pushbutton must be pressed before a (panic) message is sent out to the controller.
                 0: send directly the panic message when pressed.
                 1-255: send a panic message after you keep holding the button pressed for this value x 10ms.
             </Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="3" label="Min led feedback time panic" size="1" min="0" max="255" value="100" >
-			<Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Min led feedback time panic" max="255" min="0" size="1" type="byte" value="100">
+      <Help>
                 Minimum time that led feedback is shown after a panic message.
                 0: led only stays on during the send time.
                 1-255: led stays on during send time + this value*10ms.
             </Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="4" label="Buttons mapped" size="1" min="0" max="255" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Buttons mapped" max="255" min="0" size="1" type="byte" value="0">
+      <Help>
                 With this config parameter you can map the buttons to send different Z-Wave messages.
                 0: SOS button sends an ALARM_REPORT to nodes group 1 LOCK button sends a BASIC_SET, 0xFF to nodes group 1 UNLOCK button sends a BASIC_SET, 0x00 to nodes group 1.
                 1-255: button sends an BASIC_SET,0xFF to nodes group 1 LOCK button sends a BASIC_SET, 0xFF to nodes group 2 UNLOCK button sends a BASIC_SET, 0x00 to nodes group 2
             </Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="5" label="Time to press the control buttons" size="1" min="0" max="255" value="10">
-			<Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Time to press the control buttons" max="255" min="0" size="1" type="byte" value="10">
+      <Help>
                 The time that the control pushbutton(s) must be pressed before a (control) message is sent out to the controller.
                 0: send directly the panic message when pressed
                 1-255: send a control message after you keep holding pushbutton pressed for this value x 10ms.
             </Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="6" label="Min led feedback time control" size="1" min="0" max="255" value="50">
-			<Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Min led feedback time control" max="255" min="0" size="1" type="byte" value="50">
+      <Help>
                 Minimum time that led feedback is shown after a control message is sent.
                 0: led only stays on during the send time.
                 1-255: led stays on during send time + this value*10ms.
             </Help>
-		</Value>
-	</CommandClass>
-	<!-- Basic set as report -->
-	<CommandClass id="32" setasreport="true" />
-
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="2">
-			<Group index="1" max_associations="8" label="Group 1: see configuration parameter 4"/>
-            <Group index="2" max_associations="8" label="Group 2: see configuration parameter 4" auto="true"/>
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Group 1: see configuration parameter 4" max_associations="8"/>
+      <Group auto="true" index="2" label="Group 2: see configuration parameter 4" max_associations="8"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -3,7 +3,7 @@
 #include "SQLHelper.h"
 #include "Logger.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include <json/json.h>
 #include "../webserver/Base64.h"
 
 bool IFTTT::Send_IFTTT_Trigger(const std::string &eventid, const std::string &svalue1, const std::string &svalue2, const std::string &svalue3)
@@ -42,12 +42,9 @@ bool IFTTT::Send_IFTTT_Trigger(const std::string &eventid, const std::string &sv
 				_log.Log(LOG_ERROR, sSend);
 				return false;
 			}
-			else
-			{
-				sSend += " => Success!";
-				_log.Log(LOG_STATUS,sSend);
-				return true;
-			}
+			sSend += " => Success!";
+			_log.Log(LOG_STATUS, sSend);
+			return true;
 		}
 	}
 	return false;

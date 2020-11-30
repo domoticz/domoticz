@@ -5,17 +5,9 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
-#include <iostream>
-#include <boost/lexical_cast.hpp>
+using namespace boost::placeholders;
 
 #define MAX_POLL_INTERVAL 3600*1000
-
-enum _edaeUsbState
-{
-	RESPOND_RECEIVED = 0,		//0
-	DAE_USB16_UPDATE_IO,					//1
-	DAE_USB16_ASK_CMD				//2
-};
 
 #define DAE_IO_TYPE_RELAY		2
 
@@ -35,11 +27,6 @@ CDenkoviUSBDevices::CDenkoviUSBDevices(const int ID, const std::string& comPort,
 	else if (m_pollInterval > MAX_POLL_INTERVAL)
 		m_pollInterval = MAX_POLL_INTERVAL;*/
 	Init();
-}
-
-
-CDenkoviUSBDevices::~CDenkoviUSBDevices()
-{
 }
 
 void CDenkoviUSBDevices::Init()
@@ -93,11 +80,9 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 		m_readingNow = false;
 		return; //receiving not enabled
 	}
-	uint8_t tmp = (unsigned char)data[0];
-
 	switch (m_iModel) {
 	case DDEV_USB_16R:
-		if (m_Cmd == DAE_USB16_ASK_CMD) {
+		if (m_Cmd == _edaeUsbState::DAE_USB16_ASK_CMD) {
 			uint8_t firstEight, secondEight;
 			if (len == 2) {
 				firstEight = (unsigned char)data[0];
@@ -107,13 +92,12 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 				_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Response error.");
 				return;
 			}
-			uint8_t z = 0;
 			for (uint8_t ii = 1; ii < 9; ii++) {
-				z = (firstEight >> (8 - ii)) & 0x01;
-				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (8 - ii)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii));
+				//z = (firstEight >> (8 - ii)) & 0x01;
+				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (8 - ii)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii), m_Name);
 			}
 			for (uint8_t ii = 1; ii < 9; ii++)
-				SendSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, ((secondEight >> (8 - ii) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8+ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, ((secondEight >> (8 - ii) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8 + ii), m_Name);
 		} 
 		break;
 	}
@@ -121,14 +105,14 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 	m_readingNow = false;
 }
 
-void CDenkoviUSBDevices::OnError(const std::exception e)
+void CDenkoviUSBDevices::OnError(const std::exception &e)
 {
 	_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Error: %s", e.what());
 }
 
 bool CDenkoviUSBDevices::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread != nullptr)
 	{
 		RequestStop();
 		m_thread->join();
@@ -140,8 +124,8 @@ bool CDenkoviUSBDevices::StopHardware()
 
 void CDenkoviUSBDevices::Do_Work()
 {
-	int poll_interval = m_pollInterval / 100;
-	int poll_counter = poll_interval - 2;
+	//int poll_interval = m_pollInterval / 100;
+	//int poll_counter = poll_interval - 2;
 
 	int msec_counter = 0;
 
@@ -149,7 +133,7 @@ void CDenkoviUSBDevices::Do_Work()
 
 	while (!IsStopRequested(100))
 	{
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 		if (msec_counter++ >= 40) {
 			msec_counter = 0;
 			if (m_readingNow == false && m_updateIo == false)
@@ -164,7 +148,7 @@ void CDenkoviUSBDevices::Do_Work()
 	_log.Log(LOG_STATUS, "Denkovi: Worker stopped...");
 }
 
-bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	m_updateIo = true;
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
@@ -193,7 +177,7 @@ bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char 
 			szCmd << "-//";
 		else if (command == light2_sOn)
 			szCmd << "+//";
-		m_Cmd = DAE_USB16_UPDATE_IO;
+		m_Cmd = _edaeUsbState::DAE_USB16_UPDATE_IO;
 		write(szCmd.str());
 		return true;
 	}
@@ -210,7 +194,7 @@ void CDenkoviUSBDevices::GetMeterDetails()
 
 	switch (m_iModel) {
 	case DDEV_USB_16R:
-		m_Cmd = DAE_USB16_ASK_CMD;
+		m_Cmd = _edaeUsbState::DAE_USB16_ASK_CMD;
 		write("ask//");
 		break;
 	}

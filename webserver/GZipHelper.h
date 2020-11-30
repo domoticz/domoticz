@@ -47,8 +47,7 @@
 #ifndef __GZipHelper__
 #define __GZipHelper__
 
-#include "../zlib/zutil.h"
-
+#include "zlib.h"
 
 #define ALLOC(size) malloc(size)
 #define TRYFREE(p) {if (p) free(p);}
@@ -59,6 +58,8 @@
 #define ORIG_NAME    0x08 /* bit 3 set: original file name present */
 #define COMMENT      0x10 /* bit 4 set: file comment present */
 #define RESERVED     0xE0 /* bits 5..7: reserved */
+
+#define OS_CODE 0x03 //unix
 
 typedef  unsigned char GZIP;
 typedef  GZIP* LPGZIP;
@@ -72,40 +73,41 @@ class CA2GZIPT
     LPGZIP pgzip;
     int Length;
   public:
-  CA2GZIPT(char* lpsz,int len=-1):pgzip(0),Length(0)
-  {
-    Init(lpsz,len);
-  }
+    CA2GZIPT(char *lpsz, int len = -1)
+	    : pgzip(nullptr)
+	    , Length(0)
+    {
+	    Init(lpsz, len);
+    }
   ~CA2GZIPT()
   {
     if(pgzip!=m_buffer) TRYFREE(pgzip);
   }
   void Init(char *lpsz,int len=-1)
   {
-    if(lpsz==0)
-	{
-	  pgzip=0; 
-	  Length=0;
-	  return ;
-	}
+	  if (lpsz == nullptr)
+	  {
+		  pgzip = nullptr;
+		  Length = 0;
+		  return;
+	  }
 	if(len==-1)
     {
 		len = static_cast<int>(strlen(lpsz));
     }
 	m_CurrentBufferSize=t_nBufferLength;
 	pgzip=m_buffer;
-	
-   
-	m_zstream.zalloc = (alloc_func)0;
-    m_zstream.zfree = (free_func)0;
-    m_zstream.opaque = (voidpf)0;
-    m_zstream.next_in = Z_NULL;
-    m_zstream.next_out = Z_NULL;
-    m_zstream.avail_in = 0;
+
+	m_zstream.zalloc = (alloc_func) nullptr;
+	m_zstream.zfree = (free_func) nullptr;
+	m_zstream.opaque = (voidpf) nullptr;
+	m_zstream.next_in = Z_NULL;
+	m_zstream.next_out = Z_NULL;
+	m_zstream.avail_in = 0;
 	m_zstream.avail_out = 0;
     m_z_err = Z_OK;
     m_crc = crc32(0L, Z_NULL, 0);
-    int err = deflateInit2(&(m_zstream), t_nLevel,Z_DEFLATED, -MAX_WBITS, DEF_MEM_LEVEL, t_nStrategy);
+    int err = deflateInit2(&(m_zstream), t_nLevel,Z_DEFLATED, -MAX_WBITS, MAX_MEM_LEVEL, t_nStrategy);
 	m_outbuf = (Byte*)ALLOC(Z_BUFSIZE);
 	m_zstream.next_out = m_outbuf;
 	if (err != Z_OK || m_outbuf == Z_NULL)
@@ -146,18 +148,20 @@ class CA2GZIPT
    
    int write(LPGZIP buf,int count)
    {
-     if(buf==0) return 0;
-	 if(Length+count>m_CurrentBufferSize)
-	 {
-	   int nTimes=(Length+count)/t_nBufferLength +1;
-	   LPGZIP pTemp=pgzip;
-	   pgzip=static_cast<LPGZIP>( malloc(nTimes*t_nBufferLength));
-	   if (!pgzip)
+	   if (buf == nullptr)
 		   return 0;
-	   m_CurrentBufferSize=nTimes*t_nBufferLength;
-	   memcpy(pgzip,pTemp,Length);
-	   if(pTemp!=m_buffer) free(pTemp);
-	 }
+	   if (Length + count > m_CurrentBufferSize)
+	   {
+		   int nTimes = (Length + count) / t_nBufferLength + 1;
+		   LPGZIP pTemp = pgzip;
+		   pgzip = static_cast<LPGZIP>(malloc(nTimes * t_nBufferLength));
+		   if (!pgzip)
+			   return 0;
+		   m_CurrentBufferSize = nTimes * t_nBufferLength;
+		   memcpy(pgzip, pTemp, Length);
+		   if (pTemp != m_buffer)
+			   free(pTemp);
+	   }
 	 memcpy(pgzip+Length,buf,count);
 	 Length+=count;
 	 return count;
@@ -188,8 +192,9 @@ class CA2GZIPT
  int destroy()
  {
     int err = Z_OK;
-	if (m_zstream.state != NULL) {
-    err = deflateEnd(&(m_zstream));
+    if (m_zstream.state != nullptr)
+    {
+	    err = deflateEnd(&(m_zstream));
     }
     if (m_z_err < 0) err = m_z_err;
     TRYFREE(m_outbuf);
@@ -214,33 +219,38 @@ class CGZIP2AT
   public:
    char *psz;
    int  Length;
-   CGZIP2AT(LPGZIP pgzip,int len):m_gzip(pgzip),m_gziplen(len),psz(0),Length(0),m_pos(0)
-  {
-    Init(); 
-  }
+   CGZIP2AT(LPGZIP pgzip, int len)
+	   : psz(nullptr)
+	   , Length(0)
+	   , m_pos(0)
+	   , m_gzip(pgzip)
+	   , m_gziplen(len)
+   {
+	   Init();
+   }
   ~CGZIP2AT()
   {
     if(psz!=m_buffer) TRYFREE(psz);  
   }
   void Init()
   {
-	if(m_gzip==0)
-	{
-	  psz=0; 
-	  Length=0;
-	  return ;
-	}
+	  if (m_gzip == nullptr)
+	  {
+		  psz = nullptr;
+		  Length = 0;
+		  return;
+	  }
 	m_CurrentBufferSize=t_nBufferLength;
 	psz=m_buffer;
 	memset(psz,0,m_CurrentBufferSize+1);
 
-	m_zstream.zalloc = (alloc_func)0;
-    m_zstream.zfree = (free_func)0;
-    m_zstream.opaque = (voidpf)0;
-    m_zstream.next_in = m_inbuf = Z_NULL;
-    m_zstream.next_out = Z_NULL;
-    m_zstream.avail_in = m_zstream.avail_out = 0;
-    m_z_err = Z_OK;
+	m_zstream.zalloc = (alloc_func) nullptr;
+	m_zstream.zfree = (free_func) nullptr;
+	m_zstream.opaque = (voidpf) nullptr;
+	m_zstream.next_in = m_inbuf = Z_NULL;
+	m_zstream.next_out = Z_NULL;
+	m_zstream.avail_in = m_zstream.avail_out = 0;
+	m_z_err = Z_OK;
 	m_z_eof = 0;
 	m_transparent = 0;
     m_crc = crc32(0L, Z_NULL, 0);
@@ -374,7 +384,7 @@ class CGZIP2AT
 	    if (n > m_zstream.avail_out) n = m_zstream.avail_out;
 	    if (n > 0) 
 		{
-		zmemcpy(m_zstream.next_out,m_zstream.next_in, n);
+		memcpy(m_zstream.next_out,m_zstream.next_in, n);
 		next_out += n;
 		m_zstream.next_out = next_out;
 		m_zstream.next_in   += n;
@@ -441,14 +451,14 @@ class CGZIP2AT
  }
  int write(char* buf,int count)
  {
-	 if (buf == 0)
+	 if (buf == nullptr)
 		 return 0;
 	 if(Length+count>m_CurrentBufferSize)
 	 {
 	   int nTimes=(Length+count)/t_nBufferLength +1;
 	   char *pTemp=psz;
 	   psz=static_cast<char*>( malloc(nTimes*t_nBufferLength+1));
-	   if (psz == 0)
+	   if (psz == nullptr)
 		   return 0;
 	   m_CurrentBufferSize=nTimes*t_nBufferLength;
 	   memset(psz,0,m_CurrentBufferSize+1);
@@ -462,9 +472,10 @@ class CGZIP2AT
  int destroy()
  {
     int err = Z_OK;
-	if (m_zstream.state != NULL) {
+    if (m_zstream.state != nullptr)
+    {
 	    err = inflateEnd(&(m_zstream));
-	}
+    }
     if (m_z_err < 0) err = m_z_err;
     TRYFREE(m_inbuf);
     return err;

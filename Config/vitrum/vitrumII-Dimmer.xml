@@ -1,0 +1,41 @@
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010A:8A00:2100</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vitrum/vitrumII-Dimmer.png</MetaDataItem>
+    <MetaDataItem id="8A00" name="ZWProductPage" type="2100">https://products.z-wavealliance.org/products/94/</MetaDataItem>
+    <MetaDataItem name="Description">2 channel Dimmer - 503 BOX - ZWave. Smart Switch II
+
+Two buttons Smart Glass Switch 
+Switch Device for Modbus System
+with two switches for lighting control 
+or alternatively, sequential 
+pre-programmed settings
+Configurable aural feedback 
+
+
+Available in British Standard &amp; European Standard;
+Dimensions:BS 95x95mm; EU 125x95mm; 
+On/Off by "One Touch"
+Dimming is by the "iPod ®-like" touch control
+Capacitive technology to adjust lighting level</MetaDataItem>
+    <MetaDataItem id="8A00" name="Identifier" type="2100">Vitrum II BS</MetaDataItem>
+    <MetaDataItem name="Name">Vitrum II EU dimmer wireless</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.ivitrum.com/index.php?file=prodotti&amp;form_id_products=13&amp;qt=1</MetaDataItem>
+    <MetaDataItem id="8A00" name="FrequencyName" type="2100">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.ivitrum.com/index.php?file=contact</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/94/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/120/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="4A00" name="ZWProductPage" type="1100">https://products.z-wavealliance.org/products/120/</MetaDataItem>
+    <MetaDataItem id="4A00" name="Identifier" type="1100">Vitrum II EU</MetaDataItem>
+    <MetaDataItem id="4A00" name="FrequencyName" type="1100">CEPT (Europe)</MetaDataItem>
+  </MetaData>
+  <!-- Multi-Instance configuration -->
+  <CommandClass id="96">
+    <Compatibility>
+      <IgnoreMCCapReports>true</IgnoreMCCapReports>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+</Product>

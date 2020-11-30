@@ -76,12 +76,10 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	m_wdayoff = 6; // saturday
 }
 
-
-CEvohomeWeb::~CEvohomeWeb(void)
+CEvohomeWeb::~CEvohomeWeb()
 {
 	m_bIsStarted = false;
 }
-
 
 void CEvohomeWeb::Init()
 {
@@ -106,20 +104,25 @@ bool CEvohomeWeb::StartSession()
 	{
 		if (!renew_login())
 		{
+			m_logonfailures++;
+			if (m_logonfailures == LOGONFAILTRESHOLD)
+				_log.Log(LOG_STATUS, "(%s) logon fail treshold reached - trottling", m_Name.c_str());
+			if ((m_logonfailures * m_refreshrate) > MAXPOLINTERVAL)
+				m_logonfailures--;
 			return false;
 		}
 	}
 	else if (!login(m_username, m_password))
 	{
 		m_logonfailures++;
-		if (m_logonfailures > LOGONFAILTRESHOLD)
+		if (m_logonfailures == LOGONFAILTRESHOLD)
 			_log.Log(LOG_STATUS, "(%s) logon fail treshold reached - trottling", m_Name.c_str());
 		if ((m_logonfailures * m_refreshrate) > MAXPOLINTERVAL)
 			m_logonfailures--;
 		return false;
 	}
 
-	m_sessiontimer = mytime(NULL) + 3599; // Honeywell will invalidate our session ID after an hour
+	m_sessiontimer = mytime(nullptr) + 3599; // Honeywell will invalidate our session ID after an hour
 	m_loggedon = true;
 	m_logonfailures = 0;
 
@@ -131,7 +134,7 @@ bool CEvohomeWeb::StartSession()
 		_log.Log(LOG_ERROR, "(%s) failed to retrieve installation info from server", m_Name.c_str());
 		return false;
 	}
-	m_tcs = NULL;
+	m_tcs = nullptr;
 	if (
 		(m_locations.size() > m_locationId) &&
 		(m_locations[m_locationId].gateways.size() > m_gatewayId) &&
@@ -155,8 +158,8 @@ bool CEvohomeWeb::StartSession()
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(result[0][0], ";", splitresults);
-			if (splitresults.size()>0)
-				m_awaysetpoint = strtod(splitresults[0].c_str(), NULL);
+			if (!splitresults.empty())
+				m_awaysetpoint = strtod(splitresults[0].c_str(), nullptr);
 			if (splitresults.size()>1)
 				m_wdayoff = atoi(splitresults[1].c_str()) % 7;
 		}
@@ -210,7 +213,7 @@ void CEvohomeWeb::Do_Work()
 		sec_counter++;
 		m_lastconnect++;
 		if (sec_counter % 10 == 0)
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 
 		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect >= MINPOLINTERVAL))
 		{
@@ -280,8 +283,8 @@ bool CEvohomeWeb::GetStatus()
 		get_v1_temps();
 
 	// cycle all zones for status
-	for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
-		DecodeZone(&m_tcs->zones[i]);
+	for (auto &i : m_tcs->zones)
+		DecodeZone(&i);
 
 	// hot water status
 	if (has_dhw(m_tcs))
@@ -301,14 +304,14 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 		if (sznewmode == "HeatingOff")
 		{
 			// cycle my zones to reflect the HeatingOff mode
-			for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
+			for (auto &i : m_tcs->zones)
 			{
-				zone* hz = &m_tcs->zones[i];
+				zone *hz = &i;
 				std::string szId, sztemperature;
 				szId = (*hz->installationInfo)["zoneId"].asString();
 				if ((m_showhdtemps) && !hz->hdtemp.empty())
 					sztemperature = hz->hdtemp;
-				else if (hz->status != NULL)
+				else if (hz->status != nullptr)
 					sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
 				else
 				{
@@ -325,11 +328,11 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 		}
 
 		// cycle my zones to restore scheduled temps
-		for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
+		for (auto &i : m_tcs->zones)
 		{
-			zone* hz = &m_tcs->zones[i];
-			std::string zonemode = "";
-			if (hz->status == NULL) // don't touch invalid zone - it should already show as 'Offline'
+			zone *hz = &i;
+			std::string zonemode;
+			if (hz->status == nullptr) // don't touch invalid zone - it should already show as 'Offline'
 				continue;
 			if (hz->status->isMember("heatSetpointStatus"))
 				zonemode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
@@ -337,7 +340,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				continue;
 
 			std::string sztemperature, szsetpoint;
-			std::string szuntil = "";
+			std::string szuntil;
 			double setpoint = 0;
 
 			/*  there is no strict definition for modes Away, DayOff and Custom so we'll have to wait
@@ -352,7 +355,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 				{
 					szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
-					setpoint = strtod(szsetpoint.c_str(), NULL);
+					setpoint = strtod(szsetpoint.c_str(), nullptr);
 				}
 
 				// Eco lowers the setpoint of all zones by 3 degrees, but resets a zone mode to Normal setting
@@ -363,7 +366,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 
 			if ((m_showhdtemps) && !hz->hdtemp.empty())
 				sztemperature = hz->hdtemp;
-			else if (hz->status != NULL)
+			else if (hz->status != nullptr)
 				sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
 			else
 			{
@@ -398,7 +401,7 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 	std::string zoneId(std::to_string((int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3)));
 
 	zone* hz = get_zone_by_ID(zoneId);
-	if (hz == NULL) // zone number not known by installation (manually added?)
+	if (hz == nullptr) // zone number not known by installation (manually added?)
 	{
 		_log.Log(LOG_ERROR, "(%s) attempt to change setpoint on unknown zone", m_Name.c_str());
 		return false;
@@ -410,11 +413,11 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 			return false;
 
 		std::string szsetpoint;
-		std::string szuntil = "";
+		std::string szuntil;
 		if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 		{
 			szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
-			pEvo->temperature = (int16_t)(strtod(szsetpoint.c_str(), NULL) * 100);
+			pEvo->temperature = (int16_t)(strtod(szsetpoint.c_str(), nullptr) * 100);
 		}
 
 		if ((m_showschedule) && (!szuntil.empty()))
@@ -481,11 +484,11 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 
 void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 {
-	unsigned long ID = (unsigned long)(strtod(tcs->systemId.c_str(), NULL));
+	unsigned long ID = (unsigned long)(strtod(tcs->systemId.c_str(), nullptr));
 	std::string szsystemMode, szmodelType;
 	uint8_t sysmode = 0;
 
-	if (tcs->status == NULL)
+	if (tcs->status == nullptr)
 		szsystemMode = "Unknown";
 	else
 		szsystemMode = (*tcs->status)["systemModeStatus"]["mode"].asString();
@@ -500,7 +503,7 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 	RFX_SETID3(ID, tsen.id1, tsen.id2, tsen.id3);
 	tsen.mode = 0; // web API does not support temp override of controller mode
 	tsen.status = sysmode;
-	sDecodeRXMessage(this, (const unsigned char *)&tsen, "Controller mode", -1);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen, "Controller mode", -1, nullptr);
 
 	if (GetControllerName().empty() || m_updatedev)
 	{
@@ -520,7 +523,7 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 		if (!result.empty() && ((result[0][2] != devname) || (!result[0][3].empty())))
 		{
 			// also change lastupdate time to allow the web frontend to pick up the change
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm ltime;
 			localtime_r(&now, &ltime);
 			// also wipe StrParam1 - we do not also want to call the old (python) script when changing system mode
@@ -536,11 +539,11 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	// only for mainworker to reassemble it.
 
 	std::string szId, sztemperature, szsetpoint, szmode;
-	std::string szuntil= "";
+	std::string szuntil;
 	std::stringstream ssUpdateStat;
 
 	szId = (*hz->installationInfo)["zoneId"].asString();
-	if (hz->status == NULL)
+	if (hz->status == nullptr)
 	{
 		sztemperature = "-";
 		szsetpoint = "-";
@@ -562,13 +565,13 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 
 	unsigned long evoID = atol(szId.c_str());
 	std::string szsysmode;
-	if (m_tcs->status == NULL)
+	if (m_tcs->status == nullptr)
 		szsysmode = "Unknown";
 	else
 		szsysmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
 	if ((szsysmode == "Away") && (szmode == "FollowSchedule"))
 	{
-		double new_awaysetpoint = strtod(szsetpoint.c_str(), NULL);
+		double new_awaysetpoint = strtod(szsetpoint.c_str(), nullptr);
 		if (m_awaysetpoint != new_awaysetpoint)
 		{
 			m_awaysetpoint = new_awaysetpoint;
@@ -644,18 +647,20 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	}
 
 	// Notify MQTT and various push mechanisms
-	m_mainworker.sOnDeviceReceived(this->m_HwdID, DevRowIdx, (*hz->installationInfo)["name"].asString(), NULL);
+	m_mainworker.sOnDeviceReceived(this->m_HwdID, DevRowIdx, (*hz->installationInfo)["name"].asString(), nullptr);
 }
 
 
 void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 {
 	// Hot Water is essentially just another zone
-	if ((tcs->status == NULL) || (!tcs->status->isMember("dhw") || !(*tcs->status)["dhw"].isMember("temperatureStatus") || !(*tcs->status)["dhw"].isMember("stateStatus")))
+	if ((tcs->status == nullptr)
+	    || (!tcs->status->isMember("dhw") || !(*tcs->status)["dhw"].isMember("temperatureStatus")
+		|| !(*tcs->status)["dhw"].isMember("stateStatus")))
 		return;
 
 	std::string szId, szmode;
-	std::string szuntil = "";
+	std::string szuntil;
 	std::stringstream ssUpdateStat;
 
 	szId = (*tcs->status)["dhw"]["dhwId"].asString();
@@ -712,7 +717,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, ssUpdateStat.str().c_str(), sdevname);
 
 	// Notify MQTT and various push mechanisms
-	m_mainworker.sOnDeviceReceived(this->m_HwdID, DevRowIdx, "Hot Water", NULL);
+	m_mainworker.sOnDeviceReceived(this->m_HwdID, DevRowIdx, "Hot Water", nullptr);
 }
 
 
@@ -786,7 +791,7 @@ std::string CEvohomeWeb::local_to_utc(const std::string &local_time)
 	if (m_tzoffset == -1)
 	{
 		// calculate timezone offset once
-		time_t now = mytime(NULL);
+		time_t now = mytime(nullptr);
 		struct tm utime;
 		gmtime_r(&now, &utime);
 		utime.tm_isdst = -1;
@@ -876,8 +881,7 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 	}
 
 	Json::Value j_login;
-	Json::Reader jReader;
-	if (!jReader.parse(sz_response.c_str(), j_login))
+	if (!ParseJSon(sz_response, j_login))
 	{
 		_log.Log(LOG_ERROR, "(%s) failed parsing response from login to portal", m_Name.c_str());
 		return false;
@@ -901,6 +905,9 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 	}
 
 	m_v2refresh_token = j_login["refresh_token"].asString();
+	int v2token_expiration_time = atoi(j_login["expires_in"].asString().c_str());
+	m_sessiontimer = mytime(nullptr) + v2token_expiration_time; // Honeywell will invalidate our session ID after an hour
+
 	std::stringstream atoken;
 	atoken << "Authorization: bearer " << j_login["access_token"].asString();
 
@@ -951,8 +958,7 @@ bool CEvohomeWeb::renew_login()
 	}
 
 	Json::Value j_login;
-	Json::Reader jReader;
-	if (!jReader.parse(sz_response.c_str(), j_login))
+	if (!ParseJSon(sz_response, j_login))
 	{
 		_log.Log(LOG_ERROR, "(%s) failed parsing response from renewing login", m_Name.c_str());
 		return false;
@@ -979,6 +985,9 @@ bool CEvohomeWeb::renew_login()
 	}
 
 	m_v2refresh_token = j_login["refresh_token"].asString();
+	int v2token_expiration_time = atoi(j_login["expires_in"].asString().c_str());
+	m_sessiontimer = mytime(nullptr) + v2token_expiration_time; // Honeywell will invalidate our session ID after an hour
+
 	std::stringstream atoken;
 	atoken << "Authorization: bearer " << j_login["access_token"].asString();
 
@@ -1009,16 +1018,19 @@ bool CEvohomeWeb::user_account()
 	}
 
 	Json::Value j_account;
-	Json::Reader jReader;
-	if (!jReader.parse(sz_response.c_str(), j_account))
+	if (!ParseJSon(sz_response, j_account))
 	{
 		_log.Log(LOG_ERROR, "(%s) failed parsing response from retrieve user account info", m_Name.c_str());
 		return false;
 	}
 
+	std::string szError;
+	if (j_account.isMember("error"))
+		szError = j_account["error"].asString();
 	if (j_account.isMember("message"))
+		szError = j_account["message"].asString();
+	if (!szError.empty())
 	{
-		std::string szError = j_account["message"].asString();
 		_log.Log(LOG_ERROR, "(%s) retrieve user account info failed with message: %s", m_Name.c_str(), szError.c_str());
 		return false;
 	}
@@ -1132,8 +1144,6 @@ bool CEvohomeWeb::full_installation()
 	sz_url.append("&includeTemperatureControlSystems=True");
 
 	std::string sz_response = send_receive_data(sz_url, m_SessionHeaders);
-
-	Json::Reader jReader;
 	m_j_fi.clear();
 
 	bool parseOK;
@@ -1143,10 +1153,10 @@ bool CEvohomeWeb::full_installation()
 		std::string sz_jdata = "{\"locations\": ";
 		sz_jdata.append(sz_response);
 		sz_jdata.append("}");
-		parseOK = jReader.parse(sz_jdata, m_j_fi);
+		parseOK = ParseJSon(sz_jdata, m_j_fi);
 	}
 	else
-		parseOK = jReader.parse(sz_response, m_j_fi);
+		parseOK = ParseJSon(sz_response, m_j_fi);
 
 	if (!parseOK)
 	{
@@ -1205,7 +1215,7 @@ bool CEvohomeWeb::full_installation()
 
 bool CEvohomeWeb::get_status(const std::string &locationId)
 {
-	if ((m_locations.size() == 0) && !full_installation())
+	if ((m_locations.empty()) && !full_installation())
 		return false;
 
 	for (size_t i = 0; i < m_locations.size(); i++)
@@ -1217,7 +1227,7 @@ bool CEvohomeWeb::get_status(const std::string &locationId)
 }
 bool CEvohomeWeb::get_status(int location)
 {
-	if ((m_locations.size() == 0) && !full_installation())
+	if ((m_locations.empty()) && !full_installation())
 		return false;
 	if (m_locations[location].locationId.empty())
 		return false;
@@ -1238,10 +1248,8 @@ bool CEvohomeWeb::get_status(int location)
 		len--;
 		sz_response[len] = ' ';
 	}
-
-	Json::Reader jReader;
 	m_j_stat.clear();
-	if (!jReader.parse(sz_response, m_j_stat))
+	if (!ParseJSon(sz_response, m_j_stat))
 	{
 		_log.Log(LOG_ERROR, "(%s) cannot parse return data from status request", m_Name.c_str());
 		return false;
@@ -1325,29 +1333,29 @@ bool CEvohomeWeb::get_status(int location)
 
 CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(const std::string &zoneId)
 {
-	if ((m_locations.size() == 0) && !full_installation())
-		return NULL;
+	if ((m_locations.empty()) && !full_installation())
+		return nullptr;
 
-	for (size_t l = 0; l < m_locations.size(); l++)
+	for (auto &m_location : m_locations)
 	{
-		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
+		for (auto &gateway : m_location.gateways)
 		{
-			for (size_t t = 0; t < m_locations[l].gateways[g].temperatureControlSystems.size(); t++)
+			for (auto &temperatureControlSystem : gateway.temperatureControlSystems)
 			{
-				for (size_t z = 0; z < m_locations[l].gateways[g].temperatureControlSystems[t].zones.size(); z++)
+				for (auto &zone : temperatureControlSystem.zones)
 				{
-					if (m_locations[l].gateways[g].temperatureControlSystems[t].zones[z].zoneId == zoneId)
-						return &m_locations[l].gateways[g].temperatureControlSystems[t].zones[z];
+					if (zone.zoneId == zoneId)
+						return &zone;
 				}
-				if (m_locations[l].gateways[g].temperatureControlSystems[t].dhw.size() > 0)
+				if (!temperatureControlSystem.dhw.empty())
 				{
-					if (m_locations[l].gateways[g].temperatureControlSystems[t].dhw[0].zoneId == zoneId)
-						return &m_locations[l].gateways[g].temperatureControlSystems[t].dhw[0];
+					if (temperatureControlSystem.dhw[0].zoneId == zoneId)
+						return &temperatureControlSystem.dhw[0];
 				}
 			}
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 
@@ -1379,11 +1387,9 @@ bool CEvohomeWeb::get_zone_schedule(const std::string &zoneId, const std::string
 		return false;
 
 	zone* hz = get_zone_by_ID(zoneId);
-	if (hz == NULL)
+	if (hz == nullptr)
 		return false;
-
-	Json::Reader jReader;
-	bool ret = jReader.parse(sz_response, hz->schedule);
+	bool ret = ParseJSon(sz_response, hz->schedule);
 	if (ret)
 	{
 		(hz->schedule)["zoneId"] = zoneId;
@@ -1417,7 +1423,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 		return "";
 
 	struct tm ltime;
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	localtime_r(&now, &ltime);
 	int year = ltime.tm_year;
 	int month = ltime.tm_mon;
@@ -1433,7 +1439,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 	}
 
 	// Hack: DayOff needs to reference a specific weekday rather than current
-	if (m_tcs->status != NULL)
+	if (m_tcs->status != nullptr)
 	{
 		std::string szsystemMode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
 		if (szsystemMode == "DayOff")
@@ -1455,7 +1461,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 			if (((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_tryday))
 				found = true;
 		}
-		if (!found)
+		if ((!found) || (j_day == nullptr))
 			continue;
 
 		found = false;
@@ -1494,7 +1500,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 				if (((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_tryday))
 					found = true;
 			}
-			if (!found)
+			if ((!found) || (j_day == nullptr))
 				continue;
 
 			found = false;
@@ -1561,7 +1567,7 @@ bool CEvohomeWeb::set_system_mode(const std::string &systemId, int mode)
 
 	std::string sz_putdata = "{\"SystemMode\":";
 	sz_putdata.append(std::to_string(mode));
-	sz_putdata.append(",\"TimeUntil\":null,\"Permanent\":true}");
+	sz_putdata.append(R"(,"TimeUntil":null,"Permanent":true})");
 
 	std::string sz_response = put_receive_data(sz_url, sz_putdata, m_SessionHeaders);
 	if (!sz_response.find("\"id\""))
@@ -1573,10 +1579,9 @@ bool CEvohomeWeb::set_system_mode(const std::string &systemId, int mode)
 			len--;
 			sz_response[len] = ' ';
 		}
-	
+
 		Json::Value j_response;
-		Json::Reader jReader;
-		if (jReader.parse(sz_response.c_str(), j_response) && (j_response.isMember("message")))
+		if (ParseJSon(sz_response, j_response) && (j_response.isMember("message")))
 		{
 			std::string szError = j_response["message"].asString();
 			_log.Log(LOG_ERROR, "(%s) set system mode failed with message: %s", m_Name.c_str(), szError.c_str());
@@ -1598,8 +1603,8 @@ bool CEvohomeWeb::set_temperature(const std::string &zoneId, const std::string &
 
 	std::string sz_putdata = "{\"HeatSetpointValue\":";
 	sz_putdata.append(temperature);
-	if (time_until == "")
-		sz_putdata.append(",\"SetpointMode\":1,\"TimeUntil\":null}");
+	if (time_until.empty())
+		sz_putdata.append(R"(,"SetpointMode":1,"TimeUntil":null})");
 	else
 	{
 		if (!verify_datetime(time_until))
@@ -1607,7 +1612,7 @@ bool CEvohomeWeb::set_temperature(const std::string &zoneId, const std::string &
 			_log.Log(LOG_ERROR, "(%s) ignored zone temperature override because of invalid 'time_until' value", m_Name.c_str());
 			return false;
 		}
-		sz_putdata.append(",\"SetpointMode\":2,\"TimeUntil\":\"");
+		sz_putdata.append(R"(,"SetpointMode":2,"TimeUntil":")");
 		sz_putdata.append(time_until.substr(0, 10));
 		sz_putdata.append("T");
 		sz_putdata.append(time_until.substr(11, 8));
@@ -1625,10 +1630,9 @@ bool CEvohomeWeb::set_temperature(const std::string &zoneId, const std::string &
 			len--;
 			sz_response[len] = ' ';
 		}
-	
+
 		Json::Value j_response;
-		Json::Reader jReader;
-		if (jReader.parse(sz_response.c_str(), j_response) && (j_response.isMember("message")))
+		if (ParseJSon(sz_response, j_response) && (j_response.isMember("message")))
 		{
 			std::string szError = j_response["message"].asString();
 			_log.Log(LOG_ERROR, "(%s) set zone temperature override failed with message: %s", m_Name.c_str(), szError.c_str());
@@ -1648,7 +1652,7 @@ bool CEvohomeWeb::cancel_temperature_override(const std::string &zoneId)
 	sz_url.append(zoneId);
 	sz_url.append("/heatSetpoint");
 
-	std::string sz_putdata = "{\"HeatSetpointValue\":0.0,\"SetpointMode\":0,\"TimeUntil\":null}";
+	std::string sz_putdata = R"({"HeatSetpointValue":0.0,"SetpointMode":0,"TimeUntil":null})";
 
 	std::string sz_response = put_receive_data(sz_url, sz_putdata, m_SessionHeaders);
 
@@ -1661,10 +1665,9 @@ bool CEvohomeWeb::cancel_temperature_override(const std::string &zoneId)
 			len--;
 			sz_response[len] = ' ';
 		}
-	
+
 		Json::Value j_response;
-		Json::Reader jReader;
-		if (jReader.parse(sz_response.c_str(), j_response) && (j_response.isMember("message")))
+		if (ParseJSon(sz_response, j_response) && (j_response.isMember("message")))
 		{
 			std::string szError = j_response["message"].asString();
 			_log.Log(LOG_ERROR, "(%s) cancel zone temperature override failed with message: %s", m_Name.c_str(), szError.c_str());
@@ -1692,15 +1695,15 @@ bool CEvohomeWeb::set_dhw_mode(const std::string &dhwId, const std::string &mode
 
 	std::string sz_putdata = "{\"State\":";
 	if (mode == "auto")
-		sz_putdata.append("0,\"Mode\":0,\"UntilTime\":null}");
+		sz_putdata.append(R"(0,"Mode":0,"UntilTime":null})");
 	else
 	{
 		if (mode == "on")
 			sz_putdata.append("1");
 		else
 			sz_putdata.append("0");
-		if (time_until == "")
-			sz_putdata.append(",\"Mode\":1,\"UntilTime\":null}");
+		if (time_until.empty())
+			sz_putdata.append(R"(,"Mode":1,"UntilTime":null})");
 		else
 		{
 			if (!verify_datetime(time_until))
@@ -1708,7 +1711,7 @@ bool CEvohomeWeb::set_dhw_mode(const std::string &dhwId, const std::string &mode
 				_log.Log(LOG_ERROR, "(%s) ignored hot water override because of invalid 'time_until' value", m_Name.c_str());
 				return false;
 			}
-			sz_putdata.append(",\"Mode\":2,\"UntilTime\":\"");
+			sz_putdata.append(R"(,"Mode":2,"UntilTime":")");
 			sz_putdata.append(time_until.substr(0, 10));
 			sz_putdata.append("T");
 			sz_putdata.append(time_until.substr(11, 8));
@@ -1727,10 +1730,9 @@ bool CEvohomeWeb::set_dhw_mode(const std::string &dhwId, const std::string &mode
 			len--;
 			sz_response[len] = ' ';
 		}
-	
+
 		Json::Value j_response;
-		Json::Reader jReader;
-		if (jReader.parse(sz_response.c_str(), j_response) && (j_response.isMember("message")))
+		if (ParseJSon(sz_response, j_response) && (j_response.isMember("message")))
 		{
 			std::string szError = j_response["message"].asString();
 			_log.Log(LOG_ERROR, "(%s) set hot water override failed with message: %s", m_Name.c_str(), szError.c_str());
@@ -1775,8 +1777,7 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 	}
 
 	Json::Value j_login;
-	Json::Reader jReader;
-	if (!jReader.parse(sz_response.c_str(), j_login))
+	if (!ParseJSon(sz_response, j_login))
 	{
 		_log.Log(LOG_ERROR, "(%s) cannot parse return data from v1 login", m_Name.c_str());
 		return false;
@@ -1813,8 +1814,38 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 }
 
 
+void CEvohomeWeb::v1_renew_session()
+{
+	if (m_v1uid.empty()) {
+		v1_login(m_username, m_password);
+		return;
+	}
+
+	std::string sz_url = EVOHOME_HOST"/WebAPI/api/Session";
+	std::string sz_response = put_receive_data(sz_url, "", m_v1SessionHeaders);
+
+	if (sz_response.empty())
+		return;
+
+	// no need to parse the whole json string - we only need the "code"
+	size_t pos = sz_response.find("\"code\"");
+	if (pos == std::string::npos)
+		return;
+
+	std::string sz_code = sz_response.substr(pos+8, 2);
+	if (sz_code != "-1")
+	{
+		// session is no longer valid
+		_log.Debug(DEBUG_HARDWARE, "(%s) discard expired v1 API session ID", m_Name.c_str());
+		m_v1uid = "";
+	}
+}
+
+
 void CEvohomeWeb::get_v1_temps()
 {
+	v1_renew_session();
+
 	if (m_v1uid.empty() && !v1_login(m_username, m_password))
 		return;
 
@@ -1823,8 +1854,6 @@ void CEvohomeWeb::get_v1_temps()
 	sz_url.append("&allData=True");
 
 	std::string sz_response = send_receive_data(sz_url, m_v1SessionHeaders);
-
-	Json::Reader jReader;
 	Json::Value j_fi;
 	bool parseOK;
 	if (sz_response[0] == '[')
@@ -1833,10 +1862,10 @@ void CEvohomeWeb::get_v1_temps()
 		std::string sz_jdata = "{\"locations\": ";
 		sz_jdata.append(sz_response);
 		sz_jdata.append("}");
-		parseOK = jReader.parse(sz_jdata, j_fi);
+		parseOK = ParseJSon(sz_jdata, j_fi);
 	}
 	else
-		parseOK = jReader.parse(sz_response, j_fi);
+		parseOK = ParseJSon(sz_response, j_fi);
 
 	if (!parseOK)
 	{
@@ -1844,26 +1873,34 @@ void CEvohomeWeb::get_v1_temps()
 		return;
 	}
 
-	if (!j_fi.isMember("locations"))
-	{
-		std::string szError;
-		if (j_fi.isMember("error"))
-			szError = j_fi["error"].asString();
-		else if (j_fi.isMember("message"))
-			szError = j_fi["message"].asString();
-		if (!szError.empty())
-		{
-			if (j_fi.isMember("code") && (j_fi["code"].asString() == "401")) // session is no longer valid
-				m_v1uid = "";
+	Json::Value *j_error;
+	if (j_fi.isMember("locations") && (!j_fi["locations"].empty()))
+		j_error = &j_fi["locations"][0];
+	else
+		j_error = &j_fi;
 
-			_log.Log(LOG_ERROR, "(%s) v1 get temps failed with message: %s", m_Name.c_str(), szError.c_str());
-			return;
+	std::string szError;
+	if ((*j_error).isMember("error"))
+		szError = (*j_error)["error"].asString();
+	if ((*j_error).isMember("message"))
+		szError = (*j_error)["message"].asString();
+	if (!szError.empty())
+	{
+		if ((*j_error).isMember("code") && ((*j_error)["code"].asString() == "401"))
+		{
+			// authorization error: session is no longer valid
+			m_v1uid = "";
 		}
 
-		_log.Log(LOG_ERROR, "(%s) v1 get temps returned an unhandled response", m_Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) v1 get temps failed with message: %s", m_Name.c_str(), szError.c_str());
 		return;
 	}
 
+	if (!j_fi.isMember("locations"))
+	{
+		_log.Log(LOG_ERROR, "(%s) v1 get temps returned an unhandled response", m_Name.c_str());
+		return;
+	}
 
 	size_t l = j_fi["locations"].size();
 	for (size_t i = 0; i < l; ++i)
@@ -1879,7 +1916,7 @@ void CEvohomeWeb::get_v1_temps()
 			std::string zoneId = (*j_dev)["deviceID"].asString();
 
 			zone *v2zone = get_zone_by_ID(zoneId);
-			if (v2zone != NULL)
+			if (v2zone != nullptr)
 			{
 				double v1temp = (*j_dev)["thermostat"]["indoorTemperature"].asDouble();
 				if (v1temp > 127) // allow rounding error
@@ -1903,7 +1940,7 @@ void CEvohomeWeb::get_v1_temps()
  *									*
  ************************************************************************/
 
-std::string CEvohomeWeb::send_receive_data(std::string url, std::vector<std::string> &headers)
+std::string CEvohomeWeb::send_receive_data(const std::string &url, std::vector<std::string> &headers)
 {
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> vHeaderData;
@@ -1913,8 +1950,7 @@ std::string CEvohomeWeb::send_receive_data(std::string url, std::vector<std::str
 	return process_response(vHTTPResponse, vHeaderData, httpOK);
 }
 
-
-std::string CEvohomeWeb::send_receive_data(std::string url, std::string postdata, std::vector<std::string> &headers)
+std::string CEvohomeWeb::send_receive_data(const std::string &url, const std::string &postdata, std::vector<std::string> &headers)
 {
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> vHeaderData;
@@ -1924,10 +1960,8 @@ std::string CEvohomeWeb::send_receive_data(std::string url, std::string postdata
 	return process_response(vHTTPResponse, vHeaderData, httpOK);
 }
 
-
-std::string CEvohomeWeb::put_receive_data(std::string url, std::string putdata, std::vector<std::string> &headers)
+std::string CEvohomeWeb::put_receive_data(const std::string &url, const std::string &putdata, std::vector<std::string> &headers)
 {
-
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> vHeaderData;
 
@@ -1941,30 +1975,89 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 {
 	std::string sz_response;
 	std::string sz_retcode;
+	std::string sz_rettext;
 
 	sz_response.insert(sz_response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 
-	if (!httpOK && (vHeaderData.size() > 0))
+	if (!vHeaderData.empty())
 	{
-		if (vHeaderData[0][0] == 'H')
+
+		size_t pos = vHeaderData[0].find(' ');
+		if (pos != std::string::npos)
 		{
-			size_t pos = vHeaderData[0].find(" ");
-			sz_retcode = vHeaderData[0].substr(pos+1, 3);
+			pos++;
+			while (((vHeaderData[0][pos] & 0xF0) == 0x30) && ((vHeaderData[0][pos] & 0x0F) < 10))
+			{
+				sz_retcode.append(1,vHeaderData[0][pos]);
+				pos++;
+			}
+			pos++;
+			if (pos < vHeaderData[0].size())
+				sz_rettext = vHeaderData[0].substr(pos);
 		}
-		else if (vHeaderData[0].size() > 2)
+
+		if (sz_retcode.size() == 3)
+//		if (vHeaderData[0][0] == 'H')
+		{
+			// HTTPClient GET method sets httpOK to false if HTTP return code > 400
+			// reset the value to true - we want to process the body
+			httpOK = true;
+		}
+
+		if (sz_retcode.empty())
+		{
+			// fallthrough in case of an unexpected header content
 			sz_retcode = vHeaderData[0];
-		else // vHeaderData contains a Curl status code
-			_log.Debug(DEBUG_HARDWARE, "(%s) attempt to communicate to Evohome portal returned Curl status: %s", m_Name.c_str(), vHeaderData[0].c_str());
+		}
+
+		if (!httpOK)
+		{
+			 // sz_retcode contains a Curl status code
+			 sz_response = R"({"code":")";
+			 sz_response.append(sz_retcode);
+			 sz_response.append(R"(","message":")");
+			 if (!sz_rettext.empty())
+				 sz_response.append(sz_rettext);
+			 else
+			 {
+				 sz_response.append("HTTP client error ");
+				 sz_response.append(sz_retcode);
+			 }
+			 sz_response.append("\"}");
+			 return sz_response;
+		}
+
+		if ((sz_retcode != "200") && (!sz_response.empty()))
+		{
+			if ((sz_response[0] == '[') || (sz_response[0] == '{'))
+			{
+				// append code to the json response so it will take preference over any existing (textual) message code
+				size_t pos = sz_response.find_last_of('}');
+				if (pos != std::string::npos)
+				{
+					sz_response.insert(pos, R"(,"code":"")");
+					sz_response.insert(pos+9, sz_retcode);
+					return sz_response;
+				}
+			}
+		}
 	}
 
 	if (sz_response.empty())
 	{
-		if (sz_retcode.empty()) // networking error
-			return "{\"error\":\"unable to connect to Evohome portal\"}";
+		if (sz_retcode.empty())
+			return R"({"code":"-1","message":"Evohome portal did not return any data or status"})";
 
-		std::string sz_response = "{\"error\":\"HTTP ";
+		sz_response = R"({"code":")";
 		sz_response.append(sz_retcode);
-		sz_response.append("\",\"code\":\"");
+		sz_response.append(R"(","message":")");
+		if (!sz_rettext.empty())
+			sz_response.append(sz_rettext);
+		else
+		{
+			sz_response.append("HTTP ");
+			sz_response.append(sz_retcode);
+		}
 		sz_response.append(sz_retcode);
 		sz_response.append("\"}");
 		return sz_response;
@@ -1976,7 +2069,12 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 	if (sz_response.find("<title>") != std::string::npos) // received an HTML page
 	{
 		std::stringstream ss_error;
-		ss_error << "{\"message\":\"";
+		ss_error << R"({"code":")";
+		if (!sz_retcode.empty())
+			ss_error << sz_retcode;
+		else
+			ss_error << "-1";
+		ss_error << R"(","message":")";
 		int i = sz_response.find("<title>");
 		char* html = &sz_response[i];
 		i = 7;
@@ -1987,14 +2085,43 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 			i++;
 			c = html[i];
 		}
-		if (!sz_retcode.empty())
-		{
-			ss_error << "\",\"code\":\"" << sz_retcode;
-		}
 		ss_error << "\"}";
 		return ss_error.str();
 	}
 
-	return "{\"error\":\"unhandled response\"}";
+	if (sz_response.find("<html>") != std::string::npos) // received an HTML page without a title
+	{
+		std::stringstream ss_error;
+		ss_error << R"({"code":")";
+		if (!sz_retcode.empty())
+			ss_error << sz_retcode;
+		else
+			ss_error << "-1";
+		ss_error << R"(","message":")";
+		size_t i = 0;
+		char* html = &sz_response[0];
+		char c;
+		while (i < sz_response.size())
+		{
+			c = html[i];
+			if (c == '<')
+			{
+				while (c != '>')
+				{
+					i++;
+					c = html[i];
+				}
+				i++;
+			}
+			else if (c != '<')
+			{
+				ss_error << c;
+				i++;
+			}
+		}
+		ss_error << "\"}";
+		return ss_error.str();
+	}
+	return R"({"code":"-1","message":"unhandled response"})";
 }
 

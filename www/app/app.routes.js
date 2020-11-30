@@ -10,8 +10,10 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'DashboardController'
             }))
             .when('/Devices', angularAMD.route({
-                templateUrl: 'views/devices.html',
-                controller: 'DevicesController'
+                templateUrl: 'app/devices/Devices.html',
+                controller: 'DevicesController',
+                controllerUrl: 'app/devices/Devices.js',
+                controllerAs: '$ctrl'
             }))
             .when('/Devices/:id/Timers', angularAMD.route({
                 templateUrl: 'views/timers.html',
@@ -155,8 +157,10 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 permission: 'Admin'
             }))
             .when('/Roomplan', angularAMD.route({
-                templateUrl: 'views/roomplan.html',
-                controller: 'RoomplanController',
+                templateUrl: 'app/plans/RoomPlans.html',
+                controller: 'RoomPlansController',
+                controllerUrl: 'app/plans/RoomPlans.js',
+                controllerAs: '$ctrl',
                 permission: 'Admin'
             }))
             .when('/Timerplan', angularAMD.route({

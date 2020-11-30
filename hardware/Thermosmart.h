@@ -5,26 +5,28 @@
 
 class CThermosmart : public CDomoticzHardwareBase
 {
-public:
-	CThermosmart(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
-	~CThermosmart(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	void SetSetpoint(const int idx, const float temp);
-private:
-	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
-	void SetPauseStatus(const bool bIsPause);
-	void SetOutsideTemp(const float temp);
+      public:
+	CThermosmart(int ID, const std::string &Username, const std::string &Password, int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6);
+	~CThermosmart() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	void SetSetpoint(int idx, float temp);
+
+      private:
+	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
+	void SetPauseStatus(bool bIsPause);
+	void SetOutsideTemp(float temp);
 	bool GetOutsideTemperatureFromDomoticz(float &tvalue);
 	void SendOutsideTemperature();
 	bool Login();
 	void Logout();
 	void Init();
-	void SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
+	void SetModes(int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6);
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-private:
+
+      private:
 	std::string m_UserName;
 	std::string m_Password;
 	std::string m_AccessToken;
@@ -35,4 +37,3 @@ private:
 	bool m_bDoLogin;
 	int m_LastMinute;
 };
-

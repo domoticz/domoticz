@@ -22,6 +22,8 @@ namespace status_strings {
 
 const std::string switching_protocols =
 	"HTTP/1.1 101 Switching Protocols\r\n";
+const std::string download_file =
+	"HTTP/1.1 102 Download File\r\n";
 const std::string ok =
 	"HTTP/1.1 200 OK\r\n";
 const std::string created =
@@ -61,6 +63,9 @@ std::string to_string(reply::status_type status)
 	{
 	case reply::switching_protocols:
 		return switching_protocols;
+	case reply::download_file:
+		return download_file;
+
 	case reply::ok:
 		return ok;
 	case reply::created:
@@ -110,11 +115,9 @@ const char crlf[] = { '\r', '\n', 0 };
 std::string reply::header_to_string()
 {
 	std::string buffers = status_strings::to_string(status);
-	for (std::size_t i = 0; i < headers.size(); ++i)
-	{
-		header& h = headers[i];
+	for (auto &h : headers)
 		buffers += h.name + misc_strings::name_value_separator + h.value + misc_strings::crlf;
-	}
+
 	buffers += misc_strings::crlf;
 	return buffers;
 }
@@ -138,6 +141,7 @@ void reply::reset()
 namespace stock_replies {
 
 const char switching_protocols[] = "";
+const char download_file[] = "";
 const char ok[] = "";
 const char created[] =
   "<html>"
@@ -215,6 +219,9 @@ std::string to_string(reply::status_type status)
   {
   case reply::switching_protocols:
     return switching_protocols;
+  case reply::download_file:
+	  return download_file;
+
   case reply::ok:
     return ok;
   case reply::created:
@@ -325,7 +332,7 @@ bool reply::set_content_from_file(reply *rep, const std::string & file_path, con
 		return false;
 	reply::add_header_attachment(rep, attachment);
 	if (set_content_type == true) {
-		std::size_t last_dot_pos = attachment.find_last_of(".");
+		std::size_t last_dot_pos = attachment.find_last_of('.');
 		if (last_dot_pos != std::string::npos) {
 			std::string file_extension = attachment.substr(last_dot_pos + 1);
 			std::string mime_type = mime_types::extension_to_type(file_extension);
@@ -342,12 +349,33 @@ bool reply::set_content_from_file(reply *rep, const std::string & file_path, con
 	return true;
 }
 
+bool reply::set_download_file(reply* rep, const std::string& file_path, const std::string& attachment)
+{
+	if (file_path.empty() || attachment.empty())
+		return false;
+	rep->reset();
+	rep->status = reply::status_type::download_file;
+	rep->content = file_path + "\r\n" + attachment;
+	return true;
+}
+
 void reply::add_header_attachment(reply *rep, const std::string & attachment) {
 	reply::add_header(rep, "Content-Disposition", "attachment; filename=" + attachment);
 }
 
+/*
+RFC-7231
+Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content
+3.1.1.5. Content-Type
+
+A sender that generates a message containing a payload body SHOULD
+generate a Content-Type header field in that message unless the
+intended media type of the enclosed representation is unknown to the
+sender.
+*/
 void reply::add_header_content_type(reply *rep, const std::string & content_type) {
-	reply::add_header(rep, "Content-Type", content_type);
+	if (!content_type.empty())
+		reply::add_header(rep, "Content-Type", content_type);
 }
 
 } // namespace server

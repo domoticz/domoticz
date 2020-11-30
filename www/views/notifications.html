@@ -13,7 +13,7 @@
             device="vm.device"
             notifications="vm.notifications"
             on-select="vm.selectNotification(value)"
-    />
+    ></device-notifications-table>
 
     <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
@@ -44,7 +44,7 @@
             notifiers="::vm.notifiers"
             device="::vm.device"
             ng-model="vm.notification"
-    />
+    ></device-notification-form>
 
     <br>
 
@@ -109,7 +109,7 @@
                        class="text ui-widget-content ui-corner-all"
                        ng-model="$ctrl.notification.level"
                        ng-change="$ctrl.updateViewValue()"
-                />
+                >
                 <label for="value">&nbsp;{{ $ctrl.getValueUnit() }}</label>
             </td>
         </tr>
@@ -139,7 +139,7 @@
                            id="checkalways"
                            ng-model="$ctrl.notification.ignoreInterval"
                            ng-change="$ctrl.updateViewValue()"
-                    />&nbsp;
+                    >&nbsp;
                     <label for="checkalways">({{:: 'If enabled, it will bypass the Notification interval specified in the Settings page' | translate }})</label>
                 </div>
             </td>
@@ -155,7 +155,7 @@
                            id="checkrecovery"
                            ng-model="$ctrl.notification.sendRecovery"
                            ng-change="$ctrl.updateViewValue()"
-                    />&nbsp;
+                    >&nbsp;
                     <label for="checkrecovery">({{:: 'If enabled, a notification will be send when given condition has been recovered' | translate }})</label>
                 </div>
             </td>
@@ -172,7 +172,7 @@
                        style="width: 350px; padding: .2em;"
                        ng-model="$ctrl.notification.customMessage"
                        ng-change="$ctrl.updateViewValue()"
-                />&nbsp;
+                >&nbsp;
                 <span>{{:: '(Optional)' | translate}}</span>
             </td>
         </tr>
@@ -188,7 +188,7 @@
                             id="{{:: item.description}}"
                             ng-model="$ctrl.notification.systems[item.name]"
                             ng-change="$ctrl.updateViewValue()"
-                    />
+                    >
                     <label for="{{:: item.description}}">{{:: item.name }}</label>
                 </div>
             </td>

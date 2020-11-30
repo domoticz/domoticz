@@ -41,7 +41,7 @@ static const point colorPointsGamut_Default[3] = {point(1.0, 0.0),
 
 static const char* GAMUT_A_BULBS_LIST_v[] = {"LLC001", "LLC005", "LLC006", "LLC007", "LLC010", "LLC011", "LLC012", "LLC014", "LLC013", "LST001"};
 static const char* GAMUT_B_BULBS_LIST_v[] = {"LCT001", "LCT002", "LCT003", "LCT004", "LLM001", "LCT005", "LCT006", "LCT007"};
-static const char* GAMUT_C_BULBS_LIST_v[] = {"LCT010", "LCT011", "LCT012", "LCT014", "LCT015", "LCT016", "LLC020", "LST002"};
+static const char* GAMUT_C_BULBS_LIST_v[] = {"LCT010", "LCT011", "LCT012", "LCT014", "LCT015", "LCT016", "LLC020", "LST002", "LCS001", "LCG002"};
 static const char* MULTI_SOURCE_LUMINAIRES_v[] = {"HBL001", "HBL002", "HBL003", "HIL001", "HIL002", "HEL001", "HEL002"};
 static std::vector<std::string> GAMUT_A_BULBS_LIST(GAMUT_A_BULBS_LIST_v, GAMUT_A_BULBS_LIST_v + sizeof(GAMUT_A_BULBS_LIST_v) / sizeof(GAMUT_A_BULBS_LIST_v[0]));
 static std::vector<std::string> GAMUT_B_BULBS_LIST(GAMUT_B_BULBS_LIST_v, GAMUT_B_BULBS_LIST_v + sizeof(GAMUT_B_BULBS_LIST_v) / sizeof(GAMUT_B_BULBS_LIST_v[0]));
@@ -52,13 +52,13 @@ static const point* get_light_gamut(const std::string &modelid)
 {
 	if (std::find(GAMUT_A_BULBS_LIST.begin(), GAMUT_A_BULBS_LIST.end(), modelid) != GAMUT_A_BULBS_LIST.end())
 		return colorPointsGamut_A;
-	else if (std::find(GAMUT_B_BULBS_LIST.begin(), GAMUT_B_BULBS_LIST.end(), modelid) != GAMUT_B_BULBS_LIST.end())
+	if (std::find(GAMUT_B_BULBS_LIST.begin(), GAMUT_B_BULBS_LIST.end(), modelid) != GAMUT_B_BULBS_LIST.end())
 		return colorPointsGamut_B;
-	else if (std::find(MULTI_SOURCE_LUMINAIRES.begin(), MULTI_SOURCE_LUMINAIRES.end(), modelid) != MULTI_SOURCE_LUMINAIRES.end())
+	if (std::find(MULTI_SOURCE_LUMINAIRES.begin(), MULTI_SOURCE_LUMINAIRES.end(), modelid) != MULTI_SOURCE_LUMINAIRES.end())
 		return colorPointsGamut_B;
-	else if (std::find(GAMUT_C_BULBS_LIST.begin(), GAMUT_C_BULBS_LIST.end(), modelid) != GAMUT_C_BULBS_LIST.end())
+	if (std::find(GAMUT_C_BULBS_LIST.begin(), GAMUT_C_BULBS_LIST.end(), modelid) != GAMUT_C_BULBS_LIST.end())
 		return colorPointsGamut_C;
-	else return colorPointsGamut_Default;
+	return colorPointsGamut_Default;
 }
 
 static double cross_product(point p1, point p2)
@@ -100,7 +100,7 @@ static point get_closest_point_to_line(point A, point B, point P)
 	else if (t > 1.0)
 		t = 1.0;
 
-	return point(A.x + AB.x * t, A.y + AB.y * t);
+	return { A.x + AB.x * t, A.y + AB.y * t };
 }
 
 static double get_distance_between_two_points(point p1, point p2)
@@ -145,7 +145,7 @@ static point get_closest_point_to_point(point xy_point, const std::string &model
 	double cx = closest_point.x;
 	double cy = closest_point.y;
 
-	return point(cx, cy);
+	return { cx, cy };
 }
 
 void CPhilipsHue::RgbFromXY(const double x, const double y, const double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8)
@@ -258,15 +258,15 @@ bool CPhilipsHue::StatesSimilar(const _tHueLightState &s1, const _tHueLightState
 				break;
 			case HLMODE_HS:
 			{
-				uint16_t h1 = s1.hue;
-				uint16_t h2 = s2.hue;
+				uint16_t h1 = (uint16_t) s1.hue;
+				uint16_t h2 = (uint16_t) s2.hue;
 				res = abs(int16_t(h1-h2)) < 655 && // 655 is 1% of 65535, the range of hue
 					  abs(s1.sat - s2.sat) <= 3;   // 3 is 1% of 255, the range of sat
 				  break;
 			}
 			case HLMODE_XY:
-				res = abs(s1.x - s2.x) < 0.01 && // 655 is 1% of 65535, the range of hue
-					  abs(s1.y - s2.y) < 0.01;   // 3 is 1% of 255, the range of sat
+				res = std::abs(s1.x - s2.x) < 0.01 && // 655 is 1% of 65535, the range of hue
+					  std::abs(s1.y - s2.y) < 0.01;   // 3 is 1% of 255, the range of sat
 				break;
 		}
 	}
