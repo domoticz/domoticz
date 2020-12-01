@@ -3747,7 +3747,8 @@ define(['app', 'livesocket'], function (app) {
 										statushtml = "";
 									}
 									else if (item.Type == "Air Quality") {
-										imagehtml += 'air48.png" class="lcursor" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'air48.png' : item.Image + '48_On.png';
+										imagehtml += item.Image + '" class="lcursor" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 										statushtml = item.Quality;
 									}
 									else if (item.SubType == "Percentage") {
@@ -3787,11 +3788,13 @@ define(['app', 'livesocket'], function (app) {
 										statushtml = "";
 									}
 									else if (item.SubType == "Leaf Wetness") {
-										imagehtml += 'leaf48.png" height="40" width="40"></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'leaf48.png' : item.Image + '48_On.png';
+										imagehtml += item.Image + '" height="40" width="40"></td>\n';
 										statushtml = "";
 									}
 									else if (item.SubType == "Distance") {
-										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/visibility48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'visibility48.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 									else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
@@ -3801,8 +3804,8 @@ define(['app', 'livesocket'], function (app) {
 									}
 									else if (item.SubType == "Text") {
 										var logLink = '#/Devices/' + item.idx + '/Log';
-
-										imagehtml = '<a href="' + logLink + '"><img src="images/text48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'text48.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="' + logLink + '"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
 									else if (item.SubType == "Alert") {
@@ -3829,7 +3832,8 @@ define(['app', 'livesocket'], function (app) {
 										statushtml = "";
 									}
 									else if (item.SubType == "Sound Level") {
-										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Speaker48_On.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'Speaker48_On.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 

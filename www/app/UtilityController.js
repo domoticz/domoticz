@@ -641,7 +641,8 @@ define(['app', 'livesocket'], function (app) {
 								}
 							}
 							else if (item.Type == "Air Quality") {
-								xhtm += '<img src="images/air48.png" height="48" width="48"></td>\n';
+								item.Image = (item.CustomImage == 0)  ? 'air48.png' : item.Image + '48_On.png';
+								xhtm += '<img src="images/' + item.Image + '" height="48" width="48"></td>\n';
 								status = item.Quality;
 							}
 							else if (item.SubType == "Custom Sensor") {
@@ -662,11 +663,13 @@ define(['app', 'livesocket'], function (app) {
 								status = "";
 							}
 							else if (item.SubType == "Leaf Wetness") {
-								xhtm += '<img src="images/leaf48.png" height="48" width="48"></td>\n';
+								item.Image = (item.CustomImage == 0)  ? 'leaf48.png' : item.Image + '48_On.png';
+								xhtm += '<img src="images/' + item.Image + '" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Distance") {
-								xhtm += '<img src="images/visibility48.png" height="48" width="48"></td>\n';
+								item.Image = (item.CustomImage == 0)  ? 'visibility48.png' : item.Image + '48_On.png';
+								xhtm += '<img src="images/' + item.Image + '" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
@@ -675,7 +678,8 @@ define(['app', 'livesocket'], function (app) {
 								status = "";
 							}
 							else if (item.SubType == "Text") {
-								xhtm += '<img src="images/text48.png" height="48" width="48"></td>\n';
+								item.Image = (item.CustomImage == 0)  ? 'text48.png' : item.Image + '48_On.png';
+								xhtm += '<img src="images/' + item.Image + '" height="48" width="48"></td>\n';
 								status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 							}
 							else if (item.SubType == "Alert") {
@@ -723,7 +727,8 @@ define(['app', 'livesocket'], function (app) {
 								status = "";
 							}
 							else if (item.SubType == "Sound Level") {
-								xhtm += '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Speaker48_On.png" class="lcursor" height="48" width="48"></a></td>\n';
+								item.Image = (item.CustomImage == 0)  ? 'Speaker48_On.png' : item.Image + '48_On.png';
+								xhtm += '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="48" width="48"></a></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Waterflow") {
