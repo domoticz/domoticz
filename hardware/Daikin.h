@@ -19,6 +19,7 @@ class CDaikin : public CDomoticzHardwareBase
 	void GetControlInfo();
 	void GetSensorInfo();
 	void GetBasicInfo();
+    void GetYearPower();
 	void UpdateSwitchNew(unsigned char Idx, int SubUnit, bool bOn, double Level, const std::string &defaultname);
 	void InsertUpdateSwitchSelector(unsigned char Idx, bool bIsOn, int level, const std::string &defaultname);
 	bool SetSetpoint(int idx, float temp);
