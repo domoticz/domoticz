@@ -45,13 +45,12 @@ return {
 			end
 
 		elseif device.deviceSubType == "Relay" then
-
-			if device._state == "On" then
-				device.state = "On"
-				device.active = true
-			else
+			if device._state == "Off" then
 				device.state = "Off"
 				device.active = false
+			else
+				device.state = device._state or "On"
+				device.active = true
 			end
 
 		else

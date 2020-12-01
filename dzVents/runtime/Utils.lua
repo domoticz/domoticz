@@ -123,7 +123,7 @@ function self.stringSplit(text, sep, convert)
 	if not(text) then return {} end
 	local sep = sep or '%s'
 	local t = {}
-	for str in string.gmatch(text, "([^"..sep.."]+)") do
+	for str in string.gmatch(text, "([^"..sep.."]*)") do
 		table.insert(t, ( convert and tonumber(str) ) or str)
 	end
 	return t
