@@ -770,8 +770,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
 	- **sceneExists(parm)**: *Function*: returns name when entered with valid scene ^3.0.12^ or sceneID and return ID when entered with valid sceneName or false when not a scene, sceneID or sceneName of an existing scene
 	- **setLogMarker([marker])**: *Function*: set logMarker to 'marker'. Defaults to scriptname. Can be used to change logMarker based on flow in script
-	- **stringSplit(string [,separator ] [,convert ]<sup>3.0.13</sup>)**:*Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words. If word == nil the word will be set to an empty string. Default convert is false when set to true it will convert strings to number where possible.
-	- **stringToSeconds(str)**:  *Function*: <sup>3.0.1</sup>  Returns number of seconds between now and str.	
+	- **stringSplit(string [,separator ] [,convertNumber ][,convertNil ]<sup>3.0.17</sup>)**:*Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separated words. Default convertNumber is false when set to true it will convert strings to number where possible. Word is ignored when nil, unless convertNil is set; in that case word will be set to the convertNil value.
+	- **stringToSeconds(str)**:  *Function*: <sup>3.0.1</sup>  Returns number of seconds between now and str.
 	*Examples:*
 
 		```Lua
