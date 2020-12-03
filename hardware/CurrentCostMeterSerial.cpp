@@ -8,13 +8,9 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 
-#include <string>
-#include <iostream>
-#include <boost/bind/bind.hpp>
-
 #include <ctime>
-
-using namespace boost::placeholders;
+#include <iostream>
+#include <string>
 
 //
 //Class CurrentCostMeterSerial
@@ -61,7 +57,7 @@ bool CurrentCostMeterSerial::StartHardware()
 		return false;
 	}
 	m_bIsStarted=true;
-	setReadCallback(boost::bind(&CurrentCostMeterSerial::readCallback, this, _1, _2));
+	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }

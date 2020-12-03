@@ -6,8 +6,6 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 
-using namespace boost::placeholders;
-
 #define ZiBlue_RETRY_DELAY 30
 
 CZiBlueSerial::CZiBlueSerial(const int ID, const std::string& devname) :
@@ -133,7 +131,7 @@ bool CZiBlueSerial::OpenSerialDevice()
 	m_rfbufferpos = 0;
 	m_LastReceivedTime = mytime(nullptr);
 
-	setReadCallback(boost::bind(&CZiBlueSerial::readCallback, this, _1, _2));
+	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
 
 	sOnConnected(this);
 
