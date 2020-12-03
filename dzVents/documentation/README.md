@@ -978,21 +978,26 @@ Note that if you do not find your specific device type here you can always inspe
  - **WhActual**: *Number*. Current Watt usage. (please use actualWatt)
  - **updateEnergy(energy)**: *Function*. In Watt. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
+#### Evohome (controller)
+ - **mode**: *string* <sup>3.0.0</sup>.
+ - **setMode(mode, dparm, action, ooc )**: *Function*. set mode for controller. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_AUTOWITHRESET, domoticz.EVOHOME_MODE_AUTOWITHECO, domoticz.EVOHOME_MODE_AWAY, domoticz.EVOHOME_MODE_DAYOFF, domoticz.EVOHOME_MODE_CUSTOM or domoticz.EVOHOME_MODE_HEATINGOFF. dParm <optional> can be a future time string (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`), a future time object, a future time as number of seconds since epoch or a number representing a positive offset in minutes (max 1 year). action <optional> (1 = run on action script, 0 = disable), ooc <optional> (1 = only trigger the event & log on change, 0 = always trigger & log)
+
+#### Evohome (hotWater)
+ - **state**: *string*  ('On' or 'Off')
+ - **mode**: *string*
+ - **untilDate**: *string in ISO 8601 format* or n/a.
+ - **setHotWater(state, mode, until)**: *Function*. set HotWater Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE You can provide an until date (in ISO 8601 format for domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE e.g.: `os.date("!%Y-%m-%dT%TZ")`).
+
+#### Evohome (relay)
+ - **state**: *string*  ('On' or 'Off')
+ - **level**: *number*  (level percentage)
+ - **active**: *boolean* (true when state is not equal to 'Off', false otherwise)
+
 #### Evohome (zones)
  - **setPoint**: *Number*.
  - **mode**: *string* .
  - **untilDate**: *string in ISO 8601 format* or n/a .
  - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
-
-#### Evohome (controller)
- - **mode**: *string* <sup>3.0.0</sup>.
- - **setMode(mode, dparm, action, ooc )**: *Function*. set mode for controller. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_AUTOWITHRESET, domoticz.EVOHOME_MODE_AUTOWITHECO, domoticz.EVOHOME_MODE_AWAY, domoticz.EVOHOME_MODE_DAYOFF, domoticz.EVOHOME_MODE_CUSTOM or domoticz.EVOHOME_MODE_HEATINGOFF. dParm <optional> can be a future time string (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`), a future time object, a future time as number of seconds since epoch or a number representing a positive offset in minutes (max 1 year). action <optional> (1 = run on action script, 0 = disable), ooc <optional> (1 = only trigger the event & log on change, 0 = always trigger & log)
-
-#### Evohome (hotWater) .
- - **state**: *string*  ('On' or 'Off')
- - **mode**: *string*
- - **untilDate**: *string in ISO 8601 format* or n/a.
- - **setHotWater(state, mode, until)**: *Function*. set HotWater Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE You can provide an until date (in ISO 8601 format for domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE e.g.: `os.date("!%Y-%m-%dT%TZ")`).
 
 #### Gas
  - **counter**: *Number*. Value in m<sup>3</sup>
