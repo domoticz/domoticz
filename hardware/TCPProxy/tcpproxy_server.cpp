@@ -15,6 +15,8 @@
 #include "stdafx.h"
 #include "tcpproxy_server.h"
 
+using namespace boost::placeholders;
+
 #if BOOST_VERSION >= 107000
 #define GET_IO_SERVICE(s) ((boost::asio::io_context&)(s).get_executor().context())
 #else
@@ -56,21 +58,30 @@ namespace tcp_proxy
 		}
 		else
 			end=*i;
-
-		auto self = shared_from_this();
-		upstream_socket_.async_connect(end, [this, self](const boost::system::error_code &err) { handle_upstream_connect(err); });
+		upstream_socket_.async_connect(
+			end,
+			boost::bind(&bridge::handle_upstream_connect,
+				shared_from_this(),
+				boost::asio::placeholders::error));
 	}
 
 	void bridge::handle_upstream_connect(const boost::system::error_code& error)
 	{
 		if (!error)
 		{
-			auto self = shared_from_this();
-			upstream_socket_.async_read_some(boost::asio::buffer(upstream_data_, max_data_length),
-							 [this, &error, self](const boost::system::error_code &, size_t bytes) { handle_upstream_read(error, bytes); });
+		upstream_socket_.async_read_some(
+				boost::asio::buffer(upstream_data_,max_data_length),
+				boost::bind(&bridge::handle_upstream_read,
+					shared_from_this(),
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
 
-			downstream_socket_.async_read_some(boost::asio::buffer(downstream_data_, max_data_length),
-							   [this, &error, self](const boost::system::error_code &err, size_t bytes) { handle_downstream_read(error, bytes); });
+		downstream_socket_.async_read_some(
+				boost::asio::buffer(downstream_data_,max_data_length),
+				boost::bind(&bridge::handle_downstream_read,
+					shared_from_this(),
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
 		}
 		else
 		close();
@@ -80,9 +91,12 @@ namespace tcp_proxy
 	{
 		if (!error)
 		{
-			auto self = shared_from_this();
-			upstream_socket_.async_read_some(boost::asio::buffer(upstream_data_, max_data_length),
-							 [this, &error, self](const boost::system::error_code &, size_t bytes) { handle_upstream_read(error, bytes); });
+		upstream_socket_.async_read_some(
+				boost::asio::buffer(upstream_data_,max_data_length),
+				boost::bind(&bridge::handle_upstream_read,
+					shared_from_this(),
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
 		}
 		else
 		close();
@@ -94,9 +108,11 @@ namespace tcp_proxy
 		{
 			//std::unique_lock<std::mutex> lock(mutex_);
 			sDownstreamData(reinterpret_cast<unsigned char*>(&downstream_data_[0]),static_cast<size_t>(bytes_transferred));
-			auto self = shared_from_this();
-			async_write(upstream_socket_, boost::asio::buffer(downstream_data_, bytes_transferred),
-				    [this, &error, &bytes_transferred, self](const boost::system::error_code &, const size_t &) { handle_downstream_read(error, bytes_transferred); });
+			async_write(upstream_socket_,
+					boost::asio::buffer(downstream_data_,bytes_transferred),
+					boost::bind(&bridge::handle_upstream_write,
+						shared_from_this(),
+						boost::asio::placeholders::error));
 		}
 		else
 			close();
@@ -106,9 +122,12 @@ namespace tcp_proxy
 	{
 		if (!error)
 		{
-			auto self = shared_from_this();
-			downstream_socket_.async_read_some(boost::asio::buffer(downstream_data_, max_data_length),
-							   [this, &error, self](const boost::system::error_code &err, size_t bytes) { handle_downstream_read(error, bytes); });
+			downstream_socket_.async_read_some(
+					boost::asio::buffer(downstream_data_,max_data_length),
+					boost::bind(&bridge::handle_downstream_read,
+						shared_from_this(),
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred));
 		}
 		else
 			close();
@@ -122,9 +141,11 @@ namespace tcp_proxy
 			//std::unique_lock<std::mutex> lock(mutex_);
 			sUpstreamData(reinterpret_cast<unsigned char*>(&upstream_data_[0]),static_cast<size_t>(bytes_transferred));
 
-			auto self = shared_from_this();
-			async_write(downstream_socket_, boost::asio::buffer(upstream_data_, bytes_transferred),
-				    [this, self](const boost::system::error_code &err, size_t bytes) { handle_downstream_read(err, bytes); });
+			async_write(downstream_socket_,
+					boost::asio::buffer(upstream_data_,bytes_transferred),
+					boost::bind(&bridge::handle_downstream_write,
+						shared_from_this(),
+						boost::asio::placeholders::error));
 		}
 		else
 			close();
@@ -159,10 +180,13 @@ namespace tcp_proxy
 		try
 		{
 			session_ = std::make_shared<bridge>(io_service_);
-			session_->sDownstreamData.connect([this](const unsigned char *d, size_t l) { OnDownstreamData(d, l); });
-			session_->sUpstreamData.connect([this](const unsigned char *d, size_t l) { OnUpstreamData(d, l); });
+			session_->sDownstreamData.connect( boost::bind( &acceptor::OnDownstreamData, this, _1, _2 ) );
+			session_->sUpstreamData.connect( boost::bind( &acceptor::OnUpstreamData, this, _1, _2 ) );
 
-			acceptor_.async_accept(session_->downstream_socket(), [this](const boost::system::error_code &err) { handle_accept(err); });
+			acceptor_.async_accept(session_->downstream_socket(),
+				boost::bind(&acceptor::handle_accept,
+						this,
+						boost::asio::placeholders::error));
 		}
 		catch(...)
 		{
@@ -188,7 +212,7 @@ namespace tcp_proxy
 		m_bDoStop=true;
 		// Post a call to the stop function so that server::stop() is safe to call
 		// from any thread.
-		io_service_.post([this] { handle_stop(); });
+		io_service_.post(boost::bind(&acceptor::handle_stop, this));
 		return true;
 	}
 

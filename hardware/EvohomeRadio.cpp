@@ -23,6 +23,9 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include <json/json.h>
+#include <boost/bind/bind.hpp>
+
+using namespace boost::placeholders;
 
 extern std::string szUserDataFolder;
 
@@ -85,27 +88,28 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 		s_strid >> std::hex >> m_UControllerID;
 	}
 
-	RegisterDecoder(cmdZoneTemp, [this](CEvohomeMsg &msg) { return DecodeZoneTemp(msg); });
-	RegisterDecoder(cmdSetPoint, [this](CEvohomeMsg &msg) { return DecodeSetpoint(msg); });
-	RegisterDecoder(cmdSetpointOverride, [this](CEvohomeMsg &msg) { return DecodeSetpointOverride(msg); });
-	RegisterDecoder(cmdDHWState, [this](CEvohomeMsg &msg) { return DecodeDHWState(msg); });
-	RegisterDecoder(cmdDHWTemp, [this](CEvohomeMsg &msg) { return DecodeDHWTemp(msg); });
-	RegisterDecoder(cmdControllerMode, [this](CEvohomeMsg &msg) { return DecodeControllerMode(msg); });
-	RegisterDecoder(cmdSysInfo, [this](CEvohomeMsg &msg) { return DecodeSysInfo(msg); });
-	RegisterDecoder(cmdZoneName, [this](CEvohomeMsg &msg) { return DecodeZoneName(msg); });
-	RegisterDecoder(cmdZoneHeatDemand, [this](CEvohomeMsg &msg) { return DecodeHeatDemand(msg); });
-	RegisterDecoder(cmdOpenThermBridge, [this](CEvohomeMsg &msg) { return DecodeOpenThermBridge(msg); });
-	RegisterDecoder(cmdOpenThermSetpoint, [this](CEvohomeMsg &msg) { return DecodeOpenThermSetpoint(msg); });
-	RegisterDecoder(cmdZoneInfo, [this](CEvohomeMsg &msg) { return DecodeZoneInfo(msg); });
-	RegisterDecoder(cmdControllerHeatDemand, [this](CEvohomeMsg &msg) { return DecodeHeatDemand(msg); });
-	RegisterDecoder(cmdBinding, [this](CEvohomeMsg &msg) { return DecodeBinding(msg); });
-	RegisterDecoder(cmdActuatorState, [this](CEvohomeMsg &msg) { return DecodeActuatorState(msg); });
-	RegisterDecoder(cmdActuatorCheck, [this](CEvohomeMsg &msg) { return DecodeActuatorCheck(msg); });
-	RegisterDecoder(cmdZoneWindow, [this](CEvohomeMsg &msg) { return DecodeZoneWindow(msg); });
-	RegisterDecoder(cmdExternalSensor, [this](CEvohomeMsg &msg) { return DecodeExternalSensor(msg); });
-	RegisterDecoder(cmdDeviceInfo, [this](CEvohomeMsg &msg) { return DecodeDeviceInfo(msg); });
-	RegisterDecoder(cmdBatteryInfo, [this](CEvohomeMsg &msg) { return DecodeBatteryInfo(msg); });
-	RegisterDecoder(cmdSync, [this](CEvohomeMsg &msg) { return DecodeSync(msg); });
+	RegisterDecoder(cmdZoneTemp, boost::bind(&CEvohomeRadio::DecodeZoneTemp, this, _1));
+	RegisterDecoder(cmdSetPoint, boost::bind(&CEvohomeRadio::DecodeSetpoint, this, _1));
+	RegisterDecoder(cmdSetpointOverride, boost::bind(&CEvohomeRadio::DecodeSetpointOverride, this, _1));
+	RegisterDecoder(cmdDHWState, boost::bind(&CEvohomeRadio::DecodeDHWState, this, _1));
+	RegisterDecoder(cmdDHWTemp, boost::bind(&CEvohomeRadio::DecodeDHWTemp, this, _1));
+        RegisterDecoder(cmdDHWSettings, boost::bind(&CEvohomeRadio::DecodeDHWSettings, this, _1));
+	RegisterDecoder(cmdControllerMode, boost::bind(&CEvohomeRadio::DecodeControllerMode, this, _1));
+	RegisterDecoder(cmdSysInfo, boost::bind(&CEvohomeRadio::DecodeSysInfo, this, _1));
+	RegisterDecoder(cmdZoneName, boost::bind(&CEvohomeRadio::DecodeZoneName, this, _1));
+	RegisterDecoder(cmdZoneHeatDemand, boost::bind(&CEvohomeRadio::DecodeHeatDemand, this, _1));
+	RegisterDecoder(cmdOpenThermBridge, boost::bind(&CEvohomeRadio::DecodeOpenThermBridge, this, _1));
+	RegisterDecoder(cmdOpenThermSetpoint, boost::bind(&CEvohomeRadio::DecodeOpenThermSetpoint, this, _1));
+ 	RegisterDecoder(cmdZoneInfo, boost::bind(&CEvohomeRadio::DecodeZoneInfo, this, _1));
+	RegisterDecoder(cmdControllerHeatDemand, boost::bind(&CEvohomeRadio::DecodeHeatDemand, this, _1));
+	RegisterDecoder(cmdBinding, boost::bind(&CEvohomeRadio::DecodeBinding, this, _1));
+	RegisterDecoder(cmdActuatorState, boost::bind(&CEvohomeRadio::DecodeActuatorState, this, _1));
+	RegisterDecoder(cmdActuatorCheck, boost::bind(&CEvohomeRadio::DecodeActuatorCheck, this, _1));
+	RegisterDecoder(cmdZoneWindow, boost::bind(&CEvohomeRadio::DecodeZoneWindow, this, _1));
+	RegisterDecoder(cmdExternalSensor, boost::bind(&CEvohomeRadio::DecodeExternalSensor, this, _1));
+	RegisterDecoder(cmdDeviceInfo, boost::bind(&CEvohomeRadio::DecodeDeviceInfo, this, _1));
+	RegisterDecoder(cmdBatteryInfo, boost::bind(&CEvohomeRadio::DecodeBatteryInfo, this, _1));
+	RegisterDecoder(cmdSync, boost::bind(&CEvohomeRadio::DecodeSync, this, _1));
 }
 
 CEvohomeRadio::~CEvohomeRadio()
