@@ -8,12 +8,15 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <cmath>
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #define ENOCEAN_RETRY_DELAY 30
 
@@ -1034,7 +1037,7 @@ bool CEnOceanESP2::OpenSerialDevice()
 	}
 	m_bIsStarted = true;
 	m_receivestate = ERS_SYNC1;
-	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
+	setReadCallback(boost::bind(&CEnOceanESP2::readCallback, this, _1, _2));
 	sOnConnected(this);
 
 	enocean_data_structure iframe;

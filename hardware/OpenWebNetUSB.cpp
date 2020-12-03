@@ -19,9 +19,12 @@ License: Public domain
 
 #include <algorithm>
 #include <ctime>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <iostream>
 #include <string>
+
+using namespace boost::placeholders;
 
 COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate)
 {
@@ -325,7 +328,7 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		return false;
 	}
 
-	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
+	setReadCallback(boost::bind(&COpenWebNetUSB::readCallback, this, _1, _2));
 	sOnConnected(this);
 	m_bIsStarted = true;
 

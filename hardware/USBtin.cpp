@@ -27,12 +27,15 @@ History :
 #include "../main/SQLHelper.h"
 
 #include <algorithm>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <string>
 #include <time.h>
+
+using namespace boost::placeholders;
 
 #define USBTIN_BAUD_RATE         115200
 #define USBTIN_PARITY            boost::asio::serial_port_base::parity::none
@@ -222,7 +225,7 @@ bool USBtin::OpenSerialDevice()
 	m_bIsStarted = true;
 	m_USBtinBufferpos = 0;
 	memset(&m_USBtinBuffer,0,sizeof(m_USBtinBuffer));
-	setReadCallback([this](const char *d, size_t l) { readCallback(d, l); });
+	setReadCallback(boost::bind(&USBtin::readCallback, this, _1, _2));
 
 	sOnConnected(this);
 
