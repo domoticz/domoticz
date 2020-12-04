@@ -325,8 +325,7 @@ int eHouseTCP::UpdateSQLPlan(int /*devh*/, int /*devl*/, int /*devtype*/, const 
 
 	result = m_sql.safe_query("SELECT ID FROM Plans WHERE (Name=='%q') ", devname.c_str());
 
-
-if (result.empty())
+	if (result.empty())
 	{
 		m_sql.safe_query("INSERT INTO Plans (Name) VALUES ('%q')", devname.c_str());
 	}

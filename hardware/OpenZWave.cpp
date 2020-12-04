@@ -5781,7 +5781,6 @@ namespace http {
 					root["status"] = "OK";
 				}
 			}
-			return;
 		}
 
 		void CWebServer::Cmd_ZWaveNetworkHeal(WebEmSession& session, const request& req, Json::Value& root)

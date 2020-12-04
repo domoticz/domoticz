@@ -1791,16 +1791,28 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
 	}
 
 	if (nFaultCode == 0x03) { sprintf(sFaultCode, "MAINS LOW"); }
- 	else if (nFaultCode == 0x04) { sprintf(sFaultCode, "BATTERY LOW"); }
- 	else if (nFaultCode == 0x06) { sprintf(sFaultCode, "COMMS FAULT"); }
+	else if (nFaultCode == 0x04)
+	{
+		sprintf(sFaultCode, "BATTERY LOW");
+	}
+	else if (nFaultCode == 0x06)
+	{
+		sprintf(sFaultCode, "COMMS FAULT");
+	}
 	else if (nFaultCode == 0x0a) { sprintf(sFaultCode, "SENSOR ERROR"); }
 	else { sprintf(sFaultCode, "UNKNOWN(%02x)", nFaultCode); }
 
 	if (nDevType == 0x04) { sprintf(sDevType, "ACTUATOR"); }
 	else if (nDevType == 0x01) { sprintf(sDevType, "SENSOR"); }
 	else if (nDevType == 0x05) { sprintf(sDevType, "HOT WATER"); }
-        else if (nDevType == 0x00) { sprintf(sDevType, "CONTROLLER"); }
- 	else { sprintf(sDevType, "UNKNOWN(%02x)", nDevType); }
+	else if (nDevType == 0x00)
+	{
+		sprintf(sDevType, "CONTROLLER");
+	}
+	else
+	{
+		sprintf(sDevType, "UNKNOWN(%02x)", nDevType);
+	}
 
 	// Log all Fault Logbook entries to the Status log
         Log(false, LOG_STATUS, "evohome: %s: %s %s Device:%06x %s %s", tag, sFaultDateTime, sFaultType, idDev.GetID(), sDevType, sFaultCode);

@@ -446,8 +446,8 @@ int CPiFace::LoadConfig()
 				break;
 			    }
 		    }
-		else
-			_log.Log(LOG_ERROR, "PiFace: Error config file: misformed config line %s found", Line.c_str());
+		    else
+			    _log.Log(LOG_ERROR, "PiFace: Error config file: misformed config line %s found", Line.c_str());
 	    }
 	}
 	ConfigFile.close();

@@ -595,8 +595,7 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 			if (nodes[nodeID] == nullptr)
 				return;
 			nodes[_notification->GetNodeId()]->addGroup(_notification->GetNodeId(), _notification->GetGroupIdx(), n, v);
-			if (v != nullptr)
-				delete[] v;
+			delete[] v;
 		}
 		break;
 		case OpenZWave::Notification::Type_NodeNew:
