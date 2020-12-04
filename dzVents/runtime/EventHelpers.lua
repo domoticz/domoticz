@@ -484,7 +484,7 @@ local function EventHelpers(domoticz, mainMethod)
 				return self.processTimeRuleFunction(_rule), 'function'
 			end
 
-			local rule = string.lower(_rule)
+			local rule = string.lower(tostring(_rule))
 			if (now.matchesRule(rule)) then
 				return true, _rule
 			end

@@ -1572,7 +1572,8 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **getISO**: *Function*. Returns the ISO 8601 formatted date.
  - **hour**: *Number*
  - **hoursAgo**: *Number*. Number of hours since the last update.
- - **isToday**: *Boolean*. Indicates if the device was updated today
+ - **isdst**: *Boolean*. <sup>3.0.18</sup> Indicates if time is in the daylight saving period
+ - **isToday**: *Boolean*. Indicates if time is today
  - **isUTC**: *Boolean*.
  - **makeTime(string | table,[isUTC])**: *domoticz time object*. returns domoticz time object based on first parameter (time as table or string) string format must be 'yyyy-mm-dd hh:mm:ss'. isUTC defaults to false.
  - **matchesRule(rule) **: *Function*. Returns true if the rule matches with the time. See [time trigger rules](#timer_trigger_rules) for rule examples.

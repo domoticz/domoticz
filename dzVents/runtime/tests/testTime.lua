@@ -202,6 +202,44 @@ describe('Time', function()
 
 	end)
 
+	describe('timestamp and formatted date functions', function()
+
+		it('should have timestampToDate ' , function()
+
+			assert.is_same(Time(now).rawDateTime, Time( os.time()).timestampToDate())
+			assert.is_same('01/01/70 01:00:10',Time().timestampToDate(10,'date time'))
+			assert.is_same('Thu 01 Jan 1970 01:01 AM', Time( os.time()).timestampToDate(60,'ddd mm mmm yyyy ii:MM mer'))
+			assert.is_same('8:24 AM', Time( os.time()).timestampToDate(1598077445, 'ii:MM mer nZero'))
+			assert.is_same('22/08/20 8:24 AM', Time( os.time()).timestampToDate(1598077445, 'dd/mm/yy ii:MM mer nZero'))
+			assert.is_same('1/08/20 8:24 AM', Time( os.time()).timestampToDate(1598077445, 'dd/mm/yy ii:MM mer nZero', -21 * 24 * 3600))
+			assert.is_same('Thursday', Time( os.time()).timestampToDate(1605803582, 'dddd'))
+			assert.is_same('46', Time( os.time()).timestampToDate(1605803582, 'W'))
+			assert.is_same('4', Time( os.time()).timestampToDate(1605803582, 'w'))
+
+		end)
+
+		it('should have dateToTimestamp ' , function()
+
+			assert.is_same(1609455540, Time( os.time()).dateToTimestamp('2020-12-31 23:59'))
+			assert.is_same(1609455541, Time( os.time()).dateToTimestamp('2020-12-31 23:59:01','yyyy-mm-dd hh:MM:ss'))
+			assert.is_same(1609455542, Time( os.time()).dateToTimestamp('December 31, 23:59:02','mmmm dd, hh:MM:ss'))
+			assert.is_same(1609455543, Time( os.time()).dateToTimestamp('2020-12-31 23:59:03','(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)' ))
+			assert.is_same(1609455544, Time( os.time()).dateToTimestamp('20201231235904','(%d%d%d%d)(%d%d)(%d%d)(%d%d)(%d%d)(%d%d)'))
+			assert.is_same(1609455545, Time( os.time()).dateToTimestamp('Dec 31, 23:59:05','mmm dd, hh:MM:ss'))
+			assert.is_same(1609455546, Time( os.time()).dateToTimestamp('Friday, 31 december, 23:59:06','dddd, dd mmmm, hh:MM:ss'))
+			assert.is_same(1609455547, Time( os.time()).dateToTimestamp('Friday, 31 dec 20, 23:59:07','dddd, dd mmm yy, hh:MM:ss'))
+			assert.is_same(1609369200, Time( os.time()).dateToTimestamp('Friday, 31 december 2020','dddd, dd mmmm yyyy'))
+
+		end)
+
+		it('should have dateToDate ' , function()
+
+			assert.is_same('Fri Friday 31 December 23:31:06', Time( os.time()).dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'ddd dddd dd mmmm hh:MM:ss',  1 ))
+			assert.is_same('Thu Thursday 30 Dec 23:31:02', Time( os.time()).dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'ddd dddd dd mmm hh:MM:ss',  -3600 * 24 - 3 ))
+
+		end)
+	end)
+
 	describe('makeTime functions', function()
 
 		it('should have makeTime ' , function()
@@ -273,6 +311,13 @@ describe('Time', function()
 
 		it('should have isToday', function()
 			assert.is_true(localT.isToday)
+		end)
+
+		it('should have isdst', function()
+			local t = Time('2020-06-05 02:04:00')
+			assert.is_true(t.isdst)
+			local t = Time('2020-01-05 02:04:00')
+			assert.is_false(t.isdst)
 		end)
 
 		it('should have milliseconds', function()

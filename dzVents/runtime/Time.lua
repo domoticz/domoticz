@@ -6,14 +6,8 @@ local isEmpty = function(v)
 end
 
 local function getTimezone()
-	local now = os.time()
-	local dnow = os.date('*t', now)
-	local diff = os.difftime(now, os.time(os.date("!*t", now)))
-	if (dnow.isdst) then
-		diff = diff + 3600
-	end
-
-	return diff
+	local diff = os.difftime(os.time(), os.time(os.date("!*t")))
+	return ( os.date('!*t').isdst and ( diff + 3600 ) ) or diff
 end
 
 local LOOKUPDAYABBROFWEEK = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
@@ -253,10 +247,7 @@ local function Time(sDate, isUTC, _testMS)
 	self.week = getWeekNumberOfYear(dDate)
 
 	self['raw'] = sDate
-	self['isToday'] = (now.year == time.year and
-		now.month==time.month and
-		now.day==time.day)
-
+	self['isToday'] = (now.year == time.year and now.month==time.month and now.day==time.day)
 	self['msAgo'] = math.floor(msDiff)
 	self['millisecondsAgo'] = self.msAgo
 	self['minutesAgo'] = minDiff
@@ -272,6 +263,7 @@ local function Time(sDate, isUTC, _testMS)
 	self['utils'] = utils
 	self['isUTC'] = isUTC
 	self['dDate'] = dDate
+	self['isdst'] = time.isdst
 
 	if (_G.TESTMODE) then
 		function self._getUtilsInstance()
