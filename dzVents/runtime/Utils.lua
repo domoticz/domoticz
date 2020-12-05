@@ -8,7 +8,7 @@ local self = {
 	LOG_INFO = 3,
 	LOG_WARNING = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.17',
+	DZVERSION = '3.0.18',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -536,13 +536,15 @@ function self.cameraExists(parm)
 	return loopGlobal(parm, 'camera')
 end
 
-function self.dumpTable(t, level, filename)
+function self.dumpTable(t, level, filename, done)
 	local level = level or "> "
+	local done = done or {}
 	for attr, value in pairs(t or {}) do
-		if (type(value) ~= 'function') then
-			if (type(value) == 'table') then
+		if type(value) ~= 'function' then
+			if type(value) == 'table' and not(done[value]) then
+				done[value] = true
 				self.print(level .. attr .. ':', filename)
-				self.dumpTable(value, level .. '	', filename)
+				self.dumpTable(value, level .. '	', filename, done)
 			else
 				self.print(level .. attr .. ': ' .. tostring(value), filename)
 			end

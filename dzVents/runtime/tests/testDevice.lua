@@ -1707,6 +1707,42 @@ describe('device', function()
 			end)
 		end)
 
+		describe('Quiet device ( updateQuiet', function()
+
+			local commandArray = {}
+			domoticz.openURL = function(url)
+				return table.insert(commandArray, url)
+			end
+
+			local device = getDevice(domoticz, {
+				['name'] = 'quietDevice',
+				['state'] = 'On',
+					['type'] = 'Light/Switch',
+				['subType'] = 'RGBWW',
+				['type'] = 'Color Switch'
+			})
+
+			it('should handle the updateQuiet method correctly )', function()
+				commandArray = {}
+				device.updateQuiet() -- fail (no parms)
+				assert.is_same({  }, commandArray) -- empty
+
+				commandArray = {}
+				device.updateQuiet('string only') -- only svalue
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&svalue=string+only'  }, commandArray)
+
+				commandArray = {}
+				device.updateQuiet(7) -- only nvalue
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=7'  }, commandArray)
+
+				commandArray = {}
+				device.updateQuiet(7, '(string plus)') -- nvalue, svalue
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&svalue=%28string+plus%29&nvalue=7'   }, commandArray)
+
+			end)
+
+		end)
+
 		describe('RGBW device #RGB', function()
 
 			local commandArray = {}

@@ -927,6 +927,7 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **timedOut**: *Boolean*. Is true when the device couldn't be reached.
  - **unit**: *Number*. Device unit. See device list in Domoticz' settings for the unit.
  - **update(< params >)**: *Function*. Generic update method. Accepts any number of parameters that will be sent back to Domoticz. There is no need to pass the device.id here. It will be passed for you. Example to update a temperature: `device.update(0,12)`. This will eventually result in a commandArray entry `['UpdateDevice']='<idx>|0|12'`. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+- **updateQuiet(nValue, sValue)**: *Function*. <sup>3.0.18</sup> Uses the JSON/API to send nValue and/or sValue to domoticz (at least one should be supplied). Will update the device status in the GUI and trigger events but will not execute the action on the device. Only useful when the status in the GUI is not in line with the actual status. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 ### Device attributes and methods for specific devices
 Note that if you do not find your specific device type here you can always inspect what is in the `rawData` attribute. Please let us know that it is missing so we can write an adapter for it (or you can write your own and submit it). Calling `myDevice.dump()` will dump all attributes and values for myDevice to the Domoticz log.
@@ -2428,5 +2429,7 @@ Check out the documentation [here](https://htmlpreview.github.io/?https://github
 
 # History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
 
-## [3.0.17]
-- Add timestampTodate, dateToTimestamp and date2date functions in Time
+## [3.0.18]
+- Add isdst as (boolean) attribute to time object
+- Add updateQuiet() method to generic device
+- Fixed bug in dumpTable that caused infinite loop for table with self-reference
