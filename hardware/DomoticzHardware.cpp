@@ -504,9 +504,9 @@ bool CDomoticzHardwareBase::GetWindSensorValue(const int NodeID, int& WindDir, f
 
 void CDomoticzHardwareBase::SendWattMeter(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float musage, const std::string& defaultname, const int RssiLevel /* =12 */)
 {
-	if (musage > m_sql.m_max_kwh_usage)
+	if ((musage < -m_sql.m_max_kwh_usage) || (musage > m_sql.m_max_kwh_usage))
 	{
-		Log(LOG_ERROR, "Power usage to high! Usage: %g Watt. Max Usage configured: %g. (NodeID: 0x%04X, ChildID: 0x%04X, SID: %s)", musage, m_sql.m_max_kwh_usage, NodeID, ChildID,
+		Log(LOG_ERROR, "Power usage to high/low! Usage: %g Watt. Max Usage configured: %g. (NodeID: 0x%04X, ChildID: 0x%04X, SID: %s)", musage, m_sql.m_max_kwh_usage, NodeID, ChildID,
 		    defaultname.c_str());
 		return;
 	}
@@ -531,9 +531,9 @@ void CDomoticzHardwareBase::SendKwhMeterOldWay(const int NodeID, const int Child
 
 void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string& defaultname, const int RssiLevel /* =12 */)
 {
-	if (musage > m_sql.m_max_kwh_usage)
+	if ((musage < -m_sql.m_max_kwh_usage) || (musage > m_sql.m_max_kwh_usage))
 	{
-		Log(LOG_ERROR, "Power usage to high! Usage: %g Watt. Max Usage configured: %g. (NodeID: 0x%04X, ChildID: 0x%04X, SID: %s)", musage, m_sql.m_max_kwh_usage, NodeID, ChildID,
+		Log(LOG_ERROR, "Power usage to high/low! Usage: %g Watt. Max Usage configured: %g. (NodeID: 0x%04X, ChildID: 0x%04X, SID: %s)", musage, m_sql.m_max_kwh_usage, NodeID, ChildID,
 		    defaultname.c_str());
 		return;
 	}
@@ -612,18 +612,6 @@ void CDomoticzHardwareBase::SendAirQualitySensor(const uint8_t NodeID, const uin
 	meter.id1 = NodeID;
 	meter.id2 = ChildID;
 	sDecodeRXMessage(this, (const unsigned char *)&meter, defaultname.c_str(), BatteryLevel, nullptr);
-}
-
-void CDomoticzHardwareBase::SendUsageSensor(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float Usage, const std::string& defaultname)
-{
-	_tUsageMeter umeter;
-	umeter.id1 = 0;
-	umeter.id2 = 0;
-	umeter.id3 = 0;
-	umeter.id4 = NodeID;
-	umeter.dunit = ChildID;
-	umeter.fusage = Usage;
-	sDecodeRXMessage(this, (const unsigned char *)&umeter, defaultname.c_str(), BatteryLevel, nullptr);
 }
 
 void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname,

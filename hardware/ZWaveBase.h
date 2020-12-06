@@ -76,6 +76,10 @@ class ZWaveBase : public CDomoticzHardwareBase
 		float floatValue;
 		int intvalue;
 
+		time_t lastSendValue = 0;
+		float prevFloatValue = 0;
+		int prevIntValue = 0;
+
 		// battery
 		int batValue;
 
@@ -143,7 +147,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 
       private:
 	void Do_Work();
-	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
+	void SendDevice2Domoticz(_tZWaveDevice *pDevice);
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
 
 	_tZWaveDevice *FindDevice(uint8_t nodeID, int instanceID, int indexID);

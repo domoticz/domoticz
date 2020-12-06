@@ -311,7 +311,7 @@ unsigned char ZWaveBase::Convert_Battery_To_PercInt(const unsigned char level)
 	return (unsigned char)ret;
 }
 
-void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
+void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 {
 	//make device ID
 
@@ -395,6 +395,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_POWER)
 	{
+		if ((pDevice->floatValue < -m_sql.m_max_kwh_usage) || (pDevice->floatValue > m_sql.m_max_kwh_usage))
+			return;
 		_tUsageMeter umeter;
 		umeter.id1 = ID1;
 		umeter.id2 = ID2;
@@ -475,6 +477,23 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice* pDevice)
 		|| (pDevice->devType == ZDTYPE_SENSOR_KVARH)
 		)
 	{
+		// check for possible counter / usage issues
+		if ((pDevice->floatValue < -m_sql.m_max_kwh_usage) || (pDevice->floatValue > m_sql.m_max_kwh_usage))
+			return;
+		if (pDevice->lastSendValue != 0)
+		{
+			if (pDevice->floatValue < pDevice->prevFloatValue)
+			{
+				if (pDevice->lastreceived - pDevice->lastSendValue < 3600)
+				{
+					// Seems wrong, counters should increase!, If it was right, then it will correct itself after an hour
+					return;
+				}
+			}
+		}
+		pDevice->lastSendValue = pDevice->lastreceived;
+		pDevice->prevFloatValue = pDevice->floatValue;
+
 		RBUF tsen;
 		memset(&tsen, 0, sizeof(RBUF));
 

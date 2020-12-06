@@ -96,7 +96,6 @@ class CDomoticzHardwareBase : public StoppableTask
 	double GetKwhMeter(int NodeID, int ChildID, bool &bExists);
 	void SendLuxSensor(uint8_t NodeID, uint8_t ChildID, uint8_t BatteryLevel, float Lux, const std::string &defaultname);
 	void SendAirQualitySensor(uint8_t NodeID, uint8_t ChildID, int BatteryLevel, int AirQuality, const std::string &defaultname);
-	void SendUsageSensor(uint8_t NodeID, uint8_t ChildID, int BatteryLevel, float Usage, const std::string &defaultname);
 	void SendSwitchUnchecked(int NodeID, uint8_t ChildID, int BatteryLevel, bool bOn, double Level, const std::string &defaultname, const std::string &userName, int RssiLevel = 12);
 	void SendSwitch(int NodeID, uint8_t ChildID, int BatteryLevel, bool bOn, double Level, const std::string &defaultname, const std::string &userName, int RssiLevel = 12);
 	void SendSwitchIfNotExists(int NodeID, uint8_t ChildID, int BatteryLevel, bool bOn, double Level, const std::string &userName, const std::string &defaultname);
