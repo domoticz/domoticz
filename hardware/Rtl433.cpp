@@ -394,7 +394,9 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (haveMoisture)
 	{
-		SendMoistureSensor(sensoridx, batterylevel, moisture, model, snr);
+		//moisture is in percentage
+		SendCustomSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, static_cast<float>(moisture), model, "%", snr);
+		//SendMoistureSensor(sensoridx, batterylevel, moisture, model, snr);
 		bHandled = true;
 	}
 	if (havePower)
