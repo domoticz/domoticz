@@ -25,7 +25,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents()
-	: m_version("3.0.18")
+	: m_version("3.0.19")
 {
 	m_bdzVentsExist = false;
 }

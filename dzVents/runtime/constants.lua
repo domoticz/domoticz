@@ -93,6 +93,9 @@ return {
 	['SOUND_SPACEALARM'] = 'spacealarm',
 	['SOUND_TUGBOAT'] = 'tugboat',
 	['SOUND_UPDOWN'] = 'updown',
+	['STATE_HEATING'] = 'Heating',
+	['STATE_COOLING'] = 'Cooling',
+	['STATE_IDLE'] = 'Idle',
 	['STRING'] = 'string',
 	['TIME'] = 'time',
 }

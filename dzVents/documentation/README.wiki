@@ -1207,6 +1207,13 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''setPoint''': ''Number''.
 * '''updateSetPoint(setPoint)''':''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+==== Thermostat Operating state <sup>3.0.19</sup> ====
+
+* '''mode''': ''Number''. Current mode
+* '''modes''': ''String''. List of all modes
+* '''modeString''': ''String''. Current mode
+* '''updateMode(mode)''':''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+
 ==== Thermostat type 3 (Mertik) <sup>3.0.15</sup> ====
 
 * '''mode''': ''Number''. Current mode
@@ -2373,8 +2380,116 @@ Check out the documentation [https://htmlpreview.github.io/?https://github.com/r
 
 = History [https://www.domoticz.com/wiki/DzVents_version_History link to changes in previous versions]. =
 
+== [3.0.19] ==
+
+* Add thermostat Operating State device adapter
+
 == [3.0.18] ==
 
 * Add isdst as (boolean) attribute to time object
 * Add updateQuiet() method to generic device
 * Fixed bug in dumpTable that caused infinite loop for table with self-reference
+
+== [3.0.17] ==
+
+* Add timestampTodate, dateToTimestamp and date2date functions in Time
+
+== [3.0.16] ==
+
+* Add except as keyword in timeRules
+
+== [3.0.15] ==
+
+* Fixed bug in domoticz.time.matchesRule (daterange was ignored when “on mon, tue” was also part of the rule)
+* Add device adapter for Thermostat type 3 devices (Mertik)
+* Add utils.humidityStatus
+* Add option to have dzVents compute humidity status
+
+== [3.0.14] ==
+
+* Add utils.fuzzyLookup
+* Made eventHelpers more resilient to coding errors in the on = section
+
+== [3.0.13] ==
+
+* Add utils.osCommand (caption)
+* Improved utils.stringSplit (implicit conversion to number on request)
+* Made log function more resilient when logitem is table with embedded function(s)
+* Improved domoticz.snapshot() to enable snapshot of multiple cameras (in one Email)
+
+== [3.0.12] ==
+
+* Add option to use device, camera, group, scene and variable objects as parm to deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods.
+
+== [3.0.11] ==
+
+* Add sensorValue attribute to custom sensor
+* Add solarnoon as moment in time (like sunrise / sunset )
+
+== [3.0.10] ==
+
+* Add NSS_GOOGLE_DEVICES for notification casting to Google home / Google chromecast
+* Add optional parm delay to domoticz.sendCommand, domoticz.email, domoticz.sms and domoticz.notify
+
+== [3.0.9] ==
+
+* Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time.
+* Add function toUTC to time object.
+* Allow table as parm to function makeTime
+
+== [3.0.8] ==
+
+* Allow IPv6 ::1 as localhost in domoticz settings
+* Fixed bug that occurred when using a decimal number in afterSec (openURL and emitEvent)
+* Implement optional use of parsetrigger parm in setValues to trigger any subsequent eventscripts
+* Updated round.utils to correctly handle negative numbers and round to zero decimals
+
+== [3.0.7] ==
+
+* Add domoticz.hardware() as separate object class
+
+== [3.0.6] ==
+
+* Add hardwareInfo() function
+
+== [3.0.5] ==
+
+* Add dumpSelection() method
+* Fixed settings.url
+
+== [3.0.4] ==
+
+* Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC
+* add isJSON, isXML functions to Utils
+
+== [3.0.3] ==
+
+* add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object)
+
+== [3.0.2] ==
+
+* Add <code>PUT</code> and <code>DELETE</code> support to <code>openURL</code>
+* Ensure sending integer in nValue in update function
+* Fix sValue for custom sensor
+
+== [3.0.1] ==
+
+* Add option <code>at()</code> to the various commands/methods
+* Add stringToSeconds() function
+
+== [3.0.0] ==
+
+* Add system-events triggers as option to the on = { … } section. Scripts can now be triggered based on these system-events:
+** start
+** stop
+** manualBackupFinished,
+** dailyBackupFinished
+** hourlyBackupFinished
+** monthlyBackupFinished
+* Add custom-events triggers as option to the on = { … } section. You can now send an event trigger to start subscribed dzVents scripts. customEvents can be triggered by:
+** dzVents domoticz.emitEvent(name, data ) – command (data = optional)
+** JSON: json.htm?type=command&amp;param=customevent&amp;event=MyEvent&amp;data=myData ( data = optional )
+** MQTT: {“command” : “customevent”, “event” : “MyEvent” , “data” : “myData” } ( data = opt ional )
+* Add method domoticz.emitEvent()
+* Add attribute <code>mode</code> to Evohome controller
+* Add option to dumpTable() and ([device][uservariable][[#group|scene]].dump() to os file
