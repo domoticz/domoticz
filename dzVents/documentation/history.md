@@ -1,5 +1,8 @@
 # [3.0]
 
+  [3.0.19]
+- Add thermostat Operating State device adapter
+
   [3.0.18]
 - Add isdst as (boolean) attribute to time object
 - Add updateQuiet() method to generic device

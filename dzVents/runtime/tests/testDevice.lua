@@ -1653,6 +1653,25 @@ describe('device', function()
 			assert.is_same({ { ["myHue"] = "Off" } }, commandArray)
 		end)
 
+		it('should detect a Thermostat operating state device', function()
+			local device = getDevice(domoticz, {
+				['idx'] = 1,
+				['type'] = 'General',
+				['name'] = 'myThermostat operating state device',
+				['subType'] = 'Thermostat Operating State',
+				['nValue'] = 0,
+			})
+
+			assert.is_same('Idle', device.modeString)
+			assert.is_same('Idle, Cooling, Heating', device.modes)
+			assert.is_same(0, device.mode)
+
+			commandArray = {}
+			device.updateMode('Cooling')
+			assert.is_same({ { ['UpdateDevice'] = { ['_trigger'] = true, ['idx'] = 1, ['nValue'] = 1, ['sValue'] = 'cooling' } }  }, commandArray)
+
+		end)
+
 		it('should detect a youless device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myYouless',
