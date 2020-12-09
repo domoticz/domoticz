@@ -47,10 +47,11 @@ typedef enum
 #define MODEL_SELECTOR_WIRED_WALL_SINGLE_3 "ctrl_ln1.aq1"
 #define NAME_SELECTOR_WIRED_WALL_SINGLE "Xiaomi Wired Single Wall Switch"
 
-// Xiaomi Wired Dual Wall Switch | QBKG12LM
+// Xiaomi Wired Dual Wall Switch | QBKG12LM (QBKG26LM)
 #define MODEL_SELECTOR_WIRED_WALL_DUAL_1 "ctrl_neutral2"
 #define MODEL_SELECTOR_WIRED_WALL_DUAL_2 "ctrl_ln2"
 #define MODEL_SELECTOR_WIRED_WALL_DUAL_3 "ctrl_ln2.aq1"
+#define MODEL_SELECTOR_WIRED_WALL_DUAL_4 "switch_b2lacn02"
 #define NAME_SELECTOR_WIRED_WALL_DUAL "Xiaomi Wired Dual Wall Switch"
 #define NAME_SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 "Xiaomi Wired Dual Wall Switch Channel 0"
 #define NAME_SELECTOR_WIRED_WALL_DUAL_CHANNEL_1 "Xiaomi Wired Dual Wall Switch Channel 1"
