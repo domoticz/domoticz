@@ -1009,7 +1009,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					type = STYPE_END; // type = STYPE_OnOff; // TODO: fix this hack
 					name = NAME_SELECTOR_WIRED_WALL_SINGLE;
 				}
-				else if (model == MODEL_SELECTOR_WIRED_WALL_DUAL_1 || model == MODEL_SELECTOR_WIRED_WALL_DUAL_2 || model == MODEL_SELECTOR_WIRED_WALL_DUAL_3)
+				else if (model == MODEL_SELECTOR_WIRED_WALL_DUAL_1 || model == MODEL_SELECTOR_WIRED_WALL_DUAL_2 || model == MODEL_SELECTOR_WIRED_WALL_DUAL_3 || model == MODEL_SELECTOR_WIRED_WALL_DUAL_4)
 				{
 					type = STYPE_END; // type = STYPE_OnOff; // TODO: fix this hack
 					name = NAME_SELECTOR_WIRED_WALL_DUAL;
