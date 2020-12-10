@@ -4,7 +4,6 @@
 #include <string.h>
 #include "../main/Helper.h"
 
-time_t m_lasttime = time(nullptr);
 std::mutex& TimeMutex_() {
 	static std::mutex lTimeMutex_;
 	return lTimeMutex_;
@@ -36,6 +35,7 @@ struct tm *localtime_r(const time_t *timep, struct tm *result)
 
 time_t mytime(time_t * _Time)
 {
+	time_t m_lasttime = time(nullptr);
 	time_t acttime=time(_Time);
 	if (acttime<m_lasttime)
 		return m_lasttime;

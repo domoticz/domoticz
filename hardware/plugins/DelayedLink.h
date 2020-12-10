@@ -534,4 +534,4 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyFloat_AsDouble		pythonLib->PyFloat_AsDouble
 #define	PyObject_GetIter		pythonLib->PyObject_GetIter
 #define	PyIter_Next				pythonLib->PyIter_Next
-}
+} // namespace Plugins

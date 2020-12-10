@@ -19,26 +19,28 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-typedef struct tSatelModel {
+using SatelModel = struct
+{
 	unsigned int id;
 	const char* name;
 	unsigned int zones;
 	unsigned int outputs;
-} SatelModel;
+};
 
 #define TOT_MODELS 9
 
-static SatelModel models[TOT_MODELS] =
-{
-	{ 0, "Integra 24", 24, 20 },
-	{ 1, "Integra 32", 32, 32 },
-	{ 2, "Integra 64", 64, 64 },
-	{ 3, "Integra 128", 128, 128 },
-	{ 4, "Integra 128 WRL SIM300", 128, 128 },
-	{ 132, "Integra 128 WRL LEON", 128, 128 },
-	{ 66, "Integra 64 Plus", 64, 64 },
-	{ 67, "Integra 128 Plus", 128, 128 },
-	{ 72, "Integra 256 Plus", 256, 256 },
+constexpr std::array<SatelModel, TOT_MODELS> models{
+	{
+		{ 0, "Integra 24", 24, 20 },		   //
+		{ 1, "Integra 32", 32, 32 },		   //
+		{ 2, "Integra 64", 64, 64 },		   //
+		{ 3, "Integra 128", 128, 128 },		   //
+		{ 4, "Integra 128 WRL SIM300", 128, 128 }, //
+		{ 132, "Integra 128 WRL LEON", 128, 128 }, //
+		{ 66, "Integra 64 Plus", 64, 64 },	   //
+		{ 67, "Integra 128 Plus", 128, 128 },	   //
+		{ 72, "Integra 256 Plus", 256, 256 },	   //
+	}						   //
 };
 
 #define MAX_LENGTH_OF_ANSWER 63 * 2 + 4 + 1

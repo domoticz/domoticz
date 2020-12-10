@@ -20,12 +20,14 @@ using namespace boost::placeholders;
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
-const char* szTLSVersions[3] =
+namespace
 {
-	"tlsv1",
-	"tlsv1.1",
-	"tlsv1.2"
-};
+	constexpr std::array<const char *, 3> szTLSVersions{
+		"tlsv1",   //
+		"tlsv1.1", //
+		"tlsv1.2", //
+	};
+} // namespace
 
 MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilenameExtra,
 	   const int TLS_Version, const int PublishScheme, const std::string &MQTTClientID, const bool PreventLoop)

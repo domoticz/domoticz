@@ -525,4 +525,4 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		};
 		bool	bNotifyPlugin;
 	};
-}
+} // namespace Plugins

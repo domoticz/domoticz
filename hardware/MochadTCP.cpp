@@ -26,27 +26,29 @@ enum _eMochadType {
 	MOCHAD_RFSEC
 };
 
-typedef struct {
+using MochadMatch = struct
+{
 	_eMochadMatchType matchtype;
 	_eMochadType type;
 	const char* key;
 	int start;
 	int width;
-} MochadMatch;
-
-static MochadMatch matchlist[] = {
-	{STD,	MOCHAD_STATUS,	"House ",	6, 255},
-	{STD,	MOCHAD_UNIT,	"Tx PL HouseUnit: ",	17, 9},
-	{STD,	MOCHAD_UNIT,	"Rx PL HouseUnit: ",	17, 9},
-	{STD,	MOCHAD_UNIT,	"Tx RF HouseUnit: ",	17, 9},
-	{STD,	MOCHAD_UNIT,	"Rx RF HouseUnit: ",	17, 9},
-	{STD,	MOCHAD_ACTION,	"Tx PL House: ",	13, 9},
-	{STD,	MOCHAD_ACTION,	"Rx PL House: ",	13, 9},
-	{STD,	MOCHAD_ACTION,	"Tx RF House: ",	13, 9},
-	{STD,	MOCHAD_ACTION,	"Rx RF House: ",	13, 9},
-	{STD,	MOCHAD_RFSEC,	"Rx RFSEC Addr: ",	15, 8 }
 };
 
+constexpr std::array<MochadMatch, 10> matchlist{
+	{
+		{ STD, MOCHAD_STATUS, "House ", 6, 255 },	  //
+		{ STD, MOCHAD_UNIT, "Tx PL HouseUnit: ", 17, 9 }, //
+		{ STD, MOCHAD_UNIT, "Rx PL HouseUnit: ", 17, 9 }, //
+		{ STD, MOCHAD_UNIT, "Tx RF HouseUnit: ", 17, 9 }, //
+		{ STD, MOCHAD_UNIT, "Rx RF HouseUnit: ", 17, 9 }, //
+		{ STD, MOCHAD_ACTION, "Tx PL House: ", 13, 9 },	  //
+		{ STD, MOCHAD_ACTION, "Rx PL House: ", 13, 9 },	  //
+		{ STD, MOCHAD_ACTION, "Tx RF House: ", 13, 9 },	  //
+		{ STD, MOCHAD_ACTION, "Rx RF House: ", 13, 9 },	  //
+		{ STD, MOCHAD_RFSEC, "Rx RFSEC Addr: ", 15, 8 },  //
+	}							  //
+};
 //end
 
 MochadTCP::MochadTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
@@ -199,55 +201,56 @@ void MochadTCP::MatchLine()
 {
 	if ((strlen((const char*)&m_mochadbuffer)<1)||(m_mochadbuffer[0]==0x0a))
 		return; //null value (startup)
-	uint8_t i;
+
 	int j,k;
-	uint8_t found=0;
+	bool found = false;
 	MochadMatch t;
-	char value[20]="";
-	std::string vString;
 
-
-
-	for(i=0;(i<sizeof(matchlist)/sizeof(MochadMatch))&(!found);i++)
+	for (const auto &m : matchlist)
 	{
-		t = matchlist[i];
+		if (found)
+		{
+			break;
+		}
+
+		t = m;
 		switch(t.matchtype)
 		{
 		case ID:
-			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
-				m_linecount=1;
-				found=1;
-			}
-			else
+			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			{
 				continue;
+			}
+			m_linecount = 1;
+			found = true;
 			break;
 		case STD:
-			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
-				found=1;
-			}
-			else
+			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			{
 				continue;
+			}
+			found = true;
 			break;
 		case LINE17:
-			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
-				m_linecount = 17;
-				found=1;
-			}
-			else
+			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			{
 				continue;
+			}
+			m_linecount = 17;
+			found = true;
 			break;
 		case LINE18:
 			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0)) {
-				found=1;
+				found = true;
 			}
 			break;
 		case EXCLMARK:
-			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
-				m_exclmarkfound=1;
-				found=1;
-			}
-			else
+			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			{
 				continue;
+			}
+			m_exclmarkfound = 1;
+			found = true;
 			break;
 		default:
 			continue;

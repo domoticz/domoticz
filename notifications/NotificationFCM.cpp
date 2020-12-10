@@ -8,7 +8,7 @@
 #define GAPI_POST_URL "https://fcm.googleapis.com/fcm/send"
 #define GAPI "AIzaSyBnRMroiDaXCKbwPeOmoxkNiQfjWkGMre8"
 
-const char* FCMMessage = R"FCM(
+constexpr const char *FCMMessage = R"FCM(
 {
   "to": "<to>",
   "message": {

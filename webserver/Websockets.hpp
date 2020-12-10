@@ -69,5 +69,5 @@ namespace http {
 			boost::function<void(const std::string &packet_data)> MyWrite;
 		};
 
-	}
-}
+	} // namespace server
+} // namespace http

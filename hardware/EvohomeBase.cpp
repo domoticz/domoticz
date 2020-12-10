@@ -37,10 +37,9 @@ bool CEvohomeBase::m_bDebug=true;
 bool CEvohomeBase::m_bDebug=false;
 #endif
 
-const char CEvohomeBase::m_szControllerMode[7][20]={"Normal","Economy","Away","Day Off","Custom","Heating Off","Unknown"};
-const char CEvohomeBase::m_szWebAPIMode[7][20]={"Auto","AutoWithEco","Away","DayOff","Custom","HeatingOff","Unknown"};
-const char CEvohomeBase::m_szZoneMode[7][20]={"Auto","PermanentOverride","TemporaryOverride","OpenWindow","LocalOverride","RemoteOverride","Unknown"};
-
+constexpr std::array<const char *, 7> CEvohomeBase::m_szControllerMode{ "Normal", "Economy", "Away", "Day Off", "Custom", "Heating Off", "Unknown" };
+constexpr std::array<const char *, 7> CEvohomeBase::m_szWebAPIMode{ "Auto", "AutoWithEco", "Away", "DayOff", "Custom", "HeatingOff", "Unknown" };
+constexpr std::array<const char *, 7> CEvohomeBase::m_szZoneMode{ "Auto", "PermanentOverride", "TemporaryOverride", "OpenWindow", "LocalOverride", "RemoteOverride", "Unknown" };
 
 const char* CEvohomeBase::GetControllerModeName(uint8_t nControllerMode)
 {

@@ -937,16 +937,16 @@ namespace http {
 			m_sessions.clear(); //TODO : check if it is really necessary
 		}
 
-	uint8_t ip_bit_8_array[8] = {
-		0b00000000,
-		0b10000000,
-		0b11000000,
-		0b11100000,
-		0b11110000,
-		0b11111000,
-		0b11111100,
-		0b11111110,
-	};
+		constexpr std::array<uint8_t, 8> ip_bit_8_array{
+			0b00000000, //
+			0b10000000, //
+			0b11000000, //
+			0b11100000, //
+			0b11110000, //
+			0b11111000, //
+			0b11111100, //
+			0b11111110, //
+		};
 
 		void cWebem::AddLocalNetworks(std::string network)
 		{
@@ -1389,13 +1389,8 @@ namespace http {
 					   [&](const _tIPNetwork &my) { return IsIPInRange(sHost, my); });
 		}
 
-		const char * months[12] = {
-			"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-		};
-
-		const char * wkdays[7] = {
-			"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-		};
+		constexpr std::array<const char *, 12> months{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+		constexpr std::array<const char *, 7> wkdays{ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
 		char *make_web_time(const time_t rawtime)
 		{

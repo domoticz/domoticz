@@ -10,143 +10,136 @@
  *           https://github.com/Q42Philips/hue-color-converter/blob/master/index.js
  */
 
-struct point {
-	double x;
-	double y;
-	point() {
-		x = 0.0;
-		y = 0.0;
-	}
-	point(double x, double y) {
-		this->x = x;
-		this->y = y;
-	}
-};
-
-static const point colorPointsGamut_A[3] = {point(0.703, 0.296),
-                                            point(0.214, 0.709),
-                                            point(0.139, 0.081)};
-
-static const point colorPointsGamut_B[3] = {point(0.674, 0.322),
-                                            point(0.408, 0.517),
-                                            point(0.168, 0.041)};
-
-static const point colorPointsGamut_C[3] = {point(0.692, 0.308),
-                                            point(0.17, 0.7),
-                                            point(0.153, 0.048)};
-
-static const point colorPointsGamut_Default[3] = {point(1.0, 0.0),
-                                                  point(0.0, 1.0),
-                                                  point(0.0, 0.0)};
-
-static const char* GAMUT_A_BULBS_LIST_v[] = {"LLC001", "LLC005", "LLC006", "LLC007", "LLC010", "LLC011", "LLC012", "LLC014", "LLC013", "LST001"};
-static const char* GAMUT_B_BULBS_LIST_v[] = {"LCT001", "LCT002", "LCT003", "LCT004", "LLM001", "LCT005", "LCT006", "LCT007"};
-static const char* GAMUT_C_BULBS_LIST_v[] = {"LCT010", "LCT011", "LCT012", "LCT014", "LCT015", "LCT016", "LLC020", "LST002", "LCS001", "LCG002"};
-static const char* MULTI_SOURCE_LUMINAIRES_v[] = {"HBL001", "HBL002", "HBL003", "HIL001", "HIL002", "HEL001", "HEL002"};
-static std::vector<std::string> GAMUT_A_BULBS_LIST(GAMUT_A_BULBS_LIST_v, GAMUT_A_BULBS_LIST_v + sizeof(GAMUT_A_BULBS_LIST_v) / sizeof(GAMUT_A_BULBS_LIST_v[0]));
-static std::vector<std::string> GAMUT_B_BULBS_LIST(GAMUT_B_BULBS_LIST_v, GAMUT_B_BULBS_LIST_v + sizeof(GAMUT_B_BULBS_LIST_v) / sizeof(GAMUT_B_BULBS_LIST_v[0]));
-static std::vector<std::string> GAMUT_C_BULBS_LIST(GAMUT_C_BULBS_LIST_v, GAMUT_C_BULBS_LIST_v + sizeof(GAMUT_C_BULBS_LIST_v) / sizeof(GAMUT_C_BULBS_LIST_v[0]));
-static std::vector<std::string> MULTI_SOURCE_LUMINAIRES(MULTI_SOURCE_LUMINAIRES_v, MULTI_SOURCE_LUMINAIRES_v + sizeof(MULTI_SOURCE_LUMINAIRES_v) / sizeof(MULTI_SOURCE_LUMINAIRES_v[0]));;
-
-static const point* get_light_gamut(const std::string &modelid)
+namespace
 {
-	if (std::find(GAMUT_A_BULBS_LIST.begin(), GAMUT_A_BULBS_LIST.end(), modelid) != GAMUT_A_BULBS_LIST.end())
-		return colorPointsGamut_A;
-	if (std::find(GAMUT_B_BULBS_LIST.begin(), GAMUT_B_BULBS_LIST.end(), modelid) != GAMUT_B_BULBS_LIST.end())
-		return colorPointsGamut_B;
-	if (std::find(MULTI_SOURCE_LUMINAIRES.begin(), MULTI_SOURCE_LUMINAIRES.end(), modelid) != MULTI_SOURCE_LUMINAIRES.end())
-		return colorPointsGamut_B;
-	if (std::find(GAMUT_C_BULBS_LIST.begin(), GAMUT_C_BULBS_LIST.end(), modelid) != GAMUT_C_BULBS_LIST.end())
-		return colorPointsGamut_C;
-	return colorPointsGamut_Default;
-}
+	struct point
+	{
+		double x;
+		double y;
+		point()
+		{
+			x = 0.0;
+			y = 0.0;
+		}
+		point(double x, double y)
+		{
+			this->x = x;
+			this->y = y;
+		}
+	};
 
-static double cross_product(point p1, point p2)
-{
-	// Returns the cross product of two points
-	// (This is really the determinant, not the cross product)
-	return p1.x * p2.y - p1.y * p2.x;
-}
+	const point colorPointsGamut_A[3] = { point(0.703, 0.296), point(0.214, 0.709), point(0.139, 0.081) };
+	const point colorPointsGamut_B[3] = { point(0.674, 0.322), point(0.408, 0.517), point(0.168, 0.041) };
+	const point colorPointsGamut_C[3] = { point(0.692, 0.308), point(0.17, 0.7), point(0.153, 0.048) };
+	const point colorPointsGamut_Default[3] = { point(1.0, 0.0), point(0.0, 1.0), point(0.0, 0.0) };
 
-static bool check_point_in_lamps_reach(point p, const std::string &modelid)
-{
-	const point* gamut = get_light_gamut(modelid);
-	point Red = gamut[0];
-	point Lime = gamut[1];
-	point Blue = gamut[2];
+	constexpr std::array<const char *, 10> GAMUT_A_BULBS_LIST{ "LLC001", "LLC005", "LLC006", "LLC007", "LLC010", "LLC011", "LLC012", "LLC014", "LLC013", "LST001" };
+	constexpr std::array<const char *, 8> GAMUT_B_BULBS_LIST{ "LCT001", "LCT002", "LCT003", "LCT004", "LLM001", "LCT005", "LCT006", "LCT007" };
+	constexpr std::array<const char *, 10> GAMUT_C_BULBS_LIST{ "LCT010", "LCT011", "LCT012", "LCT014", "LCT015", "LCT016", "LLC020", "LST002", "LCS001", "LCG002" };
+	constexpr std::array<const char *, 7> MULTI_SOURCE_LUMINAIRES{ "HBL001", "HBL002", "HBL003", "HIL001", "HIL002", "HEL001", "HEL002" };
 
-	// Check if the provided XYPoint can be recreated by a Hue lamp
-	point v1 = point(Lime.x - Red.x, Lime.y - Red.y);
-	point v2 = point(Blue.x - Red.x, Blue.y - Red.y);
-
-	point q = point(p.x - Red.x, p.y - Red.y);
-	double s = cross_product(q, v2) / cross_product(v1, v2);
-	double t = cross_product(v1, q) / cross_product(v1, v2);
-
-	return (s >= 0.0) && (t >= 0.0) && (s + t <= 1.0);
-}
-
-static point get_closest_point_to_line(point A, point B, point P)
-{
-	// Find the closest point on a line. This point will be reproducible by a Hue lamp.
-	point AP = point(P.x - A.x, P.y - A.y);
-	point AB = point(B.x - A.x, B.y - A.y);
-	double ab2 = AB.x * AB.x + AB.y * AB.y;
-	double ap_ab = AP.x * AB.x + AP.y * AB.y;
-	double t = ap_ab / ab2;
-
-	if (t < 0.0)
-		t = 0.0;
-	else if (t > 1.0)
-		t = 1.0;
-
-	return { A.x + AB.x * t, A.y + AB.y * t };
-}
-
-static double get_distance_between_two_points(point p1, point p2)
-{
-	// Returns the distance between two points.
-	double dx = p1.x - p2.x;
-	double dy = p1.y - p2.y;
-	return sqrt(dx * dx + dy * dy);
-}
-
-static point get_closest_point_to_point(point xy_point, const std::string &modelid)
-{
-	const point* gamut = get_light_gamut(modelid);
-	point Red = gamut[0];
-	point Lime = gamut[1];
-	point Blue = gamut[2];
-
-	// Color is unreproducible, find the closest point on each line in the CIE 1931 'triangle'.
-	point pAB = get_closest_point_to_line(Red, Lime, xy_point);
-	point pAC = get_closest_point_to_line(Blue, Red, xy_point);
-	point pBC = get_closest_point_to_line(Lime, Blue, xy_point);
-
-	// Get the distances per point and see which point is closer to our Point.
-	double dAB = get_distance_between_two_points(xy_point, pAB);
-	double dAC = get_distance_between_two_points(xy_point, pAC);
-	double dBC = get_distance_between_two_points(xy_point, pBC);
-
-	double lowest = dAB;
-	point closest_point = pAB;
-
-	if (dAC < lowest) {
-		lowest = dAC;
-		closest_point = pAC;
+	const point *get_light_gamut(const std::string &modelid)
+	{
+		if (std::find(GAMUT_A_BULBS_LIST.begin(), GAMUT_A_BULBS_LIST.end(), modelid) != GAMUT_A_BULBS_LIST.end())
+			return colorPointsGamut_A;
+		if (std::find(GAMUT_B_BULBS_LIST.begin(), GAMUT_B_BULBS_LIST.end(), modelid) != GAMUT_B_BULBS_LIST.end())
+			return colorPointsGamut_B;
+		if (std::find(MULTI_SOURCE_LUMINAIRES.begin(), MULTI_SOURCE_LUMINAIRES.end(), modelid) != MULTI_SOURCE_LUMINAIRES.end())
+			return colorPointsGamut_B;
+		if (std::find(GAMUT_C_BULBS_LIST.begin(), GAMUT_C_BULBS_LIST.end(), modelid) != GAMUT_C_BULBS_LIST.end())
+			return colorPointsGamut_C;
+		return colorPointsGamut_Default;
 	}
 
-	if (dBC < lowest) {
-		lowest = dBC;
-		closest_point = pBC;
+	double cross_product(point p1, point p2)
+	{
+		// Returns the cross product of two points
+		// (This is really the determinant, not the cross product)
+		return p1.x * p2.y - p1.y * p2.x;
 	}
 
-	// Change the xy value to a value which is within the reach of the lamp.
-	double cx = closest_point.x;
-	double cy = closest_point.y;
+	bool check_point_in_lamps_reach(point p, const std::string &modelid)
+	{
+		const point *gamut = get_light_gamut(modelid);
+		point Red = gamut[0];
+		point Lime = gamut[1];
+		point Blue = gamut[2];
 
-	return { cx, cy };
-}
+		// Check if the provided XYPoint can be recreated by a Hue lamp
+		point v1 = point(Lime.x - Red.x, Lime.y - Red.y);
+		point v2 = point(Blue.x - Red.x, Blue.y - Red.y);
+
+		point q = point(p.x - Red.x, p.y - Red.y);
+		double s = cross_product(q, v2) / cross_product(v1, v2);
+		double t = cross_product(v1, q) / cross_product(v1, v2);
+
+		return (s >= 0.0) && (t >= 0.0) && (s + t <= 1.0);
+	}
+
+	point get_closest_point_to_line(point A, point B, point P)
+	{
+		// Find the closest point on a line. This point will be reproducible by a Hue lamp.
+		point AP = point(P.x - A.x, P.y - A.y);
+		point AB = point(B.x - A.x, B.y - A.y);
+		double ab2 = AB.x * AB.x + AB.y * AB.y;
+		double ap_ab = AP.x * AB.x + AP.y * AB.y;
+		double t = ap_ab / ab2;
+
+		if (t < 0.0)
+			t = 0.0;
+		else if (t > 1.0)
+			t = 1.0;
+
+		return { A.x + AB.x * t, A.y + AB.y * t };
+	}
+
+	double get_distance_between_two_points(point p1, point p2)
+	{
+		// Returns the distance between two points.
+		double dx = p1.x - p2.x;
+		double dy = p1.y - p2.y;
+		return sqrt(dx * dx + dy * dy);
+	}
+
+	point get_closest_point_to_point(point xy_point, const std::string &modelid)
+	{
+		const point *gamut = get_light_gamut(modelid);
+		point Red = gamut[0];
+		point Lime = gamut[1];
+		point Blue = gamut[2];
+
+		// Color is unreproducible, find the closest point on each line in the CIE 1931 'triangle'.
+		point pAB = get_closest_point_to_line(Red, Lime, xy_point);
+		point pAC = get_closest_point_to_line(Blue, Red, xy_point);
+		point pBC = get_closest_point_to_line(Lime, Blue, xy_point);
+
+		// Get the distances per point and see which point is closer to our Point.
+		double dAB = get_distance_between_two_points(xy_point, pAB);
+		double dAC = get_distance_between_two_points(xy_point, pAC);
+		double dBC = get_distance_between_two_points(xy_point, pBC);
+
+		double lowest = dAB;
+		point closest_point = pAB;
+
+		if (dAC < lowest)
+		{
+			lowest = dAC;
+			closest_point = pAC;
+		}
+
+		if (dBC < lowest)
+		{
+			lowest = dBC;
+			closest_point = pBC;
+		}
+
+		// Change the xy value to a value which is within the reach of the lamp.
+		double cx = closest_point.x;
+		double cy = closest_point.y;
+
+		return { cx, cy };
+	}
+} // namespace
 
 void CPhilipsHue::RgbFromXY(const double x, const double y, const double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8)
 {

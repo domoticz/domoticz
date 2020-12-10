@@ -136,17 +136,18 @@ const unsigned char BMPx8x_OverSampling = 3;
 #define IOCON_MIRROR    0x40
 #define IOCON_BANK_MODE 0x80
 
-
-
-const char* szI2CTypeNames[] = {
-	"I2C_Unknown",
-	"I2C_BMP085/180",
-	"I2C_HTU21D",
-	"I2C_TSL2561",
-	"I2C_PCF8574",
-	"I2C_BME280",
-	"I2C_MCP23017",
-};
+namespace
+{
+	constexpr std::array<const char *, 7> szI2CTypeNames{
+		"I2C_Unknown",	  //
+		"I2C_BMP085/180", //
+		"I2C_HTU21D",	  //
+		"I2C_TSL2561",	  //
+		"I2C_PCF8574",	  //
+		"I2C_BME280",	  //
+		"I2C_MCP23017",	  //
+	};
+} // namespace
 
 I2C::I2C(const int ID, const _eI2CType DevType, const std::string &Address, const std::string &SerialPort, const int Mode1) :
 	m_dev_type(DevType),

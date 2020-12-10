@@ -12,8 +12,8 @@ namespace tcp {
 	namespace server {
 		class CTCPServerProxied;
 		class CTCPServer;
-	}
-}
+	} // namespace server
+} // namespace tcp
 
 class DomoticzTCP;
 
@@ -113,6 +113,6 @@ namespace http {
 			std::vector<DomoticzTCP *>TCPClients;
 		};
 
-	}
-}
+	} // namespace server
+} // namespace http
 #endif

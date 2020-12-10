@@ -214,7 +214,7 @@ private:
   pthread_mutex_t write_mutex;
 };
 
-}
+} // namespace serial
 
 #endif // SERIAL_IMPL_UNIX_H
 

@@ -277,4 +277,4 @@ namespace Plugins {
 		nullptr,						 /* tp_alloc */
 		CConnection_new						 /* tp_new */
 	};
-}
+} // namespace Plugins

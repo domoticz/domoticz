@@ -94,4 +94,4 @@ namespace Plugins {
 		void ProcessInbound(const ReadEvent *Message) override;
 		std::vector<byte> ProcessOutbound(const WriteDirective *WriteMessage) override;
 	};
-}
+} // namespace Plugins

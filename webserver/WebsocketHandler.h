@@ -39,5 +39,5 @@ namespace http {
 			void Do_Work();
 		};
 
-	}
-}
+	} // namespace server
+} // namespace http

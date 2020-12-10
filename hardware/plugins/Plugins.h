@@ -134,4 +134,4 @@ namespace Plugins {
 		PyObject* error;
 	};
 
-}
+} // namespace Plugins

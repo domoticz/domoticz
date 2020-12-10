@@ -91,16 +91,17 @@ struct _tGuiLanguage {
 	const char* szLong;
 };
 
-static const _tGuiLanguage guiLanguage[] = {
-	{ "en", "English" },	{ "sq", "Albanian" },	{ "ar", "Arabic" },    { "bs", "Bosnian" },	 { "bg", "Bulgarian" },
-	{ "ca", "Catalan" },	{ "zh", "Chinese" },	{ "cs", "Czech" },     { "da", "Danish" },	 { "nl", "Dutch" },
-	{ "et", "Estonian" },	{ "de", "German" },	{ "el", "Greek" },     { "fr", "French" },	 { "fi", "Finnish" },
-	{ "he", "Hebrew" },	{ "hu", "Hungarian" },	{ "is", "Icelandic" }, { "it", "Italian" },	 { "lt", "Lithuanian" },
-	{ "lv", "Latvian" },	{ "mk", "Macedonian" }, { "no", "Norwegian" }, { "fa", "Persian" },	 { "pl", "Polish" },
-	{ "pt", "Portuguese" }, { "ro", "Romanian" },	{ "ru", "Russian" },   { "sr", "Serbian" },	 { "sk", "Slovak" },
-	{ "sl", "Slovenian" },	{ "es", "Spanish" },	{ "sv", "Swedish" },   { "zh_TW", "Taiwanese" }, { "tr", "Turkish" },
-	{ "uk", "Ukrainian" },	{ nullptr, nullptr },
-};
+namespace
+{
+	constexpr std::array<std::pair<const char *, const char *>, 37> guiLanguage{ {
+		{ "en", "English" },   { "sq", "Albanian" },   { "ar", "Arabic" },   { "bs", "Bosnian" },      { "bg", "Bulgarian" }, { "ca", "Catalan" },
+		{ "zh", "Chinese" },   { "cs", "Czech" },      { "da", "Danish" },   { "nl", "Dutch" },	       { "et", "Estonian" },  { "de", "German" },
+		{ "el", "Greek" },     { "fr", "French" },     { "fi", "Finnish" },  { "he", "Hebrew" },       { "hu", "Hungarian" }, { "is", "Icelandic" },
+		{ "it", "Italian" },   { "lt", "Lithuanian" }, { "lv", "Latvian" },  { "mk", "Macedonian" },   { "no", "Norwegian" }, { "fa", "Persian" },
+		{ "pl", "Polish" },    { "pt", "Portuguese" }, { "ro", "Romanian" }, { "ru", "Russian" },      { "sr", "Serbian" },   { "sk", "Slovak" },
+		{ "sl", "Slovenian" }, { "es", "Spanish" },    { "sv", "Swedish" },  { "zh_TW", "Taiwanese" }, { "tr", "Turkish" },   { "uk", "Ukrainian" },
+	} };
+}
 
 extern http::server::CWebServerHelper m_webservers;
 
@@ -8054,11 +8055,9 @@ namespace http {
 			//return a sorted list
 			std::map<std::string, std::string> _ltypes;
 			char szTmp[200];
-			int ii = 0;
-			while (guiLanguage[ii].szShort != nullptr)
+			for (auto &lang : guiLanguage)
 			{
-				_ltypes[guiLanguage[ii].szLong] = guiLanguage[ii].szShort;
-				ii++;
+				_ltypes[lang.second] = lang.first;
 			}
 			for (const auto &type : _ltypes)
 			{

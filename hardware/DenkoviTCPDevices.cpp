@@ -16,12 +16,15 @@
 #define READ_COILS_CMD_LENGTH				11
 #define WRITE_SINGLE_COIL_CMD_LENGTH		12
 
-const char *szDenkoviHardwareNamesTCP[3] = {
-		"WiFi 16 Relays-VCP", 
-		"WiFi 16 Relays-TCP Modbus", 
-		"smartDEN IP-16R-MT"
-		};
-		
+namespace
+{
+	constexpr std::array<const char *, 3> szDenkoviHardwareNamesTCP{
+		"WiFi 16 Relays-VCP",	     //
+		"WiFi 16 Relays-TCP Modbus", //
+		"smartDEN IP-16R-MT",	     //
+	};
+} // namespace
+
 CDenkoviTCPDevices::CDenkoviTCPDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int pollInterval, const int model, const int slaveId) :
 	m_szIPAddress(IPAddress),
 	m_pollInterval(pollInterval)

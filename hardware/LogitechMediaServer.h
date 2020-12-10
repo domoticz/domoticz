@@ -7,7 +7,7 @@
 namespace Json
 {
 	class Value;
-};
+} // namespace Json
 
 class CLogitechMediaServer : public CDomoticzHardwareBase
 {

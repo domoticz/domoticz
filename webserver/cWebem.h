@@ -251,5 +251,5 @@ namespace http {
 			std::shared_ptr<std::thread> m_io_service_thread;
 		};
 
-	}
-}
+	} // namespace server
+} // namespace http

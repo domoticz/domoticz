@@ -107,6 +107,6 @@ namespace mosqdz {
 	  {
 	  }
 	};
-}
+} // namespace mosqdz
 #endif
 

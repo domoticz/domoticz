@@ -794,9 +794,9 @@ class CEvohomeBase : public CDomoticzHardwareBase
 	void InitZoneNames();
 	void SetZoneName(uint8_t nZone, const std::string &szName);
 
-	static const char m_szControllerMode[7][20];
-	static const char m_szWebAPIMode[7][20];
-	static const char m_szZoneMode[7][20];
+	static const std::array<const char *, 7> m_szControllerMode;
+	static const std::array<const char *, 7> m_szWebAPIMode;
+	static const std::array<const char *, 7> m_szZoneMode;
 
 	std::vector<zoneModeType> m_ZoneOverrideLocal;
 
