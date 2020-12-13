@@ -692,7 +692,10 @@ namespace Plugins {
 						}
 						else
 						{
-							std::map<std::string, std::string> mpOptions = m_sql.BuildDeviceOptions(sd[14], true);
+							std::map<std::string, std::string> mpOptions;
+							Py_BEGIN_ALLOW_THREADS
+							mpOptions =	m_sql.BuildDeviceOptions(sd[14], true);
+							Py_END_ALLOW_THREADS
 							for (const auto &opt : mpOptions)
 							{
 								PyObject *pKeyDict = PyUnicode_FromString(opt.first.c_str());
@@ -881,14 +884,18 @@ namespace Plugins {
 			if (Name)
 			{
 				sName = Name;
+				Py_BEGIN_ALLOW_THREADS
 				m_sql.UpdateDeviceValue("Name", sName, sID);
+				Py_END_ALLOW_THREADS
 			}
 
 			// Description change
 			if (Description)
 			{
 				std::string sDescription = Description;
+				Py_BEGIN_ALLOW_THREADS
 				m_sql.UpdateDeviceValue("Description", sDescription, sID);
+				Py_END_ALLOW_THREADS
 			}
 
 			// TypeName change - actually derives new Type, SubType and SwitchType values
@@ -897,45 +904,59 @@ namespace Plugins {
 				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
 
 				// Reset nValue and sValue when changing device types
+				Py_BEGIN_ALLOW_THREADS
 				m_sql.UpdateDeviceValue("nValue", 0, sID);
 				m_sql.UpdateDeviceValue("sValue", stdsValue, sID);
+				Py_END_ALLOW_THREADS
 			}
 
 			// Type change
 			if (iType != self->Type)
 			{
+				Py_BEGIN_ALLOW_THREADS
 				m_sql.UpdateDeviceValue("Type", iType, sID);
+				Py_END_ALLOW_THREADS
 			}
 
 			// SubType change
 			if (iSubType != self->SubType)
 			{
+				Py_BEGIN_ALLOW_THREADS
 				m_sql.UpdateDeviceValue("SubType", iSubType, sID);
+				Py_END_ALLOW_THREADS
 			}
 
 			// SwitchType change
 			if (iSwitchType != self->SwitchType)
 			{
+				Py_BEGIN_ALLOW_THREADS
 				m_sql.UpdateDeviceValue("SwitchType", iSwitchType, sID);
+				Py_END_ALLOW_THREADS
 			}
 
 			// Image change
 			if (iImage != self->Image)
 			{
+				Py_BEGIN_ALLOW_THREADS
 				m_sql.UpdateDeviceValue("CustomImage", iImage, sID);
+				Py_END_ALLOW_THREADS
 			}
 
 			// Used change
 			if (iUsed != self->Used)
 			{
+				Py_BEGIN_ALLOW_THREADS
 				m_sql.UpdateDeviceValue("Used", iUsed, sID);
+				Py_END_ALLOW_THREADS
 			}
 
 			// Color change
 			if (Color)
 			{
 				std::string	sColor = _tColor(std::string(Color)).toJSONString(); //Parse the color to detect incorrectly formatted color data
+				Py_BEGIN_ALLOW_THREADS
 				m_sql.UpdateDeviceValue("Color", sColor, sID);
+				Py_END_ALLOW_THREADS
 			}
 
 			// Options provided, assume change
@@ -954,7 +975,9 @@ namespace Plugins {
 						Py_XDECREF(pStr);
 						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 					}
+					Py_BEGIN_ALLOW_THREADS
 					m_sql.SetDeviceOptions(self->ID, mpOptions);
+					Py_END_ALLOW_THREADS
 				}
 				else
 				{
@@ -968,9 +991,11 @@ namespace Plugins {
 					time_t now = time(nullptr);
 					struct tm ltime;
 					localtime_r(&now, &ltime);
+					Py_BEGIN_ALLOW_THREADS
 					m_sql.UpdateDeviceValue("Options", iUsed, sID);
 					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) and (Unit==%d)",
 						sOptionValue.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, self->HwdID, self->Unit);
+					Py_END_ALLOW_THREADS
 				}
 			}
 
@@ -987,9 +1012,9 @@ namespace Plugins {
 				{
 					_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 				}
-
+				Py_BEGIN_ALLOW_THREADS
 				DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
-
+				Py_END_ALLOW_THREADS
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
 				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
 				{
@@ -997,31 +1022,40 @@ namespace Plugins {
 					{
 					case sStatusArmHome:
 					case sStatusArmHomeDelayed:
+						Py_BEGIN_ALLOW_THREADS
 						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
 						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME);
+						Py_END_ALLOW_THREADS
 						break;
 					case sStatusArmAway:
 					case sStatusArmAwayDelayed:
+						Py_BEGIN_ALLOW_THREADS
 						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
 						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY);
+						Py_END_ALLOW_THREADS
 						break;
 					case sStatusDisarm:
 					case sStatusNormal:
 					case sStatusNormalDelayed:
 					case sStatusNormalTamper:
 					case sStatusNormalDelayedTamper:
+						Py_BEGIN_ALLOW_THREADS
 						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
 						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED);
+						Py_END_ALLOW_THREADS
 						break;
 					}
 				}
 
 				// Notify MQTT and various push mechanisms and notifications
+				Py_BEGIN_ALLOW_THREADS
 				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->m_Name, NULL);
 				m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
 
 				// Trigger any associated scene / groups
 				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue, "Python");
+				Py_END_ALLOW_THREADS
+
 			}
 
 			CDevice_refresh(self);
@@ -1082,6 +1116,7 @@ namespace Plugins {
 
 	PyObject * CDevice_touch(CDevice * self)
 	{
+		Py_BEGIN_ALLOW_THREADS
 		if ((self->pPlugin) && (self->HwdID != -1) && (self->Unit != -1))
 		{
 			self->pPlugin->SetHeartbeatReceived();
@@ -1093,7 +1128,7 @@ namespace Plugins {
 		{
 			_log.Log(LOG_ERROR, "Device touch failed, Device object is not associated with a plugin.");
 		}
-
+		Py_END_ALLOW_THREADS
 		return CDevice_refresh(self);
 	}
 
