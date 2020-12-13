@@ -884,9 +884,9 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 
 				if (iLevel>15)
 					iLevel=15;
-				float fLevel=(255.0f/15.0f)*float(iLevel);
-				if (fLevel>254.0f)
-					fLevel=255.0f;
+				float fLevel = (255.0F / 15.0F) * float(iLevel);
+				if (fLevel > 254.0F)
+					fLevel = 255.0F;
 				iLevel=int(fLevel);
 
 

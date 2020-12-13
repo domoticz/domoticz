@@ -684,7 +684,7 @@ float CDenkoviDevices::DAEnetIP2CalculateAi(int adc, const int &valType) {
 	{
 		return static_cast<float>(10000 * ((1.2*0.377)*adc / (4.7 * 1024) + 0) / 100);
 	}
-	return 0.0f;
+	return 0.0F;
 }
 
 void CDenkoviDevices::SendDenkoviTextSensor(const int NodeID, const int ChildID, const int BatteryLevel, const std::string &textMessage, const std::string &defaultname)

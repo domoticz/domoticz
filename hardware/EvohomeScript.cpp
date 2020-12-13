@@ -131,7 +131,7 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 			boost::replace_all(OnAction, "{mode}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
-			s_strid << tsen->temperature / 100.0f;
+			s_strid << tsen->temperature / 100.0F;
 			boost::replace_all(OnAction, "{setpoint}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
@@ -155,7 +155,7 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 
 			if (file_exist(scriptname.c_str()))
 			{
-				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2F, scriptname, scriptparams));
 			}
 			else
 				_log.Log(LOG_ERROR, "evohome: Error script not found '%s'", scriptname.c_str());

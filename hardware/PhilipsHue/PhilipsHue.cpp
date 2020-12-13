@@ -167,9 +167,9 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			// From Philips Hue API documentation:
 			// Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
 			LCmd = "Set Level";
-			float fvalue = (254.0f / 100.0f)*float(pSwitch->level);
-			if (fvalue > 254.0f)
-				fvalue = 254.0f;
+			float fvalue = (254.0F / 100.0F) * float(pSwitch->level);
+			if (fvalue > 254.0F)
+				fvalue = 254.0F;
 			svalue = round(fvalue);
 		}
 		SwitchLight(nodeID, LCmd, svalue);
@@ -207,9 +207,9 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 				// From Philips Hue API documentation:
 				// Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
 				LCmd = "Set Level";
-				float fvalue = (254.0f / 100.0f)*float(pLed->value);
-				if (fvalue > 254.0f)
-					fvalue = 254.0f;
+				float fvalue = (254.0F / 100.0F) * float(pLed->value);
+				if (fvalue > 254.0F)
+					fvalue = 254.0F;
 				svalue = round(fvalue);
 				SwitchLight(nodeID, LCmd, svalue);
 			}
@@ -245,14 +245,14 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			else if (pLed->color.mode == ColorModeTemp)
 			{
 				LCmd = "Set CT";
-				svalue2 = round(float(pLed->color.t)*(500.0f-153.0f)/255.0f+153.0f);
+				svalue2 = round(float(pLed->color.t) * (500.0F - 153.0F) / 255.0F + 153.0F);
 			}
 			else if (pLed->color.mode == ColorModeRGB)
 			{
 				float hsb[3];
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-				float cHue = (65535.0f)*hsb[0]; // Scale hue from 0..1 to 0..65535
-				float cSat = (254.0f)*hsb[1];   // Scale saturation from 0..1 to 0..254
+				float cHue = (65535.0F) * hsb[0]; // Scale hue from 0..1 to 0..65535
+				float cSat = (254.0F) * hsb[1];	  // Scale saturation from 0..1 to 0..254
 				LCmd = "Set Hue";
 				svalue2 = round(cHue);
 				svalue3 = round(cSat);
@@ -260,9 +260,9 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			else{
 				_log.Log(LOG_STATUS, "Philips Hue: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
 			}
-			float fvalue = (254.0f / 100.0f)*float(pLed->value);
-			if (fvalue > 254.0f)
-				fvalue = 254.0f;
+			float fvalue = (254.0F / 100.0F) * float(pLed->value);
+			if (fvalue > 254.0F)
+				fvalue = 254.0F;
 			svalue = round(fvalue);
 			SwitchLight(nodeID, LCmd, svalue, svalue2, svalue3);
 			return true;
@@ -355,7 +355,8 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	if (pState)
 	{
 		if (setOn) pState->on = On;
-		if (setLevel) pState->level = int((100.0f / 254.0f)*float(svalue));
+		if (setLevel)
+			pState->level = int((100.0F / 254.0F) * float(svalue));
 		if (setHueSat) pState->hue = svalue2;
 		if (setHueSat) pState->sat = svalue3;
 		if (setCt) pState->ct = int((float(svalue2)-153.0)/(500.0-153.0));
@@ -541,9 +542,9 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 				int r, g, b;
 
 				//convert hue+sat to RGB
-				float iHue = float(tstate.hue)*360.0f/65535.0f;
-				float iSat = float(tstate.sat)/254.0f;
-				hsb2rgb(iHue, iSat, 1.0f, r, g, b, 255);
+				float iHue = float(tstate.hue) * 360.0F / 65535.0F;
+				float iSat = float(tstate.sat) / 254.0F;
+				hsb2rgb(iHue, iSat, 1.0F, r, g, b, 255);
 
 				color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 			}
@@ -558,7 +559,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 			}
 			if (tstate.mode == HLMODE_CT)
 			{
-				float iCt = (float(tstate.ct)-153.0f)/(500.0f-153.0f)*255.0f;
+				float iCt = (float(tstate.ct) - 153.0F) / (500.0F - 153.0F) * 255.0F;
 				color = _tColor(round(iCt), ColorModeTemp);
 			}
 			cmd = Color_SetColor;
@@ -791,7 +792,7 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value &lightstate, _tHueLightSt
 			// Clamp to conform to HUE API
 			tbri = std::max(1, tbri);
 			tbri = std::min(254, tbri);
-			tlight.level = int(std::ceil((100.0f / 254.0f)*float(tbri)));
+			tlight.level = int(std::ceil((100.0F / 254.0F) * float(tbri)));
 		}
 		if (!lightstate["sat"].empty())
 		{
@@ -957,7 +958,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		int tbri = root2["action"]["bri"].asInt();
 		if ((tbri != 0) && (tbri < 3))
 			tbri = 3;
-		tstate.level = int((100.0f / 254.0f)*float(tbri));
+		tstate.level = int((100.0F / 254.0F) * float(tbri));
 	}
 	if (!root2["action"]["sat"].empty())
 	{
@@ -1132,7 +1133,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 				if ((previous_sensor.m_state.m_temperature != current_sensor.m_state.m_temperature)
 					|| (bNewSensor))
 				{
-					SendTempSensor(sID, current_sensor.m_config.m_battery, float(current_sensor.m_state.m_temperature / 100.0f), device_name);
+					SendTempSensor(sID, current_sensor.m_config.m_battery, float(current_sensor.m_state.m_temperature / 100.0F), device_name);
 				}
 			}
 			else if (current_sensor.m_type == SensorTypeZLLLightLevel)
@@ -1149,7 +1150,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 					double lux = 0.00001;
 					if (current_sensor.m_state.m_lightlevel != 0)
 					{
-						float convertedLightLevel = float((current_sensor.m_state.m_lightlevel - 1) / 10000.00f);
+						float convertedLightLevel = float((current_sensor.m_state.m_lightlevel - 1) / 10000.00F);
 						lux = pow(10, convertedLightLevel);
 					}
 					SendLuxSensor(sID, 0, current_sensor.m_config.m_battery, (const float)lux, current_sensor.m_type + " Lux " + current_sensor.m_name);

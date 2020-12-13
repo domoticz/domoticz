@@ -243,9 +243,9 @@ void CETH8020::GetMeterDetails()
 				if (pos1 != std::string::npos)
 				{
 					int lValue = atoi(tmpstr.substr(0, pos1).c_str());
-					float voltage = (float)(5.0f / 1023.0f)*lValue;
-					if (voltage > 5.0f)
-						voltage = 5.0f;
+					float voltage = (float)(5.0F / 1023.0F) * lValue;
+					if (voltage > 5.0F)
+						voltage = 5.0F;
 					std::stringstream sstr;
 					sstr << "Voltage " << Idx;
 					SendVoltageSensor(0, (uint8_t)Idx, 255, voltage, sstr.str());

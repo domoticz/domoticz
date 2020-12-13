@@ -565,10 +565,10 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 						pCMD = (unsigned char*)&V6_RGBWW_SetColor;
 					float hsb[3];
 					rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-					pCMD[0x05] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x06] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x07] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x08] = (unsigned char)(hsb[0] * 255.0f);
+					pCMD[0x05] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x06] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x07] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x08] = (unsigned char)(hsb[0] * 255.0F);
 					if (pLed->dunit != 5)
 						pCMD[0x09] = pLed->dunit;
 				}
@@ -734,10 +734,10 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 						pCMD = (unsigned char*)&V6_RGBW_SetColor;
 					float hsb[3];
 					rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-					pCMD[0x05] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x06] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x07] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x08] = (unsigned char)(hsb[0] * 255.0f);
+					pCMD[0x05] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x06] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x07] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x08] = (unsigned char)(hsb[0] * 255.0F);
 					if (pLed->dunit != 5)
 						pCMD[0x09] = pLed->dunit;
 				}
@@ -1083,7 +1083,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				// Convert RGB to HSV
 				float hsb[3];
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-				int iHue = (unsigned char)(hsb[0] * 255.0f);
+				int iHue = (unsigned char)(hsb[0] * 255.0F);
 				//The Hue is inverted/swifted 90 degrees
 				iHue = ((255 - iHue) + 192) & 0xFF;
 				RGBWSetColor[1] = (unsigned char)iHue;
@@ -1262,7 +1262,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				// Convert RGB to HSV
 				float hsb[3];
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-				int iHue = (unsigned char)(hsb[0] * 255.0f);
+				int iHue = (unsigned char)(hsb[0] * 255.0F);
 				//The Hue is inverted/swifted 90 degrees
 				iHue = ((255 - iHue) + 192) & 0xFF;
 				RGBSetColour[1] = (unsigned char)iHue;

@@ -522,7 +522,8 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	ev[3] = 0x33;
 	int nr = -1;
 	if (m_eHEnableAutoDiscovery) nr = AddToLocalEvent(ev, 0);  //Init UDP broadcast of Device Names for auto Discovery
-	if (nr >= 0) m_EvQ[nr]->LocalEventsTimeOuts = 200u;
+	if (nr >= 0)
+		m_EvQ[nr]->LocalEventsTimeOuts = 200U;
 	m_alarmLast = false;
 }
 //////////////////////////////////////////////////////////////////////
@@ -975,7 +976,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 
 		ev[0] = AddrH;
 		ev[1] = AddrL;
-		ev[2] = 245u;		//MODADC
+		ev[2] = 245U;		// MODADC
 		ev[3] = nr;		//starting channel arg1
 		ev[4] = 3;		//arg2
 

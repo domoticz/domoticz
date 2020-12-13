@@ -604,7 +604,7 @@ void COpenWebNetTCP::MonitorFrames()
 		{
 			// Connected
 			bool bIsDataReadable = true;
-			m_pStatusSocket->canRead(&bIsDataReadable, 3.0f);
+			m_pStatusSocket->canRead(&bIsDataReadable, 3.0F);
 			if (bIsDataReadable)
 			{
 				char data[OPENWEBNET_BUFFER_SIZE];

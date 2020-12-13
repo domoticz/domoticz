@@ -217,7 +217,7 @@ class eHouseTCP : public CDomoticzHardwareBase
 	typedef struct TcpClientConT
 	{
 		int Socket;		    // TCP Client Sockets for paralel operations
-		unsigned char Events[255u]; // Event buffer for current socket
+		unsigned char Events[255U]; // Event buffer for current socket
 		// unsigned char TimeOut;                //TimeOut for current client connection in 0.1s require external thread or non blocking socket
 		// Active connections to Ehouse Controllers to avoid multiple connection to the same device
 		signed int ActiveConnections;		       // index of status matrix eHE[] or ETHERNET_EHOUSE_RM_MAX for CM

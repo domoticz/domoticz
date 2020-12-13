@@ -265,7 +265,7 @@ void CEcoDevices::GetMeterDetails()
 			m_status.pindex1 = m_status.index1;
 			m_status.pflow1 = m_status.flow1;
 			m_status.time1 = atime;
-			SendMeterSensor(m_HwdID, 1, 255, m_status.index1 / 1000.0f, m_status.hostname + " Counter 1");
+			SendMeterSensor(m_HwdID, 1, 255, m_status.index1 / 1000.0F, m_status.hostname + " Counter 1");
 			SendWaterflowSensor(m_HwdID, 2, 255, (float)m_status.flow1, m_status.hostname + " Flow counter 1");
 		}
 
@@ -276,7 +276,7 @@ void CEcoDevices::GetMeterDetails()
 			m_status.pindex2 = m_status.index2;
 			m_status.pflow2 = m_status.flow2;
 			m_status.time2 = atime;
-			SendMeterSensor(m_HwdID, 3, 255, m_status.index2 / 1000.0f, m_status.hostname + " Counter 2");
+			SendMeterSensor(m_HwdID, 3, 255, m_status.index2 / 1000.0F, m_status.hostname + " Counter 2");
 			SendWaterflowSensor(m_HwdID, 4, 255, (float)m_status.flow2, m_status.hostname + " Flow counter 2");
 		}
 	}

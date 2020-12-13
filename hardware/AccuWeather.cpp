@@ -341,13 +341,13 @@ void CAccuWeather::GetMeterDetails()
 			}
 			if (!root["Wind"]["Speed"].empty())
 			{
-				windspeed_ms = root["Wind"]["Speed"]["Metric"]["Value"].asFloat() / 3.6f; //km/h to m/s
+				windspeed_ms = root["Wind"]["Speed"]["Metric"]["Value"].asFloat() / 3.6F; // km/h to m/s
 			}
 			if (!root["WindGust"].empty())
 			{
 				if (!root["WindGust"]["Speed"].empty())
 				{
-					windgust_ms = root["WindGust"]["Speed"]["Metric"]["Value"].asFloat() / 3.6f; //km/h to m/s
+					windgust_ms = root["WindGust"]["Speed"]["Metric"]["Value"].asFloat() / 3.6F; // km/h to m/s
 				}
 			}
 			if (!root["RealFeelTemperature"].empty())
@@ -376,7 +376,7 @@ void CAccuWeather::GetMeterDetails()
 			if (!root["PrecipitationSummary"]["Precipitation"].empty())
 			{
 				float RainCount = static_cast<float>(atof(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asString().c_str()));
-				if ((RainCount != -9999.00f) && (RainCount >= 0.00f))
+				if ((RainCount != -9999.00F) && (RainCount >= 0.00F))
 				{
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -394,16 +394,16 @@ void CAccuWeather::GetMeterDetails()
 					if (!root["PrecipitationSummary"]["PastHour"].empty())
 					{
 						float rainrateph = static_cast<float>(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
-						if (rainrateph != -9999.00f)
+						if (rainrateph != -9999.00F)
 						{
-							int at10 = round(std::abs(rainrateph*10.0f));
+							int at10 = round(std::abs(rainrateph * 10.0F));
 							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 							at10 -= (tsen.RAIN.rainrateh * 256);
 							tsen.RAIN.rainratel = (BYTE)(at10);
 						}
 					}
 
-					int tr10 = int((float(RainCount)*10.0f));
+					int tr10 = int((float(RainCount) * 10.0F));
 					tsen.RAIN.raintotal1 = 0;
 					tsen.RAIN.raintotal2 = (BYTE)(tr10 / 256);
 					tr10 -= (tsen.RAIN.raintotal2 * 256);

@@ -175,7 +175,7 @@ void CDarkSky::GetMeterDetails()
 
 	if (root["currently"]["humidity"].empty()==false)
 	{
-		humidity=round(root["currently"]["humidity"].asFloat()*100.0f);
+		humidity = round(root["currently"]["humidity"].asFloat() * 100.0F);
 	}
 	if (root["currently"]["pressure"].empty()==false)
 	{
@@ -245,10 +245,10 @@ void CDarkSky::GetMeterDetails()
 		if ((root["currently"]["windSpeed"] != "N/A") && (root["currently"]["windSpeed"] != "--"))
 		{
 			float temp_wind_mph = static_cast<float>(atof(root["currently"]["windSpeed"].asString().c_str()));
-			if (temp_wind_mph!=-9999.00f)
+			if (temp_wind_mph != -9999.00F)
 			{
 				//convert to m/s
-				windspeed_ms=temp_wind_mph*0.44704f;
+				windspeed_ms = temp_wind_mph * 0.44704F;
 			}
 		}
 	}
@@ -257,10 +257,10 @@ void CDarkSky::GetMeterDetails()
 		if ((root["currently"]["windGust"] != "N/A") && (root["currently"]["windGust"] != "--"))
 		{
 			float temp_wind_gust_mph = static_cast<float>(atof(root["currently"]["windGust"].asString().c_str()));
-			if (temp_wind_gust_mph!=-9999.00f)
+			if (temp_wind_gust_mph != -9999.00F)
 			{
 				//convert to m/s
-				windgust_ms=temp_wind_gust_mph*0.44704f;
+				windgust_ms = temp_wind_gust_mph * 0.44704F;
 			}
 		}
 	}
@@ -293,14 +293,14 @@ void CDarkSky::GetMeterDetails()
 
 		tsen.WIND.av_speedh=0;
 		tsen.WIND.av_speedl=0;
-		int sw=round(windspeed_ms*10.0f);
+		int sw = round(windspeed_ms * 10.0F);
 		tsen.WIND.av_speedh=(BYTE)(sw/256);
 		sw-=(tsen.WIND.av_speedh*256);
 		tsen.WIND.av_speedl=(BYTE)(sw);
 
 		tsen.WIND.gusth=0;
 		tsen.WIND.gustl=0;
-		int gw=round(windgust_ms*10.0f);
+		int gw = round(windgust_ms * 10.0F);
 		tsen.WIND.gusth=(BYTE)(gw/256);
 		gw-=(tsen.WIND.gusth*256);
 		tsen.WIND.gustl=(BYTE)(gw);
@@ -312,13 +312,13 @@ void CDarkSky::GetMeterDetails()
 		tsen.WIND.temperaturel=0;
 
 		tsen.WIND.tempsign=(wind_temp>=0)?0:1;
-		int at10=round(std::abs(wind_temp*10.0f));
+		int at10 = round(std::abs(wind_temp * 10.0F));
 		tsen.WIND.temperatureh=(BYTE)(at10/256);
 		at10-=(tsen.WIND.temperatureh*256);
 		tsen.WIND.temperaturel=(BYTE)(at10);
 
 		tsen.WIND.chillsign=(wind_chill>=0)?0:1;
-		at10=round(std::abs(wind_chill*10.0f));
+		at10 = round(std::abs(wind_chill * 10.0F));
 		tsen.WIND.chillh=(BYTE)(at10/256);
 		at10-=(tsen.WIND.chillh*256);
 		tsen.WIND.chilll=(BYTE)(at10);
@@ -344,8 +344,8 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["precipIntensity"] != "N/A") && (root["currently"]["precipIntensity"] != "--"))
 		{
-			float rainrateph = static_cast<float>(atof(root["currently"]["precipIntensity"].asString().c_str()))*25.4f; //inches to mm
-			if ((rainrateph !=-9999.00f)&&(rainrateph >=0.00f))
+			float rainrateph = static_cast<float>(atof(root["currently"]["precipIntensity"].asString().c_str())) * 25.4F; // inches to mm
+			if ((rainrateph != -9999.00F) && (rainrateph >= 0.00F))
 			{
 				SendRainRateSensor(1, 255, rainrateph, "Rain");
 			}
@@ -357,7 +357,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["visibility"] != "N/A") && (root["currently"]["visibility"] != "--"))
 		{
-			float visibility = static_cast<float>(atof(root["currently"]["visibility"].asString().c_str()))*1.60934f; //miles to km
+			float visibility = static_cast<float>(atof(root["currently"]["visibility"].asString().c_str())) * 1.60934F; // miles to km
 			if (visibility>=0)
 			{
 				_tGeneralDevice gdevice;
@@ -373,7 +373,7 @@ void CDarkSky::GetMeterDetails()
 		if ((root["currently"]["ozone"] != "N/A") && (root["currently"]["ozone"] != "--"))
 		{
 			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));
-			if (radiation>=0.0f)
+			if (radiation >= 0.0F)
 			{
 				SendCustomSensor(1, 0, 255, radiation, "Ozone Sensor", "DU"); //(dobson units)
 			}
@@ -385,9 +385,9 @@ void CDarkSky::GetMeterDetails()
 		if ((root["currently"]["cloudCover"] != "N/A") && (root["currently"]["cloudCover"] != "--"))
 		{
 			float cloudcover = static_cast<float>(atof(root["currently"]["cloudCover"].asString().c_str()));
-			if (cloudcover >= 0.0f)
+			if (cloudcover >= 0.0F)
 			{
-				SendPercentageSensor(1, 0, 255, cloudcover * 100.0f, "Cloud Cover");
+				SendPercentageSensor(1, 0, 255, cloudcover * 100.0F, "Cloud Cover");
 			}
 		}
 	}

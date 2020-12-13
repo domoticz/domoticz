@@ -892,7 +892,7 @@ void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 	int cmin = (r < g) ? r : g;
 	if (b < cmin) cmin = b;
 
-	brightness = ((float)cmax) / 255.0f;
+	brightness = ((float)cmax) / 255.0F;
 	if (cmax != 0)
 		saturation = ((float)(cmax - cmin)) / ((float)cmax);
 	else
@@ -906,12 +906,12 @@ void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 		if (r == cmax)
 			hue = bluec - greenc;
 		else if (g == cmax)
-			hue = 2.0f + redc - bluec;
+			hue = 2.0F + redc - bluec;
 		else
-			hue = 4.0f + greenc - redc;
-		hue = hue / 6.0f;
+			hue = 4.0F + greenc - redc;
+		hue = hue / 6.0F;
 		if (hue < 0)
-			hue = hue + 1.0f;
+			hue = hue + 1.0F;
 	}
 	hsbvals[0] = hue;
 	hsbvals[1] = saturation;
@@ -968,29 +968,29 @@ bool IsLightOrSwitch(const int devType, const int subType)
 
 int MStoBeaufort(const float ms)
 {
-	if (ms < 0.3f)
+	if (ms < 0.3F)
 		return 0;
-	if (ms < 1.5f)
+	if (ms < 1.5F)
 		return 1;
-	if (ms < 3.3f)
+	if (ms < 3.3F)
 		return 2;
-	if (ms < 5.5f)
+	if (ms < 5.5F)
 		return 3;
-	if (ms < 8.0f)
+	if (ms < 8.0F)
 		return 4;
-	if (ms < 10.8f)
+	if (ms < 10.8F)
 		return 5;
-	if (ms < 13.9f)
+	if (ms < 13.9F)
 		return 6;
-	if (ms < 17.2f)
+	if (ms < 17.2F)
 		return 7;
-	if (ms < 20.7f)
+	if (ms < 20.7F)
 		return 8;
-	if (ms < 24.5f)
+	if (ms < 24.5F)
 		return 9;
-	if (ms < 28.4f)
+	if (ms < 28.4F)
 		return 10;
-	if (ms < 32.6f)
+	if (ms < 32.6F)
 		return 11;
 	return 12;
 }

@@ -2776,7 +2776,7 @@ namespace http {
 
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
-			root["WindScale"] = m_sql.m_windscale*10.0f;
+			root["WindScale"] = m_sql.m_windscale * 10.0F;
 			root["WindSign"] = m_sql.m_windsign;
 			root["TempScale"] = m_sql.m_tempscale;
 			root["TempSign"] = m_sql.m_tempsign;
@@ -3316,7 +3316,7 @@ namespace http {
 			else
 			{
 				//add script to background worker
-				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, strparm));
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2F, scriptname, strparm));
 			}
 			root["title"] = "ExecuteScript";
 			root["status"] = "OK";
@@ -3397,7 +3397,7 @@ namespace http {
 					if (splitresults.size() != 6)
 						return;
 
-					float EnergyDivider = 1000.0f;
+					float EnergyDivider = 1000.0F;
 					if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 					{
 						EnergyDivider = float(tValue);
@@ -4128,7 +4128,7 @@ namespace http {
 											{
 												ss << ",";
 											}
-											ss << (int)float((100.0f / float(maxDimLevel))*i);
+											ss << (int)float((100.0F / float(maxDimLevel)) * i);
 										}
 									}
 									dimmerLevels = ss.str();
@@ -7229,7 +7229,7 @@ namespace http {
 				std::string iswhite = request::findValue(&req, "iswhite");
 
 				int ival = 100;
-				float brightnessAdj = 1.0f;
+				float brightnessAdj = 1.0F;
 
 				if (!json.empty())
 				{
@@ -7240,7 +7240,7 @@ namespace http {
 						float hsb[3];
 						int r, g, b;
 						rgb2hsb(color.r, color.g, color.b, hsb);
-						hsb2rgb(hsb[0]*360.0f, hsb[1], 1.0f, r, g, b, 255);
+						hsb2rgb(hsb[0] * 360.0F, hsb[1], 1.0F, r, g, b, 255);
 						color.r = r;
 						color.g = g;
 						color.b = b;
@@ -7268,7 +7268,7 @@ namespace http {
 							int tr, tg, tb; // tmp of 'int' type so can be passed as references to hsb2rgb
 							rgb2hsb(r, g, b, hsb);
 							// Normalize RGB to full brightness
-							hsb2rgb(hsb[0]*360.0f, hsb[1], 1.0f, tr, tg, tb, 255);
+							hsb2rgb(hsb[0] * 360.0F, hsb[1], 1.0F, tr, tg, tb, 255);
 							r = tr;
 							g = tg;
 							b = tb;
@@ -7302,9 +7302,9 @@ namespace http {
 
 					//convert hue to RGB
 					float iHue = float(atof(hue.c_str()));
-					float iSat = 100.0f;
+					float iSat = 100.0F;
 					if (!sat.empty()) iSat = float(atof(sat.c_str()));
-					hsb2rgb(iHue, iSat/100.0f, 1.0f, r, g, b, 255);
+					hsb2rgb(iHue, iSat / 100.0F, 1.0F, r, g, b, 255);
 
 					color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 					if (iswhite == "true") color.mode = ColorModeWhite;
@@ -7357,7 +7357,7 @@ namespace http {
 				double ival = atof(kelvin.c_str());
 				ival = std::max(ival, 0.0);
 				ival = std::min(ival, 100.0);
-				_tColor color = _tColor(round(ival*255.0f/100.0f), ColorModeTemp);
+				_tColor color = _tColor(round(ival * 255.0F / 100.0F), ColorModeTemp);
 				_log.Log(LOG_STATUS, "setkelvinlevel: t: %f, color: '%s'", ival, color.toString().c_str());
 
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
@@ -8332,12 +8332,12 @@ namespace http {
 			float CostEnergyR2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR2").c_str()));
 			float CostGas = static_cast<float>(atof(request::findValue(&req, "CostGas").c_str()));
 			float CostWater = static_cast<float>(atof(request::findValue(&req, "CostWater").c_str()));
-			m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy*10000.0f));
-			m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2*10000.0f));
-			m_sql.UpdatePreferencesVar("CostEnergyR1", int(CostEnergyR1*10000.0f));
-			m_sql.UpdatePreferencesVar("CostEnergyR2", int(CostEnergyR2*10000.0f));
-			m_sql.UpdatePreferencesVar("CostGas", int(CostGas*10000.0f));
-			m_sql.UpdatePreferencesVar("CostWater", int(CostWater*10000.0f));
+			m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy * 10000.0F));
+			m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2 * 10000.0F));
+			m_sql.UpdatePreferencesVar("CostEnergyR1", int(CostEnergyR1 * 10000.0F));
+			m_sql.UpdatePreferencesVar("CostEnergyR2", int(CostEnergyR2 * 10000.0F));
+			m_sql.UpdatePreferencesVar("CostGas", int(CostGas * 10000.0F));
+			m_sql.UpdatePreferencesVar("CostWater", int(CostWater * 10000.0F));
 
 			int rnOldvalue = 0;
 			int rnvalue = 0;
@@ -9552,7 +9552,7 @@ namespace http {
 						if (switchtype == STYPE_Dimmer)
 						{
 							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = round((float(maxDimLevel) / 100.0f)*LastLevel);
+							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
 							if ((dType == pTypeColorSwitch) ||
 							    (dType == pTypeLighting5 && dSubType == sTypeTRC02) ||
@@ -9757,7 +9757,7 @@ namespace http {
 						{
 							root["result"][ii]["TypeImg"] = "blinds";
 							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = round((float(maxDimLevel) / 100.0f)*LastLevel);
+							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
 							if (lstatus == "On") {
 								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Closed" : "Open";
@@ -10168,7 +10168,7 @@ namespace http {
 								}
 								else
 								{
-									float windms = float(intSpeed) * 0.1f;
+									float windms = float(intSpeed) * 0.1F;
 									sprintf(szTmp, "%d", MStoBeaufort(windms));
 								}
 								root["result"][ii]["Speed"] = szTmp;
@@ -10183,7 +10183,7 @@ namespace http {
 								}
 								else
 								{
-									float gustms = float(intGust) * 0.1f;
+									float gustms = float(intGust) * 0.1F;
 									sprintf(szTmp, "%d", MStoBeaufort(gustms));
 								}
 								root["result"][ii]["Gust"] = szTmp;
@@ -10256,11 +10256,11 @@ namespace http {
 								total_real *= AddjMulti;
 								if (dSubType == sTypeRAINByRate)
 								{
-									rate = static_cast<float>(atof(sd2[1].c_str()) / 10000.0f);
+									rate = static_cast<float>(atof(sd2[1].c_str()) / 10000.0F);
 								}
 								else
 								{
-									rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
+									rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0F) * float(AddjMulti);
 								}
 
 								sprintf(szTmp, "%.1f", total_real);
@@ -10312,7 +10312,7 @@ namespace http {
 
 							float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
-							float musage = 0.0f;
+							float musage = 0.0F;
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
@@ -10325,7 +10325,7 @@ namespace http {
 								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = float(total_real) / (divider / 1000.0f);
+								musage = float(total_real) / (divider / 1000.0F);
 								sprintf(szTmp, "%d Liter", round(musage));
 								break;
 							case MTYPE_COUNTER:
@@ -10718,7 +10718,7 @@ namespace http {
 						}
 						else
 						{
-							float EnergyDivider = 1000.0f;
+							float EnergyDivider = 1000.0F;
 							int tValue;
 							if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 							{
@@ -10795,7 +10795,7 @@ namespace http {
 							}
 							else
 							{
-								sprintf(szTmp, "%.3f kWh", 0.0f);
+								sprintf(szTmp, "%.3f kWh", 0.0F);
 								root["result"][ii]["CounterToday"] = szTmp;
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
@@ -10846,9 +10846,9 @@ namespace http {
 						}
 						else
 						{
-							sprintf(szTmp, "%.03f", 0.0f);
+							sprintf(szTmp, "%.03f", 0.0F);
 							root["result"][ii]["Counter"] = szTmp;
-							sprintf(szTmp, "%.03f m3", 0.0f);
+							sprintf(szTmp, "%.03f m3", 0.0F);
 							root["result"][ii]["CounterToday"] = szTmp;
 							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
 							root["result"][ii]["Data"] = szTmp;
@@ -10913,7 +10913,7 @@ namespace http {
 							}
 							if (total > 0)
 							{
-								sprintf(szTmp, ", Total: %.3f kWh", total / 1000.0f);
+								sprintf(szTmp, ", Total: %.3f kWh", total / 1000.0F);
 								strcat(szData, szTmp);
 							}
 							root["result"][ii]["Data"] = szData;
@@ -11052,7 +11052,7 @@ namespace http {
 							else
 							{
 								//miles
-								sprintf(szTmp, "%.1f mi", vis*0.6214f);
+								sprintf(szTmp, "%.1f mi", vis * 0.6214F);
 							}
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Visibility"] = atof(sValue.c_str());
@@ -11071,7 +11071,7 @@ namespace http {
 							else
 							{
 								//Imperial
-								sprintf(szTmp, "%.1f in", vis * 0.3937007874015748f);
+								sprintf(szTmp, "%.1f in", vis * 0.3937007874015748F);
 							}
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -13180,7 +13180,7 @@ namespace http {
 				if (urights < 1)
 					return;
 				if (dType == pTypeEvohomeWater)
-					m_mainworker.SetSetPoint(idx, (state == "On") ? 1.0f : 0.0f, mode, until);//FIXME float not guaranteed precise?
+					m_mainworker.SetSetPoint(idx, (state == "On") ? 1.0F : 0.0F, mode, until); // FIXME float not guaranteed precise?
 				else if (dType == pTypeEvohomeZone)
 					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())), mode, until);
 				else
@@ -13495,32 +13495,32 @@ namespace http {
 				}
 				else if (Key == "CostEnergy")
 				{
-					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
+					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0F);
 					root["CostEnergy"] = szTmp;
 				}
 				else if (Key == "CostEnergyT2")
 				{
-					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
+					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0F);
 					root["CostEnergyT2"] = szTmp;
 				}
 				else if (Key == "CostEnergyR1")
 				{
-					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
+					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0F);
 					root["CostEnergyR1"] = szTmp;
 				}
 				else if (Key == "CostEnergyR2")
 				{
-					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
+					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0F);
 					root["CostEnergyR2"] = szTmp;
 				}
 				else if (Key == "CostGas")
 				{
-					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
+					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0F);
 					root["CostGas"] = szTmp;
 				}
 				else if (Key == "CostWater")
 				{
-					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
+					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0F);
 					root["CostWater"] = szTmp;
 				}
 				else if (Key == "ActiveTimerPlan")
@@ -14145,7 +14145,7 @@ namespace http {
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0f);
+										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else
@@ -14153,12 +14153,12 @@ namespace http {
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0f);
+									sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0f);
+									sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 							}
@@ -14274,7 +14274,7 @@ namespace http {
 										float tdiff = static_cast<float>(difftime(atime, lastTime));
 										if (tdiff == 0)
 											tdiff = 1;
-										float tlaps = 3600.0f / tdiff;
+										float tlaps = 3600.0F / tdiff;
 										curUsage1 *= int(tlaps);
 										curUsage2 *= int(tlaps);
 										curDeliv1 *= int(tlaps);
@@ -14408,13 +14408,13 @@ namespace http {
 					{//day
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
-						float vdiv = 10.0f;
+						float vdiv = 10.0F;
 						if (
 							((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 							((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
 							)
 						{
-							vdiv = 1000.0f;
+							vdiv = 1000.0F;
 						}
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
@@ -14427,9 +14427,9 @@ namespace http {
 								if (metertype == 1)
 								{
 									if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
-										fValue *= 0.3937007874015748f; //inches
+										fValue *= 0.3937007874015748F; // inches
 									else
-										fValue *= 0.6214f; //miles
+										fValue *= 0.6214F; // miles
 								}
 								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
 									sprintf(szTmp, "%.3f", fValue);
@@ -14488,7 +14488,7 @@ namespace http {
 							for (const auto &sd : result)
 							{
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0F);
 								root["result"][ii]["v"] = szTmp;
 								ii++;
 							}
@@ -14506,7 +14506,7 @@ namespace http {
 							for (const auto &sd : result)
 							{
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								root["result"][ii]["u"] = atof(sd[0].c_str()) / 10.0f;
+								root["result"][ii]["u"] = atof(sd[0].c_str()) / 10.0F;
 								ii++;
 							}
 						}
@@ -14535,9 +14535,9 @@ namespace http {
 							{
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
-								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
-								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0f);
-								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0f);
+								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
+								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
+								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0F);
 
 								if (fval1 != 0)
 									bHaveL1 = true;
@@ -14607,9 +14607,9 @@ namespace http {
 							{
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
-								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
-								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0f);
-								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0f);
+								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
+								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
+								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0F);
 
 								if (fval1 != 0)
 									bHaveL1 = true;
@@ -14693,7 +14693,7 @@ namespace http {
 						{
 							//realtime graph
 							if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-								divider /= 100.0f;
+								divider /= 100.0F;
 						}
 						root["method"] = method;
 						bool bHaveFirstValue = false;
@@ -14738,7 +14738,7 @@ namespace http {
 											{
 											case MTYPE_ENERGY:
 											case MTYPE_ENERGY_GENERATED:
-												sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
+												sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
 												break;
 											case MTYPE_GAS:
 												sprintf(szTmp, "%.3f", TotalValue / divider);
@@ -14779,12 +14779,12 @@ namespace http {
 
 									float TotalValue = float(actValue);
 									if ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
-										TotalValue /= 10.0f;
+										TotalValue /= 10.0F;
 									switch (metertype)
 									{
 									case MTYPE_ENERGY:
 									case MTYPE_ENERGY_GENERATED:
-										sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
+										sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
 										break;
 									case MTYPE_GAS:
 										sprintf(szTmp, "%.2f", TotalValue / divider);
@@ -14877,7 +14877,7 @@ namespace http {
 												{
 												case MTYPE_ENERGY:
 												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
+													sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
 													break;
 												case MTYPE_GAS:
 													sprintf(szTmp, "%.3f", TotalValue / divider);
@@ -14925,7 +14925,7 @@ namespace http {
 										float tdiff = static_cast<float>(difftime(atime, lastTime));
 										if (tdiff == 0)
 											tdiff = 1;
-										float tlaps = 3600.0f / tdiff;
+										float tlaps = 3600.0F / tdiff;
 										curValue *= int(tlaps);
 
 										root["result"][ii]["d"] = sd[1].substr(0, 16);
@@ -14937,7 +14937,7 @@ namespace http {
 											{
 											case MTYPE_ENERGY:
 											case MTYPE_ENERGY_GENERATED:
-												sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
+												sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
 												break;
 											case MTYPE_GAS:
 												sprintf(szTmp, "%.2f", TotalValue / divider);
@@ -14981,7 +14981,7 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
+									sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
 									break;
 								case MTYPE_GAS:
 									sprintf(szTmp, "%.3f", TotalValue / divider);
@@ -15094,8 +15094,8 @@ namespace http {
 							}
 							else
 							{
-								float windspeedms = float(intSpeed)*0.1f;
-								float windgustms = float(intGust)*0.1f;
+								float windspeedms = float(intSpeed) * 0.1F;
+								float windgustms = float(intGust) * 0.1F;
 								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
 								root["result"][ii]["sp"] = szTmp;
 								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
@@ -15200,53 +15200,77 @@ namespace http {
 								continue; //no direction if wind is still
 							//float speed = speedOrg * m_sql.m_windscale;
 							float gust = gustOrg * m_sql.m_windscale;
-							int bucket = int(fdirection / 22.5f);
+							int bucket = int(fdirection / 22.5F);
 
 							int speedpos = 0;
 
 							if (m_sql.m_windunit == WINDUNIT_MS)
 							{
-								if (gust < 0.5f) speedpos = 0;
-								else if (gust < 2.0f) speedpos = 1;
-								else if (gust < 4.0f) speedpos = 2;
-								else if (gust < 6.0f) speedpos = 3;
-								else if (gust < 8.0f) speedpos = 4;
-								else if (gust < 10.0f) speedpos = 5;
+								if (gust < 0.5F)
+									speedpos = 0;
+								else if (gust < 2.0F)
+									speedpos = 1;
+								else if (gust < 4.0F)
+									speedpos = 2;
+								else if (gust < 6.0F)
+									speedpos = 3;
+								else if (gust < 8.0F)
+									speedpos = 4;
+								else if (gust < 10.0F)
+									speedpos = 5;
 								else speedpos = 6;
 							}
 							else if (m_sql.m_windunit == WINDUNIT_KMH)
 							{
-								if (gust < 2.0f) speedpos = 0;
-								else if (gust < 4.0f) speedpos = 1;
-								else if (gust < 6.0f) speedpos = 2;
-								else if (gust < 10.0f) speedpos = 3;
-								else if (gust < 20.0f) speedpos = 4;
-								else if (gust < 36.0f) speedpos = 5;
+								if (gust < 2.0F)
+									speedpos = 0;
+								else if (gust < 4.0F)
+									speedpos = 1;
+								else if (gust < 6.0F)
+									speedpos = 2;
+								else if (gust < 10.0F)
+									speedpos = 3;
+								else if (gust < 20.0F)
+									speedpos = 4;
+								else if (gust < 36.0F)
+									speedpos = 5;
 								else speedpos = 6;
 							}
 							else if (m_sql.m_windunit == WINDUNIT_MPH)
 							{
-								if (gust < 3.0f) speedpos = 0;
-								else if (gust < 7.0f) speedpos = 1;
-								else if (gust < 12.0f) speedpos = 2;
-								else if (gust < 18.0f) speedpos = 3;
-								else if (gust < 24.0f) speedpos = 4;
-								else if (gust < 46.0f) speedpos = 5;
+								if (gust < 3.0F)
+									speedpos = 0;
+								else if (gust < 7.0F)
+									speedpos = 1;
+								else if (gust < 12.0F)
+									speedpos = 2;
+								else if (gust < 18.0F)
+									speedpos = 3;
+								else if (gust < 24.0F)
+									speedpos = 4;
+								else if (gust < 46.0F)
+									speedpos = 5;
 								else speedpos = 6;
 							}
 							else if (m_sql.m_windunit == WINDUNIT_Knots)
 							{
-								if (gust < 3.0f) speedpos = 0;
-								else if (gust < 7.0f) speedpos = 1;
-								else if (gust < 17.0f) speedpos = 2;
-								else if (gust < 27.0f) speedpos = 3;
-								else if (gust < 34.0f) speedpos = 4;
-								else if (gust < 41.0f) speedpos = 5;
+								if (gust < 3.0F)
+									speedpos = 0;
+								else if (gust < 7.0F)
+									speedpos = 1;
+								else if (gust < 17.0F)
+									speedpos = 2;
+								else if (gust < 27.0F)
+									speedpos = 3;
+								else if (gust < 34.0F)
+									speedpos = 4;
+								else if (gust < 41.0F)
+									speedpos = 5;
 								else speedpos = 6;
 							}
 							else if (m_sql.m_windunit == WINDUNIT_Beaufort)
 							{
-								float gustms = gustOrg * 0.1f;
+								float gustms = gustOrg * 0.1F;
 								int iBeaufort = MStoBeaufort(gustms);
 								if (iBeaufort < 2) speedpos = 0;
 								else if (iBeaufort < 4) speedpos = 1;
@@ -15259,12 +15283,18 @@ namespace http {
 							else
 							{
 								//Still todo !
-								if (gust < 0.5f) speedpos = 0;
-								else if (gust < 2.0f) speedpos = 1;
-								else if (gust < 4.0f) speedpos = 2;
-								else if (gust < 6.0f) speedpos = 3;
-								else if (gust < 8.0f) speedpos = 4;
-								else if (gust < 10.0f) speedpos = 5;
+								if (gust < 0.5F)
+									speedpos = 0;
+								else if (gust < 2.0F)
+									speedpos = 1;
+								else if (gust < 4.0F)
+									speedpos = 2;
+								else if (gust < 6.0F)
+									speedpos = 3;
+								else if (gust < 8.0F)
+									speedpos = 4;
+								else if (gust < 10.0F)
+									speedpos = 5;
 								else speedpos = 6;
 							}
 							wdirtabletemp[bucket][speedpos]++;
@@ -15281,7 +15311,7 @@ namespace http {
 								float svalue = 0;
 								if (totalvalues > 0)
 								{
-									svalue = (100.0f / totalvalues)*wdirtabletemp[ii][jj];
+									svalue = (100.0F / totalvalues) * wdirtabletemp[ii][jj];
 								}
 								sprintf(szTmp, "%.2f", svalue);
 								root["result_speed"][jj]["sp"][ii] = szTmp;
@@ -15708,7 +15738,7 @@ namespace http {
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else
@@ -15716,12 +15746,12 @@ namespace http {
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 							}
@@ -15790,7 +15820,7 @@ namespace http {
 							{
 								if (dSubType == sTypeTHBFloat)
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else
@@ -15798,12 +15828,12 @@ namespace http {
 							}
 							else if (dType == pTypeTEMP_BARO)
 							{
-								sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 								root["result"][ii]["ba"] = szTmp;
 							}
 							else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 							{
-								sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 								root["result"][ii]["ba"] = szTmp;
 							}
 						}
@@ -15881,7 +15911,7 @@ namespace http {
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 										root["resultprev"][iPrev]["ba"] = szTmp;
 									}
 									else
@@ -15889,12 +15919,12 @@ namespace http {
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 									root["resultprev"][iPrev]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 									root["resultprev"][iPrev]["ba"] = szTmp;
 								}
 							}
@@ -16288,13 +16318,13 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						float vdiv = 10.0f;
+						float vdiv = 10.0F;
 						if (
 							((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 							((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
 							)
 						{
-							vdiv = 1000.0f;
+							vdiv = 1000.0F;
 						}
 
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
@@ -16312,14 +16342,14 @@ namespace http {
 									if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
 									{
 										//Inches
-										fValue1 *= 0.3937007874015748f;
-										fValue2 *= 0.3937007874015748f;
+										fValue1 *= 0.3937007874015748F;
+										fValue2 *= 0.3937007874015748F;
 									}
 									else
 									{
 										//Miles
-										fValue1 *= 0.6214f;
-										fValue2 *= 0.6214f;
+										fValue1 *= 0.6214F;
+										fValue2 *= 0.6214F;
 									}
 								}
 								if (
@@ -16383,9 +16413,9 @@ namespace http {
 							for (const auto &sd : result)
 							{
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
-								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0F);
 								root["result"][ii]["v_min"] = szTmp;
-								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[1].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[1].c_str()) / 10.0F);
 								root["result"][ii]["v_max"] = szTmp;
 								ii++;
 							}
@@ -16403,8 +16433,8 @@ namespace http {
 							for (const auto &sd : result)
 							{
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
-								root["result"][ii]["u_min"] = atof(sd[0].c_str()) / 10.0f;
-								root["result"][ii]["u_max"] = atof(sd[1].c_str()) / 10.0f;
+								root["result"][ii]["u_min"] = atof(sd[0].c_str()) / 10.0F;
+								root["result"][ii]["u_max"] = atof(sd[1].c_str()) / 10.0F;
 								ii++;
 							}
 						}
@@ -16429,12 +16459,12 @@ namespace http {
 							{
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
-								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
-								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0f);
-								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0f);
-								float fval4 = static_cast<float>(atof(sd[3].c_str()) / 10.0f);
-								float fval5 = static_cast<float>(atof(sd[4].c_str()) / 10.0f);
-								float fval6 = static_cast<float>(atof(sd[5].c_str()) / 10.0f);
+								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
+								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
+								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0F);
+								float fval4 = static_cast<float>(atof(sd[3].c_str()) / 10.0F);
+								float fval5 = static_cast<float>(atof(sd[4].c_str()) / 10.0F);
+								float fval6 = static_cast<float>(atof(sd[5].c_str()) / 10.0F);
 
 								if ((fval1 != 0) || (fval2 != 0))
 									bHaveL1 = true;
@@ -16513,12 +16543,12 @@ namespace http {
 							{
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
-								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
-								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0f);
-								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0f);
-								float fval4 = static_cast<float>(atof(sd[3].c_str()) / 10.0f);
-								float fval5 = static_cast<float>(atof(sd[4].c_str()) / 10.0f);
-								float fval6 = static_cast<float>(atof(sd[5].c_str()) / 10.0f);
+								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
+								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
+								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0F);
+								float fval4 = static_cast<float>(atof(sd[3].c_str()) / 10.0F);
+								float fval5 = static_cast<float>(atof(sd[4].c_str()) / 10.0F);
+								float fval6 = static_cast<float>(atof(sd[5].c_str()) / 10.0F);
 
 								if ((fval1 != 0) || (fval2 != 0))
 									bHaveL1 = true;
@@ -16591,7 +16621,7 @@ namespace http {
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
-								sprintf(szTmp, "%.3f", fvalue / (divider / 100.0f));
+								sprintf(szTmp, "%.3f", fvalue / (divider / 100.0F));
 								root["counter"] = szTmp;
 							}
 						}
@@ -16890,13 +16920,13 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
 						)
 					{
-						float vdiv = 10.0f;
+						float vdiv = 10.0F;
 						if (
 							((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 							((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
 							)
 						{
-							vdiv = 1000.0f;
+							vdiv = 1000.0F;
 						}
 
 						result = m_sql.safe_query(
@@ -16912,14 +16942,14 @@ namespace http {
 								if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
 								{
 									//Inches
-									fValue1 *= 0.3937007874015748f;
-									fValue2 *= 0.3937007874015748f;
+									fValue1 *= 0.3937007874015748F;
+									fValue2 *= 0.3937007874015748F;
 								}
 								else
 								{
 									//Miles
-									fValue1 *= 0.6214f;
-									fValue2 *= 0.6214f;
+									fValue1 *= 0.6214F;
+									fValue2 *= 0.6214F;
 								}
 							}
 
@@ -16962,9 +16992,9 @@ namespace http {
 						if (!result.empty())
 						{
 							root["result"][ii]["d"] = szDateEnd;
-							sprintf(szTmp, "%.1f", m_sql.m_weightscale* atof(result[0][0].c_str()) / 10.0f);
+							sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][0].c_str()) / 10.0F);
 							root["result"][ii]["v_min"] = szTmp;
-							sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][1].c_str()) / 10.0f);
+							sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][1].c_str()) / 10.0F);
 							root["result"][ii]["v_max"] = szTmp;
 							ii++;
 						}
@@ -16977,8 +17007,8 @@ namespace http {
 						if (!result.empty())
 						{
 							root["result"][ii]["d"] = szDateEnd;
-							root["result"][ii]["u_min"] = atof(result[0][0].c_str()) / 10.0f;
-							root["result"][ii]["u_max"] = atof(result[0][1].c_str()) / 10.0f;
+							root["result"][ii]["u_min"] = atof(result[0][0].c_str()) / 10.0F;
+							root["result"][ii]["u_max"] = atof(result[0][1].c_str()) / 10.0F;
 							ii++;
 						}
 					}
@@ -17025,7 +17055,7 @@ namespace http {
 									sValue = mresults[1];
 								}
 								if (dType == pTypeENERGY)
-									sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str())*100.0f) - atof(szValue.c_str())) / divider));
+									sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str()) * 100.0F) - atof(szValue.c_str())) / divider));
 								else
 									sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 								root["result"][ii]["c"] = szTmp;
@@ -17084,8 +17114,8 @@ namespace http {
 							}
 							else
 							{
-								float windspeedms = float(intSpeed)*0.1f;
-								float windgustms = float(intGust)*0.1f;
+								float windspeedms = float(intSpeed) * 0.1F;
+								float windgustms = float(intGust) * 0.1F;
 								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
 								root["result"][ii]["sp"] = szTmp;
 								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
@@ -17118,8 +17148,8 @@ namespace http {
 						}
 						else
 						{
-							float windspeedms = float(intSpeed)*0.1f;
-							float windgustms = float(intGust)*0.1f;
+							float windspeedms = float(intSpeed) * 0.1F;
+							float windgustms = float(intGust) * 0.1F;
 							sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
 							root["result"][ii]["sp"] = szTmp;
 							sprintf(szTmp, "%d", MStoBeaufort(windgustms));
@@ -17153,8 +17183,8 @@ namespace http {
 							}
 							else
 							{
-								float windspeedms = float(intSpeed)*0.1f;
-								float windgustms = float(intGust)*0.1f;
+								float windspeedms = float(intSpeed) * 0.1F;
+								float windgustms = float(intGust) * 0.1F;
 								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
 								root["resultprev"][iPrev]["sp"] = szTmp;
 								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
@@ -17270,7 +17300,7 @@ namespace http {
 									{
 										if (dSubType == sTypeTHBFloat)
 										{
-											sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0f);
+											sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
 											root["result"][ii]["ba"] = szTmp;
 										}
 										else
@@ -17278,12 +17308,12 @@ namespace http {
 									}
 									else if (dType == pTypeTEMP_BARO)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0f);
+										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 									{
-										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0f);
+										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 								}
@@ -17345,7 +17375,7 @@ namespace http {
 									{
 										if (dSubType == sTypeTHBFloat)
 										{
-											sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+											sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 											root["result"][ii]["ba"] = szTmp;
 										}
 										else
@@ -17353,12 +17383,12 @@ namespace http {
 									}
 									else if (dType == pTypeTEMP_BARO)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 								}
@@ -17424,7 +17454,7 @@ namespace http {
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else
@@ -17432,12 +17462,12 @@ namespace http {
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 							}
@@ -17747,8 +17777,8 @@ namespace http {
 							}
 							else
 							{
-								float windspeedms = float(intSpeed)*0.1f;
-								float windgustms = float(intGust)*0.1f;
+								float windspeedms = float(intSpeed) * 0.1F;
+								float windgustms = float(intGust) * 0.1F;
 								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
 								root["result"][ii]["sp"] = szTmp;
 								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
@@ -17779,8 +17809,8 @@ namespace http {
 						}
 						else
 						{
-							float windspeedms = float(intSpeed)*0.1f;
-							float windgustms = float(intGust)*0.1f;
+							float windspeedms = float(intSpeed) * 0.1F;
+							float windgustms = float(intGust) * 0.1F;
 							sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
 							root["result"][ii]["sp"] = szTmp;
 							sprintf(szTmp, "%d", MStoBeaufort(windgustms));

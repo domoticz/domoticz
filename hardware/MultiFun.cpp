@@ -558,7 +558,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 	}
 
 	bool bIsDataReadable = true;
-	m_socket->canRead(&bIsDataReadable, 3.0f);
+	m_socket->canRead(&bIsDataReadable, 3.0F);
 	if (bIsDataReadable)
 	{
 		memset(databuffer, 0, BUFFER_LENGHT);

@@ -759,10 +759,10 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	luaTable.AddBool("isTimeEvent", reasonTime);
 
 	char szTmp[10];
-	sprintf(szTmp, "%.02f", 1.23f);
+	sprintf(szTmp, "%.02f", 1.23F);
 	luaTable.AddString("radix_separator", std::string(1,szTmp[1]));
 
-	sprintf(szTmp, "%.02f", 1234.56f);
+	sprintf(szTmp, "%.02f", 1234.56F);
 	if (szTmp[1] == '2')
 		luaTable.AddString("group_separator", "");
 	else
@@ -907,11 +907,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			luaTable.AddInteger("hardwareID", sitem.hardwareID);
 			if (sitem.devType == pTypeGeneral && sitem.subType == sTypeKwh)
 			{
-				long double value = 0.0f;
+				long double value = 0.0F;
 				if (strarray.size() > 1)
 					value = atof(strarray[1].c_str());
 				luaTable.AddNumber("whTotal", value);
-				value = 0.0f;
+				value = 0.0F;
 				if (!strarray.empty())
 					value = atof(strarray[0].c_str());
 				luaTable.AddNumber("whActual", value);

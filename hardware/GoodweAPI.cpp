@@ -464,13 +464,15 @@ void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStati
 
 	// Send data for L2 and L3 only when we detect a voltage
 
-	if (fVoltagePhase2 > 0.1f) {
+	if (fVoltagePhase2 > 0.1F)
+	{
 		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L2, 255, fVoltagePhase2, 
 			sStationName + " " + sDeviceSerial + " Mains L2");
 		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L2, 255, fCurrentPhase2,
 			sStationName + " " + sDeviceSerial + " Mains L2");
 	}
-	if (fVoltagePhase3 > 0.1f) {
+	if (fVoltagePhase3 > 0.1F)
+	{
 		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L3, 255, fVoltagePhase3, 
 			sStationName + " " + sDeviceSerial + " Mains L3");
 		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L3, 255, fCurrentPhase3,
@@ -484,7 +486,8 @@ void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStati
 
 	// Send data for string 2 only when we detect a voltage
 
-	if (fVoltageString2 > 0.1f) {
+	if (fVoltageString2 > 0.1F)
+	{
 		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_S2, 255, fVoltageString2, 
 			sStationName + " " + sDeviceSerial + "Input string 2");
 		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_S2, 255, fCurrentString2,

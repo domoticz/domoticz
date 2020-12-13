@@ -740,7 +740,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			// ignore rest of the line
 			mfile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		}
-		return (VmRSS + VmSwap) / 1000.f;
+		return (VmRSS + VmSwap) / 1000.F;
 	}
 #endif
 
@@ -775,7 +775,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			mfile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		}
 		unsigned long MemUsed = MemTotal - MemFree - MemBuffers - MemCached;
-		float memusedpercentage = (100.0f / float(MemTotal))*MemUsed;
+		float memusedpercentage = (100.0F / float(MemTotal)) * MemUsed;
 		return memusedpercentage;
 	}
 
@@ -836,7 +836,7 @@ void CHardwareMonitor::FetchUnixMemory()
 		if (ret != 0)
 			return;
 		unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
-		memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
+		memusedpercentage = (100.0F / float(mySysInfo.totalram)) * usedram;
 #endif
 	}
 #endif

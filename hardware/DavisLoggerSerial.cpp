@@ -254,14 +254,14 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	if ((pData[7] != 0xFF) && (pData[8] != 0xFF))
 	{
 		bBaroValid = true;
-		BaroMeter = ((unsigned int)((pData[8] << 8) | pData[7])) / 29.53f; //in hPa
+		BaroMeter = ((unsigned int)((pData[8] << 8) | pData[7])) / 29.53F; // in hPa
 	}
 	//Inside Temperature
 	if ((pData[9] != 0xFF) || (pData[10] != 0x7F))
 	{
 		bInsideTemperatureValid = true;
-		InsideTemperature = ((unsigned int)((pData[10] << 8) | pData[9])) / 10.f;
-		InsideTemperature = (InsideTemperature - 32.0f) * 5.0f / 9.0f;
+		InsideTemperature = ((unsigned int)((pData[10] << 8) | pData[9])) / 10.F;
+		InsideTemperature = (InsideTemperature - 32.0F) * 5.0F / 9.0F;
 	}
 	//Inside Humidity
 	if (pData[11] != 0xFF)
@@ -304,14 +304,14 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		if (temp16 > 0x800) {
 			// Negative values, convert to float from two complements int
 			int temp_int = (temp16 | ~((1 << 16) - 1));
-			OutsideTemperature = (float)temp_int / 10.0f;
+			OutsideTemperature = (float)temp_int / 10.0F;
 		}
 		else {
-			OutsideTemperature = (float)temp16 / 10.0f;
+			OutsideTemperature = (float)temp16 / 10.0F;
 		}
 
 		// Convert to celsius
-		OutsideTemperature = (OutsideTemperature - 32.0f) * 5.0f / 9.0f;
+		OutsideTemperature = (OutsideTemperature - 32.0F) * 5.0F / 9.0F;
 	}
 	//Outside Humidity
 	if (pData[33] != 0xFF)
@@ -352,8 +352,8 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		if (pData[18 + iTmp] != 0xFF)
 		{
 			bTempValid = true;
-			temp = pData[18 + iTmp] - 90.0f;
-			temp = (temp - 32.0f) * 5.0f / 9.0f;
+			temp = pData[18 + iTmp] - 90.0F;
+			temp = (temp - 32.0F) * 5.0F / 9.0F;
 		}
 		if (pData[34 + iTmp] != 0xFF)
 		{
@@ -387,8 +387,8 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		if (pData[25 + iTmp] != 0xFF)
 		{
 			bTempValid = true;
-			temp = pData[25 + iTmp] - 90.0f;
-			temp = (temp - 32.0f) * 5.0f / 9.0f;
+			temp = pData[25 + iTmp] - 90.0F;
+			temp = (temp - 32.0F) * 5.0F / 9.0F;
 		}
 		if (bTempValid)
 		{
@@ -406,8 +406,8 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		if (pData[29 + iTmp] != 0xFF)
 		{
 			bTempValid = true;
-			temp = pData[29 + iTmp] - 90.0f;
-			temp = (temp - 32.0f) * 5.0f / 9.0f;
+			temp = pData[29 + iTmp] - 90.0F;
+			temp = (temp - 32.0F) * 5.0F / 9.0F;
 		}
 		if (bTempValid)
 		{
@@ -419,7 +419,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	if (pData[14] != 0xFF)
 	{
 		bWindSpeedValid = true;
-		WindSpeed = (pData[14])*(4.0f / 9.0f);
+		WindSpeed = (pData[14]) * (4.0F / 9.0F);
 	}
 	//Wind Speed AVR 10 minutes
 	if (pData[15] != 0xFF)
@@ -452,7 +452,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 
 		tsen.WIND.av_speedh = 0;
 		tsen.WIND.av_speedl = 0;
-		int sw = round(WindSpeed*10.0f);
+		int sw = round(WindSpeed * 10.0F);
 		tsen.WIND.av_speedh = (BYTE)(sw / 256);
 		sw -= (tsen.WIND.av_speedh * 256);
 		tsen.WIND.av_speedl = (BYTE)(sw);
@@ -469,7 +469,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		{
 			tsen.WIND.tempsign = (OutsideTemperature >= 0) ? 0 : 1;
 			tsen.WIND.chillsign = (OutsideTemperature >= 0) ? 0 : 1;
-			int at10 = round(std::abs(OutsideTemperature*10.0f));
+			int at10 = round(std::abs(OutsideTemperature * 10.0F));
 			tsen.WIND.temperatureh = (BYTE)(at10 / 256);
 			tsen.WIND.chillh = (BYTE)(at10 / 256);
 			at10 -= (tsen.WIND.chillh * 256);
@@ -483,7 +483,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	//UV
 	if (pData[43] != 0xFF)
 	{
-		UV = (pData[43]) / 10.0f;
+		UV = (pData[43]) / 10.0F;
 		if (UV < 100)
 			bUVValid = true;
 	}
@@ -507,8 +507,8 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	//Rain Year
 	if ((pData[54] != 0xFF) && (pData[55] != 0xFF))
 	{
-		float rainYear = ((unsigned int)((pData[55] << 8) | pData[54])) / 100.0f; //inches
-		rainYear *= 25.4f; //mm
+		float rainYear = ((unsigned int)((pData[55] << 8) | pData[54])) / 100.0F; // inches
+		rainYear *= 25.4F;							  // mm
 
 		SendRainSensor(1, 255, rainYear, "Rain");
 	}

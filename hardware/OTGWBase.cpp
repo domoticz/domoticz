@@ -26,7 +26,7 @@ OTGWBase::OTGWBase()
 {
 	m_OutsideTemperatureIdx=0;//use build in
 	m_bufferpos = 0;
-	m_OverrideTemperature = 0.0f;
+	m_OverrideTemperature = 0.0F;
 	m_bRequestVersion = true;
 }
 
@@ -376,7 +376,8 @@ void OTGWBase::ParseLine()
 			SendPercentageSensor(idx - 1, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
 		}
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
-		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor((uint8_t)idx - 1, ((m_OverrideTemperature!=0.0f) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
+		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		UpdateSetPointSensor((uint8_t)idx - 1, ((m_OverrideTemperature != 0.0F) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
 		_status.Relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
 		bExists = CheckPercentageSensorExists(idx - 1, 1);
 		if ((_status.Relative_modulation_level != 0) || (bExists))
@@ -396,13 +397,13 @@ void OTGWBase::ParseLine()
 		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(idx - 1, 255, _status.Return_water_temperature, "Return Water Temperature");
 		_status.DHW_setpoint_boundaries=results[idx++];
 		_status.Max_CH_setpoint_boundaries=results[idx++];
-		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str())); 
-		if (_status.DHW_setpoint != 0.0f)
+		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		if (_status.DHW_setpoint != 0.0F)
 		{
 			UpdateSetPointSensor((uint8_t)idx - 1, _status.DHW_setpoint, "DHW Setpoint");
 		}
-		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));		
-		if (_status.Max_CH_water_setpoint != 0.0f)
+		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		if (_status.Max_CH_water_setpoint != 0.0F)
 		{
 			UpdateSetPointSensor((uint8_t)idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
 		}
@@ -454,7 +455,7 @@ void OTGWBase::ParseLine()
 	else if (sLine.find("PR: O") != std::string::npos)
 	{
 		// Check if setpoint is overriden
-		m_OverrideTemperature = 0.0f;
+		m_OverrideTemperature = 0.0F;
 		char status = sLine[6];
 		if (status == 'c' || status == 't')
 		{

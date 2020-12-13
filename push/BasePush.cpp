@@ -526,7 +526,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 			}
 			else
 			{
-				float speedms = float(intSpeed) * 0.1f;
+				float speedms = float(intSpeed) * 0.1F;
 				sprintf(szData, "%d", MStoBeaufort(speedms));
 			}
 		}
@@ -539,7 +539,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 			}
 			else
 			{
-				float gustms = float(intGust) * 0.1f;
+				float gustms = float(intGust) * 0.1F;
 				sprintf(szData, "%d", MStoBeaufort(gustms));
 			}
 		}
@@ -578,7 +578,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 			else
 			{
 				//inches
-				sprintf(szData, "%g", vis * 0.3937007874015748f);
+				sprintf(szData, "%g", vis * 0.3937007874015748F);
 			}
 		}
 		else if (vType == "Status")
@@ -630,7 +630,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if (vType == "Gas usage")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue) / 1000.0f);
+			sprintf(szData, "%g", std::stof(rawsendValue) / 1000.0F);
 		}
 		else if (vType == "Weight")
 		{
@@ -655,7 +655,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 			else
 			{
 				//miles
-				sprintf(szData, "%g", vis * 0.6214f);
+				sprintf(szData, "%g", vis * 0.6214F);
 			}
 		}
 		else if (vType == "Solar Radiation")

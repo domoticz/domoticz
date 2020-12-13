@@ -311,30 +311,30 @@ void SolarMaxTCP::ParseLine()
 		else if (sLabel == "PAC")
 		{
 			//AC power
-			ActUsage = SolarMaxGetHexStringValue(sVal)/2.0f;
+			ActUsage = SolarMaxGetHexStringValue(sVal) / 2.0F;
 		}
 		else if (sLabel == "UDC")
 		{
 			//DC voltage [mV]
-			float voltage = float(SolarMaxGetHexStringValue(sVal)) / 10.0f;
+			float voltage = float(SolarMaxGetHexStringValue(sVal)) / 10.0F;
 			SendVoltageSensor(1, 2, 255, voltage, "DC voltage");
 		}
 		else if (sLabel == "UL1")
 		{
 			//AC voltage [mV]
-			float voltage = float(SolarMaxGetHexStringValue(sVal)) / 10.0f;
+			float voltage = float(SolarMaxGetHexStringValue(sVal)) / 10.0F;
 			SendVoltageSensor(1, 3, 255, voltage, "AC voltage");
 		}
 		else if (sLabel == "IDC")
 		{
 			//DC current [mA]
-			float amps = float(SolarMaxGetHexStringValue(sVal)) / 100.0f;
+			float amps = float(SolarMaxGetHexStringValue(sVal)) / 100.0F;
 			SendCurrentSensor(4, 255, amps, 0, 0, "DC current");
 		}
 		else if (sLabel == "IL1")
 		{
 			//AC current [mA]
-			float amps = float(SolarMaxGetHexStringValue(sVal)) / 100.0f;
+			float amps = float(SolarMaxGetHexStringValue(sVal)) / 100.0F;
 			SendCurrentSensor(5, 255, amps, 0, 0, "AC current");
 		}
 		else if (sLabel == "PIN")
@@ -363,7 +363,7 @@ void SolarMaxTCP::ParseLine()
 	}
 	if (kwhCounter != 0)
 	{
-		SendKwhMeterOldWay(1, 1, 255, ActUsage/1000.0f, kwhCounter, "kWh Meter");
+		SendKwhMeterOldWay(1, 1, 255, ActUsage / 1000.0F, kwhCounter, "kWh Meter");
 	}
 
 }

@@ -343,7 +343,7 @@ void S0MeterBase::ParseLine()
 
 				double counter_value = m_meters[ii].m_counter_start + (((double)(m_meters[ii].total_pulses - m_meters[ii].first_total_pulses_received) / ((double)m_meters[ii].m_pulse_per_unit)));
 				m_meters[ii].m_current_counter = counter_value;
-				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0f, counter_value);
+				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0F, counter_value);
 			}
 
 			roffset += 3;
@@ -371,7 +371,7 @@ void S0MeterBase::ParseLine()
 				m_meters[ii].m_CurrentUsage = atof(results[roffset + 2].c_str());
 
 				//double counter_value = m_meters[ii].m_counter_start + s0_counter;
-				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0f, m_meters[ii].m_current_counter);
+				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0F, m_meters[ii].m_current_counter);
 			}
 
 			roffset += 3;

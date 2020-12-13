@@ -280,7 +280,7 @@ float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
 	case programmable_resolution_digital_thermometer:
 	{
 		DeviceCollection::const_iterator devIt = m_Devices.find(device.devid);
-		return (devIt == m_Devices.end()) ? -1000.0f : (*devIt).second->m_Temperature;
+		return (devIt == m_Devices.end()) ? -1000.0F : (*devIt).second->m_Temperature;
 	}
 	default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
 		return -1000.0;
@@ -294,12 +294,12 @@ int C1WireByKernel::GetWiper(const _t1WireDevice& /*device*/) const
 
 float C1WireByKernel::GetHumidity(const _t1WireDevice& /*device*/) const
 {
-	return 0.0f;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+	return 0.0F; // Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
 float C1WireByKernel::GetPressure(const _t1WireDevice& /*device*/) const
 {
-	return 0.0f;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+	return 0.0F; // Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
 bool C1WireByKernel::GetLightState(const _t1WireDevice& device, int unit) const
@@ -389,7 +389,7 @@ float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std
 	if (bFoundCrcOk)
 	{
 		if (is_number(data))
-			return (float)atoi(data.c_str()) / 1000.0f; // Temperature given by kernel is in thousandths of degrees
+			return (float)atoi(data.c_str()) / 1000.0F; // Temperature given by kernel is in thousandths of degrees
 	}
 
 	throw OneWireReadErrorException(deviceFileName);

@@ -1284,7 +1284,7 @@ void I2C::bmp_Read_BMP_SensorDetails()
 	//this is probably not good, need to take the rising/falling of the pressure into account?
 	//any help would be welcome!
 
-	tsensor.forecast = CalculateForecast(((float)pressure) * 10.0f);
+	tsensor.forecast = CalculateForecast(((float)pressure) * 10.0F);
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor, nullptr, 255, nullptr);
 }
 
@@ -1404,7 +1404,7 @@ bool I2C::readBME280All(const int fd, float &temp, float &pressure, int &humidit
 	double var2 = (((((temp_raw >> 4) - (dig_T1)) * ((temp_raw >> 4) - (dig_T1))) >> 12) * (dig_T3)) >> 14;
 	double t_fine = var1 + var2;
 	temp = float((int(t_fine * 5) + 128) >> 8);
-	temp /= 100.0f;
+	temp /= 100.0F;
 
 	// Refine pressure and adjust for temperature
 	var1 = t_fine / 2.0 - 64000.0;
@@ -1424,7 +1424,7 @@ bool I2C::readBME280All(const int fd, float &temp, float &pressure, int &humidit
 		var2 = dpressure * dig_P8 / 32768.0;
 		dpressure = dpressure + (var1 + var2 + dig_P7) / 16.0;
 	}
-	pressure = float(dpressure) / 100.0f;
+	pressure = float(dpressure) / 100.0F;
 
 	// Refine humidity
 	double dhumidity = t_fine - 76800.0;
@@ -1467,7 +1467,7 @@ void I2C::bmp_Read_BME_SensorDetails()
 	}
 	close(fd);
 #endif
-	uint8_t forecast = CalculateForecast(((float)pressure) * 10.0f);
+	uint8_t forecast = CalculateForecast(((float)pressure) * 10.0F);
 	//We are using the TempHumBaro Float type now, convert the forecast
 	int nforecast = wsbaroforecast_some_clouds;
 	if (pressure <= 980)

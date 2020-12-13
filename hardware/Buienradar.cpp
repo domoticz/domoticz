@@ -388,7 +388,7 @@ void CBuienRadar::GetMeterDetails()
 		}
 	}
 
-	float temp = -999.9f;
+	float temp = -999.9F;
 	int humidity = 0;
 	float barometric = 0;
 	uint8_t barometric_forecast = wsbaroforecast_unknown;
@@ -407,7 +407,7 @@ void CBuienRadar::GetMeterDetails()
 		if (barometric < 1000)
 		{
 			barometric_forecast = wsbaroforecast_rain;
-			if (temp != -999.9f)
+			if (temp != -999.9F)
 			{
 				if (temp <= 0)
 					barometric_forecast = wsbaroforecast_snow;
@@ -420,22 +420,15 @@ void CBuienRadar::GetMeterDetails()
 		else
 			barometric_forecast = wsbaroforecast_sunny;
 	}
-	if (
-		(temp != -999.9f)
-		&& (humidity != 0)
-		&& (barometric != 0)
-		)
+	if ((temp != -999.9F) && (humidity != 0) && (barometric != 0))
 	{
 		SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forecast, "TempHumBaro");
 	}
-	else if (
-		(temp != -999.9f)
-		&& (humidity != 0)
-		)
+	else if ((temp != -999.9F) && (humidity != 0))
 	{
 		SendTempHumSensor(1, 255, temp, humidity, "TempHum");
 	}
-	else if (temp != -999.9f)
+	else if (temp != -999.9F)
 	{
 		SendTempSensor(1, 255, temp, "Temp");
 	}
@@ -470,7 +463,7 @@ void CBuienRadar::GetMeterDetails()
 		else
 			wind_chill = temp;
 
-		SendWind(1, 255, wind_direction, wind_speed, wind_gusts, temp, wind_chill, temp != -999.9f, true, "Wind");
+		SendWind(1, 255, wind_direction, wind_speed, wind_gusts, temp, wind_chill, temp != -999.9F, true, "Wind");
 	}
 
 	if (!root["visibility"].empty())

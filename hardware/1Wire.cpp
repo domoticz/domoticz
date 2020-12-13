@@ -506,7 +506,7 @@ void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const un
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 
-	SendMeterSensor(deviceIdByteArray[0], deviceIdByteArray[1] + unit, 255, (const float)counter / 1000.0f, "Counter");
+	SendMeterSensor(deviceIdByteArray[0], deviceIdByteArray[1] + unit, 255, (const float)counter / 1000.0F, "Counter");
 }
 
 void C1Wire::ReportVoltage(const std::string& /*deviceId*/, const int unit, const int voltage)

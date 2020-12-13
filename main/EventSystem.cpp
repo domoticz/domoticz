@@ -757,12 +757,12 @@ void CEventSystem::GetCurrentMeasurementStates()
 				if (sitem.subType != sTypeWIND5)
 				{
 					int intSpeed = atoi(splitresults[2].c_str());
-					windspeed = float(intSpeed) * 0.1f; //m/s
+					windspeed = float(intSpeed) * 0.1F; // m/s
 					isWindSpeed = true;
 				}
 
 				int intGust = atoi(splitresults[3].c_str());
-				windgust = float(intGust) * 0.1f; //m/s
+				windgust = float(intGust) * 0.1F; // m/s
 				isWindGust = true;
 				if ((windgust == 0) && (windspeed != 0))
 				{
@@ -926,7 +926,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() == 2)
 			{
 				rainmm = 0;
-				rainmmlasthour = static_cast<float>(atof(splitresults[0].c_str())) / 100.0f;
+				rainmmlasthour = static_cast<float>(atof(splitresults[0].c_str())) / 100.0F;
 				isRain = true;
 				weatherval = rainmmlasthour;
 				isWeather = true;
@@ -968,7 +968,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			break;
 		case pTypeP1Gas:
 		{
-			float GasDivider = 1000.0f;
+			float GasDivider = 1000.0F;
 			//get lowest value of today
 			std::string szDate = TimeToString(nullptr, TF_Date);
 			std::vector<std::vector<std::string> > result2;
@@ -2280,7 +2280,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				mode = ParseBlocklyString(aParam[1]);
 			case 1:
 				temp = ParseBlocklyString(aParam[0]);
-				m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, temp, mode, until));
+				m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until));
 				actionsDone = true;
 				break;
 
@@ -2348,7 +2348,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		else if (deviceName.find("OpenURL") != std::string::npos)
 		{
 			_tActionParseResults parseResult;
-			parseResult.fAfterSec = 0.2f;
+			parseResult.fAfterSec = 0.2F;
 			ParseActionString(doWhat, parseResult);
 			OpenURL(parseResult.fAfterSec, parseResult.sCommand);
 			actionsDone = true;
@@ -2376,7 +2376,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				sPath = szUserDataFolder + "scripts/" + sPath;
 #endif
 
-			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, sPath, sParam));
+			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2F, sPath, sParam));
 			actionsDone = true;
 			continue;
 		}
@@ -2511,19 +2511,19 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 				oResults_.sCommand.append(sToken);
 				break;
 			case 1:
-				oResults_.fForSec = 60.f * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fForSec = 60.F * static_cast<float>(atof(sToken.c_str()));
 				break;
 			case 2:
-				oResults_.fAfterSec = 1.f * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fAfterSec = 1.F * static_cast<float>(atof(sToken.c_str()));
 				break;
 			case 3:
-				oResults_.fRandomSec = 60.f * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fRandomSec = 60.F * static_cast<float>(atof(sToken.c_str()));
 				break;
 			case 4:
 				oResults_.iRepeat = atoi(sToken.c_str());
 				break;
 			case 5:
-				oResults_.fRepeatSec = 1.f * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fRepeatSec = 1.F * static_cast<float>(atof(sToken.c_str()));
 				break;
 			}
 		}
@@ -2583,7 +2583,7 @@ bool CEventSystem::PythonScheduleEvent(const std::string &ID, const std::string 
 			mode = aParam[1];
 		case 1:
 			temp = aParam[0];
-			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, temp, mode, until));
+			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until));
 			break;
 
 		default:
@@ -3338,7 +3338,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
 		_tActionParseResults parseResult;
-		parseResult.fAfterSec = 0.2f;
+		parseResult.fAfterSec = 0.2F;
 		ParseActionString(luaString, parseResult);
 		OpenURL(parseResult.fAfterSec, parseResult.sCommand);
 		scriptTrue = true;
@@ -3414,7 +3414,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		case 1:
 			idx = atoi(SetPointIdx.c_str());
 			temp = aParam[0];
-			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, temp, mode, until));
+			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until));
 			break;
 
 		default:
@@ -4014,7 +4014,7 @@ int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		{
 			if ((switchtype == STYPE_Dimmer) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
-				float fLevel = (maxDimLevel / 100.0f) * percentageLevel;
+				float fLevel = (maxDimLevel / 100.0F) * percentageLevel;
 				if (fLevel > 100)
 					fLevel = 100;
 				iLevel = int(fLevel);

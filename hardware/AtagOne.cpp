@@ -502,8 +502,8 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 		return;
 	}
 
-	int rtemp = int(temp*2.0f);
-	float dtemp = float(rtemp) / 2.0f;
+	int rtemp = int(temp * 2.0F);
+	float dtemp = float(rtemp) / 2.0F;
 	if (
 		(dtemp<ATAGONE_TEMPERATURE_MIN) ||
 		(dtemp>ATAGONE_TEMPERATURE_MAX)
