@@ -1628,6 +1628,9 @@
     <Product config="shenzen_neo/ls01ch.xml" id="008c" name="Wall Switch (1 channel)" type="0003"/>
     <Product config="shenzen_neo/ls01ch.xml" id="108c" name="Wall Switch (1 channel)" type="0003"/>
   </Manufacturer>
+  <Manufacturer id="041a" name="Shenzhen Neo Electronics Co Ltd">
+    <Product config="shenzen_neo/nas-wr01ze.xml" id="0008" name="NAS-WR01ZE Power plug 12A" type="0200"/>
+  </Manufacturer>
   <Manufacturer id="032C" name="Shenzhen Saykey Technology">
     <Product config="shenzen_saykey/sk-3007-05.xml" id="0005" name="Curtain Motor Control with external module" type="3007"/>
   </Manufacturer>

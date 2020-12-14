@@ -9046,12 +9046,14 @@ namespace http {
 				for (const auto &sd : result)
 				{
 					unsigned char favorite = atoi(sd[12].c_str());
-					if ((!planID.empty()) && (planID != "0"))
-						favorite = 1;
+					bool bIsInPlan = planID.empty() && (planID != "0");
 
 					//Check if we only want favorite devices
-					if ((bFetchFavorites) && (!favorite))
-						continue;
+					if (!bIsInPlan)
+					{
+						if ((bFetchFavorites) && (!favorite))
+							continue;
+					}
 
 					std::string sDeviceName = sd[3];
 
