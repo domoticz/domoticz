@@ -30,8 +30,6 @@ Domoticz need to be in the same network/subnet with multicast working
 // Removing this vector and use unitcode to tell what kind of device each is
 //std::vector<std::string> arrAqara_Wired_ID;
 
-#pragma once
-
 // Unitcode ('Unit' in 'Devices' overview)
 typedef enum
 {
