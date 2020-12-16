@@ -892,6 +892,7 @@ If for some reason you miss a specific attribute or data for a device, then like
 
 ## Device attributes and methods for all devices
  - **active**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'. Same as bState.
+ - **baseType** *String*. 'camera', 'device', 'group', 'scene', 'hardware', 'uservariable' or 'security'
  - **batteryLevel**: *Number* If applicable for that device then it will be from 0-100.
  - **bState**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'. Better to use active.
  - **changed**: *Boolean*. True if the device was updated. **Note**: This does not necessarily means the device state or value changed.
