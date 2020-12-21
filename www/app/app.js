@@ -439,13 +439,18 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 						$rootScope.MakeGlobalConfig();
 
-						if (typeof data.result.templates != 'undefined') {
+						if ( (typeof data.result.templates != 'undefined') || (typeof data.result.urls != 'undefined') ) {
 							var customHTML = "";
 							$.each(data.result.templates, function (i, item) {
 								var cFile = item;
 								var cName = cFile.charAt(0).toUpperCase() + cFile.slice(1);
 								var cURL = "templates/" + cFile;
 								customHTML += '<li><a href="javascript:SwitchLayout(\'' + cURL + '\')">' + cName + '</a></li>';
+							});
+							$.each(data.result.urls, function (name, url) {
+								var cName = name.charAt(0).toUpperCase() + name.slice(1);
+								var cURL = url;
+								customHTML += '<li><a target="_blank" href="' + cURL + '">' + cName + '</a></li>';
 							});
 							if (customHTML != "") {
 								$("#custommenu").html(customHTML);

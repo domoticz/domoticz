@@ -2833,6 +2833,23 @@ namespace http {
 							std::string shortfile = filename.substr(0, pos);
 							root["result"]["templates"][iFile++] = shortfile;
 						}
+						// Same thing for URLs
+						pos = filename.find(".url");
+						if (pos != std::string::npos)
+						{
+							std::string url;
+							std::string shortfile = filename.substr(0, pos);
+							//First get the URL from the file
+							std::ifstream urlfile;
+							urlfile.open((templatesFolder+"/"+filename).c_str());
+							if (urlfile.is_open())
+							{
+								getline(urlfile, url);
+								urlfile.close();
+								// Pass URL in results
+								root["result"]["urls"][shortfile] = url;
+							}
+						}
 					}
 					closedir(lDir);
 				}
