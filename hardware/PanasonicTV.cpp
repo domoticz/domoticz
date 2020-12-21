@@ -72,10 +72,10 @@ Possible Commands:
 "NRC_D0-ONOFF"        => "Digit 0",
 "NRC_P_NR-ONOFF"      => "P-NR (Noise reduction)",
 "NRC_R_TUNE-ONOFF"    => "Seems to do the same as INFO",
-"NRC_HDMI1"           => "Switch to HDMI input 1",
-"NRC_HDMI2"           => "Switch to HDMI input 2",
-"NRC_HDMI3"           => "Switch to HDMI input 3",
-"NRC_HDMI4"           => "Switch to HDMI input 4",
+"NRC_HDMI1-ONOFF"     => "Switch to HDMI input 1",
+"NRC_HDMI2-ONOFF"     => "Switch to HDMI input 2",
+"NRC_HDMI3-ONOFF"     => "Switch to HDMI input 3",
+"NRC_HDMI4-ONOFF"     => "Switch to HDMI input 4",
 
 
 */
@@ -655,13 +655,13 @@ void CPanasonicNode::SendCommand(const std::string &command)
 	else if (command == "0")
 		sPanasonicCall = buildXMLStringNetCtl("D0-ONOFF");
 	else if (command == "hdmi1")
-		sPanasonicCall = buildXMLStringNetCtl("HDMI1");
+		sPanasonicCall = buildXMLStringNetCtl("HDMI1-ONOFF");
 	else if (command == "hdmi2")
-		sPanasonicCall = buildXMLStringNetCtl("HDMI2");
+		sPanasonicCall = buildXMLStringNetCtl("HDMI2-ONOFF");
 	else if (command == "hdmi3")
-		sPanasonicCall = buildXMLStringNetCtl("HDMI3");
+		sPanasonicCall = buildXMLStringNetCtl("HDMI3-ONOFF");
 	else if (command == "hdmi4")
-		sPanasonicCall = buildXMLStringNetCtl("HDMI4");
+		sPanasonicCall = buildXMLStringNetCtl("HDMI4-ONOFF");
 	else if (command == "Rewind")
 		sPanasonicCall = buildXMLStringNetCtl("REW-ONOFF");
 	else if (command == "FastForward")
@@ -689,8 +689,10 @@ void CPanasonicNode::SendCommand(const std::string &command)
 			UpdateStatus(true);
 		}
 	}
-	else
-		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Unknown command: '%s'.", m_Name.c_str(), command.c_str());
+	else {
+		_log.Log(LOG_WARNING, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), command.c_str());
+		sPanasonicCall = buildXMLStringNetCtl(command.c_str());
+	}
 
 	if (sPanasonicCall.length())
 	{

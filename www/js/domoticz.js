@@ -1424,7 +1424,7 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 	var vBox = $(svgId).prop("viewBox").baseVal;
 	var svgRatio = (vBox.width - vBox.x) / (vBox.height - vBox.y);
 	var dheight = $(window).height() * 0.85;
-	var dwidth = dheight * svgRatio;
+	var dwidth = dheight * svgRatio + 2 * 10; // Dialog margin & padding
 	// for v2.0, if screen is wide enough add room to show media at the side of the remote
 	$(divId).dialog({
 		resizable: false,
@@ -1441,6 +1441,9 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 			$(divId).attr("HardwareType", HWType);
 			$(svgId).css("-ms-overflow-style", "none");
 			$(divId).bind('touchstart', function () { });
+			if ( HWType.indexOf('Panasonic') >= 0) {
+				$("#dialog-media-remote-options").show();
+			}
 		},
 		close: function () {
 			if (typeof $.myglobals.refreshTimer != 'undefined') {
