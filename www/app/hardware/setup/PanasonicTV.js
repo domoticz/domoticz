@@ -15,6 +15,7 @@ define(['app'], function (app) {
 
             $("#hardwarecontent #panasonicsettingstable #pollinterval").val($ctrl.hardware.Mode1);
             $("#hardwarecontent #panasonicsettingstable #pingtimeout").val($ctrl.hardware.Mode2);
+            $("#hardwarecontent #panasonicsettingstable #custombuttons").val($ctrl.hardware.Extra);
 
             $('#panasonicnodestable').dataTable({
                 "sDom": '<"H"lfrC>t<"F"ip>',
@@ -221,11 +222,13 @@ define(['app'], function (app) {
             var Mode2 = parseInt($("#hardwarecontent #panasonicsettingstable #pingtimeout").val());
             if (Mode2 < 500)
                 Mode2 = 500;
+            var Extra = $("#hardwarecontent #panasonicsettingstable #custombuttons").val();
             $.ajax({
                 url: "json.htm?type=command&param=panasonicsetmode" +
                 "&idx=" + $.devIdx +
                 "&mode1=" + Mode1 +
-                "&mode2=" + Mode2,
+                "&mode2=" + Mode2 +
+                "&extra=" + Extra ,
                 async: false,
                 dataType: 'json',
                 success: function (data) {

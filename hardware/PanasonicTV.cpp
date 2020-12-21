@@ -690,7 +690,7 @@ void CPanasonicNode::SendCommand(const std::string &command)
 		}
 	}
 	else {
-		_log.Log(LOG_WARNING, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), command.c_str());
+		_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), command.c_str());
 		sPanasonicCall = buildXMLStringNetCtl(command.c_str());
 	}
 
@@ -1084,6 +1084,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
+			std::string extra = request::findValue(&req, "extra");
 			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -1100,7 +1101,7 @@ namespace http {
 			int iMode1 = atoi(mode1.c_str());
 			int iMode2 = atoi(mode2.c_str());
 
-			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == '%q')", iMode1, iMode2, hwid.c_str());
+			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d, Extra='%s' WHERE (ID == '%q')", iMode1, iMode2, extra.c_str(), hwid.c_str());
 			pHardware->SetSettings(iMode1, iMode2);
 			pHardware->Restart();
 		}

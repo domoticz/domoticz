@@ -1442,7 +1442,41 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 			$(svgId).css("-ms-overflow-style", "none");
 			$(divId).bind('touchstart', function () { });
 			if ( HWType.indexOf('Panasonic') >= 0) {
-				$("#dialog-media-remote-options").show();
+				// Here is a little painful because we need to get hardware id  first...
+				$.ajax({
+					url: "json.htm?type=devices&rid=" + devIdx,
+					async: true,
+					dataType: 'json',
+					success: function (data) { 
+						hwId = data.result[0].HardwareID;
+						$.ajax({
+							url: "json.htm?type=hardware",
+							async: true,
+							dataType: 'json',
+							success: function (data) { 
+								for(var i in data.result) {
+									var hw = data.result[i];
+									if (hw.idx == hwId) {
+										if (hw.Extra !== null && hw.Extra !== '') {
+											$("#dialog-media-remote-options").show();
+											hw.Extra.split(',').forEach(function (val, index) {
+												if (index < 4) {
+													var tokens = val.split(':');
+													$("#dialog-media-remote-opt" + (index + 1) + "-text").text(tokens[0]);
+													$("#dialog-media-remote-opt" + (index + 1) + "-title").text(tokens[0]);
+													$("#dialog-media-remote-opt" + (index + 1) + "-button").attr("onclick","");
+													$("#dialog-media-remote-opt" + (index + 1) + "-button").click(function() {
+														click_media_remote(tokens[1]);
+													});
+												}
+											});
+										}
+									}
+								}
+							}
+						});
+					}
+				});
 			}
 		},
 		close: function () {
