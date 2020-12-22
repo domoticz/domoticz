@@ -142,6 +142,7 @@ private:
   std::string buildXMLStringRendCtl(const std::string &, const std::string &);
   std::string buildXMLStringRendCtl(const std::string &, const std::string &, const std::string &);
   std::string buildXMLStringNetCtl(const std::string &);
+  std::string buildXMLStringAppCtl(const std::string &);
 
   int m_HwdID;
   char m_szDevID[40];
@@ -526,6 +527,35 @@ std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
 
 }
 
+std::string CPanasonicNode::buildXMLStringAppCtl(const std::string &productId)
+{
+	std::string head, body;
+	int size;
+
+	body = R"(<?xml version="1.0" encoding="utf-8"?>)";
+	body += R"(<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">)";
+	body += "<s:Body>";
+	body += "<u:X_LaunchApp xmlns:u=\"urn:panasonic-com:service:p00NetworkControl:1\">";
+    body += "<X_AppType>vc_app</X_AppType>";
+    body += "<X_LaunchKeyword>product_id=" + productId + "</X_LaunchKeyword>";
+    body += "</u:X_LaunchApp>";
+	body += "</s:Body>";
+	body += "</s:Envelope>";
+
+	size = body.length();
+
+	head += "POST /nrc/control_0 HTTP/1.1\r\n";
+	head += "Host: " + m_IP + ":" + m_Port + "\r\n";
+	head += "SOAPACTION: \"urn:panasonic-com:service:p00NetworkControl:1#X_LaunchApp\"\r\n";
+	head += "Content-Type: text/xml; charset=\"utf-8\"\r\n";
+	head += "Content-Length: " + std::to_string(size) + "\r\n";
+	head += "\r\n";
+
+	return head + body;
+
+}
+
+
 
 void CPanasonicNode::Do_Work()
 {
@@ -676,6 +706,41 @@ void CPanasonicNode::SendCommand(const std::string &command)
 		sPanasonicCall = buildXMLStringNetCtl("POWER-ONOFF");
 	else if (command == "ShowSubtitles")
 		sPanasonicCall = buildXMLStringNetCtl("STTL-ONOFF");
+	// Application Codes from : https://github.com/g30r93g/homebridge-panasonic#readme
+	//  and : https://forums.indigodomo.com/viewtopic.php?f=134&t=17875&start=15
+	else if (command == "Netflix")	sPanasonicCall = buildXMLStringAppCtl("0010000200000001");
+	else if (command == "YouTube")	sPanasonicCall = buildXMLStringAppCtl("0070000200170001");
+	else if (command == "Amazon Prime Video")	sPanasonicCall = buildXMLStringAppCtl("0010000100170001");
+	else if (command == "Plex")	sPanasonicCall = buildXMLStringAppCtl("0076010507000001");
+	else if (command == "BBC iPlayer")	sPanasonicCall = buildXMLStringAppCtl("0020000A00170010");
+	else if (command == "BBC News")	sPanasonicCall = buildXMLStringAppCtl("0020000A00170006");
+	else if (command == "BBC Sport")	sPanasonicCall = buildXMLStringAppCtl("0020000A00170007");
+	else if (command == "ITV Hub")	sPanasonicCall = buildXMLStringAppCtl("0387878700000124");
+	else if (command == "TuneIn")	sPanasonicCall = buildXMLStringAppCtl("0010001800000001");
+	else if (command == "AccuWeather")	sPanasonicCall = buildXMLStringAppCtl("0070000C00000001");
+	else if (command == "All 4")	sPanasonicCall = buildXMLStringAppCtl("0387878700000125");
+	else if (command == "Demand 5")	sPanasonicCall = buildXMLStringAppCtl("0020009300000002");
+	else if (command == "Rakuten TV")	sPanasonicCall = buildXMLStringAppCtl("0020002A00000001");
+	else if (command == "CHILI")	sPanasonicCall = buildXMLStringAppCtl("0020004700000001");
+	else if (command == "STV Player")	sPanasonicCall = buildXMLStringAppCtl("0387878700000132");
+	else if (command == "Digital Concert Hall")	sPanasonicCall = buildXMLStringAppCtl("0076002307170001");
+	else if (command == "Apps Market")	sPanasonicCall = buildXMLStringAppCtl("0387878700000102");
+	else if (command == "Browser")	sPanasonicCall = buildXMLStringAppCtl("0077777700160002");
+	else if (command == "Calendar")	sPanasonicCall = buildXMLStringAppCtl("0387878700150020");
+	else if (command == "VIERA Link")	sPanasonicCall = buildXMLStringAppCtl("0387878700000016");
+	else if (command == "Recorded TV")	sPanasonicCall = buildXMLStringAppCtl("0387878700000013");
+	else if (command == "Freeview Catch Up")	sPanasonicCall = buildXMLStringAppCtl("0387878700000109");
+	else if (command == "MediaPlayer")	sPanasonicCall = buildXMLStringAppCtl("0387878700000032");
+	else if (command == "DLNAPlayer")	sPanasonicCall = buildXMLStringAppCtl("0387878700000014");
+	else if (command == "TV")	sPanasonicCall = buildXMLStringAppCtl("0387878700000001");
+	else if (command == "AppsMenu")	sPanasonicCall = buildXMLStringAppCtl("0387878700000009");
+	else if (command == "WebBrowser")	sPanasonicCall = buildXMLStringAppCtl("0077777700000002");
+	else if (command == "Skype")	sPanasonicCall = buildXMLStringAppCtl("0070000600000001");
+	else if (command == "Mirroring")	sPanasonicCall = buildXMLStringAppCtl("0387878700000049");
+	else if (command == "TouchConnect")	sPanasonicCall = buildXMLStringAppCtl("0387878700000038");
+	else if (command == "Weather")	sPanasonicCall = buildXMLStringAppCtl("0070000900000001");
+	else if (command == "YouTube2")	sPanasonicCall = buildXMLStringAppCtl("0070000200000001");
+	
 	else if (command == "On" || command == "on")
 	{
 		if (m_PowerOnSupported)
@@ -703,10 +768,15 @@ void CPanasonicNode::SendCommand(const std::string &command)
 				std::remove_if(
 					sanityze.begin(), 
 					sanityze.end(), 
-					[]( char const& c ) -> bool { return ! (std::isalnum(c) || (std::string("_-+.").find(c) != std::string::npos)); } 
+					[]( char const& c ) -> bool { return ! (std::isalnum(c) || (std::string("_-+.:=").find(c) != std::string::npos)); } 
 				), sanityze.end());
 			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), sanityze.c_str());
-			sPanasonicCall = buildXMLStringNetCtl(sanityze.c_str());
+			if (sanityze.rfind("app",0) == 0) {
+				sanityze.erase(0,3);
+				sPanasonicCall = buildXMLStringAppCtl(sanityze.c_str());
+			} else {
+				sPanasonicCall = buildXMLStringNetCtl(sanityze.c_str());
+			}
 		} else {
 			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Unknown command: '%s'. ", m_Name.c_str(), command.c_str());
 		}
