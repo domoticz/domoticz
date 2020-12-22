@@ -839,7 +839,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_PanasonicTV:
 		//Panasonic Viera TV's
-		pHardware = new CPanasonic(ID, Mode1, Mode2);
+		pHardware = new CPanasonic(ID, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_Mochad:
 		//LAN

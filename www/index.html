@@ -637,7 +637,7 @@ $(document).ready(function() {
 		<img id="camfeed" name="camfeed" onload="load_cam_video()" src="images/camera_default.png" width="600" height="337" style="border: 1px solid #1E2832;">
 	</div>
 	<div id="dialog-media-remote" style="display:none;">
-		<svg id="MediaRemote" class="MediaRemote" viewBox="50 -150 900 2020" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
+		<svg id="MediaRemote" class="MediaRemote" viewBox="50 -150 900 1875" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
 			<defs>
 				<radialGradient id="grad1" cx="50%" cy="20%" r="50%" fx="50%" fy="50%">
 					<stop offset="0%" style="stop-color:#cbcccb;" />
@@ -858,44 +858,7 @@ $(document).ready(function() {
 						<path d="m 450 960 0,80 40,-40 m 10 -35 l0 70 l15 0 l0 -70 m 10 0 l0 70 l15 0 l0 -70 z" class="remoteshadow" />
 					</g>
 				</g>
-				<g id="dialog-media-remote-options" style="display: none">
-					<g id="svg_114">
-					<rect class="remoteshadow" x="50" y="1740" width="200" height="120" id="svg_127" rx="50" ry="50"/>
-					<rect class="remotehoverable" fill="url(#grad1)" x="50" y="1730" width="200" height="120" id="dialog-media-remote-opt1-button" rx="50" ry="50"  
-						onclick="javascript:click_media_remote('option1');" >
-						<title id="dialog-media-remote-opt1-title">Option 1</title>
-					</rect>
-					<text text-anchor="middle" x="150" y="1800" class="remotetext" id="dialog-media-remote-opt1-text" fill="black"  
-						style="font-size: 60px; font-weight: bold;">Opt 1</text>
-					</g>				
-					<g id="svg_123">
-					<rect class="remoteshadow" x="283" y="1737.75312" width="200" height="120" id="svg_124" rx="50" ry="50"/>
-					<rect class="remotehoverable" fill="url(#grad1)" x="283" y="1727.75312" width="200" height="120" id="dialog-media-remote-opt2-button" rx="50" ry="50"
-						onclick="javascript:click_media_remote('option2');" >
-						<title id="dialog-media-remote-opt2-title">Option 2</title>
-					</rect>
-					<text text-anchor="middle" x="383" y="1800" class="remotetext"  id="dialog-media-remote-opt2-text" fill="black"  
-						style="font-size: 60px; font-weight: bold;">Opt 2</text>
-					</g>
-					<g id="svg_120">
-					<rect class="remoteshadow" x="517" y="1737.75312" width="200" height="120" id="svg_121" rx="50" ry="50"/>
-					<rect class="remotehoverable" fill="url(#grad1)" x="517" y="1727.75312" width="200" height="120" id="dialog-media-remote-opt3-button" rx="50" ry="50" 
-						onclick="javascript:click_media_remote('option3');" >
-						<title id="dialog-media-remote-opt3-title">Option 3</title>
-					</rect>
-					<text text-anchor="middle" x="617" y="1800" class="remotetext"  id="dialog-media-remote-opt3-text" fill="black"  
-						style="font-size: 60px; font-weight: bold;">Opt 3</text>
-					</g>
-					<g id="svg_117">
-					<rect class="remoteshadow" x="750" y="1737.75312" width="200" height="120" id="svg_118" rx="50" ry="50"/>
-					<rect class="remotehoverable" fill="url(#grad1)" x="750" y="1727.75312" width="200" height="120" id="dialog-media-remote-opt4-button" rx="50" ry="50" 
-						onclick="javascript:click_media_remote('option4');" >
-						<title id="dialog-media-remote-opt4-title">Option 4</title>
-					</rect>
-					<text text-anchor="middle" x="850" y="1800" class="remotetext"  id="dialog-media-remote-opt4-text" fill="black"  
-						style="font-size: 60px; font-weight: bold;">Opt 4</text>
-					</g>
-				</g>
+				<g id="MediaRemote-custom-buttons"></g>
 			</g>
 		</svg>
 	</div>

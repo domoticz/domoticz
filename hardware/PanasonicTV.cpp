@@ -690,8 +690,18 @@ void CPanasonicNode::SendCommand(const std::string &command)
 		}
 	}
 	else {
-		_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), command.c_str());
-		sPanasonicCall = buildXMLStringNetCtl(command.c_str());
+		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(m_HwdID);
+		if (pBaseHardware == nullptr)
+			return;
+		if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
+			return;
+		CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
+		if (pHardware->m_bUnknownCommandAllowed) {
+			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), command.c_str());
+			sPanasonicCall = buildXMLStringNetCtl(command.c_str());
+		} else {
+			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Unknown command: '%s'. ", m_Name.c_str(), command.c_str());
+		}
 	}
 
 	if (sPanasonicCall.length())
@@ -740,16 +750,16 @@ void CPanasonicNode::SetExecuteCommand(const std::string &command)
 
 std::vector<std::shared_ptr<CPanasonicNode> > CPanasonic::m_pNodes;
 
-CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms)
+CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms, const int mode3)
 {
 	m_HwdID = ID;
-	SetSettings(PollIntervalsec, PingTimeoutms);
+	SetSettings(PollIntervalsec, PingTimeoutms, mode3);
 }
 
 CPanasonic::CPanasonic(const int ID)
 {
 	m_HwdID = ID;
-	SetSettings(10, 3000);
+	SetSettings(10, 3000, 0);
 }
 
 CPanasonic::~CPanasonic()
@@ -820,16 +830,19 @@ void CPanasonic::Do_Work()
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Worker stopped...");
 }
 
-void CPanasonic::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
+void CPanasonic::SetSettings(const int PollIntervalsec, const int PingTimeoutms, const int iMode3)
 {
 	//Defaults
 	m_iPollInterval = 30;
 	m_iPingTimeoutms = 1000;
+	m_bUnknownCommandAllowed = 0;
 
 	if (PollIntervalsec > 1)
 		m_iPollInterval = PollIntervalsec;
 	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
 		m_iPingTimeoutms = PingTimeoutms;
+
+	m_bUnknownCommandAllowed =  iMode3 & 1;
 }
 
 bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -1084,6 +1097,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
+			std::string mode3 = request::findValue(&req, "mode3");
 			std::string extra = request::findValue(&req, "extra");
 			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
@@ -1100,9 +1114,11 @@ namespace http {
 
 			int iMode1 = atoi(mode1.c_str());
 			int iMode2 = atoi(mode2.c_str());
+			int iMode3 = atoi(mode3.c_str());
 
-			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d, Extra='%s' WHERE (ID == '%q')", iMode1, iMode2, extra.c_str(), hwid.c_str());
-			pHardware->SetSettings(iMode1, iMode2);
+			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d, Mode3=%d, Extra='%s' WHERE (ID == '%q')", iMode1, iMode2, iMode3, extra.c_str(), hwid.c_str());
+
+			pHardware->SetSettings(iMode1, iMode2, iMode3);
 			pHardware->Restart();
 		}
 

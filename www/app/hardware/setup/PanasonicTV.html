@@ -17,9 +17,19 @@
             <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
             <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
         </tr>
-        <tr>
+        <tr valign="top">
             <td align="right" style="width:110px"><label for="custombuttons"><span data-i18n="Custom buttons"></span>:</label></td>
-            <td><input type="text" id="custombuttons" style="width: 400px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;<br />(<span data-i18n="Title1:Command1,Title2:Command2,Title3:Command3,Title4:Command4"></span>)</td>
+            <td><input type="text" id="custombuttons" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;
+            <br /><span data-i18n="Button with Title:command, separated by ',', andines separated by ';'"></span>
+            <br /><span data-i18n="Example: HDMI1:hdmi1,HDMI2:hdmi2,HDMI3:hdmi3,TV:inputtv;EPG:guide,3D:3D-ONOFF,Ratio:DISP_MODE-ONOFF,CEC:VIERA_LINK-ONOFF,AV:inputav"></span>
+            <br /><span data-i18n="To be able to use unknown commands, please check the option in settings. The command will be prefixed by 'NRC_'."></span>
+            </td>
+        </tr>
+        <tr valign="top">
+            <td align="right" style="width:110px"><label><span data-i18n="Allow unknown commands">Allow unknown commands</span>:</label></td>
+            <td>
+                <input type="checkbox" id="unknowncommands" name="unknowncommands"><label for="unknowncommands"></label><br>
+            </td>
         </tr>
         <tr>
             <td></td>

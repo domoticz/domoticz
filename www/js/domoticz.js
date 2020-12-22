@@ -1424,11 +1424,11 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 	var vBox = $(svgId).prop("viewBox").baseVal;
 	var svgRatio = (vBox.width - vBox.x) / (vBox.height - vBox.y);
 	var dheight = $(window).height() * 0.85;
-	var dwidth = dheight * svgRatio + 2 * 10; // Dialog margin & padding
+	var dwidth = dheight * svgRatio ;
 	// for v2.0, if screen is wide enough add room to show media at the side of the remote
 	$(divId).dialog({
 		resizable: false,
-		show: "blind",
+		//show: "blind", // effects are causing issue with changing the height during the animation
 		hide: "blind",
 		width: dwidth,
 		height: dheight,
@@ -1454,22 +1454,58 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 							async: true,
 							dataType: 'json',
 							success: function (data) { 
+								// Need to iterate over all hardware to find the good one
 								for(var i in data.result) {
 									var hw = data.result[i];
 									if (hw.idx == hwId) {
 										if (hw.Extra !== null && hw.Extra !== '') {
-											$("#dialog-media-remote-options").show();
-											hw.Extra.split(',').forEach(function (val, index) {
-												if (index < 4) {
+											// We finally have the custombuttons string, process!
+											var bspacing = 20;
+											var bvspacing = 20;
+											var bheight = 100;
+											var bindex = 0;
+											// Reset buttons
+											$("#MediaRemote-custom-buttons").html('');
+											$(svgId).prop("viewBox").baseVal.height = 1875;
+											// Loop lines
+											hw.Extra.split(';').forEach(function (line) {
+												// Add line
+												var vBox = $(svgId).prop("viewBox").baseVal;
+												var bvline = vBox.y + vBox.height +  bvspacing;
+												$(svgId).prop("viewBox").baseVal.height = vBox.height + bheight + bvspacing;
+												var buttons = line.split(',');
+												var bwidth = (vBox.width + bspacing) / buttons.length - bspacing; 
+												// Loop buttons
+												buttons.forEach(function (val, index) {
 													var tokens = val.split(':');
-													$("#dialog-media-remote-opt" + (index + 1) + "-text").text(tokens[0]);
-													$("#dialog-media-remote-opt" + (index + 1) + "-title").text(tokens[0]);
-													$("#dialog-media-remote-opt" + (index + 1) + "-button").attr("onclick","");
-													$("#dialog-media-remote-opt" + (index + 1) + "-button").click(function() {
-														click_media_remote(tokens[1]);
-													});
-												}
+													var btitle = tokens[0];
+													var bcommand = tokens[1];
+													var buttonSVG = "";
+													bindex++;
+													bx = $(svgId).prop("viewBox").baseVal.x + index * (bwidth+bspacing);
+													// Button shadow
+													buttonSVG += '<rect id="toto" class="remoteshadow" x="'+bx+'" y="'+(bvline+10)+'" width="'+bwidth+'" height="'+bheight+'" rx="50" ry="50"></rect>';
+													// Button 
+													buttonSVG += '<rect class="remotehoverable" fill="url(#grad1)" x="'+bx+'" y="'+(bvline)+'" width="'+bwidth+'" height="'+bheight+'"  rx="50" ry="50" ';
+													buttonSVG += 'onclick="javascript: click_media_remote(\'' + bcommand + '\');" ';
+													buttonSVG += '><title id="dialog-media-remote-opt1-title">' + btitle + '</title></rect>';
+													// Button text
+													buttonSVG += '<text text-anchor="middle" x="'+(bx+bwidth/2)+'" y="'+(bvline+bheight*0.55)+'" class="remotetext" ';
+													buttonSVG += 'fill="black"  style="font-size: 60px; font-weight: bold;">' + btitle + '</text>';
+													// Add button
+													$("#MediaRemote-custom-buttons").append(buttonSVG);
+												});
 											});
+
+											// Refresh SVG
+											$(svgId).parent().html($(svgId).parent().html());
+											// Ajust dialog width
+											var vBox = $(svgId).prop("viewBox").baseVal;
+											var svgRatio = (vBox.width - vBox.x) / (vBox.height - vBox.y);
+											var dheight = $(window).height() * 0.85;
+											var dwidth = dheight * svgRatio;
+											$(divId).dialog( "option", "width", dwidth);
+											$(divId).dialog( "option", "height", dheight);
 										}
 									}
 								}
