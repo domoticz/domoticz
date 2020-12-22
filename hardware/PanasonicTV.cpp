@@ -706,7 +706,7 @@ void CPanasonicNode::SendCommand(const std::string &command)
 					[]( char const& c ) -> bool { return ! (std::isalnum(c) || (std::string("_-+.").find(c) != std::string::npos)); } 
 				), sanityze.end());
 			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), sanityze.c_str());
-			sPanasonicCall = buildXMLStringNetCtl(command.c_str());
+			sPanasonicCall = buildXMLStringNetCtl(sanityze.c_str());
 		} else {
 			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Unknown command: '%s'. ", m_Name.c_str(), command.c_str());
 		}
