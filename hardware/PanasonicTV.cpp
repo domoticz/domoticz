@@ -697,7 +697,15 @@ void CPanasonicNode::SendCommand(const std::string &command)
 			return;
 		CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
 		if (pHardware->m_bUnknownCommandAllowed) {
-			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), command.c_str());
+			// Sanitize command : keep only alphanumeric characters
+			std::string sanityze = command;
+			sanityze.erase(
+				std::remove_if(
+					sanityze.begin(), 
+					sanityze.end(), 
+					[]( char const& c ) -> bool { return ! (std::isalnum(c) || (std::string("_-+.").find(c) != std::string::npos)); } 
+				), sanityze.end());
+			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), sanityze.c_str());
 			sPanasonicCall = buildXMLStringNetCtl(command.c_str());
 		} else {
 			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Unknown command: '%s'. ", m_Name.c_str(), command.c_str());
