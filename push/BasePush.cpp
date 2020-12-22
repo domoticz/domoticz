@@ -629,6 +629,9 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 			if (maxDimLevel != 0)
 				level = (int) float((100.0f / float(maxDimLevel)) * level);
 
+			if (lstatus.find("Off") != std::string::npos)
+				level = 0;
+
 			sprintf(szData, "%d", level);
 		}
 		else if ((vType == "Current 1") || (vType == "Current 2") || (vType == "Current 3"))
