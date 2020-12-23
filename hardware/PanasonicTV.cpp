@@ -72,10 +72,10 @@ Possible Commands:
 "NRC_D0-ONOFF"        => "Digit 0",
 "NRC_P_NR-ONOFF"      => "P-NR (Noise reduction)",
 "NRC_R_TUNE-ONOFF"    => "Seems to do the same as INFO",
-"NRC_HDMI1"           => "Switch to HDMI input 1",
-"NRC_HDMI2"           => "Switch to HDMI input 2",
-"NRC_HDMI3"           => "Switch to HDMI input 3",
-"NRC_HDMI4"           => "Switch to HDMI input 4",
+"NRC_HDMI1-ONOFF"     => "Switch to HDMI input 1",
+"NRC_HDMI2-ONOFF"     => "Switch to HDMI input 2",
+"NRC_HDMI3-ONOFF"     => "Switch to HDMI input 3",
+"NRC_HDMI4-ONOFF"     => "Switch to HDMI input 4",
 
 
 */
@@ -96,9 +96,9 @@ class CPanasonicNode : public StoppableTask
 		void			Clear();
 		std::string		LogMessage();
 		std::string		StatusMessage();
-		bool			LogRequired(CPanasonicStatus&);
-		bool			UpdateRequired(CPanasonicStatus&);
-		bool			OnOffRequired(CPanasonicStatus&);
+		bool			LogRequired(CPanasonicStatus& pPrevious);
+		bool			UpdateRequired(CPanasonicStatus& pPrevious);
+		bool			OnOffRequired(CPanasonicStatus& pPrevious);
 		bool			IsOn() { return (m_nStatus != MSTAT_OFF); };
 		void			Volume(int pVolume) { m_VolumeLevel = pVolume; };
 		void			Muted(bool pMuted) { m_Muted = pMuted; };
@@ -111,7 +111,8 @@ class CPanasonicNode : public StoppableTask
 	};
 
 public:
-  CPanasonicNode(int, int, int, const std::string &, const std::string &, const std::string &, const std::string &);
+  CPanasonicNode(const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
+	const std::string& pID, const std::string& pName, const std::string& pIP, const std::string& pPort);
   ~CPanasonicNode();
   void Do_Work();
   void SendCommand(const std::string &command);
@@ -136,12 +137,13 @@ protected:
 	bool			m_Stoppable;
 
 private:
-  bool handleConnect(boost::asio::ip::tcp::socket &, const boost::asio::ip::tcp::endpoint &, boost::system::error_code &);
-  std::string handleWriteAndRead(const std::string &);
-  int handleMessage(const std::string &);
-  std::string buildXMLStringRendCtl(const std::string &, const std::string &);
-  std::string buildXMLStringRendCtl(const std::string &, const std::string &, const std::string &);
-  std::string buildXMLStringNetCtl(const std::string &);
+  bool handleConnect(boost::asio::ip::tcp::socket &socket, const boost::asio::ip::tcp::endpoint &endpoint, boost::system::error_code &ec);
+  std::string handleWriteAndRead(const std::string &pMessageToSend);
+  int handleMessage(const std::string &pMessage);
+  std::string buildXMLStringRendCtl(const std::string &action, const std::string &command);
+  std::string buildXMLStringRendCtl(const std::string &action, const std::string &command, const std::string &value);
+  std::string buildXMLStringNetCtl(const std::string &command);
+  std::string buildXMLStringAppCtl(const std::string &productId);
 
   int m_HwdID;
   char m_szDevID[40];
@@ -526,6 +528,35 @@ std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
 
 }
 
+std::string CPanasonicNode::buildXMLStringAppCtl(const std::string &productId)
+{
+	std::string head, body;
+	int size;
+
+	body = R"(<?xml version="1.0" encoding="utf-8"?>)";
+	body += R"(<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">)";
+	body += "<s:Body>";
+	body += "<u:X_LaunchApp xmlns:u=\"urn:panasonic-com:service:p00NetworkControl:1\">";
+    body += "<X_AppType>vc_app</X_AppType>";
+    body += "<X_LaunchKeyword>product_id=" + productId + "</X_LaunchKeyword>";
+    body += "</u:X_LaunchApp>";
+	body += "</s:Body>";
+	body += "</s:Envelope>";
+
+	size = body.length();
+
+	head += "POST /nrc/control_0 HTTP/1.1\r\n";
+	head += "Host: " + m_IP + ":" + m_Port + "\r\n";
+	head += "SOAPACTION: \"urn:panasonic-com:service:p00NetworkControl:1#X_LaunchApp\"\r\n";
+	head += "Content-Type: text/xml; charset=\"utf-8\"\r\n";
+	head += "Content-Length: " + std::to_string(size) + "\r\n";
+	head += "\r\n";
+
+	return head + body;
+
+}
+
+
 
 void CPanasonicNode::Do_Work()
 {
@@ -655,13 +686,13 @@ void CPanasonicNode::SendCommand(const std::string &command)
 	else if (command == "0")
 		sPanasonicCall = buildXMLStringNetCtl("D0-ONOFF");
 	else if (command == "hdmi1")
-		sPanasonicCall = buildXMLStringNetCtl("HDMI1");
+		sPanasonicCall = buildXMLStringNetCtl("HDMI1-ONOFF");
 	else if (command == "hdmi2")
-		sPanasonicCall = buildXMLStringNetCtl("HDMI2");
+		sPanasonicCall = buildXMLStringNetCtl("HDMI2-ONOFF");
 	else if (command == "hdmi3")
-		sPanasonicCall = buildXMLStringNetCtl("HDMI3");
+		sPanasonicCall = buildXMLStringNetCtl("HDMI3-ONOFF");
 	else if (command == "hdmi4")
-		sPanasonicCall = buildXMLStringNetCtl("HDMI4");
+		sPanasonicCall = buildXMLStringNetCtl("HDMI4-ONOFF");
 	else if (command == "Rewind")
 		sPanasonicCall = buildXMLStringNetCtl("REW-ONOFF");
 	else if (command == "FastForward")
@@ -676,6 +707,41 @@ void CPanasonicNode::SendCommand(const std::string &command)
 		sPanasonicCall = buildXMLStringNetCtl("POWER-ONOFF");
 	else if (command == "ShowSubtitles")
 		sPanasonicCall = buildXMLStringNetCtl("STTL-ONOFF");
+	// Application Codes from : https://github.com/g30r93g/homebridge-panasonic#readme
+	//  and : https://forums.indigodomo.com/viewtopic.php?f=134&t=17875&start=15
+	else if (command == "Netflix")	sPanasonicCall = buildXMLStringAppCtl("0010000200000001");
+	else if (command == "YouTube")	sPanasonicCall = buildXMLStringAppCtl("0070000200170001");
+	else if (command == "Amazon Prime Video")	sPanasonicCall = buildXMLStringAppCtl("0010000100170001");
+	else if (command == "Plex")	sPanasonicCall = buildXMLStringAppCtl("0076010507000001");
+	else if (command == "BBC iPlayer")	sPanasonicCall = buildXMLStringAppCtl("0020000A00170010");
+	else if (command == "BBC News")	sPanasonicCall = buildXMLStringAppCtl("0020000A00170006");
+	else if (command == "BBC Sport")	sPanasonicCall = buildXMLStringAppCtl("0020000A00170007");
+	else if (command == "ITV Hub")	sPanasonicCall = buildXMLStringAppCtl("0387878700000124");
+	else if (command == "TuneIn")	sPanasonicCall = buildXMLStringAppCtl("0010001800000001");
+	else if (command == "AccuWeather")	sPanasonicCall = buildXMLStringAppCtl("0070000C00000001");
+	else if (command == "All 4")	sPanasonicCall = buildXMLStringAppCtl("0387878700000125");
+	else if (command == "Demand 5")	sPanasonicCall = buildXMLStringAppCtl("0020009300000002");
+	else if (command == "Rakuten TV")	sPanasonicCall = buildXMLStringAppCtl("0020002A00000001");
+	else if (command == "CHILI")	sPanasonicCall = buildXMLStringAppCtl("0020004700000001");
+	else if (command == "STV Player")	sPanasonicCall = buildXMLStringAppCtl("0387878700000132");
+	else if (command == "Digital Concert Hall")	sPanasonicCall = buildXMLStringAppCtl("0076002307170001");
+	else if (command == "Apps Market")	sPanasonicCall = buildXMLStringAppCtl("0387878700000102");
+	else if (command == "Browser")	sPanasonicCall = buildXMLStringAppCtl("0077777700160002");
+	else if (command == "Calendar")	sPanasonicCall = buildXMLStringAppCtl("0387878700150020");
+	else if (command == "VIERA Link")	sPanasonicCall = buildXMLStringAppCtl("0387878700000016");
+	else if (command == "Recorded TV")	sPanasonicCall = buildXMLStringAppCtl("0387878700000013");
+	else if (command == "Freeview Catch Up")	sPanasonicCall = buildXMLStringAppCtl("0387878700000109");
+	else if (command == "MediaPlayer")	sPanasonicCall = buildXMLStringAppCtl("0387878700000032");
+	else if (command == "DLNAPlayer")	sPanasonicCall = buildXMLStringAppCtl("0387878700000014");
+	else if (command == "TV")	sPanasonicCall = buildXMLStringAppCtl("0387878700000001");
+	else if (command == "AppsMenu")	sPanasonicCall = buildXMLStringAppCtl("0387878700000009");
+	else if (command == "WebBrowser")	sPanasonicCall = buildXMLStringAppCtl("0077777700000002");
+	else if (command == "Skype")	sPanasonicCall = buildXMLStringAppCtl("0070000600000001");
+	else if (command == "Mirroring")	sPanasonicCall = buildXMLStringAppCtl("0387878700000049");
+	else if (command == "TouchConnect")	sPanasonicCall = buildXMLStringAppCtl("0387878700000038");
+	else if (command == "Weather")	sPanasonicCall = buildXMLStringAppCtl("0070000900000001");
+	else if (command == "YouTube2")	sPanasonicCall = buildXMLStringAppCtl("0070000200000001");
+	
 	else if (command == "On" || command == "on")
 	{
 		if (m_PowerOnSupported)
@@ -689,8 +755,33 @@ void CPanasonicNode::SendCommand(const std::string &command)
 			UpdateStatus(true);
 		}
 	}
-	else
-		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Unknown command: '%s'.", m_Name.c_str(), command.c_str());
+	else {
+		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(m_HwdID);
+		if (pBaseHardware == nullptr)
+			return;
+		if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
+			return;
+		CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
+		if (pHardware->m_bUnknownCommandAllowed) {
+			// Sanitize command : keep only alphanumeric characters
+			std::string sanityze = command;
+			sanityze.erase(
+				std::remove_if(
+					sanityze.begin(), 
+					sanityze.end(), 
+					[]( char const& c ) -> bool { return ! (std::isalnum(c) || (std::string("_-+.:=").find(c) != std::string::npos)); } 
+				), sanityze.end());
+			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), sanityze.c_str());
+			if (sanityze.rfind("app",0) == 0) {
+				sanityze.erase(0,3);
+				sPanasonicCall = buildXMLStringAppCtl(sanityze.c_str());
+			} else {
+				sPanasonicCall = buildXMLStringNetCtl(sanityze.c_str());
+			}
+		} else {
+			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Unknown command: '%s'. ", m_Name.c_str(), command.c_str());
+		}
+	}
 
 	if (sPanasonicCall.length())
 	{
@@ -738,16 +829,16 @@ void CPanasonicNode::SetExecuteCommand(const std::string &command)
 
 std::vector<std::shared_ptr<CPanasonicNode> > CPanasonic::m_pNodes;
 
-CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms)
+CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms, const int mode3)
 {
 	m_HwdID = ID;
-	SetSettings(PollIntervalsec, PingTimeoutms);
+	SetSettings(PollIntervalsec, PingTimeoutms, mode3);
 }
 
 CPanasonic::CPanasonic(const int ID)
 {
 	m_HwdID = ID;
-	SetSettings(10, 3000);
+	SetSettings(10, 3000, 0);
 }
 
 CPanasonic::~CPanasonic()
@@ -818,16 +909,19 @@ void CPanasonic::Do_Work()
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Worker stopped...");
 }
 
-void CPanasonic::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
+void CPanasonic::SetSettings(const int PollIntervalsec, const int PingTimeoutms, const int iMode3)
 {
 	//Defaults
 	m_iPollInterval = 30;
 	m_iPingTimeoutms = 1000;
+	m_bUnknownCommandAllowed = 0;
 
 	if (PollIntervalsec > 1)
 		m_iPollInterval = PollIntervalsec;
 	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
 		m_iPingTimeoutms = PingTimeoutms;
+
+	m_bUnknownCommandAllowed =  iMode3 & 1;
 }
 
 bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -1082,6 +1176,8 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
+			std::string mode3 = request::findValue(&req, "mode3");
+			std::string extra = request::findValue(&req, "extra");
 			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -1097,9 +1193,11 @@ namespace http {
 
 			int iMode1 = atoi(mode1.c_str());
 			int iMode2 = atoi(mode2.c_str());
+			int iMode3 = atoi(mode3.c_str());
 
-			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == '%q')", iMode1, iMode2, hwid.c_str());
-			pHardware->SetSettings(iMode1, iMode2);
+			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d, Mode3=%d, Extra='%s' WHERE (ID == '%q')", iMode1, iMode2, iMode3, extra.c_str(), hwid.c_str());
+
+			pHardware->SetSettings(iMode1, iMode2, iMode3);
 			pHardware->Restart();
 		}
 
