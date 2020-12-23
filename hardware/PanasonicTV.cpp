@@ -96,9 +96,9 @@ class CPanasonicNode : public StoppableTask
 		void			Clear();
 		std::string		LogMessage();
 		std::string		StatusMessage();
-		bool			LogRequired(CPanasonicStatus&);
-		bool			UpdateRequired(CPanasonicStatus&);
-		bool			OnOffRequired(CPanasonicStatus&);
+		bool			LogRequired(CPanasonicStatus& pPrevious);
+		bool			UpdateRequired(CPanasonicStatus& pPrevious);
+		bool			OnOffRequired(CPanasonicStatus& pPrevious);
 		bool			IsOn() { return (m_nStatus != MSTAT_OFF); };
 		void			Volume(int pVolume) { m_VolumeLevel = pVolume; };
 		void			Muted(bool pMuted) { m_Muted = pMuted; };
@@ -111,7 +111,8 @@ class CPanasonicNode : public StoppableTask
 	};
 
 public:
-  CPanasonicNode(int, int, int, const std::string &, const std::string &, const std::string &, const std::string &);
+  CPanasonicNode(const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
+	const std::string& pID, const std::string& pName, const std::string& pIP, const std::string& pPort);
   ~CPanasonicNode();
   void Do_Work();
   void SendCommand(const std::string &command);
@@ -136,13 +137,13 @@ protected:
 	bool			m_Stoppable;
 
 private:
-  bool handleConnect(boost::asio::ip::tcp::socket &, const boost::asio::ip::tcp::endpoint &, boost::system::error_code &);
-  std::string handleWriteAndRead(const std::string &);
-  int handleMessage(const std::string &);
-  std::string buildXMLStringRendCtl(const std::string &, const std::string &);
-  std::string buildXMLStringRendCtl(const std::string &, const std::string &, const std::string &);
-  std::string buildXMLStringNetCtl(const std::string &);
-  std::string buildXMLStringAppCtl(const std::string &);
+  bool handleConnect(boost::asio::ip::tcp::socket &socket, const boost::asio::ip::tcp::endpoint &endpoint, boost::system::error_code &ec);
+  std::string handleWriteAndRead(const std::string &pMessageToSend);
+  int handleMessage(const std::string &pMessage);
+  std::string buildXMLStringRendCtl(const std::string &action, const std::string &command);
+  std::string buildXMLStringRendCtl(const std::string &action, const std::string &command, const std::string &value);
+  std::string buildXMLStringNetCtl(const std::string &command);
+  std::string buildXMLStringAppCtl(const std::string &productId);
 
   int m_HwdID;
   char m_szDevID[40];
