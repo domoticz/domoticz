@@ -11091,7 +11091,7 @@ namespace http {
 							sprintf(szData, "%.1f %c", tvalue, tempsign);
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Image"] = "Computer";
+							//root["result"][ii]["Image"] = "Computer";
 							root["result"][ii]["TypeImg"] = "temperature";
 							root["result"][ii]["Type"] = "temperature";
 							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
@@ -11471,6 +11471,14 @@ namespace http {
 						}
 						break;
 						}
+					}
+					if(CustomImage != 0 && !root["result"][ii].isMember("Image"))
+					{
+							auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
+							if (ittIcon != m_custom_light_icons_lookup.end())
+							{
+								root["result"][ii]["Image"] = m_custom_light_icons[ittIcon->second].RootFile;
+							}
 					}
 #ifdef ENABLE_PYTHON
 					if (pHardware != nullptr)
