@@ -2833,6 +2833,23 @@ namespace http {
 							std::string shortfile = filename.substr(0, pos);
 							root["result"]["templates"][iFile++] = shortfile;
 						}
+						// Same thing for URLs
+						pos = filename.find(".url");
+						if (pos != std::string::npos)
+						{
+							std::string url;
+							std::string shortfile = filename.substr(0, pos);
+							//First get the URL from the file
+							std::ifstream urlfile;
+							urlfile.open((templatesFolder+"/"+filename).c_str());
+							if (urlfile.is_open())
+							{
+								getline(urlfile, url);
+								urlfile.close();
+								// Pass URL in results
+								root["result"]["urls"][shortfile] = url;
+							}
+						}
 					}
 					closedir(lDir);
 				}
@@ -11090,7 +11107,7 @@ namespace http {
 							sprintf(szData, "%g%%", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							//root["result"][ii]["Image"] = "Computer";
+							root["result"][ii]["Image"] = "Computer";
 							root["result"][ii]["TypeImg"] = "hardware";
 						}
 						else if (dSubType == sTypeWaterflow)
@@ -11454,14 +11471,6 @@ namespace http {
 						}
 						break;
 						}
-					}
-					if(CustomImage != 0 && !root["result"][ii].isMember("Image"))
-					{
-							auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
-							if (ittIcon != m_custom_light_icons_lookup.end())
-							{
-								root["result"][ii]["Image"] = m_custom_light_icons[ittIcon->second].RootFile;
-							}
 					}
 #ifdef ENABLE_PYTHON
 					if (pHardware != nullptr)
