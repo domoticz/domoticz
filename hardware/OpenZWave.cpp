@@ -2500,8 +2500,6 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 {
 	if (m_pManager == nullptr)
 		return;
-	if (!m_pManager->IsValueValid(vID))
-		return;
 
 	if (m_controllerID == 0)
 		return;
@@ -2519,7 +2517,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 
 	uint8_t commandclass = vID.GetCommandClassId();
 
-	if (commandclass == COMMAND_CLASS_NO_OPERATION)
+	if (commandclass != COMMAND_CLASS_NO_OPERATION && !m_pManager->IsValueValid(vID))
 		return;
 
 	if ((commandclass == COMMAND_CLASS_ALARM) || (commandclass == COMMAND_CLASS_SENSOR_ALARM))
