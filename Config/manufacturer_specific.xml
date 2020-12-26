@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="132" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="133" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -18,6 +18,8 @@
     <Product config="2gig/ct101.xml" id="000b" name="CT101 Thermostat (Iris)" type="6501"/>
     <Product config="2gig/ct101.xml" id="000c" name="CT101 Thermostat (Iris)" type="6501"/>
     <Product config="2gig/ct101.xml" id="000d" name="CT101 Thermostat" type="6501"/>
+    <Product config="2gig/ct200.xml" id="0022" name="Vivint Element Thermostat" type="c801"/>
+    <Product config="2gig/ct200.xml" id="001d" name="Vivint Element Thermostat" type="c801"/>
   </Manufacturer>
   <Manufacturer id="002a" name="3e Technologies"></Manufacturer>
   <Manufacturer id="0022" name="A-1 Components"></Manufacturer>
@@ -723,6 +725,7 @@
     <Product config="fibaro/fgfs101zw5.xml" id="1002" name="FGFS101 Zwave+ Flood Sensor" type="0b01"/>
     <Product config="fibaro/fgfs101zw5.xml" id="1003" name="FGFS101 Zwave+ Flood Sensor" type="0b01"/>
     <Product config="fibaro/fgfs101zw5.xml" id="2002" name="FGFS101 Zwave+ Flood Sensor" type="0b01"/>
+    <Product config="fibaro/fgfs101zw5.xml" id="2003" name="FGFS101 Zwave+ Flood Sensor" type="0b01"/>
     <Product config="fibaro/fgfs101zw5.xml" id="3002" name="FGFS101 Zwave+ Flood Sensor" type="0b01"/>
     <Product config="fibaro/fgrgbwm441.xml" id="1000" name="FGRGBWM441 RGBW Controller" type="0900"/>
     <Product config="fibaro/fgrgbwm441.xml" id="2000" name="FGRGBWM441 RGBW Controller" type="0900"/>
@@ -1628,9 +1631,6 @@
     <Product config="shenzen_neo/ls01ch.xml" id="008c" name="Wall Switch (1 channel)" type="0003"/>
     <Product config="shenzen_neo/ls01ch.xml" id="108c" name="Wall Switch (1 channel)" type="0003"/>
   </Manufacturer>
-  <Manufacturer id="041a" name="Shenzhen Neo Electronics Co Ltd">
-    <Product config="shenzen_neo/nas-wr01ze.xml" id="0008" name="NAS-WR01ZE Power plug 12A" type="0200"/>
-  </Manufacturer>
   <Manufacturer id="032C" name="Shenzhen Saykey Technology">
     <Product config="shenzen_saykey/sk-3007-05.xml" id="0005" name="Curtain Motor Control with external module" type="3007"/>
   </Manufacturer>
@@ -1727,10 +1727,11 @@
   </Manufacturer>
   <Manufacturer id="019b" name="ThermoFloor AS">
     <Product config="thermofloor/heatit021.xml" id="0001" name="Heatit Thermostat TF 021" type="0001"/>
+    <Product config="thermofloor/heatit021.xml" id="0201" name="Heatit Thermostat TF 016" type="0003"/>
     <Product config="thermofloor/heatit056.xml" id="0202" name="Heatit Thermostat TF 056" type="0003"/>
     <Product config="thermofloor/heatit058.xml" id="0203" name="Heatit Thermostat TF 058" type="0003"/>
     <Product config="thermofloor/heatit-zdim.xml" id="2200" name="Heatit ZDim" type="0003"/>
-    <Product config="thermofloor/heatitz8.xml" id="0xa305" name="Heatit Z-Push Button 8" type="0x0300"/>
+    <Product config="thermofloor/heatitz8.xml" id="a305" name="Heatit Z-Push Button 8" type="0300"/>
     <Product config="thermofloor/heatit20a.xml" id="020a" name="Heatit Z-Water TF 20a" type="0003"/>
     <Product config="thermofloor/heatitz4.xml" id="a306" name="Heatit Z-Push Button 4" type="0300"/>
   </Manufacturer>
@@ -2014,6 +2015,7 @@
     <Product config="zooz/zse30.xml" id="0085" name="ZSE30 Water Sensor" type="0003"/>
     <Product config="zooz/zen31.xml" id="2000" name="ZEN31 RGBW Dimmer" type="0902"/>
     <Product config="zooz/zse33.xml" id="0088" name="ZSE33 Smart Chime" type="0003"/>
+    <Product config="zooz/zen34.xml" id="F001" name="ZEN34 Remote Switch" type="0004"/>
     <Product config="zooz/zse40.xml" id="2101" name="ZSE40 4-in-1 sensor" type="2021"/>
   </Manufacturer>
   <Manufacturer id="015d" name="Zooz (Willis Electric)">
