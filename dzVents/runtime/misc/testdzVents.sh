@@ -251,7 +251,7 @@ if [[ $? -eq 0 ]];then
 			#echo Errors are to be expected
 			echo -n
 		else
-			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken | grep -v LOG_ERROR | grep -v errorText 
+			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken | grep -v LOG_ERROR | grep -v errorText
 			stopBackgroundProcesses 1
 		fi
 	else

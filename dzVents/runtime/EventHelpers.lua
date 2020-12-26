@@ -258,7 +258,7 @@ local function EventHelpers(domoticz, mainMethod)
 				info.trigger = subject.callback
 				local response = ShellCommandResponse(self.domoticz, subject)
 				ok, res = pcall(eventHandler['execute'], self.domoticz, response, info)
-			
+
 			elseif (baseType == domoticz.BASETYPE_HTTP_RESPONSE) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_HTTPRESPONSE)
 				info.trigger = subject.callback

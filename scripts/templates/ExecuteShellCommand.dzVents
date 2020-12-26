@@ -15,7 +15,7 @@ return {
 			domoticz.executeShellCommand({
 				command = 'speedtest-cli --json',   -- just an example
 				callback = 'myResponse', -- see shellCommandResponses above.
-				timeout = 50, -- Max runtime 50 seconds 
+				timeout = 50, -- Max runtime 50 seconds
 			})
 		end
 

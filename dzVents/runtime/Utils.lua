@@ -349,7 +349,7 @@ end
 
 function self.hasLines(str, eol)
     local eol = eol or '\n'
-    return str:find(eol) 
+    return str:find(eol)
 end
 
 function self.fromLines(str, eol)

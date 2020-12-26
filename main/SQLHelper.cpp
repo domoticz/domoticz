@@ -2729,7 +2729,7 @@ bool CSQLHelper::OpenDatabase()
 							s_strid >> NodeID;
 							int who = (NodeID >> 16) & 0xffff;
 							int where = NodeID & 0xffff;
-							if (((who == 1) || (who == 2)) && (where < 1000))	// light or automation						
+							if (((who == 1) || (who == 2)) && (where < 1000))	// light or automation
 							{
 								if ((where > 0) && (where < 10))			// < 10 mean area device
 									NodeID += 0x4000; // Area devices flag!
@@ -3303,10 +3303,10 @@ void CSQLHelper::ManageExecuteScriptTimeout(boost::process::group *g, int timeou
 {
 
 	auto start = std::chrono::system_clock::now();
-	
+
 	while ( std::chrono::system_clock::now()-start<std::chrono::seconds(timeout) && *stillRunning) // check every seconds if we have to wait another second
 	{
-	
+
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 
@@ -3321,7 +3321,7 @@ void CSQLHelper::ManageExecuteScriptTimeout(boost::process::group *g, int timeou
 
 
 void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback, int timeout, std::string path)
-{ 
+{
 	std::ifstream infile;
 	std::string sLine;
 	std::string filename;
@@ -3334,7 +3334,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 	std::shared_ptr<std::thread> T;
 
 	// make sure we have unique filenames
-	scriptoutputindex++; 
+	scriptoutputindex++;
 	if (scriptoutputindex>250) // should be a big number, to prevent parallel scripts having the same output files. 250 concurrent will probably never be reached
 	{
 		scriptoutputindex=1;
@@ -3372,7 +3372,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 	// Start process,  using command on stdin
 	boost::process::opstream in;
 	boost::process::child c("sh", boost::process::std_in < in, boost::process::std_out > filename.c_str(), boost::process::std_err > filenamestderr, ec, g);
-	
+
 	in << command.c_str() << std::endl;
 	in.pipe().close();
 	in.close();
@@ -3381,7 +3381,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 	m_executeThreadMutex.unlock();
 
 	if (ec.value()==0) {
-		if (timeout>0) 
+		if (timeout>0)
 		{
 			// launch thread to manage timeout
 			_log.Log(LOG_STATUS,"Executing : %s for max %d seconds",command.c_str(),timeout);
@@ -3400,7 +3400,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 		if (infile.is_open())
 		{
 			getline(infile,sLine);
-			do 
+			do
 			{
 				scriptoutput.append(sLine);
 				getline(infile,sLine);
@@ -3444,7 +3444,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 
 		} else {
 			_log.Log(LOG_ERROR,"Unable to read file %s",filenamestderr.c_str());
-		}  
+		}
 	} else {
 		// something went wrong spawning the process
 		_log.Log(LOG_ERROR,"error : %d,%s",ec.value(),ec.message().c_str());
@@ -4536,7 +4536,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchType, const int nValue, const char* sValue, const std::string& devname, const unsigned char signallevel, const unsigned char batterylevel, const int used)
 {
 	//TODO: 'unsigned char unit' only allows 256 devices / plugin
-	//DONE: return -1 as error code does not make sense for a function returning an unsigned value 
+	//DONE: return -1 as error code does not make sense for a function returning an unsigned value
 	// -> better checking at receiving end needed (value becomes 0xFFFFFFFFFFFFFFFF)
 	std::vector<std::vector<std::string> > result;
 	uint64_t ulID = 0;
@@ -5512,7 +5512,7 @@ void CSQLHelper::UpdateTemperatureLog()
 						setpoint = 60;
 					else if (splitresults[1] == "Off")
 						setpoint = 0;
-					else 
+					else
 						setpoint = static_cast<float>(atof(splitresults[1].c_str()));
 				}
 				break;
@@ -6696,7 +6696,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			double total_max = (double)atof(sd[1].c_str());
 			double avg_value = (double)atof(sd[2].c_str());
 
-			// if kwh counter => total_min = first value of the day, and total_max = last value of the day 
+			// if kwh counter => total_min = first value of the day, and total_max = last value of the day
 			// because last value can be lower than first value when consumed energy is negative (e.g. photovoltaic produces more than building usage)
 			if (devType == pTypeGeneral && subType == sTypeKwh) {
 				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC LIMIT 1",

@@ -329,12 +329,12 @@ bool CdzVents::ExecuteShellCommand(lua_State *lua_state, const std::vector<_tLua
 				callback = value.sValue;
 			else if (value.name == "path")
 				path = value.sValue;
-		} 
+		}
 		else if (value.type == TYPE_INTEGER)
 		{
 			if (value.name == "_random")
 				delayTime = static_cast<float>(GenerateRandomNumber(value.iValue));
-			if (value.name == "timeout") 
+			if (value.name == "timeout")
 			{
 				timeout = value.iValue;
 			}
@@ -351,7 +351,7 @@ bool CdzVents::ExecuteShellCommand(lua_State *lua_state, const std::vector<_tLua
 	}
 
 	m_sql.AddTaskItem(_tTaskItem::ExecuteShellCommand(delayTime, command, callback, timeout, path));
-	
+
 	return true;
 }
 
