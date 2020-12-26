@@ -1,8 +1,9 @@
-<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/019B:0001:0001</MetaDataItem>
     <MetaDataItem name="ProductPic">images/thermofloor/heatit021.png</MetaDataItem>
     <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1234/</MetaDataItem>
+    <MetaDataItem id="0201" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1182/</MetaDataItem>
     <MetaDataItem name="Description">Heatit Z-Wave is an electronic thermostat for mounting in a standard wall box. The thermostat has a built-in Z-Wave chip that 
 can be connected to Home Automation systems like Fibaro, Sensio, Vera, Zipato and others.
 The display will show the actual room temperature. By pressing the buttons, the display will show the set value.
@@ -51,8 +52,10 @@ fails, Err (error) will appear.
 Leave programming mode by choosing ESC in menu. Your thermostat is ready for use with default settings.</MetaDataItem>
     <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1234/Manual_Multireg Z-Wave_Ver2015-A.pdf</MetaDataItem>
     <MetaDataItem id="0001" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0201" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
     <MetaDataItem name="Name">Heatit Z-Wave</MetaDataItem>
     <MetaDataItem id="0001" name="Identifier" type="0001">TF021</MetaDataItem>
+    <MetaDataItem id="0201" name="Identifier" type="0003">TF021</MetaDataItem>
     <MetaDataItem name="ResetDescription">FACTORY RESET - RES
 By pressing buttons Left and Center (up and confirm) for 20 seconds, the thermostat will perform a complete factory reset.
 NB! Please use this procedure only when the primary controller is missing or otherwise inoperable.</MetaDataItem>
@@ -67,6 +70,7 @@ Leave programming mode by choosing ESC in menu. Your thermostat is ready for use
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="7">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1182/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1234/xml</Entry>
+      <Entry author="Gunnar Skjold - gunnar.skjold@gmail.com" date="15 Nov 2020" revision="9">Assigned this config to TF016 as well - https://products.z-wavealliance.org/products/1182/xml</Entry>
     </ChangeLog>
   </MetaData>
   <CommandClass id="64">
