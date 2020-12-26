@@ -285,6 +285,18 @@ describe('Domoticz', function()
 		end)
 	end)
 
+	describe('executeShellcommand', function()
+
+		it('should create a Shell Command', function()
+			domoticz.executeShellCommand('some command -parm --parm2 "test"')
+			assert.is_same({
+				{
+					['ExecuteShellCommand'] = { ['command'] = 'some command -parm --parm2 "test"' , ['path'] = '/' }
+				}
+			}, domoticz.commandArray)
+		end)
+	end)
+
 	describe('openURL', function()
 
 		it('should open a simple url', function()
@@ -1101,6 +1113,15 @@ describe('Domoticz', function()
 				b = 20
 			}
 			assert.is_same('{"a":10,"b":20}', domoticz.utils.toJSON(t))
+		end)
+
+		it('should convert from lines', function()
+			local lines = 'a\nb\nc'
+			assert.is_same({
+				[1] = 'a',
+				[2] = 'b',
+				[3] = 'c',
+			}, domoticz.utils.fromLines(lines))
 		end)
 
 		it('should convert from json', function()

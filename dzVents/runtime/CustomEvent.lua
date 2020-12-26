@@ -26,11 +26,19 @@ local function CustomEvent(domoticz, eventData)
 		if json and type(json) == 'table' then
 			self.isJSON = true
 			self.json = json
-		else
-			local xml = utils.isXML(self.data) and utils.fromXML(self.data)
+		elseif utils.isXML(self.data) then
+			local xml = utils.fromXML(self.data)
 			if (xml) and type(xml) == 'table' then
 				self.isXML = true
 				self.xml = xml
+				self.xmlVersion = self.data:match([[<?xml version="(.-)"]])
+				self.xmlEncoding = self.data:match([[encoding="(.-)"]])
+			end
+		elseif utils.hasLines(self.data) then
+			local lines = utils.fromLines(self.data)
+			if lines and type(lines) == 'table' then
+				self.hasLines = true
+				self.lines = lines
 			end
 		end
 	end

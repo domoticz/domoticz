@@ -4,6 +4,7 @@ return
 	{
 		system = { 'manualBackupFinished', 'st*' },
 		customEvents = { [ 'myEvents*' ] = { 'at 04:00-03:45'} },
+		shellCommandResponses = { '*' },
 	},
 
 	execute = function(domoticz, item)
@@ -19,5 +20,9 @@ return
 		item.dump()
 
 		dz.utils.dumpTable({ item },nil ,filename)
+
+		if item.isShellCommandResponse then
+			dz.log(item,dz.log_FORCE)
+		end
 	end
 }

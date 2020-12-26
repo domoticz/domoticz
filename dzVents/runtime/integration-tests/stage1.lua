@@ -873,6 +873,19 @@ local testEmit = function()
 	return res
 end
 
+local testExecuteShellCommand = function()
+	local res = true
+
+	dz.executeShellCommand(
+	{
+		command = 'timeout 2 ping 8.8.8.8',
+		callback = 'test executeShellCommand'
+	}).afterSec(1)
+
+	tstMsg('Test executeShellCommand', res)
+	return res
+end
+
 local testAPITemperature = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -1531,6 +1544,7 @@ return {
 		res = res and testAmpere1('vdAmpere1')
 		res = res and testBackup()
 		res = res and testEmit()
+		res = res and testExecuteShellCommand()
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testBarometer('vdBarometer')
 		res = res and testCounter('vdCounter')

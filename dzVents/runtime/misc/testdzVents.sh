@@ -104,6 +104,7 @@ function cleanup
 
 function stopBackgroundProcesses
 	{
+		sleep 3
 		pkill node  2>&1 >/dev/null
 		pkill domoticz  2>&1 >/dev/null
 		if [[ $1 -eq 1 ]] ;then
@@ -135,7 +136,7 @@ function fillTimes
 function fillNumberOfTests
 	{
 		Device_ExpectedTests=118
-		Domoticz_ExpectedTests=80
+		Domoticz_ExpectedTests=82
 		EventHelpers_ExpectedTests=32
 		EventHelpersStorage_ExpectedTests=50
 		HTTPResponse_ExpectedTests=6
@@ -245,12 +246,12 @@ if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 	if [[ $? -eq 0 ]];then
 		#echo Stage 1 and stage 2 of integration test Succeeded
-		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | wc -l)
+		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | wc -l)
 		if [[ $errorCount -le $expectedErrorCount ]];then
 			#echo Errors are to be expected
 			echo -n
 		else
-			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken | grep -v LOG_ERROR
+			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken | grep -v LOG_ERROR | grep -v errorText 
 			stopBackgroundProcesses 1
 		fi
 	else

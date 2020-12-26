@@ -3,6 +3,7 @@ local GLOBAL_DATA_MODULE = 'global_data'
 local utils = require('Utils')
 local persistence = require('persistence')
 local HTTPResponse = require('HTTPResponse')
+local ShellCommandResponse = require('ShellCommandResponse')
 local Timer = require('Timer')
 local Security = require('Security')
 local SystemEvent = require('SystemEvent')
@@ -26,7 +27,7 @@ local function EventHelpers(domoticz, mainMethod)
 			package.path
 	end
 
-	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,scenes,groups,variables'
+	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,shellCommandResponses,scenes,groups,variables'
 	local inValidEventTypes = 'on,logging,active,data,execute'
 
 	local webRoot = globalvariables['domoticz_webroot']
@@ -252,6 +253,12 @@ local function EventHelpers(domoticz, mainMethod)
 				end
 				ok, res = pcall(eventHandler['execute'], self.domoticz, subject, info)
 
+			elseif (baseType == domoticz.BASETYPE_SHELLCOMMAND_RESPONSE) then
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_SHELLCOMMANDRESPONSE)
+				info.trigger = subject.callback
+				local response = ShellCommandResponse(self.domoticz, subject)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, response, info)
+			
 			elseif (baseType == domoticz.BASETYPE_HTTP_RESPONSE) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_HTTPRESPONSE)
 				info.trigger = subject.callback
@@ -424,6 +431,8 @@ local function EventHelpers(domoticz, mainMethod)
 				moduleLabelInfo = (subject.baseType == 'scene' and ' Scene' or ' Group') .. ': "' .. subject.name .. '", Index: ' .. tostring(subject.id)
 			elseif (baseType == domoticz.BASETYPE_HTTP_RESPONSE) then
 				moduleLabelInfo = ' HTTPResponse: "' .. subject.callback .. '"'
+			elseif (baseType == domoticz.BASETYPE_SHELLCOMMAND_RESPONSE) then
+				moduleLabelInfo = ' ShellCommandResponse: "' .. subject.callback .. '"'
 			elseif (baseType == domoticz.BASETYPE_SYSTEM_EVENT) then
 				moduleLabelInfo = ' Domoticz event: "' .. subject.name .. '"'
 			elseif (baseType == domoticz.BASETYPE_CUSTOM_EVENT) then
@@ -740,6 +749,11 @@ local function EventHelpers(domoticz, mainMethod)
 						for i, callbackName in pairs(event) do
 							addBindingEvent(bindings, callbackName, module)
 						end
+					elseif (mode == 'shellcommandResponse' and j == 'shellCommandResponses') then
+						-- { ['shellCommandResponses'] = { 'callbackA', 'callbackB' }
+						for i, callbackName in pairs(event) do
+							addBindingEvent(bindings, callbackName, module)
+						end
 					elseif (mode == 'system' and j == 'system') then
 						-- { ['system'] = { 'start', 'end' }
 						for evtIdx, systemEvent in pairs(event) do
@@ -1026,6 +1040,37 @@ local function EventHelpers(domoticz, mainMethod)
 		end)
 
 		return self.domoticz.commandArray
+	end
+
+	function self.dispatchShellCommandResponseEventsToScripts(domoticz)
+		if (domoticz == nil) then -- you can pass a domoticz object for testing purposes
+			domoticz = self.domoticz
+		end
+
+		local shellcommandResponseScripts = self.getEventBindings('shellcommandResponse')
+
+		local responses =_G.shellcommandresponse
+
+		if (responses ~= nil) then
+			for i, response in pairs(responses) do
+				response.baseType = domoticz.BASETYPE_SHELLCOMMAND_RESPONSE
+				local callback = response.callback
+				local caSize = _.size(self.domoticz.commandArray)
+
+				local scriptsToExecute = self.findScriptForTarget(callback, shellcommandResponseScripts)
+
+				if (scriptsToExecute ~= nil) then
+					utils.log('Handling shellcommandResponse-events for: "' .. callback .. '"', utils.LOG_MODULE_EXEC_INFO)
+					self.handleEvents(scriptsToExecute, response)
+					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
+				end
+
+			end
+
+		end
+
+		return self.domoticz.commandArray
+
 	end
 
 	function self.dispatchHTTPResponseEventsToScripts(domoticz)

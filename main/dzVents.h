@@ -42,6 +42,7 @@ private:
 
 	float RandomTime(const int randomTime);
 	bool OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
+	bool ExecuteShellCommand(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable, const std::string &eventName);
 	bool UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable, const std::string &eventName);
@@ -52,6 +53,7 @@ private:
 	void IterateTable(lua_State *lua_state, const int tIndex, std::vector<_tLuaTableValues> &vLuaTable);
 	void SetGlobalVariables(lua_State *lua_state, const bool reasonTime, const int secStatus);
 	void ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
+	void ProcessShellCommandResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void ProcessNotification(lua_State* lua_state, const std::vector<CEventSystem::_tEventQueue>& items);
 	void ProcessNotificationItem(CLuaTable &luaTable, int &index, const CEventSystem::_tEventQueue& item);

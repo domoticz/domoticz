@@ -2,6 +2,10 @@
 __NOTOC__
 ```
 
+## [3.1.0] ##
+- Added shell command event triggers to be used in combination with `executeShellCommand`. You can now execute shell commands and handle the response in your dzVents scripts **ASYNCHRONICALLY**. See the documentation. No more json parsing needed or complex `popen()` or 'system()' shizzle.
+- add inActive attribute to devices.
+
 ## [3.0.19] ##
 - Add thermostat Operating State device adapter
 
@@ -37,19 +41,19 @@ __NOTOC__
 
 ## [3.0.11] ##
 - Add sensorValue attribute to custom sensor
-- Add solarnoon as moment in time (like sunrise / sunset ) 
+- Add solarnoon as moment in time (like sunrise / sunset )
 
 ## [3.0.10] ##
 - Add NSS_GOOGLE_DEVICES for notification casting to Google home / Google chromecast
 - Add optional parm delay to domoticz.sendCommand, domoticz.email, domoticz.sms and domoticz.notify
 
 ## [3.0.9] ##
-- Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time. 
+- Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time.
 - Add function toUTC to time object.
 - Allow table as parm to function makeTime
 
 ## [3.0.8] ##
-- Allow IPv6 ::1 as localhost in domoticz settings 
+- Allow IPv6 ::1 as localhost in domoticz settings
 - Fixed bug that occurred when using a decimal number in afterSec (openURL and emitEvent)
 - Implement optional use of parsetrigger parm in setValues to trigger any subsequent eventscripts
 - Updated round.utils to correctly handle negative numbers and round to zero decimals
@@ -61,22 +65,22 @@ __NOTOC__
 - Add hardwareInfo() function
 
 ## [3.0.5] ##
-- Add dumpSelection() method 
+- Add dumpSelection() method
 - Fixed settings.url
 
 ## [3.0.4] ##
-- Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC 
-- add isJSON, isXML functions to Utils 
+- Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC
+- add isJSON, isXML functions to Utils
 
 ## [3.0.3] ##
-- add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object) 
+- add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object)
 
 ## [3.0.2] ##
 - Add `PUT` and `DELETE` support to `openURL`
 - Ensure sending integer in nValue in update function
 - Fix sValue for custom sensor
 
-## [3.0.1] 
+## [3.0.1]
 - Add option `at()` to the various commands/methods
 - Add stringToSeconds() function
 

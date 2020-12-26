@@ -7,6 +7,7 @@ return {
 		groups = {},
 		security = {},
 		httpResponses = {},
+		shellCommandResponses = {},
 		customEvents = {},
 		system = {},
 	},

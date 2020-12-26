@@ -8,7 +8,7 @@ local self = {
 	LOG_INFO = 3,
 	LOG_WARNING = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.19',
+	DZVERSION = '3.1.0',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -345,6 +345,16 @@ function self.toBase64(s) -- from http://lua-users.org/wiki/BaseSixtyFour
 		return bs[a>>2] .. bs[(a&3)<<4|b>>4] .. bs[(b&15)<<2|c>>6] .. bs[c&63]
 	end)
 	return s:sub(1, #s-pad) .. rep('=', pad)
+end
+
+function self.hasLines(str, eol)
+    local eol = eol or '\n'
+    return str:find(eol) 
+end
+
+function self.fromLines(str, eol)
+    local eol = eol or '\n'
+    return self.stringSplit(str, eol)
 end
 
 function self.isXML(str, content)
