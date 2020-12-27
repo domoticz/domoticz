@@ -2,10 +2,13 @@
 #include "SQLHelper.h"
 #include <iostream>	 /* standard I/O functions						 */
 #include <string>
+#ifdef WIN32
+#include <tchar.h>
+#else
+#include <sys/wait.h>
+#endif
+#include <sys/types.h>
 #include <iomanip>
-#include <boost/process/child.hpp>
-#include <boost/process/io.hpp>
-#include <boost/process/group.hpp>
 #include "RFXtrx.h"
 #include "RFXNames.h"
 #include "localtime_r.h"
@@ -3299,7 +3302,8 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string& switchcm
 	return m_mainworker.SwitchLightInt(sd, switchcmd, level, color, false, User);
 }
 
-void CSQLHelper::ManageExecuteScriptTimeout(boost::process::group *g, int timeout, bool *stillRunning, bool *timeoutOccurred)
+#ifndef WIN32
+void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRunning, bool *timeoutOccurred)
 {
 
 	auto start = std::chrono::system_clock::now();
@@ -3313,12 +3317,12 @@ void CSQLHelper::ManageExecuteScriptTimeout(boost::process::group *g, int timeou
 	if (*stillRunning)
 	{
 		_log.Log(LOG_ERROR,"dzVents script command running longer than specified timeout(%d seconds), cancelling...", timeout);
-		g->terminate();
+		kill (pid,SIGKILL);
 		*timeoutOccurred=true;
 	}
+	_log.Log(LOG_STATUS,"Stopping managethread");
 }
-
-
+#endif
 
 void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback, int timeout, std::string path)
 {
@@ -3328,82 +3332,170 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 	std::string filenamestderr;
 	std::string scriptoutput;
 	std::string scriptstderr;
-	int exitcode;
-	bool timeoutOccurred=false;
-	bool stillRunning=true;
+	bool commmandExecutedSuccesfully = false;
+	int exitcode = 0;
+#ifndef WIN32
+	int pid;
+	bool stillRunning = true;
 	std::shared_ptr<std::thread> T;
+#endif
+	bool timeoutOccurred = false;
 
 	// make sure we have unique filenames
 	scriptoutputindex++;
-	if (scriptoutputindex>250) // should be a big number, to prevent parallel scripts having the same output files. 250 concurrent will probably never be reached
+	if (scriptoutputindex > 250) // should be a big number, to prevent parallel scripts having the same output files. 250 concurrent will probably never be reached
 	{
-		scriptoutputindex=1;
+		scriptoutputindex = 1;
 	}
 	std::string scriptoutputindextext = std::to_string(scriptoutputindex);
 
 	// create filenames for stderr and stdout  ("path+domscript+index+<.out|.err>")
-	filename=path;
+	filename = path;
 	filename.append("domscript");
 	filename.append(scriptoutputindextext);
 	filenamestderr = filename;
-	filename.append(".out");  // stdout
+	filename.append(".out");       // stdout
 	filenamestderr.append(".err"); // stderr
 
 	// Remove temp file if they exist
 	if (!remove(filename.c_str()))
-		_log.Log(LOG_ERROR,"old temp file (%s) was still there, removing...",filename.c_str());
-	if (!remove(filename.c_str()))
-		_log.Log(LOG_ERROR,"old temp file (%s) was still there, removing...",filenamestderr.c_str());
+		_log.Log(LOG_ERROR, "old temp file (%s) was still there, removing...", filename.c_str());
+	if (!remove(filenamestderr.c_str()))
+		_log.Log(LOG_ERROR, "old temp file (%s) was still there, removing...", filenamestderr.c_str());
 
-	// start process
-	boost::process::group g;
-	std::error_code ec;
-
-	m_executeThreadMutex.lock(); // in case of multiple parallel shell commands, make sure boost::child::process statements are executed sequentially to prevent threads being blocked on the creation of the pipes (seen in testing)
+	if (timeout > 0)
+	{
+		_log.Log(LOG_STATUS, "dzVents: Executing shellcommmand %s for max %d seconds", command.c_str(), timeout);
+	}
+	else
+	{
+		_log.Log(LOG_STATUS, "dzVents: Executing shellcommmand %s", command.c_str());
+	}
 
 #ifdef WIN32
-	// start process using cmd /c "<command>"
-	std::string cmd = "cmd /c \"";
-	cmd.append(command.c_str());
-	cmd.append("\"");
-	boost::process::child c(cmd.c_str(), boost::process::std_out > filename.c_str(), boost::process::std_err > filenamestderr, ec, g);
+	SECURITY_ATTRIBUTES sa;
+	sa.nLength = sizeof(sa);
+	sa.lpSecurityDescriptor = NULL;
+	sa.bInheritHandle = TRUE;
+
+	HANDLE hstdout = CreateFile(_T(filename.c_str()), FILE_APPEND_DATA, FILE_SHARE_WRITE | FILE_SHARE_READ, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE hstderr = CreateFile(_T(filenamestderr.c_str()), FILE_APPEND_DATA, FILE_SHARE_WRITE | FILE_SHARE_READ, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si;
+	BOOL ret = FALSE;
+	DWORD flags = CREATE_NO_WINDOW;
+
+	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+	ZeroMemory(&si, sizeof(STARTUPINFO));
+	si.cb = sizeof(STARTUPINFO);
+	si.dwFlags |= STARTF_USESTDHANDLES;
+	si.hStdInput = NULL;
+	si.hStdError = hstderr;
+	si.hStdOutput = hstdout;
+
+	ret = CreateProcess(NULL, const_cast<char *>(command.c_str()), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
+
+	if (ret)
+	{
+		// Successfully created the process.  Wait for it to finish.
+		DWORD waitstatus;
+		if (timeout > 0)
+		{
+			_log.Log(LOG_STATUS, "Waiting for execution (%d)",timeout);
+			waitstatus = WaitForSingleObject(pi.hProcess, timeout * 1000);
+		}
+		else
+		{
+			_log.Log(LOG_STATUS, "Waiting for execution (INFINITE)");
+			waitstatus = WaitForSingleObject(pi.hProcess, INFINITE);
+		}
+		_log.Log(LOG_STATUS, "Waiting done");
+
+		if (waitstatus == WAIT_TIMEOUT)
+		{
+			_log.Log(LOG_ERROR, "timeout occurred, terminating process");
+			timeoutOccurred = true;
+			if (TerminateProcess(pi.hProcess, 1))
+			{
+				_log.Log(LOG_STATUS, "terminate succeeded");
+				commmandExecutedSuccesfully = true;
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "terminate failed");
+			}
+		}
+		else if (waitstatus == WAIT_FAILED)
+		{
+			_log.Log(LOG_ERROR, "something went wrong waiting");
+		}
+		else
+		{
+
+			// all went fine
+			// Get the exit code.
+
+			DWORD exitCode;
+			GetExitCodeProcess(pi.hProcess, &exitCode);
+			_log.Log(LOG_STATUS, "Exit code %ld", exitCode);
+			exitcode = exitCode;
+			commmandExecutedSuccesfully = true;
+		}
+
+	}
+
+	// Clear up everything
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	CloseHandle(hstdout);
+	CloseHandle(hstderr);
+	
 
 #else
 	// Start process,  using command on stdin
-	boost::process::opstream in;
-	boost::process::child c("sh", boost::process::std_in < in, boost::process::std_out > filename.c_str(), boost::process::std_err > filenamestderr, ec, g);
+	pid = fork();
+	if (pid == 0)
+	{
+		// child process
+		int fdout = open(filename.c_str(), O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
+		int fderr = open(filenamestderr.c_str(), O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
+		dup2(fdout, 1); // reroute stdout
+		dup2(fderr, 2); // reroute srderr
+		close(fdout);
+		close(fderr);
+		exitcode = execl("/bin/sh", "/bin/sh", "-c", command.c_str(), NULL);
+		exit(exitcode);
+	}
 
-	in << command.c_str() << std::endl;
-	in.pipe().close();
-	in.close();
+	if (pid == -1)
+	{
+		_log.Log(LOG_ERROR, "Unable to spawn process");
+	}
+	else
+	{
+		_log.Log(LOG_STATUS, "Parent: waiting for pid %d for %d seconds", pid, timeout);
+		if (timeout>0) {
+			T = std::make_shared<std::thread>(&CSQLHelper::ManageExecuteScriptTimeout,this,pid,timeout,&stillRunning,&timeoutOccurred);
+		}
+		waitpid(pid, &exitcode, 0);
+		stillRunning = false;
+		_log.Log(LOG_STATUS, "Parent: Child exited with exitcode %d", exitcode);
+		commmandExecutedSuccesfully = true;
+	}
 #endif
 
-	m_executeThreadMutex.unlock();
-
-	if (ec.value()==0) {
-		if (timeout>0)
-		{
-			// launch thread to manage timeout
-			_log.Log(LOG_STATUS,"Executing : %s for max %d seconds",command.c_str(),timeout);
-			T = std::make_shared<std::thread>(&CSQLHelper::ManageExecuteScriptTimeout,this,&g,timeout,&stillRunning,&timeoutOccurred);
-		} else {
-			_log.Log(LOG_STATUS,"Executing : %s",command.c_str(),timeout);
-		}
-		c.wait();
-
-
-		// get the exit code
-		exitcode=c.exit_code();
-
+	if (commmandExecutedSuccesfully)
+	{ 
 		// get stdout
 		infile.open(filename.c_str());
 		if (infile.is_open())
 		{
-			getline(infile,sLine);
+			getline(infile, sLine);
 			do
 			{
 				scriptoutput.append(sLine);
-				getline(infile,sLine);
+				getline(infile, sLine);
 				if (!infile.eof())
 				{
 					scriptoutput.append("\n");
@@ -3414,57 +3506,57 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 
 			// delete temporary file
 			if (remove(filename.c_str()))
-				_log.Log(LOG_ERROR," unable to remove file %s",filename.c_str());
-
-		} else {
-			_log.Log(LOG_ERROR,"Unable to read file %s",filename.c_str());
+				_log.Log(LOG_ERROR, " unable to remove file %s", filename.c_str());
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Unable to read file %s", filename.c_str());
 		}
 
 		// get stderr
 		infile.open(filenamestderr.c_str());
 		if (infile.is_open())
 		{
-			getline(infile,sLine);
+			getline(infile, sLine);
 			do
 			{
 				if (!sLine.empty())
-					_log.Log(LOG_ERROR,"ExecuteScriptError: %s",sLine.c_str());
+					_log.Log(LOG_ERROR, "ExecuteScriptError: %s", sLine.c_str());
 				scriptstderr.append(sLine);
-				getline(infile,sLine);
+				getline(infile, sLine);
 				if (!infile.eof())
 				{
 					scriptstderr.append("\n");
 				}
-			} while(!infile.eof());
+			} while (!infile.eof());
 			infile.close();
 
 			// delete temporary file
 			if (remove(filenamestderr.c_str()))
-				_log.Log(LOG_ERROR," unable to remove file %s",filenamestderr.c_str());
-
-		} else {
-			_log.Log(LOG_ERROR,"Unable to read file %s",filenamestderr.c_str());
+				_log.Log(LOG_ERROR, " unable to remove file %s", filenamestderr.c_str());
 		}
-	} else {
-		// something went wrong spawning the process
-		_log.Log(LOG_ERROR,"error : %d,%s",ec.value(),ec.message().c_str());
-		scriptstderr=ec.message();
-		exitcode=ec.value();
-	}
+		else
+		{
+			_log.Log(LOG_ERROR, "Unable to read file %s", filenamestderr.c_str());
+		}
 
-	stillRunning=false;
+		// start callback if applicable
+		if (m_bEnableEventSystem && !callback.empty())
+		{
+			m_mainworker.m_eventsystem.TriggerShellCommand(scriptoutput, scriptstderr, callback, exitcode, timeoutOccurred);
+		}
+#ifndef WIN32
+		if (timeout>0) 
+		{
+			T->join();
+			T.reset();
+		}
+#endif
 
-	// start callback if applicable
-	if (m_bEnableEventSystem && !callback.empty())
-	{
-		m_mainworker.m_eventsystem.TriggerShellCommand(scriptoutput, scriptstderr, callback, exitcode, timeoutOccurred);
 	}
-	if (timeout>0) {
-		T->join();
-		T.reset();
-	}
-	// _log.Log(LOG_STATUS,"ExecuteThread Done");
+	_log.Log(LOG_STATUS, "ExecuteThread Done");
 }
+
 
 
 void CSQLHelper::Do_Work()
@@ -3619,6 +3711,7 @@ void CSQLHelper::Do_Work()
 				std::string callback = itt->_ID;
 				std::string path = itt->_sUser;
 				int timeout = itt->_nValue;
+				_log.Log(LOG_STATUS,"Timeout set to %d",timeout);
 				std::thread shellcommandthread(&CSQLHelper::ExecuteScriptThreaded,this, command,callback,timeout,path);
 				shellcommandthread.detach();
 			}

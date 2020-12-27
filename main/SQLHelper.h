@@ -7,7 +7,6 @@
 #include "../httpclient/UrlEncode.h"
 #include "../httpclient/HTTPClient.h"
 #include "StoppableTask.h"
-#include <boost/process/group.hpp>
 
 #define timer_resolution_hz 25
 
@@ -496,7 +495,7 @@ class CSQLHelper : public StoppableTask
 	void StopThread();
 	void Do_Work();
 
-	void ManageExecuteScriptTimeout(boost::process::group *g, int timeout, bool *stillRunning, bool *timeoutOccurred);
+	void ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
 	void ExecuteScriptThreaded(std::string command, std::string callback, int timeout, std::string path);
 	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &User);
 	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color, const std::string &User);
