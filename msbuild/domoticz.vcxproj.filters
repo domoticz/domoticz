@@ -2183,7 +2183,7 @@
     <ClInclude Include="..\hardware\eVehicles\TeslaApi.h">
       <Filter>Devices\eVehicles</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\eVehicles\MercApi.h">
+    <ClInclude Include="..\hardware\eVehicles\MercApi.hpp">
       <Filter>Devices\eVehicles</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\eVehicles\VehicleApi.h">

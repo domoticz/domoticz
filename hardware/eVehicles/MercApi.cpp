@@ -9,7 +9,7 @@ License: Public domain
 
 ************************************************************************/
 #include "stdafx.h"
-#include "MercApi.h"
+#include "MercApi.hpp"
 #include "VehicleApi.h"
 #include "../../main/Logger.h"
 #include "../../httpclient/UrlEncode.h"
@@ -63,7 +63,7 @@ CMercApi::CMercApi(const std::string &username, const std::string &password, con
 	m_fields = "";
 	m_fieldcnt = -1;
 
-	m_capabilities.has_battery_level = false;
+	m_capabilities.has_battery_level = true;
 	m_capabilities.has_charge_command = false;
 	m_capabilities.has_climate_command = false;
 	m_capabilities.has_defrost_command = false;
@@ -181,12 +181,14 @@ bool CMercApi::GetLocationData(tLocationData& data)
 
 void CMercApi::GetLocationData(Json::Value& jsondata, tLocationData& data)
 {
+	/*
 	std::string CarLatitude = jsondata["latitude"].asString();
 	std::string CarLongitude = jsondata["longitude"].asString();
 	data.speed = jsondata["speed"].asInt();
 	data.is_driving = data.speed > 0;
 	data.latitude = std::stod(CarLatitude);
 	data.longitude = std::stod(CarLongitude);
+	*/
 }
 
 bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
@@ -894,7 +896,7 @@ uint16_t CMercApi::ExtractHTTPResultCode(const std::string& sResponseHeaderLine0
 		{
 			if (sResponseHeaderLine0.find_first_of(' ') != std::string::npos)
 			{
-				iHttpCodeStartPos = sResponseHeaderLine0.find_first_of(' ') + 1;	// So look for a SPACE as the seperator (RFC2616)
+				iHttpCodeStartPos = (uint8_t)sResponseHeaderLine0.find_first_of(' ') + 1;	// So look for a SPACE as the seperator (RFC2616)
 
 				iHttpCode = (uint16_t)std::stoi(sResponseHeaderLine0.substr(iHttpCodeStartPos, 3));
 				if (iHttpCode < 100 || iHttpCode > 599)		// Check valid resultcode range

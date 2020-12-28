@@ -594,7 +594,7 @@
     <ClInclude Include="..\hardware\ETH8020.h" />
     <ClInclude Include="..\hardware\eVehicles\eVehicle.h" />
     <ClInclude Include="..\hardware\eVehicles\TeslaApi.h" />
-    <ClInclude Include="..\hardware\eVehicles\MercApi.h" />
+    <ClInclude Include="..\hardware\eVehicles\MercApi.hpp" />
     <ClInclude Include="..\hardware\eVehicles\VehicleApi.h" />
     <ClInclude Include="..\hardware\EvohomeBase.h" />
     <ClInclude Include="..\hardware\EvohomeRadio.h" />
