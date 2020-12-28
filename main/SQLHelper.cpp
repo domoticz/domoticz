@@ -3308,7 +3308,7 @@ void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRun
 
 	auto start = std::chrono::system_clock::now();
 
-	while ( std::chrono::system_clock::now()-start<std::chrono::seconds(timeout) && *stillRunning) // check every seconds if we have to wait another second
+	while ( std::chrono::system_clock::now()-start<std::chrono::seconds(timeout) && *stillRunning) // check every second if we have to wait another second
 	{
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -3320,7 +3320,6 @@ void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRun
 		kill (pid,SIGKILL);
 		*timeoutOccurred=true;
 	}
-	_log.Log(LOG_STATUS,"Stopping managethread");
 }
 #endif
 
@@ -3343,7 +3342,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 
 	// make sure we have unique filenames
 	scriptoutputindex++;
-	if (scriptoutputindex > 250) // should be a big number, to prevent parallel scripts having the same output files. 250 concurrent will probably never be reached
+	if (scriptoutputindex > 10000) // should be a big number, to prevent parallel scripts having the same output files. 250 concurrent will probably never be reached
 	{
 		scriptoutputindex = 1;
 	}
@@ -3395,6 +3394,15 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 	si.hStdOutput = hstdout;
 
 	ret = CreateProcess(NULL, const_cast<char *>(command.c_str()), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
+	if (!ret)  // the above command will fail if the executable cannot be found (e.g. a "dir" command). So try again using the command shell
+	{
+		std::string cmd = "cmd /c ";
+		cmd.append(command.c_str());
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "Could not execute command, trying again using %s", cmd.c_str());
+#endif
+		ret = CreateProcess(NULL, const_cast<char *>(cmd.c_str()), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
+	}
 
 	if (ret)
 	{
@@ -3402,33 +3410,28 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 		DWORD waitstatus;
 		if (timeout > 0)
 		{
-			_log.Log(LOG_STATUS, "Waiting for execution (%d)",timeout);
 			waitstatus = WaitForSingleObject(pi.hProcess, timeout * 1000);
 		}
 		else
 		{
-			_log.Log(LOG_STATUS, "Waiting for execution (INFINITE)");
 			waitstatus = WaitForSingleObject(pi.hProcess, INFINITE);
 		}
-		_log.Log(LOG_STATUS, "Waiting done");
 
 		if (waitstatus == WAIT_TIMEOUT)
 		{
-			_log.Log(LOG_ERROR, "timeout occurred, terminating process");
+			_log.Log(LOG_ERROR, "%s has been running longer than specified time (%d seconds), cancelling command",command.c_str(),timeout);
 			timeoutOccurred = true;
-			if (TerminateProcess(pi.hProcess, 1))
-			{
-				_log.Log(LOG_STATUS, "terminate succeeded");
-				commmandExecutedSuccesfully = true;
-			}
-			else
+			exitcode = 9;   // Analog to error on unix
+			commmandExecutedSuccesfully = true;
+
+			if (!TerminateProcess(pi.hProcess, 1))
 			{
 				_log.Log(LOG_ERROR, "terminate failed");
 			}
 		}
 		else if (waitstatus == WAIT_FAILED)
 		{
-			_log.Log(LOG_ERROR, "something went wrong waiting");
+			_log.Log(LOG_ERROR, "something went wrong while executing %s waiting",command.c_str());
 		}
 		else
 		{
@@ -3438,11 +3441,17 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 
 			DWORD exitCode;
 			GetExitCodeProcess(pi.hProcess, &exitCode);
+#ifdef _DEBUG
 			_log.Log(LOG_STATUS, "Exit code %ld", exitCode);
+#endif
 			exitcode = exitCode;
 			commmandExecutedSuccesfully = true;
 		}
 
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "Unable to execute %s", command.c_str());
 	}
 
 	// Clear up everything
@@ -3474,19 +3483,18 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 	}
 	else
 	{
-		_log.Log(LOG_STATUS, "Parent: waiting for pid %d for %d seconds", pid, timeout);
 		if (timeout>0) {
 			T = std::make_shared<std::thread>(&CSQLHelper::ManageExecuteScriptTimeout,this,pid,timeout,&stillRunning,&timeoutOccurred);
 		}
 		waitpid(pid, &exitcode, 0);
 		stillRunning = false;
-		_log.Log(LOG_STATUS, "Parent: Child exited with exitcode %d", exitcode);
 		commmandExecutedSuccesfully = true;
 	}
 #endif
 
 	if (commmandExecutedSuccesfully)
 	{ 
+
 		// get stdout
 		infile.open(filename.c_str());
 		if (infile.is_open())
@@ -3504,9 +3512,6 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 
 			infile.close();
 
-			// delete temporary file
-			if (remove(filename.c_str()))
-				_log.Log(LOG_ERROR, " unable to remove file %s", filename.c_str());
 		}
 		else
 		{
@@ -3531,9 +3536,6 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 			} while (!infile.eof());
 			infile.close();
 
-			// delete temporary file
-			if (remove(filenamestderr.c_str()))
-				_log.Log(LOG_ERROR, " unable to remove file %s", filenamestderr.c_str());
 		}
 		else
 		{
@@ -3552,9 +3554,18 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 			T.reset();
 		}
 #endif
+		// delete temporary file
+		std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // give the time to finish all io from the child processes
+		if (remove(filename.c_str()))
+		{
+			_log.Log(LOG_ERROR, "unable to remove file %s", filename.c_str());
+		}
+		if (remove(filenamestderr.c_str()))
+		{
+			_log.Log(LOG_ERROR, " unable to remove file %s", filenamestderr.c_str());
+		}
 
 	}
-	_log.Log(LOG_STATUS, "ExecuteThread Done");
 }
 
 
@@ -3711,7 +3722,6 @@ void CSQLHelper::Do_Work()
 				std::string callback = itt->_ID;
 				std::string path = itt->_sUser;
 				int timeout = itt->_nValue;
-				_log.Log(LOG_STATUS,"Timeout set to %d",timeout);
 				std::thread shellcommandthread(&CSQLHelper::ExecuteScriptThreaded,this, command,callback,timeout,path);
 				shellcommandthread.detach();
 			}

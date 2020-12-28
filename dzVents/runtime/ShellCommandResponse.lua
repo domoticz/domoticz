@@ -6,7 +6,7 @@ local function ShellCommandResponse(domoticz, responseData, testResponse)
 
 	self.data = responseData.data
 	if self.data == "\n" or self.data == '\n\r' then self.data = '' end
-	self.statusCode = responseData.statusCode
+	self.statusCode = responseData.statusCode % 255
 	self.errorText = responseData.errorText:gsub('\n','')
 	self.timeoutOccurred = responseData.timeoutOccurred
 	if (self.errorText == "" or self.errorText == "\r" or self.errorText == '\r\n') and self.timeoutOccurred then self.errorText = 'Timeout occurred' end
