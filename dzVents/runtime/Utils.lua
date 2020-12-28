@@ -470,7 +470,7 @@ function self.log(msg, level)
 		local maxLength = 6000 -- limit 3 * 2048 hardCoded in main/Logger.cpp
 		msg = self.toStr(msg)
 		for i = 1, #msg, maxLength do
-			self.print( msg:sub(i, i + maxLength - 1 ) )
+			self.print( marker .. msg:sub(i, i + maxLength - 1 ) )
 		end
 	end
 end
