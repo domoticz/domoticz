@@ -30,8 +30,7 @@ self.toStr = function (value)
 		return '"'..v..'"'
 	end
 
-	local str = '';
-	-- local v;
+	local str = ''
 	if _.isString(value) then
 		str = value
 	elseif _.isBoolean(value) then
@@ -45,14 +44,14 @@ self.toStr = function (value)
 	elseif _.isTable(value) then
 		str = '{'
 		for k, v in pairs(value) do
-			v = _.isString(v) and dblQuote(v) or self.toStr(v)
+			v = ( _.isString(v) and dblQuote(v) ) or self.toStr(v)
 			if _.isNumber(k) then
 				str = str .. v .. ', '
 			else
 				str = str .. '[' .. dblQuote(k) .. ']=' .. v .. ', '
 			end
 		end
-		str = str:sub(0, #str - 2) .. '}'
+		str = str:sub(0, ( #str - 2 ) ) .. '}'
 	end
 	return str
 end
@@ -348,13 +347,13 @@ function self.toBase64(s) -- from http://lua-users.org/wiki/BaseSixtyFour
 end
 
 function self.hasLines(str, eol)
-    local eol = eol or '\n'
-    return str:find(eol)
+	local eol = eol or '\n'
+	return str:find(eol)
 end
 
 function self.fromLines(str, eol)
-    local eol = eol or '\n'
-    return self.stringSplit(str, eol)
+	local eol = eol or '\n'
+	return self.stringSplit(str, eol)
 end
 
 function self.isXML(str, content)
@@ -468,7 +467,11 @@ function self.log(msg, level)
 	end
 
 	if (level <= lLevel) then
-		self.print(tostring(marker) .. self.toStr(msg))
+		local maxLength = 6000 -- limit 3 * 2048 hardCoded in main/Logger.cpp
+		msg = self.toStr(msg)
+		for i = 1, #msg, maxLength do
+			self.print( msg:sub(i, i + maxLength - 1 ) )
+		end
 	end
 end
 
