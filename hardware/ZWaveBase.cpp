@@ -481,11 +481,11 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 		if (pDevice->lastSendValue != 0)
 		{
 			float floatChange = (pDevice->floatValue - pDevice->prevFloatValue) / pDevice->scaleMultiply;
-			if ((floatChange < 0) || (floatChange > m_sql.m_max_kwh_usage))
+			if ((floatChange < -m_sql.m_max_kwh_usage) || (floatChange > m_sql.m_max_kwh_usage))
 			{
 				if (pDevice->lastreceived - pDevice->lastSendValue < 3600)
 				{
-					// Seems wrong, counters should increase, and by a limited amount.
+					// Seems wrong, counters should change by a limited amount.
 					// If it persists, we will accept it after an hour.
 					_log.Log(LOG_STATUS,
 						 "OpenZwave: temporarily ignoring %s power meter counter (NodeID: %d, 0x%02x)",
