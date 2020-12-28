@@ -799,7 +799,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		case Post:
 			if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
-				_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t)std::stoi(_vResponseHeaders[0].substr(9, 3)) : 9999);
+				_iHttpCode = ExtractHTTPResultCode(_vResponseHeaders[0]);
 				_log.Log(LOG_ERROR, "Failed to perform POST request (%d)!", _iHttpCode);
 			}
 			break;
@@ -807,7 +807,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		case Get:
 			if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, true))
 			{
-				_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t)std::stoi(_vResponseHeaders[0].substr(9, 3)) : 9999);
+				_iHttpCode = ExtractHTTPResultCode(_vResponseHeaders[0]);
 				_log.Log(LOG_ERROR, "Failed to perform GET request (%d)!", _iHttpCode);
 			}
 			break;
@@ -819,7 +819,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			}
 		}
 
-		_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t)std::stoi(_vResponseHeaders[0].substr(9, 3)) : 0);
+		_iHttpCode = ExtractHTTPResultCode(_vResponseHeaders[0]);
 
 		// Debug response
 		for (auto &_vResponseHeader : _vResponseHeaders)
@@ -880,4 +880,30 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		return false;
 	}
 	return true;
+}
+
+// Interpret the return message headers to extract the HTTP resultcode
+uint16_t CMercApi::ExtractHTTPResultCode(const std::string& sResponseHeaderLine0)
+{
+	uint16_t iHttpCode = 9999;
+	uint8_t iHttpCodeStartPos = 0;
+
+	if(!sResponseHeaderLine0.empty())
+	{
+		if (sResponseHeaderLine0.find("HTTP") == 0)		// Ok, so this header indeeds starts with HTTP
+		{
+			if (sResponseHeaderLine0.find_first_of(' ') != std::string::npos)
+			{
+				iHttpCodeStartPos = sResponseHeaderLine0.find_first_of(' ') + 1;	// So look for a SPACE as the seperator (RFC2616)
+
+				iHttpCode = (uint16_t)std::stoi(sResponseHeaderLine0.substr(iHttpCodeStartPos, 3));
+				if (iHttpCode < 100 || iHttpCode > 599)		// Check valid resultcode range
+				{
+					iHttpCode = 9999;
+				}
+			}
+		}
+	}
+
+	return iHttpCode;
 }
