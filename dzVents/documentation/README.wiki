@@ -196,11 +196,15 @@ A list of one or more custom event triggers. This eventTrigger can be activate b
 The customEvent object (second parameter in your execute function) has these attributes:
 
 * '''data''': Raw customEvent data.
+* '''hasLines''': ''Boolean''. <sup>3.1.0</sup> When true, the data is automatically converted to a Lua table. (isJSON and isXML have preference)
 * '''isJSON''': ''Boolean''.<sup>3.0.3</sup> true when the customEvent data is a valid json string. The data is then automatically converted to a Lua table.
 * '''isXML''': ''Boolean''. <sup>3.0.3</sup> true when the customEvent data is a valid xml string. When true, the data is automatically converted to a Lua table.
 * '''json'''. ''Table''. <sup>3.0.3</sup> When the customEvent data is a valid json string, the response data is automatically converted to a Lua table for quick and easy access. nil otherwise
+* '''lines''': ''Table''. <sup>3.1.0</sup> When the response data has multiple lines but is not a JSON or XML string then the response data is automatically converted to a table for quick and easy access.
 * '''trigger''', '''customEvent''': ''String''.<sup>3.0.3</sup> The string that triggered this customEvent instance. This is useful if you have a script that can be triggered by multiple different customEvent strings.
 * '''xml'''. ''Table''. <sup>3.0.3</sup> When the response data is a valid xml string, the customEvent data is automatically converted to a Lua table for quick and easy access. nil otherwise
+* '''xmlEncoding'''. ''String''. When the response data is <code>text/xml</code> See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
+* '''xmlVersion'''. ''String''. When the response data is <code>text/xml</code> See [ xml versions ] ( https://en.wikipedia.org/wiki/XML ).
 
 ==== devices = { … } ====
 
@@ -220,7 +224,7 @@ A list of one or more http callback triggers. Use this in conjunction with <code
 
 ==== shellCommandResponses = { …} <sup>3.1.0</sup> ====
 
-A list of one or more scriptcommand callback triggers. Use this in conjunction with <code>domoticz.executeShellCommand()</code> where you will provide Domoticz with the callback trigger. See [[#Asynchronous_shellcommands|asynchronous shellcommands]] for more information.
+A list of one or more scriptcommand callback triggers. Use this in conjunction with <code>domoticz.executeShellCommand()</code> where you will provide Domoticz with the callback trigger. See [[#Asynchronous_shell_command_execution|Asynchronous shell commands]] for more information.
 
 ==== scenes = { … } ====
 
@@ -279,7 +283,7 @@ Depending on what actually triggered the script, <code>item</code> is either a:
 * [[#System_event_API|system]], <sup>3.0.0</sup>
 * [[#Security_Panel|security]] or
 * [[#Asynchronous_HTTP_requests|httpResponse]]
-* [[#Asynchronous_shellcommands|shellCommandResponses]] <sup>3.1.0</sup>
+* [[#Asynchronous_shell_command_executio|shellCommandResponse]] <sup>3.1.0</sup>
 
 Since you can define multiple on-triggers in your script, it is not always clear what the type is of this second parameter. In your code you need to know this in order to properly respond to the different events. To help you inspect the object you can use these attributes like <code>if (item.isDevice) then ... end</code>:
 
@@ -485,7 +489,7 @@ Suppose you have some external web service that will tell you what the current e
 }</source>
 See[[#Asynchronous_HTTP_requests|asynchronous http requests]] for more information.
 
-=== Asynchronous shellcommand execution <sup>3.1.0</sup> ===
+=== Asynchronous shell command execution <sup>3.1.0</sup> ===
 
 Suppose you have some local shellcommand to measure the speed of your internet connection and you want that information in Domoticz:
 
@@ -508,7 +512,7 @@ Suppose you have some local shellcommand to measure the speed of your internet c
         end
     end
 }</source>
-See[[#Asynchronous_shellcommands|asynchronous shellcommands]] for more information.
+See[[#Asynchronous_shell_command_execution|asynchronous shell commands]] for more information.
 
 === System changes ===
 
@@ -660,7 +664,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 * '''dump([osfile]<sup>3.0.0</sup>)''': ''Function''. Dump all domoticz.settings attributes to the Domoticz log. This ignores the log level setting.
 * '''email(subject, message, mailTo [, delay]<sup>3.0.10</sup>)''': ''Function''. Send email. Optional parm delay is delay in seconds.
 * '''emitEvent(name,[extra data ])''':''Function''. <sup>3.0.0</sup> Have Domoticz ‘call’ a customEvent. If you just pass a name then Domoticz will execute the script(s) that subscribed to the named customEvent after your script has finished. You can optionally pass extra information as a string or table. A table will be automatically converted into a json string and converted back to a table in the subscribed script(s). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
-* '''executeShellCommand(command/options)''': ''Function''. <sup>3.1.0</sup> Have Domoticz ‘call’ a command. If you just pass a command then Domoticz will execute the command after your script has finished but you will not get notified. If you pass options table with a callback then you have the possibility to receive the results of the request in a dzVents script. Read more about [[#Asynchronous_shellcommands|asynchronous shellcommands]] with dzVents. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]]. '''Note Make sure that when you use this function on a Windows system and use one or more of the special chars &amp;&lt;&gt;()@^| outside double quotes, you will have to escape these with a ^ char '''
+* '''executeShellCommand(command/options)''': ''Function''. <sup>3.1.0</sup> Have Domoticz ‘call’ a command. If you just pass a command then Domoticz will execute the command after your script has finished but you will not get notified. If you pass options table with a callback then you have the possibility to receive the results of the request in a dzVents script. Read more about [[#Asynchronous_shell_command_execution|asynchronous shell commands]] with dzVents. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]]. '''Note Make sure that when you use this function on a Windows system and use one or more of the special chars &amp;&lt;&gt;()@^| outside double quotes, you will have to escape these with a ^ char '''
 * '''groups(idx/name)''': ''Function'': A function returning a group by name or idx. Each group has the same interface as a device. To iterate over all groups do: <code>domoticz.groups().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.groups()) do .. end</code>. Read more about [[#Group|Groups]].
 * '''hardwareInfo(idx/name)''': <sup>3.0.6</sup> ''Function'': A function returning hardwareInfo of a hardware module by name or idx. The return of the function is a table with attributes name, type, typeValue, deviceNames (table with names of all active devices defined on this hardware) and deviceIds (table with idx of all active devices defined on this hardware)
 * '''hardware(idx/name)''': <sup>3.0.7</sup> ''Function'': A function returning a hardware module by name or idx. Each hardware has an interface comparable to group. To iterate over all hardware do: <code>domoticz.hardware().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.hardware()) do .. end</code>. Read more about [[#Hardware|Hardware]].
@@ -748,8 +752,8 @@ end</source></li>
         domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
         domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300</source>
 <ul>
-<li><p>'''osCommand(cmd)''': ''Function'': <sup>3.0.13</sup> Execute an OS command and return result and returncode. Note: For long running scripts <code>domoticz.executeShellCommand()</code> should be used, See [[#Asynchronous_shellcommands|asynchronous shellcommands]] for more information.</p></li>
-<li><p>'''osExecute(cmd)''': ''Function'': Execute an OS command (no return). Note: For long running scripts <code>executeShellCommand()</code> should be used. See [[#Asynchronous_shellcommands|asynchronous shellcommands]] for more information.</p></li>
+<li><p>'''osCommand(cmd)''': ''Function'': <sup>3.0.13</sup> Execute an OS command and return result and returncode. Note: For long running scripts <code>domoticz.executeShellCommand()</code> should be used, See [[#Asynchronous_shell_command_execution|Asynchronous shell commands]] for more information.</p></li>
+<li><p>'''osExecute(cmd)''': ''Function'': Execute an OS command (no return). Note: For long running scripts <code>executeShellCommand()</code> should be used. See [[#Asynchronous_shell_command_execution|Asynchronous shell commands]] for more information.</p></li>
 <li><p>'''rightPad(string, length [, character])''': ''Function'': Succeed string with given character(s) (default = space) to given length.</p></li>
 <li><p>'''round(number, [decimalPlaces])''': ''Function''. Helper function to round numbers. Default decimalPlaces is 0.</p></li>
 <li><p>'''sceneExists(parm)''': ''Function'': returns name when entered with valid scene <sup>3.0.12</sup> or sceneID and return ID when entered with valid sceneName or false when not a scene, sceneID or sceneName of an existing scene</p></li>
@@ -2105,7 +2109,7 @@ For every script file that defines persisted variables (using the <code>data={ �
                 yourscript1.lua
                 yourscript2.lua
                 global_data.lua</pre>
-If you dare to, you can watch inside these files. Every time some data are changed, dzVents will stream the changes back into the data files. '''Again, make sure you don’t put too much stuff in your persisted data as it may slow things down too much.'''
+If you dare to, you can watch inside these files. Every time some data are changed, dzVents will stream the changes back into the data files. '''Again, make sure you don’t put too much stuff in your persistent data as it may slow things down too much.'''
 
 = Asynchronous HTTP requests =
 
@@ -2188,10 +2192,12 @@ Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command 
 The response object (second parameter in your execute function) has these attributes:
 
 * '''data''': Raw response data.
+* '''hasLines''': ''Boolean''. <sup>3.1.0</sup> When true, the data is automatically converted to a Lua table. (isJSON and isXML have preference)
 * '''headers''': ''Table''. Response headers.
 * '''isJSON''': ''Boolean''. Short for <code>response.headers['Content-Type'] == 'application/json'</code>. When true, the data is automatically converted to a Lua table.
 * '''isXML''': ''Boolean''. Short for <code>response.headers['Content-Type'] == 'text/xml'</code>. When true, the data is automatically converted to a Lua table.
 * '''json'''. ''Table''. When the response data is <code>application/json</code> then the response data is automatically converted to a Lua table for quick and easy access.
+* '''lines''': ''Table''. <sup>3.1.0</sup> When the response data has multiple lines but is not a JSON or XML string then the response data is automatically converted to a Lua table for quick and easy access.
 * '''ok''': ''Boolean''. <code>True</code> when the request was successful. It checks for statusCode to be in range of 200-299.
 * '''statusCode''': ''Number''. HTTP status codes. See [https://en.wikipedia.org/wiki/List_of_HTTP_status_codes HTTP response status codes].
 * '''statusText''': ''String''. HTTP status message. See [https://en.wikipedia.org/wiki/List_of_HTTP_status_codes HTTP response status codes].
@@ -2328,14 +2334,14 @@ Most of the things you need to do in your dzVents script is already exposed some
     end
 }
 </source>
-= Asynchronous shell command execution <sup>3.1.0</sup> =
+= Asynchronous shell command execution =
 
-dzVents allows you to make asynchronous shell commands and handle the results. Asynchronous means that you don’t block the system while waiting for the response. Earlier you had to use functions like <code>utils.osCommand()</code> or <code>os.Execute()</code> and some magic to make sure that you didn’t block the system for too long after which Domoticz will terminate the script with a message that it took more than 10 seconds.
+dzVents allows you to make asynchronous shell commands and handle the results. Asynchronous means that you don’t block the system while waiting for the response. Earlier you had to use functions like <code>utils.osCommand()</code> or <code>os.Execute()</code> and some magic to make sure that you didn’t block the system for too long after which Domoticz comes with a message that the script took more than 10 seconds.
 
-dzVents to the rescue. With dzVents there are two ways to execute a shell command and it is determined by how you use the <code>domoticz.executeShellCommand()</code> command. The simplest form simply calls <code>executeShellCommand</code> on the domoticz object with only the command as the parameter (a string value):
+dzVents to the rescue. With dzVents there are two ways to execute a shell command asynchronously and it is determined by how you use the <code>domoticz.executeShellCommand()</code> command. The simplest form simply calls <code>executeShellCommand</code> on the domoticz object with only the command as the parameter (a string value):
 
 <source lang="lua">domoticz.executeShellCommand('some shell command')</source>
-After your script is finished, Domoticz will make the request that’s where it ends. No callback. Nothing.
+After your script is finished, Domoticz will execute the request in a separate thread and that’s where it ends. No callback. Nothing.
 
 The second way is different. Instead of passing a command you pass in a table with the command to be executed '''and''' a ''callback trigger'' which is just a string or a name:
 
@@ -2381,7 +2387,7 @@ Of course you can combine the script that issues the request and handles the res
             })
         end
         if item.isShellCommandResponse then
-            if item.statusCode ==0  then
+            if item.statusCode == 0  then
                 ...
             end
         end
@@ -2407,13 +2413,14 @@ The response object (second parameter in your execute function) has these attrib
 * '''data''': output from the command. (stdout)
 * '''errorText''': Errors generated by the command (stderr)
 * '''statusCode''': ''Int''. exitcode generated by the command
-* '''hasLines''': ''Boolean''. When true, the data is automatically converted to a Lua table.
+* '''hasLines''': ''Boolean''. When true, the data is automatically converted to a Lua table. (isJSON and isXML have preference)
 * '''isJSON''': ''Boolean''. When true, the data is automatically converted to a Lua table.
 * '''isXML''': ''Boolean''. When true, the data is automatically converted to a Lua table.
 * '''json''': ''Table''. When the response data is <code>application/json</code> then the response data is automatically converted to a Lua table for quick and easy access.
-* '''lines''': ''Table''. When the response data has multiple lines then the response data is automatically converted to a Lua table for quick and easy access.
+* '''lines''': ''Table''. When the response data has multiple lines but is not a JSON or XML string then the response data is automatically converted to a Lua table for quick and easy access.
 * '''ok''': ''Boolean''. <code>True</code> when the request was successful. It checks for statusCode to be 0.
 * '''timeoutOccurred''' ''Boolean'' <code>True</code> when the request was aborted by a timeout.
+* '''trigger''', '''callback''': ''String''. The callback string that triggered this response instance. This is useful if you have a script that is triggered by multiple different callback strings.
 * '''xml'''. ''Table''. When the response data is <code>text/xml</code> , the response data is automatically converted to a Lua table for quick and easy access.
 * '''xmlEncoding'''. ''String''. When the response data is <code>text/xml</code> See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
 * '''xmlVersion'''. ''String''. When the response data is <code>text/xml</code> See [ xml versions ] ( https://en.wikipedia.org/wiki/XML ).

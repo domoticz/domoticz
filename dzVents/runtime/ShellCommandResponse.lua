@@ -4,6 +4,9 @@ local evenItemIdentifier = require('eventItemIdentifier')
 local function ShellCommandResponse(domoticz, responseData, testResponse)
 	local self = {}
 
+	self.callback = responseData.callback
+	self.trigger = responseData.callback
+	self.shellCommandResponse = responseData.callback
 	self.data = responseData.data
 	if self.data == "\n" or self.data == '\n\r' then self.data = '' end
 	self.statusCode = responseData.statusCode % 255
@@ -19,8 +22,6 @@ local function ShellCommandResponse(domoticz, responseData, testResponse)
 	self.isXML = false
 	self.isJSON = false
 	self.hasLines = false
-
-	self.callback = responseData.callback
 
 	evenItemIdentifier.setType(self, 'isShellCommandResponse', domoticz.BASETYPE_SHELLCOMMAND_RESPONSE, responseData.callback)
 

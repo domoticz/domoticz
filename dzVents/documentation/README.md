@@ -1,4 +1,5 @@
-﻿**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
+﻿
+**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
 Documentation for dzVents 2.4.0 - 2.5.7 (Domoticz v4.11652) can be found [here](https://github.com/domoticz/domoticz/blob/a0a6069e40744df222e889474032439476b7ecfb/dzVents/documentation/README.md).
@@ -208,11 +209,15 @@ A list of one or more custom event triggers. This eventTrigger can be activate b
 The customEvent object (second parameter in your execute function) has these attributes:
 
  - **data**: Raw customEvent data.
+ - **hasLines**: *Boolean*. <sup>3.1.0</sup> When true, the data is automatically converted to a Lua table. (isJSON and isXML have preference)
  - **isJSON**: *Boolean*.<sup>3.0.3</sup> true when the customEvent data is a valid json string. The data is then automatically converted to a Lua table.
  - **isXML**: *Boolean*. <sup>3.0.3</sup> true when the customEvent data is a valid xml string. When true, the data is automatically converted to a Lua table.
  - **json**. *Table*. <sup>3.0.3</sup> When the customEvent data is a valid json string, the response data is automatically converted to a Lua table for quick and easy access. nil otherwise
+ - **lines**: *Table*. <sup>3.1.0</sup> When the response data has multiple lines but is not a JSON or XML string then the response data is automatically converted to a table for quick and easy access.
  - **trigger**, **customEvent**: *String*.<sup>3.0.3</sup> The string that triggered this customEvent instance. This is useful if you have a script that can be triggered by multiple different customEvent strings.
  - **xml**. *Table*. <sup>3.0.3</sup> When the response data is a valid xml string, the customEvent data is automatically converted to a Lua table for quick and easy access. nil otherwise
+ - **xmlEncoding**. *String*. When the response data is `text/xml` See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
+ - **xmlVersion**. *String*. When the response data is `text/xml` See [ xml versions ] ( https://en.wikipedia.org/wiki/XML ).
 
 
 #### devices = { ... }
@@ -230,7 +235,7 @@ A list of one or more group-names or indexes. The same rules as devices apply.
 A list of  one or more http callback triggers. Use this in conjunction with `domoticz.openURL()` where you will provide Domoticz with the callback trigger.  See [asynchronous http requests](#Asynchronous_HTTP_requests) for more information.
 
 #### shellCommandResponses = { ...} <sup>3.1.0</sup>
-A list of  one or more scriptcommand callback triggers. Use this in conjunction with `domoticz.executeShellCommand()` where you will provide Domoticz with the callback trigger.  See [asynchronous shellcommands](#Asynchronous_shellcommands) for more information.
+A list of  one or more scriptcommand callback triggers. Use this in conjunction with `domoticz.executeShellCommand()` where you will provide Domoticz with the callback trigger.  See  [Asynchronous shell commands](#Asynchronous_shell_command_execution) for more information.
 
 #### scenes = { ... }
  A list of one or more scene-names or indexes. The same rules as devices apply. So if your scene is listed in this table then the executed function will be triggered, e.g.: `on = { scenes = { 'myScene', 'anotherScene' } },`.
@@ -289,7 +294,7 @@ When all the above conditions are met (active == true and the on section has at 
  - [system](#System_event_API), <sup>3.0.0</sup>
  - [security](#Security_Panel) or
  - [httpResponse](#Asynchronous_HTTP_requests)
- - [shellCommandResponses](#Asynchronous_shellcommands) <sup>3.1.0</sup>
+ - [shellCommandResponse](#Asynchronous_shell_command_executio) <sup>3.1.0</sup>
 
 Since you can define multiple on-triggers in your script, it is not always clear what the type is of this second parameter. In your code you need to know this in order to properly respond to the different events. To help you inspect the object you can use these attributes like `if (item.isDevice) then ... end`:
 
@@ -512,7 +517,7 @@ return {
 ```
 See[ asynchronous http requests](#Asynchronous_HTTP_requests) for more information.
 
-### Asynchronous shellcommand execution <sup>3.1.0</sup>
+### Asynchronous shell command execution <sup>3.1.0</sup>
 Suppose you have some local shellcommand to measure the speed of your internet connection and you want that information in Domoticz:
 ```Lua
 return {
@@ -535,7 +540,7 @@ return {
 	end
 }
 ```
-See[ asynchronous shellcommands](#Asynchronous_shellcommands) for more information.
+See[ asynchronous shell commands](#Asynchronous_shell_command_execution) for more information.
 
 ### System changes
 Do some initial work when domoticz starts
@@ -693,7 +698,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **dump([osfile]<sup>3.0.0</sup>)**: *Function*. Dump all domoticz.settings attributes to the Domoticz log. This ignores the log level setting.
  - **email(subject, message, mailTo [, delay]<sup>3.0.10</sup>)**: *Function*. Send email. Optional parm delay is delay in seconds.
  - **emitEvent(name,[extra data ])**:*Function*. <sup>3.0.0</sup> Have Domoticz 'call' a customEvent. If you just pass a name then Domoticz will execute the script(s) that subscribed to the named customEvent after your script has finished. You can optionally pass extra information as a string or table. A table will be automatically converted into a json string and converted back to a table in the subscribed script(s). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **executeShellCommand(command/options)**: *Function*. <sup>3.1.0</sup> Have Domoticz 'call' a command. If you just pass a command then Domoticz will execute the command after your script has finished but you will not get notified.  If you pass options table with a callback then you have the possibility to receive the results of the request in a dzVents script. Read more about [asynchronous shellcommands](#Asynchronous_shellcommands) with dzVents. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **executeShellCommand(command/options)**: *Function*. <sup>3.1.0</sup> Have Domoticz 'call' a command. If you just pass a command then Domoticz will execute the command after your script has finished but you will not get notified.  If you pass options table with a callback then you have the possibility to receive the results of the request in a dzVents script. Read more about [asynchronous shell commands](#Asynchronous_shell_command_execution) with dzVents. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 **Note Make sure that when you use this function on a Windows system and use one or more of the special chars &<>()@^| outside double quotes, you will have to escape these with a ^ char **
 - **groups(idx/name)**: *Function*: A function returning a group by name or idx. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.groups()) do .. end`. Read more about [Groups](#Group).
  - **hardwareInfo(idx/name)**: <sup>3.0.6</sup> *Function*: A function returning hardwareInfo of a hardware module by name or idx. The return of the function is a table with attributes name, type, typeValue, deviceNames (table with names of all active devices defined on this hardware) and deviceIds (table with idx of all active devices defined on this hardware)
@@ -797,8 +802,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
 			domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
 			domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300
 	```
-	- **osCommand(cmd)**: *Function*: <sup>3.0.13</sup> Execute an OS command and return result and returncode. Note: For long running scripts `domoticz.executeShellCommand()` should be used, See [asynchronous shellcommands](#Asynchronous_shellcommands) for more information.
-	- **osExecute(cmd)**: *Function*: Execute an OS command (no return). Note: For long running scripts `executeShellCommand()` should be used. See [asynchronous shellcommands](#Asynchronous_shellcommands) for more information.
+	- **osCommand(cmd)**: *Function*: <sup>3.0.13</sup> Execute an OS command and return result and returncode. Note: For long running scripts `domoticz.executeShellCommand()` should be used, See [Asynchronous shell commands](#Asynchronous_shell_command_execution) for more information.
+	- **osExecute(cmd)**: *Function*: Execute an OS command (no return). Note: For long running scripts `executeShellCommand()` should be used. See [Asynchronous shell commands](#Asynchronous_shell_command_execution) for more information. 
 	- **rightPad(string, length [, character])**: *Function*: Succeed string with given character(s) (default = space) to given length.
 	- **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
 	- **sceneExists(parm)**: *Function*: returns name when entered with valid scene ^3.0.12^ or sceneID and return ID when entered with valid sceneName or false when not a scene, sceneID or sceneName of an existing scene
@@ -2163,7 +2168,7 @@ For every script file that defines persisted variables (using the `data={ … }`
 					global_data.lua
 
 If you dare to, you can watch inside these files. Every time some data are changed, dzVents will stream the changes back into the data files.
-**Again, make sure you don't put too much stuff in your persisted data as it may slow things down too much.**
+**Again, make sure you don't put too much stuff in your persistent data as it may slow things down too much.**
 
 # Asynchronous HTTP requests
 dzVents allows you to make asynchronous HTTP request and handle the results. Asynchronous means that you don't block the system while waiting for the response. Earlier you had to use os functions like `curl` or `wget` and some magic to make sure that you didn't block the system for too long after which Domoticz will terminate the script with a message that it took more than 10 seconds.
@@ -2251,10 +2256,12 @@ Supports [command options](#Command_options_.28delay.2C_duration.2C_event_trigge
 The response object  (second parameter in your execute function) has these attributes:
 
  - **data**: Raw response data.
+ - **hasLines**: *Boolean*. <sup>3.1.0</sup> When true, the data is automatically converted to a Lua table. (isJSON and isXML have preference)
  - **headers**: *Table*. Response headers.
  - **isJSON**: *Boolean*. Short for `response.headers['Content-Type'] == 'application/json'`. When true, the data is automatically converted to a Lua table.
  - **isXML**: *Boolean*. Short for `response.headers['Content-Type'] == 'text/xml'`. When true, the data is automatically converted to a Lua table.
- - **json**. *Table*. When the response data is `application/json` then the response data is automatically converted to a Lua table for quick and easy access.
+  - **json**. *Table*. When the response data is `application/json` then the response data is automatically converted to a Lua table for quick and easy access.
+ - **lines**: *Table*. <sup>3.1.0</sup> When the response data has multiple lines but is not a JSON or XML string then the response data is automatically converted to a Lua table for quick and easy access.
  - **ok**: *Boolean*. `True` when the request was successful. It checks for statusCode to be in range of 200-299.
  - **statusCode**: *Number*. HTTP status codes. See [HTTP response status codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes ).
  - **statusText**: *String*. HTTP status message. See [HTTP response status codes]( https://en.wikipedia.org/wiki/List_of_HTTP_status_codes ).
@@ -2397,16 +2404,18 @@ return {
 
 ```
 
-# Asynchronous shell command execution <sup>3.1.0</sup>
-dzVents allows you to make asynchronous shell commands and handle the results. Asynchronous means that you don't block the system while waiting for the response. Earlier you had to use functions like `utils.osCommand()` or `os.Execute()` and some magic to make sure that you didn't block the system for too long after which Domoticz will terminate the script with a message that it took more than 10 seconds.
+# Asynchronous shell command execution
 
-dzVents to the rescue. With dzVents there are two ways to execute a shell command and it is determined by how you use the `domoticz.executeShellCommand()` command. The simplest form simply calls `executeShellCommand` on the domoticz object with only the command as the parameter (a string value):
+
+dzVents allows you to make asynchronous shell commands and handle the results. Asynchronous means that you don't block the system while waiting for the response. Earlier you had to use functions like `utils.osCommand()` or `os.Execute()` and some magic to make sure that you didn't block the system for too long after which Domoticz comes with a message that the script took more than 10 seconds.
+
+dzVents to the rescue. With dzVents there are two ways to execute a shell command asynchronously and it is determined by how you use the `domoticz.executeShellCommand()` command. The simplest form simply calls `executeShellCommand` on the domoticz object with only the command as the parameter (a string value):
 
 ```Lua
 domoticz.executeShellCommand('some shell command')
 ```
 
-After your script is finished, Domoticz will make the request that's where it ends. No callback. Nothing.
+After your script is finished, Domoticz will execute the request in a separate thread and that's where it ends. No callback. Nothing.
 
 The second way is different. Instead of passing a command you pass in a table with the command to be executed **and** a *callback trigger* which is just a string or a name:
 ```Lua
@@ -2455,7 +2464,7 @@ return {
 			})
 		end
 		if item.isShellCommandResponse then
-			if item.statusCode ==0  then
+			if item.statusCode == 0  then
 				...
 			end
 		end
@@ -2482,13 +2491,14 @@ The response object  (second parameter in your execute function) has these attri
  - **data**: output from the command.  (stdout)
  - **errorText**: Errors generated by the command (stderr)
  - **statusCode**: *Int*.  exitcode generated by the command
- - **hasLines**: *Boolean*. When true, the data is automatically converted to a Lua table.
+ - **hasLines**: *Boolean*. When true, the data is automatically converted to a Lua table. (isJSON and isXML have preference)
  - **isJSON**: *Boolean*. When true, the data is automatically converted to a Lua table.
  - **isXML**: *Boolean*. When true, the data is automatically converted to a Lua table.
  - **json**: *Table*. When the response data is `application/json` then the response data is automatically converted to a Lua table for quick and easy access.
- - **lines**: *Table*. When the response data has multiple lines then the response data is automatically converted to a Lua table for quick and easy access.
+ - **lines**: *Table*. When the response data has multiple lines but is not a JSON or XML string then the response data is automatically converted to a Lua table for quick and easy access.
  - **ok**: *Boolean*. `True` when the request was successful. It checks for statusCode to be 0.
  - **timeoutOccurred** *Boolean*  `True` when the request was aborted by a timeout.
+ - **trigger**, **callback**: *String*. The callback string that triggered this response instance. This is useful if you have a script that is triggered by multiple different callback strings.
  - **xml**. *Table*. When the response data is `text/xml` , the response data is automatically converted to a Lua table for quick and easy access.
  - **xmlEncoding**. *String*. When the response data is `text/xml` See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
  - **xmlVersion**. *String*. When the response data is `text/xml` See [ xml versions ] ( https://en.wikipedia.org/wiki/XML ).
