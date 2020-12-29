@@ -82,3 +82,9 @@ html5.appcache text
 *.swf binary
 *.ttf binary
 *.wav binary
+
+# GitHub Linguist settings
+*.h linguist-language=C++
+Config/* linguist-vendored
+extern/* linguist-vendored
+tools/* linguist-vendored
