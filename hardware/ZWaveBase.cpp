@@ -418,13 +418,14 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 				if (pEnergyDevice == nullptr)
 				{
 					if (
-						(pDevice->Manufacturer_id == 0x010F) &&
+						(pDevice->Manufacturer_id == 0x010F) && //If Fibaro
 						(
-						((pDevice->Product_type == 0x0200) && (pDevice->Product_id == 0x1000))
+								((pDevice->Product_type == 0x0200) && (pDevice->Product_id == 0x1000))
 							|| ((pDevice->Product_type == 0x0600) && (pDevice->Product_id == 0x1000))
 							|| ((pDevice->Product_type == 0x0602) && (pDevice->Product_id == 0x1001))
 							|| ((pDevice->Product_type == 0x0602) && (pDevice->Product_id == 0x1003))
-							)
+							|| ((pDevice->Product_type == 0x1701) && (pDevice->Product_id == 0x2000))
+							|| ((pDevice->Product_type == 0x1801) && (pDevice->Product_id == 0x1000)))
 						)
 					{
 						//Fibaro Wallplug, find energy sensor
@@ -505,12 +506,13 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 		if (
 			(pDevice->Manufacturer_id == 0x010F) &&
 			(
-			((pDevice->Product_type == 0x0200) && (pDevice->Product_id == 0x1000))
+					((pDevice->Product_type == 0x0200) && (pDevice->Product_id == 0x1000))
 				|| ((pDevice->Product_type == 0x0600) && (pDevice->Product_id == 0x1000))
 				|| ((pDevice->Product_type == 0x0602) && (pDevice->Product_id == 0x1001))
 				|| ((pDevice->Product_type == 0x0602) && (pDevice->Product_id == 0x1003))
-				)
-			)
+				|| ((pDevice->Product_type == 0x1701) && (pDevice->Product_id == 0x2000))
+				|| ((pDevice->Product_type == 0x1801) && (pDevice->Product_id == 0x1000))
+			))
 		{
 			//Fibaro Wallplug, find power sensor with idx 4 (idx 1 only reports when plug goes on/off, idx 4 is live power)
 			pPowerDevice = FindDevice(pDevice->nodeID, 4, pDevice->indexID, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SENSOR_POWER);
