@@ -14,7 +14,7 @@ License: Public domain
 #include "stdafx.h"
 #include "eVehicle.h"
 #include "TeslaApi.h"
-#include "MercApi.hpp"
+#include "MercApi.h"
 #include "../../main/Helper.h"
 #include "../../main/Logger.h"
 #include "../hardwaretypes.h"

@@ -9,7 +9,7 @@ License: Public domain
 
 ************************************************************************/
 #include "stdafx.h"
-#include "MercApi.hpp"
+#include "MercApi.h"
 #include "VehicleApi.h"
 #include "../../main/Logger.h"
 #include "../../httpclient/UrlEncode.h"
