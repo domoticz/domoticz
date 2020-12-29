@@ -1,4 +1,9 @@
 __NOTOC__
+== [3.1.0] ==
+
+* Added shell command event triggers to be used in combination with <code>executeShellCommand</code>. You can now execute shell commands and handle the response in your dzVents scripts '''ASYNCHRONICALLY'''. See the documentation. No more json parsing needed or complex <code>popen()</code> or ‘system()’ shizzle.
+* add inActive attribute to devices.
+
 == [3.0.19] ==
 
 * Add thermostat Operating State device adapter

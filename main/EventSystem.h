@@ -48,7 +48,8 @@ public:
 		REASON_TIME,			// 3
 		REASON_SECURITY,		// 4
 		REASON_URL,			// 5
-		REASON_NOTIFICATION		// 6
+		REASON_NOTIFICATION,		// 6
+		REASON_SHELLCOMMAND		// 7
 	};
 
 	struct _tDeviceStatus
@@ -134,6 +135,8 @@ public:
 	bool CustomCommand(uint64_t idx, const std::string &sCommand);
 
 	void TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback);
+	void TriggerShellCommand(const std::string &result, const std::string &scriptstderr, const std::string &callback, int exitcode, bool timeoutOccurred);
+
 
 private:
 	enum _eJsonType
@@ -167,6 +170,8 @@ private:
 		std::string sValue;
 		std::string nValueWording;
 		std::string lastUpdate;
+		std::string errorText;
+		bool timeoutOccurred;
 		uint8_t lastLevel;
 		std::vector<std::string> vData;
 		std::map<uint8_t, int> JsonMapInt;

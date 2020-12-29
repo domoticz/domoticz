@@ -51,6 +51,7 @@ enum _eTaskItemType
 	TITEM_SWITCHCMD_EVENT,
 	TITEM_SWITCHCMD_SCENE,
 	TITEM_GETURL,
+	TITEM_EXECUTESHELLCOMMAND,
 	TITEM_SEND_EMAIL_TO,
 	TITEM_SET_VARIABLE,
 	TITEM_SEND_SMS,
@@ -222,6 +223,19 @@ struct _tTaskItem
 	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string & /*eventName*/)
 	{
 		return GetHTTPPage(DelayTime, URL, "", HTTPClient::HTTP_METHOD_GET, "", "");
+	}
+	static _tTaskItem ExecuteShellCommand(const float DelayTime, const std::string &command, const std::string &trigger, int timeout, const std::string &path)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType = TITEM_EXECUTESHELLCOMMAND;
+		tItem._DelayTime = DelayTime;
+		tItem._sValue = command;
+		tItem._sUser= path;
+		tItem._nValue= timeout;
+		tItem._ID = trigger;
+		if (DelayTime)
+			getclock(&tItem._DelayTimeBegin);
+		return tItem;
 	}
 	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string &extraHeaders, const HTTPClient::_eHTTPmethod method, const std::string &postData,
 				      const std::string &trigger)
@@ -462,6 +476,8 @@ class CSQLHelper : public StoppableTask
 	double m_max_kwh_usage;
 
       private:
+	int scriptoutputindex=0;
+	std::mutex m_executeThreadMutex;
 	std::mutex m_sqlQueryMutex;
 	sqlite3 *m_dbase;
 	std::string m_dbase_name;
@@ -479,6 +495,8 @@ class CSQLHelper : public StoppableTask
 	void StopThread();
 	void Do_Work();
 
+	void ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
+	void ExecuteScriptThreaded(std::string command, std::string callback, int timeout, std::string path);
 	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &User);
 	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color, const std::string &User);
 

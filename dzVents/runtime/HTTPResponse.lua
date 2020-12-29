@@ -1,7 +1,7 @@
 local utils = require('Utils')
 local evenItemIdentifier = require('eventItemIdentifier')
 
-local function HTTPResponce(domoticz, responseData, testResponse)
+local function HTTPResponse(domoticz, responseData, testResponse)
 
 	local self = {}
 	local lowerCaseHeaders = {}
@@ -38,23 +38,31 @@ local function HTTPResponce(domoticz, responseData, testResponse)
 
 	evenItemIdentifier.setType(self, 'isHTTPResponse', domoticz.BASETYPE_HTTP_RESPONSE, responseData.callback)
 
-	if self.data and utils.isJSON(self.data, self._contentType) then
-		local json = utils.fromJSON(self.data)
-		if (json) then
-			self.isJSON = true
-			self.json = json
+	if self.data then
+		if utils.isJSON(self.data, self._contentType) then
+			local json = utils.fromJSON(self.data)
+			if (json) then
+				self.isJSON = true
+				self.json = json
+			end
+		elseif utils.isXML(self.data, self._contentType) then
+			 local xml = utils.fromXML(self.data)
+			 if (xml) then
+				self.isXML = true
+				self.xml = xml
+				self.xmlVersion = self.data:match([[<?xml version="(.-)"]])
+				self.xmlEncoding = self.data:match([[encoding="(.-)"]])
+			 end
+		elseif utils.hasLines(self.data) then
+			local lines = utils.fromLines(self.data)
+			if lines and type(lines) == 'table' then
+				self.hasLines = true
+				self.lines = lines
+			end
 		end
-	elseif self.data and utils.isXML(self.data, self._contentType) then
-		 local xml = utils.fromXML(self.data)
-		 if (xml) then
-			self.isXML = true
-			self.xml = xml
-			self.xmlVersion = self.data:match([[<?xml version="(.-)"]])
-			self.xmlEncoding = self.data:match([[encoding="(.-)"]])
-		 end
 	end
 
 	return self
 end
 
-return HTTPResponce
+return HTTPResponse

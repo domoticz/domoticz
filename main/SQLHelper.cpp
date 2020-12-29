@@ -1,6 +1,13 @@
 #include "stdafx.h"
 #include "SQLHelper.h"
-#include <iostream>     /* standard I/O functions                         */
+#include <iostream>	 /* standard I/O functions						 */
+#include <string>
+#ifdef WIN32
+#include <tchar.h>
+#else
+#include <sys/wait.h>
+#endif
+#include <sys/types.h>
 #include <iomanip>
 #include "RFXtrx.h"
 #include "RFXNames.h"
@@ -208,7 +215,6 @@ const char* sqlCreateMultiMeter_Calendar =
 "[Counter3] BIGINT DEFAULT 0, "
 "[Counter4] BIGINT DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
-
 
 const char* sqlCreateNotifications =
 "CREATE TABLE IF NOT EXISTS [Notifications] ("
@@ -709,42 +715,42 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateUserSessions);
 	query(sqlCreateMobileDevices);
 	//Add indexes to log tables
-	query("create index if not exists ds_hduts_idx    on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
-	query("create index if not exists f_id_idx        on Fan(DeviceRowID);");
+	query("create index if not exists ds_hduts_idx	on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
+	query("create index if not exists f_id_idx		on Fan(DeviceRowID);");
 	query("create index if not exists f_id_date_idx   on Fan(DeviceRowID, Date);");
-	query("create index if not exists fc_id_idx       on Fan_Calendar(DeviceRowID);");
+	query("create index if not exists fc_id_idx	   on Fan_Calendar(DeviceRowID);");
 	query("create index if not exists fc_id_date_idx  on Fan_Calendar(DeviceRowID, Date);");
-	query("create index if not exists ll_id_idx       on LightingLog(DeviceRowID);");
+	query("create index if not exists ll_id_idx	   on LightingLog(DeviceRowID);");
 	query("create index if not exists ll_id_date_idx  on LightingLog(DeviceRowID, Date);");
-	query("create index if not exists sl_id_idx       on SceneLog(SceneRowID);");
+	query("create index if not exists sl_id_idx	   on SceneLog(SceneRowID);");
 	query("create index if not exists sl_id_date_idx  on SceneLog(SceneRowID, Date);");
-	query("create index if not exists m_id_idx        on Meter(DeviceRowID);");
+	query("create index if not exists m_id_idx		on Meter(DeviceRowID);");
 	query("create index if not exists m_id_date_idx   on Meter(DeviceRowID, Date);");
-	query("create index if not exists mc_id_idx       on Meter_Calendar(DeviceRowID);");
+	query("create index if not exists mc_id_idx	   on Meter_Calendar(DeviceRowID);");
 	query("create index if not exists mc_id_date_idx  on Meter_Calendar(DeviceRowID, Date);");
-	query("create index if not exists mm_id_idx       on MultiMeter(DeviceRowID);");
+	query("create index if not exists mm_id_idx	   on MultiMeter(DeviceRowID);");
 	query("create index if not exists mm_id_date_idx  on MultiMeter(DeviceRowID, Date);");
-	query("create index if not exists mmc_id_idx      on MultiMeter_Calendar(DeviceRowID);");
+	query("create index if not exists mmc_id_idx	  on MultiMeter_Calendar(DeviceRowID);");
 	query("create index if not exists mmc_id_date_idx on MultiMeter_Calendar(DeviceRowID, Date);");
-	query("create index if not exists p_id_idx        on Percentage(DeviceRowID);");
+	query("create index if not exists p_id_idx		on Percentage(DeviceRowID);");
 	query("create index if not exists p_id_date_idx   on Percentage(DeviceRowID, Date);");
-	query("create index if not exists pc_id_idx       on Percentage_Calendar(DeviceRowID);");
+	query("create index if not exists pc_id_idx	   on Percentage_Calendar(DeviceRowID);");
 	query("create index if not exists pc_id_date_idx  on Percentage_Calendar(DeviceRowID, Date);");
-	query("create index if not exists r_id_idx        on Rain(DeviceRowID);");
+	query("create index if not exists r_id_idx		on Rain(DeviceRowID);");
 	query("create index if not exists r_id_date_idx   on Rain(DeviceRowID, Date);");
-	query("create index if not exists rc_id_idx       on Rain_Calendar(DeviceRowID);");
+	query("create index if not exists rc_id_idx	   on Rain_Calendar(DeviceRowID);");
 	query("create index if not exists rc_id_date_idx  on Rain_Calendar(DeviceRowID, Date);");
-	query("create index if not exists t_id_idx        on Temperature(DeviceRowID);");
+	query("create index if not exists t_id_idx		on Temperature(DeviceRowID);");
 	query("create index if not exists t_id_date_idx   on Temperature(DeviceRowID, Date);");
-	query("create index if not exists tc_id_idx       on Temperature_Calendar(DeviceRowID);");
+	query("create index if not exists tc_id_idx	   on Temperature_Calendar(DeviceRowID);");
 	query("create index if not exists tc_id_date_idx  on Temperature_Calendar(DeviceRowID, Date);");
-	query("create index if not exists u_id_idx        on UV(DeviceRowID);");
+	query("create index if not exists u_id_idx		on UV(DeviceRowID);");
 	query("create index if not exists u_id_date_idx   on UV(DeviceRowID, Date);");
-	query("create index if not exists uv_id_idx       on UV_Calendar(DeviceRowID);");
+	query("create index if not exists uv_id_idx	   on UV_Calendar(DeviceRowID);");
 	query("create index if not exists uv_id_date_idx  on UV_Calendar(DeviceRowID, Date);");
-	query("create index if not exists w_id_idx        on Wind(DeviceRowID);");
+	query("create index if not exists w_id_idx		on Wind(DeviceRowID);");
 	query("create index if not exists w_id_date_idx   on Wind(DeviceRowID, Date);");
-	query("create index if not exists wc_id_idx       on Wind_Calendar(DeviceRowID);");
+	query("create index if not exists wc_id_idx	   on Wind_Calendar(DeviceRowID);");
 	query("create index if not exists wc_id_date_idx  on Wind_Calendar(DeviceRowID, Date);");
 	sqlite3_exec(m_dbase, "END TRANSACTION;", nullptr, nullptr, nullptr);
 
@@ -1913,42 +1919,42 @@ bool CSQLHelper::OpenDatabase()
 			query("drop index if exists w_idx;");
 			query("drop index if exists wc_idx;");
 			// Add new indexes
-			query("create index if not exists ds_hduts_idx    on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
-			query("create index if not exists f_id_idx        on Fan(DeviceRowID);");
+			query("create index if not exists ds_hduts_idx	on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
+			query("create index if not exists f_id_idx		on Fan(DeviceRowID);");
 			query("create index if not exists f_id_date_idx   on Fan(DeviceRowID, Date);");
-			query("create index if not exists fc_id_idx       on Fan_Calendar(DeviceRowID);");
+			query("create index if not exists fc_id_idx	   on Fan_Calendar(DeviceRowID);");
 			query("create index if not exists fc_id_date_idx  on Fan_Calendar(DeviceRowID, Date);");
-			query("create index if not exists ll_id_idx       on LightingLog(DeviceRowID);");
+			query("create index if not exists ll_id_idx	   on LightingLog(DeviceRowID);");
 			query("create index if not exists ll_id_date_idx  on LightingLog(DeviceRowID, Date);");
-			query("create index if not exists sl_id_idx       on SceneLog(SceneRowID);");
+			query("create index if not exists sl_id_idx	   on SceneLog(SceneRowID);");
 			query("create index if not exists sl_id_date_idx  on SceneLog(SceneRowID, Date);");
-			query("create index if not exists m_id_idx        on Meter(DeviceRowID);");
+			query("create index if not exists m_id_idx		on Meter(DeviceRowID);");
 			query("create index if not exists m_id_date_idx   on Meter(DeviceRowID, Date);");
-			query("create index if not exists mc_id_idx       on Meter_Calendar(DeviceRowID);");
+			query("create index if not exists mc_id_idx	   on Meter_Calendar(DeviceRowID);");
 			query("create index if not exists mc_id_date_idx  on Meter_Calendar(DeviceRowID, Date);");
-			query("create index if not exists mm_id_idx       on MultiMeter(DeviceRowID);");
+			query("create index if not exists mm_id_idx	   on MultiMeter(DeviceRowID);");
 			query("create index if not exists mm_id_date_idx  on MultiMeter(DeviceRowID, Date);");
-			query("create index if not exists mmc_id_idx      on MultiMeter_Calendar(DeviceRowID);");
+			query("create index if not exists mmc_id_idx	  on MultiMeter_Calendar(DeviceRowID);");
 			query("create index if not exists mmc_id_date_idx on MultiMeter_Calendar(DeviceRowID, Date);");
-			query("create index if not exists p_id_idx        on Percentage(DeviceRowID);");
+			query("create index if not exists p_id_idx		on Percentage(DeviceRowID);");
 			query("create index if not exists p_id_date_idx   on Percentage(DeviceRowID, Date);");
-			query("create index if not exists pc_id_idx       on Percentage_Calendar(DeviceRowID);");
+			query("create index if not exists pc_id_idx	   on Percentage_Calendar(DeviceRowID);");
 			query("create index if not exists pc_id_date_idx  on Percentage_Calendar(DeviceRowID, Date);");
-			query("create index if not exists r_id_idx        on Rain(DeviceRowID);");
+			query("create index if not exists r_id_idx		on Rain(DeviceRowID);");
 			query("create index if not exists r_id_date_idx   on Rain(DeviceRowID, Date);");
-			query("create index if not exists rc_id_idx       on Rain_Calendar(DeviceRowID);");
+			query("create index if not exists rc_id_idx	   on Rain_Calendar(DeviceRowID);");
 			query("create index if not exists rc_id_date_idx  on Rain_Calendar(DeviceRowID, Date);");
-			query("create index if not exists t_id_idx        on Temperature(DeviceRowID);");
+			query("create index if not exists t_id_idx		on Temperature(DeviceRowID);");
 			query("create index if not exists t_id_date_idx   on Temperature(DeviceRowID, Date);");
-			query("create index if not exists tc_id_idx       on Temperature_Calendar(DeviceRowID);");
+			query("create index if not exists tc_id_idx	   on Temperature_Calendar(DeviceRowID);");
 			query("create index if not exists tc_id_date_idx  on Temperature_Calendar(DeviceRowID, Date);");
-			query("create index if not exists u_id_idx        on UV(DeviceRowID);");
+			query("create index if not exists u_id_idx		on UV(DeviceRowID);");
 			query("create index if not exists u_id_date_idx   on UV(DeviceRowID, Date);");
-			query("create index if not exists uv_id_idx       on UV_Calendar(DeviceRowID);");
+			query("create index if not exists uv_id_idx	   on UV_Calendar(DeviceRowID);");
 			query("create index if not exists uv_id_date_idx  on UV_Calendar(DeviceRowID, Date);");
-			query("create index if not exists w_id_idx        on Wind(DeviceRowID);");
+			query("create index if not exists w_id_idx		on Wind(DeviceRowID);");
 			query("create index if not exists w_id_date_idx   on Wind(DeviceRowID, Date);");
-			query("create index if not exists wc_id_idx       on Wind_Calendar(DeviceRowID);");
+			query("create index if not exists wc_id_idx	   on Wind_Calendar(DeviceRowID);");
 			query("create index if not exists wc_id_date_idx  on Wind_Calendar(DeviceRowID, Date);");
 		}
 		if (dbversion < 103)
@@ -2726,7 +2732,7 @@ bool CSQLHelper::OpenDatabase()
 							s_strid >> NodeID;
 							int who = (NodeID >> 16) & 0xffff;
 							int where = NodeID & 0xffff;
-							if (((who == 1) || (who == 2)) && (where < 1000))	// light or automation								
+							if (((who == 1) || (who == 2)) && (where < 1000))	// light or automation
 							{
 								if ((where > 0) && (where < 10))			// < 10 mean area device
 									NodeID += 0x4000; // Area devices flag!
@@ -3296,6 +3302,274 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string& switchcm
 	return m_mainworker.SwitchLightInt(sd, switchcmd, level, color, false, User);
 }
 
+#ifndef WIN32
+void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRunning, bool *timeoutOccurred)
+{
+
+	auto start = std::chrono::system_clock::now();
+
+	while ( std::chrono::system_clock::now()-start<std::chrono::seconds(timeout) && *stillRunning) // check every second if we have to wait another second
+	{
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}
+
+	if (*stillRunning)
+	{
+		_log.Log(LOG_ERROR,"dzVents script command running longer than specified timeout(%d seconds), cancelling...", timeout);
+		kill (pid,SIGKILL);
+		*timeoutOccurred=true;
+	}
+}
+#endif
+
+void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback, int timeout, std::string path)
+{
+	std::ifstream infile;
+	std::string sLine;
+	std::string filename;
+	std::string filenamestderr;
+	std::string scriptoutput;
+	std::string scriptstderr;
+	bool commmandExecutedSuccesfully = false;
+	int exitcode = 0;
+#ifndef WIN32
+	int pid;
+	bool stillRunning = true;
+	std::shared_ptr<std::thread> T;
+#endif
+	bool timeoutOccurred = false;
+
+	// make sure we have unique filenames
+	scriptoutputindex++;
+	if (scriptoutputindex > 10000) // should be a big number, to prevent parallel scripts having the same output files. 250 concurrent will probably never be reached
+	{
+		scriptoutputindex = 1;
+	}
+	std::string scriptoutputindextext = std::to_string(scriptoutputindex);
+
+	// create filenames for stderr and stdout  ("path+domscript+index+<.out|.err>")
+	filename = path;
+	filename.append("domscript");
+	filename.append(scriptoutputindextext);
+	filenamestderr = filename;
+	filename.append(".out");       // stdout
+	filenamestderr.append(".err"); // stderr
+
+	// Remove temp file if they exist
+	if (!remove(filename.c_str()))
+		_log.Log(LOG_ERROR, "old temp file (%s) was still there, removing...", filename.c_str());
+	if (!remove(filenamestderr.c_str()))
+		_log.Log(LOG_ERROR, "old temp file (%s) was still there, removing...", filenamestderr.c_str());
+
+	if (timeout > 0)
+	{
+		_log.Log(LOG_STATUS, "dzVents: Executing shellcommmand %s for max %d seconds", command.c_str(), timeout);
+	}
+	else
+	{
+		_log.Log(LOG_STATUS, "dzVents: Executing shellcommmand %s", command.c_str());
+	}
+
+#ifdef WIN32
+	SECURITY_ATTRIBUTES sa;
+	sa.nLength = sizeof(sa);
+	sa.lpSecurityDescriptor = NULL;
+	sa.bInheritHandle = TRUE;
+
+	HANDLE hstdout = CreateFile(_T(filename.c_str()), FILE_APPEND_DATA, FILE_SHARE_WRITE | FILE_SHARE_READ, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE hstderr = CreateFile(_T(filenamestderr.c_str()), FILE_APPEND_DATA, FILE_SHARE_WRITE | FILE_SHARE_READ, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si;
+	BOOL ret = FALSE;
+	DWORD flags = CREATE_NO_WINDOW;
+
+	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+	ZeroMemory(&si, sizeof(STARTUPINFO));
+	si.cb = sizeof(STARTUPINFO);
+	si.dwFlags |= STARTF_USESTDHANDLES;
+	si.hStdInput = NULL;
+	si.hStdError = hstderr;
+	si.hStdOutput = hstdout;
+
+	ret = CreateProcess(NULL, const_cast<char *>(command.c_str()), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
+	if (!ret)  // the above command will fail if the executable cannot be found (e.g. a "dir" command). So try again using the command shell
+	{
+		std::string cmd = "cmd /c ";
+		cmd.append(command.c_str());
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "Could not execute command, trying again using %s", cmd.c_str());
+#endif
+		ret = CreateProcess(NULL, const_cast<char *>(cmd.c_str()), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
+	}
+
+	if (ret)
+	{
+		// Successfully created the process.  Wait for it to finish.
+		DWORD waitstatus;
+		if (timeout > 0)
+		{
+			waitstatus = WaitForSingleObject(pi.hProcess, timeout * 1000);
+		}
+		else
+		{
+			waitstatus = WaitForSingleObject(pi.hProcess, INFINITE);
+		}
+
+		if (waitstatus == WAIT_TIMEOUT)
+		{
+			_log.Log(LOG_ERROR, "%s has been running longer than specified time (%d seconds), cancelling command",command.c_str(),timeout);
+			timeoutOccurred = true;
+			exitcode = 9;   // Analog to error on unix
+			commmandExecutedSuccesfully = true;
+
+			if (!TerminateProcess(pi.hProcess, 1))
+			{
+				_log.Log(LOG_ERROR, "terminate failed");
+			}
+		}
+		else if (waitstatus == WAIT_FAILED)
+		{
+			_log.Log(LOG_ERROR, "something went wrong while executing %s waiting",command.c_str());
+		}
+		else
+		{
+
+			// all went fine
+			// Get the exit code.
+
+			DWORD exitCode;
+			GetExitCodeProcess(pi.hProcess, &exitCode);
+#ifdef _DEBUG
+			_log.Log(LOG_STATUS, "Exit code %ld", exitCode);
+#endif
+			exitcode = exitCode;
+			commmandExecutedSuccesfully = true;
+		}
+
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "Unable to execute %s", command.c_str());
+	}
+
+	// Clear up everything
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	CloseHandle(hstdout);
+	CloseHandle(hstderr);
+	
+
+#else
+	// Start process,  using command on stdin
+	pid = fork();
+	if (pid == 0)
+	{
+		// child process
+		int fdout = open(filename.c_str(), O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
+		int fderr = open(filenamestderr.c_str(), O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
+		dup2(fdout, 1); // reroute stdout
+		dup2(fderr, 2); // reroute srderr
+		close(fdout);
+		close(fderr);
+		exitcode = execl("/bin/sh", "/bin/sh", "-c", command.c_str(), NULL);
+		exit(exitcode);
+	}
+
+	if (pid == -1)
+	{
+		_log.Log(LOG_ERROR, "Unable to spawn process");
+	}
+	else
+	{
+		if (timeout>0) {
+			T = std::make_shared<std::thread>(&CSQLHelper::ManageExecuteScriptTimeout,this,pid,timeout,&stillRunning,&timeoutOccurred);
+		}
+		waitpid(pid, &exitcode, 0);
+		stillRunning = false;
+		commmandExecutedSuccesfully = true;
+	}
+#endif
+
+	if (commmandExecutedSuccesfully)
+	{ 
+
+		// get stdout
+		infile.open(filename.c_str());
+		if (infile.is_open())
+		{
+			getline(infile, sLine);
+			do
+			{
+				scriptoutput.append(sLine);
+				getline(infile, sLine);
+				if (!infile.eof())
+				{
+					scriptoutput.append("\n");
+				}
+			} while (!infile.eof());
+
+			infile.close();
+
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Unable to read file %s", filename.c_str());
+		}
+
+		// get stderr
+		infile.open(filenamestderr.c_str());
+		if (infile.is_open())
+		{
+			getline(infile, sLine);
+			do
+			{
+				if (!sLine.empty())
+					_log.Log(LOG_ERROR, "ExecuteScriptError: %s", sLine.c_str());
+				scriptstderr.append(sLine);
+				getline(infile, sLine);
+				if (!infile.eof())
+				{
+					scriptstderr.append("\n");
+				}
+			} while (!infile.eof());
+			infile.close();
+
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Unable to read file %s", filenamestderr.c_str());
+		}
+
+		// start callback if applicable
+		if (m_bEnableEventSystem && !callback.empty())
+		{
+			m_mainworker.m_eventsystem.TriggerShellCommand(scriptoutput, scriptstderr, callback, exitcode, timeoutOccurred);
+		}
+#ifndef WIN32
+		if (timeout>0) 
+		{
+			T->join();
+			T.reset();
+		}
+#endif
+		// delete temporary file
+		std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // give the time to finish all io from the child processes
+		if (remove(filename.c_str()))
+		{
+			_log.Log(LOG_ERROR, "unable to remove file %s", filename.c_str());
+		}
+		if (remove(filenamestderr.c_str()))
+		{
+			_log.Log(LOG_ERROR, " unable to remove file %s", filenamestderr.c_str());
+		}
+
+	}
+}
+
+
+
 void CSQLHelper::Do_Work()
 {
 	std::vector<_tTaskItem> _items2do;
@@ -3397,13 +3671,13 @@ void CSQLHelper::Do_Work()
 						//only update internally
 						m_mainworker.m_szLastSwitchUser = itt->_sUser;
 						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue,
-							       itt->_sValue.c_str(), devname, true);
+								   itt->_sValue.c_str(), devname, true);
 						break;
 					default:
 						//unknown hardware type, sensor will only be updated internally
 						m_mainworker.m_szLastSwitchUser = itt->_sUser;
 						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue,
-							       itt->_sValue.c_str(), devname, true);
+								   itt->_sValue.c_str(), devname, true);
 						break;
 					}
 				}
@@ -3415,7 +3689,7 @@ void CSQLHelper::Do_Work()
 						std::string devname;
 						m_mainworker.m_szLastSwitchUser = itt->_sUser;
 						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue,
-							       itt->_sValue.c_str(), devname, true);
+								   itt->_sValue.c_str(), devname, true);
 					}
 					else
 						SwitchLightFromTasker(itt->_idx, "Off", 0, NoColor, itt->_sUser);
@@ -3423,8 +3697,9 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
 			{
+				_log.Log(LOG_STATUS, "Executing script: %s", itt->_ID.c_str() );
+
 				//start script
-				_log.Log(LOG_STATUS, "Executing script: %s", itt->_ID.c_str());
 #ifdef WIN32
 				ShellExecute(NULL, "open", itt->_ID.c_str(), itt->_sValue.c_str(), NULL, SW_SHOWNORMAL);
 #else
@@ -3439,6 +3714,16 @@ void CSQLHelper::Do_Work()
 			else if (itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
 			{
 				m_mainworker.m_cameras.EmailCameraSnapshot(itt->_ID, itt->_sValue);
+			}
+			else if (itt->_ItemType == TITEM_EXECUTESHELLCOMMAND)
+			{
+				// int returncode=0;
+				std::string command = itt->_sValue;
+				std::string callback = itt->_ID;
+				std::string path = itt->_sUser;
+				int timeout = itt->_nValue;
+				std::thread shellcommandthread(&CSQLHelper::ExecuteScriptThreaded,this, command,callback,timeout,path);
+				shellcommandthread.detach();
 			}
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
@@ -4080,13 +4365,13 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	{
 		switch (SensorSubType)
 		{
-		case sTypeColor_RGB:         //RGB switch
-		case sTypeColor_RGB_W:       //RGBW switch
+		case sTypeColor_RGB:		 //RGB switch
+		case sTypeColor_RGB_W:	   //RGBW switch
 		case sTypeColor_RGB_CW_WW:   //RGBWW switch
-		case sTypeColor_RGB_W_Z:     //RGBWZ switch
+		case sTypeColor_RGB_W_Z:	 //RGBWZ switch
 		case sTypeColor_RGB_CW_WW_Z: //RGBWWZ switch
-		case sTypeColor_White:       //Monochrome white switch
-		case sTypeColor_CW_WW:       //Adjustable color temperature white switch
+		case sTypeColor_White:	   //Monochrome white switch
+		case sTypeColor_CW_WW:	   //Adjustable color temperature white switch
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
@@ -4111,7 +4396,6 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 
 	return DeviceRowIdx;
 }
-
 
 uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string& devname, const bool bUseOnOffAction)
 {
@@ -4173,7 +4457,6 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 			m_mainworker.m_eventsystem.ProcessDevice(ParentHardwareID, ParentID, ParentUnit, ParentType, ParentSubType, signallevel, batterylevel, nValue, sValue, ParentName);
 
 			m_mainworker.sOnDeviceUpdate(std::stoi(sd[2]), std::stoll(sd[0]));
-
 
 			//Set the status of all slave devices from this device (except the one we just received) to off
 			//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
@@ -4356,7 +4639,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchType, const int nValue, const char* sValue, const std::string& devname, const unsigned char signallevel, const unsigned char batterylevel, const int used)
 {
 	//TODO: 'unsigned char unit' only allows 256 devices / plugin
-	//DONE: return -1 as error code does not make sense for a function returning an unsigned value 
+	//DONE: return -1 as error code does not make sense for a function returning an unsigned value
 	// -> better checking at receiving end needed (value becomes 0xFFFFFFFFFFFFFFFF)
 	std::vector<std::vector<std::string> > result;
 	uint64_t ulID = 0;
@@ -4469,7 +4752,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			interval = difftime(now, lutime);
 			StringSplit(result[0][5], ";", parts);
 			nEnergy = static_cast<float>(strtof(parts[0].c_str(), nullptr) * interval / 3600
-						     + strtof(parts[1].c_str(), nullptr)); // Rob: whats happening here... strtof ?
+							 + strtof(parts[1].c_str(), nullptr)); // Rob: whats happening here... strtof ?
 			StringSplit(sValue, ";", parts);
 			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
@@ -4935,7 +5218,6 @@ bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const 
 	return result;
 }
 
-
 void CSQLHelper::GetAddjustment(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float& AddjValue, float& AddjMulti)
 {
 	AddjValue = 0.0f;
@@ -5076,8 +5358,6 @@ void CSQLHelper::DeletePreferencesVar(const std::string& Key)
 		safe_query("DELETE FROM Preferences WHERE (Key='%q')", Key.c_str());
 	}
 }
-
-
 
 int CSQLHelper::GetLastBackupNo(const char* Key, int& nValue)
 {
@@ -5335,7 +5615,7 @@ void CSQLHelper::UpdateTemperatureLog()
 						setpoint = 60;
 					else if (splitresults[1] == "Off")
 						setpoint = 0;
-					else 
+					else
 						setpoint = static_cast<float>(atof(splitresults[1].c_str()));
 				}
 				break;
@@ -5539,7 +5819,6 @@ void CSQLHelper::UpdateWindLog()
 				if (gust_max != -1)
 					gust = gust_max;
 			}
-
 
 			//insert record
 			safe_query(
@@ -5826,7 +6105,7 @@ void CSQLHelper::UpdateMeter()
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeDistance
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypePressure
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeCounterIncremental
-		"(Type=%d AND SubType=%d)"     //pTypeGeneral,sTypeKwh
+		"(Type=%d AND SubType=%d)"	 //pTypeGeneral,sTypeKwh
 		")",
 		pTypeRFXMeter,
 		pTypeP1Gas,
@@ -5884,7 +6163,6 @@ void CSQLHelper::UpdateMeter()
 			struct tm ntime;
 			time_t checktime;
 			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
-
 
 			//Check for timeout, if timeout then dont add value
 			if (dType != pTypeP1Gas)
@@ -6271,7 +6549,6 @@ void CSQLHelper::UpdateFanLog()
 	}
 }
 
-
 void CSQLHelper::AddCalendarTemperature()
 {
 	//Get All temperature devices in the Temperature Table
@@ -6410,7 +6687,6 @@ void CSQLHelper::AddCalendarUpdateRain()
 				total_real = total_max - total_min;
 			}
 
-
 			if (total_real < 1000)
 			{
 				result = safe_query(
@@ -6523,7 +6799,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			double total_max = (double)atof(sd[1].c_str());
 			double avg_value = (double)atof(sd[2].c_str());
 
-			// if kwh counter => total_min = first value of the day, and total_max = last value of the day 
+			// if kwh counter => total_min = first value of the day, and total_max = last value of the day
 			// because last value can be lower than first value when consumed energy is negative (e.g. photovoltaic produces more than building usage)
 			if (devType == pTypeGeneral && subType == sTypeKwh) {
 				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC LIMIT 1",
@@ -6955,7 +7231,6 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 	}
 }
 
-
 void CSQLHelper::AddCalendarUpdateFan()
 {
 	//Get All FAN devices in the Fan Table
@@ -7185,7 +7460,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 			safe_exec_no_return("DELETE FROM SceneDevices WHERE (DeviceRowID == '%q')", str.c_str());
 			safe_exec_no_return("DELETE FROM DeviceToPlansMap WHERE (DeviceRowID == '%q')", str.c_str());
 			safe_exec_no_return("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')",
-					    str.c_str());
+						str.c_str());
 			safe_exec_no_return("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')", str.c_str());
 			safe_exec_no_return("DELETE FROM PushLink WHERE (DeviceRowID== '%q')", str.c_str());
 			//notify eventsystem device is no longer present
@@ -7348,7 +7623,6 @@ void CSQLHelper::TransferDevice(const std::string& idx, const std::string& newid
 	else
 		safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
 
-
 	//Percentage
 	result = safe_query("SELECT Date FROM Percentage WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
 	if (!result.empty())
@@ -7408,7 +7682,6 @@ void CSQLHelper::CleanupLightSceneLog()
 	struct tm tm2;
 	constructTime(daybefore, tm2, tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday - nMaxDays, tm1.tm_hour, tm1.tm_min, 0, tm1.tm_isdst);
 	sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:00", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday, tm2.tm_hour, tm2.tm_min);
-
 
 	safe_query("DELETE FROM LightingLog WHERE (Date<'%q')", szDateEnd);
 	safe_query("DELETE FROM SceneLog WHERE (Date<'%q')", szDateEnd);
@@ -7716,9 +7989,9 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 
 	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
 
-	int rc;                     // Function return code
-	sqlite3* pFile;             // Database connection opened on zFilename
-	sqlite3_backup* pBackup;    // Backup handle used to copy data
+	int rc;					 // Function return code
+	sqlite3* pFile;			 // Database connection opened on zFilename
+	sqlite3_backup* pBackup;	// Backup handle used to copy data
 
 	// Open the database file identified by zFilename.
 	rc = sqlite3_open(OutputFile.c_str(), &pFile);

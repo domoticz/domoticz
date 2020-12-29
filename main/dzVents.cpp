@@ -25,7 +25,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents()
-	: m_version("3.0.19")
+	: m_version("3.1.0")
 {
 	m_bdzVentsExist = false;
 }
@@ -44,12 +44,15 @@ void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSys
 
 	bool reasonTime = false;
 	bool reasonURL = false;
+	bool reasonShellCommand = false;
 	bool reasonSecurity = false;
 	bool reasonNotification = false;
 	for (const auto &item : items)
 	{
 		if (item.reason == m_mainworker.m_eventsystem.REASON_URL)
 			reasonURL = true;
+		else if (item.reason == m_mainworker.m_eventsystem.REASON_SHELLCOMMAND)
+			reasonShellCommand = true;
 		else if (item.reason == m_mainworker.m_eventsystem.REASON_SECURITY)
 			reasonSecurity = true;
 		else if (item.reason == m_mainworker.m_eventsystem.REASON_TIME)
@@ -63,6 +66,8 @@ void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSys
 
 	if (reasonURL)
 		ProcessHttpResponse(lua_state, items);
+	if (reasonShellCommand)
+		ProcessShellCommandResponse(lua_state, items);
 	if (reasonSecurity)
 		ProcessSecurity(lua_state, items);
 	if (reasonNotification)
@@ -222,6 +227,30 @@ void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSys
 	luaTable.Publish();
 }
 
+void CdzVents::ProcessShellCommandResponse(lua_State* lua_state, const std::vector<CEventSystem::_tEventQueue>& items)
+{
+	int index = 1;
+	CLuaTable luaTable(lua_state, "shellcommandresponse");
+
+	for (const auto &item : items)
+	{
+		if (item.reason == m_mainworker.m_eventsystem.REASON_SHELLCOMMAND)
+		{
+
+			luaTable.OpenSubTableEntry(index, 0, 0);
+			luaTable.AddString("data", item.sValue);
+			luaTable.AddString("callback", item.nValueWording);
+			luaTable.AddInteger("statusCode",item.nValue);
+			luaTable.AddString("errorText", item.errorText);
+			luaTable.AddBool("timeoutOccurred",item.timeoutOccurred);
+			luaTable.CloseSubTableEntry(); // index entry
+			index++;
+		}
+	}
+
+	luaTable.Publish();
+}
+
 void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEventSystem::_tEventQueue>& items)
 {
 	int index = 1;
@@ -282,6 +311,48 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 	}
 
 	luaTable.Publish();
+}
+
+bool CdzVents::ExecuteShellCommand(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
+{
+	float delayTime = 0;
+	std::string command, callback, trigger, path;
+	int timeout=10; // default timeout value
+
+	for (const auto &value : vLuaTable)
+	{
+		if (value.type == TYPE_STRING)
+		{
+			if (value.name == "command")
+				command = value.sValue;
+			else if (value.name == "callback")
+				callback = value.sValue;
+			else if (value.name == "path")
+				path = value.sValue;
+		}
+		else if (value.type == TYPE_INTEGER)
+		{
+			if (value.name == "_random")
+				delayTime = static_cast<float>(GenerateRandomNumber(value.iValue));
+			if (value.name == "timeout")
+			{
+				timeout = value.iValue;
+			}
+		}
+		else if ((value.type == TYPE_FLOAT) && (value.name == "_after"))
+			delayTime = value.fValue;
+
+	}
+
+	if (command.empty())
+	{
+		_log.Log(LOG_ERROR, "dzVents: No command supplied!");
+		return false;
+	}
+
+	m_sql.AddTaskItem(_tTaskItem::ExecuteShellCommand(delayTime, command, callback, timeout, path));
+
+	return true;
 }
 
 bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
@@ -547,6 +618,8 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 	{
 		if (lCommand == "OpenURL")
 			scriptTrue = OpenURL(lua_state, vLuaTable);
+		else if (lCommand == "ExecuteShellCommand")
+			scriptTrue = ExecuteShellCommand(lua_state, vLuaTable);
 		else if (lCommand == "UpdateDevice")
 			scriptTrue = UpdateDevice(lua_state, vLuaTable, filename);
 		else if (lCommand == "Variable")

@@ -137,18 +137,32 @@ local function Domoticz(settings)
 		end
 	end
 
+	function self.triggershellCommandResponse(shellCommandResponse, delay, message)
+		local shellCommandResponse = shellCommandResponse or _G.moduleLabel
+		local delay = delay or 0
+		local message = 'triggerShellCommandResponse: ' .. (message or shellCommandResponse)
+		local command = 'echo '..message
+		self.executeShellCommand
+		(
+			{
+				command = command,
+				callback = shellCommandResponse,
+			}
+		).afterSec(delay)
+	end
+
 	function self.triggerHTTPResponse(httpResponse, delay, message)
 		local httpResponse = httpResponse or _G.moduleLabel
 		local delay = delay or 0
 		local message = 'triggerHTTPResponse: ' .. (message or httpResponse)
 		local url = self.settings['Domoticz url'] .. '/json.htm?type=command&param=addlogmessage&message=' .. self.utils.urlEncode(message)
-				self.openURL
-				(
-					{
-						url = url,
-						callback = httpResponse,
-					}
-				).afterSec(delay)
+		self.openURL
+		(
+			{
+				url = url,
+				callback = httpResponse,
+			}
+		).afterSec(delay)
 	end
 
 	-- have domoticz send snapshot
@@ -192,6 +206,39 @@ local function Domoticz(settings)
 			data = data
 		}
 		return TimedCommand(self, 'CustomEvent', eventinfo, 'emitEvent')
+	end
+
+	-- have domoticz execute a script
+	function self.executeShellCommand(options)
+		if (type(options)== 'string') then
+			options = {
+				command = options,
+			}
+		end
+		if (type(options)=='table') then
+			local command = options.command
+			local callback = options.callback
+			local sep = '/'
+			local dataFolderPath = _G.dataFolderPath or ""  -- or needed for testing
+			if dataFolderPath:find(string.char(92)) then sep = string.char(92) end -- Windows \
+			local path = dataFolderPath .. sep
+
+			local request = {
+				command = options.command,
+				callback = options.callback,
+				timeout = options.timeout,
+				path = path
+			}
+
+			utils.log('ExecuteShellCommand: command = ' .. _.str(request.command), utils.LOG_DEBUG)
+			utils.log('ExecuteShellCommand: callback = ' .. _.str(request.callback), utils.LOG_DEBUG)
+			utils.log('ExecuteShellCommand: timeout = ' .. _.str(request.timeout), utils.LOG_DEBUG)
+			utils.log('ExecuteShellcommand: path = ' .. _.str(request.path),utils.LOG_DEBUG)
+			return TimedCommand(self, 'ExecuteShellCommand', request, 'updatedevice')
+		else
+			utils.log('executeShellCommand: Invalid arguments, use either a string or a table with options', utils.LOG_ERROR)
+		end
+
 	end
 
 	-- have domoticz open a url

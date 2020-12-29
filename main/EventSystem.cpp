@@ -1191,6 +1191,19 @@ void CEventSystem::TriggerURL(const std::string &result, const std::vector<std::
 	m_eventqueue.push(item);
 }
 
+void CEventSystem::TriggerShellCommand(const std::string &result, const std::string &scriptstderr, const std::string &callback, int exitcode, bool timeoutOccurred)
+{
+	_tEventQueue item;
+	item.reason = REASON_SHELLCOMMAND;
+	item.id = 0;
+	item.sValue = result;
+	item.nValue = exitcode;
+	item.nValueWording = callback;
+	item.errorText = scriptstderr;
+	item.timeoutOccurred = timeoutOccurred;
+	m_eventqueue.push(item);
+}
+
 void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime)
 {
 	if (!m_bEnabled)

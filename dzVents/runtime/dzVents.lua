@@ -1,6 +1,6 @@
 local TESTMODE = false
 globalvariables['testmode'] = false
---globalvariables['dzVents_log_level'] = 4 --debug
+-- globalvariables['dzVents_log_level'] = 4 --debug
 
 if (_G.TESTMODE) then
 	TESTMODE = false
@@ -69,6 +69,7 @@ helpers.dispatchVariableEventsToScripts()
 helpers.dispatchSecurityEventsToScripts()
 helpers.dispatchSceneGroupEventsToScripts()
 helpers.dispatchHTTPResponseEventsToScripts()
+helpers.dispatchShellCommandResponseEventsToScripts()
 helpers.dispatchSystemEventsToScripts()
 helpers.dispatchCustomEventsToScripts()
 
