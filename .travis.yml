@@ -46,8 +46,8 @@ matrix:
 #          - george-edison55-bionic-backports  # cmake
           - ubuntu-toolchain-r-test
         packages:
-          - gcc-6
-          - g++-6
+          - gcc
+          - g++
           - curl
           - libcurl4-gnutls-dev
           - libusb-dev
