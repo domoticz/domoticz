@@ -189,7 +189,16 @@ void CeVehicle::SendTemperature(int tempType, float value)
 void CeVehicle::SendPercentage(int percType, float value)
 {
 	if ((percType == VEHICLE_LEVEL_BATTERY) && m_api->m_capabilities.has_battery_level)
-		SendPercentageSensor(VEHICLE_LEVEL_BATTERY, 1, static_cast<int>(value), value, m_Name + " Battery Level");
+	{
+		int iBattLevel = static_cast<int>(value);
+		float fBattLevel = value;
+		if (fBattLevel < 0.0f || fBattLevel > 100.0f)	// Filter out wrong readings
+		{
+			fBattLevel = 0.0f;
+			iBattLevel = 255;	// Means no batterylevel available (and hides batterylevel indicator in UI)
+		}
+		SendPercentageSensor(VEHICLE_LEVEL_BATTERY, 1, iBattLevel, fBattLevel, m_Name + " Battery Level");
+	}
 }
 
 void CeVehicle::SendCounter(int countType, float value)

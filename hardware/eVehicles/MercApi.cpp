@@ -32,7 +32,6 @@ License: Public domain
 // so use the following 5 scope's: mb:vehicle:mbdata:vehiclestatus mb:vehicle:mbdata:fuelstatus mb:vehicle:mbdata:payasyoudrive mb:vehicle:mbdata:vehiclelock mb:vehicle:mbdata:evstatus
 // and we need the additional scope to get a refresh token: offline_access
 #define MERC_URL_AUTH "https://id.mercedes-benz.com"
-#define MERC_API_AUTH "as/authorization.oauth2"
 #define MERC_API_TOKEN "/as/token.oauth2"
 #define MERC_URL "https://api.mercedes-benz.com"
 #define MERC_API "/vehicledata/v2/vehicles"
@@ -198,6 +197,7 @@ bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
 
 	if (GetData("electricvehicle", reply))
 	{
+		data.battery_level = 255.0f;	// Initialize at 'no reading'
 		if (reply.empty())
 		{
 			bData = true;	// This occurs when the API call return a 204 (No Content). So everything is valid/ok, just no data
@@ -276,10 +276,12 @@ bool CMercApi::GetClimateData(tClimateData& data)
 
 void CMercApi::GetClimateData(Json::Value& jsondata, tClimateData& data)
 {
+	/*
 	data.inside_temp = jsondata["inside_temp"].asFloat();
 	data.outside_temp = jsondata["outside_temp"].asFloat();
 	data.is_climate_on = jsondata["is_climate_on"].asBool();
 	data.is_defrost_on = (jsondata["defrost_mode"].asInt() != 0);
+	*/
 }
 
 bool CMercApi::GetVehicleData(tVehicleData& data)
