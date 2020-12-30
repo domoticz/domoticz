@@ -39,15 +39,15 @@ matrix:
     compiler: gcc
     env:
           - TARGET_ARCHITECTURE=x86_64
-          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+          - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
     addons:
       apt:
         sources:
 #          - george-edison55-bionic-backports  # cmake
           - ubuntu-toolchain-r-test
         packages:
-          - gcc
-          - g++
+          - gcc-9
+          - g++-9
           - curl
           - libcurl4-gnutls-dev
           - libusb-dev
