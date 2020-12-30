@@ -2132,14 +2132,15 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetTimerPlans";
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name FROM TimerPlans ORDER BY Name COLLATE NOCASE ASC");
+			result = m_sql.safe_query("SELECT a.ID, a.Name, b.nValue FROM TimerPlans a, Preferences b WHERE b.Key = 'ActiveTimerPlan' ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				int ii = 0;
 				for (const auto &sd : result)
 				{
-					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["idx"] = atoi(sd[0].c_str());
 					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Active"] = (sd[0] == sd[2]);
 					ii++;
 				}
 			}
