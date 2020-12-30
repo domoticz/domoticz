@@ -1875,7 +1875,7 @@ define(['app', 'livesocket'], function (app) {
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
 							if (
-								(item.Favorite != 0) && (
+								(
 									(item.Type.indexOf('Light') == 0) ||
 									(item.SubType == "Smartwares Mode") ||
 									(item.Type.indexOf('Blind') == 0) ||
@@ -2748,8 +2748,7 @@ define(['app', 'livesocket'], function (app) {
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
 							if (
-								((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined')) &&
-								(item.Favorite != 0)
+								((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined'))
 							) {
 								totdevices += 1;
 								if (jj == 0) {
@@ -2903,8 +2902,7 @@ define(['app', 'livesocket'], function (app) {
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
 							if (
-								((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined')) &&
-								(item.Favorite != 0)
+								((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined'))
 							) {
 								totdevices += 1;
 								if (jj == 0) {
@@ -3112,7 +3110,7 @@ define(['app', 'livesocket'], function (app) {
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
-							if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
+							if (item.Type.indexOf('Security') == 0) {
 								totdevices += 1;
 								if (jj == 0) {
 									//first time
@@ -3271,7 +3269,7 @@ define(['app', 'livesocket'], function (app) {
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
-							if ((item.Type.indexOf('Heating') == 0) && (item.Favorite != 0)) {
+							if (item.Type.indexOf('Heating') == 0) {
 								totdevices += 1;
 								if (jj == 0) {
 									//first time
@@ -3391,8 +3389,7 @@ define(['app', 'livesocket'], function (app) {
 									(item.SubType == "Waterflow") ||
 									(item.SubType == "Sound Level") ||
 									(item.SubType == "Custom Sensor")
-								) &&
-								(item.Favorite != 0)
+								)
 							) {
 								totdevices += 1;
 								if (jj == 0) {
