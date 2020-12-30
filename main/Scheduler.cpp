@@ -2138,12 +2138,9 @@ namespace http {
 				int ii = 0;
 				for (const auto &sd : result)
 				{
-					if (sd[0] != sd[2])
-						root["result"][ii]["Active"] = false;
-					else
-						root["result"][ii]["Active"] = true;
 					root["result"][ii]["idx"] = atoi(sd[0].c_str());
 					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Active"] = (sd[0] == sd[2]);
 					ii++;
 				}
 			}
