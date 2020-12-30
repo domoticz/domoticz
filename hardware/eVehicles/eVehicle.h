@@ -113,8 +113,9 @@ public:
 	void SendTemperature(int tempType, float value);
 	void SendPercentage(int percType, float value);
 	void SendCounter(int countType, float value);
-	void SendCustom(int countType, int ChildId, float value, const std::string &label);
-	void SendText(int countType, int ChildId, const std::string &value, const std::string &label);
+	void SendCustom(int customType, int ChildId, float value, const std::string &label);
+	void SendCustomSwitch(int customType, int ChildId, bool value, const std::string &label);
+	void SendCustomText(int customType, int ChildId, const std::string &value, const std::string &label);
 
 	bool StartHardware() override;
 	bool StopHardware() override;
