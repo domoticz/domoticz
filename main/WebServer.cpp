@@ -13082,9 +13082,7 @@ namespace http {
 
 			int CustomImage = 0;
 			if (!sCustomImage.empty())
-			{
 				CustomImage = atoi(sCustomImage.c_str());
-			}
 
 			//Strip trailing spaces in 'name'
 			name = stdstring_trim(name);
@@ -13129,21 +13127,16 @@ namespace http {
 			{
 				if (switchtype == -1)
 				{
-					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
-						used, name.c_str(), description.c_str(), idx.c_str());
+					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', CustomImage=%d WHERE (ID == '%q')", used, name.c_str(), description.c_str(),
+							 CustomImage, idx.c_str());
 				}
 				else
 				{
-					m_sql.safe_query(
-						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
-						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')", used, name.c_str(),
+							 description.c_str(), switchtype, CustomImage, idx.c_str());
 				}
 			}
-			if (!sCustomImage.empty())
-			{
-				m_sql.safe_query("UPDATE DeviceStatus SET CustomImage=%d WHERE (ID == '%q')",
-						CustomImage, idx.c_str());
-			}
+
 			if (bHasstrParam1)
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%q', StrParam2='%q' WHERE (ID == '%q')",
