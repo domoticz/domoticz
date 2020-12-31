@@ -4,10 +4,13 @@ define(function () {
     }
 
     DataLoader.prototype.loadData = function (data, receiver) {
-        const seriesSuppliersOnCurrent = receiver.seriesSuppliers.filter(function (seriesSupplier) {
+        const seriesSuppliersOnData = receiver.seriesSuppliers.filter(function (seriesSupplier) {
+            return seriesSupplier.dataIsValid === undefined || seriesSupplier.dataIsValid(data);
+        });
+        const seriesSuppliersOnCurrent = seriesSuppliersOnData.filter(function (seriesSupplier) {
             return !seriesSupplier.useDataItemsFromPrevious;
         });
-        const seriesSuppliersOnPrevious = receiver.seriesSuppliers.filter(function (seriesSupplier) {
+        const seriesSuppliersOnPrevious = seriesSuppliersOnData.filter(function (seriesSupplier) {
             return seriesSupplier.useDataItemsFromPrevious;
         });
 
@@ -20,7 +23,7 @@ define(function () {
 
         function analyseDataItems(dataItems, seriesSuppliers) {
             runSeriesSuppliersFunction(
-                dataItems.slice(0, 48),
+                dataItems.slice(0, 150),
                 seriesSuppliers
                     .filter(function (seriesSupplier) {
                         return seriesSupplier.analyseDataItem !== undefined;
