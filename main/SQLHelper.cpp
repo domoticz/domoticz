@@ -3362,6 +3362,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 	if (!remove(filenamestderr.c_str()))
 		_log.Log(LOG_ERROR, "old temp file (%s) was still there, removing...", filenamestderr.c_str());
 
+#ifdef _DEBUG
 	if (timeout > 0)
 	{
 		_log.Log(LOG_STATUS, "dzVents: Executing shellcommmand %s for max %d seconds", command.c_str(), timeout);
@@ -3370,6 +3371,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 	{
 		_log.Log(LOG_STATUS, "dzVents: Executing shellcommmand %s", command.c_str());
 	}
+#endif
 
 #ifdef WIN32
 	SECURITY_ATTRIBUTES sa;
@@ -3525,8 +3527,10 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 			getline(infile, sLine);
 			do
 			{
+#ifdef _DEBUG
 				if (!sLine.empty())
 					_log.Log(LOG_ERROR, "ExecuteScriptError: %s", sLine.c_str());
+#endif
 				scriptstderr.append(sLine);
 				getline(infile, sLine);
 				if (!infile.eof())
