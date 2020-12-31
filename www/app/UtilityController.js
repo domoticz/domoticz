@@ -2,8 +2,6 @@ define(['app', 'livesocket'], function (app) {
 	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
 		var $element = $('#main-view #utilitycontent').last();
 		
-		$scope.HasInitializedEditCustomSensorDialog = false;
-
 		$.strPad = function (i, l, s) {
 			var o = i.toString();
 			if (!s) { s = '0'; }
@@ -19,12 +17,15 @@ define(['app', 'livesocket'], function (app) {
 			});
 		};
 
-		ConfigureEditUtilityDeviceDialog = function () {
-			if ($scope.HasInitializedEditUtilityDeviceDialog == true) {
-				return;
-			}
-			$scope.HasInitializedEditUtilityDeviceDialog = true;
-			$.ddData2 = [];
+		LoadCustomIcons = function () {
+			$.ddData = [];
+			$.ddData.push({
+				text: 'Default',
+				value: 0,
+				selected: false,
+				description: 'Default icon'
+			});
+			
 			//Get Custom icons
 			$.ajax({
 				url: "json.htm?type=custom_light_icons",
@@ -51,45 +52,6 @@ define(['app', 'livesocket'], function (app) {
 								img += item.imageSrc;
 								img += "48_On.png";
 							}
-							$.ddData2.push({ text: itext, value: item.idx, selected: bSelected, description: idescription, imageSrc: img });
-						});
-					}
-				}
-			});
-		}
-
-		ConfigureEditCustomSensorDialog = function () {
-			if ($scope.HasInitializedEditCustomSensorDialog == true) {
-				return;
-			}
-			$scope.HasInitializedEditCustomSensorDialog = true;
-			$.ddData = [];
-			//Get Custom icons
-			$.ajax({
-				url: "json.htm?type=custom_light_icons",
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					if (typeof data.result != 'undefined') {
-						var totalItems = data.result.length;
-						$.each(data.result, function (i, item) {
-							var bSelected = false;
-							if (i == 0) {
-								bSelected = true;
-							}
-							var itext = item.text;
-							var idescription = item.description;
-
-							var img = "images/";
-							if (item.idx == 0) {
-								img += "Custom";
-								itext = "Custom";
-								idescription = "Custom Sensor";
-							}
-							else {
-								img += item.imageSrc;
-							}
-							img += "48_On.png";
 							$.ddData.push({ text: itext, value: item.idx, selected: bSelected, description: idescription, imageSrc: img });
 						});
 					}
@@ -98,20 +60,20 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditUtilityDevice = function (idx, name, description, customimage) {
-			ConfigureEditUtilityDeviceDialog();
 			$.devIdx = idx;
 			$("#dialog-editutilitydevice #deviceidx").text(idx);
 			$("#dialog-editutilitydevice #devicename").val(unescape(name));
 			$("#dialog-editutilitydevice #devicedescription").val(unescape(description));
 			$('#dialog-editutilitydevice #combosensoricon').ddslick({
-				data: $.ddData2,
+				data: $.ddData,
 				width: 260,
+				height: 390,
 				height: 390,
 				selectText: "Sensor Icon",
 				imagePosition: "left"
 			});
 			//find our custom image index and select it
-			$.each($.ddData2, function (i, item) {
+			$.each($.ddData, function (i, item) {
 				if (item.value == customimage) {
 					$('#dialog-editutilitydevice #combosensoricon').ddslick('select', { index: i });
 				}
@@ -121,7 +83,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditCustomSensorDevice = function (idx, name, description, customimage, sensortype, axislabel) {
-			ConfigureEditCustomSensorDialog();
 			$.devIdx = idx;
 			$.sensorType = sensortype;
 			$("#dialog-editcustomsensordevice #deviceidx").text(idx);
@@ -149,21 +110,20 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditDistanceDevice = function (idx, name, description, switchtype, customimage) {
-			ConfigureEditUtilityDeviceDialog();
 			$.devIdx = idx;
 			$("#dialog-editdistancedevice #deviceidx").text(idx);
 			$("#dialog-editdistancedevice #devicename").val(unescape(name));
 			$("#dialog-editdistancedevice #devicedescription").val(unescape(description));
 			$("#dialog-editdistancedevice #combometertype").val(switchtype);
 			$('#dialog-editdistancedevice #combosensoricon').ddslick({
-				data: $.ddData2,
+				data: $.ddData,
 				width: 260,
 				height: 390,
 				selectText: "Sensor Icon",
 				imagePosition: "left"
 			});
 			//find our custom image index and select it
-			$.each($.ddData2, function (i, item) {
+			$.each($.ddData, function (i, item) {
 				if (item.value == customimage) {
 					$('#dialog-editdistancedevice #combosensoricon').ddslick('select', { index: i });
 				}
@@ -173,7 +133,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, meterdivider, valuequantity, valueunits, customimage) {
-			ConfigureEditUtilityDeviceDialog();
 			$.devIdx = idx;
 			$("#dialog-editmeterdevice #deviceidx").text(idx);
 			$("#dialog-editmeterdevice #devicename").val(unescape(name));
@@ -200,14 +159,14 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 			$('#dialog-editmeterdevice #combosensoricon').ddslick({
-				data: $.ddData2,
+				data: $.ddData,
 				width: 260,
 				height: 390,
 				selectText: "Sensor Icon",
 				imagePosition: "left"
 			});
 			//find our custom image index and select it
-			$.each($.ddData2, function (i, item) {
+			$.each($.ddData, function (i, item) {
 				console.log(item.value+" "+customimage)
 				if (item.value == customimage) {
 					$('#dialog-editmeterdevice #combosensoricon').ddslick('select', { index: i });
@@ -219,7 +178,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditEnergyDevice = function (idx, name, description, switchtype, EnergyMeterMode, customimage) {
-			ConfigureEditUtilityDeviceDialog();
 			$.devIdx = idx;
 			$("#dialog-editenergydevice #deviceidx").text(idx);
 			$("#dialog-editenergydevice #devicename").val(unescape(name));
@@ -230,14 +188,14 @@ define(['app', 'livesocket'], function (app) {
 			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').prop('checked', true);
 			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').trigger('change');
 			$('#dialog-editenergydevice #combosensoricon').ddslick({
-				data: $.ddData2,
+				data: $.ddData,
 				width: 260,
 				height: 390,
 				selectText: "Sensor Icon",
 				imagePosition: "left"
 			});
 			//find our custom image index and select it
-			$.each($.ddData2, function (i, item) {
+			$.each($.ddData, function (i, item) {
 				if (item.value == customimage) {
 					$('#dialog-editenergydevice #combosensoricon').ddslick('select', { index: i });
 				}
@@ -247,7 +205,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditSetPoint = function (idx, name, description, setpoint, isprotected, customimage) {
-			ConfigureEditUtilityDeviceDialog();
 			HandleProtection(isprotected, function () {
 				$.devIdx = idx;
 				$("#dialog-editsetpointdevice #deviceidx").text(idx);
@@ -257,14 +214,14 @@ define(['app', 'livesocket'], function (app) {
 				$("#dialog-editsetpointdevice #setpoint").val(setpoint);
 				$("#dialog-editsetpointdevice #tempunit").html($scope.config.TempSign);
 				$('#dialog-editsetpointdevice #combosensoricon').ddslick({
-					data: $.ddData2,
+					data: $.ddData,
 					width: 260,
 					height: 390,
 					selectText: "Sensor Icon",
 					imagePosition: "left"
 				});
 				//find our custom image index and select it
-				$.each($.ddData2, function (i, item) {
+				$.each($.ddData, function (i, item) {
 					if (item.value == customimage) {
 						$('#dialog-editsetpointdevice #combosensoricon').ddslick('select', { index: i });
 					}
@@ -275,7 +232,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditThermostatClock = function (idx, name, description, daytime, isprotected, customimage) {
-			ConfigureEditUtilityDeviceDialog();
 			HandleProtection(isprotected, function () {
 				var sarray = daytime.split(";");
 				$.devIdx = idx;
@@ -287,14 +243,14 @@ define(['app', 'livesocket'], function (app) {
 				$("#dialog-editthermostatclockdevice #clockhour").val(sarray[1]);
 				$("#dialog-editthermostatclockdevice #clockminute").val(sarray[2]);
 				$('#dialog-editthermostatclockdevice #combosensoricon').ddslick({
-					data: $.ddData2,
+					data: $.ddData,
 					width: 260,
 					height: 390,
 					selectText: "Sensor Icon",
 					imagePosition: "left"
 				});
 				//find our custom image index and select it
-				$.each($.ddData2, function (i, item) {
+				$.each($.ddData, function (i, item) {
 					if (item.value == customimage) {
 						$('#dialog-editthermostatclockdevice #combosensoricon').ddslick('select', { index: i });
 					}
@@ -305,7 +261,6 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		EditThermostatMode = function (idx, name, description, actmode, modes, isprotected, customimage) {
-			ConfigureEditUtilityDeviceDialog();
 			HandleProtection(isprotected, function () {
 				var sarray = modes.split(";");
 				$.devIdx = idx;
@@ -324,14 +279,14 @@ define(['app', 'livesocket'], function (app) {
 					ii += 2;
 				}
 				$('#dialog-editthermostatmode #combosensoricon').ddslick({
-					data: $.ddData2,
+					data: $.ddData,
 					width: 260,
 					height: 390,
 					selectText: "Sensor Icon",
 					imagePosition: "left"
 				});
 				//find our custom image index and select it
-				$.each($.ddData2, function (i, item) {
+				$.each($.ddData, function (i, item) {
 					if (item.value == customimage) {
 						$('#dialog-editthermostatmode #combosensoricon').ddslick('select', { index: i });
 					}
@@ -342,7 +297,6 @@ define(['app', 'livesocket'], function (app) {
 			});
 		}
 		EditThermostatFanMode = function (idx, name, description, actmode, modes, isprotected, customimage) {
-			ConfigureEditUtilityDeviceDialog();
 			HandleProtection(isprotected, function () {
 				var sarray = modes.split(";");
 				$.devIdx = idx;
@@ -361,14 +315,14 @@ define(['app', 'livesocket'], function (app) {
 					ii += 2;
 				}
 				$('#dialog-editthermostatmode #combosensoricon').ddslick({
-					data: $.ddData2,
+					data: $.ddData,
 					width: 260,
 					height: 390,
 					selectText: "Sensor Icon",
 					imagePosition: "left"
 				});
 				//find our custom image index and select it
-				$.each($.ddData2, function (i, item) {
+				$.each($.ddData, function (i, item) {
 					if (item.value == customimage) {
 						$('#dialog-editthermostatmode #combosensoricon').ddslick('select', { index: i });
 					}
@@ -1213,7 +1167,7 @@ define(['app', 'livesocket'], function (app) {
 				bValid = bValid && checkLength($("#dialog-editutilitydevice #devicename"), 2, 100);
 				if (bValid) {
 					var cval = $('#dialog-editutilitydevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData2[cval].value;
+					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
@@ -1344,7 +1298,7 @@ define(['app', 'livesocket'], function (app) {
 				bValid = bValid && checkLength($("#dialog-editdistancedevice #devicename"), 2, 100);
 				if (bValid) {
 					var cval = $('#dialog-editdistancedevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData2[cval].value;
+					var CustomImage = $.ddData[cval].value;
 					
 					$(this).dialog("close");
 					$.ajax({
@@ -1408,7 +1362,7 @@ define(['app', 'livesocket'], function (app) {
 					var meteroffset = $("#dialog-editmeterdevice #meteroffset").val();
 					var meterdivider = $("#dialog-editmeterdevice #meterdivider").val();
 					var cval = $('#dialog-editmeterdevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData2[cval].value;
+					var CustomImage = $.ddData[cval].value;
 					if (meterType == 3) //Counter
 					{
 						devOptions.push("ValueQuantity:");
@@ -1484,7 +1438,7 @@ define(['app', 'livesocket'], function (app) {
 				bValid = bValid && checkLength($("#dialog-editenergydevice #devicename"), 2, 100);
 				if (bValid) {
 					var cval = $('#dialog-editenergydevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData2[cval].value;
+					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
@@ -1549,7 +1503,7 @@ define(['app', 'livesocket'], function (app) {
 				bValid = bValid && checkLength($("#dialog-editsetpointdevice #devicename"), 2, 100);
 				if (bValid) {
 					var cval = $('#dialog-editsetpointdevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData2[cval].value;
+					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
@@ -1610,7 +1564,7 @@ define(['app', 'livesocket'], function (app) {
 				bValid = bValid && checkLength($("#dialog-editthermostatclockdevice #devicename"), 2, 100);
 				if (bValid) {
 					var cval = $('#dialog-editthermostatclockdevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData2[cval].value;
+					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					bootbox.alert($.t('Setting the Clock is not finished yet!'));
 					var daytimestr = $("#dialog-editthermostatclockdevice #comboclockday").val() + ";" + $("#dialog-editthermostatclockdevice #clockhour").val() + ";" + $("#dialog-editthermostatclockdevice #clockminute").val();
@@ -1729,6 +1683,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
+			LoadCustomIcons();
 			ShowUtilities();
 
 			$("#dialog-editutilitydevice").keydown(function (event) {
