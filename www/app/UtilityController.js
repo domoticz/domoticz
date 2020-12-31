@@ -2,8 +2,6 @@ define(['app', 'livesocket'], function (app) {
 	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
 		var $element = $('#main-view #utilitycontent').last();
 		
-		$scope.HasInitializedEditCustomSensorDialog = false;
-
 		$.strPad = function (i, l, s) {
 			var o = i.toString();
 			if (!s) { s = '0'; }
@@ -19,12 +17,15 @@ define(['app', 'livesocket'], function (app) {
 			});
 		};
 
-		ConfigureEditCustomSensorDialog = function () {
-			if ($scope.HasInitializedEditCustomSensorDialog == true) {
-				return;
-			}
-			$scope.HasInitializedEditCustomSensorDialog = true;
+		LoadCustomIcons = function () {
 			$.ddData = [];
+			$.ddData.push({
+				text: 'Default',
+				value: 0,
+				selected: false,
+				description: 'Default icon'
+			});
+			
 			//Get Custom icons
 			$.ajax({
 				url: "json.htm?type=custom_light_icons",
@@ -43,14 +44,14 @@ define(['app', 'livesocket'], function (app) {
 
 							var img = "images/";
 							if (item.idx == 0) {
-								img += "Custom";
-								itext = "Custom";
-								idescription = "Custom Sensor";
+								img = "";
+								itext = "Default";
+								idescription = "";
 							}
 							else {
 								img += item.imageSrc;
+								img += "48_On.png";
 							}
-							img += "48_On.png";
 							$.ddData.push({ text: itext, value: item.idx, selected: bSelected, description: idescription, imageSrc: img });
 						});
 					}
@@ -58,17 +59,30 @@ define(['app', 'livesocket'], function (app) {
 			});
 		}
 
-		EditUtilityDevice = function (idx, name, description) {
+		EditUtilityDevice = function (idx, name, description, customimage) {
 			$.devIdx = idx;
 			$("#dialog-editutilitydevice #deviceidx").text(idx);
 			$("#dialog-editutilitydevice #devicename").val(unescape(name));
 			$("#dialog-editutilitydevice #devicedescription").val(unescape(description));
+			$('#dialog-editutilitydevice #combosensoricon').ddslick({
+				data: $.ddData,
+				width: 260,
+				height: 390,
+				height: 390,
+				selectText: "Sensor Icon",
+				imagePosition: "left"
+			});
+			//find our custom image index and select it
+			$.each($.ddData, function (i, item) {
+				if (item.value == customimage) {
+					$('#dialog-editutilitydevice #combosensoricon').ddslick('select', { index: i });
+				}
+			});
 			$("#dialog-editutilitydevice").i18n();
 			$("#dialog-editutilitydevice").dialog("open");
 		}
 
 		EditCustomSensorDevice = function (idx, name, description, customimage, sensortype, axislabel) {
-			ConfigureEditCustomSensorDialog();
 			$.devIdx = idx;
 			$.sensorType = sensortype;
 			$("#dialog-editcustomsensordevice #deviceidx").text(idx);
@@ -95,17 +109,30 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editcustomsensordevice").dialog("open");
 		}
 
-		EditDistanceDevice = function (idx, name, description, switchtype) {
+		EditDistanceDevice = function (idx, name, description, switchtype, customimage) {
 			$.devIdx = idx;
 			$("#dialog-editdistancedevice #deviceidx").text(idx);
 			$("#dialog-editdistancedevice #devicename").val(unescape(name));
 			$("#dialog-editdistancedevice #devicedescription").val(unescape(description));
 			$("#dialog-editdistancedevice #combometertype").val(switchtype);
+			$('#dialog-editdistancedevice #combosensoricon').ddslick({
+				data: $.ddData,
+				width: 260,
+				height: 390,
+				selectText: "Sensor Icon",
+				imagePosition: "left"
+			});
+			//find our custom image index and select it
+			$.each($.ddData, function (i, item) {
+				if (item.value == customimage) {
+					$('#dialog-editdistancedevice #combosensoricon').ddslick('select', { index: i });
+				}
+			});
 			$("#dialog-editdistancedevice").i18n();
 			$("#dialog-editdistancedevice").dialog("open");
 		}
 
-		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, meterdivider, valuequantity, valueunits) {
+		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, meterdivider, valuequantity, valueunits, customimage) {
 			$.devIdx = idx;
 			$("#dialog-editmeterdevice #deviceidx").text(idx);
 			$("#dialog-editmeterdevice #devicename").val(unescape(name));
@@ -131,12 +158,26 @@ define(['app', 'livesocket'], function (app) {
 					$("#dialog-editmeterdevice #metertable #customcounter").show();
 				}
 			});
+			$('#dialog-editmeterdevice #combosensoricon').ddslick({
+				data: $.ddData,
+				width: 260,
+				height: 390,
+				selectText: "Sensor Icon",
+				imagePosition: "left"
+			});
+			//find our custom image index and select it
+			$.each($.ddData, function (i, item) {
+				console.log(item.value+" "+customimage)
+				if (item.value == customimage) {
+					$('#dialog-editmeterdevice #combosensoricon').ddslick('select', { index: i });
+				}
+			});
 
 			$("#dialog-editmeterdevice").i18n();
 			$("#dialog-editmeterdevice").dialog("open");
 		}
 
-		EditEnergyDevice = function (idx, name, description, switchtype, EnergyMeterMode) {
+		EditEnergyDevice = function (idx, name, description, switchtype, EnergyMeterMode, customimage) {
 			$.devIdx = idx;
 			$("#dialog-editenergydevice #deviceidx").text(idx);
 			$("#dialog-editenergydevice #devicename").val(unescape(name));
@@ -146,11 +187,24 @@ define(['app', 'livesocket'], function (app) {
 			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').attr('checked', true);
 			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').prop('checked', true);
 			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').trigger('change');
+			$('#dialog-editenergydevice #combosensoricon').ddslick({
+				data: $.ddData,
+				width: 260,
+				height: 390,
+				selectText: "Sensor Icon",
+				imagePosition: "left"
+			});
+			//find our custom image index and select it
+			$.each($.ddData, function (i, item) {
+				if (item.value == customimage) {
+					$('#dialog-editenergydevice #combosensoricon').ddslick('select', { index: i });
+				}
+			});
 			$("#dialog-editenergydevice").i18n();
 			$("#dialog-editenergydevice").dialog("open");
 		}
 
-		EditSetPoint = function (idx, name, description, setpoint, isprotected) {
+		EditSetPoint = function (idx, name, description, setpoint, isprotected, customimage) {
 			HandleProtection(isprotected, function () {
 				$.devIdx = idx;
 				$("#dialog-editsetpointdevice #deviceidx").text(idx);
@@ -159,12 +213,25 @@ define(['app', 'livesocket'], function (app) {
 				$('#dialog-editsetpointdevice #protected').prop('checked', (isprotected == true));
 				$("#dialog-editsetpointdevice #setpoint").val(setpoint);
 				$("#dialog-editsetpointdevice #tempunit").html($scope.config.TempSign);
+				$('#dialog-editsetpointdevice #combosensoricon').ddslick({
+					data: $.ddData,
+					width: 260,
+					height: 390,
+					selectText: "Sensor Icon",
+					imagePosition: "left"
+				});
+				//find our custom image index and select it
+				$.each($.ddData, function (i, item) {
+					if (item.value == customimage) {
+						$('#dialog-editsetpointdevice #combosensoricon').ddslick('select', { index: i });
+					}
+				});
 				$("#dialog-editsetpointdevice").i18n();
 				$("#dialog-editsetpointdevice").dialog("open");
 			});
 		}
 
-		EditThermostatClock = function (idx, name, description, daytime, isprotected) {
+		EditThermostatClock = function (idx, name, description, daytime, isprotected, customimage) {
 			HandleProtection(isprotected, function () {
 				var sarray = daytime.split(";");
 				$.devIdx = idx;
@@ -175,12 +242,25 @@ define(['app', 'livesocket'], function (app) {
 				$("#dialog-editthermostatclockdevice #comboclockday").val(parseInt(sarray[0]));
 				$("#dialog-editthermostatclockdevice #clockhour").val(sarray[1]);
 				$("#dialog-editthermostatclockdevice #clockminute").val(sarray[2]);
+				$('#dialog-editthermostatclockdevice #combosensoricon').ddslick({
+					data: $.ddData,
+					width: 260,
+					height: 390,
+					selectText: "Sensor Icon",
+					imagePosition: "left"
+				});
+				//find our custom image index and select it
+				$.each($.ddData, function (i, item) {
+					if (item.value == customimage) {
+						$('#dialog-editthermostatclockdevice #combosensoricon').ddslick('select', { index: i });
+					}
+				});
 				$("#dialog-editthermostatclockdevice").i18n();
 				$("#dialog-editthermostatclockdevice").dialog("open");
 			});
 		}
 
-		EditThermostatMode = function (idx, name, description, actmode, modes, isprotected) {
+		EditThermostatMode = function (idx, name, description, actmode, modes, isprotected, customimage) {
 			HandleProtection(isprotected, function () {
 				var sarray = modes.split(";");
 				$.devIdx = idx;
@@ -198,13 +278,25 @@ define(['app', 'livesocket'], function (app) {
 					$("#dialog-editthermostatmode #combomode").append(option);
 					ii += 2;
 				}
-
+				$('#dialog-editthermostatmode #combosensoricon').ddslick({
+					data: $.ddData,
+					width: 260,
+					height: 390,
+					selectText: "Sensor Icon",
+					imagePosition: "left"
+				});
+				//find our custom image index and select it
+				$.each($.ddData, function (i, item) {
+					if (item.value == customimage) {
+						$('#dialog-editthermostatmode #combosensoricon').ddslick('select', { index: i });
+					}
+				});
 				$("#dialog-editthermostatmode #combomode").val(parseInt(actmode));
 				$("#dialog-editthermostatmode").i18n();
 				$("#dialog-editthermostatmode").dialog("open");
 			});
 		}
-		EditThermostatFanMode = function (idx, name, description, actmode, modes, isprotected) {
+		EditThermostatFanMode = function (idx, name, description, actmode, modes, isprotected, customimage) {
 			HandleProtection(isprotected, function () {
 				var sarray = modes.split(";");
 				$.devIdx = idx;
@@ -222,7 +314,19 @@ define(['app', 'livesocket'], function (app) {
 					$("#dialog-editthermostatmode #combomode").append(option);
 					ii += 2;
 				}
-
+				$('#dialog-editthermostatmode #combosensoricon').ddslick({
+					data: $.ddData,
+					width: 260,
+					height: 390,
+					selectText: "Sensor Icon",
+					imagePosition: "left"
+				});
+				//find our custom image index and select it
+				$.each($.ddData, function (i, item) {
+					if (item.value == customimage) {
+						$('#dialog-editthermostatmode #combosensoricon').ddslick('select', { index: i });
+					}
+				});
 				$("#dialog-editthermostatmode #combomode").val(parseInt(actmode));
 				$("#dialog-editthermostatmode").i18n();
 				$("#dialog-editthermostatmode").dialog("open");
@@ -759,17 +863,17 @@ define(['app', 'livesocket'], function (app) {
 
 								if (permissions.hasPermission("Admin")) {
 									if (item.Type == "P1 Smart Meter") {
-										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									}
 									else {
-										xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',' + item.AddjValue + ',' + item.AddjValue2 + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\');" data-i18n="Edit">Edit</a> ';
+										xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',' + item.AddjValue + ',' + item.AddjValue2 + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\', '+ item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									}
 								}
 							}
 							else if (item.Type == "Air Quality") {
 								xhtm += '<a class="btnsmall" onclick="ShowAirQualityLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.SubType == "Custom Sensor") {
@@ -781,37 +885,37 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SubType == "Percentage") {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.SubType == "Fan") {
 								xhtm += '<a class="btnsmall" onclick="ShowFanLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.SubType == "Soil Moisture") || (item.SubType == "Leaf Wetness") || (item.SubType == "Waterflow")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Lux") {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Weight") {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Usage") {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "Energy") || (item.SubType == "kWh") || (item.Type == "Power")) {
@@ -820,17 +924,17 @@ define(['app', 'livesocket'], function (app) {
 								if (permissions.hasPermission("Admin")) {
 									if ((item.Type == "Energy") || (item.SubType == "kWh")) {
 										if (item.EnergyMeterMode == "") { item.EnergyMeterMode = "0" }
-										xhtm += '<a class="btnsmall" onclick="EditEnergyDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', '
-										xhtm += item.SwitchTypeVal + ',' + item.EnergyMeterMode + ');" data-i18n="Edit">Edit</a> ';
+										xhtm += '<a class="btnsmall" onclick="EditEnergyDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ';
+										xhtm += item.SwitchTypeVal + ',' + item.EnergyMeterMode + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									} else {
-										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									}
 								}
 							}
 							else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 								xhtm += '<a class="btnsmall" onclick="ShowCurrentLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
@@ -839,7 +943,7 @@ define(['app', 'livesocket'], function (app) {
 									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
-									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" href="' + timerLink + '" data-i18n="Timers">Timers</a> ';
 									}
@@ -854,7 +958,7 @@ define(['app', 'livesocket'], function (app) {
 									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
-									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" href="' + timerLink + '" data-i18n="Timers">Timers</a> ';
 									}
@@ -868,58 +972,58 @@ define(['app', 'livesocket'], function (app) {
 
 								xhtm += '<a class="btnsmall" href="' + logLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.SubType == "Thermostat Clock") {
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditThermostatClock(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.DayTime + '\',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditThermostatClock(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.DayTime + '\',' + item.Protected + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.SubType == "Thermostat Mode") {
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditThermostatMode(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditThermostatMode(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.SubType == "Thermostat Fan Mode") {
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditThermostatFanMode(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditThermostatFanMode(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Voltage")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Distance")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditDistanceDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SwitchTypeVal + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditDistanceDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SwitchTypeVal + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Current")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Pressure")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Sound Level")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Alert")) {
@@ -927,12 +1031,12 @@ define(['app', 'livesocket'], function (app) {
 
 								xhtm += '<a class="btnsmall" href="' + logLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else {
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							if (item.ShowNotifications == true) {
@@ -1062,10 +1166,13 @@ define(['app', 'livesocket'], function (app) {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editutilitydevice #devicename"), 2, 100);
 				if (bValid) {
+					var cval = $('#dialog-editutilitydevice #combosensoricon').data('ddslick').selectedIndex;
+					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
+						'&customimage=' + CustomImage +
 						'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val()) +
 						'&used=true',
 						async: false,
@@ -1190,12 +1297,16 @@ define(['app', 'livesocket'], function (app) {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editdistancedevice #devicename"), 2, 100);
 				if (bValid) {
+					var cval = $('#dialog-editdistancedevice #combosensoricon').data('ddslick').selectedIndex;
+					var CustomImage = $.ddData[cval].value;
+					
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editdistancedevice #devicedescription").val()) +
 						'&switchtype=' + $("#dialog-editdistancedevice #combometertype").val() +
+						'&customimage=' + CustomImage +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -1250,6 +1361,8 @@ define(['app', 'livesocket'], function (app) {
 				if (bValid) {
 					var meteroffset = $("#dialog-editmeterdevice #meteroffset").val();
 					var meterdivider = $("#dialog-editmeterdevice #meterdivider").val();
+					var cval = $('#dialog-editmeterdevice #combosensoricon').data('ddslick').selectedIndex;
+					var CustomImage = $.ddData[cval].value;
 					if (meterType == 3) //Counter
 					{
 						devOptions.push("ValueQuantity:");
@@ -1268,6 +1381,7 @@ define(['app', 'livesocket'], function (app) {
 						'&switchtype=' + meterType +
 						'&addjvalue=' + meteroffset +
 						'&addjvalue2=' + meterdivider +
+						'&customimage=' + CustomImage +
 						'&used=true' +
 						'&options=' + b64EncodeUnicode(devOptionsParam.join('')),
 						async: false,
@@ -1323,12 +1437,15 @@ define(['app', 'livesocket'], function (app) {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editenergydevice #devicename"), 2, 100);
 				if (bValid) {
+					var cval = $('#dialog-editenergydevice #combosensoricon').data('ddslick').selectedIndex;
+					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) +
 						'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&EnergyMeterMode=' + $("#dialog-editenergydevice input:radio[name=EnergyMeterMode]:checked").val() +
+						'&customimage=' + CustomImage +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -1385,6 +1502,8 @@ define(['app', 'livesocket'], function (app) {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editsetpointdevice #devicename"), 2, 100);
 				if (bValid) {
+					var cval = $('#dialog-editsetpointdevice #combosensoricon').data('ddslick').selectedIndex;
+					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
@@ -1392,6 +1511,7 @@ define(['app', 'livesocket'], function (app) {
 						'&description=' + encodeURIComponent($("#dialog-editsetpointdevice #devicedescription").val()) +
 						'&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() +
 						'&protected=' + $('#dialog-editsetpointdevice #protected').is(":checked") +
+						'&customimage=' + CustomImage +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -1443,6 +1563,8 @@ define(['app', 'livesocket'], function (app) {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editthermostatclockdevice #devicename"), 2, 100);
 				if (bValid) {
+					var cval = $('#dialog-editthermostatclockdevice #combosensoricon').data('ddslick').selectedIndex;
+					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					bootbox.alert($.t('Setting the Clock is not finished yet!'));
 					var daytimestr = $("#dialog-editthermostatclockdevice #comboclockday").val() + ";" + $("#dialog-editthermostatclockdevice #clockhour").val() + ";" + $("#dialog-editthermostatclockdevice #clockminute").val();
@@ -1452,6 +1574,7 @@ define(['app', 'livesocket'], function (app) {
 						'&description=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicedescription").val()) +
 						'&clock=' + encodeURIComponent(daytimestr) +
 						'&protected=' + $('#dialog-editthermostatclockdevice #protected').is(":checked") +
+						'&customimage=' + CustomImage +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -1560,6 +1683,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
+			LoadCustomIcons();
 			ShowUtilities();
 
 			$("#dialog-editutilitydevice").keydown(function (event) {

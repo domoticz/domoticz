@@ -13031,10 +13031,17 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
+			std::string sused = request::findValue(&req, "used");
+			if ((idx.empty()) || (sused.empty()))
+				return;
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT Type,SubType,HardwareID FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
+			if (result.empty())
+				return;
+
 			std::string deviceid = request::findValue(&req, "deviceid");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
-			std::string sused = request::findValue(&req, "used");
 			std::string sswitchtype = request::findValue(&req, "switchtype");
 			std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
 			std::string addjvalue = request::findValue(&req, "addjvalue");
@@ -13074,15 +13081,11 @@ namespace http {
 			if (!sswitchtype.empty())
 				switchtype = atoi(sswitchtype.c_str());
 
-			if ((idx.empty()) || (sused.empty()))
-				return;
 			int used = (sused == "true") ? 1 : 0;
 			if (!maindeviceidx.empty())
 				used = 0;
 
-			int CustomImage = 0;
-			if (!sCustomImage.empty())
-				CustomImage = atoi(sCustomImage.c_str());
+			int CustomImage = (!sCustomImage.empty()) ? std::stoi(sCustomImage) : 0;
 
 			//Strip trailing spaces in 'name'
 			name = stdstring_trim(name);
@@ -13090,11 +13093,6 @@ namespace http {
 			//Strip trailing spaces in 'description'
 			description = stdstring_trim(description);
 
-			std::vector<std::vector<std::string> > result;
-
-			result = m_sql.safe_query("SELECT Type,SubType,HardwareID FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
-			if (result.empty())
-				return;
 			std::vector<std::string> sd = result[0];
 
 			unsigned char dType = atoi(sd[0].c_str());
@@ -13127,14 +13125,13 @@ namespace http {
 			{
 				if (switchtype == -1)
 				{
-					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
-						used, name.c_str(), description.c_str(), idx.c_str());
+					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', CustomImage=%d WHERE (ID == '%q')", used, name.c_str(), description.c_str(),
+							 CustomImage, idx.c_str());
 				}
 				else
 				{
-					m_sql.safe_query(
-						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
-						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')", used, name.c_str(),
+							 description.c_str(), switchtype, CustomImage, idx.c_str());
 				}
 			}
 
