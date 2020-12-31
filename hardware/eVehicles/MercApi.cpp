@@ -903,7 +903,7 @@ uint16_t CMercApi::ExtractHTTPResultCode(const std::string& sResponseHeaderLine0
 				iHttpCode = (uint16_t)std::stoi(sResponseHeaderLine0.substr(iHttpCodeStartPos, 3));
 				if (iHttpCode < 100 || iHttpCode > 599)		// Check valid resultcode range
 				{
-					iHttpCode = 9999;
+					_log.Log(LOG_STATUS, "Found non-standard resultcode (%d) in HTTP response statusline: %s", iHttpCode, sResponseHeaderLine0.c_str());
 				}
 			}
 		}
