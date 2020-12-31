@@ -3364,11 +3364,11 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 
 	if (timeout > 0)
 	{
-		_log.Log(LOG_STATUS, "dzVents: Executing shellcommmand %s for max %d seconds", command.c_str(), timeout);
+		_log.Debug(DEBUG_NORM, "dzVents: Executing shellcommmand %s for max %d seconds", command.c_str(), timeout);
 	}
 	else
 	{
-		_log.Log(LOG_STATUS, "dzVents: Executing shellcommmand %s", command.c_str());
+		_log.Debug(DEBUG_NORM, "dzVents: Executing shellcommmand %s", command.c_str());
 	}
 
 #ifdef WIN32
@@ -3398,9 +3398,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 	{
 		std::string cmd = "cmd /c ";
 		cmd.append(command.c_str());
-#ifdef _DEBUG
-		_log.Log(LOG_STATUS, "Could not execute command, trying again using %s", cmd.c_str());
-#endif
+		_log.Debug(DEBUG_NORM, "Could not execute command, trying again using %s", cmd.c_str());
 		ret = CreateProcess(NULL, const_cast<char *>(cmd.c_str()), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
 	}
 
@@ -3419,7 +3417,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 
 		if (waitstatus == WAIT_TIMEOUT)
 		{
-			_log.Log(LOG_ERROR, "%s has been running longer than specified time (%d seconds), cancelling command",command.c_str(),timeout);
+			_log.Log(LOG_ERROR, "dzVents: %s has been running longer than specified timeout (%d seconds), cancelling command",command.c_str(),timeout);
 			timeoutOccurred = true;
 			exitcode = 9;   // Analog to error on unix
 			commmandExecutedSuccesfully = true;
@@ -3441,9 +3439,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 
 			DWORD exitCode;
 			GetExitCodeProcess(pi.hProcess, &exitCode);
-#ifdef _DEBUG
-			_log.Log(LOG_STATUS, "Exit code %ld", exitCode);
-#endif
+			_log.Debug(DEBUG_NORM, "Exit code %ld", exitCode);
 			exitcode = exitCode;
 			commmandExecutedSuccesfully = true;
 		}
@@ -3526,7 +3522,7 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 			do
 			{
 				if (!sLine.empty())
-					_log.Log(LOG_ERROR, "ExecuteScriptError: %s", sLine.c_str());
+					_log.Debug(DEBUG_NORM, "ExecuteScriptError: %s", sLine.c_str());
 				scriptstderr.append(sLine);
 				getline(infile, sLine);
 				if (!infile.eof())
