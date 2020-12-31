@@ -13082,7 +13082,9 @@ namespace http {
 
 			int CustomImage = 0;
 			if (!sCustomImage.empty())
+			{
 				CustomImage = atoi(sCustomImage.c_str());
+			}
 
 			//Strip trailing spaces in 'name'
 			name = stdstring_trim(name);
@@ -13137,7 +13139,11 @@ namespace http {
 						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
 				}
 			}
-
+			if (!sCustomImage.empty())
+			{
+				m_sql.safe_query("UPDATE DeviceStatus SET CustomImage=%d WHERE (ID == '%q')",
+						CustomImage, idx.c_str());
+			}
 			if (bHasstrParam1)
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%q', StrParam2='%q' WHERE (ID == '%q')",
