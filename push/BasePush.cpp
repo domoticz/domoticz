@@ -717,7 +717,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 			sprintf(szData, "%g", std::stof(rawsendValue));
 		}
 		else
-			return; //unhandled type
+			return ""; //unhandled type
 	}
 	catch (...)
 	{
