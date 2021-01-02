@@ -170,6 +170,9 @@ void CHttpPush::DoHttpPush()
 		{
 			sendValue = ProcessSendValue(sendValue, delpos, nValue, false, dType, dSubType, metertype);
 		}
+		if (sendValue.empty())
+			continue;
+
 		ltargetDeviceId += "_";
 		ltargetDeviceId += ldelpos;
 
@@ -203,53 +206,50 @@ void CHttpPush::DoHttpPush()
 		replaceAll(httpData, "%h", std::string(hostname));
 		replaceAll(httpData, "%idx", sdeviceId);
 
-		if (!sendValue.empty())
-		{
-			std::string sResult;
-			std::vector<std::string> ExtraHeaders;
-			if (httpAuthInt == 1) {			// BASIC authentication
-				std::stringstream sstr;
-				sstr << httpAuthBasicLogin << ":" << httpAuthBasicPassword;
-				std::string m_AccessToken = base64_encode(sstr.str());
-				ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
-			}
-			sendValue = CURLEncode::URLEncode(sendValue);
+		std::string sResult;
+		std::vector<std::string> ExtraHeaders;
+		if (httpAuthInt == 1) {			// BASIC authentication
+			std::stringstream sstr;
+			sstr << httpAuthBasicLogin << ":" << httpAuthBasicPassword;
+			std::string m_AccessToken = base64_encode(sstr.str());
+			ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
+		}
+		sendValue = CURLEncode::URLEncode(sendValue);
 
-			// data
-			if (httpDebugActive) {
-				_log.Log(LOG_NORM, "HttpLink: sending global variable %s with value: %s", targetVariable.c_str(), sendValue.c_str());
-			}
+		// data
+		if (httpDebugActive) {
+			_log.Log(LOG_NORM, "HttpLink: sending global variable %s with value: %s", targetVariable.c_str(), sendValue.c_str());
+		}
 
-			if (httpMethodInt == 0) {			// GET
-				if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, true))
-				{
-					_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with GET!");
-				}
+		if (httpMethodInt == 0) {			// GET
+			if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, true))
+			{
+				_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with GET!");
 			}
-			else if (httpMethodInt == 1) {		// POST
-				if (!httpHeaders.empty())
-				{
-					// Add additional headers
-					std::vector<std::string> ExtraHeaders2;
-					StringSplit(httpHeaders, "\r\n", ExtraHeaders2);
-					std::copy(ExtraHeaders2.begin(), ExtraHeaders2.end(), std::back_inserter(ExtraHeaders));
-				}
-				if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, true, true))
-				{
-					_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with POST!");
-				}
+		}
+		else if (httpMethodInt == 1) {		// POST
+			if (!httpHeaders.empty())
+			{
+				// Add additional headers
+				std::vector<std::string> ExtraHeaders2;
+				StringSplit(httpHeaders, "\r\n", ExtraHeaders2);
+				std::copy(ExtraHeaders2.begin(), ExtraHeaders2.end(), std::back_inserter(ExtraHeaders));
 			}
-			else if (httpMethodInt == 2) {		// PUT
-				if (!HTTPClient::PUT(httpUrl, httpData, ExtraHeaders, sResult, true))
-				{
-					_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with PUT!");
-				}
+			if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, true, true))
+			{
+				_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with POST!");
 			}
+		}
+		else if (httpMethodInt == 2) {		// PUT
+			if (!HTTPClient::PUT(httpUrl, httpData, ExtraHeaders, sResult, true))
+			{
+				_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with PUT!");
+			}
+		}
 
-			// debug
-			if (httpDebugActive) {
-				_log.Log(LOG_NORM, "HttpLink: response %s", sResult.c_str());
-			}
+		// debug
+		if (httpDebugActive) {
+			_log.Log(LOG_NORM, "HttpLink: response %s", sResult.c_str());
 		}
 	}
 }

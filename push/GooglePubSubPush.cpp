@@ -208,6 +208,9 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 		{
 			sendValue = ProcessSendValue(sendValue, delpos, nValue, false, dType, dSubType, metertype);
 		}
+		if (sendValue.empty())
+			continue;
+
 		ltargetDeviceId += "_";
 		ltargetDeviceId += ldelpos;
 
@@ -226,74 +229,71 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 		replaceAll(googlePubSubData, "%h", std::string(hostname));
 		replaceAll(googlePubSubData, "%idx", sdeviceId);
 
-		if (!sendValue.empty())
-		{
-			std::stringstream python_DirT;
+		std::stringstream python_DirT;
 
 #ifdef ENABLE_PYTHON_DECAP
 #ifdef WIN32
-			python_DirT << szUserDataFolder << "scripts\\python\\";
-			std::string filename = szUserDataFolder + "scripts\\python\\" + "googlepubsub.py";
+		python_DirT << szUserDataFolder << "scripts\\python\\";
+		std::string filename = szUserDataFolder + "scripts\\python\\" + "googlepubsub.py";
 #else
-			python_DirT << szUserDataFolder << "scripts/python/";
-			std::string filename = szUserDataFolder + "scripts/python/" + "googlepubsub.py";
+		python_DirT << szUserDataFolder << "scripts/python/";
+		std::string filename = szUserDataFolder + "scripts/python/" + "googlepubsub.py";
 #endif
 
-			wchar_t * argv[1];
-			argv[0] = (wchar_t *)filename.c_str();
-			PySys_SetArgv(1, argv);
+		wchar_t * argv[1];
+		argv[0] = (wchar_t *)filename.c_str();
+		PySys_SetArgv(1, argv);
 
-			std::string python_Dir = python_DirT.str();
-			if (!Py_IsInitialized()) {
-				Py_SetProgramName(Py_GetProgramFullPath());
-				ialize();
-				PyModule_Create(&eventModuledef);
+		std::string python_Dir = python_DirT.str();
+		if (!Py_IsInitialized()) {
+			Py_SetProgramName(Py_GetProgramFullPath());
+			ialize();
+			PyModule_Create(&eventModuledef);
 
-				// TODO: may have a small memleak, remove references in destructor
-				PyObject* sys = PyImport_ImportModule("sys");
-				PyObject *path = PyObject_GetAttrString(sys, "path");
-			}
-
-			FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-			object main_module = import("__main__");
-			object main_namespace = dict(main_module.attr("__dict__")).copy();
-
-			try {
-				object domoticz_module = import("domoticz");
-				object reloader = import("reloader");
-				reloader.attr("_check_reload")();
-
-				object domoticz_namespace = domoticz_module.attr("__dict__");
-				main_namespace["data"] = googlePubSubData;
-				domoticz_namespace["data"] = googlePubSubData;
-
-				// debug
-				if (googlePubSubDebugActive) {
-					_log.Log(LOG_NORM, "GooglePubSubLink: data to send : %s", googlePubSubData.c_str());
-				}
-
-				object ignored = exec_file(str(filename), main_namespace);
-			}
-			catch (...) {
-				PyObject *exc, *val, *tb;
-				PyErr_Fetch(&exc, &val, &tb);
-				boost::python::handle<> hexc(exc), hval(boost::python::allow_null(val)), htb(boost::python::allow_null(tb));
-				boost::python::object traceback(boost::python::import("traceback"));
-
-				boost::python::object format_exception(traceback.attr("format_exception"));
-				boost::python::object formatted_list = format_exception(hexc, hval, htb);
-				boost::python::object formatted = boost::python::str("\n").join(formatted_list);
-
-				object traceback_module = import("traceback");
-				std::string formatted_str = extract<std::string>(formatted);
-				//PyErr_Print();
-				PyErr_Clear();
-				_log.Log(LOG_ERROR, "%s", formatted_str.c_str());
-			}
-#else
-			_log.Log(LOG_ERROR, "Error sending data to GooglePubSub : Python not available!");
-#endif
+			// TODO: may have a small memleak, remove references in destructor
+			PyObject* sys = PyImport_ImportModule("sys");
+			PyObject *path = PyObject_GetAttrString(sys, "path");
 		}
+
+		FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+		object main_module = import("__main__");
+		object main_namespace = dict(main_module.attr("__dict__")).copy();
+
+		try {
+			object domoticz_module = import("domoticz");
+			object reloader = import("reloader");
+			reloader.attr("_check_reload")();
+
+			object domoticz_namespace = domoticz_module.attr("__dict__");
+			main_namespace["data"] = googlePubSubData;
+			domoticz_namespace["data"] = googlePubSubData;
+
+			// debug
+			if (googlePubSubDebugActive) {
+				_log.Log(LOG_NORM, "GooglePubSubLink: data to send : %s", googlePubSubData.c_str());
+			}
+
+			object ignored = exec_file(str(filename), main_namespace);
+		}
+		catch (...) {
+			PyObject *exc, *val, *tb;
+			PyErr_Fetch(&exc, &val, &tb);
+			boost::python::handle<> hexc(exc), hval(boost::python::allow_null(val)), htb(boost::python::allow_null(tb));
+			boost::python::object traceback(boost::python::import("traceback"));
+
+			boost::python::object format_exception(traceback.attr("format_exception"));
+			boost::python::object formatted_list = format_exception(hexc, hval, htb);
+			boost::python::object formatted = boost::python::str("\n").join(formatted_list);
+
+			object traceback_module = import("traceback");
+			std::string formatted_str = extract<std::string>(formatted);
+			//PyErr_Print();
+			PyErr_Clear();
+			_log.Log(LOG_ERROR, "%s", formatted_str.c_str());
+		}
+#else
+		_log.Log(LOG_ERROR, "Error sending data to GooglePubSub : Python not available!");
+#endif
 	}
 }
 

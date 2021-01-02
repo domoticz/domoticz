@@ -141,35 +141,35 @@ void CInfluxPush::DoInfluxPush()
 		else
 			sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 
-		if (!sendValue.empty())
+		if (sendValue.empty())
+			continue;
+
+		std::string szKey;
+		std::string vType = CBasePush::DropdownOptionsValue(std::stoi(sd[0]), delpos);
+		stdreplace(vType, " ", "-");
+		stdreplace(name, " ", "-");
+		szKey = vType + ",idx=" + sd[0] + ",name=" + name;
+
+		_tPushItem pItem;
+		pItem.skey = szKey;
+		pItem.stimestamp = atime;
+		pItem.svalue = sendValue;
+
+		if (targetType == 0)
 		{
-			std::string szKey;
-			std::string vType = CBasePush::DropdownOptionsValue(std::stoi(sd[0]), delpos);
-			stdreplace(vType, " ", "-");
-			stdreplace(name, " ", "-");
-			szKey = vType + ",idx=" + sd[0] + ",name=" + name;
-
-			_tPushItem pItem;
-			pItem.skey = szKey;
-			pItem.stimestamp = atime;
-			pItem.svalue = sendValue;
-
-			if (targetType == 0)
+			//Only send on change
+			std::map<std::string, _tPushItem>::iterator itt = m_PushedItems.find(szKey);
+			if (itt != m_PushedItems.end())
 			{
-				//Only send on change
-				std::map<std::string, _tPushItem>::iterator itt = m_PushedItems.find(szKey);
-				if (itt != m_PushedItems.end())
-				{
-					if (sendValue == itt->second.svalue)
-						continue;
-				}
-				m_PushedItems[szKey] = pItem;
+				if (sendValue == itt->second.svalue)
+					continue;
 			}
-
-			std::lock_guard<std::mutex> l(m_background_task_mutex);
-			if (m_background_task_queue.size() < 50)
-				m_background_task_queue.push_back(pItem);
+			m_PushedItems[szKey] = pItem;
 		}
+
+		std::lock_guard<std::mutex> l(m_background_task_mutex);
+		if (m_background_task_queue.size() < 50)
+			m_background_task_queue.push_back(pItem);
 	}
 }
 

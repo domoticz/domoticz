@@ -128,84 +128,84 @@ void CFibaroPush::DoFibaroPush()
 			GetLightStatus(dType, dSubType, STYPE_OnOff, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 			sendValue = lstatus;
 		}
-		if (!sendValue.empty())
-		{
-			std::string sResult;
-			std::stringstream sPostData;
-			std::stringstream Url;
-			std::vector<std::string> ExtraHeaders;
+		if (sendValue.empty())
+			continue;
 
-			Url << "http://";
+		std::string sResult;
+		std::stringstream sPostData;
+		std::stringstream Url;
+		std::vector<std::string> ExtraHeaders;
 
-			if (bIsV4) {
-				// Create basic authentication header
-				std::stringstream sstr;
-				sstr << fibaroUsername << ":" << fibaroPassword;
-				std::string m_AccessToken = base64_encode(sstr.str());
-				ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
+		Url << "http://";
+
+		if (bIsV4) {
+			// Create basic authentication header
+			std::stringstream sstr;
+			sstr << fibaroUsername << ":" << fibaroPassword;
+			std::string m_AccessToken = base64_encode(sstr.str());
+			ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
+		}
+		else {
+			Url << fibaroUsername << ":" << fibaroPassword << "@"; // Add user name in url for earlier than V4
+		}
+
+		Url << fibaroIP << "/";
+
+		sendValue = CURLEncode::URLEncode(sendValue);
+
+		if (targetType == 0) {
+			Url << "api/globalVariables";
+
+			if (bIsV4)
+				Url << "/" << targetVariable;
+
+			sPostData << R"({"name": ")" << targetVariable << R"(", "value": ")" << sendValue << "\"";
+
+			if (bIsV4)
+				sPostData << ", \"invokeScenes\": true";
+
+			sPostData << " }";
+
+			if (fibaroDebugActive) {
+				_log.Log(LOG_NORM, "FibaroLink: sending global variable %s with value: %s", targetVariable.c_str(), sendValue.c_str());
 			}
-			else {
-				Url << fibaroUsername << ":" << fibaroPassword << "@"; // Add user name in url for earlier than V4
+			if (!HTTPClient::PUT(Url.str(), sPostData.str(), ExtraHeaders, sResult))
+			{
+				_log.Log(LOG_ERROR, "Error sending data to Fibaro!");
+
 			}
-
-			Url << fibaroIP << "/";
-
-			sendValue = CURLEncode::URLEncode(sendValue);
-
-			if (targetType == 0) {
-				Url << "api/globalVariables";
-
-				if (bIsV4)
-					Url << "/" << targetVariable;
-
-				sPostData << R"({"name": ")" << targetVariable << R"(", "value": ")" << sendValue << "\"";
-
-				if (bIsV4)
-					sPostData << ", \"invokeScenes\": true";
-
-				sPostData << " }";
-
+		}
+		else if (targetType == 1) {
+			Url << "api/callAction?deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
+			if (fibaroDebugActive) {
+				_log.Log(LOG_NORM, "FibaroLink: sending value %s to property %s of virtual device id %d", sendValue.c_str(), targetProperty.c_str(), targetDeviceID);
+			}
+			if (!HTTPClient::GET(Url.str(), ExtraHeaders, sResult))
+			{
+				_log.Log(LOG_ERROR, "Error sending data to Fibaro!");
+			}
+		}
+		else if (targetType == 2) {
+			if (((delpos == 0) && (lstatus == "Off")) || ((delpos == 1) && (lstatus == "On"))) {
+				Url << "api/sceneControl?id=" << targetDeviceID << "&action=start";
 				if (fibaroDebugActive) {
-					_log.Log(LOG_NORM, "FibaroLink: sending global variable %s with value: %s", targetVariable.c_str(), sendValue.c_str());
-				}
-				if (!HTTPClient::PUT(Url.str(), sPostData.str(), ExtraHeaders, sResult))
-				{
-					_log.Log(LOG_ERROR, "Error sending data to Fibaro!");
-
-				}
-			}
-			else if (targetType == 1) {
-				Url << "api/callAction?deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
-				if (fibaroDebugActive) {
-					_log.Log(LOG_NORM, "FibaroLink: sending value %s to property %s of virtual device id %d", sendValue.c_str(), targetProperty.c_str(), targetDeviceID);
+					_log.Log(LOG_NORM, "FibaroLink: activating scene %d", targetDeviceID);
 				}
 				if (!HTTPClient::GET(Url.str(), ExtraHeaders, sResult))
 				{
 					_log.Log(LOG_ERROR, "Error sending data to Fibaro!");
 				}
 			}
-			else if (targetType == 2) {
-				if (((delpos == 0) && (lstatus == "Off")) || ((delpos == 1) && (lstatus == "On"))) {
-					Url << "api/sceneControl?id=" << targetDeviceID << "&action=start";
-					if (fibaroDebugActive) {
-						_log.Log(LOG_NORM, "FibaroLink: activating scene %d", targetDeviceID);
-					}
-					if (!HTTPClient::GET(Url.str(), ExtraHeaders, sResult))
-					{
-						_log.Log(LOG_ERROR, "Error sending data to Fibaro!");
-					}
+		}
+		else if (targetType == 3) {
+			if (((delpos == 0) && (lstatus == "Off")) || ((delpos == 1) && (lstatus == "On"))) {
+				Url << "api/settings/reboot";
+				if (fibaroDebugActive) {
+					_log.Log(LOG_NORM, "FibaroLink: reboot");
 				}
-			}
-			else if (targetType == 3) {
-				if (((delpos == 0) && (lstatus == "Off")) || ((delpos == 1) && (lstatus == "On"))) {
-					Url << "api/settings/reboot";
-					if (fibaroDebugActive) {
-						_log.Log(LOG_NORM, "FibaroLink: reboot");
-					}
-					if (!HTTPClient::POST(Url.str(), sPostData.str(), ExtraHeaders, sResult))
-					{
-						_log.Log(LOG_ERROR, "Error sending data to Fibaro!");
-					}
+				if (!HTTPClient::POST(Url.str(), sPostData.str(), ExtraHeaders, sResult))
+				{
+					_log.Log(LOG_ERROR, "Error sending data to Fibaro!");
 				}
 			}
 		}
