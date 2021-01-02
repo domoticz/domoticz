@@ -108,67 +108,67 @@ void CInfluxPush::DoInfluxPush()
 		"WHERE (A.PushType==%d AND A.DeviceRowID == '%" PRIu64 "' AND A.Enabled==1 AND A.DeviceRowID==B.ID)",
 		PushType::PUSHTYPE_INFLUXDB,
 		m_DeviceRowIdx);
-	if (!result.empty())
+	if (result.empty())
+		return;
+
+	time_t atime = mytime(nullptr);
+	std::string sendValue;
+	for (const auto &sd : result)
 	{
-		time_t atime = mytime(nullptr);
-		std::string sendValue;
-		for (const auto &sd : result)
+		int delpos = atoi(sd[1].c_str());
+		int dType = atoi(sd[3].c_str());
+		int dSubType = atoi(sd[4].c_str());
+		int nValue = atoi(sd[5].c_str());
+		std::string sValue = sd[6];
+		int targetType = atoi(sd[7].c_str());
+		//std::string targetVariable = sd[8].c_str();
+		//int targetDeviceID = atoi(sd[9].c_str());
+		//std::string targetProperty = sd[10].c_str();
+		int includeUnit = atoi(sd[11].c_str());
+		std::string name = sd[12];
+		int metertype = atoi(sd[13].c_str());
+
+		std::vector<std::string> strarray;
+		if (sValue.find(';') != std::string::npos)
 		{
-			int delpos = atoi(sd[1].c_str());
-			int dType = atoi(sd[3].c_str());
-			int dSubType = atoi(sd[4].c_str());
-			int nValue = atoi(sd[5].c_str());
-			std::string sValue = sd[6];
-			int targetType = atoi(sd[7].c_str());
-			//std::string targetVariable = sd[8].c_str();
-			//int targetDeviceID = atoi(sd[9].c_str());
-			//std::string targetProperty = sd[10].c_str();
-			int includeUnit = atoi(sd[11].c_str());
-			std::string name = sd[12];
-			int metertype = atoi(sd[13].c_str());
-
-			std::vector<std::string> strarray;
-			if (sValue.find(';') != std::string::npos)
+			StringSplit(sValue, ";", strarray);
+			if (int(strarray.size()) >= delpos)
 			{
-				StringSplit(sValue, ";", strarray);
-				if (int(strarray.size()) >= delpos)
-				{
-					std::string rawsendValue = strarray[delpos - 1];
-					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
-				}
+				std::string rawsendValue = strarray[delpos - 1];
+				sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 			}
-			else
-				sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+		}
+		else
+			sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 
-			if (!sendValue.empty())
+		if (!sendValue.empty())
+		{
+			std::string szKey;
+			std::string vType = CBasePush::DropdownOptionsValue(std::stoi(sd[0]), delpos);
+			stdreplace(vType, " ", "-");
+			stdreplace(name, " ", "-");
+			szKey = vType + ",idx=" + sd[0] + ",name=" + name;
+
+			_tPushItem pItem;
+			pItem.skey = szKey;
+			pItem.stimestamp = atime;
+			pItem.svalue = sendValue;
+
+			if (targetType == 0)
 			{
-				std::string szKey;
-				std::string vType = CBasePush::DropdownOptionsValue(std::stoi(sd[0]), delpos);
-				stdreplace(vType, " ", "-");
-				stdreplace(name, " ", "-");
-				szKey = vType + ",idx=" + sd[0] + ",name=" + name;
-
-				_tPushItem pItem;
-				pItem.skey = szKey;
-				pItem.stimestamp = atime;
-				pItem.svalue = sendValue;
-
-				if (targetType == 0)
+				//Only send on change
+				std::map<std::string, _tPushItem>::iterator itt = m_PushedItems.find(szKey);
+				if (itt != m_PushedItems.end())
 				{
-					//Only send on change
-					std::map<std::string, _tPushItem>::iterator itt = m_PushedItems.find(szKey);
-					if (itt != m_PushedItems.end())
-					{
-						if (sendValue == itt->second.svalue)
-							continue;
-					}
-					m_PushedItems[szKey] = pItem;
+					if (sendValue == itt->second.svalue)
+						continue;
 				}
-
-				std::lock_guard<std::mutex> l(m_background_task_mutex);
-				if (m_background_task_queue.size() < 50)
-					m_background_task_queue.push_back(pItem);
+				m_PushedItems[szKey] = pItem;
 			}
+
+			std::lock_guard<std::mutex> l(m_background_task_mutex);
+			if (m_background_task_queue.size() < 50)
+				m_background_task_queue.push_back(pItem);
 		}
 	}
 }
