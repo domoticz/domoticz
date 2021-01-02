@@ -105,7 +105,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
 
             return vm.device.Type === 'RFXMeter'
                 || (vm.device.Type == 'P1 Smart Meter' && vm.device.SubType == 'Gas')
-                || (typeof vm.device.Counter != 'undefined' && !isCounterLogSpline());
+                || (typeof vm.device.Counter != 'undefined' && !isInstantAndCounterLog());
         }
 
         function isInstantAndCounterLog() {
