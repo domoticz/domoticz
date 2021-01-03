@@ -1,0 +1,33 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- TZE96 Plus Z-WAVE Color Touch Weekly Programming Heating Thermostat -->
+  <MetaData>
+    <MetaDataItem name="Name">Color Touch Weekly Programming Heating Thermostat</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.tkbhome.com/Z-WAVE-Color-Touch-Weekly-Programming-Heating-Thermostat_012_200.html</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/wenzhou/tze96.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">http://www.tkbhome.com/upimg/file/1124240362332.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Make sure the thermostat in the main interface is in OFF mode.
+2. Have Z-Wave the controller enter inclusion mode.
+3. Press Up button on thermostat 3 times in 1.5 seconds. The (Z) icon will twinkle at a certain interval.
+4. After the twinkle stop the (Z) icon displaying means the product is in the Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Make sure the thermostat in the main interface is in OFF mode.
+2. Have Z-Wave the controller enter exclusion mode.
+3. Press Up button on thermostat 3 times in 1.5 seconds. The (Z) icon will twinkle at a certain interval.
+4. After the twinkle stop the (Z) icon not displaying means the product is not the Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Turning thermostat to OFF mode, press MENU for 3 seconds then go the last parameter setting page by pressing Next 3 times. Set the Restore parameter.</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">TZE96</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Mathieu Cartoixa" date="27 December 2020" revision="1">http://www.tkbhome.com/Z-WAVE-Color-Touch-Weekly-Programming-Heating-Thermostat_012_200.html</Entry>
+      <Entry author="Jean-François Auger" date="2 January 2021" revision="2">fix image metadata element</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- Configuration Command Class  -->
+  <CommandClass id="112">
+    <!-- Memory Function -->
+    <Value genre="config" index="4" label="Memory Function" max="1" min="0" size="1" type="list" value="1">
+      <Help>The Memory Function recovers the operating mode after a power failure.</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="1"/>
+    </Value>
+  </CommandClass>
+</Product>

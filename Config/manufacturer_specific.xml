@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="133" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="145" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -600,6 +600,7 @@
     <Product config="evolve/lfm-20.xml" id="3133" name="LFM-20 Fixture Module" type="5246"/>
     <Product config="evolve/lsm-15.xml" id="3533" name="LSM-15 Wall Switch" type="5257"/>
     <Product config="evolve/ltm-5.xml" id="3033" name="LTM-5 Wall Switch Transmitter" type="5457"/>
+    <Product config="evolve/t-100.xml" id="5434" name="T-100 Thermostat" type="4556" />
   </Manufacturer>
   <Manufacturer id="036F" name="Evolvere SpA"></Manufacturer>
   <Manufacturer id="0036" name="Exceptional Innovations"></Manufacturer>
@@ -685,6 +686,7 @@
     <Product config="fibaro/fgs213.xml" id="2000" name="FGS213 Switch" type="0403"/>
     <Product config="fibaro/fgs213.xml" id="3000" name="FGS213 Switch" type="0403"/>
     <Product config="fibaro/fgs213.xml" id="4000" name="FGS213 Switch" type="0403"/>
+    <Product config="fibaro/fgs214.xml" id="4000" name="FGS214 Single Relay Switch" type="0404"/>
     <Product config="fibaro/fgs221.xml" id="0104" name="FGS221 Double Relay Switch 2x1.5kW" type="0200"/>
     <Product config="fibaro/fgs221.xml" id="0105" name="FGS221 Double Relay Switch 2x1.5kW" type="0200"/>
     <Product config="fibaro/fgs221.xml" id="0106" name="FGS221 Double Relay Switch 2x1.5kW" type="0200"/>
@@ -704,6 +706,7 @@
     <Product config="fibaro/fgwpe.xml" id="1000" name="FGWPE/F Wall Plug" type="0600"/>
     <Product config="fibaro/fgwpe.xml" id="1000" name="FGWPE/F Wall Plug" type="0200"/>
     <Product config="fibaro/fgwoe.xml" id="1000" name="FGWOE/F Walli Outlet" type="1f01"/>
+    <Product config="fibaro/fgwpb121.xml" id="2000" name="FGWPB-121 Wall Plug" type="1401"/>
     <Product config="fibaro/fgwpfzw5.xml" id="1001" name="FGWPE/F Wall Plug Gen5" type="0602"/>
     <Product config="fibaro/fgwpfzw5.xml" id="1003" name="FGWPE/F Wall Plug Gen5" type="0602"/>
     <Product config="fibaro/fgms.xml" id="1001" name="FGMS001 Motion Sensor" type="0800"/>
@@ -949,6 +952,7 @@
     <Product config="homeseer/hsm200.xml" id="0001" name="HSM200 Wireless Multi-Sensor" type="0004"/>
   </Manufacturer>
   <Manufacturer id="000c" name="HomeSeer Technologies">
+    <Product config="homeseer/hsm200.xml" id="0001" name="HSM200 Wireless Multi-Sensor" type="0004"/>
     <Product config="homeseer/hs-ws100plus.xml" id="3033" name="HS-WS100+ Wall Switch" type="4447"/>
     <Product config="homeseer/hs-wd100plus.xml" id="3034" name="HS-WD100+ Wall Dimmer" type="4447"/>
     <Product config="homeseer/hs-ws200plus.xml" id="3035" name="HS-WS200+ Wall Switch" type="4447"/>
@@ -958,6 +962,7 @@
     <Product config="homeseer/hs-ls100plus.xml" id="000a" name="HS-LS100+ Leak Sensor" type="0201"/>
     <Product config="homeseer/hs-fls100plus.xml" id="000b" name="HS-FLS100+ Floodlight Sensor" type="0201"/>
     <Product config="homeseer/hs-fc200plus.xml" id="0001" name="HS-FC200+ Z-Wave Plus Fan Controller" type="0203"/>
+    <Product config="homeseer/hs-fs100plus.xml" id="0001" name="HS-FS100+ Flex Sensor" type="0202"/>
   </Manufacturer>
   <Manufacturer id="0275" name="Honest Technology"></Manufacturer>
   <Manufacturer id="023D" name="Honest Technology Co. Ltd"></Manufacturer>
@@ -1029,6 +1034,7 @@
     <Product id="0001" name="RAone SmartDimmer Wall Dimmer Module" type="0001"/>
   </Manufacturer>
   <Manufacturer id="0312" name="Inovelli">
+    <Product config="inovelli/lzw30.xml" id="ff04" name="LZW30 Switch" type="ff00"/>
     <Product config="inovelli/nzw30.xml" id="1e01" name="NZW30 Smart Switch" type="1e01"/>
     <Product config="inovelli/nzw30.xml" id="1e00" name="NZW30 Smart Switch (w/Scene)" type="1e00"/>
     <Product config="inovelli/nzw30.xml" id="1e02" name="NZW30 Smart Toggle Switch (w/Scene)" type="1e02"/>
@@ -1155,6 +1161,7 @@
     <Product config="leviton/dzpa1.xml" id="0001" name="Leviton DZPA1 Plug-In Outlet" type="3601"/>
     <Product config="leviton/vrpd3.xml" id="0334" name="Leviton VRPD3-1LW 300W Plug-In Lamp Dimming Module" type="1706"/>
     <Product config="leviton/zw4sf.xml" id="0002" name="ZW4SF-1BW Decora Smart 4 Speed Fan Controller" type="0038"/>
+    <Product config="leviton/zw15r.xml" id="0002" name="ZW15R Decora Smart Tamper-Resistant Outlet with Z-Wave Technology" type="0037"/>
   </Manufacturer>
   <Manufacturer id="0015" name="Lexel"></Manufacturer>
   <Manufacturer id="015B" name="LG Electronics"></Manufacturer>
@@ -1246,9 +1253,10 @@
     <Product config="mcohome/mh7h.xml" id="5102" name="MH7H Water/Electrical Heating Thermostat" type="0712"/>
     <Product config="mcohome/mh7h.xml" id="5102" name="MH7H Water/Electrical Heating Thermostat" type="0732"/>
     <!--US-->
-    <Product config="mcohome/mhs513.xml" id="0103" name="Touch Panel Switch MH-S513" type="5102"/>
+    <Product config="mcohome/mhs513.xml" id="5102" name="MH-S513 Touch Panel Switch" type="0103"/>
     <!--AU-->
-    <Product config="mcohome/mhp511.xml" id="1453" name="Dimmer Touch Panel Switch MH-P511" type="511a"/>
+    <Product config="mcohome/mhp511.xml" id="1453" name="MH-P511 Dimmer Touch Panel Switch" type="511a"/>
+    <Product config="mcohome/mhs513.xml" id="5103" name="MH-S513 Touch Panel Switch" type="5131"/>
   </Manufacturer>
   <Manufacturer id="0222" name="MCT CO. LTD"></Manufacturer>
   <Manufacturer id="0027" name="Meedio LLC"></Manufacturer>
@@ -1288,7 +1296,7 @@
     <Product config="namron/4512710.xml" id="d005" type="0200" name="Z-Wave Dimmer 400W"/>
     <Product config="namron/4512715.xml" id="d006" type="0200" name="Z-Wave Switch 400W"/>
     <Product config="namron/4512724.xml" id="d00c" type="0200" name="Z-Wave Dimmer 2 400W"/>
-    
+    <Product config="namron/4512714.xml" id="a305" type="0300" name="Z-wave 4 Channel Remote" />
   </Manufacturer>
   <Manufacturer id="016E" name="Nanjing Easthouse Electrical Co"></Manufacturer>
   <Manufacturer id="0121" name="Napco Security Technologies, Inc.">
@@ -1530,6 +1538,7 @@
     <Product id="000a" name="TZ4Z-IHD RCS Thermostat" type="0001"/>
     <Product config="rcs/em52-zw.xml" id="3532" name="EM52-ZW Z-Wave Home Energy Meter" type="454d"/>
     <Product config="rcs/pm12-zw.xml" id="3132" name="PM12-ZW Z-Wave Power Monitoring Module" type="504d"/>
+    <Product type="5442" id="5432" name="TBZ48 Thermostat" config="linear/GC-TBZ48.xml" />
   </Manufacturer>
   <Manufacturer id="0216" name="RET Nanjing Intelligence System"></Manufacturer>
   <Manufacturer id="0153" name="Revolv"></Manufacturer>
@@ -1606,6 +1615,7 @@
     <Product config="shenzen_neo/nas-ds01z.xml" id="2082" name="Door/Window Detector" type="0003"/>
     <Product config="shenzen_neo/nas-wr01z.xml" id="0087" name="NAS-WR01Z Power plug 12A" type="0003"/>
     <Product config="shenzen_neo/nas-wr01z.xml" id="1087" name="NAS-WR01Z Power plug 12A" type="0003"/>
+    <Product config="shenzen_neo/nas-sc03ze.xml" id="102c" name="NAS-SC03ZE Roller Shutter" type="0200"/>
     <!-- NAS-WR01ZE and NAS-WR01Z hardware looks identical but are based on different SDK-->
     <Product config="shenzen_neo/nas-wr01ze.xml" id="1027" name="NAS-WR01ZE Power plug 12A" type="0100"/>
     <Product config="shenzen_neo/nas-wr01ze.xml" id="1027" name="NAS-WR01ZE Power plug 12A" type="0200"/>
@@ -1630,6 +1640,8 @@
     <Product config="shenzen_neo/ls02ch.xml" id="108b" name="Wall Switch (2 channels)" type="0003"/>
     <Product config="shenzen_neo/ls01ch.xml" id="008c" name="Wall Switch (1 channel)" type="0003"/>
     <Product config="shenzen_neo/ls01ch.xml" id="108c" name="Wall Switch (1 channel)" type="0003"/>
+	<!-- NAS-CS01Z Curtain Switch -->
+	<Product config="shenzen_neo/nas-cs01z.xml" id="102c" name="NAS-CS01Z Curtain Switch" type="0200"/>
   </Manufacturer>
   <Manufacturer id="032C" name="Shenzhen Saykey Technology">
     <Product config="shenzen_saykey/sk-3007-05.xml" id="0005" name="Curtain Motor Control with external module" type="3007"/>
@@ -1730,6 +1742,7 @@
     <Product config="thermofloor/heatit021.xml" id="0201" name="Heatit Thermostat TF 016" type="0003"/>
     <Product config="thermofloor/heatit056.xml" id="0202" name="Heatit Thermostat TF 056" type="0003"/>
     <Product config="thermofloor/heatit058.xml" id="0203" name="Heatit Thermostat TF 058" type="0003"/>
+    <Product config="thermofloor/heatit204.xml" id="0204" name="Heatit Thermostat Z-Temp2" type="0004"/>
     <Product config="thermofloor/heatit-zdim.xml" id="2200" name="Heatit ZDim" type="0003"/>
     <Product config="thermofloor/heatitz8.xml" id="a305" name="Heatit Z-Push Button 8" type="0300"/>
     <Product config="thermofloor/heatit20a.xml" id="020a" name="Heatit Z-Water TF 20a" type="0003"/>
@@ -1759,6 +1772,7 @@
     <Product config="wenzhou/tz79.xml" id="0305" name="TZ79 Power meter Relay Switch" type="0311"/>
     <Product config="wenzhou/tz74.xml" id="0304" name="TZ74 Dual Switch" type="0311"/>
     <Product config="wenzhou/tz78.xml" id="0005" name="TZ78 In-Wall Single Relay Switch" type="0003"/>
+    <Product config="wenzhou/tze96.xml" id="0506" name="TZE96 Color Touch Weekly Programming Heating Thermostat" type="0311"/>
   </Manufacturer>
   <Manufacturer id="011C" name="TKH Group / Eminent"></Manufacturer>
   <Manufacturer id="0327" name="TMC Technology"></Manufacturer>
@@ -1788,13 +1802,17 @@
     <Product config="sunricher/srzv9001k12dimz5.xml" id="b301" name="SR-ZV9001 5 Channel Dimmer Remote Control" type="0300"/>
     <Product config="sunricher/srzv9001k12dimz5.xml" id="b301" name="SR-ZV9001 5 Channel Dimmer Remote Control" type="0301"/>
     <Product config="sunricher/srzv9001k12dimz5.xml" id="b301" name="SR-ZV9001 5 Channel Dimmer Remote Control" type="0302"/>
-    <Product config="sunricher/srzv9001k8.xml" id="a305" name="Wall Controller - SR-ZV9001" type="0300"/>
+    <Product config="sunricher/srzv9001k2dim.xml" id="a30f" name="Wall Controller - SR-ZV9001K2-DIM" type="0300"/>
+    <Product config="sunricher/srzv9001k4dim.xml" id="a310" name="Wall Controller - SR-ZV9001K4-DIM" type="0300"/>
+    <Product config="sunricher/srzv9001k4dimg2.xml" id="a306" name="Wall Controller - SR-ZV9001K4-DIM-G2" type="0300"/>
+    <Product config="sunricher/srzv9001k8.xml" id="a305" name="Wall Controller - SR-ZV9001K8" type="0300"/>
     <Product config="sunricher/zv9101.xml" id="d005" name="Dimmer ZV-9101" type="0200"/>
     <Product config="sunricher/srzv9101sachpeu.xml" id="d00c" name="Dimmer ZV9040" type="0200"/>
     <Product config="sunricher/srzv9003t4rgbweu.xml" id="a107" name="Z-Wave Wall Controller - SR-ZV9003T4-RGBW-EU" type="0300"/>
     <Product config="sunricher/zv2835rac.xml" id="d017" name="ZV2835RAC Smart Knob Dimmer" type="0200"/>
     <Product config="sunricher/srzv9001tccteu.xml" id="a104" name="Z-Wave Wall Controller - SR-ZV9001T-CCT-EU" type="0300"/>
     <Product config="sunricher/zv9101fa.xml" id="d002" name="Dimmer ZV-9101FA" type="0200"/>
+    <Product config="sunricher/srzv9101sachpswitch.xml" id="d006" name="AC Switch ZV-9101SAC-HP-Switch" type="0200"/>
   </Manufacturer>
   <Manufacturer id="0049" name="Twisthink"></Manufacturer>
   <Manufacturer id="0270" name="Ubitech"></Manufacturer>
@@ -1819,7 +1837,7 @@
   </Manufacturer>
   <Manufacturer id="0080" name="Vero Duco">
     <Product config="duco/DucoBox.xml" id="0001" name="DucoBox Motor" type="0003"/>
-    <Product config="duco/Ducotronic_CO-RH_sensor.xml" id="0001" name="DucoBox CO/RH Sensor" type="0004"/> 
+    <Product config="duco/Ducotronic_CO-RH_sensor.xml" id="0001" name="DucoBox CO/RH Sensor" type="0004"/>
   </Manufacturer>
   <Manufacturer id="0237" name="Vestel Elektronik Ticaret ve Sanayi"></Manufacturer>
   <Manufacturer id="0053" name="Viewsonic"></Manufacturer>

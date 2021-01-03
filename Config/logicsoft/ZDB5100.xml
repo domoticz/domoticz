@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="Name">Matrix</MetaDataItem>
     <MetaDataItem name="Description">MATRIX ZDB5100 is a dimmer wall switch module with four backlit pushbuttons. MATRIX is designed to fit into 1-module FUGA® wall boxes (Danish standard).</MetaDataItem>
@@ -15,7 +15,7 @@
     <MetaDataItem id="0121" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
     <MetaDataItem id="0121" name="Identifier" type="0003">ZDB5100</MetaDataItem>
     <ChangeLog>
-      <Entry author="Dennis Staal - staal.dennis@gmail.com" date="10 August 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3399/xml</Entry>
+      <Entry author="Dennis Staal - staal.dennis@gmail.com" date="10 August 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3399/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
@@ -25,8 +25,8 @@
       <Item label="No local operation of the dimmer" value="0"/>
       <Item label="Pushbutton 1 controls the dimmer" value="1"/>
       <Item label="Pushbutton 2 controls the dimmer" value="2"/>
-      <Item label="Pushbutton 3 controls the dimmer" value="3"/>
-      <Item label="Pushbutton 4 controls the dimmer" value="4"/>
+      <Item label="Pushbutton 3 controls the dimmer" value="4"/>
+      <Item label="Pushbutton 4 controls the dimmer" value="8"/>
     </Value>
     <Value genre="config" index="2" instance="1" label="Duration of dimming" max="255" min="0" type="byte" value="5">
       <Help>

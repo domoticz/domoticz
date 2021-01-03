@@ -1,8 +1,8 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:0204</MetaDataItem>
     <MetaDataItem name="ProductPic">images/fibaro/fgs224.png</MetaDataItem>
-    <MetaDataItem id="1000" name="ZWProductPage" type="0204">https://products.z-wavealliance.org/products/3980/</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="0404">https://products.z-wavealliance.org/products/3949/</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">To remove the device from the Z-Wave network:
 1. Power the device.
 2. Set the main controller into remove mode (see the controller’s
@@ -39,13 +39,12 @@ with red LED colour.
 
 Use reset procedure only if the primary controller is missing or inoperable.
 </MetaDataItem>
-    <MetaDataItem id="1000" name="Identifier" type="0204">FGS-224</MetaDataItem>
-    <MetaDataItem name="Name">FIBARO Double Smart Module</MetaDataItem>
-    <MetaDataItem id="1000" name="FrequencyName" type="0204">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="WakeupDescription">The FIBARO Double Smart Module is powered with the mains voltage so it is always awake.</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="0404">FGS-214</MetaDataItem>
+    <MetaDataItem name="Name">FIBARO Single Smart Module</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="0404">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The FIBARO Single Smart Module is powered with the mains voltage so it is always awake.</MetaDataItem>
     <ChangeLog>
-      <Entry author="Raffaele Fanizzi - vifani@gmail.com" date="15 Oct 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/3980/XML</Entry>
-      <Entry author="Romke10" date="2 January 2021" revision="2">Added parameter 151</Entry>
+      <Entry author="Mickaël PICAUD - mobile@mpicaud.fr" date="18 Dec 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/3980/XML</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration -->
@@ -63,29 +62,13 @@ Use reset procedure only if the primary controller is missing or inoperable.
       <Item label="Auto Off" value="2"/>
       <Item label="Flashing" value="3"/>
     </Value>
-    <Value genre="config" index="151" instance="1" label="Second channel - operating mode" max="3" min="0" size="1" type="list" value="0">
-      <Help>This parameter allows to choose operating for channel controlled with Q/Q2 output. timed modes (value 1, 2 or 3), time is set parameter 155 and reaction to input is set with parameter 153.</Help>
-      <Item label="Standard operation" value="0"/>
-      <Item label="Delay Off" value="1"/>
-      <Item label="Auto Off" value="2"/>
-      <Item label="Flashing" value="3"/>
-    </Value>    
     <Value genre="config" index="152" instance="1" label="First channel - reaction to input change in delayed/auto OFF modes" max="2" min="0" size="1" type="list" value="0">
       <Help>This parameter determines how the device when changing state of S1 input in timed for first channel.</Help>
       <Item label="Cancel mode and set default state" value="0"/>
       <Item label="No reaction, mode runs until it ends" value="1"/>
       <Item label="Reset timer, start counting time from the beginning" value="2"/>
     </Value>
-    <Value genre="config" index="153" instance="1" label="Second channel - reaction to input change in delayed/auto OFF modes" max="2" min="0" size="1" type="list" value="0">
-      <Help>This parameter determines how the device when changing state of S2 input in timed for second channel.</Help>
-      <Item label="Cancel mode and set default state" value="0"/>
-      <Item label="No reaction, mode runs until it ends" value="1"/>
-      <Item label="Reset timer, start counting time from the beginning" value="2"/>
-    </Value>
     <Value genre="config" index="154" instance="1" label="First channel – time parameter for delayed/auto OFF and flashing modes" max="32000" min="0" size="2" type="short" value="5">
-      <Help>This parameter allows to set time parameter used in timed modes. (s)</Help>
-    </Value>
-    <Value genre="config" index="155" instance="1" label="Second channel – time parameter for delayed/auto OFF and flashing modes" max="32000" min="0" size="2" type="short" value="5">
       <Help>This parameter allows to set time parameter used in timed modes. (s)</Help>
     </Value>
     <Value genre="config" index="156" instance="1" label="S1 Switch ON value sent to 2nd association group" max="255" min="0" size="2" type="short" value="255">
@@ -97,29 +80,10 @@ Use reset procedure only if the primary controller is missing or inoperable.
     <Value genre="config" index="158" instance="1" label="S1 Switch Double Click value sent to 2nd association groups" max="255" min="0" size="2" type="short" value="99">
       <Help>This parameter determines value sent with Double Click command to devices associated in 2nd  association group.</Help>
     </Value>
-    <Value genre="config" index="159" instance="1" label="S2 Switch ON value sent to 3rd association group" max="255" min="0" size="2" type="short" value="255">
-      <Help>This parameter determines value sent with Switch On command to devices associated in 3rd association group.</Help>
-    </Value>
-    <Value genre="config" index="160" instance="1" label="S2 Switch OFF value sent to 3rd association group" max="255" min="0" size="2" type="short" value="0">
-      <Help>This parameter determines value sent with Switch Off command to devices associated in 3rd association group.</Help>
-    </Value>
-    <Value genre="config" index="161" instance="1" label="S2 Switch Double Click value sent to 3rd association groups" max="255" min="0" size="2" type="short" value="99">
-      <Help>This parameter determines value sent with Double Click command to devices associated in 3rd  association group.</Help>
-    </Value>
     <Value genre="config" index="162" instance="1" label="Q/Q1 output type" max="1" min="0" size="1" type="list" value="0">
       <Help>This parameter determines type of Q/Q1 output.</Help>
       <Item label="Normally Open (relay contacts opened turned off, closed when turned on)" value="0"/>
       <Item label="Normally Closed (relay contacts closed turned off, opened when turned on)" value="1"/>
-    </Value>
-    <Value genre="config" index="163" instance="1" label="Q2 output type" max="1" min="0" size="1" type="list" value="0">
-      <Help>This parameter determines type of Q2 output.</Help>
-      <Item label="Normally Open (relay contacts opened turned off, closed when turned on)" value="0"/>
-      <Item label="Normally Closed (relay contacts closed turned off, opened when turned on)" value="1"/>
-    </Value>
-    <Value genre="config" index="164" instance="1" label="Lock simultaneous switching of Q1 and Q2 outputs" max="1" min="0" size="1" type="list" value="0">
-      <Help>When the lock is enabled, both outputs cannot turned on at the same time.</Help>
-      <Item label="Lock disabled" value="0"/>
-      <Item label="Lock enabled" value="1"/>
     </Value>
     <Value genre="config" index="20" instance="1" label="S1 input – switch type" max="2" min="0" size="1" type="list" value="2">
       <Help>S1 - Inputs type configuration</Help>
@@ -133,16 +97,33 @@ Use reset procedure only if the primary controller is missing or inoperable.
       <Item label="Toggle switch (contact closed - On, contact opened - OFF)" value="1"/>
       <Item label="Toggle switch (device changes status when switch changes status)" value="2"/>
     </Value>
-    <Value genre="config" index="25" instance="1" label="Inputs orientation" max="1" min="0" size="1" type="list" value="0">
+    <Value genre="config" index="24" instance="1" label="Inputs orientation" max="1" min="0" size="1" type="list" value="0">
       <Help>This parameter allows reversing operation of S1 and S2 inputs changing the wiring. Use in case of incorrect wiring.</Help>
       <Item label="default (S1 - 1st channel, S2 - 2nd channel)" value="0"/>
       <Item label="reversed (S1 - 2nd channel, S2 - 1st channel)" value="1"/>
     </Value>
-    <Value genre="config" index="26" instance="1" label="Outputs orientation" max="1" min="0" size="1" type="list" value="0">
-      <Help>This parameter allows reversing operation of Q1 and Q2 outputs changing the wiring. Use in case of incorrect wiring.</Help>
-      <Item label="default (Q1 - 1st channel, Q2 - 2nd channel)" value="0"/>
-      <Item label="reversed (Q1 - 2nd channel, Q2 - 1st channel)" value="1"/>
+    <Value genre="config" index="40" instance="1" label="S1 input – scenes sent" max="15" min="0" size="1" type="byte" value="0">
+      <Help>
+        This parameter determines which actions result in sending scene IDs assigned to them.
+        1 - Key pressed 1 time.
+        2 - Key pressed 2 times.
+        4 - Key pressed 3 times.
+        8 - Key Hold Down and Key Released.
+        15 - All active (Default)
+        Default setting: 0 (none)
+      </Help>
     </Value>
+    <Value genre="config" index="41" instance="1" label="S2 input – scenes sent" max="15" min="0" size="1" type="byte" value="0">
+      <Help>
+        This parameter determines which actions result in sending scene IDs assigned to them.
+        1 - Key pressed 1 time.
+        2 - Key pressed 2 times.
+        4 - Key pressed 3 times.
+        8 - Key Hold Down and Key Released.
+        15 - All active (Default)
+        Default setting: 0 (none)
+      </Help>
+    </Value>      
   </CommandClass>
   <!-- -->
   <CommandClass id="96">
