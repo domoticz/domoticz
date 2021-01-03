@@ -655,6 +655,7 @@ namespace http {
 								(szContentType.find("application/octet-stream") != std::string::npos)
 								|| (szContentType.find("application/json") != std::string::npos)
 								|| (szContentType.find("application/x-zip") != std::string::npos)
+								|| (szContentType.find("application/zip") != std::string::npos)
 								|| (szContentType.find("Content-Type: text/xml") != std::string::npos)
 								)
 							{
