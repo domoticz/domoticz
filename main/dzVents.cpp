@@ -6,6 +6,7 @@
 #include "../main/Logger.h"
 #include "../main/RFXNames.h"
 #include "../main/WebServerHelper.h"
+#include "../webserver/server_settings.hpp"
 #include "../main/LuaTable.h"
 #include "../main/json_helper.h"
 #include "dzVents.h"
@@ -17,15 +18,19 @@ extern "C" {
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+
 }
 
 extern std::string szUserDataFolder, szWebRoot, szStartupFolder, szAppVersion;
 extern http::server::CWebServerHelper m_webservers;
+extern http::server::server_settings webserver_settings;
+extern http::server::ssl_server_settings secure_webserver_settings;
+
 
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents()
-	: m_version("3.1.0")
+	: m_version("3.1.1")
 {
 	m_bdzVentsExist = false;
 }
@@ -797,6 +802,8 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 
 	luaTable.AddBool("locationSet", locationSet);
 	luaTable.AddString("domoticz_listening_port", m_webservers.our_listener_port);
+	luaTable.AddString("domoticz_secure_listening_port", secure_webserver_settings.listening_port);
+	luaTable.AddBool("domoticz_is_secure", secure_webserver_settings.is_secure());
 	luaTable.AddString("domoticz_webroot", szWebRoot);
 	luaTable.AddString("domoticz_start_time", m_mainworker.m_eventsystem.m_szStartTime);
 	luaTable.AddString("currentTime", TimeToString(nullptr, TF_DateTimeMs));

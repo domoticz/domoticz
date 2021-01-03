@@ -2,13 +2,14 @@ Version 2020.xxxx (xxxx)
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: AirconWithMe wifi module
 - Implemented: Allow complete IPv6 address in local network setting
+- Implemented: Allow custom icons for utility sensors
 - Implemented: Counter meter type now supports a divider
 - Implemented: Custom icons for RGB/W
 - Implemented: Hardware Monitor, Add clock speeds for Raspberry Pi
 - Implemented: Honeywell, Add cooling control and Fahrenheit support
 - Implemented: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
 - Implemented: Inverted energy icon colors in report
-- Implemented: Max. Watt settings for power devices (defaults to 6000W) 
+- Implemented: Max. Watt settings for power devices (defaults to 6000W)
 - Implemented: Mercedes Me API's (BYOCAR) as an (e)Vehicle supporting lock/open, odo, fuellevel
 - Implemented: Meteorologisk (Meteorologisk institutt Norway) hardware support
 - Implemented: P1 Meter, added support for Encryption
@@ -23,7 +24,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: Websocket notification for secondary/sub devices
 - Implemented: ZWave, Legend and tooltips in Neighbor�s overview
 - Updated: Blebox; use of the latest SwitchBox API
-- Updated: dzVents; version 3.1.0 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
+- Updated: dzVents; version 3.1.1 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
 - Updated: eVehicles; added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: EvoHome; decode, display and store hotwater setpoint
 - Updated: Lay-out of notifications tab
@@ -44,6 +45,7 @@ Version 2020.xxxx (xxxx)
 - Fixed: Changing a value from a Thermostat Setpoint via the JSON API/MQTT resulted in a double event trigger
 - Fixed: Compiling on systems with recent Python versions
 - Fixed: Distance sensor was converting to miles instead of inches
+- Fixed: Icon uploading from linux clients/browsers
 - Fixed: Floorplan uploading
 - Fixed: Font in events editor on MacOS
 - Fixed: Possible crash in CEventSystem::SetEventTrigger
@@ -56,7 +58,7 @@ Version 2020.xxxx (xxxx)
 Version 2020.2 (April 26th 2020)
 - Implemented: GUI: New Update controller code
 - Implemented: GUI: Real-time updates of history-logs on device / scene changes
-- Fixed: Battery level Real-time updates 
+- Fixed: Battery level Real-time updates
 - Fixed: Daikin wifi adaptor module
 - Fixed: Delete device now propagates to all relevant tables
 - Fixed: Possible security issue in the websocket layer
@@ -110,7 +112,7 @@ Version 2020.1 (March 22th 2020)
 - Fixed: Enery Generated report icon colors
 - Fixed: Evohome Web for updated library
 - Fixed: Google Notification System
-  Fixed: PhilipsHue
+- Fixed: PhilipsHue
 - Fixed: SMS Notification System
 - Fixed: Telegram notification when odd number of underscores in text
 - Fixed: Youless, possible buffer overflow (#3261)
@@ -129,7 +131,7 @@ Version 4.10717 (May 9th 2019)
 - Fixed: EcoCompteur now uses the port specified in the hardware setup (#3184)
 - Fixed: Log for Weight sensor (#3192)
 - Fixed: issue with Session ID/Login
-- Fixed: issue with slightly  to large labels for the selector switch (#3187)
+- Fixed: issue with slightly too large labels for the selector switch (#3187)
 - Updated: dzVents (version 2.4.19, See dzVents/documentation/history.md)
 
 Version 4.10658 (May 5th 2019)
@@ -1386,7 +1388,7 @@ Version 1.666 (May 28th 2013)
 Version 1.607 (May 11th 2013)
 - Implemented: 5th parameter for light/switch script (full status descriptor)
 - Implemented: Date/Time/SunSet/SunRise on every page (except mobile browsers will have only SunSet/SunRise)
-- Implemented: Device type Blinds (Safy / RollerTrol / Hasta / A-OK RF01,AC114 / RAEX /  Media Mount)
+- Implemented: Device type Blinds (Safy / RollerTrol / Hasta / A-OK RF01,AC114 / RAEX / Media Mount)
 - Implemented: Email connection timeout (10 seconds)
 - Implemented: Email Notifications
 - Implemented: Email notifications now send in background

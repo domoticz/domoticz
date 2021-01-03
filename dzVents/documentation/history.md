@@ -1,6 +1,8 @@
 ```{=mediawiki}
 __NOTOC__
 ```
+## [3.1.1] ##
+- Fixed issue that prevented dzVents from accessing the domoticz API when used in sslwww only mode
 
 ## [3.1.0] ##
 - Added shell command event triggers to be used in combination with `executeShellCommand`. You can now execute shell commands and handle the response in your dzVents scripts **ASYNCHRONICALLY**. See the documentation. No more json parsing needed or complex `popen()` or 'system()' shizzle.
