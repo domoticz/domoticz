@@ -408,30 +408,14 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 
 		//Search Energy Device
 		const _tZWaveDevice* pEnergyDevice;
-		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWERENERGYMETER);
+
+		pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWERENERGYMETER);
 		if (pEnergyDevice == nullptr)
 		{
-			pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWERENERGYMETER);
+			pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWERENERGYMETER);
 			if (pEnergyDevice == nullptr)
 			{
-				pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWERENERGYMETER);
-				if (pEnergyDevice == nullptr)
-				{
-					if (
-						(pDevice->Manufacturer_id == 0x010F) && //If Fibaro
-						(
-								((pDevice->Product_type == 0x0200) && (pDevice->Product_id == 0x1000))
-							|| ((pDevice->Product_type == 0x0600) && (pDevice->Product_id == 0x1000))
-							|| ((pDevice->Product_type == 0x0602) && (pDevice->Product_id == 0x1001))
-							|| ((pDevice->Product_type == 0x0602) && (pDevice->Product_id == 0x1003))
-							|| ((pDevice->Product_type == 0x1701) && (pDevice->Product_id == 0x2000))
-							|| ((pDevice->Product_type == 0x1801) && (pDevice->Product_id == 0x1000)))
-						)
-					{
-						//Fibaro Wallplug, find energy sensor
-						pEnergyDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_POWERENERGYMETER);
-					}
-				}
+				pEnergyDevice = FindDevice(pDevice->nodeID, -1, ZDTYPE_SENSOR_POWERENERGYMETER);
 			}
 		}
 		if (pEnergyDevice)
@@ -440,11 +424,6 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 			{
 				SendKwhMeter(pEnergyDevice->nodeID, pEnergyDevice->instanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kWh Meter");
 			}
-		}
-		else
-		{
-			//No kWh meter, send as normal Power device
-			SendWattMeter(pDevice->nodeID, pDevice->instanceID, BatLevel, pDevice->floatValue, "Power Meter");
 		}
 		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_KVAH);
 		if (pEnergyDevice)
@@ -515,21 +494,19 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 			))
 		{
 			//Fibaro Wallplug, find power sensor with idx 4 (idx 1 only reports when plug goes on/off, idx 4 is live power)
-			pPowerDevice = FindDevice(pDevice->nodeID, 4, pDevice->indexID, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SENSOR_POWER);
-			if (pPowerDevice == nullptr)
-				pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+			pPowerDevice = FindDevice(pDevice->nodeID, 4, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SENSOR_POWER);
 		}
 		else
 		{
 			pPowerDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWER);
-			if (pPowerDevice == nullptr)
-				pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
 		}
 		if (pPowerDevice == nullptr)
+			pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+		if (pPowerDevice == nullptr)
 		{
-			pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWER);
+			pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, ZDTYPE_SENSOR_POWER);
 			if (pPowerDevice == nullptr)
-				pPowerDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_POWER);
+				pPowerDevice = FindDevice(pDevice->nodeID, -1, ZDTYPE_SENSOR_POWER);
 		}
 		bool bHaveValidPowerDevice = false;
 		if (pPowerDevice)
@@ -581,7 +558,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 		RBUF tsen;
 		memset(&tsen, 0, sizeof(RBUF));
 
-		const _tZWaveDevice* pHumDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_HUMIDITY);
+		const _tZWaveDevice* pHumDevice = FindDevice(pDevice->nodeID, -1, ZDTYPE_SENSOR_HUMIDITY);
 		if (pHumDevice)
 		{
 			if (!pHumDevice->bValidValue)
@@ -610,7 +587,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 		RBUF tsen;
 		memset(&tsen, 0, sizeof(RBUF));
 
-		const _tZWaveDevice* pTempDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_TEMPERATURE);
+		const _tZWaveDevice* pTempDevice = FindDevice(pDevice->nodeID, -1, ZDTYPE_SENSOR_TEMPERATURE);
 		if (pTempDevice)
 		{
 			if (!pTempDevice->bValidValue)
@@ -668,7 +645,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 		tsen.WIND.temperatureh = 0;
 		tsen.WIND.temperaturel = 0;
 
-		const _tZWaveDevice* pTempDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_TEMPERATURE);
+		const _tZWaveDevice* pTempDevice = FindDevice(pDevice->nodeID, -1, ZDTYPE_SENSOR_TEMPERATURE);
 		if (pTempDevice)
 		{
 			if (!pTempDevice->bValidValue)
@@ -688,8 +665,8 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 	{
 		if (!pDevice->bValidValue)
 			return;
-		const _tZWaveDevice* pTempDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_TEMPERATURE);
-		const _tZWaveDevice* pHumDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_HUMIDITY);
+		const _tZWaveDevice* pTempDevice = FindDevice(pDevice->nodeID, -1, ZDTYPE_SENSOR_TEMPERATURE);
+		const _tZWaveDevice* pHumDevice = FindDevice(pDevice->nodeID, -1, ZDTYPE_SENSOR_HUMIDITY);
 		if (pTempDevice && pHumDevice)
 		{
 			int nforecast = wsbaroforecast_some_clouds;
@@ -837,7 +814,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceEx(const uint8_t nodeID, const in
 	return nullptr;
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const _eZWaveDeviceType devType)
 {
 	for (auto &m : m_devices)
 	{
@@ -848,7 +825,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int 
 	return nullptr;
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType)
+ZWaveBase::_tZWaveDevice *ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const uint8_t CommandClassID, const _eZWaveDeviceType devType)
 {
 	for (auto &m : m_devices)
 	{
@@ -906,7 +883,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 		int svalue = 0;
 
 		//First find dimmer
-		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SWITCH_DIMMER);
+		pDevice = FindDevice(nodeID, instanceID, ZDTYPE_SWITCH_DIMMER);
 		if (pDevice)
 		{
 			if ((cmnd == gswitch_sOff) || (cmnd == gswitch_sGroupOff))
@@ -920,7 +897,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 			return SwitchLight(pDevice, instanceID, svalue);
 		}
 		// find normal
-		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SWITCH_NORMAL);
+		pDevice = FindDevice(nodeID, instanceID, ZDTYPE_SWITCH_NORMAL);
 		if (pDevice)
 		{
 			if ((cmnd == gswitch_sOff) || (cmnd == gswitch_sGroupOff))
@@ -941,7 +918,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 		int indexID = pMeter->id1;
 
 		//find normal
-		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_SETPOINT);
+		pDevice = FindDevice(nodeID, instanceID, ZDTYPE_SENSOR_SETPOINT);
 		if (pDevice)
 		{
 			SetThermostatSetPoint(nodeID, instanceID, pDevice->commandClassID, pMeter->temp);
@@ -962,7 +939,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 		uint8_t instanceID = ID4;
 		int indexID = ID1;
 
-		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_CLOCK);
+		pDevice = FindDevice(nodeID, instanceID, ZDTYPE_SENSOR_THERMOSTAT_CLOCK);
 		if (pDevice)
 		{
 			int tintval = pMeter->intval2;
@@ -988,7 +965,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 		uint8_t instanceID = ID4;
 		int indexID = ID1;
 
-		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_MODE);
+		pDevice = FindDevice(nodeID, instanceID, ZDTYPE_SENSOR_THERMOSTAT_MODE);
 		if (pDevice)
 		{
 			int tMode = pMeter->intval2;
@@ -1010,7 +987,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 		uint8_t instanceID = ID4;
 		int indexID = ID1;
 
-		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE);
+		pDevice = FindDevice(nodeID, instanceID, ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE);
 		if (pDevice)
 		{
 			int tMode = pMeter->intval2;
@@ -1030,7 +1007,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 		uint8_t nodeID = ID3;
 		uint8_t instanceID = ID4;
 		int indexID = ID1;
-		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SWITCH_RGBW);
+		pDevice = FindDevice(nodeID, instanceID, ZDTYPE_SWITCH_RGBW);
 		if (pDevice)
 		{
 			if (pLed->command == Color_LedOff)
@@ -1133,7 +1110,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 		}
 		else
 		{
-			pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SWITCH_COLOR);
+			pDevice = FindDevice(nodeID, instanceID, ZDTYPE_SWITCH_COLOR);
 			if (pDevice)
 			{
 				std::stringstream sstr;

@@ -151,8 +151,8 @@ class ZWaveBase : public CDomoticzHardwareBase
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
 
 	_tZWaveDevice *FindDevice(uint8_t nodeID, int instanceID, int indexID);
-	_tZWaveDevice *FindDevice(uint8_t nodeID, int instanceID, int indexID, _eZWaveDeviceType devType);
-	_tZWaveDevice *FindDevice(uint8_t nodeID, int instanceID, int indexID, int CommandClassID, _eZWaveDeviceType devType);
+	_tZWaveDevice *FindDevice(uint8_t nodeID, int instanceID, _eZWaveDeviceType devType);
+	_tZWaveDevice *FindDevice(uint8_t nodeID, int instanceID, uint8_t CommandClassID, _eZWaveDeviceType devType);
 	_tZWaveDevice *FindDeviceEx(uint8_t nodeID, int instanceID, _eZWaveDeviceType devType);
 
 	std::string GenerateDeviceStringID(const _tZWaveDevice *pDevice);

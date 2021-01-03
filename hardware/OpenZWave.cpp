@@ -1221,7 +1221,7 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 			//Special case for the Aeotec Smart Switch
 			if (pDevice->commandClassID == COMMAND_CLASS_SWITCH_MULTILEVEL)
 			{
-				pDevice = FindDevice(pDevice->nodeID, instanceID, 0, COMMAND_CLASS_SWITCH_BINARY, ZWaveBase::ZDTYPE_SWITCH_NORMAL);
+				pDevice = FindDevice(pDevice->nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, ZWaveBase::ZDTYPE_SWITCH_NORMAL);
 			}
 		}
 
@@ -1318,10 +1318,10 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 				{
 					//Device is switched off, lets see if there is a power sensor for this device,
 					//and set its value to 0 as well
-					_tZWaveDevice* pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+					_tZWaveDevice* pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
 					if (pPowerDevice == nullptr)
 					{
-						pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWER);
+						pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, ZDTYPE_SENSOR_POWER);
 					}
 					if (pPowerDevice != nullptr)
 					{
@@ -1365,10 +1365,10 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 				{
 					//Device is switched off, lets see if there is a power sensor for this device,
 					//and set its value to 0 as well
-					_tZWaveDevice* pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+					_tZWaveDevice* pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
 					if (pPowerDevice == nullptr)
 					{
-						pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWER);
+						pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, ZDTYPE_SENSOR_POWER);
 					}
 					if (pPowerDevice != nullptr)
 					{
@@ -2532,21 +2532,21 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 			instance = (uint8_t)index;
 	}
 
-	_tZWaveDevice* pDevice = FindDevice(NodeID, instance, index, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCH_NORMAL);
+	_tZWaveDevice* pDevice = FindDevice(NodeID, instance, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCH_NORMAL);
 	if (pDevice == nullptr)
 	{
 		//one more try
-		pDevice = FindDevice(NodeID, instance, index, COMMAND_CLASS_SWITCH_BINARY, ZDTYPE_SWITCH_NORMAL);
+		pDevice = FindDevice(NodeID, instance, COMMAND_CLASS_SWITCH_BINARY, ZDTYPE_SWITCH_NORMAL);
 		if (pDevice == nullptr)
 		{
 			// absolute last try
 			instance = (uint8_t)vID.GetIndex();
-			pDevice = FindDevice(NodeID, -1, -1, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SWITCH_NORMAL);
+			pDevice = FindDevice(NodeID, -1, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SWITCH_NORMAL);
 			if (pDevice == nullptr)
 			{
 				//okey, 1 more
 				int tmp_instance = index;
-				pDevice = FindDevice(NodeID, tmp_instance, -1, COMMAND_CLASS_SWITCH_MULTILEVEL, ZDTYPE_SWITCH_DIMMER);
+				pDevice = FindDevice(NodeID, tmp_instance, COMMAND_CLASS_SWITCH_MULTILEVEL, ZDTYPE_SWITCH_DIMMER);
 				if (pDevice == nullptr)
 				{
 					return;
@@ -3749,6 +3749,10 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > >& 
 	for (const auto &sd : result)
 	{
 		unsigned int _homeID = static_cast<unsigned int>(std::stoul(sd[0]));
+
+		if (_homeID != m_controllerID)
+			continue;
+
 		uint8_t _nodeID = (uint8_t)atoi(sd[1].c_str());
 		if (COpenZWave::NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
@@ -4332,8 +4336,7 @@ void COpenZWave::EnableDisableNodePolling(const uint8_t nodeID)
 		m_pManager->SetPollInterval(intervalseconds * 1000, false);
 
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT PollTime FROM ZWaveNodes WHERE (HardwareID==%d) AND (NodeID==%d)",
-			m_HwdID, nodeID);
+		result = m_sql.safe_query("SELECT PollTime FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)", m_HwdID, m_controllerID, nodeID);
 		if (result.empty())
 			return;
 		int PollTime = atoi(result[0][0].c_str());
@@ -5349,7 +5352,7 @@ bool COpenZWave::GetBatteryLevels(Json::Value& root)
 	int ii = 0;
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT NodeID,Name FROM ZWaveNodes WHERE (HardwareID==%d)", m_HwdID);
+	result = m_sql.safe_query("SELECT NodeID,Name FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u)", m_HwdID, m_controllerID);
 
 	std::map<uint16_t, std::string> _NodeNames;
 	for (const auto &r : result)
@@ -5464,6 +5467,8 @@ namespace http {
 				for (const auto &sd : result)
 				{
 					unsigned int homeID = static_cast<unsigned int>(std::stoul(sd[1]));
+					if (homeID != pOZWHardware->GetControllerID())
+						continue;
 					uint8 nodeID = (uint8)atoi(sd[2].c_str());
 					//if (nodeID>1) //Don't include the controller
 					{
@@ -5513,33 +5518,28 @@ namespace http {
 			std::string senablepolling = request::findValue(&req, "EnablePolling");
 			if (name.empty() || senablepolling.empty())
 				return;
+
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT HardwareID, HomeID, NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
+			if (result.empty())
+				return; //not found!?
+
 			root["status"] = "OK";
 			root["title"] = "UpdateZWaveNode";
 
-			std::vector<std::vector<std::string> > result;
+			int hwid = atoi(result[0][0].c_str());
+			unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
+			uint8_t nodeID = (uint8_t)atoi(result[0][2].c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+			if (pHardware == nullptr)
+				return; //not found!?
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
 
-			m_sql.safe_query(
-				"UPDATE ZWaveNodes SET Name='%q', PollTime=%d WHERE (ID=='%q')",
-				name.c_str(),
-				(senablepolling == "true") ? 1 : 0,
-				idx.c_str()
-			);
-			result = m_sql.safe_query("SELECT HardwareID, HomeID, NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
-			if (!result.empty())
-			{
-				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
-				uint8_t nodeID = (uint8_t)atoi(result[0][2].c_str());
-				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
-				if (pHardware != nullptr)
-				{
-					if (pHardware->HwdType != HTYPE_OpenZWave)
-						return;
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					pOZWHardware->SetNodeName(homeID, nodeID, name);
-					pOZWHardware->EnableDisableNodePolling(nodeID);
-				}
-			}
+			m_sql.safe_query("UPDATE ZWaveNodes SET Name='%q', PollTime=%d WHERE (ID=='%q')", name.c_str(), (senablepolling == "true") ? 1 : 0, idx.c_str());
+			pOZWHardware->SetNodeName(homeID, nodeID, name);
+			pOZWHardware->EnableDisableNodePolling(nodeID);
 		}
 
 		void CWebServer::Cmd_ZWaveDeleteNode(WebEmSession& session, const request& req, Json::Value& root)
@@ -5555,24 +5555,22 @@ namespace http {
 				return;
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID=='%q')", idx.c_str());
-			if (!result.empty())
-			{
-				int hwid = atoi(result[0][0].c_str());
-				//unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
-				uint8_t nodeID = (uint8_t)atoi(result[0][2].c_str());
-				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
-				if (pHardware != nullptr)
-				{
-					if (pHardware->HwdType != HTYPE_OpenZWave)
-						return;
-					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-					pOZWHardware->RemoveFailedDevice(nodeID);
-					root["status"] = "OK";
-					root["title"] = "DeleteZWaveNode";
-					result = m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (ID=='%q')", idx.c_str());
-				}
-			}
+			if (result.empty())
+				return;
+			int hwid = atoi(result[0][0].c_str());
+			//unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
+			uint8_t nodeID = (uint8_t)atoi(result[0][2].c_str());
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "DeleteZWaveNode";
 
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			pOZWHardware->RemoveFailedDevice(nodeID);
+			result = m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (ID=='%q')", idx.c_str());
 		}
 
 		void CWebServer::Cmd_ZWaveInclude(WebEmSession& session, const request& req, Json::Value& root)
@@ -5589,16 +5587,16 @@ namespace http {
 			std::string ssecure = request::findValue(&req, "secure");
 			bool bSecure = (ssecure == "true");
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				m_sql.AllowNewHardwareTimer(5);
-				pOZWHardware->IncludeDevice(bSecure);
-				root["status"] = "OK";
-				root["title"] = "ZWaveInclude";
-			}
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "ZWaveInclude";
+
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			m_sql.AllowNewHardwareTimer(5);
+			pOZWHardware->IncludeDevice(bSecure);
 		}
 
 		void CWebServer::Cmd_ZWaveExclude(WebEmSession& session, const request& req, Json::Value& root)
@@ -5613,15 +5611,15 @@ namespace http {
 			if (idx.empty())
 				return;
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				pOZWHardware->ExcludeDevice(1);
-				root["status"] = "OK";
-				root["title"] = "ZWaveExclude";
-			}
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "ZWaveExclude";
+
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			pOZWHardware->ExcludeDevice(1);
 		}
 
 		void CWebServer::Cmd_ZWaveIsHasNodeFailedDone(WebEmSession& /*session*/, const request& req, Json::Value& root)
@@ -5630,20 +5628,20 @@ namespace http {
 			if (idx.empty())
 				return;
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "ZWaveIsHasNodeFailedDone";
+
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			bool bIsHasNodeFailedDone = pOZWHardware->IsHasNodeFailedDone();
+			root["result"] = bIsHasNodeFailedDone;
+			if (bIsHasNodeFailedDone)
 			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				root["status"] = "OK";
-				root["title"] = "ZWaveIsHasNodeFailedDone";
-				bool bIsHasNodeFailedDone = pOZWHardware->IsHasNodeFailedDone();
-				root["result"] = bIsHasNodeFailedDone;
-				if (bIsHasNodeFailedDone)
-				{
-					root["node_id"] = pOZWHardware->m_HasNodeFailedIdx;
-					root["status_text"] = pOZWHardware->m_sHasNodeFailedResult;
-				}
+				root["node_id"] = pOZWHardware->m_HasNodeFailedIdx;
+				root["status_text"] = pOZWHardware->m_sHasNodeFailedResult;
 			}
 		}
 
@@ -5653,19 +5651,19 @@ namespace http {
 			if (idx.empty())
 				return;
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "ZWaveIsNodeReplaced";
+
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			bool bIsReplaced = pOZWHardware->IsNodeReplaced();
+			root["result"] = bIsReplaced;
+			if (bIsReplaced)
 			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				root["status"] = "OK";
-				root["title"] = "ZWaveIsNodeReplaced";
-				bool bIsReplaced = pOZWHardware->IsNodeReplaced();
-				root["result"] = bIsReplaced;
-				if (bIsReplaced)
-				{
-					root["node_id"] = pOZWHardware->m_NodeToBeReplaced;
-				}
+				root["node_id"] = pOZWHardware->m_NodeToBeReplaced;
 			}
 		}
 
@@ -5675,27 +5673,27 @@ namespace http {
 			if (idx.empty())
 				return;
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "ZWaveIsNodeIncluded";
+
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			bool bIsIncluded = pOZWHardware->IsNodeIncluded();
+			root["result"] = bIsIncluded;
+			if (bIsIncluded)
 			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				root["status"] = "OK";
-				root["title"] = "ZWaveIsNodeIncluded";
-				bool bIsIncluded = pOZWHardware->IsNodeIncluded();
-				root["result"] = bIsIncluded;
-				if (bIsIncluded)
+				root["node_id"] = pOZWHardware->m_LastIncludedNode;
+				root["node_type"] = pOZWHardware->m_LastIncludedNodeType;
+				std::string productName("Unknown");
+				COpenZWave::NodeInfo* pNode = pOZWHardware->GetNodeInfo(pOZWHardware->GetControllerID(), (uint8_t)pOZWHardware->m_LastIncludedNode);
+				if (pNode)
 				{
-					root["node_id"] = pOZWHardware->m_LastIncludedNode;
-					root["node_type"] = pOZWHardware->m_LastIncludedNodeType;
-					std::string productName("Unknown");
-					COpenZWave::NodeInfo* pNode = pOZWHardware->GetNodeInfo(pOZWHardware->GetControllerID(), (uint8_t)pOZWHardware->m_LastIncludedNode);
-					if (pNode)
-					{
-						productName = pNode->Product_name;
-					}
-					root["node_product_name"] = productName;
+					productName = pNode->Product_name;
 				}
+				root["node_product_name"] = productName;
 			}
 		}
 
@@ -5705,16 +5703,16 @@ namespace http {
 			if (idx.empty())
 				return;
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				root["status"] = "OK";
-				root["title"] = "ZWaveIsNodeExcluded";
-				root["result"] = pOZWHardware->IsNodeExcluded();
-				root["node_id"] = (pOZWHardware->m_LastRemovedNode >0) ? std::to_string(pOZWHardware->m_LastRemovedNode) : "Failed!";
-			}
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "ZWaveIsNodeExcluded";
+
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			root["result"] = pOZWHardware->IsNodeExcluded();
+			root["node_id"] = (pOZWHardware->m_LastRemovedNode >0) ? std::to_string(pOZWHardware->m_LastRemovedNode) : "Failed!";
 		}
 
 		void CWebServer::Cmd_ZWaveSoftReset(WebEmSession& session, const request& req, Json::Value& root)
@@ -5729,15 +5727,14 @@ namespace http {
 			if (idx.empty())
 				return;
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				pOZWHardware->SoftResetDevice();
-				root["status"] = "OK";
-				root["title"] = "ZWaveSoftReset";
-			}
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "ZWaveSoftReset";
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			pOZWHardware->SoftResetDevice();
 		}
 
 		void CWebServer::Cmd_ZWaveHardReset(WebEmSession& session, const request& req, Json::Value& root)
@@ -5752,32 +5749,30 @@ namespace http {
 			if (idx.empty())
 				return;
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				pOZWHardware->HardResetDevice();
-				root["status"] = "OK";
-				root["title"] = "ZWaveHardReset";
-			}
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "ZWaveHardReset";
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			pOZWHardware->HardResetDevice();
 		}
 
 		void CWebServer::Cmd_ZWaveStateCheck(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			root["title"] = "ZWaveStateCheck";
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				if (!pOZWHardware->GetFailedState()) {
-					root["status"] = "OK";
-				}
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["title"] = "ZWaveStateCheck";
+			root["status"] = "OK";
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			if (!pOZWHardware->GetFailedState()) {
 			}
 		}
 
@@ -5793,15 +5788,15 @@ namespace http {
 			if (idx.empty())
 				return;
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				pOZWHardware->HealNetwork();
-				root["status"] = "OK";
-				root["title"] = "ZWaveHealNetwork";
-			}
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "ZWaveHealNetwork";
+
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			pOZWHardware->HealNetwork();
 		}
 
 		void CWebServer::Cmd_ZWaveNodeHeal(WebEmSession& session, const request& req, Json::Value& root)
@@ -5819,15 +5814,14 @@ namespace http {
 			if (node.empty())
 				return;
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
-			if (pHardware != nullptr)
-			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
-				pOZWHardware->HealNode((uint8_t)atoi(node.c_str()));
-				root["status"] = "OK";
-				root["title"] = "ZWaveHealNode";
-			}
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			root["status"] = "OK";
+			root["title"] = "ZWaveHealNode";
+			COpenZWave *pOZWHardware = (COpenZWave *)pHardware;
+			pOZWHardware->HealNode((uint8_t)atoi(node.c_str()));
 		}
 
 		void CWebServer::Cmd_ZWaveNetworkInfo(WebEmSession& session, const request& req, Json::Value& root)
