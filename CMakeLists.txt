@@ -24,6 +24,8 @@ option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
 option(USE_BUILTIN_MINIZIP "Use builtin Minizip" YES)
 option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" NO)
+option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
+option(USE_EXTERNAL_JWTCPP "Use external JSON Web Token library from Thalhammer" YES)
 
 # Optional dependencies
 option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
@@ -129,6 +131,9 @@ IF(USE_BUILTIN_MQTT AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/mosquitto/CMake
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
 IF(USE_BUILTIN_SQLITE AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/sqlite-amalgamation/CMakeLists.txt")
+  message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+ENDIF()
+IF(USE_EXTERNAL_JWTCPP AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/jwt-cpp/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
 
@@ -576,6 +581,13 @@ ELSE(USE_BUILTIN_MINIZIP)
     MESSAGE(FATAL_ERROR "MINIZIP not found on your system! try 'sudo apt-get install minizip-dev'")
   ENDIF(MINIZIP_FOUND)
 ENDIF(USE_BUILTIN_MINIZIP)
+
+# JWT-CPP
+IF(USE_EXTERNAL_JWTCPP)
+  add_subdirectory (extern/jwt-cpp EXCLUDE_FROM_ALL)
+  target_link_libraries(domoticz jwt-cpp)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/jwt-cpp)
+ENDIF(USE_EXTERNAL_JWTCPP)
 
 #
 # Find MD5/RMD160/SHA library
