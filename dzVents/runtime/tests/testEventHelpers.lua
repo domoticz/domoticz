@@ -4,7 +4,6 @@ package.path =
 	scriptPath .. '/?.lua;../device-adapters/?.lua;./data/?.lua;./generated_scripts/?.lua;' ..
 	package.path
 
-
 local _ = require('lodash')
 _G._ = require('lodash')
 
@@ -76,7 +75,9 @@ describe('event helpers', function()
 			['Security'] = '',
 			['dzVents_log_level'] = 1,
 			['domoticz_listening_port'] = '8181',
-			['currentTime'] = '2017-08-17 12:13:14.123'
+			['currentTime'] = '2017-08-17 12:13:14.123',
+			['domoticz_secure_listening_port'] = 0,
+			['domoticz_is_secure'] = false,
 		}
 
 		_G.securityupdates = {
@@ -434,7 +435,19 @@ describe('event helpers', function()
 		it('should have proper settings', function()
 			assert.are.same('http://127.0.0.1:8181', helpers.settings['Domoticz url'])
 			assert.are.same('http://127.0.0.1:8181', helpers.settings.url)
+			assert.are.same(false, helpers.settings.secureServer)
 		end)
+
+		it('should have proper settings when started in sslwww only mode', function()
+			_G.globalvariables['domoticz_listening_port'] = nil
+			_G.globalvariables['domoticz_secure_listening_port'] = '8943'
+			_G.globalvariables['domoticz_is_secure'] = true
+
+			helpers = EventHelpers(domoticz)
+			assert.are.same('https://127.0.0.1:8943', helpers.settings['Domoticz url'])
+			assert.are.same('https://127.0.0.1:8943', helpers.settings.url)
+			assert.are.same(true, helpers.settings.secureServer)
+		 end)
 
 		it('should have proper location settings', function()
 			assert.are.same('Domoticz', helpers.settings.location.name)
@@ -506,7 +519,7 @@ describe('event helpers', function()
 
 			local res = helpers.callEventHandler(trigger1, {
 				callback = 'trigger1',
-                statusCode = 200,
+				statusCode = 200,
 				baseType = 'httpResponse'
 			})
 			-- should pass the arguments to the execute function
@@ -533,7 +546,6 @@ describe('event helpers', function()
 				"script_security",
 				"script_security_grouped"
 			}, modulesFound)
-
 
 			local res = helpers.callEventHandler(scriptSecurity, { baseType = 'security', trigger = 'Armed Away' })
 			-- should pass the arguments to the execute function

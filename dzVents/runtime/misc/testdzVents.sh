@@ -137,7 +137,7 @@ function fillNumberOfTests
 	{
 		Device_ExpectedTests=118
 		Domoticz_ExpectedTests=82
-		EventHelpers_ExpectedTests=32
+		EventHelpers_ExpectedTests=33
 		EventHelpersStorage_ExpectedTests=50
 		HTTPResponse_ExpectedTests=6
 		Lodash_ExpectedTests=100

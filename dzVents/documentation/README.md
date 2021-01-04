@@ -718,7 +718,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
 		- **latitude**: domoticz settings locations latitude.
 		- **longitude**: domoticz settings locations longitude.
 		- **name**: domoticz settings location Name.
-	- **serverPort**: webserver listening port.
+	- **secureServer**: *boolean* <sup>3.1.1</sup> true when domoticz can be accessed via https.
+	- **serverPort**: webserver listening port used by dzVents to access domoticz API.
 	- **url**: internal url to access the API service.
 	- **webRoot**: `webroot` value as specified when starting the Domoticz service.
  - **sms(message [, delay] <sup>3.0.10</sup> )**: *Function*. Sends an sms if it is configured in Domoticz. Optional parm delay is delay in seconds.
@@ -2583,6 +2584,9 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))
 Check out the documentation [here](https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html).
 
 # History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
+
+## [3.1.0] ##
+- Fixed issue that prevented dzVents from accessing the domoticz API when used in sslwww only mode
 
 ## [3.1.0]
 - Added shell command event triggers to be used in combination with `executeShellCommand`. You can now execute shell commands and handle the response in your dzVents scripts **ASYNCHRONICALLY**. See the documentation. No more json parsing needed or complex `popen()` or 'system()'  shizzle.
