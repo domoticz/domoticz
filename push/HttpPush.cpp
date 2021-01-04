@@ -45,20 +45,19 @@ void CHttpPush::UpdateActive()
 
 void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
-	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)
 	{
-		DoHttpPush();
+		DoHttpPush(DeviceRowIdx);
 	}
 }
 
-void CHttpPush::DoHttpPush()
+void CHttpPush::DoHttpPush(const uint64_t DeviceRowIdx)
 {
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, "
 				  "A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM PushLink as A, DeviceStatus as B "
 				  "WHERE (A.PushType==%d AND A.DeviceRowID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceRowID==B.ID)",
-				  PushType::PUSHTYPE_HTTP, m_DeviceRowIdx);
+				  PushType::PUSHTYPE_HTTP, DeviceRowIdx);
 	if (result.empty())
 		return;
 
@@ -149,7 +148,7 @@ void CHttpPush::DoHttpPush()
 		%idx : 'Original device' id (idx)
 		*/
 
-		std::string lunit = getUnit(delpos, metertype);
+		std::string lunit = getUnit(DeviceRowIdx, delpos, metertype);
 		std::string lType = RFX_Type_Desc(dType, 1);
 		std::string lSubType = RFX_Type_SubType_Desc(dType, dSubType);
 
@@ -163,12 +162,12 @@ void CHttpPush::DoHttpPush()
 			if (int(strarray.size()) >= delpos && delpos > 0)
 			{
 				std::string rawsendValue = strarray[delpos - 1];
-				sendValue = ProcessSendValue(rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
+				sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
 			}
 		}
 		else
 		{
-			sendValue = ProcessSendValue(sendValue, delpos, nValue, false, dType, dSubType, metertype);
+			sendValue = ProcessSendValue(DeviceRowIdx, sendValue, delpos, nValue, false, dType, dSubType, metertype);
 		}
 		if (sendValue.empty())
 			continue;

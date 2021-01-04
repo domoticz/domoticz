@@ -43,20 +43,19 @@ void CFibaroPush::UpdateActive()
 
 void CFibaroPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
-	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)
 	{
-		DoFibaroPush();
+		DoFibaroPush(DeviceRowIdx);
 	}
 }
 
-void CFibaroPush::DoFibaroPush()
+void CFibaroPush::DoFibaroPush(const uint64_t DeviceRowIdx)
 {
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, "
 				  "A.IncludeUnit, B.SwitchType FROM PushLink as A, DeviceStatus as B "
 				  "WHERE (A.PushType==%d AND A.DeviceRowID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceRowID==B.ID)",
-				  PushType::PUSHTYPE_FIBARO, m_DeviceRowIdx);
+				  PushType::PUSHTYPE_FIBARO, DeviceRowIdx);
 	if (result.empty())
 		return;
 
@@ -113,11 +112,11 @@ void CFibaroPush::DoFibaroPush()
 					if (int(strarray.size()) >= delpos)
 					{
 						std::string rawsendValue = strarray[delpos - 1];
-						sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+						sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 					}
 				}
 				else
-					sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+					sendValue = ProcessSendValue(DeviceRowIdx, sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 			}
 		}
 		else { // scenes/reboot, only on/off

@@ -376,7 +376,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 CBasePush::CBasePush()
 {
 	m_bLinkActive = false;
-	m_DeviceRowIdx = -1;
 }
 
 // STATIC
@@ -488,13 +487,14 @@ std::string CBasePush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const
 	return wording;
 }
 
-std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int devType, const int devSubType, const int metertypein)
+std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int devType, const int devSubType,
+					const int metertypein)
 {
 	char szData[100];
 	szData[0] = 0;
 	try
 	{
-		std::string vType = DropdownOptionsValue(m_DeviceRowIdx, delpos);
+		std::string vType = DropdownOptionsValue(DeviceRowIdx, delpos);
 		unsigned char tempsign = m_sql.m_tempsign[0];
 		_eMeterType metertype = (_eMeterType)metertypein;
 		
@@ -729,7 +729,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 		std::string sendValue(szData);
 		if (includeUnit)
 		{
-			std::string unit = getUnit(delpos, metertypein);
+			std::string unit = getUnit(DeviceRowIdx, delpos, metertypein);
 			if (!unit.empty())
 			{
 				sendValue += " ";
@@ -742,9 +742,9 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	return "";
 }
 
-std::string CBasePush::getUnit(const int delpos, const int metertypein)
+std::string CBasePush::getUnit(const uint64_t DeviceRowIdx, const int delpos, const int metertypein)
 {
-	std::string vType = DropdownOptionsValue(m_DeviceRowIdx, delpos);
+	std::string vType = DropdownOptionsValue(DeviceRowIdx, delpos);
 	unsigned char tempsign = m_sql.m_tempsign[0];
 	_eMeterType metertype = (_eMeterType)metertypein;
 	char szData[100];

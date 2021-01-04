@@ -24,14 +24,13 @@ public:
       protected:
 	PushType m_PushType;
 	bool m_bLinkActive;
-	uint64_t m_DeviceRowIdx;
 	boost::signals2::connection m_sConnection;
 	boost::signals2::connection m_sDeviceUpdate;
 	boost::signals2::connection m_sNotification;
 	boost::signals2::connection m_sSceneChanged;
 
-	std::string ProcessSendValue(const std::string &rawsendValue, int delpos, int nValue, int includeUnit, int devType, int devSubType, int metertype);
-	std::string getUnit(int delpos, int metertypein);
+	std::string ProcessSendValue(const uint64_t DeviceRowIdx, const std::string &rawsendValue, int delpos, int nValue, int includeUnit, int devType, int devSubType, int metertype);
+	std::string getUnit(const uint64_t DeviceRowIdx, const int delpos, const int metertypein);
 
 	static unsigned long get_tzoffset();
 #ifdef WIN32

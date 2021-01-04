@@ -91,23 +91,21 @@ void CInfluxPush::UpdateSettings()
 	m_szURL = sURL.str();
 }
 
-void CInfluxPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CInfluxPush::OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
-	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)
 	{
-		DoInfluxPush();
+		DoInfluxPush(DeviceRowIdx);
 	}
 }
 
-void CInfluxPush::DoInfluxPush()
+void CInfluxPush::DoInfluxPush(const uint64_t DeviceRowIdx)
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.Name, B.SwitchType FROM PushLink as A, DeviceStatus as B "
 		"WHERE (A.PushType==%d AND A.DeviceRowID == '%" PRIu64 "' AND A.Enabled==1 AND A.DeviceRowID==B.ID)",
-		PushType::PUSHTYPE_INFLUXDB,
-		m_DeviceRowIdx);
+		PushType::PUSHTYPE_INFLUXDB, DeviceRowIdx);
 	if (result.empty())
 		return;
 
@@ -135,11 +133,11 @@ void CInfluxPush::DoInfluxPush()
 			if (int(strarray.size()) >= delpos)
 			{
 				std::string rawsendValue = strarray[delpos - 1];
-				sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+				sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 			}
 		}
 		else
-			sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+			sendValue = ProcessSendValue(DeviceRowIdx, sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 
 		if (sendValue.empty())
 			continue;
