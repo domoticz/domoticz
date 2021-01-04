@@ -983,8 +983,8 @@ void CHardwareMonitor::FetchUnixDisk()
 			char dname[200];
 			char suse[30];
 			char smountpoint[300];
-			long numblock, usedblocks, availblocks;
-			int ret = sscanf(ittDF.c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+			long long numblock, usedblocks, availblocks;
+			int ret = sscanf(ittDF.c_str(), "%s\t%lld\t%lld\t%lld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
 			if (ret == 6)
 			{
 				std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
