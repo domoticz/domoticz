@@ -58,54 +58,57 @@ namespace Plugins {
 		void LogPythonException(const std::string &);
 
 	public:
-		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
-		~CPlugin(void);
+	  CPlugin(int HwdID, const std::string &Name, const std::string &PluginKey);
+	  ~CPlugin() override;
 
-		int		PollInterval(int Interval = -1);
-		void*	PythonModule() { return m_PyModule; };
-		void	Notifier(std::string Notifier = "");
-		void	AddConnection(CPluginTransport*);
-		void	RemoveConnection(CPluginTransport*);
+	  int PollInterval(int Interval = -1);
+	  void *PythonModule()
+	  {
+		  return m_PyModule;
+	  };
+	  void Notifier(const std::string &Notifier = "");
+	  void AddConnection(CPluginTransport *);
+	  void RemoveConnection(CPluginTransport *);
 
-		bool	Initialise();
-		bool	LoadSettings();
-		bool	Start();
-		void	ConnectionProtocol(CDirectiveBase*);
-		void	ConnectionConnect(CDirectiveBase*);
-		void	ConnectionListen(CDirectiveBase*);
-		void	ConnectionRead(CPluginMessageBase*);
-		void	ConnectionWrite(CDirectiveBase*);
-		void	ConnectionDisconnect(CDirectiveBase*);
-		void	DisconnectEvent(CEventBase*);
-		void	Callback(std::string sHandler, void* pParams);
-		void	RestoreThread();
-		void	ReleaseThread();
-		void	Stop();
+	  bool Initialise();
+	  bool LoadSettings();
+	  bool Start();
+	  void ConnectionProtocol(CDirectiveBase *);
+	  void ConnectionConnect(CDirectiveBase *);
+	  void ConnectionListen(CDirectiveBase *);
+	  void ConnectionRead(CPluginMessageBase *);
+	  void ConnectionWrite(CDirectiveBase *);
+	  void ConnectionDisconnect(CDirectiveBase *);
+	  void DisconnectEvent(CEventBase *);
+	  void Callback(const std::string &sHandler, void *pParams);
+	  void RestoreThread();
+	  void ReleaseThread();
+	  void Stop();
 
-		void	WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
+	  void WriteDebugBuffer(const std::vector<byte> &Buffer, bool Incoming);
 
-		bool	WriteToHardware(const char *pdata, const unsigned char length) override;
-		void	SendCommand(const int Unit, const std::string &command, const int level, const _tColor color);
-		void	SendCommand(const int Unit, const std::string &command, const float level);
+	  bool WriteToHardware(const char *pdata, unsigned char length) override;
+	  void SendCommand(int Unit, const std::string &command, int level, _tColor color);
+	  void SendCommand(int Unit, const std::string &command, float level);
 
-		void	onDeviceAdded(int Unit);
-		void	onDeviceModified(int Unit);
-		void	onDeviceRemoved(int Unit);
-		void	MessagePlugin(CPluginMessageBase *pMessage);
-		void	DeviceAdded(int Unit);
-		void	DeviceModified(int Unit);
-		void	DeviceRemoved(int Unit);
+	  void onDeviceAdded(int Unit);
+	  void onDeviceModified(int Unit);
+	  void onDeviceRemoved(int Unit);
+	  void MessagePlugin(CPluginMessageBase *pMessage);
+	  void DeviceAdded(int Unit);
+	  void DeviceModified(int Unit);
+	  void DeviceRemoved(int Unit);
 
-		bool	HasNodeFailed(const int Unit);
+	  bool HasNodeFailed(int Unit);
 
-		std::string			m_PluginKey;
-		void*				m_DeviceDict;
-		void*				m_ImageDict;
-		void*				m_SettingsDict;
-		std::string			m_HomeFolder;
-		PluginDebugMask		m_bDebug;
-		bool				m_bIsStarting;
-		bool				m_bTracing;
+	  std::string m_PluginKey;
+	  void *m_DeviceDict;
+	  void *m_ImageDict;
+	  void *m_SettingsDict;
+	  std::string m_HomeFolder;
+	  PluginDebugMask m_bDebug;
+	  bool m_bIsStarting;
+	  bool m_bTracing;
 	};
 
 	class CPluginNotifier : public CNotificationBase
@@ -114,20 +117,13 @@ namespace Plugins {
 		CPlugin*	m_pPlugin;
 	public:
 		CPluginNotifier(CPlugin* pPlugin, const std::string & );
-		~CPluginNotifier();
-		virtual bool IsConfigured();
+		~CPluginNotifier() override;
+		bool IsConfigured() override;
 		std::string	 GetIconFile(const std::string &ExtraData);
 		std::string GetCustomIcon(std::string & szCustom);
 	protected:
-		virtual bool SendMessageImplementation(
-			const uint64_t Idx,
-			const std::string &Name,
-			const std::string &Subject,
-			const std::string &Text,
-			const std::string &ExtraData,
-			const int Priority,
-			const std::string &Sound,
-			const bool bFromNotification);
+	  bool SendMessageImplementation(uint64_t Idx, const std::string &Name, const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority,
+					 const std::string &Sound, bool bFromNotification) override;
 	};
 
 	//

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Helper.h"
-#include "Logger.h"
 #ifdef WIN32
 #include "dirent_windows.h"
 #include <direct.h>
@@ -147,6 +146,21 @@ std::string ToHexString(const uint8_t* pSource, const size_t length)
 	return ret;
 }
 
+std::vector<char> HexToBytes(const std::string& hex) {
+	std::vector<char> bytes;
+
+	if (hex.size() % 2 != 0)
+		return bytes; //invalid length
+
+	for (unsigned int i = 0; i < hex.length(); i += 2) {
+		std::string byteString = hex.substr(i, 2);
+		char byte = (char)strtol(byteString.c_str(), nullptr, 16);
+		bytes.push_back(byte);
+	}
+
+	return bytes;
+}
+
 void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
@@ -162,8 +176,8 @@ void stdreplace(
 
 void stdupper(std::string &inoutstring)
 {
-	for (size_t i = 0; i < inoutstring.size(); ++i)
-		inoutstring[i] = toupper(inoutstring[i]);
+	for (char &i : inoutstring)
+		i = toupper(i);
 }
 
 void stdlower(std::string &inoutstring)
@@ -173,8 +187,8 @@ void stdlower(std::string &inoutstring)
 
 void stdupper(std::wstring& inoutstring)
 {
-	for (size_t i = 0; i < inoutstring.size(); ++i)
-		inoutstring[i] = towupper(inoutstring[i]);
+	for (wchar_t &i : inoutstring)
+		i = towupper(i);
 }
 
 void stdlower(std::wstring& inoutstring)
@@ -325,7 +339,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	//also scan /dev/serial/by-id/* on Linux
 
 	bool bHaveTtyAMAfree=false;
-	std::string sLine = "";
+	std::string sLine;
 	std::ifstream infile;
 
 	infile.open("/boot/cmdline.txt");
@@ -338,12 +352,12 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		}
 	}
 
-	DIR *d=NULL;
+	DIR *d = nullptr;
 	d=opendir("/dev");
-	if (d != NULL)
+	if (d != nullptr)
 	{
-		struct dirent *de=NULL;
-		// Loop while not NULL
+		struct dirent *de = nullptr;
+		// Loop while not nullptr
 		while ((de = readdir(d)))
 		{
 			// Only consider character devices and symbolic links
@@ -421,10 +435,10 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	}
 	//also scan in /dev/usb
 	d=opendir("/dev/usb");
-	if (d != NULL)
+	if (d != nullptr)
 	{
-		struct dirent *de=NULL;
-		// Loop while not NULL
+		struct dirent *de = nullptr;
+		// Loop while not nullptr
 		while ((de = readdir(d)))
 		{
 			std::string fname = de->d_name;
@@ -439,10 +453,10 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 
 #if defined(__linux__) || defined(__linux) || defined(linux)
 	d=opendir("/dev/serial/by-id");
-	if (d != NULL)
+	if (d != nullptr)
 	{
-		struct dirent *de=NULL;
-		// Loop while not NULL
+		struct dirent *de = nullptr;
+		// Loop while not nullptr
 		while ((de = readdir(d)))
 		{
 			// Only consider symbolic links
@@ -524,6 +538,36 @@ float pressureSeaLevelFromAltitude(float altitude, float atmospheric, float temp
 		(temp + 0.0065F * altitude + 273.15F)), -5.257F);
 }
 
+//Haversine formula to calculate distance between two points
+
+#define earthRadiusKm 6371.0
+
+// This function converts decimal degrees to radians
+double deg2rad(double deg)
+{
+	return (deg * 3.14159265358979323846264338327950288 / 180.0);
+}
+
+/**
+ * Returns the distance between two points on the Earth.
+ * Direct translation from http://en.wikipedia.org/wiki/Haversine_formula
+ * @param lat1d Latitude of the first point in degrees
+ * @param lon1d Longitude of the first point in degrees
+ * @param lat2d Latitude of the second point in degrees
+ * @param lon2d Longitude of the second point in degrees
+ * @return The distance between the two points in kilometers
+ */
+double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d)
+{
+	double lat1r, lon1r, lat2r, lon2r, u, v;
+	lat1r = deg2rad(lat1d);
+	lon1r = deg2rad(lon1d);
+	lat2r = deg2rad(lat2d);
+	lon2r = deg2rad(lon2d);
+	u = sin((lat2r - lat1r) / 2);
+	v = sin((lon2r - lon1r) / 2);
+	return 2.0 * earthRadiusKm * asin(sqrt(u * u + cos(lat1r) * cos(lat2r) * v * v));
+}
 
 std::string &stdstring_ltrim(std::string &s)
 {
@@ -583,11 +627,7 @@ uint32_t IPToUInt(const std::string &ip)
 
 bool isInt(const std::string &s)
 {
-	for(size_t i = 0; i < s.length(); i++){
-		if(!isdigit(s[i]))
-			return false;
-	}
-	return true;
+	return std::all_of(s.begin(), s.end(), ::isdigit);
 }
 
 void sleep_seconds(const long seconds)
@@ -656,7 +696,9 @@ int RemoveDir(const std::string &dirnames, std::string &errorPath)
 				strcpy_s(deletePath, splitresults[i].c_str());
 				deletePath[s_szLen + 1] = '\0'; // SHFILEOPSTRUCT needs an additional null char
 
-				SHFILEOPSTRUCT shfo = { NULL, FO_DELETE, deletePath, NULL, FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION, FALSE, NULL, NULL };
+				SHFILEOPSTRUCT shfo
+					= { nullptr, FO_DELETE, deletePath, nullptr, FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION,
+					    FALSE,   nullptr,	nullptr };
 				if (returncode = SHFileOperation(&shfo))
 				{
 					errorPath = splitresults[i];
@@ -665,14 +707,14 @@ int RemoveDir(const std::string &dirnames, std::string &errorPath)
 			}
 		}
 #else
-		for (size_t i = 0; i < splitresults.size(); i++)
+		for (auto &splitresult : splitresults)
 		{
-			if (!file_exist(splitresults[i].c_str()))
+			if (!file_exist(splitresult.c_str()))
 				continue;
-			ExecuteCommandAndReturn("rm -rf \"" + splitresults[i] + "\"", returncode);
+			ExecuteCommandAndReturn("rm -rf \"" + splitresult + "\"", returncode);
 			if (returncode)
 			{
-				errorPath = splitresults[i];
+				errorPath = splitresult;
 				break;
 			}
 		}
@@ -719,11 +761,11 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, i
 #else
 		fp = popen(szCommand.c_str(), "r");
 #endif
-		if (fp != NULL)
+		if (fp != nullptr)
 		{
 			char path[1035];
 			/* Read the output a line at a time - output it. */
-			while (fgets(path, sizeof(path) - 1, fp) != NULL)
+			while (fgets(path, sizeof(path) - 1, fp) != nullptr)
 			{
 				ret.push_back(path);
 			}
@@ -747,7 +789,7 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 	struct tm timeinfo;
 	struct timeval tv;
 	std::stringstream sstr;
-	if (ltime == NULL) // current time
+	if (ltime == nullptr) // current time
 	{
 #ifdef CLOCK_REALTIME
 		struct timespec ts;
@@ -758,7 +800,7 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 		}
 		else
 #endif
-			gettimeofday(&tv, NULL);
+			gettimeofday(&tv, nullptr);
 #ifdef WIN32
 		time_t tv_sec = tv.tv_sec;
 		localtime_r(&tv_sec, &timeinfo);
@@ -788,7 +830,7 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
 	}
 
-	if (format > TF_DateTime && ltime == NULL)
+	if (format > TF_DateTime && ltime == nullptr)
 		sstr << "." << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
 
 	return sstr.str();
@@ -865,7 +907,7 @@ void hsb2rgb(const float hue, const float saturation, const float vlue, int &out
 void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 {
 	float hue, saturation, brightness;
-	if (hsbvals == NULL)
+	if (hsbvals == nullptr)
 		return;
 	int cmax = (r > g) ? r : g;
 	if (b > cmax) cmax = b;
@@ -1027,11 +1069,12 @@ bool dirent_is_file(const std::string &dir, struct dirent *ent)
  */
 void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles)
 {
-	DIR *d = NULL;
+	DIR *d = nullptr;
 	struct dirent *ent;
-	if ((d = opendir(dir.c_str())) != NULL)
+	if ((d = opendir(dir.c_str())) != nullptr)
 	{
-		while ((ent = readdir(d)) != NULL) {
+		while ((ent = readdir(d)) != nullptr)
+		{
 			std::string name = ent->d_name;
 			if (bInclDirs && dirent_is_directory(dir, ent) && name != "." && name != "..") {
 				entries.push_back(name);
@@ -1044,7 +1087,6 @@ void DirectoryListing(std::vector<std::string>& entries, const std::string &dir,
 		}
 		closedir(d);
 	}
-	return;
 }
 
 std::string GenerateUserAgent()
@@ -1082,7 +1124,6 @@ std::string SafeHtml(const std::string &txt)
     return sRet;
 }
 
-
 #if defined WIN32
 //FILETIME of Jan 1 1970 00:00:00
 static const uint64_t epoch = (const uint64_t)(116444736000000000);
@@ -1111,7 +1152,7 @@ int getclock(struct timeval *tv) {
 			return 0;
 		}
 #endif
-	return gettimeofday(tv, NULL);
+		return gettimeofday(tv, nullptr);
 }
 int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y) {
 	/* Perform the carry for the later subtraction by updating y. */
@@ -1135,22 +1176,7 @@ int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval 
   return x->tv_sec < y->tv_sec;
 }
 
-const char *szInsecureArgumentOptions[] = {
-	"import",
-	"socket",
-	"process",
-	"os",
-	"|",
-	";",
-	"&",
-	"$",
-	"<",
-	">",
-	"`",
-	"\n",
-	"\r",
-	NULL
-};
+const char *szInsecureArgumentOptions[] = { "import", "socket", "process", "os", "|", ";", "&", "$", "<", ">", "`", "\n", "\r", nullptr };
 
 bool IsArgumentSecure(const std::string &arg)
 {
@@ -1158,7 +1184,7 @@ bool IsArgumentSecure(const std::string &arg)
 	std::transform(larg.begin(), larg.end(), larg.begin(), ::tolower);
 
 	int ii = 0;
-	while (szInsecureArgumentOptions[ii] != NULL)
+	while (szInsecureArgumentOptions[ii] != nullptr)
 	{
 		if (larg.find(szInsecureArgumentOptions[ii]) != std::string::npos)
 			return false;
@@ -1180,9 +1206,9 @@ uint32_t SystemUptime()
 	struct timeval boottime;
 	std::size_t len = sizeof(boottime);
 	int mib[2] = { CTL_KERN, KERN_BOOTTIME };
-	if (sysctl(mib, 2, &boottime, &len, NULL, 0) < 0)
+	if (sysctl(mib, 2, &boottime, &len, nullptr, 0) < 0)
 		return -1;
-	return time(NULL) - boottime.tv_sec;
+	return time(nullptr) - boottime.tv_sec;
 #elif (defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)) && defined(CLOCK_UPTIME)
 	struct timespec ts;
 	if (clock_gettime(CLOCK_UPTIME, &ts) != 0)
@@ -1212,7 +1238,7 @@ int GenerateRandomNumber(const int range)
 		switch (entropy.which)
 		{
 			case 0:
-				entropy.t += time (NULL);
+				entropy.t += time(nullptr);
 				accSeed ^= entropy.t;
 				break;
 			case 1:
@@ -1234,17 +1260,17 @@ int GenerateRandomNumber(const int range)
 int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files)
 {
 	DIR* dir;
-	if ((dir = opendir(DirPath.c_str())) != NULL)
+	if ((dir = opendir(DirPath.c_str())) != nullptr)
 	{
 		struct dirent *ent;
-		while ((ent = readdir(dir)) != NULL)
+		while ((ent = readdir(dir)) != nullptr)
 		{
 			if (dirent_is_directory(DirPath, ent))
 			{
 				if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0) && (strcmp(ent->d_name, ".svn") != 0))
 				{
 					std::string nextdir = DirPath + ent->d_name + "/";
-					if (GetDirFilesRecursive(nextdir.c_str(), _Files))
+					if (GetDirFilesRecursive(nextdir, _Files))
 					{
 						closedir(dir);
 						return 1;
@@ -1325,7 +1351,7 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 #endif
 
 #if !defined(WIN32)
-bool IsDebuggerPresent(void)
+bool IsDebuggerPresent()
 {
 #if defined(__linux__)
 	// Linux implementation: Search for 'TracerPid:' in /proc/self/status
@@ -1349,8 +1375,7 @@ bool IsDebuggerPresent(void)
 	{
 		if (::isspace(*characterPtr))
 			continue;
-		else
-			return ::isdigit(*characterPtr) != 0 && *characterPtr != '0';
+		return ::isdigit(*characterPtr) != 0 && *characterPtr != '0';
 	}
 
 	return false;
@@ -1362,44 +1387,6 @@ bool IsDebuggerPresent(void)
 	return false;
 #	endif
 #endif
-}
-#endif
-
-#if defined(__linux__)
-bool IsWSL(void)
-{
-	// Detect WSL according to https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364
-	bool is_wsl = false;
-
-	char buf[1024];
-
-	int status_fd = open("/proc/sys/kernel/osrelease", O_RDONLY);
-	if (status_fd == -1)
-		return is_wsl;
-
-	ssize_t num_read = read(status_fd, buf, sizeof(buf) - 1);
-
-	if (num_read > 0)
-	{
-		buf[num_read] = 0;
-		is_wsl |= (strstr(buf, "Microsoft") != NULL);
-		is_wsl |= (strstr(buf, "WSL") != NULL);
-	}
-
-	status_fd = open("/proc/version", O_RDONLY);
-	if (status_fd == -1)
-		return is_wsl;
-
-	num_read = read(status_fd, buf, sizeof(buf) - 1);
-
-	if (num_read > 0)
-	{
-		buf[num_read] = 0;
-		is_wsl |= (strstr(buf, "Microsoft") != NULL);
-		is_wsl |= (strstr(buf, "WSL") != NULL);
-	}
-
-	return is_wsl;
 }
 #endif
 

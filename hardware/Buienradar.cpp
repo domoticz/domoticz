@@ -54,37 +54,6 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-//Haversine formula to calculate distance between two points
-
-#define earthRadiusKm 6371.0
-
-// This function converts decimal degrees to radians
-double deg2rad(double deg)
-{
-	return (deg * 3.14159265358979323846264338327950288 / 180.0);
-}
-
-/**
- * Returns the distance between two points on the Earth.
- * Direct translation from http://en.wikipedia.org/wiki/Haversine_formula
- * @param lat1d Latitude of the first point in degrees
- * @param lon1d Longitude of the first point in degrees
- * @param lat2d Latitude of the second point in degrees
- * @param lon2d Longitude of the second point in degrees
- * @return The distance between the two points in kilometers
- */
-double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d)
-{
-	double lat1r, lon1r, lat2r, lon2r, u, v;
-	lat1r = deg2rad(lat1d);
-	lon1r = deg2rad(lon1d);
-	lat2r = deg2rad(lat2d);
-	lon2r = deg2rad(lon2d);
-	u = sin((lat2r - lat1r) / 2);
-	v = sin((lon2r - lon1r) / 2);
-	return 2.0 * earthRadiusKm * asin(sqrt(u * u + cos(lat1r) * cos(lat2r) * v * v));
-}
-
 CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold, const std::string& Location)
 {
 	m_HwdID = ID;
@@ -101,6 +70,7 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 			{
 				try {
 					m_iStationID = std::stoi(strarray[0]);
+					m_stationidprovided=true;
 				}
 				catch (const std::exception& e) {
 					Log(LOG_ERROR, "Bad Station ID provided: %s (%s), please recheck hardware setup.", strarray[0].c_str(), e.what());
@@ -120,14 +90,10 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 	}
 }
 
-CBuienRadar::~CBuienRadar(void)
-{
-}
-
 void CBuienRadar::Init()
 {
 	struct tm ltime;
-	time_t now = mytime(0);
+	time_t now = mytime(nullptr);
 	localtime_r(&now, &ltime);
 	m_itIsRaining = false;
 }
@@ -171,7 +137,7 @@ void CBuienRadar::Do_Work()
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
-		time_t now = mytime(0);
+		time_t now = mytime(nullptr);
 		m_LastHeartbeat = now;
 
 		if (sec_counter % 600 == 0)
@@ -294,13 +260,13 @@ bool CBuienRadar::GetStationDetails()
 		double shortest_station_lat = 0;
 		double shortest_station_lon = 0;
 
-		for (const auto itt : root["actual"]["stationmeasurements"])
+		for (const auto &measurement : root["actual"]["stationmeasurements"])
 		{
-			if (itt["temperature"].empty())
+			if (measurement["temperature"].empty())
 				continue;
 
-			double lat = itt["lat"].asDouble();
-			double lon = itt["lon"].asDouble();
+			double lat = measurement["lat"].asDouble();
+			double lon = measurement["lon"].asDouble();
 
 			double distance_km = distanceEarth(
 				MyLatitude, MyLongitude,
@@ -311,9 +277,9 @@ bool CBuienRadar::GetStationDetails()
 				shortest_distance_km = distance_km;
 				shortest_station_lat = lat;
 				shortest_station_lon = lon;
-				m_iStationID = itt["stationid"].asInt();
-				m_sStationName = itt["stationname"].asString();
-				m_sStationRegion = itt["regio"].asString();
+				m_iStationID = measurement["stationid"].asInt();
+				m_sStationName = measurement["stationname"].asString();
+				m_sStationRegion = measurement["regio"].asString();
 			}
 		}
 		if (m_iStationID == 0)
@@ -326,20 +292,20 @@ bool CBuienRadar::GetStationDetails()
 	}
 
 	// StationID was provided, find it in the list
-	for (const auto itt : root["actual"]["stationmeasurements"])
+	for (const auto &measurement : root["actual"]["stationmeasurements"])
 	{
-		if (itt["temperature"].empty())
+		if (measurement["temperature"].empty())
 			continue;
 
-		int StationID = itt["stationid"].asInt();
+		int StationID = measurement["stationid"].asInt();
 
 		if (StationID == m_iStationID)
 		{
 			// Station Found, set name and region
-			m_sStationName = itt["stationname"].asString();
-			m_sStationRegion = itt["regio"].asString();
-			m_szMyLatitude = std::to_string(itt["lat"].asDouble());
-			m_szMyLongitude = std::to_string(itt["lon"].asDouble());
+			m_sStationName = measurement["stationname"].asString();
+			m_sStationRegion = measurement["regio"].asString();
+			m_szMyLatitude = std::to_string(measurement["lat"].asDouble());
+			m_szMyLongitude = std::to_string(measurement["lon"].asDouble());
 			Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, std::stod(m_szMyLatitude), std::stod(m_szMyLongitude));
 			return true;
 		}
@@ -381,7 +347,7 @@ void CBuienRadar::GetMeterDetails()
 		return;
 	}
 
-	if (root["timestamp"].empty() == true || root["stationid"].empty() == true)
+	if (root["timestamp"].empty() == true || (root["stationid"].empty() == true && root["stationId"].empty() == true))
 	{
 		Log(LOG_ERROR, "Invalid data received (timestamp or staionid missing) or no data returned!");
 		return;
@@ -395,12 +361,32 @@ void CBuienRadar::GetMeterDetails()
 	int stationID = root["stationid"].asInt();
 	if (stationID != m_iStationID)
 	{
-		Log(LOG_ERROR, "Invalid data received (invalid stationid) or no data returned!", stationID, m_iStationID);
+		Log(LOG_ERROR, "Invalid data received (invalid stationid %d / %d ) or no data returned!", stationID, m_iStationID);
 		return;
 	}
 
 	//iconurl : "https://www.buienradar.nl/resources/images/icons/weather/30x30/a.png"
 	//graphUrl : "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/a"
+
+	// Update Location details if a configured station is used
+	if (m_stationidprovided)
+	{
+		if (!root["lon"].empty())
+		{
+			if (root["lon"].asFloat()>0)
+			{
+				m_szMyLongitude = std::to_string(root["lon"].asDouble());
+			}
+		}
+
+		if (!root["lat"].empty())
+		{
+			if (root["lat"].asFloat()>0)
+			{
+				m_szMyLatitude = std::to_string(root["lat"].asDouble());
+			}
+		}
+	}
 
 	float temp = -999.9f;
 	int humidity = 0;
@@ -504,13 +490,13 @@ void CBuienRadar::GetMeterDetails()
 		float precipitation = root["precipitationmm"].asFloat();
 		SendRainRateSensor(1, 255, precipitation, "Rain");
 		m_itIsRaining = precipitation > 0;
-		SendSwitch(1, 1, 255, m_itIsRaining, 0, "Is it Raining");
+		SendSwitch(1, 1, 255, m_itIsRaining, 0, "Is it Raining", m_Name);
 	}
 }
 
 void CBuienRadar::GetRainPrediction()
 {
-	if (m_szMyLatitude.empty())
+	if (m_szMyLatitude.empty() || m_szMyLongitude.empty() ||  std::stoi(m_szMyLatitude)<1 || std::stoi(m_szMyLongitude)<1)
 		return;
 
 	std::string sResult;
@@ -534,12 +520,19 @@ void CBuienRadar::GetRainPrediction()
 		Log(LOG_ERROR, "Problem Connecting to Buienradar! (Check your Internet Connection!)");
 		return;
 	}
+	if (sResult.empty())
+	{
+		// Log(LOG_ERROR, "Problem getting Rainprediction: no prediction available at Buienradar");
+		// no data to process, so don't update the sensros
+		return;
+	}
+
 #ifdef DEBUG_BUIENRADARW
 	SaveString2Disk(sResult, "E:\\br_rain.txt");
 #endif
 #endif
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -721,7 +714,7 @@ void CBuienRadar::GetRainPrediction()
 			//double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
 			double rain_perc = (rain_avg == 0) ? 0 : (rain_avg * 0.392156862745098);
 			SendPercentageSensor(1, 1, 255, static_cast<float>(rain_perc), "Rain Intensity");
-			SendSwitch(2, 1, 255, (rain_perc >= m_iThreshold), 0, "Possible Rain");
+			SendSwitch(2, 1, 255, (rain_perc >= m_iThreshold), 0, "Possible Rain", m_Name);
 		}
 		if (total_rain_values_next_hour)
 		{

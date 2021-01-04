@@ -9,11 +9,11 @@
 
 class DomoticzTCP : public CRFXBase, ASyncTCP
 {
-public:
-	DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
-	~DomoticzTCP(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	boost::signals2::signal<void()>	sDisconnected;
+      public:
+	DomoticzTCP(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &username, const std::string &password);
+	~DomoticzTCP() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	boost::signals2::signal<void()> sDisconnected;
 #ifndef NOCLOUD
 	void SetConnected(bool connected);
 	bool isConnected();
@@ -24,7 +24,7 @@ public:
 	bool ConnectInternalProxy();
 	void DisconnectProxy();
 #endif
-private:
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
@@ -47,9 +47,9 @@ private:
 	bool b_ProxyConnected;
 	bool b_useProxy;
 #endif
-protected:
+      protected:
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const boost::system::error_code& error) override;
+	void OnError(const boost::system::error_code &error) override;
 };

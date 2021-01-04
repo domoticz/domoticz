@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Heatit Z-Temp2</MetaDataItem>
+    <MetaDataItem name="Description">Heatit Z-Temp2 is a battery-operated thermostat designed for use with water based heating systems. Used in combination with the Heatit Z-Water regulator you can control your heating system with a Z-Wave primary controller/gateway with the use of Heatit Z-Water in combination with one or several Heatit Z-Temp2. </MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/019B:0204:0004</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://products.z-wavealliance.org/products/3860</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://www.heatit.com/z-wave/heatit-z-temp-2-2/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/thermofloor/heatit0204.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3860/Manual_Heatit_Z-Temp2_FW%201.1_Ver2020-A_ENG.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The thermostat is a FLIRS device. You are able to force a Node Information Frame using the same procedure as adding/removing procedure; "press the link button on the thermostat 3 times in a rapid sequence." </MetaDataItem>
+    <MetaDataItem name="InclusionDescription">There are two ways to add your devices in a Z-Wave network. * Standard (manual). Please refer to your primary controller/gateway manual on how to enter add mode. The device can only be added to the network if the primary controller is in add mode. When the primary controller/gateway is set to add mode press the link button on the thermostat 3 times in a rapid sequence. * SmartStart (automatic) Please refer to your primary controller/gateway to see if SmartStart is supported by the controller. SmartStart enabled products can be added into a Z-Wave network by scanning the Z-Wave QR-Code present on the product with a controller providing SmartStart inclusion. No further action is required and the SmartStart product will be added automatically within 10 minutes of being switched on in the network vicinity.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Remove. Please refer to your primary controller/gateway manual on how to enter remove mode. The device can only be removed from the network if the primary controller is in remove mode. When the primary controller/gateway is set to remove modus press the link button on the thermostat 3 times in a rapid sequence.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">By pressing and holding the link button for 20 seconds, the thermostat will perform a complete factory reset. rES will be displayed. NB! Please use this procedure only when the primary controller/gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="0204" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/XXXX/</MetaDataItem>
+    <MetaDataItem id="0204" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0204" name="Identifier" type="0004">Z-Temp2</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Julien Ithurbide - jithurbide@gmail.com" date="26 Oct 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3860/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+ 
+      <!-- Thermostat -->
+          <!-- COMMAND_CLASS_THERMOSTAT_MODE 	0x40 	64   -->
+  <CommandClass id="64">
+    <Value genre="user" index="0" instance="1" label="Mode" max="0" min="0" read_only="false" type="list" units="" value="0" write_only="false">
+      <Item label="Off" value="0"/>
+      <Item label="Heat" value="1"/>
+    </Value>
+    <SupportedModes>
+      <Mode index="0" label="Off"/>
+      <Mode index="1" label="Heat"/>
+    </SupportedModes>
+    <Compatibility>
+      <Base>0</Base>
+      <CreateVars>true</CreateVars>
+    </Compatibility>
+  </CommandClass>
+
+      <!-- COMMAND_CLASS_THERMOSTAT_SETPOINT 	0x43 	67 -->  
+  <CommandClass id="67">
+    <Instance index="1"/>
+    <Value genre="user" index="1" instance="1" label="Heating setpoint" max="40" min="0" read_only="false" type="decimal" units="C" value="20" write_only="false"/>
+    <Compatibility>
+      <Base>0</Base>
+      <CreateVars>true</CreateVars>
+    </Compatibility>
+  </CommandClass>
+
+  
+  <CommandClass id="112">
+     <Value genre="config" index="1" instance="1" label="Temperature/ Humidity report interval" max="32767" min="30" size="2" type="short" value="900">
+      <Help>Used to adjust the time between report interval for Temperature and humidity reports. Min is 30, max is 32767 and default is 900</Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Temperature delta value" max="50" min="0" size="2" type="short" value="10">
+      <Help>Temperature delta value. Value 0 : Reporting temperature based on change is disabled. Real value : + 0.5 to + 5°C (Default 10 corresponding to  1.0°C)</Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Humidity delta value" max="50" min="0" size="2" type="short" value="10">
+      <Help>Humidity delta value. Value 0 : Reporting Humidity based on change is disabled. Real value : + 0.5 to + 5°C (Default 10 corresponding to 1.0°C)</Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Temperature offset settings" max="65535" min="0" size="2" type="short" value="0">
+      <Help>Calibrate the internal temperature sensor. NB! To set negative values; 65 535 – desired value + 1. Value: -100 to 100°C (Default 0, 0°C)</Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Humidity offset settings" max="65535" min="0" size="2" type="short" value="0">
+      <Help>Calibrate the internal hunidity sensor. NB! To set negative values; 65 535 – desired value + 1. Value: -100 to 100°C (Default 0, 0°C)</Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Proximity sensor retrigger interval" max="270" min="2" size="2" type="short" value="10">
+      <Help>value 2 to 270 seconds (Default 10, 10 seconds)</Help>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Proximity sensor  Enable / Disable" max="1" min="0" size="2" type="short" value="1">
+      <Help>Disable or enable sensor. Value  0 disable, 1 enable </Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="LED maximum brightness" max="99" min="0" size="2" type="short" value="50">
+      <Help>Adjust the backlight of LCD display.</Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="LED turned on before timeout" max="300" min="3" size="2" type="short" value="3">
+      <Help>Adjust the time from proximity sensor / display touched until display goes to sleep.Value 3 to 300 seconds (Default 3, 3 seconds)</Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Temperature Control Hysteresis" max="30" min="3" size="2" type="short" value="5">
+      <Help>Adjust the delta values for the thermostat to turn on off heating .Value  0.3 to 3°C (Default 5, 0,5°C)</Help>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Minimum Temperature Limit" max="400" min="50" size="2" type="short" value="50">
+      <Help>Set the mimum temperature limit.Value 5 to 40°C (Default 50, 5°C)</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Maximum Temperature Limit" max="400" min="50" size="2" type="short" value="400">
+      <Help>Set the maximum temperature limit.5 to 40°C (Default 400, 40°C)</Help>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="External Relay and Operating State update interval " max="240" min="0" size="2" type="short" value="0">
+      <Help>Set time on how often the devices sends Binary Switch Set and thermostat mode to gateway. Value 0 : Sends only when changed (Default). 1 to 240 minutes + When changed </Help>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Report when presence is detected" max="1" min="0" size="2" type="short" value="400">
+      <Help>Decides if the thermostat sends temperature when presence is detected.Value 0 : Do not report to gateway when presence is detected, only at interval.(Default) 1 : Send temperature report to gateway when presence is detected.</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="132">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Temperature Report" max_associations="5"/>
+      <Group index="3" label="Binary Switch Set (normally used to control external relays)." max_associations="5"/>
+    </Associations>
+  </CommandClass>
+ 
+</Product>

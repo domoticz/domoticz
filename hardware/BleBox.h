@@ -14,22 +14,23 @@ namespace Json
 
 class BleBox : public CDomoticzHardwareBase
 {
-public:
-	BleBox(const int id, const int pollIntervalsec);
-	virtual ~BleBox();
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+      public:
+	BleBox(int id, int pollIntervalsec);
+	~BleBox() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	int GetDeviceType(const std::string &IPAddress);
 	void AddNode(const std::string &name, const std::string &IPAddress, bool reloadNodes);
-	void RemoveNode(const int id);
+	void RemoveNode(int id);
 	void RemoveAllNodes();
-	void SetSettings(const int pollIntervalsec);
+	void SetSettings(int pollIntervalsec);
 	void UpdateFirmware();
 	Json::Value GetApiDeviceState(const std::string &IPAddress);
 	bool DoesNodeExists(const Json::Value &root, const std::string &node);
 	bool DoesNodeExists(const Json::Value &root, const std::string &node, const std::string &value);
 	std::string GetUptime(const std::string &IPAddress);
 	void SearchNodes(const std::string &pattern);
-private:
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
@@ -39,16 +40,17 @@ private:
 	std::string GetDeviceIP(const tRBUF *id);
 	std::string GetDeviceRevertIP(const tRBUF *id);
 	std::string GetDeviceIP(const std::string &id);
-	std::string IPToHex(const std::string &IPAddress, const int type);
-	Json::Value SendCommand(const std::string &IPAddress, const std::string &command, const int timeOut = 3);
+	std::string IPToHex(const std::string &IPAddress, int type);
+	Json::Value SendCommand(const std::string &IPAddress, const std::string &command, int timeOut = 3);
 	void GetDevicesState();
 
-	void SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
+	void SendSwitch(int NodeID, uint8_t ChildID, int BatteryLevel, bool bOn, double Level, const std::string &defaultname);
 
 	void ReloadNodes();
 	void UnloadNodes();
 	bool LoadNodes();
-private:
+
+      private:
 	int m_PollInterval;
 	std::shared_ptr<std::thread> m_thread;
 	std::map<const std::string, const int> m_devices;
@@ -58,5 +60,5 @@ private:
 	bool m_RGBWisWhiteState;
 	int m_RGBWbrightnessState;
 
-	bool PrepareHostList(const std::string& pattern, std::vector<std::string>& hosts);
+	bool PrepareHostList(const std::string &pattern, std::vector<std::string> &hosts);
 };

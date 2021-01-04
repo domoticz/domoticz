@@ -81,7 +81,7 @@ struct _t1WireDevice
    std::string devid;
    std::string filename;
 
-   bool operator<(_t1WireDevice other) const
+   bool operator<(const _t1WireDevice &other) const
    {
 	   return devid > other.devid;
    }

@@ -1,10 +1,11 @@
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
     <MetaData>
         <MetaDataItem name="Name">LUXY Smart Switch</MetaDataItem>
         <MetaDataItem name="Description">The Qubino LUXY Smart Switch is ideal for gentle illumination of any room, for visual and sound notifications, and for controling various loads, using the built-in relay.</MetaDataItem>
         <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0052:0008</MetaDataItem>
         <MetaDataItem name="ProductPage">https://qubino.com</MetaDataItem>
         <MetaDataItem name="ProductSupport">https://support.qubino.com/support/home</MetaDataItem>
+        <MetaDataItem name="ProductPic">images/qubino/ZMNKADx.png</MetaDataItem>
         <MetaDataItem name="InclusionDescription">
             Manual inclusion is triggered by the following procedure:
             Full white needs to be active (c-button 2). The user can select it by quickly pressing the c-button2 once.
@@ -29,6 +30,7 @@
         </MetaDataItem>
         <ChangeLog>
             <Entry author="K.Petrovcic@goap.si" date="22 January 2020" revision="1">Initial Import</Entry>
+            <Entry author="Justin Hammond" date="24 June 2020" revision="2">Add Product Pic</Entry>
         </ChangeLog>
     </MetaData>
 

@@ -55,10 +55,6 @@ m_Location(Location)
 	Init();
 }
 
-CDarkSky::~CDarkSky(void)
-{
-}
-
 void CDarkSky::Init()
 {
 }
@@ -97,7 +93,7 @@ void CDarkSky::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 300 == 0)
 		{
@@ -327,7 +323,7 @@ void CDarkSky::GetMeterDetails()
 		at10-=(tsen.WIND.chillh*256);
 		tsen.WIND.chilll=(BYTE)(at10);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255, nullptr);
 	}
 
 	//UV
@@ -367,7 +363,7 @@ void CDarkSky::GetMeterDetails()
 				_tGeneralDevice gdevice;
 				gdevice.subtype=sTypeVisibility;
 				gdevice.floatval1=visibility;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
 			}
 		}
 	}

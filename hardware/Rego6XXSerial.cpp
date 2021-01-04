@@ -16,10 +16,12 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #define Rego6XX_RETRY_DELAY 30
 #define Rego6XX_COMMAND_DELAY 5
@@ -165,7 +167,7 @@ void CRego6XXSerial::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (!isOpen())
@@ -186,72 +188,72 @@ void CRego6XXSerial::Do_Work()
 			}
 		}
 		else if(m_errorcntr > Rego6XX_MAX_ERRORS_UNITL_RESTART)
-        {
-            // Reopen the port and clear the error counter.
+		{
+			// Reopen the port and clear the error counter.
 			terminate();
 
-		    _log.Log(LOG_ERROR,"Rego6XX: Reopening serial port");
-		    sleep_seconds(2);
+			_log.Log(LOG_ERROR, "Rego6XX: Reopening serial port");
+			sleep_seconds(2);
 
 			m_retrycntr=0;
 			m_pollcntr = 0;
 			m_pollDelaycntr = 0;
 			m_readBufferHead = 0;
 			m_readBufferTail = 0;
-            m_errorcntr = 0;
+			m_errorcntr = 0;
 
-		    OpenSerialDevice();
-        }
-        else
+			OpenSerialDevice();
+		}
+		else
 		{
 			m_pollDelaycntr++;
 
-			if (m_pollDelaycntr>=Rego6XX_COMMAND_DELAY)
+			if (m_pollDelaycntr >= Rego6XX_COMMAND_DELAY)
 			{
-                // Before issueing a new command, the recieve buffer must be empty.
-                // It seems that there are errors sometimes and this will take care
-                // of any problems even if it bypasses the circular buffer concept.
-                // There should not be any data left to recieve anyway since commands
-                // are sent with 5 seconds in between.
+				// Before issueing a new command, the recieve buffer must be empty.
+				// It seems that there are errors sometimes and this will take care
+				// of any problems even if it bypasses the circular buffer concept.
+				// There should not be any data left to recieve anyway since commands
+				// are sent with 5 seconds in between.
 				m_readBufferHead = 0;
 				m_readBufferTail = 0;
 
-   				m_pollDelaycntr = 0;
-				if(g_allRegisters[m_pollcntr].type != REGO_TYPE_NONE)
+				m_pollDelaycntr = 0;
+				if (g_allRegisters[m_pollcntr].type != REGO_TYPE_NONE)
 				{
 					RegoCommand cmd;
 					cmd.data.address = 0x81;
 					cmd.data.command = 0x02;
-                    switch(m_regoType)
-                    {
-                    case 0:
-                        cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type1 & 0xC000) >> 14 ;
-					    cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type1 & 0x3F80) >> 7 ;
-					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type1 & 0x007F;
-                        break;
-                    case 1:
-                        cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type2 & 0xC000) >> 14 ;
-					    cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type2 & 0x3F80) >> 7 ;
-					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type2 & 0x007F;
-                        break;
-                    case 2:
-                        cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type3 & 0xC000) >> 14 ;
-					    cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type3 & 0x3F80) >> 7 ;
-					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type3 & 0x007F;
-                        break;
-                    default:
-		                _log.Log(LOG_ERROR,"Rego6XX: Unknown type!");
-                        break;
-                    }
+					switch (m_regoType)
+					{
+						case 0:
+							cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type1 & 0xC000) >> 14;
+							cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type1 & 0x3F80) >> 7;
+							cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type1 & 0x007F;
+							break;
+						case 1:
+							cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type2 & 0xC000) >> 14;
+							cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type2 & 0x3F80) >> 7;
+							cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type2 & 0x007F;
+							break;
+						case 2:
+							cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type3 & 0xC000) >> 14;
+							cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type3 & 0x3F80) >> 7;
+							cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type3 & 0x007F;
+							break;
+						default:
+							_log.Log(LOG_ERROR, "Rego6XX: Unknown type!");
+							break;
+					}
 					cmd.data.value[0] = 0;
 					cmd.data.value[1] = 0;
 					cmd.data.value[2] = 0;
 					cmd.data.crc = 0;
 
-					for ( int i = 2; i < 8; i++ )
-						cmd.data.crc ^= cmd.raw[ i ];
+					for (int i = 2; i < 8; i++)
+						cmd.data.crc ^= cmd.raw[i];
 
-					WriteToHardware((char*)cmd.raw, sizeof(cmd.raw));
+					WriteToHardware((char *)cmd.raw, sizeof(cmd.raw));
 				}
 				else
 				{
@@ -261,18 +263,17 @@ void CRego6XXSerial::Do_Work()
 			else
 			{
 				// Try to parse data
-				if(ParseData())
-                {
-                    // Get the next message
-       				m_pollcntr++;
+				if (ParseData())
+				{
+					// Get the next message
+					m_pollcntr++;
 
-                    m_errorcntr = 0;
-                }
-                else
-                {
-                    m_errorcntr++;
-                }
-
+					m_errorcntr = 0;
+				}
+				else
+				{
+					m_errorcntr++;
+				}
 			}
 		}
 	}
@@ -368,51 +369,50 @@ bool CRego6XXSerial::ParseData()
 			{
 				// This is a proper message
                 messageOK = true;
-		        time_t atime=mytime(NULL);
-                signed short data = 0;
-				data = (m_readBuffer[(tail + 1) & Rego6XX_READ_BUFFER_MASK] << 14) |
-					   (m_readBuffer[(tail + 2) & Rego6XX_READ_BUFFER_MASK] << 7) |
-						m_readBuffer[(tail + 3) & Rego6XX_READ_BUFFER_MASK];
+		time_t atime = mytime(nullptr);
+		signed short data = 0;
+		data = (m_readBuffer[(tail + 1) & Rego6XX_READ_BUFFER_MASK] << 14)
+		       | (m_readBuffer[(tail + 2) & Rego6XX_READ_BUFFER_MASK] << 7) | m_readBuffer[(tail + 3) & Rego6XX_READ_BUFFER_MASK];
 
-				if(g_allRegisters[m_pollcntr].type == REGO_TYPE_TEMP)
-				{
-        			strcpy(m_Rego6XXTemp.ID, g_allRegisters[m_pollcntr].name);
-					m_Rego6XXTemp.temperature =  (float)(data * 0.1);
-                    if((m_Rego6XXTemp.temperature >= -48.2) && // -48.3 means no sensor.
-                        ((fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
-			 (difftime(atime,g_allRegisters[m_pollcntr].lastSent) >= 300))) // Send at least every 5 minutes
-                    {
-                        g_allRegisters[m_pollcntr].lastSent = atime;
-                        g_allRegisters[m_pollcntr].lastTemp = m_Rego6XXTemp.temperature;
-					    sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXTemp, NULL, 255);
-                    }
-				}
-				else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_STATUS)
-				{
-        			strcpy(m_Rego6XXValue.ID, g_allRegisters[m_pollcntr].name);
-					m_Rego6XXValue.value = data;
-                	m_Rego6XXValue.subtype=sTypeRego6XXStatus;
-                    if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
-			(difftime(atime,g_allRegisters[m_pollcntr].lastSent) >= (3600 * 23))) // Send at least every 23 hours
-                    {
-                        g_allRegisters[m_pollcntr].lastSent = atime;
-                        g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
-    					sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue, NULL, 255);
-                    }
-				}
-				else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_COUNTER)
-				{
-        			strcpy(m_Rego6XXValue.ID, g_allRegisters[m_pollcntr].name);
-					m_Rego6XXValue.value = data;
-                	m_Rego6XXValue.subtype=sTypeRego6XXCounter;
-                    if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
-			(difftime(atime,g_allRegisters[m_pollcntr].lastSent) >= 3000)) // Send at least every 50 minutes
-                    {
-                        g_allRegisters[m_pollcntr].lastSent = atime;
-                        g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
-    					sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue, NULL, 255);
-                    }
-				}
+		if (g_allRegisters[m_pollcntr].type == REGO_TYPE_TEMP)
+		{
+			strcpy(m_Rego6XXTemp.ID, g_allRegisters[m_pollcntr].name);
+			m_Rego6XXTemp.temperature = (float)(data * 0.1);
+			if ((m_Rego6XXTemp.temperature >= -48.2) && // -48.3 means no sensor.
+			    ((std::fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
+			     (difftime(atime, g_allRegisters[m_pollcntr].lastSent) >= 300))) // Send at least every 5 minutes
+			{
+				g_allRegisters[m_pollcntr].lastSent = atime;
+				g_allRegisters[m_pollcntr].lastTemp = m_Rego6XXTemp.temperature;
+				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXTemp, nullptr, 255, nullptr);
+			}
+		}
+		else if (g_allRegisters[m_pollcntr].type == REGO_TYPE_STATUS)
+		{
+			strcpy(m_Rego6XXValue.ID, g_allRegisters[m_pollcntr].name);
+			m_Rego6XXValue.value = data;
+			m_Rego6XXValue.subtype = sTypeRego6XXStatus;
+			if ((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) ||	   // Only send changes.
+			    (difftime(atime, g_allRegisters[m_pollcntr].lastSent) >= (3600 * 23))) // Send at least every 23 hours
+			{
+				g_allRegisters[m_pollcntr].lastSent = atime;
+				g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
+				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue, nullptr, 255, nullptr);
+			}
+		}
+		else if (g_allRegisters[m_pollcntr].type == REGO_TYPE_COUNTER)
+		{
+			strcpy(m_Rego6XXValue.ID, g_allRegisters[m_pollcntr].name);
+			m_Rego6XXValue.value = data;
+			m_Rego6XXValue.subtype = sTypeRego6XXCounter;
+			if ((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
+			    (difftime(atime, g_allRegisters[m_pollcntr].lastSent) >= 3000))   // Send at least every 50 minutes
+			{
+				g_allRegisters[m_pollcntr].lastSent = atime;
+				g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
+				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue, nullptr, 255, nullptr);
+			}
+		}
 
 				// Remove the message from the buffer
 				m_readBufferTail = (tail + 5) & Rego6XX_READ_BUFFER_MASK;
@@ -445,7 +445,8 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -463,5 +464,5 @@ namespace http {
 				m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0, 0);
 			}
 		}
-	}
-}
+	} // namespace server
+} // namespace http

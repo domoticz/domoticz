@@ -128,7 +128,7 @@ define(['app', 'livesocket'], function (app) {
 					else {
 						if (item.Type.indexOf('Group') == 0) {
 							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-							$(id + " #bstatus").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+							$(id + " #bstatus").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery').removeClass('statusDisabled');
 							$(id + " #bstatus").addClass(backgroundClass);
 
 							var img1 = "";
@@ -741,7 +741,12 @@ define(['app', 'livesocket'], function (app) {
 								(item.Status.indexOf('Set ') == 0)
 							) {
 								if (isLED(item.SubType)) {
-									img = '<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', ' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40">';
+									if (item.Image == "Dimmer") {
+										img = '<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', ' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40">';
+									} 
+									else {
+										img = '<img src="images/' + item.Image + '48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', ' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40">';
+									}
 								}
 								else {
 									img = '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor" height="40" width="40">';
@@ -749,7 +754,12 @@ define(['app', 'livesocket'], function (app) {
 							}
 							else {
 								if (isLED(item.SubType)) {
-									img = '<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', ' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40">';
+									if (item.Image == "Dimmer") {
+										img = '<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', ' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40">';
+									} 
+									else {
+										img = '<img src="images/' + item.Image + '48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', ' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40">';
+									}
 								}
 								else {
 									img = '<img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',' + item.Protected + ');" class="lcursor" height="40" width="40">';
@@ -1865,7 +1875,7 @@ define(['app', 'livesocket'], function (app) {
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
 							if (
-								(item.Favorite != 0) && (
+								(
 									(item.Type.indexOf('Light') == 0) ||
 									(item.SubType == "Smartwares Mode") ||
 									(item.Type.indexOf('Blind') == 0) ||
@@ -2546,7 +2556,12 @@ define(['app', 'livesocket'], function (app) {
 											(item.Status.indexOf('Disco ') == 0)
 										) {
 											if (isLED(item.SubType)) {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', ' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40"></td>\n';
+												if (item.Image == "Dimmer") {
+													xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', ' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40"></td>\n';
+												} 
+												else {
+													xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', ' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40"></td>\n';
+												}
 											}
 											else {
 												xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
@@ -2554,7 +2569,12 @@ define(['app', 'livesocket'], function (app) {
 										}
 										else {
 											if (isLED(item.SubType)) {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40"></td>\n';
+												if (item.Image == "Dimmer") {
+													xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40"></td>\n';
+												} 
+												else {
+													xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40"></td>\n';
+												}
 											}
 											else {
 												xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
@@ -2728,8 +2748,7 @@ define(['app', 'livesocket'], function (app) {
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
 							if (
-								((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined')) &&
-								(item.Favorite != 0)
+								((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined'))
 							) {
 								totdevices += 1;
 								if (jj == 0) {
@@ -2883,8 +2902,7 @@ define(['app', 'livesocket'], function (app) {
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
 							if (
-								((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined')) &&
-								(item.Favorite != 0)
+								((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined'))
 							) {
 								totdevices += 1;
 								if (jj == 0) {
@@ -3092,7 +3110,7 @@ define(['app', 'livesocket'], function (app) {
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
-							if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
+							if (item.Type.indexOf('Security') == 0) {
 								totdevices += 1;
 								if (jj == 0) {
 									//first time
@@ -3251,7 +3269,7 @@ define(['app', 'livesocket'], function (app) {
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
-							if ((item.Type.indexOf('Heating') == 0) && (item.Favorite != 0)) {
+							if (item.Type.indexOf('Heating') == 0) {
 								totdevices += 1;
 								if (jj == 0) {
 									//first time
@@ -3371,8 +3389,7 @@ define(['app', 'livesocket'], function (app) {
 									(item.SubType == "Waterflow") ||
 									(item.SubType == "Sound Level") ||
 									(item.SubType == "Custom Sensor")
-								) &&
-								(item.Favorite != 0)
+								)
 							) {
 								totdevices += 1;
 								if (jj == 0) {
@@ -3665,27 +3682,34 @@ define(['app', 'livesocket'], function (app) {
 									if (typeof item.Counter != 'undefined') {
 										if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
 											if (item.SwitchTypeVal == 1) {
-                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Gas48.png" class="lcursor" height="40" width="40"></a></td>\n';
+												item.Image = (item.CustomImage == 0)  ? 'Gas48.png' : item.Image + '48_On.png';
+												imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image +'" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 											else if (item.SwitchTypeVal == 2) {
-                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Water48_On.png" class="lcursor" height="40" width="40"></a></td>\n';
+												item.Image = (item.CustomImage == 0)  ? 'Water48_On.png' : item.Image + '48_On.png';
+												imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 											else if (item.SwitchTypeVal == 3) {
-                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Counter48.png" class="lcursor" height="40" width="40"></a></td>\n';
+												item.Image = (item.CustomImage == 0)  ? 'Counter48.png' : item.Image + '48_On.png';
+												imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 											else if (item.SwitchTypeVal == 4) {
-                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/PV48.png" class="lcursor" height="40" width="40"></a></td>\n';
+												item.Image = (item.CustomImage == 0)  ? 'PV48.png' : item.Image + '48_On.png';
+												imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 											else {
-                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Counter48.png" class="lcursor" height="40" width="40"></a></td>\n';
+												item.Image = (item.CustomImage == 0)  ? 'Counter48.png' : item.Image + '48_On.png';
+												imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 										}
 										else {
 											if ((item.Type == "P1 Smart Meter") && (item.SubType == "Gas")) {
-                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Gas48.png" class="lcursor" height="40" width="40"></a></td>\n';
+												item.Image = (item.CustomImage == 0)  ? 'Gas48.png' : item.Image + '48_On.png';
+												imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 											else {
-                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Counter48.png" class="lcursor" height="40" width="40"></a></td>\n';
+												item.Image = (item.CustomImage == 0)  ? 'Counter48.png' : item.Image + '48_On.png';
+												imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 										}
 										if (
@@ -3705,23 +3729,28 @@ define(['app', 'livesocket'], function (app) {
 									}
 									else if ((item.Type == "Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 										if (((item.Type == "Energy") || (item.Type == "Power") || (item.SubType == "kWh")) && (item.SwitchTypeVal == 4)) {
-                                            imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/PV48.png" class="lcursor" height="40" width="40"></a></td>\n';
+											item.Image = (item.CustomImage == 0)  ? 'PV48.png' : item.Image + '48_On.png';
+											imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										}
 										else {
-                                            imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/current48.png" class="lcursor" height="40" width="40"></a></td>\n';
+											item.Image = (item.CustomImage == 0)  ? 'current48.png' : item.Image + '48_On.png';
+											imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										}
 										statushtml = "";
 									}
 									else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
-										imagehtml += 'current48.png" class="lcursor" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="40" width="40"></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'current48.png' : item.Image + '48_On.png';
+										imagehtml += item.Image + '" class="lcursor" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="40" width="40"></td>\n';
 										statushtml = "";
 									}
 									else if (item.Type == "Air Quality") {
-										imagehtml += 'air48.png" class="lcursor" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'air48.png' : item.Image + '48_On.png';
+										imagehtml += item.Image + '" class="lcursor" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 										statushtml = item.Quality;
 									}
 									else if (item.SubType == "Percentage") {
-										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Percentage48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'Percentage48.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 									else if (item.SubType == "Fan") {
@@ -3729,15 +3758,18 @@ define(['app', 'livesocket'], function (app) {
 										statushtml = "";
 									}
 									else if (item.Type == "Lux") {
-										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/lux48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'lux48.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 									else if (item.Type == "Weight") {
-										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/scale48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'scale48.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 									else if (item.Type == "Usage") {
-										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/current48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'current48.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 									else if (item.SubType == "Soil Moisture") {
@@ -3753,31 +3785,35 @@ define(['app', 'livesocket'], function (app) {
 										statushtml = "";
 									}
 									else if (item.SubType == "Leaf Wetness") {
-										imagehtml += 'leaf48.png" height="40" width="40"></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'leaf48.png' : item.Image + '48_On.png';
+										imagehtml += item.Image + '" height="40" width="40"></td>\n';
 										statushtml = "";
 									}
 									else if (item.SubType == "Distance") {
-										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/visibility48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'visibility48.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 									else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
-										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/current48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'current48.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 									else if (item.SubType == "Text") {
 										var logLink = '#/Devices/' + item.idx + '/Log';
-
-                                        imagehtml = '<a href="' + logLink + '"><img src="images/text48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'text48.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="' + logLink + '"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
 									else if (item.SubType == "Alert") {
-                                        var logLink = '#/Devices/' + item.idx + '/Log';
+										var logLink = '#/Devices/' + item.idx + '/Log';
 
-                                        imagehtml = '<a href="' + logLink + '"><img src="images/Alert48_' + item.Level + '.png" class="lcursor" height="40" width="40"></a></td>\n';
+										imagehtml = '<a href="' + logLink + '"><img src="images/Alert48_' + item.Level + '.png" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
 									else if (item.SubType == "Pressure") {
-										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/gauge48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'gauge48.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
@@ -3793,7 +3829,8 @@ define(['app', 'livesocket'], function (app) {
 										statushtml = "";
 									}
 									else if (item.SubType == "Sound Level") {
-										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Speaker48_On.png" class="lcursor" height="40" width="40"></a></td>\n';
+										item.Image = (item.CustomImage == 0)  ? 'Speaker48_On.png' : item.Image + '48_On.png';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 

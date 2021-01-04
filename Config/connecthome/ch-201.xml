@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">CH-201 Thermostat</MetaDataItem>
+    <MetaDataItem name="Description">CH-201 thermostat is a Z-Wave device designed to maintain the set temperature. The thermostat can control the heating element directly (electric floor heating, electric heater, etc.) or with additional equipment (thermoelectric drive, etc.) The thermostat is equipped with a digital temperature sensor, but can work with any other temperature sensor if necessary Your Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0179:0001:0001</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://connecthome.com.ua/product/ch201</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://connecthome.com.ua/index.php?route=information/contact</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/connecthome/CH_201.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://connecthome.com.ua/product/ch201</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To include the thermostat in a Z-Wave network, place the controller in the inclusion mode (see the instructions of your controller) and apply power to the electrical network to which the device is connected. The device will be added automatically (NWI). If this does not happen automatically, briefly press the system button three times on the top cover of the device.
+If there are problems with connecting the device to your Z-Wave network, you must complete the Z-Wave network exclusion procedure, and then repeat the inclusion procedure.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To exclude the thermostat from the Z-Wave network, place the controller in the exclusion mode (see the controller instruction) and press the system button three times briefly.
+Please note that after excluding the device from the Z-Wave network, all settings you have made will be reset to the factory settings.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To perform factory reset exclude the device form Z-Wave network and include it again.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Kostiantyn Khodykin - kostiantyn.khodykin@outlook.com" date="28 June 2020" revision="1">Initial configuration definition of CH-201</Entry>
+      <Entry author="Bogdan Pankiv - bogdan.pankiv@gmail.com" date="08 November 2020" revision="2">Setpoint feature fixed for CH-201</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" instance="1" index="1" value="0" label="Relay mode" units="" size="1" min="0" max="1" type="list">
+      <Help>
+Relay mode. 
+Normal: Close the relay when the thermostat is in the "heating" mode and open when the set temperature is reached (Default). The most frequently used mode is used when the heater is directly connected through a thermostat.
+Reverse: Open the relay when the thermostat is in the "heating" mode, close - when the set temperature is reached. Can be used with a limited list of special equipment (normally closed valves, etc.).
+      </Help>
+      <Item value="0" label="Normal" />
+      <Item value="1" label="Reverse" />
+    </Value>
+    <Value genre="config" instance="1" index="2" value="1" label="Temperature threshold" units="Δ°С" size="1" min="1" max="7" type="byte">
+      <Help>
+Set temperature threshold
+To maintain the temperature, two values ​​are used: minimum and maximum. When the minimum value is reached, the heating will be turned on, when heating to the maximum value - the heating element will be turned off. For the convenience of the user, the controller assumes temperature adjustment with only one value, from which the thermostat will calculate the previously mentioned "minimum" and "maximum" values ​​of the temperature range. We recommend using a small range of 1 degree for more comfort and the most accurate match to the chosen temperature. If your heating element consumes a significant amount of energy at the moment of switching on, then it is recommended to reduce the number of on-off cycles by increasing this parameter. With our thermostat, you can always achieve the optimum operating mode by experiment or by contacting our specialists for help. The acceptable value is from 1 to 7 degrees:
+      </Help>
+    </Value>
+    <Value genre="config" instance="1" index="3" value="2" label="Point mode" units="" size="1" min="0" max="2" type="list">
+      <Help>
+Set point mode. 
+0 Switch on the heating mode at set point, switch off at set point + Δt
+1 Switch on the heating mode at set point - Δt, switch off at set point
+2 Switching on the heating mode at set point - ½ Δt, switching off at set point - ½ Δt (Default)
+      </Help>
+      <Item value="0" label="Mode 0" />
+      <Item value="1" label="Mode 1" />
+      <Item value="2" label="Mode 2" />
+    </Value>
+    <Value genre="config" instance="1" index="4" value="1" label="Thermostat status at failure" units="" size="1" min="0" max="1" type="list">
+      <Help>Operating mode in case a thermostat doesn't receive data from a temp sensor</Help>
+      <Item value="0" label="Off" />
+      <Item value="1" label="On" />
+    </Value>
+    <Value genre="config" instance="1" index="5" value="30000" label="Max waiting time from temp sensor" units="sec" size="2" min="100" max="30000" type="short">
+      <Help>Max time of data expectation from room temperature sensor</Help>
+    </Value>
+    <Value genre="config" instance="1" index="6" value="4" label="Minimum allowable temperature" units="°С" size="2" min="-127" max="127" type="short">
+      <Help>Set minimum allowable temperature</Help>
+    </Value>
+    <Value genre="config" instance="1" index="6" value="4" label="Minimum allowable temperature" units="°С" size="2" min="-127" max="127" type="short">
+      <Help>Set minimum allowable temperature</Help>
+    </Value>
+    <Value genre="config" instance="1" index="7" value="30" label="Maximum alowable temperature" units="°С" size="2" min="-127" max="127" type="short">
+      <Help>Set maximum alowable temperature</Help>
+    </Value>
+    <Value genre="config" instance="1" index="8" value="120" label="Time turbo mode" units="sec" size="2" min="100" max="1200" type="short">
+      <Help>Set time turbo mode</Help>
+    </Value>
+    <Value genre="config" instance="1" index="9" value="0" label="Power on turbo mode" units="sec" size="1" min="0" max="1" type="byte">
+      <Help>Set power on turbo mode</Help>
+    </Value>
+    <Value genre="config" instance="1" index="10" value="0" label="Temperature sensor mode" units="" size="1" min="0" max="2" type="list">
+      <Help>Set temperature sensor mode</Help>
+      <Item value="0" label="Standard temperature sensor" />
+      <Item value="1" label="Polling the room temperature sensor" />
+      <Item value="2" label="Waiting for data from the room temperature sensor" />
+    </Value>
+    <Value genre="config" instance="1" index="11" value="300" label="Polling period of the room sensor" units="sec" size="2" min="15" max="600" type="short">
+      <Help>Set polling period of the room sensor</Help>
+    </Value>
+    <Value genre="config" instance="1" index="12" value="1" label="Temprature threshold to send data" units="Δ°С" size="1" min="1" max="16" type="byte">
+      <Help>The value that temprature should be changed to send data</Help>
+    </Value>
+    <Value genre="config" instance="1" index="13" value="300" label="Interval for forced sending data" units="" size="2" min="100" max="600" type="short">
+      <Help>Set Interval for forced sending data</Help>
+    </Value>
+    <Value genre="config" instance="1" index="15" value="0" label="Type of switch 1" units="" size="1" min="0" max="3" type="list">
+      <Help>Set Type of switch 1 (thermostat operating mode)</Help>
+      <Item value="0" label="Monostable" />
+      <Item value="1" label="Bistable, fixed position 1" />
+      <Item value="2" label="Bistable, fixed position 2" />
+      <Item value="3" label="Bistable" />
+    </Value>
+    <Value genre="config" instance="1" index="16" value="0" label="Type of switch 2" units="" size="1" min="0" max="3" type="list">
+      <Help>Set type of switch 2 (turbo mode)</Help>
+      <Item value="0" label="Monostable" />
+      <Item value="1" label="Bistable, fixed position 1" />
+      <Item value="2" label="Bistable, fixed position 2" />
+      <Item value="3" label="Bistable" />
+    </Value>
+    <Value genre="config" instance="1" index="40" value="0" label="Adjusment of a temperature sensor" units="" size="1" min="0" max="10" type="list">
+      <Help>Adjust temperature sensor if required.</Help>
+      <Item value="0" label="Send the actual temperature (further t);" />
+      <Item value="1" label=" t +1°С" />
+      <Item value="2" label=" t +2°С" />
+      <Item value="3" label=" t +3°С" />
+      <Item value="4" label=" t +4°С" />
+      <Item value="5" label=" t +5°С" />
+      <Item value="6" label=" t -1°С" />
+      <Item value="7" label=" t -2°С;" />
+      <Item value="8" label=" t -3°С;" />
+      <Item value="9" label=" t -4°С" />
+      <Item value="10" label=" t -5°С;" />
+    </Value>
+  </CommandClass>
+
+  <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+  <CommandClass id="67">
+    <Compatibility>
+      <OverridePrecision>2</OverridePrecision>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Target for temperature and alarm reports" max_associations="10" />
+      <Group index="2" label="External temperature sensor" max_associations="1" />
+    </Associations>
+  </CommandClass>
+
+</Product>

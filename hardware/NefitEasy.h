@@ -5,12 +5,13 @@
 
 class CNefitEasy : public CDomoticzHardwareBase
 {
-public:
-	CNefitEasy(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~CNefitEasy(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	void SetSetpoint(const int idx, const float temp);
-private:
+      public:
+	CNefitEasy(int ID, const std::string &IPAddress, unsigned short usIPPort);
+	~CNefitEasy() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	void SetSetpoint(int idx, float temp);
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -24,7 +25,8 @@ private:
 	bool GetGasUsage();
 	void SetUserMode(bool bSetUserModeClock);
 	void SetHotWaterMode(bool bTurnOn);
-private:
+
+      private:
 	std::string m_AccessKey;
 	std::string m_SerialNumber;
 	std::string m_Password;
@@ -44,6 +46,5 @@ private:
 	std::shared_ptr<std::thread> m_thread;
 
 	uint32_t m_lastgasusage;
-	P1Gas	m_p1gas;
+	P1Gas m_p1gas;
 };
-

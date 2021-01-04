@@ -45,15 +45,9 @@ return {
 			end
 
 		elseif device.deviceSubType == "Relay" then
-
-			if device._state == "On" then
-				device.state = "On"
-				device.active = true
-			else
-				device.state = "Off"
-				device.active = false
-			end
-
+			device.state = device._state == 'Off' and 'Off' or 'On'
+			device.level = device._state:match('%d+') or 0
+			device.active = device.state ~= 'Off'
 		else
 			if device.hardwareTypeValue == 75 and device.deviceType == 'Heating' and device.deviceSubType == 'Evohome' then
 				device.mode = device._state

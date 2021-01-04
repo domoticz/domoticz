@@ -1,4 +1,4 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0039:0001:0011</MetaDataItem>
     <MetaDataItem name="ProductPic">images/honeywell/th8320zw1000.png</MetaDataItem>
@@ -11,11 +11,13 @@
     <MetaDataItem name="ProductSupport">http://honeywell.com/Products-Services/Pages/consumer-home.aspx</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/44/xml</Entry>
+      <Entry author="automaton82" date="18 Aug 2020" revision="4">Thermostat requires 2 bytes for precision, not 1. Sending 1 results in all decimal sets returning back to minimum value.</Entry>
     </ChangeLog>
   </MetaData>
   <!-- This thermostat's setpoint descriptions are 1 based, not 0 -->
   <CommandClass id="67">
     <Compatibility>
+      <OverridePrecision>2</OverridePrecision>
       <Base>0</Base>
     </Compatibility>
   </CommandClass>

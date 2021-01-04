@@ -1,3 +1,58 @@
+Version 2020.xxxx (xxxx)
+- Implemented: Added optional parameter 'level' to addlogmessage JSON
+- Implemented: AirconWithMe wifi module
+- Implemented: Allow complete IPv6 address in local network setting
+- Implemented: Counter meter type now supports a divider
+- Implemented: Custom icons for RGB/W
+- Implemented: Hardware Monitor, Add clock speeds for Raspberry Pi
+- Implemented: Honeywell, Add cooling control and Fahrenheit support
+- Implemented: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
+- Implemented: Inverted energy icon colors in report
+- Implemented: Max. Watt settings for power devices (defaults to 6000W) 
+- Implemented: Mercedes Me API's (BYOCAR) as an (e)Vehicle supporting lock/open, odo, fuellevel
+- Implemented: Meteorologisk (Meteorologisk institutt Norway) hardware support
+- Implemented: P1 Meter, added support for Encryption
+- Implemented: RFXCom Byron BY doorbell
+- Implemented: RTL433, Added RF Signal Strength in device tab based on reported SNR
+- Implemented: RTL433, Added Pressure (PSI) type
+- Implemented: RTL433, Added UV type
+- Implemented: RTL433, Added X-10 Security support
+- Implemented: RTL433, Switched to Json input
+- Implemented: Autorefresh feature for graphical logs
+- Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
+- Implemented: Websocket notification for secondary/sub devices
+- Implemented: ZWave, Legend and tooltips in Neighbor�s overview
+- Updated: Blebox; use of the latest SwitchBox API
+- Updated: dzVents; version 3.1.0 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
+- Updated: eVehicles; added ODO meter, unlock/open alert, max charge level to Tesla module
+- Updated: EvoHome; decode, display and store hotwater setpoint
+- Updated: Lay-out of notifications tab
+- Updated: MQTT; added publish schemes: device index, device name and implemented custom topics for in- and outbound messages
+- Updated: OpenZWave; configuration files
+- Updated: Openweathermap; use latest API and overal improvements
+- Updated: Plugwise; update of scene selector and added a migration process
+- Updated: SolarEdge; add support for 3 Phase inverter
+- Updated: Tado; add support for per-zone Open Window Detection
+- Updated: TTNMQTT; Better GPS/Locations handling, distance calculation (Geofencing)
+- Updated: TTNMQTT; Improved calculation and storage of signal-levels
+- Changed: During a database backup we now 'sleep' when the status != OK
+- Changed: Differentiate kWh, kVah, kVar and kVarh
+- Changed: Energy devices allow negative values
+- Changed: Use of Clang-Tidy rules to force ++ coding consistency
+- Fixed: Annatherm Presets usage in Events. Please use the following percentages: 10% for Home, 20% for Away, 30% Night 40% for Vacation
+- Fixed: Cache refresh issue on Safari
+- Fixed: Changing a value from a Thermostat Setpoint via the JSON API/MQTT resulted in a double event trigger
+- Fixed: Compiling on systems with recent Python versions
+- Fixed: Distance sensor was converting to miles instead of inches
+- Fixed: Floorplan uploading
+- Fixed: Font in events editor on MacOS
+- Fixed: Possible crash in CEventSystem::SetEventTrigger
+- Fixed: Prevent duplicate keys in preferences table
+- Fixed: Sound device was incorrectly displayed on the Floorplan
+- Fixed: Tado Zone/Home limit, setpoint mix-up
+- Fixed: User field in device logging for switches, -text-devices and for groups/scenes
+- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
+
 Version 2020.2 (April 26th 2020)
 - Implemented: GUI: New Update controller code
 - Implemented: GUI: Real-time updates of history-logs on device / scene changes
@@ -52,6 +107,7 @@ Version 2020.1 (March 22th 2020)
 - Fixed: GUI, Weight Log now displays correct Unit (#3211)
 - Fixed: GUI, OpenZWave Abort Include/Exclude button
 - Fixed: Blockly, handling incorrect time field
+- Fixed: Enery Generated report icon colors
 - Fixed: Evohome Web for updated library
 - Fixed: Google Notification System
   Fixed: PhilipsHue

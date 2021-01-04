@@ -1,11 +1,294 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <!--MCOHome Touch Panel Switch MH-S513 -->
+  <MetaData>
+    <MetaDataItem name="Name">MH-S513 Touch Panel Switch</MetaDataItem>
+    <MetaDataItem name="Description">MCOHome Touch Panel Switch is a wall panel built-in with Z-Wave Plus module. It supports basic command class, association command class, which can control all associated devices synchronously. This product can be included and operated in any Z-Wave network with other Z-Wave certified devices from any other manufacturers.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/015f:5102:0103</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/015f:5103:5131</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.mcohome.com/ProductDetail/3894278.html</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/mcohome/mhs513.png</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Press and hold any key on the panel for 8 seconds or 3 clicks in quick succession. Note: If inclusion is successful, all INDICATION LEDs on the panel will flash 4 times.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Press and hold any key on the panel for 8 seconds or 3 clicks in quick succession. Note: If the exclusion is successful, all INDICATION LEDs on the panel will flash 4 times. The exclusion will delete all association data.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Write 0x55 to Configuration Parameter Index 255, or Press 20 times of any button or exclude the device from Z-Wave network, the factory setting will be restored.</MetaDataItem>
+    <MetaDataItem id="5102" name="FrequencyName" type="0103">US / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="5103" name="FrequencyName" type="5131">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="5102" name="Identifier" type="0103">MH-S513-US</MetaDataItem>
+    <MetaDataItem id="5103" name="Identifier" type="5131">MH-S513-AU</MetaDataItem>
+    <ChangeLog>
+      <Entry author="StuartW - swish@email4me.com" date="27 December 2020" revision="4">Add AU frequency and update Configuration</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration -->
   <CommandClass id="112">
-    <Value genre="config" index="1" instance="1" label="Saving state before power failure" size="1" type="list" value="1">
+    <Value genre="config" index="2" label="Switch state saved or not when power down" max="1" min="0" size="1" type="list" value="1">
       <Help>Switch state saved or not when power down</Help>
-      <Item label="Disabled" value="0"/>
-      <Item label="Enabled" value="1"/>
+      <Item label="Not Saved. Switch will be off when powered again" value="0"/>
+      <Item label="Saved. Switch will keep the same state when powered again" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="All On / All Off" max="255" min="0" size="1" type="list" value="255">
+      <Help>All On / All Off</Help>
+      <Item label="forbid ALL ON, forbid ALL OFF" value="0"/>
+      <Item label="forbid ALL ON, allow ALL OFF" value="1"/>
+      <Item label="allow ALL ON, forbid ALL OFF" value="2"/>
+      <Item label="allow ALL ON, allow ALL OFF" value="255"/>
+    </Value>
+    <Value genre="config" index="4" label="LED Backlit brightness level" max="10" min="0" type="byte" units="" value="10">
+      <Help>0 = Off; 1 - 10 = Minimum - Maximum brightness level</Help>
+    </Value>
+    <Value genre="config" index="5" label="Key Mode" max="4" min="0" size="1" type="list" value="0">
+      <Help>
+      Key Mode
+      This function works for corridor or stairwell situation.
+      </Help>
+      <Item label="Single click to switch on/off status" value="0"/>
+      <Item label="Key default as off state. When it is turned on, then it will be turned off automatically after a time period, which can be set in item Key On duration" value="1"/>
+      <Item label="Key default as on state. When it is turned off, then it will be turned on automatically after a time period , which can be set in item Key On duration" value="2"/>
+      <Item label="Hold >3s then key is on, and off once released" value="3"/>
+      <Item label="Single click to switch on/off status and hold >3s then key is on, and off once released" value="4"/>
+      <Item label="Momentary Switch Mode 2, hold the key is on, off once released" value="5"/>
+      <Item label="If key is off, hold >3s then key is on, and it remains on after relese. If is is on, hold >3s then key is off, and it remains off after release." value="6"/>
+    </Value>
+    <Value genre="config" index="6" label="Key On duration" max="65535" min="0" type="short" units="s" value="0">
+      <Help>
+      Key On duration
+      0 = infinite
+      1 - 65535 = on duration in seconds
+      </Help>
+    </Value>
+    <Value genre="config" index="8" label="Basic CC integration setting" max="3" min="0" size="1" type="list" value="0">
+      <Help>
+      Basic CC integration setting
+      This parameter works for integration with different gateways/systems. If you do not know how to use, please keep as default.
+      </Help>
+      <Item label="Basic Set received, key 1 responds; Basic Get received， key 1 sends Basic Report; key 1 will not send unsolicited Basic Report （No Endpoint） to LifeLine Association" value="0"/>
+      <Item label="Basic Set received, key 1 responds; Basic Get received， key 1 sends Basic Report; key 1 will send unsolicited Basic Report （No Endpoint） to LifeLine Association" value="1"/>
+      <Item label="Basic Set received, all keys respond; Basic Get received， not reply Basic Report; All keys will not send unsolicited Basic Report （No Endpoint） to LifeLine Association" value="2"/>
+      <Item label="Basic Set received, all keys respond; Basic Get received， key 1 sends Basic Report; All keys will not send unsolicited Basic Report （No Endpoint） to LifeLine Association" value="3"/>
+    </Value>
+    <Value genre="config" index="10" label="Key 1 Mode" max="6" min="0" size="1" type="list" value="0">
+      <Help>
+      Key Mode
+      This function works for corridor or stairwell situation.
+      </Help>
+      <Item label="Single click to switch on/off status" value="0"/>
+      <Item label="Key default as off state. When it is turned on, then it will be turned off automatically after a time period, which can be set in item Key On duration" value="1"/>
+      <Item label="Key default as on state. When it is turned off, then it will be turned on automatically after a time period , which can be set in item Key On duration" value="2"/>
+      <Item label="Hold >3s then key is on, and off once released" value="3"/>
+      <Item label="Single click to switch on/off status and hold >3s then key is on, and off once released" value="4"/>
+      <Item label="Momentary Switch Mode 2, hold the key is on, off once released" value="5"/>
+      <Item label="If key is off, hold >3s then key is on, and it remains on after relese. If is is on, hold >3s then key is off, and it remains off after release." value="6"/>
+    </Value>
+    <Value genre="config" index="11" label="Key 2 Mode" max="6" min="0" size="1" type="list" value="0">
+      <Help>
+      Key Mode
+      This function works for corridor or stairwell situation.
+      </Help>
+      <Item label="Single click to switch on/off status" value="0"/>
+      <Item label="Key default as off state. When it is turned on, then it will be turned off automatically after a time period, which can be set in item Key On duration" value="1"/>
+      <Item label="Key default as on state. When it is turned off, then it will be turned on automatically after a time period , which can be set in item Key On duration" value="2"/>
+      <Item label="Hold >3s then key is on, and off once released" value="3"/>
+      <Item label="Single click to switch on/off status and hold >3s then key is on, and off once released" value="4"/>
+      <Item label="Momentary Switch Mode 2, hold the key is on, off once released" value="5"/>
+      <Item label="If key is off, hold >3s then key is on, and it remains on after relese. If is is on, hold >3s then key is off, and it remains off after release." value="6"/>
+    </Value>
+    <Value genre="config" index="12" label="Key 3 Mode" max="6" min="0" size="1" type="list" value="0">
+      <Help>
+      Key Mode
+      This function works for corridor or stairwell situation.
+      </Help>
+      <Item label="Single click to switch on/off status" value="0"/>
+      <Item label="Key default as off state. When it is turned on, then it will be turned off automatically after a time period, which can be set in item Key On duration" value="1"/>
+      <Item label="Key default as on state. When it is turned off, then it will be turned on automatically after a time period , which can be set in item Key On duration" value="2"/>
+      <Item label="Hold >3s then key is on, and off once released" value="3"/>
+      <Item label="Single click to switch on/off status and hold >3s then key is on, and off once released" value="4"/>
+      <Item label="Momentary Switch Mode 2, hold the key is on, off once released" value="5"/>
+      <Item label="If key is off, hold >3s then key is on, and it remains on after relese. If is is on, hold >3s then key is off, and it remains off after release." value="6"/>
+    </Value>
+    <Value genre="config" index="14" label="Disable Local Control" max="15" min="0" size="1" type="list" value="0">
+      <Help>All On / All Off</Help>
+      <Item label="all keys are valid for local control" value="0"/>
+      <Item label="all keys are invalid for local control" value="15"/>
+    </Value>
+    <Value genre="config" index="15" label="Disable Remote Control" max="15" min="0" size="1" type="list" value="0">
+      <Help>All On / All Off</Help>
+      <Item label="all keys are valid for remote (gateway) control" value="0"/>
+      <Item label="all keys are invalid for remote (gateway) control" value="15"/>
+    </Value>
+    <Value genre="config" index="16" label="Scene response" size="1" type="bitset" bitmask="7" value="0">
+      <Help>Scene response</Help>
+      <BitSet id="1">
+        <Label>Key 1</Label>
+        <Help>Key 1 scene response</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>Key 2</Label>
+        <Help>Key 2 scene response</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>Key 3</Label>
+        <Help>Key 3 scene response</Help>
+      </BitSet>
+    </Value>
+    <Value genre="config" index="17" label="Key1 Scene Activate Mode Setting" max="3" min="0" size="1" type="list" value="0">
+      <Help>Key 1 Scene response</Help>
+      <Item label="Scence active function disabled" value="0"/>
+      <Item label="One click Key1 always activate scene ID no matter what the status of Key1 is" value="1"/>
+      <Item label="One click Key1 always activate scene ID when Key1's relay output is open" value="2"/>
+      <Item label="One click Key1 always activate scene ID when Key1's relay output is closed" value="3"/>
+    </Value>
+    <Value genre="config" index="18" label="Key1 Activate Scene ID" max="255" min="0" type="byte" units="" value="0">
+      <Help>
+      Key1 Activate Scene ID
+      0 = Scene ID is invalid and will not send scene activate command.
+      1 - 255 = Scene ID
+      </Help>
+    </Value>
+    <Value genre="config" index="19" label="Key1 Activate Scene Duration" max="254" min="0" type="byte" units="" value="0">
+      <Help>
+      Key1 Activate Scene Duration
+      0 = Instantly
+      1 - 127 = Dimming durations from 1 second (1 | 0x01) to 127 seconds (127 | 0x7F) in 1-second resolution
+      128 - 254 = Dimming durations from 1 minute (128 | 0x80) to 127 minutes (254 | 0xFE) in 1-minute resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="20" label="Key2 Scene Activate Mode Setting" max="3" min="0" size="1" type="list" value="0">
+      <Help>Key 2 Scene response</Help>
+      <Item label="Scence active function disabled" value="0"/>
+      <Item label="One click Key2 always activate scene ID no matter what the status of Key2 is" value="1"/>
+      <Item label="One click Key2 always activate scene ID when Key2's relay output is open" value="2"/>
+      <Item label="One click Key2 always activate scene ID when Key2's relay output is closed" value="3"/>
+    </Value>
+    <Value genre="config" index="21" label="Key2 Activate Scene ID" max="255" min="0" type="byte" units="" value="0">
+      <Help>
+      Key2 Activate Scene ID
+      0 = Scene ID is invalid and will not send scene activate command.
+      1 - 255 = Scene ID
+      </Help>
+    </Value>
+    <Value genre="config" index="22" label="Key2 Activate Scene Duration" max="254" min="0" type="byte" units="" value="0">
+      <Help>
+      Key2 Activate Scene Duration
+      0 = Instantly
+      1 - 127 = Dimming durations from 1 second (1 | 0x01) to 127 seconds (127 | 0x7F) in 1-second resolution
+      128 - 254 = Dimming durations from 1 minute (128 | 0x80) to 127 minutes (254 | 0xFE) in 1-minute resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="23" label="Key3 Scene Activate Mode Setting" max="3" min="0" size="1" type="list" value="0">
+      <Help>Key 3 Scene response</Help>
+      <Item label="Scence active function disabled" value="0"/>
+      <Item label="One click Key3 always activate scene ID no matter what the status of Key3 is" value="1"/>
+      <Item label="One click Key3 always activate scene ID when Key3's relay output is open" value="2"/>
+      <Item label="One click Key3 always activate scene ID when Key3's relay output is closed" value="3"/>
+    </Value>
+    <Value genre="config" index="24" label="Key3 Activate Scene ID" max="255" min="0" type="byte" units="" value="0">
+      <Help>
+      Key3 Activate Scene ID
+      0 = Scene ID is invalid and will not send scene activate command.
+      1 - 255 = Scene ID
+      </Help>
+    </Value>
+    <Value genre="config" index="25" label="Key3 Activate Scene Duration" max="254" min="0" type="byte" units="" value="0">
+      <Help>
+      Key3 Activate Scene Duration
+      0 = Instantly
+      1 - 127 = Dimming durations from 1 second (1 | 0x01) to 127 seconds (127 | 0x7F) in 1-second resolution
+      128 - 254 = Dimming durations from 1 minute (128 | 0x80) to 127 minutes (254 | 0xFE) in 1-minute resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="32" label="Scene response ID 1 - 50" size="1" type="bitset" bitmask="7" value="0">
+      <Help>
+      Scene response  ID 1 - 50
+      Valid only when the default is 0 (0x00) for Scene response (parameter 16 | 0x10)
+      </Help>
+      <BitSet id="1">
+        <Label>Key 1</Label>
+        <Help>Key 1 scene response</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>Key 2</Label>
+        <Help>Key 2 scene response</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>Key 3</Label>
+        <Help>Key 3 scene response</Help>
+      </BitSet>
+    </Value>
+    <Value genre="config" index="33" label="Scene response ID 51 - 100" size="1" type="bitset" bitmask="7" value="0">
+      <Help>
+      Scene response  ID 51 - 100
+      Valid only when the default is 0 (0x00) for Scene response (parameter 16 | 0x10)
+      </Help>
+      <BitSet id="1">
+        <Label>Key 1</Label>
+        <Help>Key 1 scene response</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>Key 2</Label>
+        <Help>Key 2 scene response</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>Key 3</Label>
+        <Help>Key 3 scene response</Help>
+      </BitSet>
+    </Value>   
+    <Value genre="config" index="34" label="Scene response ID 101 - 150" size="1" type="bitset" bitmask="7" value="0">
+      <Help>
+      Scene response  ID 101 - 150
+      Valid only when the default is 0 (0x00) for Scene response (parameter 16 | 0x10)
+      </Help>
+      <BitSet id="1">
+        <Label>Key 1</Label>
+        <Help>Key 1 scene response</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>Key 2</Label>
+        <Help>Key 2 scene response</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>Key 3</Label>
+        <Help>Key 3 scene response</Help>
+      </BitSet>
+    </Value>
+    <Value genre="config" index="35" label="Scene response ID 151 - 200" size="1" type="bitset" bitmask="7" value="0">
+      <Help>
+      Scene response  ID 151 - 200
+      Valid only when the default is 0 (0x00) for Scene response (parameter 16 | 0x10)
+      </Help>
+      <BitSet id="1">
+        <Label>Key 1</Label>
+        <Help>Key 1 scene response</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>Key 2</Label>
+        <Help>Key 2 scene response</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>Key 3</Label>
+        <Help>Key 3 scene response</Help>
+      </BitSet>
+    </Value>
+    <Value genre="config" index="36" label="Scene response ID 201 - 250" size="1" type="bitset" bitmask="7" value="0">
+      <Help>
+      Scene response  ID 201 - 250
+      Valid only when the default is 0 (0x00) for Scene response (parameter 16 | 0x10)
+      </Help>
+      <BitSet id="1">
+        <Label>Key 1</Label>
+        <Help>Key 1 scene response</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>Key 2</Label>
+        <Help>Key 2 scene response</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>Key 3</Label>
+        <Help>Key 3 scene response</Help>
+      </BitSet>
+    </Value>
+    <Value genre="config" index="255" label="Restore factory setting" max="85" min="0" size="1" type="list" value="0">
+      <Help>Restore factory setting</Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Reset to factory defaults" value="85"/>
     </Value>
   </CommandClass>
   <!-- Map endpoints to instances -->
@@ -17,10 +300,10 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="4">
-      <Group auto="false" index="1" label="Button1" max_associations="5"/>
-      <Group index="2" label="Button2" max_associations="5"/>
-      <Group index="3" label="Button3" max_associations="5"/>
-      <Group auto="true" index="4" label="Lifeline" max_associations="1"/>
+      <Group index="1" label="Gateway" max_associations="1"/>
+      <Group index="2" label="Key1" max_associations="5"/>
+      <Group index="5" label="Key2" max_associations="5"/>
+      <Group index="8" label="Key3" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>

@@ -1,7 +1,7 @@
 /*
  Domoticz, Open Source Home Automation System
 
- Copyright (C) 2012,2015 Rob Peters (GizMoCuz)
+ Copyright (C) 2012,2020 Rob Peters (GizMoCuz)
 
  Domoticz is free software: you can redistribute it and/or modify it
  under the terms of the GNU General Public License as published
@@ -63,10 +63,12 @@ const char *szHelp =
 "\t-wwwroot file_path (for example D:\\www)\n"
 "\t-dbase file_path (for example D:\\domoticz.db)\n"
 "\t-userdata file_path (for example D:\\domoticzdata)\n"
+"\t-approot file_path (for example D:\\domoticz)\n"
 #else
 "\t-wwwroot file_path (for example /opt/domoticz/www)\n"
 "\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
 "\t-userdata file_path (for example /opt/domoticz)\n"
+"\t-approot file_path (for example /opt/domoticz)\n"
 #endif
 "\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 "\t-startupdelay seconds (default=0)\n"
@@ -121,15 +123,26 @@ std::string szWWWFolder;
 std::string szWebRoot;
 std::string dbasefile;
 
+/*
+#define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
+#define VCGENCMDARMSPEEDCOMMAND "vcgencmd measure_clock arm"
+#define VCGENCMDV3DSPEEDCOMMAND "vcgencmd measure_clock v3d"
+#define VCGENCMDCORESPEEDCOMMAND "vcgencmd measure_clock core"
+
 bool bHasInternalTemperature=false;
-std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
+std::string szInternalTemperatureCommand = "";
+
+bool bHasInternalClockSpeeds=false;
+std::string szInternalARMSpeedCommand = "";
+std::string szInternalV3DSpeedCommand = "";
+std::string szInternalCoreSpeedCommand = "";
 
 bool bHasInternalVoltage=false;
 std::string szInternalVoltageCommand = "";
 
 bool bHasInternalCurrent=false;
 std::string szInternalCurrentCommand = "";
-
+*/
 
 std::string szAppVersion="???";
 int iAppRevision=0;
@@ -137,7 +150,7 @@ std::string szAppHash="???";
 std::string szAppDate="???";
 std::string szPyVersion="None";
 int ActYear;
-time_t m_StartTime=time(NULL);
+time_t m_StartTime = time(nullptr);
 std::string szRandomUUID = "???";
 
 MainWorker m_mainworker;
@@ -159,7 +172,6 @@ http::server::ssl_server_settings secure_webserver_settings;
 #endif
 bool bStartWebBrowser = true;
 bool g_bUseWatchdog = true;
-bool g_bIsWSL = false;
 
 #define DAEMON_NAME "domoticz"
 #define PID_FILE "/var/run/domoticz.pid" 
@@ -190,7 +202,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	sigaddset(&newSigSet, SIGTSTP);  /* ignore Tty stop signals */
 	sigaddset(&newSigSet, SIGTTOU);  /* ignore Tty background writes */
 	sigaddset(&newSigSet, SIGTTIN);  /* ignore Tty background reads */
-	sigprocmask(SIG_BLOCK, &newSigSet, NULL);   /* Block the above specified signals */
+	sigprocmask(SIG_BLOCK, &newSigSet, nullptr); /* Block the above specified signals */
 
 	/* Set up a signal handler */
 	newSigAction.sa_sigaction = signal_handler;
@@ -198,16 +210,14 @@ void daemonize(const char *rundir, const char *pidfile)
 	newSigAction.sa_flags = SA_SIGINFO;
 
 	/* Signals to handle */
-	sigaction(SIGTERM, &newSigAction, NULL);    // catch term signal
-	sigaction(SIGINT,  &newSigAction, NULL);    // catch interrupt signal
-	sigaction(SIGSEGV, &newSigAction, NULL);    // catch segmentation fault signal
-	sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
-	sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
-	sigaction(SIGUSR1, &newSigAction, NULL);    // catch SIGUSR1 (used by watchdog)
-#ifndef WIN32
-	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for log rotation
-#endif
-	
+	sigaction(SIGTERM, &newSigAction, nullptr); // catch term signal
+	sigaction(SIGINT, &newSigAction, nullptr);  // catch interrupt signal
+	sigaction(SIGSEGV, &newSigAction, nullptr); // catch segmentation fault signal
+	sigaction(SIGABRT, &newSigAction, nullptr); // catch abnormal termination signal
+	sigaction(SIGILL, &newSigAction, nullptr);  // catch invalid program image
+	sigaction(SIGUSR1, &newSigAction, nullptr); // catch SIGUSR1 (used by watchdog)
+	sigaction(SIGHUP, &newSigAction, nullptr); // catch HUP, for log rotation
+
 	/* Fork*/
 	pid = fork();
 
@@ -458,85 +468,6 @@ void GetAppVersion()
 	szAppDate = szTmp;
 }
 
-#if !defined WIN32
-void CheckForOnboardSensors()
-{
-	//Check if we are running on a RaspberryPi
-	std::string sLine = "";
-	std::ifstream infile;
-
-#if defined(__FreeBSD__)
-	infile.open("/compat/linux/proc/cpuinfo");
-#else
-	infile.open("/proc/cpuinfo");
-#endif
-	if (infile.is_open())
-	{
-		while (!infile.eof())
-		{
-			getline(infile, sLine);
-			if (
-				(sLine.find("BCM2708") != std::string::npos) ||
-				(sLine.find("BCM2709") != std::string::npos)
-				)
-			{
-				//Core temperature of BCM2835 SoC
-				_log.Log(LOG_STATUS, "System: Raspberry Pi");
-				szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
-				bHasInternalTemperature = true;
-				break;
-			}
-		}
-		infile.close();
-	}
-	if (!bHasInternalTemperature)
-	{
-		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
-		{
-			_log.Log(LOG_STATUS, "System: Cubieboard/Cubietruck");
-			szInternalTemperatureCommand = "cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
-			bHasInternalTemperature = true;
-		}
-		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
-		{
-			//_log.Log(LOG_STATUS,"System: ODroid");
-			szInternalTemperatureCommand = "cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ if ($1 < 100) printf(\"temp=%d\\n\",$1); else printf (\"temp=%0.2f\\n\",$1/1000); }'";
-			bHasInternalTemperature = true;
-		}
-	}
-	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
-	{
-		szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalVoltage = true;
-	}
-	if (file_exist("/sys/class/power_supply/ac/current_now"))
-	{
-		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalCurrent = true;
-	}
-	//New Armbian Kernal 4.14+
-	if (file_exist("/sys/class/power_supply/axp20x-ac/voltage_now"))
-	{
-		szInternalVoltageCommand = "cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalVoltage = true;
-	}
-	if (file_exist("/sys/class/power_supply/axp20x-ac/current_now"))
-	{
-		szInternalCurrentCommand = "cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalCurrent = true;
-	}
-
-#if defined (__OpenBSD__)
-	szInternalTemperatureCommand = "sysctl hw.sensors.acpitz0.temp0|sed -e 's/.*temp0/temp/'|cut -d ' ' -f 1";
-	bHasInternalTemperature = true;
-	szInternalVoltageCommand = "sysctl hw.sensors.acpibat0.volt1|sed -e 's/.*volt1/volt/'|cut -d ' ' -f 1";
-	bHasInternalVoltage = true;
-	//bHasInternalCurrent = true;
-
-#endif
-}
-#endif
-
 bool GetConfigBool(std::string szValue)
 {
 	stdlower(szValue);
@@ -761,7 +692,8 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-approot", 0, "");
-			if (szroot.size() != 0) {
+			if (!szroot.empty())
+			{
 				szStartupFolder = szroot;
 				FixFolderEnding(szStartupFolder);
 			}
@@ -800,9 +732,6 @@ int main(int argc, char**argv)
 #endif
 #endif
 	}
-#if defined(__linux__)
-	g_bIsWSL = IsWSL();
-#endif
 
 	/* call srand once for the entire app */
 	std::srand((unsigned int)std::time(nullptr));
@@ -811,9 +740,6 @@ int main(int argc, char**argv)
 	GetAppVersion();
 	DisplayAppVersion();
 
-#if !defined WIN32
-	CheckForOnboardSensors();
-#endif
 	if (!szStartupFolder.empty())
 		_log.Log(LOG_STATUS, "Startup Path: %s", szStartupFolder.c_str());
 
@@ -842,7 +768,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-userdata", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 			{
 				szUserDataFolder = szroot;
 				FixFolderEnding(szUserDataFolder);
@@ -901,7 +827,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 				szWWWFolder = szroot;
 		}
 	}
@@ -1071,7 +997,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-webroot", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 				szWebRoot = szroot;
 		}
 		if (cmdLine.HasSwitch("-noupdates"))
@@ -1137,14 +1063,14 @@ int main(int argc, char**argv)
 	{
 		int logfacility = 0;
 
-		for ( size_t idx = 0; idx < sizeof(facilities)/sizeof(facilities[0]); idx++ ) 
+		for (auto facilitie : facilities)
 		{
-			if (strcmp(facilities[idx].facname, logfacname.c_str()) == 0) 
+			if (strcmp(facilitie.facname, logfacname.c_str()) == 0)
 			{
-				logfacility = facilities[idx].facvalue;
+				logfacility = facilitie.facvalue;
 				break;
 			}
-		} 
+		}
 		if ( logfacility == 0 ) 
 		{
 			_log.Log(LOG_ERROR, "%s is an unknown syslog facility", logfacname.c_str());
@@ -1180,13 +1106,13 @@ int main(int argc, char**argv)
 		newSigAction.sa_flags = SA_SIGINFO;
 
 		/* Signals to handle */
-		sigaction(SIGTERM, &newSigAction, NULL);    // catch term signal
-		sigaction(SIGINT,  &newSigAction, NULL);    // catch interrupt signal
-		sigaction(SIGSEGV, &newSigAction, NULL);    // catch segmentation fault signal
-		sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
-		sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
-		sigaction(SIGFPE,  &newSigAction, NULL);    // catch floating point error
-		sigaction(SIGUSR1, &newSigAction, NULL);    // catch SIGUSR1 (used by watchdog)
+		sigaction(SIGTERM, &newSigAction, nullptr); // catch term signal
+		sigaction(SIGINT, &newSigAction, nullptr);  // catch interrupt signal
+		sigaction(SIGSEGV, &newSigAction, nullptr); // catch segmentation fault signal
+		sigaction(SIGABRT, &newSigAction, nullptr); // catch abnormal termination signal
+		sigaction(SIGILL, &newSigAction, nullptr);  // catch invalid program image
+		sigaction(SIGFPE, &newSigAction, nullptr);  // catch floating point error
+		sigaction(SIGUSR1, &newSigAction, nullptr); // catch SIGUSR1 (used by watchdog)
 #else
 		signal(SIGINT, signal_handler);
 		signal(SIGTERM, signal_handler);
@@ -1194,7 +1120,7 @@ int main(int argc, char**argv)
 	}
 
 	// start Watchdog thread after daemonization
-	m_LastHeartbeat = mytime(NULL);
+	m_LastHeartbeat = mytime(nullptr);
 	std::thread thread_watchdog(Do_Watchdog_Work);
 	SetThreadName(thread_watchdog.native_handle(), "Watchdog");
 
@@ -1202,8 +1128,7 @@ int main(int argc, char**argv)
 	{
 		return 1;
 	}
-	m_StartTime = time(NULL);
-
+	m_StartTime = time(nullptr);
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32
@@ -1231,7 +1156,7 @@ int main(int argc, char**argv)
 	while ( !g_bStopApplication )
 	{
 		sleep_seconds(1);
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 	}
 #endif
 	_log.Log(LOG_STATUS, "Closing application!...");

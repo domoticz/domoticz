@@ -20,7 +20,7 @@ class CTCPClientBase :
 {
 public:
 	explicit CTCPClientBase(CTCPServerIntBase *pManager);
-	~CTCPClientBase(void);
+	~CTCPClientBase();
 
 	virtual void start() = 0;
 	virtual void stop() = 0;
@@ -46,11 +46,12 @@ class CTCPClient : public CTCPClientBase,
 {
 public:
 	CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase *pManager);
-	~CTCPClient();
-	virtual void start() override;
-	virtual void stop() override;
-	virtual void write(const char *pData, size_t Length) override;
-private:
+	~CTCPClient() = default;
+	void start() override;
+	void stop() override;
+	void write(const char *pData, size_t Length) override;
+
+      private:
 	void handleRead(const boost::system::error_code& error, size_t length);
 	void handleWrite(const boost::system::error_code& error);
 
@@ -65,10 +66,10 @@ class CSharedClient : public CTCPClientBase,
 {
 public:
 	CSharedClient(CTCPServerIntBase *pManager, http::server::CProxyClient *proxy, const std::string &token, const std::string &username);
-	~CSharedClient();
-	virtual void start() override;
-	virtual void stop() override;
-	virtual void write(const char *pData, size_t Length) override;
+	~CSharedClient() = default;
+	void start() override;
+	void stop() override;
+	void write(const char *pData, size_t Length) override;
 	void OnIncomingData(const unsigned char *data, size_t bytes_transferred);
 	bool CompareToken(const std::string &token);
 private:

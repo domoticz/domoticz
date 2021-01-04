@@ -87,12 +87,6 @@ CPiFace::CPiFace(const int ID)
     m_fd = 0;
 }
 
-CPiFace::~CPiFace()
-{
-
-}
-
-
 /***** config file stuff *****/
 
 // trim from start
@@ -130,22 +124,22 @@ std::string & CPiFace::preprocess(std::string &s)
     return s;
 }
 
-int CPiFace::LocateValueInParameterArray(std::string Parametername,const std::string *ParameterArray,int Items)
+int CPiFace::LocateValueInParameterArray(const std::string &Parametername, const std::string *ParameterArray, int Items)
 {
     int NameFound=-1; //assume not found
     int Parameter_Index;
 
     for (Parameter_Index=0;(Parameter_Index < Items) && (NameFound==-1);Parameter_Index++)
     {
-        if (Parametername.compare(ParameterArray[Parameter_Index])==0)
-        {
-            NameFound=Parameter_Index;
-        }
+	    if (Parametername == ParameterArray[Parameter_Index])
+	    {
+		    NameFound = Parameter_Index;
+	    }
     }
     return (NameFound);
 }
 
-int CPiFace::GetParameterString(std::string TargetString,const char * SearchStr, int StartPos,  std::string &Parameter)
+int CPiFace::GetParameterString(const std::string &TargetString, const char *SearchStr, int StartPos, std::string &Parameter)
 {
     int EndPos=-1;
     std::string Substring;
@@ -161,8 +155,7 @@ int CPiFace::GetParameterString(std::string TargetString,const char * SearchStr,
     return EndPos;
 }
 
-
-int CPiFace::LoadConfig(void)
+int CPiFace::LoadConfig()
 {
     int result=-1;
 
@@ -183,7 +176,7 @@ int CPiFace::LoadConfig(void)
     unsigned char PortType=0;
     int NameFound=0;
     int ValueFound=0;
-    CIOPort *IOport=NULL;
+    CIOPort *IOport = nullptr;
     bool Regenerate_Config=false;
 
     std::string configfile=szUserDataFolder + "piface.conf";
@@ -226,170 +219,180 @@ int CPiFace::LoadConfig(void)
                 EndPos=GetParameterString(Line,".",0,Parameter);
                 if (EndPos>=0)
                 {
-                    if (Parameter.compare("piface")==0)
-                    {
-                        StartPos=EndPos;
-                    }
-                }
-            }
-            while ((StartPos<0) && (ConfigFile.good()==true));
+			if (Parameter == "piface")
+			{
+				StartPos = EndPos;
+			}
+		}
+	    } while ((StartPos < 0) && (ConfigFile.good() == true));
 
-            if (StartPos > 0)
-            {
-                //first lets get PiFace Address
-                EndPos=GetParameterString(Line,".",StartPos,Parameter);
-                if (EndPos>=0)
-                {
-                    Address=(unsigned char)(strtol(Parameter.c_str(),NULL,0) & 0xFF); //data can be restricted further but as we check later on keep it wide for future use.
-                    StartPos=EndPos;
-                }
+	    if (StartPos > 0)
+	    {
+		    // first lets get PiFace Address
+		    EndPos = GetParameterString(Line, ".", StartPos, Parameter);
+		    if (EndPos >= 0)
+		    {
+			    Address = (unsigned char)(strtol(Parameter.c_str(), nullptr, 0) & 0xFF); // data can be restricted further but as we check later on keep it wide for
+												     // future use.
+			    StartPos = EndPos;
+		    }
 
-                //Now lets get Port Type
-                EndPos=GetParameterString(Line,".",StartPos,Parameter);
-                if (EndPos>=0)
-                {
-                    if ( Parameter.compare("input") == 0)
-                    {
-                        // we have an input
-                        PortType='I';
-                    }
-                    else if ( Parameter.compare("output") == 0)
-                    {
-                        // we have an output
-                        PortType='O';
-                    }
+		    // Now lets get Port Type
+		    EndPos = GetParameterString(Line, ".", StartPos, Parameter);
+		    if (EndPos >= 0)
+		    {
+			    if (Parameter == "input")
+			    {
+				    // we have an input
+				    PortType = 'I';
+			    }
+			    else if (Parameter == "output")
+			    {
+				    // we have an output
+				    PortType = 'O';
+			    }
 
-                    StartPos=EndPos;
-                }
+			    StartPos = EndPos;
+		    }
 
-                //Now lets get Pinnumber
-                EndPos=GetParameterString(Line,".",StartPos,Parameter);
-                if (EndPos>=0)
-                {
-                    PinNumber=(unsigned char)(strtol(Parameter.c_str(),NULL,0) & 0xFF); //data can be restricted further but as we check later on keep it wide for future use.
-                    StartPos=EndPos;
-                }
+		    // Now lets get Pinnumber
+		    EndPos = GetParameterString(Line, ".", StartPos, Parameter);
+		    if (EndPos >= 0)
+		    {
+			    PinNumber = (unsigned char)(strtol(Parameter.c_str(), nullptr, 0) & 0xFF); // data can be restricted further but as we check later on keep it wide for
+												       // future use.
+			    StartPos = EndPos;
+		    }
 
-                //Now lets get parameter name
-                EndPos=GetParameterString(Line,"=",StartPos,Parameter);
-                if (EndPos>=0)
-                {
-                    Parametername=Parameter;
-                    StartPos=EndPos;
-                }
+		    // Now lets get parameter name
+		    EndPos = GetParameterString(Line, "=", StartPos, Parameter);
+		    if (EndPos >= 0)
+		    {
+			    Parametername = Parameter;
+			    StartPos = EndPos;
+		    }
 
-                //finaly lets get parameter value
-                Parametervalue=Line.substr(StartPos,Line.length()-StartPos);
-                Parametervalue=preprocess(Parametervalue);
+		    // finaly lets get parameter value
+		    Parametervalue = Line.substr(StartPos, Line.length() - StartPos);
+		    Parametervalue = preprocess(Parametervalue);
 
-                if ((Address <= 3) && (PinNumber <= 7) && ((PortType=='I') || (PortType=='O')) && (Parametername.length() >0 ) && (Parametervalue.length() >0 ))
-                {
-                    _log.Log(LOG_STATUS,"PiFace: config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s",Address,PinNumber,PortType,Parametername.c_str(),Parametervalue.c_str());
-                    NameFound=LocateValueInParameterArray(Parametername,ParameterNames,CONFIG_NR_OF_PARAMETER_TYPES);
+		    if ((Address <= 3) && (PinNumber <= 7) && ((PortType == 'I') || (PortType == 'O')) && (Parametername.length() > 0) && (Parametervalue.length() > 0))
+		    {
+			    _log.Log(LOG_STATUS, "PiFace: config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s", Address, PinNumber, PortType, Parametername.c_str(),
+				     Parametervalue.c_str());
+			    NameFound = LocateValueInParameterArray(Parametername, ParameterNames, CONFIG_NR_OF_PARAMETER_TYPES);
 
-                    if (PortType=='I')
-                    {
-                        IOport=&m_Inputs[Address];
-                        m_Inputs[Address].Pin[PinNumber].Direction = 'I';
-                    }
-                    else {
-                        IOport=&m_Outputs[Address];
-                        m_Outputs[Address].Pin[PinNumber].Direction = 'O';
-                    }
+			    if (PortType == 'I')
+			    {
+				    IOport = &m_Inputs[Address];
+				    m_Inputs[Address].Pin[PinNumber].Direction = 'I';
+			    }
+			    else
+			    {
+				    IOport = &m_Outputs[Address];
+				    m_Outputs[Address].Pin[PinNumber].Direction = 'O';
+			    }
 
-                    result=0;
+			    result = 0;
 
-                    switch (NameFound)
-                    {
-                        default:
-                            _log.Log(LOG_ERROR,"PiFace: Error config file: unknown parameter %s found", Parametername.c_str() );
-                            break;
-                        case 0:
-                        case 1:
-                            //found enable(d)
-                            ValueFound=LocateValueInParameterArray(Parametervalue,ParameterBooleanValueNames,CONFIG_NR_OF_PARAMETER_BOOL_TYPES);
-                            if (ValueFound >=0)
-                            {
-                                if ((ValueFound == 0) || (ValueFound == 1))
-                                {
-                                    IOport->Pin[PinNumber].Enabled=false;
-                                }
-                                else {
-                                    IOport->Pin[PinNumber].Enabled=true;
-                                }
-                                result++;
-                            }
-                            else _log.Log(LOG_ERROR,"PiFace: Error config file: unknown value %s found", Parametervalue.c_str() );
-                            break;
+			    switch (NameFound)
+			    {
+				    default:
+					    _log.Log(LOG_ERROR, "PiFace: Error config file: unknown parameter %s found", Parametername.c_str());
+					    break;
+				    case 0:
+				    case 1:
+					    // found enable(d)
+					    ValueFound = LocateValueInParameterArray(Parametervalue, ParameterBooleanValueNames, CONFIG_NR_OF_PARAMETER_BOOL_TYPES);
+					    if (ValueFound >= 0)
+					    {
+						    if ((ValueFound == 0) || (ValueFound == 1))
+						    {
+							    IOport->Pin[PinNumber].Enabled = false;
+						    }
+						    else
+						    {
+							    IOport->Pin[PinNumber].Enabled = true;
+						    }
+						    result++;
+					    }
+					    else
+						    _log.Log(LOG_ERROR, "PiFace: Error config file: unknown value %s found", Parametervalue.c_str());
+					    break;
 
-                        case 2:
-                            //found pintype
-                            ValueFound=LocateValueInParameterArray(Parametervalue,ParameterPinTypeValueNames,CONFIG_NR_OF_PARAMETER_PIN_TYPES);
-                            switch ( ValueFound )
-                            {
-                                default:
-                                    _log.Log(LOG_ERROR,"PiFace: Error config file: unknown value %s found =>setting default level %d", Parametervalue.c_str(),ValueFound );
-                                    IOport->Pin[PinNumber].Type=LEVEL;
-                                    break;
+				    case 2:
+					    // found pintype
+					    ValueFound = LocateValueInParameterArray(Parametervalue, ParameterPinTypeValueNames, CONFIG_NR_OF_PARAMETER_PIN_TYPES);
+					    switch (ValueFound)
+					    {
+						    default:
+							    _log.Log(LOG_ERROR,
+								     "PiFace: Error config file: unknown value %s found =>setting default "
+								     "level %d",
+								     Parametervalue.c_str(), ValueFound);
+							    IOport->Pin[PinNumber].Type = LEVEL;
+							    break;
 
-                                case 0:
-                                    IOport->Pin[PinNumber].Type=LEVEL;
-                                    break;
-                                case 1:
-                                    IOport->Pin[PinNumber].Type=INV_LEVEL;
-                                    break;
-                                case 2:
-                                    IOport->Pin[PinNumber].Type=TOGGLE_RISING;
-                                    break;
-                                case 3:
-                                    IOport->Pin[PinNumber].Type=TOGGLE_FALLING;
-                                    break;
-                            }
-                            result++;
-                            break;
+						    case 0:
+							    IOport->Pin[PinNumber].Type = LEVEL;
+							    break;
+						    case 1:
+							    IOport->Pin[PinNumber].Type = INV_LEVEL;
+							    break;
+						    case 2:
+							    IOport->Pin[PinNumber].Type = TOGGLE_RISING;
+							    break;
+						    case 3:
+							    IOport->Pin[PinNumber].Type = TOGGLE_FALLING;
+							    break;
+					    }
+					    result++;
+					    break;
 
-                        case 3:
-                        case 4:
-                            //found count_enable(d)
-                            ValueFound=LocateValueInParameterArray(Parametervalue,ParameterBooleanValueNames,CONFIG_NR_OF_PARAMETER_BOOL_TYPES);
+				    case 3:
+				    case 4:
+					    // found count_enable(d)
+					    ValueFound = LocateValueInParameterArray(Parametervalue, ParameterBooleanValueNames, CONFIG_NR_OF_PARAMETER_BOOL_TYPES);
 
-                            if (ValueFound >=0)
-                            {
-                                if ((ValueFound == 0) || (ValueFound == 1))
-                                {
-                                    IOport->ConfigureCounter(PinNumber,false);
-                                }
-                                else {
-                                    IOport->ConfigureCounter(PinNumber,true);
-                                }
-                                result++;
-                            }
-                            else _log.Log(LOG_ERROR,"PiFace: Error config file: unknown value %s found", Parametervalue.c_str() );
-                            break;
+					    if (ValueFound >= 0)
+					    {
+						    if ((ValueFound == 0) || (ValueFound == 1))
+						    {
+							    IOport->ConfigureCounter(PinNumber, false);
+						    }
+						    else
+						    {
+							    IOport->ConfigureCounter(PinNumber, true);
+						    }
+						    result++;
+					    }
+					    else
+						    _log.Log(LOG_ERROR, "PiFace: Error config file: unknown value %s found", Parametervalue.c_str());
+					    break;
 
-                        case 5:
-                        case 6:
-                        case 7:
-                            //count_update_interval(_s)(ec)
-                            unsigned long UpdateInterval;
+				    case 5:
+				    case 6:
+				    case 7:
+					    // count_update_interval(_s)(ec)
+					    unsigned long UpdateInterval;
 
-                            UpdateInterval=strtol(Parametervalue.c_str(),NULL,0);
-                            IOport->Pin[PinNumber].Count.SetUpdateInterval(UpdateInterval*1000);
-                            result++;
-                            break;
+					    UpdateInterval = strtol(Parametervalue.c_str(), nullptr, 0);
+					    IOport->Pin[PinNumber].Count.SetUpdateInterval(UpdateInterval * 1000);
+					    result++;
+					    break;
 
-                        case 8:
-                            //count_update_interval_diff_perc
-                            unsigned long UpdateIntervalPerc;
+				    case 8:
+					    // count_update_interval_diff_perc
+					    unsigned long UpdateIntervalPerc;
 
-                            UpdateIntervalPerc=strtol(Parametervalue.c_str(),NULL,0);
-                            if ( UpdateIntervalPerc < 1 || UpdateIntervalPerc > 1000 )
-                            {
-                                _log.Log(LOG_ERROR,"PiFace: Error config file: invalid value %s found", Parametervalue.c_str());
-                                break;
-                            }
-                            IOport->Pin[PinNumber].Count.SetUpdateIntervalPerc(UpdateIntervalPerc);
-                            result++;
+					    UpdateIntervalPerc = strtol(Parametervalue.c_str(), nullptr, 0);
+					    if (UpdateIntervalPerc < 1 || UpdateIntervalPerc > 1000)
+					    {
+						    _log.Log(LOG_ERROR, "PiFace: Error config file: invalid value %s found", Parametervalue.c_str());
+						    break;
+					    }
+					    IOport->Pin[PinNumber].Count.SetUpdateIntervalPerc(UpdateIntervalPerc);
+					    result++;
 
 #ifndef DISABLE_NEW_FUNCTIONS
                             /*  disabled until code part is completed and tested */
@@ -397,54 +400,57 @@ int CPiFace::LoadConfig(void)
                             //count_initial_value
                             unsigned long StartValue;
 
-                            StartValue=strtol(Parametervalue.c_str(),NULL,0);
-                            IOport->Pin[PinNumber].Count.SetTotal(StartValue);
-                            result++;
-                            Regenerate_Config=true;
-                            break;
+			    StartValue = strtol(Parametervalue.c_str(), nullptr, 0);
+			    IOport->Pin[PinNumber].Count.SetTotal(StartValue);
+			    result++;
+			    Regenerate_Config = true;
+			    break;
 #endif
                         case 10:
                             //count_minimum_pulse_period_msec
                             unsigned long Min_Pulse_Period;
 
-                            Min_Pulse_Period=strtol(Parametervalue.c_str(),NULL,0); // results in 0 if str is invalid
-                            IOport->Pin[PinNumber].Count.SetRateLimit(Min_Pulse_Period);
-                            result++;
-                            break;
+			    Min_Pulse_Period = strtol(Parametervalue.c_str(), nullptr, 0); // results in 0 if str is invalid
+			    IOport->Pin[PinNumber].Count.SetRateLimit(Min_Pulse_Period);
+			    result++;
+			    break;
 
-                        case 11:
-                            //count_type
-                            ValueFound=LocateValueInParameterArray(Parametervalue,ParameterCountTypeValueNames,CONFIG_NR_OF_PARAMETER_COUNT_TYPES);
-                            switch (ValueFound )
-                            {
-                                default:
-                                    _log.Log(LOG_ERROR,"PiFace: Error config file: unknown value %s found", Parametervalue.c_str());
-                                    break;
+			case 11:
+				// count_type
+				ValueFound = LocateValueInParameterArray(Parametervalue, ParameterCountTypeValueNames,
+									 CONFIG_NR_OF_PARAMETER_COUNT_TYPES);
+				switch (ValueFound)
+				{
+					default:
+						_log.Log(LOG_ERROR, "PiFace: Error config file: unknown value %s found",
+							 Parametervalue.c_str());
+						break;
 
-                                case 0: // generic
-                                    IOport->Pin[PinNumber].Count.Type = COUNT_TYPE_GENERIC;
-                                    break;
-                                case 1: // rfxmeter
-                                    IOport->Pin[PinNumber].Count.Type = COUNT_TYPE_RFXMETER;
-                                    break;
-                                case 2: // energy
-                                    IOport->Pin[PinNumber].Count.Type = COUNT_TYPE_ENERGY;
-                                    break;
-                            }
-                            result++;
-                            break;
+					case 0: // generic
+						IOport->Pin[PinNumber].Count.Type = COUNT_TYPE_GENERIC;
+						break;
+					case 1: // rfxmeter
+						IOport->Pin[PinNumber].Count.Type = COUNT_TYPE_RFXMETER;
+						break;
+					case 2: // energy
+						IOport->Pin[PinNumber].Count.Type = COUNT_TYPE_ENERGY;
+						break;
+				}
+				result++;
+				break;
 
-                        case 12:
-                            //count_divider
-                            IOport->Pin[PinNumber].Count.SetDivider(strtol(Parametervalue.c_str(), NULL, 0));
-                            result++;
-                            break;
-                    }
-                }
-                else _log.Log(LOG_ERROR,"PiFace: Error config file: misformed config line %s found", Line.c_str() );
-            }
-        }
-        ConfigFile.close();
+			case 12:
+				// count_divider
+				IOport->Pin[PinNumber].Count.SetDivider(strtol(Parametervalue.c_str(), nullptr, 0));
+				result++;
+				break;
+			    }
+		    }
+		    else
+			    _log.Log(LOG_ERROR, "PiFace: Error config file: misformed config line %s found", Line.c_str());
+	    }
+	}
+	ConfigFile.close();
 #ifndef DISABLE_NEW_FUNCTIONS
         if (Regenerate_Config)
         {
@@ -463,7 +469,7 @@ int CPiFace::LoadConfig(void)
     return result;
 }
 
-void CPiFace::LoadDefaultConfig(void)
+void CPiFace::LoadDefaultConfig()
 {
     for (int i=0; i<=3 ;i++)
     {
@@ -489,13 +495,15 @@ void CPiFace::LoadDefaultConfig(void)
     }
 }
 
-void CPiFace::AutoCreate_piface_config(void)
+void CPiFace::AutoCreate_piface_config()
 {
-	char const * const explanation[] = {
+	char const *const explanation[] = {
 		"//piface.conf [Autogenerated]\r\n",
-		"//This file is part of the PiFace driver (written by Robin Stevenhagen) for Domoticz, and allows for more advanced pin configuration options\r\n",
+		"//This file is part of the PiFace driver (written by Robin Stevenhagen) for Domoticz, and allows for more advanced pin "
+		"configuration options\r\n",
 		"//This file can optionally hold all the configuration for all attached PiFace boards.\r\n",
-		"//Please note that if this file is found the default config is discarded, and only the configuration in this file is used, all IO that is not specified will\r\n/",
+		"//Please note that if this file is found the default config is discarded, and only the configuration in this file is "
+		"used, all IO that is not specified will\r\n/",
 		"//be configured as not used.\r\n",
 		"//\r\n",
 		"// Configuration line syntax:\r\n",
@@ -513,18 +521,19 @@ void CPiFace::AutoCreate_piface_config(void)
 		"//                                  count_enabled\r\n",
 		"//                                  count_type\r\n",
 		"//                                  count_divider\r\n",
-        "//                                  count_update_interval_sec\r\n",
-        "//                                  count_update_interval_diff_perc\r\n",
+		"//                                  count_update_interval_sec\r\n",
+		"//                                  count_update_interval_diff_perc\r\n",
 #ifndef DISABLE_NEW_FUNCTIONS
-        "//                                  count_initial_value\r\n",
+		"//                                  count_initial_value\r\n",
 #endif
-        "//                                  count_minimum_pulse_period\r\n",
+		"//                                  count_minimum_pulse_period\r\n",
 		"//\r\n",
 		"// Available <parameter> / <values>:\r\n",
 		"// enabled:                         true  or 1\r\n",
 		"//                                  false or 0\r\n",
 		"//\r\n",
-		"// pin_type:                        level                     // best to keep this parameter to level for outputs, as Domoticz does not like other values\r\n",
+		"// pin_type:                        level                     // best to keep this parameter to level for outputs, as "
+		"Domoticz does not like other values\r\n",
 		"//                                  inv_level\r\n",
 		"//                                  rising\r\n",
 		"//                                  falling\r\n",
@@ -539,28 +548,35 @@ void CPiFace::AutoCreate_piface_config(void)
 		"//                                  Pulses per unit.\r\n",
 		"//\r\n",
 		"// count_update_interval_sec:       0 to 3600\r\n",
-        "// count_update_interval_diff_perc: 1 to 1000\r\n",
-        "//                                  This parameter can be used to force trigger an update when the difference in pulse intervals is above a certain percentage.\r\n",
-        "//                                  The value is a percentage of the previous interval. This can be useful for energy counters to quickly report large fluctuations\r\n",
-        "//                                  in active power.\r\n",
+		"// count_update_interval_diff_perc: 1 to 1000\r\n",
+		"//                                  This parameter can be used to force trigger an update when the difference in pulse "
+		"intervals is above a certain percentage.\r\n",
+		"//                                  The value is a percentage of the previous interval. This can be useful for energy "
+		"counters to quickly report large fluctuations\r\n",
+		"//                                  in active power.\r\n",
 		"//\r\n",
 #ifndef DISABLE_NEW_FUNCTIONS
-        "// count_initial_value:             0 to 4294967295 counts\r\n",
-		"// Note1: The initial_value will only be used once. After it has been set, a new piface.conf will automatically be generated without the initial_value parameter(s)\r\n",
+		"// count_initial_value:             0 to 4294967295 counts\r\n",
+		"// Note1: The initial_value will only be used once. After it has been set, a new piface.conf will automatically be "
+		"generated without the initial_value parameter(s)\r\n",
 		"// to ensure that it will only be used once.\r\n",
 		"// Using the initial_value to set a counter to a desired (start) value, will result in spikes in the Domoticz graphs.\r\n",
-		"// Note2: The initial_value is in counter counts, Domoticz scales (divides) this by the factor that is set in the GUI settings \r\n",
+		"// Note2: The initial_value is in counter counts, Domoticz scales (divides) this by the factor that is set in the GUI "
+		"settings \r\n",
 		"//\r\n",
 #endif
-        "// count_minimum_pulse_period_msec: 0 to 4294967295 milliseconds\r\n",
+		"// count_minimum_pulse_period_msec: 0 to 4294967295 milliseconds\r\n",
 		"//                                  This parameter sets a pulse rate limiter.\r\n",
-		"//                                  If multiple pulses are detected within the specified time period, they are ignored until the specified idle time has been met.\r\n",
-		"//                                  This can be useful for opto reflective sensors that count slow moving dials. Like water meters or gas meters,\r\n",
-		"//                                  where the dial can stop on an opto barrier and cause oscillations (and unwanted counts).\r\n",
+		"//                                  If multiple pulses are detected within the specified time period, they are ignored "
+		"until the specified idle time has been met.\r\n",
+		"//                                  This can be useful for opto reflective sensors that count slow moving dials. Like "
+		"water meters or gas meters,\r\n",
+		"//                                  where the dial can stop on an opto barrier and cause oscillations (and unwanted "
+		"counts).\r\n",
 		"//                                  0 = off \r\n",
 		"//                                  < 100 msec times will not be very effective.\r\n",
 		"//\r\n",
-		NULL
+		nullptr
 	};
 
     char configline[100];
@@ -577,79 +593,91 @@ void CPiFace::AutoCreate_piface_config(void)
     if (ConfigFile.is_open())
     {
 		int i = 0;
-		while (explanation[i]!=NULL)
-        {
-            ConfigFile.write(explanation[i],strlen(explanation[i]));
+		while (explanation[i] != nullptr)
+		{
+			ConfigFile.write(explanation[i], strlen(explanation[i]));
 			i++;
-        }
+		}
 
-        for (int BoardNr=0; BoardNr< 1 ;BoardNr++) // Note there could be 4 boards, but this will create a lot of entires in the configfile
-        {
-            for (int PinNr=0; PinNr<=7 ;PinNr++)
-            {
-                for (int IOType=0; IOType <= 1 ; IOType++)
-                {
-                    if (IOType==0)
-                    {
-                        PortType="output";
-                        IOport=&m_Outputs[BoardNr];
-                    }
-                    else {
-                        PortType="input";
-                        IOport=&m_Inputs[BoardNr];
-                    }
+		for (int BoardNr = 0; BoardNr < 1;
+		     BoardNr++) // Note there could be 4 boards, but this will create a lot of entires in the configfile
+		{
+			for (int PinNr = 0; PinNr <= 7; PinNr++)
+			{
+				for (int IOType = 0; IOType <= 1; IOType++)
+				{
+					if (IOType == 0)
+					{
+						PortType = "output";
+						IOport = &m_Outputs[BoardNr];
+					}
+					else
+					{
+						PortType = "input";
+						IOport = &m_Inputs[BoardNr];
+					}
 
-                    if (IOport->Pin[PinNr].Enabled)
-                        ValueText="true";
-                    else ValueText="false";
-                    sprintf(configline,"piface.%d.%s.%d.enabled=%s\r\n",BoardNr,PortType.c_str(),PinNr,ValueText.c_str());
-                    ConfigFile.write(configline,strlen(configline));
+					if (IOport->Pin[PinNr].Enabled)
+						ValueText = "true";
+					else
+						ValueText = "false";
+					sprintf(configline, "piface.%d.%s.%d.enabled=%s\r\n", BoardNr, PortType.c_str(), PinNr,
+						ValueText.c_str());
+					ConfigFile.write(configline, strlen(configline));
 
-                    ValueText=ParameterPinTypeValueNames[IOport->Pin[PinNr].Type];
-                    sprintf(configline,"piface.%d.%s.%d.pin_type=%s\r\n",BoardNr,PortType.c_str(),PinNr,ValueText.c_str());
-                    ConfigFile.write(configline,strlen(configline));
+					ValueText = ParameterPinTypeValueNames[IOport->Pin[PinNr].Type];
+					sprintf(configline, "piface.%d.%s.%d.pin_type=%s\r\n", BoardNr, PortType.c_str(), PinNr,
+						ValueText.c_str());
+					ConfigFile.write(configline, strlen(configline));
 
-                    if (IOport->Pin[PinNr].Count.Enabled)
-                        ValueText="true";
-                    else ValueText="false";
-                    sprintf(configline,"piface.%d.%s.%d.count_enabled=%s\r\n",BoardNr,PortType.c_str(),PinNr,ValueText.c_str());
-                    ConfigFile.write(configline,strlen(configline));
+					if (IOport->Pin[PinNr].Count.Enabled)
+						ValueText = "true";
+					else
+						ValueText = "false";
+					sprintf(configline, "piface.%d.%s.%d.count_enabled=%s\r\n", BoardNr, PortType.c_str(), PinNr,
+						ValueText.c_str());
+					ConfigFile.write(configline, strlen(configline));
 
-                    ValueText=ParameterCountTypeValueNames[IOport->Pin[PinNr].Count.Type];
-                    sprintf(configline,"piface.%d.%s.%d.count_type=%s\r\n",BoardNr,PortType.c_str(),PinNr,ValueText.c_str());
-                    ConfigFile.write(configline,strlen(configline));
+					ValueText = ParameterCountTypeValueNames[IOport->Pin[PinNr].Count.Type];
+					sprintf(configline, "piface.%d.%s.%d.count_type=%s\r\n", BoardNr, PortType.c_str(), PinNr,
+						ValueText.c_str());
+					ConfigFile.write(configline, strlen(configline));
 
-                    if (
-                        IOport->Pin[PinNr].Count.Type != COUNT_TYPE_GENERIC
-                        && IOport->Pin[PinNr].Count.Type != COUNT_TYPE_RFXMETER
-                    ) {
-                        Value=IOport->Pin[PinNr].Count.GetDivider();
-                        sprintf(configline,"piface.%d.%s.%d.count_divider=%d\r\n",BoardNr,PortType.c_str(),PinNr,Value);
-                        ConfigFile.write(configline,strlen(configline));
-                    }
+					if (IOport->Pin[PinNr].Count.Type != COUNT_TYPE_GENERIC
+					    && IOport->Pin[PinNr].Count.Type != COUNT_TYPE_RFXMETER)
+					{
+						Value = IOport->Pin[PinNr].Count.GetDivider();
+						sprintf(configline, "piface.%d.%s.%d.count_divider=%d\r\n", BoardNr, PortType.c_str(),
+							PinNr, Value);
+						ConfigFile.write(configline, strlen(configline));
+					}
 
-                    Value=IOport->Pin[PinNr].Count.GetUpdateInterval()/1000;
-                    sprintf(configline,"piface.%d.%s.%d.count_update_interval_sec=%d\r\n",BoardNr,PortType.c_str(),PinNr,Value);
-                    ConfigFile.write(configline,strlen(configline));
+					Value = IOport->Pin[PinNr].Count.GetUpdateInterval() / 1000;
+					sprintf(configline, "piface.%d.%s.%d.count_update_interval_sec=%d\r\n", BoardNr, PortType.c_str(),
+						PinNr, Value);
+					ConfigFile.write(configline, strlen(configline));
 
-                    Value=IOport->Pin[PinNr].Count.GetUpdateIntervalPerc();
-                    if ( Value > 0 ) {
-                        sprintf(configline,"piface.%d.%s.%d.count_update_interval_diff_perc=%d\r\n",BoardNr,PortType.c_str(),PinNr,Value);
-                        ConfigFile.write(configline,strlen(configline));
-                    }
+					Value = IOport->Pin[PinNr].Count.GetUpdateIntervalPerc();
+					if (Value > 0)
+					{
+						sprintf(configline, "piface.%d.%s.%d.count_update_interval_diff_perc=%d\r\n", BoardNr,
+							PortType.c_str(), PinNr, Value);
+						ConfigFile.write(configline, strlen(configline));
+					}
 
-                    Value=IOport->Pin[PinNr].Count.GetRateLimit();
-                    if ( Value > 0 ) {
-                        sprintf(configline,"piface.%d.%s.%d.count_minimum_pulse_period_msec=%d\r\n",BoardNr,PortType.c_str(),PinNr,Value);
-                        ConfigFile.write(configline,strlen(configline));
-                    }
+					Value = IOport->Pin[PinNr].Count.GetRateLimit();
+					if (Value > 0)
+					{
+						sprintf(configline, "piface.%d.%s.%d.count_minimum_pulse_period_msec=%d\r\n", BoardNr,
+							PortType.c_str(), PinNr, Value);
+						ConfigFile.write(configline, strlen(configline));
+					}
 
-                    sprintf(configline,"\r\n");
-                    ConfigFile.write(configline,strlen(configline));
-                }
-            }
-        }
-
+					sprintf(configline, "\r\n");
+					ConfigFile.write(configline, strlen(configline));
+				}
+			}
+		}
     }
     ConfigFile.close();
 }
@@ -832,33 +860,33 @@ void CPiFace::Do_Work()
             msec_counter = 0;
             sec_counter++;
             if (sec_counter % 12 == 0) {
-                m_LastHeartbeat = mytime(NULL);
-            }
-        }
+		    m_LastHeartbeat = mytime(nullptr);
+	    }
+	}
 
-        m_InputSample_waitcntr++;
-        m_CounterEdgeSample_waitcntr++;
+	m_InputSample_waitcntr++;
+	m_CounterEdgeSample_waitcntr++;
 
-        //sample interrupt states faster for edge detection on count
-        if (m_CounterEdgeSample_waitcntr>=PIFACE_COUNTER_COUNTER_INTERVAL)
-        {
-            m_CounterEdgeSample_waitcntr=0;
-            for (devId=0; devId<4; devId++)
-            {
-                Sample_and_Process_Input_Interrupts(devId);
-            }
-        }
+	// sample interrupt states faster for edge detection on count
+	if (m_CounterEdgeSample_waitcntr >= PIFACE_COUNTER_COUNTER_INTERVAL)
+	{
+		m_CounterEdgeSample_waitcntr = 0;
+		for (devId = 0; devId < 4; devId++)
+		{
+			Sample_and_Process_Input_Interrupts(devId);
+		}
+	}
 
-        //sample pin states more slowly to avoid spamming Domoticz
-        if (m_InputSample_waitcntr>=PIFACE_INPUT_PROCESS_INTERVAL)
-        {
-            m_InputSample_waitcntr=0;
-            for (devId=0; devId<4; devId++)
-            {
-                Sample_and_Process_Inputs(devId);
-                Sample_and_Process_Outputs(devId);
-            }
-        }
+	// sample pin states more slowly to avoid spamming Domoticz
+	if (m_InputSample_waitcntr >= PIFACE_INPUT_PROCESS_INTERVAL)
+	{
+		m_InputSample_waitcntr = 0;
+		for (devId = 0; devId < 4; devId++)
+		{
+			Sample_and_Process_Inputs(devId);
+			Sample_and_Process_Outputs(devId);
+		}
+	}
     }
     _log.Log(LOG_STATUS,"PiFace: Worker stopped...");
 }
@@ -877,7 +905,7 @@ void CPiFace::Do_Work_Queue()
         sendData = *itt;
         m_send_queue.erase(itt);
         m_queue_mutex.unlock();
-        sDecodeRXMessage(this, (const unsigned char*)sendData.c_str(), NULL, 255);
+	sDecodeRXMessage(this, (const unsigned char *)sendData.c_str(), nullptr, 255, m_Name.c_str());
     }
 }
 
@@ -930,10 +958,10 @@ int CPiFace::Init_SPI_Device(int Init)
 #endif
         return -1;
     }
-    else return m_fd;
+    return m_fd;
 }
 
-int CPiFace::Detect_PiFace_Hardware(void)
+int CPiFace::Detect_PiFace_Hardware()
 {
     int NrOfFoundBoards=0;
     unsigned char read_iocon;
@@ -1185,11 +1213,6 @@ CIOCount::CIOCount()
     Cur_Interval = boost::posix_time::milliseconds(0);
 };
 
-CIOCount::~CIOCount()
-{
-
-};
-
 int CIOPinState::Update(bool New)
 {
     int StateChange=-1; //nothing changed
@@ -1265,8 +1288,7 @@ int CIOPinState::UpdateInterrupt(bool IntFlag,bool PinState)
     return (Changed);
 }
 
-
-int CIOPinState::GetInitialState(void)
+int CIOPinState::GetInitialState()
 {
     int CurState=-1; //Report not enabled
 
@@ -1316,11 +1338,6 @@ CIOPinState::CIOPinState()
     Toggle=false;
     InitialStateSent=false;
     Direction=' ';
-};
-
-CIOPinState::~CIOPinState()
-{
-
 };
 
 void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned char housecode, unsigned char initial_state)
@@ -1535,18 +1552,13 @@ CIOPort::CIOPort()
     Last=0;
     Current=0;
     Present=false;
-    Callback_pntr = NULL;
+    Callback_pntr = nullptr;
     PortType = 0;
     devId = 0;
     for (int PinNr=0; PinNr<=7 ;PinNr++)
     {
         Pin[PinNr].Id=PinNr;
     }
-
-};
-
-CIOPort::~CIOPort()
-{
 
 };
 
@@ -1563,13 +1575,12 @@ namespace http {
 			}
 
             std::string idx = request::findValue(&req, "idx");
-            if (idx == "") {
-                return;
-            }
+	    if (idx.empty())
+	    {
+		    return;
+	    }
 
-            m_mainworker.RestartHardware(idx);
-        }
-    }
-}
-
-
+	    m_mainworker.RestartHardware(idx);
+	}
+    } // namespace server
+} // namespace http

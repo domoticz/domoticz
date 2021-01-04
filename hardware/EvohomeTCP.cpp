@@ -32,7 +32,7 @@ bool CEvohomeTCP::StopHardware()
 	if(m_bDebug && m_pEvoLog)
 	{
 		delete m_pEvoLog;
-		m_pEvoLog=NULL;
+		m_pEvoLog = nullptr;
 	}
 	return true;
 }
@@ -66,7 +66,7 @@ void CEvohomeTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat= mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		Idle_Work();

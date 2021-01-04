@@ -39,10 +39,6 @@ m_szIPAddress(IPAddress)
 	Init();
 }
 
-CInComfort::~CInComfort(void)
-{
-}
-
 void CInComfort::Init()
 {
 }
@@ -106,7 +102,7 @@ void CInComfort::SetSetpoint(const int /*idx*/, const float temp)
 		ParseAndUpdateDevices(jsonData);
 }
 
-std::string CInComfort::GetHTTPData(std::string sURL)
+std::string CInComfort::GetHTTPData(const std::string &sURL)
 {
 	// Get Data
 	std::vector<std::string> ExtraHeaders;
@@ -150,7 +146,7 @@ void CInComfort::SetProgramState(const int /*newState*/)
 {
 }
 
-void CInComfort::ParseAndUpdateDevices(std::string jsonData)
+void CInComfort::ParseAndUpdateDevices(const std::string &jsonData)
 {
 	Json::Value root;
 	bool bRet = ParseJSon(jsonData, root);
@@ -213,7 +209,7 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 
 	// Compare the time of the last update to the current time.
 	// For items changing frequently, update the value every 5 minutes, for all others update every 15 minutes
-	time_t currentTime = mytime(NULL);
+	time_t currentTime = mytime(nullptr);
 	bool updateFrequentChangingValues = (currentTime - m_LastUpdateFrequentChangingValues) >= 300;
 	if (updateFrequentChangingValues)
 		m_LastUpdateFrequentChangingValues = currentTime;
@@ -280,8 +276,8 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 		bool pumpActive = (io & 0x02) > 0;
 		bool tapFunctionActive = (io & 0x04) > 0;
 		bool burnerActive = (io & 0x08) > 0;
-		SendSwitch(8, 1, 255, pumpActive, 0, "Pump Active");
-		SendSwitch(8, 2, 255, tapFunctionActive, 0, "Tap Function Active");
-		SendSwitch(8, 3, 255, burnerActive, 0, "Burner Active");
+		SendSwitch(8, 1, 255, pumpActive, 0, "Pump Active", m_Name);
+		SendSwitch(8, 2, 255, tapFunctionActive, 0, "Tap Function Active", m_Name);
+		SendSwitch(8, 3, 255, burnerActive, 0, "Burner Active", m_Name);
 	}
 }

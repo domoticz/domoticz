@@ -40,10 +40,6 @@ CNestOAuthAPI::CNestOAuthAPI(const int ID, const std::string &apikey, const std:
 	Init();
 }
 
-CNestOAuthAPI::~CNestOAuthAPI(void)
-{
-}
-
 void CNestOAuthAPI::Init()
 {
 	m_bDoLogin = true;
@@ -85,7 +81,7 @@ void CNestOAuthAPI::Do_Work()
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter % NEST_POLL_INTERVAL == 0)
@@ -106,10 +102,9 @@ void CNestOAuthAPI::SendSetPointSensor(const unsigned char Idx, const float Temp
 	thermos.id3=0;
 	thermos.id4=Idx;
 	thermos.dunit=0;
-
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 // Creates and updates switch used to log Heating and/or Cooling.
@@ -155,7 +150,7 @@ void CNestOAuthAPI::UpdateSwitch(const unsigned char Idx, const bool bOn, const 
 	lcmd.LIGHTING2.level = (BYTE)level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string & /*accesstoken*/) {
@@ -214,7 +209,7 @@ bool CNestOAuthAPI::Login()
 		if (!m_ProductId.empty() && !m_ProductSecret.empty() && !m_PinCode.empty()) {
 			_log.Log(LOG_NORM, "NestOAuthAPI: Access token missing. Will request an API key based on Product Id, Product Secret and PIN code.");
 
-			std::string sTmpToken = "";
+			std::string sTmpToken;
 			try
 			{
 				// Request the token using the information that we already have.
@@ -262,10 +257,9 @@ bool CNestOAuthAPI::Login()
 		m_bDoLogin = false;
 		return true;
 	}
-	else {
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Login failed: token did not validate.");
-		return false;
-	}
+
+	_log.Log(LOG_ERROR, "NestOAuthAPI: Login failed: token did not validate.");
+	return false;
 }
 
 void CNestOAuthAPI::Logout()
@@ -325,7 +319,7 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 			bNoChange = true;
 		if (bNoChange)
 		{
-			time_t now = time(0);
+			time_t now = time(nullptr);
 			struct tm ltime;
 			localtime_r(&now, &ltime);
 
@@ -366,7 +360,7 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 
 	if (!bDeviceExists)
 	{
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 		//Assign default name for device
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szIdx);
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
@@ -376,7 +370,7 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 		}
 	}
 	else
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void CNestOAuthAPI::GetMeterDetails()
@@ -457,16 +451,15 @@ void CNestOAuthAPI::GetMeterDetails()
 			return;
 		}
 		int SwitchIndex = 1;
-		for (Json::Value::iterator itDevice = deviceRoot["smoke_co_alarms"].begin(); itDevice != deviceRoot["smoke_co_alarms"].end(); ++itDevice)
+		for (auto device : deviceRoot["smoke_co_alarms"])
 		{
-			Json::Value device = *itDevice;
-			//std::string devstring = itDevice.key().asString();
+			// std::string devstring = itDevice.key().asString();
 			std::string devWhereName = device["where_name"].asString();
 
 			if (devWhereName.empty())
 				continue;
 
-			std::string devName = devWhereName;
+			const std::string &devName = devWhereName;
 
 			// Default value is true, let's assume the worst.
 			bool bSmokeAlarm = true;
@@ -517,11 +510,11 @@ void CNestOAuthAPI::GetMeterDetails()
 
 	size_t iThermostat = 0;
 	size_t iStructure = 0;
-	for (Json::Value::iterator ittStructure = structureRoot.begin(); ittStructure != structureRoot.end(); ++ittStructure)
+	for (auto nstructure : structureRoot)
 	{
 		// Get general structure information
-		Json::Value nstructure = *ittStructure;
-		if (!nstructure.isObject()) continue;
+		if (!nstructure.isObject())
+			continue;
 
 		// Store the structure information in a map.
 		_tNestStructure nstruct;
@@ -533,13 +526,13 @@ void CNestOAuthAPI::GetMeterDetails()
 		if (!nstructure["away"].empty())
 		{
 			bool bIsAway = (nstructure["away"].asString() == "away" || nstructure["away"].asString() == "auto-away");
-			SendSwitch((iStructure * 3) + 3, 1, 255, bIsAway, 0, nstruct.Name + " Away");
+			SendSwitch((iStructure * 3) + 3, 1, 255, bIsAway, 0, nstruct.Name + " Away", m_Name);
 		}
 
 		// Find out which thermostats are available under this structure
-		for (Json::Value::iterator ittDevice = nstructure["thermostats"].begin(); ittDevice != nstructure["thermostats"].end(); ++ittDevice)
+		for (auto &ittDevice : nstructure["thermostats"])
 		{
-			std::string devID = (*ittDevice).asString();
+			std::string devID = ittDevice.asString();
 
 			// _log.Log(LOG_NORM, ("Nest: Found Thermostat " + devID + " in structure " + StructureName).c_str());
 
@@ -608,7 +601,7 @@ void CNestOAuthAPI::GetMeterDetails()
 			bool bManualEcomodeEnabled = (!sHvacMode.empty() && sHvacMode == "off");
 
 			// UpdateSwitch(115 + (iThermostat * 3), bManualEcomodeEnabled, Name + " Manual Eco Mode");
-			SendSwitch((iThermostat * 3) + 4, 1, 255, bManualEcomodeEnabled, 0, Name + " Manual Eco Mode");
+			SendSwitch((iThermostat * 3) + 4, 1, 255, bManualEcomodeEnabled, 0, Name + " Manual Eco Mode", m_Name);
 
 			iThermostat++;
 		}

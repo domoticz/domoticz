@@ -42,10 +42,6 @@ m_refresh(refresh)
 	Init();
 }
 
-CHttpPoller::~CHttpPoller(void)
-{
-}
-
 void CHttpPoller::Init()
 {
 }
@@ -88,7 +84,7 @@ void CHttpPoller::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % m_refresh == 0) {
 			GetScript();
@@ -111,10 +107,7 @@ void CHttpPoller::GetScript()
 	{
 		std::vector<std::string> ExtraHeaders2;
 		StringSplit(m_headers, "\n", ExtraHeaders2);
-		for (size_t i = 0; i < ExtraHeaders2.size(); i++)
-		{
-			ExtraHeaders.push_back(ExtraHeaders2[i]);
-		}
+		std::copy(ExtraHeaders2.begin(), ExtraHeaders2.end(), std::back_inserter(ExtraHeaders));
 	}
 
 	std::string auth;

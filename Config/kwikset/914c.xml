@@ -1,4 +1,4 @@
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0090:0446:0003</MetaDataItem>
     <MetaDataItem name="ProductPic">images/kwikset/914c.png</MetaDataItem>
@@ -13,6 +13,7 @@ Works with existing select single cylinder deadbolts</MetaDataItem>
     <MetaDataItem name="Name">Convert Electronic Deadbolt</MetaDataItem>
     <ChangeLog>
       <Entry author="Jeff Sanicola - jeff.sanicola@outlook.com" date="20 Dec 2019" revision="1">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2268/xml</Entry>
+      <Entry author="steve28" date="14 Jun 2020" revision="2">Fixed index of alarm message to trigger lock status refresh</Entry>
     </ChangeLog>
     <MetaDataItem name="WakeupDescription">The electronic conversion kit remains asleep until an action occurs on the latch or a request is received from the RF side.
 For the RF side, it will wake up every 1 second to check if there are any requests from your smart home controller.</MetaDataItem>
@@ -67,7 +68,7 @@ To perform a factory reset, please perform the following:
 		Lock Status is Changed, but instead send a Alarm Message -
 		So we trigger a Refresh of the DoorLock Command Class when
 		we recieve a Alarm Message Instead -->
-    <TriggerRefreshValue Genre="user" Index="0" Instance="1">
+    <TriggerRefreshValue Genre="user" Index="6" Instance="1">
       <RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
     </TriggerRefreshValue>
   </CommandClass>

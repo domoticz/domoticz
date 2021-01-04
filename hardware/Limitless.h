@@ -4,29 +4,31 @@
 
 class CLimitLess : public CDomoticzHardwareBase
 {
-public:
+      public:
 	enum _eLimitlessBridgeType
 	{
 		LBTYPE_V4 = 0,
 		LBTYPE_V5,
 		LBTYPE_V6
 	};
-	CLimitLess(const int ID, const int LedType, const int BridgeType, const std::string &IPAddress, const unsigned short usIPPort);
-	~CLimitLess(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
-	bool AddSwitchIfNotExits(const unsigned char Unit, const std::string& devname);
+	CLimitLess(int ID, int LedType, int BridgeType, const std::string &IPAddress, unsigned short usIPPort);
+	~CLimitLess() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
+	bool AddSwitchIfNotExits(unsigned char Unit, const std::string &devname);
 	bool GetV6BridgeID();
 	bool SendV6Command(const uint8_t *pCmd);
-	void Send_V6_RGBWW_On(const uint8_t dunit, const long delay);
-	void Send_V6_RGBW_On(const uint8_t dunit, const long delay);
-	void Send_V4V5_RGBW_On(const uint8_t dunit, const long delay);
-	bool IsDataAvailable(const SOCKET sock);
+	void Send_V6_RGBWW_On(uint8_t dunit, long delay);
+	void Send_V6_RGBW_On(uint8_t dunit, long delay);
+	void Send_V4V5_RGBW_On(uint8_t dunit, long delay);
+	bool IsDataAvailable(SOCKET sock);
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-private:
+
+      private:
 	_eLimitlessBridgeType m_BridgeType;
 	unsigned char m_LEDType;
 
@@ -37,9 +39,8 @@ private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 
-	SOCKET	m_RemoteSocket;
+	SOCKET m_RemoteSocket;
 	sockaddr_in m_stRemoteDestAddr;
 
 	std::shared_ptr<std::thread> m_thread;
 };
-

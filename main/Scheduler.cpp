@@ -14,7 +14,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-CScheduler::CScheduler(void)
+CScheduler::CScheduler()
 {
 	m_tSunRise = 0;
 	m_tSunSet = 0;
@@ -25,11 +25,7 @@ CScheduler::CScheduler(void)
 	m_tNautTwEnd = 0;
 	m_tAstTwStart = 0;
 	m_tAstTwEnd = 0;
-	srand((int)mytime(NULL));
-}
-
-CScheduler::~CScheduler(void)
-{
+	srand((int)mytime(nullptr));
 }
 
 void CScheduler::StartScheduler()
@@ -51,10 +47,7 @@ void CScheduler::StopScheduler()
 std::vector<tScheduleItem> CScheduler::GetScheduleItems()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
-	std::vector<tScheduleItem> ret;
-	for (const auto & itt : m_scheduleitems)
-		ret.push_back(itt);
-	return ret;
+	return std::vector<tScheduleItem>{ m_scheduleitems };
 }
 
 void CScheduler::ReloadSchedules()
@@ -64,7 +57,7 @@ void CScheduler::ReloadSchedules()
 
 	std::vector<std::vector<std::string> > result;
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
@@ -78,10 +71,8 @@ void CScheduler::ReloadSchedules()
 		m_sql.m_ActiveTimerPlan);
 	if (!result.empty())
 	{
-		for (const auto & itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
-
 			bool bDUsed = (atoi(sd[7].c_str()) != 0);
 
 			if (bDUsed == true)
@@ -177,10 +168,8 @@ void CScheduler::ReloadSchedules()
 		m_sql.m_ActiveTimerPlan);
 	if (!result.empty())
 	{
-		for (const auto & itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
-
 			tScheduleItem titem;
 
 			titem.bEnabled = true;
@@ -269,10 +258,8 @@ void CScheduler::ReloadSchedules()
 		m_sql.m_ActiveTimerPlan);
 	if (!result.empty())
 	{
-		for (const auto & itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
-
 			tScheduleItem titem;
 
 			titem.bEnabled = true;
@@ -357,7 +344,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		std::lock_guard<std::mutex> l(m_mutex);
 
 		time_t temptime;
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
 		struct tm tm1;
@@ -387,7 +374,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 
 bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 {
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	time_t rtime = atime;
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
@@ -446,7 +433,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		pItem->startTime = rtime;
 		return true;
 	}
-	else if (pItem->timerType == TTYPE_FIXEDDATETIME)
+	if (pItem->timerType == TTYPE_FIXEDDATETIME)
 	{
 		constructTime(rtime,tm1,pItem->startYear,pItem->startMonth,pItem->startDay,pItem->startHour,pItem->startMin,roffset*60,isdst);
 		if (rtime < atime)
@@ -454,7 +441,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		pItem->startTime = rtime;
 		return true;
 	}
-	else if (pItem->timerType == TTYPE_BEFORESUNSET)
+	if (pItem->timerType == TTYPE_BEFORESUNSET)
 	{
 		if (m_tSunSet == 0)
 			return false;
@@ -701,7 +688,7 @@ void CScheduler::Do_Work()
 {
 	while (!IsStopRequested(1000))
 	{
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
 
@@ -723,42 +710,42 @@ void CScheduler::CheckSchedules()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
-	for (auto & itt : m_scheduleitems)
+	for (auto &item : m_scheduleitems)
 	{
-		if ((itt.bEnabled) && (atime > itt.startTime))
+		if ((item.bEnabled) && (atime > item.startTime))
 		{
 			//check if we are on a valid day
 			bool bOkToFire = false;
-			if (itt.timerType == TTYPE_FIXEDDATETIME)
+			if (item.timerType == TTYPE_FIXEDDATETIME)
 			{
 				bOkToFire = true;
 			}
-			else if (itt.timerType == TTYPE_DAYSODD)
+			else if (item.timerType == TTYPE_DAYSODD)
 			{
 				bOkToFire = (ltime.tm_mday % 2 != 0);
 			}
-			else if (itt.timerType == TTYPE_DAYSEVEN)
+			else if (item.timerType == TTYPE_DAYSEVEN)
 			{
 				bOkToFire = (ltime.tm_mday % 2 == 0);
 			}
 			else
 			{
-				if (itt.Days & 0x80)
+				if (item.Days & 0x80)
 				{
 					//everyday
 					bOkToFire = true;
 				}
-				else if (itt.Days & 0x100)
+				else if (item.Days & 0x100)
 				{
 					//weekdays
 					if ((ltime.tm_wday > 0) && (ltime.tm_wday < 6))
 						bOkToFire = true;
 				}
-				else if (itt.Days & 0x200)
+				else if (item.Days & 0x200)
 				{
 					//weekends
 					if ((ltime.tm_wday == 0) || (ltime.tm_wday == 6))
@@ -767,28 +754,27 @@ void CScheduler::CheckSchedules()
 				else
 				{
 					//custom days
-					if ((itt.Days & 0x01) && (ltime.tm_wday == 1))
+					if ((item.Days & 0x01) && (ltime.tm_wday == 1))
 						bOkToFire = true;//Monday
-					if ((itt.Days & 0x02) && (ltime.tm_wday == 2))
+					if ((item.Days & 0x02) && (ltime.tm_wday == 2))
 						bOkToFire = true;//Tuesday
-					if ((itt.Days & 0x04) && (ltime.tm_wday == 3))
+					if ((item.Days & 0x04) && (ltime.tm_wday == 3))
 						bOkToFire = true;//Wednesday
-					if ((itt.Days & 0x08) && (ltime.tm_wday == 4))
+					if ((item.Days & 0x08) && (ltime.tm_wday == 4))
 						bOkToFire = true;//Thursday
-					if ((itt.Days & 0x10) && (ltime.tm_wday == 5))
+					if ((item.Days & 0x10) && (ltime.tm_wday == 5))
 						bOkToFire = true;//Friday
-					if ((itt.Days & 0x20) && (ltime.tm_wday == 6))
+					if ((item.Days & 0x20) && (ltime.tm_wday == 6))
 						bOkToFire = true;//Saturday
-					if ((itt.Days & 0x40) && (ltime.tm_wday == 0))
+					if ((item.Days & 0x40) && (ltime.tm_wday == 0))
 						bOkToFire = true;//Sunday
 				}
 				if (bOkToFire)
 				{
-					if ((itt.timerType == TTYPE_WEEKSODD) ||
-						(itt.timerType == TTYPE_WEEKSEVEN))
+					if ((item.timerType == TTYPE_WEEKSODD) || (item.timerType == TTYPE_WEEKSEVEN))
 					{
 						struct tm timeinfo;
-						localtime_r(&itt.startTime, &timeinfo);
+						localtime_r(&item.startTime, &timeinfo);
 
 						boost::gregorian::date d = boost::gregorian::date(
 							timeinfo.tm_year + 1900,
@@ -796,7 +782,7 @@ void CScheduler::CheckSchedules()
 							timeinfo.tm_mday);
 						int w = d.week_number();
 
-						if (itt.timerType == TTYPE_WEEKSODD)
+						if (item.timerType == TTYPE_WEEKSODD)
 							bOkToFire = (w % 2 != 0);
 						else
 							bOkToFire = (w % 2 == 0);
@@ -808,56 +794,63 @@ void CScheduler::CheckSchedules()
 				char ltimeBuf[30];
 				strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &ltime);
 
-				if (itt.bIsScene == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, SceneID: %" PRIu64 ", Time: %s", itt.DeviceName.c_str(), Timer_Type_Desc(itt.timerType), itt.RowID, ltimeBuf);
-				else if (itt.bIsThermostat == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, ThermostatID: %" PRIu64 ", Time: %s", itt.DeviceName.c_str(), Timer_Type_Desc(itt.timerType), itt.RowID, ltimeBuf);
+				if (item.bIsScene == true)
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, SceneID: %" PRIu64 ", Time: %s",
+						 item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
+				else if (item.bIsThermostat == true)
+					_log.Log(LOG_STATUS,
+						 "Schedule item started! Name: %s, Type: %s, ThermostatID: %" PRIu64 ", Time: %s",
+						 item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
 				else
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, DevID: %" PRIu64 ", Time: %s", itt.DeviceName.c_str(), Timer_Type_Desc(itt.timerType), itt.RowID, ltimeBuf);
-				std::string switchcmd = "";
-				if (itt.timerCmd == TCMD_ON)
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, DevID: %" PRIu64 ", Time: %s",
+						 item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
+				std::string switchcmd;
+				if (item.timerCmd == TCMD_ON)
 					switchcmd = "On";
-				else if (itt.timerCmd == TCMD_OFF)
+				else if (item.timerCmd == TCMD_OFF)
 					switchcmd = "Off";
-				if (switchcmd == "")
+				if (switchcmd.empty())
 				{
 					_log.Log(LOG_ERROR, "Unknown switch command in timer!!....");
 				}
 				else
 				{
-					if (itt.bIsScene == true)
+					if (item.bIsScene == true)
 					{
-/*
-						if (
-							(itt.timerType == TTYPE_BEFORESUNRISE) ||
-							(itt.timerType == TTYPE_AFTERSUNRISE) ||
-							(itt.timerType == TTYPE_BEFORESUNSET) ||
-							(itt.timerType == TTYPE_AFTERSUNSET)
-							)
-						{
+						/*
+												if (
+													(item.timerType ==
+						   TTYPE_BEFORESUNRISE) || (item.timerType == TTYPE_AFTERSUNRISE) || (item.timerType ==
+						   TTYPE_BEFORESUNSET) || (item.timerType == TTYPE_AFTERSUNSET)
+													)
+												{
 
-						}
-*/
-						if (!m_mainworker.SwitchScene(itt.RowID, switchcmd, "timer"))
+												}
+						*/
+						if (!m_mainworker.SwitchScene(item.RowID, switchcmd, "timer"))
 						{
-							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %" PRIu64 ", Time: %s", itt.RowID, ltimeBuf);
+							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %" PRIu64 ", Time: %s",
+								 item.RowID, ltimeBuf);
 						}
 					}
-					else if (itt.bIsThermostat == true)
+					else if (item.bIsThermostat == true)
 					{
 						std::stringstream sstr;
-						sstr << itt.RowID;
-						if (!m_mainworker.SetSetPoint(sstr.str(), itt.Temperature))
+						sstr << item.RowID;
+						if (!m_mainworker.SetSetPoint(sstr.str(), item.Temperature))
 						{
-							_log.Log(LOG_ERROR, "Error setting thermostat setpoint, ThermostatID: %" PRIu64 ", Time: %s", itt.RowID, ltimeBuf);
+							_log.Log(LOG_ERROR,
+								 "Error setting thermostat setpoint, ThermostatID: %" PRIu64 ", Time: %s",
+								 item.RowID, ltimeBuf);
 						}
 					}
 					else
 					{
 						//Get SwitchType
 						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query("SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
-							itt.RowID);
+						result = m_sql.safe_query(
+							"SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
+							item.RowID);
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
@@ -865,7 +858,7 @@ void CScheduler::CheckSchedules()
 							unsigned char dType = atoi(sd[0].c_str());
 							unsigned char dSubType = atoi(sd[1].c_str());
 							_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
-							std::string lstatus = "";
+							std::string lstatus;
 							int llevel = 0;
 							bool bHaveDimmer = false;
 							bool bHaveGroupCmd = false;
@@ -875,53 +868,60 @@ void CScheduler::CheckSchedules()
 							int ilevel = maxDimLevel;
 							if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 							{
-								if (itt.timerCmd == TCMD_ON)
+								if (item.timerCmd == TCMD_ON)
 								{
 									switchcmd = "Set Level";
-									float fLevel = (maxDimLevel / 100.0f)*itt.Level;
+									float fLevel = (maxDimLevel / 100.0f) * item.Level;
 									if (fLevel > 100)
 										fLevel = 100;
 									ilevel = int(fLevel);
 								}
-								else if (itt.timerCmd == TCMD_OFF)
+								else if (item.timerCmd == TCMD_OFF)
 									ilevel = 0;
 							}
 							else if ((switchtype == STYPE_Dimmer) && (maxDimLevel != 0))
 							{
-								if (itt.timerCmd == TCMD_ON)
+								if (item.timerCmd == TCMD_ON)
 								{
 									switchcmd = "Set Level";
-									float fLevel = (maxDimLevel / 100.0f)*itt.Level;
+									float fLevel = (maxDimLevel / 100.0f) * item.Level;
 									if (fLevel > 100)
 										fLevel = 100;
 									ilevel = int(fLevel);
 								}
 							} else if (switchtype == STYPE_Selector) {
-								if (itt.timerCmd == TCMD_ON) {
+								if (item.timerCmd == TCMD_ON)
+								{
 									switchcmd = "Set Level";
-									ilevel = itt.Level;
-								} else if (itt.timerCmd == TCMD_OFF) {
+									ilevel = item.Level;
+								}
+								else if (item.timerCmd == TCMD_OFF)
+								{
 									ilevel = 0; // force level to a valid value for Selector
 								}
 							}
-							if (!m_mainworker.SwitchLight(itt.RowID, switchcmd, ilevel, itt.Color, false, 0, "timer"))
+							if (!m_mainworker.SwitchLight(item.RowID, switchcmd, ilevel, item.Color, false, 0,
+										      "timer"))
 							{
-								_log.Log(LOG_ERROR, "Error sending switch command, DevID: %" PRIu64 ", Time: %s", itt.RowID, ltimeBuf);
+								_log.Log(LOG_ERROR,
+									 "Error sending switch command, DevID: %" PRIu64 ", Time: %s",
+									 item.RowID, ltimeBuf);
 							}
 						}
 					}
 				}
 			}
-			if (!AdjustScheduleItem(&itt, true))
+			if (!AdjustScheduleItem(&item, true))
 			{
 				//something is wrong, probably no sunset/rise
-				if (itt.timerType != TTYPE_FIXEDDATETIME)
+				if (item.timerType != TTYPE_FIXEDDATETIME)
 				{
-					itt.startTime += atime + (24 * 3600);
+					item.startTime += atime + (24 * 3600);
 				}
-				else {
+				else
+				{
 					//Disable timer
-					itt.bEnabled = false;
+					item.bEnabled = false;
 				}
 			}
 		}
@@ -932,7 +932,7 @@ void CScheduler::DeleteExpiredTimers()
 {
 	char szDate[40];
 	char szTime[40];
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm tmnow;
 	localtime_r(&now, &tmnow);
 	sprintf(szDate, "%04d-%02d-%02d", tmnow.tm_year + 1900, tmnow.tm_mon + 1, tmnow.tm_mday);
@@ -998,7 +998,8 @@ namespace http {
 			std::vector<tScheduleItem> schedules = m_mainworker.m_scheduler.GetScheduleItems();
 
 			//Add Timers
-			if ((rfilter == "all") || (rfilter == "") || (rfilter == "device")) {
+			if ((rfilter == "all") || (rfilter.empty()) || (rfilter == "device"))
+			{
 				tmp_result = m_sql.safe_query(
 					"SELECT t.ID, t.Active, d.[Name], t.DeviceRowID AS ID, 0 AS IsScene, 0 AS IsThermostat,"
 					" t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Color, 0 AS Temperature, t.Days,"
@@ -1007,12 +1008,13 @@ namespace http {
 					" WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d)"
 					" ORDER BY d.[Name], t.Time",
 					m_sql.m_ActiveTimerPlan);
-				if (tmp_result.size() > 0)
+				if (!tmp_result.empty())
 					tot_result.insert(tot_result.end(), tmp_result.begin(), tmp_result.end());
 			}
 
 			//Add Scene-Timers
-			if ((rfilter == "all") || (rfilter == "") || (rfilter == "scene")) {
+			if ((rfilter == "all") || (rfilter.empty()) || (rfilter == "scene"))
+			{
 				tmp_result = m_sql.safe_query(
 					"SELECT t.ID, t.Active, s.[Name], t.SceneRowID AS ID, 1 AS IsScene, 0 AS IsThermostat"
 					", t.[Date], t.Time, t.Type, t.Cmd, t.Level, '' AS Color, 0 AS Temperature, t.Days,"
@@ -1021,12 +1023,13 @@ namespace http {
 					" WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d)"
 					" ORDER BY s.[Name], t.Time",
 					m_sql.m_ActiveTimerPlan);
-				if (tmp_result.size() > 0)
+				if (!tmp_result.empty())
 					tot_result.insert(tot_result.end(), tmp_result.begin(), tmp_result.end());
 			}
 
 			//Add Setpoint-Timers
-			if ((rfilter == "all") || (rfilter == "") || (rfilter == "thermostat")) {
+			if ((rfilter == "all") || (rfilter.empty()) || (rfilter == "thermostat"))
+			{
 				tmp_result = m_sql.safe_query(
 					"SELECT t.ID, t.Active, d.[Name], t.DeviceRowID AS ID, 0 AS IsScene, 1 AS IsThermostat,"
 					" t.[Date], t.Time, t.Type, 0 AS Cmd, 0 AS Level, '' AS Color, t.Temperature, t.Days,"
@@ -1035,17 +1038,15 @@ namespace http {
 					" WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d)"
 					" ORDER BY d.[Name], t.Time",
 					m_sql.m_ActiveTimerPlan);
-				if (tmp_result.size() > 0)
+				if (!tmp_result.empty())
 					tot_result.insert(tot_result.end(), tmp_result.begin(), tmp_result.end());
 			}
 
-			if (tot_result.size() > 0)
+			if (!tot_result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : tot_result)
+				for (const auto &sd : tot_result)
 				{
-					std::vector<std::string> sd = itt;
-
 					int iTimerIdx = atoi(sd[0].c_str());
 					bool bActive = atoi(sd[1].c_str()) != 0;
 					bool bIsScene = atoi(sd[4].c_str()) != 0;
@@ -1119,7 +1120,7 @@ namespace http {
 		void CWebServer::RType_Timers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -1135,10 +1136,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					unsigned char iLevel = atoi(sd[6].c_str());
 					if (iLevel == 0)
 						iLevel = 100;
@@ -1224,20 +1223,11 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
-			if (
-				(idx == "") ||
-				(active == "") ||
-				(stimertype == "") ||
-				(shour == "") ||
-				(smin == "") ||
-				(randomness == "") ||
-				(scmd == "") ||
-				(sdays == "")
-				)
+			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -1256,24 +1246,28 @@ namespace http {
 			else if (iTimerType == TTYPE_MONTHLY)
 			{
 				smday = request::findValue(&req, "mday");
-				if (smday == "") return;
+				if (smday.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_MONTHLY_WD)
 			{
 				soccurence = request::findValue(&req, "occurence");
-				if (soccurence == "") return;
+				if (soccurence.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY)
 			{
 				smday = request::findValue(&req, "mday");
 				smonth = request::findValue(&req, "month");
-				if ((smday == "") || (smonth == "")) return;
+				if ((smday.empty()) || (smonth.empty()))
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY_WD)
 			{
 				smonth = request::findValue(&req, "month");
 				soccurence = request::findValue(&req, "occurence");
-				if ((smonth == "") || (soccurence == "")) return;
+				if ((smonth.empty()) || (soccurence.empty()))
+					return;
 			}
 
 			unsigned char hour = atoi(shour.c_str());
@@ -1329,20 +1323,11 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
-			if (
-				(idx == "") ||
-				(active == "") ||
-				(stimertype == "") ||
-				(shour == "") ||
-				(smin == "") ||
-				(randomness == "") ||
-				(scmd == "") ||
-				(sdays == "")
-				)
+			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
 
 			unsigned char iTimerType = atoi(stimertype.c_str());
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -1361,24 +1346,28 @@ namespace http {
 			else if (iTimerType == TTYPE_MONTHLY)
 			{
 				smday = request::findValue(&req, "mday");
-				if (smday == "") return;
+				if (smday.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_MONTHLY_WD)
 			{
 				soccurence = request::findValue(&req, "occurence");
-				if (soccurence == "") return;
+				if (soccurence.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY)
 			{
 				smday = request::findValue(&req, "mday");
 				smonth = request::findValue(&req, "month");
-				if ((smday == "") || (smonth == "")) return;
+				if ((smday.empty()) || (smonth.empty()))
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY_WD)
 			{
 				smonth = request::findValue(&req, "month");
 				soccurence = request::findValue(&req, "occurence");
-				if ((smonth == "") || (soccurence == "")) return;
+				if ((smonth.empty()) || (soccurence.empty()))
+					return;
 			}
 
 			unsigned char hour = atoi(shour.c_str());
@@ -1420,7 +1409,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "DeleteTimer";
@@ -1440,7 +1429,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "EnableTimer";
@@ -1460,7 +1449,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "DisableTimer";
@@ -1480,7 +1469,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "ClearTimer";
@@ -1495,7 +1484,7 @@ namespace http {
 		void CWebServer::RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -1511,10 +1500,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					int iTimerType = atoi(sd[4].c_str());
 					std::string sdate = sd[2];
 					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
@@ -1561,19 +1548,11 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
-			if (
-				(idx == "") ||
-				(active == "") ||
-				(stimertype == "") ||
-				(shour == "") ||
-				(smin == "") ||
-				(stvalue == "") ||
-				(sdays == "")
-				)
+			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (stvalue.empty()) || (sdays.empty()))
 				return;
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -1592,24 +1571,28 @@ namespace http {
 			else if (iTimerType == TTYPE_MONTHLY)
 			{
 				smday = request::findValue(&req, "mday");
-				if (smday == "") return;
+				if (smday.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_MONTHLY_WD)
 			{
 				soccurence = request::findValue(&req, "occurence");
-				if (soccurence == "") return;
+				if (soccurence.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY)
 			{
 				smday = request::findValue(&req, "mday");
 				smonth = request::findValue(&req, "month");
-				if ((smday == "") || (smonth == "")) return;
+				if ((smday.empty()) || (smonth.empty()))
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY_WD)
 			{
 				smonth = request::findValue(&req, "month");
 				soccurence = request::findValue(&req, "occurence");
-				if ((smonth == "") || (soccurence == "")) return;
+				if ((smonth.empty()) || (soccurence.empty()))
+					return;
 			}
 
 			unsigned char hour = atoi(shour.c_str());
@@ -1657,19 +1640,11 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
-			if (
-				(idx == "") ||
-				(active == "") ||
-				(stimertype == "") ||
-				(shour == "") ||
-				(smin == "") ||
-				(stvalue == "") ||
-				(sdays == "")
-				)
+			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (stvalue.empty()) || (sdays.empty()))
 				return;
 
 			unsigned char iTimerType = atoi(stimertype.c_str());
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -1688,24 +1663,28 @@ namespace http {
 			else if (iTimerType == TTYPE_MONTHLY)
 			{
 				smday = request::findValue(&req, "mday");
-				if (smday == "") return;
+				if (smday.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_MONTHLY_WD)
 			{
 				soccurence = request::findValue(&req, "occurence");
-				if (soccurence == "") return;
+				if (soccurence.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY)
 			{
 				smday = request::findValue(&req, "mday");
 				smonth = request::findValue(&req, "month");
-				if ((smday == "") || (smonth == "")) return;
+				if ((smday.empty()) || (smonth.empty()))
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY_WD)
 			{
 				smonth = request::findValue(&req, "month");
 				soccurence = request::findValue(&req, "occurence");
-				if ((smonth == "") || (soccurence == "")) return;
+				if ((smonth.empty()) || (soccurence.empty()))
+					return;
 			}
 
 			unsigned char hour = atoi(shour.c_str());
@@ -1742,7 +1721,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "DeleteSetpointTimer";
@@ -1762,7 +1741,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "EnableSetpointTimer";
@@ -1782,7 +1761,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "DisableSetpointTimer";
@@ -1802,7 +1781,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "ClearSetpointTimers";
@@ -1816,7 +1795,7 @@ namespace http {
 		void CWebServer::RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
-			if (request::findValue(&req, "idx") != "")
+			if (!request::findValue(&req, "idx").empty())
 			{
 				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
@@ -1833,10 +1812,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					unsigned char iLevel = atoi(sd[6].c_str());
 					if (iLevel == 0)
 						iLevel = 100;
@@ -1892,20 +1869,11 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
-			if (
-				(idx == "") ||
-				(active == "") ||
-				(stimertype == "") ||
-				(shour == "") ||
-				(smin == "") ||
-				(randomness == "") ||
-				(scmd == "") ||
-				(sdays == "")
-				)
+			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -1924,24 +1892,28 @@ namespace http {
 			else if (iTimerType == TTYPE_MONTHLY)
 			{
 				smday = request::findValue(&req, "mday");
-				if (smday == "") return;
+				if (smday.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_MONTHLY_WD)
 			{
 				soccurence = request::findValue(&req, "occurence");
-				if (soccurence == "") return;
+				if (soccurence.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY)
 			{
 				smday = request::findValue(&req, "mday");
 				smonth = request::findValue(&req, "month");
-				if ((smday == "") || (smonth == "")) return;
+				if ((smday.empty()) || (smonth.empty()))
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY_WD)
 			{
 				smonth = request::findValue(&req, "month");
 				soccurence = request::findValue(&req, "occurence");
-				if ((smonth == "") || (soccurence == "")) return;
+				if ((smonth.empty()) || (soccurence.empty()))
+					return;
 			}
 
 			unsigned char hour = atoi(shour.c_str());
@@ -1994,21 +1966,12 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
-			if (
-				(idx == "") ||
-				(active == "") ||
-				(stimertype == "") ||
-				(shour == "") ||
-				(smin == "") ||
-				(randomness == "") ||
-				(scmd == "") ||
-				(sdays == "")
-				)
+			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
 
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			time_t now = mytime(NULL);
+			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 			int Year = tm1.tm_year + 1900;
@@ -2027,24 +1990,28 @@ namespace http {
 			else if (iTimerType == TTYPE_MONTHLY)
 			{
 				smday = request::findValue(&req, "mday");
-				if (smday == "") return;
+				if (smday.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_MONTHLY_WD)
 			{
 				soccurence = request::findValue(&req, "occurence");
-				if (soccurence == "") return;
+				if (soccurence.empty())
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY)
 			{
 				smday = request::findValue(&req, "mday");
 				smonth = request::findValue(&req, "month");
-				if ((smday == "") || (smonth == "")) return;
+				if ((smday.empty()) || (smonth.empty()))
+					return;
 			}
 			else if (iTimerType == TTYPE_YEARLY_WD)
 			{
 				smonth = request::findValue(&req, "month");
 				soccurence = request::findValue(&req, "occurence");
-				if ((smonth == "") || (soccurence == "")) return;
+				if ((smonth.empty()) || (soccurence.empty()))
+					return;
 			}
 
 			unsigned char hour = atoi(shour.c_str());
@@ -2084,7 +2051,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "DeleteSceneTimer";
@@ -2104,7 +2071,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "EnableSceneTimer";
@@ -2124,7 +2091,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "DisableSceneTimer";
@@ -2144,7 +2111,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "ClearSceneTimer";
@@ -2165,15 +2132,15 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetTimerPlans";
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name FROM TimerPlans ORDER BY Name COLLATE NOCASE ASC");
+			result = m_sql.safe_query("SELECT a.ID, a.Name, b.nValue FROM TimerPlans a, Preferences b WHERE b.Key = 'ActiveTimerPlan' ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["idx"] = atoi(sd[0].c_str());
 					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Active"] = (sd[0] == sd[2]);
 					ii++;
 				}
 			}
@@ -2286,9 +2253,8 @@ namespace http {
 
 				//Normal Timers
 				result = m_sql.safe_query("SELECT Active, DeviceRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], MDay, Month, Occurence, Color FROM Timers WHERE (TimerPlan==%q) ORDER BY ID", idx.c_str());
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
 					m_sql.safe_query(
 						"INSERT INTO Timers (Active, DeviceRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], MDay, Month, Occurence, Color, TimerPlan) VALUES (%q, %q, '%q', %q, %q, %q, %q, %q, %q, '%q', %q, %q, %q, '%q', %q)",
 						sd[0].c_str(),
@@ -2310,9 +2276,8 @@ namespace http {
 				}
 				//Scene Timers
 				result = m_sql.safe_query("SELECT Active, SceneRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], Month, MDay, Occurence FROM SceneTimers WHERE (TimerPlan==%q) ORDER BY ID", idx.c_str());
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
 					m_sql.safe_query(
 						"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], Month, MDay, Occurence, TimerPlan) VALUES (%q, %q, '%q', %q, %q, %q, %q, %q, %q, '%q', %q, %q, %q, %q)",
 						sd[0].c_str(),
@@ -2333,9 +2298,8 @@ namespace http {
 				}
 				//Setpoint Timers
 				result = m_sql.safe_query("SELECT Active, DeviceRowID, [Date], Time, Type, Temperature, Days, Month, MDay, Occurence FROM SetpointTimers WHERE (TimerPlan==%q) ORDER BY ID", idx.c_str());
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
 					m_sql.safe_query(
 						"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, Month, MDay, Occurence, TimerPlan) VALUES (%q, %q, '%q', '%q', %q, %q, %q, %q, %q, %q, %q)",
 						sd[0].c_str(),
@@ -2354,5 +2318,5 @@ namespace http {
 			}
 		}
 
-	}
-}
+	} // namespace server
+} // namespace http

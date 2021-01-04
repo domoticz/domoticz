@@ -6,7 +6,8 @@ struct lua_Debug;
 class CLuaCommon
 {
 public:
-	CLuaCommon() {};
+  CLuaCommon() = default;
+  ;
 
 protected:
 	static int l_domoticz_applyJsonPath(lua_State* lua_state);

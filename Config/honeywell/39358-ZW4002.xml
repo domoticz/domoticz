@@ -1,0 +1,56 @@
+<!-- Honeywell(Jasco) 39358 / ZW4002 In-Wall Fan Control -->
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0039:3131:4944</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/honeywell/39358-ZW4002.png</MetaDataItem>
+    <MetaDataItem id="3131" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/2725/</MetaDataItem>
+    <MetaDataItem id="3131" name="Identifier" type="4944">39358 / ZW4002</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to
+include a device to the Z-Wave network.
+2. Once the controller is ready to add your device,
+press and release the top or bottom of the wireless smart
+switch (rocker) to add it in the network.
+Please reference the controller’s manual for instructions.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Quickly press ON (Top) button three (3) times then immediately
+press the OFF (Bottom) button three (3) times. The LED will flash
+ON/OFF 5 times when completed successfully.
+NOTE: This should only be used in the event your network’s
+primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to
+remove a device from the Z-Wave network.
+2. Once the controller is ready to Exclude your device, press
+and release the top or bottom of the wireless smart dimmer
+(rocker) to remove it from the network.</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Fan Control</MetaDataItem>
+    <MetaDataItem id="3131" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the Honeywell Z-Wave Fan Control. The in-wall fan control easily replaces any standard in-wall switch remotely controls a ceiling fan in your home and features a three-speed control system. Your home will be equipped with ultimate flexibility with the Honeywell Z-Wave Fan Control, capable of being used by itself or with up to four Honeywell add-on switches. Screw terminal installation provides improved space efficiency when replacing existing switches and the integrated LED indicator light allows you to easily locate the switch in a dark room. The Honeywell Z-Wave Fan Control is compatible with any Z-Wave certified gateway, providing access to many popular home automation systems. Take control of your home lighting with Honeywell Z-Wave Smart Controls! 
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2725/39358-HQSG-v1-para.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Nathan Holben - nathan@holben.me" date="09 May 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2725/xml</Entry>
+      <Entry author="Bill Bagdon - bill@bagdon.io" date="14 Nov 2020" revision="2">Add LED config</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters - per https://products.z-wavealliance.org/products/2725 -->
+  <CommandClass id="112">
+    <Value genre="config" index="4" label="Invert Switch" max="1" min="0" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="0">
+      <Help>Sets when the LED on the switch is lit.</Help>
+      <Item label="LED on when fan on" value="0"/>
+      <Item label="LED on when fan off" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

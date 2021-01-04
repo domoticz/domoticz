@@ -38,7 +38,7 @@
                            minlength="2"
                            maxlength="100"
                            ng-model="vm.device.Name"
-                    />
+                    >
                 </td>
             </tr>
             <tr ng-if="::!vm.isSecurityDevice()">
@@ -69,7 +69,7 @@
                            id="motionoffdelay"
                            style="width: 40px; padding: .2em;"
                            class="text ui-widget-content ui-corner-all"
-                           ng-model="vm.device.AddjValue"/>
+                           ng-model="vm.device.AddjValue">
                     <span>{{ :: '(Seconds) 0 = Use sensor time' | translate}}</span>
                 </td>
             </tr>
@@ -83,7 +83,7 @@
                            style="width: 40px; padding: .2em;"
                            class="text ui-widget-content ui-corner-all"
                            ng-model="vm.device.AddjValue2"
-                    />
+                    >
                     <span>{{ :: '(Seconds) 0 = Disabled' | translate}}</span>
                 </td>
             </tr>
@@ -97,7 +97,7 @@
                            style="width: 40px; padding: .2em;"
                            class="text ui-widget-content ui-corner-all"
                            ng-model="vm.device.AddjValue"
-                    />
+                    >
                     <span>{{ :: '(Seconds) 0 = Disabled' | translate}}</span>
                 </td>
             </tr>
@@ -114,7 +114,7 @@
                            maxlength="500"
                            pattern="^(http|https|script):\/\/.+"
                            ng-model="vm.device.StrParam1"
-                    />
+                    >
                     <span>{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
                 </td>
             </tr>
@@ -131,7 +131,7 @@
                            maxlength="500"
                            pattern="^(http|https|script):\/\/.+"
                            ng-model="vm.device.StrParam2"
-                    />
+                    >
                     <span>{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
                 </td>
             </tr>
@@ -140,7 +140,7 @@
                     {{ :: 'Protected' | translate}}:
                 </td>
                 <td>
-                    <input type="checkbox" id="protected" ng-model="vm.device.Protected"/><label for="protected"></label>
+                    <input type="checkbox" id="protected" ng-model="vm.device.Protected"><label for="protected"></label>
                 </td>
             </tr>
             <tr ng-if="vm.isColorSettingsAvailable()">
@@ -278,7 +278,7 @@
                            required
                            minlength="1"
                            ng-model="name"
-                    />
+                    >
                 </div>
             </div>
         </form>
@@ -309,7 +309,7 @@
 					   maxlength="500"
 					   pattern="^(http|https|script):\/\/.+"
 					   ng-model="action"
-					/>
+					>
 					<br>
 					<span class="help-block">{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
 				</td>

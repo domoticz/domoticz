@@ -54,13 +54,13 @@ struct _tNetatmoDevice
 	//Json::Value Modules;
 };
 
-CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string& password) :
-	m_username(CURLEncode::URLEncode(username)),
-	m_password(CURLEncode::URLEncode(password)),
-	m_clientId("5588029e485a88af28f4a3c4"),
-	m_clientSecret("6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2")
+CNetatmo::CNetatmo(const int ID, const std::string &username, const std::string &password)
+	: m_clientId("5588029e485a88af28f4a3c4")
+	, m_clientSecret("6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2")
+	, m_username(CURLEncode::URLEncode(username))
+	, m_password(CURLEncode::URLEncode(password))
 {
-	m_nextRefreshTs = mytime(NULL);
+	m_nextRefreshTs = mytime(nullptr);
 	m_isLogged = false;
 	m_NetatmoType = NETYPE_WEATHER_STATION;
 
@@ -72,12 +72,8 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_bPollWeatherData = true;
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
-	m_tSetpointUpdateTime = time(NULL);
+	m_tSetpointUpdateTime = time(nullptr);
 	Init();
-}
-
-CNetatmo::~CNetatmo(void)
-{
 }
 
 void CNetatmo::Init()
@@ -135,7 +131,7 @@ void CNetatmo::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (!m_isLogged)
@@ -168,7 +164,7 @@ void CNetatmo::Do_Work()
 					}
 					if (m_bForceSetpointUpdate)
 					{
-						time_t atime = time(NULL);
+						time_t atime = time(nullptr);
 						if (atime >= m_tSetpointUpdateTime)
 						{
 							m_bForceSetpointUpdate = false;
@@ -240,7 +236,7 @@ bool CNetatmo::Login()
 	//_log.Log(LOG_STATUS, "Access token: %s", m_accessToken.c_str());
 	//_log.Log(LOG_STATUS, "RefreshToken: %s", m_refreshToken.c_str());
 	int expires = root["expires_in"].asInt();
-	m_nextRefreshTs = mytime(NULL) + expires;
+	m_nextRefreshTs = mytime(nullptr) + expires;
 	StoreRefreshToken();
 	m_isLogged = true;
 	return true;
@@ -256,7 +252,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	{
 		if (!m_isLogged)
 			return false;
-		if ((mytime(NULL) - 15) < m_nextRefreshTs)
+		if ((mytime(nullptr) - 15) < m_nextRefreshTs)
 			return true; //no need to refresh the token yet
 	}
 
@@ -303,7 +299,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	m_accessToken = root["access_token"].asString();
 	m_refreshToken = root["refresh_token"].asString();
 	int expires = root["expires_in"].asInt();
-	m_nextRefreshTs = mytime(NULL) + expires;
+	m_nextRefreshTs = mytime(nullptr) + expires;
 	//StoreRefreshToken();
 	return true;
 }
@@ -390,7 +386,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	if (ModuleType != "NATherm1")
 	{
 		std::time_t tNetatmoLastUpdate = 0;
-		std::time_t tNow = time(NULL);
+		std::time_t tNow = time(nullptr);
 
 		// initialize the relevant device flag
 		if ( m_bNetatmoRefreshed.find(ID) == m_bNetatmoRefreshed.end() )
@@ -722,7 +718,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 		tempDest = static_cast<float>(ConvertToCelsius(tempDest));
 	}
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm etime;
 	localtime_r(&now, &etime);
 	time_t end_time;
@@ -765,12 +761,11 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	{
 		//find roomid
 		std::string roomID;
-		std::map<int, std::string >::const_iterator ittTherm;
-		for (ittTherm = m_thermostatDeviceID.begin(); ittTherm != m_thermostatDeviceID.end(); ++ittTherm)
+		for (const auto &therm : m_thermostatDeviceID)
 		{
-			if (ittTherm->first == idx)
+			if (therm.first == idx)
 			{
-				roomID = ittTherm->second;
+				roomID = therm.second;
 				break;
 			}
 		}
@@ -793,7 +788,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	}
 
 	GetThermostatDetails();
-	m_tSetpointUpdateTime = time(NULL) + 60;
+	m_tSetpointUpdateTime = time(nullptr) + 60;
 	m_bForceSetpointUpdate = true;
 }
 
@@ -832,9 +827,8 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 	std::vector<_tNetatmoDevice> _netatmo_devices;
 
 	int iDevIndex = 0;
-	for (Json::Value::iterator itDevice = root["body"]["devices"].begin(); itDevice != root["body"]["devices"].end(); ++itDevice)
+	for (auto device : root["body"]["devices"])
 	{
-		Json::Value device = *itDevice;
 		if (!device["_id"].empty())
 		{
 			std::string id = device["_id"].asString();
@@ -859,9 +853,8 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 				if (device["modules"].isArray())
 				{
 					//Add modules for this device
-					for (Json::Value::iterator itModule = device["modules"].begin(); itModule != device["modules"].end(); ++itModule)
+					for (auto module : device["modules"])
 					{
-						Json::Value module = *itModule;
 						if (module.isObject())
 						{
 							//New Method (getstationsdata and getthermostatsdata)
@@ -909,7 +902,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 											std::string setpoint_mode = module["setpoint"]["setpoint_mode"].asString();
 											bool bIsAway = (setpoint_mode == "away");
 											std::string aName = "Away " + mname;
-											SendSwitch(3, (uint8_t)(1 + iDevIndex), 255, bIsAway, 0, aName);
+											SendSwitch(3, (uint8_t)(1 + iDevIndex), 255, bIsAway, 0, aName, m_Name);
 										}
 										//Check if setpoint was just set, and if yes, overrule the previous setpoint
 										if (!module["setpoint"]["setpoint_temp"].empty())
@@ -963,9 +956,8 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 	}
 	mRoot = root["body"]["modules"];
 
-	for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
+	for (auto module : mRoot)
 	{
-		Json::Value module = *itModule;
 		if (module["_id"].empty())
 			continue;
 		std::string id = module["_id"].asString();
@@ -1281,9 +1273,8 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 			if (root["body"]["homes"][m_ActHome]["modules"].empty())
 				return false;
 			Json::Value mRoot = root["body"]["homes"][m_ActHome]["modules"];
-			for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
+			for (auto module : mRoot)
 			{
-				Json::Value module = *itModule;
 				if (!module["id"].empty())
 				{
 					std::string mID = module["id"].asString();
@@ -1297,9 +1288,8 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 			if (root["body"]["homes"][m_ActHome]["rooms"].empty())
 				return false;
 			mRoot = root["body"]["homes"][m_ActHome]["rooms"];
-			for (Json::Value::iterator itRoom = mRoot.begin(); itRoom != mRoot.end(); ++itRoom)
+			for (auto room : mRoot)
 			{
-				Json::Value room = *itRoom;
 				if (!room["id"].empty())
 				{
 					std::string rID = room["id"].asString();
@@ -1343,9 +1333,8 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 		Json::Value mRoot = root["body"]["home"]["modules"];
 
 		int iModuleIndex = 0;
-		for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
+		for (auto module : mRoot)
 		{
-			Json::Value module = *itModule;
 			if (!module["id"].empty())
 			{
 				std::string id = module["id"].asString();
@@ -1369,7 +1358,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				{
 					std::string aName = "Status";
 					bool bIsActive = (module["boiler_status"].asString() == "true");
-					SendSwitch(moduleID & 0x00FFFFFF | 0x10000000, 1, 255, (bIsActive == true), 0, aName);
+					SendSwitch((moduleID & 0x00FFFFFF) | 0x10000000, 1, 255, bIsActive, 0, aName, m_Name);
 				}
 				if (!module["battery_level"].empty())
 				{
@@ -1405,9 +1394,8 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 			return false;
 		Json::Value mRoot = root["body"]["home"]["rooms"];
 
-		for (Json::Value::iterator itRoom = mRoot.begin(); itRoom != mRoot.end(); ++itRoom)
+		for (auto room : mRoot)
 		{
-			Json::Value room = *itRoom;
 			if (!room["id"].empty())
 			{
 				std::string id = room["id"].asString();
@@ -1431,18 +1419,19 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 
 				if (!room["therm_measured_temperature"].empty())
 				{
-					SendTempSensor(roomID & 0x00FFFFFF | 0x03000000, 255, room["therm_measured_temperature"].asFloat(), roomName);
+					SendTempSensor((roomID & 0x00FFFFFF) | 0x03000000, 255, room["therm_measured_temperature"].asFloat(), roomName);
 				}
 				if (!room["therm_setpoint_temperature"].empty())
 				{
-					SendSetPointSensor((uint8_t)((roomID & 0X00FF0000 | 0x02000000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName);
+					SendSetPointSensor((uint8_t)(((roomID & 0x00FF0000) | 0x02000000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(),
+							   roomName);
 				}
 				if (!room["therm_setpoint_mode"].empty())
 				{
 					std::string setpoint_mode = room["therm_setpoint_mode"].asString();
 					bool bIsAway = (setpoint_mode == "away");
 					std::string aName = "Away " + roomName;
-					SendSwitch(roomID & 0x00FFFFFF | 0x01000000, 1, 255, bIsAway, 0, aName);
+					SendSwitch((roomID & 0x00FFFFFF) | 0x01000000, 1, 255, bIsAway, 0, aName, m_Name);
 				}
 			}
 			iDevIndex++;

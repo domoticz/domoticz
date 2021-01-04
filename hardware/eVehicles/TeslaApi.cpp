@@ -1,3 +1,15 @@
+/************************************************************************
+
+Tesla implementation of VehicleApi baseclass
+Author: MrHobbes74 (github.com/MrHobbes74)
+
+21/02/2020 1.0 Creation
+13/03/2020 1.1 Added keep asleep support
+28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+
+License: Public domain
+
+************************************************************************/
 #include "stdafx.h"
 #include "TeslaApi.h"
 #include "VehicleApi.h"
@@ -18,9 +30,9 @@
 #define TESLA_CLIENT_ID "81527cff06843c8634fdc09e8ac0abefb46ac849f38fe1e431c2ef2106796384"
 #define TESLA_CLIENT_SECRET "c7257eb71a564034f9419ee651c7d0e5f7aa6bfbd18bafb5c5c033b093bb2fa3"
 
-#define TLAPITIMEOUT (30)
+#define TLAPITIMEOUT (25)
 
-CTeslaApi::CTeslaApi(const std::string username, const std::string password, const std::string vinnr)
+CTeslaApi::CTeslaApi(const std::string &username, const std::string &password, const std::string &vinnr)
 {
 	m_username = username;
 	m_password = password;
@@ -28,11 +40,21 @@ CTeslaApi::CTeslaApi(const std::string username, const std::string password, con
 	m_authtoken = "";
 	m_refreshtoken = "";
 	m_carid = 0;
-	m_carname = "";
-}
+	m_config.car_name = "";
+	m_config.unit_miles = false;
+	m_config.distance_unit = "km";
 
-CTeslaApi::~CTeslaApi()
-{
+	m_capabilities.has_battery_level = true;
+	m_capabilities.has_charge_command = true;
+	m_capabilities.has_climate_command = true;
+	m_capabilities.has_defrost_command = true;
+	m_capabilities.has_inside_temp = true;
+	m_capabilities.has_outside_temp = true;
+	m_capabilities.has_odo = true;
+	m_capabilities.has_lock_status = true;
+	m_capabilities.has_charge_limit = true;
+	m_capabilities.has_custom_data = false;
+	m_capabilities.sleep_interval = 20;
 }
 
 bool CTeslaApi::Login()
@@ -68,20 +90,17 @@ bool CTeslaApi::RefreshLogin()
 	return false;
 }
 
-int CTeslaApi::GetSleepInterval()
-{
-	return 20;
-}
-
 bool CTeslaApi::GetAllData(tAllCarData& data)
 {
 	Json::Value reply;
 
 	if (GetData("vehicle_data", reply))
 	{
+		GetUnitData(reply["response"]["gui_settings"], m_config);
 		GetLocationData(reply["response"]["drive_state"], data.location);
 		GetChargeData(reply["response"]["charge_state"], data.charge);
 		GetClimateData(reply["response"]["climate_state"], data.climate);
+		GetVehicleData(reply["response"]["vehicle_state"], data.vehicle);
 		return true;
 	}
 	return false;
@@ -127,9 +146,17 @@ void CTeslaApi::GetChargeData(Json::Value& jsondata, CVehicleApi::tChargeData& d
 	data.status_string = jsondata["charging_state"].asString();
 	data.is_connected = (data.status_string != "Disconnected");
 	data.is_charging = (data.status_string == "Charging") || (data.status_string == "Starting");
+	data.charge_limit = jsondata["charge_limit_soc"].asInt();
 
 	if(data.status_string == "Disconnected")
 		data.status_string = "Charge Cable Disconnected";
+
+	if (data.is_charging)
+	{
+		data.status_string.append(" (until ");
+		data.status_string.append(std::to_string(data.charge_limit));
+		data.status_string.append("%)");
+	}
 }
 
 bool CTeslaApi::GetClimateData(tClimateData& data)
@@ -152,7 +179,79 @@ void CTeslaApi::GetClimateData(Json::Value& jsondata, tClimateData& data)
 	data.is_defrost_on = (jsondata["defrost_mode"].asInt() != 0);
 }
 
-bool CTeslaApi::GetData(std::string datatype, Json::Value& reply)
+bool CTeslaApi::GetVehicleData(tVehicleData& data)
+{
+	Json::Value reply;
+
+	if (GetData("vehicle_state", reply))
+	{
+		GetVehicleData(reply["response"], data);
+		return true;
+	}
+	return false;
+}
+
+void CTeslaApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
+{
+	data.odo = (jsondata["odometer"].asFloat());
+	if (!m_config.unit_miles)
+		data.odo = data.odo * (float)1.60934;
+
+	if (jsondata["df"].asBool() ||
+		jsondata["pf"].asBool() ||
+		jsondata["pr"].asBool() ||
+		jsondata["dr"].asBool())
+	{
+		data.car_open = true;
+		data.car_open_message = "Door open";
+	}
+	else if (
+		jsondata["ft"].asBool() ||
+		jsondata["rt"].asBool())
+	{
+		data.car_open = true;
+		data.car_open_message = "Trunk open";
+	}
+	else if (
+		jsondata["fd_window"].asBool() ||
+		jsondata["fp_window"].asBool() ||
+		jsondata["rp_window"].asBool() ||
+		jsondata["rd_window"].asBool())
+	{
+		data.car_open = true;
+		data.car_open_message = "Window open";
+	}
+	else if (
+		!jsondata["locked"].asBool())
+	{
+		data.car_open = true;
+		data.car_open_message = "Unlocked";
+	}
+	else
+	{
+		data.car_open = false;
+		data.car_open_message = "Locked";
+	}
+}
+
+bool CTeslaApi::GetCustomData(tCustomData& data)
+{
+	return true;
+}
+
+void CTeslaApi::GetUnitData(Json::Value& jsondata, tConfigData &config)
+{
+	std::string sUnit = jsondata["gui_distance_units"].asString();
+	config.unit_miles = (sUnit == "mi/hr");
+	if (config.unit_miles)
+		config.distance_unit = "mi";
+	else
+		config.distance_unit = "km";
+
+	_log.Debug(DEBUG_NORM, "TeslaApi: unit found %s, report in miles = %s.", sUnit.c_str(), config.unit_miles ? "true":"false");
+}
+
+bool CTeslaApi::GetData(const std::string &datatype, Json::Value &reply)
 {
 	std::stringstream ss;
 	if(datatype == "vehicle_data")
@@ -195,9 +294,9 @@ bool CTeslaApi::FindCarInAccount()
 		if (_jsRoot["response"][i]["vin"].asString() == m_VIN)
 		{
 			m_carid = _jsRoot["response"][i]["id"].asInt64();
-			m_carname = _jsRoot["response"][i]["display_name"].asString();
+			m_config.car_name = _jsRoot["response"][i]["display_name"].asString();
 			car_found = true;
-			_log.Log(LOG_NORM, "TeslaApi: Car found in account: VIN %s NAME %s", m_VIN.c_str(), m_carname.c_str());
+			_log.Log(LOG_NORM, "TeslaApi: Car found in account: VIN %s NAME %s", m_VIN.c_str(), m_config.car_name.c_str());
 			return true;
 		}
 	}
@@ -214,24 +313,28 @@ bool CTeslaApi::IsAwake()
 	std::string _sResponse;
 	Json::Value _jsRoot;
 	bool is_awake = false;
+	int nr_retry = 0;
 
-	if (SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot, true))
+	while (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot, true, 10))
 	{
-		//_log.Log(LOG_NORM, "Awake state: %s", _jsRoot["response"]["state"].asString().c_str());
-		_log.Debug(DEBUG_NORM, "Awake state: %s", _jsRoot["response"]["state"].asString().c_str());
-		is_awake = (_jsRoot["response"]["state"] == "online");
-		return(is_awake);
+		nr_retry++;
+		if (nr_retry == 4)
+		{
+			_log.Log(LOG_ERROR, "TeslaApi: Failed to get awake state.");
+			return false;
+		}
 	}
 
-	_log.Log(LOG_ERROR, "TeslaApi: Failed to get awake state.");
-	return false;
+	_log.Debug(DEBUG_NORM, "Awake state: %s", _jsRoot["response"]["state"].asString().c_str());
+	is_awake = (_jsRoot["response"]["state"] == "online");
+	return(is_awake);
 }
 
-bool CTeslaApi::SendCommand(eCommandType command)
+bool CTeslaApi::SendCommand(eCommandType command, std::string parameter)
 {
 	std::string command_string;
 	Json::Value reply;
-	std::string parameters = "";
+	std::string parameters;
 
 	switch (command)
 	{
@@ -258,7 +361,17 @@ bool CTeslaApi::SendCommand(eCommandType command)
 	case Wake_Up:
 		command_string = "wake_up";
 		break;
-
+	case Set_Charge_Limit:
+		if (parameter == "0")
+			command_string = "charge_standard";
+		else if(parameter == "100")
+			command_string = "charge_max_range";
+		else
+		{
+			command_string = "set_charge_limit";
+			parameters = "percent=" + parameter;
+		}
+		break;
 	}
 
 	if (SendCommand(command_string, reply, parameters))
@@ -278,7 +391,7 @@ bool CTeslaApi::SendCommand(eCommandType command)
 	return false;
 }
 
-bool CTeslaApi::SendCommand(std::string command, Json::Value& reply, std::string parameters)
+bool CTeslaApi::SendCommand(const std::string &command, Json::Value &reply, const std::string &parameters)
 {
 	std::stringstream ss;
 	if (command == "wake_up")
@@ -299,21 +412,21 @@ bool CTeslaApi::SendCommand(std::string command, Json::Value& reply, std::string
 		return false;
 	}
 
-	//	_log.Log(LOG_NORM, "TeslaApi: Command %s received reply: %s", GetCommandString(command).c_str(), _sResponse.c_str());
+	//_log.Log(LOG_NORM, "TeslaApi: Command %s received reply: %s", command.c_str(), _sResponse.c_str());
 	_log.Debug(DEBUG_NORM, "TeslaApi: Command %s received reply: %s", command.c_str(), _sResponse.c_str());
 
 	return true;
 }
 
 // Requests an authentication token from the Tesla OAuth Api.
-bool CTeslaApi::GetAuthToken(const std::string username, const std::string password, const bool refreshUsingToken)
+bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &password, const bool refreshUsingToken)
 {
-	if (username.size() == 0 && !refreshUsingToken)
+	if (username.empty() && !refreshUsingToken)
 	{
 		_log.Log(LOG_ERROR, "TeslaApi: No username specified.");
 		return false;
 	}
-	if (username.size() == 0 && !refreshUsingToken)
+	if (username.empty() && !refreshUsingToken)
 	{
 		_log.Log(LOG_ERROR, "TeslaApi: No password specified.");
 		return false;
@@ -354,14 +467,14 @@ bool CTeslaApi::GetAuthToken(const std::string username, const std::string passw
 	}
 
 	m_authtoken = _jsRoot["access_token"].asString();
-	if (m_authtoken.size() == 0)
+	if (m_authtoken.empty())
 	{
 		_log.Log(LOG_ERROR, "TeslaApi: Received token is zero length.");
 		return false;
 	}
 
 	m_refreshtoken = _jsRoot["refresh_token"].asString();
-	if (m_refreshtoken.size() == 0)
+	if (m_refreshtoken.empty())
 	{
 		_log.Log(LOG_ERROR, "TeslaApi: Received refresh token is zero length.");
 		return false;
@@ -374,13 +487,13 @@ bool CTeslaApi::GetAuthToken(const std::string username, const std::string passw
 
 // Sends a request to the Tesla API.
 bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, const std::string& sPostData,
-	std::string& sResponse, const std::vector<std::string>& vExtraHeaders, Json::Value& jsDecodedResponse, const bool bSendAuthHeaders)
+	std::string& sResponse, const std::vector<std::string>& vExtraHeaders, Json::Value& jsDecodedResponse, const bool bSendAuthHeaders, const int timeout)
 {
 	try 
 	{
 		// If there is no token stored then there is no point in doing a request. Unless we specifically
 		// decide not to do authentication.
-		if (m_authtoken.size() == 0 && bSendAuthHeaders) 
+		if (m_authtoken.empty() && bSendAuthHeaders)
 		{
 			_log.Log(LOG_ERROR, "TeslaApi: No access token available.");
 			return false;
@@ -390,7 +503,7 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 		std::vector<std::string> _vExtraHeaders = vExtraHeaders;
 
 		// If the supplied postdata validates as json, add an appropriate content type header
-		if (sPostData.size() > 0)
+		if (!sPostData.empty())
 			if (ParseJSon(sPostData, *(new Json::Value))) 
 				_vExtraHeaders.push_back("Content-Type: application/json");
 
@@ -399,8 +512,16 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 			_vExtraHeaders.push_back("Authorization: Bearer " + m_authtoken);
 
 		// Increase default timeout, tesla is slow
-		HTTPClient::SetConnectionTimeout(TLAPITIMEOUT);
-		HTTPClient::SetTimeout(TLAPITIMEOUT);
+		if(timeout == 0)
+		{
+			HTTPClient::SetConnectionTimeout(TLAPITIMEOUT);
+			HTTPClient::SetTimeout(TLAPITIMEOUT);
+		}
+		else
+		{
+			HTTPClient::SetConnectionTimeout(timeout);
+			HTTPClient::SetTimeout(timeout);
+		}
 
 		std::vector<std::string> _vResponseHeaders;
 		std::stringstream _ssResponseHeaderString;
@@ -410,8 +531,8 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 		case Post:
 			if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
-				for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
-					_ssResponseHeaderString << _vResponseHeaders[i];
+				for (auto &_vResponseHeader : _vResponseHeaders)
+					_ssResponseHeaderString << _vResponseHeader;
 				_log.Debug(DEBUG_NORM, "TeslaApi: Failed to perform POST request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 				return false;
 			}
@@ -420,8 +541,8 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 		case Get:
 			if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
-				for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
-					_ssResponseHeaderString << _vResponseHeaders[i];
+				for (auto &_vResponseHeader : _vResponseHeaders)
+					_ssResponseHeaderString << _vResponseHeader;
 				_log.Debug(DEBUG_NORM, "TeslaApi: Failed to perform GET request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 				return false;
 			}
@@ -434,7 +555,7 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 		}
 		}
 
-		if (sResponse.size() == 0)
+		if (sResponse.empty())
 		{
 			_log.Log(LOG_ERROR, "TeslaApi: Received an empty response from Api.");
 			return false;

@@ -1,4 +1,4 @@
-<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/003B:5044:6341</MetaDataItem>
     <MetaDataItem name="ProductPic">images/schlage/BE469.png</MetaDataItem>
@@ -9,6 +9,7 @@
     <MetaDataItem id="5044" name="FrequencyName" type="6341">U.S. / Canada / Mexico</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/748/xml</Entry>
+      <Entry author="Jordan Speicher" date="11 June 2020" revision="5">Fix TriggerRefreshValue index for Alarm Message</Entry>
     </ChangeLog>
   </MetaData>
   <CommandClass id="112">
@@ -152,7 +153,7 @@
 		Lock Status is Changed, but instead send a Alarm Message -
 		So we trigger a Refresh of the DoorLock Command Class when
 		we recieve a Alarm Message Instead -->
-    <TriggerRefreshValue Genre="user" Index="0" Instance="1">
+    <TriggerRefreshValue Genre="user" Index="6" Instance="1">
       <RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
     </TriggerRefreshValue>
   </CommandClass>

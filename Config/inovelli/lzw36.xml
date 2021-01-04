@@ -1,0 +1,334 @@
+<Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/031E:0001:000e</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/inovelli/lzw36.png</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://inovelli.com/red-series-fan-light-switch-z-wave/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://support.inovelli.com/portal/en/kb/inovelli/products/switches-fan-light-red-series-lzw36</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/3902</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To Exclude your switch, put your HUB in exclusion mode, hold the light up or down button and press the Light on/off button three (3) times.</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="000e">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://support.inovelli.com/portal/api/kbArticles/407409000002102001/attachments/kw8eq50c812f5d3344bc08295860b8b394c7c/content?portalId=edbsn8bb12d5f5a97d693e61ce4ce8a23f8b0e323eac44a6c2794f893e912acf005df&amp;inline=true</MetaDataItem>
+    <MetaDataItem name="ResetDescription">You may factory reset the switch by holding down the light up or down button and the light on/off button for twenty (20) or more seconds. The LED Bar will turn Red and blink three (3) times to confirm.
+    </MetaDataItem>
+    <MetaDataItem name="Description">The Inovelli Red Series Fan/Light Switch is a 700 Series Z-Wave in-wall fan + light switch that controls both your fan motor and its attached LED, CFL, &amp; Incandescent bulbs which can be highly customized to your liking at the switch itself with our unique config buttons and advanced firmware. In addition, the Red Series comes with advanced features such as scene support, power monitoring, notifications, local protection, etc. This is the first of its kind that allows homes that only have one wire coming from the fan to the light switch and uses both a light switch and canopy module. Inspired and worked on by our wonderful community.</MetaDataItem>
+    <MetaDataItem name="Name">LZW36 Fan/Light Dimmer</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="000e">LZW36</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">put your HUB in exclusion mode, hold the light up or down button and press the Light on/off button three (3) times.
+
+Please Note: If this doesn't work, you can check to see if your switch is within Z-Wave Range by holding down the Light Button for 5-10 seconds (if it's not within range, the LED Bar will indicate Red and if it is within Range, the LED Bar will indicate Green). If your switch indicates Red, please move the switch closer to the HUB. If your switch indicates Green, please try running an Exclusion to reset your switch.
+    </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="05 Jun 2020" revision="6">Adding Metadata</Entry>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="23 Jul 2020" revision="7">Fix Config Parameters</Entry>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="24 Jul 2020" revision="8">Adding additional metadata</Entry>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="27 Aug 2020" revision="9">Adding parameter 51 for firmware 1.36+</Entry>
+    </ChangeLog>
+  </MetaData>
+ 
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+
+    <Value genre="config" type="byte" size="1" index="1" label="Light Dimming Speed" min="0" max="98" value="4">
+      <Help>
+      This changes the speed in which the attached light dims up or down. A setting of 0 should turn the light immediately on or off (almost like an on/off switch). Increasing the value should slow down the transition speed.
+      Range:0-98
+      Default: 4
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="2" label="Light Dimming Speed (From Switch)" min="0" max="99" value="99">
+      <Help>
+      This changes the speed in which the attached light dims up or down when controlled from the physical switch. A setting of 0 should turn the light immediately on or off (almost like an on/off switch). Increasing the value should slow down the transition speed. A setting of 99 should keep this in sync with parameter 1.
+      Range:0-99
+      Default: 99
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="3" label="Light Ramp Rate" min="0" max="99" value="99">
+      <Help>
+      This changes the speed in which the attached light turns on or off. For example, when a user sends the switch a basicSet(value: 0xFF) or basicSet(value: 0x00), this is the speed in which those actions take place. A setting of 0 should turn the light immediately on or off (almost like an on/off switch). Increasing the value should slow down the transition speed. A setting of 99 should keep this in sync with parameter 1.
+      Range:0-99
+      Default: 99
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="4" label="Light Ramp Rate (From Switch)" min="0" max="99" value="99">
+      <Help>
+      This changes the speed in which the attached light turns on or off from the physical switch. For example, when a user presses the up or down button, this is the speed in which those actions take place. A setting of 0 should turn the light immediately on or off (almost like an on/off switch). Increasing the value should slow down the transition speed. A setting of 99 should keep this in sync with parameter 1.
+      Range:0-99
+      Default: 99
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="5" label="Minimum Light Level" min="1" max="45" value="1">
+      <Help>
+      The minimum level that the dimmer allows the bulb to be dimmed to. Useful when the user has an LED bulb that does not turn on or flickers at a lower level.
+      Range:1-45
+      Default: 1
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="6" label="Maximum Light Level" min="55" max="99" value="99">
+      <Help>
+      The maximum level that the dimmer allows the bulb to be dimmed to. Useful when the user has an LED bulb that reaches its maximum level before the dimmer value of 99.
+      Range:55-99
+      Default: 99
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="7" label="Minimum Fan Level" min="1" max="45" value="1">
+      <Help>
+      The minimum level that the dimmer allows the fan to be dimmed to. Useful when the user has a fan that does not turn at a lower level.
+      Range:1-45
+      Default: 1
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="8" label="Maximum Fan Level" min="55" max="99" value="99">
+      <Help>
+      The maximum level that the dimmer allows the fan to be dimmed to.
+      Range:55-99
+      Default: 99
+      </Help>
+    </Value>
+
+    <Value genre="config" type="short" size="2" index="10" label="Auto Off Light Timer" min="0" max="32767" value="0">
+      <Help>
+      Automatically turns the light switch off after this many seconds. When the switch is turned on a timer is started that is the duration of this setting. When the timer expires, the switch is turned off.
+      Range:0-32767
+      Default: 0
+      </Help>
+    </Value>
+
+    <Value genre="config" type="short" size="2" index="11" label="Auto Off Fan Timer" min="0" max="32767" value="0">
+      <Help>
+      Automatically turns the fan switch off after this many seconds. When the switch is turned on a timer is started that is the duration of this setting. When the timer expires, the switch is turned off.
+      Range:0-32767
+      Default: 0
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="12" label="Default Light Level (Local)" min="1" max="99" value="0">
+      <Help>
+      Default level for the dimmer when it is powered on from the local switch. A setting of 0 means that the switch will return to the level that it was on before it was turned off.
+      Range:1-99
+      Default: 0
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="13" label="Default Light Level (Z-Wave)" min="1" max="99" value="0">
+      <Help>
+      Default level for the dimmer when it is powered on from a Z-Wave command. A setting of 0 means that the switch will return to the level that it was on before it was turned off.
+      Range:1-99
+      Default: 0
+      </Help>
+    </Value>
+
+    <Value genre="config" type="list" size="1" index="14" label="Default Fan Level (Local)" min="0" max="99" value="0">
+      <Help>
+      Default level for the fan dimmer when it is powered on from the local switch.
+      Default: Last State
+      </Help>
+        <Item value="0" label="Last State"/>
+    <Item value="33" label="Low"/>
+        <Item value="66" label="Medium"/>
+        <Item value="99" label="High"/>
+    </Value>
+
+    <Value genre="config" type="list" size="1" index="15" label="Default Fan Level (Z-Wave)" min="1" max="99" value="0">
+      <Help>
+      Default level for the fan dimmer when it is powered on from the local switch.
+      Default: Last State
+      </Help>
+        <Item value="0" label="Last State"/>
+    <Item value="33" label="Low"/>
+        <Item value="66" label="Medium"/>
+        <Item value="99" label="High"/>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="16" label="Light State After Power Restored" min="0" max="100" value="0">
+      <Help>
+      The state the switch should return to once power is restored after power failure. 0 = off, 1-99 = level, 100=previous.
+      Range:0-100
+      Default: 100
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="17" label="Fan State After Power Restored" min="0" max="100" value="0">
+      <Help>
+      The state the switch should return to once power is restored after power failure.
+      Default: Off
+      </Help>
+        <Item value="0" label="Off"/>
+    <Item value="33" label="Low"/>
+        <Item value="66" label="Medium"/>
+        <Item value="99" label="High"/>
+        <Item value="100" label="Previous State"/>
+    </Value>
+
+    <Value genre="config" type="short" size="2" index="18" label="Light LED Indicator Color" min="0" max="255" value="170">
+      <Help>
+      This is the color of the Light LED strip represented as part of the HUE color wheel. Since the wheel has 360 values and this parameter only has 255, the following equation can be used to determine the color: value/255 * 360 = Hue color wheel value
+      Range: 0 to 255
+      Default: 170
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="19" label="Light LED Strip Intensity" min="0" max="10" value="5">
+      <Help>
+      This is the intensity of the Light LED strip.
+      Range: 0-10
+      Default: 5
+      </Help>
+    </Value>
+
+    <Value genre="config" type="short" size="2" index="20" label="Fan LED Indicator Color" min="0" max="255" value="170">
+      <Help>
+      This is the color of the Fan LED strip represented as part of the HUE color wheel. Since the wheel has 360 values and this parameter only has 255, the following equation can be used to determine the color: value/255 * 360 = Hue color wheel value
+      Range: 0 to 255
+      Default: 170
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="21" label="Fan LED Strip Intensity" min="0" max="10" value="5">
+      <Help>
+      This is the intensity of the Fan LED strip.
+      Range: 0-10
+      Default: 5
+    </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="22" label="Light LED Strip Intensity (When OFF)" min="0" max="10" value="1">
+      <Help>
+      This is the intensity of the Light LED strip when the switch is off. This is useful for users to see the light switch location when the lights are off.
+      Range: 0-10
+      Default: 1
+    </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="23" label="Fan LED Strip Intensity (When OFF)" min="0" max="10" value="1">
+      <Help>
+      This is the intensity of the Fan LED strip when the switch is off. This is useful for users to see the light switch location when the lights are off.
+      Range: 0-10
+      Default: 1
+    </Help>
+    </Value>
+
+    <Value genre="config" type="int" size="4" index="24" label="Light LED Strip Effect" min="0" max="100600319" value="0">
+      <Help>
+      Please see website for documentation.
+          Byte 4: Effect - 0 = Off, 1 = Solid, 2 = Slow Blink, 3 = Fast Blink, 4 = Chase, 5 = Pulse
+          Byte 3: Duration - 1 to 60 = seconds, 61 to 120  minutes, 121 -  254 = hours, 255 = Indefinitely
+          Byte 2: Intensity - 0 to 9.  0 = dim, 9 = bright
+          Byte 1: Color - 0 - 255. Hue color wheel. value/255 * 360 = Hue color wheel value
+      Range: 0-100600319
+      Default: 0
+      </Help>
+    </Value>
+
+    <Value genre="config" type="int" size="4" index="25" label="Fan LED Strip Effect" min="0" max="100600319" value="0">
+      <Help>
+      Please see website for documentation.
+          Byte 4: Effect - 0 = Off, 1 = Solid, 2 = Slow Blink, 3 = Fast Blink, 4 = Chase, 5 = Pulse
+          Byte 3: Duration - 1 to 60 = seconds, 61 to 120  minutes, 121 -  254 = hours, 255 = Indefinitely
+          Byte 2: Intensity - 0 to 9.  0 = dim, 9 = bright
+          Byte 1: Color - 0 - 255. Hue color wheel. value/255 * 360 = Hue color wheel value
+      Range: 0-100600319
+      Default: 0
+      </Help>
+    </Value>
+
+    <Value genre="config" type="list" size="1" index="26" label="Light LED Strip Timeout" min="0" max="10" value="3">
+      <Help>
+      When the LED strip is disabled (Light LED Strip Intensity is set to 0), this setting allows the LED strip to turn on temporarily while being adjusted.
+      Range: 0-10
+      Default: 3
+      </Help>
+      <Item value="0" label="Stay Off"/>
+      <Item value="1" label="1 Second"/>
+      <Item value="2" label="2 Seconds"/>
+      <Item value="3" label="3 Seconds"/>
+      <Item value="4" label="4 Seconds"/>
+      <Item value="5" label="5 Seconds"/>
+      <Item value="6" label="6 Seconds"/>
+      <Item value="7" label="7 Seconds"/>
+      <Item value="8" label="8 Seconds"/>
+      <Item value="9" label="9 Seconds"/>
+      <Item value="10" label="10 Seconds"/>
+    </Value>
+
+    <Value genre="config" type="list" size="1" index="27" label="Fan LED Strip Timeout" min="0" max="10" value="3">
+      <Help>
+      When the LED strip is disabled (Fan LED Strip Intensity is set to 0), this setting allows the LED strip to turn on temporarily while being adjusted.
+      Range: 0-10
+      Default: 3
+      </Help>
+      <Item value="0" label="Stay Off"/>
+      <Item value="1" label="1 Second"/>
+      <Item value="2" label="2 Seconds"/>
+      <Item value="3" label="3 Seconds"/>
+      <Item value="4" label="4 Seconds"/>
+      <Item value="5" label="5 Seconds"/>
+      <Item value="6" label="6 Seconds"/>
+      <Item value="7" label="7 Seconds"/>
+      <Item value="8" label="8 Seconds"/>
+      <Item value="9" label="9 Seconds"/>
+      <Item value="10" label="10 Seconds"/>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="28" label="Active Power Reports" min="0" max="100" value="10">
+      <Help>
+      The power level change that will result in a new power report being sent. The value is a percentage of the previous report. 0 = disabled.
+      Range:0-100
+      Default: 10
+      </Help>
+    </Value>
+
+    <Value genre="config" type="short" size="2" index="29" label="Periodic Power &amp; Energy Reports" min="0" max="32767" value="3600">
+      <Help>
+      Time period between consecutive power &amp; energy reports being sent (in seconds). The timer is reset after each report is sent.
+      Range:0-32767
+      Default: 3600
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="30" label="Energy Reports" min="0" max="100" value="10">
+      <Help>
+      The energy level change that will result in a new energy report being sent. The value is a percentage of the previous report.
+      Range:0-100
+      Default: 10
+      </Help>
+    </Value>
+
+    <Value genre="config" type="byte" size="1" index="31" label="Local Protection" min="0" max="3" value="0">
+      <Help>
+      Enable local protection on these buttons. 0 = none, 1 = light, 2 = fan, 3 = both.
+      </Help>
+      <Item value="0" label="None"/>
+      <Item value="1" label="Light Button"/>
+      <Item value="2" label="Fan Button"/>
+      <Item value="3" label="Both Buttons"/>
+    </Value>
+
+    <Value genre="config" type="list" size="1" index="51" label="Instant On" min="0" max="1" value="1">
+       <Help>
+       Enables instant on (ie: disables the 700ms button delay). Note, if you disable the delay, it will also disable scene control except for the following: Light on/off pressed, held, released, Fan on/off  pressed, held, released &amp; light up/down fan up/down  pressed (firmware 1.36+).
+       </Help>
+       <Item value="0" label="Enabled (no delay)"/>
+       <Item value="1" label="Disabled (700ms delay)"/>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="7">
+      <Group index="1" label="Lifeline" max_associations="5" />
+      <Group index="2" label="Basic_Set_Light" max_associations="5" />
+      <Group index="3" label="Switch_MultiLevel_Set_Light" max_associations="5" />
+      <Group index="4" label="Switch_MultiLevel_Start/Stop_Light" max_associations="5" />
+      <Group index="5" label="Basic_Set_Fan" max_associations="5" />
+      <Group index="6" label="Switch_MultiLevel_Set_Fan" max_associations="5" />
+      <Group index="7" label="Switch_MultiLevel_Start/Stop_Fan" max_associations="5" />
+    </Associations>
+  </CommandClass>
+</Product>

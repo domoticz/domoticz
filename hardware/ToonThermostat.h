@@ -10,13 +10,14 @@ namespace Json
 
 class CToonThermostat : public CDomoticzHardwareBase
 {
-public:
-	CToonThermostat(const int ID, const std::string &Username, const std::string &Password, const int &Agreement);
-	~CToonThermostat(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	void SetSetpoint(const int idx, const float temp);
-	void SetProgramState(const int newState);
-private:
+      public:
+	CToonThermostat(int ID, const std::string &Username, const std::string &Password, const int &Agreement);
+	~CToonThermostat() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	void SetSetpoint(int idx, float temp);
+	void SetProgramState(int newState);
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -28,22 +29,23 @@ private:
 	bool ParsePowerUsage(const Json::Value &root);
 	bool ParseGasUsage(const Json::Value &root);
 
-	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
-	void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname);
+	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
+	void UpdateSwitch(unsigned char Idx, bool bOn, const std::string &defaultname);
 
 	bool GetUUIDIdx(const std::string &UUID, int &idx);
 	bool AddUUID(const std::string &UUID, int &idx);
-	bool GetUUIDFromIdx(const int idx, std::string &UUID);
+	bool GetUUIDFromIdx(int idx, std::string &UUID);
 
-	bool SwitchLight(const std::string &UUID, const int SwitchState);
-	bool SwitchAll(const int SwitchState);
+	bool SwitchLight(const std::string &UUID, int SwitchState);
+	bool SwitchAll(int SwitchState);
 
-	double GetElectricOffset(const int idx, const double currentKwh);
+	double GetElectricOffset(int idx, double currentKwh);
 
 	bool Login();
 	void Logout();
 	std::string GetRandom();
-private:
+
+      private:
 	std::string m_UserName;
 	std::string m_Password;
 	int m_Agreement;
@@ -61,8 +63,8 @@ private:
 	unsigned long m_OffsetDeliv2;
 
 	bool m_bDoLogin;
-	P1Power	m_p1power;
-	P1Gas	m_p1gas;
+	P1Power m_p1power;
+	P1Gas m_p1gas;
 	time_t m_lastSharedSendElectra;
 	time_t m_lastSharedSendGas;
 	unsigned long m_lastgasusage;
@@ -75,4 +77,3 @@ private:
 	std::map<int, double> m_LastElectricCounter;
 	std::map<int, double> m_OffsetElectricUsage;
 };
-

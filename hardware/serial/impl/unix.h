@@ -55,7 +55,7 @@ using serial::IOException;
 
 class MillisecondTimer {
 public:
-  MillisecondTimer(const uint32_t millis);         
+  MillisecondTimer(uint32_t millis);
   int64_t remaining();
 
 private:

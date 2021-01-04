@@ -8,12 +8,14 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #ifdef _DEBUG
 //#define DEBUG_DAVIS
@@ -32,11 +34,6 @@ CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname,
 	m_retrycntr = RETRY_DELAY;
 	m_statecounter = 0;
 	m_state = DSTATE_WAKEUP;
-}
-
-CDavisLoggerSerial::~CDavisLoggerSerial(void)
-{
-
 }
 
 bool CDavisLoggerSerial::StartHardware()
@@ -480,7 +477,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 			tsen.WIND.chilll = (BYTE)(at10);
 		}
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255, nullptr);
 	}
 
 	//UV
@@ -523,8 +520,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		_tGeneralDevice gdevice;
 		gdevice.subtype = sTypeSolarRadiation;
 		gdevice.floatval1 = float(solarRadiation);
-		sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
-
+		sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
 	}
 
 	//Soil Moistures
@@ -548,7 +544,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 			gdevice.subtype = sTypeLeafWetness;
 			gdevice.intval1 = leaf_wetness;
 			gdevice.id = (uint8_t)(1 + iLeaf);
-			sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+			sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
 		}
 	}
 

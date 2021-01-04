@@ -44,10 +44,6 @@ FritzboxTCP::FritzboxTCP(const int ID, const std::string &IPAddress, const unsig
 	m_bufferpos = 0;
 }
 
-FritzboxTCP::~FritzboxTCP(void)
-{
-}
-
 bool FritzboxTCP::StartHardware()
 {
 	RequestStart();
@@ -97,7 +93,7 @@ void FritzboxTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
@@ -226,7 +222,7 @@ void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, c
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void FritzboxTCP::ParseLine()

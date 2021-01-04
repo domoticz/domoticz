@@ -84,10 +84,6 @@ MochadTCP::MochadTCP(const int ID, const std::string &IPAddress, const unsigned 
 	currentUnit=0;
 }
 
-MochadTCP::~MochadTCP(void)
-{
-}
-
 bool MochadTCP::StartHardware()
 {
 	RequestStart();
@@ -144,7 +140,7 @@ void MochadTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
@@ -278,7 +274,7 @@ void MochadTCP::MatchLine()
 				return;
 			if (!('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '1')) goto onError;
 			m_mochad.LIGHTING1.cmnd = m_mochadbuffer[j++] - '0';
-			sDecodeRXMessage(this, (const unsigned char *)&m_mochad, NULL, 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_mochad, nullptr, 255, m_Name.c_str());
 			if (!(','==  m_mochadbuffer[j++])) return;
 		}
 		break;
@@ -309,14 +305,14 @@ checkFunc:
 		if (!(' '==  m_mochadbuffer[j++])) goto onError;
 		if (!('O'==  m_mochadbuffer[j++])) goto onError;
 		if ('f'==  m_mochadbuffer[j]) m_mochad.LIGHTING1.cmnd = 0;
-		else
-		if ('n'==  m_mochadbuffer[j]) m_mochad.LIGHTING1.cmnd = 1;
+		else if ('n' == m_mochadbuffer[j])
+			m_mochad.LIGHTING1.cmnd = 1;
 		else goto onError;
 		for (k=1;k<=16;k++) {
 			if (selected[currentHouse][k] >0) {
 				m_mochad.LIGHTING1.housecode = (BYTE)(currentHouse+'A');
 				m_mochad.LIGHTING1.unitcode = (BYTE)k;
-				sDecodeRXMessage(this, (const unsigned char *)&m_mochad, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_mochad, nullptr, 255, m_Name.c_str());
 				selected[currentHouse][k] = 0;
 			}
 		}
@@ -335,7 +331,7 @@ checkFunc:
 			// parse sensor conditions, e.g. "Contact_alert_min_DS10A" or "'Contact_normal_max_low_DS10A"
 			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
 			pchar = strtok(tempRFSECbuf, " _");
-			while (pchar != NULL)
+			while (pchar != nullptr)
 			{
 				if (strcmp(pchar, "alert") == 0)
 					m_mochadsec.SECURITY1.status = sStatusAlarm;
@@ -350,7 +346,7 @@ checkFunc:
 				}
 				else if (strcmp(pchar, "low") == 0)
 					m_mochadsec.SECURITY1.battery_level = 1;
-				pchar = strtok(NULL, " _");
+				pchar = strtok(nullptr, " _");
 			}
 			m_mochadsec.SECURITY1.rssi = 12; // signal strength ?? 12 = no signal strength
 		}
@@ -363,7 +359,7 @@ checkFunc:
 			// parse remote conditions, e.g. "Panic_KR10A" "Lights_On_KR10A" "Lights_Off_KR10A" "Disarm_KR10A" "Arm_KR10A"
 			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
 			pchar = strtok(tempRFSECbuf, " _");
-			while (pchar != NULL)
+			while (pchar != nullptr)
 			{
 				if (strcmp(pchar, "Panic") == 0)
 					m_mochadsec.SECURITY1.status = sStatusPanic;
@@ -375,7 +371,7 @@ checkFunc:
 					m_mochadsec.SECURITY1.status = sStatusLightOn;
 				else if (strcmp(pchar, "Off") == 0)
 					m_mochadsec.SECURITY1.status = sStatusLightOff;
-				pchar = strtok(NULL, " _");
+				pchar = strtok(nullptr, " _");
 			}
 			m_mochadsec.SECURITY1.rssi = 12;
 		}
@@ -388,7 +384,7 @@ checkFunc:
 			// parse remote conditions, "Motion_alert_MS10A" and "Motion_normal_MS10A"
 			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
 			pchar = strtok(tempRFSECbuf, " _");
-			while (pchar != NULL)
+			while (pchar != nullptr)
 			{
 				if (strcmp(pchar, "alert") == 0)
 					m_mochadsec.SECURITY1.status = sStatusMotion;
@@ -396,14 +392,14 @@ checkFunc:
 					m_mochadsec.SECURITY1.status = sStatusNoMotion;
 				else if (strcmp(pchar, "low") == 0)
 					m_mochadsec.SECURITY1.battery_level = 1;
-				pchar = strtok(NULL, " _");
+				pchar = strtok(nullptr, " _");
 			}
 			m_mochadsec.SECURITY1.rssi = 12;
 		}
 		else
 			goto onError;
 
-		sDecodeRXMessage(this, (const unsigned char *)&m_mochadsec, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_mochadsec, nullptr, 255, m_Name.c_str());
 		break;
 	}
 	return;

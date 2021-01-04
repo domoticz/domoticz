@@ -103,15 +103,15 @@ static std::string errors[4] =
 	"Server error"
 };
 
-MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort) :
-	m_IPPort(IPPort),
-	m_IPAddress(IPAddress),
-	m_socket(NULL),
-	m_LastAlarms(0),
-	m_LastWarnings(0),
-	m_LastDevices(0),
-	m_LastState(0),
-	m_LastQuickAccess(0)
+MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort)
+	: m_IPPort(IPPort)
+	, m_IPAddress(IPAddress)
+	, m_socket(nullptr)
+	, m_LastAlarms(0)
+	, m_LastWarnings(0)
+	, m_LastDevices(0)
+	, m_LastState(0)
+	, m_LastQuickAccess(0)
 {
 	_log.Log(LOG_STATUS, "MultiFun: Create instance");
 	m_HwdID = ID;
@@ -173,7 +173,7 @@ void MultiFun::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter % MULTIFUN_POLL_INTERVAL == 0)
@@ -275,7 +275,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 bool MultiFun::ConnectToDevice()
 {
-	if (m_socket != NULL)
+	if (m_socket != nullptr)
 		return true;
 
 	m_socket = new csocket();
@@ -296,13 +296,13 @@ bool MultiFun::ConnectToDevice()
 
 void MultiFun::DestroySocket()
 {
-	if (m_socket != NULL)
+	if (m_socket != nullptr)
 	{
 #ifdef DEBUG_MultiFun
 		_log.Log(LOG_STATUS, "MultiFun: destroy socket");
 #endif
 		delete m_socket;
-		m_socket = NULL;
+		m_socket = nullptr;
 	}
 }
 
@@ -389,18 +389,16 @@ void MultiFun::GetRegisters(bool firstTime)
 				{
 				case 0x00:
 				{
-					dictionary::iterator it = alarmsType.begin();
-					for (; it != alarmsType.end(); ++it)
+					for (const auto &alarm : alarmsType)
 					{
-						if (((*it).first & value) && !((*it).first & m_LastAlarms))
+						if ((alarm.first & value) && !(alarm.first & m_LastAlarms))
 						{
-							SendTextSensor(1, 0, 255, (*it).second, "Alarms");
+							SendTextSensor(1, 0, 255, alarm.second, "Alarms");
 						}
-						else
-							if (!((*it).first & value) && ((*it).first & m_LastAlarms))
-							{
-								SendTextSensor(1, 0, 255, "End - " + (*it).second, "Alarms");
-							}
+						else if (!(alarm.first & value) && (alarm.first & m_LastAlarms))
+						{
+							SendTextSensor(1, 0, 255, "End - " + alarm.second, "Alarms");
+						}
 					}
 					if (((m_LastAlarms != 0) != (value != 0)) || firstTime)
 					{
@@ -411,18 +409,16 @@ void MultiFun::GetRegisters(bool firstTime)
 				}
 				case 0x01:
 				{
-					dictionary::iterator it = warningsType.begin();
-					for (; it != warningsType.end(); ++it)
+					for (const auto &warning : warningsType)
 					{
-						if (((*it).first & value) && !((*it).first & m_LastWarnings))
+						if ((warning.first & value) && !(warning.first & m_LastWarnings))
 						{
-							SendTextSensor(1, 1, 255, (*it).second, "Warnings");
+							SendTextSensor(1, 1, 255, warning.second, "Warnings");
 						}
-						else
-							if (!((*it).first & value) && ((*it).first & m_LastWarnings))
-							{
-								SendTextSensor(1, 1, 255, "End - " + (*it).second, "Warnings");
-							}
+						else if (!(warning.first & value) && (warning.first & m_LastWarnings))
+						{
+							SendTextSensor(1, 1, 255, "End - " + warning.second, "Warnings");
+						}
 					}
 					if (((m_LastWarnings != 0) != (value != 0)) || firstTime)
 					{
@@ -433,18 +429,16 @@ void MultiFun::GetRegisters(bool firstTime)
 				}
 				case 0x02:
 				{
-					dictionary::iterator it = devicesType.begin();
-					for (; it != devicesType.end(); ++it)
+					for (const auto &device : devicesType)
 					{
-						if (((*it).first & value) && !((*it).first & m_LastDevices))
+						if ((device.first & value) && !(device.first & m_LastDevices))
 						{
-							SendGeneralSwitch(2, (*it).first, 255, true, 0, (*it).second.c_str());
+							SendGeneralSwitch(2, device.first, 255, true, 0, device.second, m_Name.c_str());
 						}
-						else
-							if (!((*it).first & value) && ((*it).first & m_LastDevices))
-							{
-								SendGeneralSwitch(2, (*it).first, 255, false, 0, (*it).second.c_str());
-							}
+						else if (!(device.first & value) && (device.first & m_LastDevices))
+						{
+							SendGeneralSwitch(2, device.first, 255, false, 0, device.second, m_Name.c_str());
+						}
 					}
 					m_LastDevices = value;
 
@@ -454,18 +448,16 @@ void MultiFun::GetRegisters(bool firstTime)
 				}
 				case 0x03:
 				{
-					dictionary::iterator it = statesType.begin();
-					for (; it != statesType.end(); ++it)
+					for (const auto &state : statesType)
 					{
-						if (((*it).first & value) && !((*it).first & m_LastState))
+						if ((state.first & value) && !(state.first & m_LastState))
 						{
-							SendTextSensor(3, 1, 255, (*it).second, "State");
+							SendTextSensor(3, 1, 255, state.second, "State");
 						}
-						else
-							if (!((*it).first & value) && ((*it).first & m_LastState))
-							{
-								SendTextSensor(3, 1, 255, "End - " + (*it).second, "State");
-							}
+						else if (!(state.first & value) && (state.first & m_LastState))
+						{
+							SendTextSensor(3, 1, 255, "End - " + state.second, "State");
+						}
 					}
 					m_LastState = value;
 
@@ -516,18 +508,16 @@ void MultiFun::GetRegisters(bool firstTime)
 
 				case 0x21:
 				{
-					dictionary::iterator it = quickAccessType.begin();
-					for (; it != quickAccessType.end(); ++it)
+					for (const auto &access : quickAccessType)
 					{
-						if (((*it).first & value) && !((*it).first & m_LastQuickAccess))
+						if ((access.first & value) && !(access.first & m_LastQuickAccess))
 						{
-							SendGeneralSwitch(0x21, (*it).first, 255, true, 0, (*it).second.c_str());
+							SendGeneralSwitch(0x21, access.first, 255, true, 0, access.second, m_Name.c_str());
 						}
-						else
-							if ((!((*it).first & value) && ((*it).first & m_LastQuickAccess)) || firstTime)
-							{
-								SendGeneralSwitch(0x21, (*it).first, 255, false, 0, (*it).second.c_str());
-							}
+						else if ((!(access.first & value) && (access.first & m_LastQuickAccess)) || firstTime)
+						{
+							SendGeneralSwitch(0x21, access.first, 255, false, 0, access.second, m_Name.c_str());
+						}
 					}
 					m_LastQuickAccess = value;
 					break;
@@ -593,21 +583,16 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 
 				if ((int)databuffer[4] * 256 + (int)databuffer[5] == (unsigned char)(answerLength + 2))
 				{
-					if (write)
-					{
-						if (cmd[8] == databuffer[8] && cmd[9] == databuffer[9] && cmd[10] == databuffer[10] && cmd[11] == databuffer[11])
-						{
-							return answerLength;
-						}
-						else
-						{
-							_log.Log(LOG_ERROR, "MultiFun: bad response after write");
-						}
-					}
-					else
+					if (!write)
 					{
 						return answerLength;
 					}
+
+					if (cmd[8] == databuffer[8] && cmd[9] == databuffer[9] && cmd[10] == databuffer[10] && cmd[11] == databuffer[11])
+					{
+						return answerLength;
+					}
+					_log.Log(LOG_ERROR, "MultiFun: bad response after write");
 				}
 				else
 				{

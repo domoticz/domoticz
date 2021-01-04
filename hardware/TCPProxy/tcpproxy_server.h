@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/signals2.hpp>
 
 namespace tcp_proxy
@@ -38,7 +39,7 @@ namespace tcp_proxy
 		acceptor(
 			const std::string& local_host, unsigned short local_port,
 			const std::string& upstream_host, const std::string& upstream_port);
-		~acceptor();
+		~acceptor() = default;
 		bool accept_connections();
 		bool start();
 		bool stop();
@@ -48,8 +49,8 @@ namespace tcp_proxy
 		void handle_accept(const boost::system::error_code& error);
 		void handle_stop();
 
-		void OnUpstreamData(const unsigned char *pData, const size_t Len);
-		void OnDownstreamData(const unsigned char *pData, const size_t Len);
+		void OnUpstreamData(const unsigned char *pData, size_t Len);
+		void OnDownstreamData(const unsigned char *pData, size_t Len);
 
 		/// The io_service used to perform asynchronous operations.
 		boost::asio::io_service io_service_;

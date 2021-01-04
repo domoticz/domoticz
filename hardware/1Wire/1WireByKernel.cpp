@@ -83,7 +83,9 @@ void C1WireByKernel::ThreadFunction()
 		// Thread is stopped
 	}
 	m_PendingChanges.clear();
-	for (DeviceCollection::iterator it = m_Devices.begin(); it != m_Devices.end(); ++it) { delete (*it).second; }
+	for (auto &m_Device : m_Devices)
+		delete m_Device.second;
+
 	m_Devices.clear();
 }
 
@@ -198,10 +200,14 @@ void C1WireByKernel::ThreadBuildDevicesList()
 {
 	DIR *dir;
 	struct dirent *ent;
-	if ((dir = opendir (Wire1_Base_Dir)) != NULL) {
-		for (DeviceCollection::iterator it = m_Devices.begin(); it != m_Devices.end(); ++it) { delete (*it).second; }
+	if ((dir = opendir(Wire1_Base_Dir)) != nullptr)
+	{
+		for (auto &m_Device : m_Devices)
+			delete m_Device.second;
+
 		m_Devices.clear();
-		while ((ent = readdir (dir)) != NULL) {
+		while ((ent = readdir(dir)) != nullptr)
+		{
 			std::string directoryName=ent->d_name;
 			if(directoryName.find("w1_bus_master")==0)
 			{
@@ -220,7 +226,7 @@ void C1WireByKernel::ThreadBuildDevicesList()
 				while (!infile.eof())
 				{
 					getline(infile, sLine);
-					if (sLine.size() != 0)
+					if (!sLine.empty())
 					{
 						// Get the device from it's name
 						_t1WireDevice device;
@@ -246,14 +252,14 @@ void C1WireByKernel::ThreadBuildDevicesList()
 			}
 		}
 		closedir (dir);
-	}	
+	}
 }
 
 void C1WireByKernel::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const
 {
 	Locker l(m_Mutex);
-	for (const auto & it : m_Devices)
-		devices.push_back((it.second)->GetDevice());
+	std::transform(m_Devices.begin(), m_Devices.end(), std::back_inserter(devices),
+		       [](const std::pair<const std::string, C1WireByKernel::DeviceState *> &m) { return m.second->GetDevice(); });
 }
 
 const C1WireByKernel::DeviceState* C1WireByKernel::GetDevicePendingState(const std::string& deviceId) const
@@ -263,7 +269,7 @@ const C1WireByKernel::DeviceState* C1WireByKernel::GetDevicePendingState(const s
 		if (it.GetDevice().devid == deviceId)
 			return &it;
 	}
-	return NULL;
+	return nullptr;
 }
 
 float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
@@ -528,8 +534,8 @@ void C1WireByKernel::ThreadWriteRawData8ChannelAddressableSwitch(const std::stri
 inline void std_to_upper(const std::string& str, std::string& converted)
 {
 	converted = "";
-	for (size_t i = 0; i < str.size(); ++i)
-		converted += (char)toupper(str[i]);
+	for (char c : str)
+		converted += (char)toupper(c);
 }
 
 void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const

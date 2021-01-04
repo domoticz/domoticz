@@ -1,4 +1,4 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027A:A004:A000</MetaDataItem>
     <MetaDataItem name="ProductPic">images/zooz/zen20v2.png</MetaDataItem>
@@ -37,6 +37,8 @@ NOTE: All previously recorded activity and custom settings EXCEPT for the kWh re
 4. You will see 7 or 8 new on/off devices in your app: 5 channels or on/off control, 2 channels for on/off monitoring (USB ports reporting charging/ charged status, no control), and possibly one master node to access and adjust advanced settings in.</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3158/xml</Entry>
+      <Entry author="Brett Daugherty" date="22 Jul 2020" revision="3">Update parameters for firmware 2.0.3</Entry>
+
     </ChangeLog>
   </MetaData>
   <!-- https://products.z-wavealliance.org/products/3158 -->
@@ -151,6 +153,47 @@ NOTE: All previously recorded activity and custom settings EXCEPT for the kWh re
       <Item label="Inverse" value="0"/>
       <Item label="Normal" value="1"/>
       <Item label="Always Off" value="2"/>
+    </Value>
+    <Value genre="config" index="28" label="Enable/Disable Energy Monitoring Reports" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>Disable or enable energy monitoring for the entire devie. None of the outlets will send any power or energy related reports back to the hub if energy monitoring is disabled. Use this optoin to minimize the amount or reports you want to receive from the Power Strip. (Firmware > 2.0.3)</Help>
+      <Item label="Energy monitoring reports disabled" value="0"/>
+      <Item label="Energy monitoring reports enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="29" label="Enable/Disable Energy Monitoring Reports for CH1" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>Disable or enabled energy monitoring for CH1. (Firmware > 2.03)</Help>
+      <Item label="Energy monitoring reports disabled" value="0"/>
+      <Item label="Energy monitoring reports enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="30" label="Enable/Disable Energy Monitoring Reports for CH2" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>Disable or enabled energy monitoring for CH2. (Firmware > 2.03)</Help>
+      <Item label="Energy monitoring reports disabled" value="0"/>
+      <Item label="Energy monitoring reports enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="31" label="Enable/Disable Energy Monitoring Reports for CH3" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>Disable or enabled energy monitoring for CH3. (Firmware > 2.03)</Help>
+      <Item label="Energy monitoring reports disabled" value="0"/>
+      <Item label="Energy monitoring reports enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="32" label="Enable/Disable Energy Monitoring Reports for CH4" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>Disable or enabled energy monitoring for CH4. (Firmware > 2.03)</Help>
+      <Item label="Energy monitoring reports disabled" value="0"/>
+      <Item label="Energy monitoring reports enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="33" label="Enable/Disable Energy Monitoring Reports for CH5" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>Disable or enabled energy monitoring for CH5. (Firmware > 2.03)</Help>
+      <Item label="Energy monitoring reports disabled" value="0"/>
+      <Item label="Energy monitoring reports enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="34" label="Enable/Disable USB Reports" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Disable or enable on/off reports send from the USB ports when a connected device is charging (drawing power) or not charging (not drawing power). (Firmware > 2.03)</Help>
+      <Item label="USB Reports Enabled" value="0"/>
+      <Item label="USB Reports Disabled" value="1"/>
+    </Value>
+    <Value genre="config" index="35" label="Electrical Current (A) Report Frequency" max="2678400" min="0" size="4" type="int" units="seconds" value="0">
+      <Help>0 = disabled; 30-2678400 = time in seconds to send current (A) report (Firmware > 2.03)</Help>
+    </Value>
+    <Value genre="config" index="36" label="Voltage (V) Report Frequency" max="2678400" min="0" size="4" type="int" units="seconds" value="2678400">
+      <Help>0 = disabled; 30-2678400 = time in seconds to send voltage (v) report (Firmware > 2.03)</Help>
     </Value>
   </CommandClass>
   <!-- Association Groups -->

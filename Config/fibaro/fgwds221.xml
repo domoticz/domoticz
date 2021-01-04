@@ -1,4 +1,4 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
   <MetaData>
     <MetaDataItem name="Name">FGWDSEU-221 Walli Double Switch</MetaDataItem>
@@ -6,7 +6,7 @@
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010f:1000:1B01</MetaDataItem>
     <MetaDataItem name="ProductPage">https://www.fibaro.com/en/products/smart-switches-and-outlets-walli-switch/</MetaDataItem>
     <MetaDataItem name="ProductSupport">https://manuals.fibaro.com/walli-switch/</MetaDataItem>
-    <MetaDataItem name="ProductPic"><!-- path to images/vendor/product.png --></MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgwds221.png</MetaDataItem>
     <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=Manuals/3395/FGWDSEU-221-T-EN-0.19.pdf</MetaDataItem>
     <MetaDataItem name="WakeupDescription">FIBARO Walli Double Switch is powered using DC power supply unit so it is always awake.</MetaDataItem>
     <MetaDataItem name="InclusionDescription">To add the device to the Z-Wave network manually:
@@ -35,6 +35,7 @@
     <ChangeLog>
       <Entry author="Makooy - marc@makooy.nl" date="07 July 2019" revision="1">Initial Creation of config file - https://products.z-wavealliance.org/Products/3395/XML</Entry>
 	  <Entry author="Peter Gebruers - peter.gebruers@gmail.com" date="06 September 2019" revision="2">Change definition of params 30-34 to fix https://github.com/domoticz/domoticz/issues/3557</Entry>
+	  <Entry author="Justin Hammond" date="24 June 2020" revision="3">Add Product Picture</Entry>
     </ChangeLog>
   </MetaData>
   

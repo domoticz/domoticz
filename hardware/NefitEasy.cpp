@@ -121,10 +121,6 @@ m_szIPAddress(IPAddress)
 	Init();
 }
 
-CNefitEasy::~CNefitEasy(void)
-{
-}
-
 void CNefitEasy::Init()
 {
 	m_lastgasusage = 0;
@@ -176,7 +172,7 @@ void CNefitEasy::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if ((sec_counter % fast_pollint == 0) || (bFirstTime))
 		{
@@ -238,7 +234,7 @@ bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char /*length
 			SetUserMode(bIsOn);
 			return true;
 		}
-		else if (node_id == 2)
+		if (node_id == 2)
 		{
 			//Hot Water Switch
 			SetHotWaterMode(bIsOn);
@@ -425,7 +421,7 @@ bool CNefitEasy::GetStatusDetails()
 		tmpstr = root2["BAI"].asString();
 		if (tmpstr != "null")
 		{
-			std::string bstatus = "";
+			std::string bstatus;
 			if (tmpstr == "CH")
 				bstatus = "central heating";
 			else if (tmpstr == "HW")
@@ -446,13 +442,13 @@ bool CNefitEasy::GetStatusDetails()
 	{
 		tmpstr = root2["UMD"].asString();
 		m_bClockMode = (tmpstr == "clock");
-		SendSwitch(1, 1, -1, m_bClockMode, 0, "Clock Mode");
+		SendSwitch(1, 1, -1, m_bClockMode, 0, "Clock Mode", m_Name);
 	}
 	if (!root2["DHW"].empty())
 	{
 		tmpstr = root2["DHW"].asString();
 		bool bIsOn = (tmpstr != "off");
-		SendSwitch(2, 1, -1, bIsOn, 0, "Hot Water");
+		SendSwitch(2, 1, -1, bIsOn, 0, "Hot Water", m_Name);
 	}
 
 	return true;
@@ -767,7 +763,7 @@ bool CNefitEasy::GetGasUsage()
 
 	}
 	m_p1gas.gasusage = gusage;
-	sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+	sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255, nullptr);
 	return true;
 }
 

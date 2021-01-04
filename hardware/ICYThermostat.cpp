@@ -33,10 +33,6 @@ m_Password(Password)
 	Init();
 }
 
-CICYThermostat::~CICYThermostat(void)
-{
-}
-
 void CICYThermostat::Init()
 {
 	m_SerialNumber="";
@@ -79,7 +75,7 @@ void CICYThermostat::Do_Work()
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % ICY_POLL_INTERVAL ==0)
 		{
@@ -106,7 +102,7 @@ void CICYThermostat::SendSetPointSensor(const unsigned char Idx, const float Tem
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 bool CICYThermostat::GetSerialAndToken()
@@ -116,7 +112,7 @@ bool CICYThermostat::GetSerialAndToken()
 	std::string szPostdata=sstr.str();
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
-	std::string sURL = "";
+	std::string sURL;
 
 	if ((m_companymode == CMODE_UNKNOWN) || (m_companymode == CMODE_PORTAL))
 		sURL = ICY_LOGIN_URL;
@@ -211,9 +207,9 @@ bool CICYThermostat::GetSerialAndToken()
 
 void CICYThermostat::GetMeterDetails()
 {
-	if (m_UserName.size()==0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size()==0)
+	if (m_Password.empty())
 		return;
 	if (!GetSerialAndToken())
 		return;
@@ -224,7 +220,7 @@ void CICYThermostat::GetMeterDetails()
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Session-token:"+m_Token);
 
-	std::string sURL = "";
+	std::string sURL;
 
 	if (m_companymode == CMODE_PORTAL)
 		sURL = ICY_DATA_URL;
@@ -279,7 +275,7 @@ void CICYThermostat::SetSetpoint(const int idx, const float temp)
 		ExtraHeaders.push_back("Session-token:"+m_Token);
 		std::string sResult;
 
-		std::string sURL = "";
+		std::string sURL;
 		if (m_companymode == CMODE_PORTAL)
 			sURL = ICY_DATA_URL;
 		else if (m_companymode == CMODE_ENI)

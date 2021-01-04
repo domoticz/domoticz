@@ -1,4 +1,4 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/031E:0001:0004</MetaDataItem>
     <MetaDataItem name="ProductPic">images/inovelli/lzw30.png</MetaDataItem>
@@ -23,6 +23,9 @@ Please Note: If this doesn't work, you can check to see if your switch is within
     </MetaDataItem>
     <ChangeLog>
       <Entry author="Eric Maycock - ericm@inovelli.com" date="10 Sep 2019" revision="5">Adding Metadata</Entry>
+      <Entry author="Brett Daugherty and SirDeadlyStrike" date="23 Jul 2020" revision="6">Add Instant On/Off Parameter</Entry>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="24 Jul 2020" revision="7">Clarifying which scenes are disabled with parameter 51</Entry>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="30 Oct 2020" revision="8">Adding parameter 13 to manually specify the load if auto detection doesn't work</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->
@@ -80,6 +83,21 @@ Please Note: If this doesn't work, you can check to see if your switch is within
       Range: 0 - 10
       Default: 0
       </Help>
+    </Value>
+    <Value genre="config" type="list" size="1" index="13" label="Load Type" min="0" max="1" value="0">
+       <Help>
+       The default of the switch is to auto detect the load. In some situations you may want to try the option for a special load type. (firmware 1.17+)
+       </Help>
+       <Item value="0" label="Default"/>
+       <Item value="1" label="Special Load"/>
+    </Value>
+    <Value genre="config" type="list" size="1" index="51" label="Instant On" min="0" max="1" value="1">
+       <Help>
+       Enables instant on (ie: disables the 700ms button delay). Note, if you disable the delay, it will also disable scene control except for the following: Up pres
+sed, held, released, Down pressed, held, released &amp; config button pressed.
+       </Help>
+       <Item value="0" label="Enabled (no delay)"/>
+       <Item value="1" label="Disabled (700ms delay)"/>
     </Value>
   </CommandClass>
 

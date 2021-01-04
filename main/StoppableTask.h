@@ -19,11 +19,12 @@ public:
 		m_futureObj(m_exitSignal.get_future())
 	{
 	}
-	StoppableTask(StoppableTask && obj) :
-		m_exitSignal(std::move(obj.m_exitSignal)), m_futureObj(std::move(obj.m_futureObj))
+	StoppableTask(StoppableTask &&obj) noexcept
+		: m_exitSignal(std::move(obj.m_exitSignal))
+		, m_futureObj(std::move(obj.m_futureObj))
 	{
 	}
-	StoppableTask & operator=(StoppableTask && obj)
+	StoppableTask &operator=(StoppableTask &&obj) noexcept
 	{
 		m_exitSignal = std::move(obj.m_exitSignal);
 		m_futureObj = std::move(obj.m_futureObj);

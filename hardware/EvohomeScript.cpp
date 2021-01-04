@@ -39,12 +39,10 @@ CEvohomeScript::CEvohomeScript(const int ID)
 	m_bSkipReceiveCheck = true;
 }
 
-
-CEvohomeScript::~CEvohomeScript(void)
+CEvohomeScript::~CEvohomeScript()
 {
 	m_bIsStarted = false;
 }
-
 
 void CEvohomeScript::Init()
 {
@@ -143,10 +141,10 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 			//Execute possible script
 			std::string scriptname = OnAction.substr(9);
 #if !defined WIN32
-			if (scriptname.find("/") != 0)
+			if (scriptname.find('/') != 0)
 				scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
-			std::string scriptparams = "";
+			std::string scriptparams;
 			//Add parameters
 			int pindex = scriptname.find(' ');
 			if (pindex != std::string::npos)

@@ -937,7 +937,7 @@ Device.create = function (item) {
             dev = new Smoke(item);
             break;
         case "speaker":
-            dev = new Dimmer(item);
+            dev = new Sound(item);
             break;
         case "temp":
         case "temperature":
@@ -1306,7 +1306,10 @@ Blinds.inheritsFrom(Switch);
 function Counter(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.image = "images/counter.png";
+        if(item.Image == undefined)
+            this.image = "images/counter.png";
+        else
+            this.image = "images/"+item.Image+".png";
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
         if (typeof item.CounterToday != 'undefined') {
@@ -1487,12 +1490,15 @@ function Hardware(item) {
             this.LogLink = this.onClick = "Show" + this.subtype + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
         }
 
-        if (item.CustomImage == 0)
+        if (item.CustomImage == 0) {
             switch (item.SubType.toLowerCase()) {
                 case "percentage":
                     this.image = "images/Percentage48.png";
                     break;
             }
+        } else {
+            this.image = "images/"+ item.Image + "48_On.png";
+        }
     }
 }
 Hardware.inheritsFrom(UtilitySensor);
@@ -1640,6 +1646,19 @@ function Smoke(item) {
     }
 }
 Smoke.inheritsFrom(BinarySensor);
+
+function Sound(item) {
+	if (arguments.length != 0) {
+		this.parent.constructor(item);
+		if (item.CustomImage != 0) {
+			this.image = "images/" + item.Image + "48_On.png";
+		} else {
+			this.image = "images/Speaker48_On.png";
+		}
+		this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+	}
+}
+Sound.inheritsFrom(UtilitySensor);
 
 function Temperature(item) {
     if (arguments.length != 0) {

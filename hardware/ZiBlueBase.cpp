@@ -25,29 +25,28 @@ typedef struct _STR_TABLE_SINGLE {
 	const char   *str2;
 } STR_TABLE_SINGLE;
 
-extern const char *findTableIDSingle1(const STR_TABLE_SINGLE *t, const unsigned long id);
+extern const char *findTableIDSingle1(const STR_TABLE_SINGLE *t, unsigned long id);
 
 const char *szZiBlueProtocolRFLink(const unsigned char id)
 {
-	static const STR_TABLE_SINGLE	Table[] =
-	{
-		{ 1, "VISONIC_433" },
-		{ 2, "VISONIC_868" },
-		{ 3, "CHACON_433" },
-		{ 4, "DOMIA_433" },
-		{ 5, "X10_433" },
-		{ 6, "X2D_433" },
-		{ 7, "X2D_868" },
-		{ 8, "X2D_SHUTTER_868" },
-		{ 9, "X2D_HA_ELEC_868" },
-		{ 10, "X2D_HA_GAS_868" },
-		{ 11, "SOMFY_RTS_433" },
-		{ 12, "BLYSS_433" },
-		{ 13, "PARROT_433_OR_868" },
-		{ 14, "reserved" },
-		{ 15, "reserved" },
-		{ 16, "KD101_433" },
-		{ 0, NULL }
+	static const STR_TABLE_SINGLE Table[] = {
+		{ 1, "VISONIC_433" },	     //
+		{ 2, "VISONIC_868" },	     //
+		{ 3, "CHACON_433" },	     //
+		{ 4, "DOMIA_433" },	     //
+		{ 5, "X10_433" },	     //
+		{ 6, "X2D_433" },	     //
+		{ 7, "X2D_868" },	     //
+		{ 8, "X2D_SHUTTER_868" },    //
+		{ 9, "X2D_HA_ELEC_868" },    //
+		{ 10, "X2D_HA_GAS_868" },    //
+		{ 11, "SOMFY_RTS_433" },     //
+		{ 12, "BLYSS_433" },	     //
+		{ 13, "PARROT_433_OR_868" }, //
+		{ 14, "reserved" },	     //
+		{ 15, "reserved" },	     //
+		{ 16, "KD101_433" },	     //
+		{ 0, nullptr },		     //
 	};
 	return findTableIDSingle1(Table, id);
 }
@@ -56,20 +55,19 @@ const char *szZiBlueProtocolRFLink(const unsigned char id)
 
 const char *szZiBlueProtocol(const unsigned char id)
 {
-	static const STR_TABLE_SINGLE	Table[] =
-	{
-		{ 1, "X10" },
-		{ 2, "VISONIC" },
-		{ 3, "BLYSS" },
-		{ 4, "CHACON" },
-		{ 5, "OREGON" },
-		{ 6, "DOMIA" },
-		{ 7, "OWL" },
-		{ 8, "X2D" },
-		{ 9, "RTS" },
-		{ 10, "KD101" },
-		{ 11, "PARROT" },
-		{ 0, NULL }
+	static const STR_TABLE_SINGLE Table[] = {
+		{ 1, "X10" },	  //
+		{ 2, "VISONIC" }, //
+		{ 3, "BLYSS" },	  //
+		{ 4, "CHACON" },  //
+		{ 5, "OREGON" },  //
+		{ 6, "DOMIA" },	  //
+		{ 7, "OWL" },	  //
+		{ 8, "X2D" },	  //
+		{ 9, "RTS" },	  //
+		{ 10, "KD101" },  //
+		{ 11, "PARROT" }, //
+		{ 0, nullptr },	  //
 	};
 	return findTableIDSingle1(Table, id);
 }
@@ -128,10 +126,6 @@ std::string GetGeneralZiBlueFromInt(const _tZiBlueStringIntHelper *pTable, const
 CZiBlueBase::CZiBlueBase()
 {
 	Init();
-}
-
-CZiBlueBase::~CZiBlueBase()
-{
 }
 
 void CZiBlueBase::Init()
@@ -316,7 +310,7 @@ bool CZiBlueBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 	gswitch.battery_level = BatteryLevel;
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
-	sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, BatteryLevel);
+	sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, BatteryLevel, m_Name.c_str());
 	return true;
 }
 
@@ -406,13 +400,12 @@ void CZiBlueBase::ParseData(const char *data, size_t len)
 			break;
 		}
 		ii++;
-		continue;
 	}
 }
 
 bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len)
 {
-	m_LastReceivedTime = mytime(NULL);
+	m_LastReceivedTime = mytime(nullptr);
 
 	uint8_t reserved = (SDQ & 0x80) >> 7;
 	uint8_t vtype = (SDQ & 0x70) >> 4; //0x0 = binary, 0x4 = ascii
@@ -469,7 +462,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				INCOMING_RF_INFOS_TYPE0 *pSen = (INCOMING_RF_INFOS_TYPE0*)(data + 8);
 				uint8_t houseCode = (pSen->id & 0xF0) >> 4;;
 				uint8_t dev = pSen->id & 0x0F;
-				std::string switchCmd = "";
+				std::string switchCmd;
 				switch (pSen->subtype)
 				{
 				case SEND_ACTION_OFF:
@@ -492,7 +485,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					break;
 				}
 				const char *szProtocol = szZiBlueProtocol(pIncomming->protocol);
-				if (szProtocol != NULL)
+				if (szProtocol != nullptr)
 				{
 					SendSwitchInt(houseCode, dev, 255, std::string(szProtocol), switchCmd, 0);
 				}
@@ -507,7 +500,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 			{
 				INCOMING_RF_INFOS_TYPE1 *pSen = (INCOMING_RF_INFOS_TYPE1*)(data + 8);
 				int DevID = (pSen->idMsb << 16) + pSen->idLsb;
-				std::string switchCmd = "";
+				std::string switchCmd;
 				switch (pSen->subtype)
 				{
 				case SEND_ACTION_OFF:
@@ -532,7 +525,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 */
 				}
 				const char *szProtocol = szZiBlueProtocol(pIncomming->protocol);
-				if (szProtocol != NULL)
+				if (szProtocol != nullptr)
 				{
 					SendSwitchInt(DevID, 1, 255, std::string(szProtocol), switchCmd, 0);
 				}

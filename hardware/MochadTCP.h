@@ -4,13 +4,14 @@
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"
 
-class MochadTCP: public CDomoticzHardwareBase,  ASyncTCP
+class MochadTCP : public CDomoticzHardwareBase, ASyncTCP
 {
-public:
-	MochadTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~MochadTCP(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
+      public:
+	MochadTCP(int ID, const std::string &IPAddress, unsigned short usIPPort);
+	~MochadTCP() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
@@ -18,13 +19,14 @@ private:
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const boost::system::error_code& error) override;
+	void OnError(const boost::system::error_code &error) override;
 
 	unsigned char hex2bin(char h);
 	void setSecID(unsigned char *p);
 	void MatchLine();
 	void ParseData(const unsigned char *pData, int Len);
-private:
+
+      private:
 	RBUF m_mochad;
 	RBUF m_mochadsec;
 	std::string m_szIPAddress;
@@ -38,6 +40,4 @@ private:
 	unsigned char m_mochadbuffer[1028];
 	char s_buffer[1028];
 	int m_bufferpos;
-
 };
-

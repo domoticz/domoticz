@@ -22,10 +22,6 @@ CPVOutputInput::CPVOutputInput(const int ID, const std::string& SID, const std::
 	Init();
 }
 
-CPVOutputInput::~CPVOutputInput(void)
-{
-}
-
 void CPVOutputInput::Init()
 {
 	m_bHadConsumption = false;
@@ -64,7 +60,7 @@ void CPVOutputInput::Do_Work()
 	_log.Log(LOG_STATUS, "PVOutput (Input): Worker started...");
 	while (!IsStopRequested(1000))
 	{
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		m_LastHeartbeat = atime;
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
@@ -84,9 +80,9 @@ bool CPVOutputInput::WriteToHardware(const char* pdata, const unsigned char leng
 
 void CPVOutputInput::GetMeterDetails()
 {
-	if (m_SID.size() == 0)
+	if (m_SID.empty())
 		return;
-	if (m_KEY.size() == 0)
+	if (m_KEY.empty())
 		return;
 
 	std::string sResult;

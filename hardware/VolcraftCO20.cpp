@@ -30,10 +30,6 @@ CVolcraftCO20::CVolcraftCO20(const int ID)
 	m_HwdID=ID;
 }
 
-CVolcraftCO20::~CVolcraftCO20(void)
-{
-}
-
 bool CVolcraftCO20::StartHardware()
 {
 	RequestStart();
@@ -67,7 +63,7 @@ void CVolcraftCO20::Do_Work()
 		sec_counter++;
 		if (sec_counter%12==0)
 		{
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter%VolcraftCO20_POLL_INTERVAL==0)

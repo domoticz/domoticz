@@ -8,16 +8,12 @@
 
 #define RETRY_DELAY 30
 
-MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-	m_szIPAddress(IPAddress),
-	m_usIPPort(usIPPort),
-	m_retrycntr(RETRY_DELAY)
+MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
+	: m_retrycntr(RETRY_DELAY)
+	, m_szIPAddress(IPAddress)
+	, m_usIPPort(usIPPort)
 {
 	m_HwdID = ID;
-}
-
-MySensorsTCP::~MySensorsTCP(void)
-{
 }
 
 bool MySensorsTCP::StartHardware()
@@ -80,7 +76,7 @@ void MySensorsTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (isConnected())

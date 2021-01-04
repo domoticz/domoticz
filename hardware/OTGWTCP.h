@@ -3,20 +3,23 @@
 #include "ASyncTCP.h"
 #include "OTGWBase.h"
 
-class OTGWTCP: public OTGWBase, ASyncTCP
+class OTGWTCP : public OTGWBase, ASyncTCP
 {
-public:
-	OTGWTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
-	~OTGWTCP(void);
-public:
+      public:
+	OTGWTCP(int ID, const std::string &IPAddress, unsigned short usIPPort, int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6);
+	~OTGWTCP() override = default;
+
+      public:
 	// signals
-	boost::signals2::signal<void()>	sDisconnected;
-private:
+	boost::signals2::signal<void()> sDisconnected;
+
+      private:
 	int m_retrycntr;
 	bool StartHardware() override;
 	bool StopHardware() override;
-	bool WriteInt(const unsigned char *pData, const unsigned char Len) override;
-protected:
+	bool WriteInt(const unsigned char *pData, unsigned char Len) override;
+
+      protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 
@@ -25,8 +28,7 @@ protected:
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const boost::system::error_code& error) override;
+	void OnError(const boost::system::error_code &error) override;
 
 	std::shared_ptr<std::thread> m_thread;
 };
-

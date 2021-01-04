@@ -10,17 +10,18 @@ namespace Json
 
 class CNetatmo : public CDomoticzHardwareBase
 {
-public:
-	CNetatmo(const int ID, const std::string& username, const std::string& password);
-	~CNetatmo(void);
+      public:
+	CNetatmo(int ID, const std::string &username, const std::string &password);
+	~CNetatmo() override = default;
 
-	bool WriteToHardware(const char *, const unsigned char) override;
-	void SetSetpoint(int idx, const float temp);
-	bool SetProgramState(const int idx, const int newState);
-private:
+	bool WriteToHardware(const char *, unsigned char) override;
+	void SetSetpoint(int idx, float temp);
+	bool SetProgramState(int idx, int newState);
+
+      private:
 	enum _eNetatmoType
 	{
-		NETYPE_WEATHER_STATION=0,
+		NETYPE_WEATHER_STATION = 0,
 		NETYPE_HOMECOACH,
 		NETYPE_ENERGY
 	};
@@ -30,8 +31,8 @@ private:
 	std::string m_password;
 	std::string m_accessToken;
 	std::string m_refreshToken;
-	std::map<int, std::string > m_thermostatDeviceID;
-	std::map<int, std::string > m_thermostatModuleID;
+	std::map<int, std::string> m_thermostatDeviceID;
+	std::map<int, std::string> m_thermostatModuleID;
 	bool m_bPollThermostat;
 	bool m_bPollWeatherData;
 	bool m_bFirstTimeThermostat;
@@ -43,7 +44,7 @@ private:
 
 	time_t m_nextRefreshTs;
 
-	std::map<int,float> m_RainOffset;
+	std::map<int, float> m_RainOffset;
 	std::map<int, float> m_OldRainCounter;
 
 	std::map<int, bool> m_bNetatmoRefreshed;
@@ -52,16 +53,16 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	std::string MakeRequestURL(const _eNetatmoType NetatmoType);
+	std::string MakeRequestURL(_eNetatmoType NetatmoType);
 	void GetMeterDetails();
 	void GetThermostatDetails();
-	bool ParseNetatmoGetResponse(const std::string &sResult, const _eNetatmoType NetatmoType, const bool bIsThermostat);
+	bool ParseNetatmoGetResponse(const std::string &sResult, _eNetatmoType NetatmoType, bool bIsThermostat);
 	bool ParseHomeData(const std::string &sResult);
 	bool ParseHomeStatus(const std::string &sResult);
-	bool SetAway(const int idx, const bool bIsAway);
+	bool SetAway(int idx, bool bIsAway);
 
 	bool Login();
-	bool RefreshToken(const bool bForce = false);
+	bool RefreshToken(bool bForce = false);
 	bool LoadRefreshToken();
 	void StoreRefreshToken();
 	bool m_isLogged;
@@ -78,6 +79,5 @@ private:
 	std::map<int, CBaroForecastCalculator> m_forecast_calculators;
 
 	int GetBatteryLevel(const std::string &ModuleType, int battery_percent);
-	bool ParseDashboard(const Json::Value &root, const int DevIdx, const int ID, const std::string &name, const std::string &ModuleType, const int battery_percent, const int rf_status);
+	bool ParseDashboard(const Json::Value &root, int DevIdx, int ID, const std::string &name, const std::string &ModuleType, int battery_percent, int rf_status);
 };
-

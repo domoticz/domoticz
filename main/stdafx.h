@@ -53,6 +53,7 @@ typedef unsigned char       BYTE;
 #include <sstream>
 #include <string>
 #include <thread>
+#include <cmath>
 
 // third-party
 #include <json/json.h>
@@ -61,6 +62,4 @@ typedef unsigned char       BYTE;
 // rarely changing project-specific
 #include "concurrent_queue.h"
 #include "localtime_r.h"
-#include "Logger.h"
-#include "Noncopyable.h"
 #include "StoppableTask.h"

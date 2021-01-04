@@ -16,10 +16,6 @@ OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned shor
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
 }
 
-OTGWTCP::~OTGWTCP(void)
-{
-}
-
 bool OTGWTCP::StartHardware()
 {
 	RequestStart();
@@ -69,7 +65,7 @@ void OTGWTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (isConnected())

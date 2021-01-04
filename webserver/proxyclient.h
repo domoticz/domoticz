@@ -20,12 +20,12 @@ class DomoticzTCP;
 namespace http {
 	namespace server {
 
-#define PDUFUNCTION(type) void CProxyClient::OnPduReceived(std::shared_ptr<ProxyPdu_##type> pdu)
+#define PDUFUNCTION(type) void CProxyClient::OnPduReceived(const std::shared_ptr<ProxyPdu_##type> &pdu)
 
 		class CProxyClient : ASyncTCP {
 		public:
 			CProxyClient();
-			~CProxyClient();
+			~CProxyClient() override = default;
 			void Reset();
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);
@@ -52,7 +52,7 @@ namespace http {
 			/* Algorithm execution class */
 #define PDUSTRING(name)
 #define PDULONG(name)
-#define PROXYPDU(name, members) void OnPduReceived(std::shared_ptr<ProxyPdu_##name> pdu);
+#define PROXYPDU(name, members) void OnPduReceived(const std::shared_ptr<ProxyPdu_##name> &pdu);
 #include "proxydef.def"
 #undef PDUSTRING
 #undef PDULONG
@@ -78,12 +78,13 @@ namespace http {
 
 		class CProxyManager {
 		public:
-			CProxyManager();
-			~CProxyManager();
-			bool Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
-			void Stop();
-			void SetWebRoot(const std::string& doc_root);
-			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
+		  CProxyManager() = default;
+		  ~CProxyManager();
+		  bool Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
+		  void Stop();
+		  void SetWebRoot(const std::string &doc_root);
+		  CProxyClient *GetProxyForMaster(DomoticzTCP *master);
+
 		private:
 			CProxyClient proxyclient;
 			std::string m_pDocRoot;
@@ -92,17 +93,19 @@ namespace http {
 
 		class CProxySharedData {
 		public:
-			CProxySharedData() {};
-			void SetInstanceId(const std::string &instanceid);
-			std::string GetInstanceId();
-			bool AddConnectedIp(std::string ip);
-			bool AddConnectedServer(std::string ip);
-			void AddTCPClient(DomoticzTCP *master);
-			void RemoveTCPClient(DomoticzTCP *master);
-			void RestartTCPClients();
-			void StopTCPClients();
-			DomoticzTCP *findSlaveConnection(const std::string &token);
-			DomoticzTCP *findSlaveById(const std::string &instanceid);
+		  CProxySharedData() = default;
+		  ;
+		  void SetInstanceId(const std::string &instanceid);
+		  std::string GetInstanceId();
+		  bool AddConnectedIp(const std::string &ip);
+		  bool AddConnectedServer(const std::string &ip);
+		  void AddTCPClient(DomoticzTCP *master);
+		  void RemoveTCPClient(DomoticzTCP *master);
+		  void RestartTCPClients();
+		  void StopTCPClients();
+		  DomoticzTCP *findSlaveConnection(const std::string &token);
+		  DomoticzTCP *findSlaveById(const std::string &instanceid);
+
 		private:
 			std::string _instanceid;
 			std::set<std::string> connectedips_;

@@ -1,6 +1,6 @@
 [submodule "extern/jsoncpp"]
 	path = extern/jsoncpp
-	url = https://github.com/open-source-parsers/jsoncpp.git
+	url = https://github.com/domoticz/jsoncpp
 	ignore = dirty
 [submodule "extern/mosquitto"]
 	path = extern/mosquitto

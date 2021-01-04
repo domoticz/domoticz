@@ -11,19 +11,20 @@ class CPanasonicNode;
 
 class CPanasonic : public CDomoticzHardwareBase
 {
-public:
-	CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms);
-	explicit CPanasonic(const int ID);
-	~CPanasonic(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	void AddNode(const std::string &Name, const std::string &IPAddress, const int Port);
-	bool UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Port);
-	void RemoveNode(const int ID);
+      public:
+	CPanasonic(int ID, int PollIntervalsec, int PingTimeoutms, int Mode3);
+	explicit CPanasonic(int ID);
+	~CPanasonic() override;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	void AddNode(const std::string &Name, const std::string &IPAddress, int Port);
+	bool UpdateNode(int ID, const std::string &Name, const std::string &IPAddress, int Port);
+	void RemoveNode(int ID);
 	void RemoveAllNodes();
-	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
-	void SendCommand(const int ID, const std::string &command);
-	bool SetExecuteCommand(const int ID, const std::string &command);
-private:
+	void SetSettings(int PollIntervalsec, int PingTimeoutms, int Mode3);
+	void SendCommand(int ID, const std::string &command);
+	bool SetExecuteCommand(int ID, const std::string &command);
+
+      private:
 	void Do_Work();
 
 	bool StartHardware() override;
@@ -31,11 +32,15 @@ private:
 
 	void ReloadNodes();
 	void UnloadNodes();
-private:
-	static	std::vector<std::shared_ptr<CPanasonicNode> > m_pNodes;
+
+      private:
+	static std::vector<std::shared_ptr<CPanasonicNode>> m_pNodes;
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
+	bool m_bUnknownCommandAllowed;
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
 	boost::asio::io_service m_ios;
+
+	friend class CPanasonicNode; 
 };

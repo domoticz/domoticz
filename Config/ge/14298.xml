@@ -1,0 +1,45 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3034:4F50</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/14298.png</MetaDataItem>
+    <MetaDataItem id="3034" name="ZWProductPage" type="4F50">https://products.z-wavealliance.org/products/3408/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. If plugged in, unplug the Switch from the receptacle. 
+2. Press and hold the top button for at least 3 seconds while you plug the switch into a receptacle. </MetaDataItem>
+    <MetaDataItem id="3034" name="Identifier" type="4F50">14298/ZW4202</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/3408/14298%20EnFrSp%20QSG%20v1.pdf</MetaDataItem>
+    <MetaDataItem name="Description">New Plug-in Outdoor Smart Switch is equipt with S2 and Smart Start which allows for easy and secure inclusion.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to exclude a device from the Z-Wave network. 
+2. Once the controller is ready to Exclude your device, press and release the manual/program button on the smart switch to exclude it from the network. </MetaDataItem>
+    <MetaDataItem name="Name">Plug-in Outdoor Smart Switch</MetaDataItem>
+    <MetaDataItem id="3034" name="FrequencyName" type="4F50">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for you Z-Wave certified controller to include the smart switch to the Z-Wave network. 
+2. Once the controller is ready to include your outdoor smart switch, press and release the manual/program button on the smart switch to include it in the network.
+3. Once your controller has confirmed that the smart switch has been included, refresh the Z-Wave network to optimize performance. If prompted by the controller to enter the S2 security code
+/security number on the side of the box or the QR code label on the product, enter the 5 digit code.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="mike240se" date="06 Jul 2020" revision="1">Initial metadata</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="0">
+      <Help>Sets when the LED on the switch is lit.</Help>
+      <Item label="LED on when light off" value="0"/>
+      <Item label="LED on when light on" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+	<Value genre="config" index="19" label="Alternate Exclusion" max="1" min="0" size="1" type="list" value="0">
+      <Help>Default - normal exclusion
+        Active - perform a series of button presses to help eliminate accidental exclusion</Help>
+      <Item label="Press any button" value="0"/>
+      <Item label="Press two times ON, two times OFF" value="1"/>
+    </Value>
+  </CommandClass>
+   <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

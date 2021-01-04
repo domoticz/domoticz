@@ -51,10 +51,6 @@ std::string SolarMaxTCP::MakeRequestString()
 	return std::string(szSendRequest);
 }
 
-SolarMaxTCP::~SolarMaxTCP(void)
-{
-}
-
 bool SolarMaxTCP::StartHardware()
 {
 	RequestStart();
@@ -77,14 +73,11 @@ bool SolarMaxTCP::StartHardware()
 	{
 		// change Hostname in serveraddr
 		hostent *he = gethostbyname(m_szIPAddress.c_str());
-		if (he == NULL)
+		if (he == nullptr)
 		{
 			return false;
 		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
-		}
+		memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
 	}
 
 	char szIP[20];
@@ -168,7 +161,7 @@ void SolarMaxTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (m_socket == INVALID_SOCKET)
@@ -205,10 +198,7 @@ void SolarMaxTCP::Do_Work()
 					m_retrycntr = 0;
 					continue;
 				}
-				else
-				{
-					ParseData((const unsigned char *)&buf, bread);
-				}
+				ParseData((const unsigned char *)&buf, bread);
 			}
 		}
 
@@ -276,14 +266,14 @@ static unsigned long SolarMaxGetHexStringValue(const std::string &svalue)
 void SolarMaxTCP::ParseLine()
 {
 	std::string InputStr = std::string((const char*)&m_buffer);
-	size_t npos = InputStr.find("|");
+	size_t npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
 		_log.Log(LOG_ERROR, "SolarMax: Invalid data received!");
 		return;
 	}
 	InputStr = InputStr.substr(npos + 4);
-	npos = InputStr.find("|");
+	npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
 		_log.Log(LOG_ERROR, "SolarMax: Invalid data received!");
@@ -296,15 +286,13 @@ void SolarMaxTCP::ParseLine()
 	if (results.size() < 2)
 		return; //invalid data
 
-	std::vector<std::string>::const_iterator itt;
-
 	double kwhCounter = 0;
 	double ActUsage = 0;
 
-	for (itt = results.begin(); itt != results.end(); ++itt)
+	for (const auto &sd : results)
 	{
 		std::vector<std::string> varresults;
-		StringSplit(*itt, "=", varresults);
+		StringSplit(sd, "=", varresults);
 		if (varresults.size() !=2)
 			continue;
 

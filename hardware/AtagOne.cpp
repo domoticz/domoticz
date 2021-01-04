@@ -74,10 +74,6 @@ m_Password(Password)
 	Init();
 }
 
-CAtagOne::~CAtagOne(void)
-{
-}
-
 void CAtagOne::SetModes(const int Mode1, const int /*Mode2*/, const int /*Mode3*/, const int /*Mode4*/, const int /*Mode5*/, const int /*Mode6*/)
 {
 	m_OutsideTemperatureIdx = Mode1;
@@ -130,7 +126,7 @@ std::string GetFirstDeviceID(const std::string &shtml)
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(tpos + 2);
-	tpos = sResult.find("\"");
+	tpos = sResult.find('"');
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(0, tpos);
@@ -171,7 +167,7 @@ std::string CAtagOne::GetRequestVerificationToken(const std::string &url)
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(tpos+7);
-	tpos = sResult.find("\"");
+	tpos = sResult.find('"');
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(0,tpos);
@@ -259,7 +255,7 @@ void CAtagOne::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % AtagOne_POLL_INTERVAL == 0)
 		{
@@ -283,7 +279,6 @@ bool CAtagOne::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	if (tsize < 1)
 		return false;
 
-	Json::Value::const_iterator itt;
 	Json::ArrayIndex rsize = tempjson["result"].size();
 	if (rsize < 1)
 		return false;
@@ -326,10 +321,10 @@ static std::string GetHTMLPageValue(const std::string &hpage, const std::string 
 	//     <div class="col-xs-6">
 	//         <p class="form-control-static">CV-ketel</p>
 	//     </div>
-	for (const auto & itt : m_labels)
+	for (const auto &label : m_labels)
 	{
 		std::string sresult = hpage;
-		std::string sstring = ">" + itt + "</label>";
+		std::string sstring = ">" + label + "</label>";
 		size_t tpos = sresult.find(sstring);
 		if (tpos==std::string::npos)
 			continue;
@@ -338,11 +333,11 @@ static std::string GetHTMLPageValue(const std::string &hpage, const std::string 
 		if (tpos == std::string::npos)
 			continue;
 		sresult = sresult.substr(tpos+2);
-		tpos = sresult.find(">");
+		tpos = sresult.find('>');
 		if (tpos == std::string::npos)
 			continue;
 		sresult = sresult.substr(tpos + 1);
-		tpos = sresult.find("<");
+		tpos = sresult.find('<');
 		if (tpos == std::string::npos)
 			continue;
 		sresult = sresult.substr(0,tpos);
@@ -490,11 +485,11 @@ void CAtagOne::GetMeterDetails()
 	{
 		std::string actSource = root["currentMode"].asString();
 		bool bIsScheduleMode = (actSource == "schedule_active");
-		SendSwitch(1, 1, 255, bIsScheduleMode, 0, "Thermostat Schedule Mode");
+		SendSwitch(1, 1, 255, bIsScheduleMode, 0, "Thermostat Schedule Mode", m_Name);
 	}
 	if (!root["flameStatus"].empty())
 	{
-		SendSwitch(2, 1, 255, root["flameStatus"].asBool(), 0, "Flame Status");
+		SendSwitch(2, 1, 255, root["flameStatus"].asBool(), 0, "Flame Status", m_Name);
 	}
 
 }

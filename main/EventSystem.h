@@ -48,7 +48,8 @@ public:
 		REASON_TIME,			// 3
 		REASON_SECURITY,		// 4
 		REASON_URL,			// 5
-		REASON_NOTIFICATION		// 6
+		REASON_NOTIFICATION,		// 6
+		REASON_SHELLCOMMAND		// 7
 	};
 
 	struct _tDeviceStatus
@@ -70,6 +71,10 @@ public:
 		int signalLevel;
 		int unit;
 		int hardwareID;
+		float AddjValue;
+		float AddjMulti;
+		float AddjValue2;
+		float AddjMulti2;
 		std::map<uint8_t, int> JsonMapInt;
 		std::map<uint8_t, float> JsonMapFloat;
 		std::map<uint8_t, bool> JsonMapBool;
@@ -103,32 +108,35 @@ public:
 		bool Enabled;
 	} tHardwareList;
 
-	CEventSystem(void);
-	~CEventSystem(void);
+	CEventSystem();
+	~CEventSystem();
 
 	void StartEventSystem();
 	void StopEventSystem();
 
 	void LoadEvents();
-	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname);
-	void UpdateBatteryLevel(const uint64_t ulDevID, const unsigned char batteryLevel);
+	void ProcessDevice(int HardwareID, uint64_t ulDevID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+			   const char *sValue, const std::string &devname);
+	void UpdateBatteryLevel(uint64_t ulDevID, unsigned char batteryLevel);
 
-	void RemoveSingleState(const uint64_t ulDevID, const _eReason reason);
-	void WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname, const _eReason reason);
+	void RemoveSingleState(uint64_t ulDevID, _eReason reason);
+	void WWWUpdateSingleState(uint64_t ulDevID, const std::string &devname, _eReason reason);
 	void WWWUpdateSecurityState(int securityStatus);
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
-	void SetEnabled(const bool bEnabled);
+	void SetEnabled(bool bEnabled);
 	void GetCurrentStates();
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
-	bool UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
-	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate);
-	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
-	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
-	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
-	bool CustomCommand(const uint64_t idx, const std::string &sCommand);
+	bool UpdateSceneGroup(uint64_t ulDevID, int nValue, const std::string &lastUpdate);
+	void UpdateUserVariable(uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate);
+	bool PythonScheduleEvent(const std::string &ID, const std::string &Action, const std::string &eventName);
+	bool GetEventTrigger(uint64_t ulDevID, _eReason reason, bool bEventTrigger);
+	void SetEventTrigger(uint64_t ulDevID, _eReason reason, float fDelayTime);
+	bool CustomCommand(uint64_t idx, const std::string &sCommand);
 
 	void TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback);
+	void TriggerShellCommand(const std::string &result, const std::string &scriptstderr, const std::string &callback, int exitcode, bool timeoutOccurred);
+
 
 private:
 	enum _eJsonType
@@ -162,6 +170,8 @@ private:
 		std::string sValue;
 		std::string nValueWording;
 		std::string lastUpdate;
+		std::string errorText;
+		bool timeoutOccurred;
 		uint8_t lastLevel;
 		std::vector<std::string> vData;
 		std::map<uint8_t, int> JsonMapInt;
@@ -195,17 +205,8 @@ private:
 	void Do_Work();
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
-	std::string UpdateSingleState(
-		const uint64_t ulDevID, 
-		const std::string &devname, 
-		const int nValue, const std::string &sValue, 
-		const unsigned char devType, const unsigned char subType, 
-		const _eSwitchType switchType, 
-		const std::string &lastUpdate, 
-		const unsigned char lastLevel, 
-		const unsigned char batteryLevel,
-		const std::map<std::string, std::string> & options
-	);
+	std::string UpdateSingleState(uint64_t ulDevID, const std::string &devname, int nValue, const std::string &sValue, unsigned char devType, unsigned char subType, _eSwitchType switchType,
+				      const std::string &lastUpdate, unsigned char lastLevel, unsigned char batteryLevel, const std::map<std::string, std::string> &options);
 	void EvaluateEvent(const std::vector<_tEventQueue> &items);
 	void EvaluateDatabaseEvents(const _tEventQueue &item);
 	lua_State *ParseBlocklyLua(lua_State *lua_state, const _tEventItem &item);
@@ -219,9 +220,9 @@ private:
 	void EvaluateLua(const std::vector<_tEventQueue> &items, const std::string &filename, const std::string &LuaString);
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
-	std::string nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
+	std::string nValueToWording(uint8_t dType, uint8_t dSubType, _eSwitchType switchtype, int nValue, const std::string &sValue, const std::map<std::string, std::string> &options);
 	static int l_domoticz_print(lua_State* lua_state);
-	void OpenURL(const float delay, const std::string &URL);
+	void OpenURL(float delay, const std::string &URL);
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, const std::string &Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
@@ -229,11 +230,11 @@ private:
 
 	std::string ParseBlocklyString(const std::string &oString);
 	void ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ );
-	void UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID);
+	void UpdateJsonMap(_tDeviceStatus &item, uint64_t ulDevID);
 	void EventQueueThread();
 	void UnlockEventQueueThread();
 	void ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQueue &item);
-	void EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, const int secStatus);
+	void EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, int secStatus);
 
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
@@ -270,16 +271,16 @@ private:
 	std::map<uint64_t, float> m_windgustValuesByID;
 	std::map<uint64_t, int> m_zwaveAlarmValuesByID;
 
-	void reportMissingDevice(const int deviceID, const _tEventItem &item);
+	void reportMissingDevice(int deviceID, const _tEventItem &item);
 	int getSunRiseSunSetMinutes(const std::string &what);
 	bool isEventscheduled(const std::string &eventName);
-	bool iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename);
+	bool iterateLuaTable(lua_State *lua_state, int tIndex, const std::string &filename);
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename);
-	void report_errors(lua_State *L, int status, std::string filename);
+	void report_errors(lua_State *L, int status, const std::string &filename);
 	int calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);
 	std::string SpaceToUnderscore(std::string sResult);
 	std::string LowerCase(std::string sResult);
 
-	bool Update(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata) override;
+	bool Update(Notification::_eType type, Notification::_eStatus status, const std::string &eventdata) override;
 };

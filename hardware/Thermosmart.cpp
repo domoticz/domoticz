@@ -77,10 +77,6 @@ CThermosmart::CThermosmart(const int ID, const std::string &Username, const std:
 	Init();
 }
 
-CThermosmart::~CThermosmart(void)
-{
-}
-
 void CThermosmart::SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
 {
 	m_OutsideTemperatureIdx = Mode1;
@@ -129,7 +125,7 @@ void CThermosmart::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % THERMOSMART_POLL_INTERVAL == 0)
 		{
@@ -153,7 +149,6 @@ bool CThermosmart::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	if (tsize < 1)
 		return false;
 
-	Json::Value::const_iterator itt;
 	Json::ArrayIndex rsize = tempjson["result"].size();
 	if (rsize < 1)
 		return false;
@@ -175,7 +170,7 @@ void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp,
 	thermos.id4=Idx;
 	thermos.dunit=0;
 	thermos.temp=Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255, nullptr);
 }
 
 bool CThermosmart::Login()
@@ -388,7 +383,7 @@ void CThermosmart::GetMeterDetails()
 	{
 		std::string actSource = root["source"].asString();
 		bool bPauzeOn = (actSource == "pause");
-		SendSwitch(1, 1, 255, bPauzeOn, 0, "Thermostat Pause");
+		SendSwitch(1, 1, 255, bPauzeOn, 0, "Thermostat Pause", m_Name);
 	}
 }
 

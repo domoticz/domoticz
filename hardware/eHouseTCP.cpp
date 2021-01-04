@@ -70,47 +70,48 @@ h l O nr
 #define round(a) ( int ) ( a + .5 )
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Init Structures on start
-void eHouseTCP::InitStructs(void)
+void eHouseTCP::InitStructs()
 {
 	int i;
 	int to = EHOUSE_WIFI_MAX + 1;
 	for (i = 0; i < to; i++)
 	{
-		(m_eHWIFIs[i]) = NULL;		//full wifi status
-		(m_eHWIFIPrev[i]) = NULL;		//full wifi status previous for detecting changes
-		(m_eHWIFIn[i]) = NULL;			//names of i/o for WiFi controllers
-		(m_eHWiFi[i]) = NULL;
+		(m_eHWIFIs[i]) = nullptr;    // full wifi status
+		(m_eHWIFIPrev[i]) = nullptr; // full wifi status previous for detecting changes
+		(m_eHWIFIn[i]) = nullptr;    // names of i/o for WiFi controllers
+		(m_eHWiFi[i]) = nullptr;
 	}
-	m_ECMn = NULL;
-	m_ECM = NULL;
-	m_ECMPrv = NULL;					//Previous statuses for Update MSQL optimalization  (change data only updated)
-	m_eHouseProN = NULL;
-	m_eHouseProStatus = NULL;
-	m_eHouseProStatusPrv = NULL;
+	m_ECMn = nullptr;
+	m_ECM = nullptr;
+	m_ECMPrv = nullptr; // Previous statuses for Update MSQL optimalization  (change data only updated)
+	m_eHouseProN = nullptr;
+	m_eHouseProStatus = nullptr;
+	m_eHouseProStatusPrv = nullptr;
 
 	to = ETHERNET_EHOUSE_RM_MAX + 1;
 	for (i = 0; i < to; i++)
 	{
-		(m_eHEn[i]) = NULL;				//names of i/o for Ethernet controllers
-		(m_eHERMs[i]) = NULL;  		//full ERM status decoded
-		(m_eHERMPrev[i]) = NULL;  	//full ERM status decoded previous for detecting changes
+		(m_eHEn[i]) = nullptr;	    // names of i/o for Ethernet controllers
+		(m_eHERMs[i]) = nullptr;    // full ERM status decoded
+		(m_eHERMPrev[i]) = nullptr; // full ERM status decoded previous for detecting changes
 	}
 	to = EHOUSE1_RM_MAX + 1;
 	for (i = 0; i < to; i++)
 	{
-		(m_eHRMs[i]) = NULL;  		//full RM status decoded
-		(m_eHRMPrev[i]) = NULL;  		//full RM status decoded previous for detecting changes
-		(m_eHn[i]) = NULL;
+		(m_eHRMs[i]) = nullptr;	   // full RM status decoded
+		(m_eHRMPrev[i]) = nullptr; // full RM status decoded previous for detecting changes
+		(m_eHn[i]) = nullptr;
 	}
 	to = EVENT_QUEUE_MAX;
 	for (i = 0; i < to; i++)
-		(m_EvQ[i]) = NULL;		//eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
+		(m_EvQ[i]) = nullptr; // eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO
+				      // other variants) - multiple events can be executed at once
 	to = MAX_AURA_DEVS;
 	for (i = 0; i < to; i++)
 	{
-		(m_AuraDev[i]) = NULL;	// Aura status thermostat
-		(m_AuraDevPrv[i]) = NULL;			// previous for detecting changes
-		(m_AuraN[i]) = NULL;
+		(m_AuraDev[i]) = nullptr;    // Aura status thermostat
+		(m_AuraDevPrv[i]) = nullptr; // previous for detecting changes
+		(m_AuraN[i]) = nullptr;
 	}
 	//future initialzation
 #ifndef REMOVEUNUSED
@@ -247,16 +248,16 @@ int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const u
 	sprintf(IDX, "%02X%02X%02X%02X", devh, devl, code, nr);  //index calculated adrh,adrl,signalcode,i/o nr
 	if ((type == pTypeLighting2)) // || (type==pTypeTEMP))
 		sprintf(IDX, "%X%02X%02X%02X", devh, devl, code, nr);    //exception bug in Domoticz??
-	std::string devname = "";
+	std::string devname;
 	std::vector<std::vector<std::string> > result;
 	//if name contains '@' - ignore i/o - do not add to DB (unused)
-	if ((strstr(Name, "@") == NULL) && (strlen(Name) > 0))
+	if ((strstr(Name, "@") == nullptr) && (strlen(Name) > 0))
 	{
 		devname.append(Name, strlen(Name));
 		devname.append(" - ");
 	}
 	if (swtype != STYPE_Selector)
-		if ((strstr(SignalName, "@") != NULL) || (strlen(SignalName) < 1))
+		if ((strstr(SignalName, "@") != nullptr) || (strlen(SignalName) < 1))
 		{
 			return -1;
 		}
@@ -310,22 +311,21 @@ void eHouseTCP::UpdatePGM(int /*adrh*/, int /*adrl*/, int /*devtype*/, const cha
 	std::string Names = ISO2UTF8
 	(std::string(names));
 	//_log.Log(LOG_ERROR, "PGM: %s", Names.c_str());
-	m_sql.SetDeviceOptions(idx, m_sql.BuildDeviceOptions(Names.c_str(), false));
+	m_sql.SetDeviceOptions(idx, m_sql.BuildDeviceOptions(Names, false));
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Add Controllers To 'Plans' DB
 int eHouseTCP::UpdateSQLPlan(int /*devh*/, int /*devl*/, int /*devtype*/, const char * Name)
 {
 	int i = 0;
-	std::string devname = "";
+	std::string devname;
 	std::vector<std::vector<std::string> > result;
 	devname.append(Name, strlen(Name));
 	devname = ISO2UTF8(devname);
 
 	result = m_sql.safe_query("SELECT ID FROM Plans WHERE (Name=='%q') ", devname.c_str());
 
-
-if (result.empty())
+	if (result.empty())
 	{
 		m_sql.safe_query("INSERT INTO Plans (Name) VALUES ('%q')", devname.c_str());
 	}
@@ -344,7 +344,7 @@ void eHouseTCP::UpdateSQLStatus(int devh, int devl, int /*devtype*/, int code, i
 	char IDX[20];
 	char state[5] = "";
 	char szLastUpdate[40];
-	time_t now = time(0);
+	time_t now = time(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
@@ -498,7 +498,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	{
 		m_EvQ[i] = (struct EventQueueT *) malloc(sizeof(struct EventQueueT));
 
-		if (m_EvQ[i] == NULL)
+		if (m_EvQ[i] == nullptr)
 		{
 			LOG(LOG_ERROR, "Can't Alloc Events Queue Memory");
 			return;
@@ -546,7 +546,9 @@ bool eHouseTCP::StartHardware()
 
 #ifdef UDP_USE_THREAD
 	//please use normal std::thread!
-	thread_create(&ThEhouseUDP, NULL, UDPListener, (void *)&ThEhouseUDPdta); //for eHouse4ethernet or eHouse1 under CommManager supervision, eHouse Pro server in main thread
+	thread_create(
+		&ThEhouseUDP, nullptr, UDPListener,
+		(void *)&ThEhouseUDPdta); // for eHouse4ethernet or eHouse1 under CommManager supervision, eHouse Pro server in main thread
 #else
 
 #endif
@@ -735,7 +737,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 //////////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::CheckAddress()
 {
-	if (m_IPAddress.size() == 0 || m_IPPort < 1 || m_IPPort > 65535)
+	if (m_IPAddress.empty() || m_IPPort < 1 || m_IPPort > 65535)
 	{
 		LOG(LOG_ERROR, "eHouse: Empty IP Address or bad Port");
 		return false;
@@ -759,22 +761,19 @@ bool eHouseTCP::CheckAddress()
 	else
 	{
 		hostent *he = gethostbyname(m_IPAddress.c_str());
-		if (he == NULL)
+		if (he == nullptr)
 		{
 			LOG(LOG_ERROR, "eHouse: cannot resolve host name");
 			return false;
 		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
-			m_SrvAddrU = ip & 0xff;
-			m_SrvAddrM = (ip >> 8) & 0xff;
-			m_SrvAddrL = ip >> 24;
-			m_SrvAddrH = (ip >> 16) & 0xff;
-			LOG(LOG_STATUS, "[eHouse PRO] %s =>IP Address: %d.%d.%d.%d\r\n", m_IPAddress.c_str(), m_SrvAddrU, m_SrvAddrM, m_SrvAddrH, m_SrvAddrL);
-			if ((m_SrvAddrU != 192) || (m_SrvAddrM != 168))
-				m_ViaTCP = 1;
-		}
+		memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
+		m_SrvAddrU = ip & 0xff;
+		m_SrvAddrM = (ip >> 8) & 0xff;
+		m_SrvAddrL = ip >> 24;
+		m_SrvAddrH = (ip >> 16) & 0xff;
+		LOG(LOG_STATUS, "[eHouse PRO] %s =>IP Address: %d.%d.%d.%d\r\n", m_IPAddress.c_str(), m_SrvAddrU, m_SrvAddrM, m_SrvAddrH, m_SrvAddrL);
+		if ((m_SrvAddrU != 192) || (m_SrvAddrM != 168))
+			m_ViaTCP = 1;
 	}
 	if (m_ViaTCP)
 		m_TCPSocket = ConnectTCP(m_addr.sin_addr.s_addr);
@@ -823,9 +822,10 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 		switch (code)
 		{
 		case VISUAL_PGM:
-			for (i = 0; i < (sizeof(m_eHEn[index]->Programs) / sizeof(m_eHEn[index]->Programs[0])); i++)
+			i = 0;
+			for (const auto &program : m_eHEn[index]->Programs)
 			{
-				if ((strlen(m_eHEn[index]->Programs[i]) > 0) && (strstr(m_eHEn[index]->Programs[i], "@") == NULL))
+				if ((strlen(program) > 0) && (strstr(program, "@") == nullptr))
 				{
 					Lev++;
 				}
@@ -837,12 +837,14 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 					AddToLocalEvent(ev, 0);
 					return i;
 				}
+				++i;
 			}
 			break;
 		case VISUAL_APGM:
-			for (i = 0; i < (sizeof(m_eHEn[index]->ADCPrograms) / sizeof(m_eHEn[index]->ADCPrograms[0])); i++)
+			i = 0;
+			for (const auto &adc : m_eHEn[index]->ADCPrograms)
 			{
-				if ((strlen(m_eHEn[index]->ADCPrograms[i]) > 0) && (strstr(m_eHEn[index]->ADCPrograms[i], "@") == NULL))
+				if ((strlen(adc) > 0) && (strstr(adc, "@") == nullptr))
 				{
 					Lev++;
 				}
@@ -854,6 +856,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 					AddToLocalEvent(ev, 0);
 					return i;
 				}
+				++i;
 			}
 
 			break;
@@ -869,7 +872,7 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 	uint8_t devh = ID >> 24;
 	uint8_t devl = (ID >> 16) & 0xff;
 	uint8_t code = (ID >> 8) & 0xff;
-	int i;
+	int i = 0;
 	int lv = level / 10;
 	lv += 1;
 	int Lev = 0;
@@ -886,9 +889,9 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 		switch (code)
 		{
 		case VISUAL_PGM:
-			for (i = 0; i < (sizeof(m_eHn[index]->Programs) / sizeof(m_eHn[index]->Programs[0])); i++)
+			for (const auto &eHn : m_eHn[index]->Programs)
 			{
-				if ((strlen(m_eHn[index]->Programs[i]) > 0) && (strstr(m_eHn[index]->Programs[i], "@") == NULL))
+				if ((strlen(eHn) > 0) && (strstr(eHn, "@") == nullptr))
 				{
 					Lev++;
 				}
@@ -902,12 +905,13 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 					AddToLocalEvent(ev, 0);
 					return i;
 				}
+				i++;
 			}
 			break;
 			/*case VISUAL_APGM:
 				for (i=0;i<(sizeof(eHEn[index].ADCPrograms)/sizeof(eHEn[index].ADCPrograms[0]));i++)
 					{
-					if ((strlen(eHEn[index].ADCPrograms[i])>0) && (strstr(eHEn[index].ADCPrograms[i],"@")==NULL))
+					if ((strlen(eHEn[index].ADCPrograms[i])>0) && (strstr(eHEn[index].ADCPrograms[i],"@")==nullptr))
 						{
 						Lev++;
 						}
@@ -991,7 +995,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 			UpdateSQLStatus(AddrH, AddrL, m_Dtype, VISUAL_MCP9700_PRESET, nr, 100, ttemp, tmp, 100);
 		}
 
-		if ((m_Dtype == EH_AURA))
+		if (m_Dtype == EH_AURA)
 		{
 			unsigned int adcvalue = (int)round(temp);
 			ev[3] = 0;	//nr ==0
@@ -1239,12 +1243,12 @@ std::string eHouseTCP::ISO2UTF8(const std::string &name)
 	char utf8[] = "\xC4\x85\xC4\x87\xC4\x99\xC5\x82\xC5\x84\xC3\xB3\xC5\x9B\xC5\xBA\xC5\xBC\xC4\x84\xC4\x86\xC4\x98\xC5\x81\xC5\x83\xC3\x93\xC5\x9A\xC5\xB9\xC5\xBB";
 
 	std::string UTF8Name;
-	for (size_t i = 0; i < name.length(); ++i)
+	for (char i : name)
 	{
 		bool changed = false;
 		for (int j = 0; j < sizeof(cp1250); ++j)
 		{
-			if (name[i] == cp1250[j])
+			if (i == cp1250[j])
 			{
 				UTF8Name += utf8[j * 2];
 				UTF8Name += utf8[j * 2 + 1];
@@ -1254,7 +1258,7 @@ std::string eHouseTCP::ISO2UTF8(const std::string &name)
 		}
 		if (!changed)
 		{
-			UTF8Name += name[i];
+			UTF8Name += i;
 		}
 	}
 	return UTF8Name;

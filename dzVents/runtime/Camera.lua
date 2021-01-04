@@ -8,8 +8,8 @@ local function Camera(domoticz, data, dummyLogger)
 	local state
 	local adapterManager = Adapters(dummyLogger)
 
-	function self.dump()
-		domoticz.logCamera(self)
+	function self.dump( filename )
+		domoticz.logObject(self, filename, 'Camera')
 	end
 
 	self['name'] = data.name

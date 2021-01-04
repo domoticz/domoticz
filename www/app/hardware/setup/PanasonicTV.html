@@ -11,11 +11,28 @@
     <table class="display" id="panasonicsettingstable" border="0" cellpadding="0" cellspacing="20">
         <tr>
             <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
-            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
         </tr>
         <tr>
             <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
-            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr valign="top">
+            <td align="right" style="width:110px"><label for="custombuttons"><span data-i18n="Custom buttons"></span>:</label></td>
+            <td><input type="text" id="custombuttons" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;
+            <br /><span data-i18n="Button with Title:command, separated by ',', and lines separated by ';'"></span>
+            <br /><span data-i18n="Full Example: HDMI1:hdmi1,HDMI2:hdmi2,HDMI3:hdmi3,TV:inputtv;YouTube:YouTube2,DLNA:DLNAPlayer,Record:app0387878700000013,Apps:APPS-ONOFF;EPG:guide,3D:3D-ONOFF,Ratio:DISP_MODE-ONOFF,CEC:VIERA_LINK-ONOFF,AV:inputav"></span>
+            <br /><span data-i18n="See source code of domoticz hardware/PanasonicTC.cpp for list of supported commands and applications codes."></span>
+            <br /><span data-i18n="To be able to use unknown commands, please check the option in settings. The command will be prefixed by 'NRC_'."></span>
+            <br /><span data-i18n="With this option, you may also use unknown application codes with prefixing the application code with app."></span>
+            </td>
+        </tr>
+        <tr valign="top">
+            <td align="right" style="width:110px"><label><span data-i18n="Allow unknown commands">Allow unknown commands</span>:</label></td>
+            <td>
+                <input type="checkbox" id="unknowncommands" name="unknowncommands"><label for="unknowncommands"></label>
+                <br /><span data-i18n="Please note that even if the command are basically sanitized, activating this option may cause a security issue."></span>
+            </td>
         </tr>
         <tr>
             <td></td>
@@ -57,15 +74,15 @@
     <table class="display" id="panasonicnodeparamstable" border="0" cellpadding="0" cellspacing="20">
         <tr>
             <td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name"></span>:</label></td>
-            <td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            <td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
         </tr>
         <tr>
             <td align="right" style="width:110px"><label for="nodeip"><span data-i18n="IP Address">IP Address</span>:</label></td>
-            <td><input type="text" id="nodeip" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            <td><input type="text" id="nodeip" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
         </tr>
         <tr>
             <td align="right" style="width:110px"><label for="nodeport"><span data-i18n="Port">Port</span>:</label></td>
-            <td><input type="text" id="nodeport" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            <td><input type="text" id="nodeport" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
         </tr>
         <tr>
             <td></td>

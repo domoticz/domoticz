@@ -1,6 +1,6 @@
 <div class="container">
 	<a class="btnstylerev" back-button>{{:: 'Back'|translate }}</a>
-	<page-loading-indicator ng-hide="::$ctrl.plans" />
+	<page-loading-indicator ng-hide="::$ctrl.plans"></page-loading-indicator>
 
 	<div ng-if="::$ctrl.plans">
 		<section>
@@ -10,7 +10,7 @@
 				<button class="btn btn-default" ng-click="$ctrl.addPlan()">{{:: 'Add Plan' | translate }}</button>
 			</div>
 
-			<room-plans-table plans="$ctrl.plans" on-update="$ctrl.refreshPlans()" on-select="$ctrl.selectPlan(plan)"/>
+			<room-plans-table plans="$ctrl.plans" on-update="$ctrl.refreshPlans()" on-select="$ctrl.selectPlan(plan)"></room-plans-table>
 		</section>
 
 		<section ng-show="$ctrl.selectedPlan">
@@ -33,8 +33,7 @@
 			<room-plan-devices-table
 					plan-id="$ctrl.selectedPlan.idx"
 					devices="$ctrl.planDevices"
-					on-update="$ctrl.refreshPlanDevices()"
-			/>
+					on-update="$ctrl.refreshPlanDevices()"></room-plan-devices-table>
 		</section>
 	</div>
 </div>
@@ -54,8 +53,7 @@
 						   required
 						   minlength="1"
 						   maxlength="100"
-						   ng-model="$ctrl.planName"
-					/>
+						   ng-model="$ctrl.planName">
 				</div>
 			</div>
 		</form>
@@ -91,8 +89,7 @@
 						   required
 						   minlength="1"
 						   maxlength="100"
-						   ng-model="$ctrl.planName"
-					/>
+						   ng-model="$ctrl.planName">
 				</div>
 			</div>
 		</form>
@@ -118,12 +115,11 @@
 		<h3 class="modal-title">{{:: 'Select Device' | translate }}</h3>
 	</div>
 	<div class="modal-body">
-		<page-loading-indicator ng-hide="::$ctrl.devices" />
+		<page-loading-indicator ng-hide="::$ctrl.devices"></page-loading-indicator>
 		<room-plan-device-selector
 				ng-if="::$ctrl.devices"
 				devices="::$ctrl.devices"
-				on-select="$ctrl.selectDevice(device)"
-		/>
+				on-select="$ctrl.selectDevice(device)"></room-plan-device-selector>
 	</div>
 	<div class="modal-footer">
 		<button type="button"
@@ -161,8 +157,7 @@
 			<room-plans-device-selector-table
 					class="device-selector-group"
 					devices="$ctrl.filteredDevices"
-					on-select="$ctrl.selectDevice(value)"
-			/>
+					on-select="$ctrl.selectDevice(value)"></room-plans-device-selector-table>
 		</section>
 	</div>
 </script>

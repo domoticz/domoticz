@@ -10,26 +10,17 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <ctime>
 
 #define round(a) ( int ) ( a + .5 )
 
-
-KMTronicBase::KMTronicBase(void)
+KMTronicBase::KMTronicBase()
 {
 	m_bufferpos = 0;
 	m_TotRelais = 0;
-	for (int ii = 0; ii < Max_KMTronic_Relais; ii++)
-	{
-		m_bRelaisStatus[ii] = false;
-	}
-}
-
-
-KMTronicBase::~KMTronicBase(void)
-{
+	std::fill(std::begin(m_bRelaisStatus), std::end(m_bRelaisStatus), false);
 }
 
 void KMTronicBase::ParseData(const unsigned char *pData, int Len)

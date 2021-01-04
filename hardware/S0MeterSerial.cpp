@@ -8,10 +8,12 @@
 
 #include <algorithm>
 #include <ctime>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <iostream>
 #include <string>
+
+using namespace boost::placeholders;
 
 #ifdef _DEBUG
 	//#define DEBUG_S0
@@ -32,11 +34,6 @@ S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const uns
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	InitBase();
-}
-
-S0MeterSerial::~S0MeterSerial()
-{
-
 }
 
 bool S0MeterSerial::StartHardware()

@@ -1,20 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--    
-        Enerwave ZWN-RSM2 Smart Dual Relay Switch Module 
-        Enerwave ZWN-RSM2-PLUS Smart Dual Relay Switch Module 
-
-        Note:  the two devices share the same device ID but have different configuration parameters.
-
-        Z-Wave Alliance Product Database info: 
-        https://products.z-wavealliance.org/products/2242
--->
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-	<!-- Configuration Parameters -->
-        <CommandClass id="112">
-                <Value type="short" genre="config" index="3" label="Unsolicited Report Configuration" units="" min="0" max="255" value="0">
-                        <Help>ZWN-RSM2 and ZWN-RSM2-PLUS can send unsolicited status reports to the primary controller (Node ID 0x1) when the switch is toggled if the controller is designed as a gateway.  If your controller is not a gateway or does not need the status reported or you think it could confuse your Z-Wave network, you can use Command_Class_Configuration to disable this function.  By default this function is disabled. ZWM-RSM2 disabled=0, enabled=255.  ZWN-RSM2-PLUS disabled=0, enabled=1</Help>
-                </Value>
-        </CommandClass>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">ZWN-RSM2-PLUS Smart Dual Relay Switch Module</MetaDataItem>
+    <MetaDataItem name="Description">ZWN-RSM2-Plus Transform any home into a connected home with the Enerwave Z-Wave Plus Smart Dual Relay Wireless Lighting Control Module. The lighting control enables wireless control of on/off functions for standard table and floor lamps, and is compatible with incandescent, LED, Xenon, Halogen, fluorescent and compact fluorescent bulbs.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/011A:0606:0111</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://enerwaveautomation.com/products/zwnrsm2/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://enerwaveautomation.com/products/zwnrsm2/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/enerwave/zwnrsm2plus.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=%26filename=MarketCertificationFiles/2242/ZWN-RSM2%202017-2-28.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Once program button is pressed and hold for 10 second, the device will send a device reset locally notification to controller. Then clear all of information for the network, and restore factory defaults, and reset the module. Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">When the controller is in remove mode,Press and release the program button of ZWN-RSM2 module, or Flick 3 times of the connected switch with Aux1 line (or Aux2 line) in 1.5 second. Then the controller will remove the module from current Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">When the controller is in add mode,Press and release the program button of ZWN-RSM2 module,or Flick 3 times of the connected switch with Aux1 line(or Aux 2 line) in 1.5 second. Then the controller will add the module into current Z-Wave network.</MetaDataItem>
+    <MetaDataItem id="0606" name="FrequencyName" type="0111">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Original file was placeholder - had not revision entry</Entry>
+      <Entry author="Steve28" date="03 Jul 2020" revision="2">Wholesale replacement of placeholder file. Added information from mfg site</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="112">
+    <Value type="short" genre="config" index="3" label="Unsolicited Report Configuration" units="" min="0" max="255" value="0">
+      <Help>ZWN-RSM2-PLUS can send unsolicited status reports to the primary controller (Node ID 0x1) when the switch is toggled if the controller is designed as a gateway.  If your controller is not a gateway or does not need the status reported or you think it could confuse your Z-Wave network, you can use Command_Class_Configuration to disable this function.  By default this function is disabled. ZWM-RSM2 disabled=0, enabled=255.  ZWN-RSM2-PLUS disabled=0, enabled=1</Help>
+    </Value>
+  </CommandClass>
 	<CommandClass id="133">
 		<Associations num_groups="3">
 			<Group index="1" max_associations="1" label="Lifeline" />

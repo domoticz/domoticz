@@ -35,35 +35,35 @@ bool C1WireByOWFS::FindDevice(const std::string &inDir, const std::string &sID, 
 {
     bool found = false;
     DIR *d=opendir(inDir.c_str());
-    if (d != NULL)
+    if (d != nullptr)
     {
-        struct dirent *de=NULL;
-        // Loop while not NULL or not found
-        while((de=readdir(d)) && !found)
-        {
-            // Check dir
-            if (!IsValidDir(de))
-                continue;
+	    struct dirent *de = nullptr;
+	    // Loop while not nullptr or not found
+	    while ((de = readdir(d)) && !found)
+	    {
+		    // Check dir
+		    if (!IsValidDir(de))
+			    continue;
 
-            // Get the device from it's dirname
-            GetDevice(inDir, de->d_name, device);
+		    // Get the device from it's dirname
+		    GetDevice(inDir, de->d_name, device);
 
-            // Check if it's the device we are looking for
-            if (device.devid.compare(0,sID.length(),sID)==0)
-            {
-                found=true;
-                continue;
-            }
+		    // Check if it's the device we are looking for
+		    if (device.devid.compare(0, sID.length(), sID) == 0)
+		    {
+			    found = true;
+			    continue;
+		    }
 
-            // Else, try to scan hubs (recursively)
-            if (device.family==microlan_coupler)
-            {
-                // Search in "main" and "aux" dir
-                found=FindDevice(inDir + "/" + de->d_name + HUB_MAIN_SUB_PATH, sID, device);
-                if(!found)
-                    found=FindDevice(inDir + "/" + de->d_name + HUB_AUX_SUB_PATH, sID, device);
-            }
-        }
+		    // Else, try to scan hubs (recursively)
+		    if (device.family == microlan_coupler)
+		    {
+			    // Search in "main" and "aux" dir
+			    found = FindDevice(inDir + "/" + de->d_name + HUB_MAIN_SUB_PATH, sID, device);
+			    if (!found)
+				    found = FindDevice(inDir + "/" + de->d_name + HUB_AUX_SUB_PATH, sID, device);
+		    }
+	    }
     }
 
     closedir(d);
@@ -78,32 +78,32 @@ void C1WireByOWFS::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const
 void C1WireByOWFS::GetDevices(const std::string &inDir, /*out*/std::vector<_t1WireDevice>& devices) const
 {
     DIR *d=opendir(inDir.c_str());
-    if (d != NULL)
+    if (d != nullptr)
     {
-        struct dirent *de=NULL;
-        // Loop while not NULL
-        while((de=readdir(d)))
-        {
-            // Check dir
-            if (!IsValidDir(de))
-                continue;
+	    struct dirent *de = nullptr;
+	    // Loop while not nullptr
+	    while ((de = readdir(d)))
+	    {
+		    // Check dir
+		    if (!IsValidDir(de))
+			    continue;
 
-            // Get the device from it's dirname
-            _t1WireDevice device;
-            GetDevice(inDir, de->d_name, device);
+		    // Get the device from it's dirname
+		    _t1WireDevice device;
+		    GetDevice(inDir, de->d_name, device);
 
-            // Add device to list
-			_log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Add device %s", device.filename.c_str());
-            devices.push_back(device);
+		    // Add device to list
+		    _log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Add device %s", device.filename.c_str());
+		    devices.push_back(device);
 
-            // If device is a hub, scan for all hub connected devices (recursively)
-            if (device.family==microlan_coupler)
-            {
-                // Scan in "main" and "aux" dir
-                GetDevices(inDir + "/" + de->d_name + HUB_MAIN_SUB_PATH, devices);
-                GetDevices(inDir + "/" + de->d_name + HUB_AUX_SUB_PATH, devices);
-            }
-        }
+		    // If device is a hub, scan for all hub connected devices (recursively)
+		    if (device.family == microlan_coupler)
+		    {
+			    // Scan in "main" and "aux" dir
+			    GetDevices(inDir + "/" + de->d_name + HUB_MAIN_SUB_PATH, devices);
+			    GetDevices(inDir + "/" + de->d_name + HUB_AUX_SUB_PATH, devices);
+		    }
+	    }
     }
 
     closedir(d);
@@ -285,8 +285,8 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
          int iValue=atoi(readValue.c_str())==2;
          if (iValue!=1 && iValue!=2)
             return false;
-         else
-            return (iValue==2);
+
+	 return (iValue == 2);
       }
    }
    return false;
@@ -435,12 +435,12 @@ void C1WireByOWFS::GetDevice(const std::string &inDir, const std::string &dirnam
 
 std::string C1WireByOWFS::nameHelper(const std::string& dirname, const _e1WireFamilyType family) const {
 	std::string name;
-	DIR *d=NULL;
+	DIR *d = nullptr;
 
-	d=opendir(std::string(std::string(m_path) + "/" + dirname.c_str()).c_str());
-	if (d != NULL)
+	d = opendir(std::string(std::string(m_path) + "/" + dirname).c_str());
+	if (d != nullptr)
 	{
-		struct dirent *de = NULL;
+		struct dirent *de = nullptr;
 		while ((de = readdir(d)))
 		{
 			name = de->d_name;

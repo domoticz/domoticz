@@ -12,7 +12,7 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <ctime>
 
@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <pwd.h>
 #endif
+
+using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 
@@ -88,11 +90,6 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_serial.setTimeout(stimeout);
 }
 
-RFXComSerial::~RFXComSerial()
-{
-
-}
-
 bool RFXComSerial::StartHardware()
 {
 	RequestStart();
@@ -134,7 +131,7 @@ void RFXComSerial::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (m_bStartFirmwareUpload)
@@ -310,14 +307,14 @@ bool RFXComSerial::UpgradeFirmware()
 
 	m_szUploadMessage = "Bootloader, Start programming...";
 	Log(LOG_STATUS, m_szUploadMessage);
-	for (auto itt : firmwareBuffer)
+	for (const auto &firmware : firmwareBuffer)
 	{
 		icntr++;
 		if (icntr % 5 == 0)
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
-		unsigned long Address = itt.first;
+		unsigned long Address = firmware.first;
 		m_FirmwareUploadPercentage = (100.0f / float(firmwareBuffer.size()))*icntr;
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
@@ -339,8 +336,8 @@ bool RFXComSerial::UpgradeFirmware()
 			bcmd[2] = Address & 0xFF;
 			bcmd[3] = (Address & 0xFF00) >> 8;
 			bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
-			memcpy(bcmd + 5, itt.second.c_str(), itt.second.size());
-			bool ret = Write_TX_PKT(bcmd, 5 + itt.second.size(), 20);
+			memcpy(bcmd + 5, firmware.second.c_str(), firmware.second.size());
+			bool ret = Write_TX_PKT(bcmd, 5 + firmware.second.size(), 20);
 			if (!ret)
 			{
 				m_szUploadMessage = "Bootloader, unable to program firmware memory, please try again!!!";
@@ -470,7 +467,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 	int addrh = 0;
 
 	fileBuffer.clear();
-	std::string dstring = "";
+	std::string dstring;
 	bool bHaveEOF = false;
 
 	while (!infile.eof())
@@ -755,7 +752,7 @@ bool RFXComSerial::Read_TX_PKT()
 					m_bHaveRX = true;
 					return true;
 				}
-				else if (tByte == PKT_DLE)
+				if (tByte == PKT_DLE)
 				{
 					bHadDLE = true;
 				}
@@ -882,19 +879,19 @@ namespace http {
 				return;
 			}
 
-			CDomoticzHardwareBase *pHardware = NULL;
+			CDomoticzHardwareBase *pHardware = nullptr;
 			if ((!hardwareid.empty()) && (hardwareid != "undefined"))
 			{
 				pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
 			}
-			if (pHardware == NULL)
+			if (pHardware == nullptr)
 			{
 				//Direct Entry, try to find the RFXCom hardware
 				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
-				if (pHardware == NULL)
+				if (pHardware == nullptr)
 				{
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
-					if (pHardware == NULL)
+					if (pHardware == nullptr)
 					{
 						return;
 					}
@@ -935,7 +932,8 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -999,7 +997,7 @@ namespace http {
 					if (pBase->m_Version.find("Pro XL") != std::string::npos)
 					{
 						std::string AsyncMode = request::findValue(&req, "combo_rfx_xl_async_type");
-						if (AsyncMode == "")
+						if (AsyncMode.empty())
 							AsyncMode = "0";
 						result = m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID='%q')", AsyncMode.c_str(), idx.c_str());
 						pBase->SetAsyncType((CRFXBase::_eRFXAsyncType)atoi(AsyncMode.c_str()));
@@ -1018,21 +1016,21 @@ namespace http {
 			root["title"] = "GetFirmwareUpgradePercentage";
 			std::string hardwareid = request::findValue(&req, "hardwareid");
 
-			CDomoticzHardwareBase *pHardware = NULL;
+			CDomoticzHardwareBase *pHardware = nullptr;
 			if ((!hardwareid.empty()) && (hardwareid != "undefined"))
 			{
 				pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
 			}
-			if (pHardware == NULL)
+			if (pHardware == nullptr)
 			{
 				//Direct Entry, try to find the RFXCom hardware
 				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
-				if (pHardware == NULL)
+				if (pHardware == nullptr)
 				{
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
 				}
 			}
-			if (pHardware != NULL)
+			if (pHardware != nullptr)
 			{
 				if (
 					(pHardware->HwdType == HTYPE_RFXtrx315) ||
@@ -1049,5 +1047,5 @@ namespace http {
 			else
 				root["message"] = "Hardware not found, or not enabled!";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

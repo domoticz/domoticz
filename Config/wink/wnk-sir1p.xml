@@ -1,0 +1,89 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+  <MetaData>
+    <MetaDataItem name="Name">Siren</MetaDataItem>
+    <MetaDataItem name="Description">Battery-powered alarm, chime, and flash</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/017f:0001:0200</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.wink.com/products/wink-siren-and-chime/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://www.wink.com/help/products/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/wink/wnk-sir1p.png</MetaDataItem>
+	<MetaDataItem name="ProductManual"><![CDATA[https://products.z-wavealliance.org/ProductManual/File?folder=&filename=MarketCertificationFiles/2482/wink-motion-manual.pdf]]></MetaDataItem>
+    <MetaDataItem name="WakeupDescription"><!-- Short description on how to wake up the device if its battery powered --></MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. For proper inclusion, bring the Motion Detector within range of your Controller.
+	2. Pull the tab on the side of the sensor to power on, or remove then re-install the batteries.
+	The LED indicator will flash five times indicating inclusion.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Remove the sensor cover by twisting it counterclockwise and be sure it is powered on.
+	2. Press the Connect Button on the bottom of the device next to the battery quickly 3 times in a row. 
+	The LED Indicator will flash five times indicating exclusion/disconnection.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Remove the sensor cover by twisting it counterclockwise and be sure it is powered on.
+	2. Hold the Connect Button next to the battery for 10 seconds until the LED indicator blinks once, then release the button.
+	Only do this if the controller is disconnected or otherwise unreachable!</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0200">https://products.z-wavealliance.org/products/2484</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0200">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0200">WNK-SIR1P</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Dejan Zelic" date="9 July 2020" revision="1">Initial information based on Z-Wave alliance database information</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="112">
+
+    <Value genre="config" index="1" label="Primary Notification Volume Level" max="3" min="1" size="1" type="list" value="2">
+      <Help>Primary Notification Volume Level</Help>
+      <Item label="Low Volume" value="1"/>
+      <Item label="Medium Volume" value="2"/>
+      <Item label="High Volume" value="3"/>
+    </Value>
+
+	<Value genre="config" index="2" label="Primary Notification Length" max="3" min="-1" size="1" type="list" value="2">
+      <Help>Primary Notification Length</Help>
+      <Item label="Plays until battery dies" value="1"/>
+      <Item label="30 Sec" value="2"/>
+      <Item label="1 Min" value="3"/>
+      <Item label="5 Min" value="4"/>
+    </Value>
+
+	<Value genre="config" index="3" label="Secondary Notification Length" max="127" min="-128" type="byte" units="" value="1">
+      <Help>-128 to -2 Chime Duration (in Minutes; -128=128 min, -2=254 min)
+	  -1 Chime Will Not Play
+	  0 Does Not Stop
+      1 to 127 Chime Duration (in Minutes)
+      </Help>
+    </Value>
+
+	<Value genre="config" index="4" label="Secondary Notification Volume Level" max="3" min="1" size="1" type="list" value="2">
+      <Help>Secondary Notification Volume Level</Help>
+      <Item label="Low Volume" value="1"/>
+      <Item label="Medium Volume" value="2"/>
+      <Item label="High Volume" value="3"/>
+    </Value>
+
+	<Value genre="config" index="5" label="Primary Notification Sound" max="10" min="1" type="byte" units="" value="10">
+      <Help>1 to 10 Tone Index Number</Help>
+    </Value>
+
+	<Value genre="config" index="6" label="Secondary Notification Sound" max="10" min="1" type="byte" units="" value="10">
+      <Help>1 to 10 Tone Index Number</Help>
+    </Value>
+
+    <Value genre="config" index="7" label="Toggle Secondary Chime" max="2" min="1" size="1" type="list" value="1">
+      <Help>Short Help Description</Help>
+      <Item label="Primary Notification Will Play" value="1"/>
+      <Item label="Secondary Notification Will Play" value="2"/>
+    </Value>
+  </CommandClass>
+
+  <CommandClass id="113">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Binary Switch Report" max_associations="5"/>
+      <Group index="3" label="Notification Report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

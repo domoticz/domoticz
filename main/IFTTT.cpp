@@ -42,12 +42,9 @@ bool IFTTT::Send_IFTTT_Trigger(const std::string &eventid, const std::string &sv
 				_log.Log(LOG_ERROR, sSend);
 				return false;
 			}
-			else
-			{
-				sSend += " => Success!";
-				_log.Log(LOG_STATUS,sSend);
-				return true;
-			}
+			sSend += " => Success!";
+			_log.Log(LOG_STATUS, sSend);
+			return true;
 		}
 	}
 	return false;

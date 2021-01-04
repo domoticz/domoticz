@@ -1,5 +1,7 @@
 define(['app'], function (app) {
 
+	var zwave_nodes = {};
+
 	app.component('zWaveHardware', {
 		bindings: {
 			hardware: '<'
@@ -74,6 +76,61 @@ define(['app'], function (app) {
 				}
 			});
 		};
+		
+		MakeLegendTable = function(data) {
+			if ($.fn.dataTable.isDataTable('#legendtable')) {
+				oTable = $('#legendtable').DataTable();
+				oTable.destroy();
+			}
+			$("#legendtable").empty();
+			var i;
+			var maxgroups = data.result.MaxNoOfGroups;
+			var thead = $('<thead></thead>');
+			var trow = $('<tr style="height: 35px;"></tr>');
+
+			$('<th style="width: 80px"></th>').text($.t("NodeID")).appendTo(trow);
+			$('<th></th>').text($.t("Name")).appendTo(trow);
+			trow.appendTo(thead);
+			thead.appendTo($('#legendtable'));
+			
+			tbody = $('<tbody></tbody>');
+			var jsonnodes = data.result.nodes;
+			zwave_nodes = {};
+			i = jsonnodes.length;
+			while (i--) {
+				var node = jsonnodes[i];
+				zwave_nodes[node.nodeID] = node;
+			}
+			$.each(jsonnodes, function (i, node) {
+				var groupsDone = 0;
+				noderow = $('<tr>');
+				var nodeStr = addLeadingZeros(node.nodeID, 3) + " (0x" + addLeadingZeros(node.nodeID.toString(16), 2) + ")";
+				$('<td>').text(nodeStr).appendTo(noderow);
+				$('<td>').text(node.nodeName).appendTo(noderow);
+				noderow.appendTo(tbody);
+			});
+			tbody.appendTo($('#legendtable'));
+			
+			tfoot = $('<tfoot></tfoot>');
+			tfoot.appendTo($('#legendtable'));
+
+			$('#legendtable').DataTable(Object.assign({}, dataTableDefaultSettings, {
+				"sDom": '<"H"lfrC>t<"F"ip>',
+				"oTableTools": {
+					"sRowSelect": "single"
+				},
+				"aaSorting": [[0, "desc"]],
+				"bSortClasses": false,
+				"bProcessing": true,
+				"bStateSave": true,
+				"bJQueryUI": true,
+				"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+				"iDisplayLength": 25,
+				"sPaginationType": "full_numbers",
+				language: $.DataTableLanguage
+			}));
+			
+		}
 
 		RefreshGroupTable = function () {
 			$http({
@@ -85,26 +142,26 @@ define(['app'], function (app) {
 				if (typeof data !== 'undefined') {
 					if (data.status === "OK") {
 						if (typeof data.result !== 'undefined') {
+							MakeLegendTable(data);
 
 							if ($.fn.dataTable.isDataTable('#grouptable')) {
 								oTable = $('#grouptable').DataTable();
 								oTable.destroy();
 							}
+							$("#grouptable").empty();
 
 							var i;
-							$("#grouptable").empty();
-							grouptable = $('#grouptable');
 							var maxgroups = data.result.MaxNoOfGroups;
 							var thead = $('<thead></thead>');
 							var trow = $('<tr style="height: 35px;"></tr>');
 
-							$('<th></th>').text($.t("Node")).appendTo(trow);
+							$('<th style="width: 80px"></th>').text($.t("NodeID")).appendTo(trow);
 							$('<th></th>').text($.t("Name")).appendTo(trow);
 							for (i = 0; i < maxgroups; i++) {
 								$('<th></th>').text($.t("Group") + " " + (i + 1)).appendTo(trow);
 							}
 							trow.appendTo(thead);
-							thead.appendTo(grouptable);
+							thead.appendTo($('#grouptable'));
 							tbody = $('<tbody></tbody>');
 
 							var jsonnodes = data.result.nodes;
@@ -159,9 +216,9 @@ define(['app'], function (app) {
 								}
 								noderow.appendTo(tbody);
 							});
-							tbody.appendTo(grouptable);
+							tbody.appendTo($('#grouptable'));
 							tfoot = $('<tfoot></tfoot>');
-							tfoot.appendTo(grouptable);
+							tfoot.appendTo($('#grouptable'));
 
 							$('#grouptable').DataTable(Object.assign({}, dataTableDefaultSettings, {
 								"sDom": '<"H"lfrC>t<"F"ip>',
@@ -189,14 +246,6 @@ define(['app'], function (app) {
 			$.depChart = $('#networkchart');
 			$.depChart.highcharts({
 				chart: {
-					type: 'spline',
-					zoomType: 'x',
-					resetZoomButton: {
-						position: {
-							x: -30,
-							y: -36
-						}
-					},
 					events: {
 						load: function () {
 							$http({
@@ -235,12 +284,28 @@ define(['app'], function (app) {
 					text: null
 				},
 				tooltip: {
-					enabled: false
+					enabled: true,
+					nodeFormatter: function() {
+						return '<span style="font-weight:bold">' + zwave_nodes[this.id].nodeName + '</span>'
+					},
+					pointFormatter: function() {
+						return 'from: ' + this.from + '-' + zwave_nodes[this.from].nodeName + ' to: ' + this.to + '-' + zwave_nodes[this.to].nodeName;
+					}
+				},
+				accessibility: {
+					point: {
+						valueDescriptionFormat: '{index}. From {point.from} to {point.to}: {point.weight}.'
+					}
+				},
+				plotOptions: {
+					series: {
+						turboThreshold: 0
+					}
 				},
 				series: [{
 					keys: ['from', 'to', 'weight'],
 					type: 'dependencywheel',
-					name: 'Node Neighbors',
+					name: '',
 					dataLabels: {
 						color: '#fff',
 						textPath: {
@@ -262,6 +327,91 @@ define(['app'], function (app) {
 
 			EditOpenZWave($ctrl.hardware.idx, $ctrl.hardware.Name)
 		};
+
+		$scope.ZWaveCheckReplaceReady = function () {
+			if (typeof $scope.mytimer !== 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$http({
+				url: "json.htm?type=command&param=zwaveisnodereplaced&idx=" + $.devIdx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				var data = response.data;
+				if (data.status === "OK") {
+					if (data.result === true) {
+						//Node replaced 
+						$scope.ozw_node_id = data.node_id;
+						$("#ReplaceZWaveDialog #rzwd_waiting").hide();
+						$("#ReplaceZWaveDialog #rzwd_result").show();
+					}
+					else {
+						//Not ready yet
+						$scope.mytimer = $interval(function () {
+							$scope.ZWaveCheckReplaceReady();
+						}, 1000);
+					}
+				}
+				else {
+					$scope.mytimer = $interval(function () {
+						$scope.ZWaveCheckReplaceReady();
+					}, 1000);
+				}
+			}, function errorCallback(response) {
+					$scope.mytimer = $interval(function () {
+						$scope.ZWaveCheckReplaceReady();
+					}, 1000);
+			});
+		};
+
+		OnZWaveAbortReplace = function () {
+			$http({
+				url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				$('#ReplaceZWaveDialog').modal('hide');
+			}, function errorCallback(response) {
+					$('#ReplaceZWaveDialog').modal('hide');
+			});
+		};
+
+		OnZWaveCloseReplace = function () {
+			$('#ReplaceZWaveDialog').modal('hide');
+			RefreshOpenZWaveNodeTable();
+		};
+
+		//Request Node Information Frame
+		ReplaceFailedNode = function (idx) {
+			if ($('#updelclr #replacefailednode').attr("class") === "btnstyle3-dis") {
+				return;
+			}
+
+			if (typeof $scope.mytimer !== 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+
+			$("#ReplaceZWaveDialog #rzwd_waiting").show();
+			$("#ReplaceZWaveDialog #rzwd_result").hide();
+
+			$http({
+				url: "json.htm?type=command&param=zwavereplacefailednode&idx=" + idx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				var data = response.data;
+				$scope.ozw_node_id = "-";
+				$scope.ozw_node_desc = "-";
+				$('#ReplaceZWaveDialog').modal('show');
+				$scope.mytimer = $interval(function () {
+					$scope.ZWaveCheckReplaceReady();
+				}, 1000);
+			}, function errorCallback(response) {
+			});
+		};
+
 
 		$scope.ZWaveCheckIncludeReady = function () {
 			if (typeof $scope.mytimer !== 'undefined') {
@@ -414,6 +564,82 @@ define(['app'], function (app) {
 				$('#ExcludeZWaveDialog').modal('show');
 				$scope.mytimer = $interval(function () {
 					$scope.ZWaveCheckExcludeReady();
+				}, 1000);
+			}, function errorCallback(response) {
+			});
+		};
+
+		$scope.HasNodeFailedReady = function () {
+			if (typeof $scope.mytimer !== 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$http({
+				url: "json.htm?type=command&param=zwaveishasnodefaileddone&idx=" + $.devIdx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				var data = response.data;
+				if (data.status === "OK") {
+					if (data.result === true) {
+						//has node failed is done
+						$scope.hnf_result_text = data.status_text;
+						$("#ZWaveHasNodeFailedDialog #hzwd_waiting").hide();
+						$("#ZWaveHasNodeFailedDialog #hzwd_result").show();
+					}
+					else {
+						//Not ready yet
+						$scope.mytimer = $interval(function () {
+							$scope.HasNodeFailedReady();
+						}, 1000);
+					}
+				}
+				else {
+					$scope.mytimer = $interval(function () {
+						$scope.HasNodeFailedReady();
+					}, 1000);
+				}
+			}, function errorCallback(response) {
+					$scope.mytimer = $interval(function () {
+						$scope.HasNodeFailedReady();
+					}, 1000);
+			});
+		};
+
+		OnZWaveAbortHasNodeFailed = function () {
+			$http({
+				url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				$('#ZWaveHasNodeFailedDialog').modal('hide');
+			}, function errorCallback(response) {
+					$('#ZWaveHasNodeFailedDialog').modal('hide');
+			});
+		};
+
+		OnZWaveCloseHasNodeFailed = function () {
+			$('#ZWaveHasNodeFailedDialog').modal('hide');
+			RefreshOpenZWaveNodeTable();
+		};
+
+		HasNodeFailed = function (idx) {
+			if (typeof $scope.mytimer !== 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$("#ZWaveHasNodeFailedDialog #hzwd_waiting").show();
+			$("#ZWaveHasNodeFailedDialog #hzwd_result").hide();
+			$http({
+				url: "json.htm?type=command&param=zwavehasnodefailed&idx=" + idx,
+				async: true,
+				dataType: 'json'
+			}).then(function successCallback(response) {
+				var data = response.data;
+				$scope.hnf_result_text = "-";
+				$('#ZWaveHasNodeFailedDialog').modal('show');
+				$scope.mytimer = $interval(function () {
+					$scope.HasNodeFailedReady();
 				}, 1000);
 			}, function errorCallback(response) {
 			});
@@ -625,6 +851,8 @@ define(['app'], function (app) {
 			$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
 			$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
 			$('#updelclr #noderefresh').attr("class", "btnstyle3-dis");
+			$('#updelclr #hasnodefailed').attr("class", "btnstyle3-dis");
+			$('#updelclr #replacefailednode').attr("class", "btnstyle3-dis");
 
 			$("#hardwarecontent #configuration").html("");
 			$("#hardwarecontent #nodeparamstable #nodename").val("");
@@ -662,8 +890,8 @@ define(['app'], function (app) {
 						}
 						var statusImg = '<img src="images/' + status + '.png" />';
 						var healButton = '<img src="images/heal.png" onclick="ZWaveHealNode(' + item.NodeID + ')" class="lcursor" title="' + $.t("Heal node") + '" />';
-						var Description = item.Description;
-						if (Description.length < 2) {
+						var Description = item.Product_name;
+						if (item.Product_id == "0x0000") {
 							Description = '<span class="zwave_no_info">' + item.Generic_type + '</span>';
 						}
 						if (item.IsPlus === true) {
@@ -702,6 +930,8 @@ define(['app'], function (app) {
 					$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
 					$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
 					$('#updelclr #noderefresh').attr("class", "btnstyle3-dis");
+					$('#updelclr #hasnodefailed').attr("class", "btnstyle3-dis");
+					$('#updelclr #replacefailednode').attr("class", "btnstyle3-dis");
 					$("#hardwarecontent #configuration").html("");
 					$("#hardwarecontent #nodeparamstable #nodename").val("");
 					$('#hardwarecontent #usercodegrp').hide();
@@ -713,6 +943,8 @@ define(['app'], function (app) {
 					$(this).addClass('row_selected');
 					$('#updelclr #nodeupdate').attr("class", "btnstyle3");
 					$('#updelclr #noderefresh').attr("class", "btnstyle3");
+					$('#updelclr #hasnodefailed').attr("class", "btnstyle3");
+					$('#updelclr #replacefailednode').attr("class", "btnstyle3");
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
@@ -720,6 +952,8 @@ define(['app'], function (app) {
 						var iNode = parseInt(data["NodeID"]);
 						$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
 						$('#updelclr #noderefresh').attr("href", "javascript:RefreshNode(" + idx + ")");
+						$('#updelclr #hasnodefailed').attr("href", "javascript:HasNodeFailed(" + idx + ")");
+						$('#updelclr #replacefailednode').attr("href", "javascript:ReplaceFailedNode(" + idx + ")");
 
 						$("#hardwarecontent #zwavecodemanagement").attr("href", "javascript:ZWaveUserCodeManagement(" + idx + ")");
 						if (iNode !== iOwnNodeId) {
@@ -810,9 +1044,11 @@ define(['app'], function (app) {
 								if (item.help !== "") {
 									szConfig += '<span class="zwave_help">' + item.help + '</span><br>';
 								}
+/*								
 								if (item.LastUpdate.length > 1) {
 									szConfig += '<span class="zwave_last_update">Last Update: ' + item.LastUpdate + '</span><br />';
 								}
+*/								
 								szConfig += "<br />";
 							});
 							if (bHaveConfiguration === true) {

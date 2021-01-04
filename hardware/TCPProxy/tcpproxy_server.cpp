@@ -15,6 +15,8 @@
 #include "stdafx.h"
 #include "tcpproxy_server.h"
 
+using namespace boost::placeholders;
+
 #if BOOST_VERSION >= 107000
 #define GET_IO_SERVICE(s) ((boost::asio::io_context&)(s).get_executor().context())
 #else
@@ -162,19 +164,13 @@ namespace tcp_proxy
 		}
 	}
 //Acceptor Class
-	acceptor::acceptor(
-			const std::string& local_host, unsigned short local_port,
-			const std::string& upstream_host, const std::string& upstream_port)
-	:	io_service_(),
-		localhost_address(boost::asio::ip::address_v4::from_string(local_host)),
-		acceptor_(io_service_,boost::asio::ip::tcp::endpoint(localhost_address,local_port)),
-		upstream_port_(upstream_port),
-		upstream_host_(upstream_host),
-		m_bDoStop(false)
-	{
-
-	}
-	acceptor::~acceptor()
+	acceptor::acceptor(const std::string &local_host, unsigned short local_port, const std::string &upstream_host, const std::string &upstream_port)
+		: io_service_()
+		, m_bDoStop(false)
+		, localhost_address(boost::asio::ip::address_v4::from_string(local_host))
+		, acceptor_(io_service_, boost::asio::ip::tcp::endpoint(localhost_address, local_port))
+		, upstream_host_(upstream_host)
+		, upstream_port_(upstream_port)
 	{
 
 	}
@@ -183,9 +179,7 @@ namespace tcp_proxy
 	{
 		try
 		{
-			session_ = std::shared_ptr<bridge>(
-				new bridge(io_service_)
-			);
+			session_ = std::make_shared<bridge>(io_service_);
 			session_->sDownstreamData.connect( boost::bind( &acceptor::OnDownstreamData, this, _1, _2 ) );
 			session_->sUpstreamData.connect( boost::bind( &acceptor::OnUpstreamData, this, _1, _2 ) );
 
@@ -257,4 +251,4 @@ namespace tcp_proxy
 		sOnUpstreamData(pData,Len);
 	}
 
-} //end namespace
+} // namespace tcp_proxy

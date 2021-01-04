@@ -4,19 +4,20 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 
-P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit):
+P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit, const std::string& DecryptionKey):
 	m_szIPAddress(IPAddress),
 	m_usIPPort(usIPPort)
 {
 	m_HwdID = ID;
 	m_bDisableCRC = disable_crc;
 	m_ratelimit = ratelimit;
-}
 
-P1MeterTCP::~P1MeterTCP(void)
-{
+	if (!DecryptionKey.empty())
+	{
+		m_bIsEncrypted = true;
+		m_szHexKey = HexToBytes(DecryptionKey);
+	}
 }
-
 
 bool P1MeterTCP::StartHardware()
 {
@@ -54,7 +55,7 @@ void P1MeterTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();

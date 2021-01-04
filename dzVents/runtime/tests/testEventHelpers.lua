@@ -433,6 +433,7 @@ describe('event helpers', function()
 
 		it('should have proper settings', function()
 			assert.are.same('http://127.0.0.1:8181', helpers.settings['Domoticz url'])
+			assert.are.same('http://127.0.0.1:8181', helpers.settings.url)
 		end)
 
 		it('should have proper location settings', function()

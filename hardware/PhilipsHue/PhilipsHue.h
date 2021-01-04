@@ -50,10 +50,11 @@ class CPhilipsHue : public CDomoticzHardwareBase
 	};
 
 public:
-	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username, const int poll, const int Options);
-	~CPhilipsHue(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	static std::string RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username);
+  CPhilipsHue(int ID, const std::string &IPAddress, unsigned short Port, const std::string &Username, int poll, int Options);
+  ~CPhilipsHue() override = default;
+  bool WriteToHardware(const char *pdata, unsigned char length) override;
+  static std::string RegisterUser(const std::string &IPAddress, unsigned short Port, const std::string &username);
+
 private:
 	void Init();
 	bool StartHardware() override;
@@ -64,13 +65,13 @@ private:
 	bool GetGroups(const Json::Value &root);
 	bool GetScenes(const Json::Value &root);
 	bool GetSensors(const Json::Value &root);
-	void InsertUpdateLamp(const int NodeID, const _eHueLightType LType, const _tHueLightState tstate, const std::string& Name, const std::string& Options, const std::string& modelid, const bool AddMissingDevice);
-	bool InsertUpdateSelectorSwitch(const int NodeID, const uint8_t Unitcode, const uint8_t selectorLevel, const std::string& Name, const uint8_t BatteryLevel);
-	void InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, const _eSwitchType SType, const bool bIsOn, const std::string &Name, const uint8_t BatteryLevel);
-	void SetSwitchOptions(const int NodeID, const uint8_t Unitcode, const std::map<std::string, std::string> options);
-	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue, const int svalue2 = 0, const int svalue3 = 0);
+	void InsertUpdateLamp(int NodeID, _eHueLightType LType, _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string &modelid, bool AddMissingDevice);
+	bool InsertUpdateSelectorSwitch(int NodeID, uint8_t Unitcode, uint8_t selectorLevel, const std::string &Name, uint8_t BatteryLevel);
+	void InsertUpdateSwitch(int NodeID, uint8_t Unitcode, _eSwitchType SType, bool bIsOn, const std::string &Name, uint8_t BatteryLevel);
+	void SetSwitchOptions(int NodeID, uint8_t Unitcode, const std::map<std::string, std::string> &options);
+	bool SwitchLight(int nodeID, const std::string &LCmd, int svalue, int svalue2 = 0, int svalue3 = 0);
 	static void LightStateFromJSON(const Json::Value &lightstate, _tHueLightState &tlight, _eHueLightType &LType);
-	static void RgbFromXY(const double x, const double y, const double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8);
+	static void RgbFromXY(double x, double y, double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8);
 	static bool StatesSimilar(const _tHueLightState &s1, const _tHueLightState &s2);
 private:
 	int m_poll_interval;

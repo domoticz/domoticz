@@ -40,9 +40,9 @@ if [[ $? -ne 0 ]];then
 else
 	echo dzVents will be tested against domoticz version $NewVersion.
 fi
- 
+
 currenttime=$(date +%H:%M)
-if [[ "$currenttime" > "00:00" ]] && [[ "$currenttime" < "00:31" ]]; then 
+if [[ "$currenttime" > "00:00" ]] && [[ "$currenttime" < "00:31" ]]; then
 	echo Script cannot be execute dbetween 00:00 and 00:30. Time checks will fail
 	exit 1
 fi
@@ -104,6 +104,7 @@ function cleanup
 
 function stopBackgroundProcesses
 	{
+		sleep 3
 		pkill node  2>&1 >/dev/null
 		pkill domoticz  2>&1 >/dev/null
 		if [[ $1 -eq 1 ]] ;then
@@ -127,28 +128,28 @@ function fillTimes
 		ContactDoorLockInvertedSwitch_ExpectedSeconds=30
 		DelayedVariableScene_ExpectedSeconds=80
 		EventState_ExpectedSeconds=190
-		Integration_ExpectedSeconds=330
+		Integration_ExpectedSeconds=340
 		SelectorSwitch_ExpectedSeconds=100
 		SystemAndCustomEvents_ExpectedSeconds=10
 	}
 
 function fillNumberOfTests
 	{
-		Device_ExpectedTests=113
-		Domoticz_ExpectedTests=74
+		Device_ExpectedTests=118
+		Domoticz_ExpectedTests=82
 		EventHelpers_ExpectedTests=32
 		EventHelpersStorage_ExpectedTests=50
 		HTTPResponse_ExpectedTests=6
 		Lodash_ExpectedTests=100
 		ScriptdzVentsDispatching_ExpectedTests=2
 		TimedCommand_ExpectedTests=46
-		Time_ExpectedTests=340
-		Utils_ExpectedTests=25
+		Time_ExpectedTests=369
+		Utils_ExpectedTests=36
 		Variable_ExpectedTests=15
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
 		DelayedVariableScene_ExpectedTests=2
 		EventState_ExpectedTests=2
-		Integration_ExpectedTests=217
+		Integration_ExpectedTests=222
 		SelectorSwitch_ExpectedTests=2
 		SystemAndCustomEvents_ExpectedTests=7
 	}
@@ -167,16 +168,16 @@ function testDir
 			Tests=$(( $(($testFile$underScoreTests)) / 1 ))
 			if test $i == 'testSystemAndCustomEvents.lua' ; then
 				tput sc # save cursor
-				stopBackgroundProcesses 
+				stopBackgroundProcesses
 				sleep 6
 				tput rc;tput el # rc
 			fi
 			echo -n $(showTime) " "
-			printf "%-42s %4d "  $testFile $Expected 
+			printf "%-42s %4d "  $testFile $Expected
 			printf "%10d" $Tests
 			# busted $i  2>&1 >/dev/null
 			busted $i  > $outfile
-			
+
 			if [[ $? -ne 0 ]];then
 				printf "%-10s" "===>> NOT OK"
 				echo
@@ -223,7 +224,7 @@ cd $basedir
 checkStarted "domoticz" 20
 
 clear
-echo "========= domoticz $NewVersion, dzVents V$dzVersion +========================== Tests ==============================+"
+echo "======== domoticz $NewVersion, dzVents V$dzVersion +========================== Tests ==============================+"
 echo "  time  | test-script	                           | expected | tests | result  | successful |  failed  | seconds  |"
 echo "===================================================+===============================================================+"
 
@@ -245,12 +246,12 @@ if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 	if [[ $? -eq 0 ]];then
 		#echo Stage 1 and stage 2 of integration test Succeeded
-		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | wc -l)
+		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | wc -l)
 		if [[ $errorCount -le $expectedErrorCount ]];then
 			#echo Errors are to be expected
 			echo -n
 		else
-			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken
+			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken | grep -v LOG_ERROR | grep -v errorText
 			stopBackgroundProcesses 1
 		fi
 	else
@@ -267,6 +268,6 @@ else
 fi
 
 echo Total tests: $totalTest
-echo $(date)';' dzVents version $dzVersion tested without erors after $(showTime)
+echo $(date)';' dzVents version $dzVersion tested without errors after $(showTime)
 stopBackgroundProcesses 0
 cleanup

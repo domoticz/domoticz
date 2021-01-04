@@ -20,22 +20,19 @@
             device="::vm.device"
             selected-year="::vm.selectedYear"
             selected-month="::vm.selectedMonth"
-            is-only-usage="::vm.isOnlyUsage()"
-    />
+            is-only-usage="::vm.isOnlyUsage()"></device-counter-report>
 
     <device-energy-multi-counter-report
             ng-if="::vm.isEnergyMultiCounterReport()"
             device="::vm.device"
             selected-year="::vm.selectedYear"
-            selected-month="::vm.selectedMonth"
-    />
+            selected-month="::vm.selectedMonth"></device-energy-multi-counter-report>
 
     <device-temperature-report
             ng-if="::vm.isTemperatureReport()"
             device="::vm.device"
             selected-year="::vm.selectedYear"
-            selected-month="::vm.selectedMonth"
-    />
+            selected-month="::vm.selectedMonth"></device-temperature-report>
 
     <div class="no-data" ng-if="::vm.isNoReport()">
         {{ ::'This device does not have any reports.' | translate}}

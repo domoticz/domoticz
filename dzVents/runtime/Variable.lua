@@ -9,6 +9,7 @@ local function Variable(domoticz, data)
 		['type'] = data.variableType,
 		['changed'] = data.changed,
 		['id'] = data.id,
+		['idx'] = data.id,
 		['lastUpdate'] = Time(data.lastUpdate),
 	}
 
@@ -19,6 +20,14 @@ local function Variable(domoticz, data)
 		-- proper type
 		-- just for backward compatibility
 		self['nValue'] = data.data.value
+	end
+
+	function self.dump( filename )
+		domoticz.logObject(self, filename, 'variable')
+	end
+
+	function self.dumpSelection( selection )
+		domoticz.utils.dumpSelection(self, ( selection or 'attributes' ))
 	end
 
 	if (data.variableType == 'date') then

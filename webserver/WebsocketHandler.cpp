@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "WebsocketHandler.h"
+
+#include <utility>
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/Helper.h"
@@ -12,13 +14,11 @@
 namespace http {
 	namespace server {
 
-		CWebsocketHandler::CWebsocketHandler(cWebem *pWebem, boost::function<void(const std::string &packet_data)> _MyWrite) : 
-			m_Push(this),
-			sessionid(""),
-			MyWrite(_MyWrite),
-			myWebem(pWebem)
+		CWebsocketHandler::CWebsocketHandler(cWebem *pWebem, boost::function<void(const std::string &packet_data)> _MyWrite)
+			: MyWrite(std::move(_MyWrite))
+			, myWebem(pWebem)
+			, m_Push(this)
 		{
-			
 		}
 
 		CWebsocketHandler::~CWebsocketHandler()
@@ -43,13 +43,13 @@ namespace http {
 					// todo: Add the username and rights from the original connection
 					if (outbound)
 					{
-							time_t	nowAnd1Day = ((time_t)mytime(NULL)) + WEBSOCKET_SESSION_TIMEOUT;
-							session.timeout = nowAnd1Day;
-							session.expires = nowAnd1Day;
-							session.isnew = false;
-							session.forcelogin = false;
-							session.rememberme = false;
-							session.reply_status = 200;
+						time_t nowAnd1Day = ((time_t)mytime(nullptr)) + WEBSOCKET_SESSION_TIMEOUT;
+						session.timeout = nowAnd1Day;
+						session.expires = nowAnd1Day;
+						session.isnew = false;
+						session.forcelogin = false;
+						session.rememberme = false;
+						session.reply_status = 200;
 					}
 
 
@@ -119,7 +119,7 @@ namespace http {
 		{
 			while (!IsStopRequested(1000))
 			{
-				time_t atime = mytime(NULL);
+				time_t atime = mytime(nullptr);
 				if (atime % 10 == 0)
 				{
 					//Send Date/Time every 10 seconds
@@ -133,7 +133,7 @@ namespace http {
 		{
 			//Check cookie if still valid
 			const char* cookie_header = request::get_req_header(&req, "Cookie");
-			if (cookie_header != NULL)
+			if (cookie_header != nullptr)
 			{
 				std::string sSID;
 				std::string szTime;
@@ -151,9 +151,9 @@ namespace http {
 						scookie = scookie.substr(0, epos);
 					}
 				}
-				size_t upos = scookie.find("_", fpos);
-				size_t ppos = scookie.find(".", upos);
-				time_t now = mytime(NULL);
+				size_t upos = scookie.find('_', fpos);
+				size_t ppos = scookie.find('.', upos);
+				time_t now = mytime(nullptr);
 				if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 				{
 					sSID = scookie.substr(fpos + 7, upos - fpos - 7);
@@ -235,7 +235,7 @@ namespace http {
 				{
 					char szTmp[100];
 					struct tm loctime;
-					time_t now = mytime(NULL);
+					time_t now = mytime(nullptr);
 
 					localtime_r(&now, &loctime);
 					strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
@@ -252,5 +252,5 @@ namespace http {
 			}
 		}
 
-	}
-}
+	} // namespace server
+} // namespace http

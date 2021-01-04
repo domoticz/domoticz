@@ -33,10 +33,6 @@ CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 	Init();
 }
 
-CSBFSpot::~CSBFSpot(void)
-{
-}
-
 void CSBFSpot::Init()
 {
 	m_SBFDataPath="";
@@ -59,12 +55,12 @@ void CSBFSpot::Init()
 		getline(infile, sLine);
 		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
 		sLine = stdstring_trim(sLine);
-		if (sLine.size()!=0)
+		if (!sLine.empty())
 		{
 			if (sLine.find("OutputPath=")==0)
 			{
 				tmpString=sLine.substr(strlen("OutputPath="));
-				if (tmpString!="")
+				if (!tmpString.empty())
 				{
 					unsigned char lastchar=tmpString[tmpString.size()-1];
 #ifdef WIN32
@@ -92,7 +88,7 @@ void CSBFSpot::Init()
 		}
 	}
 	infile.close();
-	if ((m_SBFDataPath.size()==0)||(m_SBFDateFormat.size()==0)||(m_SBFTimeFormat.size()==0))
+	if ((m_SBFDataPath.empty()) || (m_SBFDateFormat.empty()) || (m_SBFTimeFormat.empty()))
 	{
 		_log.Log(LOG_ERROR,"SBFSpot: Could not find OutputPath in configuration file!");
 	}
@@ -132,7 +128,7 @@ void CSBFSpot::Do_Work()
 	_log.Log(LOG_STATUS,"SBFSpot: Worker started...");
 	while (!IsStopRequested(1000))
 	{
-		time_t atime=mytime(NULL);
+		time_t atime = mytime(nullptr);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);
 		if (((ltime.tm_min/SMA_POLL_INTERVAL!=LastMinute))&&(ltime.tm_sec>20))
@@ -198,7 +194,7 @@ void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 	total-=tsen.ENERGY.total5*0x100;
 	tsen.ENERGY.total6=(unsigned char)(total);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY, defaultname.c_str(), 255, nullptr);
 }
 
 bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
@@ -207,7 +203,7 @@ bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double 
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query("SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
-	if (result.size()<1)
+	if (result.empty())
 	{
 		return false;
 	}
@@ -243,7 +239,7 @@ void CSBFSpot::ImportOldMonthData()
 	uint64_t ulID = std::stoull(result[0][0]);
 
 	//Try actual year, and previous year
-	time_t atime = time(NULL);
+	time_t atime = time(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
@@ -262,9 +258,9 @@ void CSBFSpot::ImportOldMonthData()
 
 void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const int Month)
 {
-	if (m_SBFDataPath.size() == 0)
+	if (m_SBFDataPath.empty())
 		return;
-	if (m_SBFPlantName.size() == 0)
+	if (m_SBFPlantName.empty())
 		return;
 
 	int iInvOff = 1;
@@ -281,7 +277,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 	}
 
 	std::string tmpString;
-	std::string szSeperator = "";
+	std::string szSeperator;
 	std::vector<std::string> results;
 	std::string sLine;
 	bool bHaveVersion = false;
@@ -296,7 +292,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 	{
 		getline(infile, sLine);
 		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
-		if (sLine.size() != 0)
+		if (!sLine.empty())
 		{
 			if (bIsSMAWebExport)
 			{
@@ -342,7 +338,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 			else if (sLine.find("sep=") == 0)
 			{
 				tmpString = sLine.substr(strlen("sep="));
-				if (tmpString != "")
+				if (!tmpString.empty())
 				{
 					szSeperator = tmpString;
 				}
@@ -400,7 +396,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 					}
 				}
 			}
-			else if ((szSeperator != "") && (m_SBFInverter != ""))
+			else if ((!szSeperator.empty()) && (!m_SBFInverter.empty()))
 			{
 				StringSplit(sLine, szSeperator, results);
 				for (size_t l = 0; l < results.size(); l++)
@@ -432,27 +428,25 @@ int CSBFSpot::getSunRiseSunSetMinutes(const bool bGetSunRise)
 		if (bGetSunRise) {
 			return sunRiseInMinutes;
 		}
-		else {
-			return sunSetInMinutes;
-		}
+		return sunSetInMinutes;
 	}
 	return 0;
 }
 
 void CSBFSpot::GetMeterDetails()
 {
-	if (m_SBFDataPath.size() == 0)
+	if (m_SBFDataPath.empty())
 	{
 		_log.Log(LOG_ERROR, "SBFSpot: Data path empty!");
 		return;
 	}
-	if (m_SBFPlantName.size() == 0)
+	if (m_SBFPlantName.empty())
 	{
 		_log.Log(LOG_ERROR, "SBFSpot: Plant name empty!");
 		return;
 	}
 
-	time_t atime = time(NULL);
+	time_t atime = time(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
@@ -476,7 +470,7 @@ void CSBFSpot::GetMeterDetails()
 	bool bHaveVersion = false;
 	std::string tmpString;
 	std::ifstream infile;
-	std::string szLastDate = "";
+	std::string szLastDate;
 	std::vector<std::string> szLastLines;
 	std::vector<std::string> results;
 	std::string sLine;
@@ -493,12 +487,12 @@ void CSBFSpot::GetMeterDetails()
 	{
 		getline(infile, sLine);
 		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
-		if (sLine.size() != 0)
+		if (!sLine.empty())
 		{
 			if (sLine.find("sep=") == 0)
 			{
 				tmpString = sLine.substr(strlen("sep="));
-				if (tmpString != "")
+				if (!tmpString.empty())
 				{
 					szSeperator = tmpString;
 				}
@@ -552,12 +546,11 @@ void CSBFSpot::GetMeterDetails()
 	double Pac = 0;
 	int InvIdx = 0;
 
-	std::vector<std::string>::const_iterator itt;
-	for (itt = szLastLines.begin(); itt != szLastLines.end(); ++itt)
+	for (const auto &line : szLastLines)
 	{
-		StringSplit(*itt, szSeperator, results);
+		StringSplit(line, szSeperator, results);
 
-		if (results[1].size() < 1)
+		if (results[1].empty())
 		{
 			_log.Log(LOG_ERROR, "SBFSpot: No data record found in spot file!");
 			return;
@@ -646,12 +639,13 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 			int hardwareID = atoi(idx.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
-			if (pHardware != NULL)
+			if (pHardware != nullptr)
 			{
 				if (pHardware->HwdType == HTYPE_SBFSpot)
 				{
@@ -660,5 +654,5 @@ namespace http {
 				}
 			}
 		}
-	}
-}
+	} // namespace server
+} // namespace http

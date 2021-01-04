@@ -28,11 +28,12 @@ local function getDevice_(
 	additionalRootData,
 	additionalDataData,
 	hardwareType,
-	hardwaryTypeValue,
+	hardwareTypeValue,
 	baseType,
 	dummyLogger,
 	batteryLevel,
-	signalLevel)
+	signalLevel,
+	nValue)
 
 	local Device = require('Device')
 
@@ -78,14 +79,14 @@ local function getDevice_(
 		["_state"] = state,
 		["hardwareName"] = "hw1",
 		["hardwareType"] = hardwareType,
-		["hardwareTypeValue"] = hardwaryTypeValue,
+		["hardwareTypeValue"] = hardwareTypeValue,
 		["hardwareID"] = 1,
 		['protected'] = true,
-		['_nValue'] = 123,
+		['_nValue'] = nValue or 123,
 		['unit'] = 1
 		},
 		["rawData"] = rawData,
-		["baseType"] = baseType ~= nil and baseType or "device",
+		["baseType"] = baseType or "device",
 		["changed"] = changed,
 		["changedAttribute"] = 'temperature' --tbd
 	}
@@ -117,7 +118,8 @@ local function getDevice(domoticz, options)
 		options.baseType,
 		options.dummyLogger,
 		options.batteryLevel,
-		options.signalLevel)
+		options.signalLevel,
+		options.nValue)
 
 end
 
@@ -162,6 +164,8 @@ describe('device', function()
 			['currentTime'] = '2017-08-17 12:13:14.123'
 		}
 
+		_G.domoticzData = {}
+
 		TimedCommand = require('TimedCommand')
 
 		Device = require('Device')
@@ -198,7 +202,8 @@ describe('device', function()
 				subType = 'sub',
 				hardwareType = 'hwtype',
 				hardwareTypeValue = 'hvalue',
-				state = 'bla'
+				state = 'bla',
+				id = 1,
 			})
 
 			assert.is_same(true, device.changed)
@@ -743,7 +748,7 @@ describe('device', function()
 			end
 			local test = 'sValue'
 			device.setValues(12,test,13,14,test)
-			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=12&svalue=sValue;13;14;sValue', res)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=12&svalue=sValue;13;14;sValue&parsetrigger=false', res)
 		end)
 
 		it('should detect an evohome device', function()
@@ -871,6 +876,34 @@ describe('device', function()
 
 		end)
 
+		it('should detect a Thermostat type 3 device', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Thermostat 3',
+				['subType'] = 'Mertik some type',
+				['nValue'] = 2;
+				['_nValue'] = 2;
+				}
+			)
+
+			domoticz.openURL = function(url)
+				return url;
+			end
+
+			assert.is_same( { 'Off', 'On', 'Up', 'Down', 'Run Up', 'Run Down', 'Stop' } , utils.stringSplit(device.modes,',') )
+			assert.is_same(2, device.mode)
+			assert.is_same('Up', device.modeString)
+
+			assert.is_same( 'http://127.0.0.1:8080/json.htm?type=command&param=switchlight&idx=1&switchcmd=Off', device.updateMode('Off'))
+			assert.is_same( 'http://127.0.0.1:8080/json.htm?type=command&param=switchlight&idx=1&switchcmd=On', device.updateMode('On'))
+			assert.is_same( 'http://127.0.0.1:8080/json.htm?type=command&param=switchlight&idx=1&switchcmd=Up', device.updateMode('Up'))
+			assert.is_same( 'http://127.0.0.1:8080/json.htm?type=command&param=switchlight&idx=1&switchcmd=Down', device.updateMode('Down'))
+			assert.is_same( 'http://127.0.0.1:8080/json.htm?type=command&param=switchlight&idx=1&switchcmd=Run%20Up', device.updateMode('Run Up'))
+			assert.is_same( 'http://127.0.0.1:8080/json.htm?type=command&param=switchlight&idx=1&switchcmd=Run%20Down', device.updateMode('Run Down'))
+			assert.is_same( 'http://127.0.0.1:8080/json.htm?type=command&param=switchlight&idx=1&switchcmd=Stop', device.updateMode('Stop'))
+		end)
+
 		it('should detect a wind device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
@@ -955,6 +988,16 @@ describe('device', function()
 			device.updateTempHum(10, 12, 'wet')
 			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;12;wet", _trigger=true} } }, commandArray)
 			assert.is_same(2, device.humidityStatusValue)
+
+			commandArray = {}
+			device.updateTempHum(10, 12)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;12;2", _trigger=true} } }, commandArray)
+			assert.is_same(2, device.humidityStatusValue)
+
+			commandArray = {}
+			device.updateTempHum(24, 52)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="24;52;1", _trigger=true} } }, commandArray)
+			assert.is_same(2, device.humidityStatusValue)
 		end)
 
 		it('should detect a temp+humidity+barometer device', function()
@@ -966,8 +1009,18 @@ describe('device', function()
 				}
 			})
 
-			device.updateTempHumBaro(10, 12, 'wet', 1000, 'rain')
-			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;12;wet;1000;4", _trigger=true} } }, commandArray)
+			device.updateTempHumBaro(10, 12, 2, 1000, 'rain')
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;12;2;1000;4", _trigger=true} } }, commandArray)
+			assert.is_same(1, device.humidityStatusValue)
+
+			commandArray = {}
+			device.updateTempHumBaro(10, 12, -1, 1000, 'rain')
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;12;2;1000;4", _trigger=true} } }, commandArray)
+			assert.is_same(1, device.humidityStatusValue)
+
+			commandArray = {}
+			device.updateTempHumBaro(24, 52, -1, 1000, 'rain')
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="24;52;1;1000;4", _trigger=true} } }, commandArray)
 			assert.is_same(1, device.humidityStatusValue)
 		end)
 
@@ -1097,11 +1150,25 @@ describe('device', function()
 		it('should detect a custom sensor device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
-				['subType'] = 'Custom Sensor'
+				['subType'] = 'Custom Sensor',
+				['rawData'] = { [1]="12" }
 			})
 
 			device.updateCustomSensor(12)
 			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="12", _trigger=true} } }, commandArray)
+
+			assert.is_same(12, device.sensorValue)
+			assert.is_same('number' , type(device.sensorValue) )
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Custom Sensor',
+				['rawData'] = { [1]="12a" }
+			})
+
+			assert.is_same('12a', device.sensorValue)
+			assert.is_same('string', type(device.sensorValue))
+
 		end)
 
 		it('should detect a solar radiation device', function()
@@ -1529,6 +1596,42 @@ describe('device', function()
 			end)
 		end)
 
+		describe('hardware', function()
+
+			it('should detect hardware', function()
+				local hardware = getDevice(domoticz, {
+					['baseType'] = 'hardware',
+					['name'] = 'myHardware',
+					['hardwareType'] = 'myHardware type',
+					['hardwareTypeValue'] = '234',
+				})
+
+				assert.is_false(hardware.isHTTPResponse)
+				assert.is_false(hardware.isVariable)
+				assert.is_false(hardware.isTimer)
+				assert.is_false(hardware.isDevice)
+				assert.is_false(hardware.isGroup)
+				assert.is_false(hardware.isScene)
+				assert.is_false(hardware.isSecurity)
+				assert.is_true(hardware.isHardware)
+			end)
+
+			it('should return attributes correctly', function()
+				local hardware = getDevice(domoticz, {
+					['baseType'] = 'hardware',
+					['name'] = 'myHardware',
+					['hardwareType'] = 'myHardware type',
+					['hardwareTypeValue'] = 234,
+				})
+
+				assert.is_equal(hardware.name,'myHardware' )
+				assert.is_equal(hardware.hardwareType,'myHardware type' )
+				assert.is_equal(hardware.hardwareTypeValue,234)
+				assert.is_true(hardware.isHardware)
+
+			end)
+		end)
+
 		it('should detect a huelight', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myHue',
@@ -1548,6 +1651,25 @@ describe('device', function()
 			commandArray = {}
 			device.switchOff()
 			assert.is_same({ { ["myHue"] = "Off" } }, commandArray)
+		end)
+
+		it('should detect a Thermostat operating state device', function()
+			local device = getDevice(domoticz, {
+				['idx'] = 1,
+				['type'] = 'General',
+				['name'] = 'myThermostat operating state device',
+				['subType'] = 'Thermostat Operating State',
+				['nValue'] = 0,
+			})
+
+			assert.is_same('Idle', device.modeString)
+			assert.is_same('Idle, Cooling, Heating', device.modes)
+			assert.is_same(0, device.mode)
+
+			commandArray = {}
+			device.updateMode('Cooling')
+			assert.is_same({ { ['UpdateDevice'] = { ['_trigger'] = true, ['idx'] = 1, ['nValue'] = 1, ['sValue'] = 'cooling' } }  }, commandArray)
+
 		end)
 
 		it('should detect a youless device', function()
@@ -1602,6 +1724,42 @@ describe('device', function()
 				device.quietOff()
 				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&nvalue=0&svalue=0&idx=1' }, commandArray)
 			end)
+		end)
+
+		describe('Quiet device ( updateQuiet', function()
+
+			local commandArray = {}
+			domoticz.openURL = function(url)
+				return table.insert(commandArray, url)
+			end
+
+			local device = getDevice(domoticz, {
+				['name'] = 'quietDevice',
+				['state'] = 'On',
+					['type'] = 'Light/Switch',
+				['subType'] = 'RGBWW',
+				['type'] = 'Color Switch'
+			})
+
+			it('should handle the updateQuiet method correctly )', function()
+				commandArray = {}
+				device.updateQuiet() -- fail (no parms)
+				assert.is_same({  }, commandArray) -- empty
+
+				commandArray = {}
+				device.updateQuiet('string only') -- only svalue
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&svalue=string+only'  }, commandArray)
+
+				commandArray = {}
+				device.updateQuiet(7) -- only nvalue
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=7'  }, commandArray)
+
+				commandArray = {}
+				device.updateQuiet(7, '(string plus)') -- nvalue, svalue
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&svalue=%28string+plus%29&nvalue=7'   }, commandArray)
+
+			end)
+
 		end)
 
 		describe('RGBW device #RGB', function()

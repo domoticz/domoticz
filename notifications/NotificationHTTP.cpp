@@ -22,10 +22,6 @@ CNotificationHTTP::CNotificationHTTP() : CNotificationBase(std::string("http"), 
 	SetupConfigBase64(std::string("HTTPPostContentType"), _HTTPPostContentType);
 }
 
-CNotificationHTTP::~CNotificationHTTP()
-{
-}
-
 bool CNotificationHTTP::SendMessageImplementation(
 	const uint64_t Idx,
 	const std::string &Name,
@@ -67,9 +63,9 @@ bool CNotificationHTTP::SendMessageImplementation(
 			{
 				std::vector<std::string> ExtraHeaders2;
 				StringSplit(_HTTPPostHeaders, "\r\n", ExtraHeaders2);
-				for (size_t i = 0; i < ExtraHeaders2.size(); i++)
+				for (auto &i : ExtraHeaders2)
 				{
-					ExtraHeaders.push_back(ExtraHeaders2[i]);
+					ExtraHeaders.push_back(i);
 				}
 			}
 			std::string httpData = _HTTPPostData;
@@ -120,13 +116,13 @@ bool CNotificationHTTP::SendMessageImplementation(
 		stdreplace(destURL, "#MESSAGE", Text);
 
 		std::string scriptname = destURL.substr(9);
-		std::string scriptparams = "";
+		std::string scriptparams;
 #if !defined WIN32
-		if (scriptname.find("/") != 0)
+		if (scriptname.find('/') != 0)
 			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 		//Add parameters
-		uPos = scriptname.find(" ");
+		uPos = scriptname.find(' ');
 		if (uPos != std::string::npos)
 		{
 			scriptparams = scriptname.substr(uPos + 1);

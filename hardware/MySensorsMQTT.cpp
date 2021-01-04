@@ -13,20 +13,11 @@
 
 extern const char* szTLSVersions[3];
 
-MySensorsMQTT::MySensorsMQTT(
-	const int ID,
-	const std::string &Name,
-	const std::string &IPAddress, const unsigned short usIPPort,
-	const std::string &Username, const std::string &Password, const std::string &CAfilename, const int TLS_Version,
-	const int Topics,
-	const bool PreventLoop) :
-	MQTT(
-		ID,
-		IPAddress, usIPPort,
-		Username, Password, CAfilename, TLS_Version,
-		(int)MQTT::PT_out, (std::string("Domoticz-MySensors") +  std::string(GenerateUUID())).c_str(), PreventLoop),
-	MyTopicIn(TOPIC_IN),
-	MyTopicOut(TOPIC_OUT)
+MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password,
+			     const std::string &CAfilenameExtra, const int TLS_Version, const int PublishScheme, const bool PreventLoop)
+	: MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilenameExtra, TLS_Version, (int)MQTT::PT_out, std::string("Domoticz-MySensors") + std::string(GenerateUUID()), PreventLoop)
+	, MyTopicIn(TOPIC_IN)
+	, MyTopicOut(TOPIC_OUT)
 {
 
 	/**
@@ -37,8 +28,8 @@ MySensorsMQTT::MySensorsMQTT(
 	 **/
 
 	size_t nextPiece = std::string::npos;
-	std::string CustomTopicIn = "";
-	std::string CustomTopicOut = "";
+	std::string CustomTopicIn;
+	std::string CustomTopicOut;
 
 	do {
 		// Locate the last delimiter in the CAfilename string.
@@ -68,9 +59,9 @@ MySensorsMQTT::MySensorsMQTT(
 		// And remove it from the CAfilename string.
 		m_CAFilename.erase(nextPiece, m_CAFilename.length());
 
-	} while (0);
+	} while (false);
 
-	switch (Topics) {
+	switch (PublishScheme) {
 		case 2:
 			MyTopicIn = CustomTopicIn;
 			MyTopicOut = CustomTopicOut;
@@ -89,10 +80,6 @@ MySensorsMQTT::MySensorsMQTT(
 	m_TopicIn = m_TopicInWithoutHash + "/#";
 	m_TopicOut = MyTopicOut;
 
-}
-
-MySensorsMQTT::~MySensorsMQTT(void)
-{
 }
 
 bool MySensorsMQTT::StartHardware()
@@ -185,11 +172,11 @@ void MySensorsMQTT::ConvertMySensorsLineToMessage(const std::string &sLine, std:
 		return;
 	}
 
-	sTopic = std::string(sLine.substr(0, indexLastSeperator).c_str());
+	sTopic = std::string(sLine.substr(0, indexLastSeperator));
 	boost::replace_all(sTopic, ";", "/");
 	sTopic.insert(0, m_TopicOut + "/");
 
-	sPayload = std::string(sLine.substr(indexLastSeperator + 1).c_str());
+	sPayload = std::string(sLine.substr(indexLastSeperator + 1));
 	if (!sPayload.empty() &&
 		sPayload[sPayload.length() - 1] == '\n')
 	{

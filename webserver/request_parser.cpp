@@ -15,11 +15,6 @@
 namespace http {
 namespace server {
 
-request_parser::request_parser()
-  : state_(method_start)
-{
-}
-
 void request_parser::reset()
 {
   state_ = method_start;
@@ -291,36 +286,34 @@ boost::tribool request_parser::consume(request& req, const char* &pInput, const 
   case expecting_newline_3:
 	  if (input == '\n')
 	  {
-		  if( req.method != "POST" ) 
+		  if (req.method != "POST")
 		  {
 			  // finished
 			  return true;
-		  } else
-		  {
-			  // this is a post request, so we need to read the content
-			  req.content_length = 0;
-			  for( std::vector<header>::iterator ph = req.headers.begin();  ph != req.headers.end(); ++ph )
-			  {
-				  std::string hname = (*ph).name;
-				  std::transform(hname.begin(), hname.end(), hname.begin(), ::tolower);
-				  if( hname == "content-length" ) {
-					  req.content_length = atoi( (*ph).value.c_str());
-					  break;
-				  }
-			  }
-
-			  // check on content_length, we might be done already
-			  if (req.content_length == 0) {
-				  return true;
-			  }
-
-			  state_ = reading_content;
-			  return boost::indeterminate;
 		  }
-	  } else
-	  {
-		  return false;
+		  // this is a post request, so we need to read the content
+		  req.content_length = 0;
+		  for (auto &ph : req.headers)
+		  {
+			  std::string hname = ph.name;
+			  std::transform(hname.begin(), hname.end(), hname.begin(), ::tolower);
+			  if (hname == "content-length")
+			  {
+				  req.content_length = atoi(ph.value.c_str());
+				  break;
+			  }
+		  }
+
+		  // check on content_length, we might be done already
+		  if (req.content_length == 0)
+		  {
+			  return true;
+		  }
+
+		  state_ = reading_content;
+		  return boost::indeterminate;
 	  }
+	  return false;
   case reading_content:
 	   // reset pInput to start value
 	  pInput--;

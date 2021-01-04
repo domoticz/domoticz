@@ -9,11 +9,13 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #include <ctime>
+
+using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 
@@ -40,11 +42,6 @@ Meteostick::Meteostick(const int ID, const std::string& devname, const unsigned 
 		m_ActRainCounter[ii] = -1;
 		m_LastRainValue[ii] = -1;
 	}
-}
-
-Meteostick::~Meteostick()
-{
-
 }
 
 bool Meteostick::StartHardware()
@@ -124,7 +121,7 @@ void Meteostick::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (!isOpen())
@@ -200,7 +197,7 @@ void Meteostick::SendTempBaroSensorInt(const unsigned char Idx, const float Temp
 	float dTempAtSea = (Temp - (-273.15f)) + dTempGradient * altitude;
 	float dBasis = 1 - dTempGradient * altitude / dTempAtSea;
 	float dExponent = 0.03416f / dTempGradient;
-	float dPressure = Baro / pow(dBasis,dExponent);
+	float dPressure = Baro / std::pow(dBasis,dExponent);
 
 	SendTempBaroSensor(Idx, 255, Temp, dPressure, defaultname);
 }
@@ -242,7 +239,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	{
 		float dBasis = dWindSpeed;
 		float dExponent = 0.16f;
-		float dWind = pow(dBasis,dExponent);
+		float dWind = std::pow(dBasis,dExponent);
 		dWindChill = (13.12f + 0.6215f * Temp - 11.37f * dWind + 0.3965f * Temp * dWind);
 	}
 	dWindChill*=10.0f;
@@ -251,7 +248,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	dWindChill -= (tsen.WIND.chillh * 256);
 	tsen.WIND.chilll = (BYTE)(dWindChill);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), 255, nullptr);
 }
 
 void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname)
@@ -261,7 +258,7 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 	gdevice.subtype = sTypeLeafWetness;
 	gdevice.intval1 = Wetness;
 	gdevice.id = (uint8_t)finalID;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255, nullptr);
 }
 
 void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname)
@@ -276,7 +273,7 @@ void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float R
 	gdevice.subtype = sTypeSolarRadiation;
 	gdevice.id = static_cast<int>(Idx);
 	gdevice.floatval1 = Radiation;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255, nullptr);
 }
 
 void Meteostick::ParseLine()
@@ -287,7 +284,7 @@ void Meteostick::ParseLine()
 
 	std::vector<std::string> results;
 	StringSplit(sLine, " ", results);
-	if (results.size() < 1)
+	if (results.empty())
 		return; //invalid data
 
 	switch (m_state)
