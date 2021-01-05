@@ -460,31 +460,21 @@ std::vector<std::string> CBasePush::DropdownOptions(const uint64_t DeviceRowIdxI
 std::string CBasePush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const int pos)
 {
 	std::string wording = "???";
-	int getpos = pos - 1; // 0 pos is always nvalue/status, 1 and higher goes to svalues
+	if (pos < 1)
+		return wording;
 	std::vector<std::vector<std::string> > result;
-
 	result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID== %" PRIu64 ")", DeviceRowIdxIn);
 	if (result.empty())
-	{
 		return wording;
-	}
+
 	int dType = atoi(result[0][0].c_str());
 	int dSubType = atoi(result[0][1].c_str());
 
-	std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
 	std::vector<std::string> tmpV;
-	StringSplit(sOptions, ",", tmpV);
-	if (tmpV.size() > 1)
-	{
-		if ((int)tmpV.size() >= pos && getpos >= 0) {
-			wording = tmpV[getpos];
-		}
-	}
-	else if (tmpV.size() == 1)
-	{
-		wording = sOptions;
-	}
-	return wording;
+	StringSplit(RFX_Type_SubType_Values(dType, dSubType), ",", tmpV);
+	if (pos -1 >= tmpV.size())
+		return wording;
+	return wording = tmpV[pos - 1];
 }
 
 std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int devType, const int devSubType,
@@ -495,6 +485,9 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 	try
 	{
 		std::string vType = DropdownOptionsValue(DeviceRowIdx, delpos);
+		if (vType  == "???")
+			return ""; // unhandled type
+
 		unsigned char tempsign = m_sql.m_tempsign[0];
 		_eMeterType metertype = (_eMeterType)metertypein;
 		
@@ -745,6 +738,9 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 std::string CBasePush::getUnit(const uint64_t DeviceRowIdx, const int delpos, const int metertypein)
 {
 	std::string vType = DropdownOptionsValue(DeviceRowIdx, delpos);
+	if (vType == "???")
+		return ""; // No unit, unhandled
+
 	unsigned char tempsign = m_sql.m_tempsign[0];
 	_eMeterType metertype = (_eMeterType)metertypein;
 	char szData[100];
