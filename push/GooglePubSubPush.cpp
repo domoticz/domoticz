@@ -24,6 +24,7 @@ extern "C" {
 using namespace boost::placeholders;
 
 extern std::string szUserDataFolder;
+extern CGooglePubSubPush m_googlepubsubpush;
 
 // this should be filled in by the preprocessor
 extern const char * Python_exe;
@@ -41,6 +42,7 @@ CGooglePubSubPush::CGooglePubSubPush()
 void CGooglePubSubPush::Start()
 {
 	UpdateActive();
+	ReloadPushLinks(m_PushType);
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CGooglePubSubPush::OnDeviceReceived, this, _1, _2, _3, _4));
 }
 
@@ -121,12 +123,14 @@ void CGooglePubSubPush::DoGooglePubSubPush(const uint64_t DeviceRowIdx)
 		googlePubSubDebugActive = true;
 	}
 #endif
-	std::string sendValue;
 	for (const auto &sd : result)
 	{
+		std::string sendValue;
+
 		m_sql.GetPreferencesVar("GooglePubSubData", googlePubSubData);
 		if (googlePubSubData.empty())
 			return;
+
 
 		std::string sdeviceId = sd[0];
 		std::string ldelpos = sd[1];
@@ -186,7 +190,7 @@ void CGooglePubSubPush::DoGooglePubSubPush(const uint64_t DeviceRowIdx)
 		%idx : 'Original device' id (idx)
 		*/
 
-		std::string lunit = getUnit(DeviceRowIdx, delpos, metertype);
+		std::string lunit = getUnit(dType, dSubType, delpos, metertype);
 		std::string lType = RFX_Type_Desc(dType, 1);
 		std::string lSubType = RFX_Type_SubType_Desc(dType, dSubType);
 
@@ -435,6 +439,7 @@ namespace http {
 					idx.c_str()
 				);
 			}
+			m_googlepubsubpush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB);
 			root["status"] = "OK";
 			root["title"] = "SaveGooglePubSubLink";
 		}
@@ -451,6 +456,7 @@ namespace http {
 			if (idx.empty())
 				return;
 			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
+			m_googlepubsubpush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB);
 			root["status"] = "OK";
 			root["title"] = "DeleteGooglePubSubLink";
 		}

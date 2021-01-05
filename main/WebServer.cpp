@@ -1850,13 +1850,14 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::vector<std::string> result;
-			result = CBasePush::DropdownOptions(atoi(idx.c_str()));
-			if ((result.size() == 1) && result[0] == "Status") {
-				root["result"][0]["Value"] = 0;
-				root["result"][0]["Wording"] = result[0];
-			}
-			else {
+			std::vector<std::vector<std::string>> devresult;
+			devresult = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
+			if (!devresult.empty())
+			{
+				int devType = std::stoi(devresult[0][0]);
+				int devSubType = std::stoi(devresult[0][1]);
+				std::vector<std::string> result;
+				result = CBasePush::DropdownOptions(devType, devSubType);
 				int ii = 0;
 				for (const auto &ddOption : result)
 				{
@@ -1881,7 +1882,14 @@ namespace http {
 			if ((idx.empty()) || (pos.empty()))
 				return;
 			std::string wording;
-			wording = CBasePush::DropdownOptionsValue(atoi(idx.c_str()), atoi(pos.c_str()));
+			std::vector<std::vector<std::string>> devresult;
+			devresult = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
+			if (!devresult.empty())
+			{
+				int devType = std::stoi(devresult[0][0]);
+				int devSubType = std::stoi(devresult[0][1]);
+				wording = CBasePush::DropdownOptionsValue(devType, devSubType, std::stoi(pos));
+			}
 			root["wording"] = wording;
 			root["status"] = "OK";
 			root["title"] = "GetDeviceValueOptions";

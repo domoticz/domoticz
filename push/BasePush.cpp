@@ -434,47 +434,27 @@ void CBasePush::replaceAll(std::string& context, const std::string& from, const 
 	}
 }
 
-std::vector<std::string> CBasePush::DropdownOptions(const uint64_t DeviceRowIdxIn)
+std::vector<std::string> CBasePush::DropdownOptions(const int devType, const int devSubType)
 {
 	std::vector<std::string> dropdownOptions;
-
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID== %" PRIu64 ")", DeviceRowIdxIn);
-	if (!result.empty())
-	{
-		int dType = atoi(result[0][0].c_str());
-		int dSubType = atoi(result[0][1].c_str());
-
-		std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
-		std::vector<std::string> tmpV;
-		StringSplit(sOptions, ",", tmpV);
-		std::copy(tmpV.begin(), tmpV.end(), std::back_inserter(dropdownOptions));
-	}
-	else
-	{
-		dropdownOptions.push_back("Not implemented");
-	}
+	std::string sOptions = RFX_Type_SubType_Values(devType, devSubType);
+	std::vector<std::string> tmpV;
+	StringSplit(sOptions, ",", tmpV);
+	std::copy(tmpV.begin(), tmpV.end(), std::back_inserter(dropdownOptions));
 	return dropdownOptions;
 }
 
-std::string CBasePush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const int pos)
+std::string CBasePush::DropdownOptionsValue(const int devType, const int devSubType, const int pos)
 {
 	std::string wording = "???";
 	if (pos < 1)
 		return wording;
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID== %" PRIu64 ")", DeviceRowIdxIn);
-	if (result.empty())
-		return wording;
-
-	int dType = atoi(result[0][0].c_str());
-	int dSubType = atoi(result[0][1].c_str());
 
 	std::vector<std::string> tmpV;
-	StringSplit(RFX_Type_SubType_Values(dType, dSubType), ",", tmpV);
-	if (pos -1 >= tmpV.size())
+	StringSplit(RFX_Type_SubType_Values(devType, devSubType), ",", tmpV);
+	if (pos -1 >= (int)tmpV.size())
 		return wording;
-	return wording = tmpV[pos - 1];
+	return tmpV[pos - 1];
 }
 
 std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int devType, const int devSubType,
@@ -484,7 +464,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 	szData[0] = 0;
 	try
 	{
-		std::string vType = DropdownOptionsValue(DeviceRowIdx, delpos);
+		std::string vType = DropdownOptionsValue(devType, devSubType, delpos);
 		if (vType  == "???")
 			return ""; // unhandled type
 
@@ -722,7 +702,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		std::string sendValue(szData);
 		if (includeUnit)
 		{
-			std::string unit = getUnit(DeviceRowIdx, delpos, metertypein);
+			std::string unit = getUnit(devType, devSubType, delpos, metertypein);
 			if (!unit.empty())
 			{
 				sendValue += " ";
@@ -735,9 +715,9 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 	return "";
 }
 
-std::string CBasePush::getUnit(const uint64_t DeviceRowIdx, const int delpos, const int metertypein)
+std::string CBasePush::getUnit(const int devType, const int devSubType, const int delpos, const int metertypein)
 {
-	std::string vType = DropdownOptionsValue(DeviceRowIdx, delpos);
+	std::string vType = DropdownOptionsValue(devType, devSubType, delpos);
 	if (vType == "???")
 		return ""; // No unit, unhandled
 
@@ -910,6 +890,55 @@ std::string CBasePush::getUnit(const uint64_t DeviceRowIdx, const int delpos, co
 	// No unit
 	return "";
 }
+
+void CBasePush::ReloadPushLinks(const PushType PType)
+{
+	std::lock_guard<std::mutex> l(m_link_mutex);
+	m_pushlinks.clear();
+	std::vector<std::vector<std::string>> result;
+	result = m_sql.safe_query("SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Name, B.Type, B.SubType, B.SwitchType "
+				  "FROM PushLink as A, DeviceStatus as B "
+				  "WHERE (A.PushType==%d AND A.Enabled==1 AND A.DeviceRowID == B.ID)",
+				  PType);
+	for (const auto &sd : result)
+	{
+		_tPushLinks tlink;
+		tlink.DeviceRowIdx = std::stoull(sd[0]);
+		tlink.DelimiterPos = std::stoi(sd[1]);
+		tlink.DeviceName = sd[3];
+		tlink.devType = std::stoi(sd[4]);
+		tlink.devSubType = std::stoi(sd[5]);
+		tlink.metertype = std::stoi(sd[6]);
+		m_pushlinks.push_back(tlink);
+	}
+}
+
+bool CBasePush::IsLinkInDatabase(const uint64_t DeviceRowIdx)
+{
+	std::lock_guard<std::mutex> l(m_link_mutex);
+	for (const auto &itt : m_pushlinks)
+	{
+		if (itt.DeviceRowIdx == DeviceRowIdx)
+			return true;
+	}
+	return false;
+}
+
+bool CBasePush::GetPushLink(const uint64_t DeviceRowIdx, _tPushLinks &plink)
+{
+	std::lock_guard<std::mutex> l(m_link_mutex);
+	for (const auto &itt : m_pushlinks)
+	{
+		if (itt.DeviceRowIdx == DeviceRowIdx)
+		{
+			plink = itt;
+			return true;
+		}
+	}
+	return false;
+}
+
+
 
 //Webserver helpers
 namespace http {

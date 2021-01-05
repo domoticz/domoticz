@@ -16,6 +16,7 @@
 #include <inttypes.h>
 
 using namespace boost::placeholders;
+extern CHttpPush m_httppush;
 
 CHttpPush::CHttpPush()
 {
@@ -26,6 +27,7 @@ CHttpPush::CHttpPush()
 void CHttpPush::Start()
 {
 	UpdateActive();
+	ReloadPushLinks(m_PushType);
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CHttpPush::OnDeviceReceived, this, _1, _2, _3, _4));
 }
 
@@ -80,9 +82,9 @@ void CHttpPush::DoHttpPush(const uint64_t DeviceRowIdx)
 		httpDebugActive = true;
 	}
 
-	std::string sendValue;
 	for (const auto &sd : result)
 	{
+		std::string sendValue;
 		m_sql.GetPreferencesVar("HttpUrl", httpUrl);
 		m_sql.GetPreferencesVar("HttpData", httpData);
 		m_sql.GetPreferencesVar("HttpHeaders", httpHeaders);
@@ -148,7 +150,7 @@ void CHttpPush::DoHttpPush(const uint64_t DeviceRowIdx)
 		%idx : 'Original device' id (idx)
 		*/
 
-		std::string lunit = getUnit(DeviceRowIdx, delpos, metertype);
+		std::string lunit = getUnit(dType, dSubType, delpos, metertype);
 		std::string lType = RFX_Type_Desc(dType, 1);
 		std::string lSubType = RFX_Type_SubType_Desc(dType, dSubType);
 
@@ -436,6 +438,7 @@ namespace http {
 					idx.c_str()
 				);
 			}
+			m_httppush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_HTTP);
 			root["status"] = "OK";
 			root["title"] = "SaveHttpLink";
 		}
@@ -452,6 +455,7 @@ namespace http {
 			if (idx.empty())
 				return;
 			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
+			m_httppush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_HTTP);
 			root["status"] = "OK";
 			root["title"] = "DeleteHttpLink";
 		}

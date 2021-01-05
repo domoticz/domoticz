@@ -16,6 +16,8 @@
 
 using namespace boost::placeholders;
 
+extern CFibaroPush m_fibaropush;
+
 CFibaroPush::CFibaroPush()
 {
 	m_PushType = PushType::PUSHTYPE_FIBARO;
@@ -25,6 +27,7 @@ CFibaroPush::CFibaroPush()
 void CFibaroPush::Start()
 {
 	UpdateActive();
+	ReloadPushLinks(m_PushType);
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CFibaroPush::OnDeviceReceived, this, _1, _2, _3, _4));
 }
 
@@ -79,9 +82,9 @@ void CFibaroPush::DoFibaroPush(const uint64_t DeviceRowIdx)
 
 	if ((fibaroIP.empty()) || (fibaroUsername.empty()) || (fibaroPassword.empty()))
 		return;
-	std::string sendValue;
 	for (const auto &sd : result)
 	{
+		std::string sendValue;
 		int delpos = atoi(sd[1].c_str());
 		int dType = atoi(sd[3].c_str());
 		int dSubType = atoi(sd[4].c_str());
@@ -370,6 +373,7 @@ namespace http {
 					idx.c_str()
 				);
 			}
+			m_fibaropush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_FIBARO);
 			root["status"] = "OK";
 			root["title"] = "SaveFibaroLink";
 		}
@@ -386,6 +390,7 @@ namespace http {
 			if (idx.empty())
 				return;
 			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
+			m_fibaropush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_FIBARO);
 			root["status"] = "OK";
 			root["title"] = "DeleteFibaroLink";
 		}

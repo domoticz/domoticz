@@ -17,6 +17,8 @@
 
 using namespace boost::placeholders;
 
+extern CInfluxPush m_influxpush;
+
 CInfluxPush::CInfluxPush()
 {
 	m_PushType = PushType::PUSHTYPE_INFLUXDB;
@@ -30,6 +32,7 @@ bool CInfluxPush::Start()
 	RequestStart();
 
 	UpdateSettings();
+	ReloadPushLinks(m_PushType);
 
 	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "InfluxPush");
@@ -101,30 +104,30 @@ void CInfluxPush::OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std
 
 void CInfluxPush::DoInfluxPush(const uint64_t DeviceRowIdx)
 {
+	if (!IsLinkInDatabase(DeviceRowIdx))
+		return;
+
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.Name, B.SwitchType FROM PushLink as A, DeviceStatus as B "
+		"SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.IncludeUnit, B.Name, B.SwitchType FROM PushLink as A, DeviceStatus as B "
 		"WHERE (A.PushType==%d AND A.DeviceRowID == '%" PRIu64 "' AND A.Enabled==1 AND A.DeviceRowID==B.ID)",
 		PushType::PUSHTYPE_INFLUXDB, DeviceRowIdx);
 	if (result.empty())
 		return;
 
 	time_t atime = mytime(nullptr);
-	std::string sendValue;
 	for (const auto &sd : result)
 	{
+		std::string sendValue;
 		int delpos = atoi(sd[1].c_str());
 		int dType = atoi(sd[3].c_str());
 		int dSubType = atoi(sd[4].c_str());
 		int nValue = atoi(sd[5].c_str());
 		std::string sValue = sd[6];
 		int targetType = atoi(sd[7].c_str());
-		//std::string targetVariable = sd[8].c_str();
-		//int targetDeviceID = atoi(sd[9].c_str());
-		//std::string targetProperty = sd[10].c_str();
-		int includeUnit = atoi(sd[11].c_str());
-		std::string name = sd[12];
-		int metertype = atoi(sd[13].c_str());
+		int includeUnit = atoi(sd[8].c_str());
+		std::string name = sd[9];
+		int metertype = atoi(sd[10].c_str());
 
 		std::vector<std::string> strarray;
 		if (sValue.find(';') != std::string::npos)
@@ -143,7 +146,7 @@ void CInfluxPush::DoInfluxPush(const uint64_t DeviceRowIdx)
 			continue;
 
 		std::string szKey;
-		std::string vType = CBasePush::DropdownOptionsValue(std::stoi(sd[0]), delpos);
+		std::string vType = CBasePush::DropdownOptionsValue(dType, dSubType, delpos);
 		stdreplace(vType, " ", "-");
 		stdreplace(name, " ", "-");
 		szKey = vType + ",idx=" + sd[0] + ",name=" + name;
@@ -307,15 +310,20 @@ namespace http {
 			}
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query(
-				"SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_INFLUXDB);
+				"SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit, B.Type, B.SubType FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_INFLUXDB);
 			if (!result.empty())
 			{
 				int ii = 0;
 				for (const auto &sd : result)
 				{
+					int Delimitedvalue = std::stoi(sd[2]);
+					int devType = std::stoi(sd[10]);
+					int devSubType = std::stoi(sd[11]);
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["DeviceID"] = sd[1];
-					root["result"][ii]["Delimitedvalue"] = sd[2];
+					root["result"][ii]["Delimitedvalue"] = Delimitedvalue;
+					root["result"][ii]["Delimitedname"] = CBasePush::DropdownOptionsValue(devType, devSubType, Delimitedvalue);
 					root["result"][ii]["TargetType"] = sd[3];
 					root["result"][ii]["TargetVariable"] = sd[4];
 					root["result"][ii]["TargetDevice"] = sd[5];
@@ -368,6 +376,7 @@ namespace http {
 					idx.c_str()
 				);
 			}
+			m_influxpush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_INFLUXDB);
 			root["status"] = "OK";
 			root["title"] = "SaveInfluxLink";
 		}
@@ -384,6 +393,7 @@ namespace http {
 			if (idx.empty())
 				return;
 			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
+			m_influxpush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_INFLUXDB);
 			root["status"] = "OK";
 			root["title"] = "DeleteInfluxLink";
 		}
