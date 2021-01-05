@@ -440,7 +440,7 @@ std::vector<std::string> CBasePush::DropdownOptions(const uint64_t DeviceRowIdxI
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID== %" PRIu64 ")", DeviceRowIdxIn);
-	if (result.empty())
+	if (!result.empty())
 	{
 		int dType = atoi(result[0][0].c_str());
 		int dSubType = atoi(result[0][1].c_str());
