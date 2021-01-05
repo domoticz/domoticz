@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 146
+#define DB_VERSION 147
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2764,6 +2764,11 @@ bool CSQLHelper::OpenDatabase()
 				if (nValue == 4000)
 					UpdatePreferencesVar("MaxElectricPower", 6000);
 			}
+		}
+		if (dbversion < 147)
+		{
+			//Pushlink is not zero based anymore
+			safe_exec_no_return("UPDATE PushLink SET DelimitedValue=1 WHERE (DelimitedValue == 0)");
 		}
 	}
 	else if (bNewInstall)
