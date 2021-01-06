@@ -446,15 +446,11 @@ std::vector<std::string> CBasePush::DropdownOptions(const int devType, const int
 
 std::string CBasePush::DropdownOptionsValue(const int devType, const int devSubType, const int pos)
 {
-	std::string wording = "???";
-	if (pos < 1)
-		return wording;
-
 	std::vector<std::string> tmpV;
 	StringSplit(RFX_Type_SubType_Values(devType, devSubType), ",", tmpV);
-	if (pos -1 >= (int)tmpV.size())
-		return wording;
-	return tmpV[pos - 1];
+	if (pos > 0 && pos <= (int)tmpV.size())
+		return tmpV[pos - 1];
+	return "???";
 }
 
 std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int devType, const int devSubType,
