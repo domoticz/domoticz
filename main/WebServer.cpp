@@ -9071,7 +9071,7 @@ namespace http {
 				for (const auto &sd : result)
 				{
 					unsigned char favorite = atoi(sd[12].c_str());
-					bool bIsInPlan = planID.empty() && (planID != "0");
+					bool bIsInPlan = !planID.empty() && (planID != "0");
 
 					//Check if we only want favorite devices
 					if (!bIsInPlan)
