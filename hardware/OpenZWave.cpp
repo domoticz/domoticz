@@ -3338,6 +3338,13 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_KVARH:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
+		if (fValue < -1000000)
+		{
+			//NeoCoolcam reports values of -21474762
+			_log.Log(LOG_ERROR, "OpenZWave: Invalid counter value received!: (%f) Node: %d (0x%02x), CommandClass: %s, Instance: %d, Index: %d, Id: 0x%llX", fValue,
+					static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), pDevice->orgInstanceID, pDevice->orgIndexID, vID.GetId());
+			return; //counter should not be negative
+		}
 		pDevice->floatValue = fValue * pDevice->scaleMultiply;
 		break;
 	case ZDTYPE_SENSOR_TEMPERATURE:
