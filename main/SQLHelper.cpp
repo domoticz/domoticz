@@ -6391,52 +6391,62 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 6)
 					continue; //impossible
 
-				unsigned long long powerusage1 = 0;
-				unsigned long long powerusage2 = 0;
-				unsigned long long powerdeliv1 = 0;
-				unsigned long long powerdeliv2 = 0;
-				unsigned long long usagecurrent = 0;
-				unsigned long long delivcurrent = 0;
-
 				try
 				{
-					powerusage1 = std::stoull(splitresults[0]);
-					powerusage2 = std::stoull(splitresults[1]);
-					powerdeliv1 = std::stoull(splitresults[2]);
-					powerdeliv2 = std::stoull(splitresults[3]);
-					usagecurrent = std::stoull(splitresults[4]);
-					delivcurrent = std::stoull(splitresults[5]);
+					unsigned long long powerusage1 = std::stoull(splitresults[0]);
+					unsigned long long powerusage2 = std::stoull(splitresults[1]);
+					unsigned long long powerdeliv1 = std::stoull(splitresults[2]);
+					unsigned long long powerdeliv2 = std::stoull(splitresults[3]);
+					unsigned long long usagecurrent = std::stoull(splitresults[4]);
+					unsigned long long delivcurrent = std::stoull(splitresults[5]);
+
+					value1 = powerusage1;
+					value2 = powerdeliv1;
+					value5 = powerusage2;
+					value6 = powerdeliv2;
+					value3 = usagecurrent;
+					value4 = delivcurrent;
 				}
-				catch (const std::exception &)
+				catch (...)
 				{
 					_log.Log(LOG_ERROR, "UpdateMultiMeter: Error converting sValue values! (IDX: %s, sValue: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), dType, dSubType);
+					return;
 				}
-
-				value1 = powerusage1;
-				value2 = powerdeliv1;
-				value5 = powerusage2;
-				value6 = powerdeliv2;
-				value3 = usagecurrent;
-				value4 = delivcurrent;
 			}
 			else if ((dType == pTypeCURRENT) && (dSubType == sTypeELEC1))
 			{
 				if (splitresults.size() != 3)
 					continue; //impossible
 
-				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0f);
-				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0f);
-				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0f);
+				try
+				{
+					value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0f);
+					value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0f);
+					value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0f);
+				}
+				catch (...)
+				{
+					_log.Log(LOG_ERROR, "UpdateMultiMeter: Error converting sValue values! (IDX: %s, sValue: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), dType, dSubType);
+					return;
+				}
 			}
 			else if ((dType == pTypeCURRENTENERGY) && (dSubType == sTypeELEC4))
 			{
 				if (splitresults.size() != 4)
 					continue; //impossible
 
-				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0f);
-				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0f);
-				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0f);
-				value4 = (unsigned long long)(atof(splitresults[3].c_str()) * 1000.0f);
+				try
+				{
+					value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0f);
+					value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0f);
+					value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0f);
+					value4 = (unsigned long long)(atof(splitresults[3].c_str()) * 1000.0f);
+				}
+				catch (...)
+				{
+					_log.Log(LOG_ERROR, "UpdateMultiMeter: Error converting sValue values! (IDX: %s, sValue: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), dType, dSubType);
+					return;
+				}
 			}
 			else
 				continue;//don't know you (yet)
