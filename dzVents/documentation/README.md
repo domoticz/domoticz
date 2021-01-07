@@ -213,7 +213,7 @@ The customEvent object (second parameter in your execute function) has these att
  - **isJSON**: *Boolean*.<sup>3.0.3</sup> true when the customEvent data is a valid json string. The data is then automatically converted to a Lua table.
  - **isXML**: *Boolean*. <sup>3.0.3</sup> true when the customEvent data is a valid xml string. When true, the data is automatically converted to a Lua table.
  - **json**. *Table*. <sup>3.0.3</sup> When the customEvent data is a valid json string, the response data is automatically converted to a Lua table for quick and easy access. nil otherwise
- - **lines**: *Table*. <sup>3.1.0</sup> When the response data has multiple lines but is not a JSON or XML string then the response data is automatically converted to a table for quick and easy access.
+ - **lines**: *Table*. <sup>3.1.0</sup> When the response data has multiple lines but is not a JSON or XML string then the response data is automatically converted to a table for quick and easy access. nil otherwise
  - **trigger**, **customEvent**: *String*.<sup>3.0.3</sup> The string that triggered this customEvent instance. This is useful if you have a script that can be triggered by multiple different customEvent strings.
  - **xml**. *Table*. <sup>3.0.3</sup> When the response data is a valid xml string, the customEvent data is automatically converted to a Lua table for quick and easy access. nil otherwise
  - **xmlEncoding**. *String*. When the response data is `text/xml` See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
@@ -1001,8 +1001,14 @@ Note that if you do not find your specific device type here you can always inspe
 #### Counter, managed Counter, counter incremental
  - **counter**: *Number*
  - **counterToday**: *Number*. Today's counter value.
- - **updateCounter(value)**: *Function*. **This will overwrite; and not increment !**. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **incrementCounter(value)**: *Function*. (counter incremental) Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **updateCounter(value)**: *Function*. **Overwrite current value for managed and standard counters; increment for incremental counters !!**. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **incrementCounter(value)**: *Function*. (counter incremental) Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). To update with a complete new value you will have to do some calculation and take the counter divider into account.
+```Lua
+   local newValue = value
+   local iCounter = domoticz.devices('device name')
+   local counterDivider = x -- x is depending on the counter divider set for the device
+   iCounter.incrementCounter( ( -1 * iCounter.counter * counterDivider ) + newValue ) 
+```
  - **valueQuantity**: *String*. For counters.
  - **valueUnits**: *String*.
 
@@ -2247,7 +2253,7 @@ return {
 
  - **url**: *String*.
  - **method**: *String*. Optional. Either `'GET'` (default), `'POST'`, `'PUT'`<sup>3.0.2</sup>  or `'DELETE'`<sup>3.0.2</sup> .
- - **callback**: *String*. Optional. A custom string that will be used by dzVents to find a the callback handler script.
+ - **callback**: *String*. Optional. A custom string that will be used by dzVents to trigger the callback handler script(s).
  - **headers**: *Table*. Optional. A Lua table with additions http request-headers.
  - **postData**: Optional. When doing a `POST`, `PUT` <sup>3.0.2</sup> or `DELETE`<sup>3.0.2</sup> this data will be the payload of the request (body). If you provide a Lua table then this will automatically be converted to json and the request-header `application/json` is set. So no need to do that manually.
 
@@ -2585,7 +2591,7 @@ Check out the documentation [here](https://htmlpreview.github.io/?https://github
 
 # History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
 
-## [3.1.0] ##
+## [3.1.1] ##
 - Fixed issue that prevented dzVents from accessing the domoticz API when used in sslwww only mode
 
 ## [3.1.0]
