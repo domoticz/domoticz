@@ -6390,12 +6390,27 @@ void CSQLHelper::UpdateMultiMeter()
 			{
 				if (splitresults.size() != 6)
 					continue; //impossible
-				unsigned long long powerusage1 = std::stoull(splitresults[0]);
-				unsigned long long powerusage2 = std::stoull(splitresults[1]);
-				unsigned long long powerdeliv1 = std::stoull(splitresults[2]);
-				unsigned long long powerdeliv2 = std::stoull(splitresults[3]);
-				unsigned long long usagecurrent = std::stoull(splitresults[4]);
-				unsigned long long delivcurrent = std::stoull(splitresults[5]);
+
+				unsigned long long powerusage1 = 0;
+				unsigned long long powerusage2 = 0;
+				unsigned long long powerdeliv1 = 0;
+				unsigned long long powerdeliv2 = 0;
+				unsigned long long usagecurrent = 0;
+				unsigned long long delivcurrent = 0;
+
+				try
+				{
+					powerusage1 = std::stoull(splitresults[0]);
+					powerusage2 = std::stoull(splitresults[1]);
+					powerdeliv1 = std::stoull(splitresults[2]);
+					powerdeliv2 = std::stoull(splitresults[3]);
+					usagecurrent = std::stoull(splitresults[4]);
+					delivcurrent = std::stoull(splitresults[5]);
+				}
+				catch (const std::exception &)
+				{
+					_log.Log(LOG_ERROR, "UpdateMultiMeter: Error converting sValue values! (IDX: %s, sValue: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), dType, dSubType);
+				}
 
 				value1 = powerusage1;
 				value2 = powerdeliv1;
