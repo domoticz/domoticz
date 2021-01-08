@@ -944,8 +944,6 @@ bool COpenZWave::OpenSerialConnector()
 	OpenZWave::Options::Get()->AddOptionBool("ValidateValueChanges", true);
 	OpenZWave::Options::Get()->AddOptionBool("Associate", true);
 
-	OpenZWave::Options::Get()->AddOptionBool("AutoUpdateConfigFile", false);
-
 	//Set network key for security devices
 	std::string sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
 	m_sql.GetPreferencesVar("ZWaveNetworkKey", sValue);
@@ -970,9 +968,12 @@ bool COpenZWave::OpenSerialConnector()
 	m_sql.GetPreferencesVar("ZWavePerformReturnRoutes", nValue);
 	OpenZWave::Options::Get()->AddOptionBool("PerformReturnRoutes", (nValue == 1) ? true : false);
 
-	nValue = 1; //default true
+	nValue = 0; //default false
 	m_sql.GetPreferencesVar("ZWaveAutoUpdateConfigFile", nValue);
 	OpenZWave::Options::Get()->AddOptionBool("AutoUpdateConfigFile", (nValue == 1) ? true : false);
+
+	bool bIsEnabled = true;
+	bool bOK = OpenZWave::Options::Get()->GetOptionAsBool("AutoUpdateConfigFile", &bIsEnabled);
 	
 
 	try
