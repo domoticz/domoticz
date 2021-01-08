@@ -10108,7 +10108,7 @@ void MainWorker::decode_General(const CDomoticzHardwareBase* pHardware, const tR
 	}
 	else if (subType == sTypePressure)
 	{
-		sprintf(szTmp, "%.1f", pMeter->floatval1);
+		sprintf(szTmp, "%.2f", pMeter->floatval1);
 		DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 		if (DevRowIdx == (uint64_t)-1)
 			return;
@@ -10235,7 +10235,7 @@ void MainWorker::decode_General(const CDomoticzHardwareBase* pHardware, const tR
 			break;
 		case sTypePressure:
 			WriteMessage("subtype       = Pressure");
-			sprintf(szTmp, "Pressure = %.1f bar", pMeter->floatval1);
+			sprintf(szTmp, "Pressure = %.2f bar", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		case sTypeBaro:
