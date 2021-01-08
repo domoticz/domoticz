@@ -972,10 +972,6 @@ bool COpenZWave::OpenSerialConnector()
 	m_sql.GetPreferencesVar("ZWaveAutoUpdateConfigFile", nValue);
 	OpenZWave::Options::Get()->AddOptionBool("AutoUpdateConfigFile", (nValue == 1) ? true : false);
 
-	bool bIsEnabled = true;
-	bool bOK = OpenZWave::Options::Get()->GetOptionAsBool("AutoUpdateConfigFile", &bIsEnabled);
-	
-
 	try
 	{
 		OpenZWave::Options::Get()->Lock();
