@@ -912,12 +912,7 @@ void CBasePush::ReloadPushLinks(const PushType PType)
 bool CBasePush::IsLinkInDatabase(const uint64_t DeviceRowIdx)
 {
 	std::lock_guard<std::mutex> l(m_link_mutex);
-	for (const auto &itt : m_pushlinks)
-	{
-		if (itt.DeviceRowIdx == DeviceRowIdx)
-			return true;
-	}
-	return false;
+	return std::any_of(m_pushlinks.begin(), m_pushlinks.end(), [&](const _tPushLinks &val) { return DeviceRowIdx == val.DeviceRowIdx; });
 }
 
 bool CBasePush::GetPushLink(const uint64_t DeviceRowIdx, _tPushLinks &plink)
