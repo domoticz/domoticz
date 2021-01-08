@@ -7013,7 +7013,7 @@ void CSQLHelper::UpdateMeter()
 			else if ((dType == pTypeGeneral) && (dSubType == sTypePressure))
 			{
 				double fValue = atof(sValue.c_str()) * 10.0F;
-				sprintf(szTmp, "%.0f", fValue);
+				sprintf(szTmp, "%.1f", fValue);
 				sValue = szTmp;
 			}
 			else if (dType == pTypeUsage)
