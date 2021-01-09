@@ -412,7 +412,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 		pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWERENERGYMETER);
 		if (pEnergyDevice == nullptr)
 		{
-			pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWERENERGYMETER);
+			pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWERENERGYMETER);
 			if (pEnergyDevice == nullptr)
 			{
 				pEnergyDevice = FindDevice(pDevice->nodeID, -1, ZDTYPE_SENSOR_POWERENERGYMETER);
@@ -425,7 +425,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 				SendKwhMeter(pEnergyDevice->nodeID, pEnergyDevice->instanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kWh Meter");
 			}
 		}
-		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_KVAH);
+		pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_KVAH);
 		if (pEnergyDevice)
 		{
 			if (pEnergyDevice->bValidValue)
@@ -433,7 +433,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 				SendKwhMeter(pEnergyDevice->nodeID, 0x40 + pEnergyDevice->orgInstanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kVah Meter");
 			}
 		}
-		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_KVAR);
+		pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_KVAR);
 		if (pEnergyDevice)
 		{
 			if (pEnergyDevice->bValidValue)
@@ -441,7 +441,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 				SendKwhMeter(pEnergyDevice->nodeID, 0x60 + pEnergyDevice->orgInstanceID, BatLevel, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kVar Meter");
 			}
 		}
-		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_KVARH);
+		pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_KVARH);
 		if (pEnergyDevice)
 		{
 			if (pEnergyDevice->bValidValue)
@@ -498,7 +498,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 		}
 		else
 		{
-			pPowerDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWER);
+			pPowerDevice = FindDevice(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWER);
 		}
 		if (pPowerDevice == nullptr)
 			pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
@@ -793,34 +793,18 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 	}
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const int indexID)
-{
-	for (auto &m : m_devices)
-	{
-		if ((m.second.nodeID == nodeID) && (m.second.instanceID == instanceID) && (m.second.indexID == indexID))
-			return &m.second;
-	}
-	return nullptr;
-}
-
-//Used for power/energy devices
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceEx(const uint8_t nodeID, const int instanceID, const _eZWaveDeviceType devType)
-{
-	for (auto &m : m_devices)
-	{
-		if ((m.second.nodeID == nodeID) && (m.second.instanceID == instanceID) && (m.second.devType == devType))
-			return &m.second;
-	}
-	return nullptr;
-}
-
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const uint8_t nodeID, const int instanceID, const _eZWaveDeviceType devType)
 {
 	for (auto &m : m_devices)
 	{
-		if ((m.second.nodeID == nodeID) && ((m.second.instanceID == instanceID) || (instanceID == -1))
-		    && (m.second.devType == devType))
+		if (
+			(m.second.nodeID == nodeID)
+			&& ((m.second.instanceID == instanceID) || (instanceID == -1))
+		    && (m.second.devType == devType)
+			)
+		{
 			return &m.second;
+		}
 	}
 	return nullptr;
 }
@@ -829,9 +813,15 @@ ZWaveBase::_tZWaveDevice *ZWaveBase::FindDevice(const uint8_t nodeID, const int 
 {
 	for (auto &m : m_devices)
 	{
-		if ((m.second.nodeID == nodeID) && ((m.second.instanceID == instanceID) || (instanceID == -1))
-		    && (m.second.commandClassID == CommandClassID) && (m.second.devType == devType))
+		if (
+			(m.second.nodeID == nodeID)
+			&& ((m.second.instanceID == instanceID) || (instanceID == -1))
+		    && (m.second.commandClassID == CommandClassID)
+			&& (m.second.devType == devType)
+			)
+		{
 			return &m.second;
+		}
 	}
 	return nullptr;
 }
