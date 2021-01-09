@@ -9,6 +9,7 @@ local Security = require('Security')
 local SystemEvent = require('SystemEvent')
 local CustomEvent = require('CustomEvent')
 local HistoricalStorage = require('HistoricalStorage')
+local sep = string.sub(package.config, 1, 1)
 
 local function EventHelpers(domoticz, mainMethod)
 	local _gv = globalvariables
@@ -94,9 +95,6 @@ local function EventHelpers(domoticz, mainMethod)
 		if (storageDef ~= nil) then
 			-- load the datafile for this module
 			ok, fileStorage = pcall(require, module)
-			if type(fileStorage) == 'boolean' then
-				utils.log('Problem with module: ' .. module, utils.LOG_ERROR)
-			end
 			package.loaded[module] = nil -- no caching
 			if (ok) then
 				-- only transfer data as defined in storageDef
@@ -111,7 +109,23 @@ local function EventHelpers(domoticz, mainMethod)
 						def = _def
 					end
 
-					if (def.history ~= nil and def.history == true) then
+					if type(fileStorage) == 'boolean' then
+
+						local function preserve(fullQualifiedName, fullQualifiedNameFaulty)
+							local inf = io.open(fullQualifiedName, 'rb')
+							local outf = io.open(fullQualifiedNameFaulty, 'w')
+							outf:write(inf:read('*a'))
+							inf:close()
+							outf:close()
+							os.remove(fullQualifiedName)
+						end
+
+						local fullQualifiedName = _G.dataFolderPath .. sep .. module .. '.lua'
+						local fullQualifiedNameFaulty = _G.dataFolderPath .. sep .. module .. '.faulty'
+
+						utils.log('There was an issue with the require of the datamodule "' .. fullQualifiedName .. '"', utils.LOG_ERROR)
+						preserve(fullQualifiedName,fullQualifiedNameFaulty)
+					elseif def.history ~= nil and def.history == true then
 						storageContext[var] = HistoricalStorage(fileStorage[var], def.maxItems, def.maxHours, def.maxMinutes, def.getValue)
 					else
 						if (fileStorage[var] == nil) then
@@ -334,7 +348,6 @@ local function EventHelpers(domoticz, mainMethod)
 	function self.scandir(directory, type)
 		local pos, len
 		local i, t, popen = 0, {}, io.popen
-		local sep = string.sub(package.config, 1, 1)
 		local cmd
 		local namesLookup = {}
 
