@@ -943,7 +943,7 @@ define(['app', 'livesocket'], function (app) {
 									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
-									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" href="' + timerLink + '" data-i18n="Timers">Timers</a> ';
 									}
@@ -958,7 +958,7 @@ define(['app', 'livesocket'], function (app) {
 									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
-									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" href="' + timerLink + '" data-i18n="Timers">Timers</a> ';
 									}
