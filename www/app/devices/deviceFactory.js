@@ -199,6 +199,19 @@ define(function () {
                 }
             };
 
+            this.isCustomLog = function () {
+				var deviceTypes = ['Air Quality','UV','Rain','Current'];
+				var deviceSubTypes = ['Barometer'];
+
+				if (deviceTypes.includes(this.Type)) {
+					return true;
+				}
+				if (deviceSubTypes.includes(this.SubType)) {
+					return true;
+				}
+				return false;
+            };
+
             this.openCustomLog = function (container, backFn) {
                 GlobalBackFn = backFn;
 

@@ -331,6 +331,7 @@ define(['app', 'livesocket'], function(app) {
                 var actions = [];
                 var logLink = device.getLogLink();
                 var isScene = device.isScene();
+                var isCustomLog = device.isCustomLog();
 
                 if (isScene) {
                     actions.push('<img src="images/empty16.png">');
@@ -346,6 +347,8 @@ define(['app', 'livesocket'], function(app) {
                     actions.push('<a class="btn btn-icon" href="#/Scenes/' + device.idx + '/Log" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
                 } else if (logLink) {
                     actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
+                } else if (isCustomLog) {
+					actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>');
                 }
 
                 actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
