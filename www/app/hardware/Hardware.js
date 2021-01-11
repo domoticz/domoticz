@@ -4796,6 +4796,8 @@ define(['app'], function (app) {
 											PluginParams += '<td>'
 											if ((typeof (param.password) != "undefined") && (param.password == "true"))
 												PluginParams += '<input type="password" ';
+											else if((typeof (param.multiline) != "undefined") && (param.multiline == "true"))
+												PluginParams += '<textarea type="text" ';
 											else
 												PluginParams += '<input type="text" ';
 											PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
