@@ -4793,17 +4793,25 @@ define(['app'], function (app) {
 											});
 											PluginParams += '</select></td>';
 										} else {
+											var multiline=(typeof (param.multiline) != "undefined") && (param.multiline == "true")
 											PluginParams += '<td>'
 											if ((typeof (param.password) != "undefined") && (param.password == "true"))
 												PluginParams += '<input type="password" ';
-											else if((typeof (param.multiline) != "undefined") && (param.multiline == "true"))
-												PluginParams += '<textarea type="text" ';
+											else if(multiline)
+												PluginParams += '<textarea ';
 											else
 												PluginParams += '<input type="text" ';
 											PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
-											if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
+											if (typeof (param.default) != "undefined" && !multiline) PluginParams += 'value="' + param.default + '"';
 											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
-											PluginParams += ' /></td>';
+											if(multiline) {
+												PluginParams += ' >';
+												if (typeof (param.default) != "undefined") PluginParams +=  param.default;
+												PluginParams +='</textarea>';
+											} else {
+                                                                                               PluginParams += ' />';
+											}
+											PluginParams += '</td>';
 										}
 									}
 									else {
