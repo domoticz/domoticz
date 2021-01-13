@@ -4793,23 +4793,29 @@ define(['app'], function (app) {
 											});
 											PluginParams += '</select></td>';
 										} else {
-											var multiline=(typeof (param.multiline) != "undefined") && (param.multiline == "true")
+											var nbRows=-1;
+											if (typeof (param.rows) != "undefined") {
+												var n = Math.floor(Number(param.rows));
+												if(n !== Infinity && String(n) === param.rows && n >= 0) {
+													nbRows = n;
+												}
+											}
 											PluginParams += '<td>'
-											if ((typeof (param.password) != "undefined") && (param.password == "true"))
-												PluginParams += '<input type="password" ';
-											else if(multiline)
-												PluginParams += '<textarea ';
-											else
-												PluginParams += '<input type="text" ';
-											PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
-											if (typeof (param.default) != "undefined" && !multiline) PluginParams += 'value="' + param.default + '"';
-											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
-											if(multiline) {
-												PluginParams += ' >';
+											if (nbRows >= 0) {
+												PluginParams += '<textarea id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
+												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += 'required';
+												PluginParams += '>';
 												if (typeof (param.default) != "undefined") PluginParams +=  param.default;
-												PluginParams +='</textarea>';
+                                                                                                PluginParams +='</textarea>';
 											} else {
-                                                                                               PluginParams += ' />';
+												if ((typeof (param.password) != "undefined") && (param.password == "true"))
+													PluginParams += '<input type="password" ';
+												else
+													PluginParams += '<input type="text" ';
+												PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
+												if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
+												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
+  												PluginParams += ' />';
 											}
 											PluginParams += '</td>';
 										}
