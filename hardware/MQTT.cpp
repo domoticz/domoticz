@@ -483,7 +483,8 @@ void MQTT::on_message(const struct mosquitto_message* message)
 		else if (szCommand == "sendnotification")
 		{
 			uint64_t idx=0;
-			std::string name=std::string(""), subsystems=NOTIFYALL, subject, body, extradata=std::string(""), sound;
+			std::string name, subject, body, extradata, sound;
+			std::string subsystems=NOTIFYALL;
 			bool bfromnotification=true;
 			int priority = 0;
 			if (!root["idx"].empty())
