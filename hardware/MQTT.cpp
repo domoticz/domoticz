@@ -482,8 +482,23 @@ void MQTT::on_message(const struct mosquitto_message* message)
 		}
 		else if (szCommand == "sendnotification")
 		{
-			std::string subject, body, sound;
+			uint64_t idx=0;
+			std::string name, subject, body, extradata, sound;
+			std::string subsystems=NOTIFYALL;
+			bool bfromnotification=true;
 			int priority = 0;
+			if (!root["idx"].empty())
+			{
+				idx = root["idx"].asUInt64();
+			}
+			if (!root["name"].empty())
+			{
+				name = root["name"].asString();
+			}
+			if (!root["subsystems"].empty())
+			{
+				subsystems = root["subsystems"].asString();
+			}
 			if (!root["subject"].empty())
 			{
 				subject = root["subject"].asString();
@@ -491,6 +506,10 @@ void MQTT::on_message(const struct mosquitto_message* message)
 			if (!root["body"].empty())
 			{
 				body = root["body"].asString();
+			}
+			if (!root["extradata"].empty())
+			{
+				extradata = root["extradata"].asString();
 			}
 			if (!root["priority"].empty())
 			{
@@ -500,7 +519,11 @@ void MQTT::on_message(const struct mosquitto_message* message)
 			{
 				sound = root["sound"].asString();
 			}
-			m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, subject, body, std::string(""), priority, sound, true);
+			if (!root["bfromnotification"].empty())
+			{
+				bfromnotification = root["bfromnotification"].asBool();
+			}
+			m_notifications.SendMessageEx(idx, name, subsystems, subject, body, extradata, priority, sound, bfromnotification);
 		}
 		else if (szCommand == "getdeviceinfo")
 		{
