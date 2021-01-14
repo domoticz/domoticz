@@ -20,7 +20,7 @@ __NOTOC__
 
 == [3.0.17] ==
 
-* Add timestampTodate, dateToTimestamp and date2date functions in Time
+* Add timestampTodate, dateToTimestamp and dateToDate functions in Time
 
 == [3.0.16] ==
 

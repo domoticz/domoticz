@@ -501,9 +501,9 @@ Suppose you have some local shellcommand to measure the speed of your internet c
     execute = function(domoticz, item)
         if (item.isTimer) then
         domoticz.executeShellCommand({
-            command = 'speedtest-cli --json',    -- just an example
-            callback = 'internetspeedRetrieved', -- see shellCommandResponses above.
-            timeout = 20,                        -- max execution time in seconds
+            command = 'speedtest-cli --json',      -- just an example
+            callback = 'internetspeedRetrieved',   -- see shellCommandResponses above.
+            timeout = 20,                          -- max execution time in seconds
         })
         elseif (item.isShellCommandResponse) then
             if (item.statusCode==0) then
@@ -690,11 +690,11 @@ The domoticz object holds all information about your Domoticz system. It has glo
 * '''sms(message [, delay] <sup>3.0.10</sup> )''': ''Function''. Sends an sms if it is configured in Domoticz. Optional parm delay is delay in seconds.
 * '''snapshot(cameraID(s) or camera Name(s)<sup>3.0.13</sup>,subject)''': ''Function''. Sends email with a camera snapshots if email is configured and set for attachments in Domoticz. Send 1 or multiple camerIDs -names in ; separated string or array.
 
-<source lang="lua">    dz.snapshot() -- defaults to id = 1, subject domoticz
-    dz.snapshot(1,'dz') -- subject dz
-    dz.snapshot('1;2;3') -- ; separated string
-    dz.snapshot({1,4,7}) --  table
-    dz.snapshot('test;test2') -- ; separated string
+<source lang="lua">    dz.snapshot()                  -- defaults to id = 1, subject domoticz
+    dz.snapshot(1,'dz')            -- subject dz
+    dz.snapshot('1;2;3')           -- ; separated string
+    dz.snapshot({1,4,7})           --  table
+    dz.snapshot('test;test2')      -- ; separated string
     dz.snapshot({'test', 'test2'}) -- table</source>
 <ul>
 <li><p>'''startTime''': ''[[#Time_object|Time Object]]''. Returns the startup time of the Domoticz service.</p></li>
@@ -950,10 +950,10 @@ Note that if you do not find your specific device type here you can always inspe
 * '''updateCounter(value)''': ''Function''. '''Overwrite current value for managed and standard counters; increment for incremental counters !!'''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''incrementCounter(value)''': ''Function''. (counter incremental) Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]]. To update with a complete new value you will have to do some calculation and take the counter divider into account.
 
-<source lang="lua">   local newValue = value
-   local iCounter = domoticz.devices('device name')
-   local counterDivider = x -- x is depending on the counter divider set for the device
-   iCounter.incrementCounter( ( -1 * iCounter.counter * counterDivider ) + newValue ) </source>
+<source lang="lua">    local newValue = value
+    local iCounter = domoticz.devices('device name')
+    local counterDivider = x -- x is depending on the counter divider set for the device
+    iCounter.incrementCounter( ( -1 * iCounter.counter * counterDivider ) + newValue )</source>
 * '''valueQuantity''': ''String''. For counters.
 * '''valueUnits''': ''String''.
 
@@ -1325,9 +1325,9 @@ Many dzVents device methods support extra options, like controlling a delay or a
     device.switchOn().afterSec(10).forMin(2)
 
     -- switch on at a specic time / day
-    device.switchOn().at('09:00')                 -- earliest moment it will be 09:00 hr.
-    device.switchOn().at('08:53:30 on fri')       -- earliest moment it will be Friday at 08:53:30
-    device.switchOn().at('08:53:30 on sat, sun')  -- earliest moment it will be Saturday or Sunday at 08:53:30 (whatever comes first)
+    device.switchOn().at('09:00')                   -- earliest moment it will be 09:00 hr.
+    device.switchOn().at('08:53:30 on fri')         -- earliest moment it will be Friday at 08:53:30
+    device.switchOn().at('08:53:30 on sat, sun')    -- earliest moment it will be Saturday or Sunday at 08:53:30 (whatever comes first)
 
     -- switch on for 2 minutes after a randomized delay of 1-10 minutes
     device.switchOff().withinMin(10).forMin(2)
@@ -1588,11 +1588,11 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
         time -- time (e.g. 23:48:10)
 
         -- examples:
-        domoticz.time.dateToTimestamp('2020-12-31 23:59'))                                                        -- > 1609455540
-        domoticz.time.dateToTimestamp('2020-12-31 23:59:01','yyyy-mm-dd hh:MM:ss'))                               -- > 1609455541
-        domoticz.time.dateToTimestamp('December 31, 23:59:02','mmmm dd, hh:MM:ss'))                               -- > 1609455542
-        domoticz.time.dateToTimestamp('2020-12-31 23:59:03','(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)' ))    -- > 1609455543
-        domoticz.time.dateToTimestamp('20201231235904','(%d%d%d%d)(%d%d)(%d%d)(%d%d)(%d%d)(%d%d)'))               -- > 1609455544</source>
+        domoticz.time.dateToTimestamp('2020-12-31 23:59'))                                                      -- > 1609455540
+        domoticz.time.dateToTimestamp('2020-12-31 23:59:01','yyyy-mm-dd hh:MM:ss'))                             -- > 1609455541
+        domoticz.time.dateToTimestamp('December 31, 23:59:02','mmmm dd, hh:MM:ss'))                             -- > 1609455542
+        domoticz.time.dateToTimestamp('2020-12-31 23:59:03','(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)' ))  -- > 1609455543
+        domoticz.time.dateToTimestamp('20201231235904','(%d%d%d%d)(%d%d)(%d%d)(%d%d)(%d%d)(%d%d)'))             -- > 1609455544</source>
 * '''day''': ''Number''
 * '''day''': ''Number''
 * '''dayAbbrOfWeek''': ''String''. sun,mon,tue,wed,thu,fri or sat
@@ -1626,7 +1626,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 * '''sunriseInMinutes''': ''Number''. Minutes from midnight until sunrise.
 * '''solarnoonInMinutes''': ''Number''. <sup>3.0.11</sup> Minutes from midnight until solarnoon.
 * '''time''': ''String''. Returns the time part of the raw data as HH:MM
-* '''timestampToDate([ [ timestamp ] , [ pattern ] ,[ offSet ] )''': ''function''. Returns a datestring. timestamp is number of seconds since epoch (default = now) , pattern is a string as explained in this wiki at the description of the domoticz.time.date2Timestamp function (default = ‘yyyy-mm-dd hh:MM:ss’). Offset is a number (default = 0 )
+* '''timestampToDate([ [ timestamp ] , [ pattern ] ,[ offSet ] )''': ''function''. Returns a datestring. timestamp is number of seconds since epoch (default = now) , pattern is a string as explained in this wiki at the description of the domoticz.time.dateToTimestamp function (default = ‘yyyy-mm-dd hh:MM:ss’). Offset is a number (default = 0 )
 
 <source lang="lua">        -- examples:
         domoticz.time.timestampToDate(10,'date time')                               --> '01/01/70 01:00:10'
@@ -2379,22 +2379,31 @@ In this case, Domoticz will execute the command and when done it will trigger an
 }</source>
 Of course you can combine the script that issues the request and handles the response in one script:
 
-<source lang="lua">return {
-    on = {
-        timer = {'every 5 minutes'},
-        shellCommandResponses = { 'trigger' }
+<source lang="lua">return
+{
+    on =
+    {
+        timer =
+        {
+            'every 5 minutes',
+        },
+        shellCommandResponses =
+        {
+            scriptVar,
+        },
     },
+
     execute = function(domoticz, item)
-        if (item.isTimer) then
-            domoticz.executeShellCommand({
-                command = '...',
-                callback = 'trigger'
-                timeout = 10,
+        if item.isTimer then
+            domoticz.executeShellCommand(
+            {
+                command = 'some shell command',
+                callback = scriptVar,
+                timeout = timeoutinseconds,
             })
-        end
-        if item.isShellCommandResponse then
+        elseif item.isShellCommandResponse and then
             if item.statusCode == 0  then
-                ...
+                ... -- process result (in item.json, -item.xml, -item.lines or item.data)
             end
         end
     end
@@ -2463,14 +2472,14 @@ When debug logging is enabled, every time dzVents kicks into action (Domoticz th
 
 Example content of <code>module.log</code>
 
-<pre>    Startdate time    - End date time     (clk - CPU  )                 module / scriptname &lt;&lt; type: &quot;trigger&quot;
+<pre>    Startdate time  - End date time  (clk - CPU  )                 dule / scriptname &lt;&lt; type: &quot;trigger&quot;
     ---------------------------------------------------------------------------------------------------------------
-    11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0029)                            waqi.lua &lt;&lt; timer: &quot;every 20 minutes&quot;
-    11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0016)                          Washer.lua &lt;&lt; timer: &quot;every 5 minutes&quot;
-    11/27/20 18:40:01 - 11/27/20 18:40:01 (00 - 0.0215)          getWaterFromHomewizard.lua &lt;&lt; HTTPResponse: &quot;WaterfromHomewizard&quot;
-    11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.2472)            updateWeatherSensors.lua &lt;&lt; HTTPResponse: &quot;WUS_buienradarResponse&quot;
-    11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.0290)                            waqi.lua &lt;&lt; HTTPResponse: &quot;waqi_nearby&quot;
-    11/27/20 18:41:00 - 11/27/20 18:41:00 (00 - 0.0583)               Bathroom humidity.lua &lt;&lt; timer: &quot;every minute between 05:15 and 23:30&quot;</pre>
+    11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0029)                     waqi.lua &lt;&lt; timer: &quot;every 20 minutes&quot;
+    11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0016)                   Washer.lua &lt;&lt; timer: &quot;every 5 minutes&quot;
+    11/27/20 18:40:01 - 11/27/20 18:40:01 (00 - 0.0215)   getWaterFromHomewizard.lua &lt;&lt; HTTPResponse: &quot;WaterfromHomewizard&quot;
+    11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.2472)     updateWeatherSensors.lua &lt;&lt; HTTPResponse: &quot;WUS_buienradarResponse&quot;
+    11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.0290)                     waqi.lua &lt;&lt; HTTPResponse: &quot;waqi_nearby&quot;
+    11/27/20 18:41:00 - 11/27/20 18:41:00 (00 - 0.0583)        Bathroom humidity.lua &lt;&lt; timer: &quot;every minute between 05:15 and 23:30&quot;</pre>
 Every time Domoticz starts dzVents and debug logging is enabled you should see these lines in the domoticz log:
 
 <pre>dzVents version: x.y.z
@@ -2531,7 +2540,7 @@ Check out the documentation [https://htmlpreview.github.io/?https://github.com/r
 
 == [3.0.17] ==
 
-* Add timestampTodate, dateToTimestamp and date2date functions in Time
+* Add timestampTodate, dateToTimestamp and dateToDate functions in Time
 
 == [3.0.16] ==
 

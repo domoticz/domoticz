@@ -407,7 +407,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	function self.makeTime(oDate, isUTC)
 		local sDate = ( type(oDate) == 'table' and os.date("%Y-%m-%d %H:%M:%S", os.time(oDate)) ) or
-						( tonumber(oDate) and timeStamp2string(oDate) ) or oDate
+						( tonumber(oDate) and self.timestampToDate(oDate) ) or oDate
 		return Time(sDate, isUTC)
 	end
 

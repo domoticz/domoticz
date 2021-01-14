@@ -17,7 +17,7 @@ __NOTOC__
 - Fixed bug in dumpTable that caused infinite loop for table with self-reference
 
 ## [3.0.17] ##
-- Add timestampTodate, dateToTimestamp and date2date functions in Time
+- Add timestampTodate, dateToTimestamp and dateToDate functions in Time
 
 ## [3.0.16] ##
 - Add except as keyword in timeRules

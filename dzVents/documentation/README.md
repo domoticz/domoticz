@@ -219,7 +219,6 @@ The customEvent object (second parameter in your execute function) has these att
  - **xmlEncoding**. *String*. When the response data is `text/xml` See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
  - **xmlVersion**. *String*. When the response data is `text/xml` See [ xml versions ] ( https://en.wikipedia.org/wiki/XML ).
 
-
 #### devices = { ... }
 A list of device-names or indexes. If a device in your system was updated (e.g. a switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. **Note**: update does not necessarily means the device state or value has changed. Each device can be:
 
@@ -264,11 +263,10 @@ A list of  one or more system triggers.
 	-   **start**  - fired when Domoticz has started.
 	-   **stop**  - fired when Domoticz is shutting down. As you probably can imagine you have only a limited amount of time - also depending on the load on your system -  to have Domoticz do stuff when your script has been completed. Some commands will probably not be executed. Just give it a try.
 	-  **Backups** - the trigger item (2nd parameter of the execute function) is a table that holds information about the newly created backup (location,  duration in seconds and type).  You could use this information to copy the file to some other location or for another purpose.
-		-	**dailyBackupFinished**    - automatic backup when set in domoticz
+		-	**dailyBackupFinished**	- automatic backup when set in domoticz
 		-	**hourlyBackupFinished**	 -							  " "
 		-	**monthlyBackupFinished** - " "
 		-	**manualBackupFinished**  - fired when you start a backup using the Domoticz GUI or via **< domoticz IP:domoticz port >**/backupdatabase.php
-
 
 #### timer = { ... }
 A list of one ore more time 'rules' like `every minute` or `at 17:*`. See [*timer* trigger rules](#timer_trigger_rules). If any or the rules matches with the current time/date then your execute function is called. E.g.: `on = { timer = { 'between 30 minutes before sunset and 30 minutes after sunrise' } }`.
@@ -528,9 +526,9 @@ return {
 	execute = function(domoticz, item)
 		if (item.isTimer) then
 		domoticz.executeShellCommand({
-			command = 'speedtest-cli --json',    -- just an example
-			callback = 'internetspeedRetrieved', -- see shellCommandResponses above.
-			timeout = 20,                        -- max execution time in seconds
+			command = 'speedtest-cli --json',      -- just an example
+			callback = 'internetspeedRetrieved',   -- see shellCommandResponses above.
+			timeout = 20,                          -- max execution time in seconds
 		})
 		elseif (item.isShellCommandResponse) then
 			if (item.statusCode==0) then
@@ -726,11 +724,11 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **snapshot(cameraID(s) or camera Name(s)<sup>3.0.13</sup>,subject)**: *Function*. Sends email with a camera snapshots if email is configured and set for attachments in Domoticz. Send 1 or multiple camerIDs -names in ; separated string or array.
 
 ```Lua
-	dz.snapshot() -- defaults to id = 1, subject domoticz
-	dz.snapshot(1,'dz') -- subject dz
-	dz.snapshot('1;2;3') -- ; separated string
-	dz.snapshot({1,4,7}) --  table
-	dz.snapshot('test;test2') -- ; separated string
+	dz.snapshot()                  -- defaults to id = 1, subject domoticz
+	dz.snapshot(1,'dz')            -- subject dz
+	dz.snapshot('1;2;3')           -- ; separated string
+	dz.snapshot({1,4,7})           --  table
+	dz.snapshot('test;test2')      -- ; separated string
 	dz.snapshot({'test', 'test2'}) -- table
 ```
 
@@ -804,7 +802,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 			domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300
 	```
 	- **osCommand(cmd)**: *Function*: <sup>3.0.13</sup> Execute an OS command and return result and returncode. Note: For long running scripts `domoticz.executeShellCommand()` should be used, See [Asynchronous shell commands](#Asynchronous_shell_command_execution) for more information.
-	- **osExecute(cmd)**: *Function*: Execute an OS command (no return). Note: For long running scripts `executeShellCommand()` should be used. See [Asynchronous shell commands](#Asynchronous_shell_command_execution) for more information. 
+	- **osExecute(cmd)**: *Function*: Execute an OS command (no return). Note: For long running scripts `executeShellCommand()` should be used. See [Asynchronous shell commands](#Asynchronous_shell_command_execution) for more information.
 	- **rightPad(string, length [, character])**: *Function*: Succeed string with given character(s) (default = space) to given length.
 	- **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
 	- **sceneExists(parm)**: *Function*: returns name when entered with valid scene ^3.0.12^ or sceneID and return ID when entered with valid sceneName or false when not a scene, sceneID or sceneName of an existing scene
@@ -1004,10 +1002,10 @@ Note that if you do not find your specific device type here you can always inspe
  - **updateCounter(value)**: *Function*. **Overwrite current value for managed and standard counters; increment for incremental counters !!**. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **incrementCounter(value)**: *Function*. (counter incremental) Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). To update with a complete new value you will have to do some calculation and take the counter divider into account.
 ```Lua
-   local newValue = value
-   local iCounter = domoticz.devices('device name')
-   local counterDivider = x -- x is depending on the counter divider set for the device
-   iCounter.incrementCounter( ( -1 * iCounter.counter * counterDivider ) + newValue ) 
+	local newValue = value
+	local iCounter = domoticz.devices('device name')
+	local counterDivider = x -- x is depending on the counter divider set for the device
+	iCounter.incrementCounter( ( -1 * iCounter.counter * counterDivider ) + newValue )
 ```
  - **valueQuantity**: *String*. For counters.
  - **valueUnits**: *String*.
@@ -1330,9 +1328,9 @@ Many dzVents device methods support extra options, like controlling a delay or a
 	device.switchOn().afterSec(10).forMin(2)
 
 	-- switch on at a specic time / day
-	device.switchOn().at('09:00')                 -- earliest moment it will be 09:00 hr.
-	device.switchOn().at('08:53:30 on fri')       -- earliest moment it will be Friday at 08:53:30
-	device.switchOn().at('08:53:30 on sat, sun')  -- earliest moment it will be Saturday or Sunday at 08:53:30 (whatever comes first)
+	device.switchOn().at('09:00')					-- earliest moment it will be 09:00 hr.
+	device.switchOn().at('08:53:30 on fri')			-- earliest moment it will be Friday at 08:53:30
+	device.switchOn().at('08:53:30 on sat, sun')	-- earliest moment it will be Saturday or Sunday at 08:53:30 (whatever comes first)
 
 	-- switch on for 2 minutes after a randomized delay of 1-10 minutes
 	device.switchOff().withinMin(10).forMin(2)
@@ -1388,7 +1386,6 @@ light.switchOn().checkFirst().forMin(5)
 
 #### Availability
 Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices and snapshot command silent() is not available.  For commands for which dzVents must use openURL, only  `at()` and  `afterAAA()` methods are available. These commands are mainly the setAaaaa() commands for RGBW type devices.
-
 
 See table below
 
@@ -1584,8 +1581,8 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **dateToDate( dateString, sourceFormat, targetFormat[ , offSet] )**:<sup>3.0.17</sup> *Function*: Returns a reformatted datestring. dateString is a formatted date and source- and targetFormat are representations of the dateString elements and their locations in the string (see examples in dateToTimestamp) . Offset is a number (default = 0 )
 ```Lua
 		-- examples:
-		domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'dddd dd mmmm hh:MM:ss',  1 )             -- > 'Friday 31 December 23:31:06'
-		domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'ddd dd mmm hh:MM:ss',  -3600 * 24 - 3 )) -- > 'Thu 30 Dec 23:31:02'
+		domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'dddd dd mmmm hh:MM:ss',  1 )				-- > 'Friday 31 December 23:31:06'
+		domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'ddd dd mmm hh:MM:ss',  -3600 * 24 - 3 ))	-- > 'Thu 30 Dec 23:31:02'
 ```
 
  - **dateToTimestamp([ dateString [,control] ] )**: *Function*:  Returns *Number* representing time since epoch in seconds. dateString is a formatted date and control is a representation of the dateString elements and their location in the string. Default control is 'yyyy-mm-dd hh:MM'.
@@ -1611,11 +1608,11 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 		time -- time (e.g. 23:48:10)
 
 		-- examples:
-		domoticz.time.dateToTimestamp('2020-12-31 23:59'))                                                        -- > 1609455540
-		domoticz.time.dateToTimestamp('2020-12-31 23:59:01','yyyy-mm-dd hh:MM:ss'))                               -- > 1609455541
-		domoticz.time.dateToTimestamp('December 31, 23:59:02','mmmm dd, hh:MM:ss'))                               -- > 1609455542
-		domoticz.time.dateToTimestamp('2020-12-31 23:59:03','(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)' ))    -- > 1609455543
-		domoticz.time.dateToTimestamp('20201231235904','(%d%d%d%d)(%d%d)(%d%d)(%d%d)(%d%d)(%d%d)'))               -- > 1609455544
+		domoticz.time.dateToTimestamp('2020-12-31 23:59'))                                                      -- > 1609455540
+		domoticz.time.dateToTimestamp('2020-12-31 23:59:01','yyyy-mm-dd hh:MM:ss'))                             -- > 1609455541
+		domoticz.time.dateToTimestamp('December 31, 23:59:02','mmmm dd, hh:MM:ss'))                             -- > 1609455542
+		domoticz.time.dateToTimestamp('2020-12-31 23:59:03','(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)' ))  -- > 1609455543
+		domoticz.time.dateToTimestamp('20201231235904','(%d%d%d%d)(%d%d)(%d%d)(%d%d)(%d%d)(%d%d)'))	            -- > 1609455544
 ```
 
  - **day**: *Number*
@@ -1651,7 +1648,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
  - **sunriseInMinutes**: *Number*. Minutes from midnight until sunrise.
  - **solarnoonInMinutes**: *Number*. <sup>3.0.11</sup> Minutes from midnight until solarnoon.
  - **time**: *String*. Returns the time part of the raw data as HH:MM
- - **timestampToDate([ [ timestamp ] , [ pattern ] ,[ offSet ]  )**: *function*. Returns a datestring. timestamp is number of seconds since epoch (default = now) , pattern is a string as explained in this wiki at the description of the domoticz.time.date2Timestamp function (default = 'yyyy-mm-dd hh:MM:ss'). Offset is a number (default = 0 )
+ - **timestampToDate([ [ timestamp ] , [ pattern ] ,[ offSet ]  )**: *function*. Returns a datestring. timestamp is number of seconds since epoch (default = now) , pattern is a string as explained in this wiki at the description of the domoticz.time.dateToTimestamp function (default = 'yyyy-mm-dd hh:MM:ss'). Offset is a number (default = 0 )
 ```Lua
 		-- examples:
 		domoticz.time.timestampToDate(10,'date time')                               --> '01/01/70 01:00:10'
@@ -2413,7 +2410,6 @@ return {
 
 # Asynchronous shell command execution
 
-
 dzVents allows you to make asynchronous shell commands and handle the results. Asynchronous means that you don't block the system while waiting for the response. Earlier you had to use functions like `utils.osCommand()` or `os.Execute()` and some magic to make sure that you didn't block the system for too long after which Domoticz comes with a message that the script took more than 10 seconds.
 
 dzVents to the rescue. With dzVents there are two ways to execute a shell command asynchronously and it is determined by how you use the `domoticz.executeShellCommand()` command. The simplest form simply calls `executeShellCommand` on the domoticz object with only the command as the parameter (a string value):
@@ -2457,22 +2453,31 @@ return {
 ```
 Of course you can combine the script that issues the request and handles the response in one script:
 ```Lua
-return {
-	on = {
-		timer = {'every 5 minutes'},
-		shellCommandResponses = { 'trigger' }
+return
+{
+	on =
+	{
+		timer =
+		{
+			'every 5 minutes',
+		},
+		shellCommandResponses =
+		{
+			scriptVar,
+		},
 	},
+
 	execute = function(domoticz, item)
-		if (item.isTimer) then
-			domoticz.executeShellCommand({
-				command = '...',
-				callback = 'trigger'
-				timeout = 10,
+		if item.isTimer then
+			domoticz.executeShellCommand(
+			{
+				command = 'some shell command',
+				callback = scriptVar,
+				timeout = timeoutinseconds,
 			})
-		end
-		if item.isShellCommandResponse then
+		elseif item.isShellCommandResponse and then
 			if item.statusCode == 0  then
-				...
+				... -- process result (in item.json, -item.xml, -item.lines or item.data)
 			end
 		end
 	end
@@ -2539,14 +2544,14 @@ When debug logging is enabled, every time dzVents kicks into action (Domoticz th
 
 Example content of `module.log`
 ```
-	Startdate time    - End date time     (clk - CPU  )                 module / scriptname << type: "trigger"
+	Startdate time	- End date time	 (clk - CPU  )                 dule / scriptname << type: "trigger"
 	---------------------------------------------------------------------------------------------------------------
-	11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0029)                            waqi.lua << timer: "every 20 minutes"
-	11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0016)                          Washer.lua << timer: "every 5 minutes"
-	11/27/20 18:40:01 - 11/27/20 18:40:01 (00 - 0.0215)          getWaterFromHomewizard.lua << HTTPResponse: "WaterfromHomewizard"
-	11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.2472)            updateWeatherSensors.lua << HTTPResponse: "WUS_buienradarResponse"
-	11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.0290)                            waqi.lua << HTTPResponse: "waqi_nearby"
-	11/27/20 18:41:00 - 11/27/20 18:41:00 (00 - 0.0583)               Bathroom humidity.lua << timer: "every minute between 05:15 and 23:30"
+	11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0029)                     waqi.lua << timer: "every 20 minutes"
+	11/27/20 18:40:00 - 11/27/20 18:40:00 (00 - 0.0016)                   Washer.lua << timer: "every 5 minutes"
+	11/27/20 18:40:01 - 11/27/20 18:40:01 (00 - 0.0215)   getWaterFromHomewizard.lua << HTTPResponse: "WaterfromHomewizard"
+	11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.2472)     updateWeatherSensors.lua << HTTPResponse: "WUS_buienradarResponse"
+	11/27/20 18:40:03 - 11/27/20 18:40:03 (00 - 0.0290)                     waqi.lua << HTTPResponse: "waqi_nearby"
+	11/27/20 18:41:00 - 11/27/20 18:41:00 (00 - 0.0583)        Bathroom humidity.lua << timer: "every minute between 05:15 and 23:30"
 ```
 
 Every time Domoticz starts dzVents and debug logging is enabled you should see these lines in the domoticz log:
@@ -2607,7 +2612,7 @@ Check out the documentation [here](https://htmlpreview.github.io/?https://github
 - Fixed bug in dumpTable that caused infinite loop for table with self-reference
 
 ## [3.0.17]
-- Add timestampTodate, dateToTimestamp and date2date functions in Time
+- Add timestampTodate, dateToTimestamp and dateToDate functions in Time
 
 ## [3.0.16]
 - Add except as keyword in timeRules
@@ -2688,7 +2693,7 @@ Check out the documentation [here](https://htmlpreview.github.io/?https://github
  - Add custom-events triggers as option to the on = { ... } section. You can now send an event trigger to start subscribed dzVents scripts. customEvents can be triggered by:
 	 - dzVents domoticz.emitEvent(name, data )  --  command  (data = optional)
 	 - JSON: json.htm?type=command&param=customevent&event=MyEvent&data=myData ( data = optional )
-	 - MQTT: {"command" : "customevent", "event" :    "MyEvent" , "data" : "myData" } ( data = opt ional )
+	 - MQTT: {"command" : "customevent", "event" :	"MyEvent" , "data" : "myData" } ( data = opt ional )
  - Add method  domoticz.emitEvent()
  - Add attribute `mode` to Evohome controller
  - Add option to dumpTable() and ([device][uservariable][scene][group].dump() to os file
