@@ -617,10 +617,20 @@ void CPanasonicNode::SendCommand(const std::string &command)
 
 	if (m_CurrentStatus.Status() == MSTAT_OFF && !m_PowerOnSupported)
 	{
-		// no point trying to send a command if we know the device is off
-		// if we get a 400 response when TV is off then Power toggle can be sent
-		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Device is Off, cannot send command.", m_Name.c_str());
-		return;
+		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(m_HwdID);
+		if (pBaseHardware == nullptr)
+			return;
+		if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
+			return;
+		CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
+		if (pHardware->m_bTryIfOff) {
+			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Device is Off, but with TryIfOff option, so trying anyway.", m_Name.c_str());
+		} else {
+			// no point trying to send a command if we know the device is off
+			// if we get a 400 response when TV is off then Power toggle can be sent
+			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Device is Off, cannot send command.", m_Name.c_str());
+			return;
+		}
 	}
 
 	if (command == "Home")
@@ -914,14 +924,16 @@ void CPanasonic::SetSettings(const int PollIntervalsec, const int PingTimeoutms,
 	//Defaults
 	m_iPollInterval = 30;
 	m_iPingTimeoutms = 1000;
-	m_bUnknownCommandAllowed = 0;
+	m_bUnknownCommandAllowed = false;
+	m_bTryIfOff = false;
 
 	if (PollIntervalsec > 1)
 		m_iPollInterval = PollIntervalsec;
 	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
 		m_iPingTimeoutms = PingTimeoutms;
 
-	m_bUnknownCommandAllowed =  iMode3 & 1;
+	m_bUnknownCommandAllowed =  ( iMode3 & 1 ) ? true : false;
+	m_bTryIfOff =  (iMode3 & 2) ? true : false;
 }
 
 bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char /*length*/)

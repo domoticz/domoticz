@@ -38,6 +38,7 @@ class CPanasonic : public CDomoticzHardwareBase
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	bool m_bUnknownCommandAllowed;
+	bool m_bTryIfOff;
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
 	boost::asio::io_service m_ios;
