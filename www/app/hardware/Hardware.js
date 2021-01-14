@@ -4793,20 +4793,14 @@ define(['app'], function (app) {
 											});
 											PluginParams += '</select></td>';
 										} else {
-											var nbRows=-1;
-											if (typeof (param.rows) != "undefined") {
-												var n = Math.floor(Number(param.rows));
-												if(n !== Infinity && String(n) === param.rows && n >= 0) {
-													nbRows = n;
-												}
-											}
 											PluginParams += '<td>'
+											var nbRows=parseInt(param.rows);
 											if (nbRows >= 0) {
 												PluginParams += '<textarea id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
 												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += 'required';
 												PluginParams += '>';
 												if (typeof (param.default) != "undefined") PluginParams +=  param.default;
-                                                                                                PluginParams +='</textarea>';
+												PluginParams +='</textarea>';
 											} else {
 												if ((typeof (param.password) != "undefined") && (param.password == "true"))
 													PluginParams += '<input type="password" ';
