@@ -4463,7 +4463,7 @@ std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned 
 	uint8_t instanceID = ID4;
 	int indexID = ID1;
 
-	const _tZWaveDevice* pDevice = FindDevice((uint8_t)nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_MODE);
+	const _tZWaveDevice *pDevice = FindDevice((uint8_t)nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, ZDTYPE_SENSOR_THERMOSTAT_MODE);
 	if (pDevice)
 	{
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
@@ -4494,7 +4494,7 @@ std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 	uint8_t instanceID = ID4;
 	int indexID = ID1;
 
-	const _tZWaveDevice* pDevice = FindDevice((uint8_t)nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE);
+	const _tZWaveDevice *pDevice = FindDevice((uint8_t)nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE);
 	if (pDevice)
 	{
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
