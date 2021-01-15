@@ -4412,17 +4412,30 @@ void COpenZWave::SetThermostatMode(const uint8_t nodeID, const uint8_t instanceI
 			COpenZWave::NodeInfo* pNode = GetNodeInfo(homeID, vnodeID);
 			if (pNode)
 			{
-				if (tMode < (int)pNode->tModes.size())
+				if (tMode >= 0 && tMode < (int)pNode->tModes.size())
 				{
 					m_pManager->SetValueListSelection(vID, pNode->tModes[tMode]);
 				}
+				else
+				{
+					_log.Log(LOG_ERROR, "OpenZWave nodeID %u, instanceID %u: tMode out of range: 0 <= %d < %d. File: %s (Line %d)",
+						nodeID, instanceID, tMode, (int)pNode->tModes.size(),
+						std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "OpenZWave nodeID %u, instanceID %u: NodeInfo not found. File: %s (Line %d)",
+					nodeID, instanceID,
+					std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 			}
 		}
 		m_updateTime = mytime(nullptr);
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d) %s:%d",
+		_log.Log(LOG_ERROR, "OpenZWave nodeID %u, instanceID %u: Exception caught. Type: %d, Msg: %s, File: %s (Line %d) %s:%d",
+			nodeID, instanceID,
 			ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine(),
 			std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 	}
@@ -4440,11 +4453,18 @@ void COpenZWave::SetThermostatFanMode(const uint8_t nodeID, const uint8_t instan
 		{
 			m_pManager->SetValueListSelection(vID, ZWave_Thermostat_Fan_Modes[fMode]);
 		}
+		else
+		{
+			_log.Log(LOG_ERROR, "OpenZWave nodeID %u, instanceID %u: Value not found. CommandClass %d. File: %s (Line %d)",
+				nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE,
+				std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+		}
 		m_updateTime = mytime(nullptr);
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d) %s:%d",
+		_log.Log(LOG_ERROR, "OpenZWave nodeID %u, instanceID %u: Exception. Type: %d, Msg: %s, File: %s (Line %d) %s:%d",
+			nodeID, instanceID,
 			ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine(),
 			std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 	}
@@ -4461,9 +4481,8 @@ std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned 
 
 	int nodeID = (ID2 << 8) | ID3;
 	uint8_t instanceID = ID4;
-	int indexID = ID1;
 
-	const _tZWaveDevice* pDevice = FindDevice((uint8_t)nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_MODE);
+	const _tZWaveDevice* pDevice = FindDevice((uint8_t)nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, ZDTYPE_SENSOR_THERMOSTAT_MODE);
 	if (pDevice)
 	{
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
@@ -4476,7 +4495,25 @@ std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned 
 			{
 				return pNode->tModes;
 			}
+			else
+			{
+				_log.Log(LOG_ERROR, "OpenZWave: NodeInfo not found. homeID %u, vnodeID %u. File: %s (Line %d)",
+					homeID, vnodeID,
+					std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+			}
 		}
+		else
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Value not found. NodeID %d, instanceID %u, CommandClass %d. File: %s (Line %d)",
+				nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE,
+				std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+		}
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: device not found. NodeID %d, instanceID %u, CommandClass %d, DeviceType %d. File: %s (Line %d)",
+			nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, ZDTYPE_SENSOR_THERMOSTAT_MODE,
+			std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 	}
 	return ret;
 }
@@ -4492,9 +4529,8 @@ std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 
 	int nodeID = (ID2 << 8) | ID3;
 	uint8_t instanceID = ID4;
-	int indexID = ID1;
 
-	const _tZWaveDevice* pDevice = FindDevice((uint8_t)nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE);
+	const _tZWaveDevice* pDevice = FindDevice((uint8_t)nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE);
 	if (pDevice)
 	{
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
@@ -4520,7 +4556,25 @@ std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 				}
 				retstr = modes;
 			}
+			else
+			{
+				_log.Log(LOG_ERROR, "OpenZWave: NodeInfo not found. homeID %u, vnodeID %u. File: %s (Line %d)",
+					homeID, vnodeID,
+					std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+			}
 		}
+		else
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Value not found. NodeID %d, instanceID %u, CommandClass %d. File: %s (Line %d)",
+				nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE,
+				std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+		}
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: device not found. NodeID %d, instanceID %u, CommandClass %d, DeviceType %d. File: %s (Line %d)",
+			nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, ZDTYPE_SENSOR_THERMOSTAT_MODE,
+			std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 	}
 	return retstr;
 }

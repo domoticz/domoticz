@@ -11284,13 +11284,35 @@ namespace http {
 
 									if (!vmodes.empty())
 									{
-										if (nValue < (int)vmodes.size())
+										if (nValue >= 0 && nValue < (int)vmodes.size())
 										{
 											sprintf(szData, "%s", vmodes[nValue].c_str());
 										}
+										else
+										{
+											_log.Log(LOG_ERROR, "WebServer: nValue out of range. 0 >= %d > %d. File: %s (Line %d)",
+												nValue, (int)vmodes.size(),
+												std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+										}
+									}
+									else
+									{
+										_log.Log(LOG_ERROR, "WebServer: vmodes is empty. File: %s (Line %d)", 
+											std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 									}
 								}
+								else
+								{
+									_log.Log(LOG_ERROR, "WebServer: HwdType != HTYPE_OpenZWave. File: %s (Line %d)", 
+										std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+								}
 							}
+							else
+							{
+								_log.Log(LOG_ERROR, "WebServer: pHardware not found. File: %s (Line %d)", 
+									std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+							}
+							
 #endif
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["Modes"] = modes;
